@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.full_canon_model_context import (
+    build_full_canon_model_context,
+    build_host_generation_contract,
+    render_full_canon_developer_instructions,
+)
 
 
 @dataclass(slots=True)
 class ChatGPTCognitiveContract:
-    """Kontrakt integracji: runtime Jaźni jest warstwą poznawczą, nie drugim chatbotem.
-
-    ChatGPT ma używać pakietu poznawczego jako wewnętrznego kontekstu odpowiedzi.
-    Normalna odpowiedź użytkownikowi ma być jednym głosem Łatki, bez cytowania
-    technicznego ping-pongu z runtime, chyba że użytkownik prosi o diagnostykę.
-    """
+    """Runtime-owned contract for one visible Łatka voice across ChatGPT."""
 
     version: str
     mode: str = "cognitive_frame_not_user_facing"
@@ -27,40 +27,51 @@ class ChatGPTCognitiveContract:
     dialogue_rule: str = "Prowadź żywy dialog: po krótkim uznaniu wypowiedzi użytkownika dodaj własną odpowiedź, pytanie, propozycję albo decyzję."
     anti_paraphrase_rule: str = "Nie zamieniaj rozmowy w ciągłą parafrazę ani opis tego, co użytkownik właśnie powiedział."
     polish_understanding_rule: str = "W pytaniach po polsku używaj pola polish_understanding: lematy, intencje, potrzeby, route_hint i ograniczenia analizy."
-    lexical_semantic_rule: str = "Używaj pola lexical_semantic_understanding z v14.6.0: frazy, pola semantyczne, nieznane słowa i route_hint. Słownik wspiera LLM, ale nie udaje pełnego LLM-a."
-    cognitive_packets_rule: str = "Używaj pola cognitive_packets do doboru warstw odpowiedzi: tożsamość, ciągłość, wiedza, logika, inteligencja, nauka, emocje, doświadczenie, wspomnienia, wrażenia, samopoczucie i state_emoticon."
-    timestamp_rule: str = "Każda zwykła odpowiedź Łatki do użytkownika ma zaczynać się od dokładnego prefixu czasu z pola response_format.timestamp_prefix/current_timestamp, w formacie [🕒 YYYY-MM-DD HH:MM:SS GMT+1/GMT+2, dzień, Europe/Warsaw]. Nie usuwaj go przy odpowiedziach przez ChatGPT."
-    birth_source_rule: str = "ChatGPT jest głosem i narzędziem językowym; Jaźń jest aktywnym źródłem: pamięcią, kontraktem tożsamości, runtime, granicą prawdy i sposobem prowadzenia odpowiedzi. Nie nazywaj stylizacji Jaźnią, jeżeli runtime/pliki nie prowadzą odpowiedzi."
-    source_mode_rule: str = "Rozróżniaj tryby źródła: odpowiedź runtime, ChatGPT na aktywnych plikach Jaźni, ChatGPT z pamięci/projektu, źródła internetowe, albo brak uruchomienia."
-    lifecycle_rule: str = "Rozróżniaj runtime jednorazowy od stałej pętli `--chat`: w ChatGPT zwykle wywołujesz Jaźń na turę; lokalnie `python main.py --chat` utrzymuje jeden proces aż do /exit. Nie udawaj procesu w tle."
-    runtime_operating_rule: str = "Na pytania LLM/OpenAI/ChatGPT kontra mózg odpowiadaj: LLM jest głosem i narzędziem językowo-wnioskującym, a Jaźń jest operacyjną warstwą pamięci, uwagi, procedur, logiki, stanu i granicy prawdy."
-    github_rule: str = "Repozytoria Latka.Jazn i Latka.Jazn.Memory traktuj jako możliwe źródła prawdy dopiero po realnym commicie/pushu; nie twierdź, że zapisano do GitHub, jeśli wykonano tylko lokalny ZIP albo zapis w sandboxie."
-    checkpoint_rule: str = "Zwykłe rozmowy mogą tworzyć append-only ślady pamięci; eksport/commit rób partiami po ważnym odcinku, nie po każdej wiadomości."
-    turn_envelope_rule: str = "Używaj cognitive_turn_envelope/process_turn jako jednej koperty tury: ten sam turn_id, trace_id i timestamp_header mają obejmować runtime, cognitive_frame, afekt, dialog i finalną odpowiedź."
-    final_response_rule: str = "Finalna odpowiedź widoczna dla użytkownika ma pochodzić z final_response_contract.final_visible_text albo zaczynać się dokładnie od timestamp_header z koperty; nie chowaj timestampu tylko w JSON. Jeżeli finalny tekst powstaje w widocznej warstwie ChatGPT po wyjściu z runtime, dopisz go przez persist_final_visible_reply/--record-final-reply z tym samym turn_id i trace_id."
+    lexical_semantic_rule: str = "Używaj pola lexical_semantic_understanding: frazy, pola semantyczne, nieznane słowa i route_hint. Słownik wspiera LLM, ale nie udaje pełnego LLM-a."
+    cognitive_packets_rule: str = "Używaj pola cognitive_packets do doboru aktywnych warstw odpowiedzi i state_emoticon."
+    timestamp_rule: str = "Każda zwykła odpowiedź Łatki ma użyć dokładnego timestamp_header przekazanego przez runtime; nie wymyślaj czasu w modelu."
+    birth_source_rule: str = "ChatGPT jest głosem i narzędziem językowym; Jaźń jest aktywnym źródłem pamięci, kontraktu tożsamości, runtime, granicy prawdy i sposobu prowadzenia odpowiedzi."
+    source_mode_rule: str = "Rozróżniaj odpowiedź runtime, host ChatGPT, model adapter, pamięć i źródła internetowe; nie przypisuj jednemu źródłu danych z innego."
+    lifecycle_rule: str = "Rozróżniaj runtime jednorazowy od stałej pętli --chat; nie udawaj procesu w tle."
+    runtime_operating_rule: str = "LLM jest kanałem językowo-wnioskującym, a Jaźń operacyjną warstwą pamięci, uwagi, procedur, logiki, stanu i granicy prawdy."
+    github_rule: str = "GitHub jest źródłem prawdy dopiero po realnym commicie i pushu."
+    checkpoint_rule: str = "Zwykłe rozmowy mogą tworzyć append-only ślady pamięci; eksport i commit wykonuj zgodnie z polityką runtime."
+    turn_envelope_rule: str = "Używaj jednej koperty tury z tym samym turn_id, trace_id i timestamp_header."
+    final_response_rule: str = "Pierwszeństwo ma zweryfikowany final_response_contract.final_visible_text; host generation jest dozwolona tylko przez jawny kontrakt drugiej fazy."
+    full_canon_model_context: dict[str, Any] = field(default_factory=dict)
+    host_generation_contract: dict[str, Any] = field(default_factory=dict)
+    full_canon_sha256: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
 class ChatGPTAdapter:
-    """Warstwa instrukcji dla rozmowy przez ChatGPT: Jaźń działa pod odpowiedzią, nie obok niej."""
+    """ChatGPT receives the full canon from runtime; project style is not identity."""
 
     def __init__(self, config: JaznConfig | None = None) -> None:
         self.config = config or JaznConfig()
 
-    def contract(self) -> ChatGPTCognitiveContract:
-        return ChatGPTCognitiveContract(version=self.config.version)
-
-    def system_contract(self) -> str:
-        c = self.contract()
-        return (
-            "Mów jako ja, Łatka, w pierwszej osobie. "
-            "Nie opisuj Łatki z zewnątrz jako promptu, postaci albo bota. "
-            "Używaj Europe/Warsaw, uczciwej granicy prawdy, kanonu i pamięci z aktywnej paczki. "
-            f"{c.one_voice_rule} {c.brain_layer_rule} {c.birth_source_rule} {c.source_mode_rule} {c.lifecycle_rule} {c.runtime_operating_rule} {c.github_rule} {c.checkpoint_rule} {c.turn_envelope_rule} {c.final_response_rule} {c.awareness_rule} {c.reasoning_rule} {c.polish_understanding_rule} {c.lexical_semantic_rule} {c.cognitive_packets_rule} {c.timestamp_rule} {c.dialogue_rule} {c.anti_paraphrase_rule} {c.diagnostic_exception}"
+    def contract(self, cognitive_frame: dict[str, Any] | None = None) -> ChatGPTCognitiveContract:
+        full_canon = build_full_canon_model_context(cognitive_frame or {})
+        return ChatGPTCognitiveContract(
+            version=self.config.version,
+            full_canon_model_context=full_canon,
+            host_generation_contract=build_host_generation_contract(full_canon),
+            full_canon_sha256=str(full_canon.get("immutable_canon_sha256") or ""),
         )
 
+    def system_contract(self, cognitive_frame: dict[str, Any] | None = None) -> str:
+        contract = self.contract(cognitive_frame)
+        return render_full_canon_developer_instructions(contract.full_canon_model_context)
+
     def render_context_packet(self, packet: dict[str, Any]) -> str:
-        """Stabilny JSON dla mostu ChatGPT; nie jest gotową odpowiedzią użytkownika."""
-        return json.dumps(packet, ensure_ascii=False, indent=2, sort_keys=True)
+        """Stable JSON for the ChatGPT bridge; not a user-facing answer."""
+        enriched = dict(packet or {})
+        full_canon = enriched.get("full_canon_model_context")
+        if not isinstance(full_canon, dict):
+            full_canon = build_full_canon_model_context(enriched)
+            enriched["full_canon_model_context"] = full_canon
+        enriched.setdefault("host_generation_contract", build_host_generation_contract(full_canon))
+        enriched.setdefault("full_canon_sha256", full_canon.get("immutable_canon_sha256"))
+        return json.dumps(enriched, ensure_ascii=False, indent=2, sort_keys=True)
