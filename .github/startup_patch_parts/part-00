@@ -1,0 +1,232 @@
+diff --git a/.github/workflows/release-hardening.yml b/.github/workflows/release-hardening.yml
+index afc00ac..4b4fa2c 100644
+--- a/.github/workflows/release-hardening.yml
++++ b/.github/workflows/release-hardening.yml
+@@ -49,7 +49,7 @@ jobs:
+           -m "not live_model and not live_mcp"
+ 
+       - name: Package smoke system profile
+-        run: python -X utf8 run.py package-smoke --profile system --json
++        run: python -X utf8 main.py --package-smoke --package-profile system
+ 
+       - name: Security path regressions
+         run: python -X utf8 -m pytest -q tests/test_release_hardening_safe_paths.py tests/test_release_hardening_raw_archive.py
+diff --git a/AGENTS.md b/AGENTS.md
+index 3c5277c..4cb881b 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -6,7 +6,6 @@ Ten plik jest cienkim loaderem repozytorium. Nie jest pamięcią, kanonem, osobo
+ 
+ - ChatGPT/openai.com: `AGENTS.chatgpt.md`
+ - Codex / agent kodujący: `AGENTS.codex.md`
+-- LM Studio / lokalny adapter LLM: `AGENTS.lmstudio.md`
+ 
+ ## Granica prawdy
+ 
+diff --git a/latka_jazn/cli.py b/latka_jazn/cli.py
+index 1e64365..37071f5 100644
+--- a/latka_jazn/cli.py
++++ b/latka_jazn/cli.py
+@@ -24,7 +24,7 @@ def _add_common(parser: argparse.ArgumentParser) -> None:
+ 
+ 
+ def build_parser() -> argparse.ArgumentParser:
+-    parser = StableArgumentParser(prog="run.py", description="Canonical Jaźń v15 operator CLI", allow_abbrev=False)
++    parser = StableArgumentParser(prog="latka_jazn.cli", description="Canonical Jaźń v15 operator CLI", allow_abbrev=False)
+     parser.add_argument("--version", action="version", version=PACKAGE_VERSION_FULL)
+     sub = parser.add_subparsers(dest="command")
+ 
+diff --git a/latka_jazn/cli_commands/diagnostics.py b/latka_jazn/cli_commands/diagnostics.py
+index f54f9ab..a90dfce 100644
+--- a/latka_jazn/cli_commands/diagnostics.py
++++ b/latka_jazn/cli_commands/diagnostics.py
+@@ -80,7 +80,7 @@ def doctor_payload(
+         action="read_status",
+         source_kind="generated_report",
+         source_content="doctor self-test",
+-        source_origin="run.py doctor",
++        source_origin="main.py --doctor",
+         actor="operator_cli",
+         reason="read_only_gate_self_test",
+         write_action=False,
+@@ -90,7 +90,7 @@ def doctor_payload(
+         action="write_status",
+         source_kind="generated_report",
+         source_content="doctor self-test",
+-        source_origin="run.py doctor",
++        source_origin="main.py --doctor",
+         actor="operator_cli",
+         reason="unconfirmed_write_gate_self_test",
+         write_action=True,
+diff --git a/latka_jazn/config.py b/latka_jazn/config.py
+index 9f94520..d049d5c 100644
+--- a/latka_jazn/config.py
++++ b/latka_jazn/config.py
+@@ -136,10 +136,6 @@ class JaznConfig:
+     terminal_model_name: str = field(default_factory=lambda: os.environ.get("JAZN_TERMINAL_MODEL_NAME", "terminal_visible_layer").strip())
+     local_model_name: str = field(default_factory=lambda: _env_first("JAZN_LOCAL_LLM_MODEL", "JAZN_LOCAL_MODEL_NAME", default="").strip())
+     local_model_api_base: str = field(default_factory=lambda: _env_first("JAZN_LOCAL_LLM_BASE_URL", "JAZN_LOCAL_LLM_API_BASE", "JAZN_LOCAL_MODEL_API_BASE", default="http://127.0.0.1:11434").strip().rstrip("/"))
+-    lm_studio_model_name: str = field(default_factory=lambda: _env_first("JAZN_LM_STUDIO_MODEL", "JAZN_LMSTUDIO_MODEL").strip())
+-    lm_studio_api_base: str = field(default_factory=lambda: _env_first("JAZN_LM_STUDIO_API_BASE", "JAZN_LMSTUDIO_API_BASE", default="http://127.0.0.1:1234/v1").strip().rstrip("/"))
+-    lm_studio_timeout_seconds: float = field(default_factory=lambda: _env_float_first("JAZN_LM_STUDIO_TIMEOUT", "JAZN_LMSTUDIO_TIMEOUT_SECONDS", default=45.0))
+-    lm_studio_max_output_tokens: int = field(default_factory=lambda: _env_int_first("JAZN_LM_STUDIO_MAX_OUTPUT_TOKENS", "JAZN_LMSTUDIO_MAX_OUTPUT_TOKENS", default=800))
+     llama_cpp_model_name: str = field(default_factory=lambda: os.environ.get("JAZN_LLAMA_CPP_MODEL_NAME", "").strip())
+     llama_cpp_model_api_base: str = field(default_factory=lambda: os.environ.get("JAZN_LLAMA_CPP_API_BASE", "http://127.0.0.1:8080/v1").strip().rstrip("/"))
+ 
+diff --git a/latka_jazn/core/bridge_discovery.py b/latka_jazn/core/bridge_discovery.py
+index 3b90c1a..71f1683 100644
+--- a/latka_jazn/core/bridge_discovery.py
++++ b/latka_jazn/core/bridge_discovery.py
+@@ -10,12 +10,6 @@ from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_P
+ from latka_jazn.version import schema_version
+ 
+ 
+-LMSTUDIO_TRUTH_BOUNDARY = (
+-    "LM Studio jest lokalnym backendem językowym przez OpenAI-compatible API. "
+-    "Nie wymaga OPENAI_API_KEY i nie jest źródłem tożsamości, pamięci, stanu ani prawdy runtime Jaźni. "
+-    "Widoczna odpowiedź przechodzi przez istniejący runtime, walidację i truthful fallback."
+-)
+-
+ 
+ def _read_json(path: Path) -> dict[str, Any] | None:
+     try:
+@@ -43,7 +37,7 @@ def discover_runtime_bridges(
+         "daemon_status": daemon,
+         "local_chat": {
+             "command": "python main.py --chat --session-id <id>",
+-            "meaning": "lokalna żywa pętla rozmowy; jeden JaznEngine do /exit, Ctrl+D albo EOF",
++            "meaning": "uniwersalny start rozmowy: host ChatGPT, terminal z Ollamą albo jawny fallback bez modelu",
+         },
+         "chatgpt_bridge": {
+             "command": "python main.py --chat-gpt --session-id <id>",
+@@ -62,13 +56,6 @@ def discover_runtime_bridges(
+             "env": "OPENAI_API_KEY",
+             "meaning": "ten sam runtime Jaźni + OpenAI Responses API jako model_adapter językowy",
+         },
+-        "lmstudio_bridge": {
+-            "command": "python main.py --chat-lm-studio --session-id <id>",
+-            "requires_api_key": False,
+-            "env": None,
+-            "meaning": "ten sam runtime Jaźni + lokalny backend LM Studio przez OpenAI-compatible Responses API z fallbackiem Chat Completions",
+-            "truth_boundary": LMSTUDIO_TRUTH_BOUNDARY,
+-        },
+         "daemon": {
+             "start": "python main.py --daemon-start",
+             "status": "python main.py --daemon-status",
+diff --git a/latka_jazn/core/chat_command_contract.py b/latka_jazn/core/chat_command_contract.py
+index 24614ff..9a486df 100644
+--- a/latka_jazn/core/chat_command_contract.py
++++ b/latka_jazn/core/chat_command_contract.py
+@@ -17,7 +17,6 @@ from latka_jazn.version import schema_version
+ ACCEPTED_CHATGPT_INPUT_FIELDS = ("message", "text", "user_text", "content", "prompt")
+ CHATGPT_BRIDGE_PROTOCOL = schema_version("chatgpt_bridge_jsonl")
+ CHAT_OPENAI_PROTOCOL = schema_version("chat_open_ai_jsonl")
+-CHAT_LMSTUDIO_PROTOCOL = schema_version("chat_lm_studio_jsonl")
+ LOCAL_LLM_PROTOCOL = schema_version("local_llm_jsonl")
+ CHAT_BRIDGE_OUTPUT_MODES = ("jsonl", "final_visible_text")
+ KNOWN_CLI_FLAG_VALUE_POLICY = {
+@@ -140,22 +139,6 @@ def chat_open_ai_contract() -> ChatCommandContract:
+     )
+ 
+ 
+-def chat_lm_studio_contract() -> ChatCommandContract:
+-    return ChatCommandContract(
+-        command="--chat-lm-studio",
+-        mode="lmstudio_openai_compatible_local_backend_contract",
+-        requires_api_key=False,
+-        uses_openai_api=False,
+-        keeps_process_alive=True,
+-        engine_reused_between_turns=True,
+-        truth_boundary=(
+-            "LM Studio jest lokalnym backendem językowym przez OpenAI-compatible API. "
+-            "Nie wymaga OPENAI_API_KEY i nie jest źródłem tożsamości, pamięci, stanu ani prawdy runtime Jaźni. "
+-            "Widoczna odpowiedź przechodzi przez istniejący runtime, walidację i truthful fallback."
+-        ),
+-    )
+-
+-
+ def local_llm_contract() -> ChatCommandContract:
+     return ChatCommandContract(
+         command="--local-llm",
+@@ -174,8 +157,6 @@ def local_llm_contract() -> ChatCommandContract:
+ def command_contract(command: str, *, process_lifecycle: str | None = None) -> dict[str, Any]:
+     if command == "--chat-open-ai":
+         return chat_open_ai_contract().to_dict()
+-    if command == "--chat-lm-studio":
+-        return chat_lm_studio_contract().to_dict()
+     if command == "--local-llm":
+         return local_llm_contract().to_dict()
+     if command == "--chat-gpt":
+@@ -231,9 +212,22 @@ def apply_chatgpt_cli_settings(config: JaznConfig) -> JaznConfig:
+     return config
+ 
+ 
+-def apply_chat_cli_settings(config: JaznConfig) -> JaznConfig:
+-    """Select the truthful local terminal adapter for the --chat loop."""
+-    config.model_adapter = "terminal_runtime_adapter"
++def apply_chat_cli_settings(
++    config: JaznConfig,
++    *,
++    infer_host_environment: bool = True,
++    probe_local: bool = True,
++) -> JaznConfig:
++    """Resolve the universal ``--chat`` route for the current environment."""
++    from latka_jazn.core.llm_route_resolver import apply_llm_route_to_config, build_llm_route_status
++
++    status = build_llm_route_status(
++        config,
++        command="--chat",
++        infer_host_environment=infer_host_environment,
++        probe_local=probe_local,
++    )
++    apply_llm_route_to_config(config, status)
+     if not os.environ.get("JAZN_TERMINAL_MODEL_NAME"):
+         config.terminal_model_name = "terminal_visible_layer"
+     return config
+@@ -259,26 +253,6 @@ def apply_openai_cli_settings(
+     return config
+ 
+ 
+-def apply_lm_studio_cli_settings(
+-    config: JaznConfig,
+-    *,
+-    model: str | None = None,
+-    api_base: str | None = None,
+-    timeout_seconds: float | None = None,
+-    max_output_tokens: int | None = None,
+-) -> JaznConfig:
+-    config.model_adapter = "lmstudio_runtime_adapter"
+-    if model:
+-        config.lm_studio_model_name = model
+-    if api_base:
+-        config.lm_studio_api_base = api_base.rstrip("/")
+-    if timeout_seconds is not None:
+-        config.lm_studio_timeout_seconds = float(timeout_seconds)
+-    if max_output_tokens is not None:
+-        config.lm_studio_max_output_tokens = int(max_output_tokens)
+-    return config
+-
+-
+ def apply_local_llm_cli_settings(
+     config: JaznConfig,
+     *,
+@@ -586,8 +560,6 @@ def run_jsonl_chat_bridge(
+         raise ValueError(f"unsupported chat bridge output_mode: {output_mode}")
+     if command == "--chat-gpt":
+         apply_chatgpt_cli_settings(config)
+-    elif command == "--chat-lm-studio":
+-        apply_lm_studio_cli_settings(config)
+     elif command == "--chat-open-ai":
+         apply_openai_cli_settings(config)
+     elif command == "--local-llm":
+@@ -603,10 +575,6 @@ def run_jsonl_chat_bridge(
+         protocol_version = CHAT_OPENAI_PROTOCOL
+         default_client = "openai_api_bridge"
+         default_lifecycle = "openai_api_jsonl"
+-    elif command == "--chat-lm-studio":
+-        protocol_version = CHAT_LMSTUDIO_PROTOCOL
+-        default_client = "lmstudio_local_bridge"
+-        default_lifecycle = "lmstudio_jsonl_contract"
+     elif command == "--local-llm":
+         protocol_version = LOCAL_LLM_PROTOCOL
+         default_client = "openai_compatible_local_bridge"
