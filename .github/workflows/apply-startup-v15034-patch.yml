@@ -1,0 +1,39 @@
+name: Apply startup v15.0.3.4 patch
+
+on:
+  push:
+    branches:
+      - patch/v15.0.3.3-startup-stability-to-point-15.0.3.4
+    paths:
+      - .github/startup_patch_parts/APPLY
+
+permissions:
+  contents: write
+
+jobs:
+  apply-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reassemble and verify patch
+        shell: bash
+        run: |
+          cat .github/startup_patch_parts/part-* > /tmp/startup-v15034.patch
+          echo "37314fac8700a2741d46183c6dbc19a778c13fefa540706bb90ac41a2941ef52  /tmp/startup-v15034.patch" | sha256sum --check --strict
+          git apply --check /tmp/startup-v15034.patch
+
+      - name: Apply patch and commit
+        shell: bash
+        run: |
+          git apply /tmp/startup-v15034.patch
+          rm -rf .github/startup_patch_parts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Unify startup routing and replace LM Studio with Ollama"
+          git push origin HEAD
