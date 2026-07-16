@@ -70,8 +70,8 @@ def load_self_knowledge_contract(root: Path) -> tuple[dict[str, Any], str | None
     """Load the static contract and resolve release metadata from version.py.
 
     The JSON resource intentionally contains no copied package version.  Runtime
-    consumers receive canonical metadata here, so a release bump changes only
-    latka_jazn/version.py plus the matching VERSION.txt checkpoint.
+    consumers receive canonical metadata here, so release metadata comes only
+    from latka_jazn/version.py and PACKAGE_INTEGRITY_MANIFEST.json.
     """
     data, error = _load_json(Path(root) / SELF_KNOWLEDGE_RESOURCE)
     if error is not None:

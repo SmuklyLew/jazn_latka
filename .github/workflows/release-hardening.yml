@@ -1,0 +1,56 @@
+name: release-hardening
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Compile all active Python
+        run: python -X utf8 -m compileall -q latka_jazn tools tests
+
+      - name: Test without live/private integrations
+        run: python -X utf8 -m pytest -q -m "not live_model and not live_mcp"
+
+      - name: Package smoke system profile
+        run: python -X utf8 run.py package-smoke --profile system --json
+
+      - name: Security path regressions
+        run: python -X utf8 -m pytest -q tests/test_release_hardening_safe_paths.py tests/test_release_hardening_raw_archive.py
+
+      - name: Full session integrity regressions
+        run: python -X utf8 -m pytest -q tests/test_release_hardening_integrity_pipeline.py
+
+      - name: Active contract legacy guard
+        run: python -X utf8 -m pytest -q tests/test_release_hardening_active_contracts.py
+
+      - name: Diff whitespace and generated-file guard
+        run: |
+          git diff --check
+          git diff --exit-code

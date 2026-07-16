@@ -158,7 +158,12 @@ def validate_visible_text(
         errors.append("origin_truth_invalid")
     if not hash_valid:
         errors.append("visible_text_hash_mismatch")
-    timestamp_valid = bool(has_timestamp and header_shape_valid and freshness_ok and trust_ok)
+    timestamp_valid = bool(
+        has_timestamp
+        and header_shape_valid
+        and freshness_ok
+        and (trust_ok or degraded_allowed)
+    )
     return {
         "schema_version": schema_version("final_visible_integrity"),
         "timestamp_policy": timestamp_runtime_policy(),
@@ -189,15 +194,20 @@ def validate_result_integrity(result: Mapping[str, Any]) -> dict[str, Any]:
     contract = result.get("final_response_contract") if isinstance(result.get("final_response_contract"), Mapping) else {}
     decision = result.get("conversation_decision") if isinstance(result.get("conversation_decision"), Mapping) else {}
     trace = result.get("trace") if isinstance(result.get("trace"), Mapping) else {}
-    final_text = str(result.get("final_visible_text") or contract.get("final_visible_text") or "")
+    final_text = str(
+        result.get("final_visible_text")
+        if "final_visible_text" in result
+        else contract.get("final_visible_text") or ""
+    )
     timestamp_header = str(trace.get("timestamp_header") or contract.get("timestamp_header") or "")
-    body = str(contract.get("body") or result.get("exact_runtime_text") or "")
+    body = str(contract.get("body") if "body" in contract else result.get("exact_runtime_text") or "")
     origin_valid, origin_errors = evaluate_origin_truth(
         decision, body=body, final_visible_text=final_text, timestamp_header=timestamp_header
     )
     validation = decision.get("final_answer_validation") if isinstance(decision.get("final_answer_validation"), Mapping) else contract.get("validation") or {}
     validation_passed = bool(validation.get("accepted") is True and validation.get("must_regenerate") is not True)
     provenance = result.get("runtime_provenance") if isinstance(result.get("runtime_provenance"), Mapping) else decision.get("runtime_provenance") or {}
+    decision_provenance = decision.get("runtime_provenance") if isinstance(decision.get("runtime_provenance"), Mapping) else {}
     expected_hash = str(provenance.get("visible_answer_hash") or contract.get("visible_answer_hash") or "") or None
     integrity = validate_visible_text(
         timestamp_header, final_text,
@@ -209,13 +219,46 @@ def validate_result_integrity(result: Mapping[str, Any]) -> dict[str, Any]:
         expected_visible_hash=expected_hash,
     )
     errors = list(integrity.get("errors") or []) + origin_errors
+    if decision_provenance and any(
+        str(decision_provenance.get(field) or "") != str(provenance.get(field) or "")
+        for field in ("exact_runtime_text", "runtime_text_hash", "visible_answer_text", "visible_answer_hash")
+    ):
+        errors.append("runtime_provenance_layer_mismatch")
     visible_provenance_text = str(provenance.get("visible_answer_text") or "")
-    if visible_provenance_text and visible_provenance_text != final_text:
+    if not visible_provenance_text:
+        errors.append("visible_answer_text_missing")
+    elif visible_provenance_text != final_text:
         errors.append("visible_answer_text_mismatch")
-    exact_runtime_text = str(provenance.get("exact_runtime_text") or result.get("exact_runtime_text") or "")
+    provenance_visible_hash = str(provenance.get("visible_answer_hash") or "")
+    if not provenance_visible_hash:
+        errors.append("visible_answer_hash_missing")
+    elif provenance_visible_hash != _sha(visible_provenance_text):
+        errors.append("provenance_visible_answer_hash_mismatch")
+    contract_text = str(contract.get("final_visible_text") or "")
+    if contract_text != final_text:
+        errors.append("final_response_contract_text_mismatch")
+    contract_visible_hash = str(contract.get("visible_answer_hash") or "")
+    if contract_visible_hash and contract_visible_hash != provenance_visible_hash:
+        errors.append("final_response_contract_visible_hash_mismatch")
+
+    provenance_runtime_text = str(provenance.get("exact_runtime_text") or "")
+    result_runtime_text = str(result.get("exact_runtime_text") or "")
+    contract_runtime_text = str(contract.get("runtime_exact_text") or contract.get("body") or "")
+    exact_runtime_text = provenance_runtime_text
+    if not provenance_runtime_text:
+        errors.append("exact_runtime_text_missing")
+    if result_runtime_text != provenance_runtime_text:
+        errors.append("result_exact_runtime_text_mismatch")
+    if contract_runtime_text != provenance_runtime_text:
+        errors.append("final_response_contract_runtime_text_mismatch")
     expected_runtime_hash = str(provenance.get("runtime_text_hash") or "")
-    if expected_runtime_hash and expected_runtime_hash != _sha(exact_runtime_text):
+    if not expected_runtime_hash:
+        errors.append("runtime_text_hash_missing")
+    elif expected_runtime_hash != _sha(exact_runtime_text):
         errors.append("runtime_text_hash_mismatch")
+    contract_runtime_hash = str(contract.get("runtime_text_hash") or "")
+    if contract_runtime_hash and contract_runtime_hash != expected_runtime_hash:
+        errors.append("final_response_contract_runtime_hash_mismatch")
     for artifact in RENDER_ARTIFACTS:
         if artifact in final_text or artifact in exact_runtime_text:
             errors.append(f"render_artifact_detected:{artifact}")
@@ -235,6 +278,7 @@ def enforce_integrity_consensus(result: Mapping[str, Any]) -> tuple[dict[str, An
     gate = dict(updated.get("runtime_truth_gate") or {})
     session = dict(updated.get("session_provenance") or {})
     values = {
+        "pre_repair_contract": updated.get("final_visible_integrity_pre_repair_contract_valid"),
         "result": result_integrity.get("valid"),
         "contract": contract_integrity.get("valid"),
         "runtime_truth_gate": gate.get("final_visible_integrity_valid"),

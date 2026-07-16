@@ -15,6 +15,32 @@ from latka_jazn.version import schema_version
 SCHEMA_VERSION = schema_version("memory_normalization_sidecar")
 WAKE_STATE_SCHEMA_VERSION = schema_version("wake_state_snapshot")
 LAYERED_DEDUPE_SCHEMA_VERSION = schema_version("layered_dedupe")
+FINGERPRINT_CONTRACT_VERSION = "memory_normalization_input/v1"
+RELEVANT_FINGERPRINT_COLUMNS: dict[str, tuple[str, ...]] = {
+    "messages": (
+        "message_id", "conversation_id", "conversation_title", "role", "timestamp",
+        "content_text", "content_hash", "first_source_file", "first_source_sha256", "source_refs_json",
+    ),
+    "legacy_chunks": (
+        "legacy_chunk_id", "source_sha256", "source_file", "source_rel_path", "chunk_index",
+        "page_start", "page_end", "content_text", "inferred_date",
+    ),
+    "episodic_memories": (
+        "episode_id", "created_at_utc", "scene", "participants_json", "source", "grounding",
+        "confidence", "raw_excerpt", "tags_json",
+    ),
+    "semantic_facts": (
+        "fact_id", "created_at_utc", "subject", "predicate", "value", "source", "confidence", "tags_json",
+    ),
+    "procedural_rules": (
+        "rule_id", "created_at_utc", "trigger", "action", "reason", "priority", "source",
+    ),
+    "reflection_entries": (
+        "reflection_id", "created_at_utc", "episode_id", "meaning_for_latka", "identity_impact",
+        "boundary_note", "next_question", "confidence",
+    ),
+    "truth_audits": ("audit_id", "created_at_utc", "text", "audit_json"),
+}
 TRUTH_BOUNDARY = (
     "Sidecar normalizacji czyta aktywną SQLite jako źródło i zapisuje wyłącznie "
     "do bazy audytowej. Nie nadpisuje kanonicznej pamięci rozmów i nie udaje "
@@ -39,6 +65,7 @@ class MemoryNormalizationStatus:
     source_counts: dict[str, int]
     sidecar_counts: dict[str, int]
     last_run: dict[str, Any] | None
+    freshness: dict[str, Any] | None = None
     truth_boundary: str = TRUTH_BOUNDARY
 
     def to_dict(self) -> dict[str, Any]:
@@ -58,6 +85,7 @@ class NormalizationRunReport:
     errors: list[str]
     source_integrity_check: str | None
     source_foreign_key_error_count: int | None
+    source_fingerprint: dict[str, Any] | None = None
     truth_boundary: str = TRUTH_BOUNDARY
 
     def to_dict(self) -> dict[str, Any]:
@@ -80,6 +108,7 @@ class WakeStateStatus:
     sidecar_integrity_check: str | None = None
     sidecar_foreign_key_error_count: int | None = None
     errors: list[str] | None = None
+    freshness: dict[str, Any] | None = None
     truth_boundary: str = TRUTH_BOUNDARY
 
     def to_dict(self) -> dict[str, Any]:
@@ -155,7 +184,15 @@ CREATE TABLE IF NOT EXISTS normalization_runs(
   source_db_sha256 TEXT,
   source_db_size INTEGER,
   source_db_mtime_ns INTEGER,
+  source_db_wal_size INTEGER,
+  source_db_wal_mtime_ns INTEGER,
+  source_db_shm_present INTEGER,
   source_schema_sha256 TEXT,
+  relevant_content_sha256 TEXT,
+  relevant_schema_sha256 TEXT,
+  relevant_row_count INTEGER,
+  relevant_revision TEXT,
+  fingerprint_contract_version TEXT,
   source_integrity_check TEXT,
   source_foreign_key_error_count INTEGER,
   input_counts_json TEXT NOT NULL DEFAULT '{}',
@@ -363,6 +400,124 @@ def _file_fingerprint(path: Path) -> tuple[int | None, int | None]:
         return None, None
 
 
+def _physical_sqlite_state(path: Path, *, include_hash: bool = False) -> dict[str, Any]:
+    size, mtime_ns = _file_fingerprint(path)
+    wal = Path(str(path) + "-wal")
+    shm = Path(str(path) + "-shm")
+    wal_size, wal_mtime_ns = _file_fingerprint(wal)
+    return {
+        "source_db_size": size,
+        "source_db_mtime_ns": mtime_ns,
+        "source_db_sha256": _sha256_file(path) if include_hash else None,
+        "source_db_wal_size": wal_size or 0,
+        "source_db_wal_mtime_ns": wal_mtime_ns,
+        "source_db_shm_present": shm.exists(),
+    }
+
+
+def _quoted(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def _fingerprint_value(value: Any) -> Any:
+    if isinstance(value, bytes):
+        return {"bytes_sha256": hashlib.sha256(value).hexdigest(), "length": len(value)}
+    if isinstance(value, float):
+        return format(value, ".17g")
+    return value
+
+
+def _relevant_logical_fingerprint(path: Path, *, include_content: bool) -> dict[str, Any]:
+    """Fingerprint only semantic inputs consumed by normalization.
+
+    Fast callers collect schema/count/revision metadata. Deep verification also
+    streams deterministic semantic rows, without rowid, WAL or SQLite page layout.
+    """
+    result: dict[str, Any] = {
+        "fingerprint_contract_version": FINGERPRINT_CONTRACT_VERSION,
+        "relevant_content_sha256": None,
+        "relevant_schema_sha256": None,
+        "relevant_row_count": 0,
+        "relevant_revision": None,
+        "tables": {},
+    }
+    con = _connect_readonly(path)
+    try:
+        present_tables = {
+            str(row[0])
+            for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        schema_digest = hashlib.sha256()
+        revision_rows: list[dict[str, Any]] = []
+        content_digest = hashlib.sha256() if include_content else None
+        total = 0
+        for table, configured_columns in RELEVANT_FINGERPRINT_COLUMNS.items():
+            if table not in present_tables:
+                result["tables"][table] = {"present": False, "row_count": 0}
+                continue
+            schema_rows = con.execute(
+                "SELECT type,name,tbl_name,COALESCE(sql,'') FROM sqlite_master "
+                "WHERE (type='table' AND name=?) OR (tbl_name=? AND type IN ('index','trigger')) "
+                "ORDER BY type,name,tbl_name",
+                (table, table),
+            ).fetchall()
+            for schema_row in schema_rows:
+                schema_digest.update(_json(list(schema_row)).encode("utf-8"))
+                schema_digest.update(b"\n")
+            available = {
+                str(row[1])
+                for row in con.execute(f"PRAGMA table_info({_quoted(table)})")
+            }
+            columns = tuple(column for column in configured_columns if column in available)
+            if not columns:
+                count = 0
+                identity_min = identity_max = max_timestamp = None
+            else:
+                count = int(con.execute(f"SELECT COUNT(*) FROM {_quoted(table)}").fetchone()[0] or 0)
+                identity_column = columns[0]
+                timestamp_column = next(
+                    (column for column in ("timestamp", "inferred_date", "created_at_utc") if column in columns),
+                    identity_column,
+                )
+                aggregate = con.execute(
+                    f"SELECT MIN(CAST({_quoted(identity_column)} AS TEXT)), "
+                    f"MAX(CAST({_quoted(identity_column)} AS TEXT)), "
+                    f"MAX(CAST({_quoted(timestamp_column)} AS TEXT)) FROM {_quoted(table)}"
+                ).fetchone()
+                identity_min, identity_max, max_timestamp = aggregate
+            table_revision = {
+                "table": table,
+                "columns": list(columns),
+                "row_count": count,
+                "identity_min": identity_min,
+                "identity_max": identity_max,
+                "max_semantic_timestamp": max_timestamp,
+            }
+            result["tables"][table] = {"present": True, **table_revision}
+            revision_rows.append(table_revision)
+            total += count
+            if content_digest is not None and columns:
+                select_columns = ",".join(_quoted(column) for column in columns)
+                order_columns = ",".join(_quoted(column) for column in columns)
+                for row in con.execute(
+                    f"SELECT {select_columns} FROM {_quoted(table)} ORDER BY {order_columns}"
+                ):
+                    content_digest.update(table.encode("utf-8"))
+                    content_digest.update(b"\x00")
+                    content_digest.update(
+                        _json([_fingerprint_value(value) for value in row]).encode("utf-8")
+                    )
+                    content_digest.update(b"\n")
+        result["relevant_schema_sha256"] = schema_digest.hexdigest()
+        result["relevant_row_count"] = total
+        result["relevant_revision"] = _hash_text(_json(revision_rows))
+        if content_digest is not None:
+            result["relevant_content_sha256"] = content_digest.hexdigest()
+        return result
+    finally:
+        con.close()
+
+
 def _connect_readonly(path: Path, *, immutable: bool = False) -> sqlite3.Connection:
     options = "mode=ro&immutable=1" if immutable else "mode=ro"
     uri = f"file:{path.resolve().as_posix()}?{options}"
@@ -480,7 +635,15 @@ class MemoryNormalizationSidecar:
             for name, sql_type in (
                 ("source_db_size", "INTEGER"),
                 ("source_db_mtime_ns", "INTEGER"),
+                ("source_db_wal_size", "INTEGER"),
+                ("source_db_wal_mtime_ns", "INTEGER"),
+                ("source_db_shm_present", "INTEGER"),
                 ("source_schema_sha256", "TEXT"),
+                ("relevant_content_sha256", "TEXT"),
+                ("relevant_schema_sha256", "TEXT"),
+                ("relevant_row_count", "INTEGER"),
+                ("relevant_revision", "TEXT"),
+                ("fingerprint_contract_version", "TEXT"),
             ):
                 if name not in columns:
                     con.execute(f"ALTER TABLE normalization_runs ADD COLUMN {name} {sql_type}")
@@ -503,6 +666,129 @@ class MemoryNormalizationSidecar:
             )
             con.commit()
 
+    def _evaluate_freshness(self, run: dict[str, Any] | sqlite3.Row, *, deep_verify: bool) -> dict[str, Any]:
+        stored = dict(run)
+        flags = {
+            "relevant_content_changed": False,
+            "relevant_schema_changed": False,
+            "relevant_row_revision_changed": False,
+            "metadata_only_change": False,
+            "wal_checkpoint_only": False,
+            "file_layout_changed_without_logical_change": False,
+            "physical_hash_changed": None,
+            "logical_fingerprint_changed": False,
+            "unchanged": False,
+            "unknown_change_reason": False,
+            "invalidates_wake_state": False,
+            "reason": "unchanged",
+        }
+        required = (
+            "relevant_content_sha256", "relevant_schema_sha256", "relevant_row_count",
+            "relevant_revision", "fingerprint_contract_version",
+        )
+        if any(stored.get(name) is None for name in required):
+            flags.update(
+                reason="fingerprint_contract_missing",
+                unknown_change_reason=True,
+                invalidates_wake_state=True,
+            )
+            return flags
+        if str(stored.get("fingerprint_contract_version")) != FINGERPRINT_CONTRACT_VERSION:
+            flags.update(
+                reason="fingerprint_contract_changed",
+                unknown_change_reason=True,
+                invalidates_wake_state=True,
+            )
+            return flags
+        try:
+            logical = _relevant_logical_fingerprint(self.source_db_path, include_content=deep_verify)
+            physical = _physical_sqlite_state(self.source_db_path, include_hash=deep_verify)
+        except Exception as exc:
+            flags.update(
+                reason="fingerprint_read_error",
+                unknown_change_reason=True,
+                invalidates_wake_state=True,
+                error=repr(exc),
+            )
+            return flags
+
+        flags.update(
+            fingerprint_contract_version=FINGERPRINT_CONTRACT_VERSION,
+            stored_relevant_content_sha256=stored.get("relevant_content_sha256"),
+            current_relevant_content_sha256=logical.get("relevant_content_sha256"),
+            stored_relevant_schema_sha256=stored.get("relevant_schema_sha256"),
+            current_relevant_schema_sha256=logical.get("relevant_schema_sha256"),
+            stored_relevant_row_count=stored.get("relevant_row_count"),
+            current_relevant_row_count=logical.get("relevant_row_count"),
+            stored_relevant_revision=stored.get("relevant_revision"),
+            current_relevant_revision=logical.get("relevant_revision"),
+            stored_source_db_sha256=stored.get("source_db_sha256"),
+            current_source_db_sha256=physical.get("source_db_sha256"),
+            stored_source_db_size=stored.get("source_db_size"),
+            current_source_db_size=physical.get("source_db_size"),
+            stored_source_db_mtime_ns=stored.get("source_db_mtime_ns"),
+            current_source_db_mtime_ns=physical.get("source_db_mtime_ns"),
+            stored_source_db_wal_size=stored.get("source_db_wal_size") or 0,
+            current_source_db_wal_size=physical.get("source_db_wal_size") or 0,
+            stored_source_db_wal_mtime_ns=stored.get("source_db_wal_mtime_ns"),
+            current_source_db_wal_mtime_ns=physical.get("source_db_wal_mtime_ns"),
+            stored_source_db_shm_present=bool(stored.get("source_db_shm_present")),
+            current_source_db_shm_present=bool(physical.get("source_db_shm_present")),
+        )
+        if logical["relevant_schema_sha256"] != stored.get("relevant_schema_sha256"):
+            flags.update(
+                reason="relevant_schema_changed",
+                relevant_schema_changed=True,
+                logical_fingerprint_changed=True,
+                invalidates_wake_state=True,
+            )
+            return flags
+        if (
+            int(logical["relevant_row_count"]) != int(stored.get("relevant_row_count") or 0)
+            or logical["relevant_revision"] != stored.get("relevant_revision")
+        ):
+            flags.update(
+                reason="relevant_row_revision_changed",
+                relevant_row_revision_changed=True,
+                logical_fingerprint_changed=True,
+                invalidates_wake_state=True,
+            )
+            if deep_verify and logical.get("relevant_content_sha256") != stored.get("relevant_content_sha256"):
+                flags.update(reason="relevant_content_changed", relevant_content_changed=True)
+            return flags
+        if deep_verify and logical.get("relevant_content_sha256") != stored.get("relevant_content_sha256"):
+            flags.update(
+                reason="relevant_content_changed",
+                relevant_content_changed=True,
+                logical_fingerprint_changed=True,
+                invalidates_wake_state=True,
+            )
+            return flags
+
+        main_metadata_changed = (
+            physical.get("source_db_size") != stored.get("source_db_size")
+            or physical.get("source_db_mtime_ns") != stored.get("source_db_mtime_ns")
+        )
+        wal_changed = (
+            (physical.get("source_db_wal_size") or 0) != (stored.get("source_db_wal_size") or 0)
+            or physical.get("source_db_wal_mtime_ns") != stored.get("source_db_wal_mtime_ns")
+            or bool(physical.get("source_db_shm_present")) != bool(stored.get("source_db_shm_present"))
+        )
+        if deep_verify:
+            flags["physical_hash_changed"] = physical.get("source_db_sha256") != stored.get("source_db_sha256")
+        if not main_metadata_changed and not wal_changed and not flags["physical_hash_changed"]:
+            flags.update(reason="unchanged", unchanged=True)
+        elif main_metadata_changed and wal_changed and not (physical.get("source_db_wal_size") or 0):
+            flags.update(reason="wal_checkpoint_only", wal_checkpoint_only=True)
+        elif main_metadata_changed:
+            flags.update(
+                reason="file_layout_changed_without_logical_change",
+                file_layout_changed_without_logical_change=True,
+            )
+        else:
+            flags.update(reason="metadata_only_change", metadata_only_change=True)
+        return flags
+
     def status(self, *, deep_verify: bool = False) -> MemoryNormalizationStatus:
         # Ordinary startup/status remains bounded: only file metadata and small
         # sidecar rows are read. Deep verification is explicit.
@@ -510,6 +796,7 @@ class MemoryNormalizationSidecar:
         sidecar_counts: dict[str, int] = {}
         schema_present = False
         last_run = None
+        freshness: dict[str, Any] | None = None
         read_error = False
         if self.sidecar_db_path.exists():
             try:
@@ -547,24 +834,17 @@ class MemoryNormalizationSidecar:
         elif str(last_run.get("schema_version")) != SCHEMA_VERSION or str(last_run.get("runtime_version")) != self.runtime_version:
             status = "normalization_stale"
         else:
-            status = "ready"
-            source_size, source_mtime_ns = _file_fingerprint(self.source_db_path)
-            stored_size = last_run.get("source_db_size")
-            stored_mtime = last_run.get("source_db_mtime_ns")
-            if stored_size is None or stored_mtime is None:
+            freshness = self._evaluate_freshness(last_run, deep_verify=deep_verify)
+            if freshness.get("reason") in {"fingerprint_contract_missing", "fingerprint_contract_changed"}:
                 status = "normalization_stale"
-            elif int(stored_size) != source_size or int(stored_mtime) != source_mtime_ns:
+            elif freshness.get("invalidates_wake_state"):
                 status = "source_changed"
-            elif deep_verify:
+            else:
+                status = "ready"
+            if deep_verify and status == "ready":
                 integrity, fk_count, errors = _sqlite_checks(self.source_db_path)
-                source_hash = _sha256_file(self.source_db_path)
-                schema_hash = _sqlite_schema_sha256(self.source_db_path)
                 if errors or integrity != "ok" or fk_count != 0:
                     status = "validation_failed"
-                elif source_hash != last_run.get("source_db_sha256"):
-                    status = "source_changed"
-                elif schema_hash != last_run.get("source_schema_sha256"):
-                    status = "normalization_stale"
             if status == "ready" and sidecar_counts.get("normalized_memory_items", 0) <= 0:
                 status = "normalization_required"
         return MemoryNormalizationStatus(
@@ -578,6 +858,7 @@ class MemoryNormalizationSidecar:
             source_counts=source_counts,
             sidecar_counts=sidecar_counts,
             last_run=last_run,
+            freshness=freshness,
         )
 
     def normalize(self, *, dry_run: bool = False, limit: int | None = None) -> NormalizationRunReport:
@@ -597,9 +878,6 @@ class MemoryNormalizationSidecar:
             )
         integrity, fk_count, check_errors = _sqlite_checks(self.source_db_path)
         input_counts = self._source_counts()
-        source_hash = _sha256_file(self.source_db_path)
-        source_size, source_mtime_ns = _file_fingerprint(self.source_db_path)
-        source_schema_hash = _sqlite_schema_sha256(self.source_db_path)
         if check_errors or integrity != "ok" or fk_count != 0:
             return NormalizationRunReport(
                 schema_version=SCHEMA_VERSION,
@@ -614,6 +892,12 @@ class MemoryNormalizationSidecar:
                 source_integrity_check=integrity,
                 source_foreign_key_error_count=fk_count,
             )
+        logical_fingerprint = _relevant_logical_fingerprint(self.source_db_path, include_content=True)
+        physical_fingerprint = _physical_sqlite_state(self.source_db_path, include_hash=True)
+        source_hash = physical_fingerprint["source_db_sha256"]
+        source_size = physical_fingerprint["source_db_size"]
+        source_mtime_ns = physical_fingerprint["source_db_mtime_ns"]
+        source_schema_hash = _sqlite_schema_sha256(self.source_db_path)
         if dry_run:
             return NormalizationRunReport(
                 schema_version=SCHEMA_VERSION,
@@ -627,6 +911,7 @@ class MemoryNormalizationSidecar:
                 errors=[],
                 source_integrity_check=integrity,
                 source_foreign_key_error_count=fk_count,
+                source_fingerprint=logical_fingerprint,
             )
 
         self.ensure_schema()
@@ -639,10 +924,13 @@ class MemoryNormalizationSidecar:
                 side.execute(
                     """INSERT INTO normalization_runs
                        (run_id,schema_version,runtime_version,started_at_utc,mode,source_db_path,
-                         source_db_sha256,source_db_size,source_db_mtime_ns,source_schema_sha256,
+                         source_db_sha256,source_db_size,source_db_mtime_ns,
+                         source_db_wal_size,source_db_wal_mtime_ns,source_db_shm_present,
+                         source_schema_sha256,relevant_content_sha256,relevant_schema_sha256,
+                         relevant_row_count,relevant_revision,fingerprint_contract_version,
                          source_integrity_check,source_foreign_key_error_count,
                          input_counts_json,output_counts_json,status,errors_json,dry_run,truth_boundary)
-                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
                         run_id,
                         SCHEMA_VERSION,
@@ -653,7 +941,15 @@ class MemoryNormalizationSidecar:
                         source_hash,
                         source_size,
                         source_mtime_ns,
+                        physical_fingerprint["source_db_wal_size"],
+                        physical_fingerprint["source_db_wal_mtime_ns"],
+                        int(bool(physical_fingerprint["source_db_shm_present"])),
                         source_schema_hash,
+                        logical_fingerprint["relevant_content_sha256"],
+                        logical_fingerprint["relevant_schema_sha256"],
+                        logical_fingerprint["relevant_row_count"],
+                        logical_fingerprint["relevant_revision"],
+                        logical_fingerprint["fingerprint_contract_version"],
                         integrity,
                         fk_count,
                         _json(input_counts),
@@ -695,6 +991,7 @@ class MemoryNormalizationSidecar:
             errors=errors,
             source_integrity_check=integrity,
             source_foreign_key_error_count=fk_count,
+            source_fingerprint={**logical_fingerprint, **physical_fingerprint},
         )
 
     def wake_state_status(self, *, deep_verify: bool = False) -> WakeStateStatus:
@@ -722,6 +1019,7 @@ class MemoryNormalizationSidecar:
                 source_fk_count = None
                 sidecar_integrity = None
                 sidecar_fk_count = None
+                freshness: dict[str, Any] | None = None
                 if schema_present:
                     rows = con.execute(
                         "SELECT * FROM wake_state_snapshots WHERE active=1 ORDER BY created_at_utc DESC, rowid DESC"
@@ -759,13 +1057,19 @@ class MemoryNormalizationSidecar:
                             status = "normalization_stale"
                         elif str(Path(run["source_db_path"]).resolve()) != str(self.source_db_path.resolve()):
                             status = "source_changed"
+                            freshness = {
+                                "reason": "source_path_changed",
+                                "unknown_change_reason": True,
+                                "invalidates_wake_state": True,
+                                "logical_fingerprint_changed": False,
+                            }
                         elif not self.source_db_path.exists():
                             status = "normalization_required"
                         else:
-                            source_size, source_mtime = _file_fingerprint(self.source_db_path)
-                            if run["source_db_size"] is None or run["source_db_mtime_ns"] is None:
+                            freshness = self._evaluate_freshness(run, deep_verify=deep_verify)
+                            if freshness.get("reason") in {"fingerprint_contract_missing", "fingerprint_contract_changed"}:
                                 status = "normalization_stale"
-                            elif int(run["source_db_size"]) != source_size or int(run["source_db_mtime_ns"]) != source_mtime:
+                            elif freshness.get("invalidates_wake_state"):
                                 status = "source_changed"
                             else:
                                 status = "ready"
@@ -775,10 +1079,6 @@ class MemoryNormalizationSidecar:
                             errors.extend(source_errors + sidecar_errors)
                             if errors or source_integrity != "ok" or source_fk_count != 0 or sidecar_integrity != "ok" or sidecar_fk_count != 0:
                                 status = "validation_failed"
-                            elif _sha256_file(self.source_db_path) != run["source_db_sha256"]:
-                                status = "source_changed"
-                            elif _sqlite_schema_sha256(self.source_db_path) != run["source_schema_sha256"]:
-                                status = "normalization_stale"
                     else:
                         status = "snapshot_missing"
                 return WakeStateStatus(
@@ -796,6 +1096,7 @@ class MemoryNormalizationSidecar:
                     sidecar_integrity_check=sidecar_integrity,
                     sidecar_foreign_key_error_count=sidecar_fk_count,
                     errors=errors,
+                    freshness=freshness,
                 )
         except Exception as exc:
             return WakeStateStatus(
@@ -945,7 +1246,7 @@ class MemoryNormalizationSidecar:
             wake = self.wake_state_status(deep_verify=False).to_dict()
             return MemoryPrepareReport(
                 schema_version=schema_version("memory_prepare"), dry_run=dry_run, force=force,
-                deep_verify=deep_verify, status="normalization_required", normalization_performed=False,
+                deep_verify=deep_verify, status="source_missing", normalization_performed=False,
                 snapshot_built=False, normalization=None, wake_state=wake,
                 errors=[f"missing source db: {self.source_db_path}"],
             )
@@ -968,13 +1269,25 @@ class MemoryNormalizationSidecar:
             if force or before.status != "ready":
                 normalization = self.normalize(dry_run=True).to_dict()
             wake = self.wake_state_status(deep_verify=deep_verify).to_dict()
-            planned_status = "ready" if before.status == "ready" and wake.get("status") == "ready" and not force else before.status
-            if force:
-                planned_status = "normalization_required"
+            hard_failures = {
+                "source_missing", "validation_failed", "source_run_invalid",
+                "snapshot_hash_mismatch", "read_error",
+            }
+            if before.status in hard_failures:
+                planned_status = before.status
+            elif wake.get("status") in hard_failures:
+                planned_status = str(wake.get("status"))
+            elif before.status == "ready" and wake.get("status") == "ready" and not force:
+                planned_status = "ready"
+            elif normalization and normalization.get("status") == "dry_run_ok":
+                planned_status = "dry_run_ok"
+            else:
+                planned_status = before.status
+            dry_errors = list((normalization or {}).get("errors") or []) + list(wake.get("errors") or [])
             return MemoryPrepareReport(
                 schema_version=schema_version("memory_prepare"), dry_run=True, force=force,
                 deep_verify=deep_verify, status=planned_status, normalization_performed=False,
-                snapshot_built=False, normalization=normalization, wake_state=wake, errors=[],
+                snapshot_built=False, normalization=normalization, wake_state=wake, errors=dry_errors,
             )
 
         self.ensure_schema()

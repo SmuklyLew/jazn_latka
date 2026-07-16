@@ -174,11 +174,6 @@ class JaznConfig:
         return self._path_under_runtime_root("MANIFEST_CURRENT.json")
 
     @property
-    def manifest_current_path(self) -> Path:
-        # Compatibility property name only; it always points at the canonical manifest.
-        return self.package_integrity_manifest_path
-
-    @property
     def start_file_path(self) -> Path | None:
         return find_start_file(self.root)
 

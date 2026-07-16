@@ -16,6 +16,7 @@ def finalize_payload(args: Any) -> dict[str, Any]:
         text=text,
         supplied_turn_id=args.supplied_turn_id,
         supplied_trace_id=args.supplied_trace_id,
+        supplied_text_sha256=args.text_sha256,
         max_utf8_bytes=args.max_bytes,
     )
     return result.to_dict()

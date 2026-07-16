@@ -311,7 +311,7 @@ class MemorySearchPlanner:
                 aliases=["granica prawdy", "źródło aktywne", "zrodlo aktywne", "procedura startowa", "runtime preview", "fallback"],
                 canonical_files=[
                     "memory/raw/LATKA_BOOTSTRAP_SYSTEM.txt", "memory/raw/LATKA_IDENTITY_CANON.json",
-                    "START_CHATGPT_FROM_HERE.txt", "MANIFEST_CURRENT.json", "memory/layered/procedural.jsonl",
+                    "START_CHATGPT_FROM_HERE.txt", "PACKAGE_INTEGRITY_MANIFEST.json", "memory/layered/procedural.jsonl",
                 ],
                 source_layers=["identity_canon", "procedural", "manifest", "legacy_chat"],
                 priority=88,

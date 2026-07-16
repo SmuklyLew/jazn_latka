@@ -40,6 +40,12 @@ class ModelGuidedResponseSynthesizer:
         "dictionary_network_lookup_request",
         "current_time_question",
         "creative_text_formatting",
+        "runtime_health_check",
+        "runtime_health_check_after_update",
+        "runtime_activation_status_question",
+        "presence_check",
+        "identity_presence_check",
+        "identity_continuity_check",
     }
 
     def synthesize(

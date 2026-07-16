@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -163,6 +164,7 @@ def build_chatgpt_host_visible_reply_payload(
         text=text,
         supplied_turn_id=turn_id,
         supplied_trace_id=trace_id,
+        supplied_text_sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
         max_utf8_bytes=MAX_HOST_BRIDGE_JSON_BYTES,
     )
     if not finalization.accepted:
@@ -175,6 +177,7 @@ def build_chatgpt_host_visible_reply_payload(
         "trace_id": trace_id,
         "timestamp_header": timestamp_header,
         "final_text": text,
+        "final_text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "finalization_result": finalization.to_dict(),
         "builder": {
             "schema_version": schema_version("chatgpt_host_visible_reply_builder"),

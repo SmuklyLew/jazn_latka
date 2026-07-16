@@ -71,11 +71,12 @@ TOOL_DEFINITIONS = [
                 "turn_id": {"type": "string"},
                 "trace_id": {"type": "string"},
                 "final_text": {"type": "string"},
+                "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
                 "supplied_turn_id": {"type": "string"},
                 "supplied_trace_id": {"type": "string"},
                 "idempotency_key": {"type": "string"},
             },
-            "required": ["required_timestamp_header", "turn_id", "trace_id", "final_text"],
+            "required": ["required_timestamp_header", "turn_id", "trace_id", "final_text", "final_text_sha256"],
         },
         "annotations": {
             "readOnlyHint": False,

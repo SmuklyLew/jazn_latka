@@ -8,6 +8,7 @@ from latka_jazn.bootstrap.chatgpt_recovery import runtime_preflight
 from latka_jazn.cli_commands.diagnostics import doctor_payload
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.package_integrity_manifest import (
+    LEGACY_PACKAGE_MANIFEST_NAME,
     PACKAGE_INTEGRITY_MANIFEST_NAME,
     package_integrity_manifest_status,
     resolve_package_integrity_manifest,
@@ -82,9 +83,11 @@ def test_04_missing_legacy_checkpoint_is_compatible(tmp_path: Path) -> None:
     assert version_checkpoint_matches(_runtime(tmp_path)) is True
 
 
-def test_05_config_compat_property_points_to_primary(tmp_path: Path) -> None:
+def test_05_config_exposes_canonical_and_explicit_legacy_paths(tmp_path: Path) -> None:
     cfg = JaznConfig(root=_runtime(tmp_path))
-    assert cfg.manifest_current_path.name == PACKAGE_INTEGRITY_MANIFEST_NAME
+    assert cfg.package_integrity_manifest_path.name == PACKAGE_INTEGRITY_MANIFEST_NAME
+    assert cfg.legacy_manifest_current_path.name == LEGACY_PACKAGE_MANIFEST_NAME
+    assert not hasattr(cfg, "manifest_current_path")
 
 
 def test_06_resolver_never_falls_back_to_legacy(tmp_path: Path) -> None:

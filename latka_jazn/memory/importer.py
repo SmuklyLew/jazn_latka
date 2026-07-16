@@ -90,7 +90,9 @@ class MemoryImporter:
                     counts["chat_html_auto_import"] = {"status": "error", "error": repr(exc)}
             elif legacy_count > 0:
                 counts["chat_html_auto_import"] = {"status": "already_indexed", "legacy_messages": legacy_count}
-            elif not chat_path.exists() and archive_report.status in {"missing_py7zr", "missing_archive", "error", "unpacked_but_missing_chat"}:
+            elif not chat_path.exists() and archive_report.status in {
+                "missing_archive", "missing_safe_extractor", "validation_failed",
+            }:
                 counts["chat_html_auto_import"] = {
                     "status": "not_possible",
                     "reason": archive_report.status,

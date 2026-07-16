@@ -327,6 +327,7 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
     turn_id = str(payload.get("turn_id") or trace.get("turn_id") or "").strip()
     trace_id = str(payload.get("trace_id") or trace.get("trace_id") or "").strip()
     timestamp_header = str(payload.get("timestamp_header") or trace.get("timestamp_header") or "").strip()
+    final_text_sha256 = str(payload.get("final_text_sha256") or "").strip().lower()
     state_emoticon = str(payload.get("state_emoticon") or payload.get("emoticon") or "🌿").strip() or "🌿"
     missing: list[str] = []
     if not final_text:
@@ -337,6 +338,8 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         missing.append("trace_id")
     if not timestamp_header:
         missing.append("timestamp_header")
+    if not re.fullmatch(r"[0-9a-f]{64}", final_text_sha256):
+        missing.append("final_text_sha256")
     return {
         "final_text": final_text,
         "final_text_field": final_text_field,
@@ -344,6 +347,7 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         "trace_id": trace_id,
         "timestamp_header": timestamp_header,
         "state_emoticon": state_emoticon,
+        "final_text_sha256": final_text_sha256,
     }, missing
 
 
@@ -432,6 +436,7 @@ def build_chatgpt_host_bridge_turn_contract(
             "trace_id": trace_id,
             "timestamp_header": timestamp_header,
             "final_text": "<widoczna odpowiedź ChatGPT ułożona na podstawie runtime Jaźni>",
+            "final_text_sha256": "<sha256 dokładnych bajtów UTF-8 pola final_text>",
         },
         "accepted_host_reply_text_fields": list(CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS),
         "chat_bridge": chat_bridge_meta,
@@ -467,6 +472,7 @@ def persist_chatgpt_host_visible_reply(
         text=reply["final_text"],
         supplied_turn_id=reply["turn_id"],
         supplied_trace_id=reply["trace_id"],
+        supplied_text_sha256=reply["final_text_sha256"],
     )
     if not finalization.accepted:
         return None, [f"finalization:{item.code}" for item in finalization.violations]

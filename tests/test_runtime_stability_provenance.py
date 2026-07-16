@@ -9,6 +9,7 @@ import pytest
 
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest, write_package_integrity_manifest
+from latka_jazn.tools.release_staging import create_release_staging
 from latka_jazn.tools.source_provenance import (
     SourceProvenanceError,
     build_source_provenance_document,
@@ -119,6 +120,9 @@ def test_export_without_git_is_verified_only_through_manifest(tmp_path: Path) ->
     assert marker["source_provenance_sha256"] == status.file_sha256
     assert marker["source_base_commit"] == status.base_merge_commit
     assert marker["source_provenance_without_git_history_restriction"]
+    strict = read_source_provenance(export, profile="export_without_git")
+    assert strict.status == "invalid"
+    assert any("dirty=false" in item for item in strict.limitations)
 
 
 def test_provenance_is_manifest_protected_and_forbidden_paths_are_absent(tmp_path: Path) -> None:
@@ -132,3 +136,50 @@ def test_provenance_is_manifest_protected_and_forbidden_paths_are_absent(tmp_pat
     paths = {entry["path"] for entry in manifest["files"]}
     assert "SOURCE_PROVENANCE.json" in paths
     assert not any(path.startswith(("memory/", "workspace_runtime/")) for path in paths)
+
+
+def test_release_staging_is_clean_verified_export_without_git(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    staging = tmp_path / "release-staging"
+    report = create_release_staging(root, staging)
+    assert report["ok"] is True
+    assert report["status"] == "verified_export_without_git_history"
+    assert not (staging / ".git").exists()
+    status = read_source_provenance(staging, profile="export_without_git")
+    assert status.status == "verified_export_without_git_history"
+    assert status.dirty is False
+    assert status.generation_mode == "release"
+    manifest = json.loads((staging / "PACKAGE_INTEGRITY_MANIFEST.json").read_text(encoding="utf-8"))
+    assert "SOURCE_PROVENANCE.json" in {item["path"] for item in manifest["files"]}
+
+
+def test_release_staging_rejects_dirty_source(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "main.py").write_text("dirty\n", encoding="utf-8")
+    with pytest.raises(SourceProvenanceError, match="clean working tree"):
+        create_release_staging(root, tmp_path / "release-staging")
+
+
+def test_stale_provenance_commit_is_rejected_against_current_head(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    payload = build_source_provenance_document(root)
+    (root / "SOURCE_PROVENANCE.json").write_text(json.dumps(payload), encoding="utf-8")
+    _git(root, "add", "SOURCE_PROVENANCE.json")
+    _git(root, "commit", "-m", "commit stale provenance fixture")
+    status = read_source_provenance(root, profile="development")
+    assert status.status == "invalid"
+    assert status.commit_matches_head is False
+    assert any("current HEAD" in item for item in status.limitations)
+
+
+def test_export_profile_rejects_source_provenance_removed_from_manifest(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    staging = tmp_path / "release-staging"
+    create_release_staging(root, staging)
+    manifest_path = staging / "PACKAGE_INTEGRITY_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"] = [item for item in manifest["files"] if item["path"] != "SOURCE_PROVENANCE.json"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    status = read_source_provenance(staging, profile="export_without_git")
+    assert status.status == "invalid"
+    assert status.manifest_protected is False

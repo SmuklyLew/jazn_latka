@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import Any
+import json
+import os
 
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.startup_contract import build_startup_status
@@ -25,11 +27,71 @@ class CapabilityStatusHandler:
         "runtime_health_check_after_update",
     )
 
+    @staticmethod
+    def _fast_health_status(cfg: Any, ctx: dict[str, Any]) -> dict[str, Any]:
+        root = cfg.root.resolve()
+        marker: dict[str, Any] = {}
+        marker_path = cfg.active_runtime_marker_path
+        if marker_path.is_file():
+            try:
+                loaded = json.loads(marker_path.read_text(encoding="utf-8"))
+                marker = loaded if isinstance(loaded, dict) else {}
+            except Exception:
+                marker = {}
+        daemon = marker.get("runtime_daemon") if isinstance(marker.get("runtime_daemon"), dict) else {}
+        start_file = cfg.start_file_path
+        lifecycle = str(ctx.get("lifecycle") or "one_shot")
+        memory_path = cfg.memory_db_path_readonly
+        memory_status = {
+            "status": "ready" if memory_path.is_file() else "not_initialized",
+            "path": str(memory_path),
+            "size_bytes": memory_path.stat().st_size if memory_path.is_file() else 0,
+            "inspection_mode": "metadata_only",
+        }
+        adapter = ctx.get("model_adapter_status") if isinstance(ctx.get("model_adapter_status"), dict) else {}
+        timestamp = ctx.get("timestamp_contract") if isinstance(ctx.get("timestamp_contract"), dict) else {}
+        endpoint_host = daemon.get("host") or marker.get("host")
+        endpoint_port = daemon.get("port") or marker.get("port")
+        endpoint = f"http://{endpoint_host}:{endpoint_port}" if endpoint_host and endpoint_port else None
+        return {
+            "runtime_version": cfg.version,
+            "active_root": str(root),
+            "start_file": str(start_file) if start_file else None,
+            "active_database": str(memory_path),
+            "active_runtime_write_database": str(memory_path),
+            "runtime_process_active": True,
+            "process_lifecycle": lifecycle,
+            "pid": os.getpid(),
+            "endpoint": endpoint,
+            "heartbeat": daemon.get("last_heartbeat_at_utc") or marker.get("last_heartbeat_at_utc"),
+            "adapter": adapter,
+            "timestamp_contract": timestamp,
+            "active_cache_status": {
+                "version": cfg.version,
+                "active_root": str(root),
+                "should_reuse_existing_extraction": marker.get("should_reuse_existing_extraction"),
+                "cache_miss_reasons": marker.get("cache_miss_reasons") or [],
+            },
+            "raw_memory_status": memory_status,
+            "conversation_archive_status": {
+                "status": "not_scanned_in_health_fast_path",
+                "ready_for_search": None,
+            },
+            "network_policy_status": {"allow_network": False, "health_check_network_used": False},
+            "dictionary_provider_status": {"status": "not_probed_in_health_fast_path"},
+            "cli_capabilities": {},
+            "startup_status_mode": "health_metadata",
+            "truth_boundary": "Health-check potwierdza wyłącznie bieżący proces i lokalne metadane; nie wykonuje deep verify ani sond sieciowych.",
+        }
+
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}
         intent = str(ctx.get("intent") or "capability_status_question")
         cfg = ctx.get("config")
-        status = build_startup_status(cfg).to_dict() if cfg else {}
+        if cfg and intent in {"runtime_health_check", "runtime_health_check_after_update"}:
+            status = self._fast_health_status(cfg, ctx)
+        else:
+            status = build_startup_status(cfg).to_dict() if cfg else {}
         active_cache = status.get("active_cache_status") if isinstance(status.get("active_cache_status"), dict) else {}
         raw_memory = status.get("raw_memory_status") if isinstance(status.get("raw_memory_status"), dict) else {}
         archive_memory = status.get("conversation_archive_status") if isinstance(status.get("conversation_archive_status"), dict) else {}
@@ -63,6 +125,7 @@ class CapabilityStatusHandler:
                 f"runtime_version={runtime_version}, active_cache_version={active_cache.get('version')}, "
                 f"active_root={active_cache.get('active_root') or status.get('active_root')}, start_file={status.get('start_file')}, "
                 f"active_database={status.get('active_database')}, active_runtime_write_database={status.get('active_runtime_write_database')}, "
+                f"process_lifecycle={status.get('process_lifecycle')}, pid={status.get('pid')}, endpoint={status.get('endpoint')}, heartbeat={status.get('heartbeat')}, "
                 f"conversation_archive_status={archive_memory.get('status') or 'status_not_available'}, ready_for_search={archive_memory.get('ready_for_search')}, "
                 f"should_reuse_existing_extraction={active_cache.get('should_reuse_existing_extraction')}, "
                 f"cache_miss_reasons={active_cache.get('cache_miss_reasons') or []}, "

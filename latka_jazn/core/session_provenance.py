@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 import hashlib
+import re
 
 from latka_jazn.version import schema_version
 from latka_jazn.core.visible_integrity import validate_result_integrity
@@ -45,53 +46,91 @@ def build_session_provenance(
     }
 
 
-def repair_final_visible_integrity(result: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
-    """Naprawia widoczny tekst tury przed walidacją bridge/session.
+def _sha(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-    Runtime ma już FinalResponseContract, ale warstwa mostu ChatGPT i testowe
-    klienty mogą dostać rozjechany payload: timestamp w trace istnieje, a
-    final_visible_text albo runtime_provenance.visible_answer_text go zgubiły.
-    Ta funkcja nie zmienia treści merytorycznej odpowiedzi — tylko dopina
-    wspólną kopertę tury i synchronizuje hash widocznej odpowiedzi.
+
+def _body(text: str, timestamp_header: str) -> str:
+    value = str(text or "").strip()
+    if timestamp_header and value.startswith(timestamp_header):
+        value = value[len(timestamp_header):].lstrip()
+        if "\n" in value:
+            envelope_line, remainder = value.split("\n", 1)
+            if len(envelope_line.strip()) <= 8:
+                value = remainder
+    return re.sub(r"\s+", " ", value.strip())
+
+
+def _verified_contract_source(
+    contract: Mapping[str, Any],
+    provenance: Mapping[str, Any],
+    timestamp_header: str,
+) -> bool:
+    contract_text = str(contract.get("final_visible_text") or "").strip()
+    contract_body = str(contract.get("body") or contract.get("runtime_exact_text") or "").strip()
+    provenance_text = str(provenance.get("visible_answer_text") or "").strip()
+    provenance_hash = str(provenance.get("visible_answer_hash") or "").strip()
+    runtime_text = str(provenance.get("exact_runtime_text") or "").strip()
+    runtime_hash = str(provenance.get("runtime_text_hash") or "").strip()
+    integrity = contract.get("final_visible_integrity")
+    return bool(
+        isinstance(integrity, Mapping)
+        and integrity.get("valid") is True
+        and contract_text.startswith(timestamp_header)
+        and provenance_text == contract_text
+        and provenance_hash == _sha(contract_text)
+        and str(contract.get("visible_answer_hash") or provenance_hash) == provenance_hash
+        and contract_body == runtime_text
+        and runtime_hash == _sha(runtime_text)
+        and str(contract.get("runtime_text_hash") or runtime_hash) == runtime_hash
+    )
+
+
+def repair_final_visible_integrity(result: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Restore only a missing envelope from an already verified final contract.
+
+    Provenance text and hashes are evidence created before this boundary. They
+    are never synchronized, recalculated, or replaced here.
     """
     repaired = dict(result or {})
-    repairs: list[str] = []
+    audit: list[dict[str, Any]] = []
     trace = repaired.get("trace") if isinstance(repaired.get("trace"), dict) else {}
     timestamp_header = str((trace or {}).get("timestamp_header") or "")
     if not timestamp_header:
-        return repaired, repairs
+        return repaired, audit
 
     final_text = str(repaired.get("final_visible_text") or "").strip()
     contract = repaired.get("final_response_contract") if isinstance(repaired.get("final_response_contract"), dict) else {}
     contract_text = str((contract or {}).get("final_visible_text") or "").strip()
-    if (not final_text or not final_text.startswith(f"{timestamp_header} ")) and contract_text.startswith(f"{timestamp_header} "):
-        final_text = contract_text
-        repairs.append("final_visible_text_restored_from_final_response_contract")
-    elif final_text and not final_text.startswith(f"{timestamp_header} "):
-        final_text = f"{timestamp_header} 🌿\n{final_text}"
-        repairs.append("final_visible_text_timestamp_prefixed")
-
-    if final_text:
-        repaired["final_visible_text"] = final_text
-        if isinstance(contract, dict):
-            contract = dict(contract)
-            contract["final_visible_text"] = final_text
-            repaired["final_response_contract"] = contract
-        runtime_provenance = repaired.get("runtime_provenance") if isinstance(repaired.get("runtime_provenance"), dict) else {}
-        if isinstance(runtime_provenance, dict):
-            runtime_provenance = dict(runtime_provenance)
-            if runtime_provenance.get("visible_answer_text") != final_text:
-                runtime_provenance["visible_answer_text"] = final_text
-                runtime_provenance["visible_answer_hash"] = hashlib.sha256(final_text.encode("utf-8")).hexdigest()
-                repairs.append("runtime_provenance_visible_answer_synced")
-            repaired["runtime_provenance"] = runtime_provenance
-            decision = repaired.get("conversation_decision") if isinstance(repaired.get("conversation_decision"), dict) else {}
-            if isinstance(decision, dict):
-                decision = dict(decision)
-                decision["runtime_provenance"] = runtime_provenance
-                decision["visible_answer_hash"] = runtime_provenance.get("visible_answer_hash")
-                repaired["conversation_decision"] = decision
-    return repaired, repairs
+    provenance = repaired.get("runtime_provenance") if isinstance(repaired.get("runtime_provenance"), dict) else {}
+    provenance_hash_before = str(provenance.get("visible_answer_hash") or "")
+    body_unchanged = bool(final_text and _body(final_text, timestamp_header) == _body(contract_text, timestamp_header))
+    contract_verified = _verified_contract_source(contract, provenance, timestamp_header)
+    missing_envelope_only = bool(
+        final_text
+        and not final_text.startswith(timestamp_header)
+        and body_unchanged
+        and contract_verified
+    )
+    if final_text != contract_text:
+        applied = missing_envelope_only
+        repaired_text = contract_text if applied else final_text
+        if applied:
+            repaired["final_visible_text"] = repaired_text
+        audit.append({
+            "schema_version": schema_version("final_visible_integrity_repair_audit"),
+            "applied": applied,
+            "original_visible_text_sha256": _sha(final_text),
+            "repaired_visible_text_sha256": _sha(repaired_text),
+            "repair_reason": "missing_timestamp_envelope" if applied else "repair_rejected",
+            "repair_source": "verified_final_response_contract",
+            "body_unchanged": body_unchanged,
+            "provenance_hash_preserved": (
+                provenance_hash_before == str(provenance.get("visible_answer_hash") or "")
+            ),
+            "contract_source_verified": contract_verified,
+        })
+    return repaired, audit
 
 
 def validate_final_visible_integrity(result: dict[str, Any]) -> dict[str, Any]:

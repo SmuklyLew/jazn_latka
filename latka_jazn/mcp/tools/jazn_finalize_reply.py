@@ -11,6 +11,7 @@ def run(
     turn_id: str,
     trace_id: str,
     final_text: str,
+    final_text_sha256: str,
     supplied_turn_id: str | None = None,
     supplied_trace_id: str | None = None,
 ) -> dict[str, Any]:
@@ -21,6 +22,7 @@ def run(
         text=final_text,
         supplied_turn_id=supplied_turn_id,
         supplied_trace_id=supplied_trace_id,
+        supplied_text_sha256=final_text_sha256,
     )
     payload = result.to_dict()
     visible = result.final_visible_text if result.accepted else "Host-visible finalization rejected the reply."

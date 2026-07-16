@@ -4,9 +4,42 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 import os
+import threading
+import time
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon
+
+
+class _FakeSession:
+    execution_count = 0
+
+    def __init__(self, _config, **_kwargs) -> None:
+        self.state = SimpleNamespace(session_id=_kwargs.get("session_id"))
+
+    def process_user_text(self, user_text: str, **_kwargs) -> dict:
+        type(self).execution_count += 1
+        if user_text == "slow":
+            time.sleep(0.15)
+        return {"ok": True, "final_visible_text": user_text, "execution_ordinal": type(self).execution_count}
+
+    def close(self) -> None:
+        return
+
+
+def _test_server(tmp_path: Path, *, execution_timeout: float = 1.0) -> runtime_daemon.JaznDaemonServer:
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_FakeSession,
+        execution_timeout_seconds=execution_timeout,
+    )
+    server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
+    return server
 
 
 def _iso(age_seconds: int = 0) -> str:
@@ -124,3 +157,128 @@ def test_probe_retries_and_third_attempt_can_succeed(monkeypatch) -> None:
 def test_windows_pid_probe_distinguishes_live_and_missing_process() -> None:
     assert runtime_daemon.pid_is_alive(os.getpid()) is True
     assert runtime_daemon.pid_is_alive(2_147_483_647) is False
+
+
+def test_lazy_worker_state_is_explicit_before_first_job(tmp_path: Path) -> None:
+    server = _test_server(tmp_path)
+    try:
+        summary = server.chat_job_summary()
+        assert summary["worker_alive"] is False
+        assert summary["worker_state"] == "not_started_lazy"
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
+def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_path: Path) -> None:
+    _FakeSession.execution_count = 0
+    server = _test_server(tmp_path)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    port = int(server.server_address[1])
+    request_id = "isolated-client-timeout"
+    try:
+        pending = runtime_daemon.chat_daemon(
+            server.config,
+            "slow",
+            host="127.0.0.1",
+            port=port,
+            request_id=request_id,
+            timeout=0.02,
+            poll_interval=0.005,
+        )
+        assert pending["error_code"] == "daemon_chat_pending"
+        assert pending["client_wait_status"] == "client_wait_timeout"
+        assert pending["execution_failed"] is False
+        assert pending["request_id"] == request_id
+
+        replay = runtime_daemon.chat_daemon_submit(
+            server.config,
+            "slow",
+            host="127.0.0.1",
+            port=port,
+            request_id=request_id,
+        )
+        assert replay["request_id"] == request_id
+        assert replay["idempotent_replay"] is True
+
+        deadline = time.monotonic() + 2.0
+        completed: dict = {}
+        while time.monotonic() < deadline:
+            completed = runtime_daemon.chat_daemon_result(
+                server.config, request_id, host="127.0.0.1", port=port
+            )
+            if completed.get("done") is True:
+                break
+            time.sleep(0.01)
+        assert completed["done"] is True
+        assert completed["job_status"] == "completed"
+        assert completed["request_id"] == request_id
+        assert _FakeSession.execution_count == 1
+        summary = server.chat_job_summary()
+        assert summary["completed"] == 1
+        assert summary["failed"] == 0
+    finally:
+        server.shutdown()
+        server.close_sessions()
+        server.server_close()
+        thread.join(timeout=2.0)
+
+
+def test_execution_timeout_is_terminal_and_worker_accepts_next_job(tmp_path: Path) -> None:
+    _FakeSession.execution_count = 0
+    server = _test_server(tmp_path, execution_timeout=0.04)
+    try:
+        slow, created, error = server.submit_chat_job(
+            user_text="slow", input_field="test", session_id="slow-session",
+            no_carryover=False, client="isolated-test", request_id="execution-timeout",
+        )
+        assert created is True and error is None and slow is not None
+        assert slow.done_event.wait(1.0)
+        assert slow.status == "execution_timeout"
+        assert slow.result["error_code"] == "execution_timeout"
+
+        fast, created, error = server.submit_chat_job(
+            user_text="fast", input_field="test", session_id="fast-session",
+            no_carryover=False, client="isolated-test", request_id="after-timeout",
+        )
+        assert created is True and error is None and fast is not None
+        assert fast.done_event.wait(1.0)
+        assert fast.status == "completed"
+        assert server.chat_job_summary()["worker_state"] == "alive"
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
+def test_restart_recovers_nonterminal_job_without_double_execution(tmp_path: Path) -> None:
+    _FakeSession.execution_count = 0
+    first = _test_server(tmp_path)
+    first.start_chat_worker = lambda: None  # type: ignore[method-assign]
+    job, created, error = first.submit_chat_job(
+        user_text="slow", input_field="test", session_id="restart-session",
+        no_carryover=False, client="isolated-test", request_id="restart-request",
+    )
+    assert created is True and error is None and job is not None
+    assert job.status == "queued"
+    first.server_close()
+
+    second = _test_server(tmp_path)
+    try:
+        recovered = second.get_chat_job("restart-request")
+        assert recovered is not None
+        assert recovered.status == "recovered_after_restart"
+        assert recovered.recovery_disposition == "failed_without_replay"
+        assert recovered.result["automatic_replay_performed"] is False
+
+        replay, created, error = second.submit_chat_job(
+            user_text="slow", input_field="test", session_id="restart-session",
+            no_carryover=False, client="isolated-test", request_id="restart-request",
+        )
+        assert error is None
+        assert created is False
+        assert replay is recovered
+        assert _FakeSession.execution_count == 0
+    finally:
+        second.close_sessions()
+        second.server_close()

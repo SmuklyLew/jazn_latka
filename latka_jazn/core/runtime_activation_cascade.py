@@ -9,10 +9,9 @@ from latka_jazn.core.package_integrity_manifest import package_integrity_manifes
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 from latka_jazn.core.version_source import (
     read_runtime_version_from_version_py,
-    read_version_checkpoint,
 )
 SCHEMA_VERSION=schema_version("runtime_activation_status",version=PACKAGE_VERSION_FULL)
-REQUIRED_FILES=("VERSION.txt","latka_jazn/version.py","main.py","latka_jazn")
+REQUIRED_FILES=("latka_jazn/version.py","main.py","latka_jazn")
 @dataclass(slots=True)
 class RuntimeActivationStatus:
     ok:bool; active_state:str; active_root:str; version:str|None; start_file:str|None; folder_ready:dict[str,Any]; manifest:dict[str,Any]; marker:dict[str,Any]; daemon:dict[str,Any]; time:dict[str,Any]; memory:dict[str,Any]; model:dict[str,Any]; tools:dict[str,Any]; voice:dict[str,Any]; fail_closed_reason:str|None; errors:list[str]=field(default_factory=list)
@@ -35,11 +34,9 @@ class RuntimeActivationCascade:
     def _manifest_status(self):
         status=package_integrity_manifest_status(self.root)
         canonical=read_runtime_version_from_version_py(self.root)
-        checkpoint=read_version_checkpoint(self.root)
-        checkpoint_matches=bool(canonical and checkpoint==canonical)
         manifest_matches=bool(canonical and status.version==canonical)
-        ok=bool(status.present and status.valid_json and checkpoint_matches and manifest_matches)
-        payload={**status.to_dict(),'ok':ok,'canonical_version':canonical,'checkpoint_version':checkpoint,'matches_version_checkpoint':checkpoint_matches,'matches_version_txt':checkpoint_matches,'matches_version_py':manifest_matches,'runtime_start_blocking':False,'reason':'verified' if ok else 'missing_stale_or_invalid_nonblocking'}
+        ok=bool(status.present and status.valid_json and manifest_matches)
+        payload={**status.to_dict(),'ok':ok,'canonical_version':canonical,'matches_version_py':manifest_matches,'runtime_start_blocking':False,'reason':'verified' if ok else 'missing_stale_or_invalid_nonblocking'}
         return payload,canonical or status.version
     def _marker_status(self,supplied:Mapping[str,Any]|None):
         marker=dict(supplied or {}); marker_path=None

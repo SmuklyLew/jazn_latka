@@ -15,7 +15,13 @@ from latka_jazn.core.runtime_daemon import start_daemon, status_daemon, stop_dae
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+from latka_jazn.tools.release_staging import create_release_staging, create_system_smoke_staging
+from latka_jazn.tools.safe_paths import resolve_safe_destination, resolve_safe_source, validate_safe_relative_path
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+READINESS_PROFILES = frozenset({
+    "development", "system", "release", "export-without-git", "memory", "full",
+})
 
 
 def _check(name: str, ok: bool, *, required: bool = True, **details: Any) -> dict[str, Any]:
@@ -32,11 +38,7 @@ def _run(root: Path, *args: str, input_text: str | None = None, timeout: float =
         capture_output=True, text=True, encoding="utf-8", errors="replace",
         timeout=timeout, env=env, check=False,
     )
-    return {
-        "returncode": completed.returncode,
-        "stdout": completed.stdout,
-        "stderr": completed.stderr,
-    }
+    return {"returncode": completed.returncode, "stdout": completed.stdout, "stderr": completed.stderr}
 
 
 def _free_port() -> int:
@@ -46,15 +48,26 @@ def _free_port() -> int:
 
 
 def _copy_static_package(root: Path, destination: Path) -> None:
-    manifest_path = root / "PACKAGE_INTEGRITY_MANIFEST.json"
+    """Copy a manifest plan only after every source and destination is proven safe."""
+
+    root = Path(root).resolve()
+    destination = Path(destination).resolve()
+    manifest_path = resolve_safe_source(root, "PACKAGE_INTEGRITY_MANIFEST.json")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    plan: list[tuple[Path, Path]] = []
+    seen: set[str] = set()
     for entry in manifest.get("files") or []:
-        relative = str(entry.get("path") or "")
-        source = root / relative
-        target = destination / relative
+        relative = validate_safe_relative_path(str((entry or {}).get("path") or ""))
+        if relative in seen:
+            raise ValueError(f"duplicate manifest path: {relative}")
+        seen.add(relative)
+        plan.append((resolve_safe_source(root, relative), resolve_safe_destination(destination, relative)))
+    manifest_target = resolve_safe_destination(destination, "PACKAGE_INTEGRITY_MANIFEST.json")
+    for source, target in plan:
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
-    shutil.copy2(manifest_path, destination / manifest_path.name)
+    manifest_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(manifest_path, manifest_target)
 
 
 def _json_document(output: str) -> dict[str, Any] | None:
@@ -65,146 +78,172 @@ def _json_document(output: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) -> None:
+    compile_result = _run(isolated, "-m", "compileall", "-q", "latka_jazn")
+    checks.append(_check("compile", compile_result["returncode"] == 0,
+                         returncode=compile_result["returncode"], stderr=compile_result["stderr"][-2000:]))
+    import_result = _run(isolated, "-c", "from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)")
+    checks.append(_check("import", import_result["returncode"] == 0 and import_result["stdout"].strip() == PACKAGE_VERSION_FULL,
+                         returncode=import_result["returncode"], stdout=import_result["stdout"].strip()))
+    version_result = _run(isolated, "run.py", "--version")
+    checks.append(_check("cli_version", version_result["returncode"] == 0 and PACKAGE_VERSION_FULL in version_result["stdout"],
+                         returncode=version_result["returncode"]))
+
+    snapshot_result = _run(isolated, "run.py", "status", "--snapshot", "--json")
+    snapshot_payload = _json_document(snapshot_result["stdout"])
+    snapshot_daemon = (snapshot_payload or {}).get("daemon") or {}
+    checks.append(_check(
+        "cli_status_snapshot",
+        snapshot_result["returncode"] == 0
+        and snapshot_daemon.get("endpoint_probe_performed") is False
+        and snapshot_daemon.get("observation_state") == "endpoint_not_probed",
+        returncode=snapshot_result["returncode"], daemon=snapshot_daemon,
+    ))
+    doctor_result = _run(isolated, "run.py", "doctor", "--json")
+    doctor = _json_document(doctor_result["stdout"])
+    checks.append(_check("doctor", doctor_result["returncode"] == 0 and bool((doctor or {}).get("ok")),
+                         returncode=doctor_result["returncode"], report=doctor))
+
+    chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
+    chat_result = _run(
+        isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+        input_text=chat_input, timeout=120.0,
+    )
+    chat_lines = [line for line in chat_result["stdout"].splitlines() if line.strip()]
+    chat = _json_document(chat_lines[-1]) if chat_lines else None
+    consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
+    checks.append(_check(
+        "chat_gpt_turn_and_integrity_consensus",
+        chat_result["returncode"] == 0 and bool((chat or {}).get("final_visible_text"))
+        and consensus.get("valid") is True and consensus.get("mismatch") is False,
+        returncode=chat_result["returncode"], consensus=consensus, stderr=chat_result["stderr"][-2000:],
+    ))
+
+    port = _free_port()
+    marker = isolated / "workspace_runtime" / "package_smoke_daemon_marker.json"
+    cfg = JaznConfig(root=isolated)
+    startup: dict[str, Any] | None = None
+    daemon_status: dict[str, Any] | None = None
+    stop_report: dict[str, Any] | None = None
+    try:
+        startup = start_daemon(cfg, port=port, marker_output=marker, startup_timeout=20.0)
+        daemon_status = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
+        cli_live = _run(
+            isolated, "run.py", "status", "--daemon-port", str(port),
+            "--daemon-marker-output", str(marker), "--json", timeout=60.0,
+        )
+        cli_live_payload = _json_document(cli_live["stdout"])
+        cli_live_daemon = (cli_live_payload or {}).get("daemon") or {}
+        daemon_ok = (
+            daemon_status.get("active_state") == "active_trusted"
+            and cli_live["returncode"] == 0
+            and cli_live_daemon.get("active_state") == "active_trusted"
+            and cli_live_daemon.get("endpoint_probe_performed") is True
+        )
+        checks.append(_check("isolated_daemon_start_status", daemon_ok, port=port,
+                             startup=startup, status=daemon_status, cli_status=cli_live_daemon))
+    except Exception as exc:
+        checks.append(_check("isolated_daemon_start_status", False, port=port, error=repr(exc)))
+    finally:
+        try:
+            stop_report = stop_daemon(cfg, port=port, marker_output=marker, timeout=20.0)
+        except Exception as exc:
+            stop_report = {"ok": False, "error": repr(exc)}
+    after_cleanup = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
+    checks.append(_check(
+        "isolated_daemon_cleanup",
+        bool((stop_report or {}).get("ok"))
+        and after_cleanup.get("active_state") == "inactive"
+        and after_cleanup.get("endpoint_reachable") is False
+        and after_cleanup.get("pid_alive") is False,
+        stop=stop_report, after=after_cleanup,
+    ))
+
+
 def build_release_readiness_report(root: Path | str, *, profile: str = "system") -> dict[str, Any]:
     root = Path(root).resolve()
-    checks: list[dict[str, Any]] = []
-    configuration_error = False
-    if profile not in {"system", "memory", "full"}:
+    if profile not in READINESS_PROFILES:
         return {
             "schema_version": schema_version("release_readiness_report"), "ok": False,
             "exit_code": 2, "profile": profile,
             "checks": [_check("profile", False, error="unsupported profile")],
         }
 
-    required_files = [root / "run.py", root / "main.py", root / "latka_jazn"]
-    required_ok = all(path.exists() for path in required_files)
-    checks.append(_check("required_package_files", required_ok, paths=[str(path) for path in required_files]))
-    if not required_ok:
-        configuration_error = True
-
-    manifest = verify_package_integrity_manifest(root)
-    checks.append(_check("package_integrity_manifest", bool(manifest.get("ok")), report=manifest))
-    if manifest.get("configuration_error"):
-        configuration_error = True
-
-    provenance = read_source_provenance(root).to_dict()
-    provenance_ok = provenance.get("status") in {
-        "clean_checkout_verified", "development_dirty_verified", "verified_export_without_git_history",
-    }
-    checks.append(_check("source_provenance", provenance_ok, report=provenance))
-    if provenance.get("status") in {"missing", "invalid"}:
-        configuration_error = True
-
+    checks: list[dict[str, Any]] = []
+    configuration_error = False
+    release_policy_failure = False
+    source_manifest = verify_package_integrity_manifest(root)
     checks.append(_check(
-        "version_consistency",
-        provenance.get("runtime_version") == PACKAGE_VERSION_FULL
-        and manifest.get("ok")
-        and not any(error.get("code") == "version_mismatch" for error in manifest.get("errors") or []),
-        runtime_version=PACKAGE_VERSION_FULL,
+        "source_checkout_manifest_current",
+        bool(source_manifest.get("ok")), required=profile in {"release", "export-without-git"},
+        report=source_manifest,
     ))
 
-    if not configuration_error:
-        with tempfile.TemporaryDirectory(prefix="jazn-package-smoke-") as temp_name:
-            isolated = Path(temp_name)
+    with tempfile.TemporaryDirectory(prefix="jazn-readiness-") as temp_name:
+        work = Path(temp_name)
+        try:
+            if profile == "release":
+                staging_report = create_release_staging(root, work / "staging")
+                smoke_root = work / "staging"
+                provenance_profile = "export_without_git"
+            elif profile == "export-without-git":
+                if (root / ".git").exists():
+                    raise ValueError("export-without-git profile requires a package without .git")
+                staging_report = {"ok": True, "staging_root": str(root), "status": "input_export"}
+                smoke_root = root
+                provenance_profile = "export_without_git"
+            else:
+                staging_report = create_system_smoke_staging(root, work / "staging")
+                smoke_root = work / "staging"
+                provenance_profile = "system_smoke"
+            checks.append(_check("profile_staging", True, report=staging_report))
+        except Exception as exc:
+            error_text = str(exc)
+            error_code = None
+            if profile == "release" and "clean working tree" in error_text.lower():
+                error_code = "dirty_worktree"
+                release_policy_failure = True
+            checks.append(_check("profile_staging", False, error=repr(exc), error_code=error_code))
+            if not release_policy_failure:
+                configuration_error = True
+            smoke_root = root
+            provenance_profile = "release" if profile == "release" else "system_smoke"
+
+        required_files = [smoke_root / "run.py", smoke_root / "main.py", smoke_root / "latka_jazn"]
+        required_ok = all(path.exists() for path in required_files)
+        checks.append(_check("required_package_files", required_ok, paths=[str(path) for path in required_files]))
+        if not required_ok:
+            configuration_error = True
+
+        manifest = verify_package_integrity_manifest(smoke_root)
+        checks.append(_check("package_integrity_manifest", bool(manifest.get("ok")), report=manifest))
+        if manifest.get("configuration_error"):
+            configuration_error = True
+
+        provenance = read_source_provenance(smoke_root, profile=provenance_profile).to_dict()
+        provenance_ok = provenance.get("status") in {
+            "clean_checkout_verified", "development_dirty_verified", "verified_export_without_git_history",
+        }
+        checks.append(_check("source_provenance", provenance_ok, report=provenance))
+        checks.append(_check(
+            "version_consistency",
+            provenance.get("runtime_version") == PACKAGE_VERSION_FULL
+            and manifest.get("ok")
+            and not any(error.get("code") == "version_mismatch" for error in manifest.get("errors") or []),
+            runtime_version=PACKAGE_VERSION_FULL,
+        ))
+
+        if not configuration_error and not release_policy_failure:
+            isolated = work / "isolated"
+            isolated.mkdir()
             try:
-                _copy_static_package(root, isolated)
+                _copy_static_package(smoke_root, isolated)
             except Exception as exc:
                 checks.append(_check("isolated_package_copy", False, error=repr(exc)))
                 configuration_error = True
             else:
                 checks.append(_check("isolated_package_copy", True, root=str(isolated)))
-                compile_result = _run(isolated, "-m", "compileall", "-q", "latka_jazn")
-                checks.append(_check(
-                    "compile", compile_result["returncode"] == 0,
-                    returncode=compile_result["returncode"], stderr=compile_result["stderr"][-2000:],
-                ))
-                import_result = _run(
-                    isolated, "-c",
-                    "from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)",
-                )
-                checks.append(_check(
-                    "import", import_result["returncode"] == 0 and import_result["stdout"].strip() == PACKAGE_VERSION_FULL,
-                    returncode=import_result["returncode"], stdout=import_result["stdout"].strip(),
-                ))
-                version_result = _run(isolated, "run.py", "--version")
-                checks.append(_check(
-                    "cli_version", version_result["returncode"] == 0 and PACKAGE_VERSION_FULL in version_result["stdout"],
-                    returncode=version_result["returncode"],
-                ))
-                snapshot_result = _run(isolated, "run.py", "status", "--snapshot", "--json")
-                snapshot_payload = _json_document(snapshot_result["stdout"])
-                snapshot_daemon = (snapshot_payload or {}).get("daemon") or {}
-                checks.append(_check(
-                    "cli_status_snapshot",
-                    snapshot_result["returncode"] == 0
-                    and snapshot_daemon.get("endpoint_probe_performed") is False
-                    and snapshot_daemon.get("observation_state") == "endpoint_not_probed",
-                    returncode=snapshot_result["returncode"], daemon=snapshot_daemon,
-                ))
-                doctor_result = _run(isolated, "run.py", "doctor", "--json")
-                doctor = _json_document(doctor_result["stdout"])
-                checks.append(_check(
-                    "doctor", doctor_result["returncode"] == 0 and bool((doctor or {}).get("ok")),
-                    returncode=doctor_result["returncode"], report=doctor,
-                ))
-
-                chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
-                chat_result = _run(
-                    isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
-                    input_text=chat_input, timeout=120.0,
-                )
-                chat_lines = [line for line in chat_result["stdout"].splitlines() if line.strip()]
-                chat = _json_document(chat_lines[-1]) if chat_lines else None
-                consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
-                checks.append(_check(
-                    "chat_gpt_turn_and_integrity_consensus",
-                    chat_result["returncode"] == 0 and bool((chat or {}).get("final_visible_text"))
-                    and consensus.get("valid") is True and consensus.get("mismatch") is False,
-                    returncode=chat_result["returncode"], consensus=consensus,
-                    stderr=chat_result["stderr"][-2000:],
-                ))
-
-                port = _free_port()
-                marker = isolated / "workspace_runtime" / "package_smoke_daemon_marker.json"
-                cfg = JaznConfig(root=isolated)
-                startup: dict[str, Any] | None = None
-                daemon_status: dict[str, Any] | None = None
-                stop_report: dict[str, Any] | None = None
-                try:
-                    startup = start_daemon(cfg, port=port, marker_output=marker, startup_timeout=20.0)
-                    daemon_status = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
-                    cli_live = _run(
-                        isolated, "run.py", "status", "--daemon-port", str(port),
-                        "--daemon-marker-output", str(marker), "--json", timeout=60.0,
-                    )
-                    cli_live_payload = _json_document(cli_live["stdout"])
-                    cli_live_daemon = (cli_live_payload or {}).get("daemon") or {}
-                    daemon_ok = (
-                        daemon_status.get("active_state") == "active_trusted"
-                        and cli_live["returncode"] == 0
-                        and cli_live_daemon.get("active_state") == "active_trusted"
-                        and cli_live_daemon.get("endpoint_probe_performed") is True
-                    )
-                    checks.append(_check(
-                        "isolated_daemon_start_status", daemon_ok, port=port,
-                        startup=startup, status=daemon_status, cli_status=cli_live_daemon,
-                    ))
-                except Exception as exc:
-                    checks.append(_check("isolated_daemon_start_status", False, port=port, error=repr(exc)))
-                finally:
-                    try:
-                        stop_report = stop_daemon(cfg, port=port, marker_output=marker, timeout=20.0)
-                    except Exception as exc:
-                        stop_report = {"ok": False, "error": repr(exc)}
-                after_cleanup = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
-                checks.append(_check(
-                    "isolated_daemon_cleanup",
-                    bool((stop_report or {}).get("ok"))
-                    and after_cleanup.get("active_state") == "inactive"
-                    and after_cleanup.get("endpoint_reachable") is False
-                    and after_cleanup.get("pid_alive") is False,
-                    stop=stop_report, after=after_cleanup,
-                ))
+                _run_isolated_system_checks(isolated, checks)
 
     if profile in {"memory", "full"}:
         cfg = JaznConfig(root=root)
@@ -230,7 +269,7 @@ def build_release_readiness_report(root: Path | str, *, profile: str = "system")
         },
         "checks": checks,
         "truth_boundary": (
-            "The system profile does not require private memory. Memory/full profiles verify SQLite/wake state read-only. "
-            "The daemon uses a free port, isolated marker and temporary package root, and is stopped in finally."
+            "Development/system smoke uses an ephemeral current-tree staging. Release uses a clean commit staging. "
+            "Export-without-git requires release provenance protected by its package manifest. Private memory is not required."
         ),
     }

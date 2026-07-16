@@ -41,7 +41,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     child = sub.add_parser("package-smoke", allow_abbrev=False)
     _add_common(child)
-    child.add_argument("--profile", choices=("system", "memory", "full"), default="system")
+    child.add_argument(
+        "--profile",
+        choices=("development", "system", "release", "export-without-git", "memory", "full"),
+        default="system",
+    )
 
     child = sub.add_parser("release-metadata", allow_abbrev=False)
     _add_common(child)
@@ -73,6 +77,7 @@ def build_parser() -> argparse.ArgumentParser:
     source = child.add_mutually_exclusive_group(required=True)
     source.add_argument("--text", default="")
     source.add_argument("--text-file", type=Path)
+    child.add_argument("--text-sha256", required=True)
     child.add_argument("--supplied-turn-id")
     child.add_argument("--supplied-trace-id")
     child.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024)
@@ -211,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
                 force=ns.force,
                 deep_verify=ns.deep_verify or not ns.dry_run,
             ).to_dict()
-            code = 0 if payload.get("status") == "ready" or ns.dry_run else 1
+            code = 0 if payload.get("status") in {"ready", "dry_run_ok"} else 1
         else:
             payload = sidecar.wake_state_status(deep_verify=ns.deep_verify).to_dict()
             code = 0 if payload.get("status") == "ready" else 1

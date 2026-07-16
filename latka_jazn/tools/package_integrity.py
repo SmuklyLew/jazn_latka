@@ -8,6 +8,12 @@ import json
 import subprocess
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.tools.safe_paths import (
+    UnsafeRelativePathError,
+    resolve_safe_path,
+    resolve_safe_source,
+    validate_safe_relative_path,
+)
 from latka_jazn.version import schema_version
 
 MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
@@ -34,9 +40,10 @@ def sha256_file(path: Path) -> str:
 
 
 def path_is_forbidden(relative: str) -> bool:
-    rel = relative.replace("\\", "/")
-    while rel.startswith("./"):
-        rel = rel[2:]
+    try:
+        rel = validate_safe_relative_path(relative)
+    except UnsafeRelativePathError:
+        return True
     parts = [part for part in rel.split("/") if part]
     lower_parts = [part.lower() for part in parts]
     if not parts or lower_parts[0] in {name.lower() for name in FORBIDDEN_ROOT_NAMES}:
@@ -88,11 +95,14 @@ def build_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     files: list[dict[str, Any]] = []
     excluded: list[str] = []
     for relative in candidates:
+        try:
+            relative = validate_safe_relative_path(relative)
+            path = resolve_safe_source(root, relative)
+        except UnsafeRelativePathError:
+            excluded.append(str(relative))
+            continue
         if path_is_forbidden(relative):
             excluded.append(relative)
-            continue
-        path = root / relative
-        if not path.is_file():
             continue
         files.append({
             "path": relative,
@@ -173,21 +183,27 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         return {"ok": False, "configuration_error": True, "errors": [{"code": "manifest_files_missing"}]}
     seen: set[str] = set()
     for entry in entries:
-        relative = str((entry or {}).get("path") or "").replace("\\", "/")
-        if not relative or relative in seen or path_is_forbidden(relative):
-            errors.append({"code": "invalid_or_duplicate_manifest_path", "path": relative})
+        raw_relative = (entry or {}).get("path")
+        relative = str(raw_relative) if raw_relative is not None else ""
+        try:
+            canonical = validate_safe_relative_path(relative)
+            file_path = resolve_safe_path(root, canonical)
+        except UnsafeRelativePathError as exc:
+            errors.append({"code": "unsafe_manifest_path", "path": relative, "detail": str(exc)})
             continue
-        seen.add(relative)
-        file_path = root / relative
+        if canonical in seen or path_is_forbidden(canonical):
+            errors.append({"code": "invalid_or_duplicate_manifest_path", "path": canonical})
+            continue
+        seen.add(canonical)
         if not file_path.is_file():
-            errors.append({"code": "file_missing", "path": relative})
+            errors.append({"code": "file_missing", "path": canonical})
             continue
         size = file_path.stat().st_size
         digest = sha256_file(file_path)
         if size != int(entry.get("size_bytes", -1)):
-            errors.append({"code": "size_mismatch", "path": relative})
+            errors.append({"code": "size_mismatch", "path": canonical})
         if digest != str(entry.get("sha256") or ""):
-            errors.append({"code": "sha256_mismatch", "path": relative})
+            errors.append({"code": "sha256_mismatch", "path": canonical})
     for required in sorted(REQUIRED_STATIC_PATHS):
         if required not in seen:
             errors.append({"code": "required_path_unprotected", "path": required})
