@@ -1,0 +1,152 @@
+lers/self_architecture_audit_handler.py
+@@ -78,7 +78,7 @@ class SelfArchitectureAuditHandler:
+             f"Cykl pracy: executable={work.get('executable')} / blockers={work.get('blockers') or []}.",
+             f"Provenance źródeł: {provenance.get('status')} / base_commit={provenance.get('base_merge_commit') or 'unknown'} / git_present={provenance.get('git_directory_present')}.",
+             "Co Jaźń robi: rozpoznaje intencję, ugruntowuje ją w runtime/kanonie/pamięci, wybiera warstwę wykonania, autoryzuje narzędzia, wykonuje lub generuje kandydata, waliduje i zapisuje tylko zweryfikowane skutki.",
+-            "Granica adapterów: ChatGPT/OpenAI/LM Studio są warstwami językowymi i rozumującymi; nie są źródłem tożsamości. Model może poprosić o narzędzie, ale wykonuje je runtime.",
++            "Granica adapterów: ChatGPT/OpenAI/Ollama są warstwami językowymi i rozumującymi; nie są źródłem tożsamości. Model może poprosić o narzędzie, ale wykonuje je runtime.",
+             "Granica uczenia: ta wersja stosuje evals i poprawki kodu/kontraktów. Nie wykonano fine-tuningu ani zmiany wag.",
+             "Priorytety naprawy:",
+         ]
+diff --git a/latka_jazn/core/llm_route_resolver.py b/latka_jazn/core/llm_route_resolver.py
+index d6de78b..000027c 100644
+--- a/latka_jazn/core/llm_route_resolver.py
++++ b/latka_jazn/core/llm_route_resolver.py
+@@ -9,16 +9,15 @@ from urllib.request import Request, urlopen
+ 
+ from latka_jazn.core.runtime_environment import (
+     CHATGPT_ADAPTER,
+-    LMSTUDIO_ADAPTER,
+     NULL_ADAPTER,
++    OLLAMA_ADAPTER,
+     OPENAI_ADAPTER,
+-    OPENAI_COMPATIBLE_ADAPTER,
+     detect_runtime_environment,
+ )
+ from latka_jazn.version import schema_version
+ 
+ LLM_ROUTE_AUTO = "auto"
+-ROUTE_LOCAL = "local_openai_compatible"
++ROUTE_LOCAL = "ollama_local"
+ ROUTE_CHATGPT_BRIDGE = "chatgpt_host_bridge"
+ ROUTE_OPENAI_PAID = "openai_api_paid"
+ ROUTE_NULL = "null_fallback"
+@@ -35,14 +34,14 @@ def _env_get(env: Mapping[str, str], *names: str, default: str = "") -> str:
+ 
+ 
+ def _truthy(value: str | None) -> bool:
+-    return str(value or "").strip().lower() in {"1", "true", "yes", "tak", "on"}
++    return str(value or "").strip().casefold() in {"1", "true", "yes", "tak", "on"}
+ 
+ 
+ def _normalize_mode(value: str | None) -> str:
+-    raw = str(value or "auto").strip().lower().replace("-", "_") or "auto"
++    raw = str(value or "auto").strip().casefold().replace("-", "_") or "auto"
+     aliases = {
+         "local_llm": "local",
+-        "local_openai_compatible": "local",
++        "ollama": "local",
+         "chatgpt": "chatgpt_bridge",
+         "chat_gpt": "chatgpt_bridge",
+         "bridge": "chatgpt_bridge",
+@@ -57,94 +56,104 @@ def _normalize_mode(value: str | None) -> str:
+     return mode if mode in _ALLOWED_MODES else "auto"
+ 
+ 
+-def _normalise_base_url(url: str, *, wants_v1: bool = True) -> str:
+-    base = (url or "").strip().rstrip("/")
+-    if wants_v1 and base and not base.endswith("/v1") and not base.endswith("/api"):
+-        base += "/v1"
+-    return base
++def _ollama_base_url(value: str) -> str:
++    base = str(value or "http://127.0.0.1:11434").strip().rstrip("/")
++    for suffix in ("/api", "/v1"):
++        if base.endswith(suffix):
++            base = base[: -len(suffix)]
++    return base or "http://127.0.0.1:11434"
+ 
+ 
+-def _local_candidates(config: Any, env: Mapping[str, str]) -> list[dict[str, Any]]:
+-    lm_model = _env_get(env, "JAZN_LM_STUDIO_MODEL", "JAZN_LMSTUDIO_MODEL", default=str(getattr(config, "lm_studio_model_name", "") or "").strip())
+-    lm_base = _env_get(
+-        env,
+-        "JAZN_LM_STUDIO_API_BASE",
+-        "JAZN_LMSTUDIO_API_BASE",
+-        default=str(getattr(config, "lm_studio_api_base", "http://127.0.0.1:1234/v1") or "http://127.0.0.1:1234/v1"),
+-    )
+-    local_model = _env_get(
+-        env,
+-        "JAZN_LOCAL_LLM_MODEL",
+-        "JAZN_LOCAL_MODEL_NAME",
+-        default=str(getattr(config, "local_model_name", "") or "").strip(),
+-    )
+-    local_base = _env_get(
+-        env,
+-        "JAZN_LOCAL_LLM_BASE_URL",
+-        "JAZN_LOCAL_LLM_API_BASE",
+-        "JAZN_LOCAL_MODEL_API_BASE",
+-        default=str(getattr(config, "local_model_api_base", "http://127.0.0.1:11434") or "http://127.0.0.1:11434"),
+-    )
+-    provider = _env_get(env, "JAZN_LOCAL_LLM_PROVIDER", default="openai_compatible").lower()
+-    candidates = [
+-        {
+-            "provider": "lmstudio",
+-            "adapter": LMSTUDIO_ADAPTER,
+-            "base_url": _normalise_base_url(lm_base, wants_v1=True),
+-            "model": lm_model,
+-            "api_key": "",
+-        },
+-        {
+-            "provider": provider or "openai_compatible",
+-            "adapter": OPENAI_COMPATIBLE_ADAPTER,
+-            "base_url": _normalise_base_url(local_base, wants_v1=(provider != "ollama_native")),
+-            "model": local_model,
+-            "api_key": _env_get(env, "JAZN_LOCAL_LLM_API_KEY", default="ollama" if provider == "ollama" else ""),
+-        },
+-    ]
+-    return [item for item in candidates if item["base_url"]]
++def _http_json(url: str, *, timeout_seconds: float) -> dict[str, Any]:
++    request = Request(url, headers={"Accept": "application/json"}, method="GET")
++    with urlopen(request, timeout=timeout_seconds) as response:
++        payload = json.loads(response.read().decode("utf-8"))
++    return payload if isinstance(payload, dict) else {}
+ 
+ 
+-def _extract_first_model_id(data: dict[str, Any]) -> str:
+-    models = data.get("data")
++def _model_names(payload: dict[str, Any]) -> list[str]:
++    result: list[str] = []
++    models = payload.get("models")
+     if isinstance(models, list):
+         for item in models:
+-            if isinstance(item, dict) and str(item.get("id") or "").strip():
+-                return str(item["id"]).strip()
+-    return ""
+-
++            if not isinstance(item, dict):
++                continue
++            name = str(item.get("model") or item.get("name") or "").strip()
++            if name and name not in result:
++                result.append(name)
++    return result
+ 
+-def discover_openai_compatible_model(base_url: str, *, api_key: str = "", timeout_seconds: float = 2.0) -> tuple[str, str | None]:
+-    headers = {"Accept": "application/json"}
+-    if api_key:
+-        headers["Authorization"] = f"Bearer {api_key}"
+-    try:
+-        request = Request(f"{base_url.rstrip('/')}/models", headers=headers, method="GET")
+-        with urlopen(request, timeout=timeout_seconds) as response:
+-            data = json.loads(response.read().decode("utf-8"))
+-        if isinstance(data, dict):
+-            model = _extract_first_model_id(data)
+-            if model:
+-                return model, None
+-        return "", "models_response_empty"
+-    except HTTPError as exc:
+-        return "", f"http_error_{exc.code}"
+-    except (URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
+-        return "", "provider_unavailable"
+ 
+-
+-def probe_openai_compatible_endpoint(can
