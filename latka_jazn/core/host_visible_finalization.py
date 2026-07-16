@@ -35,6 +35,7 @@ class HostVisibleFinalizationViolation:
 class HostVisibleFinalizationPolicy:
     max_utf8_bytes: int = 2 * 1024 * 1024
     repair_missing_timestamp: bool = True
+    require_supplied_text_hash: bool = True
     reject_foreign_timestamp: bool = True
     reject_empty: bool = True
     schema_version: str = schema_version("host_visible_finalization_policy")
@@ -93,6 +94,10 @@ class HostVisibleFinalizationResult:
     contract_hash: str
     original_text_sha256: str
     final_text_sha256: str
+    supplied_text_sha256: str | None
+    hash_valid: bool
+    approval_stage: str
+    body_unchanged: bool
     violations: list[HostVisibleFinalizationViolation] = field(default_factory=list)
     created_at_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     schema_version: str = SCHEMA_VERSION
@@ -117,8 +122,11 @@ class HostVisibleFinalizationGate:
         *,
         turn_id: str | None = None,
         trace_id: str | None = None,
+        supplied_text_sha256: str | None = None,
     ) -> HostVisibleFinalizationResult:
         original = str(text or "").strip()
+        original_hash = _sha_text(original)
+        supplied_hash = str(supplied_text_sha256 or "").strip().lower() or None
         violations: list[HostVisibleFinalizationViolation] = []
 
         if turn_id is not None and str(turn_id) != contract.turn_id:
@@ -129,6 +137,10 @@ class HostVisibleFinalizationGate:
             violations.append(HostVisibleFinalizationViolation("empty_text", "Visible text is empty."))
         if len(original.encode("utf-8")) > contract.policy.max_utf8_bytes:
             violations.append(HostVisibleFinalizationViolation("text_too_large", "Visible text exceeds the contract byte limit."))
+        if contract.policy.require_supplied_text_hash and supplied_hash is None:
+            violations.append(HostVisibleFinalizationViolation("text_hash_missing", "Explicit host-finalize approval hash is required."))
+        elif supplied_hash is not None and supplied_hash != original_hash:
+            violations.append(HostVisibleFinalizationViolation("text_hash_mismatch", "The supplied host-finalize hash does not match the visible text."))
 
         exact_timestamp = original.startswith(contract.required_timestamp_header)
         detected_prefix = TIMESTAMP_PREFIX_RE.match(original)
@@ -147,13 +159,17 @@ class HostVisibleFinalizationGate:
                 turn_id=contract.turn_id,
                 trace_id=contract.trace_id,
                 contract_hash=contract.contract_hash,
-                original_text_sha256=_sha_text(original),
+                original_text_sha256=original_hash,
                 final_text_sha256=_sha_text(""),
+                supplied_text_sha256=supplied_hash,
+                hash_valid=False,
+                approval_stage="host_finalize_rejected",
+                body_unchanged=False,
                 violations=violations,
             )
 
         final_text = original if exact_timestamp else f"{contract.required_timestamp_header} {original}".strip()
-        state = "repair" if violations else "accept"
+        state = "approved_envelope_completion" if violations else "approved"
         return HostVisibleFinalizationResult(
             accepted=True,
             state=state,
@@ -161,8 +177,12 @@ class HostVisibleFinalizationGate:
             turn_id=contract.turn_id,
             trace_id=contract.trace_id,
             contract_hash=contract.contract_hash,
-            original_text_sha256=_sha_text(original),
+            original_text_sha256=original_hash,
             final_text_sha256=_sha_text(final_text),
+            supplied_text_sha256=supplied_hash,
+            hash_valid=supplied_hash == original_hash,
+            approval_stage="host_finalize_hash_approval",
+            body_unchanged=(final_text == original or final_text.endswith(original)),
             violations=violations,
         )
 
@@ -175,6 +195,7 @@ def finalize_host_visible_text(
     text: str,
     supplied_turn_id: str | None = None,
     supplied_trace_id: str | None = None,
+    supplied_text_sha256: str | None = None,
     max_utf8_bytes: int = 2 * 1024 * 1024,
 ) -> HostVisibleFinalizationResult:
     contract = HostVisibleFinalizationContract(
@@ -188,4 +209,5 @@ def finalize_host_visible_text(
         text,
         turn_id=supplied_turn_id,
         trace_id=supplied_trace_id,
+        supplied_text_sha256=supplied_text_sha256,
     )

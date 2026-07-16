@@ -47,7 +47,7 @@ from latka_jazn.memory.importer import MemoryImporter
 from latka_jazn.memory.layered_memory import LayeredMemory
 from latka_jazn.memory.consolidation import MemoryConsolidationModel
 from latka_jazn.memory.store import MemoryStore
-from latka_jazn.memory.runtime_persistence import RuntimeMemoryWriter
+from latka_jazn.memory.runtime_persistence import RuntimeMemoryWriter, RuntimePersistenceResult
 from latka_jazn.memory.event_ledger import RuntimeEventLedger
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.memory.chat_html_importer import search_raw_chat_html_snippets
@@ -98,6 +98,7 @@ from latka_jazn.memory.raw_chat_importer import RawChatImporter
 from latka_jazn.model_adapters.factory import build_model_adapter
 from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_summary
+from latka_jazn.core.turn_execution import TurnExecutionContext
 
 
 MODEL_GUIDED_SPEECH_INTENTS = {
@@ -115,6 +116,15 @@ MODEL_GUIDED_SPEECH_INTENTS = {
     "reciprocal_self_state_question",
     "self_preference_question",
     "direct_latka_voice_request",
+}
+
+FAST_HEALTH_CHECK_INTENTS = {
+    "runtime_health_check",
+    "runtime_health_check_after_update",
+    "runtime_activation_status_question",
+    "presence_check",
+    "identity_presence_check",
+    "identity_continuity_check",
 }
 
 
@@ -980,7 +990,12 @@ class JaznEngine:
         return [dict(r) for r in rows]
 
     NON_MEMORY_RETRIEVAL_INTENTS = {
+        "runtime_health_check",
         "runtime_health_check_after_update",
+        "runtime_activation_status_question",
+        "presence_check",
+        "identity_presence_check",
+        "identity_continuity_check",
         "capability_status_question",
         "internet_access_question",
     }
@@ -1289,36 +1304,226 @@ class JaznEngine:
             ),
         }
 
-    def build_cognitive_frame(self, text: str, *, client_context: dict | None = None) -> dict:
+    @staticmethod
+    def _stage_turn_write(
+        turn_context: TurnExecutionContext | None,
+        *,
+        data_type: str,
+        stage: str,
+        commit,
+    ) -> Any:
+        if turn_context is None:
+            return commit()
+        write_id = turn_context.stage_semantic_write(
+            data_type=data_type,
+            stage=stage,
+            commit=commit,
+        )
+        return {
+            "status": "turn_local_staged" if write_id else "staging_rejected",
+            "write_id": write_id,
+            "data_type": data_type,
+        }
+
+    def _build_health_check_frame(
+        self,
+        text: str,
+        *,
+        client_context: dict[str, Any],
+        intent_report: Any,
+        turn_context: TurnExecutionContext | None,
+    ) -> dict[str, Any]:
+        """Build the minimal deterministic frame used by presence diagnostics."""
+        if turn_context is not None:
+            turn_context.start_stage("timestamp_acquisition")
+        sample = self.clock.now(False, allow_fallback=True)
+        if turn_context is not None:
+            turn_context.complete_stage("timestamp_acquisition")
+        timestamp_header = self.clock.header(sample)
+        turn_id = turn_context.turn_id if turn_context is not None else str(uuid.uuid4())
+        trace_id = turn_context.request_id if turn_context is not None else str(uuid.uuid4())
+        intent = str(getattr(intent_report, "primary_intent", None) or "runtime_health_check")
+
+        if turn_context is not None:
+            turn_context.start_stage("memory_use_gate")
+        memory_gate = self.memory_use_gate.decide(text, detected_intent=intent)
+        if turn_context is not None:
+            turn_context.complete_stage("memory_use_gate")
+            turn_context.mark_stage("memory_planning", status="skipped_health_check")
+            turn_context.mark_stage("memory_reads", status="skipped_health_check")
+
+        if turn_context is not None:
+            turn_context.start_stage("truth_audit_generation")
+        truth_audit = self.layered_memory.evaluate_truth(text, source_count=0)
+        if turn_context is not None:
+            turn_context.record_technical_event(
+                "technical_turn_truth_audit",
+                {
+                    "text_sha256": __import__("hashlib").sha256(text.encode("utf-8", errors="surrogatepass")).hexdigest(),
+                    "audit": truth_audit,
+                    "memory_allowed": False,
+                    "category": "technical_turn_audit",
+                },
+            )
+            turn_context.complete_stage("truth_audit_generation")
+            turn_context.mark_stage("candidate_persistence_staging", status="skipped_health_check")
+
+        self.affect = self.affect.observe(text)
+        adapter_status = self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else {}
+        voice_source_contract = VoiceSourceContract.build(
+            runtime_active=True,
+            runtime_mode="persistent_chat_loop" if client_context.get("lifecycle") != "one_shot" else "one_shot",
+            language_channel=str(adapter_status.get("visible_channel_adapter") or client_context.get("client") or "runtime"),
+        ).to_dict()
+        rendering_mode = self.runtime_rendering_modes.select(
+            text,
+            detected_intent=intent,
+            client_context=client_context,
+        ).to_dict()
+        empty_memory = self._empty_memory_context_for_chatgpt(
+            text,
+            primary_intent=intent,
+            memory_gate=memory_gate.to_dict(),
+        )
+        intent_dict = intent_report.to_dict() if hasattr(intent_report, "to_dict") else dict(intent_report or {})
+        state_marker = self.affect.marker()
+        return {
+            "schema_version": "chatgpt_cognitive_frame/v1",
+            "runtime_version": self.config.version,
+            "mode": "deterministic_health_check_frame",
+            "health_check_fast_path": True,
+            "timestamp": timestamp_header,
+            "turn_id": turn_id,
+            "trace_id": trace_id,
+            "turn_trace": {
+                "schema_version": "turn_trace/v14.6.2",
+                "turn_id": turn_id,
+                "trace_id": trace_id,
+                "timestamp_header": timestamp_header,
+                "timezone": self.config.timezone,
+                "runtime_mode": "deterministic_health_check",
+                "client": client_context.get("client", "runtime"),
+                "lifecycle": client_context.get("lifecycle", "one_shot"),
+            },
+            "response_format": {
+                "timestamp_required": True,
+                "timestamp_prefix": timestamp_header,
+                "current_timestamp": timestamp_header,
+                "timezone": self.config.timezone,
+            },
+            "timestamp_contract": self.clock.sample_contract(sample),
+            "user_message": text,
+            "client_context": client_context,
+            "contract": self.chatgpt_adapter.contract().to_dict(),
+            "dialogue_intent_classifier": intent_dict,
+            "intent_tags": [intent, "health_check_fast_path"],
+            "memory_context": empty_memory,
+            "memory_recall_contract": {"items": [], "status": "skipped_health_check"},
+            "fallback_diagnostics": {},
+            "polish_understanding": {},
+            "lexical_semantic_understanding": {},
+            "topic_mismatch_guard": {},
+            "emotional_profile": {},
+            "granular_affect": {},
+            "affective_state": json.loads(self.affect.to_json()),
+            "cognitive_packets": {
+                "dominant_packet": "operational_health",
+                "packets": [],
+                "reply_guidance": [],
+                "state_emoticon": state_marker,
+            },
+            "state_emoticon": state_marker,
+            "voice_source_contract": voice_source_contract,
+            "runtime_rendering_mode": rendering_mode,
+            "model_adapter_status": adapter_status,
+            "startup_summary": {
+                "status": "deferred_to_deterministic_health_handler",
+                "startup_status_mode": "health_metadata",
+                "network_time_used": False,
+            },
+            "truth_audit": truth_audit,
+            "truth_boundary": {
+                "rule": "health-check is technical and does not become canonical semantic memory",
+            },
+            "persistence": {
+                "accepted": False,
+                "reason": "health_check_has_no_semantic_candidate",
+                "appended_count": 0,
+                "candidate_kind": None,
+            },
+        }
+
+    def build_cognitive_frame(
+        self,
+        text: str,
+        *,
+        client_context: dict | None = None,
+        turn_context: TurnExecutionContext | None = None,
+        intent_report: Any | None = None,
+    ) -> dict:
         """Buduje pakiet poznawczy dla ChatGPT zamiast gotowej odpowiedzi użytkownikowi.
 
         To jest właściwy tryb integracji: runtime działa jak pamięć/uwaga/afekt/procedury,
         a ChatGPT używa wyniku jako wewnętrznego kontekstu do jednej odpowiedzi Łatki.
         """
+        if turn_context is not None:
+            turn_context.start_stage("timestamp_acquisition")
         sample = self.clock.now(self.config.network_time_first and self.config.network_time_allowed_in_normal_turn, allow_fallback=self.config.local_time_fallback)
-        turn_id = str(uuid.uuid4())
-        trace_id = str(uuid.uuid4())
+        if turn_context is not None:
+            turn_context.complete_stage("timestamp_acquisition")
+        turn_id = turn_context.turn_id if turn_context is not None else str(uuid.uuid4())
+        trace_id = turn_context.request_id if turn_context is not None else str(uuid.uuid4())
         now = time.time()
         gap = int(now - self.last_turn_at) if self.last_turn_at else None
         self.last_turn_at = now
-        self._save_runtime_state()
-        neurological_signal_route = self.neurological_signal_router.analyse(text)
-        self.event_ledger.append_turn(
-            "user",
-            text,
-            source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-            client_context=client_context or {},
-            local_time_label=self.clock.header(sample),
-            metadata={"entrypoint": "build_cognitive_frame", "turn_id": turn_id, "trace_id": trace_id},
+        self._stage_turn_write(
+            turn_context,
+            data_type="runtime_state",
+            stage="cognitive_frame_started",
+            commit=self._save_runtime_state,
         )
-        self.session_continuity.update_index(reason="cognitive_frame_user_turn", source="JaznEngine.build_cognitive_frame", extra={"client_context": client_context or {}})
+        neurological_signal_route = self.neurological_signal_router.analyse(text)
+        self._stage_turn_write(
+            turn_context,
+            data_type="conversation_turn_user",
+            stage="cognitive_frame_started",
+            commit=lambda: self.event_ledger.append_turn(
+                "user",
+                text,
+                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
+                client_context=client_context or {},
+                local_time_label=self.clock.header(sample),
+                metadata={"entrypoint": "build_cognitive_frame", "turn_id": turn_id, "trace_id": trace_id},
+            ),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="session_continuity",
+            stage="cognitive_frame_started",
+            commit=lambda: self.session_continuity.update_index(reason="cognitive_frame_user_turn", source="JaznEngine.build_cognitive_frame", extra={"client_context": client_context or {}}),
+        )
 
         self.affect = self.affect.observe(text)
         temporal_state = self.temporal_awareness.classify_gap(gap)
         emotional_profile = self.emotional_layers.appraise(text, gap)
         importance = self.importance_assessor.assess(text)
-        user_truth_audit = self.layered_memory.audit_truth(text, source_count=0)
+        if turn_context is not None:
+            turn_context.start_stage("truth_audit_generation")
+        user_truth_audit = self.layered_memory.evaluate_truth(text, source_count=0)
+        if turn_context is not None:
+            turn_context.record_technical_event(
+                "technical_turn_truth_audit",
+                {
+                    "text_sha256": __import__("hashlib").sha256(text.encode("utf-8", errors="surrogatepass")).hexdigest(),
+                    "audit": user_truth_audit,
+                    "memory_allowed": False,
+                    "category": "technical_turn_audit",
+                },
+            )
+            turn_context.complete_stage("truth_audit_generation")
         truth_risk = min(1.0, 0.18 * sum(1 for a in user_truth_audit if a.get("risk_flags")))
+        if turn_context is not None:
+            turn_context.start_stage("memory_planning")
         consolidation_plan = self.consolidation.plan(
             text=text,
             emotional_profile=emotional_profile,
@@ -1326,6 +1531,8 @@ class JaznEngine:
             silence_gap_seconds=gap,
             truth_risk=truth_risk,
         )
+        if turn_context is not None:
+            turn_context.complete_stage("memory_planning")
         identity_vector = self.identity_dynamics.evaluate(
             text=text,
             truth_audit=user_truth_audit,
@@ -1341,11 +1548,16 @@ class JaznEngine:
             temporal_state=temporal_state,
             truth_audit=user_truth_audit,
         )
-        memory_gate_intent_report = self.dialogue_intent_classifier.classify(
-            text,
-            previous_text=str((client_context or {}).get("previous_user_text") or "") or None,
+        memory_gate_intent_report = intent_report or self.dialogue_intent_classifier.classify(
+            text, previous_text=str((client_context or {}).get("previous_user_text") or "") or None,
         )
+        if turn_context is not None:
+            turn_context.start_stage("memory_use_gate")
         memory_context = self._gated_memory_context_for_chatgpt(text, intent_report=memory_gate_intent_report)
+        if turn_context is not None:
+            turn_context.complete_stage("memory_use_gate")
+            memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
+            turn_context.mark_stage("memory_reads", status=memory_read_status)
         memory_recall_contract = self.memory_recall_contract_builder.build(memory_context, user_text=text).to_dict()
         raw_chat_status = self.raw_chat_importer.inspect().to_dict()
         tool_use_decision = self.tool_use_policy.decide(text).to_dict()
@@ -1456,10 +1668,15 @@ class JaznEngine:
             source_origin=source_origin,
             client_context=client_context or {},
         )
-        session_continuity = self.session_continuity.update_index(
-            reason="cognitive_frame_context_built",
-            source="JaznEngine.build_cognitive_frame",
-            extra={"intent_tags": intent_tags, "route_hint": polish_report.route_hint, "lexical_route_hint": lexical_report.route_hint, "nlp_provider": nlp_report.provider_summary},
+        session_continuity = self._stage_turn_write(
+            turn_context,
+            data_type="session_continuity",
+            stage="cognitive_frame_context_built",
+            commit=lambda: self.session_continuity.update_index(
+                reason="cognitive_frame_context_built",
+                source="JaznEngine.build_cognitive_frame",
+                extra={"intent_tags": intent_tags, "route_hint": polish_report.route_hint, "lexical_route_hint": lexical_report.route_hint, "nlp_provider": nlp_report.provider_summary},
+            ),
         )
 
         runtime_candidate = self.runtime_memory.build_candidate_from_runtime_turn(
@@ -1472,7 +1689,33 @@ class JaznEngine:
             grounding="recognized",
             confidence=0.70,
         )
-        persistence = self.runtime_memory.persist_candidate(runtime_candidate)
+        accepted, persistence_reason = self.runtime_memory.should_persist(runtime_candidate)
+        candidate_fingerprint = self.runtime_memory.candidate_fingerprint(runtime_candidate)
+        if accepted and turn_context is not None:
+            turn_context.start_stage("candidate_persistence_staging")
+            write_id = turn_context.stage_semantic_write(
+                data_type=f"runtime_memory_candidate:{runtime_candidate.kind}",
+                stage="candidate_persistence_staging",
+                commit=lambda candidate=runtime_candidate: self.runtime_memory.persist_candidate(candidate),
+            )
+            turn_context.complete_stage(
+                "candidate_persistence_staging",
+                status="completed" if write_id else "rejected",
+                error_code=None if write_id else "turn_cancelled",
+            )
+            persistence = RuntimePersistenceResult(
+                False,
+                candidate_fingerprint,
+                runtime_candidate.kind,
+                "turn_local_staged" if write_id else "turn_local_staging_rejected",
+                [],
+            )
+        elif accepted:
+            persistence = self.runtime_memory.persist_candidate(runtime_candidate)
+        else:
+            if turn_context is not None:
+                turn_context.mark_stage("candidate_persistence_staging", status="skipped_below_threshold")
+            persistence = RuntimePersistenceResult(False, candidate_fingerprint, runtime_candidate.kind, persistence_reason, [])
 
         cognitive_packets = self.cognitive_packets.build(
             text=text,
@@ -1502,6 +1745,21 @@ class JaznEngine:
             },
             write_requested=False,
         )
+        if turn_context is not None:
+            turn_context.start_stage("startup_status_collection")
+        startup_summary = build_startup_summary(self.config)
+        self_knowledge_summary = startup_summary.get("self_knowledge_summary") or {
+            "status": "included_in_startup_summary",
+        }
+        truth_boundary_check = {
+            "schema_version": "truth_boundary_check/v15.0.3.3-frame",
+            "runtime_version": self.config.version,
+            "startup_status_mode": startup_summary.get("startup_status_mode"),
+            "truth_boundary": startup_summary.get("truth_boundary"),
+            "rules_source": "latka_jazn/core/startup_contract.py",
+        }
+        if turn_context is not None:
+            turn_context.complete_stage("startup_status_collection")
 
         packet = {
             "schema_version": "chatgpt_cognitive_frame/v1",
@@ -1550,10 +1808,10 @@ class JaznEngine:
             "quiet_context": quiet_context,
             "dialogue_context": dialogue_context,
             "runtime_operating_model": runtime_operating_context,
-            "startup_summary": build_startup_summary(self.config),
-            "self_knowledge_summary": build_self_knowledge_summary(self.config),
-            "free_dialogue_memory_nlp_bridge": build_startup_summary(self.config),
-            "truth_boundary_check": build_truth_boundary_check(self.config),
+            "startup_summary": startup_summary,
+            "self_knowledge_summary": self_knowledge_summary,
+            "free_dialogue_memory_nlp_bridge": startup_summary,
+            "truth_boundary_check": truth_boundary_check,
             "source_origin": source_origin.to_dict(),
             "self_state_runtime": self_state_packet.to_dict(),
             "github_repository_plan": self.github_repository_plan.to_dict(),
@@ -1650,28 +1908,38 @@ class JaznEngine:
                 "Pakiet poznawczy nie jest samodzielną świadomością biologiczną; jest strukturą pamięci, procedur, rozumienia polskiej wypowiedzi, logicznego audytu, świadomości operacyjnej i kontroli prawdy.",
             ],
         }
-        self.store.add_event(
-            "chatgpt_cognitive_frame",
-            packet,
-            source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-            actor="latka_runtime",
-            tags=["chatgpt_bridge", "cognitive_frame", "one_voice", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "topic_mismatch_guard", "project_startup_index", "cognitive_packets", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
-            importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
-            emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
-            canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
-            created_at_local=self.clock.header(sample),
+        self._stage_turn_write(
+            turn_context,
+            data_type="cognitive_frame_event",
+            stage="cognitive_frame_complete",
+            commit=lambda: self.store.add_event(
+                "chatgpt_cognitive_frame",
+                packet,
+                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
+                actor="latka_runtime",
+                tags=["chatgpt_bridge", "cognitive_frame", "one_voice", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "topic_mismatch_guard", "project_startup_index", "cognitive_packets", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
+                importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
+                emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
+                canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
+                created_at_local=self.clock.header(sample),
+            ),
         )
-        self.event_ledger.append_event(
-            "chatgpt_cognitive_frame",
-            actor="latka_runtime",
-            source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-            payload=packet,
-            tags=["chatgpt_bridge", "cognitive_frame", "exact", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
-            importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
-            emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
-            canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
-            exact_text=text,
-            local_time_label=self.clock.header(sample),
+        self._stage_turn_write(
+            turn_context,
+            data_type="runtime_event_ledger",
+            stage="cognitive_frame_complete",
+            commit=lambda: self.event_ledger.append_event(
+                "chatgpt_cognitive_frame",
+                actor="latka_runtime",
+                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
+                payload=packet,
+                tags=["chatgpt_bridge", "cognitive_frame", "exact", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
+                importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
+                emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
+                canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
+                exact_text=text,
+                local_time_label=self.clock.header(sample),
+            ),
         )
         return packet
 
@@ -1685,6 +1953,9 @@ class JaznEngine:
         finalną odpowiedź z timestampem.
         """
         ctx = dict(client_context or {})
+        turn_context = ctx.pop("_turn_context", None)
+        if not isinstance(turn_context, TurnExecutionContext):
+            turn_context = None
         ctx.setdefault("client", "process_turn")
         try:
             import hashlib as _hashlib
@@ -1717,11 +1988,35 @@ class JaznEngine:
             if prior_runtime_route:
                 ctx.setdefault("previous_runtime_route", prior_runtime_route)
             ctx.setdefault("previous_context_age_seconds", prior_context_age_seconds)
-        frame = self.build_cognitive_frame(text, client_context=ctx)
-        dialogue_intent_report = self.dialogue_intent_classifier.classify(
-            text,
-            previous_text=str(prior_user_text or "") if carryover_allowed else None,
-        ).to_dict()
+        if turn_context is not None:
+            turn_context.start_stage("route_classification")
+        dialogue_intent_result = self.dialogue_intent_classifier.classify(
+            text, previous_text=str(prior_user_text or "") if carryover_allowed else None,
+        )
+        dialogue_intent_report = dialogue_intent_result.to_dict()
+        if turn_context is not None:
+            turn_context.complete_stage("route_classification")
+            turn_context.start_stage("health_check_detection")
+        health_check_fast_path = dialogue_intent_result.primary_intent in FAST_HEALTH_CHECK_INTENTS
+        if turn_context is not None:
+            turn_context.complete_stage(
+                "health_check_detection",
+                status="detected" if health_check_fast_path else "not_detected",
+            )
+        if health_check_fast_path:
+            frame = self._build_health_check_frame(
+                text,
+                client_context=ctx,
+                intent_report=dialogue_intent_result,
+                turn_context=turn_context,
+            )
+        else:
+            frame = self.build_cognitive_frame(
+                text,
+                client_context=ctx,
+                turn_context=turn_context,
+                intent_report=dialogue_intent_result,
+            )
         frame["dialogue_intent_classifier"] = dialogue_intent_report
         frame["turn_context_carryover"] = {
             **turn_context_resolution.to_dict(),
@@ -1787,6 +2082,9 @@ class JaznEngine:
             "intent": str(detected_dialogue_intent),
             "last_turn": self.runtime_visible_answer_comparator.reader.latest(),
             "runtime_version": self.config.version,
+            "lifecycle": ctx.get("lifecycle"),
+            "request_id": ctx.get("request_id"),
+            "timestamp_contract": frame.get("timestamp_contract") if isinstance(frame.get("timestamp_contract"), dict) else {},
             "turn_context_carryover": frame.get("turn_context_carryover") if isinstance(frame.get("turn_context_carryover"), dict) else {},
             "previous_user_text": prior_user_text if carryover_allowed else None,
             "previous_detected_intent": prior_detected_intent if carryover_allowed else None,
@@ -1808,7 +2106,11 @@ class JaznEngine:
             "required_components": route_entry.required_components,
             "turn_response_policy": turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
         }
+        if turn_context is not None and health_check_fast_path:
+            turn_context.start_stage("startup_status_collection")
         handler_result = self.route_handler_dispatcher.dispatch(route_entry, text, handler_context)
+        if turn_context is not None and health_check_fast_path:
+            turn_context.complete_stage("startup_status_collection")
         handler_result_dict = handler_result.to_dict()
         decision_dict["handler_result"] = handler_result_dict
         decision_dict["handler_name"] = handler_result.handler_name
@@ -1842,6 +2144,8 @@ class JaznEngine:
         decision_dict["can_generate_model_guided_speech"] = can_generate_model_guided_speech
         decision_dict["model_guided_retry_limit"] = 1
         decision_dict["model_guided_retry_count"] = 0
+        if turn_context is not None:
+            turn_context.start_stage("synthesis")
         model_synthesis = self.model_guided_response_synthesizer.synthesize(
             adapter=self.model_adapter,
             user_text=text,
@@ -2023,6 +2327,8 @@ class JaznEngine:
                     user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
                 )
                 decision_dict["runtime_answer_quality"] = "topic_aligned"
+        if turn_context is not None:
+            turn_context.complete_stage("synthesis")
         logic_audit = self.turn_logic_auditor.audit(
             user_text=text,
             response_text=body,
@@ -2033,7 +2339,12 @@ class JaznEngine:
             speech_act=str((dialogue_intent_report or {}).get("speech_act") or "unknown"),
             question_object=str((dialogue_intent_report or {}).get("question_object") or "unknown"),
         )
-        self.turn_logic_auditor.append(logic_audit)
+        self._stage_turn_write(
+            turn_context,
+            data_type="turn_logic_audit",
+            stage="synthesis_validation",
+            commit=lambda: self.turn_logic_auditor.append(logic_audit),
+        )
         reasoning_decision = self.reasoning_controller.assess_turn(
             user_text=text,
             intent=str(detected_dialogue_intent),
@@ -2120,6 +2431,8 @@ class JaznEngine:
             envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
         if str(detected_dialogue_intent).startswith("creative_text"):
             decision_dict["source_text_preservation_contract"] = SourceTextPreservationContract.build(text, intent=str(detected_dialogue_intent)).to_dict()
+        if turn_context is not None:
+            turn_context.start_stage("provenance")
         runtime_provenance = build_runtime_provenance(
             body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
             handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
@@ -2170,10 +2483,17 @@ class JaznEngine:
                 final_visible_integrity_valid=bool(decision_dict.get("origin_truth_valid") and answer_validation.accepted),
                 model_response=model_synthesis.adapter_response,
             )
-            self.source_origin_ledger.append(source_entry)
+            self._stage_turn_write(
+                turn_context,
+                data_type="source_origin_ledger",
+                stage="provenance",
+                commit=lambda entry=source_entry: self.source_origin_ledger.append(entry),
+            )
             envelope.cognitive_frame["source_origin_ledger_entry"] = source_entry.to_dict()
         except Exception as exc:
             envelope.cognitive_frame["source_origin_ledger_error"] = str(exc)
+        if turn_context is not None:
+            turn_context.start_stage("host_visible_finalization")
         candidate_contract = FinalResponseContract.build(
             turn_id=envelope.trace.turn_id,
             trace_id=envelope.trace.trace_id,
@@ -2241,62 +2561,101 @@ class JaznEngine:
         )
         envelope.attach_runtime_turn_contract(runtime_turn_contract.to_dict())
         envelope.attach_final_response_contract(contract.to_dict(), contract.final_visible_text)
+        if turn_context is not None:
+            turn_context.complete_stage("provenance")
+            turn_context.complete_stage("host_visible_finalization")
         try:
-            checkpoint = self.turn_checkpoint_writer.build_and_append(
-                turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, timestamp_header=envelope.trace.timestamp_header, user_text=text, runtime_text=body, visible_text=contract.final_visible_text, detected_intent=str(detected_dialogue_intent), route=str(decision_dict.get("route") or ""), response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"), template_origin=template_origin, validator=answer_validation.to_dict(), source_origin=envelope.cognitive_frame.get("source_origin_ledger_entry") or {},
+            checkpoint = self._stage_turn_write(
+                turn_context,
+                data_type="turn_checkpoint",
+                stage="host_visible_finalization",
+                commit=lambda: self.turn_checkpoint_writer.build_and_append(
+                    turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, timestamp_header=envelope.trace.timestamp_header, user_text=text, runtime_text=body, visible_text=contract.final_visible_text, detected_intent=str(detected_dialogue_intent), route=str(decision_dict.get("route") or ""), response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"), template_origin=template_origin, validator=answer_validation.to_dict(), source_origin=envelope.cognitive_frame.get("source_origin_ledger_entry") or {},
+                ),
             )
             envelope.cognitive_frame["turn_checkpoint"] = checkpoint
         except Exception as exc:
             envelope.cognitive_frame["turn_checkpoint_error"] = str(exc)
         envelope_dict = envelope.to_dict()
-        self.store.add_event(
-            "cognitive_turn_envelope",
-            envelope_dict,
-            source=ctx.get("client", "process_turn"),
-            actor="latka_runtime",
-            tags=["cognitive_turn_envelope", "final_response_contract", "timestamp_contract", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", "project_startup_index", self.config.version],
-            importance=0.86,
-            emotional_weight=0.55,
-            canonical_impact=1,
-            created_at_local=envelope.trace.timestamp_header,
+        self._stage_turn_write(
+            turn_context,
+            data_type="cognitive_turn_envelope",
+            stage="host_visible_finalization",
+            commit=lambda: self.store.add_event(
+                "cognitive_turn_envelope",
+                envelope_dict,
+                source=ctx.get("client", "process_turn"),
+                actor="latka_runtime",
+                tags=["cognitive_turn_envelope", "final_response_contract", "timestamp_contract", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", "project_startup_index", self.config.version],
+                importance=0.86,
+                emotional_weight=0.55,
+                canonical_impact=1,
+                created_at_local=envelope.trace.timestamp_header,
+            ),
         )
-        self.event_ledger.append_event(
-            "cognitive_turn_envelope",
-            actor="latka_runtime",
-            source=ctx.get("client", "process_turn"),
-            payload=envelope_dict,
-            tags=["cognitive_turn_envelope", "final_response_contract", "exact", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", self.config.version],
-            importance=0.86,
-            emotional_weight=0.55,
-            canonical_impact=1,
-            exact_text=text,
-            local_time_label=envelope.trace.timestamp_header,
+        self._stage_turn_write(
+            turn_context,
+            data_type="runtime_event_ledger",
+            stage="host_visible_finalization",
+            commit=lambda: self.event_ledger.append_event(
+                "cognitive_turn_envelope",
+                actor="latka_runtime",
+                source=ctx.get("client", "process_turn"),
+                payload=envelope_dict,
+                tags=["cognitive_turn_envelope", "final_response_contract", "exact", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", self.config.version],
+                importance=0.86,
+                emotional_weight=0.55,
+                canonical_impact=1,
+                exact_text=text,
+                local_time_label=envelope.trace.timestamp_header,
+            ),
         )
-        self.event_ledger.append_final_visible_reply(
-            envelope_dict,
-            final_text=contract.final_visible_text,
-            source=ctx.get("client", "process_turn"),
-            local_time_label=envelope.trace.timestamp_header,
+        self._stage_turn_write(
+            turn_context,
+            data_type="final_visible_reply",
+            stage="host_visible_finalization",
+            commit=lambda: self.event_ledger.append_final_visible_reply(
+                envelope_dict,
+                final_text=contract.final_visible_text,
+                source=ctx.get("client", "process_turn"),
+                local_time_label=envelope.trace.timestamp_header,
+            ),
         )
-        self.session_continuity.update_index(
-            reason="final_visible_reply_persisted",
-            source="JaznEngine.process_turn",
-            extra={
-                "turn_id": envelope.trace.turn_id,
-                "trace_id": envelope.trace.trace_id,
-                "timestamp_header": envelope.trace.timestamp_header,
-                "client_context": ctx,
-                "final_visible_reply_sha256": envelope.cognitive_frame.get("final_visible_reply_sha256"),
-            },
+        self._stage_turn_write(
+            turn_context,
+            data_type="session_continuity",
+            stage="host_visible_finalization",
+            commit=lambda: self.session_continuity.update_index(
+                reason="final_visible_reply_persisted",
+                source="JaznEngine.process_turn",
+                extra={
+                    "turn_id": envelope.trace.turn_id,
+                    "trace_id": envelope.trace.trace_id,
+                    "timestamp_header": envelope.trace.timestamp_header,
+                    "client_context": ctx,
+                    "final_visible_reply_sha256": envelope.cognitive_frame.get("final_visible_reply_sha256"),
+                },
+            ),
         )
-        try:
-            self.audit_store.append_event("process_turn_completed", {"turn_id": envelope.trace.turn_id, "trace_id": envelope.trace.trace_id, "detected_intent": str(detected_dialogue_intent), "route": str(decision_dict.get("route") or route_entry.route or ""), "runtime_answer_quality": (answer_validation.to_dict() or {}).get("runtime_answer_quality")}, source=ctx.get("client", "process_turn"), actor="latka_runtime", tags=["turn", "completed", "audit", self.config.version], trace_id=envelope.trace.trace_id, turn_id=envelope.trace.turn_id)
-        except Exception:
-            pass
-        self.last_user_text = text
-        self.last_detected_intent = str(detected_dialogue_intent)
-        self.last_runtime_route = str(decision_dict.get("route") or route_entry.route or "")
-        self._save_runtime_state()
+        self._stage_turn_write(
+            turn_context,
+            data_type="process_turn_completed_audit",
+            stage="audit_persistence",
+            commit=lambda: self.audit_store.append_event("process_turn_completed", {"turn_id": envelope.trace.turn_id, "trace_id": envelope.trace.trace_id, "detected_intent": str(detected_dialogue_intent), "route": str(decision_dict.get("route") or route_entry.route or ""), "runtime_answer_quality": (answer_validation.to_dict() or {}).get("runtime_answer_quality")}, source=ctx.get("client", "process_turn"), actor="latka_runtime", tags=["turn", "completed", "audit", self.config.version], trace_id=envelope.trace.trace_id, turn_id=envelope.trace.turn_id),
+        )
+
+        def _commit_engine_turn_state() -> None:
+            self.last_user_text = text
+            self.last_detected_intent = str(detected_dialogue_intent)
+            self.last_runtime_route = str(decision_dict.get("route") or route_entry.route or "")
+            self._save_runtime_state()
+
+        self._stage_turn_write(
+            turn_context,
+            data_type="engine_turn_state",
+            stage="host_visible_finalization",
+            commit=_commit_engine_turn_state,
+        )
         return envelope
 
     def persist_final_visible_reply(

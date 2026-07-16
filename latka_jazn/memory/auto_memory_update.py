@@ -101,7 +101,6 @@ def update_version_files(root: Path, target_version: str, description: str) -> N
     text = _replace_literal_assignment(text, "PACKAGE_VERSION", target_package)
     text = _replace_literal_assignment(text, "PACKAGE_RELEASE_NAME", target_release)
     version_file.write_text(text, encoding="utf-8")
-    (root / "VERSION.txt").write_text(target_full + "\n", encoding="utf-8")
 
     pyproject = root / "pyproject.toml"
     if pyproject.exists() and description:
@@ -214,7 +213,7 @@ python tools/auto_memory_update.py --memory-json memory_payload.json --zip
 4. Wyciąga konkretne wspomnienia, refleksje, ustalenia, emocje, krótkie ważne tematy i granice prawdy.
 5. Dopisuje aktualizację do `memory/raw/dziennik.json` jako doświadczenie Łatki.
 6. Równolegle dopisuje epizod, refleksję, fakt semantyczny, regułę proceduralną i audyt prawdy do `memory/layered/*.jsonl`.
-5. Aktualizuje `latka_jazn/version.py`, zgodny checkpoint `VERSION.txt`, README, dokument aktualizacji i manifest.
+5. Aktualizuje jedyne źródło wersji `latka_jazn/version.py`, README, dokument aktualizacji i manifest.
 6. Opcjonalnie tworzy ZIP do pobrania.
 
 ## Granica prawdy
@@ -602,7 +601,6 @@ def run_auto_memory_update(
 
     changed_files = [
         "latka_jazn/version.py",
-        "VERSION.txt",
         "pyproject.toml",
         "README.md",
         str(protocol_doc.relative_to(root)),

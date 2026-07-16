@@ -177,16 +177,12 @@
     "tool_boundary": "Model może zwrócić żądanie narzędzia; runtime je autoryzuje, wykonuje, zapisuje provenance i waliduje wynik."
   },
   "post_update_bootstrap": [
-    "read VERSION.txt and MANIFEST_CURRENT.json",
-    "read JAZN_ACTIVE_RUNTIME.json marker if present",
-    "run --active-cache-status",
-    "run --startup-status",
-    "run --self-knowledge-status",
-    "run --model-adapter-status or --chat-gpt --model-adapter-status for bridge mode",
-    "run --daemon-status when daemon is expected",
-    "run sqlite integrity checks before claiming memory readiness",
-    "run --chat-gpt-final-only smoke turn",
-    "run --operational-eval-status"
+    "read latka_jazn/version.py",
+    "read PACKAGE_INTEGRITY_MANIFEST.json",
+    "read workspace_runtime/JAZN_ACTIVE_RUNTIME.json when present and verify it",
+    "run python -X utf8 run.py status --json",
+    "run python -X utf8 run.py doctor --json",
+    "run python -X utf8 run.py chat-gpt -- \"<wiadomość>\""
   ],
   "purpose": "Operacyjny kontrakt tego, co Łatka może wiedzieć i powiedzieć o sobie po aktualizacji runtime.",
   "recall_policy": {

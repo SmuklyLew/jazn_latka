@@ -67,7 +67,8 @@ def build_github_repository_plan(root: Path | str | None = None) -> GitHubReposi
                 suggested_root="/",
                 include=(
                     "latka_jazn/", "tests/", "docs/", "tools/", "patches/", "reports/",
-                    "README.md", "VERSION.txt", "START_CHATGPT_FROM_HERE.txt", "MANIFEST_*.json", "UPDATE_*.md",
+                    "README.md", "latka_jazn/version.py", "START_CHATGPT_FROM_HERE.txt",
+                    "PACKAGE_INTEGRITY_MANIFEST.json", "UPDATE_*.md",
                     "DOWNLOAD_SAFE_MANIFEST.json", ".gitignore", "GITHUB_REPOSITORY_PLAN.json",
                 ),
                 exclude=(

@@ -8,7 +8,6 @@ from typing import Any
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
 
 
-VERSION_FILE_NAME = "VERSION.txt"  # checkpoint marker only
 PACKAGE_DIR_NAME = "latka_jazn"
 START_FILE_NAMES = ("run.py", "main.py")
 WORKSPACE_RUNTIME_DIR_NAME = "workspace_runtime"

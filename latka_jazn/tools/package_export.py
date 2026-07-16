@@ -5,12 +5,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 import hashlib
 import json
+import shutil
 import sqlite3
+import stat
 import tempfile
 import zipfile
 
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.tools.safe_paths import (
+    UnsafeRelativePathError,
+    resolve_safe_destination,
+    resolve_safe_source,
+    validate_safe_relative_path,
+)
 from latka_jazn.version import PACKAGE_VERSION
 
 SYSTEM_EXCLUDE_PREFIXES = (
@@ -142,19 +150,14 @@ def _sha256_file(path: Path) -> str:
 
 
 def _normalize_package_rel(rel: str) -> str:
-    return rel.replace("\\", "/").lstrip("/")
+    return validate_safe_relative_path(str(rel))
 
 
 def forbidden_package_reason(rel: str) -> str | None:
-    raw = str(rel).replace("\\", "/")
-    raw_parts = Path(raw).parts
-    if "\x00" in raw:
-        return "NUL byte is forbidden in package paths"
-    if raw.startswith(("/", "\\")) or (raw_parts and ":" in raw_parts[0]):
-        return "absolute or drive path is forbidden"
-    if ".." in raw_parts:
-        return "parent traversal is forbidden"
-    rel = _normalize_package_rel(raw)
+    try:
+        rel = validate_safe_relative_path(str(rel))
+    except UnsafeRelativePathError as exc:
+        return str(exc)
     parts = set(Path(rel).parts)
     if "__pycache__" in parts:
         return "__pycache__ is never packaged"
@@ -172,15 +175,30 @@ def forbidden_package_reason(rel: str) -> str | None:
 def find_forbidden_package_paths(rel_paths) -> list[tuple[str, str]]:
     blocked: list[tuple[str, str]] = []
     for rel in rel_paths:
-        normalized = _normalize_package_rel(str(rel))
-        reason = forbidden_package_reason(normalized)
+        raw = str(rel)
+        reason = forbidden_package_reason(raw)
         if reason:
-            blocked.append((normalized, reason))
+            blocked.append((raw, reason))
     return blocked
 
 
-def validate_package_plan(rel_paths) -> None:
-    blocked = find_forbidden_package_paths(rel_paths)
+def validate_package_plan(
+    rel_paths,
+    *,
+    root: Path | None = None,
+    destination_root: Path | None = None,
+) -> None:
+    paths = [str(rel) for rel in rel_paths]
+    blocked = find_forbidden_package_paths(paths)
+    for raw in paths:
+        try:
+            canonical = validate_safe_relative_path(raw)
+            if root is not None:
+                resolve_safe_source(root, canonical)
+            if destination_root is not None:
+                resolve_safe_destination(destination_root, canonical)
+        except UnsafeRelativePathError as exc:
+            blocked.append((raw, str(exc)))
     if not blocked:
         return
     examples = ", ".join(f"{rel} ({reason})" for rel, reason in blocked[:10])
@@ -257,7 +275,7 @@ def build_package_plan(root: Path, mode: str, output_zip: Path | None = None) ->
     root = Path(root).resolve()
     preview_output = Path(output_zip).resolve() if output_zip is not None else (root / "exports" / ".preview.zip").resolve()
     plan = list(_iter_files(root, mode, preview_output))
-    validate_package_plan(rel for _, rel in plan)
+    validate_package_plan((rel for _, rel in plan), root=root)
     if mode == "github_source_safe":
         blocked = [
             {"path": rel, "reason": reason}
@@ -297,11 +315,35 @@ def _checkpoint_sqlite_databases(root: Path) -> list[str]:
 def _unsafe_zip_entries(zf: zipfile.ZipFile) -> list[str]:
     unsafe: list[str] = []
     for info in zf.infolist():
-        name = info.filename.replace("\\", "/")
-        path = Path(name)
-        if name.startswith("/") or ".." in path.parts or (path.parts and ":" in path.parts[0]):
-            unsafe.append(name)
+        name = info.filename[:-1] if info.is_dir() and info.filename.endswith("/") else info.filename
+        try:
+            validate_safe_relative_path(name)
+        except UnsafeRelativePathError:
+            unsafe.append(info.filename)
+            continue
+        mode = (info.external_attr >> 16) & 0xFFFF
+        if stat.S_ISLNK(mode):
+            unsafe.append(info.filename)
     return unsafe
+
+
+def _extract_zip_safely(zf: zipfile.ZipFile, target: Path) -> list[str]:
+    extracted: list[str] = []
+    for info in zf.infolist():
+        relative = info.filename[:-1] if info.is_dir() and info.filename.endswith("/") else info.filename
+        canonical = validate_safe_relative_path(relative)
+        destination = resolve_safe_destination(target, canonical)
+        mode = (info.external_attr >> 16) & 0xFFFF
+        if stat.S_ISLNK(mode):
+            raise PackagePlanValidationError(f"ZIP symlink is forbidden: {info.filename}")
+        if info.is_dir():
+            destination.mkdir(parents=True, exist_ok=True)
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with zf.open(info, "r") as source, destination.open("wb") as output:
+            shutil.copyfileobj(source, output)
+        extracted.append(canonical)
+    return sorted(extracted)
 
 
 def build_package_manifest(zip_path: Path, *, mode: str) -> dict:
@@ -348,12 +390,7 @@ def build_packing_audit(zip_path: Path, package_manifest: dict) -> dict:
             try:
                 with tempfile.TemporaryDirectory(prefix="jazn_package_smoke_") as tmp:
                     target = Path(tmp)
-                    zf.extractall(target)
-                    extracted = sorted(
-                        item.relative_to(target).as_posix()
-                        for item in target.rglob("*")
-                        if item.is_file()
-                    )
+                    extracted = _extract_zip_safely(zf, target)
             except Exception as exc:
                 extract_error = f"{type(exc).__name__}: {exc}"
                 errors.append("extract_smoke_failed")

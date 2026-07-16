@@ -5,6 +5,7 @@ import json
 
 from latka_jazn import cli
 from latka_jazn.tools import release_readiness
+from latka_jazn.tools.source_provenance import SourceProvenanceError
 from latka_jazn.tools.package_export import forbidden_package_reason
 
 
@@ -44,3 +45,29 @@ def test_system_profile_does_not_require_memory(monkeypatch, tmp_path: Path) -> 
 
 def test_backups_are_forbidden_export_paths() -> None:
     assert forbidden_package_reason("backups/pre-change/working-tree.patch") is not None
+
+
+def test_release_profile_reports_dirty_worktree_as_policy_failure(monkeypatch, tmp_path: Path) -> None:
+    (tmp_path / "latka_jazn").mkdir()
+    (tmp_path / "run.py").write_text("", encoding="utf-8")
+    (tmp_path / "main.py").write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        release_readiness,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": False, "configuration_error": False, "errors": [{"code": "sha256_mismatch"}]},
+    )
+
+    def reject_dirty(_root, _destination):
+        raise SourceProvenanceError("release provenance requires a clean working tree")
+
+    monkeypatch.setattr(release_readiness, "create_release_staging", reject_dirty)
+    monkeypatch.setattr(
+        release_readiness,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: type("Status", (), {"to_dict": lambda self: {"status": "invalid"}})(),
+    )
+    report = release_readiness.build_release_readiness_report(tmp_path, profile="release")
+    staging = next(item for item in report["checks"] if item["name"] == "profile_staging")
+    assert report["ok"] is False
+    assert report["exit_code"] == 1
+    assert staging["error_code"] == "dirty_worktree"

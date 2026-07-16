@@ -6,10 +6,9 @@
   "chatgpt_role": "minimal_loader_voice_and_tool",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
   "startup_commands": [
-    "python main.py --startup-status",
-    "python main.py --runtime-preview \"<wiadomość>\"",
-    "python main.py \"<wiadomość>\"",
-    "python main.py --chat"
+    "python -X utf8 run.py status --json",
+    "python -X utf8 run.py doctor --json",
+    "python -X utf8 run.py chat-gpt -- \"<wiadomość>\""
   ],
   "truth_boundary": "Instrukcja ChatGPT jest loaderem. Aktywna Jaźń po starcie odpowiada przez runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy. Nie wolno udawać stałego procesu w tle ani źródeł, których runtime nie dostarczył."
 }

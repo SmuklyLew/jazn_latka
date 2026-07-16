@@ -75,7 +75,7 @@ class MemorySourceTruthGate:
             trusted_memory_root or (self.active_root / "memory")
         ).resolve()
         self.marker_path = Path(marker_path).resolve() if marker_path else None
-        self.manifest_path = Path(manifest_path).resolve() if manifest_path else self.active_root / "MANIFEST_CURRENT.json"
+        self.manifest_path = Path(manifest_path).resolve() if manifest_path else self.active_root / "PACKAGE_INTEGRITY_MANIFEST.json"
         self.runtime_version = runtime_version
 
     def evaluate(

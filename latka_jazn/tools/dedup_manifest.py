@@ -63,7 +63,7 @@ def canonical_score(rel: str) -> tuple[int, str]:
     score = 50
     if rel.startswith("memory/raw/"):
         score -= 30
-    if rel.startswith("latka_jazn/") or rel in {"main.py", "VERSION.txt", "README.md"}:
+    if rel.startswith("latka_jazn/") or rel in {"main.py", "README.md"}:
         score -= 25
     if rel.startswith("docs/"):
         score -= 15

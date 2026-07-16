@@ -12,6 +12,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("source_provenance_status")
 PROVENANCE_FILENAME = "SOURCE_PROVENANCE.json"
+PROVENANCE_PROFILES = frozenset({"development", "system_smoke", "release", "export_without_git"})
 
 
 @dataclass(slots=True)
@@ -34,6 +35,11 @@ class SourceProvenanceStatus:
     manifest_protected: bool
     limitations: list[str]
     truth_boundary: str
+    validation_profile: str = "system_smoke"
+    generation_mode: str | None = None
+    head_sha: str | None = None
+    commit_matches_head: bool | None = None
+    tree_matches_commit: bool | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -72,8 +78,14 @@ def _manifest_protects_provenance(root: Path, path: Path) -> bool:
     return False
 
 
-def read_source_provenance(root: Path | str) -> SourceProvenanceStatus:
+def read_source_provenance(
+    root: Path | str,
+    *,
+    profile: str = "system_smoke",
+) -> SourceProvenanceStatus:
     root = Path(root).resolve()
+    if profile not in PROVENANCE_PROFILES:
+        raise ValueError(f"unsupported provenance profile: {profile}")
     path = root / PROVENANCE_FILENAME
     limitations: list[str] = []
     if not path.is_file():
@@ -127,6 +139,7 @@ def read_source_provenance(root: Path | str) -> SourceProvenanceStatus:
     tree_sha = str(payload.get("git_tree_sha") or "") or None
     tree_shape_valid = bool(tree_sha and re.fullmatch(r"[0-9a-fA-F]{40}", tree_sha))
     declared_dirty = payload.get("dirty") if isinstance(payload.get("dirty"), bool) else None
+    generation_mode = str(payload.get("generation_mode") or "") or None
     git_present = (root / ".git").exists()
     manifest_protected = _manifest_protects_provenance(root, path)
     if not version_matches:
@@ -136,25 +149,52 @@ def read_source_provenance(root: Path | str) -> SourceProvenanceStatus:
     if not tree_shape_valid:
         limitations.append("git_tree_sha is not a 40-character Git SHA")
     status = "invalid"
+    head_sha: str | None = None
+    commit_matches_head: bool | None = None
+    tree_matches_commit: bool | None = None
     if version_matches and commit_valid and tree_shape_valid and git_present:
         commit_rc, _, commit_error = _git(root, "cat-file", "-e", f"{merge_commit}^{{commit}}")
         _, current_tree, _ = _git(root, "rev-parse", f"{merge_commit}^{{tree}}")
+        _, head_sha, _ = _git(root, "rev-parse", "HEAD")
         _, actual_status, _ = _git(root, "status", "--porcelain", "--untracked-files=all")
         actual_dirty = bool(actual_status)
+        commit_matches_head = bool(head_sha and merge_commit and head_sha.lower() == merge_commit.lower())
+        tree_matches_commit = current_tree.lower() == str(tree_sha).lower()
         if commit_rc != 0:
             limitations.append(f"base commit does not exist in checkout: {commit_error}")
-        if current_tree.lower() != str(tree_sha).lower():
+        if not tree_matches_commit:
             limitations.append("git_tree_sha does not match base commit")
+        if not commit_matches_head:
+            limitations.append("provenance commit does not match current HEAD")
         if declared_dirty is None or declared_dirty != actual_dirty:
             limitations.append("declared dirty state does not match working tree")
+        if profile == "release":
+            if actual_dirty or declared_dirty is not False:
+                limitations.append("release profile requires dirty=false and a clean working tree")
+            if generation_mode != "release":
+                limitations.append("release profile rejects non-release generation_mode")
+            if not manifest_protected:
+                limitations.append("release profile requires SOURCE_PROVENANCE.json protected by the package manifest")
         if not limitations:
             status = "development_dirty_verified" if actual_dirty else "clean_checkout_verified"
     elif version_matches and commit_valid and tree_shape_valid and not git_present:
         limitations.append(".git is not included; local branch, tag and dirty state cannot be independently verified")
-        if manifest_protected:
+        strict_export_ok = bool(
+            profile == "export_without_git"
+            and declared_dirty is False
+            and generation_mode == "release"
+        )
+        if profile == "export_without_git" and not strict_export_ok:
+            limitations.append("export_without_git requires release provenance with dirty=false")
+        if profile in {"development", "release"}:
+            limitations.append(f"{profile} profile requires Git metadata")
+        if manifest_protected and (
+            profile == "system_smoke" or strict_export_ok
+        ):
             status = "verified_export_without_git_history"
         else:
-            limitations.append("PACKAGE_INTEGRITY_MANIFEST.json does not protect SOURCE_PROVENANCE.json")
+            if not manifest_protected:
+                limitations.append("PACKAGE_INTEGRITY_MANIFEST.json does not protect SOURCE_PROVENANCE.json")
     return SourceProvenanceStatus(
         schema_version=SCHEMA_VERSION,
         status=status,
@@ -174,4 +214,9 @@ def read_source_provenance(root: Path | str) -> SourceProvenanceStatus:
         manifest_protected=manifest_protected,
         limitations=limitations,
         truth_boundary=str(payload.get("truth_boundary") or "Provenance is descriptive unless verified against Git and manifest hashes."),
+        validation_profile=profile,
+        generation_mode=generation_mode,
+        head_sha=head_sha,
+        commit_matches_head=commit_matches_head,
+        tree_matches_commit=tree_matches_commit,
     )

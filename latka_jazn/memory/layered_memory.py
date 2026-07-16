@@ -167,8 +167,18 @@ class LayeredMemory:
         self.store.write_journal("reflection", meaning_for_latka, payload=asdict(rec))
         return rec
 
+    def evaluate_truth(self, text: str, *, evidence: str | None=None, source_count: int=0) -> list[dict]:
+        """Return a technical assessment without changing canonical memory."""
+        return self.truth.audit_text(text, evidence=evidence, source_count=source_count)
+
     def audit_truth(self, text: str, *, evidence: str | None=None, source_count: int=0) -> list[dict]:
-        audit = self.truth.audit_text(text, evidence=evidence, source_count=source_count)
+        """Persist a canonical semantic truth audit for legacy/explicit callers.
+
+        Normal runtime input assessment uses :meth:`evaluate_truth` and stores
+        its technical trace in runtime_audit.sqlite3 instead.  This method stays
+        canonical for accepted semantic-memory records.
+        """
+        audit = self.evaluate_truth(text, evidence=evidence, source_count=source_count)
         record = {"created_at_utc": datetime.now(timezone.utc).isoformat(), "text": text, "audit": audit}
         self._append_jsonl("truth_audits.jsonl", record)
         self.store.add_truth_audit(record)

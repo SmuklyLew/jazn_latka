@@ -10,7 +10,12 @@ SCHEMA_VERSION = "memory_use_gate/v14.8.5.011"
 _DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
 
 NON_MEMORY_INTENTS = {
+    "runtime_health_check",
     "runtime_health_check_after_update",
+    "runtime_activation_status_question",
+    "presence_check",
+    "identity_presence_check",
+    "identity_continuity_check",
     "capability_status_question",
     "internet_access_question",
 }

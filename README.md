@@ -48,12 +48,12 @@ Każda warstwa jest osobno audytowana. Aktywacja runtime rozdziela folder, manif
 ## Aktualna linia rozwoju
 
 ```text
-v15.0.1
+v15.0.3.2 + release-hardening in progress
 ```
 
 Plan `v14.8.8.100` został przeniesiony do kodu, testów i CI. Obejmuje klasyfikację źródeł, ochronę przed prompt injection, bramki działań zapisu, provenance narzędzi, `RuntimeActivationCascade`, walidację SQLite, audyt dokumentów oraz kompletne paczkowanie ZIP z `package_manifest.json`, `PACKING_AUDIT.json`, CRC i świeżym rozpakowaniem.
 
-Linia `v15.0.1` rozwija kontrakt operacyjnego rozumowania, adapterów, prywatnego eksportu, pamięci i provenance źródeł bez deklarowania zmiany wag modelu.
+Linia `v15.0.3.2 + release-hardening in progress` wzmacnia integralność odpowiedzi, bezpieczeństwo ścieżek, rozpakowanie archiwów, provenance wydania i CI bez deklarowania jeszcze wersji v15.0.3.3 ani zmiany wag modelu.
 
 ## Pamięć
 

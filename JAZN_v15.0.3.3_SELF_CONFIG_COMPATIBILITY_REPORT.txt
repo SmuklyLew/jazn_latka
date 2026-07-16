@@ -1,0 +1,47 @@
+JAZN v15.0.3.3 release-hardening — self.config compatibility repair
+
+Source bundle:
+- branch: fix/v15.0.3.3-release-hardening
+- bundle HEAD: 67b4d9c33c4ed0ea585988f0af8184f0032b39de
+- bundle verified as complete history
+
+Files changed by this repair:
+- latka_jazn/core/runtime_session.py
+- latka_jazn/core/runtime_daemon.py
+
+Repair:
+1. JaznRuntimeSession.process_user_text no longer assumes self.config exists on a partially constructed object.
+2. Missing config uses default turn timeout, no audit DB path, records a technical diagnostic, rejects semantic staging, and leaves canonical persistence fail-closed.
+3. POSIX PID probing treats zombie/terminal /proc process states as dead. This fixes deterministic isolated daemon cleanup without weakening pre-shutdown endpoint/root/PID identity verification.
+
+Verification:
+- tests/test_release_hardening_integrity_pipeline.py: 7 passed
+- targeted atomicity/daemon/wake/integrity set: 49 passed
+- compileall: passed for latka_jazn, tests, main.py, run.py
+- full non-live pytest: 130 passed
+- doctor: exit 0, ok=true
+- package-smoke system: exit 0, ok=true, required checks 14/14 passed; source checkout manifest mismatch remained optional/expected for dirty working tree
+- package-smoke release: exit 1, ok=false; dirty_worktree rejection confirmed
+- isolated daemon smoke:
+  - staging/prepare ready
+  - active_trusted
+  - Działasz? route=runtime_health_check
+  - job_status=completed, ok=true
+  - final_visible_integrity.valid=true
+  - consensus=true, mismatch=false
+  - runtime_truth_gate.ok=true
+  - wake_state=ready, logical_fingerprint_changed=false
+  - semantic counts unchanged
+  - stop=true; final active_state=inactive; PID dead; endpoint down
+- git diff --check: clean
+- memory/ and workspace_runtime/: no changes in the repair checkout
+
+Not performed:
+- version bump
+- commit
+- push
+- PR
+- merge/rebase/tag
+- final SOURCE_PROVENANCE.json
+- final PACKAGE_INTEGRITY_MANIFEST.json
+- final ZIP

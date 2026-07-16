@@ -149,7 +149,7 @@ class RuntimeResponseSynthesizer:
         if intent in {'system_update_execution_request','system_update_manifest_request','update_manifest_request'}:
             return (
                 "To jest zadanie aktualizacji aktywnego systemu Jaźni, ale odpowiedź nie może wracać do historycznego planu ani starej wersji. "
-                "Zakres musi wynikać z bieżącej wiadomości użytkownika, aktualnego latka_jazn/version.py, checkpointu VERSION.txt i aktywnego commita. "
+                "Zakres musi wynikać z bieżącej wiadomości użytkownika, aktualnego latka_jazn/version.py, PACKAGE_INTEGRITY_MANIFEST.json i aktywnego commita. "
                 "Wspólna zasada: --chat, --chat-gpt, --chat-open-ai i --chat-lm-studio mają przechodzić przez ten sam JaznRuntimeSession.process_turn; adapter zmienia kanał modelu, nie rozumowanie, pamięć ani walidację. "
                 "Jeżeli brak modelu językowego, runtime ma odpowiedzieć prawdomównym lokalnym fallbackiem, bez null_model_adapter jako widzialnego kanału rozmowy dla --chat. "
                 "Kryteria akceptacji: health-check po przeładowaniu nie trafia w system_update_execution_request, one-shot czatów zwraca final_visible_text z tej samej sesji runtime, a current-turn grounding blokuje historyczne odpowiedzi aktualizacyjne."

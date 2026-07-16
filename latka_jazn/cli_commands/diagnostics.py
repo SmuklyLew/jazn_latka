@@ -50,8 +50,19 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], str | None]:
     return value, None
 
 
-def doctor_payload(root: Path) -> dict[str, Any]:
-    status = status_payload(root)
+def doctor_payload(
+    root: Path,
+    *,
+    daemon_host: str = DEFAULT_DAEMON_HOST,
+    daemon_port: int = DEFAULT_DAEMON_PORT,
+    marker_output: Path | None = None,
+) -> dict[str, Any]:
+    status = status_payload(
+        root,
+        daemon_host=daemon_host,
+        daemon_port=daemon_port,
+        marker_output=marker_output,
+    )
     startup = status.get("startup") or {}
     daemon = status.get("daemon") or {}
     manifest, manifest_error = _read_manifest(root)
