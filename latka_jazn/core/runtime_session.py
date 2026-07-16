@@ -46,12 +46,23 @@ class JaznRuntimeSession:
         request_id: str | None = None,
         _turn_context: TurnExecutionContext | None = None,
     ) -> dict[str, Any]:
+        config = getattr(self, "config", None)
+        audit_db_path = getattr(config, "audit_db_path", None) if config is not None else None
         turn_context = _turn_context or TurnExecutionContext.create(
             request_id=request_id,
             session_id=self.state.session_id,
-            timeout_seconds=runtime_turn_timeout_seconds(self.config),
-            audit_db_path=self.config.audit_db_path,
+            timeout_seconds=runtime_turn_timeout_seconds(config),
+            audit_db_path=audit_db_path,
         )
+        persistence_available = config is not None
+        if not persistence_available:
+            turn_context.record_technical_event(
+                "runtime_session_config_unavailable",
+                {
+                    "canonical_persistence_available": False,
+                    "audit_persistence_available": False,
+                },
+            )
         ctx = {
             "client": client,
             "lifecycle": lifecycle,
@@ -125,7 +136,12 @@ class JaznRuntimeSession:
                 and result.get("normal_response_blocked") is not True
                 and turn_context.can_continue()
             )
-            commit_status = turn_context.commit_if_allowed(result, job_status="completed")
+            if persistence_available:
+                commit_status = turn_context.commit_if_allowed(result, job_status="completed")
+            else:
+                commit_status = turn_context.reject_staging(reason="runtime_config_unavailable")
+                commit_status["available"] = False
+                commit_status["diagnostic"] = "canonical persistence skipped because session config is unavailable"
             result["canonical_persistence"] = commit_status
             if not commit_status.get("committed"):
                 result["ok"] = False

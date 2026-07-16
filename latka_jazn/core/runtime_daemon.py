@@ -363,6 +363,23 @@ def _project_retained_trusted_time(
 def pid_is_alive(pid: int | None) -> bool:
     if not pid or int(pid) <= 0:
         return False
+    if os.name == "posix":
+        # ``kill(pid, 0)`` reports zombie children as existing even though they
+        # can no longer serve requests.  Treat terminal /proc states as dead so
+        # daemon stop can complete without weakening the endpoint+PID identity
+        # checks used before shutdown.
+        try:
+            stat_text = Path(f"/proc/{int(pid)}/stat").read_text(encoding="utf-8", errors="replace")
+            closing = stat_text.rfind(")")
+            state = stat_text[closing + 2 : closing + 3] if closing >= 0 else ""
+            if state in {"Z", "X", "x"}:
+                return False
+        except (FileNotFoundError, ProcessLookupError):
+            return False
+        except (OSError, ValueError):
+            # /proc may be unavailable in some POSIX environments; the portable
+            # signal probe below remains the fallback.
+            pass
     if os.name == "nt":
         try:
             import ctypes
