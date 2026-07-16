@@ -1,0 +1,184 @@
+al=True,
++        )
++        apply_llm_route_to_config(cfg, route_status)
++        config = cfg
++        if route_status.selected_route == ROUTE_CHATGPT_BRIDGE:
++            ns.chat_gpt = True
++            ns.chat_loop = False
++
+     if ns.bridge_discovery:
+         cfg = config or JaznConfig()
+         print(json.dumps(discover_runtime_bridges(cfg), ensure_ascii=False, indent=2, sort_keys=True))
+@@ -802,6 +830,7 @@ def main(argv: list[str] | None = None) -> int:
+             host=ns.daemon_host,
+             port=ns.daemon_port,
+             marker_output=ns.daemon_marker_output,
++            probe_endpoint=not ns.daemon_snapshot,
+         ), ensure_ascii=False, indent=2, sort_keys=True))
+         return 0
+ 
+@@ -919,14 +948,6 @@ def main(argv: list[str] | None = None) -> int:
+                 timeout_seconds=ns.openai_timeout,
+                 max_output_tokens=ns.openai_max_output_tokens,
+             )
+-        elif runtime_command == "--chat-lm-studio":
+-            cfg = apply_lm_studio_cli_settings(
+-                cfg,
+-                model=ns.lm_studio_model,
+-                api_base=ns.lm_studio_api_base,
+-                timeout_seconds=ns.lm_studio_timeout,
+-                max_output_tokens=ns.lm_studio_max_output_tokens,
+-            )
+         print(json.dumps(build_startup_status(
+             cfg,
+             source_zip=ns.source_zip,
+@@ -1291,14 +1312,6 @@ def main(argv: list[str] | None = None) -> int:
+                 timeout_seconds=ns.openai_timeout,
+                 max_output_tokens=ns.openai_max_output_tokens,
+             )
+-        elif adapter_command == "--chat-lm-studio":
+-            cfg = apply_lm_studio_cli_settings(
+-                cfg,
+-                model=ns.lm_studio_model,
+-                api_base=ns.lm_studio_api_base,
+-                timeout_seconds=ns.lm_studio_timeout,
+-                max_output_tokens=ns.lm_studio_max_output_tokens,
+-            )
+         elif adapter_command == "--local-llm":
+             cfg = apply_local_llm_cli_settings(
+                 cfg,
+@@ -1566,30 +1579,6 @@ def main(argv: list[str] | None = None) -> int:
+             output_mode=output_mode,
+         )
+ 
+-    if ns.chat_lm_studio:
+-        cfg = apply_lm_studio_cli_settings(
+-            config or JaznConfig(),
+-            model=ns.lm_studio_model,
+-            api_base=ns.lm_studio_api_base,
+-            timeout_seconds=ns.lm_studio_timeout,
+-            max_output_tokens=ns.lm_studio_max_output_tokens,
+-        )
+-        bridge_text = _message_from_remainder(ns.message)
+-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-lm-studio")
+-        if daemon_exit is not None:
+-            return daemon_exit
+-        output_mode = _bridge_text_output_mode(ns, bridge_text)
+-        bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
+-        return run_jsonl_chat_bridge(
+-            config=cfg,
+-            session_id=ns.session_id,
+-            no_carryover=ns.no_carryover,
+-            command="--chat-lm-studio",
+-            stdin=bridge_stdin,
+-            require_openai_api_key=False,
+-            output_mode=output_mode,
+-        )
+-
+     if ns.chat_open_ai:
+         cfg = config or JaznConfig()
+         route_status = build_llm_route_status(cfg, command="--chat-open-ai", infer_host_environment=False, probe_local=False)
+@@ -1643,7 +1632,7 @@ def main(argv: list[str] | None = None) -> int:
+         return 0 if payload.get("ok", True) else 2
+ 
+     if ns.chat_loop:
+-        cfg = apply_chat_cli_settings(config or JaznConfig())
++        cfg = config or apply_chat_cli_settings(JaznConfig(), infer_host_environment=True, probe_local=True)
+         bridge_text = _message_from_remainder(ns.message)
+         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat")
+         if daemon_exit is not None:
+diff --git a/run.py b/run.py
+index e461a52..aa0d298 100644
+--- a/run.py
++++ b/run.py
+@@ -2,9 +2,22 @@ from __future__ import annotations
+ 
+ import sys
+ 
+-from latka_jazn.cli import main
++from main import main
++
++
++def quick_start(argv: list[str] | None = None) -> int:
++    """Wake Łatka through the universal ``main.py --chat`` route."""
++
++    args = list(sys.argv[1:] if argv is None else argv)
++    if args:
++        print(
++            "run.py służy wyłącznie do szybkiego obudzenia Jaźni bez flag. "
++            "Zaawansowane starty, mosty i diagnostyka: python main.py --help",
++            file=sys.stderr,
++        )
++        return 2
++    return int(main(["--chat"]))
+ 
+ 
+ if __name__ == "__main__":
+-    argv = sys.argv[1:] or ["chat"]
+-    raise SystemExit(main(argv))
+\ No newline at end of file
++    raise SystemExit(quick_start())
+diff --git a/tests/test_release_hardening_active_contracts.py b/tests/test_release_hardening_active_contracts.py
+index e392ad9..dba8399 100644
+--- a/tests/test_release_hardening_active_contracts.py
++++ b/tests/test_release_hardening_active_contracts.py
+@@ -58,9 +58,9 @@ def test_active_bootstrap_contract_has_only_canonical_release_sources_and_comman
+         "read latka_jazn/version.py",
+         "read PACKAGE_INTEGRITY_MANIFEST.json",
+         "read workspace_runtime/JAZN_ACTIVE_RUNTIME.json when present and verify it",
+-        "run python -X utf8 run.py status --json",
+-        "run python -X utf8 run.py doctor --json",
+-        'run python -X utf8 run.py chat-gpt -- "<wiadomość>"',
++        "run python -X utf8 main.py --daemon-status",
++        "run python -X utf8 main.py --doctor",
++        'run python -X utf8 main.py --chatGPT -- "<wiadomość>"',
+     ]
+     active_text = path.read_text(encoding="utf-8")
+     assert "VERSION.txt" not in active_text
+diff --git a/tests/test_v15034_universal_startup.py b/tests/test_v15034_universal_startup.py
+new file mode 100644
+index 0000000..580c15e
+--- /dev/null
++++ b/tests/test_v15034_universal_startup.py
+@@ -0,0 +1,242 @@
++from __future__ import annotations
++
++import io
++import json
++from pathlib import Path
++
++import main as main_module
++import run as run_module
++from latka_jazn.config import JaznConfig
++from latka_jazn.core.cli_normalization import normalize_cli_argv
++from latka_jazn.core.llm_route_resolver import (
++    ROUTE_CHATGPT_BRIDGE,
++    ROUTE_LOCAL,
++    ROUTE_NULL,
++    apply_llm_route_to_config,
++    build_llm_route_status,
++    probe_ollama,
++)
++from latka_jazn.core.runtime_daemon import build_daemon_start_command
++from latka_jazn.core.runtime_environment import (
++    CHATGPT_ADAPTER,
++    NULL_ADAPTER,
++    OLLAMA_ADAPTER,
++    TERMINAL_ADAPTER,
++    detect_runtime_environment,
++)
++from latka_jazn.model_adapters.base import ModelAdapterRequest
++from latka_jazn.model_adapters.local_llm_adapter import LocalLlmAdapter
++
++
++class _FakeStream:
++    def __init__(self, is_tty: bool) -> None:
++        self._is_tty = is_tty
++
++    def isatty(self) -> bool:
++        return self._is_tty
++
++
++class _Response:
++    def __init__(self, payload: dict) -> None:
++        self._data = json.dumps(payload).en

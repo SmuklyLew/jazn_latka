@@ -1,0 +1,74 @@
+hot_daemon = (snapshot_payload or {}).get("daemon") or {}
++    snapshot_daemon = snapshot_payload or {}
+     checks.append(_check(
+         "cli_status_snapshot",
+         snapshot_result["returncode"] == 0
+@@ -99,7 +99,7 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
+         and snapshot_daemon.get("observation_state") == "endpoint_not_probed",
+         returncode=snapshot_result["returncode"], daemon=snapshot_daemon,
+     ))
+-    doctor_result = _run(isolated, "run.py", "doctor", "--json")
++    doctor_result = _run(isolated, "main.py", "--doctor")
+     doctor = _json_document(doctor_result["stdout"])
+     checks.append(_check("doctor", doctor_result["returncode"] == 0 and bool((doctor or {}).get("ok")),
+                          returncode=doctor_result["returncode"], report=doctor))
+@@ -129,11 +129,11 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
+         startup = start_daemon(cfg, port=port, marker_output=marker, startup_timeout=20.0)
+         daemon_status = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
+         cli_live = _run(
+-            isolated, "run.py", "status", "--daemon-port", str(port),
+-            "--daemon-marker-output", str(marker), "--json", timeout=60.0,
++            isolated, "main.py", "--daemon-status", "--daemon-port", str(port),
++            "--daemon-marker-output", str(marker), timeout=60.0,
+         )
+         cli_live_payload = _json_document(cli_live["stdout"])
+-        cli_live_daemon = (cli_live_payload or {}).get("daemon") or {}
++        cli_live_daemon = cli_live_payload or {}
+         daemon_ok = (
+             daemon_status.get("active_state") == "active_trusted"
+             and cli_live["returncode"] == 0
+diff --git a/main.py b/main.py
+index 2018ed4..e404f59 100644
+--- a/main.py
++++ b/main.py
+@@ -47,6 +47,7 @@ from latka_jazn.memory.raw_memory_status import RawMemoryInspector
+ from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
+ from latka_jazn.memory.conversation_archive import ConversationArchiveStore
+ from latka_jazn.cli_commands.export import export_payload
++from latka_jazn.cli_commands.diagnostics import doctor_payload
+ from latka_jazn.tools.dedup_manifest import write_dedup_report
+ from latka_jazn.tools.active_extraction_cache import build_active_runtime_status, write_active_runtime_marker, visible_preview_contract_version
+ from latka_jazn.core.polish_understanding import PolishUnderstandingEngine
+@@ -73,10 +74,11 @@ from latka_jazn.nlp_reasoning.source_registry import PolishReasoningSourceRegist
+ from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPlanner
+ from latka_jazn.core.turn_route_trace import TurnRouteTrace
+ from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
+-from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_lm_studio_cli_settings, apply_local_llm_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, run_jsonl_chat_bridge, write_chat_bridge_payload
++from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_local_llm_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, run_jsonl_chat_bridge, write_chat_bridge_payload
+ from latka_jazn.core.bridge_discovery import discover_runtime_bridges
+-from latka_jazn.core.llm_route_resolver import build_llm_route_status
++from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
+ from latka_jazn.core.model_guided_speech_runtime import build_model_guided_speech_status
++from latka_jazn.core.cli_normalization import normalize_cli_argv
+ from latka_jazn.core.daemon_autostart import daemon_autostart_policy_status, ensure_daemon_for_runtime_turn
+ from latka_jazn.core.turn_timeout import RuntimeSessionWorker, runtime_turn_timeout_seconds
+ from latka_jazn.core.runtime_daemon import (
+@@ -115,12 +117,16 @@ def _build_parser() -> argparse.ArgumentParser:
+         description="Runtime JaÄąĹźni ÄąÂatki: rozmowa bezpoÄąâ€şrednia, cognitive-frame, diagnostyka i eksport paczek.",
+         allow_abbrev=False,
+     )
+-    parser.add_argument("--root", type=Path, default=None, help="Folder gÄąâ€šÄ‚Ĺ‚wny aktywnej paczki JaÄąĹźni.")
++    parser.add_argument("--version", action="version", version=PACKAGE_VERSION_FULL)
++    parser.add_argument("--root", type=Path, default=None, help="Folder główny aktywnej paczki Jaźni.")
++    parser.add_argument("--doctor", action="store_true", help="Uruchom pełną diagnostykę pakietu i kontraktów bez rozpoczynania rozmowy.")
++    parser.add_argument("--package-smoke", action="store_true", dest="package_smoke", help="Uruchom kontrolę gotowości paczki.")
++    parser.add_argument("--package-profile", choices=("development", "system", "release", "export-without-git", "memory", "full"), default="system")
+     parser.add_argument("--status", "--status-readonly", "--diagnostics-readonly", action="store_true", dest="status_readonly", help="PokaÄąÄ˝ diagnostykĂ„â„˘ bez zapisu do pamiĂ„â„˘ci. --status jest jawnym aliasem, nie skrÄ‚Ĺ‚tem argparse.")
+     parser.add_argument("--cognitive-frame", "--chatgpt-frame", "--brain-frame", action="store_true", dest="cognitive_frame", help="ZwrÄ‚Ĺ‚Ă„â€ˇ wewnĂ„â„˘trzny pakiet poznawczy JSON dla ChatGPT, nie gotowĂ„â€¦ odpowiedÄąĹź uÄąÄ˝ytkownikowi.")
+     parser.add_argument("--debug-direct", action="store_true", dest="debug_direct", help="PokaÄąÄ˝ technicznĂ„â€¦ Äąâ€şcieÄąÄ˝kĂ„â„˘ bezpoÄąâ€şredniĂ„â€¦ i fallback diagnostyczny zamiast rozmownej odpowiedzi.")
+-    parser.add_argument("--chat", "--loop", action="store_true", dest="chat_loop", help="Uruchom staÄąâ€šĂ„â€¦ pĂ„â„˘tlĂ„â„˘ rozmowy: jeden JaznEngine dziaÄąâ€ša przez wiele tur aÄąÄ˝ do /exit lub EOF.")
+-    parser.add_argument("--chat-gpt", action="store_true", dest="chat_gpt", help="Kanoniczny most ChatGPT. Z wiadomoĹ›ciÄ… po -- wypisuje tylko final_visible_text; ze stdin JSONL dziaĹ‚a jako protokĂłĹ‚ maszynowy. Nie uĹĽywa OPENAI_API_KEY.")
++    parser.add_argument("--chat", "--loop", action="store_true", dest="chat_loop", help="Uniwersalny start Jaźni: automatycznie wybiera most ChatGPT albo terminal z Ollamą i otwiera rozmowę.")
++    parser.add_argument("--chat-gpt", "--chatgpt", action="store_true", dest="chat_gpt", help="Jawne wymuszenie mostu ChatGPT. Wielkość liter flag nie ma znaczenia; nie używa OPENAI_API_KEY.")
+     parser.add_argument("--chat-gpt-final-only", action="store_true", dest="chat_gpt_final_only", help=argparse.SUPPRESS)
+     parser.add_argumen

@@ -1,0 +1,89 @@
+t("--final-only", action="store_true", dest="final_only", help=argparse.SUPPRESS)
+     parser.add_argument("--chat-open-ai", "--openai-api", action="store_true", dest="chat_open_ai", help="Uruchom lokalny runtime JaÄąĹźni z model_adapter przez OpenAI Responses API; wymaga OPENAI_API_KEY i nie udaje poÄąâ€šĂ„â€¦czenia bez klucza.")
+@@ -129,19 +135,15 @@ def _build_parser() -> argparse.ArgumentParser:
+     parser.add_argument("--openai-timeout", type=float, default=None, help="Timeout sekund dla adaptera OpenAI w --chat-open-ai.")
+     parser.add_argument("--openai-max-output-tokens", type=int, default=None, help="Limit output tokens dla adaptera OpenAI w --chat-open-ai.")
+     parser.add_argument("--chat-openai", action="store_true", dest="chat_open_ai", help=argparse.SUPPRESS)
+-    parser.add_argument("--chat-lm-studio", action="store_true", dest="chat_lm_studio", help="Uruchom lokalny runtime JaĹşni z modelem LM Studio przez OpenAI-compatible API; bez OPENAI_API_KEY.")
+-    parser.add_argument("--lm-studio-api-base", default=None, help="Bazowy URL lokalnego LM Studio API dla --chat-lm-studio; domyslnie http://127.0.0.1:1234/v1.")
+-    parser.add_argument("--lm-studio-model", default=None, help="Model LM Studio dla --chat-lm-studio.")
+-    parser.add_argument("--lm-studio-timeout", type=float, default=None, help="Timeout sekund dla adaptera LM Studio.")
+-    parser.add_argument("--lm-studio-max-output-tokens", type=int, default=None, help="Limit output tokens dla adaptera LM Studio.")
+-    parser.add_argument("--local-llm", action="store_true", dest="local_llm", help="Uruchom runtime z lokalnym lub zewnÄ™trznym backendem OpenAI-compatible jako generatorem kandydata.")
++    parser.add_argument("--local-llm", "--ollama", action="store_true", dest="local_llm", help="Jawnie wymuś lokalny backend Ollama jako generator językowy Jaźni.")
+     parser.add_argument("--local-llm-api-base", default=None, help="Bazowy URL OpenAI-compatible dla --local-llm.")
+     parser.add_argument("--local-llm-model", default=None, help="Nazwa modelu dla --local-llm.")
+-    parser.add_argument("--local-llm-provider", default=None, choices=("openai_compatible", "ollama", "llama_cpp"), help="WskazĂłwka provider-specific dla kolejnoĹ›ci endpointĂłw.")
++    parser.add_argument("--local-llm-provider", default=None, choices=("ollama", "openai_compatible", "llama_cpp"), help="WskazĂłwka provider-specific dla kolejnoĹ›ci endpointĂłw.")
+     parser.add_argument("--bridge-discovery", action="store_true", dest="bridge_discovery", help="PokaÄąÄ˝ wykryte mosty runtime: --chat, --chat-gpt, --chat-open-ai i daemon.")
+     parser.add_argument("--daemon-run", action="store_true", dest="daemon_run", help="Uruchom foreground daemon staÄąâ€šej aktywnej JaÄąĹźni: lokalny HTTP loopback + PID + heartbeat + marker JAZN_ACTIVE_RUNTIME.json.")
+     parser.add_argument("--daemon-start", action="store_true", dest="daemon_start", help="Uruchom daemon JaÄąĹźni w tle i zwrÄ‚Ĺ‚Ă„â€ˇ status startu.")
+-    parser.add_argument("--daemon-status", action="store_true", dest="daemon_status", help="SprawdÄąĹź marker, PID, heartbeat i endpoint /status daemonu JaÄąĹźni.")
++    parser.add_argument("--daemon-status", action="store_true", dest="daemon_status", help="Sprawdź marker, PID, heartbeat i endpoint daemonu Jaźni.")
++    parser.add_argument("--daemon-snapshot", action="store_true", dest="daemon_snapshot", help="Z --daemon-status nie sonduj endpointu; pokaż wyłącznie marker, PID i heartbeat.")
+     parser.add_argument("--daemon-stop", action="store_true", dest="daemon_stop", help="PoproÄąâ€ş dziaÄąâ€šajĂ„â€¦cy lokalny daemon JaÄąĹźni o zatrzymanie i zamkniĂ„â„˘cie sesji.")
+     parser.add_argument("--daemon-host", default=DEFAULT_DAEMON_HOST, help="Adres bindowania daemonu; domyÄąâ€şlnie tylko loopback 127.0.0.1.")
+     parser.add_argument("--daemon-port", type=int, default=DEFAULT_DAEMON_PORT, help="Port lokalnego daemonu JaÄąĹźni.")
+@@ -468,8 +470,6 @@ def _runtime_command_from_cli_args(ns: argparse.Namespace) -> str | None:
+         return "--chat"
+     if getattr(ns, "chat_open_ai", False):
+         return "--chat-open-ai"
+-    if getattr(ns, "chat_lm_studio", False):
+-        return "--chat-lm-studio"
+     if getattr(ns, "local_llm", False):
+         return "--local-llm"
+     return None
+@@ -585,10 +585,11 @@ def _run_chat_command_one_shot(
+ def main(argv: list[str] | None = None) -> int:
+     _configure_stdio_utf8()
+     argv = list(sys.argv[1:] if argv is None else argv)
++    parser = _build_parser()
++    argv = normalize_cli_argv(argv, parser)
+     if "--chat-jsonl" in argv:
+-        sys.stderr.write("Flaga --chat-jsonl zostaÄąâ€ša usuniĂ„â„˘ta z aktywnego CLI. UÄąÄ˝yj: python main.py --chat-gpt --session-id <id>\n")
++        sys.stderr.write("Flaga --chat-jsonl zostaÄąâ€ša usuniĂ„â„˘ta z aktywnego CLI. Użyj: python main.py --chatGPT --session-id <id>\n")
+         return 2
+-    parser = _build_parser()
+     ns = parser.parse_args(argv)
+     if ns.runtime_preview_output is None and "--runtime-preview-output" in ns.message:
+         idx = ns.message.index("--runtime-preview-output")
+@@ -618,6 +619,18 @@ def main(argv: list[str] | None = None) -> int:
+ 
+     runtime_root = (root or Path(__file__).resolve().parent).resolve()
+ 
++    if ns.doctor:
++        payload = doctor_payload(runtime_root)
++        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
++        return 0 if payload.get("ok") else 1
++
++    if ns.package_smoke:
++        from latka_jazn.tools.release_readiness import build_release_readiness_report
++
++        payload = build_release_readiness_report(runtime_root, profile=ns.package_profile)
++        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
++        return int(payload.get("exit_code", 2))
++
+     if ns.runtime_preflight:
+         report = runtime_preflight(runtime_root)
+         print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True))
+@@ -668,7 +681,6 @@ def main(argv: list[str] | None = None) -> int:
+         or ns.chat_gpt
+         or ns.chat_gpt_final_only
+         or ns.chat_open_ai
+-        or ns.chat_lm_studio
+         or ns.local_llm
+         or ns.daemon_send
+         or ns.daemon_submit
+@@ -724,6 +736,22 @@ def main(argv: list[str] | None = None) -> int:
+     if ns.final_only and not ns.chat_gpt:
+         parser.error("--final-only jest legacy aliasem i wymaga kanonicznego --chat-gpt")
+ 
++    # --chat is the universal startup route. A confirmed ChatGPT host wins;
++    # otherwise the runtime probes local Ollama and uses a truthful null fallback.
++    if ns.chat_loop and not ns.chat_gpt:
++        cfg = config or JaznConfig()
++        route_status = build_llm_route_status(
++            cfg,
++            command="--chat",
++            infer_host_environment=True,
++            probe_loc
