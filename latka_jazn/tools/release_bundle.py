@@ -244,6 +244,18 @@ def build_release_bundle(
                 # untouched even if staging, export, CRC or manifest checks fail.
                 os.replace(candidate, output)
 
+                if report_path:
+                    persisted_report = {
+                        **export_report,
+                        "output_zip": str(output),
+                        "package_manifest_path": package_manifest_path or "",
+                        "packing_audit_path": packing_audit_path or "",
+                    }
+                    Path(report_path).write_text(
+                        json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n",
+                        encoding="utf-8",
+                    )
+
         digest = _sha256_file(output)
         sha_path = output.with_name(output.name + ".sha256")
         sha_temp = sha_path.with_name(sha_path.name + ".tmp")
