@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "15.0.3.4.1"
+DISTRIBUTION_VERSION = "15.0.3.4"
 PACKAGE_VERSION = "v15.0.3.4.1"
 PACKAGE_RELEASE_NAME = "release-hardening"
 PACKAGE_VERSION_FULL = (
