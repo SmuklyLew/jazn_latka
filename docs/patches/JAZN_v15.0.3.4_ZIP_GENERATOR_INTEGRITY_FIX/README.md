@@ -32,10 +32,12 @@ tools/_jazn_pack_generator.py
 
 Przeprowadzono:
 
-- `python -X utf8 -m py_compile` dla zmienionych modułów;
-- 78 istniejących testów dotyczących wydania, ścieżek, provenance i paczek;
-- 4 nowe testy regresyjne integralności ZIP;
+- `python -X utf8 -m py_compile` dla zmienionego modułu;
+- 94 testy dokładnego stanu brancha dotyczące wydania, ścieżek, provenance, startu i paczek;
+- 4 nowe testy regresyjne integralności ZIP zawarte w powyższej liczbie;
 - rzeczywiste pakowanie przesłanej paczki `v15.0.3.4` do 7 niezależnych ZIP-ów;
 - pełny CRC każdego woluminu;
 - sprawdzenie, że osadzony manifest ma wersję `v15.0.3.4` i odpowiada faktycznym plikom;
 - sprawdzenie, że źródłowy stary manifest nie został po cichu zmieniony.
+
+Zestaw testów surowych archiwów 7z nie został uruchomiony w środowisku roboczym z powodu braku opcjonalnego pakietu `py7zr`; nie obejmuje on zmienionej ścieżki ZIP.
