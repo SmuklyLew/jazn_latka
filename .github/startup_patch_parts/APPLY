@@ -1,1 +1,2 @@
 apply startup v15.0.3.4 patch
+retry: 2
