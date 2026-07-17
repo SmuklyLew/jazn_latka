@@ -8,6 +8,7 @@ import json
 import re
 import subprocess
 
+from latka_jazn.core.version_source import read_runtime_version_from_version_py
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("source_provenance_status")
@@ -134,7 +135,11 @@ def read_source_provenance(
         )
     runtime_version = str(payload.get("runtime_version") or "") or None
     merge_commit = str(payload.get("base_merge_commit") or "") or None
-    version_matches = runtime_version == PACKAGE_VERSION_FULL
+    expected_runtime_version = (
+        read_runtime_version_from_version_py(root, fallback=PACKAGE_VERSION_FULL)
+        or PACKAGE_VERSION_FULL
+    )
+    version_matches = runtime_version == expected_runtime_version
     commit_valid = bool(merge_commit and re.fullmatch(r"[0-9a-fA-F]{40}", merge_commit))
     tree_sha = str(payload.get("git_tree_sha") or "") or None
     tree_shape_valid = bool(tree_sha and re.fullmatch(r"[0-9a-fA-F]{40}", tree_sha))
@@ -143,7 +148,10 @@ def read_source_provenance(
     git_present = (root / ".git").exists()
     manifest_protected = _manifest_protects_provenance(root, path)
     if not version_matches:
-        limitations.append(f"provenance runtime_version={runtime_version!r} differs from active {PACKAGE_VERSION_FULL!r}")
+        limitations.append(
+            f"provenance runtime_version={runtime_version!r} differs from runtime root "
+            f"{expected_runtime_version!r}"
+        )
     if not commit_valid:
         limitations.append("base_merge_commit is not a 40-character Git SHA")
     if not tree_shape_valid:

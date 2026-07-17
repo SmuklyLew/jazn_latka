@@ -276,6 +276,13 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
 
 
 def _version_from_python_bytes(raw: bytes) -> str | None:
+    """Read the canonical full package version from archived ``version.py``.
+
+    ``PACKAGE_VERSION`` and ``PACKAGE_RELEASE_NAME`` are separate literal fields
+    in the authoritative module. ``PACKAGE_VERSION_FULL`` is commonly an f-string,
+    so it cannot be recovered by reading constants alone and must be reconstructed.
+    """
+
     try:
         tree = ast.parse(raw.decode("utf-8-sig"))
     except Exception:
@@ -290,6 +297,14 @@ def _version_from_python_bytes(raw: bytes) -> str | None:
             value = node.value
             if isinstance(value, ast.Constant) and isinstance(value.value, str):
                 values[node.target.id] = value.value.strip()
+
+    package_version = values.get("PACKAGE_VERSION", "").strip()
+    release_name = values.get("PACKAGE_RELEASE_NAME", "").strip()
+    if package_version:
+        if release_name and not package_version.lower().endswith(f"-{release_name}".lower()):
+            return f"{package_version}-{release_name}"
+        return package_version
+
     for name in _VERSION_VARIABLES:
         value = values.get(name)
         if value:

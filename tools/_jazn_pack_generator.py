@@ -43,7 +43,7 @@ Opcjonalne pliki diagnostyczne (`--diagnostic-files`) zawierają manifesty, SHA-
 
 from __future__ import annotations
 
-VERSION = "1.6.INTEGRITY-MANIFEST-GATE"
+VERSION = "1.6.1.RELEASE-VERSION-FIX"
 
 import argparse
 import ast
@@ -1327,6 +1327,39 @@ def normalize_release_name(value: str | None) -> str:
     return release
 
 
+def compose_package_version_full(
+    package_version: str,
+    package_release_name: str | None = None,
+) -> str:
+    """Zwraca pełną wersję pakietu zgodną z kontraktem version.py.
+
+    PACKAGE_VERSION i PACKAGE_RELEASE_NAME są odrębnymi polami źródła prawdy.
+    Sufiks wydania nie może być pomijany podczas porównywania z manifestem,
+    ale nie może też zostać dopisany drugi raz, gdy PACKAGE_VERSION już go zawiera.
+    """
+
+    version = normalize_version(package_version)
+    release = normalize_release_name(package_release_name)
+    if not release:
+        return version
+    suffix = f"-{release}"
+    if version.lower().endswith(suffix.lower()):
+        return version
+    return f"{version}{suffix}"
+
+
+def manifest_version_matches(
+    manifest_version: str,
+    package_version: str,
+    package_release_name: str | None = None,
+) -> bool:
+    """Porównuje manifest z pełną wersją wynikającą z version.py."""
+
+    return normalize_version(manifest_version) == compose_package_version_full(
+        package_version,
+        package_release_name,
+    )
+
 def read_version_from_py(version_file: Path, variable_names: Iterable[str] = VERSION_VARIABLES) -> str:
     version_file = version_file.resolve()
     if not version_file.exists() or not version_file.is_file():
@@ -1495,6 +1528,7 @@ def build_integrity_manifest_virtual_file(
     plan: PackPlan,
     *,
     package_version: str,
+    package_release_name: str = "",
 ) -> tuple[bytes, dict[str, object]] | None:
     """Buduje świeży manifest z dokładnego planu bez zmiany źródła."""
 
@@ -1518,10 +1552,12 @@ def build_integrity_manifest_virtual_file(
     if not isinstance(payload, dict) or not isinstance(manifest_text, str):
         raise RuntimeError("Niepełna odpowiedź budowania PACKAGE_INTEGRITY_MANIFEST.json")
     manifest_version = str(payload.get("runtime_version") or payload.get("version") or "")
-    if normalize_version(manifest_version) != normalize_version(package_version):
+    expected_version = compose_package_version_full(package_version, package_release_name)
+    if not manifest_version_matches(manifest_version, package_version, package_release_name):
         raise RuntimeError(
-            "Wersja świeżego manifestu nie zgadza się z latka_jazn/version.py: "
-            f"manifest={manifest_version!r}, version.py={package_version!r}"
+            "Wersja świeżego manifestu nie zgadza się z pełną wersją z "
+            "latka_jazn/version.py: "
+            f"manifest={manifest_version!r}, version.py_full={expected_version!r}"
         )
     return manifest_text.encode("utf-8"), payload
 
@@ -3407,6 +3443,7 @@ def create_split_zip_from_plan(
         source_folder,
         plan,
         package_version=package_version,
+        package_release_name=package_release_name,
     )
     virtual_files: dict[str, bytes] = {}
     integrity_payload: dict[str, object] | None = None
@@ -10017,7 +10054,7 @@ def configure_pack_settings(state: WizardState, ui_mode: str = "plain") -> None:
 # ręczne wykluczenia bez zagnieżdżonych Application.run i poprawki etykiet
 # =============================================================================
 
-VERSION = "1.6.INTEGRITY-MANIFEST-GATE"
+VERSION = "1.6.1.RELEASE-VERSION-FIX"
 
 
 def _zip_menu_display_name(name: str) -> str:
@@ -11068,7 +11105,7 @@ def _manual_exclusion_cursor_menu(state: WizardState) -> None:
 # NADPISANIA UI v5.17 — powrót kursora do ostatniej pozycji i brak pauzy po Nie
 # =============================================================================
 
-VERSION = "1.6.INTEGRITY-MANIFEST-GATE"
+VERSION = "1.6.1.RELEASE-VERSION-FIX"
 
 # Pamięć pozycji kursora działa w ramach jednego uruchomienia aplikacji.
 # Nie zapisujemy tego do JSON-a, bo to stan nawigacji, nie ustawienie paczki.
@@ -11668,7 +11705,7 @@ def run_wizard(initial_source: str | None = None, *, ui_mode: str | None = None)
 # NADPISANIA UI v5.18 — cyan w podglądzie list i JSON w menu głównym
 # =============================================================================
 
-VERSION = "1.6.INTEGRITY-MANIFEST-GATE"
+VERSION = "1.6.1.RELEASE-VERSION-FIX"
 
 _WINDOWS_VT_READY: bool | None = None
 

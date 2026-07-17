@@ -24,7 +24,12 @@ from latka_jazn.tools.active_extraction_cache import (
 )
 from latka_jazn.tools.runtime_contract_version_normalizer import normalize_runtime_contract_versions
 from latka_jazn.tools.version_consistency_audit import SOURCE_OF_TRUTH_FILES, build_audit
-from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL
+from latka_jazn.version import (
+    DISTRIBUTION_VERSION,
+    PACKAGE_RELEASE_NAME,
+    PACKAGE_VERSION,
+    PACKAGE_VERSION_FULL,
+)
 
 
 def _runtime(tmp_path: Path, *, legacy_manifest: bool = False, legacy_version: bool = False) -> Path:
@@ -32,7 +37,9 @@ def _runtime(tmp_path: Path, *, legacy_manifest: bool = False, legacy_version: b
     (root / "latka_jazn").mkdir(parents=True)
     (root / "workspace_runtime").mkdir()
     (root / "latka_jazn/version.py").write_text(
-        f'DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\nPACKAGE_VERSION = {PACKAGE_VERSION!r}\nPACKAGE_RELEASE_NAME = ""\n',
+        f"DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\n"
+        f"PACKAGE_VERSION = {PACKAGE_VERSION!r}\n"
+        f"PACKAGE_RELEASE_NAME = {PACKAGE_RELEASE_NAME!r}\n",
         encoding="utf-8",
     )
     (root / "run.py").write_text("print('ok')\n", encoding="utf-8")
