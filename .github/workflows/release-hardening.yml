@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply verified startup patch when staged
+      - name: Diagnose and apply verified startup patch when staged
         shell: bash
         run: |
           if [[ ! -f .github/startup_patch_parts/APPLY ]]; then
@@ -29,11 +29,21 @@ jobs:
           fi
 
           cat .github/startup_patch_parts/part-* > /tmp/startup-v15034.patch
-          echo "37314fac8700a2741d46183c6dbc19a778c13fefa540706bb90ac41a2941ef52  /tmp/startup-v15034.patch" | sha256sum --check --strict
+          expected="37314fac8700a2741d46183c6dbc19a778c13fefa540706bb90ac41a2941ef52"
+          actual="$(sha256sum /tmp/startup-v15034.patch | awk '{print $1}')"
+          echo "expected_sha256=${expected}"
+          echo "actual_sha256=${actual}"
+
           git apply --check \
             --exclude=latka_jazn/version.py \
             --exclude=.github/workflows/release-hardening.yml \
             /tmp/startup-v15034.patch
+
+          if [[ "${actual}" != "${expected}" ]]; then
+            echo "Patch bytes differ from the locally validated artifact; refusing to apply."
+            exit 3
+          fi
+
           git apply \
             --exclude=latka_jazn/version.py \
             --exclude=.github/workflows/release-hardening.yml \
