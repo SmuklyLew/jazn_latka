@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import ast
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 import hashlib
 import json
 import subprocess
+import zipfile
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
 from latka_jazn.tools.safe_paths import (
@@ -24,11 +26,14 @@ FORBIDDEN_ROOT_NAMES = {
 FORBIDDEN_FILE_NAMES = {
     MANIFEST_NAME, "MANIFEST_CURRENT.json", "VERSION.txt", "RUNTIME_STATE.json",
     "JAZN_ACTIVE_RUNTIME.json", "BOOTSTRAP_JAZN_CURRENT.json",
+    "__jazn_pack_generator.lock.json", "__jazn_pack_generator_settings.json",
+    "_jazn_pack_generator.before.py",
 }
 FORBIDDEN_SUFFIXES = {
     ".sqlite", ".sqlite3", ".db", ".db-wal", ".db-shm", ".sqlite-wal", ".sqlite-shm",
-    ".zip", ".log", ".tmp", ".temp", ".bak", ".pyc",
+    ".zip", ".log", ".tmp", ".temp", ".bak", ".pyc", ".before.py",
 }
+_VERSION_VARIABLES = ("PACKAGE_VERSION", "__version__", "VERSION", "DISTRIBUTION_VERSION")
 
 
 def sha256_file(path: Path) -> str:
@@ -46,17 +51,18 @@ def path_is_forbidden(relative: str) -> bool:
         return True
     parts = [part for part in rel.split("/") if part]
     lower_parts = [part.lower() for part in parts]
-    if not parts or lower_parts[0] in {name.lower() for name in FORBIDDEN_ROOT_NAMES}:
+    forbidden_roots = {name.lower() for name in FORBIDDEN_ROOT_NAMES}
+    if not parts or lower_parts[0] in forbidden_roots:
         return True
     name = parts[-1]
     lower_name = name.lower()
-    if name in FORBIDDEN_FILE_NAMES:
+    if lower_name in {item.lower() for item in FORBIDDEN_FILE_NAMES}:
         return True
     if lower_name == ".env" or lower_name.startswith(".env.") and lower_name != ".env.example":
         return True
     if any(token in lower_name for token in ("secret", "private_key", "credentials")):
         return True
-    if any(lower_name.endswith(suffix) for suffix in FORBIDDEN_SUFFIXES):
+    if any(lower_name.endswith(suffix.lower()) for suffix in FORBIDDEN_SUFFIXES):
         return True
     if ".zip." in lower_name or lower_name.endswith(("-wal", "-shm")):
         return True
@@ -81,17 +87,49 @@ def _walk_paths(root: Path) -> Iterable[str]:
             yield path.relative_to(root).as_posix()
 
 
-def build_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
+def _selected_paths(root: Path, relative_paths: Iterable[str] | None) -> list[str]:
+    if relative_paths is None:
+        if (root / ".git").exists():
+            candidates, missing = _git_paths(root)
+            if missing:
+                raise RuntimeError(f"tracked/unignored files missing from working tree: {missing[:10]}")
+            return candidates
+        return list(_walk_paths(root))
+
+    selected: set[str] = set()
+    missing: list[str] = []
+    for raw in relative_paths:
+        try:
+            relative = validate_safe_relative_path(str(raw))
+            path = resolve_safe_source(root, relative)
+        except UnsafeRelativePathError:
+            continue
+        if not path.is_file():
+            missing.append(relative)
+            continue
+        selected.add(relative)
+    if missing:
+        raise RuntimeError(f"selected package files missing from source tree: {missing[:10]}")
+    return sorted(selected)
+
+
+def build_package_integrity_manifest(
+    root: Path | str,
+    *,
+    relative_paths: Iterable[str] | None = None,
+) -> dict[str, Any]:
+    """Build the canonical static manifest.
+
+    ``relative_paths`` narrows the manifest to the exact immutable package plan.
+    This is used by ZIP exporters so preview, manifest and archive cannot drift.
+    The manifest file itself and runtime/memory artifacts remain excluded.
+    """
+
     root = Path(root).resolve()
     runtime_version = read_runtime_version_from_version_py(root)
     if not runtime_version:
         raise RuntimeError("latka_jazn/version.py is missing or invalid")
-    if (root / ".git").exists():
-        candidates, missing = _git_paths(root)
-        if missing:
-            raise RuntimeError(f"tracked/unignored files missing from working tree: {missing[:10]}")
-    else:
-        candidates = list(_walk_paths(root))
+    candidates = _selected_paths(root, relative_paths)
     files: list[dict[str, Any]] = []
     excluded: list[str] = []
     for relative in candidates:
@@ -142,8 +180,9 @@ def build_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
             "suffixes": sorted(FORBIDDEN_SUFFIXES),
         },
         "truth_boundary": (
-            "The manifest hashes static files including SOURCE_PROVENANCE.json. It excludes itself, Git history, "
-            "memory, runtime state, SQLite, archives, secrets, logs, backups and temporary files."
+            "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. "
+            "It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, "
+            "backups, generator state and temporary files."
         ),
         "files": files,
         "excluded_files": excluded,
@@ -151,12 +190,20 @@ def build_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     }
 
 
-def write_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
+def serialize_package_integrity_manifest(payload: dict[str, Any]) -> bytes:
+    return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+
+def write_package_integrity_manifest(
+    root: Path | str,
+    *,
+    relative_paths: Iterable[str] | None = None,
+) -> dict[str, Any]:
     root = Path(root).resolve()
-    payload = build_package_integrity_manifest(root)
+    payload = build_package_integrity_manifest(root, relative_paths=relative_paths)
     path = root / MANIFEST_NAME
     temp = path.with_name(path.name + ".tmp")
-    temp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temp.write_bytes(serialize_package_integrity_manifest(payload))
     try:
         temp.replace(path)
     except PermissionError:
@@ -166,6 +213,13 @@ def write_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         path.write_bytes(temp.read_bytes())
         temp.unlink(missing_ok=True)
     return payload
+
+
+def _manifest_entries(payload: dict[str, Any]) -> list[dict[str, Any]] | None:
+    entries = payload.get("files")
+    if not isinstance(entries, list):
+        return None
+    return [entry for entry in entries if isinstance(entry, dict)]
 
 
 def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
@@ -178,12 +232,12 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
     except Exception as exc:
         return {"ok": False, "configuration_error": True, "errors": [{"code": "manifest_invalid_json", "detail": repr(exc)}]}
-    entries = payload.get("files") if isinstance(payload.get("files"), list) else None
+    entries = _manifest_entries(payload) if isinstance(payload, dict) else None
     if entries is None:
         return {"ok": False, "configuration_error": True, "errors": [{"code": "manifest_files_missing"}]}
     seen: set[str] = set()
     for entry in entries:
-        raw_relative = (entry or {}).get("path")
+        raw_relative = entry.get("path")
         relative = str(raw_relative) if raw_relative is not None else ""
         try:
             canonical = validate_safe_relative_path(relative)
@@ -217,5 +271,152 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         "manifest_path": str(path),
         "manifest_sha256": sha256_file(path),
         "checked_file_count": len(entries),
+        "errors": errors,
+    }
+
+
+def _version_from_python_bytes(raw: bytes) -> str | None:
+    try:
+        tree = ast.parse(raw.decode("utf-8-sig"))
+    except Exception:
+        return None
+    values: dict[str, str] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    values[target.id] = node.value.value.strip()
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            value = node.value
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                values[node.target.id] = value.value.strip()
+    for name in _VERSION_VARIABLES:
+        value = values.get(name)
+        if value:
+            return value
+    return None
+
+
+def verify_package_integrity_manifest_in_zips(
+    zip_paths: Path | str | Iterable[Path | str],
+    *,
+    allowed_unprotected_prefixes: Iterable[str] = (),
+) -> dict[str, Any]:
+    """Verify one ZIP or a set of independent ZIP volumes against the embedded manifest."""
+
+    if isinstance(zip_paths, (str, Path)):
+        paths = [Path(zip_paths).resolve()]
+    else:
+        paths = [Path(path).resolve() for path in zip_paths]
+    allowed_prefixes = tuple(
+        validate_safe_relative_path(str(prefix).rstrip("/")) + "/"
+        for prefix in allowed_unprotected_prefixes
+        if str(prefix).strip()
+    )
+    errors: list[dict[str, Any]] = []
+    members: dict[str, tuple[Path, zipfile.ZipInfo]] = {}
+    manifest_bytes: bytes | None = None
+
+    for zip_path in paths:
+        if not zip_path.is_file():
+            errors.append({"code": "zip_missing", "path": str(zip_path)})
+            continue
+        try:
+            with zipfile.ZipFile(zip_path, "r") as archive:
+                for info in archive.infolist():
+                    if info.is_dir():
+                        continue
+                    try:
+                        canonical = validate_safe_relative_path(info.filename)
+                    except UnsafeRelativePathError as exc:
+                        errors.append({"code": "unsafe_zip_member", "path": info.filename, "detail": str(exc)})
+                        continue
+                    if canonical in members:
+                        errors.append({"code": "duplicate_zip_member", "path": canonical})
+                        continue
+                    members[canonical] = (zip_path, info)
+                    if canonical == MANIFEST_NAME:
+                        manifest_bytes = archive.read(info)
+        except Exception as exc:
+            errors.append({"code": "zip_open_failed", "path": str(zip_path), "detail": repr(exc)})
+
+    payload: dict[str, Any] = {}
+    if manifest_bytes is None:
+        errors.append({"code": "manifest_missing"})
+        entries: list[dict[str, Any]] = []
+    else:
+        try:
+            decoded = json.loads(manifest_bytes.decode("utf-8-sig"))
+            if not isinstance(decoded, dict):
+                raise ValueError("manifest is not a JSON object")
+            payload = decoded
+        except Exception as exc:
+            errors.append({"code": "manifest_invalid_json", "detail": repr(exc)})
+        entries = _manifest_entries(payload) or []
+        if not isinstance(payload.get("files"), list):
+            errors.append({"code": "manifest_files_missing"})
+
+    listed: set[str] = set()
+    checked = 0
+    for entry in entries:
+        relative = str(entry.get("path") or "")
+        try:
+            canonical = validate_safe_relative_path(relative)
+        except UnsafeRelativePathError as exc:
+            errors.append({"code": "unsafe_manifest_path", "path": relative, "detail": str(exc)})
+            continue
+        if canonical in listed or path_is_forbidden(canonical):
+            errors.append({"code": "invalid_or_duplicate_manifest_path", "path": canonical})
+            continue
+        listed.add(canonical)
+        member = members.get(canonical)
+        if member is None:
+            errors.append({"code": "file_missing", "path": canonical})
+            continue
+        zip_path, info = member
+        expected_size = int(entry.get("size_bytes", -1))
+        if info.file_size != expected_size:
+            errors.append({"code": "size_mismatch", "path": canonical, "expected": expected_size, "actual": info.file_size})
+        digest = hashlib.sha256()
+        with zipfile.ZipFile(zip_path, "r") as archive:
+            with archive.open(info, "r") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+        actual_hash = digest.hexdigest()
+        expected_hash = str(entry.get("sha256") or "")
+        if actual_hash != expected_hash:
+            errors.append({"code": "sha256_mismatch", "path": canonical, "expected": expected_hash, "actual": actual_hash})
+        checked += 1
+
+    for required in sorted(REQUIRED_STATIC_PATHS):
+        if required not in listed:
+            errors.append({"code": "required_path_unprotected", "path": required})
+
+    version_member = members.get("latka_jazn/version.py")
+    archive_version = None
+    if version_member is not None:
+        version_zip, version_info = version_member
+        with zipfile.ZipFile(version_zip, "r") as archive:
+            archive_version = _version_from_python_bytes(archive.read(version_info))
+    manifest_version = str(payload.get("runtime_version") or payload.get("version") or "")
+    if not archive_version or manifest_version != archive_version:
+        errors.append({"code": "version_mismatch", "manifest": manifest_version, "archive": archive_version})
+
+    allowed = set(listed)
+    allowed.add(MANIFEST_NAME)
+    for relative in sorted(set(members) - allowed):
+        if any(relative.startswith(prefix) for prefix in allowed_prefixes):
+            continue
+        errors.append({"code": "unexpected_zip_member", "path": relative})
+
+    return {
+        "schema_version": schema_version("package_integrity_zip_verification"),
+        "ok": not errors,
+        "zip_paths": [str(path) for path in paths],
+        "manifest_runtime_version": manifest_version,
+        "archive_runtime_version": archive_version,
+        "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest() if manifest_bytes is not None else None,
+        "checked_file_count": checked,
+        "member_count": len(members),
         "errors": errors,
     }
