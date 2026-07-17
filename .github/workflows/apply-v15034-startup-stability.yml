@@ -1,0 +1,68 @@
+name: Apply v15.0.3.4 startup stability
+
+on:
+  push:
+    branches:
+      - fix/v15.0.3.4-startup-stability
+    paths:
+      - .github/workflows/apply-v15034-startup-stability.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-v15034-startup-stability
+  cancel-in-progress: false
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/v15.0.3.4-startup-stability
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Apply controlled source edits
+        run: python -X utf8 .github/scripts/apply_v15034_startup_stability.py
+
+      - name: Remove one-shot migration files
+        run: |
+          rm .github/scripts/apply_v15034_startup_stability.py
+          rm .github/workflows/apply-v15034-startup-stability.yml
+
+      - name: Compile
+        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+
+      - name: Run focused startup regressions
+        run: python -X utf8 -m pytest -q tests/test_v15034_startup_stability.py
+
+      - name: Run full non-live suite
+        run: python -X utf8 -m pytest -q -m "not live_model and not live_mcp"
+
+      - name: Doctor through main.py
+        run: python -X utf8 main.py --doctor > doctor-v15034.json
+
+      - name: Package smoke through main.py
+        run: python -X utf8 main.py --package-smoke --package-profile system > package-smoke-v15034.json
+
+      - name: Verify diff
+        run: |
+          git diff --check
+          git status --short
+          test -n "$(git status --short)"
+
+      - name: Commit verified source changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply v15.0.3.4 startup stability"
+          git push origin HEAD:fix/v15.0.3.4-startup-stability
