@@ -329,4 +329,3 @@ def test_release_build_persists_final_report_paths(
         == result["packing_audit_path"]
     )
     assert ".jazn-release-output-" not in json.dumps(persisted)
-
