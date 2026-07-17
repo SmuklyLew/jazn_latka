@@ -12,11 +12,18 @@ from latka_jazn.tools.package_integrity import (
 )
 
 
+FIXTURE_DISTRIBUTION_VERSION = "91.82.73.64"
+FIXTURE_PACKAGE_VERSION = f"v{FIXTURE_DISTRIBUTION_VERSION}"
+FIXTURE_STALE_PACKAGE_VERSION = "v91.82.73.63"
+FIXTURE_RELEASE_NAME = "fixture-release"
+FIXTURE_PACKAGE_VERSION_FULL = f"{FIXTURE_PACKAGE_VERSION}-{FIXTURE_RELEASE_NAME}"
+
+
 def _runtime_fixture(root: Path) -> Path:
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "version.py").write_text(
-        "DISTRIBUTION_VERSION = '15.0.3.4'\n"
-        "PACKAGE_VERSION = 'v15.0.3.4'\n"
+        f"DISTRIBUTION_VERSION = {FIXTURE_DISTRIBUTION_VERSION!r}\n"
+        f"PACKAGE_VERSION = {FIXTURE_PACKAGE_VERSION!r}\n"
         "PACKAGE_RELEASE_NAME = ''\n",
         encoding="utf-8",
     )
@@ -56,7 +63,7 @@ def test_plan_scoped_manifest_uses_current_version_and_excludes_generator_state(
     relative_paths = [path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()]
     payload = build_package_integrity_manifest(root, relative_paths=relative_paths)
 
-    assert payload["runtime_version"] == "v15.0.3.4"
+    assert payload["runtime_version"] == FIXTURE_PACKAGE_VERSION
     listed = {entry["path"] for entry in payload["files"]}
     assert MANIFEST_NAME not in listed
     assert "tools/__jazn_pack_generator.lock.json" not in listed
@@ -71,8 +78,8 @@ def test_zip_verification_accepts_exact_current_manifest(tmp_path: Path) -> None
     result = verify_package_integrity_manifest_in_zips(output)
 
     assert result["ok"] is True
-    assert result["manifest_runtime_version"] == "v15.0.3.4"
-    assert result["archive_runtime_version"] == "v15.0.3.4"
+    assert result["manifest_runtime_version"] == FIXTURE_PACKAGE_VERSION
+    assert result["archive_runtime_version"] == FIXTURE_PACKAGE_VERSION
     assert result["checked_file_count"] == 5
 
 
@@ -80,8 +87,8 @@ def test_zip_verification_rejects_stale_manifest_and_unexpected_member(tmp_path:
     root = _runtime_fixture(tmp_path / "runtime")
     relative_paths = [path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()]
     payload = build_package_integrity_manifest(root, relative_paths=relative_paths)
-    payload["runtime_version"] = "v15.0.3.2"
-    payload["version"] = "v15.0.3.2"
+    payload["runtime_version"] = FIXTURE_STALE_PACKAGE_VERSION
+    payload["version"] = FIXTURE_STALE_PACKAGE_VERSION
     output = tmp_path / "bad.zip"
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for relative in relative_paths:
@@ -118,9 +125,9 @@ def test_zip_verification_allows_only_explicit_memory_prefix(tmp_path: Path) -> 
 def test_zip_verification_accepts_full_release_version(tmp_path: Path) -> None:
     root = _runtime_fixture(tmp_path / "runtime")
     (root / "latka_jazn" / "version.py").write_text(
-        "DISTRIBUTION_VERSION = '15.0.3.4.1'\n"
-        "PACKAGE_VERSION = 'v15.0.3.4.1'\n"
-        "PACKAGE_RELEASE_NAME = 'release-hardening'\n"
+        f"DISTRIBUTION_VERSION = {FIXTURE_DISTRIBUTION_VERSION!r}\n"
+        f"PACKAGE_VERSION = {FIXTURE_PACKAGE_VERSION!r}\n"
+        f"PACKAGE_RELEASE_NAME = {FIXTURE_RELEASE_NAME!r}\n"
         "PACKAGE_VERSION_FULL = (\n"
         "    f'{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}' if PACKAGE_RELEASE_NAME else PACKAGE_VERSION\n"
         ")\n",
@@ -131,5 +138,5 @@ def test_zip_verification_accepts_full_release_version(tmp_path: Path) -> None:
     result = verify_package_integrity_manifest_in_zips(output)
 
     assert result["ok"] is True
-    assert result["manifest_runtime_version"] == "v15.0.3.4.1-release-hardening"
-    assert result["archive_runtime_version"] == "v15.0.3.4.1-release-hardening"
+    assert result["manifest_runtime_version"] == FIXTURE_PACKAGE_VERSION_FULL
+    assert result["archive_runtime_version"] == FIXTURE_PACKAGE_VERSION_FULL
