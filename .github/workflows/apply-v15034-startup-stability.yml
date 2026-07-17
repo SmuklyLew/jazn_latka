@@ -30,6 +30,27 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Correct generated test string escapes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/scripts/apply_v15034_startup_stability.py')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              '(tmp_path / "main.py").write_text("print(\'ok\')\\n", encoding="utf-8")':
+                  '(tmp_path / "main.py").write_text("print(\'ok\')\\\\n", encoding="utf-8")',
+              '(tmp_path / "run.py").write_text("raise SystemExit(2)\\n", encoding="utf-8")':
+                  '(tmp_path / "run.py").write_text("raise SystemExit(2)\\\\n", encoding="utf-8")',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'expected one generator escape match: {old!r}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8', newline='\n')
+          PY
+
       - name: Apply controlled source edits
         run: python -X utf8 .github/scripts/apply_v15034_startup_stability.py
 
