@@ -113,3 +113,23 @@ def test_zip_verification_allows_only_explicit_memory_prefix(tmp_path: Path) -> 
 
     assert strict["ok"] is False
     assert full_profile["ok"] is True
+
+
+def test_zip_verification_accepts_full_release_version(tmp_path: Path) -> None:
+    root = _runtime_fixture(tmp_path / "runtime")
+    (root / "latka_jazn" / "version.py").write_text(
+        "DISTRIBUTION_VERSION = '15.0.3.4.1'\n"
+        "PACKAGE_VERSION = 'v15.0.3.4.1'\n"
+        "PACKAGE_RELEASE_NAME = 'release-hardening'\n"
+        "PACKAGE_VERSION_FULL = (\n"
+        "    f'{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}' if PACKAGE_RELEASE_NAME else PACKAGE_VERSION\n"
+        ")\n",
+        encoding="utf-8",
+    )
+    output = _build_zip(root, tmp_path / "release.zip")
+
+    result = verify_package_integrity_manifest_in_zips(output)
+
+    assert result["ok"] is True
+    assert result["manifest_runtime_version"] == "v15.0.3.4.1-release-hardening"
+    assert result["archive_runtime_version"] == "v15.0.3.4.1-release-hardening"
