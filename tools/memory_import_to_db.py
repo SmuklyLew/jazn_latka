@@ -13,6 +13,7 @@ from typing import Any
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
 from latka_jazn.tools.chat_export_reader import sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
+from latka_jazn.tools.chat_export_topics import ChatExportTopicStore
 
 
 def emit(payload: Any, *, json_mode: bool) -> None:
@@ -80,6 +81,21 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("--database", required=True, type=database_path)
     search.add_argument("query")
     search.add_argument("--limit", type=int, default=20)
+
+    topics = sub.add_parser("topics", help="analizuj i podsumuj tematy rozmów")
+    topics.add_argument("--database", required=True, type=database_path)
+    topics.add_argument("--force", action="store_true", help="przelicz także świeże profile")
+    topics.add_argument("--limit", type=int)
+    topics.add_argument("--summary-only", action="store_true", help="nie uruchamiaj analizy, pokaż istniejący indeks")
+
+    review = sub.add_parser("review", help="zarządzaj kolejką ręcznego przeglądu pamięci")
+    review.add_argument("--database", required=True, type=database_path)
+    review.add_argument("--queue-domains", nargs="+", metavar="DOMAIN")
+    review.add_argument("--reason", default="manual archive review")
+    review.add_argument("--candidate-type", default="long_term_review")
+    review.add_argument("--status", default="pending_review", help="status do wyświetlenia; 'all' pokazuje wszystkie")
+    review.add_argument("--limit", type=int, default=200)
+
     return parser
 
 
@@ -163,12 +179,7 @@ def command_import(args: argparse.Namespace) -> int:
         try:
             result = run_worker(source, args.database, dry_run=args.dry_run, timeout=args.worker_timeout)
         except subprocess.TimeoutExpired:
-            result = {
-                "ok": False,
-                "status": "worker_timeout",
-                "source": str(source),
-                "timeout_seconds": args.worker_timeout,
-            }
+            result = {"ok": False, "status": "worker_timeout", "source": str(source), "timeout_seconds": args.worker_timeout}
         result["wall_seconds"] = round(time.monotonic() - source_started, 6)
         results.append(result)
         if not args.json:
@@ -253,6 +264,57 @@ def command_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_topics(args: argparse.Namespace) -> int:
+    if not args.database.exists():
+        emit({"ok": False, "error": "database_missing", "path": str(args.database)}, json_mode=args.json)
+        return 2
+    with ChatExportTopicStore(args.database) as topics:
+        analysis = None if args.summary_only else topics.analyse_all(force=args.force, limit=args.limit)
+        summary = topics.summary()
+        validation = topics.archive.validate(full=False)
+    payload = {
+        "ok": bool(validation.get("ok")),
+        "database": str(args.database),
+        "analysis": analysis,
+        "summary": summary,
+        "validation": validation,
+        "truth_boundary": "Klasyfikacja tematów nie promuje rozmów do pamięci krótkotrwałej ani długotrwałej.",
+    }
+    emit(payload, json_mode=args.json)
+    return 0 if payload["ok"] else 2
+
+
+def command_review(args: argparse.Namespace) -> int:
+    if not args.database.exists():
+        emit({"ok": False, "error": "database_missing", "path": str(args.database)}, json_mode=args.json)
+        return 2
+    with ChatExportTopicStore(args.database) as topics:
+        inserted = 0
+        if args.queue_domains:
+            topics.analyse_all(force=False)
+            inserted = topics.queue_domains(
+                args.queue_domains,
+                reason=args.reason,
+                candidate_type=args.candidate_type,
+            )
+        status = None if str(args.status).lower() == "all" else args.status
+        queue = topics.review_queue(status=status, limit=args.limit)
+        validation = topics.archive.validate(full=False)
+    payload = {
+        "ok": bool(validation.get("ok")),
+        "database": str(args.database),
+        "inserted": inserted,
+        "queue": queue,
+        "validation": validation,
+        "truth_boundary": (
+            "Kolejka zawiera wyłącznie kandydatów do ręcznego przeglądu. "
+            "Nie oznacza promocji do L2 ani L3."
+        ),
+    }
+    emit(payload, json_mode=args.json)
+    return 0 if payload["ok"] else 2
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -265,20 +327,16 @@ def main(argv: list[str] | None = None) -> int:
         "conversations": command_conversations,
         "branches": command_branches,
         "search": command_search,
+        "topics": command_topics,
+        "review": command_review,
     }
     try:
         return handlers[args.command](args)
     except KeyboardInterrupt:
-        print(
-            "Przerwano. Zakończony eksport pozostaje zatwierdzony; bieżąca transakcja jest cofana.",
-            file=sys.stderr,
-        )
+        print("Przerwano. Zakończony eksport pozostaje zatwierdzony; bieżąca transakcja jest cofana.", file=sys.stderr)
         return 130
     except Exception as exc:
-        emit(
-            {"ok": False, "error_type": type(exc).__name__, "error": str(exc)},
-            json_mode=getattr(args, "json", False),
-        )
+        emit({"ok": False, "error_type": type(exc).__name__, "error": str(exc)}, json_mode=getattr(args, "json", False))
         return 1
 
 
