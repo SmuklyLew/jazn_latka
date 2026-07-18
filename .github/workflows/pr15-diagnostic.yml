@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - update/v15.1.0.1
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: read
