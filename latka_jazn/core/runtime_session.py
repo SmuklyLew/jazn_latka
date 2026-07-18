@@ -9,6 +9,8 @@ from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
 from latka_jazn.core.visible_integrity import enforce_integrity_consensus
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.turn_timeout import runtime_turn_timeout_seconds
+from latka_jazn.memory.runtime_memory_v151 import RuntimeMemoryWriteContext
+from latka_jazn.memory.runtime_memory_v151_install import install_runtime_memory_v151
 
 from latka_jazn.version import schema_version
 
@@ -30,6 +32,7 @@ class JaznRuntimeSession:
     ) -> None:
         self.config = config or JaznConfig()
         self.engine = JaznEngine(self.config)
+        self.memory_v151_install_status = install_runtime_memory_v151(self.engine)
         self.state_store = RuntimeSessionStateStore(self.config.root)
         self.state = self.state_store.load_or_create(session_id=session_id, source_client=source_client, no_carryover=no_carryover)
         self.no_carryover = no_carryover
@@ -55,6 +58,17 @@ class JaznRuntimeSession:
             audit_db_path=audit_db_path,
         )
         persistence_available = config is not None
+        memory_context_token = None
+        bind_memory_context = getattr(getattr(self.engine, "runtime_memory", None), "bind_context", None)
+        if callable(bind_memory_context):
+            memory_context_token = bind_memory_context(
+                RuntimeMemoryWriteContext(
+                    session_id=self.state.session_id,
+                    turn_id=turn_context.turn_id,
+                    actor="user",
+                    active_goal="validated_runtime_turn",
+                )
+            )
         if not persistence_available:
             turn_context.record_technical_event(
                 "runtime_session_config_unavailable",
@@ -186,6 +200,11 @@ class JaznRuntimeSession:
             turn_context.finalize_total(status="failed", error_code=type(exc).__name__)
             turn_context.persist_audit(event_type="runtime_turn_failed")
             raise
+        finally:
+            if memory_context_token is not None:
+                reset_memory_context = getattr(getattr(self.engine, "runtime_memory", None), "reset_context", None)
+                if callable(reset_memory_context):
+                    reset_memory_context(memory_context_token)
 
     def close(self) -> None:
         self.state_store.save(self.state)
