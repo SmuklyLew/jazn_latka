@@ -48,6 +48,35 @@ class MemoryTierStatus:
         return asdict(self)
 
 
+def _sidecar_paths(database: Path) -> tuple[Path, Path]:
+    return (
+        database.with_name(database.name + "-wal"),
+        database.with_name(database.name + "-shm"),
+    )
+
+
+def _read_only_uri(database: Path) -> tuple[str | None, str | None]:
+    """Return a no-write URI without silently ignoring a live WAL.
+
+    A closed/checkpointed WAL database normally has no sidecars. In that case
+    ``immutable=1`` prevents SQLite from creating ``-wal``/``-shm`` merely to
+    inspect a database whose header still declares WAL journal mode.
+
+    A live database may already have both sidecars; normal ``mode=ro`` then
+    reads committed WAL content without changing the database. An incomplete
+    pair is reported instead of creating the missing sidecar or ignoring WAL.
+    """
+    wal, shm = _sidecar_paths(database)
+    wal_exists = wal.exists()
+    shm_exists = shm.exists()
+    if wal_exists != shm_exists:
+        present = wal.name if wal_exists else shm.name
+        missing = shm.name if wal_exists else wal.name
+        return None, f"incomplete SQLite WAL sidecars: present={present}, missing={missing}"
+    suffix = "?mode=ro" if wal_exists else "?mode=ro&immutable=1"
+    return f"file:{database.as_posix()}{suffix}", None
+
+
 def inspect_memory_tier_store(path: str | Path, *, full: bool = False) -> MemoryTierStatus:
     """Inspect the tier database without creating schema, WAL or metadata writes."""
     database = Path(path).expanduser().resolve()
@@ -64,9 +93,24 @@ def inspect_memory_tier_store(path: str | Path, *, full: bool = False) -> Memory
             error_type="FileNotFoundError",
             error="memory tier database is missing",
         )
+
+    uri, sidecar_error = _read_only_uri(database)
+    if sidecar_error is not None or uri is None:
+        return MemoryTierStatus(
+            path=str(database),
+            exists=True,
+            size_bytes=database.stat().st_size,
+            ready=False,
+            integrity_check=None,
+            foreign_key_error_count=None,
+            automatic_commit_violation_count=None,
+            stats={},
+            error_type="SidecarStateError",
+            error=sidecar_error,
+        )
+
     con: sqlite3.Connection | None = None
     try:
-        uri = f"file:{database.as_posix()}?mode=ro"
         con = sqlite3.connect(uri, uri=True, timeout=10.0)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA query_only=ON")
