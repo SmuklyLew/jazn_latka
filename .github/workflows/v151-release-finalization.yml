@@ -1,0 +1,160 @@
+name: v151-release-finalization
+
+on:
+  push:
+    branches:
+      - update/v15.1.0.1
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v151-release-finalization-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JAZN_NETWORK_TIME_FIRST: "0"
+      JAZN_NETWORK_TIME_IN_TURN: "0"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Generate canonical manifest candidate
+        run: |
+          mkdir -p release-finalization
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          from latka_jazn.tools.package_integrity import (
+              build_package_integrity_manifest,
+              serialize_package_integrity_manifest,
+          )
+
+          root = Path.cwd()
+          payload = build_package_integrity_manifest(root)
+          output = root / "release-finalization" / "PACKAGE_INTEGRITY_MANIFEST.json"
+          output.write_bytes(serialize_package_integrity_manifest(payload))
+          print({
+              "runtime_version": payload["runtime_version"],
+              "file_count": payload["file_count"],
+              "output": str(output),
+          })
+          PY
+
+      - name: Upload manifest candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: v151-package-integrity-manifest-candidate
+          path: release-finalization/PACKAGE_INTEGRITY_MANIFEST.json
+          retention-days: 7
+
+      - name: Verify committed package manifest
+        run: |
+          python -X utf8 - <<'PY'
+          import json
+          from pathlib import Path
+          from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+
+          report = verify_package_integrity_manifest(Path.cwd())
+          Path("release-finalization/manifest-verification.json").write_text(
+              json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          raise SystemExit(0 if report.get("ok") else 2)
+          PY
+
+      - name: Create clean release staging
+        run: |
+          python -X utf8 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from latka_jazn.tools.release_staging import create_release_staging
+
+          destination = Path(os.environ["RUNNER_TEMP"]) / "jazn-v15.1.0.1-release"
+          report = create_release_staging(Path.cwd(), destination)
+          Path("release-finalization/release-staging.json").write_text(
+              json.dumps(report, ensure_ascii=False, indent=2, default=str) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
+          raise SystemExit(0 if report.get("ok") else 2)
+          PY
+
+      - name: Run doctor on verified release staging
+        shell: bash
+        run: |
+          staging="$RUNNER_TEMP/jazn-v15.1.0.1-release"
+          (
+            cd "$staging"
+            python -X utf8 run.py doctor --json
+          ) > release-finalization/doctor.json
+          cat release-finalization/doctor.json
+          python -X utf8 - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("release-finalization/doctor.json").read_text(encoding="utf-8"))
+          required = {
+              "installation_ok": payload.get("installation_ok"),
+              "activation_ready": payload.get("activation_ready"),
+              "release_metadata_current": payload.get("release_metadata_current"),
+              "release_ready": payload.get("release_ready"),
+          }
+          print(required)
+          if not all(required.values()):
+              raise SystemExit(f"release doctor failed: {required}")
+          PY
+
+      - name: Package smoke system profile
+        run: python -X utf8 run.py package-smoke --profile system --json | tee release-finalization/package-smoke-system.json
+
+      - name: Package smoke release profile
+        run: python -X utf8 run.py package-smoke --profile release --json | tee release-finalization/package-smoke-release.json
+
+      - name: Targeted full runtime turn
+        run: python -X utf8 -m pytest -q tests/test_v15101_runtime_full_turn.py | tee release-finalization/full-turn.txt
+
+      - name: Version and manifest contract
+        run: python -X utf8 -m pytest -q tests/test_single_source_version_manifest_contract.py | tee release-finalization/version-manifest-contract.txt
+
+      - name: Clean checkout guard
+        run: |
+          git diff --check
+          git diff --exit-code
+
+      - name: Upload finalization reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v151-release-finalization-reports
+          path: release-finalization/
+          retention-days: 14
