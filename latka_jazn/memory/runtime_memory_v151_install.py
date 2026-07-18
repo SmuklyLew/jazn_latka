@@ -52,19 +52,35 @@ class LegacyLayeredMemoryReadOnlyAdapter:
         }
 
 
+def resolve_memory_tier_database_path(
+    root: str | Path,
+    *,
+    configured: str | Path | None = None,
+) -> Path:
+    """Resolve the one canonical L1/L2/L3 database path inside runtime root."""
+    runtime_root = Path(root).expanduser().resolve()
+    if configured is not None:
+        configured_path = Path(configured).expanduser()
+        if configured_path.is_absolute():
+            resolved = configured_path.resolve()
+        else:
+            resolved = (runtime_root / configured_path).resolve()
+    else:
+        relative = os.environ.get("JAZN_MEMORY_TIER_DB", DEFAULT_TIER_DB).strip() or DEFAULT_TIER_DB
+        path = Path(relative)
+        if path.is_absolute():
+            raise ValueError("JAZN_MEMORY_TIER_DB must be relative to runtime root")
+        resolved = (runtime_root / path).resolve()
+    resolved.relative_to(runtime_root)
+    return resolved
+
+
 def _tier_database_path(engine: Any) -> Path:
     config = engine.config
-    configured = getattr(config, "memory_tier_db_path", None)
-    if configured is not None:
-        return Path(configured).expanduser().resolve()
-    relative = os.environ.get("JAZN_MEMORY_TIER_DB", DEFAULT_TIER_DB).strip() or DEFAULT_TIER_DB
-    path = Path(relative)
-    if path.is_absolute():
-        raise ValueError("JAZN_MEMORY_TIER_DB must be relative to runtime root")
-    root = Path(config.root).expanduser().resolve()
-    resolved = (root / path).resolve()
-    resolved.relative_to(root)
-    return resolved
+    return resolve_memory_tier_database_path(
+        config.root,
+        configured=getattr(config, "memory_tier_db_path", None),
+    )
 
 
 def install_runtime_memory_v151(engine: Any) -> RuntimeMemoryInstallStatus:
