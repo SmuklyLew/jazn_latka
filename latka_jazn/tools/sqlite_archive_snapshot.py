@@ -101,7 +101,11 @@ def create_sqlite_snapshot(
         target_con.close()
         source_con.close()
 
-    with temp_path.open("rb") as handle:
+    # Windows requires a writable OS handle for FlushFileBuffers, which backs
+    # Python's os.fsync(). Opening the completed temporary snapshot as r+b is
+    # cross-platform and does not modify its contents.
+    with temp_path.open("r+b") as handle:
+        handle.flush()
         os.fsync(handle.fileno())
     os.replace(temp_path, destination_path)
     try:
