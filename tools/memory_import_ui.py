@@ -18,7 +18,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Kursorowy importer eksportów ChatGPT do archiwum SQLite.")
     parser.add_argument("--database", type=Path, default=DEFAULT_DATABASE)
     args = parser.parse_args(argv)
-    return MemoryImportCursorApp(args.database).run()
+    try:
+        return MemoryImportCursorApp(args.database).run()
+    except KeyboardInterrupt:
+        print(
+            "Przerwano przez Ctrl+X. Zatwierdzone operacje pozostają zapisane; aktywna transakcja została cofnięta.",
+            file=sys.stderr,
+        )
+        return 130
 
 
 if __name__ == "__main__":
