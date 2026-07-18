@@ -126,7 +126,16 @@ jobs:
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=25
+          --junitxml="${{ runner.temp }}/pytest-${{ matrix.os }}.xml"
           -m "not live_model and not live_mcp"
+
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.os }}
+          path: ${{ runner.temp }}/pytest-${{ matrix.os }}.xml
+          retention-days: 7
 
       - name: Package smoke system profile
         run: python -X utf8 run.py package-smoke --profile system --json
