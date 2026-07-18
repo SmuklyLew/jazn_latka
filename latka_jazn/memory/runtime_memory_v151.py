@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -70,6 +71,18 @@ class RuntimeMemoryV151Coordinator:
         self.classifier = classifier
         self.working_budget = working_budget or WorkingMemoryBudget()
         self.short_term_policy = short_term_policy or ShortTermMemoryPolicy()
+        self._write_context: ContextVar[RuntimeMemoryWriteContext | None] = ContextVar(
+            f"runtime_memory_v151_context_{id(self)}", default=None
+        )
+
+    def bind_context(self, context: RuntimeMemoryWriteContext) -> Token:
+        return self._write_context.set(context)
+
+    def reset_context(self, token: Token) -> None:
+        self._write_context.reset(token)
+
+    def current_context(self) -> RuntimeMemoryWriteContext | None:
+        return self._write_context.get()
 
     def build_candidate_from_runtime_turn(self, **kwargs) -> RuntimeMemoryCandidate:
         return self.classifier.build_candidate_from_runtime_turn(**kwargs)
@@ -92,7 +105,7 @@ class RuntimeMemoryV151Coordinator:
         if not force and not accepted:
             return RuntimePersistenceResult(False, fingerprint, candidate.kind, reason, [])
 
-        write_context = context or RuntimeMemoryWriteContext()
+        write_context = context or self.current_context() or RuntimeMemoryWriteContext()
         now = datetime.now(timezone.utc)
         evidence = self._evidence(candidate, fingerprint=fingerprint, context=write_context)
         truth_status = self._truth_status(candidate.grounding)
