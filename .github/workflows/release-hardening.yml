@@ -46,40 +46,43 @@ jobs:
           print({"runtime_version": payload["runtime_version"], "file_count": payload["file_count"]})
           PY
 
-      - name: Compare manifest semantics
-        id: delta
+      - name: Synchronize canonical manifest when semantics change
         run: |
-          python -X utf8 - <<'PY' >> "$GITHUB_OUTPUT"
+          python -X utf8 - <<'PY'
           import json
           import os
           from pathlib import Path
 
           volatile = {"generated_at_utc", "updated_at_utc"}
 
-          def normalized(path: Path):
-              if not path.is_file():
-                  return None
-              payload = json.loads(path.read_text(encoding="utf-8-sig"))
+          def normalized(source: Path, target: Path) -> None:
+              payload = json.loads(source.read_text(encoding="utf-8-sig"))
               if not isinstance(payload, dict):
-                  return None
-              return {key: value for key, value in payload.items() if key not in volatile}
+                  raise TypeError(f"manifest is not an object: {source}")
+              for key in volatile:
+                  payload.pop(key, None)
+              target.write_text(
+                  json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+                  encoding="utf-8",
+              )
 
-          current = normalized(Path("PACKAGE_INTEGRITY_MANIFEST.json"))
-          candidate = normalized(Path(os.environ["RUNNER_TEMP"]) / "PACKAGE_INTEGRITY_MANIFEST.json")
-          print(f"needs_update={'true' if current != candidate else 'false'}")
+          temp = Path(os.environ["RUNNER_TEMP"])
+          normalized(Path("PACKAGE_INTEGRITY_MANIFEST.json"), temp / "manifest-current.normalized.json")
+          normalized(temp / "PACKAGE_INTEGRITY_MANIFEST.json", temp / "manifest-candidate.normalized.json")
           PY
-
-      - name: Commit synchronized manifest
-        if: >-
-          steps.delta.outputs.needs_update == 'true' &&
-          (github.head_ref == 'update/v15.1.0.1' || github.ref == 'refs/heads/update/v15.1.0.1')
-        run: |
-          cp "$RUNNER_TEMP/PACKAGE_INTEGRITY_MANIFEST.json" PACKAGE_INTEGRITY_MANIFEST.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add PACKAGE_INTEGRITY_MANIFEST.json
-          git commit -m "release: rebuild PACKAGE_INTEGRITY_MANIFEST for v15.1.0.1"
-          git push origin HEAD:update/v15.1.0.1
+          if cmp -s "$RUNNER_TEMP/manifest-current.normalized.json" "$RUNNER_TEMP/manifest-candidate.normalized.json"; then
+            echo "Canonical manifest semantics are already synchronized."
+          elif [ "$GITHUB_HEAD_REF" = "update/v15.1.0.1" ] || [ "$GITHUB_REF" = "refs/heads/update/v15.1.0.1" ]; then
+            cp "$RUNNER_TEMP/PACKAGE_INTEGRITY_MANIFEST.json" PACKAGE_INTEGRITY_MANIFEST.json
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add PACKAGE_INTEGRITY_MANIFEST.json
+            git commit -m "release: rebuild PACKAGE_INTEGRITY_MANIFEST for v15.1.0.1"
+            git push origin HEAD:update/v15.1.0.1
+          else
+            echo "Manifest drift detected outside update/v15.1.0.1." >&2
+            exit 2
+          fi
 
       - name: Resolve synchronized HEAD
         id: head
