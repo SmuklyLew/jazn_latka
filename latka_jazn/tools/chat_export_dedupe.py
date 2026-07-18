@@ -164,27 +164,35 @@ def summarize_relations(plans: Iterable[ConversationPlan]) -> dict[str, int]:
     return counters
 
 
+def _row_value(row: Mapping[str, Any], key: str, default: Any = None) -> Any:
+    """Read dict-like mappings and sqlite3.Row without relying on ``.get``."""
+    try:
+        return row[key]
+    except (KeyError, IndexError):
+        return default
+
+
 def active_states_from_rows(
     conversation_rows: Iterable[Mapping[str, Any]],
     node_rows: Iterable[Mapping[str, Any]],
 ) -> dict[str, ActiveConversationState]:
-    """Build a bulk index from SQLite rows without per-conversation queries."""
+    """Build a bulk index from dicts or SQLite rows without per-conversation queries."""
     nodes: dict[str, dict[str, str | None]] = {}
     for row in node_rows:
         conversation_id = str(row["conversation_id"])
+        stable_hash = _row_value(row, "stable_node_sha256")
         nodes.setdefault(conversation_id, {})[str(row["node_id"])] = (
-            str(row["semantic_payload_sha256"])
-            if row.get("semantic_payload_sha256") is not None
-            else None
+            str(stable_hash) if stable_hash is not None else None
         )
     result: dict[str, ActiveConversationState] = {}
     for row in conversation_rows:
         conversation_id = str(row["conversation_id"])
         node_hashes = nodes.get(conversation_id, {})
+        node_count = _row_value(row, "node_count", len(node_hashes))
         result[conversation_id] = ActiveConversationState(
             conversation_id=conversation_id,
             semantic_tree_sha256=str(row["semantic_tree_sha256"]),
             node_hashes=node_hashes,
-            node_count=int(row.get("node_count") or len(node_hashes)),
+            node_count=int(node_count if node_count is not None else len(node_hashes)),
         )
     return result
