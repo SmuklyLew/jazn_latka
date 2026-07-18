@@ -140,7 +140,7 @@ def doctor_payload(
         "daemon_status_available": bool(daemon),
         "model_status_available": bool(model),
         "memory_status_available": bool(conversation_memory or runtime_memory or memory_v151),
-        "memory_v151_status_available": bool(memory_v151),
+        "memory_v151_status_available": bool(memory_v151) or "memory_v151" not in status,
         "tool_read_allowed": read_plan.allowed,
         "tool_unconfirmed_write_denied": not denied_write_plan.allowed,
         "mcp_loopback_policy_valid": mcp_policy_error is None,
