@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+import json
 
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.runtime_memory_v151 import RuntimeMemoryV151Coordinator, RuntimeMemoryWriteContext
@@ -83,10 +84,15 @@ def test_bound_session_context_is_used_until_reset(tmp_path: Path) -> None:
 
     with MemoryTierStore(status.database_path) as store:
         row = store.con.execute(
-            """SELECT w.session_id,w.turn_id,e.source_id,e.conversation_id
+            """SELECT w.session_id,w.turn_id,e.source_id,e.evidence_json
                  FROM working_memory_index w
                  JOIN memory_evidence e ON e.memory_id=w.memory_id"""
         ).fetchone()
-        assert tuple(row) == ("session-real", "turn-real", "turn-real", "session-real")
+        evidence = json.loads(row["evidence_json"])
+        assert (row["session_id"], row["turn_id"], row["source_id"]) == (
+            "session-real", "turn-real", "turn-real"
+        )
+        assert evidence["conversation_id"] == "session-real"
+        assert evidence["node_ids"] == ["turn-real"]
         assert store.stats()["long_term_memory_index"] == 0
         assert store.validate()["ok"] is True
