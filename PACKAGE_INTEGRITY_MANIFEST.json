@@ -3,11 +3,11 @@
   "version": "v15.1.0.1",
   "runtime_version": "v15.1.0.1",
   "package_version": "v15.1.0.1",
-  "generated_at_utc": "2026-07-19T10:18:45.750355+00:00",
-  "updated_at_utc": "2026-07-19T10:18:45.750355+00:00",
+  "generated_at_utc": "2026-07-19T18:06:37.404832+00:00",
+  "updated_at_utc": "2026-07-19T18:06:37.404832+00:00",
   "start_file": "run.py",
-  "file_count": 533,
-  "static_file_count": 533,
+  "file_count": 531,
+  "static_file_count": 531,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 1,
@@ -55,15 +55,6 @@
   },
   "truth_boundary": "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, backups, generator state and temporary files.",
   "files": [
-    {
-      "path": ".archives/apply-memory-rebuild-v240204.trigger",
-      "size_bytes": 94,
-      "sha256": "6bc5a21040b49760b1cbe1b50c6ad227bbd8ca18438f1240eb74fedf04d9f252",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
     {
       "path": ".gitattributes",
       "size_bytes": 864,
@@ -4045,7 +4036,7 @@
     {
       "path": "latka_jazn/tools/memory_rebuild_coordinator.py",
       "size_bytes": 21298,
-      "sha256": "cfcbb9591cb9b02a66f77135e0736f57a1bf44f12e75b43ed550b88b750b4109",
+      "sha256": "c6c2348481f2e3ee4520ed164f958f17498fc593fe125541ce4606d691a60f97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4397,15 +4388,6 @@
       "path": "run.py",
       "size_bytes": 177,
       "sha256": "88db8ed0b79423cda1357b9ccb2e54e6686903444e252988ce7a4f48b3b148ae",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/conftest.py",
-      "size_bytes": 745,
-      "sha256": "1357c1e62b08611cb609036c296c2e5930cf03034e0dade9f3e744406677695a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
