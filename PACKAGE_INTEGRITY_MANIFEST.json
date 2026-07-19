@@ -3,14 +3,14 @@
   "version": "v15.1.0.1",
   "runtime_version": "v15.1.0.1",
   "package_version": "v15.1.0.1",
-  "generated_at_utc": "2026-07-19T19:54:31.529736+00:00",
-  "updated_at_utc": "2026-07-19T19:54:31.529736+00:00",
+  "generated_at_utc": "2026-07-19T20:02:55.125439+00:00",
+  "updated_at_utc": "2026-07-19T20:02:55.125439+00:00",
   "start_file": "run.py",
   "file_count": 531,
   "static_file_count": 531,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
-  "excluded_file_count": 0,
+  "excluded_file_count": 1,
   "runtime_state_file": "RUNTIME_STATE.json",
   "runtime_memory_split_policy": {
     "static_manifest": "PACKAGE_INTEGRITY_MANIFEST.json protects static project files only.",
@@ -4835,6 +4835,8 @@
       "hash_policy": "sha256_file_bytes"
     }
   ],
-  "excluded_files": [],
+  "excluded_files": [
+    "PACKAGE_INTEGRITY_MANIFEST.json"
+  ],
   "deferred_hash_files": []
 }
