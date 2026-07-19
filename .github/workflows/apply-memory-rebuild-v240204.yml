@@ -94,7 +94,10 @@ jobs:
           python -m pip install -e . pytest
 
       - name: Compile and run focused regressions
+        shell: bash
         run: |
+          set -euo pipefail
+          exec > >(tee "$RUNNER_TEMP/apply-memory-rebuild-v240204.log") 2>&1
           python -X utf8 -m compileall -q \
             latka_jazn/tools/chat_export_models.py \
             latka_jazn/tools/chat_export_reader.py \
@@ -106,12 +109,21 @@ jobs:
             tests/test_memory_rebuild_v240204.py
           python -X utf8 tools/memory_rebuild.py --version
           python -X utf8 tools/memory_rebuild.py --self-test
-          python -X utf8 -m pytest -q \
+          python -X utf8 -m pytest -q -ra --tb=short \
             tests/test_v15101_chat_export_pipeline.py \
             tests/test_v15101_chat_export_source_selection.py \
             tests/test_memory_rebuild_v240204.py \
             tests/test_memory_rebuild_tool.py \
             tests/test_memory_restore_tool.py
+
+      - name: Upload apply diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apply-memory-rebuild-v240204-diagnostics
+          path: ${{ runner.temp }}/apply-memory-rebuild-v240204.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Commit verified upgrade
         shell: bash
