@@ -164,6 +164,33 @@ def test_system_confirmation_binds_to_exact_target_path(tmp_path: Path) -> None:
     assert token.endswith(str((tmp_path / "system").resolve()))
 
 
+def test_plan_is_cumulative_across_selected_exports_without_writing_target(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    source = tmp_path / "exports"
+    source.mkdir()
+    first = source / "first.zip"
+    second = source / "second.zip"
+    _write_export(first, "same")
+    with zipfile.ZipFile(second, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(
+            "conversations.json",
+            json.dumps([_conversation("same", "Rozmowa same", "Byliśmy nad jeziorem z Kasią.")], ensure_ascii=False),
+        )
+        archive.writestr("chat.html", "<html></html>")
+        archive.writestr("different-source-marker.txt", "same conversation, different export bytes")
+
+    target = tmp_path / "jazn_memory_test_03"
+    plan = MemoryRestoreOrchestrator(_settings(source, target), tool_root=repo).plan([first, second])
+
+    assert plan.ok
+    assert plan.chats[0]["plan"]["conversation_counters"] == {"new": 1}
+    assert plan.chats[1]["plan"]["conversation_counters"] == {"identical": 1}
+    assert plan.chats[0]["plan"]["cumulative_simulation"]["temporary_database_only"] is True
+    assert plan.chats[1]["plan"]["cumulative_simulation"]["temporary_database_only"] is True
+    assert not target.exists(), "cumulative planning must only write its temporary database"
+
+
 def test_restore_test3_runs_all_safe_steps_and_never_promotes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

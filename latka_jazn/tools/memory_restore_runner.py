@@ -69,6 +69,21 @@ class MemoryRestoreOrchestrator:
                     if detected["kind"] == "chat_export" and detected.get("canonical_conversations_available"):
                         plan = self.importer.plan(source, planning_db).to_dict()
                         plan.pop("conversations", None)
+                        simulation = self.importer.import_one(
+                            source,
+                            planning_db,
+                            dry_run=False,
+                            full_validation=False,
+                            progress_every_conversations=self.settings.progress_every_conversations,
+                        ).to_dict()
+                        if not simulation.get("ok"):
+                            raise RuntimeError(f"cumulative_plan_simulation_failed:{source}")
+                        plan["cumulative_simulation"] = {
+                            "ok": True,
+                            "status": simulation.get("status"),
+                            "conversation_counters": simulation.get("conversation_counters", {}),
+                            "temporary_database_only": True,
+                        }
                         chats.append({**detected, "plan": plan})
                     elif detected["kind"] == "journal":
                         if is_known_non_memory_source(source):

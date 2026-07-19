@@ -119,3 +119,4 @@ docs/.root/
 
 # Python packaging metadata
 *.egg-info/
+tools/jazn_pack_generator_settings.json
