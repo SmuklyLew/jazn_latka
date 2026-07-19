@@ -7,6 +7,7 @@ from typing import Any, Callable, Iterable, Literal, Sequence
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -24,6 +25,11 @@ KNOWN_NON_MEMORY_JSON_NAMES = {
     "chatgpt-app-submission.json",
 }
 KNOWN_NON_MEMORY_JSON_SUFFIXES = (".package.json", ".manifest.json", ".report.json", ".settings.json")
+SECRET_JSON_NAME_RE = re.compile(
+    r"^(?:client[_-]?secrets?|credentials?|oauth(?:[_-].*)?|service[_-]?account(?:[_-].*)?|"
+    r"(?:access|refresh)[_-]?tokens?|tokens?)\.json$",
+    re.IGNORECASE,
+)
 
 @dataclass(slots=True)
 class MemoryRestoreSettings:
@@ -72,6 +78,8 @@ class MemoryRestoreSettings:
         payload = json.loads(Path(path).read_text(encoding="utf-8-sig"))
         if not isinstance(payload, dict):
             raise ValueError("restore settings must be a JSON object")
+        if isinstance(payload.get("settings"), dict):
+            payload = payload["settings"]
         return cls(**payload).normalized()
 
     def to_dict(self) -> dict[str, Any]:
@@ -143,7 +151,11 @@ def sha256_file(path: Path) -> str:
 
 def is_known_non_memory_source(path: Path) -> bool:
     name = path.name.casefold()
-    return name in KNOWN_NON_MEMORY_JSON_NAMES or any(name.endswith(suffix) for suffix in KNOWN_NON_MEMORY_JSON_SUFFIXES)
+    return (
+        name in KNOWN_NON_MEMORY_JSON_NAMES
+        or any(name.endswith(suffix) for suffix in KNOWN_NON_MEMORY_JSON_SUFFIXES)
+        or bool(SECRET_JSON_NAME_RE.fullmatch(path.name))
+    )
 
 def journal_inspection_is_plausible(path: Path, inspection: dict[str, Any]) -> bool:
     if int(inspection.get("valid_entries", 0)) <= 0:

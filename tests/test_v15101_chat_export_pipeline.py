@@ -152,3 +152,67 @@ def test_corrupt_zip_is_rejected(tmp_path: Path) -> None:
     source.write_bytes(b"not-a-zip")
     with pytest.raises(zipfile.BadZipFile):
         ChatExportReader(source)
+
+
+def test_numbered_conversation_parts_are_read_in_order_and_shared_links_are_ignored(tmp_path: Path) -> None:
+    source = tmp_path / "split.zip"
+    first = conversation()
+    first["id"] = "conv-000"
+    second = conversation()
+    second["id"] = "conv-001"
+    with zipfile.ZipFile(source, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("conversations-001.json", json.dumps([second], ensure_ascii=False))
+        archive.writestr("shared_conversations.json", json.dumps([{"id": "shared-only"}], ensure_ascii=False))
+        archive.writestr("conversations-000.json", json.dumps([first], ensure_ascii=False))
+        archive.writestr("chat.html", "<html></html>")
+
+    with ChatExportReader(source) as reader:
+        assert reader.info.conversations_member == "conversations-000.json"
+        assert reader.info.conversation_members == (
+            "conversations-000.json",
+            "conversations-001.json",
+        )
+        graphs = list(reader.iter_graphs())
+        report = reader.inspect()
+
+    assert [graph.conversation_id for graph in graphs] == ["conv-000", "conv-001"]
+    assert report.ok
+    assert report.conversation_count == 2
+    assert "shared-only" not in {graph.conversation_id for graph in graphs}
+
+
+def test_single_conversations_json_is_preferred_over_shared_links_metadata(tmp_path: Path) -> None:
+    source = tmp_path / "single.zip"
+    with zipfile.ZipFile(source, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("shared_conversations.json", json.dumps([{"id": "shared-only"}]))
+        archive.writestr("conversations.json", json.dumps([conversation()], ensure_ascii=False))
+        archive.writestr("chat.html", "<html></html>")
+
+    with ChatExportReader(source) as reader:
+        assert reader.info.conversation_members == ("conversations.json",)
+        assert [graph.conversation_id for graph in reader.iter_graphs()] == ["conv-1"]
+
+
+def test_numbered_conversation_parts_must_be_contiguous(tmp_path: Path) -> None:
+    source = tmp_path / "missing-part.zip"
+    with zipfile.ZipFile(source, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("conversations-000.json", json.dumps([conversation()]))
+        archive.writestr("conversations-002.json", json.dumps([conversation()]))
+        archive.writestr("chat.html", "<html></html>")
+
+    with pytest.raises(ValueError, match="missing: 001"):
+        ChatExportReader(source)
+
+
+def test_shared_conversations_without_canonical_history_is_not_importable(tmp_path: Path) -> None:
+    source = tmp_path / "shared-only.zip"
+    with zipfile.ZipFile(source, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("shared_conversations.json", json.dumps([{"id": "shared-only"}]))
+        archive.writestr("chat.html", "<html></html>")
+
+    with ChatExportReader(source) as reader:
+        report = reader.inspect()
+        assert reader.info.conversations_member is None
+        assert reader.info.conversation_members == ()
+    assert not report.ok
+    assert "shared links alone" in report.errors[0]

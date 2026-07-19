@@ -36,12 +36,17 @@ class ExportSourceInfo:
     html_member: str | None
     crc_checked: bool
     crc_ok: bool
+    conversation_members: tuple[str, ...] = ()
     format_version: str = "chatgpt-export/unknown"
     schema_version: str = SCHEMA_VERSION
 
     @property
     def resolved_path(self) -> Path:
         return Path(self.path).expanduser().resolve()
+
+    @property
+    def canonical_conversations_available(self) -> bool:
+        return bool(self.conversation_members or self.conversations_member)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

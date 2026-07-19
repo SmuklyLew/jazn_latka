@@ -260,3 +260,108 @@ def test_known_package_json_is_not_offered_as_memory_source(tmp_path: Path) -> N
     journal = source / "dziennik.json"; _write_journal(journal)
     discovered = discover_restore_sources(source)
     assert [item.path.name for item in discovered] == ["dziennik.json"]
+
+
+def test_secret_json_files_are_never_offered_as_memory_sources(tmp_path: Path) -> None:
+    source = tmp_path / "exports"
+    source.mkdir()
+    for name in (
+        "client_secret.json",
+        "client_secrets.json",
+        "credentials.json",
+        "oauth-client.json",
+        "service_account.json",
+        "token.json",
+        "refresh_token.json",
+    ):
+        (source / name).write_text("{}", encoding="utf-8")
+    journal = source / "dziennik.json"
+    _write_journal(journal)
+
+    discovered = discover_restore_sources(source)
+    assert [item.path.name for item in discovered] == ["dziennik.json"]
+
+
+def test_ui_accepts_optional_cd_prefix_in_path_input() -> None:
+    from latka_jazn.tools.memory_restore_ui import normalize_path_input
+
+    assert normalize_path_input(r'cd "D:\\Eksporty ChatGPT"') == r"D:\\Eksporty ChatGPT"
+    assert normalize_path_input(r"D:\\Eksporty ChatGPT") == r"D:\\Eksporty ChatGPT"
+
+
+def test_ui_config_is_saved_outside_repo_and_preserves_selected_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    source = tmp_path / "exports"
+    source.mkdir()
+    chat = source / "chat.zip"
+    _write_export(chat, "config")
+    answers = iter(["3"])
+    app = MemoryRestoreCursorApp(
+        repo,
+        settings=_settings(source, tmp_path / "jazn_memory_test_03"),
+        input_func=lambda _prompt: next(answers),
+        output=_NonTtyBuffer(),
+    )
+    app.state.selected_paths = [chat.resolve()]
+
+    app._save_config()
+
+    config = tmp_path / "3.json"
+    assert config.is_file()
+    assert not (repo / "3").exists()
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    assert payload["selected_sources"] == [str(chat.resolve())]
+    assert payload["settings"]["target_root"] == str((tmp_path / "jazn_memory_test_03").resolve())
+    loaded = MemoryRestoreSettings.from_json(config)
+    assert loaded.target_root == str((tmp_path / "jazn_memory_test_03").resolve())
+
+
+def test_ui_load_config_restores_existing_selected_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    source = tmp_path / "exports"
+    source.mkdir()
+    chat = source / "chat.zip"
+    _write_export(chat, "load")
+    missing = source / "missing.zip"
+    config = tmp_path / "restore.json"
+    config.write_text(
+        json.dumps(
+            {
+                "settings": _settings(source, tmp_path / "target").to_dict(),
+                "selected_sources": [str(chat), str(missing)],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    answers = iter([str(config)])
+    output = _NonTtyBuffer()
+    app = MemoryRestoreCursorApp(repo, input_func=lambda _prompt: next(answers), output=output)
+
+    app._load_config()
+
+    assert app.state.selected_paths == [chat.resolve()]
+    assert "Brakujące źródła" in "".join(output.parts)
+
+
+def test_ui_can_add_journal_from_outside_export_directory(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    source = tmp_path / "exports"
+    source.mkdir()
+    journal = tmp_path / "dziennik.json"
+    _write_journal(journal)
+    answers = iter([str(journal)])
+    app = MemoryRestoreCursorApp(
+        repo,
+        settings=_settings(source, tmp_path / "target"),
+        input_func=lambda _prompt: next(answers),
+        output=_NonTtyBuffer(),
+    )
+
+    app._add_external_source()
+
+    assert app.state.selected_paths == [journal.resolve()]
+    assert [item.path for item in app.state.discovered] == [journal.resolve()]

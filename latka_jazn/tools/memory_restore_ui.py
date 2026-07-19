@@ -16,7 +16,20 @@ from latka_jazn.tools.memory_restore import (
     RestoreSource,
     compare_database_sets,
     discover_restore_sources,
+    is_known_non_memory_source,
 )
+from latka_jazn.version import schema_version
+
+
+CONFIG_SCHEMA_VERSION = schema_version("memory_restore_ui_config")
+SUPPORTED_EXTERNAL_SUFFIXES = {".zip", ".json", ".jsonl", ".ndjson", ".html", ".htm"}
+
+
+def normalize_path_input(raw: str) -> str:
+    value = str(raw or "").strip()
+    if value.casefold().startswith("cd "):
+        value = value[3:].strip()
+    return value.strip().strip('"').strip("'")
 
 
 BOOLEAN_SETTINGS = (
@@ -47,6 +60,7 @@ class MemoryRestoreCursorApp:
     MENU = (
         "Ustaw katalog eksportów",
         "Skanuj i wybierz pliki",
+        "Dodaj plik źródłowy spoza katalogu",
         "Wybierz tryb i katalog docelowy",
         "Ustawienia restore",
         "Ustaw bazy porównawcze test_01/test_02",
@@ -103,14 +117,15 @@ class MemoryRestoreCursorApp:
         actions = {
             0: self._set_source_directory,
             1: self._scan_and_select,
-            2: self._set_target,
-            3: self._settings_page,
-            4: self._set_baselines,
-            5: self._preview_plan,
-            6: self._run_restore,
-            7: self._compare_baselines,
-            8: self._save_config,
-            9: self._load_config,
+            2: self._add_external_source,
+            3: self._set_target,
+            4: self._settings_page,
+            5: self._set_baselines,
+            6: self._preview_plan,
+            7: self._run_restore,
+            8: self._compare_baselines,
+            9: self._save_config,
+            10: self._load_config,
         }
         actions[choice]()
 
@@ -164,7 +179,9 @@ class MemoryRestoreCursorApp:
                     raise KeyboardInterrupt
 
     def _set_source_directory(self) -> None:
-        raw = self.input(f"Katalog eksportów [{self.state.settings.source_directory}]: ").strip().strip('"')
+        raw = normalize_path_input(self.input(
+            f"Katalog eksportów [{self.state.settings.source_directory}] (podaj samą ścieżkę; opcjonalne 'cd ' zostanie usunięte): "
+        ))
         if not raw:
             return
         path = Path(raw).expanduser().resolve()
@@ -195,8 +212,29 @@ class MemoryRestoreCursorApp:
         )
         if chosen is None:
             return
-        self.state.selected_paths = [self.state.discovered[index].path for index in sorted(chosen)]
+        discovered_paths = {item.path for item in self.state.discovered}
+        external = [path for path in self.state.selected_paths if path not in discovered_paths]
+        selected = [self.state.discovered[index].path for index in sorted(chosen)]
+        self.state.selected_paths = external + [path for path in selected if path not in external]
         self._write(f"Wybrano {len(self.state.selected_paths)} plików.")
+
+    def _add_external_source(self) -> None:
+        raw = normalize_path_input(self.input("Pełna ścieżka dodatkowego ZIP/JSON/JSONL/NDJSON/HTML: "))
+        if not raw:
+            return
+        path = Path(raw).expanduser().resolve()
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        suffix = path.suffix.casefold()
+        if suffix not in SUPPORTED_EXTERNAL_SUFFIXES:
+            raise ValueError(f"nieobsługiwany typ źródła: {suffix or '(brak rozszerzenia)'}")
+        if suffix == ".json" and is_known_non_memory_source(path):
+            raise ValueError("plik wygląda jak sekret, poświadczenie albo techniczny JSON i nie może być źródłem pamięci")
+        if path not in self.state.selected_paths:
+            self.state.selected_paths.append(path)
+        if all(item.path != path for item in self.state.discovered):
+            self.state.discovered.append(RestoreSource(path, path.stat().st_size, suffix))
+        self._write(f"Dodano źródło: {path}")
 
     def _set_target(self) -> None:
         selected = CursorMenu("Tryb docelowy", ["developer — poza repo, np. test_03", "system — bezpośrednio do aktywnego folderu systemu"]).choose(
@@ -206,7 +244,7 @@ class MemoryRestoreCursorApp:
             return
         mode = "developer" if int(selected) == 0 else "system"
         default = self.state.repo_root.parent / "jazn_memory_test_03" if mode == "developer" else self.state.repo_root
-        raw = self.input(f"Katalog docelowy [{default}]: ").strip().strip('"')
+        raw = normalize_path_input(self.input(f"Katalog docelowy [{default}]: "))
         target = Path(raw).expanduser().resolve() if raw else default.resolve()
         self._replace_settings(mode=mode, target_root=str(target))
 
@@ -229,11 +267,18 @@ class MemoryRestoreCursorApp:
         self._replace_settings(**changes)
 
     def _set_baselines(self) -> None:
-        current = ";".join(self.state.settings.baseline_roots)
-        raw = self.input(f"Katalogi test_01/test_02 rozdzielone średnikiem [{current}]: ").strip()
-        if not raw:
-            return
-        roots = [str(Path(part.strip().strip('"')).expanduser().resolve()) for part in raw.split(";") if part.strip()]
+        current = list(self.state.settings.baseline_roots)
+        first_default = current[0] if len(current) > 0 else str(self.state.repo_root.parent / "jazn_memory_test_01")
+        second_default = current[1] if len(current) > 1 else str(self.state.repo_root.parent / "jazn_memory_test_02")
+        first_raw = normalize_path_input(self.input(f"Katalog test_01 [{first_default}]: "))
+        second_raw = normalize_path_input(self.input(f"Katalog test_02 [{second_default}]: "))
+        roots: list[str] = []
+        for raw, default in ((first_raw, first_default), (second_raw, second_default)):
+            value = raw or default
+            path = Path(value).expanduser().resolve()
+            if not path.is_dir():
+                raise NotADirectoryError(path)
+            roots.append(str(path))
         self._replace_settings(baseline_roots=roots)
 
     def _orchestrator(self) -> MemoryRestoreOrchestrator:
@@ -292,20 +337,49 @@ class MemoryRestoreCursorApp:
 
     def _save_config(self) -> None:
         default = self.state.repo_root.parent / "restore_memory_test_03.json"
-        raw = self.input(f"Plik konfiguracji [{default}]: ").strip().strip('"')
-        path = Path(raw).expanduser().resolve() if raw else default.resolve()
+        raw = normalize_path_input(self.input(f"Plik konfiguracji [{default}]: "))
+        candidate = Path(raw).expanduser() if raw else default
+        if not candidate.is_absolute():
+            candidate = default.parent / candidate
+        if candidate.suffix.casefold() != ".json":
+            candidate = candidate.with_suffix(".json")
+        path = candidate.resolve()
+        try:
+            path.relative_to(self.state.repo_root)
+        except ValueError:
+            pass
+        else:
+            raise ValueError("konfiguracja restore musi być zapisana poza repozytorium")
+        payload = {
+            "schema_version": CONFIG_SCHEMA_VERSION,
+            "settings": self.state.settings.to_dict(),
+            "selected_sources": [str(path) for path in self.state.selected_paths],
+        }
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self.state.settings.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         self._write(f"Zapisano: {path}")
 
     def _load_config(self) -> None:
-        raw = self.input("Ścieżka konfiguracji JSON: ").strip().strip('"')
+        raw = normalize_path_input(self.input("Ścieżka konfiguracji JSON: "))
         if not raw:
             return
-        self.state.settings = MemoryRestoreSettings.from_json(raw)
+        path = Path(raw).expanduser().resolve()
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+        self.state.settings = MemoryRestoreSettings.from_json(path)
+        configured = payload.get("selected_sources", []) if isinstance(payload, dict) else []
+        selected: list[Path] = []
+        missing: list[str] = []
+        for item in configured if isinstance(configured, list) else []:
+            source = Path(str(item)).expanduser().resolve()
+            if source.is_file():
+                selected.append(source)
+            else:
+                missing.append(str(source))
         self.state.discovered.clear()
-        self.state.selected_paths.clear()
-        self._write("Wczytano konfigurację. Zeskanuj katalog i wybierz źródła.")
+        self.state.selected_paths = selected
+        self._write(f"Wczytano konfigurację i {len(selected)} istniejących źródeł.")
+        if missing:
+            self._write("Brakujące źródła: " + "; ".join(missing))
 
     def _progress(self, event: dict) -> None:
         name = str(event.get("event", "progress"))
@@ -328,4 +402,6 @@ def human_size(size: int) -> str:
     return f"{size} B"
 
 
-__all__ = ["MemoryRestoreCursorApp", "MemoryRestoreUiState", "human_size"]
+__all__ = [
+    "MemoryRestoreCursorApp", "MemoryRestoreUiState", "human_size", "normalize_path_input",
+]

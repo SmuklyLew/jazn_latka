@@ -61,6 +61,18 @@ def _print_event(event: dict) -> None:
     print(json.dumps(event, ensure_ascii=False, sort_keys=True, default=str), flush=True)
 
 
+def _configured_sources(path: Path | None) -> list[Path]:
+    if path is None:
+        return []
+    payload = json.loads(path.expanduser().resolve().read_text(encoding="utf-8-sig"))
+    if not isinstance(payload, dict):
+        return []
+    raw = payload.get("selected_sources", [])
+    if not isinstance(raw, list):
+        return []
+    return [Path(str(item)).expanduser().resolve() for item in raw]
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.write_example_config:
@@ -72,9 +84,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     settings = _settings(args)
+    configured_sources = _configured_sources(args.config)
     if not args.no_ui and not args.plan_only and not args.sources and not args.all_discovered:
         try:
-            return MemoryRestoreCursorApp(ROOT, settings=settings).run()
+            app = MemoryRestoreCursorApp(ROOT, settings=settings)
+            app.state.selected_paths = [path for path in configured_sources if path.is_file()]
+            return app.run()
         except KeyboardInterrupt:
             print("Przerwano przez Ctrl+X/Ctrl+C.", file=sys.stderr)
             return 130
@@ -83,8 +98,10 @@ def main(argv: list[str] | None = None) -> int:
         sources = [path.expanduser().resolve() for path in args.sources]
     elif args.all_discovered:
         sources = [item.path for item in discover_restore_sources(settings.source_directory, recursive=settings.recursive_scan)]
+    elif configured_sources:
+        sources = configured_sources
     else:
-        raise SystemExit("Tryb bez UI wymaga --source (wielokrotnie) albo --all-discovered.")
+        raise SystemExit("Tryb bez UI wymaga --source, --all-discovered albo selected_sources w konfiguracji.")
 
     orchestrator = MemoryRestoreOrchestrator(settings, tool_root=ROOT, callback=_print_event)
     if args.plan_only:
