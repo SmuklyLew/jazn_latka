@@ -197,7 +197,7 @@ class MemoryRebuildCoordinator:
                         "error_type": type(exc).__name__, "error": str(exc),
                     })
                     if not continue_on_error:
-                        break
+                        raise
         return {
             "ok": bool(results) and all(row["ok"] for row in results),
             "database": str(self.paths.archive_chats),
