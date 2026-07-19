@@ -1911,7 +1911,7 @@ def show_last_report(state: ToolState) -> None:
 def self_test(state: ToolState) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     config = state.config_path or default_config_path()
-    checks.append({"name": "tool_version", "ok": TOOL_VERSION == "24.0.2.04", "value": TOOL_VERSION})
+    checks.append({"name": "tool_version", "ok": TOOL_VERSION == "24.0.2.05", "value": TOOL_VERSION})
     checks.append({"name": "canonical_filename", "ok": Path(__file__).name == "memory_rebuild.py", "value": Path(__file__).name})
     checks.append({"name": "single_file_entrypoint", "ok": callable(globals().get("main"))})
     checks.append({"name": "plan_cancel_supported", "ok": True, "keys": ["Esc", "Q", "PPM"]})

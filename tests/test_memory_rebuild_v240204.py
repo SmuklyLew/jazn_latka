@@ -252,3 +252,31 @@ def test_operator_settings_show_effective_memory_boundaries(tmp_path: Path) -> N
     enabled_rows, _ = module._memory_boundary_rows(MemoryRestoreSettings(candidate_limit=7))
     assert enabled_rows[0] == "Kandydaci doświadczeń: [ON — próbka 7]"
     assert enabled_rows[1:] == rows[1:]
+
+
+def test_operator_self_test_accepts_v240205(tmp_path: Path) -> None:
+    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
+    module_name = "memory_rebuild_v240205_self_test"
+    spec = importlib.util.spec_from_file_location(module_name, tool_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    source = tmp_path / "exports"
+    source.mkdir()
+    state = module.ToolState(
+        settings=_settings(source, tmp_path / "test_03"),
+        config_path=tmp_path / "memory_rebuild_v24.json",
+        ui_mode="text",
+    )
+
+    report = module.self_test(state)
+    version_check = next(item for item in report["checks"] if item["name"] == "tool_version")
+
+    assert version_check == {
+        "name": "tool_version",
+        "ok": True,
+        "value": "24.0.2.05",
+    }
+    assert report["ok"] is True
