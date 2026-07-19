@@ -71,6 +71,7 @@ class ChatExportImporter:
                     source=reader.info,
                     export_relation="new_export",
                     conversations=plans,
+                    warnings=list(reader.record_warnings),
                 )
 
     def import_one(
@@ -126,6 +127,8 @@ class ChatExportImporter:
                     "source_validation_completed",
                     crc_checked=reader.info.crc_checked,
                     crc_ok=reader.info.crc_ok,
+                    canonical_conversation_members=len(reader.info.conversation_members),
+                    shared_conversation_members=len(reader.info.shared_conversations_members),
                 )
                 active = store.load_active_states()
                 if dry_run:
@@ -158,6 +161,7 @@ class ChatExportImporter:
                         database_path=str(store.path),
                         elapsed_seconds=round(time.monotonic() - started, 6),
                         validation=store.validate(full=False),
+                        warnings=list(reader.record_warnings),
                     )
 
                 relation_plans = []
@@ -194,6 +198,11 @@ class ChatExportImporter:
                         "schema_version": SCHEMA_VERSION,
                         "relations": relation_counts,
                         "writes": writes,
+                        "source_members": {
+                            "canonical_conversations": list(reader.info.conversation_members),
+                            "shared_link_metadata": list(reader.info.shared_conversations_members),
+                        },
+                        "reader_warnings": list(reader.record_warnings),
                         "truth_boundary": (
                             "Import tworzy źródłowe archiwum i indeks. Nie tworzy automatycznie "
                             "wspomnień, emocji, refleksji ani kanonu książki."
@@ -235,11 +244,14 @@ class ChatExportImporter:
                     elapsed_seconds=round(time.monotonic() - started, 6),
                     validation=validation,
                     errors=errors,
-                    warnings=(
-                        [f"conflicts_recorded={writes.get('conflicts', 0)}"]
-                        if writes.get("conflicts", 0)
-                        else []
-                    ),
+                    warnings=[
+                        *reader.record_warnings,
+                        *(
+                            [f"conflicts_recorded={writes.get('conflicts', 0)}"]
+                            if writes.get("conflicts", 0)
+                            else []
+                        ),
+                    ],
                 )
 
     def import_many(

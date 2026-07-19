@@ -21,6 +21,9 @@ from latka_jazn.version import schema_version
 SCHEMA_VERSION = schema_version("chat_export_reader")
 VOLATILE_METADATA_KEYS = frozenset({"lpe_keep_patch_ijhw"})
 DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024
+CANONICAL_CONVERSATIONS_NAME = "conversations.json"
+SHARED_CONVERSATIONS_NAME = "shared_conversations.json"
+NUMBERED_CONVERSATIONS_RE = re.compile(r"^conversations(?:[-_ ]?)(\d+)\.json$", re.IGNORECASE)
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -55,6 +58,51 @@ def _safe_member_name(name: str) -> str:
     if re.match(r"^[A-Za-z]:", value):
         raise ValueError(f"absolute archive entry is forbidden: {name!r}")
     return value
+
+
+def _member_basename(name: str) -> str:
+    return PurePosixPath(str(name).replace("\\", "/")).name.casefold()
+
+
+def _conversation_member_kind(name: str) -> tuple[str, int | None]:
+    base = _member_basename(name)
+    if base == SHARED_CONVERSATIONS_NAME:
+        return "shared_metadata", None
+    if base == CANONICAL_CONVERSATIONS_NAME:
+        return "canonical", -1
+    match = NUMBERED_CONVERSATIONS_RE.fullmatch(base)
+    if match:
+        return "canonical", int(match.group(1))
+    return "other", None
+
+
+def _select_export_members(names: Iterator[str] | list[str] | tuple[str, ...]) -> tuple[tuple[str, ...], tuple[str, ...], str | None]:
+    values = tuple(str(name) for name in names)
+    if len(values) != len(set(values)):
+        raise ValueError("archive contains duplicate member paths")
+    casefolded: dict[str, str] = {}
+    for name in values:
+        key = name.casefold()
+        previous = casefolded.get(key)
+        if previous is not None and previous != name:
+            raise ValueError(f"archive contains case-colliding member paths: {previous!r}, {name!r}")
+        casefolded[key] = name
+
+    canonical: list[tuple[int, str, str]] = []
+    shared: list[str] = []
+    html: list[str] = []
+    for name in values:
+        kind, ordinal = _conversation_member_kind(name)
+        if kind == "canonical":
+            canonical.append((ordinal if ordinal is not None else 0, name.casefold(), name))
+        elif kind == "shared_metadata":
+            shared.append(name)
+        elif _member_basename(name) == "chat.html":
+            html.append(name)
+    canonical.sort(key=lambda item: (item[0], item[1]))
+    shared.sort(key=str.casefold)
+    html.sort(key=lambda item: (len(PurePosixPath(item).parts), item.casefold()))
+    return tuple(item[2] for item in canonical), tuple(shared), (html[0] if html else None)
 
 
 def iter_json_array_objects(stream: TextIO, *, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Iterator[dict[str, Any]]:
@@ -116,6 +164,27 @@ def iter_json_array_objects(stream: TextIO, *, chunk_size: int = DEFAULT_CHUNK_S
         if position > chunk_size:
             buffer = buffer[position:]
             position = 0
+
+
+def probe_json_source_kind(path: str | Path) -> str:
+    """Classify a JSON source from its first array record without loading the full file."""
+
+    source = Path(path).expanduser().resolve()
+    if _member_basename(source.name) == SHARED_CONVERSATIONS_NAME:
+        return "shared_metadata"
+    try:
+        with source.open("r", encoding="utf-8-sig", errors="strict", newline="") as stream:
+            first = next(iter_json_array_objects(stream), None)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        return "other"
+    if first is None:
+        return "empty_array"
+    if isinstance(first.get("mapping"), dict):
+        return "conversation"
+    shared_keys = {"id", "conversation_id", "title", "is_anonymous"}
+    if shared_keys.issubset(first):
+        return "shared_metadata"
+    return "other"
 
 
 def _read_js_object_assignment(handle: BinaryIO, marker: bytes, *, chunk_size: int = 1024 * 1024) -> dict[str, str]:
@@ -365,34 +434,53 @@ def build_conversation_graph(conversation: dict[str, Any], *, assets_map: dict[s
 
 
 class ChatExportReader:
-    """Read ChatGPT exports without treating rendered HTML as canonical conversation order."""
+    """Read lossless ChatGPT conversation sources and keep shared-link metadata separate."""
 
     def __init__(self, source: str | Path, *, verify_crc: bool = True) -> None:
         self.path = Path(source).expanduser().resolve()
         self.verify_crc = bool(verify_crc)
         self._zip: zipfile.ZipFile | None = None
+        self._conversation_members: tuple[str, ...] = ()
+        self._shared_conversation_members: tuple[str, ...] = ()
+        self._record_warnings: list[str] = []
+        self._skipped_metadata_records = 0
+        self._duplicate_conversation_records = 0
         self.info = self._inspect_source()
         self._assets_map: dict[str, str] | None = None
+
+    @property
+    def record_warnings(self) -> tuple[str, ...]:
+        return tuple(self._record_warnings)
 
     def _inspect_source(self) -> ExportSourceInfo:
         if not self.path.exists():
             raise FileNotFoundError(self.path)
         if self.path.is_dir():
-            json_path = next(iter(sorted(self.path.glob("**/conversations.json"))), None)
-            html_path = next(iter(sorted(self.path.glob("**/chat.html"))), None)
-            if json_path is None and html_path is None:
-                raise ValueError("directory does not contain conversations.json or chat.html")
+            files = [item for item in self.path.rglob("*") if item.is_file()]
+            rel_names = [item.relative_to(self.path).as_posix() for item in files]
+            canonical_rel, shared_rel, html_rel = _select_export_members(rel_names)
+            if not canonical_rel and not shared_rel and html_rel is None:
+                raise ValueError("directory does not contain conversation JSON, shared-link metadata, or chat.html")
+            canonical = tuple(str(self.path / PurePosixPath(name)) for name in canonical_rel)
+            shared = tuple(str(self.path / PurePosixPath(name)) for name in shared_rel)
+            html_path = str(self.path / PurePosixPath(html_rel)) if html_rel else None
+            self._conversation_members = canonical
+            self._shared_conversation_members = shared
             digest = hashlib.sha256()
             size = 0
-            for item in (json_path, html_path):
-                if item and item.is_file():
-                    item_hash = sha256_file(item)
-                    digest.update(item.relative_to(self.path).as_posix().encode("utf-8"))
-                    digest.update(item_hash.encode("ascii"))
-                    size += item.stat().st_size
+            for item_name in (*canonical, *shared, *((html_path,) if html_path else ())):
+                item = Path(item_name)
+                item_hash = sha256_file(item)
+                digest.update(item.relative_to(self.path).as_posix().encode("utf-8"))
+                digest.update(item_hash.encode("ascii"))
+                size += item.stat().st_size
             return ExportSourceInfo(
-                str(self.path), self.path.name, "directory", digest.hexdigest(), size,
-                str(json_path) if json_path else None, str(html_path) if html_path else None, False, True,
+                path=str(self.path), source_name=self.path.name, source_kind="directory",
+                sha256=digest.hexdigest(), size_bytes=size,
+                conversations_member=canonical[0] if canonical else None,
+                html_member=html_path, crc_checked=False, crc_ok=True,
+                conversation_members=canonical,
+                shared_conversations_members=shared,
             )
         suffix = self.path.suffix.lower()
         source_hash = sha256_file(self.path)
@@ -401,11 +489,9 @@ class ChatExportReader:
             archive = zipfile.ZipFile(self.path, "r")
             try:
                 names = [_safe_member_name(info.filename) for info in archive.infolist() if not info.is_dir()]
-                lowered = {name.lower(): name for name in names}
-                conversations = next((name for low, name in lowered.items() if low.endswith("conversations.json")), None)
-                html = next((name for low, name in lowered.items() if low.endswith("chat.html")), None)
-                if conversations is None and html is None:
-                    raise ValueError("ZIP does not contain conversations.json or chat.html")
+                canonical, shared, html = _select_export_members(names)
+                if not canonical and not shared and html is None:
+                    raise ValueError("ZIP does not contain conversation JSON, shared-link metadata, or chat.html")
                 crc_ok = True
                 if self.verify_crc:
                     bad = archive.testzip()
@@ -413,40 +499,62 @@ class ChatExportReader:
                     if bad:
                         raise zipfile.BadZipFile(f"CRC failure in {bad}")
                 self._zip = archive
+                self._conversation_members = canonical
+                self._shared_conversation_members = shared
                 return ExportSourceInfo(
-                    str(self.path), self.path.name, "zip", source_hash, size,
-                    conversations, html, self.verify_crc, crc_ok,
+                    path=str(self.path), source_name=self.path.name, source_kind="zip",
+                    sha256=source_hash, size_bytes=size,
+                    conversations_member=canonical[0] if canonical else None,
+                    html_member=html, crc_checked=self.verify_crc, crc_ok=crc_ok,
+                    conversation_members=canonical,
+                    shared_conversations_members=shared,
                 )
             except Exception:
                 archive.close()
                 raise
         if suffix == ".json":
-            return ExportSourceInfo(str(self.path), self.path.name, "json", source_hash, size, str(self.path), None, False, True)
+            kind, _ = _conversation_member_kind(self.path.name)
+            if kind == "shared_metadata":
+                shared = (str(self.path),)
+                canonical: tuple[str, ...] = ()
+            else:
+                canonical = (str(self.path),)
+                shared = ()
+            self._conversation_members = canonical
+            self._shared_conversation_members = shared
+            return ExportSourceInfo(
+                path=str(self.path), source_name=self.path.name, source_kind="json",
+                sha256=source_hash, size_bytes=size,
+                conversations_member=canonical[0] if canonical else None,
+                html_member=None, crc_checked=False, crc_ok=True,
+                conversation_members=canonical,
+                shared_conversations_members=shared,
+            )
         if suffix in {".html", ".htm"}:
-            return ExportSourceInfo(str(self.path), self.path.name, "html", source_hash, size, None, str(self.path), False, True)
+            return ExportSourceInfo(
+                path=str(self.path), source_name=self.path.name, source_kind="html",
+                sha256=source_hash, size_bytes=size, conversations_member=None,
+                html_member=str(self.path), crc_checked=False, crc_ok=True,
+            )
         raise ValueError(f"unsupported export source: {self.path}")
 
     @contextmanager
-    def _conversation_stream(self) -> Iterator[TextIO]:
-        if self.info.source_kind == "zip" and self.info.conversations_member:
+    def _conversation_stream(self, member: str) -> Iterator[TextIO]:
+        if self.info.source_kind == "zip":
             assert self._zip is not None
-            raw = self._zip.open(self.info.conversations_member, "r")
+            raw = self._zip.open(member, "r")
             text = io.TextIOWrapper(raw, encoding="utf-8-sig", errors="strict", newline="")
             try:
                 yield text
             finally:
                 text.close()
             return
-        path = Path(self.info.conversations_member or "")
-        if self.info.source_kind == "directory" and path.is_file():
+        path = Path(member)
+        if path.is_file():
             with path.open("r", encoding="utf-8-sig", errors="strict", newline="") as handle:
                 yield handle
             return
-        if self.info.source_kind == "json":
-            with self.path.open("r", encoding="utf-8-sig", errors="strict", newline="") as handle:
-                yield handle
-            return
-        raise ValueError("canonical conversations.json is not available")
+        raise ValueError(f"canonical conversation member is unavailable: {member}")
 
     def assets_map(self) -> dict[str, str]:
         if self._assets_map is not None:
@@ -465,34 +573,85 @@ class ChatExportReader:
         return dict(result)
 
     def iter_raw_conversations(self) -> Iterator[dict[str, Any]]:
-        with self._conversation_stream() as stream:
-            yield from iter_json_array_objects(stream)
+        if not self._conversation_members:
+            if self._shared_conversation_members:
+                raise ValueError(
+                    "shared_conversations contains shared-link metadata only; "
+                    "a canonical conversations.json or numbered conversation JSON file is required"
+                )
+            raise ValueError("canonical conversations.json is not available")
+        yielded = 0
+        for member in self._conversation_members:
+            with self._conversation_stream(member) as stream:
+                for index, conversation in enumerate(iter_json_array_objects(stream), start=1):
+                    mapping = conversation.get("mapping")
+                    if not isinstance(mapping, dict) or not mapping:
+                        self._skipped_metadata_records += 1
+                        self._record_warnings.append(
+                            f"skipped metadata-only conversation record: member={member!r}, index={index}, "
+                            f"conversation_id={conversation.get('id') or conversation.get('conversation_id')!r}"
+                        )
+                        continue
+                    yielded += 1
+                    yield conversation
+        if yielded == 0:
+            raise ValueError("canonical conversation source contains no records with a non-empty mapping tree")
 
     def iter_graphs(self) -> Iterator[ConversationGraph]:
         assets = self.assets_map()
+        seen: dict[str, str] = {}
         for conversation in self.iter_raw_conversations():
-            yield build_conversation_graph(conversation, assets_map=assets)
+            graph = build_conversation_graph(conversation, assets_map=assets)
+            previous = seen.get(graph.conversation_id)
+            if previous is None:
+                seen[graph.conversation_id] = graph.semantic_tree_sha256
+                yield graph
+                continue
+            if previous == graph.semantic_tree_sha256:
+                self._duplicate_conversation_records += 1
+                self._record_warnings.append(
+                    f"skipped identical duplicate conversation record: conversation_id={graph.conversation_id}"
+                )
+                continue
+            raise ValueError(
+                "divergent duplicate conversation id across conversation JSON members: "
+                f"{graph.conversation_id}"
+            )
 
     def inspect(self) -> ExportInspectionReport:
         report = ExportInspectionReport(source=self.info, relation="parsed_export")
+        report.canonical_conversation_member_count = len(self._conversation_members)
+        report.shared_conversation_member_count = len(self._shared_conversation_members)
+        if not self._conversation_members:
+            if self._shared_conversation_members:
+                report.errors.append(
+                    "shared_conversations is shared-link metadata, not a lossless conversation history source"
+                )
+            else:
+                report.errors.append("conversation JSON is missing; rendered HTML alone is not a lossless source")
+            return report
         all_times: list[float] = []
-        for graph in self.iter_graphs():
-            report.conversation_count += 1
-            report.node_count += graph.node_count
-            report.message_count += graph.message_count
-            report.branch_point_count += len(graph.branch_points)
-            report.alternate_branch_node_count += sum(1 for node in graph.nodes if not node.on_current_path)
-            report.asset_reference_count += sum(len(node.assets) for node in graph.nodes)
-            report.structural_only_timestamp_count += sum(1 for node in graph.nodes if node.timestamp_status == "structural_only")
-            report.missing_timestamp_count += sum(1 for node in graph.nodes if node.timestamp_status == "missing")
-            if graph.first_message_time is not None:
-                all_times.append(graph.first_message_time)
-            if graph.last_message_time is not None:
-                all_times.append(graph.last_message_time)
+        try:
+            for graph in self.iter_graphs():
+                report.conversation_count += 1
+                report.node_count += graph.node_count
+                report.message_count += graph.message_count
+                report.branch_point_count += len(graph.branch_points)
+                report.alternate_branch_node_count += sum(1 for node in graph.nodes if not node.on_current_path)
+                report.asset_reference_count += sum(len(node.assets) for node in graph.nodes)
+                report.structural_only_timestamp_count += sum(1 for node in graph.nodes if node.timestamp_status == "structural_only")
+                report.missing_timestamp_count += sum(1 for node in graph.nodes if node.timestamp_status == "missing")
+                if graph.first_message_time is not None:
+                    all_times.append(graph.first_message_time)
+                if graph.last_message_time is not None:
+                    all_times.append(graph.last_message_time)
+        except (ValueError, json.JSONDecodeError) as exc:
+            report.errors.append(str(exc))
+        report.skipped_metadata_record_count = self._skipped_metadata_records
+        report.duplicate_conversation_record_count = self._duplicate_conversation_records
+        report.warnings.extend(self._record_warnings)
         report.first_message_time = min(all_times) if all_times else None
         report.last_message_time = max(all_times) if all_times else None
-        if not self.info.conversations_member:
-            report.errors.append("conversations.json is missing; rendered HTML alone is not a lossless source")
         return report
 
     def close(self) -> None:

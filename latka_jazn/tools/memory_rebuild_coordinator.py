@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Sequence
-import json
 
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
-from latka_jazn.tools.chat_export_reader import ChatExportReader
+from latka_jazn.tools.chat_export_reader import ChatExportReader, probe_json_source_kind
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
@@ -17,31 +15,73 @@ from latka_jazn.tools.memory_rebuild_common import (
 )
 
 
+def _chat_source_details(reader: ChatExportReader) -> dict[str, Any]:
+    info = reader.info
+    return {
+        "kind": "chat_export",
+        "path": str(reader.path),
+        "sha256": info.sha256,
+        "size_bytes": info.size_bytes,
+        "source_kind": info.source_kind,
+        "canonical_conversations_available": info.has_canonical_conversations,
+        "canonical_conversation_members": list(info.conversation_members),
+        "shared_link_metadata_available": info.has_shared_link_metadata,
+        "shared_conversation_members": list(info.shared_conversations_members),
+        "shared_metadata_only": info.shared_metadata_only,
+        "chat_html_available": bool(info.html_member),
+        "rejection_reason": (
+            "shared_conversations_metadata_only"
+            if info.shared_metadata_only
+            else "chat_export_without_canonical_conversation_json"
+            if not info.has_canonical_conversations
+            else None
+        ),
+    }
+
+
 def detect_source(path: str | Path) -> dict[str, Any]:
+    """Detect a rebuild source without loading a large JSON file into memory."""
+
     source = Path(path).expanduser().resolve()
     if not source.exists():
         raise FileNotFoundError(source)
-    if source.is_dir() or source.suffix.lower() in {".zip", ".html", ".htm"}:
+    suffix = source.suffix.lower()
+    if source.is_dir() or suffix in {".zip", ".html", ".htm"}:
         with ChatExportReader(source, verify_crc=True) as reader:
-            return {"kind": "chat_export", "path": str(source), "sha256": reader.info.sha256,
-                    "size_bytes": reader.info.size_bytes, "source_kind": reader.info.source_kind,
-                    "canonical_conversations_available": bool(reader.info.conversations_member),
-                    "chat_html_available": bool(reader.info.html_member)}
-    if source.suffix.lower() in {".jsonl", ".ndjson"}:
+            return _chat_source_details(reader)
+    if suffix in {".jsonl", ".ndjson"}:
         reader = JournalReader(source)
-        return {"kind": "journal", "path": str(source), "sha256": reader.sha256,
-                "size_bytes": source.stat().st_size, "source_kind": reader.format}
-    if source.suffix.lower() == ".json":
-        value = json.loads(source.read_text(encoding="utf-8-sig"))
-        if isinstance(value, list) and value and isinstance(value[0], dict) and ("mapping" in value[0] or "current_node" in value[0]):
+        return {
+            "kind": "journal", "path": str(source), "sha256": reader.sha256,
+            "size_bytes": source.stat().st_size, "source_kind": reader.format,
+        }
+    if suffix == ".json":
+        source_kind = probe_json_source_kind(source)
+        if source_kind in {"conversation", "shared_metadata", "empty_array"}:
             with ChatExportReader(source, verify_crc=False) as reader:
-                return {"kind": "chat_export", "path": str(source), "sha256": reader.info.sha256,
-                        "size_bytes": reader.info.size_bytes, "source_kind": "json",
-                        "canonical_conversations_available": True, "chat_html_available": False}
+                details = _chat_source_details(reader)
+                details["json_probe_kind"] = source_kind
+                return details
         reader = JournalReader(source)
-        return {"kind": "journal", "path": str(source), "sha256": reader.sha256,
-                "size_bytes": source.stat().st_size, "source_kind": reader.format}
+        return {
+            "kind": "journal", "path": str(source), "sha256": reader.sha256,
+            "size_bytes": source.stat().st_size, "source_kind": reader.format,
+            "json_probe_kind": source_kind,
+        }
     raise ValueError(f"unsupported source: {source}")
+
+
+def _unique_sources_in_user_order(sources: Sequence[str | Path]) -> list[Path]:
+    ordered: list[Path] = []
+    seen: set[str] = set()
+    for raw in sources:
+        path = Path(raw).expanduser().resolve()
+        key = str(path).casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(path)
+    return ordered
 
 
 class MemoryRebuildCoordinator:
@@ -60,83 +100,127 @@ class MemoryRebuildCoordinator:
             experience = store.validate(full=False)
         with CatalogStore(self.paths.import_catalog) as store:
             catalog = store.validate(full=False)
-        checks = {"archive_chats": archive, "journal": journal, "memory_jazn": memory,
-                  "experience": experience, "import_catalog": catalog}
-        return {"ok": all(item["ok"] for item in checks.values()), "schema_version": SCHEMA_VERSION,
-                "root": str(self.paths.root), "databases": self.paths.as_dict(), "validation": checks,
-                "truth_boundary": TRUTH_BOUNDARY}
+        checks = {
+            "archive_chats": archive, "journal": journal, "memory_jazn": memory,
+            "experience": experience, "import_catalog": catalog,
+        }
+        return {
+            "ok": all(item["ok"] for item in checks.values()), "schema_version": SCHEMA_VERSION,
+            "root": str(self.paths.root), "databases": self.paths.as_dict(), "validation": checks,
+            "truth_boundary": TRUTH_BOUNDARY,
+        }
 
     def inspect(self, sources: Sequence[str | Path]) -> dict[str, Any]:
         self.init()
         reports = []
         with CatalogStore(self.paths.import_catalog) as catalog:
-            for raw in sources:
-                path = Path(raw).expanduser().resolve()
+            for path in _unique_sources_in_user_order(sources):
                 detected = detect_source(path)
                 if detected["kind"] == "chat_export":
                     with ChatExportReader(path, verify_crc=True) as reader:
-                        if not reader.info.conversations_member:
-                            report = {**detected, "ok": False, "assets_only": True,
-                                      "error": "chat.html alone is not lossless; conversations.json is required"}
-                        else:
-                            report = {**detected, **reader.inspect().to_dict(), "ok": True}
+                        inspection = reader.inspect().to_dict()
+                        report = {**detected, **inspection}
+                        if not report.get("ok"):
+                            report["metadata_only"] = bool(reader.info.shared_metadata_only)
+                            report["assets_only"] = bool(
+                                reader.info.html_member
+                                and not reader.info.has_canonical_conversations
+                                and not reader.info.has_shared_link_metadata
+                            )
                 else:
                     report = {**detected, **JournalReader(path).inspect()}
-                report["catalog_source_id"] = catalog.source(path, detected["sha256"], detected["kind"],
-                                                              detected["size_bytes"], report)
+                report["catalog_source_id"] = catalog.source(
+                    path, detected["sha256"], detected["kind"], detected["size_bytes"], report,
+                )
                 reports.append(report)
-        return {"ok": all(report.get("ok") for report in reports), "reports": reports}
+        return {"ok": bool(reports) and all(report.get("ok") for report in reports), "reports": reports}
 
     def plan_chats(self, sources: Sequence[str | Path], details: bool = False) -> dict[str, Any]:
         self.init()
         plans = []
         importer = ChatExportImporter()
-        for source in sources:
+        for source in _unique_sources_in_user_order(sources):
             plan = importer.plan(source, self.paths.archive_chats).to_dict()
             if not details:
                 plan.pop("conversations", None)
             plans.append(plan)
-        return {"ok": True, "plans": plans}
+        return {"ok": bool(plans) and all(plan.get("ok", True) for plan in plans), "plans": plans}
 
-    def import_chats(self, sources: Sequence[str | Path], dry_run: bool = False,
-                     full_validation: bool = True, continue_on_error: bool = False) -> dict[str, Any]:
+    def import_chats(
+        self,
+        sources: Sequence[str | Path],
+        dry_run: bool = False,
+        full_validation: bool = True,
+        continue_on_error: bool = False,
+    ) -> dict[str, Any]:
         self.init()
         results = []
         importer = ChatExportImporter()
-        ordered = sorted((Path(x).expanduser().resolve() for x in sources),
-                         key=lambda p: p.stat().st_size if p.is_file() else 0, reverse=True)
+        ordered = _unique_sources_in_user_order(sources)
         with CatalogStore(self.paths.import_catalog) as catalog:
             for source in ordered:
-                with ChatExportReader(source, verify_crc=True) as reader:
-                    if not reader.info.conversations_member:
-                        raise ValueError("chat.html alone cannot be imported; conversations.json is required")
-                    source_id = catalog.source(source, reader.info.sha256, "chat_export", reader.info.size_bytes, asdict(reader.info))
-                operation = catalog.begin("import_chats_dry_run" if dry_run else "import_chats",
-                                          source_id, DATABASE_FILENAMES["archive_chats"])
+                operation: str | None = None
                 try:
-                    result = importer.import_one(source, self.paths.archive_chats, dry_run=dry_run,
-                                                 full_validation=full_validation).to_dict()
-                    result["ok"] = result.get("validation", {}).get("ok", True)
+                    with ChatExportReader(source, verify_crc=True) as reader:
+                        if not reader.info.has_canonical_conversations:
+                            if reader.info.shared_metadata_only:
+                                raise ValueError(
+                                    "shared_conversations contains link metadata only and cannot be imported as chat history"
+                                )
+                            raise ValueError(
+                                "chat.html alone cannot be imported; conversations.json or numbered conversation JSON is required"
+                            )
+                        source_id = catalog.source(
+                            source, reader.info.sha256, "chat_export", reader.info.size_bytes,
+                            reader.info.to_dict(),
+                        )
+                    operation = catalog.begin(
+                        "import_chats_dry_run" if dry_run else "import_chats",
+                        source_id,
+                        DATABASE_FILENAMES["archive_chats"],
+                    )
+                    result = importer.import_one(
+                        source,
+                        self.paths.archive_chats,
+                        dry_run=dry_run,
+                        full_validation=full_validation,
+                    ).to_dict()
+                    result["ok"] = result.get("validation", {}).get("ok", True) and not result.get("errors")
                     result["operation_id"] = operation
                     catalog.finish(operation, result, "verified" if result["ok"] else "needs_review")
                     results.append(result)
                 except BaseException as exc:
-                    catalog.fail(operation, exc)
-                    results.append({"ok": False, "source": str(source), "operation_id": operation,
-                                    "error_type": type(exc).__name__, "error": str(exc)})
+                    if operation is not None:
+                        catalog.fail(operation, exc)
+                    results.append({
+                        "ok": False, "source": str(source), "operation_id": operation,
+                        "error_type": type(exc).__name__, "error": str(exc),
+                    })
                     if not continue_on_error:
-                        break
-        return {"ok": bool(results) and all(row["ok"] for row in results),
-                "database": str(self.paths.archive_chats), "dry_run": dry_run, "results": results,
-                "automatic_l2": False, "automatic_l3": False}
+                        raise
+        return {
+            "ok": bool(results) and all(row["ok"] for row in results),
+            "database": str(self.paths.archive_chats),
+            "dry_run": dry_run,
+            "source_order": [str(path) for path in ordered],
+            "source_order_policy": "explicit_user_order_deduplicated",
+            "results": results,
+            "automatic_l2": False,
+            "automatic_l3": False,
+        }
 
     def import_journal(self, source: str | Path, dry_run: bool = False) -> dict[str, Any]:
         self.init()
         reader = JournalReader(source)
         with CatalogStore(self.paths.import_catalog) as catalog:
-            source_id = catalog.source(reader.path, reader.sha256, "journal", reader.path.stat().st_size, reader.inspect())
-            operation = catalog.begin("import_journal_dry_run" if dry_run else "import_journal",
-                                      source_id, DATABASE_FILENAMES["journal"])
+            source_id = catalog.source(
+                reader.path, reader.sha256, "journal", reader.path.stat().st_size, reader.inspect(),
+            )
+            operation = catalog.begin(
+                "import_journal_dry_run" if dry_run else "import_journal",
+                source_id,
+                DATABASE_FILENAMES["journal"],
+            )
             try:
                 with JournalStore(self.paths.journal) as journal:
                     result = journal.import_reader(reader, dry_run=dry_run)
@@ -188,19 +272,31 @@ class MemoryRebuildCoordinator:
                 for report in reports:
                     source_db = report["source"]
                     for candidate_id in report["candidate_ids"]:
-                        row = experience.con.execute("SELECT * FROM candidates WHERE candidate_id=?", (candidate_id,)).fetchone()
-                        catalog.link(source_db, row["source_type"], row["source_record_id"],
-                                     DATABASE_FILENAMES["experience"], "experience_candidate",
-                                     candidate_id, "candidate_from_source", row["source_sha256"])
-                payload = {"ok": True, "reports": reports, "counts": experience.counts(),
-                           "automatic_experience": False, "automatic_l2": False, "automatic_l3": False}
+                        row = experience.con.execute(
+                            "SELECT * FROM candidates WHERE candidate_id=?", (candidate_id,),
+                        ).fetchone()
+                        catalog.link(
+                            source_db, row["source_type"], row["source_record_id"],
+                            DATABASE_FILENAMES["experience"], "experience_candidate",
+                            candidate_id, "candidate_from_source", row["source_sha256"],
+                        )
+                payload = {
+                    "ok": True, "reports": reports, "counts": experience.counts(),
+                    "automatic_experience": False, "automatic_l2": False, "automatic_l3": False,
+                }
                 catalog.finish(operation, payload)
                 return payload
             except BaseException as exc:
                 catalog.fail(operation, exc)
                 raise
 
-    def approve_experience(self, candidate_id: str, confirm_candidate_id: str, approved_by: str, reason: str) -> dict[str, Any]:
+    def approve_experience(
+        self,
+        candidate_id: str,
+        confirm_candidate_id: str,
+        approved_by: str,
+        reason: str,
+    ) -> dict[str, Any]:
         self.init()
         with ExperienceStore(self.paths.experience) as experience, CatalogStore(self.paths.import_catalog) as catalog:
             operation = catalog.begin("approve_experience", None, DATABASE_FILENAMES["experience"])
@@ -283,10 +379,17 @@ class MemoryRebuildCoordinator:
             experience = {**store.validate(full), "counts": store.counts()}
         with CatalogStore(self.paths.import_catalog) as store:
             catalog = {**store.validate(full), "counts": store.status()}
-        results = {"archive_chats": archive, "journal": journal, "memory_jazn": memory,
-                   "experience": experience, "import_catalog": catalog}
-        return {"ok": all(item["ok"] for item in results.values()), "mode": "full" if full else "quick",
-                "databases": self.paths.as_dict(), "results": results, "truth_boundary": TRUTH_BOUNDARY}
+        results = {
+            "archive_chats": archive, "journal": journal, "memory_jazn": memory,
+            "experience": experience, "import_catalog": catalog,
+        }
+        return {
+            "ok": all(item["ok"] for item in results.values()),
+            "mode": "full" if full else "quick",
+            "databases": self.paths.as_dict(),
+            "results": results,
+            "truth_boundary": TRUTH_BOUNDARY,
+        }
 
     def status(self) -> dict[str, Any]:
         self.init()
@@ -300,11 +403,20 @@ class MemoryRebuildCoordinator:
             experience_counts = experience.counts()
         with CatalogStore(self.paths.import_catalog) as catalog:
             catalog_counts = catalog.status()
-        return {"ok": True, "root": str(self.paths.root), "databases": self.paths.as_dict(),
-                "counts": {"archive_chats": archive_counts, "journal": journal_counts,
-                           "memory_jazn": memory_counts, "experience": experience_counts,
-                           "import_catalog": catalog_counts},
-                "automatic_l2": False, "automatic_l3": False}
+        return {
+            "ok": True,
+            "root": str(self.paths.root),
+            "databases": self.paths.as_dict(),
+            "counts": {
+                "archive_chats": archive_counts,
+                "journal": journal_counts,
+                "memory_jazn": memory_counts,
+                "experience": experience_counts,
+                "import_catalog": catalog_counts,
+            },
+            "automatic_l2": False,
+            "automatic_l3": False,
+        }
 
     def search(self, query: str, limit: int = 20) -> dict[str, Any]:
         self.init()
@@ -320,11 +432,22 @@ class MemoryRebuildCoordinator:
             experiences = experience.search(query, limit)
         with MemoryTierStore(self.paths.memory_jazn) as memory:
             rows = memory.con.execute(
-                "SELECT memory_id,tier,kind,content,domain,truth_status,confidence,importance FROM memory_records WHERE active=1 AND content LIKE ? ORDER BY importance DESC LIMIT ?",
+                "SELECT memory_id,tier,kind,content,domain,truth_status,confidence,importance "
+                "FROM memory_records WHERE active=1 AND content LIKE ? ORDER BY importance DESC LIMIT ?",
                 (f"%{query}%", limit),
             ).fetchall()
-        return {"ok": True, "query": query,
-                "results": {"memory_jazn": [dict(row) for row in rows], "experience": experiences,
-                            "journal": journals, "archive_chats": chats},
-                "search_order": [DATABASE_FILENAMES[key] for key in ("memory_jazn", "experience", "journal", "archive_chats")],
-                "import_catalog_used_for_recall": False}
+        return {
+            "ok": True,
+            "query": query,
+            "results": {
+                "memory_jazn": [dict(row) for row in rows],
+                "experience": experiences,
+                "journal": journals,
+                "archive_chats": chats,
+            },
+            "search_order": [
+                DATABASE_FILENAMES[key]
+                for key in ("memory_jazn", "experience", "journal", "archive_chats")
+            ],
+            "import_catalog_used_for_recall": False,
+        }
