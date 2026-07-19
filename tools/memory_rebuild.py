@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Jaźń / Łatka — Memory Rebuild v24.0.2.04
+Jaźń / Łatka — Memory Rebuild v24.0.2.05
 
 Pełne narzędzie operatorskie do kontrolowanego odtworzenia pięciu baz pamięci:
   - archive_chats.sqlite3
@@ -49,7 +49,7 @@ import time
 import traceback
 from typing import Any, Callable, Iterable, Sequence
 
-TOOL_VERSION = "24.0.2.04"
+TOOL_VERSION = "24.0.2.05"
 TOOL_SCHEMA = "jazn_memory_rebuild_tool/v24"
 CONFIG_NAME = "memory_rebuild_v24.json"
 LEGACY_CONFIG_NAME = "restore_memory_v24.json"
@@ -1588,6 +1588,34 @@ def edit_baselines(state: ToolState) -> None:
         state.last_plan = None
 
 
+def _memory_boundary_rows(settings: MemoryRestoreSettings) -> tuple[list[str], list[str]]:
+    """Render effective memory boundaries without exposing unsafe switches."""
+
+    candidate_limit = max(0, int(settings.candidate_limit))
+    candidate_status = "OFF" if candidate_limit == 0 else f"ON — próbka {candidate_limit}"
+    rows = [
+        f"Kandydaci doświadczeń: [{candidate_status}]",
+        "Automatyczna akceptacja doświadczeń: [OFF — STAŁE]",
+        "Automatyczna promocja L2: [OFF — STAŁE]",
+        "Automatyczna promocja L3: [OFF — STAŁE]",
+        "Analiza grafik i mediów: [OFF — NIEOBSŁUGIWANA]",
+    ]
+    details = [
+        (
+            "OFF nie tworzy kandydatów. Wartość dodatnia tworzy wyłącznie próbkę do ręcznego review; "
+            "nie zatwierdza doświadczeń i nie zapisuje L2/L3."
+        ),
+        "Narzędzie nigdy nie zatwierdza doświadczeń automatycznie. To stała granica bezpieczeństwa.",
+        "Memory Rebuild nie promuje rekordów do L2. Promocja wymaga osobnego, jawnego procesu.",
+        "Memory Rebuild nie promuje rekordów do L3. Wymagane są request, decyzja i promotion ledger.",
+        (
+            "Pipeline odbudowy rozmów nie analizuje ani nie promuje obrazów. Media pozostają odłożonym "
+            "etapem L0 z osobnym audytem i deduplikacją."
+        ),
+    ]
+    return rows, details
+
+
 SETTING_SPECS = [
     ("recursive_scan", "Skanuj podkatalogi", "Wyszukuje źródła także w podkatalogach."),
     ("verify_after_each", "Walidacja po każdym źródle", "Po każdym eksporcie i dzienniku uruchamia kontrolę pięciu baz."),
@@ -1611,10 +1639,11 @@ def edit_settings(state: ToolState) -> None:
         for field_name, label, detail in SETTING_SPECS:
             rows.append(f"{label}: [{'ON' if bool(getattr(s, field_name)) else 'OFF'}]")
             details.append(detail)
+        boundary_rows, boundary_details = _memory_boundary_rows(s)
         rows.extend(
             [
                 f"Postęp co rozmów: [{s.progress_every_conversations}]",
-                f"Próbka kandydatów: [{s.candidate_limit}]",
+                *boundary_rows,
                 "Przywróć bezpieczne ustawienia pierwszego pełnego testu",
                 "Wróć",
             ]
@@ -1622,7 +1651,7 @@ def edit_settings(state: ToolState) -> None:
         details.extend(
             [
                 "Częstotliwość zdarzeń postępu z importera. Minimum 1.",
-                "0 nie tworzy żadnej próbki. Wartość dodatnia tworzy tylko kandydatów do review, bez L2/L3.",
+                *boundary_details,
                 "Backup ON, pełna walidacja ON, stop po błędzie, audyt ON, tylko dry-run, tematy OFF, kandydaci 0.",
                 "Powrót do głównego menu.",
             ]
@@ -1634,7 +1663,14 @@ def edit_settings(state: ToolState) -> None:
             details=details,
             selected=min(selected, len(rows) - 1),
             subtitle="Bezpieczne wartości są domyślne",
-            groups={0: "SKAN I WALIDACJA", 4: "BEZPIECZEŃSTWO", 5: "KLASYFIKACJA", 10: "POSTĘP I KANDYDACI", 12: "RESET"},
+            groups={
+                0: "SKAN I WALIDACJA",
+                4: "BEZPIECZEŃSTWO",
+                5: "KLASYFIKACJA",
+                10: "POSTĘP I KANDYDACI",
+                12: "GRANICE PAMIĘCI",
+                16: "RESET",
+            },
         )
         if choice is None or choice == len(rows) - 1:
             return
@@ -1653,7 +1689,10 @@ def edit_settings(state: ToolState) -> None:
             if raw is None:
                 continue
             payload["candidate_limit"] = max(0, int(raw))
-        elif choice == 12:
+        elif 12 <= choice <= 15:
+            # Wiersze informacyjne. Nie są przełącznikami i nie zmieniają konfiguracji.
+            continue
+        elif choice == 16:
             payload.update(
                 {
                     "recursive_scan": False,
@@ -1701,6 +1740,8 @@ def build_plan(state: ToolState, *, cancellable: bool = False) -> MemoryRestoreP
 
 def _plan_text(plan: MemoryRestorePlan) -> str:
     payload = plan.to_dict()
+    candidate_limit = int(payload.get("settings", {}).get("candidate_limit") or 0)
+    candidate_status = "OFF" if candidate_limit == 0 else f"ON — próbka {candidate_limit}"
     lines = [
         f"MEMORY REBUILD v{TOOL_VERSION}",
         "",
@@ -1714,9 +1755,18 @@ def _plan_text(plan: MemoryRestorePlan) -> str:
         f"Backup: {payload.get('settings', {}).get('create_backup')}",
         f"Walidacja po każdym: {payload.get('settings', {}).get('verify_after_each')}",
         f"Pełna walidacja: {payload.get('settings', {}).get('full_validation')}",
-        f"Automatyczne doświadczenia: {payload.get('automatic_experience')}",
-        f"Automatyczne L2: {payload.get('automatic_l2')}",
-        f"Automatyczne L3: {payload.get('automatic_l3')}",
+        f"Kandydaci doświadczeń: {candidate_status}",
+        (
+            "Automatyczna akceptacja doświadczeń: "
+            f"{payload.get('automatic_experience_approval', payload.get('automatic_experience'))}"
+        ),
+        f"Automatyczna promocja L2: {payload.get('automatic_l2')}",
+        f"Automatyczna promocja L3: {payload.get('automatic_l3')}",
+        (
+            "Analiza grafik i mediów: "
+            f"{payload.get('media_analysis_enabled')} "
+            f"(obsługiwana={payload.get('media_analysis_supported')})"
+        ),
         "",
         "PREFLIGHT:",
         json.dumps(payload.get("target_preflight"), ensure_ascii=False, indent=2, sort_keys=True, default=str),

@@ -227,8 +227,11 @@ class MemoryRestoreOrchestrator:
                     "database": str(self.coordinator.paths.archive_chats),
                     "dry_run": False,
                     "results": [imported],
+                    "automatic_experience_approval": False,
                     "automatic_l2": False,
                     "automatic_l3": False,
+                    "media_analysis_enabled": False,
+                    "media_analysis_supported": False,
                 }
             except BaseException as exc:
                 catalog.fail(operation, exc)
@@ -285,8 +288,11 @@ class MemoryRestoreOrchestrator:
             "planned_chat_count": len(plan.chats),
             "planned_journal_count": len(plan.journals),
             "automatic_experience": False,
+            "automatic_experience_approval": False,
             "automatic_l2": False,
             "automatic_l3": False,
+            "media_analysis_enabled": False,
+            "media_analysis_supported": False,
             "steps": [],
             "errors": [],
         }

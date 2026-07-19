@@ -1,4 +1,4 @@
-# Odbudowa pamięci Jaźni — Memory Rebuild v24.0.2.04
+# Odbudowa pamięci Jaźni — Memory Rebuild v24.0.2.05
 
 Kanonicznym programem operatorskim jest wyłącznie:
 
@@ -28,7 +28,20 @@ memory/sqlite/
 
 Import, analiza tematów ani utworzenie kandydata nie promują automatycznie treści do L2 lub L3.
 
-## Źródła rozmów w v24.0.2.04
+## Jawne granice w interfejsie v24.0.2.05
+
+Ekran ustawień pokazuje teraz faktyczny stan całego pipeline'u, a nie tylko pola konfiguracyjne:
+
+- `Kandydaci doświadczeń: OFF` przy limicie `0`; wartość dodatnia oznacza wyłącznie próbkę do ręcznego review.
+- `Automatyczna akceptacja doświadczeń: OFF — STAŁE`.
+- `Automatyczna promocja L2: OFF — STAŁE`.
+- `Automatyczna promocja L3: OFF — STAŁE`.
+- `Analiza grafik i mediów: OFF — NIEOBSŁUGIWANA`.
+
+Cztery ostatnie pozycje są informacyjne i nie można ich przełączyć. Nie dodano ukrytej drogi do automatycznego
+zatwierdzania doświadczeń ani promocji pamięci. Grafiki pozostają osobnym, odłożonym etapem archiwum L0.
+
+## Źródła rozmów w v24.0.2.05
 
 Reader rozróżnia trzy rodzaje danych:
 

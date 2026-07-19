@@ -115,8 +115,11 @@ class MemoryRestorePlan:
             "target_preflight": self.target_preflight,
             "current_status": self.current_status,
             "automatic_experience": False,
+            "automatic_experience_approval": False,
             "automatic_l2": False,
             "automatic_l3": False,
+            "media_analysis_enabled": False,
+            "media_analysis_supported": False,
         }
 
 def confirmation_token(settings: MemoryRestoreSettings) -> str:

@@ -96,6 +96,12 @@ def test_plan_simulates_previous_exports_in_temporary_database(tmp_path: Path) -
     ).plan([first, second])
 
     assert plan.ok
+    plan_payload = plan.to_dict()
+    assert plan_payload["automatic_experience_approval"] is False
+    assert plan_payload["automatic_l2"] is False
+    assert plan_payload["automatic_l3"] is False
+    assert plan_payload["media_analysis_enabled"] is False
+    assert plan_payload["media_analysis_supported"] is False
     assert plan.chats[0]["plan"]["conversation_counters"] == {"new": 1}
     assert plan.chats[1]["plan"]["conversation_counters"] == {"extends_active": 1}
     assert plan.chats[1]["temporary_simulation"]["updated_conversations"] == 1
@@ -206,9 +212,9 @@ def test_explicit_source_order_is_preserved_and_duplicates_are_removed(tmp_path:
     assert [Path(item["path"]) for item in plan.chats] == [newer.resolve(), older.resolve()]
 
 
-def test_operator_tool_reports_v240204_and_orders_dates_not_sizes(tmp_path: Path) -> None:
+def test_operator_tool_reports_v240205_and_orders_dates_not_sizes(tmp_path: Path) -> None:
     tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
-    module_name = "memory_rebuild_v240204_test"
+    module_name = "memory_rebuild_v240205_test"
     spec = importlib.util.spec_from_file_location(module_name, tool_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -218,5 +224,31 @@ def test_operator_tool_reports_v240204_and_orders_dates_not_sizes(tmp_path: Path
     older = RestoreSource(tmp_path / "chatGPT-export-2025.07.18.zip", 999_999, ".zip")
     newer = RestoreSource(tmp_path / "chatGPT-export-2025.07.19.zip", 1, ".zip")
 
-    assert module.TOOL_VERSION == "24.0.2.04"
+    assert module.TOOL_VERSION == "24.0.2.05"
     assert module._ordered_restore_sources([newer, older]) == [older, newer]
+
+
+def test_operator_settings_show_effective_memory_boundaries(tmp_path: Path) -> None:
+    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
+    module_name = "memory_rebuild_v240205_boundaries_test"
+    spec = importlib.util.spec_from_file_location(module_name, tool_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    rows, details = module._memory_boundary_rows(MemoryRestoreSettings(candidate_limit=0))
+
+    assert rows == [
+        "Kandydaci doświadczeń: [OFF]",
+        "Automatyczna akceptacja doświadczeń: [OFF — STAŁE]",
+        "Automatyczna promocja L2: [OFF — STAŁE]",
+        "Automatyczna promocja L3: [OFF — STAŁE]",
+        "Analiza grafik i mediów: [OFF — NIEOBSŁUGIWANA]",
+    ]
+    assert len(details) == len(rows)
+    assert all("ON" not in row for row in rows)
+
+    enabled_rows, _ = module._memory_boundary_rows(MemoryRestoreSettings(candidate_limit=7))
+    assert enabled_rows[0] == "Kandydaci doświadczeń: [ON — próbka 7]"
+    assert enabled_rows[1:] == rows[1:]
