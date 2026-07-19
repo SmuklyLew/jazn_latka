@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Jaźń / Łatka — Memory Rebuild v24.0.2.01
+Jaźń / Łatka — Memory Rebuild v24.0.2.04
 
 Pełne narzędzie operatorskie do kontrolowanego odtworzenia pięciu baz pamięci:
   - archive_chats.sqlite3
@@ -17,6 +17,8 @@ Nie duplikuje transakcji, schematów ani klasyfikatorów. Zapewnia:
   - kompletny tryb tekstowy bez prompt_toolkit,
   - plan bez zapisu, jawne potwierdzenie odbudowy i raportowanie,
   - wybór wielu eksportów ChatGPT oraz dziennika,
+  - rozpoznawanie conversations.json i ponumerowanych plików rozmów,
+  - oddzielenie shared_conversations jako metadanych linków bez treści,
   - tryb developerski poza repo albo jawną odbudowę systemową,
   - backup całego zestawu SQLite, walidację po każdym źródle,
   - porównanie z wcześniejszymi bazami testowymi,
@@ -36,6 +38,7 @@ import argparse
 from dataclasses import dataclass, field
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -46,7 +49,7 @@ import time
 import traceback
 from typing import Any, Callable, Iterable, Sequence
 
-TOOL_VERSION = "24.0.2.01"
+TOOL_VERSION = "24.0.2.04"
 TOOL_SCHEMA = "jazn_memory_rebuild_tool/v24"
 CONFIG_NAME = "memory_rebuild_v24.json"
 LEGACY_CONFIG_NAME = "restore_memory_v24.json"
@@ -166,6 +169,26 @@ def _human_size(value: int | float | None) -> str:
             return f"{size:.2f} {unit}"
         size /= 1024.0
     return f"{int(value or 0)} B"
+
+
+_SOURCE_DATE_RE = re.compile(
+    r"(?<!\d)(20\d{2})[._-](0[1-9]|1[0-2])[._-](0[1-9]|[12]\d|3[01])(?!\d)"
+)
+
+
+def _source_order_key(value: RestoreSource | Path) -> tuple[Any, ...]:
+    path = value.path if isinstance(value, RestoreSource) else Path(value)
+    match = _SOURCE_DATE_RE.search(path.name) or _SOURCE_DATE_RE.search(str(path.parent))
+    if match:
+        year, month, day = (int(part) for part in match.groups())
+        return (0, year, month, day, path.name.casefold(), str(path).casefold())
+    return (1, path.name.casefold(), str(path).casefold())
+
+
+def _ordered_restore_sources(values: Iterable[RestoreSource | Path]) -> list[RestoreSource | Path]:
+    """Order dated exports chronologically; never use file size as chronology."""
+
+    return sorted(values, key=_source_order_key)
 
 
 def _short_path(value: str | Path, width: int = 72) -> str:
@@ -1456,10 +1479,10 @@ def _main_details(state: ToolState) -> list[str]:
 
 
 def select_sources(state: ToolState) -> None:
-    discovered = discover_restore_sources(
+    discovered = _ordered_restore_sources(discover_restore_sources(
         state.settings.source_directory,
         recursive=state.settings.recursive_scan,
-    )
+    ))
     # zachowaj ręcznie dodane źródła spoza katalogu
     by_key: dict[str, RestoreSource | Path] = {
         os.path.normcase(str(item.path.resolve())): item for item in discovered
@@ -1838,7 +1861,7 @@ def show_last_report(state: ToolState) -> None:
 def self_test(state: ToolState) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     config = state.config_path or default_config_path()
-    checks.append({"name": "tool_version", "ok": TOOL_VERSION == "24.0.2.01", "value": TOOL_VERSION})
+    checks.append({"name": "tool_version", "ok": TOOL_VERSION == "24.0.2.04", "value": TOOL_VERSION})
     checks.append({"name": "canonical_filename", "ok": Path(__file__).name == "memory_rebuild.py", "value": Path(__file__).name})
     checks.append({"name": "single_file_entrypoint", "ok": callable(globals().get("main"))})
     checks.append({"name": "plan_cancel_supported", "ok": True, "keys": ["Esc", "Q", "PPM"]})
@@ -1856,7 +1879,12 @@ def self_test(state: ToolState) -> dict[str, Any]:
             state.settings.source_directory,
             recursive=state.settings.recursive_scan,
         )
-        checks.append({"name": "source_discovery", "ok": True, "count": len(discovered)})
+        ordered = _ordered_restore_sources(discovered)
+        checks.append({
+            "name": "source_discovery", "ok": True, "count": len(discovered),
+            "order_policy": "date_then_name_not_size",
+            "ordered_names": [item.path.name if isinstance(item, RestoreSource) else Path(item).name for item in ordered],
+        })
     except Exception as exc:
         checks.append({"name": "source_discovery", "ok": False, "error": str(exc)})
     try:
@@ -2034,11 +2062,11 @@ def _headless_sources(args: argparse.Namespace, state: ToolState) -> list[Path]:
         return [path.expanduser().resolve() for path in args.sources]
     if args.all_discovered:
         return [
-            item.path
-            for item in discover_restore_sources(
+            item.path if isinstance(item, RestoreSource) else Path(item)
+            for item in _ordered_restore_sources(discover_restore_sources(
                 state.settings.source_directory,
                 recursive=state.settings.recursive_scan,
-            )
+            ))
         ]
     if state.selected_paths:
         return list(state.selected_paths)

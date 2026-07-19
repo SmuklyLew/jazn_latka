@@ -1,6 +1,13 @@
-# Odbudowa pamięci Jaźni — importer pięciu baz
+# Odbudowa pamięci Jaźni — Memory Rebuild v24.0.2.04
 
-Narzędzie `tools/memory_rebuild.py` buduje od zera pięć baz o stałych nazwach:
+Kanonicznym programem operatorskim jest wyłącznie:
+
+```powershell
+py -X utf8 .\tools\memory_rebuild.py
+```
+
+Silnik pozostaje w `latka_jazn.tools.memory_restore`, lecz nie jest drugim programem dla operatora.
+Narzędzie buduje i weryfikuje pięć baz:
 
 ```text
 memory/sqlite/
@@ -13,158 +20,112 @@ memory/sqlite/
 
 ## Granica działania
 
-- `archive_chats.sqlite3` zachowuje pełne eksporty ChatGPT, drzewa rozmów, gałęzie i FTS.
-- `journal.sqlite3` jest żywym dziennikiem z wersjami wpisów i źródłami.
-- `experience.sqlite3` przechowuje kandydatów oraz ręcznie zatwierdzone doświadczenia.
-- `memory_jazn.sqlite3` jest kanoniczną bazą L1/L2/L3 istniejącego runtime.
-- `import_catalog.sqlite3` rejestruje źródła, operacje, walidacje i relacje między bazami.
+- `archive_chats.sqlite3` jest bezstratnym L0 rozmów i ich gałęzi.
+- `journal.sqlite3` przechowuje wpisy dziennika oraz rewizje.
+- `experience.sqlite3` przechowuje kandydatów i ręcznie zatwierdzone doświadczenia.
+- `memory_jazn.sqlite3` jest bazą L1/L2/L3 runtime.
+- `import_catalog.sqlite3` zapisuje źródła, operacje, walidacje i relacje.
 
-Importer nie promuje automatycznie treści do L2 ani L3. Sam import rozmowy, wpisu dziennika lub utworzenie kandydata doświadczenia nie dowodzi aktywnego wspomnienia.
+Import, analiza tematów ani utworzenie kandydata nie promują automatycznie treści do L2 lub L3.
+
+## Źródła rozmów w v24.0.2.04
+
+Reader rozróżnia trzy rodzaje danych:
+
+1. `conversations.json` — kanoniczna historia rozmów.
+2. Ponumerowane pliki rozmów, np. `conversations-001.json`, `conversations-002.json` — części jednego dużego eksportu, czytane w kolejności numerycznej.
+3. `shared_conversations.json` — metadane udostępnionych linków: ID, conversation ID, tytuł i ustawienie anonimowości. Nie jest to treść rozmowy i nie może tworzyć pustych czatów.
+
+Dopasowanie jest wykonywane po dokładnej nazwie pliku. Nazwy takie jak `my_conversations.json` nie są uznawane za kanoniczne źródło.
+
+`chat.html` pozostaje pomocniczym źródłem mapy załączników. Sam HTML nie jest bezstratnym archiwum drzewa rozmowy.
+
+## Plan bez zapisu
+
+Plan jest narastającą symulacją:
+
+1. tworzona jest tymczasowa kopia istniejącego `archive_chats.sqlite3`;
+2. pierwszy ZIP jest planowany i symulacyjnie importowany wyłącznie do tej kopii;
+3. drugi ZIP jest porównywany z wynikiem pierwszego;
+4. kolejne źródła widzą wcześniejsze `new`, `identical`, `older_subset`, `extends_active` i konflikty;
+5. katalog docelowy nie jest modyfikowany.
+
+Dzięki temu liczników z wielu ZIP-ów nie sumuje się tak, jakby każdy był porównywany z pustą bazą.
+
+Plan zapisuje SHA-256 i rozmiar każdego źródła. Wykonanie jest blokowane, gdy plik zmieni się po planowaniu.
+
+## Kolejność źródeł
+
+Jawna kolejność wybrana przez operatora jest zachowywana, a powtórzona ścieżka jest usuwana bez zmiany pierwszego wystąpienia.
+
+Dla automatycznego wyboru wszystkich plików program używa daty `YYYY-MM-DD`, `YYYY.MM.DD` albo `YYYY_MM_DD` z nazwy lub ścieżki. Rozmiar pliku nie jest traktowany jako chronologia. Gdy daty nie ma, używana jest stabilna kolejność nazw.
+
+## Walidacja rekordów
+
+Rekord rozmowy musi mieć:
+
+- identyfikator rozmowy;
+- niepuste drzewo `mapping`;
+- poprawne węzły i role możliwe do zbudowania przez reader.
+
+Rekord bez `mapping` jest raportowany jako metadany i pomijany. Jeżeli dwa ponumerowane pliki zawierają identyczną rozmowę, druga kopia jest pomijana z ostrzeżeniem. Rozbieżne wersje tego samego ID w jednym eksporcie blokują import i wymagają kontroli.
+
+ZIP jest sprawdzany pod kątem CRC, niebezpiecznych ścieżek, powtórzonych nazw i kolizji wielkości liter.
 
 ## Zalecana kolejność odbudowy
 
-Najpierw należy wgrać **wszystkie dostępne eksporty rozmów** do `archive_chats.sqlite3`, a dopiero potem wykonywać analizę tematów i budować kandydatów doświadczeń. Dzięki temu segmentacja i deduplikacja widzą pełniejszy kontekst, najnowsze rewizje oraz starsze podzbiory rozmów.
-
-Zalecana kolejność:
-
-1. `init` w nowym katalogu testowym.
-2. `inspect`, `plan-chats` i `import-chats` dla wszystkich eksportów.
-3. Ponowny import wybranych ZIP-ów w celu potwierdzenia idempotencji.
-4. Pełne `verify` archiwum rozmów.
-5. Import dziennika i jego weryfikacja.
-6. `analyse-topics` dopiero po zakończeniu importu rozmów.
-7. `build-experience-candidates` dopiero po skompletowaniu L0.
-8. Ręczny przegląd i ewentualne zatwierdzanie pojedynczych kandydatów.
-
-Dziennik może zostać zaimportowany wcześniej, ale tworzenie pochodnych kandydatów warto odłożyć do czasu skompletowania rozmów.
-
-## Pierwsze uruchomienie
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master init
-```
-
-Komenda jest idempotentna. Nie usuwa istniejących danych.
-
-## Inspekcja źródeł
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master --json inspect `
-  D:\Eksporty\chat-export.zip `
-  D:\Eksporty\dziennik.json
-```
-
-`chat.html` jest używany jako źródło pomocnicze do `assetsJson`. Sam HTML bez `conversations.json` nie jest importowany jako bezstratne archiwum, ponieważ nie zachowuje pełnego drzewa i alternatywnych gałęzi. Najbezpieczniejszym źródłem pozostaje cały oficjalny ZIP eksportu zawierający oba pliki.
-
-## Plan i import rozmów
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master plan-chats `
-  D:\Eksporty\chat-export-small.zip --details
-
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master import-chats `
-  D:\Eksporty\chat-export-small.zip
-```
-
-Można podać wiele eksportów. Narzędzie zachowuje istniejącą deduplikację SHA-256, rozmów, węzłów, starszych podzbiorów i rewizji. Import większego/nowszego eksportu jako pierwszego zwykle ogranicza liczbę późniejszych zmian aktywnej wersji rozmów, ale poprawność nie zależy od kolejności.
-
-## Import żywego dziennika
-
-Obsługiwane są:
-
-- obiekt JSON z `meta` i `entries`;
-- lista wpisów JSON;
-- JSONL/NDJSON;
-- znaczniki czasu `event_time_start`, `timestamp`, `datetime` i starsze pole `data`.
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master import-journal `
-  D:\Eksporty\dziennik.json
-```
-
-Jeden wpis pozostaje jednym wpisem. Stare pola fan-out są oznaczane do kontroli, lecz nie tworzą automatycznie osobnych wspomnień, emocji i refleksji. Typy sceniczne, fabularne, sny, prompty i wpisy systemowo-meta zachowują oddzielną granicę prawdy.
-
-## Kandydaci doświadczeń
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master `
-  build-experience-candidates --from all
-
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master `
-  review-experiences --limit 50
-```
-
-Filtr odrzuca między innymi:
-
-- krótkie potwierdzenia, tracebacki i techniczny szum;
-- `book_scene`, `symbolic` i `draft`;
-- sceny, fabułę, sny, prompty oraz wpisy systemowe/meta;
-- wpisy bez czasu źródłowego;
-- analizy mediów bez jawnego charakteru przeżycia lub reakcji;
-- nieufne `inferred`, które nie mają jawnego typu refleksyjnego lub doświadczeniowego;
-- segmenty rozmów w trybach technicznych, systemowych, redakcyjnych i roleplay.
-
-Raport podaje osobne liczniki przyczyn odrzucenia. Kandydat nadal nie jest doświadczeniem. Kandydaci `pending_review` nie uczestniczą w recall `experience.sqlite3`; wyszukiwanie tej warstwy zwraca dopiero ręcznie zatwierdzone doświadczenia.
-
-Zatwierdzenie wymaga dwukrotnego podania identyfikatora:
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master `
-  approve-experience `
-  --candidate-id ID `
-  --confirm-candidate-id ID `
-  --approved-by Krzysztof `
-  --reason "sprawdzone ze źródłem"
-```
-
-Zatwierdzenie doświadczenia nie tworzy L2 ani L3.
-
-## Weryfikacja
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master verify
-```
-
-Poprawny wynik wymaga dla wszystkich baz:
-
-- `integrity_check=ok`;
-- pustego `foreign_key_check`;
-- braku błędów schematu.
-
-Tryb szybki:
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master verify --quick
-```
-
-## Status i wyszukiwanie
-
-```powershell
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master status
-python -X utf8 tools\memory_rebuild.py --root D:\.AI\jazn_latka_master search "jezioro"
-```
-
-Kolejność wyszukiwania:
-
-1. `memory_jazn.sqlite3`;
-2. zatwierdzone rekordy z `experience.sqlite3`;
-3. `journal.sqlite3`;
-4. `archive_chats.sqlite3`.
-
-`import_catalog.sqlite3` nie uczestniczy w recall autobiograficznym.
-
-## Bezpieczna kolejność testów
-
 1. Utwórz nowy pusty katalog testowy.
-2. Uruchom `init`.
-3. Wykonaj `inspect` na jednym małym eksporcie.
-4. Wykonaj `plan-chats`.
-5. Uruchom `import-chats`.
-6. Zaimportuj ten sam ZIP ponownie i sprawdź brak duplikatów.
-7. Zaimportuj pozostałe eksporty rozmów i uruchom pełne `verify`.
-8. Zaimportuj dziennik.
-9. Uruchom `analyse-topics`.
-10. Utwórz małą próbkę kandydatów doświadczeń.
-11. Sprawdź próbkę ręcznie.
-12. Uruchom pełne `verify`.
-13. Dopiero później buduj pełną kolejkę kandydatów i zatwierdzaj pojedyncze rekordy.
+2. Wybierz wszystkie eksporty rozmów w kolejności chronologicznej.
+3. Uruchom plan bez zapisu i sprawdź źródła odrzucone.
+4. Sprawdź liczniki relacji każdego kolejnego ZIP-a.
+5. Uruchom odbudowę L0.
+6. Ponownie zaimportuj wybrany ZIP i potwierdź idempotencję.
+7. Uruchom pełne `verify`: `integrity_check=ok` i pusty `foreign_key_check` dla wszystkich baz.
+8. Zaimportuj i zweryfikuj dziennik.
+9. Dopiero po skompletowaniu L0 uruchom analizę tematów.
+10. Utwórz małą próbkę kandydatów doświadczeń i przeglądaj ją ręcznie.
+11. L2 i L3 odbudowuj osobnym, jawnym procesem promocji.
+
+## Tryby celu
+
+### Developer
+
+Cel musi znajdować się poza repozytorium. Domyślny token zapisu:
+
+```text
+RESTORE
+```
+
+### System
+
+Wymaga pełnego runtime, poprawnego `doctor`, aktualnej integralności oraz zatrzymanego daemona. Token jest związany z dokładną ścieżką:
+
+```text
+SYSTEM_RESTORE:<bezwzględna ścieżka>
+```
+
+## Raporty
+
+Każdy przebieg zapisuje osobny katalog z:
+
+- `settings.json`;
+- `plan.json`;
+- `events.jsonl`;
+- raportem każdego importu;
+- pełną walidacją;
+- `summary.json`;
+- opcjonalnym porównaniem do testów bazowych.
+
+Podsumowanie podaje osobno liczbę źródeł zaplanowanych i wykonanych. Etap z błędem nie może zostać oznaczony jako poprawny.
+
+## Granice bezpieczeństwa
+
+- brak automatycznego zatwierdzania doświadczeń;
+- brak automatycznej promocji L2/L3;
+- sceny książkowe i roleplay nie stają się wydarzeniami fizycznymi;
+- sny i wizje pozostają materiałem symbolicznym;
+- surowe źródła nie są zmieniane;
+- plan nie zapisuje do celu;
+- zmiana źródła po planie blokuje wykonanie;
+- błąd domyślnie zatrzymuje dalszy import;
+- `continue_on_error` wymaga jawnego włączenia.
