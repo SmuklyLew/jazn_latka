@@ -120,16 +120,16 @@ class OperationalWorkLoop:
             adapter_mode = "chatgpt_host_bridge"
         elif provider == "openai":
             adapter_mode = "openai_responses_api"
-        elif provider == "lmstudio":
-            adapter_mode = "lmstudio_local_api"
+        elif provider == "ollama":
+            adapter_mode = "ollama_local_api"
         elif configured:
             adapter_mode = "configured_model_backend"
 
         blockers: list[str] = []
         if adapter_mode == "openai_responses_api" and not configured:
             blockers.append("openai_requires_explicit_model_and_OPENAI_API_KEY")
-        if adapter_mode == "lmstudio_local_api" and not configured:
-            blockers.append("lmstudio_requires_running_server_and_explicit_loaded_model_identifier")
+        if adapter_mode == "ollama_local_api" and not configured:
+            blockers.append("ollama_requires_running_server_and_explicit_installed_model")
         if adapter_mode == "deterministic_runtime" and route not in {
             "runtime_health_check", "runtime_truth", "self_architecture_audit", "memory_audit"
         }:
@@ -194,7 +194,7 @@ class OperationalWorkLoop:
                 "can": [
                     "classify_and_route", "retrieve_validated_memory", "build_public_reasoning_audit",
                     "plan_and_authorize_tools", "execute_runtime_tools", "validate_candidate_output",
-                    "persist_validated_events_and_procedures", "use_chatgpt_openai_or_lmstudio_as_language_backend",
+                    "persist_validated_events_and_procedures", "use_chatgpt_openai_or_ollama_as_language_backend",
                 ],
                 "cannot_without_external_layer": ["generate_model_guided_language_when_only_null_adapter_is_active"],
                 "cannot_claim": [

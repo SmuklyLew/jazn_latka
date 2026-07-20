@@ -9,11 +9,10 @@ from .chatgpt_runtime_adapter import ChatgptRuntimeAdapter
 from .terminal_runtime_adapter import TerminalRuntimeAdapter
 from .openai_responses_adapter import OpenaiResponsesAdapter
 from .local_llm_adapter import LocalLlmAdapter
-from .lmstudio_runtime_adapter import LmStudioRuntimeAdapter
 from .adapter_contract import ContractOnlyModelAdapter, backend_config_skeletons
 from .openai_compatible_local_adapter import OpenAICompatibleLocalAdapter
 from latka_jazn.core.llm_route_resolver import apply_llm_route_to_config, build_llm_route_status
-from latka_jazn.core.runtime_environment import CHATGPT_ADAPTER, CODEX_ADAPTER, LMSTUDIO_ADAPTER, NULL_ADAPTER, OPENAI_COMPATIBLE_ADAPTER, apply_effective_runtime_adapter, detect_runtime_environment
+from latka_jazn.core.runtime_environment import CHATGPT_ADAPTER, CODEX_ADAPTER, NULL_ADAPTER, OPENAI_COMPATIBLE_ADAPTER, apply_effective_runtime_adapter, detect_runtime_environment
 
 
 _NULL_ALIASES = {"", "null", "none", "off", "fallback", "null_model_adapter"}
@@ -119,14 +118,6 @@ def build_model_adapter(config: Any):
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
             max_output_tokens=int(getattr(config, "model_max_output_tokens", 800)),
         )
-    if name in {"lmstudio", "lm_studio", "lmstudio_runtime", LMSTUDIO_ADAPTER}:
-        return LmStudioRuntimeAdapter(
-            model=str(getattr(config, "lm_studio_model_name", "")),
-            api_base=str(getattr(config, "lm_studio_api_base", "http://127.0.0.1:1234/v1")),
-            timeout_seconds=float(getattr(config, "lm_studio_timeout_seconds", 45.0)),
-            max_output_tokens=int(getattr(config, "lm_studio_max_output_tokens", 800)),
-            root=getattr(config, "root", None),
-        )
     if name in {"codex", "codex_development", CODEX_ADAPTER}:
         return ContractOnlyModelAdapter(
             provider="codex",
@@ -156,8 +147,8 @@ def _environment_availability_basis(environment: Any) -> str | None:
         return "explicit_chat_terminal_command"
     if first == "explicit_command:--chat-open-ai":
         return "explicit_openai_api_bridge_command"
-    if first == "explicit_command:--chat-lm-studio":
-        return "explicit_lmstudio_local_bridge_command"
+    if first in {"explicit_command:--chat-ollama", "explicit_command:--local-llm", "explicit_command:--ollama"}:
+        return "explicit_ollama_local_bridge_command"
     if first == "detected_openai_chatgpt_tool_container":
         return "detected_openai_chatgpt_tool_container"
     if first.startswith("env:"):

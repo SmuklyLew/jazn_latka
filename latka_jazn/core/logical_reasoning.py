@@ -180,7 +180,7 @@ class LogicalReasoner:
         actions: list[str] = []
         if any(x in low for x in ("napraw", "patch", "aktualiz")):
             actions.extend(["zbuduj odtwarzalny patch", "uruchom testy regresyjne", "sprawdź status runtime po restarcie"])
-        if any(x in low for x in ("adapter", "openai", "lm studio", "chatgpt")):
+        if any(x in low for x in ("adapter", "openai", "ollama", "chatgpt")):
             actions.append("oddziel konfigurację adaptera od potwierdzonej generacji i wykonania narzędzi")
         if risks:
             actions.append("zachowaj jawne granice prawdy dla wykrytych ryzyk")

@@ -65,8 +65,8 @@ class SelfArchitectureAuditor:
     SOURCE_GROUNDING = [
         "OpenAI model optimization: reprezentatywne evals i baseline przed zmianą promptu, kodu lub fine-tuningiem.",
         "OpenAI function calling: model zwraca żądanie funkcji; aplikacja wykonuje narzędzie i przekazuje wynik.",
-        "LM Studio tool use: lokalny model prosi o narzędzie, a kod hosta je wykonuje i odsyła rezultat.",
-        "LM Studio model listing: zdolności modelu trzeba odkryć, a nie zakładać; reasoning i tool use zależą od modelu.",
+        "Ollama tool use: lokalny model może poprosić o narzędzie, ale kod runtime je autoryzuje, wykonuje i odsyła rezultat.",
+        "Ollama model listing: dostępność modelu trzeba potwierdzić przez GET /api/tags; nie wolno zakładać, że model jest zainstalowany.",
         "SQLite: integrity_check i foreign_key_check są osobnymi kontrolami spójności.",
     ]
     CAPABILITIES = (
@@ -77,7 +77,7 @@ class SelfArchitectureAuditor:
         ("tool_boundary", ["latka_jazn/core/tool_execution_controller.py", "latka_jazn/core/tool_use_policy.py"], "runtime authorization and execution"),
         ("chatgpt_adapter", ["latka_jazn/model_adapters/chatgpt_runtime_adapter.py"], "host-visible language bridge"),
         ("openai_adapter", ["latka_jazn/model_adapters/openai_responses_adapter.py"], "Responses API generation, structured output and tool requests"),
-        ("lmstudio_adapter", ["latka_jazn/model_adapters/lmstudio_runtime_adapter.py"], "local Responses/chat fallback with capability discovery"),
+        ("ollama_adapter", ["latka_jazn/model_adapters/local_llm_adapter.py"], "native local /api/tags and /api/chat backend"),
         ("privacy_export", ["latka_jazn/core/private_data_export_gate.py", "latka_jazn/tools/package_export.py"], "one plan and private generated-source exclusion"),
         ("trusted_time", ["latka_jazn/core/runtime_daemon.py", "latka_jazn/core/timestamp_policy.py"], "trusted time retention with expiry"),
         ("self_architecture_audit", ["latka_jazn/core/self_architecture_audit.py", "latka_jazn/core/handlers/self_architecture_audit_handler.py"], "read-only self capability audit"),
@@ -128,7 +128,7 @@ class SelfArchitectureAuditor:
             repair.append("P1: przywróć prawidłowy SOURCE_PROVENANCE.json z bazowym commitem i granicą braku .git.")
         repair.extend([
             "P1: live smoke OpenAI wykonuj tylko z chronionym OPENAI_API_KEY i jawnym modelem.",
-            "P1: live smoke LM Studio wykonuj tylko przy uruchomionym lokalnym serwerze i załadowanym modelu.",
+            "P1: live smoke Ollamy wykonuj tylko przy uruchomionym lokalnym serwerze i modelu potwierdzonym przez /api/tags.",
             "P2: fine-tuning rozważaj dopiero po reprezentatywnych evals; ta aktualizacja nie zmienia wag.",
         ])
         backlog = [
@@ -146,7 +146,7 @@ class SelfArchitectureAuditor:
             "Marker aktywnego runtime wskazuje istniejącą bazę bieżącego układu pamięci.",
             "Source-safe nie zawiera local_private_canon_extension.py ani embedded_sources.py.",
             "Model tool call ma executed=false i requires_runtime_authorization=true.",
-            "LM Studio wysyła reasoning/tools tylko po potwierdzeniu odpowiedniej zdolności modelu.",
+            "Ollama nie może wykonać narzędzia samodzielnie; każde tool call wymaga autoryzacji i wyniku runtime.",
             "Audyt nie zwiększa liczby grounded reflections.",
             "Evals operacyjne przechodzą bez twierdzenia o fine-tuningu lub zmianie wag.",
         ]

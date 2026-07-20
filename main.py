@@ -74,7 +74,7 @@ from latka_jazn.nlp_reasoning.source_registry import PolishReasoningSourceRegist
 from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPlanner
 from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
-from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_lm_studio_cli_settings, apply_local_llm_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, run_jsonl_chat_bridge, write_chat_bridge_payload
+from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, run_jsonl_chat_bridge, write_chat_bridge_payload
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
 from latka_jazn.core.cli_normalization import normalize_cli_argv
@@ -136,15 +136,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--openai-timeout", type=float, default=None, help="Timeout sekund dla adaptera OpenAI w --chat-open-ai.")
     parser.add_argument("--openai-max-output-tokens", type=int, default=None, help="Limit output tokens dla adaptera OpenAI w --chat-open-ai.")
     parser.add_argument("--chat-openai", action="store_true", dest="chat_open_ai", help=argparse.SUPPRESS)
-    parser.add_argument("--chat-lm-studio", action="store_true", dest="chat_lm_studio", help="Uruchom lokalny runtime Jaźni z modelem LM Studio przez OpenAI-compatible API; bez OPENAI_API_KEY.")
-    parser.add_argument("--lm-studio-api-base", default=None, help="Bazowy URL lokalnego LM Studio API dla --chat-lm-studio; domyslnie http://127.0.0.1:1234/v1.")
-    parser.add_argument("--lm-studio-model", default=None, help="Model LM Studio dla --chat-lm-studio.")
-    parser.add_argument("--lm-studio-timeout", type=float, default=None, help="Timeout sekund dla adaptera LM Studio.")
-    parser.add_argument("--lm-studio-max-output-tokens", type=int, default=None, help="Limit output tokens dla adaptera LM Studio.")
-    parser.add_argument("--local-llm", "--ollama", action="store_true", dest="local_llm", help="Uruchom runtime z lokalnym lub zewnętrznym backendem OpenAI-compatible jako generatorem kandydata.")
-    parser.add_argument("--local-llm-api-base", default=None, help="Bazowy URL OpenAI-compatible dla --local-llm.")
-    parser.add_argument("--local-llm-model", default=None, help="Nazwa modelu dla --local-llm.")
-    parser.add_argument("--local-llm-provider", default=None, choices=("openai_compatible", "ollama", "llama_cpp"), help="Wskazówka provider-specific dla kolejności endpointów.")
+    parser.add_argument("--chat-ollama", "--ollama", "--chat-ollama", action="store_true", dest="local_llm", help="Uruchom lokalny runtime Jaźni z modelem Ollama przez natywne API /api/chat; bez OPENAI_API_KEY.")
+    parser.add_argument("--ollama-api-base", "--local-llm-api-base", dest="ollama_api_base", default=None, help="Bazowy URL Ollamy; domyślnie http://127.0.0.1:11434.")
+    parser.add_argument("--ollama-model", "--local-llm-model", dest="ollama_model", default=None, help="Nazwa lokalnego modelu Ollama.")
+    parser.add_argument("--ollama-timeout", type=float, default=None, help="Timeout sekund dla adaptera Ollama.")
+    parser.add_argument("--ollama-max-output-tokens", type=int, default=None, help="Limit tokenów odpowiedzi dla adaptera Ollama.")
     parser.add_argument("--bridge-discovery", action="store_true", dest="bridge_discovery", help="Pokaż wykryte mosty runtime: --chat, --chat-gpt, --chat-open-ai i daemon.")
     parser.add_argument("--daemon-run", action="store_true", dest="daemon_run", help="Uruchom foreground daemon stałej aktywnej Jaźni: lokalny HTTP loopback + PID + heartbeat + marker JAZN_ACTIVE_RUNTIME.json.")
     parser.add_argument("--daemon-start", action="store_true", dest="daemon_start", help="Uruchom daemon Jaźni w tle i zwróć status startu.")
@@ -476,10 +472,8 @@ def _runtime_command_from_cli_args(ns: argparse.Namespace) -> str | None:
         return "--chat"
     if getattr(ns, "chat_open_ai", False):
         return "--chat-open-ai"
-    if getattr(ns, "chat_lm_studio", False):
-        return "--chat-lm-studio"
     if getattr(ns, "local_llm", False):
-        return "--local-llm"
+        return "--chat-ollama"
     return None
 
 
@@ -696,7 +690,6 @@ def main(argv: list[str] | None = None) -> int:
         or ns.chat_gpt
         or ns.chat_gpt_final_only
         or ns.chat_open_ai
-        or ns.chat_lm_studio
         or ns.local_llm
         or ns.daemon_send
         or ns.daemon_submit
@@ -963,14 +956,6 @@ def main(argv: list[str] | None = None) -> int:
                 api_base=ns.openai_api_base,
                 timeout_seconds=ns.openai_timeout,
                 max_output_tokens=ns.openai_max_output_tokens,
-            )
-        elif runtime_command == "--chat-lm-studio":
-            cfg = apply_lm_studio_cli_settings(
-                cfg,
-                model=ns.lm_studio_model,
-                api_base=ns.lm_studio_api_base,
-                timeout_seconds=ns.lm_studio_timeout,
-                max_output_tokens=ns.lm_studio_max_output_tokens,
             )
         print(json.dumps(build_startup_status(
             cfg,
@@ -1336,20 +1321,13 @@ def main(argv: list[str] | None = None) -> int:
                 timeout_seconds=ns.openai_timeout,
                 max_output_tokens=ns.openai_max_output_tokens,
             )
-        elif adapter_command == "--chat-lm-studio":
-            cfg = apply_lm_studio_cli_settings(
+        elif adapter_command == "--chat-ollama":
+            cfg = apply_ollama_cli_settings(
                 cfg,
-                model=ns.lm_studio_model,
-                api_base=ns.lm_studio_api_base,
-                timeout_seconds=ns.lm_studio_timeout,
-                max_output_tokens=ns.lm_studio_max_output_tokens,
-            )
-        elif adapter_command == "--local-llm":
-            cfg = apply_local_llm_cli_settings(
-                cfg,
-                model=ns.local_llm_model,
-                api_base=ns.local_llm_api_base,
-                provider=ns.local_llm_provider,
+                model=ns.ollama_model,
+                api_base=ns.ollama_api_base,
+                timeout_seconds=ns.ollama_timeout,
+                max_output_tokens=ns.ollama_max_output_tokens,
             )
         payload = {
             "runtime_version": cfg.version,
@@ -1589,14 +1567,15 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     if ns.local_llm:
-        cfg = apply_local_llm_cli_settings(
+        cfg = apply_ollama_cli_settings(
             config or JaznConfig(),
-            model=ns.local_llm_model,
-            api_base=ns.local_llm_api_base,
-            provider=ns.local_llm_provider,
+            model=ns.ollama_model,
+            api_base=ns.ollama_api_base,
+            timeout_seconds=ns.ollama_timeout,
+            max_output_tokens=ns.ollama_max_output_tokens,
         )
         bridge_text = _message_from_remainder(ns.message)
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--local-llm")
+        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-ollama")
         if daemon_exit is not None:
             return daemon_exit
         output_mode = _bridge_text_output_mode(ns, bridge_text)
@@ -1605,35 +1584,12 @@ def main(argv: list[str] | None = None) -> int:
             config=cfg,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
-            command="--local-llm",
+            command="--chat-ollama",
             stdin=bridge_stdin,
             require_openai_api_key=False,
             output_mode=output_mode,
         )
 
-    if ns.chat_lm_studio:
-        cfg = apply_lm_studio_cli_settings(
-            config or JaznConfig(),
-            model=ns.lm_studio_model,
-            api_base=ns.lm_studio_api_base,
-            timeout_seconds=ns.lm_studio_timeout,
-            max_output_tokens=ns.lm_studio_max_output_tokens,
-        )
-        bridge_text = _message_from_remainder(ns.message)
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-lm-studio")
-        if daemon_exit is not None:
-            return daemon_exit
-        output_mode = _bridge_text_output_mode(ns, bridge_text)
-        bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
-        return run_jsonl_chat_bridge(
-            config=cfg,
-            session_id=ns.session_id,
-            no_carryover=ns.no_carryover,
-            command="--chat-lm-studio",
-            stdin=bridge_stdin,
-            require_openai_api_key=False,
-            output_mode=output_mode,
-        )
 
     if ns.chat_open_ai:
         cfg = config or JaznConfig()

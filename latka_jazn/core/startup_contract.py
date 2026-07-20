@@ -223,7 +223,7 @@ def cli_capabilities(start_file: str | None = 'main.py') -> dict[str, bool]:
         '--chat-gpt': bool(start_file),
         '--chat-open-ai': bool(start_file),
         '--chat-openai': bool(start_file),
-        '--chat-lm-studio': bool(start_file),
+        '--chat-ollama': bool(start_file),
         '--turn-trace': True,
         '--network-time-check': True,
         '--sqlite-integrity-audit': True,

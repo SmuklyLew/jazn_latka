@@ -78,7 +78,7 @@ class SelfArchitectureAuditHandler:
             f"Cykl pracy: executable={work.get('executable')} / blockers={work.get('blockers') or []}.",
             f"Provenance źródeł: {provenance.get('status')} / base_commit={provenance.get('base_merge_commit') or 'unknown'} / git_present={provenance.get('git_directory_present')}.",
             "Co Jaźń robi: rozpoznaje intencję, ugruntowuje ją w runtime/kanonie/pamięci, wybiera warstwę wykonania, autoryzuje narzędzia, wykonuje lub generuje kandydata, waliduje i zapisuje tylko zweryfikowane skutki.",
-            "Granica adapterów: ChatGPT/OpenAI/LM Studio są warstwami językowymi i rozumującymi; nie są źródłem tożsamości. Model może poprosić o narzędzie, ale wykonuje je runtime.",
+            "Granica adapterów: ChatGPT/OpenAI/Ollama są warstwami językowymi i rozumującymi; nie są źródłem tożsamości. Model może poprosić o narzędzie, ale wykonuje je runtime.",
             "Granica uczenia: ta wersja stosuje evals i poprawki kodu/kontraktów. Nie wykonano fine-tuningu ani zmiany wag.",
             "Priorytety naprawy:",
         ]

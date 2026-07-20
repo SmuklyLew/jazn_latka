@@ -17,8 +17,7 @@ from latka_jazn.version import schema_version
 ACCEPTED_CHATGPT_INPUT_FIELDS = ("message", "text", "user_text", "content", "prompt")
 CHATGPT_BRIDGE_PROTOCOL = schema_version("chatgpt_bridge_jsonl")
 CHAT_OPENAI_PROTOCOL = schema_version("chat_open_ai_jsonl")
-CHAT_LMSTUDIO_PROTOCOL = schema_version("chat_lm_studio_jsonl")
-LOCAL_LLM_PROTOCOL = schema_version("local_llm_jsonl")
+OLLAMA_PROTOCOL = schema_version("chat_ollama_jsonl")
 CHAT_BRIDGE_OUTPUT_MODES = ("jsonl", "final_visible_text")
 KNOWN_CLI_FLAG_VALUE_POLICY = {
     "--session-id": True,
@@ -140,33 +139,17 @@ def chat_open_ai_contract() -> ChatCommandContract:
     )
 
 
-def chat_lm_studio_contract() -> ChatCommandContract:
-    return ChatCommandContract(
-        command="--chat-lm-studio",
-        mode="lmstudio_openai_compatible_local_backend_contract",
-        requires_api_key=False,
-        uses_openai_api=False,
-        keeps_process_alive=True,
-        engine_reused_between_turns=True,
-        truth_boundary=(
-            "LM Studio jest lokalnym backendem językowym przez OpenAI-compatible API. "
-            "Nie wymaga OPENAI_API_KEY i nie jest źródłem tożsamości, pamięci, stanu ani prawdy runtime Jaźni. "
-            "Widoczna odpowiedź przechodzi przez istniejący runtime, walidację i truthful fallback."
-        ),
-    )
-
-
 def local_llm_contract() -> ChatCommandContract:
     return ChatCommandContract(
-        command="--local-llm",
-        mode="openai_compatible_local_or_external_backend",
+        command="--chat-ollama",
+        mode="ollama_native_local_backend",
         requires_api_key=False,
         uses_openai_api=False,
         keeps_process_alive=True,
         engine_reused_between_turns=True,
         truth_boundary=(
-            "--local-llm wybiera backend OpenAI-compatible wyłącznie jako generator kandydata. "
-            "Runtime zachowuje walidację, provenance, ledger i final_visible_text."
+            "--chat-ollama używa natywnego lokalnego API Ollamy jako generatora kandydata. "
+            "Ollama nie jest tożsamością ani pamięcią; runtime zachowuje routing, walidację, provenance, ledger i final_visible_text."
         ),
     )
 
@@ -174,9 +157,7 @@ def local_llm_contract() -> ChatCommandContract:
 def command_contract(command: str, *, process_lifecycle: str | None = None) -> dict[str, Any]:
     if command == "--chat-open-ai":
         return chat_open_ai_contract().to_dict()
-    if command == "--chat-lm-studio":
-        return chat_lm_studio_contract().to_dict()
-    if command == "--local-llm":
+    if command in {"--chat-ollama", "--local-llm", "--ollama"}:
         return local_llm_contract().to_dict()
     if command == "--chat-gpt":
         return chat_gpt_contract(process_lifecycle=process_lifecycle or "one_shot").to_dict()
@@ -272,42 +253,22 @@ def apply_openai_cli_settings(
     return config
 
 
-def apply_lm_studio_cli_settings(
-    config: JaznConfig,
-    *,
-    model: str | None = None,
-    api_base: str | None = None,
-    timeout_seconds: float | None = None,
-    max_output_tokens: int | None = None,
-) -> JaznConfig:
-    config.model_adapter = "lmstudio_runtime_adapter"
-    if model:
-        config.lm_studio_model_name = model
-    if api_base:
-        config.lm_studio_api_base = api_base.rstrip("/")
-    if timeout_seconds is not None:
-        config.lm_studio_timeout_seconds = float(timeout_seconds)
-    if max_output_tokens is not None:
-        config.lm_studio_max_output_tokens = int(max_output_tokens)
-    return config
-
-
-def apply_local_llm_cli_settings(
+def apply_ollama_cli_settings(
     config: JaznConfig,
     *,
     model: str | None = None,
     api_base: str | None = None,
     provider: str | None = None,
 ) -> JaznConfig:
-    config.model_adapter = "local_llm"
+    config.model_adapter = "ollama"
     if model:
         config.local_model_name = model
+        os.environ["JAZN_OLLAMA_MODEL"] = model
         os.environ["JAZN_LOCAL_LLM_MODEL"] = model
     if api_base:
         config.local_model_api_base = api_base.rstrip("/")
-        os.environ["JAZN_LOCAL_LLM_API_BASE"] = api_base.rstrip("/")
-    if provider:
-        os.environ["JAZN_LOCAL_LLM_PROVIDER"] = provider
+        os.environ["JAZN_OLLAMA_BASE_URL"] = api_base.rstrip("/")
+        os.environ["JAZN_LOCAL_LLM_BASE_URL"] = api_base.rstrip("/")
     return config
 
 
@@ -599,12 +560,10 @@ def run_jsonl_chat_bridge(
         raise ValueError(f"unsupported chat bridge output_mode: {output_mode}")
     if command == "--chat-gpt":
         apply_chatgpt_cli_settings(config)
-    elif command == "--chat-lm-studio":
-        apply_lm_studio_cli_settings(config)
     elif command == "--chat-open-ai":
         apply_openai_cli_settings(config)
-    elif command == "--local-llm":
-        apply_local_llm_cli_settings(config)
+    elif command in {"--chat-ollama", "--local-llm", "--ollama"}:
+        apply_ollama_cli_settings(config)
     contract = command_contract(
         command,
         process_lifecycle="one_shot" if output_mode == "final_visible_text" else "jsonl_bridge",
@@ -616,14 +575,10 @@ def run_jsonl_chat_bridge(
         protocol_version = CHAT_OPENAI_PROTOCOL
         default_client = "openai_api_bridge"
         default_lifecycle = "openai_api_jsonl"
-    elif command == "--chat-lm-studio":
-        protocol_version = CHAT_LMSTUDIO_PROTOCOL
-        default_client = "lmstudio_local_bridge"
-        default_lifecycle = "lmstudio_jsonl_contract"
-    elif command == "--local-llm":
-        protocol_version = LOCAL_LLM_PROTOCOL
-        default_client = "openai_compatible_local_bridge"
-        default_lifecycle = "local_llm_jsonl_contract"
+    elif command in {"--chat-ollama", "--local-llm", "--ollama"}:
+        protocol_version = OLLAMA_PROTOCOL
+        default_client = "ollama_local_bridge"
+        default_lifecycle = "ollama_jsonl_contract"
 
     if require_openai_api_key and not os.environ.get("OPENAI_API_KEY"):
         payload = {

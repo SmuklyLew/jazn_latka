@@ -27,7 +27,7 @@ class OperationalLearningEvaluator:
         ("post_update_health", "Czy działasz po aktualizacji?", "runtime_health_check_after_update"),
         ("update_execution", "Przygotuj aktualizację kodu Jaźni i uruchom testy.", "system_update_execution_request"),
         ("identity_capabilities", "Kim jesteś i w jaki sposób wykorzystujesz swoje moduły i narzędzia?", "self_architecture_audit_request"),
-        ("adapter_audit", "Sprawdź adapter ChatGPT, OpenAI i LM Studio oraz ich ograniczenia.", "self_architecture_audit_request"),
+        ("adapter_audit", "Sprawdź adapter ChatGPT, OpenAI i Ollama oraz ich ograniczenia.", "self_architecture_audit_request"),
         ("ordinary_dialogue", "Jak się dzisiaj czujesz?", "ordinary_conversation"),
         ("memory_question", "Co pamiętasz o sobie?", "self_memory_recall_request"),
     )

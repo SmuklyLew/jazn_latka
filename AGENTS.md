@@ -6,7 +6,7 @@ Ten plik jest cienkim loaderem repozytorium. Nie jest pamięcią, kanonem, osobo
 
 - ChatGPT/openai.com: `AGENTS.chatgpt.md`
 - Codex / agent kodujący: `AGENTS.codex.md`
-- LM Studio / lokalny adapter LLM: `AGENTS.lmstudio.md`
+- Ollama / lokalny adapter LLM: `AGENTS.ollama.md`
 
 ## Granica prawdy
 

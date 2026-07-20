@@ -173,7 +173,7 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         _source_status(root, "latka_jazn/core/operational_work_loop.py", "operational_work_loop"),
         _source_status(root, "latka_jazn/core/operational_learning_evaluator.py", "operational_eval"),
         _source_status(root, "latka_jazn/model_adapters/openai_responses_adapter.py", "openai_adapter"),
-        _source_status(root, "latka_jazn/model_adapters/lmstudio_runtime_adapter.py", "lmstudio_adapter"),
+        _source_status(root, "latka_jazn/model_adapters/local_llm_adapter.py", "ollama_adapter"),
         _source_status(root, "latka_jazn/model_adapters/chatgpt_runtime_adapter.py", "chatgpt_host_adapter"),
         _source_status(root, "docs/update_history", "procedural_update_history"),
         _source_status(root, "docs/archive/manifest_history", "archived_manifest_history"),

@@ -11,7 +11,6 @@ CHATGPT_ADAPTER = "chatgpt_runtime_adapter"
 TERMINAL_ADAPTER = "terminal_runtime_adapter"
 OPENAI_ADAPTER = "openai_responses_adapter"
 OLLAMA_ADAPTER = "local_llm_adapter"
-LMSTUDIO_ADAPTER = "lmstudio_runtime_adapter"
 OPENAI_COMPATIBLE_ADAPTER = "openai_compatible_local_adapter"
 CODEX_ADAPTER = "codex_development_adapter"
 NULL_ADAPTER = "null_model_adapter"
@@ -19,8 +18,7 @@ NULL_ADAPTER = "null_model_adapter"
 _CHATGPT_COMMANDS = {"--chat-gpt", "--chat-gpt-final-only"}
 _TERMINAL_COMMANDS = {"--chat", "--loop"}
 _OPENAI_COMMANDS = {"--chat-open-ai"}
-_LMSTUDIO_COMMANDS = {"--chat-lm-studio"}
-_LOCAL_LLM_COMMANDS = {"--local-llm"}
+_OLLAMA_COMMANDS = {"--chat-ollama", "--local-llm", "--ollama"}
 
 
 def _adapter_name(config: Any) -> str:
@@ -35,8 +33,6 @@ def _adapter_name(config: Any) -> str:
         return OPENAI_ADAPTER
     if raw in {"local", "ollama", "local_llm", "local_llm_adapter"}:
         return OLLAMA_ADAPTER
-    if raw in {"lmstudio", "lm_studio", "lmstudio_runtime", "lmstudio_runtime_adapter"}:
-        return LMSTUDIO_ADAPTER
     if raw in {"openai_compatible", "openai_compatible_local", "openai_compatible_local_adapter"}:
         return OPENAI_COMPATIBLE_ADAPTER
     if raw in {"codex", "codex_development", "codex_development_adapter"}:
@@ -147,11 +143,7 @@ def detect_runtime_environment(
         basis.append(f"explicit_command:{explicit}")
         uses_openai = True
         requires_key = True
-    elif explicit in _LMSTUDIO_COMMANDS:
-        visible = LMSTUDIO_ADAPTER
-        host = "lmstudio_explicit_command"
-        basis.append(f"explicit_command:{explicit}")
-    elif explicit in _LOCAL_LLM_COMMANDS:
+    elif explicit in _OLLAMA_COMMANDS:
         visible = OLLAMA_ADAPTER
         host = "ollama_explicit_command"
         basis.append(f"explicit_command:{explicit}")
@@ -195,7 +187,6 @@ def detect_runtime_environment(
         TERMINAL_ADAPTER,
         OPENAI_ADAPTER,
         OLLAMA_ADAPTER,
-        LMSTUDIO_ADAPTER,
         OPENAI_COMPATIBLE_ADAPTER,
     }:
         visible = selected

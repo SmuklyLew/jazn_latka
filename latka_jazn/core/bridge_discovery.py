@@ -10,10 +10,10 @@ from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_P
 from latka_jazn.version import schema_version
 
 
-LMSTUDIO_TRUTH_BOUNDARY = (
-    "LM Studio jest lokalnym backendem językowym przez OpenAI-compatible API. "
+OLLAMA_TRUTH_BOUNDARY = (
+    "Ollama jest lokalnym backendem językowym przez natywne API /api/tags i /api/chat. "
     "Nie wymaga OPENAI_API_KEY i nie jest źródłem tożsamości, pamięci, stanu ani prawdy runtime Jaźni. "
-    "Widoczna odpowiedź przechodzi przez istniejący runtime, walidację i truthful fallback."
+    "Widoczna odpowiedź przechodzi przez istniejący runtime, walidację i prawdomówny fallback."
 )
 
 
@@ -62,12 +62,15 @@ def discover_runtime_bridges(
             "env": "OPENAI_API_KEY",
             "meaning": "ten sam runtime Jaźni + OpenAI Responses API jako model_adapter językowy",
         },
-        "lmstudio_bridge": {
-            "command": "python main.py --chat-lm-studio --session-id <id>",
+        "ollama_bridge": {
+            "command": "python main.py --chat-ollama --session-id <id>",
+            "aliases": ["--ollama", "--local-llm"],
             "requires_api_key": False,
-            "env": None,
-            "meaning": "ten sam runtime Jaźni + lokalny backend LM Studio przez OpenAI-compatible Responses API z fallbackiem Chat Completions",
-            "truth_boundary": LMSTUDIO_TRUTH_BOUNDARY,
+            "env": ["JAZN_OLLAMA_MODEL", "JAZN_OLLAMA_BASE_URL"],
+            "probe_endpoint": "/api/tags",
+            "chat_endpoint": "/api/chat",
+            "meaning": "ten sam runtime Jaźni + lokalny model Ollama jako wymienna warstwa językowa",
+            "truth_boundary": OLLAMA_TRUTH_BOUNDARY,
         },
         "daemon": {
             "start": "python main.py --daemon-start",
