@@ -32,6 +32,11 @@ _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 class ReleaseMetadataSyncError(RuntimeError):
     pass
 
+def _canonical_remote_url(remote_url: str) -> str:
+    value = remote_url.strip().rstrip("/")
+    if value.endswith(".git"):
+        value = value[:-4]
+    return value
 
 def _git(
     root: Path,
@@ -201,7 +206,9 @@ def build_release_provenance_document(
     if not _SHA_RE.fullmatch(source) or not _commit_exists(root, source):
         raise ReleaseMetadataSyncError("release source commit is missing or invalid")
 
-    remote_url = str(_git(root, "remote", "get-url", "origin")).strip()
+    remote_url = _canonical_remote_url(
+    str(_git(root, "remote", "get-url", "origin"))
+)
     if not remote_url:
         raise ReleaseMetadataSyncError("origin remote URL is missing")
 
