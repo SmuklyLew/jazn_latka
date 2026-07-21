@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "03e477f23aadd319729eb41a84cc2a277b6bb68b",
-  "base_version": "v15.1.0.3",
-  "commit_date": "2026-07-21T15:41:49+02:00",
+  "base_merge_commit": "8b7968573ebbf46592e67074f094f0fbdb225cfc",
+  "base_version": "v15.1.0.3.533-Reorganize agents",
+  "commit_date": "2026-07-21T23:48:47+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-07-21T13:41:49+00:00",
+  "generated_at_utc": "2026-07-21T21:48:47+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "0f09e7a49576be96fa70df2e5f54a79c7ce60f08",
+  "git_tree_sha": "14acd5eb3d6266d1ad671dafa4bb814490e5c3da",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
