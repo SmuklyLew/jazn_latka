@@ -13,11 +13,11 @@
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.1.0.3",
-  "schema_version": "source_provenance/v15.1.0.3",
+  "runtime_version": "v15.1.0.3.533-Reorganize agents",
+  "schema_version": "source_provenance/v15.1.0.3.533",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.1.0.3",
+  "update_version": "v15.1.0.3.533-Reorganize agents",
   "version_source": "latka_jazn/version.py"
 }
