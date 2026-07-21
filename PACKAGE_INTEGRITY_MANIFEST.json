@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.534-New generator",
   "runtime_version": "v15.1.0.3.534-New generator",
   "package_version": "v15.1.0.3.534-New generator",
-  "generated_at_utc": "2026-07-21T23:38:55+00:00",
-  "updated_at_utc": "2026-07-21T23:38:55+00:00",
+  "generated_at_utc": "2026-07-21T23:48:06+00:00",
+  "updated_at_utc": "2026-07-21T23:48:06+00:00",
   "start_file": "run.py",
-  "file_count": 557,
-  "static_file_count": 557,
+  "file_count": 558,
+  "static_file_count": 558,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 1,
@@ -92,6 +92,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/temporary-fix-generator-exceptions.yml",
+      "size_bytes": 5414,
+      "sha256": "d4e89ce3adc5797e7b8d1b2c3e6698f3230f55d29aafa8760b4d2087ec283538",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".gitignore",
       "size_bytes": 1737,
       "sha256": "7eeb854ed6a273de06626063293f2b1c02ae660efb402215bc868c0e9351eb94",
@@ -157,7 +166,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1265,
-      "sha256": "5045aa6dcf56015ff07b045e569505ecc2a1af3a076d97f540464f0344221383",
+      "sha256": "4baea1e56e91b4e756a117f392a71a63f029a20529dd9081ad12f5ee405c9307",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
