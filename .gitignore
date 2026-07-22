@@ -104,3 +104,4 @@ branches/
 
 # Python packaging metadata
 *.egg-info/
+PACKAGE_INTEGRITY_MANIFEST.json
