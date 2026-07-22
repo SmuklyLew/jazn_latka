@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Jaźń / Łatka — generator paczek v7.0.1
+Jaźń / Łatka — generator paczek v8.0
 
 Najważniejsza zasada: podgląd, manifest i ZIP korzystają z jednego,
 zamrożonego planu plików. Generator nie pakuje archiwów, baz systemowych,
@@ -114,15 +114,16 @@ except ImportError:  # pragma: no cover
     HAS_PROMPT_TOOLKIT = False
 
 
-GENERATOR_VERSION = "7.0.1"
+GENERATOR_VERSION = "8.0"
 CHUNK_SIZE = 1024 * 1024
 DEFAULT_PART_SIZE_MB = 400
 DEFAULT_COMPRESSION_LEVEL = 6
 DEFAULT_PROFILE = "dual"
 DEFAULT_FORMAT = "auto"
 
-SETTINGS_FILE_NAME = "__jazn_pack_generator_settings.json"
-SETTINGS_SCHEMA = "jazn_pack_generator_settings/v7.0.1"
+SETTINGS_FILE_NAME = "jazn_pack_generator_settings.json"
+LEGACY_SETTINGS_FILE_NAMES = ("__jazn_pack_generator_settings.json",)
+SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.0"
 UI_MODE_CHOICES = ("tekstowy", "kursorowy")
 UI_EXIT_MARKER = "__JAZN_UI_EXIT__"
 UI_CANCEL_MARKER = "__JAZN_UI_CANCEL__"
@@ -152,15 +153,15 @@ class Theme:
     kontrolowany ekran ``window_too_small`` zamiast ściskać zawartość.
     """
 
-    name: str = "latka-cyan-v7.0.1"
-    left_panel_width: int = 54
+    name: str = "latka-cyan-v8.0"
+    left_panel_width: int = 36
     right_min_width: int = 36
     compact_breakpoint: int = 96
     page_step: int = 8
     info_min_height: int = 3
     info_max_height: int = 9
     popup_min_width: int = 28
-    popup_max_width: int = 48
+    popup_max_width: int = 56
     popup_min_height: int = 10
     popup_max_height: int = 13
     section_fill: str = "─"
@@ -176,6 +177,8 @@ class Theme:
         "menu.section": "ansibrightcyan bold",
         "menu.selected": "bg:ansicyan fg:ansiblack bold",
         "menu.editing": "bg:ansiwhite fg:ansiblack",
+        "menu.subvalue": "ansibrightblack",
+        "exit.save.dirty": "ansired bold",
         "panel": "bg:ansiblack",
         "panel.title": "ansibrightcyan bold",
         "panel.label": "ansibrightblack",
@@ -367,6 +370,7 @@ SYSTEM_FORBIDDEN_FILE_NAMES = {
     "active_runtime_cache_contract.json",
     "__jazn_pack_generator.lock.json",
     "__jazn_pack_generator_settings.json",
+    "jazn_pack_generator_settings.json",
 }
 
 COMMON_FORBIDDEN_SUFFIXES = (
@@ -548,6 +552,7 @@ class InteractiveState:
     compatibility_checks: bool = True
     ui_mode: str = "tekstowy"
     ui_auto_start: bool = False
+    auto_save_settings: bool = False
     dirty: bool = False
 
     def to_options(self) -> PackOptions:
@@ -2472,9 +2477,41 @@ def package_one(plan: PackPlan, options: PackOptions, base_zip_name: str) -> Pac
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def package_names(stem: str, version: VersionInfo, profile: str) -> dict[str, str]:
-    stem = sanitize_archive_stem(stem)
-    base = f"{stem}_v{version.filename_version}"
+def canonical_archive_basename(version: VersionInfo, prefix: str = "jazn_latka") -> str:
+    """Domyślna pełna nazwa paczki bez rozszerzenia ``.zip``."""
+
+    clean_prefix = sanitize_archive_stem(prefix or "jazn_latka")
+    return f"{clean_prefix}_v{version.filename_version}"
+
+
+def validate_archive_basename(value: str, version: VersionInfo) -> str:
+    """Waliduje pełną nazwę paczki bez rozszerzenia.
+
+    Wersja i nazwa wydania z ``latka_jazn/version.py`` muszą pozostać widoczne
+    w nazwie. Generator nie podmienia wpisanej nazwy historycznym stemem.
+    """
+
+    stem = sanitize_archive_stem(value)
+    required = f"v{version.filename_version}"
+    if required.casefold() not in stem.casefold():
+        raise PackError(
+            "Pełna nazwa paczki musi zawierać bieżącą wersję i nazwę wydania "
+            f"z version.py: {required!r}. Podano: {stem!r}"
+        )
+    return stem
+
+
+def resolve_archive_basename(value: str, version: VersionInfo) -> str:
+    """Migruje wyłącznie pustą/legacy nazwę, a własną nazwę zachowuje dokładnie."""
+
+    raw = str(value or "").strip()
+    if not raw or sanitize_archive_stem(raw).casefold() == "jazn_latka":
+        return canonical_archive_basename(version)
+    return validate_archive_basename(raw, version)
+
+
+def package_names(full_basename: str, version: VersionInfo, profile: str) -> dict[str, str]:
+    base = resolve_archive_basename(full_basename, version)
     if profile == "dual":
         return {
             "system": f"{base}_system.zip",
@@ -2483,6 +2520,101 @@ def package_names(stem: str, version: VersionInfo, profile: str) -> dict[str, st
     if profile == "memory":
         return {"memory": f"{base}_memory.zip"}
     return {profile: f"{base}.zip"}
+
+
+def plan_configuration_signature(options: PackOptions) -> str:
+    """Hash ustawień, które wpływają na skład kanonicznego planu."""
+
+    payload = {
+        "source": str(options.source.expanduser().resolve()),
+        "profile": options.profile,
+        "base_excludes": list(options.base_excludes),
+        "custom_excludes": list(options.custom_excludes),
+        "manual_excludes_enabled": bool(options.manual_excludes_enabled),
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _selected_source_paths_for_plan(plan: PackPlan, options: PackOptions) -> set[str]:
+    root = options.source.expanduser().resolve()
+    base = options.base_excludes
+    custom = options.custom_excludes
+    manual = options.manual_excludes_enabled
+
+    if plan.profile == "system":
+        candidates, _ = discover_candidates(root)
+        selected, _ = filter_candidates(
+            candidates, profile="system", base_excludes=base,
+            custom_excludes=custom, manual_excludes_enabled=manual,
+        )
+        return set(selected) - {PACKAGE_INTEGRITY_MANIFEST}
+    if plan.profile == "memory":
+        candidates, _ = discover_memory_candidates(root)
+        selected, _ = filter_candidates(
+            candidates, profile="memory", base_excludes=base,
+            custom_excludes=custom, manual_excludes_enabled=manual,
+        )
+        return set(selected) - {MEMORY_PACKAGE_MANIFEST}
+    if plan.profile == "combined":
+        system_candidates, _ = discover_candidates(root)
+        memory_candidates, _ = discover_memory_candidates(root)
+        system_selected, _ = filter_candidates(
+            system_candidates, profile="system", base_excludes=base,
+            custom_excludes=custom, manual_excludes_enabled=manual,
+        )
+        memory_selected, _ = filter_candidates(
+            memory_candidates, profile="memory", base_excludes=base,
+            custom_excludes=custom, manual_excludes_enabled=manual,
+        )
+        return (set(system_selected) | set(memory_selected)) - {
+            PACKAGE_INTEGRITY_MANIFEST, MEMORY_PACKAGE_MANIFEST,
+        }
+    raise PackError(f"Nieobsługiwany profil planu cache: {plan.profile}")
+
+
+def verify_plan_current(plan: PackPlan, options: PackOptions) -> tuple[bool, str]:
+    """Sprawdza aktualność istniejącego planu po liście plików i SHA-256."""
+
+    try:
+        root = options.source.expanduser().resolve()
+        if plan.root.resolve() != root:
+            return False, "plan pochodzi z innego katalogu źródłowego"
+        current_version = read_version_info(root)
+        if current_version.full_version != plan.version.full_version:
+            return False, "wersja lub nazwa wydania w version.py uległa zmianie"
+
+        expected_paths = _selected_source_paths_for_plan(plan, options)
+        planned_paths = {entry.relative for entry in plan.entries if entry.source is not None}
+        if expected_paths != planned_paths:
+            missing = sorted(expected_paths - planned_paths)[:5]
+            extra = sorted(planned_paths - expected_paths)[:5]
+            return False, f"zmieniła się lista plików: nowe={missing}, usunięte={extra}"
+
+        for entry in plan.entries:
+            if entry.source is None:
+                continue
+            if not entry.source.is_file():
+                return False, f"brak pliku: {entry.relative}"
+            if entry.source.stat().st_size != entry.size_bytes:
+                return False, f"zmienił się rozmiar: {entry.relative}"
+            if sha256_file(entry.source) != entry.sha256:
+                return False, f"SHA-256 nie zgadza się: {entry.relative}"
+        return True, "lista plików, wersja i SHA-256 są aktualne"
+    except (OSError, PackError, ValueError) as exc:
+        return False, f"nie można zweryfikować planu: {type(exc).__name__}: {exc}"
+
+
+def verify_plans_current(plans: Sequence[PackPlan], options: PackOptions) -> tuple[bool, str]:
+    expected_profiles = {"system", "memory"} if options.profile == "dual" else {options.profile}
+    actual_profiles = {plan.profile for plan in plans}
+    if not plans or not actual_profiles.issubset(expected_profiles):
+        return False, "profile zapisanych planów nie odpowiadają bieżącej konfiguracji"
+    for plan in plans:
+        ok, reason = verify_plan_current(plan, options)
+        if not ok:
+            return False, f"{plan.profile}: {reason}"
+    return True, "wszystkie zapisane plany przeszły weryfikację SHA-256"
 
 
 def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
@@ -2856,6 +2988,21 @@ def settings_path() -> Path:
     return Path(__file__).resolve().with_name(SETTINGS_FILE_NAME)
 
 
+def legacy_settings_paths() -> list[Path]:
+    script = Path(__file__).resolve()
+    return [script.with_name(name) for name in LEGACY_SETTINGS_FILE_NAMES]
+
+
+def existing_settings_path() -> Path:
+    primary = settings_path()
+    if primary.is_file():
+        return primary
+    for legacy in legacy_settings_paths():
+        if legacy.is_file():
+            return legacy
+    return primary
+
+
 def platform_default_source() -> Path:
     return Path("C:\\") if os.name == "nt" else Path("/bin/")
 
@@ -2882,7 +3029,7 @@ def _normalize_ui_mode(value: str | None) -> str:
 
 def load_interactive_state() -> InteractiveState:
     state = default_interactive_state()
-    path = settings_path()
+    path = existing_settings_path()
     if not path.is_file():
         return state
     try:
@@ -2927,6 +3074,7 @@ def load_interactive_state() -> InteractiveState:
     state.compatibility_checks = bool(payload.get("compatibility_checks", True))
     state.ui_mode = _normalize_ui_mode(str(payload.get("ui_mode") or "kursorowy"))
     state.ui_auto_start = bool(payload.get("ui_auto_start", False))
+    state.auto_save_settings = bool(payload.get("auto_save_settings", False))
     state.dirty = False
     return state
 
@@ -2952,18 +3100,58 @@ def save_interactive_state(state: InteractiveState) -> Path:
         "compatibility_checks": state.compatibility_checks,
         "ui_mode": state.ui_mode,
         "ui_auto_start": state.ui_auto_start,
-        "appearance": "latka-cyan-v7.0.1",
+        "auto_save_settings": state.auto_save_settings,
+        "appearance": "latka-cyan-v8.0",
     }
     path = settings_path()
     temp = path.with_name(path.name + f".{uuid.uuid4().hex}.tmp")
     temp.write_bytes(serialize_json(payload))
     os.replace(temp, path)
+    for legacy in legacy_settings_paths():
+        if legacy != path:
+            legacy.unlink(missing_ok=True)
     state.dirty = False
     return path
 
 
+def mark_interactive_state_changed(state: InteractiveState) -> Path | None:
+    """Oznacza zmianę i — gdy włączono autozapis — zapisuje ją atomowo od razu."""
+
+    state.dirty = True
+    if state.auto_save_settings:
+        return save_interactive_state(state)
+    return None
+
+
+def settings_preview_lines(state: InteractiveState) -> list[str]:
+    """Czytelny podgląd zakresu i miejsca zapisu konfiguracji."""
+
+    return [
+        f"Plik ustawień: {settings_path()}",
+        f"Automatyczny zapis: {'TAK' if state.auto_save_settings else 'NIE'}",
+        "Zapisywane pola:",
+        "  • source — System Jaźni",
+        "  • out_dir — Zapis archiwum",
+        "  • profile — profil paczki",
+        "  • archive_format — format ZIP",
+        "  • archive_basename — pełna nazwa paczki bez rozszerzenia .zip",
+        "  • part_size_mb — limit woluminu",
+        "  • compression_level — poziom kompresji",
+        "  • force — nadpisywanie",
+        "  • base_excludes / custom_excludes / manual_excludes_enabled",
+        "  • sidecars — pliki pomocnicze",
+        "  • update_source_manifest — aktualizacja mapy",
+        "  • compatibility_checks — testy ZIP",
+        "  • ui_mode / ui_auto_start",
+        "  • auto_save_settings",
+        "Zapis jest atomowy: najpierw plik tymczasowy, potem os.replace().",
+    ]
+
+
 def reset_interactive_settings() -> None:
     settings_path().unlink(missing_ok=True)
+    for legacy in legacy_settings_paths():
+        legacy.unlink(missing_ok=True)
 
 
 def _cursor_available() -> bool:
@@ -3430,20 +3618,20 @@ def edit_exclusions_text(state: InteractiveState) -> None:
     raw = input("Nowa lista podstawowa rozdzielona średnikami [Enter=bez zmian]: ").strip()
     if raw:
         state.base_excludes = [item.strip() for item in raw.split(";") if item.strip()]
-        state.dirty = True
+        mark_interactive_state_changed(state)
     print("\nRĘCZNE WYKLUCZENIA")
     print("; ".join(state.custom_excludes) if state.custom_excludes else "(brak)")
     raw = input("Nowa lista ręczna rozdzielona średnikami [Enter=bez zmian]: ").strip()
     if raw:
         state.custom_excludes = [item.strip() for item in raw.split(";") if item.strip()]
         state.manual_excludes_enabled = bool(state.custom_excludes)
-        state.dirty = True
+        mark_interactive_state_changed(state)
     if state.custom_excludes:
         toggle = input(f"Używać ręcznych? [{'T/n' if state.manual_excludes_enabled else 't/N'}]: ").strip().lower()
         if toggle in {"t", "tak", "y", "yes"}:
-            state.manual_excludes_enabled = True; state.dirty = True
+            state.manual_excludes_enabled = True; mark_interactive_state_changed(state)
         elif toggle in {"n", "nie", "no"}:
-            state.manual_excludes_enabled = False; state.dirty = True
+            state.manual_excludes_enabled = False; mark_interactive_state_changed(state)
 
 
 def edit_exclusions_cursor(state: InteractiveState) -> None:
@@ -3465,7 +3653,7 @@ def edit_exclusions_cursor(state: InteractiveState) -> None:
             "Dodaje nowy glob do listy ręcznej.",
             "Otwiera listę i usuwa wskazany wpis.",
             "Zmienia aktywność listy ręcznej. Pusta lista zawsze pozostaje wyłączona.",
-            "Przywraca listę podstawową dostarczoną z generatorem v7.0.1.",
+            "Przywraca listę podstawową dostarczoną z generatorem v8.0.",
             "Powrót do strony głównej.",
         ]
         choice = cursor_select("WYKLUCZENIA", rows, selected, details=details, groups={0: "LISTY", 2: "RĘCZNE", 5: "PRZYWRACANIE", 6: "WYJŚCIE"})
@@ -3476,19 +3664,19 @@ def edit_exclusions_cursor(state: InteractiveState) -> None:
             updated, changed = cursor_list_editor("PODSTAWOWE WYKLUCZENIA", list(state.base_excludes), description="Wzorce glob stosowane przed regułami profilu.")
             if changed:
                 state.base_excludes = updated
-                state.dirty = True
+                mark_interactive_state_changed(state)
         elif choice == 1:
             updated, changed = cursor_list_editor("RĘCZNE WYKLUCZENIA", list(state.custom_excludes), description="Wzorce dodane przez użytkownika.")
             if changed:
                 state.custom_excludes = updated
                 state.manual_excludes_enabled = bool(updated)
-                state.dirty = True
+                mark_interactive_state_changed(state)
         elif choice == 2:
             value = cursor_inline_editor("DODAJ RĘCZNE WYKLUCZENIE", "Wzorzec", "", description="Przykład: docs/archive/** albo *.tmp")
             if value:
                 state.custom_excludes.append(value)
                 state.manual_excludes_enabled = True
-                state.dirty = True
+                mark_interactive_state_changed(state)
         elif choice == 3:
             if not state.custom_excludes:
                 cursor_message_page("BRAK WPISÓW", "Lista ręcznych wykluczeń jest pusta.", kind="warn")
@@ -3497,18 +3685,18 @@ def edit_exclusions_cursor(state: InteractiveState) -> None:
             if remove is not None:
                 state.custom_excludes.pop(remove)
                 state.manual_excludes_enabled = bool(state.custom_excludes)
-                state.dirty = True
+                mark_interactive_state_changed(state)
         elif choice == 4:
             if not state.custom_excludes:
                 state.manual_excludes_enabled = False
                 cursor_message_page("RĘCZNE WYKLUCZENIA", "Lista jest pusta, więc pozostaje wyłączona.", kind="warn")
             else:
                 state.manual_excludes_enabled = not state.manual_excludes_enabled
-                state.dirty = True
+                mark_interactive_state_changed(state)
         elif choice == 5:
             if cursor_confirm("PRZYWRÓCIĆ DOMYŚLNE?", [f"Obecnie: {len(state.base_excludes)} wpisów", f"Domyślne: {len(DEFAULT_BASE_EXCLUDES)} wpisów"]):
                 state.base_excludes = list(DEFAULT_BASE_EXCLUDES)
-                state.dirty = True
+                mark_interactive_state_changed(state)
 
 
 def build_preview_plans(state: InteractiveState) -> list[PackPlan]:
@@ -3691,7 +3879,7 @@ def _legacy_main_menu_details_v611(state: InteractiveState) -> list[str]:
         "Python zipfile jest obowiązkowy; dostępne 7-Zip, WinRAR, WinZip i Info-ZIP są testowane automatycznie.",
         "Osobna edycja listy podstawowej i ręcznej, dodawanie, edycja, usuwanie i przełącznik aktywności.",
         "Wybór interfejsu. Proste zmiany w trybie kursorowym nie przełączają aplikacji do trybu tekstowego.",
-        "Zapisuje konfigurację v7.0.1 atomowo obok skryptu.",
+        "Zapisuje konfigurację v8.0 atomowo obok skryptu.",
         "Sprawdza sidecar, SHA-256, CRC i kompletność wpisów.",
         "Najpierw weryfikuje, potem rozpakowuje z ochroną przed path traversal.",
         "Jawnie aktualizuje źródłowy manifest bez tworzenia ZIP-a.",
@@ -3774,7 +3962,7 @@ def cursor_main_screen(state: InteractiveState, selected: int = 0) -> int | None
             state.archive_format = str(new_value)
         elif row_index == 8:
             state.compression_level = int(new_value)
-        state.dirty = True
+        mark_interactive_state_changed(state)
         message = "Zmieniono ustawienie w bieżącym wierszu."
 
     def apply_toggle(row_index: int, direction: int = 0) -> None:
@@ -3788,7 +3976,7 @@ def cursor_main_screen(state: InteractiveState, selected: int = 0) -> int | None
             state.update_source_manifest = (not state.update_source_manifest) if desired is None else desired
         elif row_index == 12:
             state.compatibility_checks = (not state.compatibility_checks) if desired is None else desired
-        state.dirty = True
+        mark_interactive_state_changed(state)
         message = "Przełącznik zmieniono bez opuszczania strony."
 
     def current_edit_value(row_index: int) -> str:
@@ -3849,7 +4037,7 @@ def cursor_main_screen(state: InteractiveState, selected: int = 0) -> int | None
                 if amount <= 0:
                     raise ValueError("Limit musi być większy od zera.")
                 state.part_size_mb = amount
-            state.dirty = True
+            mark_interactive_state_changed(state)
         except (OSError, ValueError, PackError) as exc:
             message = f"Błąd: {exc}"
             app.invalidate()
@@ -4081,18 +4269,18 @@ def handle_menu_choice(state: InteractiveState, choice: int) -> str:
     elif choice == 2:
         value = cursor_inline_editor("EDYCJA ŹRÓDŁA", "Źródło", str(state.source), description="Domyślnie bez konfiguracji: C:\\ w Windows albo /bin/ w systemach Unix.", path_mode=True)
         if value is not None:
-            state.source = Path(value).expanduser().resolve(); state.dirty = True
+            state.source = Path(value).expanduser().resolve(); mark_interactive_state_changed(state)
     elif choice == 3:
         value = cursor_inline_editor("EDYCJA WYJŚCIA", "Wyjście", str(state.out_dir), description="Folder wynikowy nie może znajdować się wewnątrz źródła.", path_mode=True)
         if value is not None:
-            state.out_dir = Path(value).expanduser().resolve(); state.dirty = True
+            state.out_dir = Path(value).expanduser().resolve(); mark_interactive_state_changed(state)
     elif choice == 4:
         values = list(PROFILE_CHOICES)
         labels = [PROFILE_DISPLAY[value] for value in values]
         descriptions = [PROFILE_DESCRIPTIONS[value] for value in values]
         selected = cursor_choice_editor("WYBÓR PROFILU", "Profil", values, labels, descriptions, values.index(state.profile))
         if selected is not None:
-            state.profile = values[selected]; state.dirty = True
+            state.profile = values[selected]; mark_interactive_state_changed(state)
     elif choice == 5:
         values = list(FORMAT_CHOICES)
         descriptions = [
@@ -4102,29 +4290,29 @@ def handle_menu_choice(state: InteractiveState, choice: int) -> str:
         ]
         selected = cursor_choice_editor("WYBÓR FORMATU", "Format", values, values, descriptions, values.index(state.archive_format))
         if selected is not None:
-            state.archive_format = values[selected]; state.dirty = True
+            state.archive_format = values[selected]; mark_interactive_state_changed(state)
     elif choice == 6:
         value = cursor_inline_editor("EDYCJA NAZWY", "Nazwa", state.archive_basename, description="Bez rozszerzenia .zip; niedozwolone znaki zostaną odrzucone.")
         if value is not None:
-            state.archive_basename = sanitize_archive_stem(value); state.dirty = True
+            state.archive_basename = sanitize_archive_stem(value); mark_interactive_state_changed(state)
     elif choice == 7:
         value = cursor_inline_editor("LIMIT WOLUMINU", "MiB", str(state.part_size_mb), description="Liczba dodatnia.")
         if value is not None:
-            state.part_size_mb = max(1, int(value)); state.dirty = True
+            state.part_size_mb = max(1, int(value)); mark_interactive_state_changed(state)
     elif choice == 8:
         values = [str(index) for index in range(10)]
         descriptions = [f"Poziom DEFLATE {index}. 0=najszybciej, 9=najmniejszy plik." for index in range(10)]
         selected = cursor_choice_editor("POZIOM KOMPRESJI", "DEFLATE", values, values, descriptions, state.compression_level)
         if selected is not None:
-            state.compression_level = selected; state.dirty = True
+            state.compression_level = selected; mark_interactive_state_changed(state)
     elif choice == 9:
-        state.force = not state.force; state.dirty = True
+        state.force = not state.force; mark_interactive_state_changed(state)
     elif choice == 10:
-        state.sidecars = not state.sidecars; state.dirty = True
+        state.sidecars = not state.sidecars; mark_interactive_state_changed(state)
     elif choice == 11:
-        state.update_source_manifest = not state.update_source_manifest; state.dirty = True
+        state.update_source_manifest = not state.update_source_manifest; mark_interactive_state_changed(state)
     elif choice == 12:
-        state.compatibility_checks = not state.compatibility_checks; state.dirty = True
+        state.compatibility_checks = not state.compatibility_checks; mark_interactive_state_changed(state)
     elif choice == 13:
         if state.ui_mode == "kursorowy":
             edit_exclusions_cursor(state)
@@ -4133,7 +4321,7 @@ def handle_menu_choice(state: InteractiveState, choice: int) -> str:
     elif choice == 14:
         if HAS_PROMPT_TOOLKIT:
             state.ui_mode = "tekstowy" if state.ui_mode == "kursorowy" else "kursorowy"
-            state.dirty = True
+            mark_interactive_state_changed(state)
     elif choice == 15:
         cursor_message_page("USTAWIENIA ZAPISANE", str(save_interactive_state(state)), kind="ok")
     elif choice == 16:
@@ -4148,16 +4336,25 @@ def handle_menu_choice(state: InteractiveState, choice: int) -> str:
 
 
 def exit_dialog(state: InteractiveState) -> str:
-    rows = ["Zapisz ustawienia i wyjdź", "Wyjdź bez zapisu", "Wróć do programu"]
+    rows = ["Zakończ", "Zapisz zmiany i zakończ"]
     summary = [
         f"Źródło: {state.source}", f"Wyjście: {state.out_dir}",
         f"Profil: {PROFILE_DISPLAY[state.profile]}",
         f"Stan ustawień: {'niezapisane zmiany' if state.dirty else 'zapisane'}",
     ]
-    choice = cursor_select("WYJŚCIE", rows, 2, details=["Zapis atomowy konfiguracji v7.0.1.", "Kończy bez zapisywania bieżących zmian.", "Powrót do strony głównej."], status_lines=summary, groups={0: "PODSUMOWANIE"})
-    if choice == 0:
-        save_interactive_state(state); return "save"
+    choice = cursor_select(
+        "WYJŚCIE", rows, 0,
+        details=[
+            "Kończy bez zapisywania bieżących zmian.",
+            "Zapisuje ustawienia atomowo do jazn_pack_generator_settings.json i kończy.",
+        ],
+        status_lines=summary,
+        groups={0: "PODSUMOWANIE"},
+    )
     if choice == 1:
+        save_interactive_state(state)
+        return "save"
+    if choice == 0:
         return "discard"
     return "cancel"
 
@@ -4233,8 +4430,8 @@ def print_results(results: Sequence[PackageResult]) -> None:
 
 
 def run_self_test() -> dict[str, Any]:
-    """Regresja v7.0.1: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
-    with tempfile.TemporaryDirectory(prefix="jazn-pack-v7-selftest-") as tmp_raw:
+    """Regresja v8.0: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
+    with tempfile.TemporaryDirectory(prefix="jazn-pack-v8-selftest-") as tmp_raw:
         temp = Path(tmp_raw)
         version = VersionInfo(
             version_file=temp / "version.py",
@@ -4246,6 +4443,18 @@ def run_self_test() -> dict[str, Any]:
         assert compose_runtime_version_full(version.package_version, version.release_name) == version.full_version
         assert compose_package_version_full(version.package_version, version.release_name) == version.filename_version
         assert manifest_version_matches(version.full_version, version.package_version, version.release_name)
+        canonical_name = canonical_archive_basename(version)
+        assert canonical_name == "jazn_latka_v91.82.73.64-Reorganize-agents"
+        assert package_names(canonical_name, version, "dual") == {
+            "system": canonical_name + "_system.zip",
+            "memory": canonical_name + "_memory.zip",
+        }
+        try:
+            validate_archive_basename("jazn_latka", version)
+        except PackError:
+            pass
+        else:
+            raise AssertionError("Niepełna nazwa paczki powinna zostać odrzucona")
         payloads = {
             "ascii.txt": b"standard zip compatibility\n",
             "polski/zażółć-gęślą.txt": "Pchnąć w tę łódź jeża lub ośm skrzyń fig.".encode("utf-8"),
@@ -4273,7 +4482,7 @@ def run_self_test() -> dict[str, Any]:
             "pagedown": menu_navigation_index(3, "pagedown", 13, 8),
         }
         assert navigation == {"home": 0, "end": 12, "pageup": 4, "pagedown": 11}
-        assert APP_THEME.left_panel_width == 54
+        assert APP_THEME.left_panel_width == 36
         assert APP_THEME.right_min_width == 36
         responsive_layout = {
             "compact": APP_THEME.layout_metrics(80, 24),
@@ -4291,6 +4500,12 @@ def run_self_test() -> dict[str, Any]:
             assert metrics["right_text_width"] >= 12
             assert APP_THEME.info_min_height <= metrics["info_height"] <= APP_THEME.info_max_height
         assert responsive_layout["wide"]["right_width"] < responsive_layout["large"]["right_width"]
+        assert settings_path().name == "jazn_pack_generator_settings.json"
+        settings_state = InteractiveState(source=temp / "source", out_dir=temp / "out")
+        preview = settings_preview_lines(settings_state)
+        assert any("jazn_pack_generator_settings.json" in line for line in preview)
+        assert "Ustawienia zapisywania" in OPTIONS_LABELS
+        assert "Wykluczenia" in OPTIONS_LABELS
 
         root_fixture = temp / "jazn-root"
         version_fixture = root_fixture / "latka_jazn" / "version.py"
@@ -4385,20 +4600,20 @@ def run_self_test() -> dict[str, Any]:
 
 
 # -----------------------------------------------------------------------------
-# Interfejs v7.0.1 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
+# Interfejs v8.0 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
 # -----------------------------------------------------------------------------
 
 DASHBOARD_GROUPS: dict[int, str] = {
     0: "GŁÓWNE",
     6: "NARZĘDZIA",
-    8: "KONFIGURACJA",
+    9: "KONFIGURACJA",
     11: "WYJŚCIE",
 }
 
 DASHBOARD_LEFT_EDITABLE: dict[int, str] = {
-    3: "source",
-    4: "out_dir",
-    8: "archive_basename",
+    2: "source",
+    3: "out_dir",
+    4: "archive_basename",
 }
 
 OPTIONS_LABELS: tuple[str, ...] = (
@@ -4408,17 +4623,21 @@ OPTIONS_LABELS: tuple[str, ...] = (
     "Nadpisywanie",
     "Pliki pomocnicze",
     "Interfejs",
+    "Wykluczenia",
+    "Ustawienia zapisywania",
     "Aktualizuj mapę przy pakowaniu",
     "Testy zgodności ZIP",
 )
 
 OPTIONS_DESCRIPTIONS: tuple[str, ...] = (
     "Wybiera format przez popup: auto, independent albo binary.",
-    "Maksymalny rozmiar woluminu w MiB. Enter uruchamia edycję w prawym panelu.",
+    "Maksymalny rozmiar woluminu w MiB. Enter edytuje wartość dokładnie w tym wierszu.",
     "Wybiera poziom DEFLATE 0–9 przez popup.",
     "Pozwala zastąpić istniejące wyniki o tej samej nazwie.",
     "Tworzy package.json, parts.sha256 oraz join.ps1 dla formatu binary.",
     "Wybiera preferowany interfejs przy następnym uruchomieniu.",
+    "Otwiera zarządzanie podstawowymi i ręcznymi wzorcami wykluczeń.",
+    "Otwiera ustawienia automatycznego zapisu oraz podgląd pól i lokalizacji pliku JSON.",
     "Przed pakowaniem zapisuje świeży PACKAGE_INTEGRITY_MANIFEST.json z dokładnie zatwierdzonego planu.",
     "Uruchamia Python zipfile oraz wykryte 7-Zip, WinRAR, WinZip i Info-ZIP.",
 )
@@ -4474,20 +4693,42 @@ def _menu_field(label: str, value: object) -> str:
     return f"{label}: [{_middle_ellipsize(value, available)}]"
 
 
+def _interactive_archive_name(state: InteractiveState) -> str:
+    """Zwraca pełną nazwę do wyświetlenia, migrując tylko pustą nazwę legacy."""
+
+    try:
+        version = read_version_info(state.source.expanduser().resolve())
+        return resolve_archive_basename(state.archive_basename, version)
+    except (OSError, PackError, ValueError):
+        return state.archive_basename or "jazn_latka"
+
+
+def ensure_interactive_archive_basename(state: InteractiveState) -> Path | None:
+    """Migruje pustą nazwę legacy do pełnej nazwy bieżącego wydania."""
+
+    try:
+        version = read_version_info(state.source.expanduser().resolve())
+        resolved = resolve_archive_basename(state.archive_basename, version)
+    except (OSError, PackError, ValueError):
+        return None
+    if resolved == state.archive_basename:
+        return None
+    state.archive_basename = resolved
+    return mark_interactive_state_changed(state)
+
+
 def main_menu_rows(state: InteractiveState) -> list[str]:
-    manual = "WŁ." if state.manual_excludes_enabled and state.custom_excludes else "WYŁ."
     return [
         "Pakuj teraz",
         "Pokaż kanoniczny plan",
-        "Aktualizuj mapę plików",
         _menu_field("System Jaźni", state.source),
         _menu_field("Zapis archiwum", state.out_dir),
+        _menu_field("Nazwa", _interactive_archive_name(state)),
         f"Profil: [{PROFILE_DISPLAY[state.profile]}]",
+        "Aktualizuj mapę plików",
         "Zweryfikuj istniejącą paczkę",
         "Bezpiecznie rozpakuj paczkę",
-        _menu_field("Nazwa", state.archive_basename),
         "Opcje",
-        f"Wykluczenia: [{len(state.base_excludes)} podst. • {len(state.custom_excludes)} ręcz. • {manual}]",
         "Zapisz ustawienia",
         "Wyjdź",
     ]
@@ -4495,22 +4736,21 @@ def main_menu_rows(state: InteractiveState) -> list[str]:
 
 def main_menu_details(state: InteractiveState) -> list[str]:
     return [
-        "Buduje jeden zamrożony plan, opcjonalnie aktualizuje mapę plików, pakuje i weryfikuje CRC, SHA-256 oraz zgodność ZIP.",
-        "Buduje plan bez tworzenia paczki i pokazuje wersję, liczbę plików, rozmiar, źródło skanowania oraz Plan SHA-256.",
+        "Buduje lub weryfikuje zamrożony plan, opcjonalnie aktualizuje mapę plików, pakuje i sprawdza CRC, SHA-256 oraz zgodność ZIP.",
+        "Jeśli istnieje zapisany i aktualny plan, pozwala go pokazać. Gdy planu nie ma, jest nieaktualny albo nie przechodzi SHA-256, buduje nowy.",
+        "Root systemu Jaźni. Zapis zostanie przyjęty tylko wtedy, gdy istnieje latka_jazn/version.py i można odczytać wersję.",
+        "Katalog zapisu archiwum. Może nie istnieć — generator utworzy go podczas pakowania.",
+        "Pełna nazwa paczki bez rozszerzenia .zip. Musi zawierać bieżącą wersję i nazwę wydania z latka_jazn/version.py.",
+        PROFILE_DESCRIPTIONS[state.profile] + " Wybór odbywa się po prawej stronie.",
         (
             "Tworzy od nowa PACKAGE_INTEGRITY_MANIFEST.json — kanoniczną mapę statycznych plików paczki. "
             "Każdy wpis zawiera ścieżkę, rozmiar i SHA-256. Operacja nie tworzy ZIP-a."
         ),
-        "Root systemu Jaźni. Zapis zostanie przyjęty tylko wtedy, gdy istnieje latka_jazn/version.py i można odczytać wersję.",
-        "Katalog zapisu archiwum. Może nie istnieć — generator utworzy go podczas pakowania.",
-        PROFILE_DESCRIPTIONS[state.profile] + " Wybór odbywa się po prawej stronie.",
         "Wskaż *.package.json albo katalog z sidecarem. Generator sprawdzi części, CRC, SHA-256 i kompletność wpisów.",
         "Wskaż sidecar i katalog docelowy. Paczka zostanie najpierw zweryfikowana, a następnie bezpiecznie rozpakowana.",
-        "Bazowa nazwa paczki bez rozszerzenia. Wersja i nazwa wydania pochodzą wyłącznie z latka_jazn/version.py.",
-        "Otwiera po prawej: Format, Limit, Kompresję, Nadpisywanie, Pliki pomocnicze, Interfejs, mapę i testy ZIP.",
-        "Zarządzaj podstawowymi i ręcznymi wzorcami wykluczeń po prawej stronie.",
+        "Otwiera po prawej: Format, Limit, Kompresję, Nadpisywanie, Pliki pomocnicze, Interfejs, Wykluczenia, ustawienia zapisywania, mapę i testy ZIP.",
         "Zapisuje konfigurację atomowo obok skryptu.",
-        "Pokazuje wybór: zapisz i wyjdź, wyjdź bez zapisu albo wróć.",
+        "Pokazuje modalne opcje: Zakończ albo Zapisz zmiany i zakończ.",
     ]
 
 
@@ -4536,7 +4776,7 @@ def cursor_dashboard(
     _output: Any = None,
     _debug_state: dict[str, Any] | None = None,
 ) -> str:
-    """Uruchamia stabilny pulpit v7.0.1.
+    """Uruchamia stabilny pulpit v8.0.
 
     Interfejs ma jeden stały punkt fokusu dla menu i po jednym trwałym punkcie
     fokusu dla każdego rodzaju prawego widoku. Przy małej szerokości działa jak
@@ -4544,7 +4784,7 @@ def cursor_dashboard(
     """
 
     if not _dashboard_available():
-        raise PackError("Pulpit v7.0.1 wymaga kompletnej biblioteki prompt_toolkit.")
+        raise PackError("Pulpit v8.0 wymaga kompletnej biblioteki prompt_toolkit.")
 
     application_cls = cast(Any, _pt_Application)
     condition_cls = cast(Any, _pt_Condition)
@@ -4566,6 +4806,7 @@ def cursor_dashboard(
     threaded_completer_cls = cast(Any, _pt_ThreadedCompleter)
     completions_menu_cls = cast(Any, _pt_CompletionsMenu)
 
+    ensure_interactive_archive_basename(state)
     rows_cache = main_menu_rows(state)
     index = max(0, min(selected, len(rows_cache) - 1))
     panel_mode = "overview"
@@ -4592,12 +4833,15 @@ def cursor_dashboard(
     exclusion_edit_index: int | None = None
     popup_visible = False
     popup_kind = ""
+    popup_title = "WYBÓR"
     popup_values: list[Any] = []
     popup_labels: list[str] = []
     popup_descriptions: list[str] = []
     popup_index = 0
     busy = False
     log_follow_tail = True
+    cached_plans: list[PackPlan] | None = None
+    cached_plan_signature = ""
     last_compact: bool | None = None
     app_box: dict[str, Any] = {}
     bindings = key_bindings_cls()
@@ -4635,7 +4879,7 @@ def cursor_dashboard(
         "out_dir": output_editor,
         "archive_basename": name_editor,
     }
-    left_editors_by_row = {3: source_editor, 4: output_editor, 8: name_editor}
+    left_editors_by_row = {2: source_editor, 3: output_editor, 4: name_editor}
 
     def right_completer() -> Any:
         if panel_mode in {"verify_input", "extract_sidecar"}:
@@ -4648,6 +4892,10 @@ def cursor_dashboard(
         text="", multiline=False, wrap_lines=False, name="right-editor",
         completer=dynamic_completer_cls(right_completer),
         complete_while_typing=True, focus_on_click=True, style="class:input",
+    )
+    limit_editor = textarea_cls(
+        text="", multiline=False, wrap_lines=False, name="limit-editor",
+        focus_on_click=True, style="class:input",
     )
 
     def app() -> Any:
@@ -4680,19 +4928,33 @@ def cursor_dashboard(
                 current_buffer = current.layout.current_buffer
             except (AttributeError, RuntimeError):
                 current_buffer = None
+        try:
+            debug_right_pane = active_right_scroll_pane() if right_panel_visible() else None
+        except (NameError, UnboundLocalError):
+            debug_right_pane = None
+        try:
+            debug_left_pane = left_content_wide()
+        except (NameError, UnboundLocalError):
+            debug_left_pane = None
         _debug_state.update({
             "ready": bool(current),
             "menu_index": index,
             "panel_mode": panel_mode,
             "panel_title": panel_title,
             "focus_zone": focus_zone,
+            "right_panel_visible": right_panel_visible(),
             "compact": compact_mode(),
             "compact_page": compact_page,
             "busy": busy,
             "log_follow_tail": log_follow_tail,
-            "right_scroll": getattr(readonly_pane, "vertical_scroll", 0) if "readonly_pane" in locals() else 0,
+            "right_scroll": int(getattr(debug_right_pane, "vertical_scroll", 0) or 0),
+            "left_scroll": int(getattr(debug_left_pane, "vertical_scroll", 0) or 0),
             "popup_visible": popup_visible,
             "popup_kind": popup_kind,
+            "popup_index": popup_index,
+            "choice_index": choice_index,
+            "options_index": options_index,
+            "exclusions_index": exclusions_index,
             "left_edit_kind": left_edit_kind,
             "right_editor_kind": right_editor_kind,
             "buffer_name": getattr(current_buffer, "name", "") if current_buffer is not None else "",
@@ -4719,8 +4981,13 @@ def cursor_dashboard(
         editor = active_left_editor()
         return editor.window if editor is not None else menu_window
 
+    def right_panel_visible() -> bool:
+        return panel_mode != "overview"
+
     def current_right_target() -> Any:
-        if panel_mode in {"verify_input", "extract_sidecar", "extract_destination", "options_limit_edit", "exclusion_edit"}:
+        if panel_mode == "options_limit_edit":
+            return limit_editor.window
+        if panel_mode in {"verify_input", "extract_sidecar", "extract_destination", "exclusion_edit"}:
             return right_editor.window
         if panel_mode == "action":
             return action_window
@@ -4728,6 +4995,8 @@ def cursor_dashboard(
             return choice_window
         if panel_mode == "options":
             return options_window
+        if panel_mode == "saving_settings":
+            return saving_settings_window
         if panel_mode in {"exclusions", "exclusion_list"}:
             return exclusions_window
         return readonly_window
@@ -4752,6 +5021,9 @@ def cursor_dashboard(
         focus_target(current_left_target(), "menu")
 
     def focus_right() -> None:
+        if not right_panel_visible():
+            focus_left()
+            return
         focus_target(current_right_target(), "detail")
 
     def panel_is_focused() -> bool:
@@ -4768,7 +5040,7 @@ def cursor_dashboard(
         if current is None:
             return False
         try:
-            editors = [source_editor, output_editor, name_editor, right_editor]
+            editors = [source_editor, output_editor, name_editor, right_editor, limit_editor]
             return any(current.layout.has_focus(editor.window) for editor in editors)
         except (AttributeError, RuntimeError, ValueError):
             return False
@@ -4832,9 +5104,13 @@ def cursor_dashboard(
         labels: Sequence[str],
         descriptions: Sequence[str],
         current: int,
+        *,
+        title: str = "WYBÓR",
     ) -> None:
-        nonlocal popup_visible, popup_kind, popup_values, popup_labels, popup_descriptions, popup_index
+        nonlocal popup_visible, popup_kind, popup_title
+        nonlocal popup_values, popup_labels, popup_descriptions, popup_index
         popup_kind = kind
+        popup_title = title
         popup_values = list(values)
         popup_labels = list(labels)
         popup_descriptions = list(descriptions)
@@ -4856,11 +5132,17 @@ def cursor_dashboard(
         if not popup_values:
             return
         value = popup_values[popup_index]
+        if popup_kind == "exit":
+            popup_visible = False
+            if value == "save":
+                save_interactive_state(state)
+            app().exit(result="exit")
+            return
         if popup_kind == "compression":
             state.compression_level = int(value)
         elif popup_kind == "format":
             state.archive_format = str(value)
-        state.dirty = True
+        mark_interactive_state_changed(state)
         popup_visible = False
         panel_mode = "options"
         refresh_rows()
@@ -4903,6 +5185,8 @@ def cursor_dashboard(
                 if left_edit_kind == "source":
                     root, version = validate_jazn_root(value)
                     state.source = root
+                    if not state.archive_basename or sanitize_archive_stem(state.archive_basename).casefold() == "jazn_latka":
+                        state.archive_basename = canonical_archive_basename(version)
                     set_info("System Jaźni potwierdzony.", f"version.py: {version.full_version}")
                 elif left_edit_kind == "out_dir":
                     if not value:
@@ -4910,9 +5194,10 @@ def cursor_dashboard(
                     state.out_dir = Path(value).expanduser().resolve()
                     set_info("Zapis archiwum ustawiony.", str(state.out_dir))
                 else:
-                    state.archive_basename = sanitize_archive_stem(value)
-                    set_info("Nazwa ustawiona.", state.archive_basename)
-                state.dirty = True
+                    version = read_version_info(state.source.expanduser().resolve())
+                    state.archive_basename = validate_archive_basename(value, version)
+                    set_info("Pełna nazwa ustawiona.", state.archive_basename)
+                mark_interactive_state_changed(state)
             else:
                 set_info("Edycja anulowana.")
         except (OSError, PackError, ValueError) as exc:
@@ -4932,6 +5217,8 @@ def cursor_dashboard(
             "TAK" if state.force else "NIE",
             "TAK" if state.sidecars else "NIE",
             state.ui_mode,
+            f"{len(state.base_excludes)} podst. / {len(state.custom_excludes)} ręcz.",
+            "AUTO" if state.auto_save_settings else "RĘCZNIE",
             "TAK" if state.update_source_manifest else "NIE",
             "TAK" if state.compatibility_checks else "NIE",
         )
@@ -4947,8 +5234,8 @@ def cursor_dashboard(
         nonlocal panel_mode, right_editor_kind
         panel_mode = "options_limit_edit"
         right_editor_kind = "part_size_mb"
-        right_editor.buffer.text = str(state.part_size_mb)
-        right_editor.buffer.cursor_position = len(right_editor.buffer.text)
+        limit_editor.buffer.text = str(state.part_size_mb)
+        limit_editor.buffer.cursor_position = len(limit_editor.buffer.text)
         set_info("Edycja limitu.", "Enter zapisuje • Esc/PPM anuluje")
         focus_right()
 
@@ -4956,11 +5243,11 @@ def cursor_dashboard(
         nonlocal panel_mode, right_editor_kind
         try:
             if commit:
-                amount = int(right_editor.text.strip())
+                amount = int(limit_editor.text.strip())
                 if amount <= 0:
                     raise ValueError("Limit musi być większy od zera.")
                 state.part_size_mb = amount
-                state.dirty = True
+                mark_interactive_state_changed(state)
                 set_info("Limit zapisany.", f"{amount} MiB")
             else:
                 set_info("Edycja limitu anulowana.")
@@ -4971,7 +5258,31 @@ def cursor_dashboard(
             set_info("Błąd wartości.", str(exc))
             focus_right()
 
+    def open_saving_settings() -> None:
+        nonlocal panel_title, panel_mode, panel_lines
+        panel_title = "USTAWIENIA ZAPISYWANIA"
+        panel_mode = "saving_settings"
+        panel_lines = settings_preview_lines(state)
+        set_info(
+            "Ustawienia zapisywania.",
+            "Enter/LPM przełącza autozapis • Esc/PPM wraca do Opcji",
+            str(settings_path()),
+        )
+        focus_right()
+
+    def toggle_auto_save_settings() -> None:
+        state.auto_save_settings = not state.auto_save_settings
+        state.dirty = True
+        path = save_interactive_state(state)
+        set_info(
+            "Automatyczny zapis zmieniony.",
+            f"Teraz: {'TAK' if state.auto_save_settings else 'NIE'}",
+            str(path),
+        )
+        invalidate()
+
     def activate_option() -> None:
+        nonlocal panel_title, panel_mode, exclusions_index
         if options_index == 0:
             values = list(FORMAT_CHOICES)
             descriptions = [
@@ -4989,23 +5300,31 @@ def cursor_dashboard(
             open_popup("compression", values, labels, descriptions, state.compression_level)
         elif options_index == 3:
             state.force = not state.force
-            state.dirty = True
+            mark_interactive_state_changed(state)
             set_info("Nadpisywanie zmienione.", f"Teraz: {'TAK' if state.force else 'NIE'}")
         elif options_index == 4:
             state.sidecars = not state.sidecars
-            state.dirty = True
+            mark_interactive_state_changed(state)
             set_info("Pliki pomocnicze zmienione.", f"Teraz: {'TAK' if state.sidecars else 'NIE'}")
         elif options_index == 5:
             state.ui_mode = "tekstowy" if state.ui_mode == "kursorowy" else "kursorowy"
-            state.dirty = True
+            mark_interactive_state_changed(state)
             set_info("Preferowany interfejs zmieniony.", f"Następne uruchomienie: {state.ui_mode}")
         elif options_index == 6:
-            state.update_source_manifest = not state.update_source_manifest
-            state.dirty = True
-            set_info("Aktualizacja mapy zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
+            panel_title = "WYKLUCZENIA"
+            panel_mode = "exclusions"
+            exclusions_index = 0
+            set_info(EXCLUSION_ACTIONS[0], EXCLUSION_DESCRIPTIONS[0])
+            focus_right()
         elif options_index == 7:
+            open_saving_settings()
+        elif options_index == 8:
+            state.update_source_manifest = not state.update_source_manifest
+            mark_interactive_state_changed(state)
+            set_info("Aktualizacja mapy zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
+        elif options_index == 9:
             state.compatibility_checks = not state.compatibility_checks
-            state.dirty = True
+            mark_interactive_state_changed(state)
             set_info("Testy zgodności ZIP zmienione.", f"Teraz: {'TAK' if state.compatibility_checks else 'NIE'}")
         refresh_rows()
         invalidate()
@@ -5069,7 +5388,7 @@ def cursor_dashboard(
                 exclusion_item_index = exclusion_edit_index
             if exclusion_list_kind == "manual":
                 state.manual_excludes_enabled = bool(state.custom_excludes)
-            state.dirty = True
+            mark_interactive_state_changed(state)
             refresh_rows()
             set_info("Wzorzec zapisany.", value)
         else:
@@ -5089,7 +5408,7 @@ def cursor_dashboard(
         exclusion_item_index = max(0, min(exclusion_item_index, len(items) - 1))
         if exclusion_list_kind == "manual":
             state.manual_excludes_enabled = bool(state.custom_excludes) and state.manual_excludes_enabled
-        state.dirty = True
+        mark_interactive_state_changed(state)
         refresh_rows()
         set_info("Usunięto wzorzec.", removed)
 
@@ -5107,7 +5426,7 @@ def cursor_dashboard(
             elif exclusions_index == 4:
                 if state.custom_excludes:
                     state.manual_excludes_enabled = not state.manual_excludes_enabled
-                    state.dirty = True
+                    mark_interactive_state_changed(state)
                     set_info("Ręczne wykluczenia przełączone.", f"Teraz: {'WŁĄCZONE' if state.manual_excludes_enabled else 'WYŁĄCZONE'}")
                 else:
                     state.manual_excludes_enabled = False
@@ -5115,7 +5434,7 @@ def cursor_dashboard(
                 refresh_rows()
             elif exclusions_index == 5:
                 state.base_excludes = list(DEFAULT_BASE_EXCLUDES)
-                state.dirty = True
+                mark_interactive_state_changed(state)
                 set_info("Przywrócono wykluczenia podstawowe.", f"Wpisów: {len(state.base_excludes)}")
         elif panel_mode == "exclusion_list":
             if exclusion_delete_mode:
@@ -5159,6 +5478,7 @@ def cursor_dashboard(
 
     def drain_worker_events() -> None:
         nonlocal busy, panel_mode, panel_lines, log_follow_tail
+        nonlocal action_kind, panel_title
         while True:
             try:
                 kind, payload = worker_events.get_nowait()
@@ -5170,18 +5490,44 @@ def cursor_dashboard(
                     del panel_lines[:-800]
             elif kind == "done":
                 busy = False
+                if isinstance(payload, dict) and payload.get("dashboard_event") == "plan_check":
+                    reason = str(payload.get("reason") or "brak informacji")
+                    if bool(payload.get("current")):
+                        set_choice(
+                            "plan", "KANONICZNY PLAN", ["show", "rebuild"],
+                            ["Pokaż aktualny plan", "Zbuduj plan od nowa"],
+                            [
+                                "Plan przeszedł sprawdzenie listy plików i SHA-256. Pokazuje go bez ponownego budowania.",
+                                "Pomija istniejący cache i tworzy nowy zamrożony plan.",
+                            ],
+                            0,
+                        )
+                        set_info("Plan jest aktualny.", reason, "Wybierz: pokaż albo zbuduj od nowa.")
+                    else:
+                        action_kind = "plan_build"
+                        panel_title = "KANONICZNY PLAN"
+                        panel_mode = "action"
+                        panel_lines = [
+                            "Istniejącego planu nie można pokazać jako aktualnego.",
+                            reason,
+                            "",
+                            "Zbuduj aktualny plan",
+                        ]
+                        set_info("Plan wymaga zbudowania.", reason, "Enter/LPM buduje nowy plan • Esc/PPM wraca")
+                        focus_right()
+                    continue
                 panel_mode = "result"
                 if payload is not None:
                     if isinstance(payload, str):
                         panel_lines.append(payload)
                     else:
                         panel_lines.extend(str(item) for item in payload)
-                set_info("Operacja zakończona poprawnie.", "Wynik pozostaje widoczny po prawej stronie.")
+                set_info("Operacja zakończona poprawnie.", "Aby kontynuować, naciśnij ENTER lub ESC.")
             elif kind == "error":
                 busy = False
                 panel_mode = "error"
                 panel_lines.extend(["", f"BŁĄD: {payload}"])
-                set_info("Operacja zakończyła się błędem.", payload)
+                set_info("Operacja zakończyła się błędem.", payload, "Aby kontynuować, naciśnij ENTER lub ESC.")
 
     def result_lines(results: Sequence[PackageResult]) -> list[str]:
         lines: list[str] = []
@@ -5201,6 +5547,54 @@ def cursor_dashboard(
             lines.append("")
         return lines
 
+    def cache_plans(plans: Sequence[PackPlan]) -> list[PackPlan]:
+        nonlocal cached_plans, cached_plan_signature
+        cached_plans = list(plans)
+        cached_plan_signature = plan_configuration_signature(state.to_options())
+        return cached_plans
+
+    def build_and_cache_plans() -> list[PackPlan]:
+        return cache_plans(build_plans_for_options(state.to_options()))
+
+    def cached_plan_available() -> bool:
+        return bool(
+            cached_plans
+            and cached_plan_signature == plan_configuration_signature(state.to_options())
+        )
+
+    def check_cached_plan_status() -> dict[str, Any]:
+        if not cached_plan_available() or cached_plans is None:
+            return {
+                "dashboard_event": "plan_check",
+                "current": False,
+                "reason": "brak planu odpowiadającego bieżącej konfiguracji",
+            }
+        ok, reason = verify_plans_current(cached_plans, state.to_options())
+        return {
+            "dashboard_event": "plan_check",
+            "current": ok,
+            "reason": reason,
+        }
+
+    def show_cached_or_rebuild_plan() -> list[str]:
+        if cached_plan_available() and cached_plans is not None:
+            ok, reason = verify_plans_current(cached_plans, state.to_options())
+            if ok:
+                return ["Istniejący plan jest aktualny.", reason, ""] + plan_summary(cached_plans)
+            rebuilt = build_and_cache_plans()
+            return ["Istniejący plan nie był aktualny lub nie przeszedł SHA-256.", reason, "Zbudowano nowy plan.", ""] + plan_summary(rebuilt)
+        rebuilt = build_and_cache_plans()
+        return ["Nie było aktualnego planu. Zbudowano nowy.", ""] + plan_summary(rebuilt)
+
+    def current_plans_for_pack() -> list[PackPlan]:
+        if cached_plan_available() and cached_plans is not None:
+            ok, reason = verify_plans_current(cached_plans, state.to_options())
+            if ok:
+                _emit_operation_line("Używam istniejącego planu zweryfikowanego po SHA-256.")
+                return list(cached_plans)
+            _emit_operation_line(f"Plan cache odrzucony: {reason}")
+        return build_and_cache_plans()
+
     def execute_action() -> None:
         nonlocal panel_mode, panel_lines
         if busy:
@@ -5209,14 +5603,14 @@ def cursor_dashboard(
             def operation() -> list[str]:
                 validate_jazn_root(state.source)
                 options = state.to_options()
-                plans = build_plans_for_options(options)
+                plans = current_plans_for_pack()
                 results = run_pack_with_plans(options, plans)
                 return result_lines(results)
             start_worker("PAKOWANIE", operation)
-        elif action_kind == "plan":
+        elif action_kind == "plan_build":
             start_worker(
                 "KANONICZNY PLAN",
-                lambda: plan_summary(build_plans_for_options(state.to_options())),
+                lambda: ["Zbudowano nowy plan.", ""] + plan_summary(build_and_cache_plans()),
             )
         elif action_kind == "manifest":
             def update_map() -> list[str]:
@@ -5289,9 +5683,17 @@ def cursor_dashboard(
         if not choice_values:
             return
         value = choice_values[choice_index]
-        if choice_key == "profile":
+        if choice_key == "plan":
+            if value == "show":
+                start_worker("KANONICZNY PLAN", show_cached_or_rebuild_plan)
+            elif value == "rebuild":
+                start_worker(
+                    "KANONICZNY PLAN",
+                    lambda: ["Zbudowano plan od nowa.", ""] + plan_summary(build_and_cache_plans()),
+                )
+        elif choice_key == "profile":
             state.profile = str(value)
-            state.dirty = True
+            mark_interactive_state_changed(state)
             refresh_rows()
             panel_mode = "result"
             panel_lines[:] = ["Wybrano profil:", choice_labels[choice_index]]
@@ -5303,13 +5705,22 @@ def cursor_dashboard(
                 app().exit(result="exit")
             elif value == "discard":
                 app().exit(result="exit")
-            else:
-                sync_menu_preview(force_panel=True)
-                focus_left()
+
+    def open_exit_popup() -> None:
+        open_popup(
+            "exit", ["discard", "save"],
+            ["Zakończ", "Zapisz zmiany i zakończ"],
+            [
+                "Kończy program bez zapisywania niezapisanych zmian.",
+                "Zapisuje ustawienia do jazn_pack_generator_settings.json i kończy program.",
+            ],
+            0,
+            title="WYJŚCIE",
+        )
 
     def open_menu_action(row_index: int) -> None:
         nonlocal index, panel_title, panel_mode, panel_lines, right_editor_kind
-        nonlocal exclusions_index, compact_page
+        nonlocal compact_page
         index = row_index
         refresh_rows()
         detail = main_menu_details(state)[row_index]
@@ -5318,9 +5729,10 @@ def cursor_dashboard(
         elif row_index == 0:
             open_action("pack", "PAKOWANIE", detail, "Uruchom pakowanie")
         elif row_index == 1:
-            open_action("plan", "KANONICZNY PLAN", detail, "Zbuduj plan")
-        elif row_index == 2:
-            open_action("manifest", "AKTUALIZUJ MAPĘ PLIKÓW", detail, "Zapisz mapę plików")
+            if cached_plan_available():
+                start_worker("SPRAWDZANIE PLANU", check_cached_plan_status)
+            else:
+                open_action("plan_build", "KANONICZNY PLAN", detail, "Zbuduj aktualny plan")
         elif row_index == 5:
             values = list(PROFILE_CHOICES)
             set_choice(
@@ -5330,6 +5742,8 @@ def cursor_dashboard(
                 values.index(state.profile),
             )
         elif row_index == 6:
+            open_action("manifest", "AKTUALIZUJ MAPĘ PLIKÓW", detail, "Zapisz mapę plików")
+        elif row_index == 7:
             panel_title = "WERYFIKACJA PACZKI"
             panel_mode = "verify_input"
             panel_lines = [detail, "Wpisz *.package.json albo katalog."]
@@ -5339,7 +5753,7 @@ def cursor_dashboard(
             set_info("Narzędzie: weryfikacja.", "Tab/Ctrl+Spacja pokazuje ścieżki i pliki *.package.json")
             focus_right()
             right_editor.buffer.start_completion(select_first=False)
-        elif row_index == 7:
+        elif row_index == 8:
             panel_title = "BEZPIECZNE ROZPAKOWANIE — SIDECAR"
             panel_mode = "extract_sidecar"
             panel_lines = [detail, "Najpierw podaj sidecar lub katalog."]
@@ -5355,20 +5769,9 @@ def cursor_dashboard(
             set_info(OPTIONS_LABELS[options_index], OPTIONS_DESCRIPTIONS[options_index])
             focus_right()
         elif row_index == 10:
-            panel_title = "WYKLUCZENIA"
-            panel_mode = "exclusions"
-            exclusions_index = 0
-            set_info(EXCLUSION_ACTIONS[0], EXCLUSION_DESCRIPTIONS[0])
-            focus_right()
-        elif row_index == 11:
             open_action("save", "ZAPISZ USTAWIENIA", detail, "Zapisz ustawienia")
-        elif row_index == 12:
-            set_choice(
-                "exit", "WYJŚCIE", ["save", "discard", "cancel"],
-                ["Zapisz i wyjdź", "Wyjdź bez zapisu", "Wróć"],
-                ["Zapisuje ustawienia i kończy program.", "Kończy bez zapisu bieżących zmian.", "Wraca do menu."],
-                2, exit_mode=True,
-            )
+        elif row_index == 11:
+            open_exit_popup()
         compact_page = "detail" if panel_mode != "overview" else compact_page
         invalidate()
 
@@ -5393,6 +5796,8 @@ def cursor_dashboard(
             apply_selected_choice()
         elif panel_mode == "options":
             activate_option()
+        elif panel_mode == "saving_settings":
+            toggle_auto_save_settings()
         elif panel_mode in {"exclusions", "exclusion_list"}:
             activate_exclusion()
 
@@ -5411,10 +5816,32 @@ def cursor_dashboard(
                 open_menu_action(row_index)
                 return None
             if action == "back":
-                focus_left()
+                handle_escape_action()
                 return None
             return NotImplemented
         return handler
+
+    def menu_display_lines(row_index: int, rows: Sequence[str]) -> list[str]:
+        if compact_mode():
+            return [rows[row_index]]
+        value_width = max(12, APP_THEME.left_panel_width - 7)
+        if row_index == 2:
+            return ["System Jaźni:", "   " + _middle_ellipsize(state.source, value_width)]
+        if row_index == 3:
+            return ["Zapis archiwum:", "   " + _middle_ellipsize(state.out_dir, value_width)]
+        if row_index == 4:
+            return ["Nazwa:", "   " + _middle_ellipsize(_interactive_archive_name(state), value_width)]
+        return [rows[row_index]]
+
+    def menu_subvalue_mouse_handler(mouse_event: Any):
+        action = _mouse_action(mouse_event)
+        if action in {"up", "down"}:
+            menu_move(action)
+            return None
+        if action == "back":
+            handle_escape_action()
+            return None
+        return NotImplemented
 
     def render_menu_range(start: int = 0, end: int | None = None, *, omit: int | None = None):
         rows = refresh_rows()
@@ -5427,11 +5854,20 @@ def cursor_dashboard(
                 fragments.append(("class:menu.section", "  " + label + APP_THEME.section_fill * max(3, APP_THEME.left_panel_width - len(label) - 4) + "\n"))
             if row_index == omit:
                 continue
-            if row_index == index:
+            active_cursor = row_index == index and focus_zone == "menu"
+            if active_cursor:
                 fragments.append(("[SetCursorPosition]", ""))
-            style = "class:menu.selected" if row_index == index else "class:menu.item"
-            marker = "  ▶ " if row_index == index else "    "
-            fragments.append((style, marker + rows[row_index] + "\n", menu_mouse_handler(row_index)))
+            lines = menu_display_lines(row_index, rows)
+            for line_no, line in enumerate(lines):
+                if active_cursor and line_no == 0:
+                    style = "class:menu.selected"
+                elif line_no > 0:
+                    style = "class:menu.subvalue"
+                else:
+                    style = "class:menu.item"
+                marker = "  ▶ " if active_cursor and line_no == 0 else "    "
+                handler = menu_mouse_handler(row_index) if line_no == 0 else menu_subvalue_mouse_handler
+                fragments.append((style, marker + line + "\n", handler))
         return fragments
 
     menu_control = control_cls(text=lambda: render_menu_range(), focusable=True, show_cursor=False)
@@ -5449,7 +5885,7 @@ def cursor_dashboard(
 
     def build_left_edit_container(row_index: int, compact: bool) -> Any:
         editor = left_editors_by_row[row_index]
-        label = {3: "System Jaźni", 4: "Zapis archiwum", 8: "Nazwa"}[row_index]
+        label = {2: "System Jaźni", 3: "Zapis archiwum", 4: "Nazwa"}[row_index]
         before_control = control_cls(text=lambda i=row_index: render_menu_range(0, i))
         after_control = control_cls(text=lambda i=row_index: render_menu_range(i + 1, None))
         edit_row = vsplit_cls([
@@ -5487,6 +5923,9 @@ def cursor_dashboard(
             style = "class:panel.error" if str(raw).startswith("BŁĄD") else "class:panel.text"
             for line in _wrap(raw, wrap_width):
                 fragments.append((style, "  " + line + "\n"))
+        if panel_mode in {"result", "error"} and not busy:
+            fragments.append(("class:panel.rule", "\n  " + APP_THEME.section_fill * max(8, wrap_width - 2) + "\n"))
+            fragments.append(("class:message.warn", "  Aby kontynuować, naciśnij ENTER lub ESC.\n"))
         if panel_mode == "overview":
             fragments.append(("[SetCursorPosition]", ""))
         return fragments
@@ -5502,11 +5941,15 @@ def cursor_dashboard(
     def action_mouse_handler(mouse_event: Any):
         action = _mouse_action(mouse_event)
         if action == "activate":
+            focus_right()
             execute_action()
             return None
         if action == "back":
-            sync_menu_preview(force_panel=True)
-            focus_left()
+            handle_escape_action()
+            return None
+        if action in {"up", "down"}:
+            focus_right()
+            scroll_right_content(action)
             return None
         return NotImplemented
 
@@ -5533,6 +5976,7 @@ def cursor_dashboard(
             nonlocal choice_index, options_index, exclusions_index, exclusion_item_index
             action = _mouse_action(mouse_event)
             if action == "activate":
+                focus_right()
                 if kind == "choice":
                     choice_index = item_index
                     apply_selected_choice()
@@ -5547,15 +5991,16 @@ def cursor_dashboard(
                     activate_exclusion()
                 return None
             if action == "back":
-                sync_menu_preview(force_panel=True)
-                focus_left()
+                handle_escape_action()
                 return None
             if action == "up":
+                focus_right()
                 if kind == "choice": choice_move(-1)
                 elif kind == "options": options_move(-1)
                 else: exclusions_move(-1)
                 return None
             if action == "down":
+                focus_right()
                 if kind == "choice": choice_move(1)
                 elif kind == "options": options_move(1)
                 else: exclusions_move(1)
@@ -5570,7 +6015,10 @@ def cursor_dashboard(
         for item_index, label in enumerate(choice_labels):
             if item_index == choice_index:
                 fragments.append(("[SetCursorPosition]", ""))
-            style = "class:menu.selected" if item_index == choice_index else "class:panel.text"
+            if panel_mode == "exit_choice" and choice_values[item_index] == "save" and state.dirty:
+                style = "class:exit.save.dirty"
+            else:
+                style = "class:menu.selected" if item_index == choice_index else "class:panel.text"
             marker = "  ▶ " if item_index == choice_index else "    "
             fragments.append((style, marker + label + "\n", list_mouse_handler("choice", item_index)))
         if choice_descriptions:
@@ -5583,17 +6031,27 @@ def cursor_dashboard(
     choice_window = window_cls(content=choice_control, wrap_lines=True, always_hide_cursor=True, dont_extend_height=True)
     choice_pane = scrollable_cls(hsplit_cls([choice_window]), show_scrollbar=True, display_arrows=True, keep_cursor_visible=True)
 
+    def render_options_rows(start: int = 0, end: int | None = None, *, omit: int | None = None):
+        end = len(OPTIONS_LABELS) if end is None else end
+        fragments: list[tuple[Any, ...]] = []
+        for item_index in range(start, end):
+            if item_index == omit:
+                continue
+            label = OPTIONS_LABELS[item_index]
+            active = panel_mode == "options" and item_index == options_index
+            if active:
+                fragments.append(("[SetCursorPosition]", ""))
+            style = "class:menu.selected" if active else "class:panel.text"
+            marker = "  ▶ " if active else "    "
+            text = f"{label}: [{option_value(item_index)}]"
+            fragments.append((style, marker + text + "\n", list_mouse_handler("options", item_index)))
+        return fragments
+
     def render_options():
         wrap_width = max(18, APP_THEME.current_metrics()["right_text_width"])
         fragments: list[tuple[Any, ...]] = [("class:panel.title", "  OPCJE\n")]
         fragments.append(("class:panel.rule", "  " + APP_THEME.section_fill * max(8, wrap_width - 2) + "\n"))
-        for item_index, label in enumerate(OPTIONS_LABELS):
-            if item_index == options_index:
-                fragments.append(("[SetCursorPosition]", ""))
-            style = "class:menu.selected" if item_index == options_index else "class:panel.text"
-            marker = "  ▶ " if item_index == options_index else "    "
-            text = f"{label}: [{option_value(item_index)}]"
-            fragments.append((style, marker + text + "\n", list_mouse_handler("options", item_index)))
+        fragments.extend(render_options_rows())
         fragments.append(("class:panel.rule", "\n  " + APP_THEME.section_fill * max(8, wrap_width - 2) + "\n"))
         for line in _wrap(OPTIONS_DESCRIPTIONS[options_index], wrap_width):
             fragments.append(("class:panel.label", "  " + line + "\n"))
@@ -5602,6 +6060,71 @@ def cursor_dashboard(
     options_control = control_cls(text=render_options, focusable=True, show_cursor=False)
     options_window = window_cls(content=options_control, wrap_lines=True, always_hide_cursor=True, dont_extend_height=True)
     options_pane = scrollable_cls(hsplit_cls([options_window]), show_scrollbar=True, display_arrows=True, keep_cursor_visible=True)
+
+    options_limit_header = control_cls(text=[
+        ("class:panel.title", "  OPCJE\n"),
+        ("class:panel.rule", "  " + APP_THEME.section_fill * 24 + "\n"),
+    ])
+    options_limit_before = control_cls(text=lambda: render_options_rows(0, 1))
+    options_limit_after = control_cls(text=lambda: render_options_rows(2, None))
+    options_limit_row = vsplit_cls([
+        window_cls(width=13, height=1, content=control_cls(text=[("class:menu.selected", "  ▶ Limit: [")])),
+        limit_editor,
+        window_cls(width=6, height=1, content=control_cls(text=[("class:menu.selected", " MiB]")])),
+    ], height=1)
+    options_limit_help = control_cls(text=lambda: [
+        ("class:panel.rule", "\n  " + APP_THEME.section_fill * max(8, APP_THEME.current_metrics()["right_text_width"] - 2) + "\n"),
+        ("class:panel.label", "  Limit jest edytowany w tym samym wierszu. Enter zapisuje • Esc/PPM anuluje\n"),
+    ])
+    options_limit_edit_pane = scrollable_cls(
+        hsplit_cls([
+            window_cls(content=options_limit_header, height=2, dont_extend_height=True),
+            window_cls(content=options_limit_before, dont_extend_height=True),
+            options_limit_row,
+            window_cls(content=options_limit_after, dont_extend_height=True),
+            window_cls(content=options_limit_help, dont_extend_height=True, wrap_lines=True),
+        ]),
+        show_scrollbar=True, display_arrows=True, keep_focused_window_visible=True,
+    )
+
+    def saving_settings_mouse_handler(mouse_event: Any):
+        action = _mouse_action(mouse_event)
+        if action == "activate":
+            focus_right()
+            toggle_auto_save_settings()
+            return None
+        if action == "back":
+            handle_escape_action()
+            return None
+        if action in {"up", "down"}:
+            focus_right()
+            scroll_right_content(action)
+            return None
+        return NotImplemented
+
+    def render_saving_settings():
+        wrap_width = max(18, APP_THEME.current_metrics()["right_text_width"])
+        fragments: list[tuple[Any, ...]] = [("class:panel.title", "  USTAWIENIA ZAPISYWANIA\n")]
+        fragments.append(("class:panel.rule", "  " + APP_THEME.section_fill * max(8, wrap_width - 2) + "\n"))
+        fragments.append(("[SetCursorPosition]", ""))
+        fragments.append((
+            "class:menu.selected",
+            f"  ▶ Automatyczny zapis każdej zmiany: [{'TAK' if state.auto_save_settings else 'NIE'}]\n",
+            saving_settings_mouse_handler,
+        ))
+        fragments.append(("class:panel.rule", "\n  " + APP_THEME.section_fill * max(8, wrap_width - 2) + "\n"))
+        for raw in settings_preview_lines(state):
+            style = "class:panel.title" if raw.endswith(":") else "class:panel.label"
+            for line in _wrap(raw, wrap_width):
+                fragments.append((style, "  " + line + "\n"))
+        return fragments
+
+    saving_settings_control = control_cls(text=render_saving_settings, focusable=True, show_cursor=False)
+    saving_settings_window = window_cls(content=saving_settings_control, wrap_lines=True, always_hide_cursor=True, dont_extend_height=True)
+    saving_settings_pane = scrollable_cls(
+        hsplit_cls([saving_settings_window]),
+        show_scrollbar=True, display_arrows=True, keep_cursor_visible=True,
+    )
 
     def render_exclusions():
         wrap_width = max(18, APP_THEME.current_metrics()["right_text_width"])
@@ -5662,6 +6185,10 @@ def cursor_dashboard(
             return choice_pane
         if panel_mode == "options":
             return options_pane
+        if panel_mode == "options_limit_edit":
+            return options_limit_edit_pane
+        if panel_mode == "saving_settings":
+            return saving_settings_pane
         if panel_mode in {"exclusions", "exclusion_list"}:
             return exclusions_pane
         if panel_mode in {"overview", "log", "result", "error"}:
@@ -5694,17 +6221,18 @@ def cursor_dashboard(
     def readonly_mouse_handler(mouse_event: Any):
         action = _mouse_action(mouse_event)
         if action == "up":
+            focus_right()
             scroll_right_content("up")
             return None
         if action == "down":
+            focus_right()
             scroll_right_content("down")
             return None
         if action == "activate":
             focus_target(readonly_window, "detail")
             return None
         if action == "back":
-            sync_menu_preview(force_panel=True)
-            focus_left()
+            handle_escape_action()
             return None
         return NotImplemented
 
@@ -5719,14 +6247,21 @@ def cursor_dashboard(
             return options_pane
         if panel_mode in {"exclusions", "exclusion_list"}:
             return exclusions_pane
-        if panel_mode in {"verify_input", "extract_sidecar", "extract_destination", "options_limit_edit", "exclusion_edit"}:
+        if panel_mode == "options_limit_edit":
+            return options_limit_edit_pane
+        if panel_mode == "saving_settings":
+            return saving_settings_pane
+        if panel_mode in {"verify_input", "extract_sidecar", "extract_destination", "exclusion_edit"}:
             return right_editor_container
         return readonly_pane
 
     right_dynamic = dynamic_container_cls(right_container)
 
     def render_info():
-        wrap_width = max(18, APP_THEME.current_metrics()["right_text_width"])
+        if right_panel_visible():
+            wrap_width = max(18, APP_THEME.left_panel_width - 4)
+        else:
+            wrap_width = max(18, terminal_columns() - 6)
         fragments: list[tuple[str, str]] = [("class:info.title", "  INFORMACJE\n")]
         for raw in info_lines[-6:]:
             for line in _wrap(raw, wrap_width):
@@ -5736,31 +6271,62 @@ def cursor_dashboard(
         return fragments
 
     info_control = control_cls(text=render_info, focusable=False, show_cursor=False)
-    right_column = hsplit_cls([
-        right_dynamic,
-        window_cls(height=1, char=APP_THEME.section_fill, style="class:border"),
-        window_cls(height=APP_THEME.info_dimension(), content=info_control, style="class:info", wrap_lines=True),
-    ], width=APP_THEME.right_dimension())
+
+    def info_mouse_handler(mouse_event: Any):
+        action = _mouse_action(mouse_event)
+        if action == "back":
+            handle_escape_action()
+            return None
+        if action in {"up", "down"}:
+            if right_panel_visible() and focus_zone == "detail":
+                scroll_right_content(action)
+            else:
+                menu_move(action)
+            return None
+        return NotImplemented
+
+    info_control.mouse_handler = info_mouse_handler
+    info_window = window_cls(
+        height=APP_THEME.info_dimension(), content=info_control,
+        style="class:info", wrap_lines=True,
+    )
 
     left_dynamic_wide = dynamic_container_cls(left_content_wide)
     left_dynamic_compact = dynamic_container_cls(left_content_compact)
-    wide_split = vsplit_cls([
+    left_column_narrow = hsplit_cls([
         left_dynamic_wide,
-        window_cls(width=1, char=APP_THEME.border_char, style="class:border"),
-        right_column,
+        window_cls(height=1, char=APP_THEME.section_fill, style="class:border"),
+        info_window,
+    ], width=APP_THEME.left_dimension())
+    left_column_full = hsplit_cls([
+        left_dynamic_wide,
+        window_cls(height=1, char=APP_THEME.section_fill, style="class:border"),
+        info_window,
     ])
-    compact_menu_container = hsplit_cls([left_dynamic_compact])
-    compact_detail_container = hsplit_cls([right_column])
+    compact_menu_container = hsplit_cls([
+        left_dynamic_compact,
+        window_cls(height=1, char=APP_THEME.section_fill, style="class:border"),
+        info_window,
+    ])
+    compact_detail_container = hsplit_cls([right_dynamic])
+    wide_split = vsplit_cls([
+        left_column_narrow,
+        window_cls(width=1, char=APP_THEME.border_char, style="class:border"),
+        right_dynamic,
+    ])
+    wide_menu_only = hsplit_cls([left_column_full])
 
     def body_container() -> Any:
         if compact_mode():
+            if not right_panel_visible():
+                return compact_menu_container
             return compact_menu_container if compact_page == "menu" else compact_detail_container
-        return wide_split
+        return wide_split if right_panel_visible() else wide_menu_only
 
     body_dynamic = dynamic_container_cls(body_container)
 
     def render_popup():
-        fragments: list[tuple[Any, ...]] = [("class:popup.title", f"  {popup_kind.upper()}\n")]
+        fragments: list[tuple[Any, ...]] = [("class:popup.title", f"  {popup_title}\n")]
         fragments.append(("class:popup.rule", "  " + APP_THEME.section_fill * max(12, APP_THEME.popup_width() - 7) + "\n"))
 
         def handler_for(item_index: int):
@@ -5772,7 +6338,7 @@ def cursor_dashboard(
                     popup_commit()
                     return None
                 if action == "back":
-                    popup_cancel()
+                    handle_escape_action()
                     return None
                 if action == "up": popup_move(-1); return None
                 if action == "down": popup_move(1); return None
@@ -5782,7 +6348,10 @@ def cursor_dashboard(
         for item_index, label in enumerate(popup_labels):
             if item_index == popup_index:
                 fragments.append(("[SetCursorPosition]", ""))
-            style = "class:popup.selected" if item_index == popup_index else "class:popup.text"
+            if popup_kind == "exit" and popup_values[item_index] == "save" and state.dirty:
+                style = "class:exit.save.dirty"
+            else:
+                style = "class:popup.selected" if item_index == popup_index else "class:popup.text"
             marker = "  ▶ " if item_index == popup_index else "    "
             fragments.append((style, marker + label + "\n", handler_for(item_index)))
         if popup_descriptions:
@@ -5802,15 +6371,24 @@ def cursor_dashboard(
 
     header_control = control_cls(text=lambda: [
         ("class:header.title", f"  Jaźń / Łatka — generator paczek v{GENERATOR_VERSION}"),
-        ("class:header.subtitle", "  •  " + ("tryb jednego okna" if compact_mode() else "menu + panel akcji")),
+        ("class:header.subtitle", "  •  " + ("tryb jednego okna" if compact_mode() else ("menu + panel akcji" if right_panel_visible() else "menu + informacje"))),
     ])
     footer_control = control_cls(text=lambda: [
         ("class:footer.key", " ↑/↓ Home/End PgUp/PgDn "), ("class:footer.text", "nawigacja/scroll; End śledzi log  "),
         ("class:footer.key", " Enter/LPM "), ("class:footer.text", "otwórz/wykonaj  "),
-        ("class:footer.key", " Tab/←/→ "), ("class:footer.text", "zmień okno  "),
+        ("class:footer.key", " Tab/←/→ "), ("class:footer.text", "okno/wybór  "),
         ("class:footer.key", " Esc/PPM "), ("class:footer.text", "wróć  "),
         ("class:footer.key", " Ctrl+X "), ("class:footer.text", "wyjście "),
     ])
+
+    def passive_back_mouse_handler(mouse_event: Any):
+        if _mouse_action(mouse_event) == "back":
+            handle_escape_action()
+            return None
+        return NotImplemented
+
+    header_control.mouse_handler = passive_back_mouse_handler
+    footer_control.mouse_handler = passive_back_mouse_handler
     base = hsplit_cls([
         window_cls(height=2, content=header_control, style="class:header", wrap_lines=False),
         window_cls(height=1, char=APP_THEME.section_fill, style="class:border"),
@@ -5833,7 +6411,7 @@ def cursor_dashboard(
 
     right_focus_targets = [
         readonly_window, action_window, choice_window, options_window,
-        exclusions_window, right_editor.window, popup_window,
+        saving_settings_window, exclusions_window, right_editor.window, limit_editor.window, popup_window,
     ]
 
     def handle_navigation(action: str) -> None:
@@ -5854,6 +6432,9 @@ def cursor_dashboard(
             elif action in {"up", "pageup"}: choice_move(-1)
             elif action in {"down", "pagedown"}: choice_move(1)
             invalidate(); return
+        if panel_mode == "saving_settings":
+            scroll_right_content(action)
+            return
         if panel_mode == "options":
             if action == "home": options_index = 0
             elif action == "end": options_index = len(OPTIONS_LABELS) - 1
@@ -5895,10 +6476,16 @@ def cursor_dashboard(
                     return
         if any(event.app.layout.has_focus(editor.window) for editor in left_editors_by_kind.values()):
             finish_left_edit(commit=True); return
+        if event.app.layout.has_focus(limit_editor.window):
+            finish_limit_edit(commit=True); return
         if event.app.layout.has_focus(right_editor.window):
             commit_right_editor(); return
         if focus_zone == "menu":
             open_menu_action(index); return
+        if panel_mode in {"result", "error"} and not busy:
+            sync_menu_preview(force_panel=True)
+            focus_left()
+            return
         execute_right()
 
     @bindings.add("tab", filter=editor_filter, eager=True)
@@ -5930,56 +6517,84 @@ def cursor_dashboard(
     def switch_window(to_detail: bool) -> None:
         nonlocal compact_page
         if to_detail:
+            if not right_panel_visible():
+                set_info("Prawe okno nie jest otwarte.", "Enter otwiera wybraną pozycję menu.")
+                focus_left()
+                return
             compact_page = "detail"
             focus_right()
         else:
             compact_page = "menu"
             focus_left()
 
+    def handle_horizontal(direction: int) -> None:
+        if popup_visible:
+            popup_move(direction)
+            return
+        if focus_zone == "detail" and panel_mode in {"choice", "exit_choice"}:
+            choice_move(direction)
+            return
+        switch_window(direction > 0)
+
     @bindings.add("tab", filter=plain_key_filter, eager=True)
     @bindings.add("right", filter=plain_key_filter, eager=True)
     def on_to_right(event: Any) -> None:
-        if popup_visible:
-            popup_move(1)
-        else:
-            switch_window(True)
+        handle_horizontal(1)
 
     @bindings.add("s-tab", filter=plain_key_filter, eager=True)
     @bindings.add("left", filter=plain_key_filter, eager=True)
     def on_to_left(event: Any) -> None:
-        if popup_visible:
-            popup_move(-1)
-        else:
-            switch_window(False)
+        handle_horizontal(-1)
 
-    @bindings.add("escape", eager=True)
-    @bindings.add("q", filter=plain_key_filter, eager=True)
-    def on_escape(event: Any) -> None:
+    def handle_escape_action() -> None:
         nonlocal panel_mode, right_editor_kind, exclusion_delete_mode
+        current = app()
         if popup_visible:
-            popup_cancel(); return
-        if any(event.app.layout.has_focus(editor.window) for editor in left_editors_by_kind.values()):
-            finish_left_edit(commit=False); return
-        if event.app.layout.has_focus(right_editor.window):
-            if panel_mode == "options_limit_edit": finish_limit_edit(commit=False)
-            elif panel_mode == "exclusion_edit": finish_exclusion_edit(commit=False)
+            popup_cancel()
+            return
+        if current is not None and any(current.layout.has_focus(editor.window) for editor in left_editors_by_kind.values()):
+            finish_left_edit(commit=False)
+            return
+        if current is not None and current.layout.has_focus(limit_editor.window):
+            finish_limit_edit(commit=False)
+            return
+        if current is not None and current.layout.has_focus(right_editor.window):
+            if panel_mode == "exclusion_edit":
+                finish_exclusion_edit(commit=False)
             else:
                 right_editor_kind = ""
                 sync_menu_preview(force_panel=True)
                 focus_left()
             return
+        if panel_mode == "saving_settings" and focus_zone == "detail":
+            panel_mode = "options"
+            set_info(OPTIONS_LABELS[options_index], OPTIONS_DESCRIPTIONS[options_index])
+            focus_right()
+            return
         if panel_mode == "exclusion_list" and focus_zone == "detail":
             panel_mode = "exclusions"
             exclusion_delete_mode = False
-            focus_right(); return
+            focus_right()
+            return
+        if panel_mode == "exclusions" and focus_zone == "detail":
+            panel_mode = "options"
+            set_info(OPTIONS_LABELS[options_index], OPTIONS_DESCRIPTIONS[options_index])
+            focus_right()
+            return
         if focus_zone == "detail":
             sync_menu_preview(force_panel=True)
-            focus_left(); return
-        open_menu_action(12)
+            focus_left()
+            return
+        open_menu_action(11)
+
+    @bindings.add("escape", eager=True)
+    @bindings.add("q", filter=plain_key_filter, eager=True)
+    def on_escape(event: Any) -> None:
+        handle_escape_action()
 
     @bindings.add("c-x", eager=True)
     def on_ctrl_x(event: Any) -> None:
-        open_menu_action(12)
+        open_menu_action(11)
 
     @bindings.add("a", filter=exclusion_list_filter, eager=True)
     def on_exclusion_add(event: Any) -> None:
@@ -6005,19 +6620,62 @@ def cursor_dashboard(
             return original(mouse_event)
         control.mouse_handler = handler
 
+    def install_passive_mouse_navigation(control: Any, zone: str) -> None:
+        original = getattr(control, "mouse_handler", None)
+        def handler(mouse_event: Any):
+            action = _mouse_action(mouse_event)
+            if action == "back":
+                handle_escape_action()
+                return None
+            if action in {"up", "down"}:
+                if zone == "menu":
+                    menu_move(action)
+                else:
+                    focus_right()
+                    scroll_right_content(action)
+                return None
+            if original is not None:
+                return original(mouse_event)
+            return NotImplemented
+        control.mouse_handler = handler
+
+    for passive_control, zone in (
+        (header_control, "menu"), (footer_control, "menu"),
+        (menu_control, "menu"),
+        (readonly_control, "detail"), (action_control, "detail"),
+        (choice_control, "detail"), (options_control, "detail"),
+        (saving_settings_control, "detail"), (exclusions_control, "detail"),
+        (info_control, "menu"),
+        (options_limit_header, "detail"), (options_limit_before, "detail"),
+        (options_limit_after, "detail"), (options_limit_help, "detail"),
+        (editor_help_control, "detail"),
+    ):
+        install_passive_mouse_navigation(passive_control, zone)
+
+    popup_original_mouse_handler = getattr(popup_control, "mouse_handler", None)
+    def popup_global_mouse_handler(mouse_event: Any):
+        action = _mouse_action(mouse_event)
+        if action == "back":
+            handle_escape_action()
+            return None
+        if action == "up":
+            popup_move(-1)
+            return None
+        if action == "down":
+            popup_move(1)
+            return None
+        if popup_original_mouse_handler is not None:
+            return popup_original_mouse_handler(mouse_event)
+        return NotImplemented
+    popup_control.mouse_handler = popup_global_mouse_handler
+
     for editor in left_editors_by_kind.values():
-        install_editor_back(editor.control, lambda: finish_left_edit(commit=False))
-    install_editor_back(
-        right_editor.control,
-        lambda: finish_limit_edit(commit=False)
-        if panel_mode == "options_limit_edit"
-        else finish_exclusion_edit(commit=False)
-        if panel_mode == "exclusion_edit"
-        else (sync_menu_preview(force_panel=True), focus_left()),
-    )
+        install_editor_back(editor.control, handle_escape_action)
+    install_editor_back(limit_editor.control, handle_escape_action)
+    install_editor_back(right_editor.control, handle_escape_action)
 
     def ensure_visible_focus(application: Any) -> None:
-        nonlocal last_compact, compact_page
+        nonlocal last_compact, compact_page, focus_zone
         drain_worker_events()
         if panel_mode in {"log", "result", "error"} and log_follow_tail:
             readonly_pane.vertical_scroll = 10**9
@@ -6028,6 +6686,9 @@ def cursor_dashboard(
             last_compact = compact
             if compact:
                 compact_page = "detail" if focus_zone == "detail" else "menu"
+        if focus_zone == "detail" and not right_panel_visible():
+            focus_zone = "menu"
+            compact_page = "menu"
         target = current_left_target() if focus_zone == "menu" else current_right_target()
         try:
             application.layout.update_parents_relations()
@@ -6075,6 +6736,8 @@ def _text_options_menu(state: InteractiveState) -> None:
             "TAK" if state.force else "NIE",
             "TAK" if state.sidecars else "NIE",
             state.ui_mode,
+            f"{len(state.base_excludes)} podst. / {len(state.custom_excludes)} ręcz.",
+            "AUTO" if state.auto_save_settings else "RĘCZNIE",
             "TAK" if state.update_source_manifest else "NIE",
             "TAK" if state.compatibility_checks else "NIE",
         )
@@ -6105,12 +6768,27 @@ def _text_options_menu(state: InteractiveState) -> None:
         elif choice == 5:
             state.ui_mode = "tekstowy" if state.ui_mode == "kursorowy" else "kursorowy"
         elif choice == 6:
-            state.update_source_manifest = not state.update_source_manifest
+            edit_exclusions_text(state)
+            continue
         elif choice == 7:
+            print("\n" + "\n".join(settings_preview_lines(state)))
+            raw_auto = input(
+                f"Automatyczny zapis każdej zmiany [{'TAK' if state.auto_save_settings else 'NIE'}] (t/n, Enter=bez zmian): "
+            ).strip().lower()
+            if raw_auto in {"t", "tak", "y", "yes"}:
+                state.auto_save_settings = True
+                save_interactive_state(state)
+            elif raw_auto in {"n", "nie", "no"}:
+                state.auto_save_settings = False
+                save_interactive_state(state)
+            continue
+        elif choice == 8:
+            state.update_source_manifest = not state.update_source_manifest
+        elif choice == 9:
             state.compatibility_checks = not state.compatibility_checks
         else:
             continue
-        state.dirty = True
+        mark_interactive_state_changed(state)
 
 
 def handle_text_menu_choice(state: InteractiveState, choice: int) -> str:
@@ -6119,37 +6797,44 @@ def handle_text_menu_choice(state: InteractiveState, choice: int) -> str:
     elif choice == 1:
         show_plan_interactive(state)
     elif choice == 2:
-        update_manifest_interactive(state)
-    elif choice == 3:
         raw = input(f"System Jaźni [{state.source}]: ").strip() or str(state.source)
-        root, _ = validate_jazn_root(raw)
-        state.source = root; state.dirty = True
+        root, version = validate_jazn_root(raw)
+        state.source = root
+        if not state.archive_basename or sanitize_archive_stem(state.archive_basename).casefold() == "jazn_latka":
+            state.archive_basename = canonical_archive_basename(version)
+        mark_interactive_state_changed(state)
+    elif choice == 3:
+        state.out_dir = Path(input(f"Zapis archiwum [{state.out_dir}]: ").strip() or str(state.out_dir)).expanduser().resolve()
+        mark_interactive_state_changed(state)
     elif choice == 4:
-        state.out_dir = Path(input(f"Zapis archiwum [{state.out_dir}]: ").strip() or str(state.out_dir)).expanduser().resolve(); state.dirty = True
+        version = read_version_info(state.source.expanduser().resolve())
+        raw = input(f"Pełna nazwa bez .zip [{_interactive_archive_name(state)}]: ").strip() or _interactive_archive_name(state)
+        state.archive_basename = validate_archive_basename(raw, version)
+        mark_interactive_state_changed(state)
     elif choice == 5:
         values = list(PROFILE_CHOICES)
         raw = input(f"Profil {values} [{state.profile}]: ").strip()
         if raw in values:
-            state.profile = raw; state.dirty = True
+            state.profile = raw
+            mark_interactive_state_changed(state)
     elif choice == 6:
-        verify_interactive(state)
+        update_manifest_interactive(state)
     elif choice == 7:
-        extract_interactive(state)
+        verify_interactive(state)
     elif choice == 8:
-        state.archive_basename = sanitize_archive_stem(input(f"Nazwa [{state.archive_basename}]: ").strip() or state.archive_basename); state.dirty = True
+        extract_interactive(state)
     elif choice == 9:
         _text_options_menu(state)
     elif choice == 10:
-        edit_exclusions_text(state)
-    elif choice == 11:
         save_interactive_state(state)
-    elif choice == 12:
+    elif choice == 11:
         return "exit"
     return "continue"
 
 
 def interactive(ui_override: str | None = None) -> int:
     state = load_interactive_state()
+    ensure_interactive_archive_basename(state)
     if ui_override:
         state.ui_mode = _normalize_ui_mode(ui_override)
     elif not state.ui_auto_start:
@@ -6172,17 +6857,21 @@ def interactive(ui_override: str | None = None) -> int:
             continue
         try:
             if handle_text_menu_choice(state, choice) == "exit":
+                print("  1. Zakończ")
+                save_label = "Zapisz zmiany i zakończ"
                 if state.dirty:
-                    answer = input("Zapisać ustawienia? [T/n]: ").strip().lower()
-                    if answer not in {"n", "nie", "no"}:
-                        save_interactive_state(state)
+                    save_label = _paint(save_label, ANSI_RED, ANSI_BOLD)
+                print(f"  2. {save_label}")
+                answer = input("Wybór [1]: ").strip()
+                if answer == "2":
+                    save_interactive_state(state)
                 return 0
         except (PackError, OSError, ValueError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
             ui_status(str(exc), "error")
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v7.0.1")
+    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v8.0")
     root.add_argument("--version", action="version", version=GENERATOR_VERSION)
     sub = root.add_subparsers(dest="command")
 
@@ -6191,7 +6880,10 @@ def parser() -> argparse.ArgumentParser:
     pack.add_argument("--out", type=Path)
     pack.add_argument("--profile", choices=PROFILE_CHOICES, default=DEFAULT_PROFILE)
     pack.add_argument("--format", dest="archive_format", choices=FORMAT_CHOICES, default=DEFAULT_FORMAT)
-    pack.add_argument("--name", default="jazn_latka")
+    pack.add_argument(
+        "--name", default="",
+        help="Pełna nazwa paczki bez .zip; musi zawierać v<wersja>-<nazwa-wydania>. Pusta używa nazwy kanonicznej.",
+    )
     pack.add_argument("--part-size-mb", type=int, default=DEFAULT_PART_SIZE_MB)
     pack.add_argument("--compresslevel", type=int, default=DEFAULT_COMPRESSION_LEVEL)
     pack.add_argument("--force", action="store_true")
