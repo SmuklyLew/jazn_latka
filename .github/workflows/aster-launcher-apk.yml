@@ -7,6 +7,12 @@ on:
     paths:
       - 'android/aster-launcher/**'
       - '.github/workflows/aster-launcher-apk.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'android/aster-launcher/**'
+      - '.github/workflows/aster-launcher-apk.yml'
   workflow_dispatch:
 
 permissions:
