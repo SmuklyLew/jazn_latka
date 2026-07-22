@@ -7,6 +7,7 @@ import os
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.startup_contract import build_startup_status
 from latka_jazn.memory.raw_memory_status import RawMemoryInspector
+from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 
 
 class CapabilityStatusHandler:
@@ -49,6 +50,23 @@ class CapabilityStatusHandler:
             "size_bytes": memory_path.stat().st_size if memory_path.is_file() else 0,
             "inspection_mode": "metadata_only",
         }
+        try:
+            wake_state_status = MemoryNormalizationSidecar(
+                root,
+                source_db_path=cfg.normalization_source_db_path,
+                sidecar_db_path=cfg.normalization_sidecar_db_path,
+                runtime_version=cfg.version,
+            ).wake_state_status(deep_verify=False).to_dict()
+        except Exception as exc:
+            wake_state_status = {
+                "status": "status_unavailable",
+                "active_snapshot_present": False,
+                "active_snapshot": None,
+                "freshness": None,
+                "sidecar_db_path": str(cfg.normalization_sidecar_db_path),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
         adapter = ctx.get("model_adapter_status") if isinstance(ctx.get("model_adapter_status"), dict) else {}
         timestamp = ctx.get("timestamp_contract") if isinstance(ctx.get("timestamp_contract"), dict) else {}
         endpoint_host = daemon.get("host") or marker.get("host")
@@ -74,6 +92,7 @@ class CapabilityStatusHandler:
                 "cache_miss_reasons": marker.get("cache_miss_reasons") or [],
             },
             "raw_memory_status": memory_status,
+            "wake_state_status": wake_state_status,
             "conversation_archive_status": {
                 "status": "not_scanned_in_health_fast_path",
                 "ready_for_search": None,
@@ -96,6 +115,9 @@ class CapabilityStatusHandler:
         active_cache = status.get("active_cache_status") if isinstance(status.get("active_cache_status"), dict) else {}
         raw_memory = status.get("raw_memory_status") if isinstance(status.get("raw_memory_status"), dict) else {}
         archive_memory = status.get("conversation_archive_status") if isinstance(status.get("conversation_archive_status"), dict) else {}
+        wake_state = status.get("wake_state_status") if isinstance(status.get("wake_state_status"), dict) else {}
+        wake_snapshot = wake_state.get("active_snapshot") if isinstance(wake_state.get("active_snapshot"), dict) else {}
+        wake_freshness = wake_state.get("freshness") if isinstance(wake_state.get("freshness"), dict) else {}
         if cfg and not raw_memory.get("status"):
             try:
                 raw_memory = RawMemoryInspector(cfg.root, cfg.memory_db_path).inspect().to_dict()
@@ -149,19 +171,33 @@ class CapabilityStatusHandler:
                 f"active_root={active_cache.get('active_root') or status.get('active_root')}, start_file={status.get('start_file')}, "
                 f"active_database={status.get('active_database')}, active_runtime_write_database={status.get('active_runtime_write_database')}, "
                 f"process_lifecycle={status.get('process_lifecycle')}, pid={status.get('pid')}, endpoint={status.get('endpoint')}, heartbeat={status.get('heartbeat')}, "
+                f"wake_state_status={wake_state.get('status') or 'status_not_available'}, "
+                f"wake_state_snapshot_id={wake_snapshot.get('snapshot_id')}, "
+                f"wake_state_snapshot_sha256={wake_snapshot.get('snapshot_sha256')}, "
+                f"wake_state_validation_status={wake_snapshot.get('validation_status')}, "
+                f"wake_state_freshness_reason={wake_freshness.get('reason')}, "
+                f"wake_state_invalidated={wake_freshness.get('invalidates_wake_state')}, "
+                f"wake_state_sidecar={wake_state.get('sidecar_db_path')}, "
                 f"conversation_archive_status={archive_memory.get('status') or 'status_not_available'}, ready_for_search={archive_memory.get('ready_for_search')}, "
                 f"should_reuse_existing_extraction={active_cache.get('should_reuse_existing_extraction')}, "
                 f"cache_miss_reasons={active_cache.get('cache_miss_reasons') or []}, "
-                f"runtime_write_raw_memory_status={raw_memory.get('status') or 'status_not_available'} "
-                "(kontrolny status małej bazy bieżących zapisów; główny indeks rozmów to conversation_archive/FTS). "
+                f"runtime_write_raw_memory_status={raw_memory.get('status') or 'status_not_available'}, "
+                f"source_origin=runtime_rule_handler_response, "
+                f"source_origin_detail=capability_status_handler/v{version_number}. "
+                "(runtime_write jest kontrolnym statusem bieżących zapisów; conversation_archive/FTS pozostaje głównym indeksem pełnych rozmów). "
                 + (
                     "To jest pytanie o stan działania po aktualizacji, nie polecenie wykonania nowej aktualizacji kodu. "
                     if intent == "runtime_health_check_after_update"
                     else "To jest pytanie diagnostyczne o działanie runtime, nie zwykła rozmowa ani deklaracja stałego życia w tle. "
                 )
-                + "Granica prawdy: tryb `--runtime-preview` jest jednorazowy, a stała rozmowa istnieje lokalnie tylko w `--chat` do EOF albo /exit."
+                + "Granica prawdy: `persistent_daemon_async_job` oznacza turę obsłużoną przez trwały daemon do jawnego stopu; "
+                "`--chat` jest osobną interaktywną pętlą terminalową do EOF albo /exit, a `--runtime-preview` pozostaje turą one-shot."
             )
-            satisfied = ["runtime_status", "version", "active_database", "cache_reuse", "memory_status", "truth_boundary"]
+            satisfied = [
+                "runtime_status", "version", "active_database", "cache_reuse",
+                "memory_status", "wake_state_status", "wake_state_snapshot",
+                "wake_state_freshness", "source_origin", "truth_boundary",
+            ]
             route = "runtime_health_check_after_update" if intent == "runtime_health_check_after_update" else "runtime_health_check"
         else:
             enabled_cli = ", ".join(name for name, ok in sorted(cli.items()) if ok) or "brak jawnej listy CLI"

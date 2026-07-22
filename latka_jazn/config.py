@@ -66,6 +66,18 @@ def _env_int_first(*names: str, default: int) -> int:
     except Exception:
         return default
 
+
+def _default_normalization_sidecar_db_name() -> str:
+    'Resolve one canonical sidecar path while preserving an explicit override.'
+    explicit = os.environ.get("JAZN_MEMORY_NORMALIZATION_SIDECAR_DB")
+    if explicit is not None and explicit.strip():
+        return explicit.strip()
+    return os.environ.get(
+        "JAZN_AUDIT_DB",
+        "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3",
+    ).strip()
+
+
 @dataclass(slots=True)
 class JaznConfig:
     version: str = PACKAGE_VERSION
@@ -78,10 +90,9 @@ class JaznConfig:
         "JAZN_RECOVERED_MEMORY_DB",
         "memory/sqlite/recovery_v151/runtime_memory_recovered.sqlite3",
     ).strip())
-    normalization_sidecar_db_name: str = field(default_factory=lambda: os.environ.get(
-        "JAZN_MEMORY_NORMALIZATION_SIDECAR_DB",
-        "memory/sqlite/runtime_write_v2/memory_normalization_sidecar.sqlite3",
-    ).strip())
+    normalization_sidecar_db_name: str = field(
+        default_factory=_default_normalization_sidecar_db_name
+    )
     memory_tier_db_name: str = field(default_factory=lambda: os.environ.get(
         "JAZN_MEMORY_TIER_DB",
         "memory/sqlite/runtime_write_v2/runtime_memory_v151.sqlite3",

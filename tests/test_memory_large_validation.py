@@ -5,6 +5,8 @@ import hashlib
 import sqlite3
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.handlers.capability_status_handler import CapabilityStatusHandler
+from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.tools.memory_validation import (
@@ -142,3 +144,106 @@ def test_report_output_is_written_under_runtime_root(tmp_path: Path) -> None:
     destination = Path(report["report_path"])
     assert destination.is_file()
     assert destination.is_relative_to(root.resolve())
+
+
+def test_canonical_sidecar_path_and_health_contract(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("JAZN_MEMORY_NORMALIZATION_SIDECAR_DB", raising=False)
+    monkeypatch.delenv("JAZN_AUDIT_DB", raising=False)
+
+    root = _prepared_root(tmp_path)
+    cfg = JaznConfig(root=root)
+
+    assert cfg.normalization_sidecar_db_path == cfg.audit_db_path_readonly
+    assert "runtime_write_v2/memory_normalization_sidecar.sqlite3" not in str(
+        cfg.normalization_sidecar_db_path
+    ).replace("\\", "/")
+
+    report = validate_large_memory(
+        root,
+        full=True,
+        include_all_sqlite=True,
+        table_counts=True,
+        hash_files=True,
+    )
+
+    assert report["ok"] is True, report
+    assert report["summary"]["required_missing_count"] == 0
+    assert report["summary"]["wake_state_ready"] is True
+    assert not any(
+        item["path"].replace("\\", "/").endswith(
+            "runtime_write_v2/memory_normalization_sidecar.sqlite3"
+        )
+        for item in report["databases"]
+    )
+
+    sidecar_results = [
+        item for item in report["databases"]
+        if "normalization_sidecar" in item["role"]
+    ]
+    assert len(sidecar_results) == 1
+    assert "runtime_audit" in sidecar_results[0]["role"]
+    assert sidecar_results[0]["table_counts"]["wake_state_snapshots"] == 1
+
+    user_text = "Podaj bieżący stan runtime, wake-state i źródło tej odpowiedzi."
+    handler_result = CapabilityStatusHandler().handle(
+        user_text,
+        {
+            "intent": "runtime_health_check",
+            "config": cfg,
+            "lifecycle": "persistent_daemon_async_job",
+        },
+    )
+
+    assert "wake_state_status=ready" in handler_result.body
+    assert "wake_state_snapshot_id=" in handler_result.body
+    assert "wake_state_snapshot_sha256=" in handler_result.body
+    assert "wake_state_freshness_reason=" in handler_result.body
+    assert "source_origin=runtime_rule_handler_response" in handler_result.body
+    assert "persistent_daemon_async_job" in handler_result.body
+    assert "`--chat` jest osobną" in handler_result.body
+    assert "`--runtime-preview` pozostaje turą one-shot" in handler_result.body
+
+    validation = RuntimeAnswerValidator().validate(
+        user_text=user_text,
+        body=handler_result.body,
+        route=handler_result.route,
+        detected_intent="runtime_health_check",
+    )
+    assert validation.accepted is True, validation.to_dict()
+
+
+def test_health_validator_rejects_missing_requested_wake_state_fields() -> None:
+    validation = RuntimeAnswerValidator().validate(
+        user_text="Podaj stan runtime, wake-state i źródło tej odpowiedzi.",
+        body=(
+            "Działam. active_database=memory.sqlite3, cache_miss_reasons=[], "
+            "runtime działa. Granica prawdy: raport techniczny."
+        ),
+        route="runtime_health_check",
+        detected_intent="runtime_health_check",
+    )
+
+    assert validation.accepted is False
+    assert validation.must_regenerate is True
+    assert "wake_state_status" in validation.missing_required_components
+    assert "wake_state_snapshot" in validation.missing_required_components
+    assert "wake_state_freshness" in validation.missing_required_components
+    assert "source_origin" in validation.missing_required_components
+
+
+def test_explicit_normalization_sidecar_override_is_preserved(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv(
+        "JAZN_MEMORY_NORMALIZATION_SIDECAR_DB",
+        "memory/sqlite/custom/normalization.sqlite3",
+    )
+    cfg = JaznConfig(root=tmp_path / "runtime")
+
+    assert cfg.normalization_sidecar_db_path == (
+        cfg.root / "memory/sqlite/custom/normalization.sqlite3"
+    )

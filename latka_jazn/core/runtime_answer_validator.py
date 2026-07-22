@@ -105,6 +105,9 @@ class RuntimeAnswerValidator:
         "stdin_or_jsonl_boundary": ("stdin", "jsonl", "wsadow"),
         "code_steps": ("kod", "plik", "zmian", "napraw"),
         "memory_status": ("pamię", "pamie", "legacy", "indeks", "sqlite"),
+        "wake_state_status": ("wake_state_status", "wake-state", "wake state", "status_not_available", "ready"),
+        "wake_state_snapshot": ("wake_state_snapshot_id", "snapshot_id", "snapshot_sha256"),
+        "wake_state_freshness": ("wake_state_freshness_reason", "invalidates_wake_state", "wake_state_invalidated", "freshness"),
         "memory_content": ("fragment", "trop", "pamię", "pamie", "źród", "zrod", "licznik"),
         "source_or_index_status": ("źród", "zrod", "indeks", "status", "licznik", "sqlite", "trop"),
         "no_update_route_substitution": ("aktualizacj", "aktualizacji", "zastępować", "zastepowac", "nie wolno", "nie wypełnię", "nie wypelnie", "nie będę", "nie bede", "trop"),
@@ -353,6 +356,14 @@ class RuntimeAnswerValidator:
         internet_question = any(marker in folded_user for marker in ('dostep do internetu', 'masz internet', 'dostep do sieci', 'czy runtime ma internet', 'czy jazn ma internet'))
         self_memory_question = any(marker in folded_user for marker in ('co pamietasz', 'poszukaj w pamieci', 'sprawdz pamiec', 'o swojej postaci', 'o swojej osobie', 'informacji o sobie'))
         runtime_health_question = (('dzialasz' in folded_user or 'uruchomiona' in folded_user or 'runtime dziala' in folded_user or 'jazn dziala' in folded_user) and ('aktualiz' in folded_user or 'sprawdz' in folded_user or len(folded_user.split()) <= 4))
+        wake_state_question = any(marker in folded_user for marker in (
+            'wake-state', 'wake state', 'wake_state', 'stan przebudzenia',
+            'snapshot wake', 'aktywny snapshot',
+        ))
+        source_origin_question = any(marker in folded_user for marker in (
+            'zrodlo tej odpowiedzi', 'skad ta odpowiedz', 'source_origin',
+            'source origin', 'pochodzenie odpowiedzi',
+        ))
         presence_question = any(marker in folded_user for marker in ('jestes tam', 'jestes tu', 'latko jestes', 'slyszysz mnie', 'odezwij sie'))
         self_state_question = any(marker in folded_user for marker in ('co czujesz', 'jak sie czujesz', 'jaki masz stan', 'jaki masz nastroj'))
         time_awareness_question = any(marker in folded_user for marker in ('jaka jest pora', 'ktora godzina', 'ktora jest godzina', 'wiesz jaka jest pora', 'wiesz ktora godzina'))
@@ -374,6 +385,32 @@ class RuntimeAnswerValidator:
             runtime_version=SCHEMA_VERSION.rsplit("/", 1)[-1],
         )
         if detected_intent in self.HANDLER_PRESERVED_INTENTS and self._handler_preserved_answer_is_direct(body, detected_intent, route) and grounding.valid:
+            required_handler_components: list[str] = []
+            if detected_intent in {"runtime_health_check", "runtime_health_check_after_update"}:
+                if wake_state_question:
+                    required_handler_components.extend(
+                        ["wake_state_status", "wake_state_snapshot", "wake_state_freshness"]
+                    )
+                if source_origin_question:
+                    required_handler_components.append("source_origin")
+            missing_handler_components = self._missing_components(
+                body, required_handler_components
+            )
+            if missing_handler_components:
+                checks.append(
+                    "health_handler_missing_requested_components:"
+                    + ",".join(missing_handler_components)
+                )
+                return self._bad(
+                    "runtime_health_check_missing_requested_components",
+                    "runtime_health_check_repair",
+                    "Health-check musi podać żądane pola wake-state i źródła odpowiedzi z bieżącego runtime, zamiast kończyć na ogólnym statusie procesu.",
+                    detected_intent,
+                    route,
+                    checks,
+                    missing_handler_components,
+                    current_turn_grounding=grounding.to_dict(),
+                )
             checks.append('dedicated_handler_body_preserved_and_direct')
             return RuntimeAnswerValidation(SCHEMA_VERSION, True, None, None, True, False, detected_intent, route, None, checks, [], current_turn_grounding=grounding.to_dict())
         if not grounding.valid:

@@ -11,7 +11,8 @@ inspekcjonowana i nigdy nie jest naprawiana ani nadpisywana w miejscu.
 
 1. **L0 — źródła**: archiwum rozmów, `dziennik.json`, `memory/layered/*.jsonl`.
 2. **Recovery SQLite**: `memory/sqlite/recovery_v151/runtime_memory_recovered.sqlite3`.
-3. **Sidecar normalizacji**: `memory/sqlite/runtime_write_v2/memory_normalization_sidecar.sqlite3`.
+3. **Sidecar normalizacji**: kanonicznie `memory/sqlite/runtime_write_v1/runtime_audit.sqlite3`;
+   osobny plik jest używany wyłącznie przy jawnym `JAZN_MEMORY_NORMALIZATION_SIDECAR_DB`.
 4. **Wake state**: jeden aktywny snapshot ze sprawdzonym SHA i integralnością.
 5. **L1**: ograniczony pakiet wake state tylko na czas sesji.
 6. **L2**: wybrane rekordy źródłowe, TTL i status `pending_review`.
@@ -114,6 +115,25 @@ plików.
 
 Raport potwierdza czytelność i wybrane kontrakty strukturalne. Nie dowodzi
 kompletności wszystkich dawnych rozmów, trafności recallu ani autoryzacji L3.
+
+### Kanoniczna ścieżka sidecara
+
+`JaznConfig.normalization_sidecar_db_path` jest jednym źródłem ścieżki używanym
+przez normalizację, wake-state, startup status, recovery i `memory-validate`.
+Domyślnie wskazuje aktywną bazę audytową
+`memory/sqlite/runtime_write_v1/runtime_audit.sqlite3`. Dzięki temu jedna baza
+może mieć połączone role `runtime_audit+normalization_sidecar`, a pełny walidator
+nie wymaga nieużywanego pliku `runtime_write_v2/memory_normalization_sidecar.sqlite3`.
+
+Jawny override pozostaje dostępny:
+
+```powershell
+$env:JAZN_MEMORY_NORMALIZATION_SIDECAR_DB = "memory/sqlite/custom/memory_normalization_sidecar.sqlite3"
+```
+
+Zmiany fizycznego układu plików WAL/SHM bez zmiany logicznego fingerprintu
+pamięci nie unieważniają wake-state. Pliki `-wal` i `-shm` są jednak częścią
+aktywnego stanu SQLite i nie wolno ich oddzielać od głównej bazy podczas kopiowania.
 
 ## Ollama
 

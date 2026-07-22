@@ -1174,8 +1174,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config or JaznConfig()
         sidecar = MemoryNormalizationSidecar(
             cfg.root,
-            source_db_path=cfg.root / cfg.memory_db_name,
-            sidecar_db_path=cfg.root / cfg.audit_db_name,
+            source_db_path=cfg.normalization_source_db_path,
+            sidecar_db_path=cfg.normalization_sidecar_db_path,
             runtime_version=cfg.version,
         )
         payload = {"runtime_version": cfg.version, "memory_normalization_status": sidecar.status().to_dict()}
@@ -1186,8 +1186,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config or JaznConfig()
         sidecar = MemoryNormalizationSidecar(
             cfg.root,
-            source_db_path=cfg.root / cfg.memory_db_name,
-            sidecar_db_path=cfg.root / cfg.audit_db_name,
+            source_db_path=cfg.normalization_source_db_path,
+            sidecar_db_path=cfg.normalization_sidecar_db_path,
             runtime_version=cfg.version,
         )
         payload = {
@@ -1201,8 +1201,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config or JaznConfig()
         sidecar = MemoryNormalizationSidecar(
             cfg.root,
-            source_db_path=cfg.root / cfg.memory_db_name,
-            sidecar_db_path=cfg.root / cfg.audit_db_name,
+            source_db_path=cfg.normalization_source_db_path,
+            sidecar_db_path=cfg.normalization_sidecar_db_path,
             runtime_version=cfg.version,
         )
         payload = {"runtime_version": cfg.version, "wake_state_status": sidecar.wake_state_status().to_dict()}
@@ -1213,8 +1213,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config or JaznConfig()
         sidecar = MemoryNormalizationSidecar(
             cfg.root,
-            source_db_path=cfg.root / cfg.memory_db_name,
-            sidecar_db_path=cfg.root / cfg.audit_db_name,
+            source_db_path=cfg.normalization_source_db_path,
+            sidecar_db_path=cfg.normalization_sidecar_db_path,
             runtime_version=cfg.version,
         )
         payload = {"runtime_version": cfg.version, "wake_state_build_report": sidecar.build_wake_state(dry_run=ns.dry_run).to_dict()}
@@ -1225,8 +1225,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config or JaznConfig()
         sidecar = MemoryNormalizationSidecar(
             cfg.root,
-            source_db_path=cfg.root / cfg.memory_db_name,
-            sidecar_db_path=cfg.root / cfg.audit_db_name,
+            source_db_path=cfg.normalization_source_db_path,
+            sidecar_db_path=cfg.normalization_sidecar_db_path,
             runtime_version=cfg.version,
         )
         payload = {
