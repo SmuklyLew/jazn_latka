@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
           ref: automation/v15.1.0.3.89-migration-runner
 
-      - name: Reconstruct and verify compressed patch
+      - name: Decode compressed patch
         shell: bash
         run: |
           set -euo pipefail
@@ -36,10 +36,27 @@ jobs:
           parts=(.automation/v15.1.0.3.89/patch/part-*.b64)
           printf 'patch_parts=%s\n' "${#parts[@]}"
           test "${#parts[@]}" -eq 2
+          for part in "${parts[@]}"; do
+            printf '%s bytes=%s sha256=%s\n' "$part" "$(wc -c < "$part")" "$(sha256sum "$part" | awk '{print $1}')"
+          done
           cat "${parts[@]}" | tr -d '\r\n' | base64 --decode > migration.patch.xz
+          echo "decoded_bytes=$(wc -c < migration.patch.xz)"
+          echo "decoded_sha256=$(sha256sum migration.patch.xz | awk '{print $1}')"
+
+      - name: Verify compressed patch checksum
+        shell: bash
+        run: |
+          set -euo pipefail
           actual_sha="$(sha256sum migration.patch.xz | awk '{print $1}')"
-          echo "patch_xz_sha256=$actual_sha"
-          test "$actual_sha" = 'f3f18f246af22c63a8cd91dc11f1e85b297d65929dbc1b786b65d925352fcae6'
+          expected_sha='f3f18f246af22c63a8cd91dc11f1e85b297d65929dbc1b786b65d925352fcae6'
+          echo "actual_sha=$actual_sha"
+          echo "expected_sha=$expected_sha"
+          test "$actual_sha" = "$expected_sha"
+
+      - name: Test and decompress patch XZ
+        shell: bash
+        run: |
+          set -euo pipefail
           xz --test migration.patch.xz
           xz --decompress --stdout migration.patch.xz > migration.patch
           echo "patch_bytes=$(wc -c < migration.patch)"
