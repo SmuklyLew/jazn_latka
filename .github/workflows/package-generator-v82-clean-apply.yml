@@ -144,10 +144,22 @@ jobs:
             tests/test_jazn_pack_generator_v82_contract.py \
             tests/test_jazn_pack_generator_v82_dashboard.py
 
+      - name: Commit source, tests, and workflow cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(pack): harden generator v8.2 contracts"
+
       - name: Synchronize canonical release metadata
         run: |
           python -X utf8 -m latka_jazn.tools.release_metadata_sync \
             --root . --base-branch master --write --json
+
+      - name: Commit canonical release metadata
+        run: |
+          git add PACKAGE_INTEGRITY_MANIFEST.json SOURCE_PROVENANCE.json
+          git commit -m "release: synchronize generator hardening metadata"
 
       - name: Full repository validation
         run: |
@@ -156,11 +168,8 @@ jobs:
           python -X utf8 run.py doctor --json
           python -X utf8 run.py package-smoke --profile system --json
           git diff --check
+          test -z "$(git status --porcelain)"
 
-      - name: Commit and push final clean branch
+      - name: Push final clean branch
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "fix(pack): harden generator v8.2 contracts"
           git push origin HEAD:fix/package-generator-v82-hardening-clean
