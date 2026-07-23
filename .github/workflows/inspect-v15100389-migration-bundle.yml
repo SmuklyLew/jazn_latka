@@ -6,6 +6,12 @@ on:
       - automation/v15.1.0.3.89-migration-runner
     paths:
       - '.github/workflows/inspect-v15100389-migration-bundle.yml'
+  pull_request:
+    branches:
+      - update/v15.1.0.3.89-current-line-archive
+    paths:
+      - '.github/workflows/inspect-v15100389-migration-bundle.yml'
+      - '.automation/v15.1.0.3.89/raw/**'
   workflow_dispatch:
 
 permissions:
