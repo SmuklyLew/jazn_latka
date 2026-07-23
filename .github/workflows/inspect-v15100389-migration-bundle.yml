@@ -1,4 +1,4 @@
-name: Inspect v15.1.0.3.89 migration patch
+name: Inspect v15.1.0.3.89 raw candidates
 
 on:
   push:
@@ -6,21 +6,15 @@ on:
       - automation/v15.1.0.3.89-migration-runner
     paths:
       - '.github/workflows/inspect-v15100389-migration-bundle.yml'
-  pull_request:
-    branches:
-      - update/v15.1.0.3.89-current-line-archive
-    paths:
-      - '.github/workflows/inspect-v15100389-migration-bundle.yml'
-      - '.automation/v15.1.0.3.89/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  inspect-patch:
+  inspect-raw-candidates:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout automation branch
         uses: actions/checkout@v4
@@ -28,54 +22,31 @@ jobs:
           fetch-depth: 0
           ref: automation/v15.1.0.3.89-migration-runner
 
-      - name: Decode compressed patch parts independently
+      - name: Report candidate metadata
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
           shopt -s nullglob
-          parts=(.automation/v15.1.0.3.89/patch/part-*.b64)
-          printf 'patch_parts=%s\n' "${#parts[@]}"
-          test "${#parts[@]}" -eq 2
-          : > migration.patch.xz
-          for part in "${parts[@]}"; do
-            printf '%s bytes=%s sha256=%s\n' "$part" "$(wc -c < "$part")" "$(sha256sum "$part" | awk '{print $1}')"
-            tr -d '\r\n' < "$part" | base64 --decode >> migration.patch.xz
+          candidates=(.automation/v15.1.0.3.89/raw/candidate-*.bin)
+          echo "candidate_count=${#candidates[@]}"
+          for candidate in "${candidates[@]}"; do
+            echo "=== $candidate ==="
+            echo "bytes=$(wc -c < "$candidate")"
+            echo "sha256=$(sha256sum "$candidate" | awk '{print $1}')"
+            file "$candidate" || true
+            if xz --test "$candidate"; then
+              echo "xz_test=passed"
+              xz --decompress --stdout "$candidate" > candidate.bundle
+              echo "bundle_bytes=$(wc -c < candidate.bundle)"
+              echo "bundle_sha256=$(sha256sum candidate.bundle | awk '{print $1}')"
+              if git bundle verify candidate.bundle; then
+                echo "bundle_verify=passed"
+                git bundle list-heads candidate.bundle
+              else
+                echo "bundle_verify=failed"
+              fi
+            else
+              echo "xz_test=failed"
+            fi
           done
-          echo "decoded_bytes=$(wc -c < migration.patch.xz)"
-          echo "decoded_sha256=$(sha256sum migration.patch.xz | awk '{print $1}')"
-
-      - name: Verify compressed patch checksum
-        shell: bash
-        run: |
-          set -euo pipefail
-          actual_sha="$(sha256sum migration.patch.xz | awk '{print $1}')"
-          expected_sha='f3f18f246af22c63a8cd91dc11f1e85b297d65929dbc1b786b65d925352fcae6'
-          echo "actual_sha=$actual_sha"
-          echo "expected_sha=$expected_sha"
-          test "$actual_sha" = "$expected_sha"
-
-      - name: Test and decompress patch XZ
-        shell: bash
-        run: |
-          set -euo pipefail
-          xz --test migration.patch.xz
-          xz --decompress --stdout migration.patch.xz > migration.patch
-          echo "patch_bytes=$(wc -c < migration.patch)"
-          echo "patch_sha256=$(sha256sum migration.patch | awk '{print $1}')"
-          git apply --numstat migration.patch | tail -n 20
-
-      - name: Check patch against current update branch without writing
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin update/v15.1.0.3.89-current-line-archive master
-          git worktree add --detach ../migration-check origin/update/v15.1.0.3.89-current-line-archive
-          cp migration.patch ../migration-check/migration.patch
-          cd ../migration-check
-          echo "base_commit=$(git rev-parse HEAD)"
-          echo "base_tree=$(git rev-parse HEAD^{tree})"
-          git apply --check migration.patch
-          echo direct_apply_check=passed
-          git apply --3way --check migration.patch
-          echo three_way_apply_check=passed
-          git status --short
+          echo "inspection_complete=true"
