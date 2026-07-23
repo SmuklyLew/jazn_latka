@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
           ref: automation/v15.1.0.3.89-migration-runner
 
-      - name: Decode compressed patch
+      - name: Decode compressed patch parts independently
         shell: bash
         run: |
           set -euo pipefail
@@ -36,10 +36,11 @@ jobs:
           parts=(.automation/v15.1.0.3.89/patch/part-*.b64)
           printf 'patch_parts=%s\n' "${#parts[@]}"
           test "${#parts[@]}" -eq 2
+          : > migration.patch.xz
           for part in "${parts[@]}"; do
             printf '%s bytes=%s sha256=%s\n' "$part" "$(wc -c < "$part")" "$(sha256sum "$part" | awk '{print $1}')"
+            tr -d '\r\n' < "$part" | base64 --decode >> migration.patch.xz
           done
-          cat "${parts[@]}" | tr -d '\r\n' | base64 --decode > migration.patch.xz
           echo "decoded_bytes=$(wc -c < migration.patch.xz)"
           echo "decoded_sha256=$(sha256sum migration.patch.xz | awk '{print $1}')"
 
