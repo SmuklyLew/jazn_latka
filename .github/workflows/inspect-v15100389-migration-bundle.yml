@@ -1,4 +1,4 @@
-name: Inspect v15.1.0.3.89 migration bundle
+name: Inspect v15.1.0.3.89 migration patch
 
 on:
   push:
@@ -18,9 +18,9 @@ permissions:
   contents: read
 
 jobs:
-  inspect-bundle:
+  inspect-patch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout automation branch
         uses: actions/checkout@v4
@@ -28,36 +28,36 @@ jobs:
           fetch-depth: 0
           ref: automation/v15.1.0.3.89-migration-runner
 
-      - name: Inspect exact raw candidates
+      - name: Reconstruct and verify compressed patch
         shell: bash
         run: |
-          set -u
-          candidates=(.automation/v15.1.0.3.89/raw/candidate-*.bin)
-          test -e "${candidates[0]}"
-          for candidate in "${candidates[@]}"; do
-            echo "=== $candidate ==="
-            wc -c "$candidate"
-            sha256sum "$candidate"
-            file "$candidate" || true
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(.automation/v15.1.0.3.89/patch/part-*.b64)
+          printf 'patch_parts=%s\n' "${#parts[@]}"
+          test "${#parts[@]}" -eq 2
+          cat "${parts[@]}" | tr -d '\r\n' | base64 --decode > migration.patch.xz
+          actual_sha="$(sha256sum migration.patch.xz | awk '{print $1}')"
+          echo "patch_xz_sha256=$actual_sha"
+          test "$actual_sha" = 'f3f18f246af22c63a8cd91dc11f1e85b297d65929dbc1b786b65d925352fcae6'
+          xz --test migration.patch.xz
+          xz --decompress --stdout migration.patch.xz > migration.patch
+          echo "patch_bytes=$(wc -c < migration.patch)"
+          echo "patch_sha256=$(sha256sum migration.patch | awk '{print $1}')"
+          git apply --numstat migration.patch | tail -n 20
 
-            xz --test "$candidate"
-            xz_rc=$?
-            echo "xz_test_rc=$xz_rc"
-            if [ "$xz_rc" -eq 0 ]; then
-              xz --decompress --stdout "$candidate" > candidate.bundle
-              echo "decompressed_bytes=$(wc -c < candidate.bundle)"
-              echo "decompressed_sha256=$(sha256sum candidate.bundle | awk '{print $1}')"
-              git bundle verify candidate.bundle
-              bundle_rc=$?
-              echo "bundle_verify_rc=$bundle_rc"
-              if [ "$bundle_rc" -eq 0 ]; then
-                rm -rf refs/remotes/migration
-                git fetch candidate.bundle 'refs/heads/*:refs/remotes/migration/*'
-                git for-each-ref --format='%(refname) %(objectname)' refs/remotes/migration
-                for ref in $(git for-each-ref --format='%(refname)' refs/remotes/migration); do
-                  echo "ref=$ref commit=$(git rev-parse "$ref") tree=$(git rev-parse "$ref^{tree}")"
-                done
-              fi
-            fi
-          done
-          echo inspection_complete
+      - name: Check patch against current update branch without writing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin update/v15.1.0.3.89-current-line-archive master
+          git worktree add --detach ../migration-check origin/update/v15.1.0.3.89-current-line-archive
+          cp migration.patch ../migration-check/migration.patch
+          cd ../migration-check
+          echo "base_commit=$(git rev-parse HEAD)"
+          echo "base_tree=$(git rev-parse HEAD^{tree})"
+          git apply --check migration.patch
+          echo direct_apply_check=passed
+          git apply --3way --check migration.patch
+          echo three_way_apply_check=passed
+          git status --short
