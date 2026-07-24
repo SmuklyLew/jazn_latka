@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - automation/v15.1.0.3.89-migration-runner
+  pull_request:
+    branches:
+      - update/v15.1.0.3.89-current-line-archive
   workflow_dispatch:
 
 permissions:
