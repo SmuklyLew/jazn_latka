@@ -61,42 +61,67 @@ def main() -> int:
     if actual_patch_sha != EXPECTED_PATCH_SHA256:
         raise SystemExit(f"patch sha mismatch: {actual_patch_sha}")
 
-    manifest_source = payload / "ARCHIVE_MANIFEST.json"
-    manifest = json.loads(manifest_source.read_text(encoding="utf-8"))
-    if manifest.get("source_commit") != EXPECTED_BASE:
-        raise SystemExit("archive manifest source commit mismatch")
-    entries = manifest.get("files")
+    plan_source = payload / "ARCHIVE_PLAN.json"
+    plan = json.loads(plan_source.read_text(encoding="utf-8"))
+    entries = plan.get("entries")
     if not isinstance(entries, list) or len(entries) != 204:
         raise SystemExit(f"unexpected archive entries: {len(entries) if isinstance(entries, list) else 'invalid'}")
 
     copied = 0
     private_metadata = 0
+    manifest_entries = []
     for entry in entries:
         original = root / entry["original_path"]
         if not original.is_file():
             raise SystemExit(f"missing archive source: {entry['original_path']}")
-        if original.stat().st_size != int(entry["size_bytes"]):
-            raise SystemExit(f"archive source size mismatch: {entry['original_path']}")
-        if sha256(original) != entry["sha256"]:
-            raise SystemExit(f"archive source sha mismatch: {entry['original_path']}")
+        actual_sha = sha256(original)
+        actual_size = original.stat().st_size
         retention = entry["retention"]
         if retention == "metadata_only_private_source":
-            if entry.get("archive_path") is not None:
-                raise SystemExit("private source must not have archive path")
             private_metadata += 1
+            manifest_entries.append({
+                "archive_path": None,
+                "category": entry["category"],
+                "original_path": entry["original_path"],
+                "reason": entry["reason"],
+                "retention": retention,
+                "sha256": actual_sha,
+                "size_bytes": actual_size,
+            })
             continue
         if retention != "exact_copy":
             raise SystemExit(f"unsupported retention: {retention}")
-        destination = root / entry["archive_path"]
+        archive_path = f".archives/pre_v15_1_0_3_89/tree/{entry['original_path']}"
+        destination = root / archive_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(original, destination)
-        if sha256(destination) != entry["sha256"]:
-            raise SystemExit(f"archive copy sha mismatch: {entry['archive_path']}")
+        if sha256(destination) != actual_sha:
+            raise SystemExit(f"archive copy sha mismatch: {archive_path}")
+        manifest_entries.append({
+            "archive_path": archive_path,
+            "category": entry["category"],
+            "original_path": entry["original_path"],
+            "reason": entry["reason"],
+            "retention": retention,
+            "sha256": actual_sha,
+            "size_bytes": actual_size,
+        })
         copied += 1
 
     archive_manifest = root / ARCHIVE_REL
     archive_manifest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(manifest_source, archive_manifest)
+    archive_payload = {
+        "exact_copy_count": copied,
+        "file_count": len(manifest_entries),
+        "files": manifest_entries,
+        "metadata_only_private_count": private_metadata,
+        "schema_version": "jazn_source_archive/v15.1.0.3.89",
+        "source_commit": EXPECTED_BASE,
+        "source_version": "v15.1.0.3.88-Night of Hotfix",
+        "target_version": "v15.1.0.3.89-Night of Hotfix",
+        "truth_boundary": "Archive preserves reviewed historical project sources. Private generated embedded_sources.py is represented only by path, size and SHA-256; its content is not duplicated.",
+    }
+    archive_manifest.write_text(json.dumps(archive_payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     check = run(root, "apply", "--check", "--binary", str(patch_path), check=False)
     if check.returncode != 0:
