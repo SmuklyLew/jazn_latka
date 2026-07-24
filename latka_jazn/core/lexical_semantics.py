@@ -47,7 +47,7 @@ class LexicalSemanticReport:
 
 
 class LexicalSemanticUnderstanding:
-    """Rozszerzona warstwa słownikowo-znaczeniowa Jaźni v14.6.0.
+    """Rozszerzona warstwa słownikowo-znaczeniowa Jaźni v15.1.0.3.89.
 
     `PolishUnderstandingEngine` rozpoznaje tokeny, lematy, intencje i podstawową
     trasę. Ta klasa dodaje drugi poziom: rodziny słów, frazy wielowyrazowe,
@@ -57,8 +57,8 @@ class LexicalSemanticUnderstanding:
     diagnostyki runtime i pracy z GitHub.
     """
 
-    RESOURCE_NAME = "semantic_lexicon_v14_6_0.json"
-    RESOURCE_NAME_V1462 = "semantic_lexicon_v14_6_2.json"
+    RESOURCE_NAME = "semantic_lexicon_current_line.json"
+    RESOURCE_NAME = "semantic_lexicon.json"
     FUNCTION_WORDS = {
         "a", "ale", "albo", "bo", "by", "czy", "do", "dla", "gdy", "i", "ja", "jak", "jest", "już", "juz",
         "mi", "mnie", "na", "nad", "nie", "o", "od", "po", "pod", "przy", "się", "sie", "tak", "te", "ten",
@@ -120,7 +120,7 @@ class LexicalSemanticUnderstanding:
                 "average_confidence": nlp_report.get("average_confidence"),
             },
             limitations=[
-                "Moduł v14.6.2 rozszerza słownik i semantykę domenową, ale nie zastępuje LLM-a ani pełnego parsera języka polskiego.",
+                "Moduł v15.1.0.3.89 rozszerza słownik i semantykę domenową, ale nie zastępuje LLM-a ani pełnego parsera języka polskiego.",
                 "Nieznane słowa są raportowane ostrożnie; mają pomagać w rozbudowie słownika, nie blokować rozmowy.",
                 "Pełna lematyzacja kontekstowa pozostaje opcjonalną warstwą providerów NLP, nie obowiązkowym założeniem runtime.",
             ],
@@ -130,8 +130,8 @@ class LexicalSemanticUnderstanding:
         candidates: list[Path] = []
         if self.root:
             candidates.extend([
-                self.root / "memory" / "raw" / self.RESOURCE_NAME_V1462,
-                self.root / "latka_jazn" / "resources" / self.RESOURCE_NAME_V1462,
+                self.root / "memory" / "raw" / self.RESOURCE_NAME,
+                self.root / "latka_jazn" / "resources" / self.RESOURCE_NAME,
                 self.root / "memory" / "raw" / self.RESOURCE_NAME,
                 self.root / "latka_jazn" / "resources" / self.RESOURCE_NAME,
             ])
@@ -227,12 +227,12 @@ class LexicalSemanticUnderstanding:
         tag_set = set(tags)
         phrase_keys = {p.key for p in phrases}
         field_keys = {f.key for f in fields}
-        if "v14_6_10_runtime_self_expression_topic_mismatch_update" in tag_set or "v14_6_10_update" in tag_set:
-            return "v14_6_10_runtime_self_expression_topic_mismatch_update"
-        if {"v14_6_1_update", "polish_nlp", "safe_incremental_update"} & tag_set:
-            return "v14_6_1_nlp_adapter_update"
-        if {"v14_6_update", "lexicon_expansion", "language_understanding"} & tag_set and {"update_request", "implementation"} & tag_set:
-            return "v14_6_0_lexical_runtime_update"
+        if "runtime_self_expression_topic_mismatch_update" in tag_set or "current_line_update" in tag_set:
+            return "runtime_self_expression_topic_mismatch_update"
+        if {"current_line_update", "polish_nlp", "safe_incremental_update"} & tag_set:
+            return "nlp_adapter_update"
+        if {"current_line_update", "lexicon_expansion", "language_understanding"} & tag_set and {"update_request", "implementation"} & tag_set:
+            return "lexical_runtime_update"
         if "repository" in field_keys or "github" in tag_set:
             return "github_repository_workflow"
         if "memory_recall" in tag_set or "place_memory" in field_keys or "memory_scene" in phrase_keys:

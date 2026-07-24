@@ -4,7 +4,7 @@ from dataclasses import dataclass, asdict
 from typing import Any
 import re
 
-from latka_jazn.version import schema_version
+from latka_jazn.version import PACKAGE_VERSION, schema_version
 from latka_jazn.core.visible_integrity import (
     evaluate_origin_truth,
     validate_visible_text as canonical_validate_visible_text,
@@ -197,15 +197,15 @@ class FinalResponseContract:
         )
         if any(sig in text for sig in technical_signatures):
             return "technical_fallback"
-        if route_text == "v14_6_1_nlp_adapter_update" and not runtime_text.startswith("v14.6.1") and any(
+        if route_text == "legacy_nlp_adapter_update" and runtime_text.startswith(PACKAGE_VERSION.lower()):
+            return "stale_route_mismatch"
+        if route_text == "legacy_nlp_adapter_update" and any(
             sig in text for sig in (
-                "właściwy bezpieczny krok dla v14.6.1",
-                "utrzymać v14.6.1",
-                "pełny eksport v14.6.1",
+                "historyczna ścieżka nlp",
+                "jawnie historycznego wydania",
+                "starszej trasy nlp",
             )
         ):
-            return "stale_route_mismatch"
-        if runtime_text.startswith("v14.6.10") and route_text == "v14_6_1_nlp_adapter_update" and "v14.6.10" in text:
             return "stale_route_mismatch"
         if route_text in {"general_dialogue", "open_question"} and "odpowiedź runtime ma teraz wyraźny obowiązek" in text:
             return "obligation_instead_of_answer"

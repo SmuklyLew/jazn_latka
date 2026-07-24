@@ -6,7 +6,7 @@ from typing import Any
 
 @dataclass(slots=True)
 class TurnRouteTrace:
-    schema_version: str = "turn_route_trace/v14.8.3.1"
+    schema_version: str = "turn_route_trace/v15.1.0.3.89"
     user_text_preview: str = ""
     speech_act: str | None = None
     question_object: str | None = None

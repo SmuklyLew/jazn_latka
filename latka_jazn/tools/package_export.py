@@ -31,22 +31,8 @@ NLP_INCLUDE_PREFIXES = (
     "latka_jazn/nlp/",
     "latka_jazn/resources/",
 )
-NLP_INCLUDE_EXACT = {
-    "MANIFEST_V14_6_1_NLP_ADAPTER_ZIP_PROFILES.json",
-    "MANIFEST_V14_6_1_12_RUNTIME_PREVIEW_SOURCE_ORIGIN_SELF_STATE.json",
-    "MANIFEST_V14_6_1_13_COGNITIVE_TURN_ENVELOPE.json",
-    "UPDATE_REPORT_V14_6_1.md",
-    "UPDATE_REPORT_V14_6_1_12.md",
-    "UPDATE_REPORT_V14_6_1_14.md",
-    "UPDATE_REPORT_V14_6_2.md",
-    "UPDATE_REPORT_V14_6_2_1.md",
-    "MANIFEST_V14_6_2_1_STALE_NLP_ROUTE_HOTFIX.json",
-    "docs/UPDATE_V14_6_1_NLP_ADAPTER_ZIP_PROFILES.md",
-    "docs/UPDATE_V14_6_1_12_RUNTIME_PREVIEW_SOURCE_ORIGIN_SELF_STATE.md",
-    "docs/UPDATE_V14_6_1_13_COGNITIVE_TURN_ENVELOPE.md",
-    "docs/UPDATE_V14_6_2_CONTEXTUAL_GREETING_FALLBACK_REPAIR.md",
-    "docs/UPDATE_V14_6_2_1_STALE_NLP_ROUTE_HOTFIX.md",
-}
+NLP_INCLUDE_EXACT: set[str] = set()
+
 GITHUB_SAFE_EXCLUDE_PREFIXES = (
     "memory/",
     "workspace_runtime/",
@@ -56,7 +42,6 @@ GITHUB_SAFE_EXCLUDE_PREFIXES = (
 # Source-safe means safe by provenance and content, not merely by directory.
 GITHUB_SAFE_PRIVATE_EXACT = {
     "latka_jazn/core/canon/local_private_canon_extension.py",
-    "latka_jazn/contracts/embedded_sources.py",
 }
 _PRIVATE_MARKER_PARTS = (
     ("local_private", "do_not_commit_without_review"),

@@ -81,7 +81,7 @@ class RuntimeResponseSynthesizer:
                     "Diagnoza runtime: to jest błąd stale-route/starego kontekstu w warstwie rozmownej, a nie zwykła korekta stylu. "
                     "Naprawa musi objąć `engine.py` (carryover ostatniej tury z limitem czasu i bez zgadywania), `ellipsis_resolver.py` i `dialogue_intent_classifier.py` (krótkie 'zrób to teraz' dziedziczy tylko bezpieczny kontekst systemowy), "
                     "`runtime_response_synthesizer.py` (odpowiedź diagnostyczna musi mówić o aktualnym stale-route, nie o starej trasie), `runtime_answer_validator.py` (current-turn grounding guard blokuje wstrzyknięty stary kontekst) oraz test regresji. "
-                    "Kryterium: pytanie o stale-route nie może wrócić do `correction_acknowledged`, `positive_continuation`, v14.6.1/v14.6.2 ani do dawnych detali pracy, jeśli nie ma ich w aktualnej wiadomości lub jawnie użytym poprzednim kontekście. "
+                    "Kryterium: pytanie o stale-route nie może wrócić do `correction_acknowledged`, `positive_continuation`, historycznych tras wersjonowanych ani do dawnych detali pracy, jeśli nie ma ich w aktualnej wiadomości lub jawnie użytym poprzednim kontekście. "
                     "Source-origin ma pokazać, czy odpowiedź powstała z handlera, syntezy naprawczej czy interpretacji ChatGPT."
                 )
             return (

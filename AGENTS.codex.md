@@ -90,7 +90,7 @@ Dla zmian runtime lub pamięci sprawdź dodatkowo:
 
 - test bieżącej tury właściwym adapterem;
 - marker, PID, endpoint i heartbeat;
-- `tier_v151` oraz legacy `runtime_write` oddzielnie;
+- `transactional_tier` oraz legacy `runtime_write` oddzielnie;
 - `PRAGMA integrity_check`, `foreign_key_check` i zgodność shardów, gdy dotknięto SQLite.
 
 Finalny release buduj dopiero z czystego, zatwierdzonego commita:

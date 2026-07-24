@@ -32,7 +32,7 @@ class MemoryRecallQualityReport:
 class MemoryRecallQualityEvaluator:
     """Ocenia, czy recall jest treściową pamięcią, czy tylko licznikiem.
 
-    Reguła centralna v14.8.5.011: counts są diagnostyką, nie wspomnieniem.
+    Reguła centralna v15.1.0.3.89: counts są diagnostyką, nie wspomnieniem.
     """
 
     TRUTH_BOUNDARY = (

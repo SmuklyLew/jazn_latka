@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from typing import Any
-SCHEMA_VERSION="entity_and_topic_frame/v14.6.10"
+SCHEMA_VERSION="entity_and_topic_frame/v15.1.0.3.89"
 @dataclass(slots=True)
 class EntityTopicFrame:
     entities: list[dict[str,Any]]=field(default_factory=list); topics: list[str]=field(default_factory=list); schema_version: str=SCHEMA_VERSION

@@ -29,7 +29,7 @@ def test_readiness_separates_activation_prerequisites_from_live_runtime() -> Non
             "endpoint_reachable": False,
             "heartbeat_fresh": False,
         },
-        memory_v151={"exists": False, "ready": False},
+        transactional_memory={"exists": False, "ready": False},
     )
 
     assert readiness.activation_prerequisites_ready is True
@@ -41,7 +41,7 @@ def test_readiness_separates_activation_prerequisites_from_live_runtime() -> Non
         "activation_prerequisites": "ready",
         "release": "ready",
         "runtime": "inactive",
-        "memory_v151": "missing",
+        "transactional_memory": "missing",
     }
 
 
@@ -59,12 +59,12 @@ def test_readiness_requires_live_daemon_evidence_for_active_trusted() -> None:
             "endpoint_reachable": True,
             "heartbeat_fresh": True,
         },
-        memory_v151={"exists": True, "ready": True},
+        transactional_memory={"exists": True, "ready": True},
     )
 
     assert readiness.live_runtime_ready is True
     assert readiness.summary()["runtime"] == "active_trusted"
-    assert readiness.summary()["memory_v151"] == "ready"
+    assert readiness.summary()["transactional_memory"] == "ready"
 
 
 def test_integrity_failure_blocks_activation_and_release() -> None:
@@ -76,7 +76,7 @@ def test_integrity_failure_blocks_activation_and_release() -> None:
             "version_matches_runtime": True,
         },
         daemon={},
-        memory_v151={},
+        transactional_memory={},
     )
 
     assert readiness.installation_ok is True

@@ -1,5 +1,5 @@
 from __future__ import annotations
-SCHEMA_VERSION="lexical_license_guard/v14.6.10"
+SCHEMA_VERSION="lexical_license_guard/v15.1.0.3.89"
 class LexicalLicenseGuard:
     def note_for(self, source: str) -> str:
         notes = {

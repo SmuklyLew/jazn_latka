@@ -6,7 +6,7 @@ import unicodedata
 from typing import Any
 
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
-SCHEMA_VERSION = "ellipsis_resolver/v14.8.2.4"
+SCHEMA_VERSION = "ellipsis_resolver/v15.1.0.3.89"
 
 
 @dataclass(slots=True)
@@ -46,7 +46,7 @@ class EllipsisResolver:
     def _present(text: str, marker: str) -> bool:
         if not marker:
             return False
-        # v14.8.2.4: każde dopasowanie ma granice słów, również frazy wielowyrazowe.
+        # v15.1.0.3.89: każde dopasowanie ma granice słów, również frazy wielowyrazowe.
         pattern = r"(?<!\w)" + re.escape(marker) + r"(?!\w)"
         return re.search(pattern, text) is not None
 
@@ -60,7 +60,7 @@ class EllipsisResolver:
         basis: list[str] = []
         previous_norm = self.normalize(previous_text or "")
         if self._contains_independent_runtime_question(normalized) or "póki co" in normalized or "poki co" in folded:
-            return EllipsisResolution(SCHEMA_VERSION, text, normalized, folded, False, None, None, ["v14.8.2.4: samodzielne pytanie/status lub fraza póki co blokuje fałszywą elipsę"])
+            return EllipsisResolution(SCHEMA_VERSION, text, normalized, folded, False, None, None, ["v15.1.0.3.89: samodzielne pytanie/status lub fraza póki co blokuje fałszywą elipsę"])
         is_short = len(normalized) <= 80
         ellipsis_type = None
         hint = None

@@ -86,7 +86,7 @@ class CanonCandidate:
 @dataclass(slots=True)
 class CanonExtractionReport:
     schema_version: str = SCHEMA_VERSION
-    version: str = "v14.8.3.4-python-canon-consolidation"
+    version: str = "v15.1.0.3.89"
     mode: str = "preview"
     root: str = ""
     started_at_utc: float = 0.0

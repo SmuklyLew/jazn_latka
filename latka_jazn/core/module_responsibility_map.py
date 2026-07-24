@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import ast, json, hashlib
 
-SCHEMA_VERSION = "module_responsibility_map/v14.6.10"
+SCHEMA_VERSION = "module_responsibility_map/v15.1.0.3.89"
 
 
 @dataclass(slots=True)
@@ -34,7 +34,7 @@ class ModuleResponsibilityMap:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.output_path = root / "workspace_runtime" / "module_responsibility_map_v14_6_10.json"
+        self.output_path = root / "workspace_runtime" / "module_responsibility_map_current_line.json"
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _analyse_py(self, path: Path) -> tuple[list[str], list[str]]:
@@ -57,7 +57,7 @@ class ModuleResponsibilityMap:
                 intents.extend(tags)
         if not resp:
             resp.append("pomocniczy moduł systemu")
-        if "v14_5" in low or "legacy" in low:
+        if "current_line" in low or "legacy" in low:
             status = "legacy_or_historical_resource"
         return resp, sorted(set(intents)), status
 

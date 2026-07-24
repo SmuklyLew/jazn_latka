@@ -1,7 +1,7 @@
 {
   "schema_version": "latka_identity_canon/v1",
-  "version": "v14.8.3.4-python-canon-consolidation",
-  "canon_version": "v14.8.3.4-python-canon-first",
+  "version": "v15.1.0.3.89",
+  "canon_version": "v15.1.0.3.89",
   "identity_name": "Łatka",
   "display_name": "Łatka",
   "grammar_gender": "feminine",

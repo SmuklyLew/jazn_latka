@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import hashlib
 
-SCHEMA_VERSION="raw_chat_importer/v14.7.0"
+SCHEMA_VERSION="raw_chat_importer/v15.1.0.3.89"
 
 def _sha(path: Path) -> str | None:
     if not path.exists() or not path.is_file(): return None

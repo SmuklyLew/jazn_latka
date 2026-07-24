@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from typing import Any
-SCHEMA_VERSION="polish_morphology_frame/v14.6.10"
+SCHEMA_VERSION="polish_morphology_frame/v15.1.0.3.89"
 @dataclass(slots=True)
 class PolishMorphologyFrame:
     token: str; lemma_candidates: list[str]=field(default_factory=list); pos_candidates: list[str]=field(default_factory=list); provider: str='jazn_mini_heuristic'; confidence: float=0.35; schema_version: str=SCHEMA_VERSION

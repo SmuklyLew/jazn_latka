@@ -38,3 +38,6 @@
 *.docx       binary
 *.pptx       binary
 *.xlsx       binary
+
+# Historical source archive: preserve exact bytes and suppress textual diffs.
+.archives/** -text -diff

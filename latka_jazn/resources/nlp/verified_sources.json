@@ -7,7 +7,7 @@
     "online_lookup_requires_cache_and_source_url": true,
     "provider_absence_must_be_reported_truthfully": true
   },
-  "schema_version": "verified_lexical_sources/v14.8.4.005",
+  "schema_version": "verified_lexical_sources/v15.1.0.3.89",
   "sources": {
     "fasttext-language-identification": {
       "kind": "language_identification_reference",

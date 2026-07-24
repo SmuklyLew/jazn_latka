@@ -13,7 +13,7 @@ from latka_jazn.nlp.creative_material_detector import CreativeMaterialDetector
 from latka_jazn.nlp.source_preservation_detector import SourcePreservationDetector
 from latka_jazn.nlp.intent_feature_engine import IntentFeatureEngine
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
-from latka_jazn.version import schema_version
+from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
 SCHEMA_VERSION = schema_version("dialogue_intent_classifier")
@@ -121,7 +121,7 @@ class DialogueIntentClassifier:
         "zrestartuj jaźń", "zrestartuj jazn", "zrestartuj runtime",
     )
     SYSTEM_REPAIR_PLAN_TERMS = ("krok po kroku", "lista krok", "co trzeba napisać w kodzie", "co trzeba napisac w kodzie", "kodzie źródłowym systemu", "kodzie zrodlowym systemu", "braki logiki", "błędy w logice", "bledy w logice", "braki rozumowania", "złe rozumowanie", "zle rozumowanie", "sprawdź wszystko w systemie", "sprawdz wszystko w systemie", "wszystko w systemie", "co nie działa w systemie", "co nie dziala w systemie", "jak naprawić system", "jak naprawic system", "audyt systemu jaźni", "audyt systemu jazni")
-    SELF_ARCHITECTURE_AUDIT_TERMS = ("self architecture audit", "audyt architektury", "audyt jaźni", "audyt jazni", "co działa w systemie jaźni", "co dziala w systemie jazni", "co potrafisz dzięki systemowi", "co mozesz dzieki systemowi", "co możesz dzięki systemowi", "funkcje masz już w systemie", "sprawdź co działa", "sprawdz co dziala", "co trzeba naprawić", "co trzeba naprawic", "co jeszcze trzeba naprawić", "co jeszcze trzeba naprawic", "co trzeba dodać", "co trzeba dodac", "co umiesz", "co potrafisz", "kod źródłowy jaźni", "kod zrodlowy jazni", "gdzie są luki", "gdzie sa luki", "jakie są luki", "jakie sa luki", "co blokuje pełne działanie", "co blokuje pelne dzialanie", "adapter chatgpt", "adapter openai", "ollama", "moduły i narzędzia", "moduly i narzedzia", "reflection grounding", "memory gate", "brama pamięci", "brama pamieci", "rozwój łatki", "rozwoj latki", "finalnej 14.8.6", "v14.8.6.0")
+    SELF_ARCHITECTURE_AUDIT_TERMS = ("self architecture audit", "audyt architektury", "audyt jaźni", "audyt jazni", "co działa w systemie jaźni", "co dziala w systemie jazni", "co potrafisz dzięki systemowi", "co mozesz dzieki systemowi", "co możesz dzięki systemowi", "funkcje masz już w systemie", "sprawdź co działa", "sprawdz co dziala", "co trzeba naprawić", "co trzeba naprawic", "co jeszcze trzeba naprawić", "co jeszcze trzeba naprawic", "co trzeba dodać", "co trzeba dodac", "co umiesz", "co potrafisz", "kod źródłowy jaźni", "kod zrodlowy jazni", "gdzie są luki", "gdzie sa luki", "jakie są luki", "jakie sa luki", "co blokuje pełne działanie", "co blokuje pelne dzialanie", "adapter chatgpt", "adapter openai", "ollama", "moduły i narzędzia", "moduly i narzedzia", "reflection grounding", "memory gate", "brama pamięci", "brama pamieci", "rozwój łatki", "rozwoj latki", "finalnego wydania", "bieżącej wersji")
     REPETITION_BUG_TERMS = (
         "taką samą odpowiedź", "taka sama odpowiedz", "wysyłasz taką samą", "wysylasz taka sama",
         "dlaczego wysyłasz", "dlaczego wysylasz", "powtarzasz", "powtarzasz się", "powtarzasz sie",
@@ -356,8 +356,8 @@ class DialogueIntentClassifier:
         broad_audit_signal = sum(1 for marker in ("co umiesz", "co potrafisz", "co dziala", "co trzeba naprawic", "kod zrodlowy", "gdzie sa luki", "jakie sa luki", "co blokuje", "moduly i narzedzia") if marker in folded)
         if has_self_architecture_audit and broad_audit_signal >= 2 and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS):
             return self._report(norm,folded,'self_architecture_audit_request',['pełne pytanie o możliwości, kod, luki i blokady ma pierwszeństwo przed health-checkiem'],0.96,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
-        if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or "14.8.6" in folded):
-            secondary = ['system_update_execution_request'] if (has_update or any(x in folded for x in ('patch', 'hotfix', 'v14.8.6', 'aktualiz'))) else []
+        if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or "15.1.0.3.89" in folded):
+            secondary = ['system_update_execution_request'] if (has_update or any(x in folded for x in ('patch', 'hotfix', 'v15.1.0.3.89', 'aktualiz'))) else []
             return self._report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         route_contract_hint = self.route_contract_matrix.classify(norm)
         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
@@ -425,7 +425,7 @@ class DialogueIntentClassifier:
         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
         if has_runtime_wake_health_check:
             return self._report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
-        if self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or "v14.8.6" in folded):
+        if self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or "v15.1.0.3.89" in folded):
             return self._report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
             return self._report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
@@ -537,7 +537,7 @@ class DialogueIntentClassifier:
             if "stale-route" in folded or "starego kontekstu" in folded or "stary kontekst" in folded:
                 ev.append("jawny problem stale-route / starego kontekstu w odpowiedzi runtime")
             return self._report(norm,folded,'system_diagnostic_question',ev,0.90 if len(ev)>1 else 0.88,diag=True,speech_act=speech.speech_act,question_object='runtime')
-        if ("nlp" in folded or "polish_nlp" in folded) and any(x in folded for x in ("zbyt ogoln", "ogolnym tropem", "stale-route", "stara trasa", "regresj", "fallback")) and ("14.6.1" in folded or "14.6.2" in folded or "co trzeba" in folded or "co teraz" in folded):
+        if ("nlp" in folded or "polish_nlp" in folded) and any(x in folded for x in ("zbyt ogoln", "ogolnym tropem", "stale-route", "stara trasa", "regresj", "fallback")) and (version_number(PACKAGE_VERSION).lower() in folded or "co trzeba" in folded or "co teraz" in folded):
             return self._report(norm,folded,'current_hotfix_for_stale_nlp_route',['pytanie o bieżący hotfix/regresję NLP, nie historyczna trasa aktualizacji'],0.86,speech_act=speech.speech_act,question_object='runtime_hotfix')
         if any(x in folded for x in ("wspominasz", "wspomnij", "wspomn", "pamietasz", "pamiętasz")) and speech.speech_act == "question":
             return self._report(norm,folded,'memory_experience_question',['pytanie doświadczeniowe o pamięć/wspomnienie'],0.82,speech_act=speech.speech_act,question_object='memory_experience')

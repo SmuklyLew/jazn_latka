@@ -10,8 +10,8 @@ from latka_jazn.core.visible_integrity import enforce_integrity_consensus
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.turn_timeout import runtime_turn_timeout_seconds
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
-from latka_jazn.memory.runtime_memory_v151 import RuntimeMemoryWriteContext
-from latka_jazn.memory.runtime_memory_v151_install import install_runtime_memory_v151
+from latka_jazn.memory.runtime_memory import RuntimeMemoryWriteContext
+from latka_jazn.memory.runtime_memory_install import install_runtime_memory
 from latka_jazn.memory.wake_state_runtime import WakeStateRuntimeBridge
 
 from latka_jazn.version import schema_version
@@ -34,7 +34,7 @@ class JaznRuntimeSession:
     ) -> None:
         self.config = config or JaznConfig()
         self.engine = JaznEngine(self.config)
-        self.memory_v151_install_status = install_runtime_memory_v151(self.engine)
+        self.transactional_memory_install_status = install_runtime_memory(self.engine)
         self.state_store = RuntimeSessionStateStore(self.config.root)
         self.state = self.state_store.load_or_create(
             session_id=session_id,
@@ -72,8 +72,8 @@ class JaznRuntimeSession:
             ),
         }
 
-    def _memory_v151_status_payload(self) -> dict[str, Any]:
-        install_status = getattr(self, "memory_v151_install_status", None)
+    def _transactional_memory_status_payload(self) -> dict[str, Any]:
+        install_status = getattr(self, "transactional_memory_install_status", None)
         if install_status is None:
             return {
                 "available": False,
@@ -81,7 +81,7 @@ class JaznRuntimeSession:
                 "install": None,
                 "store": None,
                 "truth_boundary": (
-                    "Minimalna lub testowa sesja nie uruchomiła instalatora pamięci v15.1. "
+                    "Minimalna lub testowa sesja nie uruchomiła instalatora pamięci v15.1.0.3.89. "
                     "Brak statusu nie jest dowodem pustej ani uszkodzonej pamięci."
                 ),
             }
@@ -221,7 +221,7 @@ class JaznRuntimeSession:
             if not commit_status.get("committed"):
                 result["ok"] = False
 
-            result["memory_v151"] = self._memory_v151_status_payload()
+            result["transactional_memory"] = self._transactional_memory_status_payload()
             result["wake_state_runtime"] = self._wake_state_runtime_payload()
 
             if result["ok"]:
@@ -253,8 +253,8 @@ class JaznRuntimeSession:
                     save_status=save_status,
                 )
                 session_provenance["final_visible_integrity_valid"] = bool(integrity.get("valid"))
-                session_provenance["memory_v151_ready"] = bool(
-                    ((result.get("memory_v151") or {}).get("store") or {}).get("ready")
+                session_provenance["transactional_memory_ready"] = bool(
+                    ((result.get("transactional_memory") or {}).get("store") or {}).get("ready")
                 )
                 result["session_provenance"] = session_provenance
 

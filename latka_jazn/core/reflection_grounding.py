@@ -99,7 +99,7 @@ class ReflectionGroundingSynthesizer:
                 "Wzmacnia samo-monitoring: Łatka ma umieć powiedzieć, co jest faktem systemowym, "
                 "co jest wspomnieniem, a co symboliczną refleksją."
             ),
-            next_question="Który ślad powinien zostać skonsolidowany jako reguła proceduralna przed v14.8.6.0?",
+            next_question="Który ślad powinien zostać skonsolidowany jako reguła proceduralna przed następnym zatwierdzonym wydaniem?",
             confidence=round(confidence, 3),
             boundary_label=boundary,
             truth_boundary=self.TRUTH_BOUNDARY,

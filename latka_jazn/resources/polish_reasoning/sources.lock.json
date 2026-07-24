@@ -8,7 +8,7 @@
     "provider_absence_must_be_reported": true,
     "real_morphology_provider_required_before_full_semantics": true
   },
-  "schema_version": "polish_reasoning_source_registry/v14.8.4",
+  "schema_version": "polish_reasoning_source_registry/v15.1.0.3.89",
   "sources": {
     "bielik": {
       "allow_bulk_mirror": false,
@@ -170,5 +170,5 @@
       "url": "https://wsjp.pl/"
     }
   },
-  "truth_boundary": "To jest rejestr źródeł, licencji, trybu użycia i cache. Obecność wpisu nie oznacza, że zasób został pobrany. v14.8.4 używa realnie Morfeusza tylko wtedy, gdy morfeusz2 jest zainstalowany lokalnie, a PoliMorf tylko wtedy, gdy wskazano lokalny plik po przeglądzie licencji."
+  "truth_boundary": "To jest rejestr źródeł, licencji, trybu użycia i cache. Obecność wpisu nie oznacza, że zasób został pobrany. v15.1.0.3.89 używa realnie Morfeusza tylko wtedy, gdy morfeusz2 jest zainstalowany lokalnie, a PoliMorf tylko wtedy, gdy wskazano lokalny plik po przeglądzie licencji."
 }

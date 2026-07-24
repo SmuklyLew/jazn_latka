@@ -856,7 +856,7 @@ def run_jsonl_chat_bridge(
                     chat_bridge_meta=result["chat_bridge"],
                 )
             result["chat_command_contract"] = contract
-            # v14.8.5.014: most nie może nadpisać blokady runtime truth gate przez ok=True.
+            # v15.1.0.3.89: most nie może nadpisać blokady runtime truth gate przez ok=True.
             result["ok"] = bool(result.get("ok", True))
             write_chat_bridge_payload(stdout, result, output_mode=output_mode)
     finally:

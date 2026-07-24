@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
-SCHEMA_VERSION="dictionary_entry/v14.6.10"
+SCHEMA_VERSION="dictionary_entry/v15.1.0.3.89"
 
 @dataclass(slots=True)
 class LexicalSource:
@@ -44,7 +44,7 @@ class DictionaryLookupResult:
     confidence: float=0.0
     cache_status: str='not_checked'
     truth_boundary: str='Wynik słownikowy jest ważny tylko dla wskazanego źródła i czasu pobrania; brak wyniku nie oznacza braku słowa.'
-    # v14.6.10 structural fields
+    # v15.1.0.3.89 structural fields
     query: str | None = None
     normalized_query: str | None = None
     found: bool = False
@@ -69,9 +69,9 @@ class DictionaryLookupResult:
 
 @dataclass(slots=True)
 class NormalizedLexeme:
-    term: str; normalized: str; language: str='pl'; provider: str='mini'; confidence: float=0.0; schema_version: str='normalized_lexeme/v14.6.10'
+    term: str; normalized: str; language: str='pl'; provider: str='mini'; confidence: float=0.0; schema_version: str='normalized_lexeme/v15.1.0.3.89'
     def to_dict(self)->dict[str,Any]: return asdict(self)
 @dataclass(slots=True)
 class SemanticRelations:
-    term: str; relation: str|None=None; related_terms: list[str]=field(default_factory=list); source_name: str='none'; confidence: float=0.0; schema_version: str='semantic_relations/v14.6.10'
+    term: str; relation: str|None=None; related_terms: list[str]=field(default_factory=list); source_name: str='none'; confidence: float=0.0; schema_version: str='semantic_relations/v15.1.0.3.89'
     def to_dict(self)->dict[str,Any]: return asdict(self)

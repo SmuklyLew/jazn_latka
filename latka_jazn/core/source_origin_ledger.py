@@ -7,7 +7,7 @@ from typing import Any
 from datetime import datetime, timezone
 import hashlib, json, time
 
-SCHEMA_VERSION = "source_origin_ledger/v14.6.10"
+SCHEMA_VERSION = "source_origin_ledger/v15.1.0.3.89"
 
 @dataclass(slots=True)
 class SourceOriginEntry:
@@ -59,7 +59,7 @@ class SourceOriginEntry:
 class SourceOriginLedger:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.path = root / "memory" / "layered" / "source_origin_ledger_v14_6_10.jsonl"
+        self.path = root / "memory" / "layered" / "source_origin_ledger_current_line.jsonl"
         self.path.parent.mkdir(parents=True, exist_ok=True)
     @staticmethod
     def _sha(text: str) -> str:

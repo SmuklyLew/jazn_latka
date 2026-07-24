@@ -94,12 +94,12 @@ def test_manifest_copy_rejects_destination_symlink_escape_before_copy(tmp_path: 
 def test_malicious_package_integrity_manifest_fails_closed(tmp_path: Path) -> None:
     (tmp_path / "latka_jazn").mkdir()
     (tmp_path / "latka_jazn" / "version.py").write_text(
-        'DISTRIBUTION_VERSION="15.0.3.2"\nPACKAGE_VERSION="v15.0.3.2"\nPACKAGE_RELEASE_NAME=""\n',
+        'DISTRIBUTION_VERSION="15.1.0.3"\nPACKAGE_VERSION="v15.1.0.3.89"\nPACKAGE_RELEASE_NAME=""\n',
         encoding="utf-8",
     )
     payload = {
-        "version": "v15.0.3.2",
-        "runtime_version": "v15.0.3.2",
+        "version": "v15.1.0.3.89",
+        "runtime_version": "v15.1.0.3.89",
         "files": [{"path": "../secret.txt", "size_bytes": 0, "sha256": "0" * 64}],
     }
     (tmp_path / "PACKAGE_INTEGRITY_MANIFEST.json").write_text(json.dumps(payload), encoding="utf-8")

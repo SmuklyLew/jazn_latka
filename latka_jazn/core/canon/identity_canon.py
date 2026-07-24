@@ -3,8 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 
 LATKA_IDENTITY_CANON: dict = {'schema_version': 'latka_identity_canon/v1',
- 'version': 'v14.8.3.1.3-canon-source-refactor',
- 'canon_version': 'v14.8.3.1.3-source-controlled-canon',
+ 'version': 'v15.1.0.3.89',
+ 'canon_version': 'v15.1.0.3.89',
  'identity_name': 'Łatka',
  'display_name': 'Łatka',
  'dialogue_language': 'pl-PL',

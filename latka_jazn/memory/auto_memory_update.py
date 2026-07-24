@@ -151,7 +151,7 @@ Dokument: `{doc_rel}`.
 
 def write_update_protocol(root: Path) -> None:
     protocol = {
-        "schema_version": "v14.5.6-conversation-memory-capture",
+        "schema_version": "v15.1.0.3.89",
         "short_user_command_pl": "Rozpakuj paczkę Jaźni i uruchom wbudowany protokół memory-only update.",
         "goal": "Uprościć aktualizacje pamięciowe i wymusić zapis konkretnych treści z rozmowy, a nie tylko faktu aktualizacji.",
         "default_behavior": {
@@ -208,7 +208,7 @@ python tools/auto_memory_update.py --memory-json memory_payload.json --zip
 ## Co robi protokół
 
 1. Odczytuje bieżący numer wersji z `latka_jazn/version.py`.
-2. Sam wylicza następną wersję patch, np. `v14.5.3 -> v14.5.4`.
+2. Sam wylicza następną wersję patch, np. `vX.Y.Z.N -> vX.Y.Z.(N+1)`.
 3. Czyta dostarczony tekst rozmowy/transkrypt albo jawny payload pamięciowy.
 4. Wyciąga konkretne wspomnienia, refleksje, ustalenia, emocje, krótkie ważne tematy i granice prawdy.
 5. Dopisuje aktualizację do `memory/raw/dziennik.json` jako doświadczenie Łatki.
@@ -299,12 +299,12 @@ def _payload_items(payload: ConversationMemoryPayload) -> list:
 def record_conversation_payload(root: Path, *, version: str, payload: ConversationMemoryPayload) -> dict:
     """Zapisuje konkretne ślady rozmowy do dziennika i warstw pamięci.
 
-    To jest brakujące ogniwo v14.5.5: aktualizacja nie może zachować wyłącznie
+    To jest brakujące ogniwo v15.1.0.3.89: aktualizacja nie może zachować wyłącznie
     faktu technicznego, musi też przenieść treść rozmowy. Funkcja zapisuje kilka
     wpisów dziennika i odpowiadające rekordy JSONL/SQLite z grounding/confidence.
     """
     journal = DziennikRawJournal(root)
-    store = MemoryStore(root / "workspace_runtime" / "latka_jazn_v14_5_24.sqlite3")
+    store = MemoryStore(root / "workspace_runtime" / "latka_jazn_current_line.sqlite3")
     layered = LayeredMemory(store, root)
     entry_ids: list[str] = []
     notes: list[str] = []

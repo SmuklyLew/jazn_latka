@@ -32,7 +32,7 @@ def build_polish_reasoning_diagnostics(root: str | Path | None, text: str = "") 
     frame = pipeline.analyse(text)
     registry = PolishReasoningSourceRegistry(root).to_dict()
     return {
-        "schema_version": "polish_reasoning_diagnostics/v14.8.4",
+        "schema_version": "polish_reasoning_diagnostics/v15.1.0.3.89",
         "polish_reasoning_frame": frame.to_dict(),
         "source_registry": registry,
         "bootstrap_commands": BOOTSTRAP_COMMANDS,
@@ -44,7 +44,7 @@ def build_polish_morphology_diagnostics(root: str | Path | None, text: str = "")
     payload = build_polish_reasoning_diagnostics(root, text)
     frame = payload["polish_reasoning_frame"]
     return {
-        "schema_version": "polish_morphology_diagnostics/v14.8.4",
+        "schema_version": "polish_morphology_diagnostics/v15.1.0.3.89",
         "polish_morphology": {
             "source_text": frame["source_text"],
             "normalized_text": frame["normalized_text"],

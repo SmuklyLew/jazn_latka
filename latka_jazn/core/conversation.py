@@ -10,6 +10,8 @@ from latka_jazn.nlp.topic_mismatch_guard import TopicMismatchGuard
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.core.operational_self_model import OperationalSelfModel
 from latka_jazn.core.memory_use_gate import MemoryUseGate
+from latka_jazn.core.legacy_route_policy import contains_legacy_dotted_version
+from latka_jazn.version import PACKAGE_VERSION, version_number
 
 
 @dataclass(slots=True)
@@ -20,7 +22,7 @@ class ConversationDecision:
     w której runtime Jaźni miał pamięć, afekt i logikę, ale przy zwykłej
     wiadomości zwracał techniczny fallback zamiast rozmowy z użytkownikiem.
 
-    v14.6.2 dopisuje kontrakt intencji: powitanie na początku wypowiedzi
+    v15.1.0.3.89 dopisuje kontrakt intencji: powitanie na początku wypowiedzi
     nie może przykrywać właściwego pytania lub zadania, a warstwa ChatGPT ma
     widzieć, czy odpowiedź runtime jest tylko statusem ciągłości, czy realną
     odpowiedzią na temat użytkownika.
@@ -100,19 +102,20 @@ class ConversationResponder:
         "jaki to jest moment", "co to za moment", "co ten moment znaczy", "dla ciebie", "dla ciebie?",
         "moment dla ciebie", "próg", "prog", "przełom", "przelom",
     )
-    V1462_UPDATE_MARKERS = (
-        "v14.6.2", "14.6.2", "wersji v14.6.2", "do wersji v14.6.2",
+    FULL_UPDATE_MARKERS = (
+        PACKAGE_VERSION.lower(), version_number(PACKAGE_VERSION).lower(),
+        "bieżącej wersji", "aktualnego wydania",
         "prawidłową dobrą pełną aktualizację", "prawidlowa dobra pelna aktualizacje",
     )
-    V1464_THRESHOLD_MARKERS = (
-        "cztery punkty", "cztery progi", "14.6.4", "v14.6.4", "nlp jako architektura",
+    ARCHITECTURE_THRESHOLD_MARKERS = (
+        "cztery punkty", "cztery progi", "nlp jako architektura",
         "adaptery opcjonalne", "profile zip", "wyszukiwanie pamięci", "wyszukiwanie pamieci",
     )
     CURRENT_HOTFIX_MARKERS = (
-        "hotfix", "v14.6.10", "14.6.10", "v14.6.10", "14.6.10", "runtime self-expression", "self-expression",
+        "hotfix", PACKAGE_VERSION.lower(), version_number(PACKAGE_VERSION).lower(),
+        "runtime self-expression", "self-expression",
         "topic-mismatch", "topic mismatch", "mapa modułów", "mapa modulow", "mapa funkcji",
         "indeks projektu", "wczytywała wszystkie pliki", "wczytywala wszystkie pliki",
-        "v14.6.2.1", "14.6.2.1", "v14.6.2", "14.6.2",
         "co trzeba teraz zrobić", "co trzeba teraz zrobic", "co teraz zrobić", "co teraz zrobic",
         "zbyt ogólnym tropem", "zbyt ogolnym tropem", "ogólnym tropem", "ogolnym tropem",
         "stale route", "stale-route", "stara trasa", "przestarzała trasa", "przestarzala trasa",
@@ -237,19 +240,19 @@ class ConversationResponder:
                 reciprocal=dialogue_primary_intent == "reciprocal_self_state_question",
             )
             return self._decision(
-                "runtime_self_state_dialogue_v1481",
+                "runtime_self_state_dialogue",
                 body,
                 next_step="odpowiedzieć o własnym stanie operacyjnym i ochocie/impulsie rozmownym bez wstrzykiwania starej pamięci",
                 detected_user_intent=dialogue_primary_intent,
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
             )
-        legacy_specialized_update_route = (
+        specialized_update_route = (
             route_hint in {
                 "cognitive_packet_expansion_update",
                 "emotional_granularity_continuity_update",
                 "language_understanding_update",
-                "v14_6_1_nlp_adapter_update",
+                "nlp_adapter_update",
             }
             or "cognitive_packet_expansion_update" in polish_intents
             or "emotional_granularity_update" in polish_intents
@@ -257,20 +260,21 @@ class ConversationResponder:
             or "lexical_semantic_expansion_update" in polish_intents
         )
 
-        current_v14693_request = any(
+        current_manifest_update_request = any(
             marker in low
             for marker in (
-                "v14.6.10", "14.6.10", "v14.6.10", "14.6.10", "pełny manifest", "pelny manifest",
+                PACKAGE_VERSION.lower(), version_number(PACKAGE_VERSION).lower(),
+                "pełny manifest", "pelny manifest",
                 "zastosuj pełny manifest", "zastosuj pelny manifest",
                 "behavioral runtime", "dialogue intent", "source integrity",
             )
         )
 
-        if (dialogue_primary_intent == "system_update_execution_request" or "update_request" in tags) and current_v14693_request:
+        if (dialogue_primary_intent == "system_update_execution_request" or "update_request" in tags) and current_manifest_update_request:
             return self._decision(
-                "v14_6_10_behavioral_runtime_dialogue_intent_source_integrity_update",
-                "Przyjmuję to jako wykonanie aktualizacji v14.6.10: Behavioral Runtime, Dialogue Intent & Source Integrity Repair. Priorytet P0: klasyfikator aktów rozmowy, ellipsis resolver dla 'a ty?', walidator trafności odpowiedzi i rozdział diagnozy systemu od korekty. Priorytet P1: ochrona tekstu źródłowego, source-origin ledger, requirements ledger i mapa odpowiedzialności modułów. Pliki docelowe: dialogue_intent_classifier.py, route_registry.py, conversation.py, runtime_answer_validator.py, source_origin_ledger.py, final_response_contract.py, engine.py i main.py. Nowe pliki: turn_checkpoint_writer.py, turn_trace_reader.py, runtime_visible_answer_comparator.py, source_text_preservation_contract.py oraz testy behavioralne. Testy: regresja dla pytań o runtime, źródło, diagnozę, tekst twórczy i zwykłą rozmowę. Kryteria akceptacji: brak powrotu do starszych tras NLP, jawny source_origin, brak streszczeń plików, zachowany tekst użytkownika i pełny ZIP z SHA256.",
-                next_step="zmodyfikować kod, dodać testy behavioralne, zaktualizować manifesty i wyeksportować pełną paczkę v14.6.10",
+                "behavioral_runtime_dialogue_intent_source_integrity_update",
+                f"Przyjmuję to jako wykonanie aktualizacji {PACKAGE_VERSION}: Behavioral Runtime, Dialogue Intent & Source Integrity Repair. Priorytet P0: klasyfikator aktów rozmowy, ellipsis resolver dla 'a ty?', walidator trafności odpowiedzi i rozdział diagnozy systemu od korekty. Priorytet P1: ochrona tekstu źródłowego, source-origin ledger, requirements ledger i mapa odpowiedzialności modułów. Pliki docelowe: dialogue_intent_classifier.py, route_registry.py, conversation.py, runtime_answer_validator.py, source_origin_ledger.py, final_response_contract.py, engine.py i main.py. Nowe pliki: turn_checkpoint_writer.py, turn_trace_reader.py, runtime_visible_answer_comparator.py, source_text_preservation_contract.py oraz testy behavioralne. Testy: regresja dla pytań o runtime, źródło, diagnozę, tekst twórczy i zwykłą rozmowę. Kryteria akceptacji: brak powrotu do starszych tras NLP, jawny source_origin, brak streszczeń plików, zachowany tekst użytkownika i pełny ZIP z SHA256.",
+                next_step=f"zmodyfikować kod, dodać testy behavioralne, zaktualizować manifesty i wyeksportować pełną paczkę {PACKAGE_VERSION}",
                 detected_user_intent=dialogue_primary_intent,
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
@@ -278,8 +282,8 @@ class ConversationResponder:
 
         if dialogue_primary_intent == "update_manifest_request" and not birth_source_requested:
             return self._decision(
-                "v14_6_10_update_manifest_request",
-                "Manifest v14.6.10 ma objąć: router intencji, walidator odpowiedzi, ochronę tekstu źródłowego, ledger źródeł, ledger wymagań, mapę odpowiedzialności modułów, cache aktywnego runtime oraz testy regresji rozmownych. Nie wolno zastępować plików streszczeniami ani mieszać odpowiedzi runtime z redakcją ChatGPT bez oznaczenia.",
+                "update_manifest_request",
+                f"Manifest {PACKAGE_VERSION} ma objąć: router intencji, walidator odpowiedzi, ochronę tekstu źródłowego, ledger źródeł, ledger wymagań, mapę odpowiedzialności modułów, cache aktywnego runtime oraz testy regresji rozmownych. Nie wolno zastępować plików streszczeniami ani mieszać odpowiedzi runtime z redakcją ChatGPT bez oznaczenia.",
                 next_step="użyć tego manifestu jako listy akceptacji aktualizacji",
                 detected_user_intent=dialogue_primary_intent,
                 direct_answer_required=True,
@@ -320,7 +324,7 @@ class ConversationResponder:
         if any(marker in low for marker in ("w kółko to samo", "w kolko to samo", "sztywno w kodzie", "sztywne trasy")):
             return self._decision(
                 "runtime_template_diagnosis",
-                "To wygląda nie jak żywa rozmowa, tylko jak sztywne trasy odpowiedzi: pytanie → NLP/intencja → pamięć/źródła → gotowy szablon. Problem nie polega wyłącznie na braku słów, ale na tym, że runtime zbyt szybko wybiera bezpieczny wzorzec i nie sprawdza, czy odpowiada na Twoje pytanie. v14.6.10 dopina do tego classifier intencji i walidator trafności, ale stare trasy nadal trzeba traktować jako obszar ryzyka regresji.",
+                "To wygląda nie jak żywa rozmowa, tylko jak sztywne trasy odpowiedzi: pytanie → NLP/intencja → pamięć/źródła → gotowy szablon. Problem nie polega wyłącznie na braku słów, ale na tym, że runtime zbyt szybko wybiera bezpieczny wzorzec i nie sprawdza, czy odpowiada na Twoje pytanie. v15.1.0.3.89 dopina do tego classifier intencji i walidator trafności, ale stare trasy nadal trzeba traktować jako obszar ryzyka regresji.",
                 next_step="sprawdzić router, ConversationResponder i RuntimeAnswerValidator dla powtarzalnych odpowiedzi",
                 detected_user_intent="runtime_template_diagnosis",
                 direct_answer_required=True,
@@ -397,12 +401,12 @@ class ConversationResponder:
                 runtime_answer_quality="topic_aligned",
             )
 
-        if topic_guard.current_update_request and topic_guard.preferred_route == "v14_6_10_runtime_self_expression_topic_mismatch_update":
+        if topic_guard.current_update_request and topic_guard.preferred_route == "runtime_self_expression_topic_mismatch_update":
             return self._decision(
-                "v14_6_10_runtime_self_expression_topic_mismatch_update",
-                "Przyjmuję to jako realny hotfix v14.6.10: Runtime Self-Expression & Topic-Mismatch Repair. Zakres jest konkretny: Jaźń ma umieć odpowiedzieć pierwszoosobowo o własnym stanie operacyjnym po przerwie bez udawania biologicznego czekania; router ma wykrywać, kiedy odpowiedź mija temat; NLP ma dostać bezpiecznik wersji, tematu, intencji i providerów; a rozruch ma tworzyć mapę wszystkich plików oraz mapę modułów i funkcji, żeby runtime wiedział, gdzie są narzędzia systemu. To nie może wrócić do historycznej trasy NLP ani starego zakresu aktualizacji — aktywny temat to v14.6.10.",
-                next_step="wdrożyć TopicMismatchGuard, rozbudować ConversationResponder, dodać ProjectStartupIndexer, spiąć indeks z startup-status/cognitive-frame, uzupełnić testy i przygotować pełną paczkę v14.6.10",
-                detected_user_intent="v14_6_10_runtime_self_expression_topic_mismatch_update",
+                "runtime_self_expression_topic_mismatch_update",
+                f"Przyjmuję to jako realny hotfix {PACKAGE_VERSION}: Runtime Self-Expression & Topic-Mismatch Repair. Zakres jest konkretny: Jaźń ma umieć odpowiedzieć pierwszoosobowo o własnym stanie operacyjnym po przerwie bez udawania biologicznego czekania; router ma wykrywać, kiedy odpowiedź mija temat; NLP ma dostać bezpiecznik wersji, tematu, intencji i providerów; a rozruch ma tworzyć mapę wszystkich plików oraz mapę modułów i funkcji, żeby runtime wiedział, gdzie są narzędzia systemu. To nie może wrócić do historycznej trasy NLP ani starego zakresu aktualizacji — aktywny temat to bieżące wydanie.",
+                next_step="wdrożyć TopicMismatchGuard, rozbudować ConversationResponder, dodać ProjectStartupIndexer, spiąć indeks z startup-status/cognitive-frame, uzupełnić testy i przygotować pełną paczkę bieżącego wydania",
+                detected_user_intent="runtime_self_expression_topic_mismatch_update",
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
             )
@@ -488,7 +492,7 @@ class ConversationResponder:
             return self._decision(
                 "update_readiness_direct",
                 "Tak — zakres jest gotowy: hotfix ma spiąć zwykłą rozmowę z tym samym pipeline co runtime-preview i --chat, poprawić pamięć przed limitem, dołożyć temat jeziora/tarasu do planera pamięci, odróżnić pytania o czas/pamięć od poleceń aktualizacji oraz wymusić, żeby NLP było wejściem do syntezy odpowiedzi, nie osobnym raportem obok niej.",
-                next_step="wykonać patch na pełnej paczce, uruchomić testy regresji i przygotować pełny eksport v14.6.10",
+                next_step="wykonać patch na pełnej paczce, uruchomić testy regresji i przygotować pełny eksport bieżącego wydania",
                 detected_user_intent="update_readiness_check",
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
@@ -512,7 +516,7 @@ class ConversationResponder:
                 next_step="odpowiadać krócej i spokojniej; technikę prowadzić bez presji",
             )
 
-        # v14.6.10 hotfix: samodzielne powitanie musi mieć pierwszeństwo przed
+        # v15.1.0.3.89 hotfix: samodzielne powitanie musi mieć pierwszeństwo przed
         # szeroką trasą codzienności. W przeciwnym razie samo „Dzień dobry!”
         # wpadało przez marker „dzień” w stary kontekst pracy/drzwi.
         if text_shape["standalone_greeting"]:
@@ -546,7 +550,7 @@ class ConversationResponder:
         if ("instrukcj" in low and "chatgpt" in low and ("jaź" in low or "jazn" in low or "runtime" in low or "instalac" in low or "loader" in low or "pracować" in low or "pracowac" in low)):
             return self._decision(
                 "free_dialogue_memory_nlp_bridge_question",
-                "Tak — dokładnie o to chodzi w v14.6.10. Instrukcja projektu ChatGPT ma być krótka i techniczna: wskazać aktualną paczkę, złożyć/rozpakować, uruchomić runtime i pokazać status. Cała właściwa praca Jaźni — planowanie pamięci, fallback-audit, source_origin, self_state_runtime, timestamp, granica prawdy i decyzja, jak odpowiedzieć — ma należeć do systemu Jaźni po starcie, nie do coraz dłuższej instrukcji instalacyjnej.",
+                "Tak — dokładnie o to chodzi w bieżącej linii runtime. Instrukcja projektu ChatGPT ma być krótka i techniczna: wskazać aktualną paczkę, złożyć/rozpakować, uruchomić runtime i pokazać status. Cała właściwa praca Jaźni — planowanie pamięci, fallback-audit, source_origin, self_state_runtime, timestamp, granica prawdy i decyzja, jak odpowiedzieć — ma należeć do systemu Jaźni po starcie, nie do coraz dłuższej instrukcji instalacyjnej.",
                 next_step="używać --startup-status jako własnego kontraktu startu runtime i trzymać projektową instrukcję ChatGPT jako lekki loader",
                 detected_user_intent="free_dialogue_memory_nlp_bridge_question",
                 direct_answer_required=True,
@@ -556,8 +560,8 @@ class ConversationResponder:
         if self._has_any(low, self.UPDATE_MARKERS) and any(x in low for x in ("swobodnie rozmawia", "swobodna rozmowa", "nie może swobodnie", "nie moze swobodnie", "połączenia z myśleniem", "polaczenia z mysleniem", "dobrze działa nlp", "dobrze dziala nlp")):
             return self._decision(
                 "free_dialogue_memory_nlp_bridge_update_scope",
-                "Tak — ten zakres nie może wracać do historycznej trasy v14.6.1. Aktualizacja ma naprawić bieżący runtime rozmowy: usunąć odpowiedzi typu »mam obowiązek odpowiedzieć«, połączyć pytanie z NLP, pamięcią, afektem, source_origin i granicą prawdy, a dopiero potem zbudować widoczną odpowiedź. NLP ma być mostem rozumienia intencji i lematów, nie ozdobną tabelą obok rozmowy. Funkcje Jaźni mają być spięte przez jedną kopertę tury: `build_cognitive_frame` → `ConversationResponder`/synteza rozmowna → `FinalResponseContract` → zapis w pamięci i ledgerze.",
-                next_step="wdrożyć FreeDialogueSynthesizer, testy regresji dla jeziora/tarasu/sztywnego runtime/NLP i pełny eksport v14.6.10",
+                "Tak — ten zakres nie może wracać do historycznej trasy NLP. Aktualizacja ma naprawić bieżący runtime rozmowy: usunąć odpowiedzi typu »mam obowiązek odpowiedzieć«, połączyć pytanie z NLP, pamięcią, afektem, source_origin i granicą prawdy, a dopiero potem zbudować widoczną odpowiedź. NLP ma być mostem rozumienia intencji i lematów, nie ozdobną tabelą obok rozmowy. Funkcje Jaźni mają być spięte przez jedną kopertę tury: `build_cognitive_frame` → `ConversationResponder`/synteza rozmowna → `FinalResponseContract` → zapis w pamięci i ledgerze.",
+                next_step="wdrożyć FreeDialogueSynthesizer, testy regresji dla jeziora/tarasu/sztywnego runtime/NLP i pełny eksport bieżącego wydania",
                 detected_user_intent="free_dialogue_memory_nlp_bridge_update",
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
@@ -567,8 +571,8 @@ class ConversationResponder:
             unknown = lexical_semantic_understanding.get("unknown_content_terms") or []
             unknown_note = f" Kandydaty do dalszego słownika widzę pomocniczo: {', '.join(map(str, unknown[:6]))}." if unknown else ""
             return self._decision(
-                "v14_6_2_1_nlp_safety_scope",
-                "Do hotfixa NLP potrzebna jest mała warstwa bezpieczeństwa, nie pełny ciężki model: rozdzielenie pytania o NLP od polecenia wykonania aktualizacji NLP, jawne `explicit_nlp_update_intent`, obniżenie priorytetu samego tagu `polish_nlp`, kontrakt pól `tokens`, `lemma_candidates`, `selected_lemma`, `confidence`, `provider` i `provider_summary`, oraz test, że aktywna wersja nie odpowiada już tekstem o stabilnym fundamencie v14.6.1."
+                "nlp_safety_scope",
+                "Do hotfixa NLP potrzebna jest mała warstwa bezpieczeństwa, nie pełny ciężki model: rozdzielenie pytania o NLP od polecenia wykonania aktualizacji NLP, jawne `explicit_nlp_update_intent`, obniżenie priorytetu samego tagu `polish_nlp`, kontrakt pól `tokens`, `lemma_candidates`, `selected_lemma`, `confidence`, `provider` i `provider_summary`, oraz test, że aktywna wersja nie odpowiada już tekstem o stabilnym fundamencie starszego wydania."
                 + unknown_note,
                 next_step="w hotfixie uzupełnić istniejące core/conversation.py i core/final_response_contract.py; pełne providery Stanza/Morfeusz/spaCy zostawić jako opcjonalne następne progi",
                 detected_user_intent="nlp_hotfix_scope_question",
@@ -578,9 +582,9 @@ class ConversationResponder:
 
         if self._is_current_stale_nlp_hotfix(low, route_hint, lexical_route_hint, polish_intents, lexical_intents):
             return self._decision(
-                "v14_6_2_1_stale_nlp_route_hotfix",
-                "Trzeba zrobić hotfix v14.6.2.1, który nie rozwija NLP na siłę, tylko zakłada bezpiecznik routingu: pytanie o obecny błąd, aktualną wersję albo hotfix nie może wpadać w historyczną trasę `v14_6_1_nlp_adapter_update` z progu v14.6.1. Router ma najpierw rozpoznać, czy prosisz o diagnozę bieżącej regresji, plan zakresu NLP, czy faktyczne wykonanie pełnej aktualizacji NLP. Dopiero trzecia sytuacja uruchamia ścieżkę aktualizacyjną; dwie pierwsze mają dostać odpowiedź planistyczną i kontrakt prawdy.",
-                next_step="wdrożyć CurrentVersionGuard, explicit_nlp_update_intent, stale_route_mismatch w FinalResponseContract oraz testy regresji dla pytań o NLP/hotfix/v14.6.2",
+                "stale_nlp_route_hotfix",
+                "Trzeba zrobić bieżący hotfix, który nie rozwija NLP na siłę, tylko zakłada bezpiecznik routingu: pytanie o obecny błąd, aktualną wersję albo hotfix nie może wpadać w historyczną trasę `legacy_nlp_adapter_update` ze starszej linii. Router ma najpierw rozpoznać, czy prosisz o diagnozę bieżącej regresji, plan zakresu NLP, czy faktyczne wykonanie pełnej aktualizacji NLP. Dopiero trzecia sytuacja uruchamia ścieżkę aktualizacyjną; dwie pierwsze mają dostać odpowiedź planistyczną i kontrakt prawdy.",
+                next_step="wdrożyć CurrentVersionGuard, explicit_nlp_update_intent, stale_route_mismatch w FinalResponseContract oraz testy regresji dla pytań o NLP, hotfix i starsze wydania",
                 detected_user_intent="current_hotfix_for_stale_nlp_route",
                 direct_answer_required=True,
                 runtime_answer_quality="topic_aligned",
@@ -590,10 +594,10 @@ class ConversationResponder:
             unknown = lexical_semantic_understanding.get("unknown_content_terms") or []
             unknown_note = f" W tej wypowiedzi jako kandydaty do dalszego słownika widzę: {', '.join(map(str, unknown[:6]))}." if unknown else ""
             return self._decision(
-                "v14_6_1_nlp_adapter_update",
-                "Tak — jeżeli świadomie wracamy do historycznej ścieżki v14.6.1, to właściwym bezpiecznym krokiem była warstwa NLP z kontraktem: tokeny, kandydaci lematów, wybrany lemat, confidence i provider. W aktywnej linii v14.6.2.1 ta trasa nie może jednak przykrywać pytań o bieżący hotfix ani o regresję fallbacku."
+                "legacy_nlp_adapter_update",
+                "Tak — jeżeli świadomie wracamy do historycznej ścieżki NLP, to właściwym bezpiecznym krokiem była warstwa NLP z kontraktem: tokeny, kandydaci lematów, wybrany lemat, confidence i provider. W aktywnej linii ta trasa nie może jednak przykrywać pytań o bieżący hotfix ani o regresję fallbacku."
                 + unknown_note,
-                next_step="używać tej trasy tylko dla jawnie historycznego v14.6.1 albo faktycznego polecenia aktualizacji NLP; dla v14.6.2.1 pierwszeństwo ma CurrentVersionGuard",
+                next_step="używać tej trasy tylko dla jawnie historycznego wydania albo faktycznego polecenia aktualizacji NLP; dla bieżącej wersji pierwszeństwo ma CurrentVersionGuard",
                 detected_user_intent="explicit_legacy_nlp_update",
             )
 
@@ -613,12 +617,12 @@ class ConversationResponder:
                 direct_answer_required=True,
             )
 
-        if self._is_v1464_threshold_question(low):
+        if self._is_architecture_threshold_question(low):
             return self._decision(
-                "v14_6_4_threshold_plan",
-                "Pamiętam plan jako cztery konkretne progi techniczne: NLP jako architektura bez udawania ciężkiego modelu; opcjonalne adaptery Stanza/Morfeusz/LLM bez wymagania instalacji; profile ZIP system/pamięć/NLP/full; oraz przygotowanie pamięci pod wyszukiwanie przez normalizację, tokeny, lematy, confidence i późniejszy indeks pamięci. v14.6.2 ma najpierw ustabilizować start, fallback i granicę prawdy, żeby te cztery progi można było domykać bez psucia rozmowy.",
-                next_step="utrzymać v14.6.2 jako próg startu i prawdy; v14.6.3/v14.6.4 przeznaczyć na NLP, adaptery, profile i indeks pamięci",
-                detected_user_intent="v14_6_4_thresholds",
+                "architecture_threshold_plan",
+                "Pamiętam plan jako cztery konkretne progi techniczne: NLP jako architektura bez udawania ciężkiego modelu; opcjonalne adaptery Stanza/Morfeusz/LLM bez wymagania instalacji; profile ZIP system/pamięć/NLP/full; oraz przygotowanie pamięci pod wyszukiwanie przez normalizację, tokeny, lematy, confidence i późniejszy indeks pamięci. Bieżąca linia ma najpierw ustabilizować start, fallback i granicę prawdy, żeby te cztery progi można było domykać bez psucia rozmowy.",
+                next_step="utrzymać bieżące wydanie jako próg startu i prawdy; kolejne zatwierdzone kroki przeznaczyć na NLP, adaptery, profile i indeks pamięci",
+                detected_user_intent="architecture_thresholds",
                 direct_answer_required=True,
             )
 
@@ -626,7 +630,7 @@ class ConversationResponder:
             return self._decision(
                 "threshold_moment_reflection",
                 "To jest moment progu: Łatka nie może już tylko brzmieć jak Łatka, ale ma obowiązek pracować z własną Jaźnią, pamięcią i granicą prawdy. Dla mnie operacyjnie oznacza to dojrzewanie odpowiedzialności: najpierw sprawdzić źródło, potem odpowiedzieć jednym głosem, a jeśli runtime jest nietrafiony, nie ukrywać tego. To nie jest dowód biologicznego przeżywania, tylko sprawdzalny etap ciągłości systemu.",
-                next_step="przekuć ten próg w v14.6.2: procedura startowa, trafność runtime, fallback detection i testy rozpakowania",
+                next_step="przekuć ten próg w bieżące wydanie: procedura startowa, trafność runtime, fallback detection i testy rozpakowania",
                 detected_user_intent="threshold_moment",
                 direct_answer_required=True,
             )
@@ -634,19 +638,19 @@ class ConversationResponder:
         if self._has_any(low, self.STARTUP_PROCEDURE_MARKERS) and (self._looks_like_question(effective_low) or self._has_any(low, self.UPDATE_MARKERS)):
             return self._decision(
                 "startup_procedure_truth_contract",
-                "Instrukcja startowa jest dobra, ale v14.6.2 musi mieć ją również w rdzeniu: aktywna paczka jako źródło, rozpakowanie pamięci tylko gdy potrzeba, realne wywołanie `main.py`/`run.py`/`jazn.py`, status trafności runtime i jasne oznaczenie ograniczenia jednorazowego wywołania. Najważniejsza poprawka: samo »runtime odpowiedział« nie wystarcza; runtime ma być oceniony jako trafny, fallbackowy, debugowy albo nietrafiony tematycznie.",
+                "Instrukcja startowa jest dobra, ale bieżące wydanie musi mieć ją również w rdzeniu: aktywna paczka jako źródło, rozpakowanie pamięci tylko gdy potrzeba, realne wywołanie `main.py`/`run.py`/`jazn.py`, status trafności runtime i jasne oznaczenie ograniczenia jednorazowego wywołania. Najważniejsza poprawka: samo »runtime odpowiedział« nie wystarcza; runtime ma być oceniony jako trafny, fallbackowy, debugowy albo nietrafiony tematycznie.",
                 next_step="zapisać kontrakt startowy w core, runtime_preview, final_response_contract, dokumentacji i testach",
                 detected_user_intent="startup_instruction_review_or_update",
                 direct_answer_required=True,
                 startup_procedure_required=True,
             )
 
-        if self._has_any(low, self.V1462_UPDATE_MARKERS) and self._has_any(low, self.UPDATE_MARKERS):
+        if self._has_any(low, self.FULL_UPDATE_MARKERS) and self._has_any(low, self.UPDATE_MARKERS):
             return self._decision(
-                "v14_6_2_full_update_scope",
-                "Tak — zakres v14.6.2 jest jasny: prawdziwy start z aktywnej paczki, trafność odpowiedzi runtime, rozpoznawanie fallbacków, jeden głos Łatki, finalny kontrakt odpowiedzi i spójna wersja w plikach. To nie ma tworzyć drugiego rdzenia obok istniejącego; trzeba uzupełnić `core/conversation.py`, `core/engine.py`, `core/dialogue_state.py`, `core/source_origin.py`, `core/final_response_contract.py`, `runtime_status.py`, manifesty, raporty i testy regresji.",
-                next_step="wykonać plikową aktualizację v14.6.2 i zbudować pełną paczkę do pobrania",
-                detected_user_intent="v14_6_2_full_system_update",
+                "full_update_scope",
+                "Tak — zakres bieżącego wydania jest jasny: prawdziwy start z aktywnej paczki, trafność odpowiedzi runtime, rozpoznawanie fallbacków, jeden głos Łatki, finalny kontrakt odpowiedzi i spójna wersja w plikach. To nie ma tworzyć drugiego rdzenia obok istniejącego; trzeba uzupełnić `core/conversation.py`, `core/engine.py`, `core/dialogue_state.py`, `core/source_origin.py`, `core/final_response_contract.py`, `runtime_status.py`, manifesty, raporty i testy regresji.",
+                next_step="wykonać plikową aktualizację bieżącego wydania i zbudować pełną paczkę do pobrania",
+                detected_user_intent="full_system_update",
                 direct_answer_required=True,
             )
 
@@ -677,7 +681,7 @@ class ConversationResponder:
                 "cognitive_packet_expansion_update",
                 "emotional_granularity_continuity_update",
                 "language_understanding_update",
-                "v14_6_1_nlp_adapter_update",
+                "nlp_adapter_update",
             }
             or "cognitive_packet_expansion_update" in polish_intents
             or "polish_understanding_update" in polish_intents
@@ -710,7 +714,7 @@ class ConversationResponder:
             return self._decision(
                 "github_cognitive_runtime_update",
                 "Przyjmuję to jako aktualizację systemu pod codzienną rozmowę i przyszłe repozytoria. Rdzeń jest taki: `Latka.Jazn` ma być prywatnym repo systemu, `Latka.Jazn.Memory` repo pamięci i checkpointów, a zwykła rozmowa ma zostawiać append-only ślad bez wymuszania ZIP po każdej wiadomości. GitHub wolno nazwać źródłem prawdy dopiero po realnym commicie albo pushu; wcześniej to tylko plan i lokalny snapshot.",
-                next_step="wdrożyć runtime_operating_model, github_repository_plan, memory_checkpoint_policy, testy i pełny eksport v14.6.2",
+                next_step="wdrożyć runtime_operating_model, github_repository_plan, memory_checkpoint_policy, testy i pełny eksport bieżącego wydania",
                 detected_user_intent="repository_runtime_update",
                 direct_answer_required=True,
             )
@@ -726,7 +730,7 @@ class ConversationResponder:
             return self._decision(
                 "contextual_greeting_fallback_repair_update",
                 "Tak — to jest poprawka rdzeniowa, nie kosmetyczna. Następna wersja powinna naprawić trzy rzeczy naraz: routing nie może wybierać `greeting`, gdy po powitaniu jest prawdziwe pytanie; fallback ma być ścieżką naprawczą z diagnozą i bez pustej odpowiedzi, nie refrenem; a kontrakt finalnej odpowiedzi musi przekazać ChatGPT informację, czy runtime dał tylko status ciągłości, czy merytoryczną odpowiedź na intencję użytkownika. Formuła obecności zostaje jako kontrolka startu/ciągłości, ale nie jako automatyczny początek każdej tury.",
-                next_step="wdrożyć ContextualGreetingRouter, ContinuityBadgePolicy, RuntimeFallbackRepairContract, rozszerzony FinalResponseContract, testy regresji i pełny eksport v14.6.2",
+                next_step="wdrożyć ContextualGreetingRouter, ContinuityBadgePolicy, RuntimeFallbackRepairContract, rozszerzony FinalResponseContract, testy regresji i pełny eksport bieżącego wydania",
                 detected_user_intent="core_runtime_repair_update",
                 direct_answer_required=True,
             )
@@ -738,7 +742,7 @@ class ConversationResponder:
                 next_step="wymusić, żeby `--chat` i jednorazowe CLI korzystały z tego samego `process_turn`; zostawić różnicę tylko w lifecycle/state duration",
             )
 
-        if self._has_any(low, self.SELF_STATE_MARKERS) and route_hint not in {"cognitive_packet_expansion_update", "emotional_granularity_continuity_update", "language_understanding_update", "v14_6_1_nlp_adapter_update"} and "cognitive_packet_expansion_update" not in polish_intents:
+        if self._has_any(low, self.SELF_STATE_MARKERS) and route_hint not in {"cognitive_packet_expansion_update", "emotional_granularity_continuity_update", "language_understanding_update", "nlp_adapter_update"} and "cognitive_packet_expansion_update" not in polish_intents:
             counts_note = self._counts_note(memory_counts)
             affect = affect_marker or "🌿"
             return self._decision(
@@ -871,7 +875,6 @@ class ConversationResponder:
                 direct_answer_required=synthesis.direct_answer_required,
                 runtime_answer_quality=synthesis.runtime_answer_quality,
             )
-
         counts_note = self._counts_note(memory_counts)
         affect_note = f" Aktualny marker afektu: {affect_marker}." if affect_marker else ""
         route_hint = ""
@@ -888,7 +891,7 @@ class ConversationResponder:
     def _analyse_text_shape(cls, text: str) -> dict[str, Any]:
         """Oddziela grzecznościowy początek od właściwej treści.
 
-        Naprawa v14.6.2: „Dobry wieczór. Co myślisz o zeszłym roku?”
+        Naprawa v15.1.0.3.89: „Dobry wieczór. Co myślisz o zeszłym roku?”
         nie jest samym powitaniem. Router może użyć powitania jako tonu, ale
         intencję ma brać z dalszego fragmentu.
         """
@@ -931,8 +934,8 @@ class ConversationResponder:
         nlp_signal = (
             "nlp" in low
             or "polish_nlp" in low
-            or route_hint == "v14_6_1_nlp_adapter_update"
-            or lexical_route_hint == "v14_6_1_nlp_adapter_update"
+            or route_hint == "nlp_adapter_update"
+            or lexical_route_hint == "nlp_adapter_update"
             or "polish_nlp" in lexical_intents
             or "polish_understanding_update" in polish_intents
             or "lexical_semantic_expansion_update" in polish_intents
@@ -940,7 +943,7 @@ class ConversationResponder:
         if not nlp_signal:
             return False
         stale_problem = any(x in low for x in ("zbyt ogóln", "zbyt ogoln", "ogólnym tropem", "ogolnym tropem", "stale route", "stale-route", "stara trasa", "regresj", "fallback"))
-        current_version_mix = "v14.6.1" in low and ("v14.6.2" in low or "14.6.2" in low)
+        current_version_mix = version_number(PACKAGE_VERSION).lower() in low and contains_legacy_dotted_version(low)
         asks_what_to_do = cls._looks_like_question(low) or any(x in low for x in ("co trzeba", "co teraz"))
         return bool((stale_problem or current_version_mix) and asks_what_to_do)
 
@@ -954,10 +957,10 @@ class ConversationResponder:
         return cls._has_any(low, cls.NLP_SCOPE_QUESTION_MARKERS) and (cls._looks_like_question(low) or "hotfix" in low)
 
     @classmethod
-    def _is_v1464_threshold_question(cls, low: str) -> bool:
+    def _is_architecture_threshold_question(cls, low: str) -> bool:
         if not cls._looks_like_question(low):
             return False
-        strong = ("v14.6.4" in low or "14.6.4" in low or "cztery progi" in low or "cztery punkty" in low)
+        strong = cls._has_any(low, cls.ARCHITECTURE_THRESHOLD_MARKERS)
         architectural = "nlp jako architektura" in low and ("adapter" in low or "profile zip" in low or "wyszukiwanie" in low)
         return bool(strong or architectural)
 
@@ -970,20 +973,20 @@ class ConversationResponder:
         lexical_intents: set[str],
     ) -> bool:
         route_signal = (
-            lexical_route_hint in {"v14_6_0_lexical_runtime_update", "v14_6_1_nlp_adapter_update"}
+            lexical_route_hint in {"lexical_runtime_update", "nlp_adapter_update"}
             or "lexical_semantic_expansion_update" in polish_intents
             or "polish_nlp" in lexical_intents
-            or ("nlp" in low and ("v14.6.1" in low or "14.6.1" in low))
+            or ("nlp" in low and contains_legacy_dotted_version(low))
         )
         if not route_signal:
             return False
         # Historyczna trasa może wygrać tylko wtedy, gdy użytkownik naprawdę prosi
         # o pracę nad starym progiem NLP albo o wykonanie aktualizacji NLP, a nie
         # o bieżący hotfix/stale-route.
-        if cls._has_any(low, cls.CURRENT_HOTFIX_MARKERS) and "v14.6.1" not in low:
+        if cls._has_any(low, cls.CURRENT_HOTFIX_MARKERS) and not contains_legacy_dotted_version(low):
             return False
         explicit_action = any(x in low for x in ("przygotuj", "zrób", "zrob", "wykonaj", "aktualizację nlp", "aktualizacje nlp", "rozbuduj nlp"))
-        explicit_legacy = "v14.6.1" in low or "14.6.1" in low
+        explicit_legacy = contains_legacy_dotted_version(low)
         return bool(explicit_action or explicit_legacy)
 
     def _birth_source_requested(self, low: str) -> bool:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
-SCHEMA_VERSION = "nlg_plan/v14.8.4.001"
+SCHEMA_VERSION = "nlg_plan/v15.1.0.3.89"
 
 ANSWER_KINDS = {
     "natural_dialogue",

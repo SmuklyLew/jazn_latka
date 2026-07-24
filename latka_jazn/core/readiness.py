@@ -13,8 +13,8 @@ class RuntimeReadiness:
     release_metadata_current: bool
     release_ready: bool
     live_runtime_ready: bool
-    memory_v151_ready: bool
-    memory_v151_exists: bool | None
+    transactional_memory_ready: bool
+    transactional_memory_exists: bool | None
 
     @property
     def activation_ready(self) -> bool:
@@ -23,9 +23,9 @@ class RuntimeReadiness:
         return self.activation_prerequisites_ready
 
     def summary(self) -> dict[str, str]:
-        if self.memory_v151_ready:
+        if self.transactional_memory_ready:
             memory_status = "ready"
-        elif self.memory_v151_exists is False:
+        elif self.transactional_memory_exists is False:
             memory_status = "missing"
         else:
             memory_status = "not_ready"
@@ -37,7 +37,7 @@ class RuntimeReadiness:
             ),
             "release": "ready" if self.release_ready else "not_ready",
             "runtime": "active_trusted" if self.live_runtime_ready else "inactive",
-            "memory_v151": memory_status,
+            "transactional_memory": memory_status,
         }
 
     def to_dict(self) -> dict[str, Any]:
@@ -53,7 +53,7 @@ def evaluate_runtime_readiness(
     package_integrity_checks: Mapping[str, Any],
     provenance: Mapping[str, Any],
     daemon: Mapping[str, Any],
-    memory_v151: Mapping[str, Any],
+    transactional_memory: Mapping[str, Any],
 ) -> RuntimeReadiness:
     """Evaluate readiness once so all diagnostic surfaces use identical semantics."""
 
@@ -85,8 +85,8 @@ def evaluate_runtime_readiness(
         activation_prerequisites_ready and release_metadata_current
     )
 
-    exists_value = memory_v151.get("exists")
-    memory_v151_exists = exists_value if isinstance(exists_value, bool) else None
+    exists_value = transactional_memory.get("exists")
+    transactional_memory_exists = exists_value if isinstance(exists_value, bool) else None
 
     return RuntimeReadiness(
         installation_ok=installation_ok,
@@ -94,6 +94,6 @@ def evaluate_runtime_readiness(
         release_metadata_current=release_metadata_current,
         release_ready=release_ready,
         live_runtime_ready=live_runtime_ready,
-        memory_v151_ready=bool(memory_v151.get("ready")),
-        memory_v151_exists=memory_v151_exists,
+        transactional_memory_ready=bool(transactional_memory.get("ready")),
+        transactional_memory_exists=transactional_memory_exists,
     )

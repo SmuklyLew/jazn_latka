@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-SOURCE_REGISTRY_SCHEMA = "polish_reasoning_source_registry/v14.8.4"
+SOURCE_REGISTRY_SCHEMA = "polish_reasoning_source_registry/v15.1.0.3.89"
 
 
 class PolishReasoningSourceRegistry:

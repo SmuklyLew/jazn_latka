@@ -18,6 +18,6 @@ Nie wolno usuwać wcześniejszego sensu początku bez adnotacji. Rozszerzenia do
 
 ## Dziennik zmian kanonu
 
-- 2026-06-22 — v14.8.3.1.3-canon-source-refactor: wydzielenie historii początku z prywatnego `memory/raw` do source-controlled kanonu repo, bez przenoszenia surowych rozmów.
+- 2026-06-22 — v15.1.0.3.89: wydzielenie historii początku z prywatnego `memory/raw` do source-controlled kanonu repo, bez przenoszenia surowych rozmów.
 
-- 2026-06-22 — v14.8.3.4-python-canon-consolidation: priorytet kanonu przeniesiony do modułów `.py`; raporty ekstrakcji są tylko artefaktem patcha/progresu, nie głównym kanonem runtime.
+- 2026-06-22 — v15.1.0.3.89: priorytet kanonu przeniesiony do modułów `.py`; raporty ekstrakcji są tylko artefaktem patcha/progresu, nie głównym kanonem runtime.

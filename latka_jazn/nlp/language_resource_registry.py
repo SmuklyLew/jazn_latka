@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from typing import Any
-SCHEMA_VERSION="language_resource_registry/v14.8.0"
+SCHEMA_VERSION="language_resource_registry/v15.1.0.3.89"
 @dataclass(slots=True)
 class LanguageResource:
     name: str; kind: str; languages: list[str]; online: bool; local_optional: bool; url: str|None; license_note: str; use_policy: str
@@ -21,4 +21,4 @@ class LanguageResourceRegistry:
         ]
     def to_dict(self)->dict[str,Any]:
         data=[r.to_dict() for r in self.resources()]
-        return {'schema_version':SCHEMA_VERSION,'resources':data,'resource_count':len(data),'truth_boundary':'Rejestr wskazuje możliwe zasoby; runtime nie twierdzi, że pobrał wynik online bez realnego lookupu. SJP/WSJP są w v14.8.0 bezpiecznymi referencjami linkowymi, nie scraperami definicji.'}
+        return {'schema_version':SCHEMA_VERSION,'resources':data,'resource_count':len(data),'truth_boundary':'Rejestr wskazuje możliwe zasoby; runtime nie twierdzi, że pobrał wynik online bez realnego lookupu. SJP/WSJP są w v15.1.0.3.89 bezpiecznymi referencjami linkowymi, nie scraperami definicji.'}

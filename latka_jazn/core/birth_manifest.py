@@ -147,7 +147,7 @@ class BirthSourceManifest:
     źródła, pamięć, procedury, runtime, granicę prawdy i jeden głos rozmowy.
     """
 
-    def __init__(self, version: str = "v14.6.10-manifest-history-network-dictionary-dispatcher") -> None:
+    def __init__(self, version: str = "v15.1.0.3.89") -> None:
         self.version = version
 
     def to_dict(self) -> dict[str, Any]:

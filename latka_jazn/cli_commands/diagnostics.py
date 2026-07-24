@@ -13,7 +13,7 @@ from latka_jazn.core.startup_contract import build_startup_status
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
-from latka_jazn.memory.runtime_memory_v151_install import resolve_memory_tier_database_path
+from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
@@ -27,7 +27,7 @@ def _report_progress(callback: DoctorProgressCallback | None, completed: int, to
         callback(completed, total, label)
 
 
-def _memory_v151_status(cfg: JaznConfig) -> dict[str, Any]:
+def _transactional_memory_status(cfg: JaznConfig) -> dict[str, Any]:
     try:
         path = resolve_memory_tier_database_path(
             cfg.root,
@@ -64,7 +64,7 @@ def status_payload(
         "runtime_version": PACKAGE_VERSION_FULL,
         "root": str(root),
         "startup": startup,
-        "memory_v151": _memory_v151_status(cfg),
+        "transactional_memory": _transactional_memory_status(cfg),
         "daemon": status_daemon(
             cfg, host=daemon_host, port=daemon_port,
             marker_output=marker_output, probe_endpoint=probe_endpoint,
@@ -91,7 +91,7 @@ def _live_evidence(
     marker: dict[str, Any],
     daemon: dict[str, Any],
     timestamp: dict[str, Any],
-    memory_v151: dict[str, Any],
+    transactional_memory: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "marker_found": bool(marker.get("existing_marker_found") or daemon.get("marker_found")),
@@ -104,7 +104,7 @@ def _live_evidence(
         "timestamp_status_available": bool(timestamp),
         "timestamp_trusted": timestamp.get("trusted"),
         "time_trust_state": timestamp.get("time_trust_state") or daemon.get("time_trust_state") or "unknown",
-        "memory_v151_ready": bool(memory_v151.get("ready")),
+        "transactional_memory_ready": bool(transactional_memory.get("ready")),
     }
 
 
@@ -127,7 +127,7 @@ def doctor_payload(
     _report_progress(progress, 1, progress_total, "Stan runtime i pamięci wczytany")
     startup = status.get("startup") or {}
     daemon = status.get("daemon") or {}
-    memory_v151 = status.get("memory_v151") or {}
+    transactional_memory = status.get("transactional_memory") or {}
     manifest, manifest_error = _read_manifest(root)
     marker = startup.get("active_cache_status") or {}
     model = startup.get("model_adapter_status") or {}
@@ -176,8 +176,8 @@ def doctor_payload(
         "startup_status_available": bool(startup),
         "daemon_status_available": bool(daemon),
         "model_status_available": bool(model),
-        "memory_status_available": bool(conversation_memory or runtime_memory or memory_v151),
-        "memory_v151_status_available": bool(memory_v151) or "memory_v151" not in status,
+        "memory_status_available": bool(conversation_memory or runtime_memory or transactional_memory),
+        "transactional_memory_status_available": bool(transactional_memory) or "transactional_memory" not in status,
         "tool_read_allowed": read_plan.allowed,
         "tool_unconfirmed_write_denied": not denied_write_plan.allowed,
         "mcp_loopback_policy_valid": mcp_policy_error is None,
@@ -205,12 +205,12 @@ def doctor_payload(
         package_integrity_checks=package_integrity_checks,
         provenance=provenance,
         daemon=daemon,
-        memory_v151=memory_v151,
+        transactional_memory=transactional_memory,
     )
     _report_progress(progress, 6, progress_total, "Gotowość aktywacji i wydania obliczona")
 
     live_evidence = _live_evidence(
-        marker=marker, daemon=daemon, timestamp=timestamp, memory_v151=memory_v151
+        marker=marker, daemon=daemon, timestamp=timestamp, transactional_memory=transactional_memory
     )
     subsystem_status = {
         "package_integrity_manifest": {
@@ -232,9 +232,9 @@ def doctor_payload(
         "memory": {
             "conversation_archive": conversation_memory,
             "runtime_write_legacy": runtime_memory,
-            "tier_v151": memory_v151,
+            "transactional_tier": transactional_memory,
             "truth_boundary": (
-                "Legacy runtime_write i tier_v151 są raportowane osobno. "
+                "Legacy runtime_write i transactional_tier są raportowane osobno. "
                 "Gotowa baza L1/L2/L3 nie dowodzi poprawnego recall ani uruchomionej Jaźni."
             ),
         },
@@ -277,7 +277,7 @@ def doctor_payload(
         "read_only": True,
         "truth_boundary": (
             "Doctor reports structural installation health separately from activation prerequisites, release metadata, "
-            "live runtime readiness and memory_v151 readiness. The legacy activation_ready field is retained as an alias "
+            "live runtime readiness and transactional_memory readiness. The legacy activation_ready field is retained as an alias "
             "for activation_prerequisites_ready; it does not mean that a daemon is running."
         ),
     }

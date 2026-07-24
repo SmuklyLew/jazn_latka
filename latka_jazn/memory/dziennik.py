@@ -9,7 +9,7 @@ import copy
 import json
 import uuid
 
-DZIENNIK_SCHEMA_VERSION = "v14.5.1-compatible-extended"
+DZIENNIK_SCHEMA_VERSION = "v15.1.0.3.89"
 
 
 @dataclass(slots=True)
@@ -58,7 +58,7 @@ class DziennikRawJournal:
                     "plik": "dziennik_system.json",
                     "opis": "Dziennik systemowy Jaźni – wpisy, refleksje, sny, sceny, polecenia, prompty i logi projektu Łatka",
                     "schema_version": DZIENNIK_SCHEMA_VERSION,
-                    "schema_policy": "Stary układ meta+entries pozostaje ważny; v14.5.1 dodaje opcjonalne pola pamięci, emocji, źródeł i granic prawdy.",
+                    "schema_policy": "Stary układ meta+entries pozostaje ważny; v15.1.0.3.89 dodaje opcjonalne pola pamięci, emocji, źródeł i granic prawdy.",
                 },
                 "entries": [],
             }

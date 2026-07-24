@@ -67,7 +67,7 @@ class MemoryImporter:
                         self.store.register_source_file(p, kind=kind)
                         counts["raw" if kind == "raw_memory" else "versioned_sources"] += 1
 
-        # v14.5.24: same zarejestrowanie plików nie wystarcza. Runtime musi
+        # v15.1.0.3.89: same zarejestrowanie plików nie wystarcza. Runtime musi
         # przepisać istniejące JSON/JSONL do SQLite, żeby wyszukiwanie pamięci
         # widziało epizody, fakty, procedury i dziennik po świeżym starcie.
         try:
@@ -99,7 +99,7 @@ class MemoryImporter:
                     "error": archive_report.error,
                 }
 
-        self.store.add_event("packaged_sources_registered", counts, source="MemoryImporter", actor="system", tags=["migration", "integrity", "v14.5.24"], importance=0.8)
+        self.store.add_event("packaged_sources_registered", counts, source="MemoryImporter", actor="system", tags=["migration", "integrity", "v15.1.0.3.89"], importance=0.8)
         return counts
 
     def import_raw_chat_html(self, *, force: bool = False, limit_conversations: int | None = None) -> dict:
@@ -119,7 +119,7 @@ class MemoryImporter:
                 result,
                 source="MemoryImporter",
                 actor="system",
-                tags=["raw_memory", "chat_html", "v14.5.24", "missing_dependency"],
+                tags=["raw_memory", "chat_html", "v15.1.0.3.89", "missing_dependency"],
                 importance=0.5,
             )
             return result
@@ -132,7 +132,7 @@ class MemoryImporter:
             result,
             source="MemoryImporter",
             actor="system",
-            tags=["raw_memory", "chat_html", "v14.5.24"],
+            tags=["raw_memory", "chat_html", "v15.1.0.3.89"],
             importance=0.9 if report.status in {"ok", "already_imported"} else 0.5,
         )
         return result
@@ -144,7 +144,7 @@ class MemoryImporter:
             report.to_dict(),
             source="MemoryImporter",
             actor="system",
-            tags=["memory_files", "sqlite", "v14.5.24"],
+            tags=["memory_files", "sqlite", "v15.1.0.3.89"],
             importance=0.88,
         )
         return report.to_dict()

@@ -4,7 +4,7 @@ from typing import Any
 import difflib, hashlib
 from latka_jazn.core.turn_trace_reader import TurnTraceReader
 
-SCHEMA_VERSION = "runtime_visible_answer_comparator/v14.6.10"
+SCHEMA_VERSION = "runtime_visible_answer_comparator/v15.1.0.3.89"
 
 @dataclass(slots=True)
 class RuntimeVisibleComparison:

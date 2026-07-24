@@ -1,1 +1,1 @@
-"""Future voice/audio adapter layer for Łatka Jaźń v14.7.0."""
+"""Future voice/audio adapter layer for Łatka Jaźń v15.1.0.3.89."""

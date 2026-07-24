@@ -21,7 +21,6 @@ _PRIVATE_MARKER_PARTS = (
 )
 _PRIVATE_EXACT_SUFFIXES = {
     "latka_jazn/core/canon/local_private_canon_extension.py",
-    "latka_jazn/contracts/embedded_sources.py",
 }
 _TEXT_SCAN_SUFFIXES = {".py", ".json", ".jsonl", ".md", ".txt", ".yaml", ".yml", ".toml"}
 

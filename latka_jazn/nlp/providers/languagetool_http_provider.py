@@ -5,7 +5,7 @@ from latka_jazn.nlp.providers.http_client import SafeHttpClient
 
 class LanguageToolHttpProvider:
     name='languagetool_optional'
-    def __init__(self, *, endpoint: str = 'http://localhost:8081/v2/check', allow_network: bool = False, user_agent: str = 'LatkaJazn/14.6.10', timeout_seconds: float = 3.0):
+    def __init__(self, *, endpoint: str = 'http://localhost:8081/v2/check', allow_network: bool = False, user_agent: str = 'LatkaJazn/15.1.0.3.89', timeout_seconds: float = 3.0):
         self.endpoint=endpoint; self.allow_network=allow_network; self.http=SafeHttpClient(user_agent=user_agent, timeout_seconds=timeout_seconds, max_retries=0)
     def lookup(self, term: str, language: str='pl') -> ProviderLookupResult:
         if not self.allow_network:

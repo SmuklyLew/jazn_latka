@@ -44,7 +44,7 @@ class SelfArchitectureAuditReport:
     repair_priorities: list[str]
     v1501_complete_backlog: list[str]
     v1501_backlog: list[str]
-    v14860_backlog: list[str]
+    development_backlog: list[str]
     source_grounding: list[str]
     acceptance_criteria: list[str]
     truth_boundary: str
@@ -132,13 +132,13 @@ class SelfArchitectureAuditor:
             "P2: fine-tuning rozważaj dopiero po reprezentatywnych evals; ta aktualizacja nie zmienia wag.",
         ])
         backlog = [
-            "v15.0.1: marker pamięci wykrywany z filesystemu i manifestu, bez fikcyjnego fallbacku v14.7.1.",
-            "v15.0.1: routing szerokiego audytu wygrywa z pojedynczym słowem 'działa'.",
-            "v15.0.1: source-safe używa jednego planu i wyklucza prywatne źródła wygenerowane z pamięci.",
-            "v15.0.1: status runtime write rozdziela inicjalizację, zdolność, zgodę i zaobserwowane zapisy.",
-            "v15.0.1: trusted time może być zachowany przez monotoniczny TTL, ale nie jest promowany z local fallback.",
-            "v15.0.1: adaptery zwracają niewykonane tool_calls wymagające autoryzacji runtime.",
-            "v15.0.1: audyt architektury jest read-only i nie zapisuje refleksji.",
+            "Bieżące wydanie: marker pamięci jest wykrywany z filesystemu i manifestu, bez fikcyjnego fallbacku starszej linii.",
+            "v15.1.0.3.89: routing szerokiego audytu wygrywa z pojedynczym słowem 'działa'.",
+            "v15.1.0.3.89: source-safe używa jednego planu i wyklucza prywatne źródła wygenerowane z pamięci.",
+            "v15.1.0.3.89: status runtime write rozdziela inicjalizację, zdolność, zgodę i zaobserwowane zapisy.",
+            "v15.1.0.3.89: trusted time może być zachowany przez monotoniczny TTL, ale nie jest promowany z local fallback.",
+            "v15.1.0.3.89: adaptery zwracają niewykonane tool_calls wymagające autoryzacji runtime.",
+            "v15.1.0.3.89: audyt architektury jest read-only i nie zapisuje refleksji.",
         ]
         acceptance = [
             "Dokładne pytanie użytkownika o możliwości, kod i luki trafia do self_architecture_audit_request.",
@@ -167,7 +167,7 @@ class SelfArchitectureAuditor:
             repair_priorities=repair,
             v1501_complete_backlog=backlog,
             v1501_backlog=backlog,
-            v14860_backlog=backlog,
+            development_backlog=backlog,
             source_grounding=list(self.SOURCE_GROUNDING),
             acceptance_criteria=acceptance,
             truth_boundary=self.TRUTH_BOUNDARY,

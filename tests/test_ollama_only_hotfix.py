@@ -8,7 +8,7 @@ from latka_jazn.core.chat_command_contract import apply_ollama_cli_settings, com
 from latka_jazn.core.runtime_environment import OLLAMA_ADAPTER, detect_runtime_environment
 
 _TEXT_SUFFIXES = {".py", ".md", ".json", ".txt", ".toml", ".yml", ".yaml"}
-_DYNAMIC_ROOTS = {".git", ".pytest_cache", "__pycache__", "exports", "memory", "workspace_runtime"}
+_DYNAMIC_ROOTS = {".git", ".pytest_cache", "__pycache__", "exports", "memory", "workspace_runtime", ".archives"}
 
 
 def _repository_text_files(root: Path) -> list[Path]:
@@ -83,10 +83,7 @@ def test_active_repository_has_no_removed_local_backend_integration() -> None:
     root = Path(__file__).resolve().parents[1]
     stem = "lm" + "studio"
     forbidden = (stem, "lm_" + "studio", "lm-" + "studio", "lm " + "studio")
-    excluded = {
-        root / "PACKAGE_INTEGRITY_MANIFEST.json",
-        root / "latka_jazn/contracts/embedded_sources.py",
-    }
+    excluded = {root / "PACKAGE_INTEGRITY_MANIFEST.json"}
     offenders: list[str] = []
 
     for path in _repository_text_files(root):

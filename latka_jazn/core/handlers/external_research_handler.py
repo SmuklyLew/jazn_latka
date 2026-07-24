@@ -10,7 +10,7 @@ class ExternalResearchHandler:
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx=context or {}; cfg=ctx.get('config')
         result={
-            'schema_version':'external_research_result/v14.6.10',
+            'schema_version':'external_research_result/v15.1.0.3.89',
             'query': text,
             'executed': False,
             'provider': None,

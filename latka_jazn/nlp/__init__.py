@@ -1,9 +1,9 @@
-"""Warstwa NLP Jaźni v14.6.10.
+"""Warstwa NLP Jaźni v15.1.0.3.89.
 
 Moduły w tym pakiecie są bezpiecznym fundamentem: działają bez ciężkich
 zależności, ale mają stabilny kontrakt dla przyszłych providerów Stanza,
 Morfeusz2 albo LLM-context. Nie udają pełnej lematyzacji polszczyzny, jeśli
-aktywne jest tylko lokalne fallbackowe rozpoznanie. v14.6.10 dodaje topic guard dla wersji, tematu i aktualnego zakresu odpowiedzi.
+aktywne jest tylko lokalne fallbackowe rozpoznanie. v15.1.0.3.89 dodaje topic guard dla wersji, tematu i aktualnego zakresu odpowiedzi.
 """
 
 from .polish_lemmatizer import PolishLemmatizationEngine, LemmatizationReport, LemmatizedToken, LemmaCandidate

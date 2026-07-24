@@ -9,6 +9,7 @@ import hashlib
 import json
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.version import PACKAGE_VERSION
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 from latka_jazn.tools.active_extraction_cache import (
     active_cache_contract_version,
@@ -18,7 +19,7 @@ from latka_jazn.tools.active_extraction_cache import (
 
 ProgressCallback = Callable[[int, int, str], None]
 
-TARGET_VERSION = "v14.8.2.6.3-free-dialogue-short-turn-fallback-hotfix"
+TARGET_VERSION = PACKAGE_VERSION
 TARGET_FILES = (
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "workspace_runtime/JAZN_ACTIVE_RUNTIME.json",
@@ -43,7 +44,7 @@ def _version_number(package_version: str | None) -> str:
     value = str(package_version or TARGET_VERSION).strip()
     if value.startswith("v"):
         value = value[1:]
-    return value.split("-", 1)[0] or "14.8.2.6.2"
+    return value.split("-", 1)[0] or PACKAGE_VERSION.lstrip("v")
 
 
 def _sha256_file(path: Path) -> str | None:
@@ -185,7 +186,7 @@ def normalize_runtime_contract_versions(
         "package_integrity_manifest_sha256": manifest_sha,
         "marker_manifest_sha256_update": marker_sha_update,
         "results": [item.to_dict() for item in results],
-        "truth_boundary": "Normalizator poprawia tylko aktywne markery/kontrakty bieżącego folderu. Nie zmienia historycznych backupów ani archiwalnych embedded_sources.",
+        "truth_boundary": "Normalizator poprawia tylko aktywne markery/kontrakty bieżącego folderu. Nie zmienia historycznych backupów ani plików w wyłączonym archiwum repozytorium.",
     }
 
 

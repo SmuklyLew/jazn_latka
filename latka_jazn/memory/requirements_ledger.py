@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import hashlib, json, time
 
-SCHEMA_VERSION = "requirements_ledger/v14.6.10"
+SCHEMA_VERSION = "requirements_ledger/v15.1.0.3.89"
 
 
 @dataclass(slots=True)
@@ -30,7 +30,7 @@ class RequirementLedgerEntry:
 class RequirementsLedger:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.path = root / "memory" / "layered" / "requirements_ledger_v14_6_10.jsonl"
+        self.path = root / "memory" / "layered" / "requirements_ledger_current_line.jsonl"
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def append(self, entry: RequirementLedgerEntry) -> Path:
@@ -51,10 +51,10 @@ class RequirementsLedger:
                 schema_version=SCHEMA_VERSION,
                 source_text=source_text,
                 requirement=requirement,
-                source="manifest_v14.6.10",
+                source="current_release_manifest",
                 status=status,
                 responsible_files=["latka_jazn/nlp/dialogue_intent_classifier.py", "latka_jazn/core/runtime_answer_validator.py", "latka_jazn/core/conversation.py"],
-                regression_tests=["tests/test_v14693_behavioral_runtime_dialogue_repair.py", "tests/test_v14693_creative_text_preservation.py"],
+                regression_tests=["tests/test_runtime_stability_visible_integrity.py", "tests/test_turn_atomicity.py"],
                 truth_boundary="To ledger wymagań z dostępnego kontekstu rozmów, nie dowód odczytu całej historii ChatGPT.",
             ))
         return self.path

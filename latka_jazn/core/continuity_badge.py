@@ -7,7 +7,7 @@ import hashlib
 import json
 import time
 
-SCHEMA_VERSION = "continuity_badge_policy/v14.6.2"
+SCHEMA_VERSION = "continuity_badge_policy/v15.1.0.3.89"
 
 
 @dataclass(slots=True)

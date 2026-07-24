@@ -5,7 +5,7 @@ from typing import Any, Callable
 import hashlib, json, re
 from datetime import datetime, timezone
 
-SCHEMA_VERSION = "turn_logic_auditor/v14.8.2.4"
+SCHEMA_VERSION = "turn_logic_auditor/v15.1.0.3.89"
 
 @dataclass(slots=True)
 class TurnLogicAudit:
@@ -73,7 +73,7 @@ class TurnLogicAuditor:
         if detected_intent in {"ordinary_conversation", "standalone_greeting"} and any(x in body for x in ("jaźń jako warstwa", "warstwa pamięci", "diagnostyk", "runtime jako")):
             audit.logic_errors.append("ordinary_dialogue_meta_report")
         # stale fragments not grounded in user text.
-        stale_terms = ["drzwi", "zlecen", "v14.6.1", "v14.6.2", "warszaw", "miodowa"]
+        stale_terms = ["drzwi", "zlecen", "historyczna wersja", "starsze wydanie", "warszaw", "miodowa"]
         for term in stale_terms:
             if term in body and term not in norm and detected_intent in {"ordinary_conversation", "self_state_question", "reciprocal_self_state_question", "sleep_closure_statement"}:
                 audit.response_terms_not_grounded.append(term)

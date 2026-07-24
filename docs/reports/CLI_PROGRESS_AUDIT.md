@@ -81,7 +81,7 @@ Zintegrowane punkty wejścia:
 - `latka_jazn/tools/version_consistency_audit.py` — postęp według liczby plików;
 - `latka_jazn/tools/memory_rebuild.py` — spinner operacji odbudowy;
 - `tools/memory_import_snapshot.py` — pasek według stron SQLite;
-- `tools/memory_migrate_legacy_v151.py` — spinner migracji.
+- `tools/memory_migrate_legacy.py` — spinner migracji.
 
 Świadomie bez dodatkowej animacji pozostają:
 

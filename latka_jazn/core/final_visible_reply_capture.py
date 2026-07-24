@@ -6,7 +6,7 @@ import hashlib
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
 
-SCHEMA_VERSION = "final_visible_reply_capture/v14.6.2"
+SCHEMA_VERSION = "final_visible_reply_capture/v15.1.0.3.89"
 
 
 @dataclass(slots=True)

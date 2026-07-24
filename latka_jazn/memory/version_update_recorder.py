@@ -28,7 +28,7 @@ class VersionUpdateMemoryResult:
 class VersionUpdateRecorder:
     """Rejestruje aktualizację wersji jako doświadczenie Jaźni, nie tylko changelog.
 
-    Zasada v14.5.1:
+    Zasada v15.1.0.3.89:
     - `dziennik.json` jest obowiązkowym nośnikiem aktualizacji,
     - wpis aktualizacji ma równolegle tworzyć doświadczenie, wspomnienie, emocje i refleksję,
     - warstwy JSONL/SQLite dostają epizod, refleksję, fakt semantyczny i regułę proceduralną,
@@ -38,7 +38,7 @@ class VersionUpdateRecorder:
     def __init__(self, *, root: Path, store: MemoryStore | None = None, layered_memory: LayeredMemory | None = None) -> None:
         self.root = Path(root)
         self.owns_store = store is None
-        self.store = store or MemoryStore(self.root / "workspace_runtime" / "latka_jazn_v14_6_4.sqlite3")
+        self.store = store or MemoryStore(self.root / "workspace_runtime" / "latka_jazn_current_line.sqlite3")
         self.layered_memory = layered_memory or LayeredMemory(self.store, self.root)
         self.dziennik = DziennikRawJournal(self.root)
 

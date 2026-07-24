@@ -88,14 +88,14 @@ class JaznConfig:
     audit_db_name: str = field(default_factory=lambda: os.environ.get("JAZN_AUDIT_DB", "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3").strip())
     recovered_memory_db_name: str = field(default_factory=lambda: os.environ.get(
         "JAZN_RECOVERED_MEMORY_DB",
-        "memory/sqlite/recovery_v151/runtime_memory_recovered.sqlite3",
+        "memory/sqlite/recovery_current/runtime_memory_recovered.sqlite3",
     ).strip())
     normalization_sidecar_db_name: str = field(
         default_factory=_default_normalization_sidecar_db_name
     )
     memory_tier_db_name: str = field(default_factory=lambda: os.environ.get(
         "JAZN_MEMORY_TIER_DB",
-        "memory/sqlite/runtime_write_v2/runtime_memory_v151.sqlite3",
+        "memory/sqlite/runtime_write_v2/runtime_memory.sqlite3",
     ).strip())
     conversation_archive_manifest_name: str = field(default_factory=lambda: os.environ.get("JAZN_CONVERSATION_ARCHIVE_MANIFEST", "memory/sqlite/conversation_archive_v1/conversation_archive_manifest.sqlite3").strip())
     conversation_fts_dir_name: str = field(default_factory=lambda: os.environ.get("JAZN_CONVERSATION_FTS_DIR", "memory/sqlite/conversation_fts_v1").strip())
