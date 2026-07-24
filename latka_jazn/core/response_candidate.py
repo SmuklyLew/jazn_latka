@@ -4,8 +4,8 @@ from dataclasses import asdict, dataclass, field
 import re
 from typing import Any
 
-SCHEMA_VERSION = "response_candidate/v14.8.4.004"
-EVALUATION_SCHEMA_VERSION = "candidate_evaluation/v14.8.4.004"
+SCHEMA_VERSION = "response_candidate/v15.1.0.3.89"
+EVALUATION_SCHEMA_VERSION = "candidate_evaluation/v15.1.0.3.89"
 
 
 @dataclass(slots=True)

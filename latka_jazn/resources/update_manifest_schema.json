@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://local.latka.jazn/schemas/update_manifest_schema_v14_6_10.json",
+  "$id": "https://local.latka.jazn/schemas/update_manifest_schema_current_line.json",
   "title": "Jaźń update manifest schema",
   "type": "object",
   "properties": {

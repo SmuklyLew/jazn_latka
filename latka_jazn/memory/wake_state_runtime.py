@@ -177,7 +177,7 @@ class WakeStateRuntimeBridge:
             created_at_utc=now,
             updated_at_utc=now,
             evidence=(evidence,),
-            tags=("wake_state", "verified", "l1", "runtime_v151"),
+            tags=("wake_state", "verified", "l1", "transactional_memory"),
             session_id=session_id,
             turn_id=None,
             active_goal=active_goal,

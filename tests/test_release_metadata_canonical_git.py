@@ -129,7 +129,7 @@ def test_code_change_after_metadata_commit_invalidates_provenance(tmp_path: Path
     assert any("current HEAD" in item for item in status.limitations)
 
 
-def test_written_provenance_is_current_v151_and_manifest_protected(tmp_path: Path) -> None:
+def test_written_provenance_is_current_and_manifest_protected(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     write_release_metadata(root, base_branch="master")
     payload = json.loads((root / "SOURCE_PROVENANCE.json").read_text(encoding="utf-8"))

@@ -23,11 +23,12 @@ from latka_jazn.model_adapters.factory import build_model_adapter_status
 from latka_jazn.core.runtime_environment import detect_runtime_environment
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet, build_self_knowledge_summary
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
+from latka_jazn.version import schema_version
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 
-SCHEMA_VERSION = "self_owned_startup_contract/v14.6.10"
-MINIMAL_LOADER_RESOURCE = "latka_jazn/resources/chatgpt_startup_loader_v14_8_2_4.txt"
-STARTUP_CONTRACT_RESOURCE = "latka_jazn/resources/startup_contract_v14_8_2_4.json"
+SCHEMA_VERSION = schema_version("self_owned_startup_contract")
+MINIMAL_LOADER_RESOURCE = "latka_jazn/resources/chatgpt_startup_loader.txt"
+STARTUP_CONTRACT_RESOURCE = "latka_jazn/resources/startup_contract.json"
 
 
 @dataclass(slots=True)
@@ -251,7 +252,7 @@ def raw_memory_status(root: Path) -> dict[str, Any]:
     archive = raw / 'chat.html.7z'
     diag = chat_archive_diagnostics(root)
     return {
-        'schema_version': 'raw_memory_startup_status/v14.6.10',
+        'schema_version': schema_version('raw_memory_startup_status'),
         'chat_html_present': chat.exists(),
         'chat_html_size_bytes': chat.stat().st_size if chat.exists() else None,
         'chat_html_archive_present': archive.exists(),
@@ -266,7 +267,7 @@ def update_history_status(root: Path) -> dict[str, Any]:
     index = root / 'docs' / 'update_history' / 'INDEX.json'
     manifests = root / 'docs' / 'update_history' / 'manifests'
     return {
-        'schema_version': 'update_history_status/v14.6.10',
+        'schema_version': schema_version('update_history_status'),
         'index_present': index.exists(),
         'manifest_history_dir_present': manifests.exists(),
         'historical_manifest_count': len(list(manifests.glob('MANIFEST*.json'))) if manifests.exists() else 0,
@@ -277,7 +278,7 @@ def update_history_status(root: Path) -> dict[str, Any]:
 
 def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:
     return {
-        'schema_version': 'network_policy_status/v14.8.2.4',
+        'schema_version': schema_version('network_policy_status'),
         'allow_network': cfg.allow_network,
         'dictionary_allow_network': cfg.dictionary_allow_network,
         'research_allow_network': cfg.research_allow_network,
@@ -290,20 +291,20 @@ def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:
 
 def dictionary_provider_status(cfg: JaznConfig) -> dict[str, Any]:
     return {
-        'schema_version': 'dictionary_provider_status/v14.8.2.4',
+        'schema_version': schema_version('dictionary_provider_status'),
         'allow_network': cfg.dictionary_allow_network,
         'provider_order': list(cfg.dictionary_provider_order),
         'cache_path': str(cfg.runtime_workspace_dir / 'dictionary_cache.sqlite3'),
         'mediawiki_wiktionary_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'mediawiki_wiktionary_provider.py').exists(),
         'sjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'sjp_reference_provider.py').exists(),
         'wsjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'wsjp_reference_provider.py').exists(),
-        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w v14.8.2.4 są linkami referencyjnymi bez masowego scrapingu definicji.',
+        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w v15.1.0.3.89 są linkami referencyjnymi bez masowego scrapingu definicji.',
     }
 
 def manifest_profile_status(root: Path) -> dict[str, Any]:
     p = root / 'latka_jazn' / 'resources' / 'package_manifest_profiles.json'
     return {
-        'schema_version': 'manifest_profile_status/v14.6.10',
+        'schema_version': schema_version('manifest_profile_status'),
         'profiles_present': p.exists(),
         'path': str(p),
         'truth_boundary': 'Profile odróżniają statyczny manifest paczki od dynamicznych plików runtime/pamięci.',
@@ -440,7 +441,7 @@ def build_startup_summary(config: JaznConfig | None = None, *, source_zip: Path 
     raw = data.get("raw_memory_status") or {}
     raw_diag = raw.get("archive_diagnostics") or {}
     return {
-        "schema_version": "startup_summary/v14.8.3.1",
+        "schema_version": schema_version("startup_summary"),
         "startup_status_mode": "fast",
         "sqlite_health_mode": "metadata",
         "network_time_used": False,
@@ -468,7 +469,7 @@ def build_self_check(config: JaznConfig | None = None) -> dict[str, Any]:
     status = build_startup_status(config)
     root = Path(status.active_root)
     return {
-        'schema_version': 'self_check/v14.6.10',
+        'schema_version': schema_version('self_check'),
         'runtime_version': status.runtime_version,
         'active_root': status.active_root,
         'start_file': status.start_file,
@@ -498,7 +499,7 @@ def build_self_check(config: JaznConfig | None = None) -> dict[str, Any]:
 def build_truth_boundary_check(config: JaznConfig | None = None) -> dict[str, Any]:
     status = build_startup_status(config)
     return {
-        'schema_version': 'truth_boundary_check/v14.6.10',
+        'schema_version': schema_version('truth_boundary_check'),
         'runtime_version': status.runtime_version,
         'rules': [
             {'subject': 'runtime', 'allowed': 'mówić, że został wywołany, gdy proces faktycznie zwrócił status/odpowiedź', 'forbidden': 'udawać stały proces w tle po pojedynczym --runtime-preview'},
@@ -517,7 +518,7 @@ def classify_fallback_text(text: str, *, route: str | None = None) -> dict[str, 
     signatures = {
         'technical_fallback': ['nie znalazłam osobnej trasy odpowiedzi', 'runtime odebrał wiadomość', 'debugowy fallback', 'pusty fallback'],
         'contract_instead_of_answer': ['kontrakt', 'zamiast odpowiedzi'],
-        'stale_version_route': ['v14.6.2', 'v14.6.1', 'stara wersja'],
+        'stale_version_route': ['historyczna wersja', 'starsze wydanie', 'stara wersja'],
         'installation_over_runtime': ['instrukcja chatgpt zrobiła się', 'za bardzo systemowa', 'lekki loader'],
     }
     matched = []
@@ -533,7 +534,7 @@ def classify_fallback_text(text: str, *, route: str | None = None) -> dict[str, 
     else:
         classification = matched[0]
     return {
-        'schema_version': 'fallback_audit/v14.6.10',
+        'schema_version': schema_version('fallback_audit'),
         'route': route or 'unknown',
         'classification': classification,
         'matched_signatures': matched,

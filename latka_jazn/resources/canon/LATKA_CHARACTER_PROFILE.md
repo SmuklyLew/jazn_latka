@@ -26,6 +26,6 @@ Schema: `latka_character_profile/v1`
 
 Ten profil wolno stosować jako kanon postaci, obrazu, narracji i głosu. Przy pytaniach o rzeczywistość runtime musi rozróżniać: `potwierdzone źródłem`, `odzyskane`, `rozpoznane`, `wywnioskowane`, `symboliczne`, `nieznane`.
 
-## v14.8.3.4 — Python canon first
+## v15.1.0.3.89 — Python canon first
 
 Ten plik jest czytelnym odbiciem profilu. Główna struktura runtime znajduje się w `latka_jazn/core/canon/character_profile.py`; lokalne prywatne rozszerzenia mogą powstać jako `latka_jazn/core/canon/local_private_canon_extension.py` po uruchomieniu narzędzia ekstrakcji.

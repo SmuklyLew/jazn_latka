@@ -207,7 +207,7 @@ class LayeredMemory:
                 emotional_anchor=emotional_anchor or getattr(plan, "reason", "ważny epizod"),
                 source=source,
                 local_time_label=local_time_label,
-                tags=["conversation", "consolidated", "v14.5.0"],
+                tags=["conversation", "consolidated", "v15.1.0.3.89"],
             )
             created["episode_id"] = ep.episode_id
         if getattr(plan, "should_write_reflection", False):
@@ -226,7 +226,7 @@ class LayeredMemory:
                 action="zaktualizować sposób odpowiedzi lub moduł, a następnie zapisać powód i granicę prawdy",
                 reason=getattr(plan, "reason", "korekta jako sygnał uczący"),
                 priority=88,
-                source="v14.5.0_consolidation",
+                source="v15.1.0.3.89",
             )
             created["procedure_id"] = proc.rule_id
         if getattr(plan, "should_promote_semantic_fact", False):
@@ -234,7 +234,7 @@ class LayeredMemory:
                 subject="System Jaźni",
                 predicate="zasada rozbudowy",
                 value="Ważne informacje najpierw trafiają do epizodu i refleksji, a dopiero potem mogą stać się faktem semantycznym lub procedurą.",
-                source="v14.5.0_consolidation",
+                source="v15.1.0.3.89",
                 confidence=0.78,
                 tags=["architecture", "memory", "truth_boundary"],
             )
@@ -272,5 +272,5 @@ class LayeredMemory:
                 "identity_dynamics": "sprawdza pierwszą osobę, źródła, czas, granice, wartości i procedury",
             },
             "truth_rule": "Piękna narracja może istnieć, ale nie może udawać potwierdzonego faktu.",
-            "v14_5_rule": "Każdy ważny sygnał przechodzi przez pętlę: ocena -> afekt -> konsolidacja -> tożsamość -> granica prawdy -> odpowiedź.",
+            "current_line_rule": "Każdy ważny sygnał przechodzi przez pętlę: ocena -> afekt -> konsolidacja -> tożsamość -> granica prawdy -> odpowiedź.",
         }

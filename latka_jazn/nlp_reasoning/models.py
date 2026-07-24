@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-SCHEMA_VERSION = "polish_reasoning_frame/v14.8.4"
+SCHEMA_VERSION = "polish_reasoning_frame/v15.1.0.3.89"
 
 
 @dataclass(slots=True)

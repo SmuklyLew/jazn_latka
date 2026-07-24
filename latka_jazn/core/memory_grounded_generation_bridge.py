@@ -6,7 +6,7 @@ from typing import Any
 
 from latka_jazn.core.response_candidate import CandidateEvaluation, ResponseCandidate
 
-SCHEMA_VERSION = "memory_grounded_generation_bridge/v14.8.4.006"
+SCHEMA_VERSION = "memory_grounded_generation_bridge/v15.1.0.3.89"
 GROUNDING_EVALUATION_REASON = "memory_grounding_bridge_checked"
 MEMORY_CLAIM_MARKERS = (
     "pamiętam",

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 import hashlib, shutil, sqlite3
 
-SCHEMA_VERSION = "raw_memory_status/v14.8.2.5"
+SCHEMA_VERSION = "raw_memory_status/v15.1.0.3.89"
 
 def _sha(path: Path) -> str | None:
     if not path.exists() or not path.is_file():

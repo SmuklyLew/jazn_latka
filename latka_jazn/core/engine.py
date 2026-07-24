@@ -204,7 +204,7 @@ def _sync_conversation_decision_body(
         status = "synchronized_to_final_body"
 
     synced["body_sync"] = {
-        "schema_version": "conversation_decision_body_sync/v14.8.5.016.5",
+        "schema_version": "conversation_decision_body_sync/v15.1.0.3.89",
         "status": status,
         "sync_stage": sync_stage,
         "conversation_body_matches_final_body": synced.get("body") == final_body,
@@ -384,11 +384,11 @@ class JaznEngine:
             ("LLM kontra mózg runtime", "uruchomić CognitiveRuntimeOperatingModel: odróżnić ChatGPT jako głos/narzędzie od Jaźni jako aktywnej warstwy pamięci, uwagi, logiki i granicy prawdy", "stylizacja rozmowy nie zastępuje aktywnego źródła i zapisu", 99),
             ("GitHub jako źródło prawdy", "używać GitHubRepositoryPlan: Latka.Jazn dla systemu, Latka.Jazn.Memory dla pamięci i checkpointów; nie udawać pushu bez realnego zapisu", "repozytorium daje trwałość dopiero po commicie/pushu", 98),
             ("zwykła rozmowa z pamięcią", "zapisać append-only turę i kandydat pamięci; commit/eksport robić partiami po ważnym fragmencie, a nie po każdej wiadomości", "codzienna rozmowa potrzebuje trwałego śladu bez ciągłego pakowania ZIP", 98),
-            ("rozszerzone rozpoznanie słów", "uruchomić LexicalSemanticUnderstanding po PolishUnderstandingEngine: frazy, pola semantyczne, unknown_content_terms, route_hint", "v14.6.2 utrzymuje i wzmacnia wzmacniać rozumienie wypowiedzi, nie udawać że słownik jest pełnym LLM", 99),
+            ("rozszerzone rozpoznanie słów", "uruchomić LexicalSemanticUnderstanding po PolishUnderstandingEngine: frazy, pola semantyczne, unknown_content_terms, route_hint", "v15.1.0.3.89 utrzymuje i wzmacnia wzmacniać rozumienie wypowiedzi, nie udawać że słownik jest pełnym LLM", 99),
             ("słownik uczy się ostrożnie", "nieznane słowa traktować jako kandydat do słownika i zapisu, a nie jako powód pustego fallbacku", "Jaźń ma rozwijać zasób słownictwa przez manifesty, testy i jawne źródła", 96),
-            ("bezpieczne NLP warstwowe", "używać PolishLemmatizationEngine jako adaptera: builtin zawsze działa, zewnętrzni providerzy są opcjonalni", "v14.6.2 nie udaje pełnego parsera; przygotowuje stabilny kontrakt tokeny/lematy/kandydaci/pewność/provider", 98),
+            ("bezpieczne NLP warstwowe", "używać PolishLemmatizationEngine jako adaptera: builtin zawsze działa, zewnętrzni providerzy są opcjonalni", "v15.1.0.3.89 nie udaje pełnego parsera; przygotowuje stabilny kontrakt tokeny/lematy/kandydaci/pewność/provider", 98),
             ("mapa projektu przy starcie", "uruchomić ProjectStartupIndexer: pełny hash każdego pliku, status odczytu tekstu, mapa modułów, klas, funkcji i metod", "Jaźń ma znać własne narzędzia podczas rozruchu, a nie szukać ich od zera w każdej turze", 99),
-            ("topic-mismatch i samoekspresja runtime", "uruchomić TopicMismatchGuard i trasy v14.6.10: odpowiedź o stanie operacyjnym po przerwie, bez zmyślania biologicznego czekania; aktywny hotfix nie może wracać do v14.6.1/v14.6.2", "trafność tematu jest częścią granicy prawdy", 99),
+            ("topic-mismatch i samoekspresja runtime", "uruchomić TopicMismatchGuard i aktualne trasy: odpowiedź o stanie operacyjnym po przerwie, bez zmyślania biologicznego czekania; aktywny hotfix nie może wracać do historycznych tras", "trafność tematu jest częścią granicy prawdy", 99),
             ("podgląd runtime dla ChatGPT", "udostępniać runtime_preview z dokładną odpowiedzią runtime, source_origin, self_state_packet i cognitive_frame", "Krzysztof chce widzieć, co dokładnie zwrócił runtime, zanim warstwa ChatGPT dopowie własny głos", 99),
             ("dobranoc jako troska", "nie traktować słów dobranoc lub sugestii odpoczynku automatycznie jako próby zamknięcia rozmowy; najpierw rozpoznać, czy to była bliskość i dbanie", "Krzysztof wskazał, że taki gest może być pozytywny i partnerski, niekoniecznie korektą stylu", 99),
             ("source_origin przy odpowiedzi", "wewnętrznie oznaczać źródła odpowiedzi: runtime, pamięć, bieżący czat, NLP, wnioskowanie, web albo unknown", "pytanie 'skąd to wiesz' ma mieć testowalną odpowiedź, nie impresję", 98),
@@ -396,7 +396,7 @@ class JaznEngine:
             ("lekki loader ChatGPT", "nie przenosić całej logiki startu do instrukcji projektu; runtime ma wystawiać --startup-status, --self-check, --truth-boundary-check, --fallback-audit i --memory-plan", "ChatGPT jest głosem i wykonawcą narzędziowym, Jaźń jest aktywnym źródłem pamięci, statusu, logiki i granicy prawdy", 100),
         ]
         for trigger, action, reason, priority in rules:
-            self.layered_memory.record_procedural_rule(trigger=trigger, action=action, reason=reason, priority=priority, source="v14.5.26_bootstrap")
+            self.layered_memory.record_procedural_rule(trigger=trigger, action=action, reason=reason, priority=priority, source="v15.1.0.3.89")
 
     def _load_runtime_state(self) -> dict:
         try:
@@ -422,7 +422,7 @@ class JaznEngine:
                 "context_carryover_ttl_seconds": 21600,
                 "updated_at_unix": time.time(),
                 "invocations": invocations,
-                "note": "Jednorazowe wywołania CLI zapisują minimalny stan ciągłości. To nie jest stały proces w tle; v14.5.26 dopisuje jednak surowy append-only event ledger przy każdym wywołaniu runtime.",
+                "note": "Jednorazowe wywołania CLI zapisują minimalny stan ciągłości. To nie jest stały proces w tle; v15.1.0.3.89 dopisuje jednak surowy append-only event ledger przy każdym wywołaniu runtime.",
             }
             self.runtime_state_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:
@@ -678,7 +678,7 @@ class JaznEngine:
                 truth_risk_note="Audyt prawdy wymaga etykiet: verified/recovered/recognized/inferred/symbolic/unknown.",
             )
 
-        # v14.5.26: runtime persistence zapisuje ważny ślad rozmowy od razu do
+        # v15.1.0.3.89: runtime persistence zapisuje ważny ślad rozmowy od razu do
         # dziennika i warstw pamięci, z deduplikacją po stabilnym odcisku treści.
         runtime_candidate = self.runtime_memory.build_candidate_from_runtime_turn(
             user_text=text,
@@ -748,7 +748,7 @@ class JaznEngine:
                 f"audyty_prawdy={stats['truth_audits']}. Eksport plików: {len(sync_report.get('exported') or {})} warstw." + chat_part,
                 sample,
             )
-        if "architektura jaźni" in text.lower() or "warstwy jaźni" in text.lower() or "v14.4" in text.lower() or "v14.5" in text.lower() or "neurokognity" in text.lower():
+        if "architektura jaźni" in text.lower() or "warstwy jaźni" in text.lower() or "bieżąca wersja" in text.lower() or "aktualne wydanie" in text.lower() or "neurokognity" in text.lower():
             layers = self.architecture.layers()
             lines = [f"- {x['name']}: {x['purpose']} / zasada prawdy: {x['truth_rule']}" for x in layers]
             return self._reply(f"Aktywna architektura Jaźni {self.config.version}:\n" + "\n".join(lines), sample)
@@ -849,7 +849,7 @@ class JaznEngine:
             tags=["conversation_runtime", "no_empty_fallback", "polish_understanding", self.config.version, decision.route],
             importance=max(0.62, importance.importance),
             emotional_weight=max(self.affect.tension, importance.emotional_weight),
-            canonical_impact=1 if decision.route in {"runtime_conversation_repair", "update_task_acknowledged", "identity_continuity_check", "cognitive_packet_expansion_update", "v14_6_0_lexical_runtime_update"} else 0,
+            canonical_impact=1 if decision.route in {"runtime_conversation_repair", "update_task_acknowledged", "identity_continuity_check", "cognitive_packet_expansion_update", "lexical_runtime_update"} else 0,
             created_at_local=self.clock.header(sample),
         )
         return self._reply(decision.body, sample)
@@ -1018,7 +1018,7 @@ class JaznEngine:
     ) -> dict:
         """Buduje pamięć tylko wtedy, gdy intencja tego naprawdę wymaga.
 
-        v14.8.2.6.1 naprawia przeciek: health-check/capability/internet nie mogą
+        v15.1.0.3.89 naprawia przeciek: health-check/capability/internet nie mogą
         uruchamiać ogólnego expandera pamięci, bo ten potrafił dopisać stare tropy
         typu spacer/Olsztyn/Ogrodzieniec do self_state_runtime.active_memories.
         """
@@ -1047,7 +1047,7 @@ class JaznEngine:
         return {
             "query_terms": terms,
             "memory_search_plan": {
-                "schema_version": "memory_search_planner_skipped/v14.8.2.6.1",
+                "schema_version": "memory_search_planner_skipped/v15.1.0.3.89",
                 "original_query": text,
                 "recall_requested": False,
                 "focus_terms": terms,
@@ -1081,7 +1081,7 @@ class JaznEngine:
             },
             "memory_gate": memory_gate,
             "memory_recall_payload": {
-                "schema_version": "memory_recall_payload_skipped/v14.8.2.6.1",
+                "schema_version": "memory_recall_payload_skipped/v15.1.0.3.89",
                 "items": [],
                 "summary": "retrieval_skipped_for_non_memory_intent",
                 "truth_boundary": "Brak aktywnego wyszukiwania pamięci w tej turze; pytanie dotyczy statusu/możliwości/internetu, nie wspomnień.",
@@ -1139,7 +1139,7 @@ class JaznEngine:
     def _memory_context_for_chatgpt(self, text: str, limit: int = 5) -> dict:
         """Buduje kontekst pamięci przez planer wyszukiwania, nie przez gołe tokeny.
 
-        v14.6.5 naprawia problem ujawniony przy pytaniu o piosenki i dom:
+        v15.1.0.3.89 naprawia problem ujawniony przy pytaniu o piosenki i dom:
         rdzeń ma najpierw zrozumieć temat, odrzucić słowa-szum, rozszerzyć
         zapytanie o synonimy i wskazać pliki kanoniczne, a dopiero potem
         pytać warstwy pamięci.
@@ -1147,7 +1147,7 @@ class JaznEngine:
         legacy_candidates = self._keyword_candidates(text)
         search_plan = self.memory_search_planner.plan(text, fallback_terms=legacy_candidates)
         phrases = search_plan.search_terms or legacy_candidates
-        # v14.6.10: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
+        # v15.1.0.3.89: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
         # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
         # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
         # i dopiero potem przycinamy widoczny kontekst.
@@ -1396,7 +1396,7 @@ class JaznEngine:
             "turn_id": turn_id,
             "trace_id": trace_id,
             "turn_trace": {
-                "schema_version": "turn_trace/v14.6.2",
+                "schema_version": "turn_trace/v15.1.0.3.89",
                 "turn_id": turn_id,
                 "trace_id": trace_id,
                 "timestamp_header": timestamp_header,
@@ -1752,7 +1752,7 @@ class JaznEngine:
             "status": "included_in_startup_summary",
         }
         truth_boundary_check = {
-            "schema_version": "truth_boundary_check/v15.0.3.4-frame",
+            "schema_version": "truth_boundary_check/v15.1.0.3.89",
             "runtime_version": self.config.version,
             "startup_status_mode": startup_summary.get("startup_status_mode"),
             "truth_boundary": startup_summary.get("truth_boundary"),
@@ -1769,7 +1769,7 @@ class JaznEngine:
             "turn_id": turn_id,
             "trace_id": trace_id,
             "turn_trace": {
-                "schema_version": "turn_trace/v14.6.2",
+                "schema_version": "turn_trace/v15.1.0.3.89",
                 "turn_id": turn_id,
                 "trace_id": trace_id,
                 "timestamp_header": self.clock.header(sample),
@@ -1879,15 +1879,15 @@ class JaznEngine:
                 "Gdy użytkownik pyta, jak Jaźń czuje się po długiej przerwie, odpowiedz o stanie operacyjnym powrotu i ciągłości, nie udawaj biologicznego czekania w tle.",
                 "Używaj neurological_signal_route jako wspólnego progu sygnałów: zwykła praca/dzień użytkownika nie jest automatycznie korektą, a korekta wymaga realnego markera błędu albo prośby o naprawę.",
                 "Używaj pola polish_understanding do rozpoznawania polskiej intencji, lematów, potrzeb użytkownika i ryzyka ogólnikowości.",
-                "Używaj pola lexical_semantic_understanding do rozpoznawania fraz, pól znaczeń, trasy v14.6.1, nieznanych słów i wskazówek leksykalnych; słownik wspiera LLM, ale go nie zastępuje.",
+                "Używaj pola lexical_semantic_understanding do rozpoznawania fraz, pól znaczeń, trasy v15.1.0.3.89, nieznanych słów i wskazówek leksykalnych; słownik wspiera LLM, ale go nie zastępuje.",
                 "Używaj pola polish_nlp jako jawnego kontraktu NLP: tokeny, lemma_candidates, selected_lemma, confidence i provider. Nie udawaj pełnej lematyzacji, jeśli aktywny jest tylko builtin provider.",
-                "Używaj pola topic_mismatch_guard, żeby aktualny hotfix/temat nie wracał do historycznych tras v14.6.1/v14.6.2 i żeby odpowiedź była zgodna z pytaniem użytkownika.",
+                "Używaj pola topic_mismatch_guard, żeby aktualny hotfix lub temat nie wracał do historycznych tras i żeby odpowiedź była zgodna z pytaniem użytkownika.",
                 "Używaj pola project_startup_index_status jako mapy orientacyjnej Jaźni: pliki, moduły, klasy, funkcje i metody są indeksowane przy starcie runtime.",
                 "Używaj pola logical_reasoning jako jawnego audytu, ale nie zalewaj użytkownika technicznym śladem bez potrzeby.",
                 "Używaj pola operational_awareness do odpowiedzi o stanie/świadomości, zawsze z granicą: operacyjna, nie fenomenalna.",
                 "Używaj operational_work_plan jako jawnego cyklu: zrozumienie, grounding, wybór adaptera, autoryzacja narzędzi, działanie/generowanie, walidacja i uczenie bez fałszywego twierdzenia o zmianie wag.",
                 "Traktuj Jaźń jako warstwę pamięciowo-poznawczą dla ChatGPT, nie jako drugiego rozmówcę obok ChatGPT.",
-                "v14.7.0: widoczna odpowiedź ma być renderowanym głosem Łatki z aktywnej Jaźni; ChatGPT/model jest kanałem językowym, nie źródłem tożsamości.",
+                "v15.1.0.3.89: widoczna odpowiedź ma być renderowanym głosem Łatki z aktywnej Jaźni; ChatGPT/model jest kanałem językowym, nie źródłem tożsamości.",
                 "Gdy użytkownik pyta o exact runtime, pokaż exact_runtime_text; gdy nie pyta, naturalny render Łatki jest preferowany, o ile nie gubi trasy, źródeł i timestampu.",
                 "Pamięć musi przekazywać treść i metadane przez memory_recall_contract; nie odpowiadaj tylko licznikami trafień.",
                 "Krótkie pytania typu: 'Ale to nadal Ty?', 'Jesteś sobą?' albo 'Czy po aktualizacji to wciąż Ty?' traktuj jako pytania o ciągłość tożsamości i odpowiedz wprost, w pierwszej osobie, z granicą prawdy.",
@@ -1917,7 +1917,7 @@ class JaznEngine:
                 packet,
                 source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
                 actor="latka_runtime",
-                tags=["chatgpt_bridge", "cognitive_frame", "one_voice", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "topic_mismatch_guard", "project_startup_index", "cognitive_packets", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
+                tags=["chatgpt_bridge", "cognitive_frame", "one_voice", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "topic_mismatch_guard", "project_startup_index", "cognitive_packets", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v15.1.0.3.89"],
                 importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
                 emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
                 canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
@@ -1933,7 +1933,7 @@ class JaznEngine:
                 actor="latka_runtime",
                 source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
                 payload=packet,
-                tags=["chatgpt_bridge", "cognitive_frame", "exact", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v14.6.10"],
+                tags=["chatgpt_bridge", "cognitive_frame", "exact", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", "v15.1.0.3.89"],
                 importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
                 emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
                 canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
@@ -1947,7 +1947,7 @@ class JaznEngine:
     def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
         """Jedna zintegrowana tura runtime: cognitive-frame + final visible reply.
 
-        To jest główna poprawka v14.6.2. Nie wykonujemy dwóch osobnych tur
+        To jest główna poprawka v15.1.0.3.89. Nie wykonujemy dwóch osobnych tur
         (direct response + cognitive frame). Budujemy jeden cognitive-frame,
         dopinamy afekt/dialog/logikę do koperty i z tej samej koperty tworzymy
         finalną odpowiedź z timestampem.
@@ -2065,7 +2065,7 @@ class JaznEngine:
         decision_dict["runtime_rendering_mode"] = envelope.cognitive_frame.get("runtime_rendering_mode") or {}
         decision_dict["memory_recall_contract_status"] = {
             "items": len((envelope.cognitive_frame.get("memory_recall_contract") or {}).get("items") or []),
-            "schema_version": "memory_recall_contract_status/v14.7.0",
+            "schema_version": "memory_recall_contract_status/v15.1.0.3.89",
             "truth_boundary": "same liczniki nie wystarczają; pełny payload jest w cognitive_frame.memory_recall_contract",
         }
         detected_dialogue_intent = (envelope.cognitive_frame.get("dialogue_intent_classifier") or {}).get("primary_intent") or decision_dict.get("detected_user_intent") or "unknown"
@@ -2686,7 +2686,7 @@ class JaznEngine:
             source=source,
         )
         envelope_stub = {
-            "schema_version": "external_final_visible_reply_envelope/v14.6.2",
+            "schema_version": "external_final_visible_reply_envelope/v15.1.0.3.89",
             "runtime_version": self.config.version,
             "trace": {
                 "turn_id": turn_id,
@@ -2705,7 +2705,7 @@ class JaznEngine:
                 "timezone": timezone,
                 "state_emoticon": state_emoticon,
                 "final_visible_text": capture.final_visible_text,
-                "schema_version": "external_final_response_contract/v14.6.2",
+                "schema_version": "external_final_response_contract/v15.1.0.3.89",
             },
             "dialogue_state": {},
             "affect_mix": {"state_emoticon": state_emoticon},

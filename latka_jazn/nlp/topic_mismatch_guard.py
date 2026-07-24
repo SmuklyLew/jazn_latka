@@ -5,8 +5,8 @@ from typing import Any
 import re
 import unicodedata
 
-from latka_jazn.version import schema_version
-from latka_jazn.core.legacy_route_policy import LEGACY_DOTTED_VERSION_PREFIXES
+from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
+from latka_jazn.core.legacy_route_policy import is_legacy_package_version
 
 SCHEMA_VERSION = schema_version("topic_mismatch_guard")
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -38,7 +38,7 @@ class TopicMismatchGuard:
     językowego; daje runtime jasne pole `preferred_route` oraz listę ryzyk.
     """
 
-    VERSION_RE = re.compile(r"\bv?\d{1,2}\.\d+(?:\.\d+){0,3}\b", re.IGNORECASE)
+    VERSION_RE = re.compile(r"\bv?\d{1,2}\.\d+(?:\.\d+){0,5}\b", re.IGNORECASE)
 
     CAPABILITY_MARKERS = {
         "runtime_self_expression": (
@@ -95,8 +95,9 @@ class TopicMismatchGuard:
         versions = self._versions(normalized)
         capabilities = [key for key, markers in self.CAPABILITY_MARKERS.items() if self._any_marker(normalized, folded, markers)]
         cap_set = set(capabilities)
+        current_version = version_number(PACKAGE_VERSION).lower()
         current_update = (
-            "14.6.10" in versions or "14.6.10" in versions
+            current_version in versions
             or ({"full_package_update", "runtime_self_expression"} <= cap_set)
             or ({"full_package_update", "topic_mismatch_repair"} <= cap_set)
             or ({"full_package_update", "startup_project_index"} <= cap_set)
@@ -107,7 +108,7 @@ class TopicMismatchGuard:
         preferred = self._preferred_route(capabilities, versions, current_update)
         commitments = self._commitments(capabilities, current_update)
         reasons: list[str] = []
-        if current_update and any(v in {"14.6.1", "14.6.2", "14.6.2.1"} for v in versions):
+        if current_update and any(is_legacy_package_version(v) for v in versions):
             reasons.append("Wiadomość zawiera historyczną wersję; aktywny runtime nie może automatycznie wrócić do starej trasy.")
         if legacy_risk:
             reasons.append("Kandydat odpowiedzi wygląda jak powrót do historycznej trasy NLP zamiast aktualnego hotfixa.")
@@ -191,7 +192,7 @@ class TopicMismatchGuard:
             return True
         if current_update and any(old in body for old in ("legacy nlp adapter update", "legacy stale nlp route hotfix", "legacy full update scope")):
             return True
-        if route == "v14_6_1_nlp_adapter_update" and not version.startswith(LEGACY_DOTTED_VERSION_PREFIXES[0]):
+        if route == "legacy_nlp_adapter_update" and version.startswith(PACKAGE_VERSION.lower()):
             return True
         return False
 

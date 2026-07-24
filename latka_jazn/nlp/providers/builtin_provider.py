@@ -5,7 +5,7 @@ import json
 from .base import ProviderLemmaCandidate
 
 class BuiltinPolishLemmaProvider:
-    name = "builtin_safe_polish_v14_6_2"
+    name = "builtin_safe_polish_current_line"
     available = True
 
     _RULES: tuple[tuple[str, str, float], ...] = (
@@ -23,8 +23,8 @@ class BuiltinPolishLemmaProvider:
     def _load_overrides(self) -> dict[str, str]:
         candidates = []
         if self.root:
-            candidates.append(self.root / "latka_jazn" / "resources" / "polish_lemma_overrides_v14_6_2.json")
-            candidates.append(self.root / "memory" / "raw" / "polish_lemma_overrides_v14_6_2.json")
+            candidates.append(self.root / "latka_jazn" / "resources" / "polish_lemma_overrides.json")
+            candidates.append(self.root / "memory" / "raw" / "polish_lemma_overrides.json")
         for path in candidates:
             if path.exists():
                 try:

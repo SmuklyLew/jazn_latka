@@ -47,7 +47,7 @@ class SelfQuestionMemoryGate:
         "co myslisz", "co myślisz", "o czym myslisz", "o czym myślisz",
     )
     DEVELOPMENT_TERMS = (
-        "v14.8.6", "v14.8.6.0", "aktualizacja", "patch", "hotfix", "rozwoj", "rozwój",
+        "bieżąca wersja", "aktualne wydanie", "aktualizacja", "patch", "hotfix", "rozwoj", "rozwój",
         "backlog", "roadmap", "plan", "krok po kroku", "finalna aktualizacja",
     )
 

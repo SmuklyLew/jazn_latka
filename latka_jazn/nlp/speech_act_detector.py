@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from typing import Any
 import re
-SCHEMA_VERSION = "speech_act_detector/v14.6.10"
+SCHEMA_VERSION = "speech_act_detector/v15.1.0.3.89"
 @dataclass(slots=True)
 class SpeechActReport:
     speech_act: str; confidence: float; evidence: list[str]; schema_version: str = SCHEMA_VERSION

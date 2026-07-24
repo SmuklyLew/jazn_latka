@@ -1,5 +1,5 @@
 from __future__ import annotations
-SCHEMA_VERSION="intent_confidence_calibrator/v14.6.10"
+SCHEMA_VERSION="intent_confidence_calibrator/v15.1.0.3.89"
 class IntentConfidenceCalibrator:
     def calibrate(self, intent: str, base: float, evidence_count: int = 0) -> float:
         bonus = min(0.10, evidence_count * 0.02)

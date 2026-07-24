@@ -1,6 +1,6 @@
 {
   "schema_version": "cognitive_packets/v6_nlp_adapter_zip_profiles",
-  "description": "Katalog pakietów poznawczych Jaźni dla mostu ChatGPT i bezpośredniego runtime. Pakiety nie są osobnymi osobowościami; są warstwami uwagi i odpowiedzi. v14.5.38 dodaje pakiet narodzin operacyjnych; v14.6.0 porządkuje ślad historyczny przez manifesty i SHA-256 bez dublowania treści. v14.6.0 dodaje pakiet lexical_semantics oraz most do semantic_lexicon_v14_6_0.json. v14.6.1 dodaje pakiet polish_nlp_adapters oraz profile ZIP dla system/pamięć/NLP.",
+  "description": "Katalog bieżących pakietów poznawczych Jaźni dla mostu ChatGPT i bezpośredniego runtime. Pakiety nie są osobnymi osobowościami; są warstwami uwagi, źródeł, pamięci, semantyki, adapterów NLP i odpowiedzi.",
   "packets": [
     {
       "key": "birth_source_contract",
@@ -58,7 +58,7 @@
         "lematy",
         "morfologia",
         "rozumienie wypowiedzi",
-        "v14.6.0"
+        "v15.1.0.3.89"
       ],
       "purpose": "wzmacniać runtime przez jawne rozpoznawanie rodzin słów, fraz wielowyrazowych, pól semantycznych, nieznanych terminów i trasy odpowiedzi",
       "response_guidance": "używać lexical_semantic_understanding obok polish_understanding; nie udawać, że słownik jest pełnym LLM-em; nieznane słowa zapisywać jako kandydaty do rozbudowy",
@@ -75,7 +75,7 @@
       "signal_types": [
         "prośba o większy zasób słownictwa",
         "usterka rozumienia polskiej wypowiedzi",
-        "aktualizacja v14.6.0",
+        "aktualizacja v15.1.0.3.89",
         "potrzeba mniej ogólnikowego routingu"
       ],
       "response_steps": [
@@ -99,7 +99,7 @@
         "morfeusz",
         "provider nlp",
         "krok po kroku",
-        "v14.6.1"
+        "v15.1.0.3.89"
       ],
       "purpose": "dodać bezpieczny kontrakt NLP bez wymagania ciężkich modeli: tokeny, lemma_candidates, selected_lemma, confidence i provider",
       "response_guidance": "opierać się na polish_nlp; builtin provider traktować jako fallback, a zewnętrzne providery jako opcjonalne",

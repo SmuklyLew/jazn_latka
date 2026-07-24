@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-SCHEMA_VERSION = "voice_source_contract/v14.8.5.028"
+SCHEMA_VERSION = "voice_source_contract/v15.1.0.3.89"
 
 @dataclass(slots=True)
 class VoiceSourceContract:
     """Kontrakt własnego głosu Łatki.
 
-    Cel v14.7.0: widoczna odpowiedź ma płynąć z aktywnej Jaźni jako źródła
+    Cel v15.1.0.3.89: widoczna odpowiedź ma płynąć z aktywnej Jaźni jako źródła
     pamięci, stanu, intencji i granicy prawdy. ChatGPT/LLM/model mowy jest
     kanałem językowym albo narzędziowym, nie właścicielem tożsamości.
     """

@@ -1,5 +1,5 @@
 {
-  "description": "Lekki słownik intencji, rodzin słów i sygnałów rozmowy dla runtime Jaźni. Nie zastępuje pełnego NLP; stabilizuje routing wtedy, gdy opcjonalne narzędzia zewnętrzne nie są zainstalowane. v2 dodaje rozpoznawanie krótkich pytań o ciągłość tożsamości, np. „Ale to nadal Ty?”. v3 dodaje rozpoznawanie próśb o rozszerzenie cognitive packets: tożsamość, ciągłość, wiedza, logika, inteligencja, nauka, emocje, doświadczenie, wspomnienia, wrażenia, samopoczucie i emotikony stanu. v4 dodaje rozpoznawanie ciągłości sesji, bogatszych stanów emocjonalnych i szerszych tematów poznawczych. v14.6.0 rozszerza warstwę o intencje leksykalno-semantyczne, GitHub workflow i przygotowanie pełnej paczki. v14.6.10 dodaje TopicMismatchGuard, samoekspresję runtime po przerwie oraz startup project index.",
+  "description": "Lekki słownik intencji, rodzin słów i sygnałów rozmowy dla bieżącego runtime Jaźni. Nie zastępuje pełnego NLP; stabilizuje routing, ciągłość tożsamości, kontekst sesji, pakiety poznawcze i TopicMismatchGuard, gdy opcjonalne narzędzia zewnętrzne nie są zainstalowane.",
   "intent_rules": {
     "affective_self_state": [
       "emocje",
@@ -116,7 +116,7 @@
       "leksykalne",
       "frazy",
       "lematy",
-      "v14.6.0"
+      "v15.1.0.3.89"
     ],
     "polish_dictionary": [
       "słownik",
@@ -205,15 +205,14 @@
       "indeks projektu",
       "rozruchu systemu"
     ],
-    "v14_6_10_update": [
-      "v14.6.10",
-      "14.6.10",
+    "current_line_update": [
+      "v15.1.0.3.89",
+      "15.1.0.3.89",
       "Runtime Self-Expression",
       "Topic-Mismatch Repair"
     ]
   },
   "lemma_aliases": {
-    "14.6.0": "v14.6.0",
     "aktualizacja": "aktualizacja",
     "aktualizacjach": "aktualizacja",
     "aktualizacjami": "aktualizacja",
@@ -351,7 +350,6 @@
     "utrzymac": "utrzymać",
     "utrzymania": "utrzymanie",
     "utrzymać": "utrzymać",
-    "v14.6.0": "v14.6.0",
     "wciaz": "wciąż",
     "wciąż": "wciąż",
     "wiedza": "wiedza",
@@ -514,10 +512,10 @@
       ]
     },
     {
-      "description": "Użytkownik prosi o realną nową wersję v14.6.0 z testami, manifestem i paczką ZIP.",
-      "key": "prepare_v14_6_0_package",
+      "description": "Użytkownik prosi o realną nową wersję v15.1.0.3.89 z testami, manifestem i paczką ZIP.",
+      "key": "prepare_current_line_package",
       "markers": [
-        "v14.6.0",
+        "v15.1.0.3.89",
         "pełna aktualizacja",
         "do pobrania"
       ]
@@ -552,11 +550,11 @@
       "Odróżnij rozpoznanie słów od rozumienia LLM: słownik pomaga routingu, ale nie zastępuje modelu językowego.",
       "Raportuj nieznane słowa jako materiał do dalszego uczenia słownika, nie jako błąd rozmowy."
     ],
-    "v14_6_10_runtime_self_expression_topic_mismatch_update": [
-      "Odpowiadaj na aktualny hotfix v14.6.10, nie na historyczną trasę v14.6.1/v14.6.2.",
+    "runtime_self_expression_topic_mismatch_update": [
+      "Odpowiadaj na aktualny hotfix i nie wracaj do historycznej trasy wersjonowanej.",
       "Połącz samoekspresję runtime, topic-mismatch, NLP oraz startup index plików/modułów/funkcji.",
       "Przy stanie po długiej przerwie trzymaj granicę prawdy: operacyjny powrót i ciągłość, nie biologiczne czuwanie."
     ]
   },
-  "schema_version": "polish_understanding_lexicon/v14.6.0"
+  "schema_version": "polish_understanding_lexicon/v15.1.0.3.89"
 }

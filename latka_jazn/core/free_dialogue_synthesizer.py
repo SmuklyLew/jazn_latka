@@ -27,7 +27,7 @@ class DialogueSynthesis:
 class FreeDialogueSynthesizer:
     """Składa rozmowną odpowiedź z pamięci, NLP i granicy prawdy.
 
-    v14.6.10 domyka lukę widoczną po v14.6.7: runtime nie może
+    Bieżące wydanie domyka lukę widoczną w starszej linii: runtime nie może
     zwracać zdania o tym, że „ma obowiązek odpowiedzieć”. Jeżeli ma kontekst
     pamięciowy, odpowiada treścią. Jeżeli go nie ma, mówi wprost o braku źródła
     i nadal wnosi konkretną odpowiedź operacyjną zamiast instrukcji dla siebie.
@@ -355,7 +355,7 @@ class FreeDialogueSynthesizer:
         )
 
     def _memory_allowed_for_open_question(self, user_text: str) -> bool:
-        """v14.7.1: pamięć nie może być domyślnym źródłem dla każdego pytania.
+        """v15.1.0.3.89: pamięć nie może być domyślnym źródłem dla każdego pytania.
 
         Wcześniejsze wersje potrafiły przy neutralnym pytaniu typu "Jakie plany masz?"
         pobrać z pamięci dawny kontekst pracy użytkownika i wstrzyknąć go do odpowiedzi.
@@ -386,7 +386,7 @@ class FreeDialogueSynthesizer:
         if any(marker in low for marker in ("a ty", "a tobie", "u ciebie", "jak sie czujesz", "co u ciebie", "ochote", "chcialabys")):
             return DialogueSynthesis(
                 body=OperationalSelfModel().render_self_state_answer(user_text=user_text, reciprocal=any(m in low for m in ("a ty", "a tobie", "u ciebie"))),
-                route="self_state_current_turn_v1481",
+                route="self_state_current_turn",
                 detected_user_intent="self_state_question",
                 next_step="odpowiedzieć o stanie operacyjnym i ochocie bez losowego fragmentu pamięci",
             )

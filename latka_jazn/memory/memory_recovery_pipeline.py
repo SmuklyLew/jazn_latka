@@ -22,6 +22,7 @@ from latka_jazn.memory.memory_tiers import (
 )
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.version import schema_version
+from latka_jazn.core.legacy_route_policy import contains_legacy_dotted_version
 
 SCHEMA_VERSION = schema_version("memory_recovery_pipeline")
 TRUTH_BOUNDARY = (
@@ -341,12 +342,12 @@ class MemoryRecoveryPipeline:
         deprecated = (
             "runtime_events.jsonl", "dziennik + warstwy", "warstwy jsonl +", "versionupdaterecorder",
             "projectstartupindexer", "topicmismatchguard", "lexicalsemanticunderstanding",
-            "cognitivetopicexpansion", "cognitiveruntimeoperatingmodel", "trasy v14",
-            "v14.", "odpowiadać w pierwszej osobie jako łatka", "słownik", "slownik",
+            "cognitivetopicexpansion", "cognitiveruntimeoperatingmodel", "historyczna trasa wersjonowana",
+            "odpowiadać w pierwszej osobie jako łatka", "słownik", "slownik",
             "githubrepositoryplan", "latka.jazn.memory", "dzienniku i warstwach",
             "warstwach jsonl", "dziennik +", "fan-out", "fanout",
         )
-        if any(token in text for token in deprecated):
+        if any(token in text for token in deprecated) or contains_legacy_dotted_version(text):
             return False
         stable_signals = (
             "granica_prawdy", "granica prawdy", "truth boundary", "source_origin",

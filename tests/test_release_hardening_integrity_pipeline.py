@@ -57,7 +57,7 @@ def _envelope(*, final_text: str = VISIBLE, mutate_contract: bool = False) -> di
     contract = FinalResponseContract.build(
         turn_id="turn-1",
         trace_id="trace-1",
-        runtime_version="v15.0.3.2",
+        runtime_version="v15.1.0.3.89",
         timestamp_header=HEADER,
         timezone="Europe/Warsaw",
         state_emoticon="🌿",

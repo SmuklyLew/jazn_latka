@@ -10,7 +10,7 @@ import json
 import os
 
 
-SESSION_CONTINUITY_SCHEMA_VERSION = "session_continuity/v14.8.5.014-fast"
+SESSION_CONTINUITY_SCHEMA_VERSION = "session_continuity/v15.1.0.3.89"
 DEFAULT_TIMEZONE = "Europe/Warsaw"
 MAX_FULL_LINE_STATS_BYTES = 16 * 1024 * 1024
 TAIL_SAMPLE_BYTES = 64 * 1024

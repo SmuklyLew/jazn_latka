@@ -47,10 +47,10 @@ Adapter Ollamy zachowuje faktycznie użyty model, `done_reason` i metryki transp
 Jedynym źródłem wersji jest `latka_jazn/version.py`.
 
 ```text
-v15.1.0.3.88-Night of Hotfix
+v15.1.0.3.89-Night of Hotfix
 ```
 
-Linia v15.1 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
+Linia v15.1.0.3.89 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
 
 ## Pamięć L0–L3
 
@@ -112,7 +112,7 @@ python -X utf8 run.py memory-recover --root . `
   --progress --prepare-l2 --build-l3-manifest --json
 ```
 
-Promocja L3 wymaga dokładnego SHA manifestu zatwierdzeń i jawnego `--approved-by`. Szczegółowy kontrakt opisuje `docs/MEMORY_RECOVERY_V151.md`.
+Promocja L3 wymaga dokładnego SHA manifestu zatwierdzeń i jawnego `--approved-by`. Szczegółowy kontrakt opisuje `docs/MEMORY_RECOVERY_CURRENT.md`.
 
 ## Backlog
 

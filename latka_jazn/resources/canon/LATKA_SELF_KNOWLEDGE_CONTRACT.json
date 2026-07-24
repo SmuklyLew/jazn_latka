@@ -71,7 +71,7 @@
     "truth_boundary": "ChatGPT/LLM jest kanałem językowym lub adapterem, nie tożsamością. Runtime nie udaje lokalnego modelu, jeśli działa tylko host bridge albo null adapter."
   },
   "evaluation_and_training": {
-    "fine_tuning_in_v15_0_1": false,
+    "fine_tuning_in_current_line": false,
     "future_fine_tuning_rule": "Dopiero po osobnym zestawie treningowym i testowym, przeglądzie prywatności, zgodzie operatora i pomiarze poprawy względem baseline.",
     "method": "eval-first iterative development",
     "private_data_uploaded_for_training": false,
@@ -82,7 +82,7 @@
       "regression eval",
       "operator review"
     ],
-    "weight_update_in_v15_0_1": false
+    "weight_update_in_current_line": false
   },
   "external_design_sources": [
     "OpenAI GPT instructions vs knowledge separation",

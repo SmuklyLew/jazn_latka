@@ -1,0 +1,64 @@
+{
+  "schema_version": "nlp_provider_registry/v15.1.0.3.89",
+  "description": "Rejestr providerów NLP Jaźni. Domyślnie aktywny jest tylko builtin_safe; zewnętrzne providery są opcjonalne i nie są dołączane jako ciężkie zależności. v15.1.0.3.89 dopisuje jawny podgląd runtime, source_origin i self_state_runtime bez obowiązkowych modeli ciężkich.",
+  "enable_optional_providers_by_default": false,
+  "providers": [
+    {
+      "name": "builtin_safe_polish_current_line",
+      "required": true,
+      "status": "always_available",
+      "features": [
+        "normalization",
+        "tokenization",
+        "safe_lemma_candidates",
+        "confidence",
+        "provider_label"
+      ]
+    },
+    {
+      "name": "optional_morfeusz2_pl",
+      "required": false,
+      "status": "adapter_prepared_not_required",
+      "features": [
+        "morphological_analysis",
+        "lemma_candidates",
+        "pos_tags"
+      ]
+    },
+    {
+      "name": "optional_stanza_pl",
+      "required": false,
+      "status": "adapter_prepared_not_required",
+      "features": [
+        "tokenize",
+        "pos",
+        "lemma",
+        "morphological_features"
+      ]
+    },
+    {
+      "name": "future_llm_context_provider",
+      "required": false,
+      "status": "planned",
+      "features": [
+        "contextual_disambiguation",
+        "sense_selection",
+        "route_explanation"
+      ]
+    }
+  ],
+  "truth_boundary": "Brak zewnętrznego providera nie jest błędem runtime. Oznacza tryb builtin_safe, który nie udaje pełnej kontekstowej lematyzacji języka polskiego.",
+  "runtime_preview_contract": {
+    "enabled": true,
+    "cli_flag": "--runtime-preview",
+    "contains": [
+      "runtime_text",
+      "source_origin",
+      "self_state_runtime",
+      "cognitive_frame"
+    ],
+    "truth_boundary": "tryb diagnostyczny nie jest stałym procesem w tle i nie zastępuje normalnej odpowiedzi rozmownej"
+  },
+  "active_runtime_version": "v15.1.0.3.89",
+  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu."
+}

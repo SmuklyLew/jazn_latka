@@ -10,7 +10,7 @@ from typing import Any
 from latka_jazn.nlp_reasoning.lexical_resource_cache import LexicalResourceCache
 
 
-LEXICAL_RESOURCE_REGISTRY_SCHEMA = "lexical_resource_registry/v14.8.4.005"
+LEXICAL_RESOURCE_REGISTRY_SCHEMA = "lexical_resource_registry/v15.1.0.3.89"
 
 
 @dataclass(slots=True)
@@ -26,7 +26,7 @@ class LexicalResourceStatus:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": "lexical_resource_status/v14.8.4.005",
+            "schema_version": "lexical_resource_status/v15.1.0.3.89",
             "source_id": self.source_id,
             "available": self.available,
             "mode": self.mode,
@@ -64,7 +64,7 @@ class LexicalResourceRegistry:
         return self._load_json(
             self.verified_sources_path,
             fallback={
-                "schema_version": "verified_lexical_sources/v14.8.4.005",
+                "schema_version": "verified_lexical_sources/v15.1.0.3.89",
                 "sources": {},
                 "policy": {},
                 "status": "missing_verified_sources_file",
@@ -211,7 +211,7 @@ def load_latka_project_lexicon(root: str | Path, path: str | Path | None = None)
     lexicon_path = Path(path) if path else package_root / "resources" / "nlp" / "latka_project_lexicon.json"
     if not lexicon_path.exists():
         return {
-            "schema_version": "latka_project_lexicon/v14.8.4.005",
+            "schema_version": "latka_project_lexicon/v15.1.0.3.89",
             "terms": {},
             "status": "missing_project_lexicon_file",
             "path": str(lexicon_path),
@@ -220,11 +220,11 @@ def load_latka_project_lexicon(root: str | Path, path: str | Path | None = None)
         data = json.loads(lexicon_path.read_text(encoding="utf-8"))
     except Exception as exc:
         return {
-            "schema_version": "latka_project_lexicon/v14.8.4.005",
+            "schema_version": "latka_project_lexicon/v15.1.0.3.89",
             "terms": {},
             "status": f"json_load_failed:{type(exc).__name__}",
             "path": str(lexicon_path),
         }
-    data.setdefault("schema_version", "latka_project_lexicon/v14.8.4.005")
+    data.setdefault("schema_version", "latka_project_lexicon/v15.1.0.3.89")
     data.setdefault("terms", {})
     return data

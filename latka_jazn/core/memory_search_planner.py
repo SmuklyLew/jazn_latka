@@ -59,7 +59,7 @@ class SourceFileHit:
 class MemorySearchPlanner:
     """Planuje wyszukiwanie pamięci przed wejściem do indeksów.
 
-    Cel v14.6.5/v14.6.10: runtime nie ma wyszukiwać po przypadkowych tokenach typu
+    Cel bieżącej linii: runtime nie ma wyszukiwać po przypadkowych tokenach typu
     `sobie`, `wszystko`, `oraz`. Najpierw rozpoznaje intencję przywołania,
     tematy, synonimy i właściwe źródła, a dopiero potem uruchamia zapytania.
 
@@ -67,9 +67,9 @@ class MemorySearchPlanner:
     rozszerzanie zapytania, ważone przejścia wyszukiwania i źródła kanoniczne.
     """
 
-    SCHEMA_VERSION = "memory_search_planner/v14.6.10"
-    RESOURCE_NAME = "memory_search_topics_v14_6_10.json"
-    RESOURCE_SCHEMA_VERSION = "memory_search_topics/v14.6.10"
+    SCHEMA_VERSION = "memory_search_planner/v15.1.0.3.89"
+    RESOURCE_NAME = "memory_search_topics.json"
+    RESOURCE_SCHEMA_VERSION = "memory_search_topics/v15.1.0.3.89"
 
     RECALL_MARKERS = {
         "pamiętasz", "pamietasz", "przypomnij", "przypomnieć", "przypomniec",
@@ -251,7 +251,7 @@ class MemorySearchPlanner:
         """Dobierz temat pliku w kontekście aktualnego planu.
 
         Niektóre pliki kanoniczne są współdzielone, np. memory/raw/data.txt
-        może zawierać zarówno dom, jak i muzykę. v14.6.10 pilnuje, żeby przy
+        może zawierać zarówno dom, jak i muzykę. v15.1.0.3.89 pilnuje, żeby przy
         pytaniu wielotematycznym etykieta trafienia nie była przypadkowo brana
         z pierwszego tematu w słowniku, tylko z najlepiej pasującego tematu planu.
         """

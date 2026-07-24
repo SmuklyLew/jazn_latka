@@ -9,6 +9,7 @@ import os
 import re
 import unicodedata
 from latka_jazn.core.signal_matching import marker_present
+from latka_jazn.version import PACKAGE_VERSION, version_number
 
 POLISH_WORD_RE = re.compile(r"[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_\-]+", re.UNICODE)
 
@@ -288,15 +289,15 @@ class PolishUnderstandingEngine:
         )
         if "update_request" in intents and any(marker_present(ascii_text, marker, normalized_text=ascii_text) for marker in free_dialogue_markers):
             intents.append("free_dialogue_memory_nlp_bridge_update")
-        v14692_markers = (
-            "v14.6.10", "14.6.10", "self-expression", "self expression", "topic-mismatch",
+        current_update_markers = (
+            PACKAGE_VERSION.lower(), version_number(PACKAGE_VERSION).lower(), "self-expression", "self expression", "topic-mismatch",
             "topic mismatch", "runtime self", "mapa modulow", "mapa modułów", "mapa funkcji",
             "wczytywala wszystkie pliki", "wczytywała wszystkie pliki", "rozbuduj system nlp",
         )
-        if any(marker_present(ascii_text, self.ascii_fold(marker), normalized_text=ascii_text) for marker in v14692_markers):
-            intents.extend(["v14_6_10_update", "topic_mismatch_guard", "runtime_self_expression", "startup_project_index", "nlp_expansion"])
-        if "v14_6_10_update" in intents and ("update_request" in intents or "solution_search" in intents or "jazn_architecture" in intents):
-            intents.append("v14_6_10_runtime_self_expression_topic_mismatch_update")
+        if any(marker_present(ascii_text, self.ascii_fold(marker), normalized_text=ascii_text) for marker in current_update_markers):
+            intents.extend(["current_update", "topic_mismatch_guard", "runtime_self_expression", "startup_project_index", "nlp_expansion"])
+        if "current_update" in intents and ("update_request" in intents or "solution_search" in intents or "jazn_architecture" in intents):
+            intents.append("runtime_self_expression_topic_mismatch_update")
         return self._unique(intents) or ["conversation"]
 
     def _infer_needs(self, text: str, lemmas: list[str], normalized_text: str) -> list[dict[str, str]]:
@@ -365,20 +366,20 @@ class PolishUnderstandingEngine:
     def _route_hint(intent_tags: list[str], needs: list[dict[str, str]]) -> str:
         tags = set(intent_tags)
         need_keys = {n.get("key") for n in needs}
-        if "v14_6_10_runtime_self_expression_topic_mismatch_update" in tags:
-            return "v14_6_10_runtime_self_expression_topic_mismatch_update"
+        if "runtime_self_expression_topic_mismatch_update" in tags:
+            return "runtime_self_expression_topic_mismatch_update"
         if "free_dialogue_memory_nlp_bridge_update" in tags:
             return "free_dialogue_memory_nlp_bridge_update"
         if "cognitive_packet_expansion_update" in tags or "expand_cognitive_packets" in need_keys:
             return "cognitive_packet_expansion_update"
-        if "lexical_semantic_expansion_update" in tags or "expand_lexical_semantic_understanding" in need_keys or "prepare_v14_6_0_package" in need_keys:
-            return "v14_6_1_nlp_adapter_update"
+        if "lexical_semantic_expansion_update" in tags or "expand_lexical_semantic_understanding" in need_keys or "prepare_current_line_package" in need_keys:
+            return "nlp_adapter_update"
         if "emotional_granularity_continuity_update" in tags or {"preserve_session_continuity", "expand_emotional_granularity", "expand_cognitive_topics"} & need_keys:
             return "emotional_granularity_continuity_update"
         if "identity_continuity" in tags:
             return "identity_continuity_check"
         if "polish_understanding_update" in tags or ({"language_understanding", "polish_dictionary"} <= tags):
-            return "v14_6_1_nlp_adapter_update"
+            return "nlp_adapter_update"
         if "anti_generic" in tags or "less_generic_answers" in need_keys:
             return "anti_generic_dialogue_repair"
         if "solution_search" in tags and "update_request" in tags:
@@ -387,21 +388,21 @@ class PolishUnderstandingEngine:
 
     def _reply_guidance(self, route_hint: str, intent_tags: list[str]) -> list[str]:
         guidance = []
-        if route_hint == "v14_6_10_runtime_self_expression_topic_mismatch_update":
-            guidance.append("Traktuj bieżący zakres jako v14.6.10: samoekspresja runtime, topic-mismatch, NLP i startup project index.")
-            guidance.append("Nie wracaj do historycznych tras v14.6.1/v14.6.2, jeśli użytkownik wskazał aktualny hotfix.")
+        if route_hint == "runtime_self_expression_topic_mismatch_update":
+            guidance.append("Traktuj bieżący zakres jako aktualne wydanie: samoekspresja runtime, topic-mismatch, NLP i startup project index.")
+            guidance.append("Nie wracaj do historycznych tras wersjonowanych, jeśli użytkownik wskazał aktualny hotfix.")
         if route_hint == "free_dialogue_memory_nlp_bridge_update":
             guidance.append("Traktuj NLP jako wejście do syntezy rozmownej: tokeny/lematy/intencje mają wpływać na odpowiedź, a nie wisieć obok niej.")
-            guidance.append("Nie kieruj bieżącej aktualizacji rozmowy do historycznej trasy v14.6.1_nlp_adapter_update.")
+            guidance.append("Nie kieruj bieżącej aktualizacji rozmowy do historycznej trasy wersjonowanej")
         if route_hint == "identity_continuity_check":
             guidance.extend((self.lexicon.get("reply_guidance") or {}).get("identity_continuity_check") or [])
         if route_hint == "cognitive_packet_expansion_update":
             guidance.extend((self.lexicon.get("reply_guidance") or {}).get("cognitive_packet_expansion_update") or [])
         if route_hint == "emotional_granularity_continuity_update":
             guidance.extend((self.lexicon.get("reply_guidance") or {}).get("emotional_granularity_continuity_update") or [])
-        if route_hint in {"language_understanding_update", "v14_6_1_nlp_adapter_update"}:
+        if route_hint in {"language_understanding_update", "nlp_adapter_update"}:
             guidance.extend((self.lexicon.get("reply_guidance") or {}).get("language_understanding_update") or [])
-        if route_hint in {"v14_6_0_lexical_runtime_update", "v14_6_1_nlp_adapter_update"}:
+        if route_hint in {"lexical_runtime_update", "nlp_adapter_update"}:
             guidance.extend((self.lexicon.get("reply_guidance") or {}).get("lexical_semantic_expansion_update") or [])
         if "anti_generic" in intent_tags:
             guidance.append("Unikaj odpowiedzi typu 'rozumiem pytanie'; podaj konkretną decyzję routingu i następny krok.")

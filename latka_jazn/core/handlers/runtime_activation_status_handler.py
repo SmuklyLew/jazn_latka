@@ -30,4 +30,4 @@ class RuntimeActivationStatusHandler:
                 "Jeżeli runtime zwróci nietrafiony szablon, finalna warstwa musi to oznaczyć zamiast udawać pełną odpowiedź Jaźni."
             )
             satisfied = ["runtime_status", "model_channel_boundary", "no_background_process_claim"]
-        return RouteHandlerResult(self.name, route, body, intent=intent, generation_mode="runtime_activation_status_handler", required_components=ctx.get("required_components", []), satisfied_components=satisfied, source_origin_detail="runtime_activation_status_handler/v14.8.2.6.6", confidence=0.88)
+        return RouteHandlerResult(self.name, route, body, intent=intent, generation_mode="runtime_activation_status_handler", required_components=ctx.get("required_components", []), satisfied_components=satisfied, source_origin_detail="runtime_activation_status_handler/v15.1.0.3.89", confidence=0.88)

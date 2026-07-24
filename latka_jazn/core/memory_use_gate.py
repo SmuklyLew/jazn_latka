@@ -6,7 +6,7 @@ from typing import Any
 
 from latka_jazn.core.self_question_memory_gate import SelfQuestionMemoryGate
 
-SCHEMA_VERSION = "memory_use_gate/v14.8.5.011"
+SCHEMA_VERSION = "memory_use_gate/v15.1.0.3.89"
 _DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
 
 NON_MEMORY_INTENTS = {
@@ -47,7 +47,7 @@ class MemoryUseGate:
 
     Sama obecność słowa „ostatnio” nie wystarcza. W pytaniu „na co miałaś
     ostatnio ochotę?” pamięć mogłaby przypadkowo wstrzyknąć dawny fragment
-    obcego tematu. Dlatego v14.8.1 rozdziela pytanie o własny stan Łatki od
+    obcego tematu. Dlatego v15.1.0.3.89 rozdziela pytanie o własny stan Łatki od
     prawdziwej prośby o wspomnienie albo poprzedni wątek.
     """
 

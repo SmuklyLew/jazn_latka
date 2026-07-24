@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-LEXICAL_RESOURCE_CACHE_SCHEMA = "lexical_resource_cache/v14.8.4.005"
+LEXICAL_RESOURCE_CACHE_SCHEMA = "lexical_resource_cache/v15.1.0.3.89"
 
 
 class LexicalResourceCache:

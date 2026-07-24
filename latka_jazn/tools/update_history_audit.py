@@ -6,7 +6,7 @@ import hashlib, json, re
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
 
-SCHEMA_VERSION='jazn_update_history_index/v14.6.10'
+SCHEMA_VERSION='jazn_update_history_index/v15.1.0.3.89'
 
 def _sha(p: Path) -> str:
     h=hashlib.sha256()
@@ -166,8 +166,8 @@ def write_index_json(root: Path) -> Path:
 def write_audit_report_md(root: Path) -> Path:
     root=Path(root)
     idx=json.loads((root/'docs'/'update_history'/'INDEX.json').read_text(encoding='utf-8')) if (root/'docs'/'update_history'/'INDEX.json').exists() else {}
-    out=root/'reports'/'UPDATE_HISTORY_AUDIT_V14_6_10.md'; out.parent.mkdir(exist_ok=True)
-    lines=['# Audyt historii manifestów v14.6.10','',f"Wpisy: {idx.get('entry_count',0)}",'', 'Statusy audytu:']
+    out=root/'reports'/'UPDATE_HISTORY_AUDIT_current_line.md'; out.parent.mkdir(exist_ok=True)
+    lines=['# Audyt historii manifestów v15.1.0.3.89','',f"Wpisy: {idx.get('entry_count',0)}",'', 'Statusy audytu:']
     counts={}
     for e in idx.get('entries',[]):
         counts[e.get('implementation_audit_status','unknown')]=counts.get(e.get('implementation_audit_status','unknown'),0)+1

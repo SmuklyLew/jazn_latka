@@ -364,7 +364,7 @@ class TurnExecutionContext:
                     "error_code": None,
                 }
             return {
-                "schema_version": "turn_execution_context/v15.0.3.3",
+                "schema_version": "turn_execution_context/v15.1.0.3.89",
                 "request_id": self.request_id,
                 "turn_id": self.turn_id,
                 "session_id": self.session_id,

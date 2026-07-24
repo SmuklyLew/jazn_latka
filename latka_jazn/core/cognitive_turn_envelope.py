@@ -12,8 +12,8 @@ from latka_jazn.core.full_canon_model_context import (
     build_host_generation_contract,
 )
 
-SCHEMA_VERSION = "cognitive_turn_envelope/v14.6.2"
-TRACE_SCHEMA_VERSION = "turn_trace/v14.6.2"
+SCHEMA_VERSION = "cognitive_turn_envelope/v15.1.0.3.89"
+TRACE_SCHEMA_VERSION = "turn_trace/v15.1.0.3.89"
 
 
 def _sha256_json(value: Any) -> str:

@@ -194,15 +194,11 @@ def _active_storage_from_bootstrap(root: Path, version: str | None) -> dict[str,
             "storage_detection": "filesystem_verified",
         }
 
-    legacy_candidates = []
-    if str(version).startswith("v14.8.2"):
-        legacy_candidates.append("workspace_runtime/latka_jazn_v14_8_2.sqlite3")
-    elif str(version).startswith("v14.8.1"):
-        legacy_candidates.append("workspace_runtime/latka_jazn_v14_8_1.sqlite3")
-    elif str(version).startswith("v14.8.0"):
-        legacy_candidates.append("workspace_runtime/latka_jazn_v14_8_0.sqlite3")
-    elif str(version).startswith("v14.7.0"):
-        legacy_candidates.append("workspace_runtime/latka_jazn_v14_7_0.sqlite3")
+    legacy_candidates = [
+        path.relative_to(root).as_posix()
+        for path in sorted((root / "workspace_runtime").glob("latka_jazn_v*.sqlite3"), reverse=True)
+        if path.is_file()
+    ] if (root / "workspace_runtime").is_dir() else []
     active = _existing_relative(root, legacy_candidates)
     return {
         "active_database": active,

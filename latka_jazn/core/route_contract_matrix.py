@@ -37,7 +37,7 @@ class RouteContractMatrix:
     wymagały statusu runtime, obecności, tożsamości, stanu operacyjnego albo czasu.
     """
 
-    RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "nlp" / "polish_dialogue_route_lexicon_v14_8_5_016.json"
+    RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "nlp" / "polish_dialogue_route_lexicon.json"
     SPECIAL_PRIORITY = (
         "self_architecture_audit_request",
         "system_capability_gap_question",

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 from typing import Any
-SCHEMA_VERSION="source_preservation_detector/v14.6.10"
+SCHEMA_VERSION="source_preservation_detector/v15.1.0.3.89"
 @dataclass(slots=True)
 class SourcePreservationReport:
     preserve_required: bool; revision_allowed: bool; evidence: list[str]; schema_version: str=SCHEMA_VERSION

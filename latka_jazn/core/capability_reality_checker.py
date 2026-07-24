@@ -66,7 +66,7 @@ class CapabilityRealityChecker:
     @staticmethod
     def _classifier_check() -> tuple[bool, str]:
         from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
-        r = DialogueIntentClassifier().classify("Sprawdź co działa w systemie Jaźni i co dodać do v14.8.6.0")
+        r = DialogueIntentClassifier().classify("Sprawdź co działa w systemie Jaźni i co dodać do v15.1.0.3.89")
         return r.primary_intent == "self_architecture_audit_request", r.primary_intent
 
     @staticmethod

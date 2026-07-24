@@ -125,8 +125,8 @@ class MemoryStore:
         self.con = sqlite3.connect(self.path)
         self.con.row_factory = sqlite3.Row
         self.con.executescript(SCHEMA)
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("schema_version", "14529"))
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", "v14.8.2.4-logic-routing-memory-grounding-repair"))
+        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("schema_version", "CURRENT_LINE"))
+        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", "v15.1.0.3.89"))
         self.con.commit()
 
     def close(self) -> None:

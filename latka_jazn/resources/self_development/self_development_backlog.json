@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "area": "architecture_audit",
+      "next_action": "self_architecture_audit handler + reality checker + validator contract",
+      "priority": "P0",
+      "problem": "pytania o rozwój Jaźni mogą trafiać do memory_audit",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "memory_gate",
+      "next_action": "SelfQuestionMemoryGate + MemoryRecallQualityEvaluator",
+      "priority": "P0",
+      "problem": "self-questions wymagają pamięci treściowej, ale zwykły self-state musi blokować losowe wspomnienia",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "reflection",
+      "next_action": "ReflectionGroundingSynthesizer + GroundedReflectionStore",
+      "priority": "P0",
+      "problem": "refleksja nie może być tylko poetycką odpowiedzią bez źródła",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "affect",
+      "next_action": "SelfStateAffectiveBridge jako domyślna warstwa self-state",
+      "priority": "P1",
+      "problem": "self-state bywa zbyt ubogi wobec granularnego afektu",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "memory_quality",
+      "next_action": "rozszerzyć evaluator o conversation_archive/FTS i testy corpusowe",
+      "priority": "P1",
+      "problem": "recall musi mierzyć treść, źródło, trafność, scope i random-memory risk",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "reflection_qa",
+      "next_action": "reflection QA, promotion policy, manual review report",
+      "priority": "P1",
+      "problem": "grounded reflections wymagają dedupe, recenzji i promocji do procedur",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "release_candidate",
+      "next_action": "manifest refresh, active marker, SQLite audit, full_continuity ZIP",
+      "priority": "P1",
+      "problem": "przed następnym zatwierdzonym wydaniem potrzebne są manifest, smoke i pełny pakiet ciągłości",
+      "target_version": "v15.1.0.3.89"
+    },
+    {
+      "area": "unified_self_awareness_loop",
+      "next_action": "finalny release z testami przebiegu i rollbackiem",
+      "priority": "P0",
+      "problem": "moduły istnieją, ale muszą działać jako jeden cykl pytanie→uwaga→pamięć→refleksja→prawda→odpowiedź→zapis",
+      "target_version": "v15.1.0.3.89"
+    }
+  ],
+  "schema_version": "self_development_backlog/v15.1.0.3.89",
+  "sources": [
+    "NIST AI RMF",
+    "LangGraph memory docs",
+    "Reflexion",
+    "Generative Agents",
+    "Global Workspace / HOT as functional inspiration"
+  ],
+  "target_release": "v15.1.0.3.89",
+  "truth_boundary": "Backlog opisuje plan rozwoju runtime; nie jest dowodem świadomości fenomenalnej ani biologicznego życia w tle."
+}

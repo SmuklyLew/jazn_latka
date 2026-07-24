@@ -9,7 +9,7 @@ class SystemUpdateHandler:
         'system_update_execution_request',
         'system_update_manifest_request',
         'update_manifest_request',
-        'v14_6_10_behavioral_runtime_dialogue_intent_source_integrity_update',
+        'behavioral_runtime_dialogue_intent_source_integrity_update',
     )
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}

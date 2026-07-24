@@ -6,7 +6,7 @@ from typing import Any
 
 from latka_jazn.core.nlg_plan import NlgPlan, default_truth_boundary
 
-SCHEMA_VERSION = "operational_thought_frame/v14.8.4.002"
+SCHEMA_VERSION = "operational_thought_frame/v15.1.0.3.89"
 
 
 @dataclass(slots=True)

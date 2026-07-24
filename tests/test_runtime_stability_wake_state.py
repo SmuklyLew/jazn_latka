@@ -64,7 +64,7 @@ def _sidecar(tmp_path: Path, *, count: int = 1, bad_fk: bool = False) -> MemoryN
         tmp_path,
         source_db_path=source,
         sidecar_db_path=tmp_path / "audit.sqlite3",
-        runtime_version="v15.0.3.2",
+        runtime_version="v15.1.0.3.89",
     )
 
 
@@ -147,7 +147,7 @@ def test_unreadable_sqlite_reports_validation_failure(tmp_path: Path) -> None:
     source = tmp_path / "source.sqlite3"
     source.write_bytes(b"not a sqlite database")
     sidecar = MemoryNormalizationSidecar(
-        tmp_path, source_db_path=source, sidecar_db_path=tmp_path / "audit.sqlite3", runtime_version="v15.0.3.2"
+        tmp_path, source_db_path=source, sidecar_db_path=tmp_path / "audit.sqlite3", runtime_version="v15.1.0.3.89"
     )
     report = sidecar.prepare()
     assert report.status == "validation_failed"

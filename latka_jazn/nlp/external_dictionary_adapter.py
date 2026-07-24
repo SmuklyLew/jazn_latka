@@ -15,13 +15,13 @@ from latka_jazn.nlp.providers.wsjp_reference_provider import WSJPReferenceProvid
 from latka_jazn.nlp.providers.sjp_reference_provider import SJPReferenceProvider
 
 class ExternalDictionaryAdapter:
-    """Kontrolowany adapter słownikowy v14.8.0.
+    """Kontrolowany adapter słownikowy v15.1.0.3.89.
 
     Domyślnie `allow_network=True`, ale każdy provider zwraca jawny status,
     timeout, źródło, licencję/cache i granicę prawdy. Brak internetu nie jest
     udawany jako sprawdzenie online.
     """
-    def __init__(self, root: Path, *, allow_network: bool = True, user_agent: str = 'LatkaJazn/14.8.0 (+local-runtime; network-nlp-sjp-lexical-bridge)', timeout_seconds: float = 4.0, max_retries: int = 0, cache_ttl_seconds: int = 604800) -> None:
+    def __init__(self, root: Path, *, allow_network: bool = True, user_agent: str = 'LatkaJazn/15.1.0.3.89 (+local-runtime; network-nlp-sjp-lexical-bridge)', timeout_seconds: float = 4.0, max_retries: int = 0, cache_ttl_seconds: int = 604800) -> None:
         self.root=Path(root); self.allow_network=bool(allow_network); self.user_agent=user_agent; self.timeout_seconds=float(timeout_seconds); self.max_retries=int(max_retries)
         self.cache=NetworkDictionaryCache(root, ttl_seconds=cache_ttl_seconds); self.license_guard=LexicalLicenseGuard()
         self.morfeusz=OptionalMorfeuszProvider()
@@ -119,7 +119,7 @@ class ExternalDictionaryAdapter:
             self.cache.put(normalized, lang, source_key, result.to_dict(), raw={'provider_statuses':statuses}, license_note=result.license_note or '', confidence=result.confidence)
         return result
     def normalize(self, term: str, lang: str = 'pl') -> NormalizedLexeme:
-        return NormalizedLexeme(term=term, normalized=self._norm(term), language=lang, provider='external_dictionary_adapter/v14.8.0', confidence=0.60)
+        return NormalizedLexeme(term=term, normalized=self._norm(term), language=lang, provider='external_dictionary_adapter/v15.1.0.3.89', confidence=0.60)
     def related_terms(self, term: str, relation: str | None = None) -> SemanticRelations:
         lookup=self.lookup(term)
         rel=[]

@@ -1,5 +1,5 @@
 from __future__ import annotations
-SCHEMA_VERSION="dictionary_source_policy/v14.8.0"
+SCHEMA_VERSION="dictionary_source_policy/v15.1.0.3.89"
 DICTIONARY_SOURCE_POLICY = {
     'allow_network_default': True,
     'no_mass_scraping': True,

@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from typing import Any
 
-SCHEMA_VERSION = "dialogue_state/v14.6.2"
+from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
+
+SCHEMA_VERSION = schema_version("dialogue_state")
 
 
 @dataclass(slots=True)
@@ -39,7 +41,7 @@ class DialogueStateTracker:
                 technical_visibility="concise_startup_status",
                 next_reply_policy="najpierw runtime/status, potem jedna odpowiedź; nie utożsamiać stylu z Jaźnią",
             )
-        if any(x in low for x in ("v14.6.2", "14.6.2", "pełną aktualizację", "pelna aktualizacje", "prawidłową", "prawidlowa")):
+        if any(x in low for x in (PACKAGE_VERSION.lower(), version_number(PACKAGE_VERSION).lower(), "pełną aktualizację", "pelna aktualizacje", "prawidłową", "prawidlowa")):
             return DialogueState(
                 mode="version_update_execution",
                 user_need="pełna aktualizacja plików, testów, manifestu i eksportu",

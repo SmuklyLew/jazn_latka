@@ -21,7 +21,7 @@ from latka_jazn.version import schema_version
 MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
 REQUIRED_STATIC_PATHS = {"SOURCE_PROVENANCE.json", "run.py", "main.py", "latka_jazn/version.py"}
 FORBIDDEN_ROOT_NAMES = {
-    ".git", "memory", "workspace_runtime", "backups", ".pytest_cache", "__pycache__",
+    ".git", ".archives", "memory", "workspace_runtime", "backups", ".pytest_cache", "__pycache__",
 }
 FORBIDDEN_FILE_NAMES = {
     MANIFEST_NAME, "MANIFEST_CURRENT.json", "VERSION.txt", "RUNTIME_STATE.json",

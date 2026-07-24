@@ -44,7 +44,7 @@ class SelfStateRuntime:
     operacyjny: uwaga, pamięć, afekt modelowany, źródła, sprawstwo i granice prawdy.
     """
 
-    schema_version = "self_state_runtime/v14.6.2"
+    schema_version = "self_state_runtime/v15.1.0.3.89"
 
     def build(
         self,

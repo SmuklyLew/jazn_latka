@@ -8,7 +8,10 @@ import re
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.current_turn_grounding import assess_current_turn_grounding
 from latka_jazn.version import schema_version
-from latka_jazn.core.legacy_route_policy import contains_legacy_feedback_token, LEGACY_DOTTED_VERSION_PREFIXES
+from latka_jazn.core.legacy_route_policy import (
+    contains_legacy_dotted_version,
+    contains_legacy_feedback_token,
+)
 
 SCHEMA_VERSION = schema_version("runtime_answer_validator")
 
@@ -71,13 +74,8 @@ class RuntimeAnswerValidator:
     )
     WORKDAY_DETAIL_MARKERS = ("drzwi", "zlecenie", "zleceniu", "montaż", "montaz", "sztuk")
     STALE_ROUTE_CONTEXT_TERMS = ("stale-route", "starego kontekstu", "stary kontekst", "stale route", "starej trasy")
-    LEGACY_ROUTE_MARKERS = tuple(LEGACY_DOTTED_VERSION_PREFIXES)
     STALE_UPDATE_SUMMARY_MARKERS = ("ta aktualizacja ma trzy rdzenie", "bogatsze stany emocjonalne", "jawny indeks ciągłości sesji")
     TIMESTAMP_REPAIR_MARKERS = ("timestamp potrafił istnieć", "wspólnej koperty tury", "ten sam turn_id, trace_id, timestamp")
-    LEGACY_VERSION_PATTERNS = (
-        re.compile(r"(?<![0-9A-Za-z.])" + re.escape(LEGACY_DOTTED_VERSION_PREFIXES[0]) + r"(?![0-9.])"),
-        re.compile(r"(?<![0-9A-Za-z.])" + re.escape(LEGACY_DOTTED_VERSION_PREFIXES[1]) + r"(?![0-9.])"),
-    )
     HANDLER_PRESERVED_INTENTS = {
         "capability_status_question",
         "internet_access_question",
@@ -116,7 +114,7 @@ class RuntimeAnswerValidator:
         "internet_access": ("internet", "sieci", "network", "allow_network"),
         "provider_status": ("provider", "cache", "źród", "zrod", "status", "allow_network"),
         "presence_response": ("jestem", "tutaj", "obec", "tej turze", "bieżącej turze", "biezacej turze"),
-        "version": ("v14", "wersj"),
+        "version": ("wersj", "wydanie", "package_version"),
         "active_database": ("active_database", "sqlite", "conversation_archive", "runtime_write"),
         "cache_reuse": ("cache", "reuse", "should_reuse", "miss_reasons"),
         "exact_runtime_text": ("dokład", "exact", "runtime_text", "cytat", "runtime"),
@@ -133,7 +131,7 @@ class RuntimeAnswerValidator:
         "problem": ("problem", "błąd", "blad", "źle", "zle"),
         "change_plan": ("zmieni", "napraw", "popraw", "dodać", "dodac"),
         "regression_test": ("test", "regres"),
-        "version": ("v14", "wersj"),
+        "version": ("wersj", "wydanie", "package_version"),
         "priority_list": ("p0", "p1", "p2", "priorytet"),
         "target_files": ("plik", ".py"),
         "new_files": ("nowe pliki", "dodać", "dodac"),
@@ -163,7 +161,7 @@ class RuntimeAnswerValidator:
         "memory_gate": ("brama pamięci", "brama pamieci", "memory_gate", "brama", "pamię", "pamie"),
         "recall_quality": ("recall quality", "jakość recall", "jakosc recall", "content-not-counts", "counts_only"),
         "capability_reality_check": ("reality check", "capability reality", "sprawdzenie zachowania", "nie tylko obecności plików"),
-        "development_backlog": ("v14.8.6.0", "backlog", "plan", "priorytet", "krok"),
+        "development_backlog": ("v15.1.0.3.89", "backlog", "plan", "priorytet", "krok"),
         "scientific_basis": ("scientific", "źród", "zrod", "nist", "langgraph", "reflexion", "generative agents", "global workspace"),
     }
     def __init__(self) -> None:
@@ -259,7 +257,7 @@ class RuntimeAnswerValidator:
         low = (text or "").lower()
         if contains_legacy_feedback_token(low):
             return True
-        return any(pattern.search(low) for pattern in self.LEGACY_VERSION_PATTERNS)
+        return contains_legacy_dotted_version(low)
 
     def _handler_preserved_answer_is_direct(self, body: str, detected_intent: str, route: str) -> bool:
         low = (body or "").lower()

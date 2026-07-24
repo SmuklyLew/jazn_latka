@@ -5,7 +5,7 @@ from typing import Any
 from urllib.parse import quote
 import datetime, hashlib, json, sqlite3, uuid
 
-AUDIT_SCHEMA_VERSION = "audit_context/v14.8.2.5"
+AUDIT_SCHEMA_VERSION = "audit_context/v15.1.0.3.89"
 
 def _now_utc() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat()

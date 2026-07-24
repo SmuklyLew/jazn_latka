@@ -113,7 +113,7 @@ def _known_targets(config: JaznConfig) -> list[MemoryValidationTarget]:
         MemoryValidationTarget("runtime_audit", str(config.audit_db_path_readonly), "config", False),
         MemoryValidationTarget("recovered_memory", str(config.recovered_memory_db_path), "config", False),
         MemoryValidationTarget("normalization_sidecar", str(config.normalization_sidecar_db_path), "config", True),
-        MemoryValidationTarget("memory_tiers_v151", str(config.memory_tier_db_path), "config", True),
+        MemoryValidationTarget("memory_tiers_transactional", str(config.memory_tier_db_path), "config", True),
         MemoryValidationTarget(
             "conversation_archive_manifest",
             str(config.conversation_archive_manifest_path),
@@ -454,7 +454,7 @@ def validate_large_memory(
         "targets": [item.to_dict() for item in targets],
         "databases": results,
         "wake_state": wake_state,
-        "memory_tiers_v151": tier_status,
+        "memory_tiers_transactional": tier_status,
         "summary": {
             "target_count": len(targets),
             "existing_database_count": len(existing),

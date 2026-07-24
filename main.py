@@ -206,7 +206,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--polish-reasoning-sources", action="store_true", dest="polish_reasoning_sources", help="Pokaż rejestr źródeł/licencji/cache dla warstwy Polish Reasoning.")
     parser.add_argument("--polish-reasoning-bootstrap-plan", action="store_true", dest="polish_reasoning_bootstrap_plan", help="Pokaż komendy lokalnej instalacji providerów NLP bez ich automatycznego pobierania.")
     parser.add_argument("--nlp-resource-status", action="store_true", dest="nlp_resource_status", help="Pokaż status lexical resource registry/cache: źródła, licencje, dostępność i projektowy leksykon bez pobierania dużych danych.")
-    parser.add_argument("--polish-morphology", action="store_true", dest="polish_morphology", help="Pokaż szczegółową analizę morfologiczną v14.8.4: Morfeusz/PoliMorf, kandydaci i selected_lemma.")
+    parser.add_argument("--polish-morphology", action="store_true", dest="polish_morphology", help="Pokaż szczegółową analizę morfologiczną v15.1.0.3.89: Morfeusz/PoliMorf, kandydaci i selected_lemma.")
     parser.add_argument("--morfeusz-status", action="store_true", dest="morfeusz_status", help="Pokaż status realnego providera Morfeusz2/SGJP w Polish Reasoning.")
     parser.add_argument("--polimorf-status", action="store_true", dest="polimorf_status", help="Pokaż status opcjonalnego lokalnego providera PoliMorf.")
     parser.add_argument("--wsjp-lookup-plan", action="store_true", dest="wsjp_lookup_plan", help="Zbuduj bezpieczny plan lookupu WSJP dla terminu; nie scrapuje masowo strony.")
@@ -1317,7 +1317,7 @@ def main(argv: list[str] | None = None) -> int:
             statuses = payload["polish_morphology"].get("provider_statuses", [])
             payload = {
                 "runtime_version": cfg.version,
-                "schema_version": "polish_provider_status/v14.8.4",
+                "schema_version": "polish_provider_status/v15.1.0.3.89",
                 "provider_status": next((item for item in statuses if item.get("provider") == wanted), None),
                 "truth_boundary": "Status providera mówi tylko, czy lokalny adapter jest dostępny. Nie oznacza pobrania pełnego słownika ani pełnej dezambiguacji języka.",
             }
@@ -1333,7 +1333,7 @@ def main(argv: list[str] | None = None) -> int:
         if ns.polish_reasoning_bootstrap_plan:
             payload = {
                 "runtime_version": cfg.version,
-                "schema_version": "polish_reasoning_bootstrap_plan/v14.8.4",
+                "schema_version": "polish_reasoning_bootstrap_plan/v15.1.0.3.89",
                 "bootstrap_commands": payload["bootstrap_commands"],
                 "source_registry": payload["source_registry"],
                 "truth_boundary": "Bootstrap instaluje providery i modele z Internetu lokalnie; patch nie vendoruje dużych słowników ani modeli.",
@@ -1350,7 +1350,7 @@ def main(argv: list[str] | None = None) -> int:
         lookup = planner.nkjp(term).to_dict() if ns.nkjp_lookup_plan else planner.wsjp(term).to_dict()
         payload = {
             "runtime_version": cfg.version,
-            "schema_version": "polish_reasoning_lookup_plan/v14.8.3",
+            "schema_version": "polish_reasoning_lookup_plan/v15.1.0.3.89",
             "lookup_plan": lookup,
             "truth_boundary": "To jest plan/link lookupu. Runtime nie twierdzi, że pobrał definicję lub przykłady bez realnego żądania HTTP i zapisu źródła.",
         }
@@ -1462,7 +1462,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if ns.dedup_report:
         cfg = config or JaznConfig()
-        path = write_dedup_report(cfg.root, cfg.root / "reports" / "DEDUP_REPORT_V14_6_1.json")
+        path = write_dedup_report(cfg.root, cfg.root / "reports" / "DEDUP_REPORT_current_line.json")
         print(path.read_text(encoding="utf-8"))
         return 0
 
@@ -1609,7 +1609,7 @@ def main(argv: list[str] | None = None) -> int:
     if ns.chat_gpt:
         cfg = apply_chatgpt_cli_settings(config or JaznConfig())
         bridge_text = _message_from_remainder(ns.message)
-        # v14.8.5.026B: --chat-gpt is the single public ChatGPT bridge.
+        # Current release: --chat-gpt is the single public ChatGPT bridge.
         # Human one-shot usage (`--chat-gpt -- "..."`) renders only
         # final_visible_text, while stdin keeps the JSONL protocol for tools.
         output_mode = _bridge_text_output_mode(ns, bridge_text)

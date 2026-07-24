@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 import json
 
-SCHEMA_VERSION = "turn_trace_reader/v14.6.10"
+SCHEMA_VERSION = "turn_trace_reader/v15.1.0.3.89"
 
 class TurnTraceReader:
     def __init__(self, root: Path) -> None:

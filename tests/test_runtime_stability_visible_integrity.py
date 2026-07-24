@@ -52,7 +52,7 @@ def _decision(*, classification: str = "rule_handler_response") -> dict:
 def _result(decision: dict | None = None) -> dict:
     decision = decision or _decision()
     contract = FinalResponseContract.build(
-        turn_id="t1", trace_id="x1", runtime_version="v15.0.3.2",
+        turn_id="t1", trace_id="x1", runtime_version="v15.1.0.3.89",
         timestamp_header=HEADER, timezone="Europe/Warsaw", state_emoticon="🌿",
         body=BODY, conversation_decision=decision,
     ).to_dict()

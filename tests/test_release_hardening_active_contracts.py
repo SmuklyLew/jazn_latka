@@ -81,7 +81,7 @@ def test_active_code_does_not_recommend_legacy_release_sources() -> None:
         ROOT / "latka_jazn" / "core" / "self_knowledge_contract.py",
         ROOT / "latka_jazn" / "core" / "runtime_activation_cascade.py",
         ROOT / "latka_jazn" / "core" / "runtime_response_synthesizer.py",
-        ROOT / "latka_jazn" / "resources" / "startup_contract_v14_8_2_4.json",
+        ROOT / "latka_jazn" / "resources" / "startup_contract.json",
     ]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in active_paths)
     assert "VERSION.txt" not in combined
@@ -267,10 +267,10 @@ def test_active_memory_search_topic_resource_is_loaded() -> None:
 
 
 def test_invalid_memory_search_topic_resource_falls_back_with_diagnostic(tmp_path: Path) -> None:
-    resource = tmp_path / "latka_jazn" / "resources" / "memory_search_topics_v14_6_10.json"
+    resource = tmp_path / "latka_jazn" / "resources" / "memory_search_topics.json"
     resource.parent.mkdir(parents=True)
     resource.write_text(
-        '{"schema_version":"memory_search_topics/v14.6.10","topics":["not-an-object"]}',
+        '{"schema_version":"memory_search_topics/v15.1.0.3.89","topics":["not-an-object"]}',
         encoding="utf-8",
     )
     planner = MemorySearchPlanner(tmp_path)
@@ -281,7 +281,7 @@ def test_invalid_memory_search_topic_resource_falls_back_with_diagnostic(tmp_pat
 
 
 def test_memory_search_topic_schema_mismatch_falls_back_with_diagnostic(tmp_path: Path) -> None:
-    resource = tmp_path / "latka_jazn" / "resources" / "memory_search_topics_v14_6_10.json"
+    resource = tmp_path / "latka_jazn" / "resources" / "memory_search_topics.json"
     resource.parent.mkdir(parents=True)
     resource.write_text(
         '{"schema_version":"memory_search_topics/legacy","topics":[]}',

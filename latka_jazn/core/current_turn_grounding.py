@@ -4,25 +4,15 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from latka_jazn.version import PACKAGE_VERSION, schema_version
+from latka_jazn.core.legacy_route_policy import contains_legacy_dotted_version
 
 SCHEMA_VERSION = schema_version("current_turn_grounding")
 
 
-def _dotted(*parts: str) -> str:
-    return "v" + ".".join(parts)
-
-
-def _route(*parts: str) -> str:
-    return "_".join(parts)
-
-
 LEGACY_OUTPUT_MARKERS = (
-    _dotted("14", "6", "10"),
-    _dotted("14", "8", "2", "4"),
-    _dotted("14", "8", "3", "4", "093"),
-    _dotted("14", "8", "5", "000"),
-    _route("v14", "6", "2", "1", "stale_nlp_route_hotfix"),
-    _route("v14", "6", "10", "behavioral_runtime_dialogue_intent_source_integrity_update"),
+    "legacy_nlp_adapter_update",
+    "legacy_stale_nlp_route_hotfix",
+    "legacy_full_update_scope",
 )
 
 ORDINARY_DIALOGUE_INTENTS = {
@@ -39,7 +29,7 @@ ORDINARY_META_LEAK_MARKERS = (
 
 STALE_UPDATE_MARKERS = (
     "ta aktualizacja ma trzy rdzenie", "dużej aktualizacji", "duzej aktualizacji",
-    "zadanie wykonania aktualizacji v14.8.5.000",
+    "zadanie wykonania poprzedniej aktualizacji",
     "pełny zip", "pelny zip", "manifest i eksport",
 )
 
@@ -84,11 +74,13 @@ def assess_current_turn_grounding(
     route_low = _fold(route)
     issues: list[str] = []
 
-    for marker in LEGACY_OUTPUT_MARKERS:
-        marker_low = _fold(marker)
-        if marker_low in body_low and marker_low not in user_low:
-            issues.append("stale_version_output")
-            break
+    legacy_marker_leaked = any(
+        _fold(marker) in body_low and _fold(marker) not in user_low
+        for marker in LEGACY_OUTPUT_MARKERS
+    )
+    legacy_version_leaked = contains_legacy_dotted_version(response_body) and not contains_legacy_dotted_version(user_text)
+    if legacy_marker_leaked or legacy_version_leaked:
+        issues.append("stale_version_output")
 
     if any(marker in body_low for marker in STALE_UPDATE_MARKERS) and not any(x in user_low for x in ("aktualiz", "patch", "zip", "manifest")):
         issues.append("stale_update_template_output")

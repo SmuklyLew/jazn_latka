@@ -2544,7 +2544,7 @@ def stop_daemon(
     }
 
 
-# v14.8.5.036b: status text sanitizer.
+# Current release: status text sanitizer.
 # This does not change runtime mechanics. It only normalizes diagnostic/status text
 # emitted through daemon marker, /status, /ready and CLI daemon commands.
 STATUS_TEXT_REPLACEMENTS = {
