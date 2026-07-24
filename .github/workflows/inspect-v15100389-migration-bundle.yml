@@ -1,70 +1,13 @@
-name: Inspect v15.1.0.3.89 raw candidates
+name: Obsolete v15.1.0.3.89 transport inspection
 
 on:
-  push:
-    branches:
-      - automation/v15.1.0.3.89-migration-runner
-    paths:
-      - '.github/workflows/inspect-v15100389-migration-bundle.yml'
-  pull_request:
-    branches:
-      - update/v15.1.0.3.89-current-line-archive
-    paths:
-      - '.github/workflows/inspect-v15100389-migration-bundle.yml'
-      - '.automation/v15.1.0.3.89/raw/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  inspect-raw-candidates:
+  obsolete:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Checkout automation branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: automation/v15.1.0.3.89-migration-runner
-
-      - name: Build candidate report
-        shell: bash
-        run: |
-          set -u
-          shopt -s nullglob
-          report="$RUNNER_TEMP/candidate-report.txt"
-          candidates=(.automation/v15.1.0.3.89/raw/candidate-*.bin)
-          {
-            echo "candidate_count=${#candidates[@]}"
-            for candidate in "${candidates[@]}"; do
-              echo "=== $candidate ==="
-              echo "bytes=$(wc -c < "$candidate")"
-              echo "sha256=$(sha256sum "$candidate" | awk '{print $1}')"
-              echo "file=$(file -b "$candidate" || true)"
-              if xz --test "$candidate" 2>/dev/null; then
-                echo "xz_test=passed"
-                xz --decompress --stdout "$candidate" > candidate.bundle
-                echo "bundle_bytes=$(wc -c < candidate.bundle)"
-                echo "bundle_sha256=$(sha256sum candidate.bundle | awk '{print $1}')"
-                if git bundle verify candidate.bundle >/tmp/bundle-verify.txt 2>&1; then
-                  echo "bundle_verify=passed"
-                  git bundle list-heads candidate.bundle
-                else
-                  echo "bundle_verify=failed"
-                  cat /tmp/bundle-verify.txt
-                fi
-              else
-                echo "xz_test=failed"
-              fi
-            done
-            echo "inspection_complete=true"
-          } | tee "$report"
-
-      - name: Upload candidate report
-        uses: actions/upload-artifact@v4
-        with:
-          name: v15100389-candidate-report
-          path: ${{ runner.temp }}/candidate-report.txt
-          if-no-files-found: error
-          retention-days: 1
+      - run: echo "Obsolete transport. Do not run or merge PR #69."
