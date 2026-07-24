@@ -1,13 +1,64 @@
-name: Obsolete v15.1.0.3.89 transport inspection
+name: Inspect v15.1.0.3.89 raw migration candidates
 
 on:
+  pull_request:
+    branches:
+      - update/v15.1.0.3.89-current-line-archive
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  obsolete:
+  inspect:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Obsolete transport. Do not run or merge PR #69."
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Decode and verify candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/candidates"
+          found=0
+          for source in .automation/v15.1.0.3.89/raw/candidate-*.bin; do
+            [ -f "$source" ] || continue
+            name="$(basename "$source")"
+            work="$RUNNER_TEMP/candidates/$name"
+            mkdir -p "$work"
+            cp "$source" "$work/layer0"
+            echo "=== $name ==="
+            for level in 0 1 2; do
+              current="$work/layer$level"
+              [ -f "$current" ] || break
+              echo "-- layer $level --"
+              wc -c "$current"
+              sha256sum "$current"
+              file "$current"
+              if git bundle verify "$current" >/tmp/bundle.log 2>&1; then
+                cat /tmp/bundle.log
+                echo "VALID_BUNDLE=$current"
+                found=1
+                break
+              fi
+              if xz -t "$current" >/tmp/xz.log 2>&1; then
+                echo "VALID_XZ=$current"
+                xz -dc "$current" > "$work/from-xz.bundle"
+                git bundle verify "$work/from-xz.bundle"
+                echo "VALID_BUNDLE=$work/from-xz.bundle"
+                found=1
+                break
+              fi
+              next="$work/layer$((level + 1))"
+              if base64 --decode "$current" > "$next" 2>/tmp/base64.log; then
+                continue
+              fi
+              rm -f "$next"
+              break
+            done
+          done
+          if [ "$found" -ne 1 ]; then
+            echo "No valid migration bundle recovered." >&2
+            exit 1
+          fi
