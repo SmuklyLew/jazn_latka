@@ -1,0 +1,4 @@
+base_sha=6c6c3acc2485324e9a2e1b385811f17f5bebf7f7
+patch_sha256=c7422ec11910d7edbf4261b5c0fc1685c59272e84105559612754bb661cbc5e5
+chunk_count=101
+target_branch=fix/release-safe-package-generator-v84
