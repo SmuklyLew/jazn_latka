@@ -1,58 +1,219 @@
-name: diagnose-windows-package-smoke-v84
+name: apply-windows-package-smoke-v84-fix
 
 on:
-  push:
-    branches:
-      - automation/release-safe-package-generator-v84-bootstrap
-    paths:
-      - .github/workflows/diagnose-windows-package-smoke-v84.yml
   pull_request:
     branches:
       - master
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
 
 jobs:
-  diagnose:
+  apply-fix:
+    if: github.event_name == 'pull_request'
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
-      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: fix/release-safe-package-generator-v84
+      EXPECTED_HEAD: 1c6c93e4fe1189dea4e09bd810130a336245bc19
     steps:
-      - name: Checkout PR 77 source
+      - name: Checkout PR 77 branch
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
-          ref: fix/release-safe-package-generator-v84
+          ref: ${{ env.TARGET_BRANCH }}
 
-      - name: Extract original failing package-smoke log
+      - name: Verify expected source head
         shell: pwsh
         run: |
-          $fullLog = Join-Path $env:RUNNER_TEMP "original-windows-job.log"
-          $excerpt = Join-Path $env:RUNNER_TEMP "original-package-smoke-step.log"
-          gh run view 30165038557 --repo SmuklyLew/jazn_latka --job 89715593241 --log | Out-File -FilePath $fullLog -Encoding utf8
+          $actual = git rev-parse HEAD
+          if ($actual -ne $env:EXPECTED_HEAD) {
+            throw "Target branch moved: expected $env:EXPECTED_HEAD, got $actual"
+          }
+
+      - name: Apply focused retry and regression tests
+        shell: pwsh
+        run: |
           @'
-          import os
           from pathlib import Path
 
-          source = Path(os.environ["RUNNER_TEMP"]) / "original-windows-job.log"
-          target = Path(os.environ["RUNNER_TEMP"]) / "original-package-smoke-step.log"
-          lines = source.read_text(encoding="utf-8-sig", errors="replace").splitlines()
-          selected = []
-          marker = "\tPackage smoke system profile\t"
-          for line in lines:
-              if marker in line:
-                  selected.append(line.split(marker, 1)[1])
-          if not selected:
-              start = next((index for index, line in enumerate(lines) if "Package smoke system profile" in line), 0)
-              selected = lines[start:start + 800]
-          text = "\n".join(selected) + "\n"
-          target.write_text(text, encoding="utf-8")
-          print(text)
+          source_path = Path("latka_jazn/tools/release_readiness.py")
+          source = source_path.read_text(encoding="utf-8")
+
+          helper_anchor = "\n\ndef _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) -> None:\n"
+          helper_block = r'''
+
+          def _chat_payload_from_output(output: str) -> dict[str, Any] | None:
+              whole = _json_document(output)
+              candidates: list[dict[str, Any]] = []
+              if whole is not None:
+                  candidates.append(whole)
+              for line in reversed([line for line in output.splitlines() if line.strip()]):
+                  parsed = _json_document(line)
+                  if parsed is not None:
+                      candidates.append(parsed)
+              for candidate in candidates:
+                  if "final_visible_text" in candidate or "final_visible_integrity_consensus" in candidate:
+                      return candidate
+              return None
+
+
+          def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
+              chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
+              attempts: list[dict[str, Any]] = []
+              final_result: dict[str, Any] = {"returncode": 2, "stdout": "", "stderr": ""}
+              final_consensus: dict[str, Any] = {}
+              ok = False
+
+              for attempt_number in (1, 2):
+                  result = _run(
+                      isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+                      input_text=chat_input, timeout=120.0,
+                  )
+                  chat = _chat_payload_from_output(result["stdout"])
+                  consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
+                  has_final_text = bool((chat or {}).get("final_visible_text"))
+                  ok = (
+                      result["returncode"] == 0
+                      and has_final_text
+                      and consensus.get("valid") is True
+                      and consensus.get("mismatch") is False
+                  )
+                  attempts.append({
+                      "attempt": attempt_number,
+                      "returncode": result["returncode"],
+                      "payload_found": chat is not None,
+                      "has_final_visible_text": has_final_text,
+                      "consensus": consensus,
+                      "stdout_tail": result["stdout"][-2000:],
+                      "stderr_tail": result["stderr"][-2000:],
+                  })
+                  final_result = result
+                  final_consensus = consensus
+                  if ok:
+                      break
+                  retryable_missing_contract = (
+                      result["returncode"] == 0
+                      and (chat is None or not has_final_text or not consensus)
+                  )
+                  if not retryable_missing_contract:
+                      break
+
+              return _check(
+                  "chat_gpt_turn_and_integrity_consensus",
+                  ok,
+                  returncode=final_result["returncode"],
+                  consensus=final_consensus,
+                  stderr=final_result["stderr"][-2000:],
+                  attempt_count=len(attempts),
+                  retry_used=len(attempts) > 1,
+                  attempts=attempts,
+              )
+          '''
+          helper_block = "\n".join(line[10:] if line.startswith("          ") else line for line in helper_block.splitlines())
+          if "def _chat_payload_from_output" in source:
+              raise SystemExit("chat payload helper already exists")
+          if helper_anchor not in source:
+              raise SystemExit("release_readiness helper anchor not found")
+          source = source.replace(helper_anchor, helper_block + helper_anchor, 1)
+
+          old_chat_block = r'''    chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
+              chat_result = _run(
+                  isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+                  input_text=chat_input, timeout=120.0,
+              )
+              chat_lines = [line for line in chat_result["stdout"].splitlines() if line.strip()]
+              chat = _json_document(chat_lines[-1]) if chat_lines else None
+              consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
+              checks.append(_check(
+                  "chat_gpt_turn_and_integrity_consensus",
+                  chat_result["returncode"] == 0 and bool((chat or {}).get("final_visible_text"))
+                  and consensus.get("valid") is True and consensus.get("mismatch") is False,
+                  returncode=chat_result["returncode"], consensus=consensus, stderr=chat_result["stderr"][-2000:],
+              ))
+          '''
+          old_chat_block = "\n".join(line[10:] if line.startswith("          ") else line for line in old_chat_block.splitlines())
+          replacement = "    checks.append(_run_chat_integrity_check(isolated))\n"
+          if old_chat_block not in source:
+              raise SystemExit("original chat integrity block not found")
+          source = source.replace(old_chat_block, replacement, 1)
+          source_path.write_text(source, encoding="utf-8")
+
+          test_path = Path("tests/test_runtime_stability_package_smoke.py")
+          tests = test_path.read_text(encoding="utf-8")
+          marker = "test_chat_integrity_check_retries_transient_missing_consensus"
+          if marker in tests:
+              raise SystemExit("regression tests already exist")
+          tests += r'''
+
+
+          def _chat_result(payload: dict, *, returncode: int = 0, suffix: str = "") -> dict:
+              return {
+                  "returncode": returncode,
+                  "stdout": json.dumps(payload, ensure_ascii=False) + "\n" + suffix,
+                  "stderr": "",
+              }
+
+
+          def test_chat_integrity_check_retries_transient_missing_consensus(monkeypatch, tmp_path: Path) -> None:
+              responses = iter([
+                  _chat_result({"final_visible_text": "Działam.", "final_visible_integrity_consensus": {}}),
+                  _chat_result({
+                      "final_visible_text": "Działam.",
+                      "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+                  }),
+              ])
+              monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: next(responses))
+
+              result = release_readiness._run_chat_integrity_check(tmp_path)
+
+              assert result["ok"] is True
+              assert result["attempt_count"] == 2
+              assert result["retry_used"] is True
+              assert result["attempts"][0]["consensus"] == {}
+              assert result["consensus"]["valid"] is True
+
+
+          def test_chat_integrity_check_selects_payload_before_trailing_json_noise(monkeypatch, tmp_path: Path) -> None:
+              payload = {
+                  "final_visible_text": "Działam.",
+                  "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+              }
+              response = _chat_result(payload, suffix=json.dumps({"kind": "diagnostic_noise"}) + "\n")
+              monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: response)
+
+              result = release_readiness._run_chat_integrity_check(tmp_path)
+
+              assert result["ok"] is True
+              assert result["attempt_count"] == 1
+              assert result["retry_used"] is False
+
+
+          def test_chat_integrity_check_does_not_mask_explicit_integrity_mismatch(monkeypatch, tmp_path: Path) -> None:
+              response = _chat_result({
+                  "final_visible_text": "Działam.",
+                  "final_visible_integrity_consensus": {"valid": False, "mismatch": True},
+              })
+              calls = 0
+
+              def run_once(*_args, **_kwargs):
+                  nonlocal calls
+                  calls += 1
+                  return response
+
+              monkeypatch.setattr(release_readiness, "_run", run_once)
+
+              result = release_readiness._run_chat_integrity_check(tmp_path)
+
+              assert result["ok"] is False
+              assert result["attempt_count"] == 1
+              assert result["retry_used"] is False
+              assert calls == 1
+          '''
+          tests = "\n".join(line[10:] if line.startswith("          ") else line for line in tests.splitlines()) + "\n"
+          test_path.write_text(tests, encoding="utf-8")
           '@ | python -X utf8 -
 
       - name: Set up Python
@@ -69,38 +230,18 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
 
-      - name: Diagnose current system package smoke
+      - name: Run focused regression tests
+        run: python -X utf8 -m pytest -q tests/test_runtime_stability_package_smoke.py
+
+      - name: Run Windows system package smoke
+        run: python -X utf8 run.py package-smoke --profile system --json
+
+      - name: Commit and push verified fix
         shell: pwsh
         run: |
-          @'
-          import json
-          import os
-          from pathlib import Path
-          from latka_jazn.tools.release_readiness import build_release_readiness_report
-
-          report = build_release_readiness_report(Path.cwd(), profile="system")
-          output = Path(os.environ["RUNNER_TEMP"]) / "package-smoke-system.json"
-          output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          failures = [
-              check for check in report.get("checks", [])
-              if check.get("required") and not check.get("ok")
-          ]
-          print(json.dumps({
-              "ok": report.get("ok"),
-              "exit_code": report.get("exit_code"),
-              "summary": report.get("summary"),
-              "failed_checks": failures,
-              "report_path": str(output),
-          }, ensure_ascii=False, indent=2))
-          raise SystemExit(int(report.get("exit_code", 2)))
-          '@ | python -X utf8 -
-
-      - name: Upload diagnostic reports
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: diagnose-windows-package-smoke-v84
-          path: |
-            ${{ runner.temp }}/original-package-smoke-step.log
-            ${{ runner.temp }}/package-smoke-system.json
-          retention-days: 2
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add latka_jazn/tools/release_readiness.py tests/test_runtime_stability_package_smoke.py
+          git commit -m "fix(ci): stabilize package smoke chat consensus"
+          git push origin "HEAD:$env:TARGET_BRANCH"
