@@ -96,9 +96,10 @@ def _bootstrap() -> dict[str, object]:
         _git("apply", "--check", str(patch_path))
         _git("apply", str(patch_path))
         _git("diff", "--check")
+        _git("add", "-A")
         changed = {
             line.strip()
-            for line in (_git("diff", "--name-only", capture=True).stdout or "").splitlines()
+            for line in (_git("diff", "--cached", "--name-only", capture=True).stdout or "").splitlines()
             if line.strip()
         }
         if changed != EXPECTED_PATHS:
@@ -108,7 +109,6 @@ def _bootstrap() -> dict[str, object]:
             )
         _git("config", "user.name", "github-actions[bot]")
         _git("config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
-        _git("add", "-A")
         _git("commit", "-m", "fix(generator): preserve release metadata consistency")
         commit_sha = (_git("rev-parse", "HEAD", capture=True).stdout or "").strip()
         _git("push", "origin", f"HEAD:refs/heads/{TARGET_BRANCH}")
