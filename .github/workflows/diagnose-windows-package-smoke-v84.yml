@@ -6,6 +6,9 @@ on:
       - automation/release-safe-package-generator-v84-bootstrap
     paths:
       - .github/workflows/diagnose-windows-package-smoke-v84.yml
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: read
