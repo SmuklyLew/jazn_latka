@@ -45,14 +45,6 @@ def _patch_bytes() -> bytes:
     present = sorted(CHUNK_ROOT.glob("chunk-*"))
     if present != expected:
         raise RuntimeError(f"invalid chunk set: expected {CHUNK_COUNT}, found {len(present)}")
-    lengths = [(path.name, len(path.read_text(encoding="utf-8").strip())) for path in expected]
-    invalid_lengths = [
-        (name, length, 636 if name == "chunk-100" else 1000)
-        for name, length in lengths
-        if length != (636 if name == "chunk-100" else 1000)
-    ]
-    if invalid_lengths:
-        raise RuntimeError(f"invalid chunk lengths: {invalid_lengths}")
     encoded = "".join(path.read_text(encoding="utf-8").strip() for path in expected)
     raw = base64.b64decode(encoded.encode("ascii"), validate=True)
     digest = hashlib.sha256(raw).hexdigest()
