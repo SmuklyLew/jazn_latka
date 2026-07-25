@@ -1,0 +1,73 @@
+name: diagnose-windows-package-smoke-v84
+
+on:
+  push:
+    branches:
+      - automation/release-safe-package-generator-v84-bootstrap
+    paths:
+      - .github/workflows/diagnose-windows-package-smoke-v84.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout PR 77 source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: fix/release-safe-package-generator-v84
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Diagnose system package smoke
+        shell: pwsh
+        run: |
+          @'
+          import json
+          import os
+          from pathlib import Path
+          from latka_jazn.tools.release_readiness import build_release_readiness_report
+
+          report = build_release_readiness_report(Path.cwd(), profile="system")
+          output = Path(os.environ["RUNNER_TEMP"]) / "package-smoke-system.json"
+          output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          failures = [
+              check for check in report.get("checks", [])
+              if check.get("required") and not check.get("ok")
+          ]
+          print(json.dumps({
+              "ok": report.get("ok"),
+              "exit_code": report.get("exit_code"),
+              "summary": report.get("summary"),
+              "failed_checks": failures,
+              "report_path": str(output),
+          }, ensure_ascii=False, indent=2))
+          raise SystemExit(int(report.get("exit_code", 2)))
+          '@ | python -X utf8 -
+
+      - name: Upload package smoke report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: diagnose-windows-package-smoke-v84
+          path: ${{ runner.temp }}/package-smoke-system.json
+          retention-days: 2
