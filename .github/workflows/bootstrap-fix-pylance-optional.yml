@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - fix/pylance-optional-virtual-bytes
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
@@ -72,4 +79,5 @@ jobs:
           git add tools/jazn_pack_generator.py .github/workflows/bootstrap-fix-pylance-optional.yml
           git diff --cached --check
           git commit -m "fix(tools): narrow virtual manifest bytes before decode"
+          git pull --rebase origin fix/pylance-optional-virtual-bytes
           git push origin HEAD:fix/pylance-optional-virtual-bytes
