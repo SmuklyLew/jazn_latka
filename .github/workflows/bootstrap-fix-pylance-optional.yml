@@ -1,0 +1,75 @@
+name: bootstrap-fix-pylance-optional
+
+on:
+  push:
+    branches:
+      - fix/pylance-optional-virtual-bytes
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/pylance-optional-virtual-bytes
+          fetch-depth: 0
+
+      - name: Apply minimal Optional narrowing fix
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("tools/jazn_pack_generator.py")
+          source = path.read_text(encoding="utf-8")
+          old = '    manifest = json.loads(entries[PACKAGE_INTEGRITY_MANIFEST].virtual_bytes.decode("utf-8-sig"))\n'
+          new = (
+              '    manifest_bytes = entries[PACKAGE_INTEGRITY_MANIFEST].virtual_bytes\n'
+              '    if manifest_bytes is None:\n'
+              '        raise PackError("Wirtualny manifest nie zawiera danych binarnych.")\n'
+              '    manifest = json.loads(manifest_bytes.decode("utf-8-sig"))\n'
+          )
+          count = source.count(old)
+          if count != 1:
+              raise SystemExit(f"expected exactly one target line, found {count}")
+          path.write_text(source.replace(old, new, 1), encoding="utf-8", newline="\n")
+
+      - name: Compile generator
+        run: python -X utf8 -m py_compile tools/jazn_pack_generator.py
+
+      - name: Run focused generator contract tests
+        run: python -X utf8 -m pytest -q tests/test_jazn_pack_generator_v84_contract.py
+
+      - name: Verify Pylance diagnostic with Pyright
+        shell: bash
+        run: |
+          npx --yes pyright@latest tools/jazn_pack_generator.py --outputjson > pyright.json || true
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("pyright.json").read_text(encoding="utf-8"))
+          matches = [
+              item
+              for item in report.get("generalDiagnostics", [])
+              if item.get("rule") == "reportOptionalMemberAccess"
+              and '"decode"' in str(item.get("message", ""))
+          ]
+          if matches:
+              raise SystemExit(json.dumps(matches, ensure_ascii=False, indent=2))
+          print("No reportOptionalMemberAccess diagnostic for decode.")
+          PY
+
+      - name: Remove bootstrap workflow and commit fix
+        shell: bash
+        run: |
+          rm .github/workflows/bootstrap-fix-pylance-optional.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/jazn_pack_generator.py .github/workflows/bootstrap-fix-pylance-optional.yml
+          git diff --cached --check
+          git commit -m "fix(tools): narrow virtual manifest bytes before decode"
+          git push origin HEAD:fix/pylance-optional-virtual-bytes
