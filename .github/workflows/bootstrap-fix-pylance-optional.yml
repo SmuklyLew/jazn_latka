@@ -25,6 +25,20 @@ jobs:
           ref: fix/pylance-optional-virtual-bytes
           fetch-depth: 0
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
       - name: Apply minimal Optional narrowing fix
         shell: python
         run: |
