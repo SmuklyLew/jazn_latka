@@ -71,3 +71,67 @@ def test_release_profile_reports_dirty_worktree_as_policy_failure(monkeypatch, t
     assert report["ok"] is False
     assert report["exit_code"] == 1
     assert staging["error_code"] == "dirty_worktree"
+
+
+def _chat_result(payload: dict, *, returncode: int = 0, suffix: str = "") -> dict:
+    return {
+        "returncode": returncode,
+        "stdout": json.dumps(payload, ensure_ascii=False) + "\n" + suffix,
+        "stderr": "",
+    }
+
+
+def test_chat_integrity_check_retries_transient_missing_consensus(monkeypatch, tmp_path: Path) -> None:
+    responses = iter([
+        _chat_result({"final_visible_text": "Działam.", "final_visible_integrity_consensus": {}}),
+        _chat_result({
+            "final_visible_text": "Działam.",
+            "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+        }),
+    ])
+    monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: next(responses))
+
+    result = release_readiness._run_chat_integrity_check(tmp_path)
+
+    assert result["ok"] is True
+    assert result["attempt_count"] == 2
+    assert result["retry_used"] is True
+    assert result["attempts"][0]["consensus"] == {}
+    assert result["consensus"]["valid"] is True
+
+
+def test_chat_integrity_check_selects_payload_before_trailing_json_noise(monkeypatch, tmp_path: Path) -> None:
+    payload = {
+        "final_visible_text": "Działam.",
+        "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+    }
+    response = _chat_result(payload, suffix=json.dumps({"kind": "diagnostic_noise"}) + "\n")
+    monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: response)
+
+    result = release_readiness._run_chat_integrity_check(tmp_path)
+
+    assert result["ok"] is True
+    assert result["attempt_count"] == 1
+    assert result["retry_used"] is False
+
+
+def test_chat_integrity_check_does_not_mask_explicit_integrity_mismatch(monkeypatch, tmp_path: Path) -> None:
+    response = _chat_result({
+        "final_visible_text": "Działam.",
+        "final_visible_integrity_consensus": {"valid": False, "mismatch": True},
+    })
+    calls = 0
+
+    def run_once(*_args, **_kwargs):
+        nonlocal calls
+        calls += 1
+        return response
+
+    monkeypatch.setattr(release_readiness, "_run", run_once)
+
+    result = release_readiness._run_chat_integrity_check(tmp_path)
+
+    assert result["ok"] is False
+    assert result["attempt_count"] == 1
+    assert result["retry_used"] is False
+    assert calls == 1

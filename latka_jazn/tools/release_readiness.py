@@ -78,6 +78,74 @@ def _json_document(output: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def _chat_payload_from_output(output: str) -> dict[str, Any] | None:
+    whole = _json_document(output)
+    candidates: list[dict[str, Any]] = []
+    if whole is not None:
+        candidates.append(whole)
+    for line in reversed([line for line in output.splitlines() if line.strip()]):
+        parsed = _json_document(line)
+        if parsed is not None:
+            candidates.append(parsed)
+    for candidate in candidates:
+        if "final_visible_text" in candidate or "final_visible_integrity_consensus" in candidate:
+            return candidate
+    return None
+
+
+def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
+    chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
+    attempts: list[dict[str, Any]] = []
+    final_result: dict[str, Any] = {"returncode": 2, "stdout": "", "stderr": ""}
+    final_consensus: dict[str, Any] = {}
+    ok = False
+
+    for attempt_number in (1, 2):
+        result = _run(
+            isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+            input_text=chat_input, timeout=120.0,
+        )
+        chat = _chat_payload_from_output(result["stdout"])
+        consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
+        has_final_text = bool((chat or {}).get("final_visible_text"))
+        ok = (
+            result["returncode"] == 0
+            and has_final_text
+            and consensus.get("valid") is True
+            and consensus.get("mismatch") is False
+        )
+        attempts.append({
+            "attempt": attempt_number,
+            "returncode": result["returncode"],
+            "payload_found": chat is not None,
+            "has_final_visible_text": has_final_text,
+            "consensus": consensus,
+            "stdout_tail": result["stdout"][-2000:],
+            "stderr_tail": result["stderr"][-2000:],
+        })
+        final_result = result
+        final_consensus = consensus
+        if ok:
+            break
+        retryable_missing_contract = (
+            result["returncode"] == 0
+            and (chat is None or not has_final_text or not consensus)
+        )
+        if not retryable_missing_contract:
+            break
+
+    return _check(
+        "chat_gpt_turn_and_integrity_consensus",
+        ok,
+        returncode=final_result["returncode"],
+        consensus=final_consensus,
+        stderr=final_result["stderr"][-2000:],
+        attempt_count=len(attempts),
+        retry_used=len(attempts) > 1,
+        attempts=attempts,
+    )
+
+
 def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) -> None:
     compile_result = _run(isolated, "-m", "compileall", "-q", "latka_jazn")
     checks.append(_check("compile", compile_result["returncode"] == 0,
@@ -104,20 +172,7 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
     checks.append(_check("doctor", doctor_result["returncode"] == 0 and bool((doctor or {}).get("ok")),
                          returncode=doctor_result["returncode"], report=doctor))
 
-    chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
-    chat_result = _run(
-        isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
-        input_text=chat_input, timeout=120.0,
-    )
-    chat_lines = [line for line in chat_result["stdout"].splitlines() if line.strip()]
-    chat = _json_document(chat_lines[-1]) if chat_lines else None
-    consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
-    checks.append(_check(
-        "chat_gpt_turn_and_integrity_consensus",
-        chat_result["returncode"] == 0 and bool((chat or {}).get("final_visible_text"))
-        and consensus.get("valid") is True and consensus.get("mismatch") is False,
-        returncode=chat_result["returncode"], consensus=consensus, stderr=chat_result["stderr"][-2000:],
-    ))
+    checks.append(_run_chat_integrity_check(isolated))
 
     port = _free_port()
     marker = isolated / "workspace_runtime" / "package_smoke_daemon_marker.json"
