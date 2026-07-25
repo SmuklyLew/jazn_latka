@@ -7,9 +7,12 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import traceback
 
 BASE_SHA = "6c6c3acc2485324e9a2e1b385811f17f5bebf7f7"
 TARGET_BRANCH = "fix/release-safe-package-generator-v84"
+ERROR_BRANCH = "diagnostic/release-safe-package-generator-v84"
+TECH_BRANCH = "automation/release-safe-package-generator-v84-bootstrap"
 PATCH_SHA256 = "c7422ec11910d7edbf4261b5c0fc1685c59272e84105559612754bb661cbc5e5"
 PATCH_SIZE = 75477
 CHUNK_COUNT = 101
@@ -28,10 +31,7 @@ EXPECTED_PATHS = {
 
 def _run(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        list(args),
-        check=True,
-        text=True,
-        encoding="utf-8",
+        list(args), check=True, text=True, encoding="utf-8",
         stdout=subprocess.PIPE if capture else None,
         stderr=subprocess.STDOUT if capture else None,
     )
@@ -69,7 +69,6 @@ def _bootstrap() -> dict[str, object]:
         _git("apply", "--check", str(patch_path))
         _git("apply", str(patch_path))
         _git("diff", "--check")
-
         changed = {
             line.strip()
             for line in (_git("diff", "--name-only", capture=True).stdout or "").splitlines()
@@ -80,14 +79,12 @@ def _bootstrap() -> dict[str, object]:
                 f"unexpected patch paths: missing={sorted(EXPECTED_PATHS - changed)}, "
                 f"extra={sorted(changed - EXPECTED_PATHS)}"
             )
-
         _git("config", "user.name", "github-actions[bot]")
         _git("config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
         _git("add", "-A")
         _git("commit", "-m", "fix(generator): preserve release metadata consistency")
         commit_sha = (_git("rev-parse", "HEAD", capture=True).stdout or "").strip()
         _git("push", "origin", f"HEAD:refs/heads/{TARGET_BRANCH}")
-
     return {
         "ok": True,
         "bootstrap": True,
@@ -97,11 +94,34 @@ def _bootstrap() -> dict[str, object]:
     }
 
 
+def _publish_error(text: str) -> None:
+    try:
+        subprocess.run(["git", "reset", "--hard"], check=False)
+        subprocess.run(["git", "clean", "-fd"], check=False)
+        _git("switch", "--detach", BASE_SHA)
+        _git("switch", "-C", ERROR_BRANCH)
+        Path("BOOTSTRAP_ERROR.txt").write_text(text, encoding="utf-8")
+        _git("config", "user.name", "github-actions[bot]")
+        _git("config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
+        _git("add", "BOOTSTRAP_ERROR.txt")
+        _git("commit", "-m", "diagnostic: record generator bootstrap failure")
+        _git("push", "--force", "origin", f"HEAD:refs/heads/{ERROR_BRANCH}")
+    except Exception:
+        pass
+
+
 def main() -> int:
     if "--write" not in sys.argv or not CHUNK_ROOT.is_dir():
         print(json.dumps({"ok": True, "bootstrap": False}, ensure_ascii=False))
         return 0
-    print(json.dumps(_bootstrap(), ensure_ascii=False, sort_keys=True))
+    try:
+        result = _bootstrap()
+    except Exception:
+        diagnostic = traceback.format_exc()
+        print(diagnostic, file=sys.stderr)
+        _publish_error(diagnostic)
+        return 2
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0
 
 
