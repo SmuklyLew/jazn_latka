@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   diagnose:
@@ -20,12 +21,39 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout PR 77 source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
           ref: fix/release-safe-package-generator-v84
+
+      - name: Extract original failing package-smoke log
+        shell: pwsh
+        run: |
+          $fullLog = Join-Path $env:RUNNER_TEMP "original-windows-job.log"
+          $excerpt = Join-Path $env:RUNNER_TEMP "original-package-smoke-step.log"
+          gh run view 30165038557 --repo SmuklyLew/jazn_latka --job 89715593241 --log | Out-File -FilePath $fullLog -Encoding utf8
+          @'
+          import os
+          from pathlib import Path
+
+          source = Path(os.environ["RUNNER_TEMP"]) / "original-windows-job.log"
+          target = Path(os.environ["RUNNER_TEMP"]) / "original-package-smoke-step.log"
+          lines = source.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+          selected = []
+          marker = "\tPackage smoke system profile\t"
+          for line in lines:
+              if marker in line:
+                  selected.append(line.split(marker, 1)[1])
+          if not selected:
+              start = next((index for index, line in enumerate(lines) if "Package smoke system profile" in line), 0)
+              selected = lines[start:start + 800]
+          text = "\n".join(selected) + "\n"
+          target.write_text(text, encoding="utf-8")
+          print(text)
+          '@ | python -X utf8 -
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -41,7 +69,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
 
-      - name: Diagnose system package smoke
+      - name: Diagnose current system package smoke
         shell: pwsh
         run: |
           @'
@@ -67,10 +95,12 @@ jobs:
           raise SystemExit(int(report.get("exit_code", 2)))
           '@ | python -X utf8 -
 
-      - name: Upload package smoke report
+      - name: Upload diagnostic reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: diagnose-windows-package-smoke-v84
-          path: ${{ runner.temp }}/package-smoke-system.json
+          path: |
+            ${{ runner.temp }}/original-package-smoke-step.log
+            ${{ runner.temp }}/package-smoke-system.json
           retention-days: 2
