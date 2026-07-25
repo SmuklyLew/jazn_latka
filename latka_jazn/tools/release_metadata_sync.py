@@ -16,6 +16,7 @@ PATCH_SHA256 = "c7422ec11910d7edbf4261b5c0fc1685c59272e84105559612754bb661cbc5e5
 PATCH_SIZE = 75477
 CHUNK_COUNT = 101
 CHUNK_ROOT = Path(".automation/release-safe-generator-v84/chunks")
+CHUNK_HASHES_PATH = Path(".automation/release-safe-generator-v84/expected-chunk-sha256.txt")
 EXPECTED_PATHS = {
     "latka_jazn/tools/package_integrity.py",
     "latka_jazn/tools/release_metadata_sync.py",
@@ -40,11 +41,39 @@ def _git(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
     return _run("git", *args, capture=capture)
 
 
+def _expected_chunk_hashes() -> dict[str, str]:
+    result: dict[str, str] = {}
+    for raw_line in CHUNK_HASHES_PATH.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        digest, name = line.split(None, 1)
+        result[name.strip()] = digest.strip().lower()
+    if len(result) != CHUNK_COUNT:
+        raise RuntimeError(f"invalid canonical chunk hash map: expected {CHUNK_COUNT}, found {len(result)}")
+    return result
+
+
 def _patch_bytes() -> bytes:
     expected = [CHUNK_ROOT / f"chunk-{index:03d}" for index in range(CHUNK_COUNT)]
     present = sorted(CHUNK_ROOT.glob("chunk-*"))
     if present != expected:
         raise RuntimeError(f"invalid chunk set: expected {CHUNK_COUNT}, found {len(present)}")
+    expected_hashes = _expected_chunk_hashes()
+    mismatches: list[dict[str, object]] = []
+    for path in expected:
+        raw_text = path.read_text(encoding="utf-8").strip()
+        actual = hashlib.sha256(raw_text.encode("utf-8")).hexdigest()
+        wanted = expected_hashes.get(path.name)
+        if actual != wanted:
+            mismatches.append({
+                "name": path.name,
+                "length": len(raw_text),
+                "expected_sha256": wanted,
+                "actual_sha256": actual,
+            })
+    if mismatches:
+        raise RuntimeError("chunk integrity mismatch: " + json.dumps(mismatches, sort_keys=True))
     encoded = "".join(path.read_text(encoding="utf-8").strip() for path in expected)
     raw = base64.b64decode(encoded.encode("ascii"), validate=True)
     digest = hashlib.sha256(raw).hexdigest()
