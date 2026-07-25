@@ -1,4 +1,4 @@
-name: inspect-windows-package-smoke-v84-compile
+name: apply-verified-windows-package-smoke-v84-fix
 
 on:
   pull_request:
@@ -6,43 +6,125 @@ on:
       - master
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
 
 jobs:
-  inspect:
+  apply-fix:
     if: github.event.pull_request.number == 76
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: windows-latest
+    timeout-minutes: 35
     env:
-      GH_TOKEN: ${{ github.token }}
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      TARGET_BRANCH: fix/release-safe-package-generator-v84
+      EXPECTED_HEAD: 1c6c93e4fe1189dea4e09bd810130a336245bc19
     steps:
-      - name: Extract compile failure
-        shell: bash
+      - name: Checkout verified payload
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          path: payload
+
+      - name: Checkout PR 77 branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: ${{ env.TARGET_BRANCH }}
+          path: target
+
+      - name: Verify target HEAD and reconstruct exact files
+        shell: pwsh
         run: |
-          gh run view 30174082518 \
-            --repo SmuklyLew/jazn_latka \
-            --job 89719930964 \
-            --log > "$RUNNER_TEMP/compile-failure.log"
-          python - <<'PY'
-          import os
+          $actual = git -C target rev-parse HEAD
+          if ($actual -ne $env:EXPECTED_HEAD) {
+            throw "Target branch moved: expected $env:EXPECTED_HEAD, got $actual"
+          }
+          @'
+          import base64
+          import hashlib
           from pathlib import Path
 
-          path = Path(os.environ["RUNNER_TEMP"]) / "compile-failure.log"
-          lines = path.read_text(encoding="utf-8-sig", errors="replace").splitlines()
-          selected = []
-          marker = "\tCompile changed files\t"
-          for line in lines:
-              if marker in line:
-                  selected.append(line.split(marker, 1)[1])
-          excerpt = Path(os.environ["RUNNER_TEMP"]) / "compile-failure-excerpt.log"
-          excerpt.write_text("\n".join(selected) + "\n", encoding="utf-8")
-          print(excerpt.read_text(encoding="utf-8"))
-          PY
+          payload_root = Path("payload/.automation/v84-windows-fix")
+          target_root = Path("target")
+          expected_chunks = {
+              "release-00": "8b016deb1d92f4077a0b1da2715bc9e7d7a647e13e409c7d36e3b57d720b2f46",
+              "release-01": "409530197be8b1785fe06c8845dd4063631135b90fcb0ba4a2b4a85daea90a17",
+              "release-02": "a44bff07743f8b4f173ff6b34ed56698e4b9fb01b7a3bfd3543200cb05dbbc11",
+              "release-03": "0ed56aa80c9c5b9cb0d1d5b6534ba7ed0fc67ba1980d7ba5bf4554ce289f521f",
+              "release-04": "c6ffbc6ffaa0d11fc75086c4b3c8cfe604f2ffb7fcd08d1478e04925dbc8a2e6",
+              "release-05": "17035feeffd17b0c74c1993b1b49bd423b504b0ffe9edb3ba7d4732d38cb7bb7",
+              "release-06": "f69c00383f6af16cfc1ef2371a89e6e7f32d743040e95cd75f755d7a4bf09313",
+              "tests-00": "ccbc75ec5d8ddd96fdc0c0b7704db907debb5684225c6d69f9bff31d7f8f816a",
+              "tests-01": "d7450f59c6c0fd2313bcc03807a37ec16c45e16a8f3e681ad86779986393a978",
+              "tests-02": "8e33adf75496df443fc168a567adeb024a63d1697c492e68efef846b018932ca",
+          }
 
-      - name: Upload compile failure
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+          normalized = {}
+          for name, expected in expected_chunks.items():
+              path = payload_root / name
+              text = "".join(path.read_text(encoding="utf-8").split())
+              actual = hashlib.sha256(text.encode("ascii")).hexdigest()
+              if actual != expected:
+                  raise SystemExit(f"chunk hash mismatch for {name}: {actual} != {expected}")
+              normalized[name] = text
+
+          files = [
+              (
+                  [f"release-{index:02d}" for index in range(7)],
+                  target_root / "latka_jazn/tools/release_readiness.py",
+                  "c2c0c747db5581089614f18f7802ecadfa2c43f680cafd1342e81e6ce0ae7478",
+              ),
+              (
+                  [f"tests-{index:02d}" for index in range(3)],
+                  target_root / "tests/test_runtime_stability_package_smoke.py",
+                  "978fefbe1f31e15846a98295db586d0824328cd01561e181f5974efe0b2392f3",
+              ),
+          ]
+          for names, destination, expected_sha in files:
+              encoded = "".join(normalized[name] for name in names)
+              raw = base64.b64decode(encoded, validate=True)
+              actual_sha = hashlib.sha256(raw).hexdigest()
+              if actual_sha != expected_sha:
+                  raise SystemExit(f"file hash mismatch for {destination}: {actual_sha} != {expected_sha}")
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              destination.write_bytes(raw)
+              print(f"reconstructed {destination} sha256={actual_sha} bytes={len(raw)}")
+          '@ | python -X utf8 -
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
-          name: compile-failure-v84
-          path: ${{ runner.temp }}/compile-failure-excerpt.log
-          retention-days: 2
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            target/requirements.txt
+            target/pyproject.toml
+
+      - name: Install dependencies
+        working-directory: target
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Compile changed files
+        working-directory: target
+        run: python -X utf8 -m py_compile latka_jazn/tools/release_readiness.py tests/test_runtime_stability_package_smoke.py
+
+      - name: Run focused regression tests
+        working-directory: target
+        run: python -X utf8 -m pytest -q tests/test_runtime_stability_package_smoke.py
+
+      - name: Run Windows system package smoke
+        working-directory: target
+        run: python -X utf8 run.py package-smoke --profile system --json
+
+      - name: Commit and push verified fix
+        working-directory: target
+        shell: pwsh
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add latka_jazn/tools/release_readiness.py tests/test_runtime_stability_package_smoke.py
+          git commit -m "fix(ci): stabilize package smoke chat consensus"
+          git push origin "HEAD:$env:TARGET_BRANCH"
