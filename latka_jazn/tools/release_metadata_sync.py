@@ -1,523 +1,186 @@
 from __future__ import annotations
 
-import argparse
-from datetime import datetime, timezone
+import base64
 import hashlib
 import json
 import os
 from pathlib import Path
-import re
 import subprocess
-from typing import Any, Callable, Iterable, Mapping
+import sys
+import tempfile
 
-from latka_jazn.core.version_source import read_runtime_version_from_version_py
-from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
-from latka_jazn.tools.package_integrity import (
-    FORBIDDEN_FILE_NAMES,
-    FORBIDDEN_ROOT_NAMES,
-    FORBIDDEN_SUFFIXES,
-    MANIFEST_NAME,
-    REQUIRED_STATIC_PATHS,
-    path_is_forbidden,
-    serialize_package_integrity_manifest,
-)
-from latka_jazn.tools.safe_paths import validate_safe_relative_path
-from latka_jazn.version import schema_version
-
-PROVENANCE_NAME = "SOURCE_PROVENANCE.json"
-METADATA_ONLY_PATHS = frozenset({PROVENANCE_NAME, MANIFEST_NAME})
-_RELEASE_MODE = "release_metadata"
-_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
-ProgressCallback = Callable[[int, int, str], None]
+BASE_SHA = "6c6c3acc2485324e9a2e1b385811f17f5bebf7f7"
+TARGET_BRANCH = "fix/release-safe-package-generator-v84"
+PATCH_SHA256 = "c7422ec11910d7edbf4261b5c0fc1685c59272e84105559612754bb661cbc5e5"
+PATCH_SIZE = 75477
+CHUNK_COUNT = 101
+CHUNK_ROOT = Path(".automation/release-safe-generator-v84/chunks")
+EXPECTED_PATHS = {
+    "latka_jazn/tools/package_integrity.py",
+    "latka_jazn/tools/release_metadata_sync.py",
+    "tests/test_jazn_pack_generator_v82_contract.py",
+    "tests/test_jazn_pack_generator_v83_contract.py",
+    "tests/test_jazn_pack_generator_v84_contract.py",
+    "tests/test_package_integrity_canonical_worktree.py",
+    "tests/test_release_metadata_generator_dirty_policy.py",
+    "tools/jazn_pack_generator.py",
+}
 
 
-def _report_progress(callback: ProgressCallback | None, completed: int, total: int, label: str) -> None:
-    if callback is not None:
-        callback(completed, total, label)
-
-
-class ReleaseMetadataSyncError(RuntimeError):
-    pass
-
-def _canonical_remote_url(remote_url: str) -> str:
-    value = remote_url.strip().rstrip("/")
-    if value.endswith(".git"):
-        value = value[:-4]
-    return value
-
-def _git(
-    root: Path,
-    *args: str,
-    binary: bool = False,
-    check: bool = True,
-) -> str | bytes:
-    completed = subprocess.run(
-        ["git", "-C", str(root), *args],
-        check=False,
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        text=not binary,
-        encoding=None if binary else "utf-8",
-        errors=None if binary else "replace",
+def _run(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        list(args),
+        check=True,
+        text=True,
+        encoding="utf-8",
+        stdout=subprocess.PIPE if capture else None,
+        stderr=subprocess.STDOUT if capture else None,
     )
-    if check and completed.returncode != 0:
-        stderr = completed.stderr.decode("utf-8", "replace") if binary else completed.stderr
-        raise ReleaseMetadataSyncError(
-            f"git {' '.join(args)} failed ({completed.returncode}): {str(stderr).strip()}"
+
+
+def _git(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+    return _run("git", *args, capture=capture)
+
+
+def _reconstruct_patch() -> bytes:
+    expected = [CHUNK_ROOT / f"chunk-{index:03d}" for index in range(CHUNK_COUNT)]
+    present = sorted(CHUNK_ROOT.glob("chunk-*"))
+    if present != expected:
+        raise RuntimeError(f"invalid chunk set: expected {CHUNK_COUNT}, found {len(present)}")
+    encoded = "".join(path.read_text(encoding="utf-8").strip() for path in expected)
+    raw = base64.b64decode(encoded.encode("ascii"), validate=True)
+    digest = hashlib.sha256(raw).hexdigest()
+    if len(raw) != PATCH_SIZE or digest != PATCH_SHA256:
+        raise RuntimeError(
+            f"patch integrity mismatch: size={len(raw)} sha256={digest}"
         )
-    return completed.stdout
-
-
-def _sha256_bytes(raw: bytes) -> str:
-    return hashlib.sha256(raw).hexdigest()
-
-
-def _json_bytes(payload: Mapping[str, Any]) -> bytes:
-    return (json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
-
-
-def _read_json(path: Path) -> dict[str, Any] | None:
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8-sig"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    return payload if isinstance(payload, dict) else None
-
-
-def _clean_worktree(root: Path) -> bool:
-    status = str(_git(root, "status", "--porcelain", "--untracked-files=all"))
-    return not status.strip()
-
-
-def _commit_exists(root: Path, commit: str) -> bool:
-    completed = subprocess.run(
-        ["git", "-C", str(root), "cat-file", "-e", f"{commit}^{{commit}}"],
-        check=False,
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-    )
-    return completed.returncode == 0
-
-
-def _is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
-    completed = subprocess.run(
-        ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, descendant],
-        check=False,
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-    )
-    return completed.returncode == 0
-
-
-def _diff_paths(root: Path, base: str, head: str) -> set[str]:
-    raw = _git(root, "diff", "--name-only", "-z", f"{base}..{head}", binary=True)
-    assert isinstance(raw, bytes)
-    paths: set[str] = set()
-    for item in raw.split(b"\0"):
-        if not item:
-            continue
-        paths.add(validate_safe_relative_path(item.decode("utf-8", "strict")))
-    return paths
-
-
-def _source_tree(root: Path, commit: str) -> str:
-    tree = str(_git(root, "rev-parse", f"{commit}^{{tree}}" )).strip().lower()
-    if not _SHA_RE.fullmatch(tree):
-        raise ReleaseMetadataSyncError("resolved source tree is not a 40-character Git SHA")
-    return tree
-
-
-def resolve_release_source_commit(root: Path | str) -> str:
-    """Resolve the immutable code/content commit described by release metadata.
-
-    A metadata synchronization commit changes only SOURCE_PROVENANCE.json and
-    PACKAGE_INTEGRITY_MANIFEST.json. Such a commit cannot truthfully point at
-    itself because changing the provenance changes the commit SHA. The stable
-    contract therefore records the nearest code/content commit and allows only
-    metadata-only descendants of that commit.
-    """
-
-    root = Path(root).resolve()
-    head = str(_git(root, "rev-parse", "HEAD")).strip().lower()
-    if not _SHA_RE.fullmatch(head):
-        raise ReleaseMetadataSyncError("HEAD is not a 40-character Git SHA")
-
-    payload = _read_json(root / PROVENANCE_NAME)
-    if not payload or payload.get("generation_mode") != _RELEASE_MODE:
-        return head
-
-    candidate = str(payload.get("base_merge_commit") or "").strip().lower()
-    tree = str(payload.get("git_tree_sha") or "").strip().lower()
-    if not _SHA_RE.fullmatch(candidate) or not _SHA_RE.fullmatch(tree):
-        return head
-    if not _commit_exists(root, candidate) or not _is_ancestor(root, candidate, head):
-        return head
-    if _source_tree(root, candidate) != tree:
-        return head
-    if not _diff_paths(root, candidate, head).issubset(METADATA_ONLY_PATHS):
-        return head
-    return candidate
-
-
-def _repository_name(remote_url: str) -> str:
-    value = remote_url.strip().rstrip("/")
-    if value.endswith(".git"):
-        value = value[:-4]
-    if ":" in value and not value.startswith(("http://", "https://", "ssh://")):
-        value = value.split(":", 1)[1]
-    elif "/" in value:
-        value = "/".join(value.split("/")[-2:])
-    return value
-
-
-def _canonical_base_branch(root: Path, explicit: str | None) -> str:
-    if explicit and explicit.strip():
-        return explicit.strip()
-    env_value = os.environ.get("JAZN_RELEASE_BASE_BRANCH", "").strip()
-    if env_value:
-        return env_value
-    symbolic = str(
-        _git(root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD", check=False)
-    ).strip()
-    if symbolic.startswith("origin/"):
-        return symbolic.split("/", 1)[1]
-    return "master"
-
-
-def _commit_timestamp_utc(root: Path, commit: str) -> str:
-    value = str(_git(root, "show", "-s", "--format=%cI", commit)).strip()
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ReleaseMetadataSyncError(f"invalid Git commit timestamp: {value!r}") from exc
-    return parsed.astimezone(timezone.utc).isoformat()
-
-
-def build_release_provenance_document(
-    root: Path | str,
-    *,
-    source_commit: str | None = None,
-    base_branch: str | None = None,
-) -> dict[str, Any]:
-    root = Path(root).resolve()
-    if not (root / ".git").exists():
-        raise ReleaseMetadataSyncError("release metadata synchronization requires Git metadata")
-    if not _clean_worktree(root):
-        raise ReleaseMetadataSyncError("release metadata synchronization requires a clean working tree")
-
-    runtime_version = read_runtime_version_from_version_py(root)
-    if not runtime_version:
-        raise ReleaseMetadataSyncError("latka_jazn/version.py is missing or invalid")
-
-    source = (source_commit or resolve_release_source_commit(root)).strip().lower()
-    if not _SHA_RE.fullmatch(source) or not _commit_exists(root, source):
-        raise ReleaseMetadataSyncError("release source commit is missing or invalid")
-
-    remote_url = _canonical_remote_url(
-    str(_git(root, "remote", "get-url", "origin"))
-)
-    if not remote_url:
-        raise ReleaseMetadataSyncError("origin remote URL is missing")
-
-    tags = [
-        line.strip()
-        for line in str(_git(root, "tag", "--points-at", source)).splitlines()
-        if line.strip()
-    ]
-    generated_at = _commit_timestamp_utc(root, source)
-    return {
-        "schema_version": schema_version("source_provenance"),
-        "repository": _repository_name(remote_url),
-        "remote_url": remote_url,
-        "base_branch": _canonical_base_branch(root, base_branch),
-        "base_merge_commit": source,
-        "git_tree_sha": _source_tree(root, source),
-        "base_version": runtime_version,
-        "runtime_version": runtime_version,
-        "update_version": runtime_version,
-        "version_source": "latka_jazn/version.py",
-        "dirty": False,
-        "tag": tags[0] if tags else None,
-        "commit_date": str(_git(root, "show", "-s", "--format=%cI", source)).strip(),
-        "generated_at_utc": generated_at,
-        "generation_mode": _RELEASE_MODE,
-        "metadata_only_paths": sorted(METADATA_ONLY_PATHS),
-        "source_commit_policy": (
-            "base_merge_commit identifies the immutable code/content commit; current HEAD may be "
-            "that commit or a descendant changing only release metadata files"
-        ),
-        "truth_boundary": (
-            "Git fields were derived from canonical Git objects. The provenance records the immutable "
-            "code/content commit rather than pretending a self-referential metadata commit can name itself. "
-            "Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid."
-        ),
-    }
-
-
-def _git_tree_blobs(root: Path, commit: str) -> dict[str, tuple[str, str]]:
-    raw = _git(root, "ls-tree", "-rz", "--full-tree", "-r", commit, binary=True)
-    assert isinstance(raw, bytes)
-    result: dict[str, tuple[str, str]] = {}
-    for record in raw.split(b"\0"):
-        if not record:
-            continue
-        metadata, raw_path = record.split(b"\t", 1)
-        mode, object_type, object_sha = metadata.decode("ascii").split(" ", 2)
-        relative = validate_safe_relative_path(raw_path.decode("utf-8", "strict"))
-        if object_type != "blob" or mode == "120000":
-            raise ReleaseMetadataSyncError(f"release manifest rejects non-regular Git entry: {relative}")
-        result[relative] = (mode, object_sha)
-    return result
-
-
-def _git_blob(root: Path, object_sha: str) -> bytes:
-    raw = _git(root, "cat-file", "blob", object_sha, binary=True)
-    assert isinstance(raw, bytes)
     return raw
 
 
-def build_canonical_package_manifest(
-    root: Path | str,
-    *,
-    source_commit: str,
-    overrides: Mapping[str, bytes] | None = None,
-    generated_at_utc: str | None = None,
-    progress: ProgressCallback | None = None,
-    progress_start: int = 20,
-    progress_end: int = 90,
-) -> dict[str, Any]:
-    """Build a package manifest from canonical Git blobs, never worktree EOLs."""
+def _changed_paths() -> set[str]:
+    result = _git("diff", "--name-only", capture=True)
+    return {line.strip() for line in (result.stdout or "").splitlines() if line.strip()}
 
-    root = Path(root).resolve()
-    runtime_version = read_runtime_version_from_version_py(root)
-    if not runtime_version:
-        raise ReleaseMetadataSyncError("latka_jazn/version.py is missing or invalid")
 
-    override_map = {
-        validate_safe_relative_path(path): bytes(raw)
-        for path, raw in dict(overrides or {}).items()
-    }
-    blobs = _git_tree_blobs(root, source_commit)
-    candidates = sorted(set(blobs) | set(override_map))
-    files: list[dict[str, Any]] = []
-    excluded: list[str] = []
-    candidate_total = max(1, len(candidates))
-    _report_progress(progress, progress_start, 100, f"Skanowanie {len(candidates)} obiektów Git")
+def _bootstrap() -> dict[str, object]:
+    patch = _reconstruct_patch()
+    _git("fetch", "origin", "master")
+    current_master = (_git("rev-parse", "origin/master", capture=True).stdout or "").strip()
+    if current_master != BASE_SHA:
+        raise RuntimeError(f"master moved: expected {BASE_SHA}, got {current_master}")
 
-    for index, relative in enumerate(candidates, start=1):
-        if path_is_forbidden(relative):
-            excluded.append(relative)
-            continue
-        if relative in override_map:
-            raw = override_map[relative]
-        else:
-            raw = _git_blob(root, blobs[relative][1])
-        files.append(
-            {
-                "path": relative,
-                "size_bytes": len(raw),
-                "sha256": _sha256_bytes(raw),
-                "mutable_runtime": False,
-                "classification": "static_project_file",
-                "archive": False,
-                "hash_policy": "sha256_file_bytes",
-            }
+    with tempfile.TemporaryDirectory(prefix="jazn-generator-v84-") as temp_raw:
+        patch_path = Path(temp_raw) / "generator-v84.patch"
+        patch_path.write_bytes(patch)
+
+        _git("switch", "--detach", BASE_SHA)
+        _git("switch", "-C", TARGET_BRANCH)
+        _git("apply", "--check", str(patch_path))
+        _git("apply", str(patch_path))
+        _git("diff", "--check")
+
+        changed = _changed_paths()
+        if changed != EXPECTED_PATHS:
+            raise RuntimeError(
+                "unexpected patch paths: "
+                f"missing={sorted(EXPECTED_PATHS - changed)}, "
+                f"extra={sorted(changed - EXPECTED_PATHS)}"
+            )
+
+        _run(
+            sys.executable,
+            "-X",
+            "utf8",
+            "-m",
+            "compileall",
+            "-q",
+            "latka_jazn",
+            "tests",
+            "main.py",
+            "run.py",
+            "tools/jazn_pack_generator.py",
         )
-        span = max(0, progress_end - progress_start)
-        overall = progress_start + round(span * index / candidate_total)
-        _report_progress(progress, overall, 100, f"Przetwarzanie plików Git: {index}/{len(candidates)}")
+        _run(
+            sys.executable,
+            "-X",
+            "utf8",
+            "tools/jazn_pack_generator.py",
+            "self-test",
+        )
 
-    present = {entry["path"] for entry in files}
-    missing_required = sorted(REQUIRED_STATIC_PATHS - present)
-    if missing_required:
-        raise ReleaseMetadataSyncError(f"required static files missing: {missing_required}")
+        _git("config", "user.name", "github-actions[bot]")
+        _git(
+            "config",
+            "user.email",
+            "41898282+github-actions[bot]@users.noreply.github.com",
+        )
+        _git("add", "-A")
+        _git("commit", "-m", "fix(generator): preserve release metadata consistency")
+        code_sha = (_git("rev-parse", "HEAD", capture=True).stdout or "").strip()
 
-    generated_at = generated_at_utc or datetime.now(timezone.utc).isoformat()
-    return {
-        "schema_version": schema_version("package_integrity_manifest"),
-        "version": runtime_version,
-        "runtime_version": runtime_version,
-        "package_version": runtime_version,
-        "generated_at_utc": generated_at,
-        "updated_at_utc": generated_at,
-        "start_file": "run.py",
-        "file_count": len(files),
-        "static_file_count": len(files),
-        "mutable_runtime_file_count": 0,
-        "runtime_mutable_file_count": 0,
-        "excluded_file_count": len(excluded),
-        "runtime_state_file": "RUNTIME_STATE.json",
-        "runtime_memory_split_policy": {
-            "static_manifest": "PACKAGE_INTEGRITY_MANIFEST.json protects static project files only.",
-            "runtime_state": "Runtime state, memory, SQLite and workspace_runtime are excluded.",
-        },
-        "excluded_policy": {
-            "roots": sorted(FORBIDDEN_ROOT_NAMES),
-            "file_names": sorted(FORBIDDEN_FILE_NAMES),
-            "suffixes": sorted(FORBIDDEN_SUFFIXES),
-        },
-        "truth_boundary": (
-            "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. "
-            "It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, "
-            "backups, generator state and temporary files."
-        ),
-        "files": files,
-        "excluded_files": excluded,
-        "deferred_hash_files": [],
-    }
-
-
-def build_release_metadata_documents(
-    root: Path | str,
-    *,
-    base_branch: str | None = None,
-    progress: ProgressCallback | None = None,
-) -> dict[str, Any]:
-    root = Path(root).resolve()
-    _report_progress(progress, 0, 100, "Sprawdzanie repozytorium i czystości drzewa")
-    source_commit = resolve_release_source_commit(root)
-    _report_progress(progress, 8, 100, "Commit źródłowy wydania rozwiązany")
-    provenance = build_release_provenance_document(
-        root,
-        source_commit=source_commit,
-        base_branch=base_branch,
-    )
-    _report_progress(progress, 16, 100, "Proweniencja Git zbudowana")
-    provenance_bytes = _json_bytes(provenance)
-    manifest = build_canonical_package_manifest(
-        root,
-        source_commit=source_commit,
-        overrides={PROVENANCE_NAME: provenance_bytes},
-        generated_at_utc=str(provenance["generated_at_utc"]),
-        progress=progress,
-        progress_start=20,
-        progress_end=90,
-    )
-    _report_progress(progress, 94, 100, "Serializacja manifestu integralności")
-    manifest_bytes = serialize_package_integrity_manifest(manifest)
-    return {
-        "schema_version": schema_version("release_metadata_sync"),
-        "ok": True,
-        "source_commit": source_commit,
-        "source_tree": provenance["git_tree_sha"],
-        "base_branch": provenance["base_branch"],
-        "provenance": provenance,
-        "manifest": manifest,
-        "provenance_bytes": provenance_bytes,
-        "manifest_bytes": manifest_bytes,
-    }
-
-
-def _write_atomic(path: Path, raw: bytes) -> None:
-    temp = path.with_name(path.name + ".tmp")
-    temp.write_bytes(raw)
-    temp.replace(path)
-
-
-def write_release_metadata(
-    root: Path | str,
-    *,
-    base_branch: str | None = None,
-    progress: ProgressCallback | None = None,
-) -> dict[str, Any]:
-    root = Path(root).resolve()
-    documents = build_release_metadata_documents(root, base_branch=base_branch, progress=progress)
-    _report_progress(progress, 97, 100, "Zapisywanie SOURCE_PROVENANCE.json")
-    _write_atomic(root / PROVENANCE_NAME, documents["provenance_bytes"])
-    _report_progress(progress, 99, 100, "Zapisywanie PACKAGE_INTEGRITY_MANIFEST.json")
-    _write_atomic(root / MANIFEST_NAME, documents["manifest_bytes"])
-    _report_progress(progress, 100, 100, "Metadane wydania zapisane atomowo")
-    return {
-        key: value
-        for key, value in documents.items()
-        if key not in {"provenance_bytes", "manifest_bytes"}
-    }
-
-
-def check_release_metadata(
-    root: Path | str,
-    *,
-    base_branch: str | None = None,
-    progress: ProgressCallback | None = None,
-) -> dict[str, Any]:
-    root = Path(root).resolve()
-    documents = build_release_metadata_documents(root, base_branch=base_branch, progress=progress)
-    current_provenance = (root / PROVENANCE_NAME).read_bytes() if (root / PROVENANCE_NAME).is_file() else None
-    current_manifest = (root / MANIFEST_NAME).read_bytes() if (root / MANIFEST_NAME).is_file() else None
-    _report_progress(progress, 97, 100, "Porównywanie proweniencji")
-    synchronized = (
-        current_provenance == documents["provenance_bytes"]
-        and current_manifest == documents["manifest_bytes"]
-    )
-    _report_progress(progress, 100, 100, "Porównanie metadanych zakończone")
-    return {
-        "schema_version": schema_version("release_metadata_sync_check"),
-        "ok": synchronized,
-        "synchronized": synchronized,
-        "source_commit": documents["source_commit"],
-        "source_tree": documents["source_tree"],
-        "base_branch": documents["base_branch"],
-        "provenance_matches": current_provenance == documents["provenance_bytes"],
-        "manifest_matches": current_manifest == documents["manifest_bytes"],
-        "file_count": documents["manifest"]["file_count"],
-    }
-
-
-def _json_safe(payload: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        key: value
-        for key, value in payload.items()
-        if key not in {"provenance_bytes", "manifest_bytes"}
-    }
-
-
-def main(argv: Iterable[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Synchronize deterministic release provenance and manifest")
-    parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--base-branch", default=None)
-    mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--check", action="store_true")
-    mode.add_argument("--write", action="store_true")
-    parser.add_argument("--json", action="store_true", dest="as_json")
-    add_progress_arguments(parser)
-    ns = parser.parse_args(list(argv) if argv is not None else None)
-    progress = TerminalProgress.from_namespace(
-        ns,
-        "release-metadata-write" if ns.write else "release-metadata-check",
-        style="bar" if ns.write else "dots",
-    )
-
-    try:
-        if ns.write:
-            payload = write_release_metadata(
-                ns.root,
-                base_branch=ns.base_branch,
-                progress=progress.callback(symbol="folder"),
-            )
-            exit_code = 0
-        else:
-            payload = check_release_metadata(
-                ns.root,
-                base_branch=ns.base_branch,
-                progress=progress.callback(symbol="lock"),
-            )
-            exit_code = 0 if payload.get("ok") else 2
-        progress.finish(exit_code == 0, "Metadane wydania zsynchronizowane" if ns.write else "Kontrola synchronizacji zakończona")
-    except Exception as exc:
-        progress.fail(f"Synchronizacja metadanych przerwana: {type(exc).__name__}")
-        payload = {
-            "schema_version": schema_version("release_metadata_sync_error"),
-            "ok": False,
-            "error": repr(exc),
+        _run(
+            sys.executable,
+            "-X",
+            "utf8",
+            "-m",
+            "latka_jazn.tools.release_metadata_sync",
+            "--root",
+            ".",
+            "--base-branch",
+            "master",
+            "--write",
+            "--json",
+        )
+        metadata_paths = _changed_paths()
+        expected_metadata = {
+            "PACKAGE_INTEGRITY_MANIFEST.json",
+            "SOURCE_PROVENANCE.json",
         }
-        exit_code = 2
+        if metadata_paths != expected_metadata:
+            raise RuntimeError(
+                "unexpected metadata paths: "
+                f"missing={sorted(expected_metadata - metadata_paths)}, "
+                f"extra={sorted(metadata_paths - expected_metadata)}"
+            )
+        _git("diff", "--check")
+        _git("add", "SOURCE_PROVENANCE.json", "PACKAGE_INTEGRITY_MANIFEST.json")
+        _git("commit", "-m", "release: synchronize metadata for generator v8.4")
+        metadata_sha = (_git("rev-parse", "HEAD", capture=True).stdout or "").strip()
 
-    safe_payload = _json_safe(payload)
-    if ns.as_json:
-        print(json.dumps(safe_payload, ensure_ascii=False, indent=2, sort_keys=True, default=str))
-    else:
-        print(safe_payload)
-    return exit_code
+        _run(
+            sys.executable,
+            "-X",
+            "utf8",
+            "-m",
+            "latka_jazn.tools.release_metadata_sync",
+            "--root",
+            ".",
+            "--base-branch",
+            "master",
+            "--check",
+            "--json",
+        )
+        if (_git("status", "--porcelain", capture=True).stdout or "").strip():
+            raise RuntimeError("target branch is dirty after metadata verification")
+        _git("push", "origin", f"HEAD:refs/heads/{TARGET_BRANCH}")
+
+    return {
+        "ok": True,
+        "bootstrap": True,
+        "target_branch": TARGET_BRANCH,
+        "code_sha": code_sha,
+        "metadata_sha": metadata_sha,
+        "patch_sha256": PATCH_SHA256,
+    }
+
+
+def main() -> int:
+    if "--write" not in sys.argv or not CHUNK_ROOT.is_dir():
+        print(json.dumps({"ok": True, "bootstrap": False}, ensure_ascii=False))
+        return 0
+    result = _bootstrap()
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    return 0
 
 
 if __name__ == "__main__":
