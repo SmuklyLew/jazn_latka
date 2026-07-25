@@ -89,6 +89,43 @@ def _clean_worktree(root: Path) -> bool:
     return not status.strip()
 
 
+def _changed_worktree_paths(root: Path) -> set[str]:
+    raw = _git(
+        root,
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        binary=True,
+    )
+    assert isinstance(raw, bytes)
+    records = raw.split(b"\0")
+    paths: set[str] = set()
+    index = 0
+    while index < len(records):
+        record = records[index]
+        index += 1
+        if not record:
+            continue
+        if len(record) < 4 or record[2:3] != b" ":
+            raise ReleaseMetadataSyncError("cannot parse git status --porcelain output")
+        status = record[:2].decode("ascii", "replace")
+        path_raw = record[3:]
+        paths.add(validate_safe_relative_path(path_raw.decode("utf-8", "strict")))
+        if status[0] in {"R", "C"} or status[1] in {"R", "C"}:
+            if index >= len(records) or not records[index]:
+                raise ReleaseMetadataSyncError("incomplete rename/copy record in git status")
+            second_path = records[index]
+            index += 1
+            paths.add(validate_safe_relative_path(second_path.decode("utf-8", "strict")))
+    return paths
+
+
+def _metadata_only_dirty(root: Path) -> bool:
+    changed = _changed_worktree_paths(root)
+    return bool(changed) and changed.issubset(METADATA_ONLY_PATHS)
+
+
 def _commit_exists(root: Path, commit: str) -> bool:
     completed = subprocess.run(
         ["git", "-C", str(root), "cat-file", "-e", f"{commit}^{{commit}}"],
@@ -198,12 +235,14 @@ def build_release_provenance_document(
     *,
     source_commit: str | None = None,
     base_branch: str | None = None,
+    allow_metadata_only_dirty: bool = False,
 ) -> dict[str, Any]:
     root = Path(root).resolve()
     if not (root / ".git").exists():
         raise ReleaseMetadataSyncError("release metadata synchronization requires Git metadata")
     if not _clean_worktree(root):
-        raise ReleaseMetadataSyncError("release metadata synchronization requires a clean working tree")
+        if not allow_metadata_only_dirty or not _metadata_only_dirty(root):
+            raise ReleaseMetadataSyncError("release metadata synchronization requires a clean working tree")
 
     runtime_version = read_runtime_version_from_version_py(root)
     if not runtime_version:

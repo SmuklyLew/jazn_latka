@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "74c90f2ea74578286cb4a950d3e941cb7c69877c",
+  "base_merge_commit": "ac8013dbc3a5299c1469cfa6f9fb020b68137756",
   "base_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "commit_date": "2026-07-24T22:52:37+02:00",
+  "commit_date": "2026-07-25T20:57:45Z",
   "dirty": false,
-  "generated_at_utc": "2026-07-24T20:52:37+00:00",
+  "generated_at_utc": "2026-07-25T20:57:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "4b5495ebe8724d96bfcd4fe55c9de853c4dad0c1",
+  "git_tree_sha": "672662096ee2d5192b23cc15287cb660f9512a21",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
