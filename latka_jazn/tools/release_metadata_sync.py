@@ -12,7 +12,6 @@ import traceback
 BASE_SHA = "6c6c3acc2485324e9a2e1b385811f17f5bebf7f7"
 TARGET_BRANCH = "fix/release-safe-package-generator-v84"
 ERROR_BRANCH = "diagnostic/release-safe-package-generator-v84"
-TECH_BRANCH = "automation/release-safe-package-generator-v84-bootstrap"
 PATCH_SHA256 = "c7422ec11910d7edbf4261b5c0fc1685c59272e84105559612754bb661cbc5e5"
 PATCH_SIZE = 75477
 CHUNK_COUNT = 101
@@ -46,6 +45,14 @@ def _patch_bytes() -> bytes:
     present = sorted(CHUNK_ROOT.glob("chunk-*"))
     if present != expected:
         raise RuntimeError(f"invalid chunk set: expected {CHUNK_COUNT}, found {len(present)}")
+    lengths = [(path.name, len(path.read_text(encoding="utf-8").strip())) for path in expected]
+    invalid_lengths = [
+        (name, length, 636 if name == "chunk-100" else 1000)
+        for name, length in lengths
+        if length != (636 if name == "chunk-100" else 1000)
+    ]
+    if invalid_lengths:
+        raise RuntimeError(f"invalid chunk lengths: {invalid_lengths}")
     encoded = "".join(path.read_text(encoding="utf-8").strip() for path in expected)
     raw = base64.b64decode(encoded.encode("ascii"), validate=True)
     digest = hashlib.sha256(raw).hexdigest()
@@ -60,7 +67,6 @@ def _bootstrap() -> dict[str, object]:
     remote_master = (_git("rev-parse", "origin/master", capture=True).stdout or "").strip()
     if remote_master != BASE_SHA:
         raise RuntimeError(f"master moved: expected {BASE_SHA}, got {remote_master}")
-
     with tempfile.TemporaryDirectory(prefix="jazn-generator-v84-") as temp_raw:
         patch_path = Path(temp_raw) / "generator-v84.patch"
         patch_path.write_bytes(patch)
@@ -85,13 +91,7 @@ def _bootstrap() -> dict[str, object]:
         _git("commit", "-m", "fix(generator): preserve release metadata consistency")
         commit_sha = (_git("rev-parse", "HEAD", capture=True).stdout or "").strip()
         _git("push", "origin", f"HEAD:refs/heads/{TARGET_BRANCH}")
-    return {
-        "ok": True,
-        "bootstrap": True,
-        "target_branch": TARGET_BRANCH,
-        "commit_sha": commit_sha,
-        "patch_sha256": PATCH_SHA256,
-    }
+    return {"ok": True, "bootstrap": True, "target_branch": TARGET_BRANCH, "commit_sha": commit_sha, "patch_sha256": PATCH_SHA256}
 
 
 def _publish_error(text: str) -> None:
