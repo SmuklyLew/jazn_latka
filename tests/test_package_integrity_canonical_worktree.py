@@ -6,7 +6,10 @@ import json
 import shutil
 import subprocess
 
-from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+from latka_jazn.tools.package_integrity import (
+    build_package_integrity_manifest,
+    verify_package_integrity_manifest,
+)
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION
 
 
@@ -144,3 +147,20 @@ def test_unpacked_tree_without_git_verifies_raw_filesystem_bytes(tmp_path: Path)
         item.get("code") == "sha256_mismatch" and item.get("path") == "main.py"
         for item in report["errors"]
     )
+
+
+def test_manifest_override_hashes_virtual_provenance_without_touching_source(tmp_path: Path) -> None:
+    root = _release_repo(tmp_path)
+    original = (root / "SOURCE_PROVENANCE.json").read_bytes()
+    virtual = b'{"runtime_version":"virtual"}\n'
+
+    payload = build_package_integrity_manifest(
+        root,
+        relative_paths=_REQUIRED,
+        overrides={"SOURCE_PROVENANCE.json": virtual},
+    )
+
+    assert (root / "SOURCE_PROVENANCE.json").read_bytes() == original
+    row = next(item for item in payload["files"] if item["path"] == "SOURCE_PROVENANCE.json")
+    assert row["size_bytes"] == len(virtual)
+    assert row["sha256"] == hashlib.sha256(virtual).hexdigest()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Jaźń / Łatka — generator paczek v8.3
+Jaźń / Łatka — generator paczek v8.4
 
 Najważniejsza zasada: podgląd, manifest i ZIP korzystają z jednego,
 zamrożonego planu plików. Generator nie pakuje archiwów, baz systemowych,
@@ -36,6 +36,7 @@ import argparse
 import contextlib
 import ast
 import bisect
+import base64
 import datetime as dt
 import fnmatch
 import hashlib
@@ -57,7 +58,7 @@ import uuid
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any, BinaryIO, Iterable, Iterator, Sequence, cast
+from typing import Any, BinaryIO, Iterable, Iterator, Mapping, Sequence, cast
 
 # prompt_toolkit jest opcjonalny. Tryb tekstowy zawsze działa bez zależności.
 try:  # pragma: no cover - zależne od terminala użytkownika
@@ -114,7 +115,7 @@ except ImportError:  # pragma: no cover
     HAS_PROMPT_TOOLKIT = False
 
 
-GENERATOR_VERSION = "8.3"
+GENERATOR_VERSION = "8.4"
 CHUNK_SIZE = 1024 * 1024
 DEFAULT_PART_SIZE_MB = 400
 DEFAULT_COMPRESSION_LEVEL = 6
@@ -123,18 +124,21 @@ DEFAULT_FORMAT = "auto"
 
 SETTINGS_FILE_NAME = "jazn_pack_generator_settings.json"
 LEGACY_SETTINGS_FILE_NAMES = ("__jazn_pack_generator_settings.json",)
-SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.3"
+SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.4"
 UI_MODE_CHOICES = ("tekstowy", "kursorowy")
 UI_EXIT_MARKER = "__JAZN_UI_EXIT__"
 UI_CANCEL_MARKER = "__JAZN_UI_CANCEL__"
 
 PACKAGE_INTEGRITY_MANIFEST = "PACKAGE_INTEGRITY_MANIFEST.json"
+SOURCE_PROVENANCE = "SOURCE_PROVENANCE.json"
+RELEASE_METADATA_PATHS = (SOURCE_PROVENANCE, PACKAGE_INTEGRITY_MANIFEST)
+RELEASE_METADATA_LOCK = "__jazn_pack_generator.lock.json"
 MEMORY_PACKAGE_MANIFEST = "memory/MEMORY_PACKAGE_MANIFEST.json"
 PACKAGE_SET_SCHEMA = "jazn_package_set/v2"
 MEMORY_MANIFEST_SCHEMA = "jazn_memory_package_manifest/v1"
 
 REQUIRED_SYSTEM_PATHS = {
-    "SOURCE_PROVENANCE.json",
+    SOURCE_PROVENANCE,
     "run.py",
     "main.py",
     "latka_jazn/version.py",
@@ -153,7 +157,7 @@ class Theme:
     kontrolowany ekran ``window_too_small`` zamiast ściskać zawartość.
     """
 
-    name: str = "latka-cyan-v8.3"
+    name: str = "latka-cyan-v8.4"
     left_panel_width: int = 36
     right_min_width: int = 36
     compact_breakpoint: int = 96
@@ -362,6 +366,7 @@ SYSTEM_FORBIDDEN_ROOTS = {
 
 SYSTEM_FORBIDDEN_FILE_NAMES = {
     PACKAGE_INTEGRITY_MANIFEST.lower(),
+    RELEASE_METADATA_LOCK.lower(),
     "manifest_current.json",
     "runtime_state.json",
     "jazn_active_runtime.json",
@@ -1097,14 +1102,72 @@ def serialize_json(payload: Any) -> bytes:
 
 
 # -----------------------------------------------------------------------------
-# Kanoniczny manifest systemowy
+# Kanoniczne metadane wydania i manifest systemowy
 # -----------------------------------------------------------------------------
 
 
-def source_manifest_bridge(root: Path, relative_paths: Sequence[str]) -> tuple[dict[str, Any], bytes] | None:
+def source_provenance_bridge(root: Path) -> tuple[dict[str, Any], bytes]:
+    """Buduje proweniencję z kanonicznych obiektów Git bez zapisu do źródła."""
+
+    bridge = r'''
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+sys.path.insert(0, str(root))
+try:
+    from latka_jazn.tools.release_metadata_sync import build_release_provenance_document
+    payload = build_release_provenance_document(root, allow_metadata_only_dirty=True)
+    raw = (json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    result = {"ok": True, "payload": payload, "provenance_b64": __import__("base64").b64encode(raw).decode("ascii")}
+except Exception as exc:
+    result = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+print("__JAZN_RESULT__" + json.dumps(result, ensure_ascii=False))
+'''
+    completed = subprocess.run(
+        [sys.executable, "-X", "utf8", "-c", bridge, str(root)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=300,
+        check=False,
+    )
+    marker = "__JAZN_RESULT__"
+    lines = [line for line in completed.stdout.splitlines() if line.startswith(marker)]
+    if not lines:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise PackError(f"Synchronizator proweniencji nie zwrócił kontraktu JSON: {detail[:1000]}")
+    result = json.loads(lines[-1][len(marker):])
+    if not result.get("ok"):
+        raise PackError(
+            "Nie można zbudować kanonicznego SOURCE_PROVENANCE.json bez zmiany źródła: "
+            f"{result.get('error') or 'nieznany błąd'}"
+        )
+    payload = result.get("payload")
+    encoded = result.get("provenance_b64")
+    if not isinstance(payload, dict) or not isinstance(encoded, str):
+        raise PackError("Niepełna odpowiedź synchronizatora proweniencji.")
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, TypeError) as exc:
+        raise PackError("Synchronizator proweniencji zwrócił niepoprawne bajty Base64.") from exc
+    return payload, raw
+
+
+def source_manifest_bridge(
+    root: Path,
+    relative_paths: Sequence[str],
+    *,
+    overrides: Mapping[str, bytes] | None = None,
+    generated_at_utc: str | None = None,
+) -> tuple[dict[str, Any], bytes] | None:
     """Używa modułu integralności pakowanego runtime, jeśli obsługuje exact plan."""
 
     bridge = r'''
+import base64
 import inspect
 import io
 import json
@@ -1125,8 +1188,25 @@ if "relative_paths" not in signature.parameters:
     print("__JAZN_RESULT__" + json.dumps({"available": False, "reason": "relative_paths unsupported"}, ensure_ascii=False))
     raise SystemExit(0)
 
+overrides = {
+    str(path): base64.b64decode(encoded.encode("ascii"), validate=True)
+    for path, encoded in dict(request.get("overrides_b64") or {}).items()
+}
+if overrides and "overrides" not in signature.parameters:
+    print("__JAZN_RESULT__" + json.dumps({"available": False, "reason": "overrides unsupported"}, ensure_ascii=False))
+    raise SystemExit(0)
+
 try:
-    payload = build_package_integrity_manifest(root, relative_paths=request["relative_paths"])
+    kwargs = {"relative_paths": request["relative_paths"]}
+    if overrides:
+        kwargs["overrides"] = overrides
+    generated_at_utc = request.get("generated_at_utc")
+    if generated_at_utc is not None:
+        if "generated_at_utc" not in signature.parameters:
+            print("__JAZN_RESULT__" + json.dumps({"available": False, "reason": "generated_at_utc unsupported"}, ensure_ascii=False))
+            raise SystemExit(0)
+        kwargs["generated_at_utc"] = str(generated_at_utc)
+    payload = build_package_integrity_manifest(root, **kwargs)
     try:
         from latka_jazn.tools.package_integrity import serialize_package_integrity_manifest
     except Exception:
@@ -1142,7 +1222,14 @@ print("__JAZN_RESULT__" + json.dumps(result, ensure_ascii=False))
 '''
     completed = subprocess.run(
         [sys.executable, "-X", "utf8", "-c", bridge, str(root)],
-        input=json.dumps({"relative_paths": list(relative_paths)}, ensure_ascii=False),
+        input=json.dumps({
+            "relative_paths": list(relative_paths),
+            "overrides_b64": {
+                normalize_rel(path): base64.b64encode(bytes(raw)).decode("ascii")
+                for path, raw in dict(overrides or {}).items()
+            },
+            "generated_at_utc": generated_at_utc,
+        }, ensure_ascii=False),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -1244,39 +1331,86 @@ def build_system_plan(
     candidates: Sequence[str],
     excluded: list[tuple[str, str]],
     scan_method: str,
+    *,
+    synchronize_release_metadata: bool = False,
 ) -> PackPlan:
-    # Źródłowy manifest nigdy nie jest kopiowany. Zastąpi go świeży plik wirtualny.
-    candidates = [path for path in candidates if path != PACKAGE_INTEGRITY_MANIFEST]
+    """Buduje jeden zamrożony plan systemu bez modyfikowania source root.
 
-    bridge_result = source_manifest_bridge(root, candidates)
+    W trybie synchronizacji proweniencja jest wyliczana z kanonicznych obiektów
+    Git i trafia do planu jako plik wirtualny. Manifest hashuje dokładnie te
+    wirtualne bajty, więc podgląd i ZIP są spójne jeszcze przed ewentualnym
+    zapisaniem metadanych z powrotem do repozytorium.
+    """
+
+    candidates = [path for path in candidates if path != PACKAGE_INTEGRITY_MANIFEST]
+    overrides: dict[str, bytes] = {}
+    provenance_payload: dict[str, Any] | None = None
+    if synchronize_release_metadata:
+        provenance_payload, provenance_bytes = source_provenance_bridge(root)
+        provenance_version = str(
+            provenance_payload.get("runtime_version")
+            or provenance_payload.get("base_version")
+            or ""
+        ).strip()
+        if provenance_version != version.full_version:
+            if re.sub(r"^v", "", provenance_version, flags=re.I) != re.sub(
+                r"^v", "", version.full_version, flags=re.I
+            ):
+                raise PackError(
+                    "Kanoniczna proweniencja różni się od version.py: "
+                    f"provenance={provenance_version!r}, version.py={version.full_version!r}"
+                )
+        candidates = [path for path in candidates if path != SOURCE_PROVENANCE]
+        overrides[SOURCE_PROVENANCE] = provenance_bytes
+
+    manifest_candidates = sorted(set(candidates) | set(overrides))
+    bridge_result = source_manifest_bridge(
+        root,
+        manifest_candidates,
+        overrides=overrides,
+        generated_at_utc=(
+            str(provenance_payload.get("generated_at_utc"))
+            if provenance_payload is not None
+            else None
+        ),
+    )
     entries: list[PlanEntry] = []
     if bridge_result is not None:
         payload, manifest_bytes = bridge_result
         manifest_files = payload.get("files")
         if not isinstance(manifest_files, list):
             raise PackError("Kanoniczny manifest nie zawiera listy files.")
-        candidate_set = set(candidates)
+        candidate_set = set(manifest_candidates)
         for item in manifest_files:
             if not isinstance(item, dict):
                 raise PackError("Niepoprawny wpis files w kanonicznym manifeście.")
             relative = normalize_rel(str(item.get("path") or ""))
             if relative not in candidate_set:
                 raise PackError(f"Manifest wskazuje plik spoza zaakceptowanych kandydatów: {relative}")
-            entry = hash_source_entry(root, relative, "static_project_file")
+            if relative in overrides:
+                entry = virtual_entry(relative, overrides[relative], "static_project_file")
+            else:
+                entry = hash_source_entry(root, relative, "static_project_file")
             expected_size = int(item.get("size_bytes", -1))
             expected_hash = str(item.get("sha256") or "").lower()
             if expected_size != entry.size_bytes or expected_hash != entry.sha256:
-                raise PackError(f"Manifest źródłowy rozjechał się z working tree: {relative}")
+                raise PackError(f"Manifest źródłowy rozjechał się z zamrożonym planem: {relative}")
             entries.append(entry)
-        builder = "latka_jazn.tools.package_integrity:relative_paths"
+        builder = (
+            "release_metadata_sync+package_integrity:overrides"
+            if overrides
+            else "latka_jazn.tools.package_integrity:relative_paths"
+        )
     else:
         total = len(candidates)
         for index, relative in enumerate(candidates, start=1):
             entries.append(hash_source_entry(root, relative, "static_project_file"))
             if index % 50 == 0 or index == total:
                 print_progress(index, total, "Hash system")
+        for relative, raw in overrides.items():
+            entries.append(virtual_entry(relative, raw, "static_project_file"))
         payload, manifest_bytes = build_internal_system_manifest(root, version, entries, excluded)
-        builder = "internal_fallback"
+        builder = "internal_fallback+virtual_provenance" if overrides else "internal_fallback"
 
     present = {item.relative for item in entries}
     missing = sorted(REQUIRED_SYSTEM_PATHS - present)
@@ -1285,7 +1419,6 @@ def build_system_plan(
 
     manifest_version = str(payload.get("runtime_version") or payload.get("version") or "")
     if manifest_version != version.full_version:
-        # Dopuszczamy jedynie różnicę w wiodącym v.
         if re.sub(r"^v", "", manifest_version, flags=re.I) != re.sub(r"^v", "", version.full_version, flags=re.I):
             raise PackError(
                 "Wersja świeżego manifestu różni się od version.py: "
@@ -1382,8 +1515,14 @@ def build_plan(
     *,
     base_excludes: Sequence[str] | None = None,
     manual_excludes_enabled: bool = True,
+    synchronize_release_metadata: bool = False,
 ) -> PackPlan:
     root = root.expanduser().resolve()
+    if profile in {"system", "combined"} and (root / RELEASE_METADATA_LOCK).exists():
+        raise PackError(
+            "Metadane wydania są aktualnie zapisywane przez inny proces generatora: "
+            f"{root / RELEASE_METADATA_LOCK}"
+        )
     if profile not in {"system", "memory", "combined"}:
         raise PackError(f"Niepoprawny profil planu: {profile}")
     version = read_version_info(root)
@@ -1398,7 +1537,14 @@ def build_plan(
             custom_excludes=custom_excludes,
             manual_excludes_enabled=manual_excludes_enabled,
         )
-        return build_system_plan(root, version, selected, excluded, system_scan_method)
+        return build_system_plan(
+            root,
+            version,
+            selected,
+            excluded,
+            system_scan_method,
+            synchronize_release_metadata=synchronize_release_metadata,
+        )
 
     if profile == "memory":
         memory_candidates, memory_scan_method = discover_memory_candidates(root)
@@ -1443,6 +1589,7 @@ def build_plan(
         system_selected,
         system_excluded,
         system_scan_method,
+        synchronize_release_metadata=synchronize_release_metadata,
     )
     memory_plan = (
         build_memory_plan(
@@ -2366,24 +2513,140 @@ def run_compatibility_matrix(
     }
 
 
-def write_source_manifest_from_plan(plan: PackPlan) -> Path | None:
-    manifest_entry = next(
-        (entry for entry in plan.entries if entry.relative == PACKAGE_INTEGRITY_MANIFEST),
+@contextlib.contextmanager
+def release_metadata_lock(root: Path) -> Iterator[None]:
+    """Blokuje równoległy zapis pary metadanych przez drugi generator."""
+
+    path = root / RELEASE_METADATA_LOCK
+    payload = serialize_json({
+        "schema_version": "jazn_pack_generator_release_metadata_lock/v1",
+        "pid": os.getpid(),
+        "created_at_utc": utc_now(),
+    })
+    try:
+        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError as exc:
+        raise PackError(
+            f"Inny proces generatora aktualizuje metadane wydania: {path}. "
+            "Jeżeli poprzedni proces zakończył się awarią, sprawdź i usuń wyłącznie ten plik blokady."
+        ) from exc
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        yield
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def _release_metadata_entries(plan: PackPlan) -> dict[str, PlanEntry]:
+    entries = {
+        entry.relative: entry
+        for entry in plan.entries
+        if entry.relative in RELEASE_METADATA_PATHS and entry.virtual_bytes is not None
+    }
+    missing = [path for path in RELEASE_METADATA_PATHS if path not in entries]
+    if missing:
+        raise PackError(
+            "Plan nie zawiera kompletnej wirtualnej pary metadanych wydania: "
+            + ", ".join(missing)
+        )
+    manifest = json.loads(entries[PACKAGE_INTEGRITY_MANIFEST].virtual_bytes.decode("utf-8-sig"))
+    manifest_files = manifest.get("files")
+    if not isinstance(manifest_files, list):
+        raise PackError("Wirtualny manifest nie zawiera listy files.")
+    provenance_record = next(
+        (
+            item
+            for item in manifest_files
+            if isinstance(item, dict) and item.get("path") == SOURCE_PROVENANCE
+        ),
         None,
     )
-    if manifest_entry is None or manifest_entry.virtual_bytes is None:
-        return None
-    target = plan.root / PACKAGE_INTEGRITY_MANIFEST
-    temp = target.with_name(target.name + f".{uuid.uuid4().hex}.tmp")
-    temp.write_bytes(manifest_entry.virtual_bytes)
+    if not isinstance(provenance_record, dict):
+        raise PackError("Wirtualny manifest nie chroni SOURCE_PROVENANCE.json.")
+    provenance = entries[SOURCE_PROVENANCE]
+    if (
+        int(provenance_record.get("size_bytes", -1)) != provenance.size_bytes
+        or str(provenance_record.get("sha256") or "").lower() != provenance.sha256
+    ):
+        raise PackError("Wirtualny manifest nie odpowiada wirtualnej proweniencji.")
+    return entries
+
+
+def _write_file_from_temp(temp: Path, target: Path) -> None:
     try:
         os.replace(temp, target)
     except PermissionError:
-        target.write_bytes(manifest_entry.virtual_bytes)
+        target.write_bytes(temp.read_bytes())
         temp.unlink(missing_ok=True)
-    if target.read_bytes() != manifest_entry.virtual_bytes:
-        raise PackError("Zapisany PACKAGE_INTEGRITY_MANIFEST.json różni się od manifestu planu.")
-    return target
+
+
+def _restore_metadata_file(target: Path, original: bytes | None) -> None:
+    if original is None:
+        target.unlink(missing_ok=True)
+        return
+    temp = target.with_name(target.name + f".{uuid.uuid4().hex}.restore.tmp")
+    temp.write_bytes(original)
+    _write_file_from_temp(temp, target)
+
+
+def write_source_release_metadata_from_plan(plan: PackPlan) -> dict[str, Path]:
+    """Zapisuje proweniencję i manifest po sukcesie ZIP, z pełnym rollbackiem."""
+
+    entries = _release_metadata_entries(plan)
+    targets = {path: plan.root / path for path in RELEASE_METADATA_PATHS}
+    originals = {
+        path: target.read_bytes() if target.is_file() else None
+        for path, target in targets.items()
+    }
+    temps: dict[str, Path] = {}
+    with release_metadata_lock(plan.root):
+        try:
+            for path in RELEASE_METADATA_PATHS:
+                target = targets[path]
+                temp = target.with_name(target.name + f".{uuid.uuid4().hex}.tmp")
+                raw = entries[path].virtual_bytes
+                assert raw is not None
+                with temp.open("wb") as handle:
+                    handle.write(raw)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                temps[path] = temp
+
+            for path in RELEASE_METADATA_PATHS:
+                _write_file_from_temp(temps[path], targets[path])
+
+            for path in RELEASE_METADATA_PATHS:
+                expected = entries[path].virtual_bytes
+                if targets[path].read_bytes() != expected:
+                    raise PackError(f"Zapisany {path} różni się od zamrożonego planu.")
+        except Exception as exc:
+            restore_errors: list[str] = []
+            for path in reversed(RELEASE_METADATA_PATHS):
+                try:
+                    _restore_metadata_file(targets[path], originals[path])
+                except Exception as restore_exc:  # pragma: no cover - katastrofa filesystemu
+                    restore_errors.append(f"{path}: {type(restore_exc).__name__}: {restore_exc}")
+            detail = f"; rollback errors: {restore_errors}" if restore_errors else ""
+            if isinstance(exc, PackError):
+                raise PackError(f"{exc}{detail}") from exc
+            raise PackError(
+                "Nie udało się zapisać pary metadanych wydania; przywrócono poprzedni stan"
+                f"{detail}: {type(exc).__name__}: {exc}"
+            ) from exc
+        finally:
+            for temp in temps.values():
+                temp.unlink(missing_ok=True)
+    return targets
+
+
+def write_source_manifest_from_plan(plan: PackPlan) -> Path | None:
+    """Alias zgodności: synchronizuje całą parę, zwraca ścieżkę manifestu."""
+
+    paths = write_source_release_metadata_from_plan(plan)
+    return paths.get(PACKAGE_INTEGRITY_MANIFEST)
 
 
 def package_one(plan: PackPlan, options: PackOptions, base_zip_name: str) -> PackageResult:
@@ -2527,6 +2790,7 @@ def plan_configuration_signature(options: PackOptions) -> str:
         "base_excludes": list(options.base_excludes),
         "custom_excludes": list(options.custom_excludes),
         "manual_excludes_enabled": bool(options.manual_excludes_enabled),
+        "synchronize_release_metadata": bool(options.update_source_manifest),
     }
     raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
@@ -2581,13 +2845,22 @@ def verify_plan_current(plan: PackPlan, options: PackOptions) -> tuple[bool, str
             return False, "wersja lub nazwa wydania w version.py uległa zmianie"
 
         expected_paths = _selected_source_paths_for_plan(plan, options)
-        planned_paths = {entry.relative for entry in plan.entries if entry.source is not None}
+        planned_paths = {
+            entry.relative
+            for entry in plan.entries
+            if entry.source is not None or entry.relative == SOURCE_PROVENANCE
+        }
         if expected_paths != planned_paths:
             missing = sorted(expected_paths - planned_paths)[:5]
             extra = sorted(planned_paths - expected_paths)[:5]
             return False, f"zmieniła się lista plików: nowe={missing}, usunięte={extra}"
 
         for entry in plan.entries:
+            if entry.relative == SOURCE_PROVENANCE and entry.virtual_bytes is not None:
+                _, current_provenance = source_provenance_bridge(root)
+                if sha256_bytes(current_provenance) != entry.sha256:
+                    return False, "kanoniczna proweniencja Git uległa zmianie"
+                continue
             if entry.source is None:
                 continue
             if not entry.source.is_file():
@@ -2624,12 +2897,14 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
             source, "system", options.custom_excludes,
             base_excludes=options.base_excludes,
             manual_excludes_enabled=options.manual_excludes_enabled,
+            synchronize_release_metadata=options.update_source_manifest,
         )]
         try:
             plans.append(build_plan(
                 source, "memory", options.custom_excludes,
                 base_excludes=options.base_excludes,
                 manual_excludes_enabled=options.manual_excludes_enabled,
+                synchronize_release_metadata=False,
             ))
         except PackError as exc:
             _emit_operation_line(f"UWAGA: pomijam paczkę pamięci: {exc}")
@@ -2638,6 +2913,9 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
         source, options.profile, options.custom_excludes,
         base_excludes=options.base_excludes,
         manual_excludes_enabled=options.manual_excludes_enabled,
+        synchronize_release_metadata=(
+            options.update_source_manifest and options.profile in {"system", "combined"}
+        ),
     )]
 
 
@@ -2670,14 +2948,22 @@ def run_pack_with_plans(options: PackOptions, plans: Sequence[PackPlan]) -> list
         name = names.get(plan.profile)
         if not name:
             raise PackError(f"Brak nazwy wynikowej dla profilu planu: {plan.profile}")
-        if options.update_source_manifest and plan.profile in {"system", "combined"}:
-            manifest_path = write_source_manifest_from_plan(plan)
-            if manifest_path:
-                _emit_operation_line(f"Zaktualizowano manifest źródłowy: {manifest_path}")
         result = package_one(plan, options, name)
         if result.plan is not plan or plan.plan_sha256() != plan_hash_before:
             raise PackError("Plan został zmieniony podczas pakowania.")
         results.append(result)
+
+    if options.update_source_manifest:
+        metadata_plan = next(
+            (plan for plan in plans if plan.profile in {"system", "combined"}),
+            None,
+        )
+        if metadata_plan is not None:
+            paths = write_source_release_metadata_from_plan(metadata_plan)
+            _emit_operation_line(
+                "Zsynchronizowano metadane wydania po poprawnym utworzeniu ZIP: "
+                + ", ".join(str(paths[path]) for path in RELEASE_METADATA_PATHS)
+            )
     return results
 
 
@@ -3136,7 +3422,7 @@ def settings_preview_lines(state: InteractiveState) -> list[str]:
         "  • force — nadpisywanie",
         "  • base_excludes / custom_excludes / manual_excludes_enabled",
         "  • sidecars — pliki pomocnicze",
-        "  • update_source_manifest — aktualizacja mapy",
+        "  • update_source_manifest — synchronizacja proweniencji i manifestu po sukcesie ZIP",
         "  • compatibility_checks — testy ZIP",
         "  • ui_mode / ui_auto_start",
         "  • auto_save_settings",
@@ -3824,12 +4110,22 @@ def extract_interactive(state: InteractiveState) -> None:
 
 def update_manifest_interactive(state: InteractiveState) -> None:
     options = state.to_options()
-    plan = build_plan(options.source, "system", options.custom_excludes, base_excludes=options.base_excludes, manual_excludes_enabled=options.manual_excludes_enabled)
-    path = write_source_manifest_from_plan(plan)
-    if path is None:
-        raise PackError("Plan nie zawiera wirtualnego PACKAGE_INTEGRITY_MANIFEST.json.")
-    message = [f"Zapisano: {path}", f"Wersja: {plan.version.full_version}", f"Pliki statyczne: {len([e for e in plan.entries if e.classification == 'static_project_file'])}", f"SHA-256: {sha256_file(path)}"]
-    cursor_message_page("MANIFEST ZAKTUALIZOWANY", message, kind="ok") if state.ui_mode == "kursorowy" else print("\n".join(message))
+    plan = build_plan(
+        options.source,
+        "system",
+        options.custom_excludes,
+        base_excludes=options.base_excludes,
+        manual_excludes_enabled=options.manual_excludes_enabled,
+        synchronize_release_metadata=True,
+    )
+    paths = write_source_release_metadata_from_plan(plan)
+    message = [
+        *(f"Zapisano: {name} -> {path}" for name, path in paths.items()),
+        f"Wersja: {plan.version.full_version}",
+        f"Pliki statyczne: {len([e for e in plan.entries if e.classification == 'static_project_file'])}",
+        *(f"SHA-256 {name}: {sha256_file(path)}" for name, path in paths.items()),
+    ]
+    cursor_message_page("METADANE WYDANIA ZAKTUALIZOWANE", message, kind="ok") if state.ui_mode == "kursorowy" else print("\n".join(message))
 
 
 def _legacy_main_menu_rows_v611(state: InteractiveState) -> list[str]:
@@ -3846,21 +4142,21 @@ def _legacy_main_menu_rows_v611(state: InteractiveState) -> list[str]:
         f"Kompresja: [{state.compression_level}]",
         f"Nadpisywanie: [{'TAK' if state.force else 'NIE'}]",
         f"Pliki pomocnicze: [{'TAK' if state.sidecars else 'NIE'}]",
-        f"Aktualizacja manifestu: [{'TAK' if state.update_source_manifest else 'NIE'}]",
+        f"Synchronizacja metadanych: [{'TAK' if state.update_source_manifest else 'NIE'}]",
         f"Testy zgodności ZIP: [{'TAK' if state.compatibility_checks else 'NIE'}]",
         f"Wykluczenia: [podstawowe {len(state.base_excludes)} • ręczne {len(state.custom_excludes)} {manual}]",
         f"Interfejs: [{state.ui_mode}]",
         "Zapisz ustawienia",
         "Zweryfikuj istniejącą paczkę",
         "Bezpiecznie rozpakuj paczkę",
-        "Aktualizuj PACKAGE_INTEGRITY_MANIFEST.json teraz",
+        "Synchronizuj SOURCE_PROVENANCE.json + manifest",
         "Wyjdź",
     ]
 
 
 def _legacy_main_menu_details_v611(state: InteractiveState) -> list[str]:
     return [
-        "Buduje jeden zamrożony plan, aktualizuje manifest (gdy włączone), pakuje, weryfikuje CRC/SHA-256 i uruchamia testy zgodności.",
+        "Buduje wirtualną parę proweniencji i manifestu, zamraża plan, pakuje i weryfikuje ZIP; źródło zapisuje dopiero po pełnym sukcesie.",
         "Pokazuje wersję runtime, nazwę pliku, liczbę plików, rozmiar i Plan SHA-256.",
         "Edytuj ścieżkę bez opuszczania trybu pełnoekranowego. Root musi zawierać latka_jazn/version.py.",
         "Edytuj folder wynikowy bez opuszczania trybu pełnoekranowego. Musi leżeć poza źródłem.",
@@ -3871,14 +4167,14 @@ def _legacy_main_menu_details_v611(state: InteractiveState) -> list[str]:
         "Poziom DEFLATE 0–9. ZIP_DEFLATED zapewnia szeroką zgodność z archiwizatorami.",
         "Gdy wyłączone, generator nie zastąpi istniejących wyników o tej samej nazwie.",
         "Tworzy package.json, parts.sha256 oraz join.ps1 dla formatu binary.",
-        "Zapisuje świeży manifest dokładnie odpowiadający kanonicznemu planowi statycznemu.",
+        "Po poprawnym ZIP zapisuje razem SOURCE_PROVENANCE.json i manifest; awaria uruchamia rollback obu plików.",
         "Python zipfile jest obowiązkowy; dostępne 7-Zip, WinRAR, WinZip i Info-ZIP są testowane automatycznie.",
         "Osobna edycja listy podstawowej i ręcznej, dodawanie, edycja, usuwanie i przełącznik aktywności.",
         "Wybór interfejsu. Proste zmiany w trybie kursorowym nie przełączają aplikacji do trybu tekstowego.",
-        "Zapisuje konfigurację v8.3 atomowo obok skryptu.",
+        "Zapisuje konfigurację v8.4 atomowo obok skryptu.",
         "Sprawdza sidecar, SHA-256, CRC i kompletność wpisów.",
         "Najpierw weryfikuje, potem rozpakowuje z ochroną przed path traversal.",
-        "Jawnie aktualizuje źródłowy manifest bez tworzenia ZIP-a.",
+        "Jawnie synchronizuje SOURCE_PROVENANCE.json i PACKAGE_INTEGRITY_MANIFEST.json bez tworzenia ZIP-a.",
         "Pokazuje podsumowanie i pozwala zapisać ustawienia albo wrócić do programu.",
     ]
 
@@ -3889,7 +4185,7 @@ def _state_status_lines(state: InteractiveState) -> list[str]:
         f"Format       {state.archive_format}",
         f"Limit        {state.part_size_mb} MiB",
         f"Kompresja    DEFLATE {state.compression_level}",
-        f"Manifest     {'auto' if state.update_source_manifest else 'bez zapisu'}",
+        f"Metadane     {'po sukcesie ZIP' if state.update_source_manifest else 'tylko w ZIP'}",
         f"Zgodność     {'włączona' if state.compatibility_checks else 'wyłączona'}",
         f"Zmiany       {'NIEZAPISANE' if state.dirty else 'zapisane'}",
     ]
@@ -4437,7 +4733,7 @@ def print_results(results: Sequence[PackageResult]) -> None:
 
 
 def run_self_test() -> dict[str, Any]:
-    """Regresja v8.3: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
+    """Regresja v8.4: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
     with tempfile.TemporaryDirectory(prefix="jazn-pack-v8-selftest-") as tmp_raw:
         temp = Path(tmp_raw)
         version = VersionInfo(
@@ -4610,7 +4906,7 @@ def run_self_test() -> dict[str, Any]:
 
 
 # -----------------------------------------------------------------------------
-# Interfejs v8.3 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
+# Interfejs v8.4 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
 # -----------------------------------------------------------------------------
 
 DASHBOARD_GROUPS: dict[int, str] = {
@@ -4799,7 +5095,7 @@ def cursor_dashboard(
     _output: Any = None,
     _debug_state: dict[str, Any] | None = None,
 ) -> str:
-    """Uruchamia stabilny pulpit v8.3.
+    """Uruchamia stabilny pulpit v8.4.
 
     Interfejs ma jeden stały punkt fokusu dla menu i po jednym trwałym punkcie
     fokusu dla każdego rodzaju prawego widoku. Przy małej szerokości działa jak
@@ -4807,7 +5103,7 @@ def cursor_dashboard(
     """
 
     if not _dashboard_available():
-        raise PackError("Pulpit v8.3 wymaga kompletnej biblioteki prompt_toolkit.")
+        raise PackError("Pulpit v8.4 wymaga kompletnej biblioteki prompt_toolkit.")
 
     application_cls = cast(Any, _pt_Application)
     condition_cls = cast(Any, _pt_Condition)
@@ -5382,7 +5678,7 @@ def cursor_dashboard(
         elif options_index == 8:
             state.update_source_manifest = not state.update_source_manifest
             mark_interactive_state_changed(state)
-            set_info("Aktualizacja mapy zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
+            set_info("Synchronizacja metadanych zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
         elif options_index == 9:
             state.compatibility_checks = not state.compatibility_checks
             mark_interactive_state_changed(state)
@@ -5681,6 +5977,7 @@ def cursor_dashboard(
                     root, "system", options.custom_excludes,
                     base_excludes=options.base_excludes,
                     manual_excludes_enabled=options.manual_excludes_enabled,
+                    synchronize_release_metadata=True,
                 )
                 path = write_source_manifest_from_plan(plan)
                 if path is None:
@@ -6969,7 +7266,7 @@ def interactive(ui_override: str | None = None) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v8.3", allow_abbrev=False)
+    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v8.4", allow_abbrev=False)
     root.add_argument("--version", action="version", version=GENERATOR_VERSION)
     sub = root.add_subparsers(dest="command")
 
@@ -6989,7 +7286,13 @@ def parser() -> argparse.ArgumentParser:
     pack.add_argument("--default-exclude", action="append", default=[])
     pack.add_argument("--no-default-excludes", action="store_true")
     pack.add_argument("--no-sidecars", action="store_true")
-    pack.add_argument("--no-update-manifest", action="store_true")
+    pack.add_argument(
+        "--no-update-release-metadata",
+        "--no-update-manifest",
+        dest="no_update_release_metadata",
+        action="store_true",
+        help="Nie zapisuj po sukcesie SOURCE_PROVENANCE.json ani PACKAGE_INTEGRITY_MANIFEST.json.",
+    )
     pack.add_argument("--no-compatibility-checks", action="store_true")
 
     plan = sub.add_parser("plan", help="Pokaż kanoniczny plan bez pakowania", allow_abbrev=False)
@@ -6998,6 +7301,11 @@ def parser() -> argparse.ArgumentParser:
     plan.add_argument("--exclude", action="append", default=[])
     plan.add_argument("--default-exclude", action="append", default=[])
     plan.add_argument("--no-default-excludes", action="store_true")
+    plan.add_argument(
+        "--no-synchronize-release-metadata",
+        action="store_true",
+        help="Użyj istniejącej proweniencji zamiast kanonicznej proweniencji Git.",
+    )
     plan.add_argument("--files", action="store_true")
     plan.add_argument("--json", type=Path)
 
@@ -7010,7 +7318,11 @@ def parser() -> argparse.ArgumentParser:
     extract.add_argument("--force", action="store_true")
     extract.add_argument("--clean", action="store_true")
 
-    manifest = sub.add_parser("manifest", help="Zaktualizuj PACKAGE_INTEGRITY_MANIFEST.json", allow_abbrev=False)
+    manifest = sub.add_parser(
+        "manifest",
+        help="Zsynchronizuj SOURCE_PROVENANCE.json i PACKAGE_INTEGRITY_MANIFEST.json",
+        allow_abbrev=False,
+    )
     manifest.add_argument("source", type=Path)
     manifest.add_argument("--exclude", action="append", default=[])
 
@@ -7044,7 +7356,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             part_size_mb=args.part_size_mb, compression_level=args.compresslevel,
             force=args.force, base_excludes=base, custom_excludes=list(args.exclude),
             manual_excludes_enabled=bool(args.exclude), sidecars=not args.no_sidecars,
-            update_source_manifest=not args.no_update_manifest,
+            update_source_manifest=not args.no_update_release_metadata,
             compatibility_checks=not args.no_compatibility_checks,
         )
         print_results(run_pack(options)); return 0
@@ -7052,7 +7364,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "plan":
         base = [] if args.no_default_excludes else list(DEFAULT_BASE_EXCLUDES)
         base.extend(args.default_exclude)
-        plan = build_plan(args.source, args.profile, args.exclude, base_excludes=base, manual_excludes_enabled=bool(args.exclude))
+        plan = build_plan(
+            args.source,
+            args.profile,
+            args.exclude,
+            base_excludes=base,
+            manual_excludes_enabled=bool(args.exclude),
+            synchronize_release_metadata=(
+                args.profile in {"system", "combined"}
+                and not args.no_synchronize_release_metadata
+            ),
+        )
         print_plan(plan, show_files=args.files)
         if args.json:
             args.json.write_bytes(serialize_json({
@@ -7071,9 +7393,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "extract":
         print(json.dumps(extract_package_sidecar(args.sidecar, args.destination, clean=args.clean, force=args.force), ensure_ascii=False, indent=2)); return 0
     if args.command == "manifest":
-        plan = build_plan(args.source, "system", args.exclude, base_excludes=DEFAULT_BASE_EXCLUDES, manual_excludes_enabled=bool(args.exclude))
-        path = write_source_manifest_from_plan(plan)
-        print(json.dumps({"ok": bool(path), "path": str(path) if path else None, "sha256": sha256_file(path) if path else None, "version": plan.version.full_version}, ensure_ascii=False, indent=2)); return 0
+        plan = build_plan(
+            args.source,
+            "system",
+            args.exclude,
+            base_excludes=DEFAULT_BASE_EXCLUDES,
+            manual_excludes_enabled=bool(args.exclude),
+            synchronize_release_metadata=True,
+        )
+        paths = write_source_release_metadata_from_plan(plan)
+        print(json.dumps({
+            "ok": True,
+            "paths": {name: str(path) for name, path in paths.items()},
+            "sha256": {name: sha256_file(path) for name, path in paths.items()},
+            "version": plan.version.full_version,
+        }, ensure_ascii=False, indent=2)); return 0
     if args.command == "self-test":
         report = run_self_test(); print(json.dumps(report, ensure_ascii=False, indent=2)); return 0 if report.get("ok") else 2
     parser().print_help(); return 0

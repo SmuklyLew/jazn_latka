@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 import hashlib
 import json
 import subprocess
@@ -203,20 +203,44 @@ def _walk_paths(root: Path) -> Iterable[str]:
             yield path.relative_to(root).as_posix()
 
 
-def _selected_paths(root: Path, relative_paths: Iterable[str] | None) -> list[str]:
+def _normalized_overrides(overrides: Mapping[str, bytes] | None) -> dict[str, bytes]:
+    result: dict[str, bytes] = {}
+    for raw_path, raw_bytes in dict(overrides or {}).items():
+        try:
+            relative = validate_safe_relative_path(str(raw_path))
+        except UnsafeRelativePathError as exc:
+            raise RuntimeError(f"unsafe manifest override path: {raw_path!r}") from exc
+        if path_is_forbidden(relative):
+            raise RuntimeError(f"manifest override points at a forbidden path: {relative}")
+        result[relative] = bytes(raw_bytes)
+    return result
+
+
+def _selected_paths(
+    root: Path,
+    relative_paths: Iterable[str] | None,
+    overrides: Mapping[str, bytes] | None = None,
+) -> list[str]:
+    override_paths = set(overrides or {})
     if relative_paths is None:
         if (root / ".git").exists():
             candidates, missing = _git_paths(root)
             if missing:
                 raise RuntimeError(f"tracked/unignored files missing from working tree: {missing[:10]}")
-            return candidates
-        return list(_walk_paths(root))
+            return sorted(set(candidates) | override_paths)
+        return sorted(set(_walk_paths(root)) | override_paths)
 
     selected: set[str] = set()
     missing: list[str] = []
     for raw in relative_paths:
         try:
             relative = validate_safe_relative_path(str(raw))
+        except UnsafeRelativePathError:
+            continue
+        if relative in override_paths:
+            selected.add(relative)
+            continue
+        try:
             path = resolve_safe_source(root, relative)
         except UnsafeRelativePathError:
             continue
@@ -233,35 +257,53 @@ def build_package_integrity_manifest(
     root: Path | str,
     *,
     relative_paths: Iterable[str] | None = None,
+    overrides: Mapping[str, bytes] | None = None,
+    generated_at_utc: str | None = None,
 ) -> dict[str, Any]:
     """Build the canonical static manifest.
 
     ``relative_paths`` narrows the manifest to the exact immutable package plan.
-    This is used by ZIP exporters so preview, manifest and archive cannot drift.
-    The manifest file itself and runtime/memory artifacts remain excluded.
+    ``overrides`` supplies immutable in-memory bytes for selected paths, primarily
+    ``SOURCE_PROVENANCE.json`` generated from canonical Git objects. This lets an
+    exporter freeze provenance and manifest without mutating the source checkout.
+    ``generated_at_utc`` may pin the manifest timestamp to the provenance commit,
+    making repeated previews and builds byte-for-byte deterministic. The manifest
+    file itself and runtime/memory artifacts remain excluded.
     """
 
     root = Path(root).resolve()
+    override_map = _normalized_overrides(overrides)
     runtime_version = read_runtime_version_from_version_py(root)
     if not runtime_version:
         raise RuntimeError("latka_jazn/version.py is missing or invalid")
-    candidates = _selected_paths(root, relative_paths)
+    candidates = _selected_paths(root, relative_paths, override_map)
     files: list[dict[str, Any]] = []
     excluded: list[str] = []
     for relative in candidates:
         try:
             relative = validate_safe_relative_path(relative)
-            path = resolve_safe_source(root, relative)
         except UnsafeRelativePathError:
             excluded.append(str(relative))
             continue
         if path_is_forbidden(relative):
             excluded.append(relative)
             continue
+        if relative in override_map:
+            raw = override_map[relative]
+            size_bytes = len(raw)
+            sha256 = hashlib.sha256(raw).hexdigest()
+        else:
+            try:
+                path = resolve_safe_source(root, relative)
+            except UnsafeRelativePathError:
+                excluded.append(relative)
+                continue
+            size_bytes = path.stat().st_size
+            sha256 = sha256_file(path)
         files.append({
             "path": relative,
-            "size_bytes": path.stat().st_size,
-            "sha256": sha256_file(path),
+            "size_bytes": size_bytes,
+            "sha256": sha256,
             "mutable_runtime": False,
             "classification": "static_project_file",
             "archive": False,
@@ -271,7 +313,7 @@ def build_package_integrity_manifest(
     missing_required = sorted(REQUIRED_STATIC_PATHS - present)
     if missing_required:
         raise RuntimeError(f"required static files missing: {missing_required}")
-    generated_at = datetime.now(timezone.utc).isoformat()
+    generated_at = str(generated_at_utc or datetime.now(timezone.utc).isoformat())
     return {
         "schema_version": schema_version("package_integrity_manifest"),
         "version": runtime_version,
