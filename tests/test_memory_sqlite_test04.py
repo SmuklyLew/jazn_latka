@@ -25,9 +25,11 @@ from latka_jazn.tools.memory_sqlite_test04 import (
     assert_sources_unchanged,
     build_plan,
     compare_logical_snapshots,
+    evaluate_html_import_dry_run,
     evaluate_multi_turn_review,
     evaluate_recall_cases,
     full_validate_database_set,
+    html_review_rows,
     inspect_zip_safety,
     inventory_sources,
     l3_status,
@@ -111,6 +113,16 @@ def _write_zip(path: Path, members: dict[str, object]) -> None:
                     name,
                     json.dumps(value, ensure_ascii=False),
                 )
+
+
+def _write_html(path: Path, conversation: dict) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps([conversation], ensure_ascii=False)
+    path.write_text(
+        f"<html><body><script>var jsonData = {payload};</script></body></html>",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _write_manifest(
@@ -215,6 +227,8 @@ def test_powershell_operator_has_fail_closed_contract() -> None:
         "$RunIdempotence",
         "$RunFreshRebuildComparison",
         "$RunRecall",
+        "$RunHtmlDryRun",
+        "$HtmlLimitConversations",
         "$RestartDaemon",
         "$RestartTimeoutSeconds",
         "$Resume",
@@ -492,6 +506,172 @@ def test_zip_traversal_symlink_duplicates_case_collisions_and_corruption_block(
     assert any("zip_open_or_crc_failed" in item for item in safety["errors"])
 
 
+def test_html_only_source_uses_existing_dry_run_without_target_write(
+    tmp_path: Path,
+) -> None:
+    canonical = tmp_path / "private" / "canonical.zip"
+    html = _write_html(
+        tmp_path / "private" / "BARDZO-PRYWATNY-eksport.html",
+        _conversation("html-source", extended=True),
+    )
+    _write_zip(canonical, {"conversations.json": [_conversation("canonical")]})
+    manifest_path = _write_manifest(
+        tmp_path / "private" / "source-manifest.private.json",
+        [
+            _source(1, canonical, latest=True),
+            _source(
+                2,
+                html,
+                role="chatgpt_export",
+                pipeline="html_only_review",
+            ),
+        ],
+    )
+
+    inventory, execution, completeness = inventory_sources(
+        load_source_manifest(manifest_path)
+    )
+    assert completeness == "passed"
+    assert execution == [canonical.resolve()]
+    assert [row["ordinal"] for row in html_review_rows(inventory)] == [2]
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    report = evaluate_html_import_dry_run(repo, inventory)
+
+    assert report["ok"] is True
+    assert report["status"] == "passed"
+    assert report["source_count"] == 1
+    assert report["sources"][0]["conversations_seen"] == 1
+    assert report["sources"][0]["messages_seen"] == 2
+    assert report["target_database_modified"] is False
+    assert report["automatic_l2"] is False
+    assert report["automatic_l3"] is False
+    rendered = json.dumps(report, ensure_ascii=False)
+    assert str(html.parent) not in rendered
+    assert html.name not in rendered
+    assert "Prywatny-sekret-fixture" not in rendered
+    assert not (repo / "memory").exists()
+
+
+def test_html_only_source_rejects_non_html_file(tmp_path: Path) -> None:
+    canonical = tmp_path / "canonical.zip"
+    fake_html = tmp_path / "not-html.zip"
+    _write_zip(canonical, {"conversations.json": [_conversation("canonical")]})
+    _write_zip(fake_html, {"conversations.json": [_conversation("other")]})
+    manifest_path = _write_manifest(
+        tmp_path / "manifest.json",
+        [
+            _source(1, canonical, latest=True),
+            _source(
+                2,
+                fake_html,
+                role="chatgpt_export",
+                pipeline="html_only_review",
+            ),
+        ],
+    )
+
+    inventory, _, completeness = inventory_sources(
+        load_source_manifest(manifest_path)
+    )
+    assert completeness == "failed"
+    assert "html_only_pipeline_requires_html_file" in inventory[1]["errors"]
+
+
+def test_acceptance_requires_html_dry_run_when_html_is_declared() -> None:
+    final = {
+        "structural_integrity": "passed",
+        "source_completeness": "passed",
+        "same_target_idempotence": "passed",
+        "fresh_rebuild_reproducibility": "passed",
+        "test03_reconciliation": "passed",
+        "recall": "passed",
+        "html_import_dry_run": "not_run",
+        "multi_turn_review": "passed",
+    }
+    assert acceptance_complete(final) is False
+    final["html_import_dry_run"] = "passed"
+    assert acceptance_complete(final) is True
+    final["html_import_dry_run"] = "not_applicable"
+    assert acceptance_complete(final) is True
+
+
+def test_protocol_requires_and_runs_html_dry_run_before_plan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical = tmp_path / "private" / "canonical.zip"
+    html = _write_html(
+        tmp_path / "private" / "legacy.html",
+        _conversation("html-protocol", extended=True),
+    )
+    _write_zip(canonical, {"conversations.json": [_conversation("canonical")]})
+    manifest_path = _write_manifest(
+        tmp_path / "private" / "manifest.json",
+        [
+            _source(1, canonical, latest=True),
+            _source(
+                2,
+                html,
+                role="chatgpt_export",
+                pipeline="html_only_review",
+            ),
+        ],
+    )
+
+    monkeypatch.setattr(
+        "latka_jazn.tools.memory_sqlite_test04.repository_preflight",
+        lambda *_args, **_kwargs: {
+            "branch": EXPECTED_BRANCH,
+            "head": "b" * 40,
+            "status_short": [],
+            "tracked_status_short": [],
+            "allow_dirty": False,
+            "restore_point": {
+                "kind": "immutable_git_commit",
+                "commit": "b" * 40,
+                "worktree_clean": True,
+            },
+        },
+    )
+
+    blocked_repo = tmp_path / "repo-blocked"
+    blocked_repo.mkdir()
+    blocked = Test04Protocol(
+        ProtocolRequest(
+            root=blocked_repo,
+            source_manifest=manifest_path,
+            target_root=tmp_path / "target-blocked",
+            plan_only=True,
+        ),
+        skip_runtime_preflight=True,
+    )
+    blocked_code, blocked_summary = blocked.execute()
+    assert blocked_code == 2
+    assert blocked_summary["final"]["html_import_dry_run"] == "not_run"
+    assert blocked_summary["error_types"] == ["Test04Error"]
+
+    ready_repo = tmp_path / "repo-ready"
+    ready_repo.mkdir()
+    ready = Test04Protocol(
+        ProtocolRequest(
+            root=ready_repo,
+            source_manifest=manifest_path,
+            target_root=tmp_path / "target-ready",
+            plan_only=True,
+            run_html_dry_run=True,
+            html_limit_conversations=10,
+        ),
+        skip_runtime_preflight=True,
+    )
+    ready_code, ready_summary = ready.execute()
+    assert ready_code == 0
+    assert ready_summary["final"]["html_import_dry_run"] == "passed"
+    assert ready_summary["final"]["source_completeness"] == "passed"
+    assert not (ready_repo / "memory").exists()
+
+
 def test_source_change_after_plan_blocks_execution(tmp_path: Path) -> None:
     manifest_path, first, _ = _small_manifest(tmp_path)
     manifest = load_source_manifest(manifest_path)
@@ -708,7 +888,19 @@ def test_multi_turn_naturalness_requires_manual_complete_review(
     result = evaluate_multi_turn_review(review)
     assert result["status"] == "passed"
     assert result["passed_check_count"] == 8
+    assert result["reviewed_at_utc_normalized"] == "2026-07-26T12:00:00+00:00"
     assert result["private_content_persisted"] is False
+
+    payload["reviewed_by"] = ""
+    review.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(Test04Error, match="without reviewed_by"):
+        evaluate_multi_turn_review(review)
+
+    payload["reviewed_by"] = "operator"
+    payload["reviewed_at_utc"] = "2026-07-26T12:00:00"
+    review.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(Test04Error, match="explicit timezone"):
+        evaluate_multi_turn_review(review)
 
 
 def test_first_rebuild_targets_only_external_developer_root(
@@ -748,5 +940,7 @@ def test_documentation_preserves_truth_boundary_and_cleanup_contract() -> None:
     assert "Issue #59 pozostaje otwarte" in text
     assert "system_activation_ready" in text
     assert "source-manifest.private.json" in text
+    assert "RunHtmlDryRun" in text
+    assert "developer_test04_passed" in text
     assert "Remove-Item -LiteralPath <DOKŁADNY_CEL> -Recurse" in text
     assert "nie aplikowano" not in text.casefold() or "patcha" in text.casefold()

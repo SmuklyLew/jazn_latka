@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -71,6 +72,7 @@ REQUIRED_REPORTS = (
     "test03-baseline-comparison.json",
     "sqlite-full-validation.json",
     "recall.sanitized.json",
+    "html-import-dry-run.sanitized.json",
     "restart-continuity.json",
     "multi-turn-review.template.json",
     "l3-status.json",
@@ -151,6 +153,8 @@ class ProtocolRequest:
     run_idempotence: bool = False
     run_fresh_comparison: bool = False
     run_recall: bool = False
+    run_html_dry_run: bool = False
+    html_limit_conversations: int | None = None
     restart_daemon: bool = False
     restart_timeout_seconds: int = 90
     resume: bool = False
@@ -186,6 +190,12 @@ class ProtocolRequest:
             run_idempotence=bool(self.run_idempotence),
             run_fresh_comparison=bool(self.run_fresh_comparison),
             run_recall=bool(self.run_recall),
+            run_html_dry_run=bool(self.run_html_dry_run),
+            html_limit_conversations=(
+                max(1, int(self.html_limit_conversations))
+                if self.html_limit_conversations is not None
+                else None
+            ),
             restart_daemon=bool(self.restart_daemon),
             restart_timeout_seconds=max(5, int(self.restart_timeout_seconds)),
             resume=bool(self.resume),
@@ -564,8 +574,9 @@ def inspect_zip_safety(path: Path) -> dict[str, Any]:
             unsafe = [
                 name for name in names if _unsafe_member_reason(name) is not None
             ]
+            name_counts = Counter(names)
             duplicates = sorted(
-                {name for name in names if names.count(name) > 1}
+                name for name, count in name_counts.items() if count > 1
             )
             by_case: dict[str, set[str]] = {}
             for name in names:
@@ -721,9 +732,18 @@ def inventory_sources(
                 f"source_{spec.ordinal}:{error}" for error in row["errors"]
             )
         if spec.pipeline == "html_only_review":
-            review_reasons.append(
-                f"source_{spec.ordinal}:html_only_pipeline_requires_manual_review"
-            )
+            if spec.role != "chatgpt_export":
+                row["errors"].append(
+                    "html_only_pipeline_requires_chatgpt_export_role"
+                )
+                blocking_reasons.append(
+                    f"source_{spec.ordinal}:html_only_pipeline_requires_chatgpt_export_role"
+                )
+            if spec.path.suffix.casefold() not in {".html", ".htm"}:
+                row["errors"].append("html_only_pipeline_requires_html_file")
+                blocking_reasons.append(
+                    f"source_{spec.ordinal}:html_only_pipeline_requires_html_file"
+                )
         reports.append(row)
     for key, value in manifest.attestations.items():
         if not value:
@@ -790,6 +810,106 @@ def sanitized_inventory(
             }
             for row in reports
         ],
+    }
+
+
+def html_review_rows(
+    reports: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [
+        row
+        for row in reports
+        if row.get("pipeline") == "html_only_review"
+        and row.get("duplicate_of_ordinal") is None
+    ]
+
+
+def evaluate_html_import_dry_run(
+    root: Path,
+    reports: Sequence[dict[str, Any]],
+    *,
+    limit_conversations: int | None = None,
+) -> dict[str, Any]:
+    rows = html_review_rows(reports)
+    if not rows:
+        return {
+            "schema_version": schema_version("memory_sqlite_test04_html_dry_run"),
+            "ok": True,
+            "status": "not_applicable",
+            "source_count": 0,
+            "sources": [],
+            "private_content_persisted": False,
+            "full_paths_persisted": False,
+            "source_names_persisted": False,
+            "target_database_modified": False,
+            "automatic_l2": False,
+            "automatic_l3": False,
+        }
+
+    assert_sources_unchanged(rows)
+    from latka_jazn.memory.html_memory_ingest import HtmlMemoryIngestor
+
+    ingestor = HtmlMemoryIngestor(root)
+    target = ingestor.target_database
+    target_existed_before = target.is_file()
+    target_sha_before = _sha256_file(target) if target_existed_before else None
+    source_paths = [Path(str(row["path"])) for row in rows]
+    report = ingestor.run(
+        source_paths,
+        dry_run=True,
+        limit_conversations=limit_conversations,
+        prepare_l2=False,
+        build_l3_manifest=False,
+    )
+    target_existed_after = target.is_file()
+    target_sha_after = _sha256_file(target) if target_existed_after else None
+    target_unchanged = (
+        target_existed_before == target_existed_after
+        and target_sha_before == target_sha_after
+    )
+
+    by_path = {str(row["path"]): row for row in rows}
+    sanitized_sources = []
+    for item in report.sources:
+        private_path = str(item.get("path") or "")
+        inventory = by_path.get(private_path)
+        sanitized_sources.append(
+            {
+                "ordinal": inventory.get("ordinal") if inventory else None,
+                "sha256": inventory.get("sha256") if inventory else None,
+                "size_bytes": inventory.get("size_bytes") if inventory else None,
+                "status": item.get("status"),
+                "source_format": item.get("source_format"),
+                "conversations_seen": int(item.get("conversations_seen") or 0),
+                "messages_seen": int(item.get("messages_seen") or 0),
+                "error_count": len(item.get("errors") or []),
+                "path_persisted": False,
+                "name_persisted": False,
+            }
+        )
+
+    ok = bool(report.ok and target_unchanged)
+    return {
+        "schema_version": schema_version("memory_sqlite_test04_html_dry_run"),
+        "ok": ok,
+        "status": "passed" if ok else "failed",
+        "source_count": len(rows),
+        "limit_conversations": limit_conversations,
+        "sources": sanitized_sources,
+        "ingest_status": report.status,
+        "error_count": len(report.errors),
+        "target_existed_before": target_existed_before,
+        "target_existed_after": target_existed_after,
+        "target_database_modified": not target_unchanged,
+        "private_content_persisted": False,
+        "full_paths_persisted": False,
+        "source_names_persisted": False,
+        "automatic_l2": False,
+        "automatic_l3": False,
+        "truth_boundary": (
+            "HTML dry-run validates parsing through the existing HtmlMemoryIngestor "
+            "without writing the recovered-memory database or promoting L2/L3."
+        ),
     }
 
 
@@ -1509,6 +1629,24 @@ def multi_turn_template() -> dict[str, Any]:
     }
 
 
+def _validated_review_timestamp(value: Any) -> str | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise Test04Error(
+            "multi-turn reviewed_at_utc must be a valid ISO 8601 timestamp"
+        ) from exc
+    if parsed.tzinfo is None:
+        raise Test04Error(
+            "multi-turn reviewed_at_utc must include an explicit timezone"
+        )
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
 def evaluate_multi_turn_review(path: Path | None) -> dict[str, Any]:
     if path is None:
         return {
@@ -1528,18 +1666,27 @@ def evaluate_multi_turn_review(path: Path | None) -> dict[str, Any]:
     if set(checks) != expected:
         raise Test04Error("multi-turn review checklist is incomplete")
     passed_count = sum(value is True for value in checks.values())
+    reviewer_present = bool(str(payload.get("reviewed_by") or "").strip())
+    reviewed_at_utc = _validated_review_timestamp(payload.get("reviewed_at_utc"))
     if status_value == "passed" and passed_count != len(expected):
         raise Test04Error(
             "multi-turn review cannot pass while checklist items are not true"
+        )
+    if status_value == "passed" and not reviewer_present:
+        raise Test04Error(
+            "multi-turn review cannot pass without reviewed_by"
+        )
+    if status_value == "passed" and reviewed_at_utc is None:
+        raise Test04Error(
+            "multi-turn review cannot pass without reviewed_at_utc"
         )
     return {
         "status": status_value,
         "check_count": len(expected),
         "passed_check_count": passed_count,
-        "reviewer_present": bool(str(payload.get("reviewed_by") or "").strip()),
-        "review_timestamp_present": bool(
-            str(payload.get("reviewed_at_utc") or "").strip()
-        ),
+        "reviewer_present": reviewer_present,
+        "review_timestamp_present": reviewed_at_utc is not None,
+        "reviewed_at_utc_normalized": reviewed_at_utc,
         "private_content_persisted": False,
     }
 
@@ -1768,6 +1915,7 @@ def _default_final_fields() -> dict[str, Any]:
         "fresh_rebuild_reproducibility": "not_run",
         "test03_reconciliation": "not_run",
         "recall": "not_run",
+        "html_import_dry_run": "not_applicable",
         "multi_turn_review": "not_reviewed",
         "restart_continuity": "not_run",
         "l2_review": "not_created",
@@ -1786,7 +1934,16 @@ def acceptance_complete(final_fields: dict[str, Any]) -> bool:
         "recall",
         "multi_turn_review",
     )
-    return all(final_fields.get(field) == "passed" for field in required_passes)
+    required_ok = all(
+        final_fields.get(field) == "passed" for field in required_passes
+    )
+    html_ok = final_fields.get(
+        "html_import_dry_run", "not_applicable"
+    ) in {
+        "passed",
+        "not_applicable",
+    }
+    return required_ok and html_ok
 
 
 def _placeholder(name: str) -> dict[str, Any]:
@@ -2033,8 +2190,37 @@ class Test04Protocol:
             final_fields["source_completeness"] = completeness
             if completeness != "passed":
                 raise Test04Error(
-                    "source completeness is not attested or a source requires review"
+                    "source completeness is not attested or a source is invalid"
                 )
+
+            html_rows = html_review_rows(inventory)
+            if html_rows:
+                final_fields["html_import_dry_run"] = "not_run"
+                if not self.request.run_html_dry_run:
+                    raise Test04Error(
+                        "html_only_review sources require --run-html-dry-run"
+                    )
+                html_report = evaluate_html_import_dry_run(
+                    self.request.root,
+                    inventory,
+                    limit_conversations=self.request.html_limit_conversations,
+                )
+                _atomic_json(
+                    self.run_dir / "html-import-dry-run.sanitized.json",
+                    html_report,
+                )
+                final_fields["html_import_dry_run"] = (
+                    "passed" if html_report["ok"] else "failed"
+                )
+                if not html_report["ok"]:
+                    raise Test04Error("HTML import dry-run failed")
+                self._mark_phase("html_import_dry_run")
+            else:
+                _atomic_json(
+                    self.run_dir / "html-import-dry-run.sanitized.json",
+                    evaluate_html_import_dry_run(self.request.root, inventory),
+                )
+
             if not execution_paths:
                 raise Test04Error("no unique Memory Rebuild sources remain")
 
@@ -2205,7 +2391,7 @@ class Test04Protocol:
             self._mark_phase("l2_l3_status")
             final_fields["system_activation_ready"] = False
             if acceptance_complete(final_fields):
-                private_summary["status"] = "completed_requested_phases"
+                private_summary["status"] = "developer_test04_passed"
                 exit_code = 0
             else:
                 if multi_turn["status"] == "not_reviewed":
@@ -2574,6 +2760,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-idempotence", action="store_true")
     parser.add_argument("--run-fresh-rebuild-comparison", action="store_true")
     parser.add_argument("--run-recall", action="store_true")
+    parser.add_argument("--run-html-dry-run", action="store_true")
+    parser.add_argument("--html-limit-conversations", type=int)
     parser.add_argument("--restart-daemon", action="store_true")
     parser.add_argument("--restart-timeout-seconds", type=int, default=90)
     parser.add_argument("--resume", action="store_true")
@@ -2614,6 +2802,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             run_idempotence=args.run_idempotence,
             run_fresh_comparison=args.run_fresh_rebuild_comparison,
             run_recall=args.run_recall,
+            run_html_dry_run=args.run_html_dry_run,
+            html_limit_conversations=args.html_limit_conversations,
             restart_daemon=args.restart_daemon,
             restart_timeout_seconds=args.restart_timeout_seconds,
             resume=args.resume,
@@ -2670,10 +2860,12 @@ __all__ = [
     "assert_sources_unchanged",
     "build_plan",
     "compare_logical_snapshots",
+    "evaluate_html_import_dry_run",
     "evaluate_multi_turn_review",
     "evaluate_recall_cases",
     "full_validate_database_set",
     "inspect_zip_safety",
+    "html_review_rows",
     "inventory_sources",
     "load_recall_cases",
     "load_source_manifest",

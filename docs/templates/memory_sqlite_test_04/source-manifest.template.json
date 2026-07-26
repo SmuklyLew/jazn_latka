@@ -35,6 +35,15 @@
       "latest_export": false,
       "pipeline": "memory_rebuild",
       "approved": true
+    },
+    {
+      "ordinal": 4,
+      "role": "chatgpt_export",
+      "path": "D:\\PRIVATE\\legacy-chat-rendered.html",
+      "exported_at": null,
+      "latest_export": false,
+      "pipeline": "html_only_review",
+      "approved": true
     }
   ]
 }

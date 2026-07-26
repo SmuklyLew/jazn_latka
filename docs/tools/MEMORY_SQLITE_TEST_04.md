@@ -164,8 +164,8 @@ Zasady:
 - kolejność nie wynika z rozmiaru pliku;
 - dziennik znajduje się po źródłach rozmów;
 - `approved_l0` wymaga `approved=true`;
-- `html_only_review` jest raportowany, ale blokuje kompletność do osobnego
-  ręcznego przeglądu pipeline'u HTML-only;
+- `html_only_review` przyjmuje wyłącznie jawny plik `.html`/`.htm`, nie trafia do
+  pięciu baz Memory Rebuild i wymaga osobnej, bezpiecznej fazy `-RunHtmlDryRun`;
 - baseline Testu 03 i legacy nie są importowane jako kolejne rozmowy.
 
 Przed planem operator zapisuje prywatnie rozmiar, SHA-256, rozpoznany typ,
@@ -189,6 +189,30 @@ zachowaniem pierwszej pozycji.
 
 ZIP z path traversal, symlinkiem, szyfrowaniem, błędem CRC, duplikatem ścieżki
 albo kolizją wielkości liter jest blokowany przed importem.
+
+## Faza HTML — bezpieczny dry-run istniejącego importera
+
+Źródła z `pipeline=html_only_review` są sprawdzane przez istniejący
+`HtmlMemoryIngestor`, a nie przez nowy parser i nie przez pięć baz Memory Rebuild.
+Faza wymaga jawnej flagi:
+
+```powershell
+& ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
+  -Root . `
+  -SourceManifest ".\workspace_runtime\memory_sqlite_test_04\source-manifest.private.json" `
+  -TargetRoot "D:\PRIVATE\jazn_memory_test_04" `
+  -PlanOnly `
+  -RunHtmlDryRun
+```
+
+Opcjonalne `-HtmlLimitConversations 100` ogranicza pierwszą próbę na dużym HTML.
+Raport `html-import-dry-run.sanitized.json` zawiera wyłącznie status, SHA, rozmiar
+i liczniki. Nie zapisuje ścieżek, nazw, pytań ani treści rozmów. Dry-run potwierdza
+też, że docelowa baza recovered-memory nie została utworzona ani zmieniona.
+
+Pełny import HTML pozostaje osobnym, świadomym krokiem operatorskim przez
+`run.py memory-import-html`; Test 04 nie uruchamia go automatycznie i nie promuje
+L2 ani L3.
 
 ## Faza A — plan-only
 
@@ -377,8 +401,9 @@ nazwy, dodaj scenariusz tur i wykonaj rozmowę ręcznie. Oceń:
 8. jawne powiedzenie, że wspomnienia nie znaleziono.
 
 Ustaw `overall_status` na `passed`, `failed` albo `not_reviewed`. `passed`
-wymaga wszystkich ośmiu pól `checks=true`. Automat nigdy sam nie ogłasza
-naturalności rozmowy.
+wymaga wszystkich ośmiu pól `checks=true`, niepustego `reviewed_by` oraz
+prawidłowego, strefowego czasu ISO 8601 w `reviewed_at_utc`. Automat nigdy sam
+nie ogłasza naturalności rozmowy.
 
 Wynik można dołączyć przy wznowieniu:
 
@@ -473,6 +498,7 @@ fresh-rebuild-comparison.json
 test03-baseline-comparison.json
 sqlite-full-validation.json
 recall.sanitized.json
+html-import-dry-run.sanitized.json
 restart-continuity.json
 multi-turn-review.template.json
 l3-status.json
@@ -497,6 +523,7 @@ trafić do Git.
   "fresh_rebuild_reproducibility": "passed|failed|not_run",
   "test03_reconciliation": "passed|failed|not_run",
   "recall": "passed|failed|not_run",
+  "html_import_dry_run": "passed|failed|not_run|not_applicable",
   "multi_turn_review": "passed|failed|not_reviewed",
   "restart_continuity": "passed|failed|not_run",
   "l2_review": "pending|approved|rejected|not_created",
@@ -504,6 +531,9 @@ trafić do Git.
   "system_activation_ready": false
 }
 ```
+
+Stan `developer_test04_passed` oznacza zaliczenie developerskiego protokołu baz i
+wymaganych faz. Nie oznacza aktywacji pamięci, decyzji L3 ani zamknięcia Issue #59.
 
 Zaliczony Test 04 nadal samodzielnie nie aktywuje pamięci systemowej.
 

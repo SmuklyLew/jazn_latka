@@ -86,3 +86,16 @@ Wyniki przed commitem implementacyjnym:
 
 Nie utworzono release’u. Commit, kanoniczna synchronizacja metadanych i push
 muszą być raportowane na podstawie późniejszych, rzeczywistych wyników Git.
+
+## Utwardzenie przed testami HTML
+
+Przed lokalnym przebiegiem prywatnym dodano osobną fazę `HTML dry-run`, która
+wywołuje istniejący `HtmlMemoryIngestor` wyłącznie w trybie bez zapisu. Źródła
+HTML nie są przedstawiane jako równoważne kanonicznemu JSON i nie trafiają do
+pięciu baz Memory Rebuild. Raport jest sanitizowany i potwierdza brak zmiany
+docelowej bazy recovered-memory.
+
+Dodatkowo ręczne zaliczenie testu wieloturowego wymaga autora i prawidłowego
+timestampu ze strefą, a wykrywanie zduplikowanych członków ZIP działa liniowo.
+Końcowy sukces developerski jest raportowany jako `developer_test04_passed`,
+aby nie sugerować aktywacji pamięci ani decyzji L3.

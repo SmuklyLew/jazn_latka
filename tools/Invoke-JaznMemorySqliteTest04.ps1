@@ -1,4 +1,4 @@
-[CmdletBinding(PositionalBinding = $false)]
+﻿[CmdletBinding(PositionalBinding = $false)]
 param(
     [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
     [string]$SourceManifest,
@@ -12,6 +12,9 @@ param(
     [switch]$RunIdempotence,
     [switch]$RunFreshRebuildComparison,
     [switch]$RunRecall,
+    [switch]$RunHtmlDryRun,
+    [ValidateRange(1, 2147483647)]
+    [int]$HtmlLimitConversations = 0,
     [switch]$RestartDaemon,
     [ValidateRange(5, 3600)]
     [int]$RestartTimeoutSeconds = 90,
@@ -138,6 +141,11 @@ else {
     if ($RunIdempotence) { [void]$arguments.Add("--run-idempotence") }
     if ($RunFreshRebuildComparison) { [void]$arguments.Add("--run-fresh-rebuild-comparison") }
     if ($RunRecall) { [void]$arguments.Add("--run-recall") }
+    if ($RunHtmlDryRun) { [void]$arguments.Add("--run-html-dry-run") }
+    if ($HtmlLimitConversations -gt 0) {
+        [void]$arguments.Add("--html-limit-conversations")
+        [void]$arguments.Add([string]$HtmlLimitConversations)
+    }
     if ($RestartDaemon) {
         [void]$arguments.Add("--restart-daemon")
         [void]$arguments.Add("--restart-timeout-seconds")
