@@ -1,13 +1,13 @@
 {
-  "schema_version": "package_integrity_manifest/v15.1.0.3.89",
-  "version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "runtime_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "package_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-07-25T21:34:29+00:00",
-  "updated_at_utc": "2026-07-25T21:34:29+00:00",
+  "schema_version": "package_integrity_manifest/v15.1.0.3.90",
+  "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "generated_at_utc": "2026-07-26T12:47:31+00:00",
+  "updated_at_utc": "2026-07-26T12:47:31+00:00",
   "start_file": "run.py",
-  "file_count": 530,
-  "static_file_count": 530,
+  "file_count": 540,
+  "static_file_count": 540,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 206,
@@ -138,6 +138,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
+      "size_bytes": 8615,
+      "sha256": "dd9d780f449e2033df6b1582f047244658019f14b57b74fa0758daab2e1766e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "README.md",
       "size_bytes": 6889,
       "sha256": "246a2a01a44eb64d5bf134923913bdc247d401080c5fb38c332d1a2f1dc06a6a",
@@ -148,8 +157,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1283,
-      "sha256": "99f277363277a137be96130c3f1b40f4c045decd2e4c379f60e4e57dbf6a259a",
+      "size_bytes": 1288,
+      "sha256": "9652efff6d54d4aa4cd8ded8cd35eb64976c88da79e732071e9e6658b6fbaa8e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -210,6 +219,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 3732,
+      "sha256": "b9c6ce1b2cc8592fcbe7e12b9808a4f32c6b4c218e32d58778b8c5ae2d0d91c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/WINDOWS_OLLAMA_NLP_STABILITY_SOURCES.md",
       "size_bytes": 1584,
       "sha256": "aa01ca5e29aca452a46ea62b556c78c1c5760a1bb2a99d2300baf9bd4c1fd553",
@@ -222,6 +240,42 @@
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
       "size_bytes": 3076,
       "sha256": "6db0b182d300c63b19d5894d8883df9f90b927e942a6ea2a89c294eddd500f49",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/templates/memory_sqlite_test_04/multi-turn-review.template.json",
+      "size_bytes": 727,
+      "sha256": "8f6f666fc52fe8191c60ef254520863ec636784a55cc8c3d7a29ce80fa3d4576",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/templates/memory_sqlite_test_04/recall-cases.template.json",
+      "size_bytes": 635,
+      "sha256": "6b0511dcd114f3298a316f1e73db10df0dcd9bf84914021e10d192b56548ed41",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/templates/memory_sqlite_test_04/source-manifest.schema.json",
+      "size_bytes": 2437,
+      "sha256": "e42ba8732db4151dea2c9093351194c009b6ce8a99aa16a86415f5043b677b4d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
+      "size_bytes": 1127,
+      "sha256": "c3e68939ccea07974e02f8e4a8bc8732298c80420a22378e0979d2cb8ed6c6e2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -303,6 +357,15 @@
       "path": "docs/tools/MEMORY_RESTORE_VALIDATION.md",
       "size_bytes": 767,
       "sha256": "6dc9e08f9c270b5268440963f91f262a89b0e3d890acd16bd2347e689f34337e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/tools/MEMORY_SQLITE_TEST_04.md",
+      "size_bytes": 17517,
+      "sha256": "0ca9531ab54d5d3b69137adf9ac4400d234bc538935f5742f69fb6994f612d84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3882,6 +3945,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/memory_sqlite_test04.py",
+      "size_bytes": 98557,
+      "sha256": "da5647564641e2ff93c3a9465c860662b78492d011682e862e6a7b19de7a8ad0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_validation.py",
       "size_bytes": 18213,
       "sha256": "6dd0566949d99baa6eb80830f55313c76dd51bc16d9a79f1ec96c66cb29ba824",
@@ -4019,7 +4091,7 @@
     {
       "path": "latka_jazn/version.py",
       "size_bytes": 1101,
-      "sha256": "1ae7da1b32d78f41aae0ee8f2c045caa12a4d176a955b812954b5a62f50239f2",
+      "sha256": "fee360254ae8d0e4426a20a29bd2e79a0417e8d77d7bb8ce439b33d57cc6be2f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4386,6 +4458,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_sqlite_test04.py",
+      "size_bytes": 24619,
+      "sha256": "02f3a6dcae163f230192a29464de88988cc62417d3879ee553a2be18f733c8dc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_tier_status.py",
       "size_bytes": 1692,
       "sha256": "fd96f2bcaa7f27ca8d829396e6a68b53b028c78878a8235e147198bb4db60554",
@@ -4722,6 +4803,15 @@
       "path": "tests/test_windows_daemon_console_policy.py",
       "size_bytes": 1759,
       "sha256": "be1d4f7de04792356d442b256a69cbaf963853a65b063946e1575de84cc87f1f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/Invoke-JaznMemorySqliteTest04.ps1",
+      "size_bytes": 5781,
+      "sha256": "2b60d1e46d836c8b135a2c74dcfcb92e2330b763ee569701435c1c358967f3ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
