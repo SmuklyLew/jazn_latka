@@ -1,0 +1,29 @@
+name: Temporary export memory test 04 checkout
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Build source archive
+        shell: bash
+        run: git archive --format=zip --output=memory-test04-checkout.zip HEAD
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-test04-checkout
+          path: memory-test04-checkout.zip
+          if-no-files-found: error
+          retention-days: 1
