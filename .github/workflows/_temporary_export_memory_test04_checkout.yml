@@ -28,9 +28,10 @@ jobs:
         run: |
           set -euo pipefail
           cat tools/.temporary_memory_test04_patch/part*.b64 | base64 --decode > /tmp/memory-test04.patch
-          git apply --check /tmp/memory-test04.patch
-          git apply /tmp/memory-test04.patch
+          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml --check /tmp/memory-test04.patch
+          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml /tmp/memory-test04.patch
           rm -rf tools/.temporary_memory_test04_patch
+          rm -f .github/workflows/_temporary_export_memory_test04_checkout.yml
           git diff --check
       - name: Set up Python
         uses: actions/setup-python@v5
