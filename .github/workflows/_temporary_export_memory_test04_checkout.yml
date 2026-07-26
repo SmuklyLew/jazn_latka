@@ -19,12 +19,10 @@ jobs:
         with:
           ref: feature/memory-sqlite-test-04
           fetch-depth: 0
-
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: Verify, assemble and apply patch
         shell: bash
         run: |
@@ -54,53 +52,23 @@ jobs:
           rm -rf tools/.temporary_memory_test04_patch tools/.temporary_memory_test04_gzpatch
           rm -f .github/workflows/_temporary_export_memory_test04_checkout.yml
           git diff --check
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements.txt
-
-      - name: Validate implementation and capture report
-        id: tests
-        continue-on-error: true
-        shell: bash
+      - name: Install dependencies and test runner
+        run: python -m pip install --disable-pip-version-check -r requirements.txt pytest
+      - name: Validate implementation
         run: |
-          set -o pipefail
-          python -X utf8 -m compileall -q latka_jazn tests main.py run.py 2>&1 | tee /tmp/compileall.log
-          compile_rc=${PIPESTATUS[0]}
-          python -X utf8 -m pytest -q --tb=short tests/test_memory_sqlite_test04.py tests/test_html_memory_ingest.py tests/test_memory_rebuild.py tests/test_memory_restore_tool.py tests/test_memory_rebuild_tool.py tests/test_memory_recovery_pipeline.py tests/test_memory_tier_store.py tests/test_memory_tiers.py tests/test_memory_tier_status.py 2>&1 | tee /tmp/pytest.log
-          pytest_rc=${PIPESTATUS[0]}
-          printf 'compile_rc=%s\npytest_rc=%s\n' "$compile_rc" "$pytest_rc" > /tmp/test-exit-codes.txt
-          exit $(( compile_rc != 0 || pytest_rc != 0 ))
-
-      - name: Upload test diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: memory-test04-test-diagnostics
-          path: |
-            /tmp/compileall.log
-            /tmp/pytest.log
-            /tmp/test-exit-codes.txt
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Stop on failed tests
-        if: steps.tests.outcome != 'success'
-        run: exit 1
-
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          python -X utf8 -m pytest -q --tb=short tests/test_memory_sqlite_test04.py tests/test_html_memory_ingest.py tests/test_memory_rebuild.py tests/test_memory_restore_tool.py tests/test_memory_rebuild_tool.py tests/test_memory_recovery_pipeline.py tests/test_memory_tier_store.py tests/test_memory_tiers.py tests/test_memory_tier_status.py
       - name: Synchronize release metadata
         run: python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
-
       - name: Validate runtime package contracts
         run: |
           python -X utf8 run.py doctor --json
           python -X utf8 run.py package-smoke --profile system --json
           git diff --check
-
       - name: Commit and push final branch
         shell: bash
         run: |
