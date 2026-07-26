@@ -1,0 +1,40 @@
+{
+  "schema_version": "jazn_memory_sqlite_test04_sources/v1",
+  "operator_attestation": {
+    "all_known_chatgpt_exports_included": false,
+    "latest_export_created_immediately_before_test": false,
+    "source_order_reviewed": false
+  },
+  "baseline_test03_root": "D:\\PRIVATE\\jazn_memory_test_03",
+  "legacy_memory_root": "D:\\PRIVATE\\latka_v15.0.3.222",
+  "baseline_decline_justifications": {},
+  "sources": [
+    {
+      "ordinal": 1,
+      "role": "chatgpt_export",
+      "path": "D:\\PRIVATE\\chatgpt-export-oldest.zip",
+      "exported_at": "YYYY-MM-DD",
+      "latest_export": false,
+      "pipeline": "memory_rebuild",
+      "approved": true
+    },
+    {
+      "ordinal": 2,
+      "role": "chatgpt_export",
+      "path": "D:\\PRIVATE\\chatgpt-export-latest.zip",
+      "exported_at": "YYYY-MM-DD",
+      "latest_export": true,
+      "pipeline": "memory_rebuild",
+      "approved": true
+    },
+    {
+      "ordinal": 3,
+      "role": "journal",
+      "path": "D:\\PRIVATE\\dziennik.json",
+      "exported_at": null,
+      "latest_export": false,
+      "pipeline": "memory_rebuild",
+      "approved": true
+    }
+  ]
+}
