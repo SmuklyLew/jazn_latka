@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION
 import argparse
 import hashlib
 import json
@@ -86,7 +87,7 @@ class CanonCandidate:
 @dataclass(slots=True)
 class CanonExtractionReport:
     schema_version: str = SCHEMA_VERSION
-    version: str = "v15.1.0.3.89"
+    version: str = PACKAGE_VERSION
     mode: str = "preview"
     root: str = ""
     started_at_utc: float = 0.0

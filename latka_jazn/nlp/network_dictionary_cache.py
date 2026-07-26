@@ -5,7 +5,7 @@ from contextlib import closing
 import sqlite3, json, hashlib, time
 from datetime import datetime, timezone
 
-SCHEMA_VERSION="network_dictionary_cache/v15.1.0.3.89"
+SCHEMA_VERSION="network_dictionary_cache/v1"
 
 class NetworkDictionaryCache:
     def __init__(self, root: Path, ttl_seconds: int = 604800):

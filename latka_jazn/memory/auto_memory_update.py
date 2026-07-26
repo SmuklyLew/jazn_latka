@@ -151,7 +151,7 @@ Dokument: `{doc_rel}`.
 
 def write_update_protocol(root: Path) -> None:
     protocol = {
-        "schema_version": "v15.1.0.3.89",
+        "schema_version": "poprzednia linia runtime",
         "short_user_command_pl": "Rozpakuj paczkę Jaźni i uruchom wbudowany protokół memory-only update.",
         "goal": "Uprościć aktualizacje pamięciowe i wymusić zapis konkretnych treści z rozmowy, a nie tylko faktu aktualizacji.",
         "default_behavior": {
@@ -299,7 +299,7 @@ def _payload_items(payload: ConversationMemoryPayload) -> list:
 def record_conversation_payload(root: Path, *, version: str, payload: ConversationMemoryPayload) -> dict:
     """Zapisuje konkretne ślady rozmowy do dziennika i warstw pamięci.
 
-    To jest brakujące ogniwo v15.1.0.3.89: aktualizacja nie może zachować wyłącznie
+    To jest brakujące ogniwo poprzednia linia runtime: aktualizacja nie może zachować wyłącznie
     faktu technicznego, musi też przenieść treść rozmowy. Funkcja zapisuje kilka
     wpisów dziennika i odpowiadające rekordy JSONL/SQLite z grounding/confidence.
     """

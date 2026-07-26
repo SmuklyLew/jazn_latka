@@ -298,7 +298,7 @@ def dictionary_provider_status(cfg: JaznConfig) -> dict[str, Any]:
         'mediawiki_wiktionary_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'mediawiki_wiktionary_provider.py').exists(),
         'sjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'sjp_reference_provider.py').exists(),
         'wsjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'wsjp_reference_provider.py').exists(),
-        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w v15.1.0.3.89 są linkami referencyjnymi bez masowego scrapingu definicji.',
+        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w poprzednia linia runtime są linkami referencyjnymi bez masowego scrapingu definicji.',
     }
 
 def manifest_profile_status(root: Path) -> dict[str, Any]:

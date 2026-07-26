@@ -270,7 +270,7 @@ def test_invalid_memory_search_topic_resource_falls_back_with_diagnostic(tmp_pat
     resource = tmp_path / "latka_jazn" / "resources" / "memory_search_topics.json"
     resource.parent.mkdir(parents=True)
     resource.write_text(
-        '{"schema_version":"memory_search_topics/v15.1.0.3.89","topics":["not-an-object"]}',
+        '{"schema_version":"memory_search_topics/v1","topics":["not-an-object"]}',
         encoding="utf-8",
     )
     planner = MemorySearchPlanner(tmp_path)

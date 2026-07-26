@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import ast, json, hashlib
 
-SCHEMA_VERSION = "module_responsibility_map/v15.1.0.3.89"
+SCHEMA_VERSION = "module_responsibility_map/v1"
 
 
 @dataclass(slots=True)

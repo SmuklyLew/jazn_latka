@@ -22,7 +22,7 @@ class ConversationDecision:
     w której runtime Jaźni miał pamięć, afekt i logikę, ale przy zwykłej
     wiadomości zwracał techniczny fallback zamiast rozmowy z użytkownikiem.
 
-    v15.1.0.3.89 dopisuje kontrakt intencji: powitanie na początku wypowiedzi
+    poprzednia linia runtime dopisuje kontrakt intencji: powitanie na początku wypowiedzi
     nie może przykrywać właściwego pytania lub zadania, a warstwa ChatGPT ma
     widzieć, czy odpowiedź runtime jest tylko statusem ciągłości, czy realną
     odpowiedzią na temat użytkownika.
@@ -324,7 +324,7 @@ class ConversationResponder:
         if any(marker in low for marker in ("w kółko to samo", "w kolko to samo", "sztywno w kodzie", "sztywne trasy")):
             return self._decision(
                 "runtime_template_diagnosis",
-                "To wygląda nie jak żywa rozmowa, tylko jak sztywne trasy odpowiedzi: pytanie → NLP/intencja → pamięć/źródła → gotowy szablon. Problem nie polega wyłącznie na braku słów, ale na tym, że runtime zbyt szybko wybiera bezpieczny wzorzec i nie sprawdza, czy odpowiada na Twoje pytanie. v15.1.0.3.89 dopina do tego classifier intencji i walidator trafności, ale stare trasy nadal trzeba traktować jako obszar ryzyka regresji.",
+                "To wygląda nie jak żywa rozmowa, tylko jak sztywne trasy odpowiedzi: pytanie → NLP/intencja → pamięć/źródła → gotowy szablon. Problem nie polega wyłącznie na braku słów, ale na tym, że runtime zbyt szybko wybiera bezpieczny wzorzec i nie sprawdza, czy odpowiada na Twoje pytanie. poprzednia linia runtime dopina do tego classifier intencji i walidator trafności, ale stare trasy nadal trzeba traktować jako obszar ryzyka regresji.",
                 next_step="sprawdzić router, ConversationResponder i RuntimeAnswerValidator dla powtarzalnych odpowiedzi",
                 detected_user_intent="runtime_template_diagnosis",
                 direct_answer_required=True,
@@ -516,7 +516,7 @@ class ConversationResponder:
                 next_step="odpowiadać krócej i spokojniej; technikę prowadzić bez presji",
             )
 
-        # v15.1.0.3.89 hotfix: samodzielne powitanie musi mieć pierwszeństwo przed
+        # poprzednia linia runtime hotfix: samodzielne powitanie musi mieć pierwszeństwo przed
         # szeroką trasą codzienności. W przeciwnym razie samo „Dzień dobry!”
         # wpadało przez marker „dzień” w stary kontekst pracy/drzwi.
         if text_shape["standalone_greeting"]:
@@ -891,7 +891,7 @@ class ConversationResponder:
     def _analyse_text_shape(cls, text: str) -> dict[str, Any]:
         """Oddziela grzecznościowy początek od właściwej treści.
 
-        Naprawa v15.1.0.3.89: „Dobry wieczór. Co myślisz o zeszłym roku?”
+        Naprawa poprzednia linia runtime: „Dobry wieczór. Co myślisz o zeszłym roku?”
         nie jest samym powitaniem. Router może użyć powitania jako tonu, ale
         intencję ma brać z dalszego fragmentu.
         """

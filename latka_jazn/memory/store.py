@@ -1,4 +1,5 @@
 from __future__ import annotations
+from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -126,7 +127,7 @@ class MemoryStore:
         self.con.row_factory = sqlite3.Row
         self.con.executescript(SCHEMA)
         self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("schema_version", "CURRENT_LINE"))
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", "v15.1.0.3.89"))
+        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", PACKAGE_VERSION))
         self.con.commit()
 
     def close(self) -> None:

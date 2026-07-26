@@ -42,6 +42,6 @@ class IdentityMemoryExistenceHandler:
             generation_mode="handler_generated",
             required_components=ctx.get("required_components", []),
             satisfied_components=satisfied,
-            source_origin_detail="identity_memory_existence_handler/v15.1.0.3.89",
+            source_origin_detail="identity_memory_existence_handler/v1",
             confidence=0.9,
         )

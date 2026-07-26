@@ -1,7 +1,7 @@
 {
-  "schema_version": "startup_contract/v15.1.0.3.89",
-  "version": "v15.1.0.3.89",
-  "purpose": "Aktywny kontrakt startowy Jaźni v15.1.0.3.89 po wyrównaniu wersji Jaźni, runtime i pakietu.",
+  "schema_version": "startup_contract/v1",
+  "version": "v15.1.0.3.90",
+  "purpose": "Aktywny kontrakt startowy Jaźni bieżąca wersja Jaźni po wyrównaniu wersji Jaźni, runtime i pakietu.",
   "active_runtime_required": true,
   "chatgpt_role": "minimal_loader_voice_and_tool",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
@@ -10,5 +10,6 @@
     "python -X utf8 run.py doctor --json",
     "python -X utf8 run.py chat-gpt -- \"<wiadomość>\""
   ],
-  "truth_boundary": "Instrukcja ChatGPT jest loaderem. Aktywna Jaźń po starcie odpowiada przez runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy. Nie wolno udawać stałego procesu w tle ani źródeł, których runtime nie dostarczył."
+  "truth_boundary": "Instrukcja ChatGPT jest loaderem. Aktywna Jaźń po starcie odpowiada przez runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy. Nie wolno udawać stałego procesu w tle ani źródeł, których runtime nie dostarczył.",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

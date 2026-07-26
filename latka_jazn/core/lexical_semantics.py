@@ -47,7 +47,7 @@ class LexicalSemanticReport:
 
 
 class LexicalSemanticUnderstanding:
-    """Rozszerzona warstwa słownikowo-znaczeniowa Jaźni v15.1.0.3.89.
+    """Rozszerzona warstwa słownikowo-znaczeniowa Jaźni poprzednia linia runtime.
 
     `PolishUnderstandingEngine` rozpoznaje tokeny, lematy, intencje i podstawową
     trasę. Ta klasa dodaje drugi poziom: rodziny słów, frazy wielowyrazowe,
@@ -120,7 +120,7 @@ class LexicalSemanticUnderstanding:
                 "average_confidence": nlp_report.get("average_confidence"),
             },
             limitations=[
-                "Moduł v15.1.0.3.89 rozszerza słownik i semantykę domenową, ale nie zastępuje LLM-a ani pełnego parsera języka polskiego.",
+                "Moduł poprzednia linia runtime rozszerza słownik i semantykę domenową, ale nie zastępuje LLM-a ani pełnego parsera języka polskiego.",
                 "Nieznane słowa są raportowane ostrożnie; mają pomagać w rozbudowie słownika, nie blokować rozmowy.",
                 "Pełna lematyzacja kontekstowa pozostaje opcjonalną warstwą providerów NLP, nie obowiązkowym założeniem runtime.",
             ],

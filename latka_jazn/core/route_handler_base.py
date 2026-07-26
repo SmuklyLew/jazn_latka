@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Protocol
 
-SCHEMA_VERSION = "route_handler_base/v15.1.0.3.89"
+SCHEMA_VERSION = "route_handler_base/v1"
 
 @dataclass(slots=True)
 class RouteHandlerResult:

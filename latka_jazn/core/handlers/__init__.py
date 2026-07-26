@@ -1,1 +1,1 @@
-"""Route handlers for v15.1.0.3.89. Actual orchestration remains in JaznEngine until full migration from legacy conversation.py."""
+"""Route handlers for poprzednia linia runtime. Actual orchestration remains in JaznEngine until full migration from legacy conversation.py."""

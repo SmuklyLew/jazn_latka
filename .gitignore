@@ -44,6 +44,7 @@ __pycache__/
 
 # Keep source, tests and docs in Git; keep ad-hoc patch bundles outside the repo.
 /*.patch
+*.ps1
 /*.rej
 /*.orig
 /*.BAD.patch

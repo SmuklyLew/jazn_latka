@@ -1,5 +1,5 @@
 {
-  "schema_version": "nlp_architecture_sources/v15.1.0.3.89",
+  "schema_version": "nlp_architecture_sources/v1",
   "generation_context": "nlp_completion_update",
   "sources": [
     {

@@ -1,5 +1,5 @@
 {
-  "schema_version": "polish_dialogue_route_lexicon/v15.1.0.3.89",
+  "schema_version": "polish_dialogue_route_lexicon/v1",
   "truth_boundary": "Ten leksykon jest minimalnym kontraktem tras dla krótkich polskich pytań. Nie jest pełnym słownikiem języka polskiego ani zamiennikiem LLM.",
   "intents": {
     "runtime_health_check": {

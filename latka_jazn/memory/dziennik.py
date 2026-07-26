@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version_contract import normalize_component_schema
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -9,7 +10,7 @@ import copy
 import json
 import uuid
 
-DZIENNIK_SCHEMA_VERSION = "v15.1.0.3.89"
+DZIENNIK_SCHEMA_VERSION = "dziennik/v1"
 
 
 @dataclass(slots=True)
@@ -58,7 +59,7 @@ class DziennikRawJournal:
                     "plik": "dziennik_system.json",
                     "opis": "Dziennik systemowy Jaźni – wpisy, refleksje, sny, sceny, polecenia, prompty i logi projektu Łatka",
                     "schema_version": DZIENNIK_SCHEMA_VERSION,
-                    "schema_policy": "Stary układ meta+entries pozostaje ważny; v15.1.0.3.89 dodaje opcjonalne pola pamięci, emocji, źródeł i granic prawdy.",
+                    "schema_policy": "Stary układ meta+entries pozostaje ważny; poprzednia linia runtime dodaje opcjonalne pola pamięci, emocji, źródeł i granic prawdy.",
                 },
                 "entries": [],
             }
@@ -69,6 +70,9 @@ class DziennikRawJournal:
             raise ValueError(f"{self.path} musi mieć listę entries")
         if not isinstance(data.get("meta"), dict):
             data["meta"] = {}
+        data["meta"]["schema_version"] = normalize_component_schema(
+            "dziennik", data["meta"].get("schema_version")
+        )
         return data
 
     def save(self, data: dict[str, Any]) -> None:

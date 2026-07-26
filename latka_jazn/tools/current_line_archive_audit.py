@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version_contract import LEGACY_MEMORY_SOURCE_VERSION
 import argparse
 import hashlib
 import json
@@ -12,7 +13,7 @@ from typing import Any, Iterable
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version, version_number
 
 SCHEMA_VERSION = schema_version("current_line_archive_audit")
-ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_89")
+ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")
 TEXT_SUFFIXES = {
     ".py", ".md", ".txt", ".json", ".jsonl", ".yml", ".yaml", ".toml",
     ".ini", ".cfg", ".ps1", ".sh", ".bat", ".cmd", ".xml", ".csv",
@@ -20,6 +21,11 @@ TEXT_SUFFIXES = {
 EXCLUDED_ACTIVE_PATHS = {
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json",
+}
+APPROVED_LEGACY_SOURCE_PATHS = {
+    "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
+    "docs/tools/MEMORY_SQLITE_TEST_04.md",
+    "latka_jazn/tools/memory_sqlite_test04.py",
 }
 _VERSION_RE = re.compile(
     r"(?i)(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])"
@@ -66,6 +72,20 @@ def _is_active_path(path: str) -> bool:
     return not folded.startswith(".archives/") and folded not in EXCLUDED_ACTIVE_PATHS
 
 
+def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> bool:
+    normalized = "v" + raw_version.replace("_", ".").lstrip("vV")
+    if normalized != LEGACY_MEMORY_SOURCE_VERSION or path not in APPROVED_LEGACY_SOURCE_PATHS:
+        return False
+    folded = line.casefold()
+    return any(
+        token in folded
+        for token in (
+            "legacy", "legacymemoryroot", "legacy_memory_root",
+            "legacy-memory-root", "starszej pamięci", "starszego źródła", "baseline",
+        )
+    )
+
+
 def _line_is_canonical_distribution(path: str, line: str, raw_version: str) -> bool:
     return (
         "DISTRIBUTION_VERSION" in line
@@ -91,6 +111,8 @@ def scan_active_old_references(root: Path) -> list[dict[str, Any]]:
                 if not _is_old_package_version(raw):
                     continue
                 if _line_is_canonical_distribution(rel, line, raw):
+                    continue
+                if _line_is_approved_legacy_source(rel, line, raw):
                     continue
                 findings.append(
                     {
@@ -207,7 +229,7 @@ def run_audit(root: str | Path) -> CurrentLineArchiveAudit:
         archive_metadata_only_private_count=int(manifest.get("metadata_only_private_count") or 0),
         archive_issues=archive_issues,
         truth_boundary=(
-            "Audyt sprawdza śledzone aktywne pliki tekstowe i integralność archiwum. "
+            "Audyt sprawdza śledzone aktywne pliki tekstowe, jawnie oznaczone legacy source i integralność archiwum. "
             "Nie interpretuje zawartości prywatnego embedded source; zachowuje wyłącznie jego metadane."
         ),
     )

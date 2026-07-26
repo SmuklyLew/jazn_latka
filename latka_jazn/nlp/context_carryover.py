@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 from typing import Any
-SCHEMA_VERSION="context_carryover/v15.1.0.3.89"
+SCHEMA_VERSION="context_carryover/v1"
 @dataclass(slots=True)
 class ContextCarryoverReport:
     needs_previous_turn: bool; carryover_type: str; confidence: float; evidence: list[str]; schema_version: str=SCHEMA_VERSION

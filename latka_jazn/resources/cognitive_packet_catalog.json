@@ -58,7 +58,7 @@
         "lematy",
         "morfologia",
         "rozumienie wypowiedzi",
-        "v15.1.0.3.89"
+        "bieżąca wersja Jaźni"
       ],
       "purpose": "wzmacniać runtime przez jawne rozpoznawanie rodzin słów, fraz wielowyrazowych, pól semantycznych, nieznanych terminów i trasy odpowiedzi",
       "response_guidance": "używać lexical_semantic_understanding obok polish_understanding; nie udawać, że słownik jest pełnym LLM-em; nieznane słowa zapisywać jako kandydaty do rozbudowy",
@@ -75,7 +75,7 @@
       "signal_types": [
         "prośba o większy zasób słownictwa",
         "usterka rozumienia polskiej wypowiedzi",
-        "aktualizacja v15.1.0.3.89",
+        "aktualizacja v15.1.0.3.90",
         "potrzeba mniej ogólnikowego routingu"
       ],
       "response_steps": [
@@ -99,7 +99,7 @@
         "morfeusz",
         "provider nlp",
         "krok po kroku",
-        "v15.1.0.3.89"
+        "bieżąca wersja Jaźni"
       ],
       "purpose": "dodać bezpieczny kontrakt NLP bez wymagania ciężkich modeli: tokeny, lemma_candidates, selected_lemma, confidence i provider",
       "response_guidance": "opierać się na polish_nlp; builtin provider traktować jako fallback, a zewnętrzne providery jako opcjonalne",

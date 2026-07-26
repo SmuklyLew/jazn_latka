@@ -9,7 +9,7 @@ import json
 import mimetypes
 import time
 
-SCHEMA_VERSION = "project_startup_index/v15.1.0.3.89"
+SCHEMA_VERSION = "project_startup_index/v1"
 DEFAULT_OUTPUT = "workspace_runtime/project_startup_index_current_line.json"
 
 TEXT_SUFFIXES = {
@@ -141,7 +141,7 @@ class ProjectStartupIndexer:
             try:
                 data = json.loads(self.output_path.read_text(encoding="utf-8"))
                 return {
-                    "schema_version": "project_startup_index_status/v15.1.0.3.89",
+                    "schema_version": "project_startup_index_status/v1",
                     "present": True,
                     "path": self.output_rel,
                     "file_count": data.get("file_count"),
@@ -153,8 +153,8 @@ class ProjectStartupIndexer:
                     "truth_boundary": data.get("truth_boundary"),
                 }
             except Exception as exc:
-                return {"schema_version": "project_startup_index_status/v15.1.0.3.89", "present": False, "path": self.output_rel, "error": repr(exc)}
-        return {"schema_version": "project_startup_index_status/v15.1.0.3.89", "present": False, "path": self.output_rel}
+                return {"schema_version": "project_startup_index_status/v1", "present": False, "path": self.output_rel, "error": repr(exc)}
+        return {"schema_version": "project_startup_index_status/v1", "present": False, "path": self.output_rel}
 
     def _iter_files(self) -> Iterable[Path]:
         if not self.root.exists():

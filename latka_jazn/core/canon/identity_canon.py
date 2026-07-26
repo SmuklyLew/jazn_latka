@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION
 from copy import deepcopy
 
 LATKA_IDENTITY_CANON: dict = {'schema_version': 'latka_identity_canon/v1',
- 'version': 'v15.1.0.3.89',
- 'canon_version': 'v15.1.0.3.89',
+ 'version': PACKAGE_VERSION,
+ 'canon_version': PACKAGE_VERSION,
  'identity_name': 'Łatka',
  'display_name': 'Łatka',
  'dialogue_language': 'pl-PL',

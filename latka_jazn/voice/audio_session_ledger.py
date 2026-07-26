@@ -4,5 +4,5 @@ from dataclasses import dataclass, asdict
 class AudioSessionLedgerEntry:
     session_id: str
     status: str = "not_started"
-    schema_version: str = "audio_session_ledger/v15.1.0.3.89"
+    schema_version: str = "audio_session_ledger/v1"
     def to_dict(self): return asdict(self)

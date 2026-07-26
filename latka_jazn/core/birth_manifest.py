@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -147,7 +148,7 @@ class BirthSourceManifest:
     źródła, pamięć, procedury, runtime, granicę prawdy i jeden głos rozmowy.
     """
 
-    def __init__(self, version: str = "v15.1.0.3.89") -> None:
+    def __init__(self, version: str = PACKAGE_VERSION) -> None:
         self.version = version
 
     def to_dict(self) -> dict[str, Any]:

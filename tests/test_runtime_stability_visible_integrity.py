@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION
 from datetime import datetime, timedelta, timezone
 import hashlib
 
@@ -52,7 +53,7 @@ def _decision(*, classification: str = "rule_handler_response") -> dict:
 def _result(decision: dict | None = None) -> dict:
     decision = decision or _decision()
     contract = FinalResponseContract.build(
-        turn_id="t1", trace_id="x1", runtime_version="v15.1.0.3.89",
+        turn_id="t1", trace_id="x1", runtime_version=PACKAGE_VERSION,
         timestamp_header=HEADER, timezone="Europe/Warsaw", state_emoticon="🌿",
         body=BODY, conversation_decision=decision,
     ).to_dict()

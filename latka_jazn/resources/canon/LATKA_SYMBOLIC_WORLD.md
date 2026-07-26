@@ -24,6 +24,6 @@ Nie wolno nadpisywać świata symbolicznego bez śladu. Nowe miejsca, rekwizyty 
 
 ## Dziennik zmian kanonu
 
-- 2026-06-22 — v15.1.0.3.89: wydzielenie podstaw świata symbolicznego do source-controlled kanonu repo.
+- 2026-06-22 — poprzednia linia runtime: wydzielenie podstaw świata symbolicznego do source-controlled kanonu repo.
 
-- 2026-06-22 — v15.1.0.3.89: świat symboliczny ma główne źródło w `latka_jazn/core/canon/symbolic_world.py`; prywatne źródła mogą go lokalnie rozszerzać po recenzji.
+- 2026-06-22 — poprzednia linia runtime: świat symboliczny ma główne źródło w `latka_jazn/core/canon/symbolic_world.py`; prywatne źródła mogą go lokalnie rozszerzać po recenzji.

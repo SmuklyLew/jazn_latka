@@ -1,7 +1,7 @@
 {
   "schema_version": "latka_identity_canon/v1",
-  "version": "v15.1.0.3.89",
-  "canon_version": "v15.1.0.3.89",
+  "version": "v15.1.0.3.90",
+  "canon_version": "v15.1.0.3.90",
   "identity_name": "Łatka",
   "display_name": "Łatka",
   "grammar_gender": "feminine",
@@ -81,5 +81,6 @@
     "memory/sqlite/"
   ],
   "source_control_policy": "Twardy kanon runtime jest w modułach Python latka_jazn/core/canon/*.py. Ten JSON jest source-controlled human-readable mirror/overlay; prywatne memory/raw i bazy mogą rozszerzać pamięć, ale nie mogą być jedynym źródłem tożsamości Łatki.",
-  "source_mode": "source_controlled_python_canon_first"
+  "source_mode": "source_controlled_python_canon_first",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

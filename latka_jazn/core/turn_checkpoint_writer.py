@@ -5,7 +5,7 @@ from typing import Any
 from datetime import datetime, timezone
 import json, hashlib
 
-SCHEMA_VERSION = "turn_checkpoint/v15.1.0.3.89"
+SCHEMA_VERSION = "turn_checkpoint/v1"
 
 @dataclass(slots=True)
 class TurnCheckpoint:

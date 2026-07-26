@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION
 from pathlib import Path
 import hashlib
 import json
@@ -64,7 +65,7 @@ def _sidecar(tmp_path: Path, *, count: int = 1, bad_fk: bool = False) -> MemoryN
         tmp_path,
         source_db_path=source,
         sidecar_db_path=tmp_path / "audit.sqlite3",
-        runtime_version="v15.1.0.3.89",
+        runtime_version=PACKAGE_VERSION,
     )
 
 
@@ -147,7 +148,7 @@ def test_unreadable_sqlite_reports_validation_failure(tmp_path: Path) -> None:
     source = tmp_path / "source.sqlite3"
     source.write_bytes(b"not a sqlite database")
     sidecar = MemoryNormalizationSidecar(
-        tmp_path, source_db_path=source, sidecar_db_path=tmp_path / "audit.sqlite3", runtime_version="v15.1.0.3.89"
+        tmp_path, source_db_path=source, sidecar_db_path=tmp_path / "audit.sqlite3", runtime_version=PACKAGE_VERSION
     )
     report = sidecar.prepare()
     assert report.status == "validation_failed"

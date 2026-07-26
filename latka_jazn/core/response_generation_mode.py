@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Any
 import hashlib
 
-SCHEMA_VERSION = "response_generation_mode/v15.1.0.3.89"
+SCHEMA_VERSION = "response_generation_mode/v1"
 
 
 class ResponseGenerationMode(StrEnum):

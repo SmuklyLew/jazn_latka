@@ -64,11 +64,11 @@ class LemmatizationReport:
 class PolishLemmatizationEngine:
     """Warstwowa lematyzacja PL dla Jaźni.
 
-    v15.1.0.3.89 wprowadza kontrakt NLP: tokeny, kandydaci lematów, wybrany lemat,
+    poprzednia linia runtime wprowadza kontrakt NLP: tokeny, kandydaci lematów, wybrany lemat,
     pewność, provider i jawne ograniczenia. Provider builtin jest ostrożny i
     zawsze dostępny; zewnętrzne providery są opcjonalne.
     """
-    schema_version = "polish_nlp/v15.1.0.3.89"
+    schema_version = "polish_nlp/v1"
 
     def __init__(self, root: Path | None = None, *, enable_optional: bool | None = None) -> None:
         self.root = Path(root).resolve() if root else None
@@ -151,7 +151,7 @@ class PolishLemmatizationEngine:
             limitations=[
                 "Builtin provider jest bezpiecznym fallbackiem, nie pełnym kontekstowym lematyzatorem języka polskiego.",
                 "Opcjonalne providery Stanza/Morfeusz2 są przygotowane, ale nie są wymagane i nie są uruchamiane bez lokalnej instalacji/modeli.",
-                "Pełny wybór sensu słowa w zdaniu powinien trafić do kolejnej warstwy v15.1.0.3.89.x jako contextual lemma selection.",
+                "Pełny wybór sensu słowa w zdaniu powinien trafić do kolejnej warstwy poprzednia linia runtime.x jako contextual lemma selection.",
             ],
         )
 

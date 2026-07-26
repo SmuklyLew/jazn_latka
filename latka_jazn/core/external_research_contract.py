@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-SCHEMA_VERSION="external_research_contract/v15.1.0.3.89"
+SCHEMA_VERSION="external_research_contract/v1"
 
 @dataclass(slots=True)
 class ExternalResearchResult:

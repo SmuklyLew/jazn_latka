@@ -153,7 +153,7 @@ def assignments(path: Path) -> dict[str, str]:
 
 def validate(data: VersionData) -> None:
     if not VERSION_PATTERN.fullmatch(data.version):
-        raise RebuildError("Numer wersji musi mieć format liczbowy, np. 15.1.0.3.89.")
+        raise RebuildError("Numer wersji musi mieć format liczbowy, np. poprzednia linia runtime.")
     if not data.package.startswith("v") or not VERSION_PATTERN.fullmatch(data.package[1:]):
         raise RebuildError("PACKAGE_VERSION musi mieć format, np. vX.Y.Z.N.")
     if "\n" in data.name or "\r" in data.name:
@@ -174,7 +174,7 @@ def build_version(version: str, distribution: str, name: str) -> VersionData:
     version = version.strip().lstrip("vV")
     distribution = distribution.strip().strip(".")
     if not VERSION_PATTERN.fullmatch(version):
-        raise RebuildError("Numer wersji musi mieć format liczbowy, np. 15.1.0.3.89.")
+        raise RebuildError("Numer wersji musi mieć format liczbowy, np. poprzednia linia runtime.")
     if distribution and not DIST_PATTERN.fullmatch(distribution):
         raise RebuildError("Numer dystrybucji musi być liczbą, np. 88 albo 88.1.")
     package = f"v{version}" + (f".{distribution}" if distribution else "")
