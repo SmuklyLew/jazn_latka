@@ -26,9 +26,34 @@ jobs:
       - name: Assemble and apply validated patch
         shell: bash
         run: |
-          set -euo pipefail
-          cat tools/.temporary_memory_test04_patch/part*.b64 | base64 --decode > /tmp/memory-test04.patch
-          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml --check /tmp/memory-test04.patch
+          set -uo pipefail
+          mkdir -p tools/.temporary_memory_test04_patch
+          : > /tmp/decode.err
+          : > /tmp/apply.err
+          cat tools/.temporary_memory_test04_patch/part*.b64 | base64 --decode > /tmp/memory-test04.patch 2>/tmp/decode.err
+          decode_rc=$?
+          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml --check --verbose /tmp/memory-test04.patch 2>/tmp/apply.err
+          apply_rc=$?
+          if [ "$decode_rc" -ne 0 ] || [ "$apply_rc" -ne 0 ]; then
+            {
+              echo "decode_rc=$decode_rc"
+              echo "apply_rc=$apply_rc"
+              echo "parts:"
+              wc -c tools/.temporary_memory_test04_patch/part*.b64
+              echo "patch:"
+              wc -c /tmp/memory-test04.patch
+              sha256sum /tmp/memory-test04.patch
+              echo "decode_stderr:"
+              cat /tmp/decode.err
+              echo "apply_stderr:"
+              cat /tmp/apply.err
+            } > tools/.temporary_memory_test04_patch/diagnostic.txt
+            git add tools/.temporary_memory_test04_patch/diagnostic.txt
+            git commit -m "ci: record memory test 04 patch diagnostic"
+            git push origin HEAD:feature/memory-sqlite-test-04
+            exit 1
+          fi
+          set -e
           git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml /tmp/memory-test04.patch
           rm -rf tools/.temporary_memory_test04_patch
           rm -f .github/workflows/_temporary_export_memory_test04_checkout.yml
