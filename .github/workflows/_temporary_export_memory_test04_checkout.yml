@@ -1,4 +1,4 @@
-name: Diagnose memory test 04 patch parts
+name: Finalize memory test 04 HTML hardening
 
 on:
   pull_request:
@@ -10,38 +10,47 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  finalize:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'feature/memory-sqlite-test-04'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout branch
+        uses: actions/checkout@v4
         with:
           ref: feature/memory-sqlite-test-04
           fetch-depth: 0
-      - name: Record exact patch-part diagnostics
-        shell: bash
+      - name: Configure Git
         run: |
-          set -u
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p tools/.temporary_memory_test04_patch
-          {
-            echo "parts:"
-            wc -c tools/.temporary_memory_test04_patch/part*.b64
-            echo "part_sha256:"
-            sha256sum tools/.temporary_memory_test04_patch/part*.b64
-            echo "combined_base64_chars:"
-            cat tools/.temporary_memory_test04_patch/part*.b64 | wc -c
-            echo "decode:"
-            set +e
-            cat tools/.temporary_memory_test04_patch/part*.b64 | base64 --decode > /tmp/memory-test04.patch 2>/tmp/decode.err
-            echo "decode_rc=$?"
-            cat /tmp/decode.err
-            wc -c /tmp/memory-test04.patch
-            sha256sum /tmp/memory-test04.patch
-            echo "patch_tail:"
-            tail -n 12 /tmp/memory-test04.patch
-          } > tools/.temporary_memory_test04_patch/diagnostic.txt
-          git add tools/.temporary_memory_test04_patch/diagnostic.txt
-          git commit -m "ci: record memory test 04 patch-part diagnostic"
+      - name: Assemble and apply validated patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat tools/.temporary_memory_test04_patch/part*.b64 | base64 --decode > /tmp/memory-test04.patch
+          test "$(wc -c < /tmp/memory-test04.patch)" = "31137"
+          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml --check --verbose /tmp/memory-test04.patch
+          git apply --exclude=.github/workflows/_temporary_export_memory_test04_checkout.yml /tmp/memory-test04.patch
+          rm -rf tools/.temporary_memory_test04_patch
+          rm -f .github/workflows/_temporary_export_memory_test04_checkout.yml
+          git diff --check
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Validate HTML and memory test suites
+        run: |
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          python -X utf8 -m pytest -q tests/test_memory_sqlite_test04.py tests/test_html_memory_ingest.py tests/test_memory_rebuild.py tests/test_memory_restore_tool.py tests/test_memory_rebuild_tool.py tests/test_memory_recovery_pipeline.py tests/test_memory_tier_store.py tests/test_memory_tiers.py tests/test_memory_tier_status.py
+      - name: Synchronize release metadata
+        run: python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
+      - name: Commit and push final branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          git diff --cached --check
+          git commit -m "feat(memory): harden test 04 for HTML import dry-run"
           git push origin HEAD:feature/memory-sqlite-test-04
