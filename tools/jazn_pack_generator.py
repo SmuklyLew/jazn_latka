@@ -2552,7 +2552,10 @@ def _release_metadata_entries(plan: PackPlan) -> dict[str, PlanEntry]:
             "Plan nie zawiera kompletnej wirtualnej pary metadanych wydania: "
             + ", ".join(missing)
         )
-    manifest = json.loads(entries[PACKAGE_INTEGRITY_MANIFEST].virtual_bytes.decode("utf-8-sig"))
+    manifest_bytes = entries[PACKAGE_INTEGRITY_MANIFEST].virtual_bytes
+    if manifest_bytes is None:
+        raise PackError("Wirtualny manifest nie zawiera danych binarnych.")
+    manifest = json.loads(manifest_bytes.decode("utf-8-sig"))
     manifest_files = manifest.get("files")
     if not isinstance(manifest_files, list):
         raise PackError("Wirtualny manifest nie zawiera listy files.")
