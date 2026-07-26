@@ -1,0 +1,28 @@
+parts:
+ 6000 tools/.temporary_memory_test04_patch/part00.b64
+12000 tools/.temporary_memory_test04_patch/part01.b64
+12000 tools/.temporary_memory_test04_patch/part02.b64
+30000 total
+part_sha256:
+a25a14923129cd6b3a6a2efcf3de00852e374077bc9f329cf2d6a9d420c59dd3  tools/.temporary_memory_test04_patch/part00.b64
+2e78cd95e72e210198c36af1148d1d4e81de1509a18fd713e79103c79321e08d  tools/.temporary_memory_test04_patch/part01.b64
+241d68753bd52c1a144c320d153a91ee5e31012463b31a87f1c89bc4205b32c1  tools/.temporary_memory_test04_patch/part02.b64
+combined_base64_chars:
+30000
+decode:
+decode_rc=0
+22500 /tmp/memory-test04.patch
+83b20e3ce8e1433d7878d6de662a632ea8b4d5efa1b5af790b9f2a7edc0d3381  /tmp/memory-test04.patch
+patch_tail:
++    inventory, execution, completeness = inventory_sources(
++        load_source_manifest(manifest_path)
++    )
++    assert completeness == "passed"
++    assert execution == [canonical.resolve()]
++    assert [row["ordinal"] for row in html_review_rows(inventory)] == [2]
++
++    repo = tmp_path / "repo"
++    repo.mkdir()
++    report = evaluate_html_import_dry_run(repo, inventory)
++
++    assert report["ok
