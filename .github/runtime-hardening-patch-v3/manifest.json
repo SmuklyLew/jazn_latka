@@ -1,0 +1,54 @@
+{
+  "base64_chars": 90664,
+  "base64_sha256": "a22926f46f1575d25eb45b482623b9f12ba2e6fc4bbbec232735df5b5bdd92be",
+  "base_sha": "30a30593901e0b8d24ba6f443f8f67d91d5078e1",
+  "compressed_bytes": 67996,
+  "compressed_sha256": "135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429",
+  "part_count": 8,
+  "parts": [
+    {
+      "chars": 8000,
+      "name": "part-0000.b64",
+      "sha256": "532b799bdeb764a3aed6122505a81542cfb10b53e3bc3c50634b2a441feb7ff7"
+    },
+    {
+      "chars": 8000,
+      "name": "part-0001.b64",
+      "sha256": "d59960664878dce2ac95093bfb7a831b03b5bfbbc522b1a0583918a577ff1aa3"
+    },
+    {
+      "chars": 8000,
+      "name": "part-0002.b64",
+      "sha256": "97c71b17f2de281becf8bd26970fe40ce212093cd93b73946167a6c3d110b0c7"
+    },
+    {
+      "chars": 15000,
+      "name": "part-0003.b64",
+      "sha256": "b4828aec7ccc48104d1d216555c0e23d3836c25d971eb578668cbccca591fc8b"
+    },
+    {
+      "chars": 15000,
+      "name": "part-0004.b64",
+      "sha256": "67a44fe496889b7f0b7850f236ef76cdce65c8f68ff006ff954be317c4e168e0"
+    },
+    {
+      "chars": 15000,
+      "name": "part-0005.b64",
+      "sha256": "66c264ca0eca4cacbe43e9931f82837fbcf204dcfb37fad13adeafc7a6ea4b85"
+    },
+    {
+      "chars": 15000,
+      "name": "part-0006.b64",
+      "sha256": "f269c8fdb8568dc06fdc5f51bb1a6ca87a89f8cf68f6697be0f62b1fc30daaba"
+    },
+    {
+      "chars": 6664,
+      "name": "part-0007.b64",
+      "sha256": "ebaef46a18fa7a7badc578f0eea4030b1b0e37e89035921a9a390d8fa7a70044"
+    }
+  ],
+  "patch_bytes": 294562,
+  "patch_sha256": "80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754",
+  "schema_version": "runtime_hardening_patch_transport/v3",
+  "target_branch": "update/v15.1.0.3.90-runtime-hardening"
+}
