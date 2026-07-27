@@ -76,7 +76,12 @@ jobs:
           assert len(patch) == manifest["patch_bytes"]
           assert hashlib.sha256(patch).hexdigest() == manifest["patch_sha256"]
           Path("runtime-hardening-v6.patch").write_bytes(patch)
-          print(json.dumps({"ok": True, "patch_sha256": manifest["patch_sha256"], "patch_bytes": len(patch)}))
+          supplemental_record = manifest["supplemental_patch"]
+          supplemental = (root / supplemental_record["name"]).read_bytes()
+          assert len(supplemental) == supplemental_record["bytes"]
+          assert hashlib.sha256(supplemental).hexdigest() == supplemental_record["sha256"]
+          Path("runtime-hardening-smoke-fix.patch").write_bytes(supplemental)
+          print(json.dumps({"ok": True, "patch_sha256": manifest["patch_sha256"], "patch_bytes": len(patch), "supplemental_sha256": supplemental_record["sha256"]}))
           PY
           test "$(git -C target rev-parse HEAD)" = "$BASE_SHA"
           git -C target diff --quiet
@@ -89,6 +94,8 @@ jobs:
           set -euo pipefail
           echo apply > "$RUNNER_TEMP/runtime-hardening-v6-stage"
           git -C target apply --whitespace=nowarn ../runtime-hardening-v6.patch
+          git -C target apply --check --whitespace=nowarn ../runtime-hardening-smoke-fix.patch
+          git -C target apply --whitespace=nowarn ../runtime-hardening-smoke-fix.patch
           git -C target diff --check
           test -z "$(git -C target diff --name-only -- .archives)"
           forbidden="$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
