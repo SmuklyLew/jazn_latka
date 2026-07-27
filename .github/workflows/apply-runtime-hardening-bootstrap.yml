@@ -2,8 +2,10 @@ name: apply-runtime-hardening-bootstrap
 
 on:
   push:
-    branches: [update/runtime-hardening-bootstrap]
-    paths: [.github/runtime-hardening-ready]
+    branches:
+      - update/runtime-hardening-bootstrap
+    paths:
+      - .github/runtime-hardening-ready
 
 permissions:
   contents: write
@@ -17,69 +19,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Checkout bootstrap history
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: update/runtime-hardening-bootstrap
           fetch-depth: 0
-      - name: Recover and verify transport
+      - name: Recover verified transport v4
         shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          import base64, gzip, hashlib, json, subprocess, traceback
-          status_path=Path('.github/runtime-hardening-recover-v4-status.json')
-          try:
-              v3=Path('.github/runtime-hardening-patch-v3')
-              v4=Path('.github/runtime-hardening-patch-v4')
-              v4.mkdir(parents=True,exist_ok=True)
-              m3=json.loads((v3/'manifest.json').read_text())
-              expected=next(x for x in m3['parts'] if x['name']=='part-0005.b64')
-              rel='.github/runtime-hardening-patch-v3/part-0005.b64'
-              recovered=None; source_commit=None; candidates=[]
-              for commit in subprocess.check_output(['git','log','--all','--format=%H','--',rel],text=True).splitlines():
-                  try: data=subprocess.check_output(['git','show',f'{commit}:{rel}']).strip()
-                  except subprocess.CalledProcessError: continue
-                  digest=hashlib.sha256(data).hexdigest()
-                  candidates.append({'commit':commit,'chars':len(data),'sha256':digest})
-                  if len(data)==int(expected['chars']) and digest==expected['sha256']:
-                      recovered=data.decode('ascii'); source_commit=commit; break
-              if recovered is None:
-                  raise RuntimeError(json.dumps({'code':'part_0005_not_in_history','expected':expected,'candidates':candidates},sort_keys=True))
-              (v3/'part-0005.b64').write_text(recovered,encoding='ascii')
-              read=lambda p:p.read_text(encoding='ascii').strip()
-              parts=[read(v3/f'part-{i:04d}.b64') for i in range(3)]
-              parts += [read(v4/f'part-{i:04d}.b64') for i in range(3,6)]
-              if any(len(x)!=8000 for x in parts): raise RuntimeError('invalid verified prefix')
-              tail=read(v3/'part-0004.b64')[9000:]+recovered+read(v3/'part-0006.b64')+read(v3/'part-0007.b64')
-              if len(tail)!=42664: raise RuntimeError(f'tail length {len(tail)}')
-              tail_parts=[tail[i:i+8000] for i in range(0,len(tail),8000)]
-              for i,data in enumerate(tail_parts,6): (v4/f'part-{i:04d}.b64').write_text(data,encoding='ascii')
-              parts+=tail_parts; encoded=''.join(parts)
-              expected_global={'base64_chars':90664,'base64_sha256':'71cb2baad8b8817d0d82eec189a48eb82b10bcd271be6e2776bd04bb65b56e32','compressed_bytes':67996,'compressed_sha256':'135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429','patch_bytes':294562,'patch_sha256':'80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754'}
-              if len(encoded)!=expected_global['base64_chars'] or hashlib.sha256(encoded.encode()).hexdigest()!=expected_global['base64_sha256']: raise RuntimeError('combined base64 mismatch')
-              compressed=base64.b64decode(encoded,validate=True)
-              if len(compressed)!=expected_global['compressed_bytes'] or hashlib.sha256(compressed).hexdigest()!=expected_global['compressed_sha256']: raise RuntimeError('compressed payload mismatch')
-              patch=gzip.decompress(compressed)
-              if len(patch)!=expected_global['patch_bytes'] or hashlib.sha256(patch).hexdigest()!=expected_global['patch_sha256']: raise RuntimeError('patch mismatch')
-              manifest={'schema_version':'runtime_hardening_patch_transport/v4','base_sha':'30a30593901e0b8d24ba6f443f8f67d91d5078e1','target_branch':'update/v15.1.0.3.90-runtime-hardening',**expected_global,'part_count':len(parts),'parts':[{'name':f'part-{i:04d}.b64','chars':len(x),'sha256':hashlib.sha256(x.encode()).hexdigest()} for i,x in enumerate(parts)],'recovered_part_0005_from_commit':source_commit}
-              (v4/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
-              status={'ok':True,'source_commit':source_commit,'part_count':len(parts),'patch_sha256':expected_global['patch_sha256']}
-          except Exception as exc:
-              status={'ok':False,'error_type':type(exc).__name__,'error':str(exc),'traceback':traceback.format_exc()}
-              status_path.write_text(json.dumps(status,indent=2,sort_keys=True)+'\n')
-              print(json.dumps(status,indent=2,sort_keys=True)); raise
-          status_path.write_text(json.dumps(status,indent=2,sort_keys=True)+'\n')
-          print(json.dumps(status,indent=2,sort_keys=True))
-          PY
-      - name: Commit recovery status and files
+        run: python -X utf8 .github/scripts/recover_runtime_hardening_v4.py
+      - name: Commit recovery result
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .github/runtime-hardening-patch-v3/part-0005.b64 .github/runtime-hardening-patch-v4 .github/runtime-hardening-recover-v4-status.json 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/runtime-hardening-patch-v3/part-0005.b64 \
+                  .github/runtime-hardening-patch-v4 \
+                  .github/runtime-hardening-recover-v4-status.json 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -m 'ci: recover verified runtime hardening transport v4'
           git push origin HEAD:update/runtime-hardening-bootstrap
