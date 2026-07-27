@@ -22,7 +22,7 @@ jobs:
     env:
       BASE_SHA: 30a30593901e0b8d24ba6f443f8f67d91d5078e1
       TARGET_BRANCH: update/v15.1.0.3.90-runtime-hardening
-      PATCH_SHA256: b014631ed25feb45383f9214baac11a0b46808a7f97f588b17e8f78aa8f2e1e3
+      PATCH_PAYLOAD_BLOB_SHA: ed54cb7abc503d5116a5c67988ffdba3b75e7c34
       PYTHONUTF8: '1'
       PYTHONUNBUFFERED: '1'
       JAZN_NETWORK_TIME_FIRST: '0'
@@ -55,20 +55,51 @@ jobs:
             target/pyproject.toml
 
       - name: Decode and verify exact patch
+        id: patch
         shell: bash
         run: |
-          base64 --decode bootstrap/.github/runtime-hardening.patch.gz.b64 \
-            | gzip --decompress > runtime-hardening.patch
-          echo "${PATCH_SHA256}  runtime-hardening.patch" | sha256sum --check --strict
+          set -euo pipefail
+          actual_blob_sha="$(git -C bootstrap hash-object .github/runtime-hardening.patch.gz.b64)"
+          echo "payload_blob_sha=${actual_blob_sha}"
+          test "${actual_blob_sha}" = "${PATCH_PAYLOAD_BLOB_SHA}"
+          python - <<'PY'
+          from __future__ import annotations
+          import base64
+          import gzip
+          import hashlib
+          from pathlib import Path
+
+          source = Path('bootstrap/.github/runtime-hardening.patch.gz.b64')
+          encoded = source.read_text(encoding='ascii')
+          compressed = base64.b64decode(encoded, validate=False)
+          patch = gzip.decompress(compressed)
+          output = Path('runtime-hardening.patch')
+          output.write_bytes(patch)
+          print(f'patch_bytes={len(patch)}')
+          print(f'patch_sha256={hashlib.sha256(patch).hexdigest()}')
+          PY
           test "$(git -C target rev-parse HEAD)" = "${BASE_SHA}"
           git -C target diff --quiet
           git -C target diff --cached --quiet
-          git -C target apply --check ../runtime-hardening.patch
+          if git -C target apply --check --whitespace=nowarn ../runtime-hardening.patch; then
+            echo 'mode=plain' >> "${GITHUB_OUTPUT}"
+          elif git -C target apply --3way --check --whitespace=nowarn ../runtime-hardening.patch; then
+            echo 'mode=threeway' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'Patch does not apply in plain or three-way mode.' >&2
+            git -C target apply --check --verbose --whitespace=nowarn ../runtime-hardening.patch || true
+            exit 1
+          fi
 
       - name: Apply patch and enforce repository boundaries
         shell: bash
         run: |
-          git -C target apply ../runtime-hardening.patch
+          set -euo pipefail
+          if [ "${{ steps.patch.outputs.mode }}" = 'threeway' ]; then
+            git -C target apply --3way --whitespace=nowarn ../runtime-hardening.patch
+          else
+            git -C target apply --whitespace=nowarn ../runtime-hardening.patch
+          fi
           git -C target diff --check
           test -z "$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
           test -z "$(git -C target diff --name-only -- .archives)"
@@ -93,6 +124,7 @@ jobs:
         working-directory: target
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A -- .github latka_jazn main.py pyproject.toml requirements.txt tests
@@ -112,6 +144,7 @@ jobs:
         working-directory: target
         shell: bash
         run: |
+          set -euo pipefail
           git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
           git diff --cached --check
           git commit -m "release: synchronize canonical metadata for v15.1.0.3.90"
@@ -120,6 +153,7 @@ jobs:
         working-directory: target
         shell: bash
         run: |
+          set -euo pipefail
           python -X utf8 -m latka_jazn.tools.release_metadata_sync \
             --root . --base-branch master --check --json --no-progress
           python -X utf8 run.py doctor --json
