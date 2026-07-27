@@ -20,9 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      BASE_SHA: 30a30593901e0b8d24ba6f443f8f67d91d5078e1
       TARGET_BRANCH: update/v15.1.0.3.90-runtime-hardening
-      PATCH_PAYLOAD_BLOB_SHA: ed54cb7abc503d5116a5c67988ffdba3b75e7c34
+      PAYLOAD_DIR: bootstrap/.github/runtime-hardening-patch-v3
       PYTHONUTF8: '1'
       PYTHONUNBUFFERED: '1'
       JAZN_NETWORK_TIME_FIRST: '0'
@@ -54,47 +53,71 @@ jobs:
             target/requirements.txt
             target/pyproject.toml
 
-      - name: Decode and verify exact patch
-        id: patch
+      - name: Reconstruct and verify exact patch
         shell: bash
         run: |
           set -euo pipefail
           exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo decode_and_verify > "${RUNNER_TEMP}/runtime-hardening-stage"
-          actual_blob_sha="$(git -C bootstrap hash-object .github/runtime-hardening.patch.gz.b64)"
-          echo "payload_blob_sha=${actual_blob_sha}"
-          test "${actual_blob_sha}" = "${PATCH_PAYLOAD_BLOB_SHA}"
+          echo reconstruct_patch > "${RUNNER_TEMP}/runtime-hardening-stage"
           python - <<'PY'
           from __future__ import annotations
-          import base64
-          import gzip
-          import hashlib
+          import base64, gzip, hashlib, json
           from pathlib import Path
 
-          source = Path('bootstrap/.github/runtime-hardening.patch.gz.b64')
-          encoded = source.read_text(encoding='ascii')
-          compressed = base64.b64decode(encoded, validate=False)
+          root = Path('bootstrap/.github/runtime-hardening-patch-v3')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          required = {
+              'schema_version': 'runtime_hardening_patch_transport/v3',
+              'base_sha': '30a30593901e0b8d24ba6f443f8f67d91d5078e1',
+              'target_branch': 'update/v15.1.0.3.90-runtime-hardening',
+          }
+          for key, expected in required.items():
+              actual = manifest.get(key)
+              if actual != expected:
+                  raise SystemExit(f'{key} mismatch: {actual!r} != {expected!r}')
+          parts = manifest.get('parts')
+          if not isinstance(parts, list) or len(parts) != int(manifest['part_count']):
+              raise SystemExit('invalid part manifest')
+          encoded_parts: list[str] = []
+          for item in parts:
+              path = root / str(item['name'])
+              data = path.read_text(encoding='ascii').strip()
+              if len(data) != int(item['chars']):
+                  raise SystemExit(f'length mismatch: {path}')
+              digest = hashlib.sha256(data.encode('ascii')).hexdigest()
+              if digest != str(item['sha256']):
+                  raise SystemExit(f'sha256 mismatch: {path}')
+              encoded_parts.append(data)
+          encoded = ''.join(encoded_parts)
+          if len(encoded) != int(manifest['base64_chars']):
+              raise SystemExit('combined base64 length mismatch')
+          if hashlib.sha256(encoded.encode('ascii')).hexdigest() != manifest['base64_sha256']:
+              raise SystemExit('combined base64 sha256 mismatch')
+          compressed = base64.b64decode(encoded, validate=True)
+          if len(compressed) != int(manifest['compressed_bytes']):
+              raise SystemExit('compressed length mismatch')
+          if hashlib.sha256(compressed).hexdigest() != manifest['compressed_sha256']:
+              raise SystemExit('compressed sha256 mismatch')
           patch = gzip.decompress(compressed)
-          output = Path('runtime-hardening.patch')
-          output.write_bytes(patch)
-          print(f'patch_bytes={len(patch)}')
-          print(f'patch_sha256={hashlib.sha256(patch).hexdigest()}')
+          if len(patch) != int(manifest['patch_bytes']):
+              raise SystemExit('patch length mismatch')
+          if hashlib.sha256(patch).hexdigest() != manifest['patch_sha256']:
+              raise SystemExit('patch sha256 mismatch')
+          Path('runtime-hardening.patch').write_bytes(patch)
+          Path('runtime-hardening-manifest.json').write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print(json.dumps({
+              'part_count': len(parts),
+              'patch_bytes': len(patch),
+              'patch_sha256': manifest['patch_sha256'],
+          }, sort_keys=True))
           PY
-          test "$(git -C target rev-parse HEAD)" = "${BASE_SHA}"
+          base_sha="$(python -c "import json; print(json.load(open('runtime-hardening-manifest.json'))['base_sha'])")"
+          test "$(git -C target rev-parse HEAD)" = "${base_sha}"
           git -C target diff --quiet
           git -C target diff --cached --quiet
-          if git -C target apply --check --whitespace=nowarn ../runtime-hardening.patch; then
-            echo 'mode=plain' >> "${GITHUB_OUTPUT}"
-          elif git -C target apply --3way --check --whitespace=nowarn ../runtime-hardening.patch; then
-            echo 'mode=threeway' >> "${GITHUB_OUTPUT}"
-          elif patch --dry-run --batch --forward -p1 -d target < runtime-hardening.patch; then
-            echo 'mode=posix_patch' >> "${GITHUB_OUTPUT}"
-          else
-            echo 'Patch does not apply in plain, three-way, or POSIX patch mode.' >&2
-            git -C target apply --check --verbose --whitespace=nowarn ../runtime-hardening.patch || true
-            patch --dry-run --verbose --batch --forward -p1 -d target < runtime-hardening.patch || true
-            exit 1
-          fi
+          git -C target apply --check --whitespace=nowarn ../runtime-hardening.patch
 
       - name: Apply patch and enforce repository boundaries
         shell: bash
@@ -102,20 +125,11 @@ jobs:
           set -euo pipefail
           exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
           echo apply_patch > "${RUNNER_TEMP}/runtime-hardening-stage"
-          case "${{ steps.patch.outputs.mode }}" in
-            threeway)
-              git -C target apply --3way --whitespace=nowarn ../runtime-hardening.patch
-              ;;
-            posix_patch)
-              patch --batch --forward -p1 -d target < runtime-hardening.patch
-              ;;
-            *)
-              git -C target apply --whitespace=nowarn ../runtime-hardening.patch
-              ;;
-          esac
+          git -C target apply --whitespace=nowarn ../runtime-hardening.patch
           git -C target diff --check
-          test -z "$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
-          test -z "$(git -C target diff --name-only -- .archives)"
+          test -z "$(git -C target diff --name-only -- .archives memory workspace_runtime)"
+          forbidden="$(git -C target diff --name-only | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
+          test -z "${forbidden}"
 
       - name: Install test environment
         working-directory: target
@@ -154,10 +168,10 @@ jobs:
           echo commit_code > "${RUNNER_TEMP}/runtime-hardening-stage"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- .github latka_jazn main.py pyproject.toml requirements.txt tests
-          forbidden="$({ git diff --cached --name-only || true; } | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
-          test -z "$forbidden"
-          test -z "$(git diff --cached --name-only -- .archives)"
+          git add -A
+          test -z "$(git diff --cached --name-only -- .archives memory workspace_runtime)"
+          forbidden="$(git diff --cached --name-only | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
+          test -z "${forbidden}"
           git diff --cached --check
           git commit -m "fix: harden runtime contracts and persistence"
 
@@ -170,6 +184,9 @@ jobs:
           echo metadata_sync > "${RUNNER_TEMP}/runtime-hardening-stage"
           python -X utf8 -m latka_jazn.tools.release_metadata_sync \
             --root . --base-branch master --write --json --no-progress
+          changed="$(git diff --name-only)"
+          test "${changed}" = $'PACKAGE_INTEGRITY_MANIFEST.json\nSOURCE_PROVENANCE.json' \
+            || test "${changed}" = $'SOURCE_PROVENANCE.json\nPACKAGE_INTEGRITY_MANIFEST.json'
 
       - name: Commit canonical release metadata
         working-directory: target
@@ -196,6 +213,7 @@ jobs:
           python -X utf8 run.py package-smoke --profile release --json
           python -X utf8 -m pytest -q tests/test_runtime_full_turn.py
           python -X utf8 -m pytest -q tests/test_single_source_version_manifest_contract.py
+          rm -rf memory workspace_runtime
           git diff --check
           test -z "$(git status --porcelain --untracked-files=all)"
 
@@ -222,22 +240,14 @@ jobs:
             echo "job_status=${JOB_STATUS}"
             echo "stage=${stage}"
             echo "target_branch=${TARGET_BRANCH}"
-            echo "base_sha=${BASE_SHA}"
-            echo "payload_blob_sha=${PATCH_PAYLOAD_BLOB_SHA}"
             echo
             echo '```text'
-            if [ -f "${log_file}" ]; then
-              tail -n 120 "${log_file}"
-            else
-              echo 'No captured shell log.'
-            fi
+            if [ -f "${log_file}" ]; then tail -n 160 "${log_file}"; else echo 'No captured shell log.'; fi
             echo '```'
           } > .github/runtime-hardening-last-status.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .github/runtime-hardening-last-status.md
-          if git diff --cached --quiet; then
-            exit 0
-          fi
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "ci: record runtime hardening bootstrap result"
           git push origin HEAD:update/runtime-hardening-bootstrap
