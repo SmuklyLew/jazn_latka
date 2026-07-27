@@ -1,0 +1,165 @@
+name: runtime-hardening-recover-v4
+
+on:
+  push:
+    branches:
+      - update/runtime-hardening-bootstrap
+    paths:
+      - .github/runtime-hardening-recover-v4-ready
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: update/runtime-hardening-bootstrap
+          fetch-depth: 0
+      - name: Recover historical part and construct v4
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import base64, gzip, hashlib, json, subprocess
+
+          repo = Path('.').resolve()
+          v3 = repo / '.github' / 'runtime-hardening-patch-v3'
+          v4 = repo / '.github' / 'runtime-hardening-patch-v4'
+          v4.mkdir(parents=True, exist_ok=True)
+          manifest3 = json.loads((v3 / 'manifest.json').read_text(encoding='utf-8'))
+          expected_items = {item['name']: item for item in manifest3['parts']}
+          target_name = 'part-0005.b64'
+          expected = expected_items[target_name]
+          target_rel = f'.github/runtime-hardening-patch-v3/{target_name}'
+
+          commits = subprocess.check_output(
+              ['git', 'log', '--all', '--format=%H', '--', target_rel],
+              text=True,
+          ).splitlines()
+          candidates = []
+          recovered = None
+          recovered_commit = None
+          for commit in commits:
+              try:
+                  raw = subprocess.check_output(['git', 'show', f'{commit}:{target_rel}'])
+              except subprocess.CalledProcessError:
+                  continue
+              data = raw.strip()
+              digest = hashlib.sha256(data).hexdigest()
+              candidates.append({'commit': commit, 'chars': len(data), 'sha256': digest})
+              if len(data) == int(expected['chars']) and digest == str(expected['sha256']):
+                  recovered = data.decode('ascii')
+                  recovered_commit = commit
+                  break
+          if recovered is None:
+              report = {
+                  'ok': False,
+                  'error_code': 'historical_part_not_found_or_invalid',
+                  'target': target_rel,
+                  'expected': expected,
+                  'candidates': candidates,
+              }
+              Path('.github/runtime-hardening-recover-v4-status.json').write_text(
+                  json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+              )
+              raise SystemExit(json.dumps(report, sort_keys=True))
+
+          (v3 / target_name).write_text(recovered, encoding='ascii')
+
+          def read(path: Path) -> str:
+              return path.read_text(encoding='ascii').strip()
+
+          # Known-good v4 prefix: v3 parts 0000..0002 and v4 parts 0003..0005.
+          prefix_parts = [read(v3 / f'part-{i:04d}.b64') for i in range(3)]
+          prefix_parts += [read(v4 / f'part-{i:04d}.b64') for i in range(3, 6)]
+          if any(len(item) != 8000 for item in prefix_parts):
+              raise SystemExit('known-good v4 prefix part has invalid length')
+
+          # Offset 48000 starts 9000 characters into original v3 part 0004.
+          tail = (
+              read(v3 / 'part-0004.b64')[9000:]
+              + recovered
+              + read(v3 / 'part-0006.b64')
+              + read(v3 / 'part-0007.b64')
+          )
+          if len(tail) != 42664:
+              raise SystemExit(f'unexpected tail length: {len(tail)}')
+          tail_parts = [tail[i:i+8000] for i in range(0, len(tail), 8000)]
+          for index, data in enumerate(tail_parts, start=6):
+              (v4 / f'part-{index:04d}.b64').write_text(data, encoding='ascii')
+
+          all_parts = prefix_parts + tail_parts
+          encoded = ''.join(all_parts)
+          expected_global = {
+              'base64_chars': 90664,
+              'base64_sha256': '71cb2baad8b8817d0d82eec189a48eb82b10bcd271be6e2776bd04bb65b56e32',
+              'compressed_bytes': 67996,
+              'compressed_sha256': '135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429',
+              'patch_bytes': 294562,
+              'patch_sha256': '80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754',
+          }
+          if len(encoded) != expected_global['base64_chars']:
+              raise SystemExit(f'combined base64 length mismatch: {len(encoded)}')
+          if hashlib.sha256(encoded.encode('ascii')).hexdigest() != expected_global['base64_sha256']:
+              raise SystemExit('combined base64 sha256 mismatch')
+          compressed = base64.b64decode(encoded, validate=True)
+          if len(compressed) != expected_global['compressed_bytes']:
+              raise SystemExit('compressed length mismatch')
+          if hashlib.sha256(compressed).hexdigest() != expected_global['compressed_sha256']:
+              raise SystemExit('compressed sha256 mismatch')
+          patch = gzip.decompress(compressed)
+          if len(patch) != expected_global['patch_bytes']:
+              raise SystemExit('patch length mismatch')
+          if hashlib.sha256(patch).hexdigest() != expected_global['patch_sha256']:
+              raise SystemExit('patch sha256 mismatch')
+
+          parts_manifest = []
+          for index, data in enumerate(all_parts):
+              parts_manifest.append({
+                  'name': f'part-{index:04d}.b64',
+                  'chars': len(data),
+                  'sha256': hashlib.sha256(data.encode('ascii')).hexdigest(),
+              })
+          manifest4 = {
+              'schema_version': 'runtime_hardening_patch_transport/v4',
+              'base_sha': '30a30593901e0b8d24ba6f443f8f67d91d5078e1',
+              'target_branch': 'update/v15.1.0.3.90-runtime-hardening',
+              **expected_global,
+              'part_count': len(all_parts),
+              'parts': parts_manifest,
+              'recovered_part_0005_from_commit': recovered_commit,
+          }
+          (v4 / 'manifest.json').write_text(
+              json.dumps(manifest4, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          status = {
+              'ok': True,
+              'recovered_part_0005_from_commit': recovered_commit,
+              'part_count': len(all_parts),
+              'patch_sha256': expected_global['patch_sha256'],
+              'patch_bytes': len(patch),
+          }
+          Path('.github/runtime-hardening-recover-v4-status.json').write_text(
+              json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(status, indent=2, sort_keys=True))
+          PY
+      - name: Commit recovered transport
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/runtime-hardening-patch-v3/part-0005.b64 \
+                  .github/runtime-hardening-patch-v4 \
+                  .github/runtime-hardening-recover-v4-status.json || true
+          git diff --cached --quiet && exit 0
+          git commit -m 'ci: recover verified runtime hardening transport v4'
+          git push origin HEAD:update/runtime-hardening-bootstrap
