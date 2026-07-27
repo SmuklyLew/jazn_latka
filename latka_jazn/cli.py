@@ -121,6 +121,14 @@ def build_parser() -> argparse.ArgumentParser:
     child = sub.add_parser("host-finalize", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--timestamp-header", required=True)
+    child.add_argument("--timezone", required=True)
+    child.add_argument("--timestamp-sample-iso", required=True)
+    child.add_argument("--timestamp-source", required=True)
+    child.add_argument("--timestamp-trusted", action=argparse.BooleanOptionalAction, required=True)
+    child.add_argument("--author-id", required=True)
+    child.add_argument("--author-label", required=True)
+    child.add_argument("--author-source", required=True)
+    child.add_argument("--state-emoticon", required=True)
     child.add_argument("--turn-id", required=True)
     child.add_argument("--trace-id", required=True)
     source = child.add_mutually_exclusive_group(required=True)
@@ -144,7 +152,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common(child)
     child.add_argument("--turn-id", required=True)
     child.add_argument("--trace-id")
-    child.add_argument("--dry-run", action="store_true", default=True)
+    child.add_argument("--execute", action="store_true", help="Zażądaj wykonania replay; obecnie jawnie niedostępne.")
 
     child = sub.add_parser("export", allow_abbrev=False)
     _add_common(child)
@@ -220,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
             marker_output=ns.daemon_marker_output,
         )
         _emit(payload, as_json=ns.as_json)
-        return 0
+        return 0 if payload.get("ok") else 1
     if ns.command == "doctor":
         progress = _progress(ns, "doctor", style="bar")
         try:
@@ -244,23 +252,30 @@ def main(argv: list[str] | None = None) -> int:
     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
         return _legacy_main(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
     if ns.command == "restart":
-        stopped = _legacy_main(["--root", str(root), "--daemon-stop"])
+        _legacy_main(["--root", str(root), "--daemon-stop"])
         started = _legacy_main(["--root", str(root), "--daemon-start"])
-        return started if started else stopped
+        if started != 0:
+            return started
+        payload = diagnostics.status_payload(root, probe_endpoint=True)
+        return 0 if payload.get("ok") else 1
     if ns.command == "host-finalize":
         payload = host_commands.finalize_payload(ns)
         _emit(payload, as_json=True)
         return 0 if payload.get("accepted") else 2
-    audit_db = root / "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
+    from latka_jazn.config import JaznConfig
+    audit_db = JaznConfig(root=root).audit_db_path_readonly
     if ns.command == "audit-tail":
-        _emit(audit_commands.audit_tail(audit_db, ns.limit), as_json=True)
-        return 0
+        payload = audit_commands.audit_tail(audit_db, ns.limit)
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok") else 2
     if ns.command == "explain-turn":
-        _emit(audit_commands.explain(audit_db, ns.turn_id, ns.trace_id), as_json=True)
-        return 0
+        payload = audit_commands.explain(audit_db, ns.turn_id, ns.trace_id)
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok") else 2
     if ns.command == "replay-turn":
-        _emit(audit_commands.replay(audit_db, ns.turn_id, ns.trace_id), as_json=True)
-        return 0
+        payload = audit_commands.replay(audit_db, ns.turn_id, ns.trace_id, execute=bool(ns.execute))
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok") else 2
     if ns.command == "export":
         payload = _spinner_call(
             ns,

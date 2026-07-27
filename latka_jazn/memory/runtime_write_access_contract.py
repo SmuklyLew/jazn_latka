@@ -38,6 +38,7 @@ class RuntimeWriteAccessStatus:
     audit_table_count: int = 0
     memory_record_count: int = 0
     audit_record_count: int = 0
+    verification_mode: str = "deep"
     weak_points_repaired: list[str] = field(default_factory=lambda: [
         "niepewny_czas_bez_trusted_timestamp",
         "brak_biezacego_runtime_write_v1_po_odchudzeniu_paczki",
@@ -65,28 +66,39 @@ def _relative_or_none(root: Path, path: Path | None) -> str | None:
         return str(path)
 
 
-def _sqlite_status(path: Path) -> dict[str, Any]:
+def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
     result = {
         "integrity": None,
         "error": None,
         "foreign_key_violations": 0,
         "table_count": 0,
         "record_count": 0,
+        "verification_mode": "deep" if deep_verify else "metadata_only",
     }
     if not path.exists():
         return result
     try:
-        con = sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True, timeout=10.0)
+        con = sqlite3.connect(
+            f"file:{path.resolve().as_posix()}?mode=ro",
+            uri=True,
+            timeout=10.0 if deep_verify else 0.25,
+        )
         try:
-            row = con.execute("PRAGMA integrity_check").fetchone()
-            result["integrity"] = str(row[0]) if row else None
-            result["foreign_key_violations"] = len(list(con.execute("PRAGMA foreign_key_check")))
+            con.execute("SELECT 1").fetchone()
             tables = [
-                str(row[0]) for row in con.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+                str(row[0])
+                for row in con.execute(
+                    "SELECT name FROM sqlite_master "
+                    "WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
                 )
             ]
             result["table_count"] = len(tables)
+            if not deep_verify:
+                result["integrity"] = "ready_metadata_only"
+                return result
+            row = con.execute("PRAGMA integrity_check").fetchone()
+            result["integrity"] = str(row[0]) if row else None
+            result["foreign_key_violations"] = len(list(con.execute("PRAGMA foreign_key_check")))
             total = 0
             for table in tables:
                 quoted = '"' + table.replace('"', '""') + '"'
@@ -97,7 +109,7 @@ def _sqlite_status(path: Path) -> dict[str, Any]:
             result["record_count"] = total
         finally:
             con.close()
-    except Exception as exc:
+    except (sqlite3.DatabaseError, OSError) as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result
 
@@ -156,6 +168,7 @@ def build_runtime_write_access_status(
     *,
     initialize: bool = False,
     writes_enabled: bool | None = None,
+    deep_verify: bool = True,
 ) -> RuntimeWriteAccessStatus:
     root = Path(config.root).resolve()
     if initialize:
@@ -165,12 +178,14 @@ def build_runtime_write_access_status(
     audit_path = Path(config.audit_db_path_readonly)
     memory_exists = memory_path.exists()
     audit_exists = audit_path.exists()
-    memory = _sqlite_status(memory_path)
-    audit = _sqlite_status(audit_path)
+    memory = _sqlite_status(memory_path, deep_verify=deep_verify)
+    audit = _sqlite_status(audit_path, deep_verify=deep_verify)
+    accepted_integrity = {"ok", "ready_metadata_only"}
 
     ok = bool(
         memory_exists and audit_exists
-        and memory["integrity"] == "ok" and audit["integrity"] == "ok"
+        and memory["integrity"] in accepted_integrity
+        and audit["integrity"] in accepted_integrity
         and not memory["foreign_key_violations"] and not audit["foreign_key_violations"]
         and not memory["error"] and not audit["error"]
     )
@@ -179,16 +194,20 @@ def build_runtime_write_access_status(
     writes_observed = bool(memory["record_count"] or audit["record_count"])
     current_write_enabled = bool(writes_enabled) and write_capable
     if ok:
-        status = "ready"
-        access_mode = "ready_write_capable" if current_write_enabled else "ready_write_capable_readonly"
+        status = "ready" if deep_verify else "ready_metadata_only"
+        access_mode = (
+            "ready_write_capable" if current_write_enabled else "ready_write_capable_readonly"
+        )
+        if not deep_verify:
+            access_mode = "ready_metadata_only"
     elif not memory_exists and not audit_exists:
         status = "missing_can_initialize"
         access_mode = "disabled_missing"
     else:
         status = "partial_or_integrity_failed"
         access_mode = "error_integrity_failed" if (
-            memory["error"] or audit["error"] or memory["integrity"] not in {None, "ok"}
-            or audit["integrity"] not in {None, "ok"}
+            memory["error"] or audit["error"] or memory["integrity"] not in {None, "ok", "ready_metadata_only"}
+            or audit["integrity"] not in {None, "ok", "ready_metadata_only"}
             or memory["foreign_key_violations"] or audit["foreign_key_violations"]
         ) else "partial_missing"
 
@@ -215,4 +234,5 @@ def build_runtime_write_access_status(
         audit_table_count=int(audit["table_count"]),
         memory_record_count=int(memory["record_count"]),
         audit_record_count=int(audit["record_count"]),
+        verification_mode="deep" if deep_verify else "metadata_only",
     )

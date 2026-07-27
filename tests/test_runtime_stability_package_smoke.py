@@ -135,3 +135,16 @@ def test_chat_integrity_check_does_not_mask_explicit_integrity_mismatch(monkeypa
     assert result["attempt_count"] == 1
     assert result["retry_used"] is False
     assert calls == 1
+
+def test_inactive_status_snapshot_is_a_valid_smoke_observation() -> None:
+    payload = {
+        "ok": False,
+        "daemon": {
+            "active_state": "inactive",
+            "endpoint_probe_performed": False,
+            "observation_state": "endpoint_not_probed",
+        },
+    }
+    assert release_readiness._inactive_snapshot_contract_ok({"returncode": 1}, payload) is True
+    assert release_readiness._inactive_snapshot_contract_ok({"returncode": 0}, payload) is False
+    assert release_readiness._inactive_snapshot_contract_ok({"returncode": 1}, None) is False

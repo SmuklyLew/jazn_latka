@@ -154,10 +154,10 @@ class NLPCapabilityAudit:
             ),
             NLPLayerStatus(
                 "evaluation_and_ood_regression",
-                "ready",
-                ["tests/test_v15030_nlp_completion.py"],
-                ["minimal pairs", "inflection variants", "wrong-route validator test"],
-                ["production quality still requires a larger labelled confusion set"],
+                "ready" if self._exists("tests/test_nlp_capability_contract.py") else "partial",
+                ["tests/test_nlp_capability_contract.py"],
+                ["minimal pairs", "compound intents", "negation scope", "OOD/abstention", "answer component coverage"],
+                ([] if self._exists("tests/test_nlp_capability_contract.py") else ["contract test file is missing"]),
                 research_source_ids=["rasa_nlu_components", "guo_calibration"],
             ),
         ]

@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
-import hashlib, shutil, sqlite3
+import hashlib, sqlite3
 
 SCHEMA_VERSION = "raw_memory_status/v1"
 
@@ -17,15 +17,12 @@ def _sha(path: Path) -> str | None:
 
 @dataclass(slots=True)
 class RawMemoryStatus:
-    archive_present: bool
     html_present: bool
-    extractor_available: bool
     sqlite_present: bool
     legacy_messages_count: int
     sqlite_index_available: bool
     source_sha256_recorded: bool
     status: str
-    archive_sha256: str | None = None
     html_sha256: str | None = None
     sqlite_path: str | None = None
     conversation_messages_count: int = 0
@@ -91,40 +88,43 @@ class RawMemoryInspector:
             return 0, 0, 0, False, "sqlite_read_error"
 
     def inspect(self) -> RawMemoryStatus:
-        raw_dir=self.root/'memory'/'raw'
-        html=raw_dir/'chat.html'
-        archive=raw_dir/'chat.html.7z'
-        extractor=bool(shutil.which('7z'))
-        try:
-            import py7zr  # type: ignore
-            extractor=True
-        except Exception:
-            pass
-        db=self.sqlite_path or self.root/'memory'/'sqlite'/'chat_context.sqlite3'
+        raw_dir = self.root / "memory" / "raw"
+        html = raw_dir / "chat.html"
+        db = self.sqlite_path or self.root / "memory" / "sqlite" / "chat_context.sqlite3"
         if not db.exists():
-            candidates=[]
-            for parent in [self.root/'memory'/'sqlite', self.root/'workspace_runtime']:
+            candidates: list[Path] = []
+            for parent in (self.root / "memory" / "sqlite", self.root / "workspace_runtime"):
                 if parent.exists():
-                    candidates.extend(parent.glob('*.sqlite3'))
-            db=sorted(candidates)[-1] if candidates else db
+                    candidates.extend(parent.glob("*.sqlite3"))
+            db = sorted(candidates)[-1] if candidates else db
         legacy_count, message_count, chunk_count, sha_meta, kind = self._inspect_sqlite(db)
-        sqlite_present=db.exists()
+        sqlite_present = db.exists()
         usable_records = max(legacy_count, message_count, chunk_count)
-        index_available=bool(sqlite_present and usable_records>0 and (sha_meta or archive.exists() or html.exists() or kind.startswith('chat_context_v4')))
+        index_available = bool(
+            sqlite_present
+            and usable_records > 0
+            and (sha_meta or html.exists() or kind.startswith("chat_context_v4"))
+        )
         if html.exists() and index_available:
-            status='rozpakowana'
+            status = "raw_and_index_available"
+        elif html.exists():
+            status = "raw_only"
         elif index_available:
-            status='indeks_dostępny'
-        elif archive.exists():
-            status='archiwum'
+            status = "index_available"
         elif sqlite_present and usable_records == 0:
-            status='indeks_pusty'
+            status = "index_empty"
         else:
-            status='niedostępna'
+            status = "unavailable"
         return RawMemoryStatus(
-            archive_present=archive.exists(), html_present=html.exists(), extractor_available=extractor,
-            sqlite_present=sqlite_present, legacy_messages_count=legacy_count, conversation_messages_count=message_count,
-            legacy_chunks_count=chunk_count, sqlite_index_available=index_available, source_sha256_recorded=sha_meta,
-            status=status, archive_sha256=_sha(archive), html_sha256=_sha(html), sqlite_path=str(db) if db.exists() else None,
+            html_present=html.exists(),
+            sqlite_present=sqlite_present,
+            legacy_messages_count=legacy_count,
+            conversation_messages_count=message_count,
+            legacy_chunks_count=chunk_count,
+            sqlite_index_available=index_available,
+            source_sha256_recorded=sha_meta,
+            status=status,
+            html_sha256=_sha(html),
+            sqlite_path=str(db) if db.exists() else None,
             sqlite_schema_kind=kind,
         )

@@ -8,6 +8,8 @@ from typing import Any, Callable, Iterator
 import threading
 import time
 import uuid
+import json
+import os
 
 
 TURN_STAGE_NAMES = (
@@ -51,6 +53,7 @@ class StagedSemanticWrite:
     stage: str
     created_at_utc: str
     commit: Callable[[], Any] = field(repr=False)
+    compensate: Callable[[], Any] | None = field(default=None, repr=False)
 
 
 class TurnExecutionContext:
@@ -223,6 +226,7 @@ class TurnExecutionContext:
         data_type: str,
         stage: str,
         commit: Callable[[], Any],
+        compensate: Callable[[], Any] | None = None,
     ) -> str | None:
         with self._lock:
             if self._cancelled or self._deadline_expired_locked():
@@ -236,6 +240,7 @@ class TurnExecutionContext:
                 stage=str(stage),
                 created_at_utc=_utc_now(),
                 commit=commit,
+                compensate=compensate,
             )
             self._staged_writes.append(write)
             return write.write_id
@@ -280,12 +285,74 @@ class TurnExecutionContext:
         with self._lock:
             rejected = self._reject_staging_locked(reason=reason)
             self.mark_stage("canonical_persistence_commit", status="rejected", error_code=reason)
-            return {"committed": False, "committed_count": 0, "rejected_count": rejected, "reason": reason}
+            return {"committed": False, "committed_count": 0, "rejected_count": rejected, "reason": reason, "persistence_degraded": False, "partial_commit_detected": False}
+
+    def _write_recovery_outbox(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if self.audit_db_path is None:
+            return {"written": False, "path": None, "error_code": "recovery_outbox_path_unavailable"}
+        path = self.audit_db_path.parent / "turn_persistence_recovery.jsonl"
+        record = {
+            "schema_version": "turn_persistence_recovery/v1",
+            "created_at_utc": _utc_now(),
+            "request_id": self.request_id,
+            "turn_id": self.turn_id,
+            "session_id": self.session_id,
+            **dict(payload),
+        }
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            encoded = (json.dumps(record, ensure_ascii=False, sort_keys=True, default=str) + "\n").encode("utf-8")
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+            try:
+                os.write(fd, encoded)
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+            return {"written": True, "path": str(path), "error_code": None}
+        except OSError as exc:
+            return {
+                "written": False,
+                "path": str(path),
+                "error_code": type(exc).__name__,
+                "error": str(exc),
+            }
+
+    def _compensate_committed_writes(self, writes: list[StagedSemanticWrite]) -> dict[str, Any]:
+        attempted = 0
+        compensated: list[str] = []
+        failures: list[dict[str, str]] = []
+        unavailable: list[str] = []
+        for write in reversed(writes):
+            if write.compensate is None:
+                unavailable.append(write.write_id)
+                continue
+            attempted += 1
+            try:
+                write.compensate()
+                compensated.append(write.write_id)
+            except Exception as exc:
+                failures.append({
+                    "write_id": write.write_id,
+                    "error_code": type(exc).__name__,
+                    "error": str(exc),
+                })
+        return {
+            "attempted": attempted,
+            "compensated_count": len(compensated),
+            "compensated_write_ids": compensated,
+            "unavailable_write_ids": unavailable,
+            "failures": failures,
+            "complete": bool(writes) and len(compensated) == len(writes) and not failures,
+        }
 
     def commit_if_allowed(self, result: dict[str, Any], *, job_status: str) -> dict[str, Any]:
         with self._lock:
             if self._canonical_committed:
-                return {"committed": True, "committed_count": 0, "rejected_count": 0, "reason": "already_committed"}
+                return {
+                    "committed": True, "committed_count": 0, "rejected_count": 0,
+                    "reason": "already_committed", "persistence_degraded": False,
+                    "partial_commit_detected": False,
+                }
             if self._cancelled or self._deadline_expired_locked():
                 reason = self._cancellation_error_code or "execution_timeout"
                 return self.reject_staging(reason=reason)
@@ -295,33 +362,68 @@ class TurnExecutionContext:
             writes = list(self._staged_writes)
             self.start_stage("canonical_persistence_commit")
 
-        committed_count = 0
-        try:
-            for write in writes:
-                with self._lock:
-                    if self._cancelled or self._deadline_expired_locked():
-                        reason = self._cancellation_error_code or "execution_timeout"
-                        self._reject_staging_locked(reason=reason)
-                        self.complete_stage("canonical_persistence_commit", status="cancelled", error_code=reason)
-                        return {
-                            "committed": False,
-                            "committed_count": committed_count,
-                            "rejected_count": len(writes) - committed_count,
-                            "reason": reason,
-                        }
-                write.commit()
-                with self._lock:
-                    self._committed_write_ids.add(write.write_id)
-                committed_count += 1
-        except BaseException as exc:
+        committed_writes: list[StagedSemanticWrite] = []
+        for index, write in enumerate(writes):
             with self._lock:
-                self._reject_staging_locked(reason="canonical_commit_failed")
-                self.complete_stage(
-                    "canonical_persistence_commit",
-                    status="failed",
-                    error_code=type(exc).__name__,
-                )
-            raise
+                if self._cancelled or self._deadline_expired_locked():
+                    reason = self._cancellation_error_code or "execution_timeout"
+                    rejected = self._reject_staging_locked(reason=reason)
+                    compensation = self._compensate_committed_writes(committed_writes)
+                    recovery = self._write_recovery_outbox({
+                        "reason": reason,
+                        "partial_commit_detected": bool(committed_writes),
+                        "committed_write_ids": [item.write_id for item in committed_writes],
+                        "pending_write_ids": [item.write_id for item in writes[index:]],
+                        "compensation": compensation,
+                    })
+                    self.complete_stage("canonical_persistence_commit", status="cancelled", error_code=reason)
+                    return {
+                        "committed": False,
+                        "committed_count": len(committed_writes),
+                        "rejected_count": rejected,
+                        "reason": reason,
+                        "persistence_degraded": True,
+                        "partial_commit_detected": bool(committed_writes),
+                        "compensation": compensation,
+                        "recovery_outbox": recovery,
+                    }
+            try:
+                write.commit()
+            except Exception as exc:
+                with self._lock:
+                    rejected = self._reject_staging_locked(reason="canonical_commit_failed")
+                    self.complete_stage(
+                        "canonical_persistence_commit",
+                        status="failed_degraded",
+                        error_code=type(exc).__name__,
+                    )
+                compensation = self._compensate_committed_writes(committed_writes)
+                recovery = self._write_recovery_outbox({
+                    "reason": "canonical_commit_failed",
+                    "error_code": type(exc).__name__,
+                    "error": str(exc),
+                    "failed_write_id": write.write_id,
+                    "partial_commit_detected": bool(committed_writes),
+                    "committed_write_ids": [item.write_id for item in committed_writes],
+                    "pending_write_ids": [item.write_id for item in writes[index + 1:]],
+                    "compensation": compensation,
+                })
+                return {
+                    "committed": False,
+                    "committed_count": len(committed_writes),
+                    "rejected_count": rejected,
+                    "reason": "canonical_commit_failed",
+                    "error_code": type(exc).__name__,
+                    "error": str(exc),
+                    "failed_write_id": write.write_id,
+                    "persistence_degraded": True,
+                    "partial_commit_detected": bool(committed_writes),
+                    "compensation": compensation,
+                    "recovery_outbox": recovery,
+                }
+            with self._lock:
+                self._committed_write_ids.add(write.write_id)
+            committed_writes.append(write)
 
         with self._lock:
             self._staged_writes.clear()
@@ -329,9 +431,16 @@ class TurnExecutionContext:
             self.complete_stage("canonical_persistence_commit", status="completed")
         return {
             "committed": True,
-            "committed_count": committed_count,
+            "committed_count": len(committed_writes),
             "rejected_count": 0,
             "reason": "success_gates_passed",
+            "persistence_degraded": False,
+            "partial_commit_detected": False,
+            "compensation": {
+                "attempted": 0, "compensated_count": 0, "compensated_write_ids": [],
+                "unavailable_write_ids": [], "failures": [], "complete": False,
+            },
+            "recovery_outbox": {"written": False, "path": None, "error_code": None},
         }
 
     def finalize_total(self, *, status: str, error_code: str | None = None) -> None:
@@ -409,7 +518,6 @@ class TurnExecutionContext:
 
         with self._lock:
             technical = list(self._technical_events)
-            self._technical_events.clear()
             self._audit_sequence += 1
             sequence = self._audit_sequence
         self.start_stage("audit_persistence")
@@ -442,6 +550,9 @@ class TurnExecutionContext:
                 trace_id=self.request_id,
                 turn_id=self.turn_id,
             )
+            with self._lock:
+                for _ in range(min(len(technical), len(self._technical_events))):
+                    self._technical_events.pop(0)
             return {
                 "ok": True,
                 "available": True,

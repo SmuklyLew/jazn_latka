@@ -8,6 +8,8 @@ import shutil
 import time
 import uuid
 import zipfile
+
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 import zlib
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -527,6 +529,7 @@ def unsafe_zip_member_name(name: str) -> str | None:
 
 
 def validate_zip_member_names(zf: zipfile.ZipFile) -> None:
+    validate_zip_resources(zf)
     bad: list[str] = []
     for info in zf.infolist():
         reason = unsafe_zip_member_name(info.filename)

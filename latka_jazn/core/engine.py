@@ -3,6 +3,7 @@ from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
+import hashlib
 import json, re, time, uuid
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.clock import WarsawClock
@@ -52,7 +53,6 @@ from latka_jazn.memory.runtime_persistence import RuntimeMemoryWriter, RuntimePe
 from latka_jazn.memory.event_ledger import RuntimeEventLedger
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.memory.chat_html_importer import search_raw_chat_html_snippets
-from latka_jazn.memory.raw_archive import chat_archive_diagnostics
 from latka_jazn.memory.conversation_archive import ConversationArchiveStore
 from latka_jazn.core.runtime_status import build_runtime_status
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
@@ -70,6 +70,7 @@ from latka_jazn.core.template_registry import TemplateRegistry
 from latka_jazn.core.response_generation_mode import build_runtime_provenance
 from latka_jazn.core.runtime_response_synthesizer import RuntimeResponseSynthesizer
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
+from latka_jazn.core.model_executor_preflight import resolve_model_executor
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.route_handler_dispatcher import RouteHandlerDispatcher
 from latka_jazn.core.turn_checkpoint_writer import TurnCheckpointWriter
@@ -729,10 +730,9 @@ class JaznEngine:
             importer = MemoryImporter(self.store, self.config.root)
             counts = importer.register_packaged_sources()
             chat_report = None
-            archive_diag = chat_archive_diagnostics(self.config.root)
             if self.store.stats().get("legacy_messages", 0) == 0 and (
-                (self.config.root / "memory" / "raw" / "chat.html").exists() or archive_diag.get("archive_present")
-            ):
+                self.config.root / "memory" / "raw" / "chat.html"
+            ).exists():
                 chat_report = importer.import_raw_chat_html(force=False)
             sync_report = importer.synchronize_memory_files(export=True)
             stats = self.store.stats()
@@ -1945,24 +1945,31 @@ class JaznEngine:
         return packet
 
 
-    def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
-        """Jedna zintegrowana tura runtime: cognitive-frame + final visible reply.
+    def _model_executor_contract(self, decision: dict[str, Any]):
+        status = self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else {}
+        preflight = resolve_model_executor(self.model_adapter)
+        can_generate = preflight.executor == "local_model"
+        decision.update(model_executor_preflight=preflight.to_dict(), can_generate_model_guided_speech=can_generate, model_guided_retry_limit=1 if preflight.retry_allowed else 0)
+        return status, preflight, can_generate
 
-        To jest główna poprawka poprzednia linia runtime. Nie wykonujemy dwóch osobnych tur
-        (direct response + cognitive frame). Budujemy jeden cognitive-frame,
-        dopinamy afekt/dialog/logikę do koperty i z tej samej koperty tworzymy
-        finalną odpowiedź z timestampem.
-        """
+    def _audit_process_turn_started(self, text: str, context: dict[str, Any]) -> None:
+        try:
+            self.audit_store.append_event(
+                "process_turn_started",
+                {"user_text_sha256": hashlib.sha256((text or "").encode("utf-8", errors="surrogatepass")).hexdigest(), "client_context": context},
+                source=context.get("client", "process_turn"), actor="user", tags=["turn", "start", self.config.version],
+            )
+        except (OSError, RuntimeError, ValueError):
+            return
+
+    def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
+        """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
         ctx = dict(client_context or {})
         turn_context = ctx.pop("_turn_context", None)
         if not isinstance(turn_context, TurnExecutionContext):
             turn_context = None
         ctx.setdefault("client", "process_turn")
-        try:
-            import hashlib as _hashlib
-            self.audit_store.append_event("process_turn_started", {"user_text_sha256": _hashlib.sha256((text or "").encode("utf-8", errors="surrogatepass")).hexdigest(), "client_context": ctx}, source=ctx.get("client", "process_turn"), actor="user", tags=["turn", "start", self.config.version])
-        except Exception:
-            pass
+        self._audit_process_turn_started(text, ctx)
         ctx.setdefault("lifecycle", "one_shot")
         prior_turn_at = self.last_turn_at
         no_carryover = bool(ctx.get("no_carryover"))
@@ -2063,6 +2070,7 @@ class JaznEngine:
         decision_dict = decision.to_dict()
         decision_dict["timestamp_contract"] = envelope.cognitive_frame.get("timestamp_contract") or {}
         decision_dict["voice_source_contract"] = envelope.cognitive_frame.get("voice_source_contract") or self.voice_source_contract.to_dict()
+        decision_dict["state_emoticon"] = str(affect_mix.get("state_emoticon") or self.affect.marker() or "").strip()
         decision_dict["runtime_rendering_mode"] = envelope.cognitive_frame.get("runtime_rendering_mode") or {}
         decision_dict["memory_recall_contract_status"] = {
             "items": len((envelope.cognitive_frame.get("memory_recall_contract") or {}).get("items") or []),
@@ -2140,10 +2148,7 @@ class JaznEngine:
             decision_dict["direct_answer_required"] = True
         if handler_result.body and handler_result.generation_mode not in {"pass_through_empty"}:
             decision.body = handler_result.body
-        adapter_status = self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else {}
-        can_generate_model_guided_speech = bool(adapter_status.get("can_generate_model_guided_speech"))
-        decision_dict["can_generate_model_guided_speech"] = can_generate_model_guided_speech
-        decision_dict["model_guided_retry_limit"] = 1
+        adapter_status, model_executor, can_generate_model_guided_speech = self._model_executor_contract(decision_dict)
         decision_dict["model_guided_retry_count"] = 0
         if turn_context is not None:
             turn_context.start_stage("synthesis")
@@ -2155,6 +2160,7 @@ class JaznEngine:
             route=str(decision_dict.get("route") or route_entry.route),
             cognitive_frame=frame,
             response_policy=turn_response_policy.to_dict(),
+            executor_preflight=model_executor,
         )
         decision_dict["model_guided_synthesis"] = model_synthesis.to_dict()
         decision_dict["model_generated"] = model_synthesis.used
@@ -2187,7 +2193,7 @@ class JaznEngine:
         speech_truth_gate_required = str(detected_dialogue_intent) in MODEL_GUIDED_SPEECH_INTENTS
         if speech_truth_gate_required:
             candidate_valid = bool(model_synthesis.used and first_validation.accepted and not template_origin.get("template_id"))
-            if not candidate_valid and can_generate_model_guided_speech:
+            if not candidate_valid and model_executor.retry_allowed:
                 retry_synthesis = self.model_guided_response_synthesizer.synthesize(
                     adapter=self.model_adapter,
                     user_text=text,
@@ -2196,6 +2202,7 @@ class JaznEngine:
                     route=str(decision_dict.get("route") or route_entry.route),
                     cognitive_frame=frame,
                     response_policy=turn_response_policy.to_dict(),
+                    executor_preflight=model_executor,
                 )
                 decision_dict["model_guided_retry_count"] = 1
                 decision_dict["model_guided_retry_synthesis"] = retry_synthesis.to_dict()
@@ -2456,7 +2463,8 @@ class JaznEngine:
         )
         prospective_visible = FinalResponseContract.ensure_timestamp_prefix(
             envelope.trace.timestamp_header,
-            affect_mix.get("state_emoticon") or self.affect.marker(),
+            str(decision_dict.get("state_emoticon") or ""),
+            str((decision_dict.get("voice_source_contract") or {}).get("speaking_identity") or ""),
             body,
         )
         origin_truth_valid, origin_truth_errors = evaluate_origin_truth(
@@ -2665,29 +2673,36 @@ class JaznEngine:
         turn_id: str,
         trace_id: str,
         timestamp_header: str,
+        timezone: str,
+        timestamp_sample_iso: str,
+        timestamp_source: str,
+        timestamp_trusted: bool,
+        author_id: str,
+        author_label: str,
+        author_source: str,
         final_text: str,
-        timezone: str = "Europe/Warsaw",
-        state_emoticon: str = "🌿",
+        state_emoticon: str,
         source: str = "chatgpt_visible_layer",
         client_context: dict | None = None,
     ) -> dict:
-        """Dopisuje do ledgera finalną odpowiedź widoczną poza runtime.
-
-        To domyka most ChatGPT: gdy odpowiedź została ułożona przez warstwę
-        widoczną po otrzymaniu cognitive_turn_envelope, zapisujemy dokładny tekst
-        użytkownikowi widoczny, z tym samym turn_id/trace_id/timestamp.
-        """
+        """Persist an externally rendered final only with the verified turn envelope."""
         capture = FinalVisibleReplyCapture.build(
             turn_id=turn_id,
             trace_id=trace_id,
             timestamp_header=timestamp_header,
             timezone=timezone,
+            timestamp_sample_iso=timestamp_sample_iso,
+            timestamp_source=timestamp_source,
+            timestamp_trusted=timestamp_trusted,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
             state_emoticon=state_emoticon,
             final_text=final_text,
             source=source,
         )
         envelope_stub = {
-            "schema_version": "external_final_visible_reply_envelope/v1",
+            "schema_version": "external_final_visible_reply_envelope/v2",
             "runtime_version": self.config.version,
             "trace": {
                 "turn_id": turn_id,
@@ -2704,45 +2719,28 @@ class JaznEngine:
                 "runtime_version": self.config.version,
                 "timestamp_header": timestamp_header,
                 "timezone": timezone,
+                "timestamp_sample_iso": timestamp_sample_iso,
+                "timestamp_source": timestamp_source,
+                "timestamp_trusted": timestamp_trusted,
                 "state_emoticon": state_emoticon,
+                "author_id": author_id,
+                "author_label": author_label,
+                "author_source": author_source,
                 "final_visible_text": capture.final_visible_text,
-                "schema_version": "external_final_response_contract/v1",
+                "schema_version": "external_final_response_contract/v2",
             },
             "dialogue_state": {},
             "affect_mix": {"state_emoticon": state_emoticon},
         }
         result = self.event_ledger.append_final_visible_reply(
             envelope_stub,
-            final_text=capture.final_visible_text,
+            capture.final_visible_text,
             source=source,
-            local_time_label=timestamp_header,
+            client_context=client_context or {},
         )
-        self.store.add_event(
-            "external_final_visible_assistant_reply",
-            capture.to_dict(),
-            source=source,
-            actor="chatgpt_visible_layer",
-            tags=["final_visible_reply", "chatgpt_bridge", "timestamp_contract", self.config.version],
-            importance=0.74,
-            emotional_weight=0.40,
-            canonical_impact=1,
-            created_at_local=timestamp_header,
-        )
-        self.session_continuity.update_index(
-            reason="external_final_visible_reply_persisted",
-            source="JaznEngine.persist_final_visible_reply",
-            extra={
-                "turn_id": turn_id,
-                "trace_id": trace_id,
-                "timestamp_header": timestamp_header,
-                "source": source,
-                "was_repaired": capture.was_repaired,
-                "ledger_event_id": getattr(result, "event_id", None),
-            },
-        )
-        return capture.to_dict()
+        result["final_visible_reply_capture"] = capture.to_dict()
+        return result
 
-    @staticmethod
     def _is_status_request(low_text: str) -> bool:
         return any(x in low_text for x in [
             "/status", "status jaźni", "status jazni", "co jeszcze nie działa", "co jeszcze nie dziala",

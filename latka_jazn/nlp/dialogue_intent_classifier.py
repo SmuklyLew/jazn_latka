@@ -13,6 +13,7 @@ from latka_jazn.nlp.question_object_detector import QuestionObjectDetector
 from latka_jazn.nlp.creative_material_detector import CreativeMaterialDetector
 from latka_jazn.nlp.source_preservation_detector import SourcePreservationDetector
 from latka_jazn.nlp.intent_feature_engine import IntentFeatureEngine
+from latka_jazn.nlp.utterance_components import analyse_utterance
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
@@ -43,6 +44,9 @@ class DialogueIntentReport:
     ambiguous: bool = False
     abstain_reason: str | None = None
     feature_frame: dict[str, Any] = field(default_factory=dict)
+    question_components: list[str] = field(default_factory=list)
+    negated_actions: list[str] = field(default_factory=list)
+    compound: bool = False
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -283,13 +287,25 @@ class DialogueIntentClassifier:
     def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown'):
         conf=self.calibrator.calibrate(intent, base, len(evidence))
         frame=self.feature_engine.analyse(norm, speech_act=speech_act)
+        component_report = analyse_utterance(norm)
+        merged_secondary = list(dict.fromkeys(secondary or []))
+        if component_report.compound:
+            evidence = [*evidence, f"compound_components:{','.join(component_report.components)}"]
+        # Negated or merely descriptive update language must never silently
+        # become an execution request.
+        effective_update = bool(update and component_report.explicit_execution and not component_report.negated_actions)
+        ambiguous = bool(frame.ambiguous and not component_report.compound)
+        abstain_reason = None if component_report.compound else frame.abstain_reason
         return DialogueIntentReport(
-            SCHEMA_VERSION,norm,folded,intent,secondary or [],conf,evidence,preserve,creative,update,diag,src,ident,speech_act,question_object,
+            SCHEMA_VERSION,norm,folded,intent,merged_secondary,conf,evidence,preserve,creative,effective_update,diag,src,ident,speech_act,question_object,
             intent_ranking=[candidate.to_dict() for candidate in frame.candidates],
             decision_margin=frame.decision_margin,
-            ambiguous=frame.ambiguous,
-            abstain_reason=frame.abstain_reason,
+            ambiguous=ambiguous,
+            abstain_reason=abstain_reason,
             feature_frame=frame.to_dict(),
+            question_components=list(component_report.components),
+            negated_actions=list(component_report.negated_actions),
+            compound=component_report.compound,
         )
     def classify(self, text: str, *, previous_text: str | None = None) -> DialogueIntentReport:
         norm=self.normalize(text); folded=self.fold(norm); evidence=[]; secondary=[]
@@ -424,9 +440,16 @@ class DialogueIntentClassifier:
             and ("uruchomil" in folded or "uruchomi" in folded or "jazn" in folded or "jaźń" in norm)
         )
         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
+        component_report = analyse_utterance(norm)
+        if component_report.diagnostic_only and (has_update or has_system or 'kod' in folded or 'patch' in folded):
+            return self._report(
+                norm, folded, 'system_diagnostic_question',
+                ['negacja/modalność blokuje wykonanie; bieżący akt mowy jest diagnostyczny'],
+                0.91, diag=True, speech_act=speech.speech_act, question_object='runtime',
+            )
         if has_runtime_wake_health_check:
             return self._report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
-        if self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded)):
+        if component_report.explicit_execution and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded)):
             return self._report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
             return self._report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
@@ -506,7 +529,7 @@ class DialogueIntentClassifier:
             if any(term in norm or term in folded for term in boundary_terms):
                 return self._report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
             return self._report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
-        if has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
+        if component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
             evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupiem słownikowym')
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
                 return self._report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
@@ -525,7 +548,7 @@ class DialogueIntentClassifier:
             return self._report(norm,folded,'creative_text_analysis',evidence,0.74,creative=True,preserve=not preservation.revision_allowed,speech_act=speech.speech_act,question_object='creative_text')
         if has_update and any(x in folded for x in ("behavioral runtime", "dialogue intent", "source integrity", "topic-mismatch")):
             return self._report(norm,folded,'legacy_behavioral_runtime_dialogue_update_reference',['jawna prośba o historyczny zakres behavioral runtime/dialogue/source integrity; aktywny runtime ma użyć legacy_diagnostic_only albo aktualnego system_update'],0.79,speech_act=speech.speech_act,question_object='legacy_system_update')
-        if has_update and has_system:
+        if component_report.explicit_execution and has_update and has_system:
             if 'lista' in folded or 'manifest' in folded:
                 return self._report(norm,folded,'system_update_manifest_request',['jawne polecenie manifestu/listy aktualizacji'],0.88,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
             return self._report(norm,folded,'system_update_execution_request',['jawne polecenie aktualizacji systemu Jaźni'],0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')

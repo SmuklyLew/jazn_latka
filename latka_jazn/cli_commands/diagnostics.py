@@ -59,16 +59,22 @@ def status_payload(
 ) -> dict[str, Any]:
     cfg = JaznConfig(root=root)
     startup = build_startup_status(cfg, mode="fast", infer_host_environment=True).to_dict()
+    transactional_memory = _transactional_memory_status(cfg)
+    daemon = status_daemon(
+        cfg, host=daemon_host, port=daemon_port,
+        marker_output=marker_output, probe_endpoint=probe_endpoint,
+    )
+    active_state = str(daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive")
+    ok = active_state in {"active_trusted", "active_degraded"}
     return {
         "schema_version": schema_version("runpy_status"),
         "runtime_version": PACKAGE_VERSION_FULL,
         "root": str(root),
+        "ok": ok,
+        "status_exit_contract": "zero_only_for_confirmed_active_process",
         "startup": startup,
-        "transactional_memory": _transactional_memory_status(cfg),
-        "daemon": status_daemon(
-            cfg, host=daemon_host, port=daemon_port,
-            marker_output=marker_output, probe_endpoint=probe_endpoint,
-        ),
+        "transactional_memory": transactional_memory,
+        "daemon": daemon,
     }
 
 

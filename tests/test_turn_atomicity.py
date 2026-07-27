@@ -121,6 +121,39 @@ def test_turn_local_semantic_staging_is_rejected_on_failed_gate(tmp_path: Path, 
     assert writes == []
 
 
+
+def test_late_commit_failure_is_reported_as_degraded_and_recorded(tmp_path: Path) -> None:
+    context = TurnExecutionContext.create(
+        request_id="partial-failure",
+        turn_id="turn-partial",
+        session_id="session-partial",
+        timeout_seconds=1.0,
+        audit_db_path=tmp_path / "runtime_audit.sqlite3",
+    )
+    effects: list[str] = []
+    context.stage_semantic_write(
+        data_type="first", stage="candidate_persistence_staging",
+        commit=lambda: effects.append("first"),
+        compensate=lambda: effects.remove("first"),
+    )
+    context.stage_semantic_write(
+        data_type="second", stage="candidate_persistence_staging",
+        commit=lambda: (_ for _ in ()).throw(RuntimeError("second failed")),
+    )
+
+    outcome = context.commit_if_allowed(_successful_result(), job_status="completed")
+
+    assert outcome["committed"] is False
+    assert outcome["persistence_degraded"] is True
+    assert outcome["partial_commit_detected"] is True
+    assert outcome["committed_count"] == 1
+    assert outcome["compensation"]["complete"] is True
+    assert effects == []
+    recovery = Path(outcome["recovery_outbox"]["path"])
+    assert outcome["recovery_outbox"]["written"] is True
+    assert recovery.is_file()
+    assert "second failed" in recovery.read_text(encoding="utf-8")
+
 class _LateWritingSession:
     writes: list[str] = []
     executions: dict[str, int] = {}

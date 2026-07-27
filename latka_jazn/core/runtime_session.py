@@ -201,7 +201,7 @@ class JaznRuntimeSession:
                 result["final_visible_integrity"]["runtime_truth_gate_errors"] = list(gate_payload.get("errors") or [])
 
             integrity = result.get("final_visible_integrity") or {}
-            result["ok"] = bool(
+            answer_ok = bool(
                 str(result.get("final_visible_text") or "").strip()
                 and integrity.get("valid") is True
                 and integrity.get("consensus") is True
@@ -211,36 +211,60 @@ class JaznRuntimeSession:
                 and result.get("normal_response_blocked") is not True
                 and turn_context.can_continue()
             )
+            result["answer_ok"] = answer_ok
+            result["ok"] = answer_ok
             if persistence_available:
                 commit_status = turn_context.commit_if_allowed(result, job_status="completed")
             else:
                 commit_status = turn_context.reject_staging(reason="runtime_config_unavailable")
                 commit_status["available"] = False
                 commit_status["diagnostic"] = "canonical persistence skipped because session config is unavailable"
+                commit_status["persistence_degraded"] = bool(answer_ok)
+            canonical_persistence_ok = bool(commit_status.get("committed"))
+            persistence_degraded = bool(answer_ok and not canonical_persistence_ok)
             result["canonical_persistence"] = commit_status
-            if not commit_status.get("committed"):
-                result["ok"] = False
+            result["canonical_persistence_ok"] = canonical_persistence_ok
+            result["persistence_degraded"] = persistence_degraded
+            result["persistence_state"] = (
+                "committed" if canonical_persistence_ok
+                else "degraded" if persistence_degraded
+                else "not_committed"
+            )
 
             result["transactional_memory"] = self._transactional_memory_status_payload()
             result["wake_state_runtime"] = self._wake_state_runtime_payload()
 
-            if result["ok"]:
+            if answer_ok:
                 self.state.update(
                     user_text=user_text,
                     intent=str(decision.get("detected_user_intent") or "unknown"),
                     route=str(decision.get("route") or "unknown"),
                 )
                 self._turn_count += 1
-                save_status = self.state_store.save(
-                    self.state,
-                    continuity_context=self.wake_state_runtime_status,
-                    turn_count=self._turn_count,
-                )
+                try:
+                    save_status = self.state_store.save(
+                        self.state,
+                        continuity_context=self.wake_state_runtime_status,
+                        turn_count=self._turn_count,
+                    )
+                except Exception as exc:
+                    save_status = {
+                        "saved": False,
+                        "reason": "session_checkpoint_failed",
+                        "error_code": type(exc).__name__,
+                        "error": str(exc),
+                        "persistence_degraded": True,
+                    }
+                    result["persistence_degraded"] = True
+                    result["persistence_state"] = "degraded"
             else:
                 save_status = {
                     "saved": False,
                     "reason": commit_status.get("reason") or "turn_not_committed",
+                    "persistence_degraded": False,
                 }
+            result["session_persistence"] = dict(save_status)
+            result["session_persistence_ok"] = bool(save_status.get("saved"))
             result["session"] = self.state.to_dict()
             with turn_context.stage("provenance"):
                 session_provenance = build_session_provenance(
@@ -258,8 +282,17 @@ class JaznRuntimeSession:
                 )
                 result["session_provenance"] = session_provenance
 
-            turn_context.finalize_total(status="completed" if result["ok"] else "rejected")
-            result["turn_audit_persistence"] = turn_context.persist_audit()
+            final_status = (
+                "completed_persistence_degraded"
+                if result.get("ok") and result.get("persistence_degraded")
+                else "completed" if result.get("ok")
+                else "rejected"
+            )
+            turn_context.finalize_total(status=final_status)
+            audit_status = turn_context.persist_audit()
+            result["turn_audit_persistence"] = audit_status
+            result["audit_persistence_ok"] = bool(audit_status.get("ok"))
+            result["audit_persistence_degraded"] = not bool(audit_status.get("ok"))
             result["turn_telemetry"] = turn_context.snapshot()
             return result
         except BaseException as exc:
@@ -278,14 +311,20 @@ class JaznRuntimeSession:
                     reset_memory_context(memory_context_token)
 
     def close(self) -> None:
-        self.state_store.save(
-            self.state,
-            continuity_context=getattr(self, "wake_state_runtime_status", None),
-            turn_count=getattr(self, "_turn_count", 0),
-        )
         bridge = getattr(self, "wake_state_bridge", None)
         try:
-            if bridge is not None:
-                bridge.end_session(self.state.session_id)
+            try:
+                self.state_store.save(
+                    self.state,
+                    continuity_context=getattr(self, "wake_state_runtime_status", None),
+                    turn_count=getattr(self, "_turn_count", 0),
+                )
+            except Exception:
+                pass
+            try:
+                if bridge is not None:
+                    bridge.end_session(self.state.session_id)
+            except Exception:
+                pass
         finally:
             self.engine.shutdown()

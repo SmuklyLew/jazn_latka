@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 import hashlib
-import re
 
 from latka_jazn.version import schema_version
 from latka_jazn.core.visible_integrity import validate_result_integrity
+from latka_jazn.core.message_envelope import normalize_newlines
 
 SCHEMA_VERSION = schema_version("session_provenance")
 
@@ -50,15 +50,15 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _body(text: str, timestamp_header: str) -> str:
-    value = str(text or "").strip()
-    if timestamp_header and value.startswith(timestamp_header):
-        value = value[len(timestamp_header):].lstrip()
-        if "\n" in value:
-            envelope_line, remainder = value.split("\n", 1)
-            if len(envelope_line.strip()) <= 8:
-                value = remainder
-    return re.sub(r"\s+", " ", value.strip())
+def _body(text: str, timestamp_header: str) -> str | None:
+    value = normalize_newlines(text)
+    if not timestamp_header or not value.startswith(timestamp_header + "\n"):
+        return None
+    remainder = value[len(timestamp_header) + 1:]
+    if "\n\n" not in remainder:
+        return None
+    _author_line, body = remainder.split("\n\n", 1)
+    return body
 
 
 def _verified_contract_source(
@@ -76,7 +76,8 @@ def _verified_contract_source(
     return bool(
         isinstance(integrity, Mapping)
         and integrity.get("valid") is True
-        and contract_text.startswith(timestamp_header)
+        and contract_text.startswith(timestamp_header + "\n")
+        and all(str(contract.get(field) or "").strip() for field in ("author_id", "author_label", "author_source", "state_emoticon"))
         and provenance_text == contract_text
         and provenance_hash == _sha(contract_text)
         and str(contract.get("visible_answer_hash") or provenance_hash) == provenance_hash
@@ -104,7 +105,9 @@ def repair_final_visible_integrity(result: dict[str, Any]) -> tuple[dict[str, An
     contract_text = str((contract or {}).get("final_visible_text") or "").strip()
     provenance = repaired.get("runtime_provenance") if isinstance(repaired.get("runtime_provenance"), dict) else {}
     provenance_hash_before = str(provenance.get("visible_answer_hash") or "")
-    body_unchanged = bool(final_text and _body(final_text, timestamp_header) == _body(contract_text, timestamp_header))
+    contract_body = str(contract.get("body") or contract.get("runtime_exact_text") or "")
+    final_body = _body(final_text, timestamp_header) if final_text.startswith(timestamp_header + "\n") else final_text
+    body_unchanged = bool(final_text and normalize_newlines(final_body) == normalize_newlines(contract_body))
     contract_verified = _verified_contract_source(contract, provenance, timestamp_header)
     missing_envelope_only = bool(
         final_text

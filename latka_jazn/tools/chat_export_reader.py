@@ -9,6 +9,8 @@ import json
 import re
 import zipfile
 
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+
 from latka_jazn.tools.chat_export_models import (
     AssetReference,
     ConversationGraph,
@@ -488,6 +490,7 @@ class ChatExportReader:
         if suffix == ".zip":
             archive = zipfile.ZipFile(self.path, "r")
             try:
+                validate_zip_resources(archive)
                 names = [_safe_member_name(info.filename) for info in archive.infolist() if not info.is_dir()]
                 canonical, shared, html = _select_export_members(names)
                 if not canonical and not shared and html is None:

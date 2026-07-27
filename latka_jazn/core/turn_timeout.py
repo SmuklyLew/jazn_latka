@@ -112,6 +112,7 @@ class RuntimeSessionWorker:
         self._ready: queue.Queue[tuple[str, object]] = queue.Queue(maxsize=1)
         self._closed = False
         self._timed_out = False
+        self._startup_cancelled = threading.Event()
         self.state: Any = None
         self.config = config
         self.last_turn_context: TurnExecutionContext | None = None
@@ -121,7 +122,12 @@ class RuntimeSessionWorker:
         try:
             status, payload = self._ready.get(timeout=ready_timeout)
         except queue.Empty as exc:
-            raise RuntimeTurnTimeoutError(command=self._command, timeout_seconds=ready_timeout, phase="session_startup") from exc
+            self._startup_cancelled.set()
+            raise RuntimeTurnTimeoutError(
+                command=self._command,
+                timeout_seconds=ready_timeout,
+                phase="session_startup",
+            ) from exc
         if status == "error":
             raise payload  # type: ignore[misc]
         self.state = payload
@@ -135,6 +141,11 @@ class RuntimeSessionWorker:
                 no_carryover=self._no_carryover,
                 source_client=self._source_client,
             )
+            if self._startup_cancelled.is_set():
+                close = getattr(session, "close", None)
+                if callable(close):
+                    close()
+                return
             self._ready.put(("ok", getattr(session, "state", None)))
         except BaseException as exc:  # noqa: BLE001
             self._ready.put(("error", exc))

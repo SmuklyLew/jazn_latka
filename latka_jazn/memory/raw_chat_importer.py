@@ -5,38 +5,60 @@ from pathlib import Path
 from typing import Any
 import hashlib
 
-SCHEMA_VERSION="raw_chat_importer/v1"
+SCHEMA_VERSION = "raw_chat_importer/v2"
+
 
 def _sha(path: Path) -> str | None:
-    if not path.exists() or not path.is_file(): return None
-    h=hashlib.sha256()
-    with path.open('rb') as f:
-        for chunk in iter(lambda:f.read(1024*1024), b''):
-            h.update(chunk)
-    return h.hexdigest()
+    if not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
 
 @dataclass(slots=True)
 class RawChatStatus:
     status: str
     chat_html_present: bool
-    archive_present: bool
     sqlite_index_available: bool
     chat_html_sha256: str | None = None
-    archive_sha256: str | None = None
     schema_version: str = SCHEMA_VERSION
-    truth_boundary: str = "Nie wolno twierdzić, że chat.html istnieje, jeśli dostępne jest tylko chat.html.7z. Import surowej pamięci wymaga jawnego rozpakowania albo istniejącego indeksu."
-    def to_dict(self) -> dict[str, Any]: return asdict(self)
+    truth_boundary: str = (
+        "Surowy import rozmów korzysta wyłącznie z jawnego memory/raw/chat.html "
+        "albo z istniejącego, zweryfikowanego indeksu SQLite. Runtime nie rozpakowuje archiwum 7z."
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
 
 class RawChatImporter:
     def __init__(self, root: Path) -> None:
-        self.root=Path(root)
+        self.root = Path(root)
+
     def inspect(self) -> RawChatStatus:
-        raw=self.root/'memory'/'raw'/'chat.html'; archive=self.root/'memory'/'raw'/'chat.html.7z'
-        dbs=list((self.root/'workspace_runtime').glob('*.sqlite3')) if (self.root/'workspace_runtime').exists() else []
-        chat=raw.exists(); arc=archive.exists(); db=bool(dbs)
-        if chat and db: status='fully_extracted'
-        elif chat: status='raw_only'
-        elif arc and db: status='archive_indexed'
-        elif arc: status='archive'
-        else: status='unavailable'
-        return RawChatStatus(status=status, chat_html_present=chat, archive_present=arc, sqlite_index_available=db, chat_html_sha256=_sha(raw), archive_sha256=_sha(archive))
+        raw = self.root / "memory" / "raw" / "chat.html"
+        runtime = self.root / "workspace_runtime"
+        sqlite_dir = self.root / "memory" / "sqlite"
+        dbs = []
+        for parent in (runtime, sqlite_dir):
+            if parent.exists():
+                dbs.extend(parent.glob("*.sqlite3"))
+        chat_present = raw.is_file()
+        index_available = bool(dbs)
+        if chat_present and index_available:
+            status = "raw_and_index_available"
+        elif chat_present:
+            status = "raw_only"
+        elif index_available:
+            status = "index_only"
+        else:
+            status = "unavailable"
+        return RawChatStatus(
+            status=status,
+            chat_html_present=chat_present,
+            sqlite_index_available=index_available,
+            chat_html_sha256=_sha(raw),
+        )

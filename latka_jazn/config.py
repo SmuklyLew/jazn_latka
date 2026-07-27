@@ -72,10 +72,7 @@ def _default_normalization_sidecar_db_name() -> str:
     explicit = os.environ.get("JAZN_MEMORY_NORMALIZATION_SIDECAR_DB")
     if explicit is not None and explicit.strip():
         return explicit.strip()
-    return os.environ.get(
-        "JAZN_AUDIT_DB",
-        "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3",
-    ).strip()
+    return "memory/sqlite/runtime_write_v1/normalization_sidecar.sqlite3"
 
 
 @dataclass(slots=True)
@@ -83,7 +80,7 @@ class JaznConfig:
     version: str = PACKAGE_VERSION
     root: Path = field(default_factory=_default_runtime_root)
     timezone: str = TIMESTAMP_TIMEZONE
-    timestamp_format: str = "[🕒 %Y-%m-%d %H:%M:%S GMT%z, %A, Europe/Warsaw]"
+    timestamp_format: str = "🕒 %Y-%m-%d %H:%M:%S"
     memory_db_name: str = field(default_factory=lambda: os.environ.get("JAZN_RUNTIME_MEMORY_DB", "memory/sqlite/runtime_write_v1/runtime_memory.sqlite3").strip())
     audit_db_name: str = field(default_factory=lambda: os.environ.get("JAZN_AUDIT_DB", "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3").strip())
     recovered_memory_db_name: str = field(default_factory=lambda: os.environ.get(
@@ -212,32 +209,47 @@ class JaznConfig:
     def lexical_resource_cache_path(self) -> Path:
         return self.root / self.lexical_resource_cache_name
 
-    def _active_shard_path(self, manifest_name: str, logical_database: str, role: str, default_db_name: str) -> Path:
-        try:
-            from .db.shard_manifest import SQLiteShardManager
-            return SQLiteShardManager(
-                self.root,
-                manifest_name,
-                logical_database=logical_database,
-                role=role,
-                default_db_path=default_db_name,
-                max_file_bytes=self.max_sqlite_file_bytes,
-            ).rotate_if_needed()
-        except Exception:
-            return self.root / default_db_name
+    def _active_shard_path(
+        self,
+        manifest_name: str,
+        logical_database: str,
+        role: str,
+        default_db_name: str,
+    ) -> Path:
+        from .db.shard_manifest import SQLiteShardManager
 
-    def _active_shard_path_readonly(self, manifest_name: str, default_db_name: str) -> Path:
-        """Resolve an active shard without creating, refreshing, or rotating it."""
+        return SQLiteShardManager(
+            self.root,
+            manifest_name,
+            logical_database=logical_database,
+            role=role,
+            default_db_path=default_db_name,
+            max_file_bytes=self.max_sqlite_file_bytes,
+        ).rotate_if_needed()
+
+    def _active_shard_path_readonly(
+        self,
+        manifest_name: str,
+        default_db_name: str,
+        *,
+        logical_database: str | None = None,
+        role: str | None = None,
+    ) -> Path:
+        """Resolve an active shard without mutating an existing manifest."""
         manifest_path = self.root / manifest_name
-        try:
-            data = json.loads(manifest_path.read_text(encoding="utf-8"))
-            active_shard = str(data.get("active_write_shard") or "")
-            for shard in data.get("shards") or []:
-                if str(shard.get("shard_id") or "") == active_shard and shard.get("path"):
-                    return self.root / str(shard["path"])
-        except Exception:
-            pass
-        return self.root / default_db_name
+        if not manifest_path.exists():
+            return self._path_under_runtime_root(default_db_name)
+        from .db.shard_manifest import SQLiteShardManager
+
+        manager = SQLiteShardManager(
+            self.root,
+            manifest_name,
+            logical_database=logical_database or Path(default_db_name).stem,
+            role=role or logical_database or Path(default_db_name).stem,
+            default_db_path=default_db_name,
+            max_file_bytes=self.max_sqlite_file_bytes,
+        )
+        return manager.load_existing().active_path(self.root)
 
     @property
     def recovered_memory_db_path(self) -> Path:
@@ -277,6 +289,8 @@ class JaznConfig:
         return self._active_shard_path_readonly(
             self.conversation_shard_manifest_name,
             self.memory_db_name,
+            logical_database="chat_context",
+            role="canonical_runtime_conversation_memory",
         )
 
     @property
@@ -293,6 +307,8 @@ class JaznConfig:
         return self._active_shard_path_readonly(
             self.audit_shard_manifest_name,
             self.audit_db_name,
+            logical_database="chat_context_audit",
+            role="canonical_realtime_audit",
         )
 
     @property

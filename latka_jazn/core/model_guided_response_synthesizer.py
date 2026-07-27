@@ -5,6 +5,8 @@ import re
 from typing import Any
 
 from latka_jazn.core.model_context_compiler import compile_model_context
+from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
+from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight, resolve_model_executor
 from latka_jazn.core.nlg_planner import build_nlg_plan
 from latka_jazn.core.operational_thought_frame import build_operational_thought_frame
 from latka_jazn.core.response_candidate_evaluator import evaluate_response_candidate, select_best_candidate
@@ -58,34 +60,23 @@ class ModelGuidedResponseSynthesizer:
         route: str,
         cognitive_frame: dict[str, Any],
         response_policy: dict[str, Any],
+        executor_preflight: ModelExecutorPreflight | None = None,
     ) -> ModelGuidedSynthesis:
+        preflight = executor_preflight or resolve_model_executor(adapter)
         status = adapter.describe() if hasattr(adapter, "describe") else {"status": "unknown"}
         adapter_id = str(status.get("adapter_id") or status.get("name") or "none")
         provider = str(status.get("provider") or adapter_id)
         model = str(status.get("model") or status.get("model_name") or "none")
-        if adapter_id == "chatgpt_runtime_adapter":
+        if preflight.executor == "host_bridge":
             return ModelGuidedSynthesis(
-                False,
-                draft_body,
-                "host_visible_generation_requested",
-                provider,
-                model,
-                "host_chatgpt_bridge_requires_external_visible_reply",
-                [],
-                source_origin="chatgpt_host_bridge",
+                False, draft_body, "host_visible_generation_requested", provider, model,
+                preflight.reason, [], source_origin="chatgpt_host_bridge",
             )
-        if adapter_id == "null_model_adapter":
+        if preflight.executor == "unavailable":
             return ModelGuidedSynthesis(
-                False,
-                draft_body,
-                str(status.get("status") or "not_configured"),
-                provider,
-                model,
-                "null_model_adapter_has_no_generation_capability",
-                [],
+                False, draft_body, str(status.get("status") or "not_configured"),
+                provider, model, preflight.reason, [],
             )
-        if status.get("status") != "configured":
-            return ModelGuidedSynthesis(False, draft_body, str(status.get("status") or "not_configured"), provider, model, "model_adapter_not_configured", [])
         if detected_intent in self.PROTECTED_INTENTS or bool(response_policy.get("exact_runtime_required")):
             return ModelGuidedSynthesis(False, draft_body, "skipped", str(status.get("name") or "unknown"), str(status.get("model") or "unknown"), "intent_requires_exact_runtime_or_external_source", [])
 
@@ -173,9 +164,7 @@ class ModelGuidedResponseSynthesizer:
 
     @staticmethod
     def _clean(text: str) -> str:
-        value = (text or "").strip()
-        value = re.sub(r"^\[🕒[^\]]+\]\s*[^\n]*\n?", "", value).strip()
-        return value
+        return strip_recognized_visible_envelope(text)
 
     @staticmethod
     def _build_context(

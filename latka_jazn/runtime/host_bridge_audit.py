@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, ensure_runtime_audit_schema
+from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, connect_runtime_audit_readonly, ensure_runtime_audit_schema
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("host_bridge_audit")
@@ -98,9 +98,11 @@ class HostBridgeAuditStore:
             connection.close()
 
     def list_for_turn(self, turn_id: str, trace_id: str | None = None) -> list[dict[str, Any]]:
-        connection = connect_runtime_audit(self.path)
+        connection = connect_runtime_audit_readonly(self.path)
         try:
-            ensure_runtime_audit_schema(connection)
+            tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
+            if "host_bridge_audit" not in tables:
+                return []
             if trace_id is None:
                 rows = connection.execute(
                     "SELECT * FROM host_bridge_audit WHERE turn_id=? ORDER BY created_at_utc,audit_id",

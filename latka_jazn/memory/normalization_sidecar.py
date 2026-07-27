@@ -14,6 +14,135 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("memory_normalization_sidecar")
+
+SIDECAR_TABLE_COPY_ORDER = (
+    "sidecar_meta",
+    "normalization_runs",
+    "actors",
+    "normalized_memory_items",
+    "wake_state_snapshots",
+    "layered_dedupe_runs",
+    "layered_dedupe_groups",
+    "layered_dedupe_members",
+)
+
+
+def _quote_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def _copy_legacy_sidecar_tables(
+    connection: sqlite3.Connection,
+    *,
+    legacy_path: Path,
+) -> dict[str, int]:
+    """Copy compatible sidecar data from a legacy mixed audit database.
+
+    The source is attached read-only and is never updated. Missing target
+    columns with schema defaults are left to those defaults. Required columns
+    introduced after the legacy schema receive explicit migration values only
+    where their meaning is well-defined. Tables that cannot be mapped safely
+    are skipped rather than being partially or silently fabricated.
+    """
+    if not legacy_path.is_file():
+        return {}
+    source_uri = f"file:{legacy_path.resolve().as_posix()}?mode=ro"
+    connection.execute("ATTACH DATABASE ? AS legacy_sidecar", (source_uri,))
+    copied: dict[str, int] = {}
+    try:
+        source_tables = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM legacy_sidecar.sqlite_schema WHERE type='table'"
+            )
+        }
+        if "wake_state_snapshots" not in source_tables:
+            return {}
+
+        connection.execute("BEGIN IMMEDIATE")
+        for table in SIDECAR_TABLE_COPY_ORDER:
+            if table not in source_tables:
+                continue
+
+            target_info = list(
+                connection.execute(
+                    f"PRAGMA main.table_info({_quote_identifier(table)})"
+                )
+            )
+            source_columns = {
+                str(row[1])
+                for row in connection.execute(
+                    f"PRAGMA legacy_sidecar.table_info({_quote_identifier(table)})"
+                )
+            }
+            insert_columns: list[str] = []
+            select_expressions: list[str] = []
+            parameters: list[Any] = []
+            compatible = True
+
+            for row in target_info:
+                name = str(row[1])
+                not_null = bool(row[3])
+                default_sql = row[4]
+                primary_key = bool(row[5])
+
+                if name in source_columns:
+                    insert_columns.append(name)
+                    if table == "wake_state_snapshots" and name == "source_run_id":
+                        select_expressions.append(
+                            "CASE WHEN s.source_run_id IS NULL OR EXISTS("
+                            "SELECT 1 FROM main.normalization_runs r "
+                            "WHERE r.run_id=s.source_run_id"
+                            ") THEN s.source_run_id ELSE NULL END"
+                        )
+                    else:
+                        select_expressions.append(f"s.{_quote_identifier(name)}")
+                    continue
+
+                if name == "truth_boundary":
+                    insert_columns.append(name)
+                    select_expressions.append("?")
+                    parameters.append(
+                        "Migrated from the legacy mixed audit/sidecar database. "
+                        "The source remained read-only and the snapshot is not "
+                        "treated as verified until normal wake-state validation succeeds."
+                    )
+                    continue
+
+                if default_sql is not None:
+                    continue
+                if not_null and not primary_key:
+                    compatible = False
+                    break
+
+            if not compatible or not insert_columns:
+                continue
+
+            quoted_columns = ",".join(
+                _quote_identifier(name) for name in insert_columns
+            )
+            select_sql = ",".join(select_expressions)
+            before = connection.total_changes
+            connection.execute(
+                f"INSERT OR IGNORE INTO main.{_quote_identifier(table)} "
+                f"({quoted_columns}) SELECT {select_sql} "
+                f"FROM legacy_sidecar.{_quote_identifier(table)} AS s",
+                tuple(parameters),
+            )
+            copied[table] = connection.total_changes - before
+
+        connection.execute(
+            "INSERT OR REPLACE INTO sidecar_meta(key,value) VALUES(?,?)",
+            ("legacy_sidecar_migration_source", str(legacy_path.resolve())),
+        )
+        connection.commit()
+        return copied
+    except (sqlite3.DatabaseError, OSError):
+        connection.rollback()
+        raise
+    finally:
+        connection.execute("DETACH DATABASE legacy_sidecar")
+
 WAKE_STATE_SCHEMA_VERSION = schema_version("wake_state_snapshot")
 LAYERED_DEDUPE_SCHEMA_VERSION = schema_version("layered_dedupe")
 FINGERPRINT_CONTRACT_VERSION = "memory_normalization_input/v1"
@@ -629,10 +758,17 @@ class MemoryNormalizationSidecar:
         self.runtime_version = runtime_version or cfg.version
         self.source_db_path = Path(source_db_path) if source_db_path else cfg.normalization_source_db_path
         self.sidecar_db_path = Path(sidecar_db_path) if sidecar_db_path else cfg.normalization_sidecar_db_path
+        self.legacy_sidecar_db_path = cfg.audit_db_path_readonly
 
     def ensure_schema(self) -> None:
+        target_preexisting = self.sidecar_db_path.is_file()
         with closing(_connect_write(self.sidecar_db_path)) as con:
             con.executescript(SIDE_SCHEMA)
+            if (
+                not target_preexisting
+                and self.legacy_sidecar_db_path.resolve() != self.sidecar_db_path.resolve()
+            ):
+                _copy_legacy_sidecar_tables(con, legacy_path=self.legacy_sidecar_db_path)
             columns = {str(row[1]) for row in con.execute("PRAGMA table_info(normalization_runs)")}
             for name, sql_type in (
                 ("source_db_size", "INTEGER"),

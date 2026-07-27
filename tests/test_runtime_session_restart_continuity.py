@@ -133,3 +133,51 @@ def test_checkpoint_replacement_leaves_no_temporary_files(tmp_path: Path) -> Non
     payload = json.loads((tmp_path / "workspace_runtime/runtime_session_state.json").read_text(encoding="utf-8"))
     assert payload["_continuity"]["generation"] == 3
     assert payload["_continuity"]["turn_count"] == 3
+
+
+def test_legacy_checkpoint_is_loaded_only_for_migration_without_carryover(tmp_path: Path) -> None:
+    legacy = RuntimeSessionStateStore(tmp_path)
+    state = legacy.load_or_create(session_id="legacy/session", source_client="pytest")
+    state.update(user_text="niezweryfikowany tekst", intent="private", route="memory")
+    path = legacy._path_for_session(state.session_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state.to_dict(), ensure_ascii=False), encoding="utf-8")
+
+    restarted = RuntimeSessionStateStore(tmp_path)
+    restored = restarted.load_or_create(session_id=state.session_id, source_client="pytest")
+    status = restarted.verify_loaded_continuity(restored, _wake())
+
+    assert status["status"] == "legacy_checkpoint_unverified"
+    assert status["carryover_allowed"] is False
+    assert restored.last_user_text is None
+    assert restored.last_intent is None
+    assert restored.last_route is None
+    assert restarted.last_load_metadata["session_carryover_blocked"] is True
+
+
+def test_session_file_names_do_not_collide_after_sanitization(tmp_path: Path) -> None:
+    store = RuntimeSessionStateStore(tmp_path)
+    first = store._path_for_session("a/b")
+    second = store._path_for_session("a_b")
+    assert first != second
+    assert first.name.startswith("a_b-")
+    assert second.name.startswith("a_b-")
+
+
+def test_older_session_cannot_replace_newer_latest_pointer(tmp_path: Path) -> None:
+    newer_store = RuntimeSessionStateStore(tmp_path)
+    newer = newer_store.load_or_create(session_id="newer", source_client="pytest")
+    newer.last_turn_at = "2026-07-27T12:00:00+00:00"
+    assert newer_store.save(newer, continuity_context=_wake(), turn_count=2)["latest_session_pointer_saved"] is True
+    original = (tmp_path / "workspace_runtime/runtime_session_state.json").read_bytes()
+
+    older_store = RuntimeSessionStateStore(tmp_path)
+    older = older_store.load_or_create(session_id="older", source_client="pytest")
+    older.last_turn_at = "2026-07-27T11:00:00+00:00"
+    status = older_store.save(older, continuity_context=_wake(), turn_count=9)
+
+    assert status["session_state_saved"] is True
+    assert status["latest_session_pointer_saved"] is False
+    assert status["latest_session_pointer_reason"] == "existing_latest_pointer_is_newer"
+    assert (tmp_path / "workspace_runtime/runtime_session_state.json").read_bytes() == original
+    assert older_store._path_for_session("older").is_file()

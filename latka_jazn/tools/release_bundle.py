@@ -8,6 +8,7 @@ import os
 import tempfile
 import zipfile
 
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 from latka_jazn.tools.package_export import export_package
 from latka_jazn.tools.release_readiness import build_release_readiness_report
 from latka_jazn.tools.release_staging import create_release_staging
@@ -43,6 +44,7 @@ def verify_release_zip_manifest(zip_path: Path | str) -> dict[str, Any]:
     manifest: dict[str, Any] = {}
     try:
         with zipfile.ZipFile(zip_path, "r") as archive:
+            validate_zip_resources(archive)
             infos = [info for info in archive.infolist() if not info.is_dir()]
             member_counts: dict[str, int] = {}
             safe_names: set[str] = set()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
+
 from dataclasses import asdict, is_dataclass
 import re
 from typing import Any
@@ -127,6 +129,4 @@ def _memory_item_ids(context: dict[str, Any]) -> list[str]:
 
 
 def _clean_model_text(text: str) -> str:
-    value = (text or "").strip()
-    value = re.sub(r"^\[🕒[^\]]+\]\s*", "", value).strip()
-    return value
+    return strip_recognized_visible_envelope(text)

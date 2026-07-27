@@ -11,7 +11,6 @@ import urllib.request
 import zipfile
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.memory.raw_archive import chat_archive_diagnostics
 from latka_jazn.tools.active_extraction_cache import build_active_runtime_status, detect_start_file
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
 from latka_jazn.core.project_index import build_project_startup_index, project_startup_index_status
@@ -249,16 +248,12 @@ def cli_capabilities(start_file: str | None = 'main.py') -> dict[str, bool]:
 def raw_memory_status(root: Path) -> dict[str, Any]:
     raw = root / 'memory' / 'raw'
     chat = raw / 'chat.html'
-    archive = raw / 'chat.html.7z'
-    diag = chat_archive_diagnostics(root)
     return {
         'schema_version': schema_version('raw_memory_startup_status'),
         'chat_html_present': chat.exists(),
         'chat_html_size_bytes': chat.stat().st_size if chat.exists() else None,
-        'chat_html_archive_present': archive.exists(),
-        'chat_html_archive_size_bytes': archive.stat().st_size if archive.exists() else None,
-        'archive_diagnostics': diag,
-        'truth_boundary': 'Rozpakowany chat.html nie musi być w ZIP-ie, jeżeli chat.html.7z istnieje i indeks SQLite jest dostępny; status musi jednak jasno powiedzieć, co faktycznie istnieje.',
+        'status': 'raw_available' if chat.exists() else 'raw_missing',
+        'truth_boundary': 'Surowy import wymaga jawnego memory/raw/chat.html albo istniejącego indeksu SQLite; runtime nie rozpakowuje archiwów 7z.',
     }
 
 
@@ -439,7 +434,6 @@ def build_startup_summary(config: JaznConfig | None = None, *, source_zip: Path 
     effective_cfg = replace(cfg, root=Path(data["active_root"]))
     archive = data.get("conversation_archive_status") or {}
     raw = data.get("raw_memory_status") or {}
-    raw_diag = raw.get("archive_diagnostics") or {}
     return {
         "schema_version": schema_version("startup_summary"),
         "startup_status_mode": "fast",
@@ -454,7 +448,7 @@ def build_startup_summary(config: JaznConfig | None = None, *, source_zip: Path 
         "model_adapter_status": data.get("model_adapter_status"),
         "self_knowledge_summary": build_self_knowledge_summary(effective_cfg),
         "raw_memory_status": {
-            "status": raw_diag.get("status") or ("archive" if raw.get("chat_html_archive_present") else "missing"),
+            "status": raw.get("status") or ("ready" if raw.get("chat_html_present") else "missing"),
             "has_chat_html": raw.get("chat_html_present"),
             "has_archive": raw.get("chat_html_archive_present"),
         },
