@@ -1,5 +1,5 @@
 {
-  "schema_version": "runtime_hardening_patch_transport/v6.4",
+  "schema_version": "runtime_hardening_main_transport/v7",
   "base_sha": "30a30593901e0b8d24ba6f443f8f67d91d5078e1",
   "target_branch": "update/v15.1.0.3.90-runtime-hardening",
   "parts": [
@@ -32,7 +32,5 @@
   "compressed_bytes": 85635,
   "compressed_sha256": "b0cb1f0b9bcc031d714b136e401a8973ceef9242168c302a1cffee8b4df2f712",
   "patch_bytes": 369272,
-  "patch_sha256": "ed0c7f73ca721da8314c79332603740019e32b1e86f67746ad31479e74e9382b",
-  "supplemental_patch": {"name":"smoke-fix.patch","bytes":11527,"sha256":"a0cf577a2c89c270a9d4618bc68f9c24ec746cd0a1e5011f240c63abb75de2d5"},
-  "validation": {"pytest":"435 passed, 3 skipped","compileall":true,"git_diff_check":true,"package_smoke_fix":true}
+  "patch_sha256": "ed0c7f73ca721da8314c79332603740019e32b1e86f67746ad31479e74e9382b"
 }

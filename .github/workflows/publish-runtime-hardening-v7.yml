@@ -1,15 +1,15 @@
-name: publish-runtime-hardening-v6
+name: publish-runtime-hardening-v7
 
 on:
   push:
     branches: [update/runtime-hardening-publisher-v6]
-    paths: [.github/runtime-hardening-publisher-v6-ready]
+    paths: [.github/runtime-hardening-publisher-v7-ready]
 
 permissions:
   contents: write
 
 concurrency:
-  group: publish-runtime-hardening-v6
+  group: publish-runtime-hardening-v7
   cancel-in-progress: false
 
 jobs:
@@ -50,52 +50,70 @@ jobs:
             target/requirements.txt
             target/pyproject.toml
 
-      - name: Reconstruct and verify exact patch
+      - name: Reconstruct and verify exact patches
         shell: bash
         run: |
           set -euo pipefail
-          echo reconstruct > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo reconstruct > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           python -X utf8 - <<'PY'
-          import base64, gzip, hashlib, json
+          from __future__ import annotations
+          import base64
+          import gzip
+          import hashlib
+          import json
           from pathlib import Path
-          root = Path("publisher/.github/runtime-hardening-publisher-v6")
-          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-          chunks = []
-          for record in manifest["parts"]:
+
+          root = Path("publisher/.github/runtime-hardening-publisher-v7")
+          main = json.loads((root / "main-manifest.json").read_text(encoding="utf-8"))
+          chunks: list[bytes] = []
+          for record in main["parts"]:
               data = (root / record["name"]).read_bytes()
               assert len(data) == record["chars"], (record["name"], len(data), record["chars"])
               assert hashlib.sha256(data).hexdigest() == record["sha256"], record["name"]
               chunks.append(data)
           encoded = b"".join(chunks)
-          assert len(encoded) == manifest["base64_chars"]
-          assert hashlib.sha256(encoded).hexdigest() == manifest["base64_sha256"]
+          assert len(encoded) == main["base64_chars"]
+          assert hashlib.sha256(encoded).hexdigest() == main["base64_sha256"]
           compressed = base64.b64decode(encoded, validate=True)
-          assert len(compressed) == manifest["compressed_bytes"]
-          assert hashlib.sha256(compressed).hexdigest() == manifest["compressed_sha256"]
+          assert len(compressed) == main["compressed_bytes"]
+          assert hashlib.sha256(compressed).hexdigest() == main["compressed_sha256"]
           patch = gzip.decompress(compressed)
-          assert len(patch) == manifest["patch_bytes"]
-          assert hashlib.sha256(patch).hexdigest() == manifest["patch_sha256"]
-          Path("runtime-hardening-v6.patch").write_bytes(patch)
-          supplemental_record = manifest["supplemental_patch"]
-          supplemental = (root / supplemental_record["name"]).read_bytes()
-          assert len(supplemental) == supplemental_record["bytes"]
-          assert hashlib.sha256(supplemental).hexdigest() == supplemental_record["sha256"]
-          Path("runtime-hardening-smoke-fix.patch").write_bytes(supplemental)
-          print(json.dumps({"ok": True, "patch_sha256": manifest["patch_sha256"], "patch_bytes": len(patch), "supplemental_sha256": supplemental_record["sha256"]}))
+          assert len(patch) == main["patch_bytes"]
+          assert hashlib.sha256(patch).hexdigest() == main["patch_sha256"]
+          Path("runtime-hardening-v7.patch").write_bytes(patch)
+
+          supplemental = json.loads((root / "supplemental-manifest.json").read_text(encoding="utf-8"))
+          supplemental_encoded = (root / supplemental["name"]).read_bytes()
+          assert len(supplemental_encoded) == supplemental["base64_chars"]
+          assert hashlib.sha256(supplemental_encoded).hexdigest() == supplemental["base64_sha256"]
+          supplemental_compressed = base64.b64decode(supplemental_encoded, validate=True)
+          assert len(supplemental_compressed) == supplemental["compressed_bytes"]
+          assert hashlib.sha256(supplemental_compressed).hexdigest() == supplemental["compressed_sha256"]
+          supplemental_patch = gzip.decompress(supplemental_compressed)
+          assert len(supplemental_patch) == supplemental["patch_bytes"]
+          assert hashlib.sha256(supplemental_patch).hexdigest() == supplemental["patch_sha256"]
+          Path("runtime-hardening-v7-supplemental.patch").write_bytes(supplemental_patch)
+          print(json.dumps({
+              "ok": True,
+              "main_patch_sha256": main["patch_sha256"],
+              "supplemental_patch_sha256": supplemental["patch_sha256"],
+          }, sort_keys=True))
           PY
           test "$(git -C target rev-parse HEAD)" = "$BASE_SHA"
           git -C target diff --quiet
           git -C target diff --cached --quiet
-          git -C target apply --check --whitespace=nowarn ../runtime-hardening-v6.patch
+          git -C target apply --check --whitespace=nowarn ../runtime-hardening-v7.patch
 
-      - name: Apply patch and enforce boundaries
+      - name: Apply patches and enforce boundaries
         shell: bash
         run: |
           set -euo pipefail
-          echo apply > "$RUNNER_TEMP/runtime-hardening-v6-stage"
-          git -C target apply --whitespace=nowarn ../runtime-hardening-v6.patch
-          git -C target apply --check --whitespace=nowarn ../runtime-hardening-smoke-fix.patch
-          git -C target apply --whitespace=nowarn ../runtime-hardening-smoke-fix.patch
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo apply > "$RUNNER_TEMP/runtime-hardening-v7-stage"
+          git -C target apply --whitespace=nowarn ../runtime-hardening-v7.patch
+          git -C target apply --check --whitespace=nowarn ../runtime-hardening-v7-supplemental.patch
+          git -C target apply --whitespace=nowarn ../runtime-hardening-v7-supplemental.patch
           git -C target diff --check
           test -z "$(git -C target diff --name-only -- .archives)"
           forbidden="$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
@@ -103,17 +121,21 @@ jobs:
 
       - name: Install test environment
         working-directory: target
+        shell: bash
         run: |
-          echo install > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          set -euo pipefail
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo install > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
 
-      - name: Compile and run full test suite
+      - name: Compile and run full non-live test suite
         working-directory: target
         shell: bash
         run: |
           set -euo pipefail
-          echo test > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo test > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           python -X utf8 -m compileall -q latka_jazn tests main.py run.py
           python -X utf8 -m pytest -q -ra --tb=short --durations=25 -m "not live_model and not live_mcp"
           git diff --check
@@ -123,7 +145,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo commit-code > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo commit-code > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A -- .github latka_jazn main.py pyproject.toml requirements.txt tests
@@ -138,8 +161,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo metadata > "$RUNNER_TEMP/runtime-hardening-v6-stage"
-          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo metadata > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json --no-progress
           git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
           git diff --cached --check
@@ -151,7 +174,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo final-validation > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo final-validation > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           python -X utf8 - <<'PY'
           from pathlib import Path
           import os
@@ -175,7 +199,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo push > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          exec > >(tee -a "$RUNNER_TEMP/runtime-hardening-v7.log") 2>&1
+          echo push > "$RUNNER_TEMP/runtime-hardening-v7-stage"
           git push origin "HEAD:${TARGET_BRANCH}"
 
       - name: Record publisher result
@@ -186,10 +211,19 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
-          stage="$(cat "$RUNNER_TEMP/runtime-hardening-v6-stage" 2>/dev/null || echo setup)"
-          printf 'job_status=%s\nstage=%s\ntarget_branch=%s\nbase_sha=%s\n' "$JOB_STATUS" "$stage" "$TARGET_BRANCH" "$BASE_SHA" > .github/runtime-hardening-publisher-v6-status.md
+          stage="$(cat "$RUNNER_TEMP/runtime-hardening-v7-stage" 2>/dev/null || echo setup)"
+          {
+            printf 'job_status=%s\nstage=%s\ntarget_branch=%s\nbase_sha=%s\n' "$JOB_STATUS" "$stage" "$TARGET_BRANCH" "$BASE_SHA"
+            printf '\n```text\n'
+            if [ -f "$RUNNER_TEMP/runtime-hardening-v7.log" ]; then
+              tail -n 160 "$RUNNER_TEMP/runtime-hardening-v7.log"
+            else
+              echo 'No captured shell log.'
+            fi
+            printf '```\n'
+          } > .github/runtime-hardening-publisher-v7-status.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/runtime-hardening-publisher-v6-status.md
-          git diff --cached --quiet || git commit -m "ci: record runtime hardening v6 result"
+          git add .github/runtime-hardening-publisher-v7-status.md
+          git diff --cached --quiet || git commit -m "ci: record runtime hardening v7 result"
           git push origin HEAD:update/runtime-hardening-publisher-v6
