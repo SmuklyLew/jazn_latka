@@ -1,0 +1,32 @@
+{
+  "schema_version": "runtime_hardening_patch_transport/v6",
+  "base_sha": "30a30593901e0b8d24ba6f443f8f67d91d5078e1",
+  "target_branch": "update/v15.1.0.3.90-runtime-hardening",
+  "parts": [
+    {"name":"part-0000.b64","chars":7000,"sha256":"e8af53458c695e652b78c9c77428e2318e375adfbcc595dea3acc45b0ce068e9"},
+    {"name":"part-0001.b64","chars":7000,"sha256":"277262317943ebd40908e7d148a3ce640758c136ef9405dc8e00f80e89793bb5"},
+    {"name":"part-0002a.b64","chars":3500,"sha256":"9e78d339c12b787679b13b930b626e52a19113d4dd6f7c95e5279753ac1edf6f"},
+    {"name":"part-0002b.b64","chars":3500,"sha256":"017e7a939b39d369690f969bd4c79246b4ef90e3a1297262cf5efe358db2aad6"},
+    {"name":"part-0003.b64","chars":7000,"sha256":"840c1864d28c46ead5adcb33102b626cb32abfd0e7f796be42c58e3f20b3ffc9"},
+    {"name":"part-0004.b64","chars":7000,"sha256":"577898571ab81720508866ad300c5bd3c2982a58936dd75d00bee8f0cdaa55e1"},
+    {"name":"part-0005.b64","chars":7000,"sha256":"28800fa42174aa208e822c5b2060c133bb7f29764ee769f55397b75eb93a3510"},
+    {"name":"part-0006.b64","chars":7000,"sha256":"14f8e3ca8fd00a628823c40675e9082117da09691b3d43fe81b7e87b64043cf3"},
+    {"name":"part-0007.b64","chars":7000,"sha256":"af4b9a06e7a72abb6c3939094d8d1f70db3a7e98444b48785731f79adf3561b9"},
+    {"name":"part-0008.b64","chars":7000,"sha256":"38a4443f4e93dac8d0d3da58dd4d41c32a5042d01af0e260aa68c8fc1e3c9f70"},
+    {"name":"part-0009.b64","chars":7000,"sha256":"9d6a52a4d1301932246d53638b62c527506e77c5b2687bc1ef5fb3d54a25fd55"},
+    {"name":"part-0010.b64","chars":7000,"sha256":"8d23eea9634d6099e0bd8c07e86ce6086dcf919616eff5f1ac57752f184e69f8"},
+    {"name":"part-0011.b64","chars":7000,"sha256":"1a4d90b0d982c6c786e438fb3efc18e2c8f302eea1b8806b9c91b7c8fcbe02b4"},
+    {"name":"part-0012.b64","chars":7000,"sha256":"f743d87b1af4f39133c5afe9bd69a84664df806cb1851b3d0ab154045f2922c7"},
+    {"name":"part-0013.b64","chars":7000,"sha256":"8b68926397df7ecffb7e8786a5cf89e19eda45b113ec4f3cbe314b5aa33d4288"},
+    {"name":"part-0014.b64","chars":7000,"sha256":"4b20e935c1327820cb5d78b713fb6443c0bfb18e8fa5662db2b13b8092b26adb"},
+    {"name":"part-0015.b64","chars":7000,"sha256":"a5251aab5761109c25273961ef899bc9592e01d4a1324a507a7b49ea1559656f"},
+    {"name":"part-0016.b64","chars":2180,"sha256":"79a0509c210d824583c2728966ff1d57abed7fad3ee90c15fb1929d4617e9f5a"}
+  ],
+  "base64_chars": 114180,
+  "base64_sha256": "d13bf0db8f34cd2e00432b1e8f266650f631ed72041a91c9a98774b3a3c18d0a",
+  "compressed_bytes": 85635,
+  "compressed_sha256": "b0cb1f0b9bcc031d714b136e401a8973ceef9242168c302a1cffee8b4df2f712",
+  "patch_bytes": 369272,
+  "patch_sha256": "ed0c7f73ca721da8314c79332603740019e32b1e86f67746ad31479e74e9382b",
+  "validation": {"pytest":"433 passed, 3 skipped","compileall":true,"git_diff_check":true}
+}
