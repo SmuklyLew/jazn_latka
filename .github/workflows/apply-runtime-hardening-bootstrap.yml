@@ -15,239 +15,163 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  apply-and-validate:
-    if: github.repository == 'SmuklyLew/jazn_latka'
+  recover-v4:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      TARGET_BRANCH: update/v15.1.0.3.90-runtime-hardening
-      PAYLOAD_DIR: bootstrap/.github/runtime-hardening-patch-v3
-      PYTHONUTF8: '1'
-      PYTHONUNBUFFERED: '1'
-      JAZN_NETWORK_TIME_FIRST: '0'
-      JAZN_NETWORK_TIME_IN_TURN: '0'
-      JAZN_ALLOW_NETWORK: '0'
-      JAZN_DICTIONARY_ALLOW_NETWORK: '0'
-      JAZN_MODEL_ADAPTER: 'null'
+    timeout-minutes: 15
     steps:
-      - name: Checkout verified bootstrap payload
+      - name: Checkout bootstrap history
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: update/runtime-hardening-bootstrap
-          fetch-depth: 1
-          path: bootstrap
-
-      - name: Checkout target branch
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        with:
-          ref: update/v15.1.0.3.90-runtime-hardening
           fetch-depth: 0
-          path: target
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: |
-            target/requirements.txt
-            target/pyproject.toml
-
-      - name: Reconstruct and verify exact patch
+      - name: Recover historical part and construct verified v4
+        id: recover
         shell: bash
         run: |
           set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo reconstruct_patch > "${RUNNER_TEMP}/runtime-hardening-stage"
           python - <<'PY'
           from __future__ import annotations
-          import base64, gzip, hashlib, json
           from pathlib import Path
+          import base64, gzip, hashlib, json, subprocess, traceback
 
-          root = Path('bootstrap/.github/runtime-hardening-patch-v3')
-          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-          required = {
-              'schema_version': 'runtime_hardening_patch_transport/v3',
-              'base_sha': '30a30593901e0b8d24ba6f443f8f67d91d5078e1',
-              'target_branch': 'update/v15.1.0.3.90-runtime-hardening',
-          }
-          for key, expected in required.items():
-              actual = manifest.get(key)
-              if actual != expected:
-                  raise SystemExit(f'{key} mismatch: {actual!r} != {expected!r}')
-          parts = manifest.get('parts')
-          if not isinstance(parts, list) or len(parts) != int(manifest['part_count']):
-              raise SystemExit('invalid part manifest')
-          encoded_parts: list[str] = []
-          for item in parts:
-              path = root / str(item['name'])
-              data = path.read_text(encoding='ascii').strip()
-              if len(data) != int(item['chars']):
-                  raise SystemExit(f'length mismatch: {path}')
-              digest = hashlib.sha256(data.encode('ascii')).hexdigest()
-              if digest != str(item['sha256']):
-                  raise SystemExit(f'sha256 mismatch: {path}')
-              encoded_parts.append(data)
-          encoded = ''.join(encoded_parts)
-          if len(encoded) != int(manifest['base64_chars']):
-              raise SystemExit('combined base64 length mismatch')
-          if hashlib.sha256(encoded.encode('ascii')).hexdigest() != manifest['base64_sha256']:
-              raise SystemExit('combined base64 sha256 mismatch')
-          compressed = base64.b64decode(encoded, validate=True)
-          if len(compressed) != int(manifest['compressed_bytes']):
-              raise SystemExit('compressed length mismatch')
-          if hashlib.sha256(compressed).hexdigest() != manifest['compressed_sha256']:
-              raise SystemExit('compressed sha256 mismatch')
-          patch = gzip.decompress(compressed)
-          if len(patch) != int(manifest['patch_bytes']):
-              raise SystemExit('patch length mismatch')
-          if hashlib.sha256(patch).hexdigest() != manifest['patch_sha256']:
-              raise SystemExit('patch sha256 mismatch')
-          Path('runtime-hardening.patch').write_bytes(patch)
-          Path('runtime-hardening-manifest.json').write_text(
-              json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8'
-          )
-          print(json.dumps({
-              'part_count': len(parts),
-              'patch_bytes': len(patch),
-              'patch_sha256': manifest['patch_sha256'],
-          }, sort_keys=True))
+          status_path = Path('.github/runtime-hardening-recover-v4-status.json')
+          try:
+              repo = Path('.').resolve()
+              v3 = repo / '.github' / 'runtime-hardening-patch-v3'
+              v4 = repo / '.github' / 'runtime-hardening-patch-v4'
+              v4.mkdir(parents=True, exist_ok=True)
+              manifest3 = json.loads((v3 / 'manifest.json').read_text(encoding='utf-8'))
+              expected_items = {item['name']: item for item in manifest3['parts']}
+              target_name = 'part-0005.b64'
+              expected = expected_items[target_name]
+              target_rel = f'.github/runtime-hardening-patch-v3/{target_name}'
+
+              commits = subprocess.check_output(
+                  ['git', 'log', '--all', '--format=%H', '--', target_rel],
+                  text=True,
+              ).splitlines()
+              candidates = []
+              recovered = None
+              recovered_commit = None
+              for commit in commits:
+                  try:
+                      raw = subprocess.check_output(['git', 'show', f'{commit}:{target_rel}'])
+                  except subprocess.CalledProcessError:
+                      continue
+                  data = raw.strip()
+                  digest = hashlib.sha256(data).hexdigest()
+                  candidates.append({'commit': commit, 'chars': len(data), 'sha256': digest})
+                  if len(data) == int(expected['chars']) and digest == str(expected['sha256']):
+                      recovered = data.decode('ascii')
+                      recovered_commit = commit
+                      break
+              if recovered is None:
+                  raise RuntimeError(json.dumps({
+                      'error_code': 'historical_part_not_found_or_invalid',
+                      'target': target_rel,
+                      'expected': expected,
+                      'candidates': candidates,
+                  }, sort_keys=True))
+
+              (v3 / target_name).write_text(recovered, encoding='ascii')
+
+              def read(path: Path) -> str:
+                  return path.read_text(encoding='ascii').strip()
+
+              prefix_parts = [read(v3 / f'part-{i:04d}.b64') for i in range(3)]
+              prefix_parts += [read(v4 / f'part-{i:04d}.b64') for i in range(3, 6)]
+              if any(len(item) != 8000 for item in prefix_parts):
+                  raise RuntimeError('known-good v4 prefix part has invalid length')
+
+              tail = (
+                  read(v3 / 'part-0004.b64')[9000:]
+                  + recovered
+                  + read(v3 / 'part-0006.b64')
+                  + read(v3 / 'part-0007.b64')
+              )
+              if len(tail) != 42664:
+                  raise RuntimeError(f'unexpected tail length: {len(tail)}')
+              tail_parts = [tail[i:i+8000] for i in range(0, len(tail), 8000)]
+              for index, data in enumerate(tail_parts, start=6):
+                  (v4 / f'part-{index:04d}.b64').write_text(data, encoding='ascii')
+
+              all_parts = prefix_parts + tail_parts
+              encoded = ''.join(all_parts)
+              expected_global = {
+                  'base64_chars': 90664,
+                  'base64_sha256': '71cb2baad8b8817d0d82eec189a48eb82b10bcd271be6e2776bd04bb65b56e32',
+                  'compressed_bytes': 67996,
+                  'compressed_sha256': '135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429',
+                  'patch_bytes': 294562,
+                  'patch_sha256': '80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754',
+              }
+              if len(encoded) != expected_global['base64_chars']:
+                  raise RuntimeError(f'combined base64 length mismatch: {len(encoded)}')
+              if hashlib.sha256(encoded.encode('ascii')).hexdigest() != expected_global['base64_sha256']:
+                  raise RuntimeError('combined base64 sha256 mismatch')
+              compressed = base64.b64decode(encoded, validate=True)
+              if len(compressed) != expected_global['compressed_bytes']:
+                  raise RuntimeError('compressed length mismatch')
+              if hashlib.sha256(compressed).hexdigest() != expected_global['compressed_sha256']:
+                  raise RuntimeError('compressed sha256 mismatch')
+              patch = gzip.decompress(compressed)
+              if len(patch) != expected_global['patch_bytes']:
+                  raise RuntimeError('patch length mismatch')
+              if hashlib.sha256(patch).hexdigest() != expected_global['patch_sha256']:
+                  raise RuntimeError('patch sha256 mismatch')
+
+              parts_manifest = [
+                  {
+                      'name': f'part-{index:04d}.b64',
+                      'chars': len(data),
+                      'sha256': hashlib.sha256(data.encode('ascii')).hexdigest(),
+                  }
+                  for index, data in enumerate(all_parts)
+              ]
+              manifest4 = {
+                  'schema_version': 'runtime_hardening_patch_transport/v4',
+                  'base_sha': '30a30593901e0b8d24ba6f443f8f67d91d5078e1',
+                  'target_branch': 'update/v15.1.0.3.90-runtime-hardening',
+                  **expected_global,
+                  'part_count': len(all_parts),
+                  'parts': parts_manifest,
+                  'recovered_part_0005_from_commit': recovered_commit,
+              }
+              (v4 / 'manifest.json').write_text(
+                  json.dumps(manifest4, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+              )
+              status = {
+                  'ok': True,
+                  'recovered_part_0005_from_commit': recovered_commit,
+                  'part_count': len(all_parts),
+                  'patch_sha256': expected_global['patch_sha256'],
+                  'patch_bytes': len(patch),
+              }
+              status_path.write_text(json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+              print(json.dumps(status, indent=2, sort_keys=True))
+          except Exception as exc:
+              status = {
+                  'ok': False,
+                  'error_type': type(exc).__name__,
+                  'error': str(exc),
+                  'traceback': traceback.format_exc(),
+              }
+              status_path.write_text(json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+              print(json.dumps(status, indent=2, sort_keys=True))
+              raise
           PY
-          base_sha="$(python -c "import json; print(json.load(open('runtime-hardening-manifest.json'))['base_sha'])")"
-          test "$(git -C target rev-parse HEAD)" = "${base_sha}"
-          git -C target diff --quiet
-          git -C target diff --cached --quiet
-          git -C target apply --check --whitespace=nowarn ../runtime-hardening.patch
 
-      - name: Apply patch and enforce repository boundaries
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo apply_patch > "${RUNNER_TEMP}/runtime-hardening-stage"
-          git -C target apply --whitespace=nowarn ../runtime-hardening.patch
-          git -C target diff --check
-          test -z "$(git -C target diff --name-only -- .archives memory workspace_runtime)"
-          forbidden="$(git -C target diff --name-only | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
-          test -z "${forbidden}"
-
-      - name: Install test environment
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo install > "${RUNNER_TEMP}/runtime-hardening-stage"
-          python -m pip install --upgrade pip
-          python -m pip install -e . pytest
-
-      - name: Compile active Python
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo compile > "${RUNNER_TEMP}/runtime-hardening-stage"
-          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
-
-      - name: Run full non-live test suite
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo pytest > "${RUNNER_TEMP}/runtime-hardening-stage"
-          python -X utf8 -m pytest -q -ra --tb=short -m "not live_model and not live_mcp"
-
-      - name: Commit validated runtime update
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo commit_code > "${RUNNER_TEMP}/runtime-hardening-stage"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          test -z "$(git diff --cached --name-only -- .archives memory workspace_runtime)"
-          forbidden="$(git diff --cached --name-only | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
-          test -z "${forbidden}"
-          git diff --cached --check
-          git commit -m "fix: harden runtime contracts and persistence"
-
-      - name: Synchronize canonical release metadata
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo metadata_sync > "${RUNNER_TEMP}/runtime-hardening-stage"
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
-            --root . --base-branch master --write --json --no-progress
-          changed="$(git diff --name-only)"
-          test "${changed}" = $'PACKAGE_INTEGRITY_MANIFEST.json\nSOURCE_PROVENANCE.json' \
-            || test "${changed}" = $'SOURCE_PROVENANCE.json\nPACKAGE_INTEGRITY_MANIFEST.json'
-
-      - name: Commit canonical release metadata
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo commit_metadata > "${RUNNER_TEMP}/runtime-hardening-stage"
-          git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
-          git diff --cached --check
-          git commit -m "release: synchronize canonical metadata for v15.1.0.3.90"
-
-      - name: Verify metadata, doctor and package smoke
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo final_validation > "${RUNNER_TEMP}/runtime-hardening-stage"
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
-            --root . --base-branch master --check --json --no-progress
-          python -X utf8 run.py doctor --json
-          python -X utf8 run.py package-smoke --profile system --json
-          python -X utf8 run.py package-smoke --profile release --json
-          python -X utf8 -m pytest -q tests/test_runtime_full_turn.py
-          python -X utf8 -m pytest -q tests/test_single_source_version_manifest_contract.py
-          rm -rf memory workspace_runtime
-          git diff --check
-          test -z "$(git status --porcelain --untracked-files=all)"
-
-      - name: Push validated commits to target branch
-        working-directory: target
-        shell: bash
-        run: |
-          set -euo pipefail
-          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
-          echo push_target > "${RUNNER_TEMP}/runtime-hardening-stage"
-          git push origin "HEAD:${TARGET_BRANCH}"
-
-      - name: Record bootstrap result
+      - name: Commit recovery result
         if: always()
-        working-directory: bootstrap
         shell: bash
-        env:
-          JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
-          stage="$(cat "${RUNNER_TEMP}/runtime-hardening-stage" 2>/dev/null || echo setup)"
-          log_file="${RUNNER_TEMP}/runtime-hardening.log"
-          {
-            echo "job_status=${JOB_STATUS}"
-            echo "stage=${stage}"
-            echo "target_branch=${TARGET_BRANCH}"
-            echo
-            echo '```text'
-            if [ -f "${log_file}" ]; then tail -n 160 "${log_file}"; else echo 'No captured shell log.'; fi
-            echo '```'
-          } > .github/runtime-hardening-last-status.md
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/runtime-hardening-last-status.md
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "ci: record runtime hardening bootstrap result"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/runtime-hardening-patch-v3/part-0005.b64 \
+                  .github/runtime-hardening-patch-v4 \
+                  .github/runtime-hardening-recover-v4-status.json 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git commit -m 'ci: recover verified runtime hardening transport v4'
           git push origin HEAD:update/runtime-hardening-bootstrap
