@@ -59,6 +59,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo decode_and_verify > "${RUNNER_TEMP}/runtime-hardening-stage"
           actual_blob_sha="$(git -C bootstrap hash-object .github/runtime-hardening.patch.gz.b64)"
           echo "payload_blob_sha=${actual_blob_sha}"
           test "${actual_blob_sha}" = "${PATCH_PAYLOAD_BLOB_SHA}"
@@ -85,9 +87,12 @@ jobs:
             echo 'mode=plain' >> "${GITHUB_OUTPUT}"
           elif git -C target apply --3way --check --whitespace=nowarn ../runtime-hardening.patch; then
             echo 'mode=threeway' >> "${GITHUB_OUTPUT}"
+          elif patch --dry-run --batch --forward -p1 -d target < runtime-hardening.patch; then
+            echo 'mode=posix_patch' >> "${GITHUB_OUTPUT}"
           else
-            echo 'Patch does not apply in plain or three-way mode.' >&2
+            echo 'Patch does not apply in plain, three-way, or POSIX patch mode.' >&2
             git -C target apply --check --verbose --whitespace=nowarn ../runtime-hardening.patch || true
+            patch --dry-run --verbose --batch --forward -p1 -d target < runtime-hardening.patch || true
             exit 1
           fi
 
@@ -95,36 +100,58 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${{ steps.patch.outputs.mode }}" = 'threeway' ]; then
-            git -C target apply --3way --whitespace=nowarn ../runtime-hardening.patch
-          else
-            git -C target apply --whitespace=nowarn ../runtime-hardening.patch
-          fi
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo apply_patch > "${RUNNER_TEMP}/runtime-hardening-stage"
+          case "${{ steps.patch.outputs.mode }}" in
+            threeway)
+              git -C target apply --3way --whitespace=nowarn ../runtime-hardening.patch
+              ;;
+            posix_patch)
+              patch --batch --forward -p1 -d target < runtime-hardening.patch
+              ;;
+            *)
+              git -C target apply --whitespace=nowarn ../runtime-hardening.patch
+              ;;
+          esac
           git -C target diff --check
           test -z "$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
           test -z "$(git -C target diff --name-only -- .archives)"
 
       - name: Install test environment
         working-directory: target
+        shell: bash
         run: |
+          set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo install > "${RUNNER_TEMP}/runtime-hardening-stage"
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
 
       - name: Compile active Python
         working-directory: target
-        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo compile > "${RUNNER_TEMP}/runtime-hardening-stage"
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
 
       - name: Run full non-live test suite
         working-directory: target
-        run: >-
-          python -X utf8 -m pytest -q -ra --tb=short
-          -m "not live_model and not live_mcp"
+        shell: bash
+        run: |
+          set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo pytest > "${RUNNER_TEMP}/runtime-hardening-stage"
+          python -X utf8 -m pytest -q -ra --tb=short -m "not live_model and not live_mcp"
 
       - name: Commit validated runtime update
         working-directory: target
         shell: bash
         run: |
           set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo commit_code > "${RUNNER_TEMP}/runtime-hardening-stage"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A -- .github latka_jazn main.py pyproject.toml requirements.txt tests
@@ -136,15 +163,21 @@ jobs:
 
       - name: Synchronize canonical release metadata
         working-directory: target
-        run: >-
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync
-          --root . --base-branch master --write --json --no-progress
+        shell: bash
+        run: |
+          set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo metadata_sync > "${RUNNER_TEMP}/runtime-hardening-stage"
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
+            --root . --base-branch master --write --json --no-progress
 
       - name: Commit canonical release metadata
         working-directory: target
         shell: bash
         run: |
           set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo commit_metadata > "${RUNNER_TEMP}/runtime-hardening-stage"
           git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
           git diff --cached --check
           git commit -m "release: synchronize canonical metadata for v15.1.0.3.90"
@@ -154,6 +187,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo final_validation > "${RUNNER_TEMP}/runtime-hardening-stage"
           python -X utf8 -m latka_jazn.tools.release_metadata_sync \
             --root . --base-branch master --check --json --no-progress
           python -X utf8 run.py doctor --json
@@ -166,4 +201,43 @@ jobs:
 
       - name: Push validated commits to target branch
         working-directory: target
-        run: git push origin "HEAD:${TARGET_BRANCH}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          exec > >(tee -a "${RUNNER_TEMP}/runtime-hardening.log") 2>&1
+          echo push_target > "${RUNNER_TEMP}/runtime-hardening-stage"
+          git push origin "HEAD:${TARGET_BRANCH}"
+
+      - name: Record bootstrap result
+        if: always()
+        working-directory: bootstrap
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          stage="$(cat "${RUNNER_TEMP}/runtime-hardening-stage" 2>/dev/null || echo setup)"
+          log_file="${RUNNER_TEMP}/runtime-hardening.log"
+          {
+            echo "job_status=${JOB_STATUS}"
+            echo "stage=${stage}"
+            echo "target_branch=${TARGET_BRANCH}"
+            echo "base_sha=${BASE_SHA}"
+            echo "payload_blob_sha=${PATCH_PAYLOAD_BLOB_SHA}"
+            echo
+            echo '```text'
+            if [ -f "${log_file}" ]; then
+              tail -n 120 "${log_file}"
+            else
+              echo 'No captured shell log.'
+            fi
+            echo '```'
+          } > .github/runtime-hardening-last-status.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/runtime-hardening-last-status.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "ci: record runtime hardening bootstrap result"
+          git push origin HEAD:update/runtime-hardening-bootstrap
