@@ -29,7 +29,7 @@ jobs:
       JAZN_NETWORK_TIME_IN_TURN: '0'
       JAZN_ALLOW_NETWORK: '0'
       JAZN_DICTIONARY_ALLOW_NETWORK: '0'
-      JAZN_MODEL_ADAPTER: null
+      JAZN_MODEL_ADAPTER: 'null'
     steps:
       - name: Checkout verified bootstrap payload
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
