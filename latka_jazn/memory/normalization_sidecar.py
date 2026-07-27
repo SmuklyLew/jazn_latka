@@ -46,7 +46,7 @@ def _copy_legacy_sidecar_tables(
     """
     if not legacy_path.is_file():
         return {}
-    source_uri = f"file:{legacy_path.resolve().as_posix()}?mode=ro"
+    source_uri = legacy_path.resolve().as_uri() + "?mode=ro"
     connection.execute("ATTACH DATABASE ? AS legacy_sidecar", (source_uri,))
     copied: dict[str, int] = {}
     try:
@@ -659,7 +659,8 @@ def _connect_readonly(path: Path, *, immutable: bool = False) -> sqlite3.Connect
 
 def _connect_write(path: Path) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(path)
+    uri = path.resolve().as_uri() + "?mode=rwc"
+    con = sqlite3.connect(uri, uri=True)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
     return con
@@ -716,9 +717,48 @@ def _snapshot_summary(
     created_at_utc: str | None = None,
     validation_status: str | None = None,
 ) -> dict[str, Any]:
-    namespace_policy = snapshot.get("namespace_policy") if isinstance(snapshot.get("namespace_policy"), dict) else {}
-    truth_digest = snapshot.get("truth_boundary_digest") if isinstance(snapshot.get("truth_boundary_digest"), dict) else {}
-    relationship = snapshot.get("relationship_digest") if isinstance(snapshot.get("relationship_digest"), dict) else {}
+    namespace_policy_value = snapshot.get("namespace_policy")
+    namespace_policy: dict[str, Any] = (
+        dict(namespace_policy_value)
+        if isinstance(namespace_policy_value, dict)
+        else {}
+    )
+
+    truth_digest_value = snapshot.get("truth_boundary_digest")
+    truth_digest: dict[str, Any] = (
+        dict(truth_digest_value)
+        if isinstance(truth_digest_value, dict)
+        else {}
+    )
+
+    relationship_value = snapshot.get("relationship_digest")
+    relationship: dict[str, Any] = (
+        dict(relationship_value)
+        if isinstance(relationship_value, dict)
+        else {}
+    )
+
+    source_counts_value = snapshot.get("source_counts")
+    source_counts: dict[str, Any] = (
+        dict(source_counts_value)
+        if isinstance(source_counts_value, dict)
+        else {}
+    )
+
+    namespace_counts_value = namespace_policy.get("namespace_counts")
+    namespace_counts: dict[str, Any] = (
+        dict(namespace_counts_value)
+        if isinstance(namespace_counts_value, dict)
+        else {}
+    )
+
+    source_truth_counts_value = truth_digest.get("source_truth_counts")
+    source_truth_counts: dict[str, Any] = (
+        dict(source_truth_counts_value)
+        if isinstance(source_truth_counts_value, dict)
+        else {}
+    )
+
     return {
         "snapshot_id": snapshot_id,
         "schema_version": snapshot.get("schema_version"),
@@ -726,20 +766,28 @@ def _snapshot_summary(
         "source_run_id": source_run_id,
         "snapshot_sha256": snapshot_sha256,
         "validation_status": validation_status or snapshot.get("validation_status"),
-        "source_counts": snapshot.get("source_counts") if isinstance(snapshot.get("source_counts"), dict) else {},
-        "namespace_counts": namespace_policy.get("namespace_counts") if isinstance(namespace_policy.get("namespace_counts"), dict) else {},
+        "source_counts": source_counts,
+        "namespace_counts": namespace_counts,
         "relationship_digest": {
-            "krzysztof_candidate_present": bool(relationship.get("krzysztof_candidate_present")),
-            "krzysztof_private_namespace_allowed": bool(relationship.get("krzysztof_private_namespace_allowed")),
+            "krzysztof_candidate_present": bool(
+                relationship.get("krzysztof_candidate_present")
+            ),
+            "krzysztof_private_namespace_allowed": bool(
+                relationship.get("krzysztof_private_namespace_allowed")
+            ),
             "private_namespace_requires_confirmed_actor": True,
         },
         "truth_boundary_digest": {
-            "must_not_claim_background_process": bool(truth_digest.get("must_not_claim_background_process")),
-            "must_not_claim_memory_without_source": bool(truth_digest.get("must_not_claim_memory_without_source")),
+            "must_not_claim_background_process": bool(
+                truth_digest.get("must_not_claim_background_process")
+            ),
+            "must_not_claim_memory_without_source": bool(
+                truth_digest.get("must_not_claim_memory_without_source")
+            ),
             "emotions_are_modelled_operational_relational": bool(
                 truth_digest.get("emotions_are_modelled_operational_relational")
             ),
-            "source_truth_counts": truth_digest.get("source_truth_counts") if isinstance(truth_digest.get("source_truth_counts"), dict) else {},
+            "source_truth_counts": source_truth_counts,
         },
     }
 

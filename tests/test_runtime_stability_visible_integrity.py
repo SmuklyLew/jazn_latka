@@ -50,6 +50,7 @@ def _decision(*, classification: str = "rule_handler_response") -> dict:
             "require_trusted_in_final_visible": False,
             "allow_degraded_local_visible": True,
             "timezone": "Europe/Warsaw",
+            "max_age_seconds": 86400,
         },
         "author_id": "latka_runtime",
         "author_label": "Łatka",
