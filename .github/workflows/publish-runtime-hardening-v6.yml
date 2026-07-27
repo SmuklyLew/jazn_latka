@@ -1,0 +1,188 @@
+name: publish-runtime-hardening-v6
+
+on:
+  push:
+    branches: [update/runtime-hardening-publisher-v6]
+    paths: [.github/runtime-hardening-publisher-v6-ready]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-runtime-hardening-v6
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JAZN_NETWORK_TIME_FIRST: "0"
+      JAZN_NETWORK_TIME_IN_TURN: "0"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+      BASE_SHA: 30a30593901e0b8d24ba6f443f8f67d91d5078e1
+      TARGET_BRANCH: update/v15.1.0.3.90-runtime-hardening
+    steps:
+      - name: Checkout publisher
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: update/runtime-hardening-publisher-v6
+          fetch-depth: 1
+          path: publisher
+
+      - name: Checkout exact target
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: update/v15.1.0.3.90-runtime-hardening
+          fetch-depth: 0
+          path: target
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            target/requirements.txt
+            target/pyproject.toml
+
+      - name: Reconstruct and verify exact patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo reconstruct > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          python -X utf8 - <<'PY'
+          import base64, gzip, hashlib, json
+          from pathlib import Path
+          root = Path("publisher/.github/runtime-hardening-publisher-v6")
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          chunks = []
+          for record in manifest["parts"]:
+              data = (root / record["name"]).read_bytes()
+              assert len(data) == record["chars"], (record["name"], len(data), record["chars"])
+              assert hashlib.sha256(data).hexdigest() == record["sha256"], record["name"]
+              chunks.append(data)
+          encoded = b"".join(chunks)
+          assert len(encoded) == manifest["base64_chars"]
+          assert hashlib.sha256(encoded).hexdigest() == manifest["base64_sha256"]
+          compressed = base64.b64decode(encoded, validate=True)
+          assert len(compressed) == manifest["compressed_bytes"]
+          assert hashlib.sha256(compressed).hexdigest() == manifest["compressed_sha256"]
+          patch = gzip.decompress(compressed)
+          assert len(patch) == manifest["patch_bytes"]
+          assert hashlib.sha256(patch).hexdigest() == manifest["patch_sha256"]
+          Path("runtime-hardening-v6.patch").write_bytes(patch)
+          print(json.dumps({"ok": True, "patch_sha256": manifest["patch_sha256"], "patch_bytes": len(patch)}))
+          PY
+          test "$(git -C target rev-parse HEAD)" = "$BASE_SHA"
+          git -C target diff --quiet
+          git -C target diff --cached --quiet
+          git -C target apply --check --whitespace=nowarn ../runtime-hardening-v6.patch
+
+      - name: Apply patch and enforce boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo apply > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          git -C target apply --whitespace=nowarn ../runtime-hardening-v6.patch
+          git -C target diff --check
+          test -z "$(git -C target diff --name-only -- .archives)"
+          forbidden="$(git -C target status --porcelain -- memory workspace_runtime '*.sqlite' '*.sqlite3' '*.db' '*.zip' '*.log')"
+          test -z "$forbidden"
+
+      - name: Install test environment
+        working-directory: target
+        run: |
+          echo install > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Compile and run full test suite
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo test > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          python -X utf8 -m pytest -q -ra --tb=short --durations=25 -m "not live_model and not live_mcp"
+          git diff --check
+
+      - name: Commit validated code update
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo commit-code > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- .github latka_jazn main.py pyproject.toml requirements.txt tests
+          test -z "$(git diff --cached --name-only -- .archives)"
+          forbidden="$(git diff --cached --name-only | grep -E '^(memory/|workspace_runtime/|.*\.(sqlite3?|db)(-|$)|.*\.zip(\.|$)|.*\.log$)' || true)"
+          test -z "$forbidden"
+          git diff --cached --check
+          git commit -m "fix: harden runtime contracts and persistence"
+
+      - name: Synchronize and commit canonical metadata
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo metadata > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json --no-progress
+          git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+          git diff --cached --check
+          git commit -m "release: synchronize canonical metadata for v15.1.0.3.90"
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --check --json --no-progress
+
+      - name: Doctor, package smoke and final guards
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo final-validation > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          import os
+          from latka_jazn.tools.release_staging import create_release_staging
+          destination = Path(os.environ["RUNNER_TEMP"]) / "jazn-v15.1.0.3.90-release"
+          report = create_release_staging(Path.cwd(), destination)
+          print(report)
+          if not report.get("ok"):
+              raise SystemExit(2)
+          PY
+          (cd "$RUNNER_TEMP/jazn-v15.1.0.3.90-release" && python -X utf8 run.py doctor --json)
+          python -X utf8 run.py package-smoke --profile system --json
+          python -X utf8 run.py package-smoke --profile release --json
+          python -X utf8 -m pytest -q tests/test_runtime_full_turn.py tests/test_single_source_version_manifest_contract.py
+          git diff --check
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Push validated commits to target branch
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo push > "$RUNNER_TEMP/runtime-hardening-v6-stage"
+          git push origin "HEAD:${TARGET_BRANCH}"
+
+      - name: Record publisher result
+        if: always()
+        working-directory: publisher
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          stage="$(cat "$RUNNER_TEMP/runtime-hardening-v6-stage" 2>/dev/null || echo setup)"
+          printf 'job_status=%s\nstage=%s\ntarget_branch=%s\nbase_sha=%s\n' "$JOB_STATUS" "$stage" "$TARGET_BRANCH" "$BASE_SHA" > .github/runtime-hardening-publisher-v6-status.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/runtime-hardening-publisher-v6-status.md
+          git diff --cached --quiet || git commit -m "ci: record runtime hardening v6 result"
+          git push origin HEAD:update/runtime-hardening-publisher-v6
