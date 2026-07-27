@@ -1,0 +1,89 @@
+name: recover-runtime-hardening-patch
+
+on:
+  push:
+    branches:
+      - update/runtime-hardening-bootstrap
+    paths:
+      - .github/runtime-hardening-recover
+
+permissions:
+  contents: write
+
+jobs:
+  recover-prefix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout bootstrap branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: update/runtime-hardening-bootstrap
+          fetch-depth: 1
+
+      - name: Recover maximal valid patch prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          import base64
+          import hashlib
+          import json
+          import zlib
+          from pathlib import Path
+
+          source = Path('.github/runtime-hardening.patch.gz.b64')
+          compressed = base64.b64decode(source.read_text(encoding='ascii'), validate=False)
+          decoder = zlib.decompressobj(wbits=31)
+          output = bytearray()
+          error = None
+          offset = 0
+          for offset in range(0, len(compressed), 4096):
+              chunk = compressed[offset:offset + 4096]
+              try:
+                  output.extend(decoder.decompress(chunk))
+              except zlib.error as exc:
+                  error = f'{type(exc).__name__}: {exc}'
+                  break
+          if error is None:
+              try:
+                  output.extend(decoder.flush())
+              except zlib.error as exc:
+                  error = f'{type(exc).__name__}: {exc}'
+          recovered = bytes(output)
+          encoded = base64.b64encode(recovered).decode('ascii')
+          target = Path('.github/recovered-runtime-hardening-patch')
+          target.mkdir(parents=True, exist_ok=True)
+          for old in target.glob('part-*.b64'):
+              old.unlink()
+          chunk_size = 40000
+          parts = []
+          for index in range(0, len(encoded), chunk_size):
+              name = f'part-{index // chunk_size:04d}.b64'
+              data = encoded[index:index + chunk_size]
+              (target / name).write_text(data + '\n', encoding='ascii')
+              parts.append({'name': name, 'chars': len(data), 'sha256': hashlib.sha256(data.encode('ascii')).hexdigest()})
+          manifest = {
+              'source_blob_sha': 'ed54cb7abc503d5116a5c67988ffdba3b75e7c34',
+              'compressed_bytes': len(compressed),
+              'failure_offset': offset,
+              'error': error,
+              'recovered_bytes': len(recovered),
+              'recovered_sha256': hashlib.sha256(recovered).hexdigest(),
+              'part_count': len(parts),
+              'parts': parts,
+          }
+          (target / 'manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(manifest, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit recovered prefix chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/recovered-runtime-hardening-patch
+          git commit -m "ci: recover valid prefix of runtime hardening patch"
+          git push origin HEAD:update/runtime-hardening-bootstrap
