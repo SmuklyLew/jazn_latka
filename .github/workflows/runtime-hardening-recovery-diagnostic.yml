@@ -1,0 +1,76 @@
+name: runtime-hardening-recovery-diagnostic
+
+on:
+  push:
+    branches:
+      - update/runtime-hardening-bootstrap
+    paths:
+      - .github/runtime-hardening-recovery-ready
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: update/runtime-hardening-bootstrap
+          fetch-depth: 1
+      - name: Inspect transport fragments
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+
+          root = Path('.github')
+          records = []
+          for path in sorted(root.rglob('*')):
+              if not path.is_file():
+                  continue
+              rel = path.as_posix()
+              if 'runtime-hardening' not in rel or not (rel.endswith('.b64') or rel.endswith('.json') or rel.endswith('.gz')):
+                  continue
+              raw = path.read_bytes()
+              stripped = raw.strip()
+              records.append({
+                  'path': rel,
+                  'bytes': len(raw),
+                  'stripped_bytes': len(stripped),
+                  'sha256_raw': hashlib.sha256(raw).hexdigest(),
+                  'sha256_stripped': hashlib.sha256(stripped).hexdigest(),
+                  'prefix32': stripped[:32].decode('ascii', errors='replace'),
+                  'suffix32': stripped[-32:].decode('ascii', errors='replace'),
+              })
+
+          expected = {
+              'base64_chars': 90664,
+              'base64_sha256': '71cb2baad8b8817d0d82eec189a48eb82b10bcd271be6e2776bd04bb65b56e32',
+              'compressed_bytes': 67996,
+              'compressed_sha256': '135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429',
+              'patch_bytes': 294562,
+              'patch_sha256': '80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754',
+          }
+
+          report = {
+              'schema_version': 'runtime_hardening_recovery_diagnostic/v1',
+              'records': records,
+              'expected': expected,
+          }
+          out = Path('.github/runtime-hardening-recovery-diagnostic.json')
+          out.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/runtime-hardening-recovery-diagnostic.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'ci: inspect runtime hardening transport fragments'
+          git push origin HEAD:update/runtime-hardening-bootstrap
