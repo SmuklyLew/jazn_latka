@@ -1,0 +1,16 @@
+{
+  "compressed_bytes": 15008,
+  "error": "error: Error -3 while decompressing data: invalid distance too far back",
+  "failure_offset": 4096,
+  "part_count": 1,
+  "parts": [
+    {
+      "chars": 20312,
+      "name": "part-0000.b64",
+      "sha256": "bf39672e51902fef2885c58db632e5703af40951173a169cfa021822e4450f17"
+    }
+  ],
+  "recovered_bytes": 15232,
+  "recovered_sha256": "e118e51d7b09a93ea88f694cbfd16d9bc6a61602f790cbb79af498a6b972c99d",
+  "source_blob_sha": "ed54cb7abc503d5116a5c67988ffdba3b75e7c34"
+}
