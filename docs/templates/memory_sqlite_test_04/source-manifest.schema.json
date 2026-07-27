@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "jazn_memory_sqlite_test04_sources/v1",
+  "title": "Jaźń Memory SQLite Test 04 private source manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operator_attestation",
+    "baseline_test03_root",
+    "legacy_memory_root",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "jazn_memory_sqlite_test04_sources/v1"
+    },
+    "operator_attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "all_known_chatgpt_exports_included",
+        "latest_export_created_immediately_before_test",
+        "source_order_reviewed"
+      ],
+      "properties": {
+        "all_known_chatgpt_exports_included": {
+          "type": "boolean"
+        },
+        "latest_export_created_immediately_before_test": {
+          "type": "boolean"
+        },
+        "source_order_reviewed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "baseline_test03_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "legacy_memory_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_decline_justifications": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ordinal",
+          "role",
+          "path",
+          "latest_export",
+          "pipeline",
+          "approved"
+        ],
+        "properties": {
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "role": {
+            "enum": [
+              "chatgpt_export",
+              "journal",
+              "approved_l0"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "exported_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "latest_export": {
+            "type": "boolean"
+          },
+          "pipeline": {
+            "enum": [
+              "memory_rebuild",
+              "html_only_review"
+            ]
+          },
+          "approved": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version_contract import mentions_jazn_version
 from dataclasses import asdict, dataclass, field
 import re
 import unicodedata
@@ -356,8 +357,8 @@ class DialogueIntentClassifier:
         broad_audit_signal = sum(1 for marker in ("co umiesz", "co potrafisz", "co dziala", "co trzeba naprawic", "kod zrodlowy", "gdzie sa luki", "jakie sa luki", "co blokuje", "moduly i narzedzia") if marker in folded)
         if has_self_architecture_audit and broad_audit_signal >= 2 and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS):
             return self._report(norm,folded,'self_architecture_audit_request',['pełne pytanie o możliwości, kod, luki i blokady ma pierwszeństwo przed health-checkiem'],0.96,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
-        if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or "15.1.0.3.89" in folded):
-            secondary = ['system_update_execution_request'] if (has_update or any(x in folded for x in ('patch', 'hotfix', 'v15.1.0.3.89', 'aktualiz'))) else []
+        if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or mentions_jazn_version(folded)):
+            secondary = ['system_update_execution_request'] if (has_update or (any(x in folded for x in ('patch', 'hotfix', 'aktualiz')) or mentions_jazn_version(folded))) else []
             return self._report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         route_contract_hint = self.route_contract_matrix.classify(norm)
         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
@@ -425,7 +426,7 @@ class DialogueIntentClassifier:
         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
         if has_runtime_wake_health_check:
             return self._report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
-        if self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or "v15.1.0.3.89" in folded):
+        if self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded)):
             return self._report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
             return self._report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')

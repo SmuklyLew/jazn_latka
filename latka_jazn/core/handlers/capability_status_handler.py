@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version import PACKAGE_VERSION, version_number
 from typing import Any
 import json
 import os
@@ -13,7 +14,7 @@ from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 class CapabilityStatusHandler:
     """Direct answers for capability, network and post-update health questions.
 
-    v15.1.0.3.89 keeps the direct-route fix for questions such as
+    poprzednia linia runtime keeps the direct-route fix for questions such as
     "Co potrafisz?" or "Masz dostęp do internetu?" fell through to a vague
     ordinary-dialogue fallback. These questions are not requests for a new
     update and should answer the current capability boundary directly.
@@ -123,8 +124,8 @@ class CapabilityStatusHandler:
                 raw_memory = RawMemoryInspector(cfg.root, cfg.memory_db_path).inspect().to_dict()
             except Exception:
                 raw_memory = raw_memory or {"status": "status_not_available"}
-        runtime_version = str(active_cache.get("version") or status.get("runtime_version") or getattr(cfg, "version", "") or "v15.1.0.3.89")
-        version_number = runtime_version.lstrip("v").split("-", 1)[0] or "15.1.0.3.89"
+        runtime_version = str(active_cache.get("version") or status.get("runtime_version") or getattr(cfg, "version", "") or PACKAGE_VERSION)
+        version_number = runtime_version.lstrip("v").split("-", 1)[0] or version_number(PACKAGE_VERSION)
         network = status.get("network_policy_status") if isinstance(status.get("network_policy_status"), dict) else {}
         dictionary = status.get("dictionary_provider_status") if isinstance(status.get("dictionary_provider_status"), dict) else {}
         cli = status.get("cli_capabilities") if isinstance(status.get("cli_capabilities"), dict) else {}

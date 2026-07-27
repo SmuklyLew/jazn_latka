@@ -421,7 +421,7 @@ class WarsawClock:
         headers = {
             "Cache-Control": "no-cache, no-store",
             "Pragma": "no-cache",
-            "User-Agent": "LatkaJazn-TimeProbe/15.1.0.3.89",
+            "User-Agent": "LatkaJazn-TimeProbe/v1",
         }
 
         def note(url: str, status: str, started: float, **extra: Any) -> None:

@@ -1,6 +1,6 @@
 {
-  "schema_version": "nlp_provider_registry/v15.1.0.3.89",
-  "description": "Rejestr providerów NLP Jaźni. Domyślnie aktywny jest tylko builtin_safe; zewnętrzne providery są opcjonalne i nie są dołączane jako ciężkie zależności. v15.1.0.3.89 dopisuje jawny podgląd runtime, source_origin i self_state_runtime bez obowiązkowych modeli ciężkich.",
+  "schema_version": "nlp_provider_registry/v1",
+  "description": "Rejestr providerów NLP Jaźni. Domyślnie aktywny jest tylko builtin_safe; zewnętrzne providery są opcjonalne i nie są dołączane jako ciężkie zależności. bieżąca wersja Jaźni dopisuje jawny podgląd runtime, source_origin i self_state_runtime bez obowiązkowych modeli ciężkich.",
   "enable_optional_providers_by_default": false,
   "providers": [
     {
@@ -59,6 +59,7 @@
     ],
     "truth_boundary": "tryb diagnostyczny nie jest stałym procesem w tle i nie zastępuje normalnej odpowiedzi rozmownej"
   },
-  "active_runtime_version": "v15.1.0.3.89",
-  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu."
+  "active_runtime_version": "v15.1.0.3.90",
+  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

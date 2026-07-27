@@ -1,5 +1,5 @@
 {
-  "schema_version": "polish_lemma_overrides/v15.1.0.3.89",
+  "schema_version": "polish_lemma_overrides/v1",
   "description": "Ręczne, bezpieczne wyjątki lematów dla domeny Jaźni i polskiej rozmowy. To nie zastępuje morfologii, tylko stabilizuje najważniejsze pojęcia.",
   "overrides": {
     "jazin": "jaźń",
@@ -31,6 +31,7 @@
     "czestochowe": "częstochowa",
     "częstochowę": "częstochowa"
   },
-  "active_runtime_version": "v15.1.0.3.89",
-  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu."
+  "active_runtime_version": "v15.1.0.3.90",
+  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

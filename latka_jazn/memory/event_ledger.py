@@ -13,7 +13,7 @@ import re
 import uuid
 
 DEFAULT_TIMEZONE = "Europe/Warsaw"
-EVENT_LEDGER_SCHEMA_VERSION = "v15.1.0.3.89"
+EVENT_LEDGER_SCHEMA_VERSION = "event_ledger/v1"
 RUNTIME_EVENTS_DIRNAME = "runtime_events"
 RUNTIME_EVENTS_PREFIX = "runtime_events"
 RUNTIME_EVENT_ERRORS_PREFIX = "runtime_event_errors"
@@ -196,7 +196,7 @@ class RuntimeEventLedger:
     ) -> LedgerAppendResult | None:
         """Zapisuje finalną odpowiedź widoczną dla użytkownika w tej samej kopercie tury.
 
-        To jest brakujący ślad z v15.1.0.3.89: timestamp i afekt nie mogą istnieć
+        To jest brakujący ślad z poprzednia linia runtime: timestamp i afekt nie mogą istnieć
         tylko w runtime_text albo tylko w cognitive-frame. Finalna odpowiedź ma
         odwołanie do tego samego turn_id/trace_id.
         """

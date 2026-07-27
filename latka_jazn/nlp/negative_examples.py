@@ -1,5 +1,5 @@
 from __future__ import annotations
-SCHEMA_VERSION = "negative_examples/v15.1.0.3.89"
+SCHEMA_VERSION = "negative_examples/v1"
 NEGATIVE_EXAMPLES = {
     "correction_feedback": ["Co jeszcze jest źle w systemie Jaźni?", "Sprawdź gdzie i jak to zmienić."],
     "positive_continuation": ["Na pewno jeszcze coś znajdziesz?"],

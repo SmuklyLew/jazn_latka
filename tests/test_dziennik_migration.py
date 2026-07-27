@@ -17,7 +17,7 @@ NOW = datetime(2026, 7, 18, 10, 0, tzinfo=timezone.utc)
 def _journal(path: Path) -> Path:
     payload = {
         "meta": {
-            "schema_version": "v15.1.0.3.89",
+            "schema_version": "v15.1.0.3.90",
             "opis": "kanoniczny dziennik testowy",
         },
         "entries": [

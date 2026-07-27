@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-SCHEMA_VERSION = "template_origin/v15.1.0.3.89"
+SCHEMA_VERSION = "template_origin/v1"
 
 @dataclass(slots=True)
 class TemplateOrigin:

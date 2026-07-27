@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from latka_jazn.version_contract import normalize_component_schema
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,7 +11,7 @@ import json
 import os
 
 
-SESSION_CONTINUITY_SCHEMA_VERSION = "session_continuity/v15.1.0.3.89"
+SESSION_CONTINUITY_SCHEMA_VERSION = "session_continuity/v1"
 DEFAULT_TIMEZONE = "Europe/Warsaw"
 MAX_FULL_LINE_STATS_BYTES = 16 * 1024 * 1024
 TAIL_SAMPLE_BYTES = 64 * 1024
@@ -112,7 +113,12 @@ class SessionContinuityManager:
             return self.update_index(reason="initial_read_index", source="SessionContinuityManager")
         try:
             data = json.loads(self.index_path.read_text(encoding="utf-8"))
-            return data if isinstance(data, dict) else {}
+            if not isinstance(data, dict):
+                return {}
+            data["schema_version"] = normalize_component_schema(
+                "session_continuity", data.get("schema_version")
+            )
+            return data
         except Exception:
             return {}
 

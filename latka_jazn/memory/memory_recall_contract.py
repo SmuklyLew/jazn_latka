@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-SCHEMA_VERSION="memory_recall_content_contract/v15.1.0.3.89"
+SCHEMA_VERSION="memory_recall_content_contract/v1"
 
 @dataclass(slots=True)
 class MemoryRecallItem:

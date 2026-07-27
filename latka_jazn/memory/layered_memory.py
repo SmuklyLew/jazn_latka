@@ -1,4 +1,5 @@
 from __future__ import annotations
+from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -207,7 +208,7 @@ class LayeredMemory:
                 emotional_anchor=emotional_anchor or getattr(plan, "reason", "ważny epizod"),
                 source=source,
                 local_time_label=local_time_label,
-                tags=["conversation", "consolidated", "v15.1.0.3.89"],
+                tags=["conversation", "consolidated", PACKAGE_VERSION],
             )
             created["episode_id"] = ep.episode_id
         if getattr(plan, "should_write_reflection", False):
@@ -226,7 +227,7 @@ class LayeredMemory:
                 action="zaktualizować sposób odpowiedzi lub moduł, a następnie zapisać powód i granicę prawdy",
                 reason=getattr(plan, "reason", "korekta jako sygnał uczący"),
                 priority=88,
-                source="v15.1.0.3.89",
+                source=PACKAGE_VERSION,
             )
             created["procedure_id"] = proc.rule_id
         if getattr(plan, "should_promote_semantic_fact", False):
@@ -234,7 +235,7 @@ class LayeredMemory:
                 subject="System Jaźni",
                 predicate="zasada rozbudowy",
                 value="Ważne informacje najpierw trafiają do epizodu i refleksji, a dopiero potem mogą stać się faktem semantycznym lub procedurą.",
-                source="v15.1.0.3.89",
+                source=PACKAGE_VERSION,
                 confidence=0.78,
                 tags=["architecture", "memory", "truth_boundary"],
             )

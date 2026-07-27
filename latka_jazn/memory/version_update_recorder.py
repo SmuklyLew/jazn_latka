@@ -28,7 +28,7 @@ class VersionUpdateMemoryResult:
 class VersionUpdateRecorder:
     """Rejestruje aktualizację wersji jako doświadczenie Jaźni, nie tylko changelog.
 
-    Zasada v15.1.0.3.89:
+    Zasada poprzednia linia runtime:
     - `dziennik.json` jest obowiązkowym nośnikiem aktualizacji,
     - wpis aktualizacji ma równolegle tworzyć doświadczenie, wspomnienie, emocje i refleksję,
     - warstwy JSONL/SQLite dostają epizod, refleksję, fakt semantyczny i regułę proceduralną,

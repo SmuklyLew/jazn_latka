@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from latka_jazn.version import schema_version
+from latka_jazn.version import PACKAGE_VERSION, schema_version
 
 SCHEMA_VERSION = schema_version("capability_reality_checker")
 
@@ -66,7 +66,7 @@ class CapabilityRealityChecker:
     @staticmethod
     def _classifier_check() -> tuple[bool, str]:
         from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
-        r = DialogueIntentClassifier().classify("Sprawdź co działa w systemie Jaźni i co dodać do v15.1.0.3.89")
+        r = DialogueIntentClassifier().classify(f"Sprawdź co działa w systemie Jaźni i co dodać do {PACKAGE_VERSION}")
         return r.primary_intent == "self_architecture_audit_request", r.primary_intent
 
     @staticmethod

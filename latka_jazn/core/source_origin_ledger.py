@@ -7,7 +7,7 @@ from typing import Any
 from datetime import datetime, timezone
 import hashlib, json, time
 
-SCHEMA_VERSION = "source_origin_ledger/v15.1.0.3.89"
+SCHEMA_VERSION = "source_origin_ledger/v1"
 
 @dataclass(slots=True)
 class SourceOriginEntry:

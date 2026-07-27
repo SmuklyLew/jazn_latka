@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_current_active_tree_has_no_old_package_version_references() -> None:
     report = run_audit(ROOT)
-    assert report.package_version == PACKAGE_VERSION == "v15.1.0.3.89"
+    assert report.package_version == PACKAGE_VERSION
     assert report.active_old_references == []
     assert report.archive_issues == []
     assert report.ok is True

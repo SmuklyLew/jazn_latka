@@ -1,12 +1,12 @@
 {
-  "schema_version": "semantic_lexicon/v15.1.0.3.89",
+  "schema_version": "semantic_lexicon/v1",
   "description": "Rozszerzony słownik semantyczny bieżącej linii Jaźni: frazy, pola znaczeń, trasy rozmowy i wskazówki odpowiedzi. Nie zastępuje modelu językowego; wzmacnia routing, adaptery NLP i profile paczek przed odpowiedzią.",
   "phrase_rules": [
     {
       "key": "runtime_self_expression_topic_mismatch_update",
       "markers": [
-        "v15.1.0.3.89",
-        "15.1.0.3.89",
+        "bieżąca wersja Jaźni",
+        "bieżąca wersja Jaźni",
         "Runtime Self-Expression",
         "self-expression",
         "Topic-Mismatch Repair",
@@ -25,13 +25,13 @@
         "nlp_expansion",
         "implementation"
       ],
-      "description": "Użytkownik prosi o aktualny hotfix v15.1.0.3.89 obejmujący samoekspresję runtime, naprawę nietrafionego tematu, NLP i startup index projektu.",
+      "description": "Użytkownik prosi o aktualny hotfix bieżąca wersja Jaźni obejmujący samoekspresję runtime, naprawę nietrafionego tematu, NLP i startup index projektu.",
       "weight": 1.8
     },
     {
       "key": "current_line_update_request",
       "markers": [
-        "v15.1.0.3.89",
+        "bieżąca wersja Jaźni",
         "nowa wersja",
         "aktualizacja",
         "rozbuduj",
@@ -190,7 +190,7 @@
     {
       "key": "current_line_nlp_adapter",
       "markers": [
-        "v15.1.0.3.89",
+        "bieżąca wersja Jaźni",
         "nlp adapter",
         "adapter nlp",
         "lematyzacja polskiego",
@@ -200,9 +200,9 @@
         "morfeusz",
         "krok po kroku",
         "bezpieczna wersja",
-        "v15.1.0.3.89",
+        "bieżąca wersja Jaźni",
         "current_line",
-        "bezpieczna aktualizacja v15.1.0.3.89"
+        "bezpieczna aktualizacja bieżąca wersja Jaźni"
       ],
       "weight": 1.2,
       "description": "Użytkownik rozwija Jaźń warstwowo: najpierw bezpieczny kontrakt NLP, potem opcjonalne providery kontekstowe.",
@@ -426,7 +426,7 @@
         "ordinary_day",
         "conversation_memory_candidate"
       ],
-      "description": "Codzienne obserwacje traktować jako żywy materiał rozmowy i ewentualny lekki checkpoint. Samodzielne markery dzień/dzien usunięte w hotfixie v15.1.0.3.89; powitanie nie może uruchamiać trasy codzienności.",
+      "description": "Codzienne obserwacje traktować jako żywy materiał rozmowy i ewentualny lekki checkpoint. Samodzielne markery dzień/dzien usunięte w hotfixie bieżąca wersja Jaźni; powitanie nie może uruchamiać trasy codzienności.",
       "weight": 1.0
     },
     "polish_nlp_adapters": {
@@ -506,6 +506,7 @@
       "Zachowaj aktualny temat i wymień konkretne moduły oraz testy."
     ]
   },
-  "active_runtime_version": "v15.1.0.3.89",
-  "hotfix_note": "Bieżące wydanie używa semantycznych nazw tras i zasobów oraz utrzymuje TopicMismatchGuard, samoekspresję runtime i indeks projektu."
+  "active_runtime_version": "v15.1.0.3.90",
+  "hotfix_note": "Bieżące wydanie używa semantycznych nazw tras i zasobów oraz utrzymuje TopicMismatchGuard, samoekspresję runtime i indeks projektu.",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

@@ -133,12 +133,12 @@ class SelfArchitectureAuditor:
         ])
         backlog = [
             "Bieżące wydanie: marker pamięci jest wykrywany z filesystemu i manifestu, bez fikcyjnego fallbacku starszej linii.",
-            "v15.1.0.3.89: routing szerokiego audytu wygrywa z pojedynczym słowem 'działa'.",
-            "v15.1.0.3.89: source-safe używa jednego planu i wyklucza prywatne źródła wygenerowane z pamięci.",
-            "v15.1.0.3.89: status runtime write rozdziela inicjalizację, zdolność, zgodę i zaobserwowane zapisy.",
-            "v15.1.0.3.89: trusted time może być zachowany przez monotoniczny TTL, ale nie jest promowany z local fallback.",
-            "v15.1.0.3.89: adaptery zwracają niewykonane tool_calls wymagające autoryzacji runtime.",
-            "v15.1.0.3.89: audyt architektury jest read-only i nie zapisuje refleksji.",
+            "poprzednia linia runtime: routing szerokiego audytu wygrywa z pojedynczym słowem 'działa'.",
+            "poprzednia linia runtime: source-safe używa jednego planu i wyklucza prywatne źródła wygenerowane z pamięci.",
+            "poprzednia linia runtime: status runtime write rozdziela inicjalizację, zdolność, zgodę i zaobserwowane zapisy.",
+            "poprzednia linia runtime: trusted time może być zachowany przez monotoniczny TTL, ale nie jest promowany z local fallback.",
+            "poprzednia linia runtime: adaptery zwracają niewykonane tool_calls wymagające autoryzacji runtime.",
+            "poprzednia linia runtime: audyt architektury jest read-only i nie zapisuje refleksji.",
         ]
         acceptance = [
             "Dokładne pytanie użytkownika o możliwości, kod i luki trafia do self_architecture_audit_request.",

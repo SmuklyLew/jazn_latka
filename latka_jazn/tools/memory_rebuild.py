@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Sequence, cast
 import argparse
 import json
 
@@ -81,7 +81,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "build-experience-candidates": payload = coordinator.build_experience_candidates(args.source, args.limit)
         elif args.command == "review-experiences":
             coordinator.init()
-            with ExperienceStore(coordinator.paths.experience) as experience:
+            with ExperienceStore(coordinator.paths.experience) as raw_experience:
+                experience = cast(ExperienceStore, raw_experience)
                 rows = experience.list_candidates(args.status, args.limit)
                 payload = {"ok": True, "status": args.status, "candidate_count": len(rows), "candidates": rows,
                            "automatic_l2": False, "automatic_l3": False}

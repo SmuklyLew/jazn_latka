@@ -355,7 +355,7 @@ class FreeDialogueSynthesizer:
         )
 
     def _memory_allowed_for_open_question(self, user_text: str) -> bool:
-        """v15.1.0.3.89: pamięć nie może być domyślnym źródłem dla każdego pytania.
+        """poprzednia linia runtime: pamięć nie może być domyślnym źródłem dla każdego pytania.
 
         Wcześniejsze wersje potrafiły przy neutralnym pytaniu typu "Jakie plany masz?"
         pobrać z pamięci dawny kontekst pracy użytkownika i wstrzyknąć go do odpowiedzi.

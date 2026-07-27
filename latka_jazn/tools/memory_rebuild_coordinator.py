@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Sequence, cast
 
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
@@ -90,15 +90,20 @@ class MemoryRebuildCoordinator:
 
     def init(self) -> dict[str, Any]:
         self.paths.sqlite_dir.mkdir(parents=True, exist_ok=True)
-        with ChatExportArchiveStore(self.paths.archive_chats) as store:
+        with ChatExportArchiveStore(self.paths.archive_chats) as raw_store:
+            store = cast(ChatExportArchiveStore, raw_store)
             archive = store.validate(full=False)
-        with JournalStore(self.paths.journal) as store:
+        with JournalStore(self.paths.journal) as raw_store:
+            store = cast(JournalStore, raw_store)
             journal = store.validate(full=False)
-        with MemoryTierStore(self.paths.memory_jazn) as store:
+        with MemoryTierStore(self.paths.memory_jazn) as raw_store:
+            store = cast(MemoryTierStore, raw_store)
             memory = store.validate(full=False)
-        with ExperienceStore(self.paths.experience) as store:
+        with ExperienceStore(self.paths.experience) as raw_store:
+            store = cast(ExperienceStore, raw_store)
             experience = store.validate(full=False)
-        with CatalogStore(self.paths.import_catalog) as store:
+        with CatalogStore(self.paths.import_catalog) as raw_store:
+            store = cast(CatalogStore, raw_store)
             catalog = store.validate(full=False)
         checks = {
             "archive_chats": archive, "journal": journal, "memory_jazn": memory,
@@ -113,7 +118,8 @@ class MemoryRebuildCoordinator:
     def inspect(self, sources: Sequence[str | Path]) -> dict[str, Any]:
         self.init()
         reports = []
-        with CatalogStore(self.paths.import_catalog) as catalog:
+        with CatalogStore(self.paths.import_catalog) as raw_catalog:
+            catalog = cast(CatalogStore, raw_catalog)
             for path in _unique_sources_in_user_order(sources):
                 detected = detect_source(path)
                 if detected["kind"] == "chat_export":
@@ -157,7 +163,8 @@ class MemoryRebuildCoordinator:
         results = []
         importer = ChatExportImporter()
         ordered = _unique_sources_in_user_order(sources)
-        with CatalogStore(self.paths.import_catalog) as catalog:
+        with CatalogStore(self.paths.import_catalog) as raw_catalog:
+            catalog = cast(CatalogStore, raw_catalog)
             for source in ordered:
                 operation: str | None = None
                 try:
@@ -212,7 +219,8 @@ class MemoryRebuildCoordinator:
     def import_journal(self, source: str | Path, dry_run: bool = False) -> dict[str, Any]:
         self.init()
         reader = JournalReader(source)
-        with CatalogStore(self.paths.import_catalog) as catalog:
+        with CatalogStore(self.paths.import_catalog) as raw_catalog:
+            catalog = cast(CatalogStore, raw_catalog)
             source_id = catalog.source(
                 reader.path, reader.sha256, "journal", reader.path.stat().st_size, reader.inspect(),
             )
@@ -222,7 +230,8 @@ class MemoryRebuildCoordinator:
                 DATABASE_FILENAMES["journal"],
             )
             try:
-                with JournalStore(self.paths.journal) as journal:
+                with JournalStore(self.paths.journal) as raw_journal:
+                    journal = cast(JournalStore, raw_journal)
                     result = journal.import_reader(reader, dry_run=dry_run)
                     result["validation"] = journal.validate(full=False)
                 result["operation_id"] = operation
@@ -235,17 +244,20 @@ class MemoryRebuildCoordinator:
     def reclassify_journal(self, dry_run: bool = False, limit: int = 100) -> dict[str, Any]:
         """Refresh derived journal truth labels while preserving raw source and revisions."""
         self.init()
-        with CatalogStore(self.paths.import_catalog) as catalog:
+        with CatalogStore(self.paths.import_catalog) as raw_catalog:
+            catalog = cast(CatalogStore, raw_catalog)
             operation = catalog.begin(
                 "reclassify_journal_dry_run" if dry_run else "reclassify_journal",
                 None,
                 DATABASE_FILENAMES["journal"],
             )
             try:
-                with JournalStore(self.paths.journal) as journal:
+                with JournalStore(self.paths.journal) as raw_journal:
+                    journal = cast(JournalStore, raw_journal)
                     result = journal.reclassify(dry_run=dry_run, sample_limit=limit)
                     result["validation"] = journal.validate(full=False)
-                with ExperienceStore(self.paths.experience) as experience:
+                with ExperienceStore(self.paths.experience) as raw_experience:
+                    experience = cast(ExperienceStore, raw_experience)
                     candidate_count = experience.counts()["candidates"]
                 result["existing_candidate_count"] = candidate_count
                 result["candidate_rebuild_recommended"] = bool(candidate_count and result["changed"])
@@ -261,11 +273,14 @@ class MemoryRebuildCoordinator:
         if source not in {"journal", "chats", "all"}:
             raise ValueError("source must be journal, chats, or all")
         reports = []
-        with ExperienceStore(self.paths.experience) as experience, CatalogStore(self.paths.import_catalog) as catalog:
+        with ExperienceStore(self.paths.experience) as raw_experience, CatalogStore(self.paths.import_catalog) as raw_catalog:
+            experience = cast(ExperienceStore, raw_experience)
+            catalog = cast(CatalogStore, raw_catalog)
             operation = catalog.begin("build_experience_candidates", None, DATABASE_FILENAMES["experience"])
             try:
                 if source in {"journal", "all"}:
-                    with JournalStore(self.paths.journal) as journal:
+                    with JournalStore(self.paths.journal) as raw_journal:
+                        journal = cast(JournalStore, raw_journal)
                         reports.append(experience.from_journal(journal, limit))
                 if source in {"chats", "all"}:
                     reports.append(experience.from_chats(self.paths.archive_chats, limit))
@@ -298,7 +313,9 @@ class MemoryRebuildCoordinator:
         reason: str,
     ) -> dict[str, Any]:
         self.init()
-        with ExperienceStore(self.paths.experience) as experience, CatalogStore(self.paths.import_catalog) as catalog:
+        with ExperienceStore(self.paths.experience) as raw_experience, CatalogStore(self.paths.import_catalog) as raw_catalog:
+            experience = cast(ExperienceStore, raw_experience)
+            catalog = cast(CatalogStore, raw_catalog)
             operation = catalog.begin("approve_experience", None, DATABASE_FILENAMES["experience"])
             try:
                 result = experience.approve(candidate_id, confirm_candidate_id, approved_by, reason)
@@ -311,10 +328,12 @@ class MemoryRebuildCoordinator:
     def audit_classifiers(self, limit: int = 50) -> dict[str, Any]:
         """Audit derived classifications without altering source or memory tiers."""
         self.init()
-        with JournalStore(self.paths.journal) as journal:
+        with JournalStore(self.paths.journal) as raw_journal:
+            journal = cast(JournalStore, raw_journal)
             journal_report = journal.classification_audit(limit)
 
-        with ChatExportArchiveStore(self.paths.archive_chats) as archive:
+        with ChatExportArchiveStore(self.paths.archive_chats) as raw_archive:
+            archive = cast(ChatExportArchiveStore, raw_archive)
             has_segments = archive.con.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='conversation_segments'"
             ).fetchone() is not None
@@ -369,15 +388,20 @@ class MemoryRebuildCoordinator:
 
     def verify(self, full: bool = True) -> dict[str, Any]:
         self.init()
-        with ChatExportArchiveStore(self.paths.archive_chats) as store:
+        with ChatExportArchiveStore(self.paths.archive_chats) as raw_store:
+            store = cast(ChatExportArchiveStore, raw_store)
             archive = store.validate(full=full)
-        with JournalStore(self.paths.journal) as store:
+        with JournalStore(self.paths.journal) as raw_store:
+            store = cast(JournalStore, raw_store)
             journal = {**store.validate(full), "counts": store.counts()}
-        with MemoryTierStore(self.paths.memory_jazn) as store:
+        with MemoryTierStore(self.paths.memory_jazn) as raw_store:
+            store = cast(MemoryTierStore, raw_store)
             memory = {**store.validate(full=full), "stats": store.stats()}
-        with ExperienceStore(self.paths.experience) as store:
+        with ExperienceStore(self.paths.experience) as raw_store:
+            store = cast(ExperienceStore, raw_store)
             experience = {**store.validate(full), "counts": store.counts()}
-        with CatalogStore(self.paths.import_catalog) as store:
+        with CatalogStore(self.paths.import_catalog) as raw_store:
+            store = cast(CatalogStore, raw_store)
             catalog = {**store.validate(full), "counts": store.status()}
         results = {
             "archive_chats": archive, "journal": journal, "memory_jazn": memory,
@@ -393,15 +417,20 @@ class MemoryRebuildCoordinator:
 
     def status(self) -> dict[str, Any]:
         self.init()
-        with ChatExportArchiveStore(self.paths.archive_chats) as archive:
+        with ChatExportArchiveStore(self.paths.archive_chats) as raw_archive:
+            archive = cast(ChatExportArchiveStore, raw_archive)
             archive_counts = archive.counts()
-        with JournalStore(self.paths.journal) as journal:
+        with JournalStore(self.paths.journal) as raw_journal:
+            journal = cast(JournalStore, raw_journal)
             journal_counts = journal.counts()
-        with MemoryTierStore(self.paths.memory_jazn) as memory:
+        with MemoryTierStore(self.paths.memory_jazn) as raw_memory:
+            memory = cast(MemoryTierStore, raw_memory)
             memory_counts = memory.stats()
-        with ExperienceStore(self.paths.experience) as experience:
+        with ExperienceStore(self.paths.experience) as raw_experience:
+            experience = cast(ExperienceStore, raw_experience)
             experience_counts = experience.counts()
-        with CatalogStore(self.paths.import_catalog) as catalog:
+        with CatalogStore(self.paths.import_catalog) as raw_catalog:
+            catalog = cast(CatalogStore, raw_catalog)
             catalog_counts = catalog.status()
         return {
             "ok": True,
@@ -420,17 +449,21 @@ class MemoryRebuildCoordinator:
 
     def search(self, query: str, limit: int = 20) -> dict[str, Any]:
         self.init()
-        with ChatExportArchiveStore(self.paths.archive_chats) as archive:
+        with ChatExportArchiveStore(self.paths.archive_chats) as raw_archive:
+            archive = cast(ChatExportArchiveStore, raw_archive)
             chats = []
             for fts_query in fts_queries(query):
                 chats = archive.search(fts_query, limit=limit)
                 if chats:
                     break
-        with JournalStore(self.paths.journal) as journal:
+        with JournalStore(self.paths.journal) as raw_journal:
+            journal = cast(JournalStore, raw_journal)
             journals = journal.search(query, limit)
-        with ExperienceStore(self.paths.experience) as experience:
+        with ExperienceStore(self.paths.experience) as raw_experience:
+            experience = cast(ExperienceStore, raw_experience)
             experiences = experience.search(query, limit)
-        with MemoryTierStore(self.paths.memory_jazn) as memory:
+        with MemoryTierStore(self.paths.memory_jazn) as raw_memory:
+            memory = cast(MemoryTierStore, raw_memory)
             rows = memory.con.execute(
                 "SELECT memory_id,tier,kind,content,domain,truth_status,confidence,importance "
                 "FROM memory_records WHERE active=1 AND content LIKE ? ORDER BY importance DESC LIMIT ?",

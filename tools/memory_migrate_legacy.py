@@ -37,7 +37,7 @@ def database_path(value: str) -> Path:
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
-        description="Bezpieczna migracja starego fan-out pamięci i dziennik.json do kolejki review v15.1.0.3.89."
+        description="Bezpieczna migracja starego fan-out pamięci i dziennik.json do kolejki review poprzednia linia runtime."
     )
     root.add_argument("--json", action="store_true")
     add_progress_arguments(root)

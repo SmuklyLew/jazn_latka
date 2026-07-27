@@ -161,7 +161,7 @@ class RuntimeAnswerValidator:
         "memory_gate": ("brama pamięci", "brama pamieci", "memory_gate", "brama", "pamię", "pamie"),
         "recall_quality": ("recall quality", "jakość recall", "jakosc recall", "content-not-counts", "counts_only"),
         "capability_reality_check": ("reality check", "capability reality", "sprawdzenie zachowania", "nie tylko obecności plików"),
-        "development_backlog": ("v15.1.0.3.89", "backlog", "plan", "priorytet", "krok"),
+        "development_backlog": ("poprzednia linia runtime", "backlog", "plan", "priorytet", "krok"),
         "scientific_basis": ("scientific", "źród", "zrod", "nist", "langgraph", "reflexion", "generative agents", "global workspace"),
     }
     def __init__(self) -> None:

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import hashlib, json, time
 
-SCHEMA_VERSION = "requirements_ledger/v15.1.0.3.89"
+SCHEMA_VERSION = "requirements_ledger/v1"
 
 
 @dataclass(slots=True)

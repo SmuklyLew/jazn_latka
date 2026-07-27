@@ -9,11 +9,11 @@ import re
 class MemoryRecallItem:
     """Treściowy trop pamięci przekazywany do warstwy odpowiedzi.
 
-    v15.1.0.3.89 naprawia błąd, w którym runtime znał listę epizodów
+    poprzednia linia runtime naprawia błąd, w którym runtime znał listę epizodów
     i legacy_messages, ale widoczna odpowiedź dostawała głównie liczniki.
     Ten obiekt jest mały, jawny i bezpieczny do włączenia w cognitive-frame
     albo ConversationDecision: zawiera treść, źródło, czas, typ, pewność
-    i prostą ocenę trafności/znaczenia. v15.1.0.3.89 dodaje też tropy z plików kanonicznych planera pamięci.
+    i prostą ocenę trafności/znaczenia. poprzednia linia runtime dodaje też tropy z plików kanonicznych planera pamięci.
     """
 
     item_type: str
@@ -193,7 +193,7 @@ class MemoryRecallPresenter:
         counts = (memory_context or {}).get("counts") if isinstance(memory_context, dict) else {}
         items = self.build_items(memory_context, user_text=user_text, limit=limit)
         return {
-            "schema_version": "memory_recall_content/v15.1.0.3.89",
+            "schema_version": "memory_recall_content/v1",
             "query_terms": (memory_context or {}).get("query_terms") if isinstance(memory_context, dict) else [],
             "memory_search_plan": (memory_context or {}).get("memory_search_plan") if isinstance(memory_context, dict) else None,
             "counts": counts or {},

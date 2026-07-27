@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 import hashlib
 
-SCHEMA_VERSION = "source_text_preservation_contract/v15.1.0.3.89"
+SCHEMA_VERSION = "source_text_preservation_contract/v1"
 
 @dataclass(slots=True)
 class SourceTextPreservationContract:

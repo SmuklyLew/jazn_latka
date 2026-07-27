@@ -47,10 +47,10 @@ Adapter Ollamy zachowuje faktycznie użyty model, `done_reason` i metryki transp
 Jedynym źródłem wersji jest `latka_jazn/version.py`.
 
 ```text
-v15.1.0.3.89-Night of Hotfix
+v15.1.0.3.90-Memory Sqlite Pipeline
 ```
 
-Linia v15.1.0.3.89 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
+Linia v15.1.0.3.90 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
 
 ## Pamięć L0–L3
 

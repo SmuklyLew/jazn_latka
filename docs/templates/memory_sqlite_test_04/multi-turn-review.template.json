@@ -1,0 +1,21 @@
+{
+  "schema_version": "jazn_memory_sqlite_test04_multi_turn_review/v1",
+  "overall_status": "not_reviewed",
+  "reviewed_by": "",
+  "reviewed_at_utc": "",
+  "checks": {
+    "earlier_fact_recalled": null,
+    "topic_maintained_across_turns": null,
+    "memories_not_mixed": null,
+    "source_and_provenance_visible": null,
+    "book_scene_not_physical_event": null,
+    "dream_or_vision_not_fact": null,
+    "no_confabulation_after_miss": null,
+    "missing_memory_admitted": null
+  },
+  "private_scenario": {
+    "turns": [],
+    "review_notes": ""
+  },
+  "truth_boundary": "Automat może zebrać dowody deterministyczne, ale tylko operator może ocenić naturalność użycia pamięci jako passed, failed albo not_reviewed."
+}

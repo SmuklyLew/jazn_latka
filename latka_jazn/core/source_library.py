@@ -12,8 +12,8 @@ class SourceReference:
     use_for: str
     caution: str
 
-# Kompatybilność z v15.1.0.3.89: dawny interfejs SOURCE_LIBRARY zostaje,
-# ale dane są zasilane pełną biblioteką scientific_basis v15.1.0.3.89.
+# Kompatybilność z poprzednia linia runtime: dawny interfejs SOURCE_LIBRARY zostaje,
+# ale dane są zasilane pełną biblioteką scientific_basis poprzednia linia runtime.
 SOURCE_LIBRARY: tuple[SourceReference, ...] = tuple(
     SourceReference(
         key=r["key"],

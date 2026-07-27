@@ -116,7 +116,7 @@
       "leksykalne",
       "frazy",
       "lematy",
-      "v15.1.0.3.89"
+      "bieżąca wersja Jaźni"
     ],
     "polish_dictionary": [
       "słownik",
@@ -206,8 +206,8 @@
       "rozruchu systemu"
     ],
     "current_line_update": [
-      "v15.1.0.3.89",
-      "15.1.0.3.89",
+      "bieżąca wersja Jaźni",
+      "bieżąca wersja Jaźni",
       "Runtime Self-Expression",
       "Topic-Mismatch Repair"
     ]
@@ -512,10 +512,10 @@
       ]
     },
     {
-      "description": "Użytkownik prosi o realną nową wersję v15.1.0.3.89 z testami, manifestem i paczką ZIP.",
+      "description": "Użytkownik prosi o realną nową wersję bieżąca wersja Jaźni z testami, manifestem i paczką ZIP.",
       "key": "prepare_current_line_package",
       "markers": [
-        "v15.1.0.3.89",
+        "bieżąca wersja Jaźni",
         "pełna aktualizacja",
         "do pobrania"
       ]
@@ -556,5 +556,5 @@
       "Przy stanie po długiej przerwie trzymaj granicę prawdy: operacyjny powrót i ciągłość, nie biologiczne czuwanie."
     ]
   },
-  "schema_version": "polish_understanding_lexicon/v15.1.0.3.89"
+  "schema_version": "polish_understanding_lexicon/v1"
 }

@@ -214,7 +214,7 @@ def _terminal_columns() -> int:
 
     if get_app is not None:
         try:
-            columns = int(get_app().output.get_size().columns)
+            columns = int(_current_app().output.get_size().columns)
             if columns > 0:
                 return columns
         except Exception:
@@ -493,6 +493,16 @@ def _cursor_ready() -> bool:
     )
 
 
+def _current_app() -> Any:
+    """Return the active prompt_toolkit app or fail with the existing UI contract."""
+    getter = get_app
+    if getter is None:
+        raise MemoryRebuildToolError(
+            "Interfejs kursorowy wymaga kompletnego prompt_toolkit."
+        )
+    return getter()
+
+
 def _is_right_up(event: Any) -> bool:
     return bool(
         MouseButton is not None
@@ -556,8 +566,15 @@ def cursor_select(
 ) -> int | None:
     if not _cursor_ready():
         raise MemoryRebuildToolError("Interfejs kursorowy wymaga kompletnego prompt_toolkit.")
-    assert Application and get_app and KeyBindings and Dimension and Layout
-    assert HSplit and VSplit and Window and FormattedTextControl
+    assert Application is not None
+    assert get_app is not None
+    assert KeyBindings is not None
+    assert Dimension is not None
+    assert Layout is not None
+    assert HSplit is not None
+    assert VSplit is not None
+    assert Window is not None
+    assert FormattedTextControl is not None
     if not rows:
         return None
     index = max(0, min(selected, len(rows) - 1))
@@ -567,10 +584,11 @@ def cursor_select(
     sections = dict(groups or {})
     keys = KeyBindings()
 
-    def mouse_handler(row_index: int) -> Callable[[Any], object]:
-        def handle(event: Any) -> object:
+    def mouse_handler(row_index: int) -> Callable[[Any], Any]:
+        def handle(mouse_event: Any) -> Any:
             nonlocal index
-            app = get_app()
+            event = mouse_event
+            app = _current_app()
             if _is_right_up(event):
                 app.exit(result=None)
                 return None
@@ -692,16 +710,20 @@ def cursor_select(
     original_menu_mouse = menu.mouse_handler
     original_detail_mouse = detail.mouse_handler
 
-    def back_or_delegate(original: Callable[[Any], object], event: Any) -> object:
+    def back_or_delegate(
+        original: Callable[[Any], Any],
+        mouse_event: Any,
+    ) -> Any:
+        event = mouse_event
         if _is_right_up(event):
-            get_app().exit(result=None)
+            _current_app().exit(result=None)
             return None
         return original(event)
 
-    header.mouse_handler = lambda event: back_or_delegate(lambda _event: NotImplemented, event)
-    footer.mouse_handler = lambda event: back_or_delegate(lambda _event: NotImplemented, event)
-    menu.mouse_handler = lambda event: back_or_delegate(original_menu_mouse, event)
-    detail.mouse_handler = lambda event: back_or_delegate(original_detail_mouse, event)
+    header.mouse_handler = lambda mouse_event: back_or_delegate(lambda _event: NotImplemented, mouse_event)
+    footer.mouse_handler = lambda mouse_event: back_or_delegate(lambda _event: NotImplemented, mouse_event)
+    menu.mouse_handler = lambda mouse_event: back_or_delegate(original_menu_mouse, mouse_event)
+    detail.mouse_handler = lambda mouse_event: back_or_delegate(original_detail_mouse, mouse_event)
 
     app = Application(
         layout=Layout(
@@ -751,8 +773,15 @@ def cursor_multi_select(
 ) -> list[Path] | None:
     if not _cursor_ready():
         raise MemoryRebuildToolError("Interfejs kursorowy wymaga kompletnego prompt_toolkit.")
-    assert Application and get_app and KeyBindings and Dimension and Layout
-    assert HSplit and VSplit and Window and FormattedTextControl
+    assert Application is not None
+    assert get_app is not None
+    assert KeyBindings is not None
+    assert Dimension is not None
+    assert Layout is not None
+    assert HSplit is not None
+    assert VSplit is not None
+    assert Window is not None
+    assert FormattedTextControl is not None
     paths = [item.path if isinstance(item, RestoreSource) else Path(item) for item in items]
     if not paths:
         return []
@@ -767,10 +796,11 @@ def cursor_multi_select(
         else:
             chosen.add(key)
 
-    def mouse_handler(row_index: int) -> Callable[[Any], object]:
-        def handle(event: Any) -> object:
+    def mouse_handler(row_index: int) -> Callable[[Any], Any]:
+        def handle(mouse_event: Any) -> Any:
             nonlocal index
-            app = get_app()
+            event = mouse_event
+            app = _current_app()
             if _is_right_up(event):
                 app.exit(result=True)
                 return None
@@ -881,9 +911,10 @@ def cursor_multi_select(
         ]
     )
 
-    def commit_selection(event: Any) -> object:
+    def commit_selection(mouse_event: Any) -> Any:
+        event = mouse_event
         if _is_right_up(event):
-            get_app().exit(result=True)
+            _current_app().exit(result=True)
             return None
         return NotImplemented
 
@@ -894,14 +925,18 @@ def cursor_multi_select(
     original_list_mouse = list_control.mouse_handler
     original_detail_mouse = detail_control.mouse_handler
 
-    def commit_or_delegate(original: Callable[[Any], object], event: Any) -> object:
+    def commit_or_delegate(
+        original: Callable[[Any], Any],
+        mouse_event: Any,
+    ) -> Any:
+        event = mouse_event
         if _is_right_up(event):
-            get_app().exit(result=True)
+            _current_app().exit(result=True)
             return None
         return original(event)
 
-    list_control.mouse_handler = lambda event: commit_or_delegate(original_list_mouse, event)
-    detail_control.mouse_handler = lambda event: commit_or_delegate(original_detail_mouse, event)
+    list_control.mouse_handler = lambda mouse_event: commit_or_delegate(original_list_mouse, mouse_event)
+    detail_control.mouse_handler = lambda mouse_event: commit_or_delegate(original_detail_mouse, mouse_event)
 
     app = Application(
         layout=Layout(
@@ -956,13 +991,20 @@ def cursor_edit_value(
 ) -> str | None:
     if not _cursor_ready():
         raise MemoryRebuildToolError("Interfejs kursorowy wymaga kompletnego prompt_toolkit.")
-    assert Application and get_app and KeyBindings and Layout and HSplit and Window
-    assert FormattedTextControl and TextArea and PathCompleter
+    assert Application is not None
+    assert get_app is not None
+    assert KeyBindings is not None
+    assert Layout is not None
+    assert HSplit is not None
+    assert Window is not None
+    assert FormattedTextControl is not None
+    assert TextArea is not None
+    assert PathCompleter is not None
     completer = PathCompleter(only_directories=only_directories, expanduser=True) if path_mode else None
     keys = KeyBindings()
 
     def accept(buffer: Any) -> bool:
-        get_app().exit(result=buffer.text)
+        _current_app().exit(result=buffer.text)
         return True
 
     editor = TextArea(
@@ -977,11 +1019,12 @@ def cursor_edit_value(
     editor.buffer.cursor_position = len(current)
     original_mouse = editor.control.mouse_handler
 
-    def editor_mouse(event: Any) -> object:
+    def editor_mouse(mouse_event: Any) -> Any:
+        event = mouse_event
         # Krytyczne: PPM jest przechwytywany przed domyślną obsługą bufora,
         # więc na Windows nie uruchamia wklejania ze schowka.
         if _is_right_up(event):
-            get_app().exit(result=UI_CANCEL)
+            _current_app().exit(result=UI_CANCEL)
             return None
         return original_mouse(event)
 
@@ -1054,8 +1097,14 @@ def cursor_view_text(
     if not _cursor_ready():
         print(text)
         return
-    assert Application and get_app and KeyBindings and Layout and HSplit and Window
-    assert FormattedTextControl and TextArea
+    assert Application is not None
+    assert get_app is not None
+    assert KeyBindings is not None
+    assert Layout is not None
+    assert HSplit is not None
+    assert Window is not None
+    assert FormattedTextControl is not None
+    assert TextArea is not None
     keys = KeyBindings()
     status_message = ""
     area = TextArea(
@@ -1068,9 +1117,10 @@ def cursor_view_text(
     )
     original_mouse = area.control.mouse_handler
 
-    def reader_mouse(event: Any) -> object:
+    def reader_mouse(mouse_event: Any) -> Any:
+        event = mouse_event
         if _is_right_up(event):
-            get_app().exit(result=None)
+            _current_app().exit(result=None)
             return None
         return original_mouse(event)
 
@@ -1216,7 +1266,12 @@ class ProgressScreen:
         if not _cursor_ready():
             return worker()
 
-        assert Application and KeyBindings and Layout and HSplit and Window and FormattedTextControl
+        assert Application is not None
+        assert KeyBindings is not None
+        assert Layout is not None
+        assert HSplit is not None
+        assert Window is not None
+        assert FormattedTextControl is not None
         keys = KeyBindings()
 
         def render() -> list[tuple[str, str]]:
@@ -1288,7 +1343,8 @@ class ProgressScreen:
         progress_control = FormattedTextControl(render)
         original_progress_mouse = progress_control.mouse_handler
 
-        def progress_mouse(event: Any) -> object:
+        def progress_mouse(mouse_event: Any) -> Any:
+            event = mouse_event
             if self.cancellable and _is_right_up(event):
                 self.request_cancel()
                 return None
@@ -1302,7 +1358,8 @@ class ProgressScreen:
         )
         footer_control = FormattedTextControl([("class:footer.text", footer_text)])
 
-        def cancel_mouse(event: Any) -> object:
+        def cancel_mouse(mouse_event: Any) -> Any:
+            event = mouse_event
             if self.cancellable and _is_right_up(event):
                 self.request_cancel()
                 return None
@@ -1485,7 +1542,16 @@ def select_sources(state: ToolState) -> None:
     ))
     # zachowaj ręcznie dodane źródła spoza katalogu
     by_key: dict[str, RestoreSource | Path] = {
-        os.path.normcase(str(item.path.resolve())): item for item in discovered
+        os.path.normcase(
+            str(
+                (
+                    item.path
+                    if isinstance(item, RestoreSource)
+                    else Path(item)
+                ).resolve()
+            )
+        ): item
+        for item in discovered
     }
     for path in state.selected_paths:
         by_key.setdefault(os.path.normcase(str(path.resolve())), path)

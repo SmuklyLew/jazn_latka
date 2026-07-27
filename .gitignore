@@ -44,6 +44,7 @@ __pycache__/
 
 # Keep source, tests and docs in Git; keep ad-hoc patch bundles outside the repo.
 /*.patch
+*.ps1
 /*.rej
 /*.orig
 /*.BAD.patch
@@ -105,3 +106,6 @@ branches/
 # Python packaging metadata
 *.egg-info/
 PACKAGE_INTEGRITY_MANIFEST.json
+
+# Preserve exact historical PowerShell artifacts in versioned archives.
+!/.archives/**/*.ps1

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from importlib import import_module
 from pathlib import Path
+from typing import Protocol, cast
 import subprocess
 import sys
 import tempfile
@@ -13,11 +15,48 @@ UI = ROOT / "tools" / "memory_import_ui.py"
 MENU_MARKER = "Importer pamięci rozmów ChatGPT"
 
 
+class _PtyProcess(Protocol):
+    def read(self, size: int) -> str: ...
+    def isalive(self) -> bool: ...
+    def close(self, *, force: bool = False) -> None: ...
+    def write(self, data: str) -> object: ...
+    def wait(self) -> int: ...
+
+
+class _PtyProcessFactory(Protocol):
+    def spawn(
+        self,
+        command: str,
+        *,
+        cwd: str,
+        dimensions: tuple[int, int],
+    ) -> _PtyProcess: ...
+
+
+def _load_pty_process() -> _PtyProcessFactory:
+    """Load optional pywinpty without making it a base runtime dependency."""
+    try:
+        module = import_module("winpty")
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "Windows ConPTY smoke wymaga opcjonalnego pakietu pywinpty. "
+            f"Zainstaluj go w tym interpreterze: "
+            f'"{sys.executable}" -m pip install pywinpty'
+        ) from exc
+
+    pty_process = getattr(module, "PtyProcess", None)
+    if pty_process is None or not callable(getattr(pty_process, "spawn", None)):
+        raise RuntimeError(
+            "Moduł winpty nie udostępnia oczekiwanego kontraktu PtyProcess.spawn."
+        )
+    return cast(_PtyProcessFactory, pty_process)
+
+
 def _run_case(*, keys: str, expected_exit: int, expected_text: str, name: str) -> dict[str, object]:
     if sys.platform != "win32":
         raise RuntimeError("Windows ConPTY smoke must run on Windows")
 
-    from winpty import PtyProcess
+    pty_process = _load_pty_process()
 
     with tempfile.TemporaryDirectory(prefix="jazn-cursor-conpty-") as temporary:
         database = Path(temporary) / "archive.sqlite3"
@@ -29,7 +68,7 @@ def _run_case(*, keys: str, expected_exit: int, expected_text: str, name: str) -
             "--database",
             str(database),
         ])
-        process = PtyProcess.spawn(
+        process = pty_process.spawn(
             command,
             cwd=str(ROOT),
             dimensions=(40, 120),

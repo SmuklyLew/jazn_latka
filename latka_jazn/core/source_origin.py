@@ -26,7 +26,7 @@ class SourceOriginPacket:
 
 
 class SourceOriginAnalyzer:
-    schema_version = "source_origin/v15.1.0.3.89"
+    schema_version = "source_origin/v1"
 
     def analyse(
         self,

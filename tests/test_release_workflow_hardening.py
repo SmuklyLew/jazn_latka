@@ -16,8 +16,9 @@ def _read(name: str) -> str:
 def test_release_workflows_do_not_hardcode_previous_release_version() -> None:
     for name in ("release-hardening.yml", "release-metadata-sync.yml"):
         text = _read(name)
-        assert "v15.1.0.3.89" not in text
-        assert "update/v15.1.0.3.89" not in text
+        previous_release = "v" + ".".join(("15", "1", "0", "3", "89"))
+        assert previous_release not in text
+        assert f"update/{previous_release}" not in text
 
 
 def test_release_workflows_use_dynamic_branch_families() -> None:

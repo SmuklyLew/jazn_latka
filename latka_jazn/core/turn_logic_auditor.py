@@ -5,7 +5,7 @@ from typing import Any, Callable
 import hashlib, json, re
 from datetime import datetime, timezone
 
-SCHEMA_VERSION = "turn_logic_auditor/v15.1.0.3.89"
+SCHEMA_VERSION = "turn_logic_auditor/v1"
 
 @dataclass(slots=True)
 class TurnLogicAudit:

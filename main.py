@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version
 
@@ -74,11 +75,13 @@ from latka_jazn.nlp_reasoning.source_registry import PolishReasoningSourceRegist
 from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPlanner
 from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
+from latka_jazn.core.chat_command_contract import BridgeOutputMode
 from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
 from latka_jazn.core.cli_normalization import normalize_cli_argv
 from latka_jazn.core.model_guided_speech_runtime import build_model_guided_speech_status
+from latka_jazn.core.daemon_autostart import DaemonEnsureResult
 from latka_jazn.core.daemon_autostart import daemon_autostart_policy_status, ensure_daemon_for_runtime_turn
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, runtime_turn_timeout_seconds
 from latka_jazn.core.runtime_daemon import (
@@ -206,7 +209,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--polish-reasoning-sources", action="store_true", dest="polish_reasoning_sources", help="Pokaż rejestr źródeł/licencji/cache dla warstwy Polish Reasoning.")
     parser.add_argument("--polish-reasoning-bootstrap-plan", action="store_true", dest="polish_reasoning_bootstrap_plan", help="Pokaż komendy lokalnej instalacji providerów NLP bez ich automatycznego pobierania.")
     parser.add_argument("--nlp-resource-status", action="store_true", dest="nlp_resource_status", help="Pokaż status lexical resource registry/cache: źródła, licencje, dostępność i projektowy leksykon bez pobierania dużych danych.")
-    parser.add_argument("--polish-morphology", action="store_true", dest="polish_morphology", help="Pokaż szczegółową analizę morfologiczną v15.1.0.3.89: Morfeusz/PoliMorf, kandydaci i selected_lemma.")
+    parser.add_argument("--polish-morphology", action="store_true", dest="polish_morphology", help="Pokaż szczegółową analizę morfologiczną poprzednia linia runtime: Morfeusz/PoliMorf, kandydaci i selected_lemma.")
     parser.add_argument("--morfeusz-status", action="store_true", dest="morfeusz_status", help="Pokaż status realnego providera Morfeusz2/SGJP w Polish Reasoning.")
     parser.add_argument("--polimorf-status", action="store_true", dest="polimorf_status", help="Pokaż status opcjonalnego lokalnego providera PoliMorf.")
     parser.add_argument("--wsjp-lookup-plan", action="store_true", dest="wsjp_lookup_plan", help="Zbuduj bezpieczny plan lookupu WSJP dla terminu; nie scrapuje masowo strony.")
@@ -361,7 +364,7 @@ def _try_chat_gpt_one_shot_via_daemon(
     host: str,
     port: int,
     timeout: float,
-    output_mode: str,
+    output_mode: BridgeOutputMode,
     request_id: str | None = None,
     wait_budget: float | None = None,
     poll_interval: float = DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS,
@@ -504,14 +507,36 @@ def _build_light_turn_trace(cfg: JaznConfig, text: str) -> dict:
     ).to_dict()
 
 
-def _bridge_text_output_mode(ns: argparse.Namespace, bridge_text: str) -> str:
+def _as_dict(value: object) -> dict[str, Any]:
+    """Return a mapping only when the runtime value is actually a dictionary."""
+    return value if isinstance(value, dict) else {}
+
+
+def _bridge_text_output_mode(
+    ns: argparse.Namespace,
+    bridge_text: str,
+) -> BridgeOutputMode:
     """Human one-shot chat commands render final_visible_text; stdin keeps JSONL."""
-    return "final_visible_text" if (getattr(ns, "chat_gpt_final_only", False) or getattr(ns, "final_only", False) or bridge_text) else "jsonl"
+    return (
+        "final_visible_text"
+        if (
+            getattr(ns, "chat_gpt_final_only", False)
+            or getattr(ns, "final_only", False)
+            or bridge_text
+        )
+        else "jsonl"
+    )
 
 
 
 
-def _ensure_daemon_for_cli_turn(ns: argparse.Namespace, cfg: JaznConfig, command: str, *, explicit: bool = False):
+def _ensure_daemon_for_cli_turn(
+    ns: argparse.Namespace,
+    cfg: JaznConfig,
+    command: str,
+    *,
+    explicit: bool = False,
+) -> DaemonEnsureResult:
     return ensure_daemon_for_runtime_turn(
         cfg,
         command=command,
@@ -525,7 +550,13 @@ def _ensure_daemon_for_cli_turn(ns: argparse.Namespace, cfg: JaznConfig, command
     )
 
 
-def _ensure_daemon_or_error(ns: argparse.Namespace, cfg: JaznConfig, command: str, *, explicit: bool = False) -> tuple[object, int | None]:
+def _ensure_daemon_or_error(
+    ns: argparse.Namespace,
+    cfg: JaznConfig,
+    command: str,
+    *,
+    explicit: bool = False,
+) -> tuple[DaemonEnsureResult, int | None]:
     result = _ensure_daemon_for_cli_turn(ns, cfg, command, explicit=explicit)
     decision = result.decision if isinstance(result.decision, dict) else {}
     if result.ok or not decision.get("should_ensure"):
@@ -547,7 +578,7 @@ def _run_chat_command_one_shot(
     source_client: str,
     lifecycle: str,
     command: str,
-    output_mode: str = "final_visible_text",
+    output_mode: BridgeOutputMode = "final_visible_text",
 ) -> int:
     """Run the same runtime speech engine for terminal and bridge one-shots.
 
@@ -965,8 +996,14 @@ def main(argv: list[str] | None = None) -> int:
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
         if ns.daemon_final_only and isinstance(payload, dict):
-            result = payload.get("result") if isinstance(payload.get("result"), dict) else payload
-            final_text = result.get("final_visible_text") or (result.get("runtime") or {}).get("final_visible_text")
+            raw_result = payload.get("result")
+            result_payload = raw_result if isinstance(raw_result, dict) else payload
+            raw_runtime = result_payload.get("runtime")
+            runtime_payload = raw_runtime if isinstance(raw_runtime, dict) else {}
+            final_text = (
+                result_payload.get("final_visible_text")
+                or runtime_payload.get("final_visible_text")
+            )
             if final_text:
                 print(str(final_text))
                 return 0
@@ -1017,7 +1054,8 @@ def main(argv: list[str] | None = None) -> int:
         if trusted_time_env is not None:
             payload.setdefault("trusted_time_env", trusted_time_env)
         if ns.daemon_final_only and isinstance(payload, dict):
-            final_text = payload.get("final_visible_text") or (payload.get("runtime") or {}).get("final_visible_text")
+            runtime_payload = _as_dict(payload.get("runtime"))
+            final_text = payload.get("final_visible_text") or runtime_payload.get("final_visible_text")
             if final_text:
                 print(str(final_text))
                 return 0
@@ -1317,7 +1355,7 @@ def main(argv: list[str] | None = None) -> int:
             statuses = payload["polish_morphology"].get("provider_statuses", [])
             payload = {
                 "runtime_version": cfg.version,
-                "schema_version": "polish_provider_status/v15.1.0.3.89",
+                "schema_version": "polish_provider_status/v1",
                 "provider_status": next((item for item in statuses if item.get("provider") == wanted), None),
                 "truth_boundary": "Status providera mówi tylko, czy lokalny adapter jest dostępny. Nie oznacza pobrania pełnego słownika ani pełnej dezambiguacji języka.",
             }
@@ -1333,7 +1371,7 @@ def main(argv: list[str] | None = None) -> int:
         if ns.polish_reasoning_bootstrap_plan:
             payload = {
                 "runtime_version": cfg.version,
-                "schema_version": "polish_reasoning_bootstrap_plan/v15.1.0.3.89",
+                "schema_version": "polish_reasoning_bootstrap_plan/v1",
                 "bootstrap_commands": payload["bootstrap_commands"],
                 "source_registry": payload["source_registry"],
                 "truth_boundary": "Bootstrap instaluje providery i modele z Internetu lokalnie; patch nie vendoruje dużych słowników ani modeli.",
@@ -1350,7 +1388,7 @@ def main(argv: list[str] | None = None) -> int:
         lookup = planner.nkjp(term).to_dict() if ns.nkjp_lookup_plan else planner.wsjp(term).to_dict()
         payload = {
             "runtime_version": cfg.version,
-            "schema_version": "polish_reasoning_lookup_plan/v15.1.0.3.89",
+            "schema_version": "polish_reasoning_lookup_plan/v1",
             "lookup_plan": lookup,
             "truth_boundary": "To jest plan/link lookupu. Runtime nie twierdzi, że pobrał definicję lub przykłady bez realnego żądania HTTP i zapisu źródła.",
         }
@@ -1522,13 +1560,20 @@ def main(argv: list[str] | None = None) -> int:
                 },
             )
             envelope_dict, runtime_truth_gate = apply_runtime_truth_gate(envelope.to_dict())
-            cognitive_frame = envelope_dict.get("cognitive_frame") or {}
+            cognitive_frame = _as_dict(envelope_dict.get("cognitive_frame"))
             runtime_text = envelope_dict.get("final_visible_text") or ""
-            final_contract = envelope_dict.get("final_response_contract") or {}
-            integrity = final_contract.get("final_visible_integrity") if isinstance(final_contract.get("final_visible_integrity"), dict) else {}
-            dialogue_classifier = cognitive_frame.get("dialogue_intent_classifier") or envelope_dict.get("dialogue_intent_classifier") or {}
-            route_trace = cognitive_frame.get("turn_route_trace") or (envelope_dict.get("conversation_decision") or {}).get("turn_route_trace") or {}
-            conversation_decision = envelope_dict.get("conversation_decision") if isinstance(envelope_dict.get("conversation_decision"), dict) else {}
+            final_contract = _as_dict(envelope_dict.get("final_response_contract"))
+            integrity = _as_dict(final_contract.get("final_visible_integrity"))
+            conversation_decision = _as_dict(envelope_dict.get("conversation_decision"))
+            dialogue_classifier = _as_dict(
+                cognitive_frame.get("dialogue_intent_classifier")
+                or envelope_dict.get("dialogue_intent_classifier")
+            )
+            route_trace = _as_dict(
+                cognitive_frame.get("turn_route_trace")
+                or conversation_decision.get("turn_route_trace")
+            )
+            trace = _as_dict(envelope_dict.get("trace"))
             payload = {
                 "schema_version": schema_version("runtime_preview_full_payload", version=PACKAGE_VERSION_FULL),
                 "runtime_version": PACKAGE_VERSION_FULL,
@@ -1561,7 +1606,7 @@ def main(argv: list[str] | None = None) -> int:
                 "cognitive_frame": cognitive_frame,
                 "visible_runtime_preview_contract": {
                     "schema_version": visible_preview_contract_version(engine.config.root),
-                    "timestamp_header": (envelope_dict.get("trace") or {}).get("timestamp_header"),
+                    "timestamp_header": trace.get("timestamp_header"),
                     "active_root": str(engine.config.root),
                     "start_file": "main.py",
                     "response_source": "runtime.process_turn + final_response_contract",

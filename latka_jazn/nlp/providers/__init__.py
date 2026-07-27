@@ -1,1 +1,1 @@
-"""Optional lexical/network providers for Jaźń v15.1.0.3.89."""
+"""Optional lexical/network providers for Jaźń poprzednia linia runtime."""

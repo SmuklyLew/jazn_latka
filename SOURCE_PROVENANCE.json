@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "16fc1b89b3b0bdbbeca3d527c6ff36997c6cd1ac",
-  "base_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "commit_date": "2026-07-25T21:34:29Z",
+  "base_merge_commit": "71262511b620fc877d1b5315e4e9b0e3b6327f63",
+  "base_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "commit_date": "2026-07-27T02:00:49+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-07-25T21:34:29+00:00",
+  "generated_at_utc": "2026-07-27T00:00:49+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "432b4f599e1d52a26f45e7441648a7804fde7277",
+  "git_tree_sha": "754c18eb011d61d9003c73f78991af2193e39e2d",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
-  "schema_version": "source_provenance/v15.1.0.3.89",
+  "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "schema_version": "source_provenance/v15.1.0.3.90",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.1.0.3.89-Memory Sqlite Pipeline",
+  "update_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "version_source": "latka_jazn/version.py"
 }

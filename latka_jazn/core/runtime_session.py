@@ -81,7 +81,7 @@ class JaznRuntimeSession:
                 "install": None,
                 "store": None,
                 "truth_boundary": (
-                    "Minimalna lub testowa sesja nie uruchomiła instalatora pamięci v15.1.0.3.89. "
+                    "Minimalna lub testowa sesja nie uruchomiła instalatora pamięci poprzednia linia runtime. "
                     "Brak statusu nie jest dowodem pustej ani uszkodzonej pamięci."
                 ),
             }

@@ -14,7 +14,7 @@ import uuid
 from latka_jazn.memory.dziennik import DziennikRawJournal
 from latka_jazn.memory.store import MemoryStore
 
-RUNTIME_MEMORY_SCHEMA_VERSION = "v15.1.0.3.89"
+RUNTIME_MEMORY_SCHEMA_VERSION = "runtime_persistence/v1"
 DEFAULT_TIMEZONE = "Europe/Warsaw"
 
 

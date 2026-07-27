@@ -15,7 +15,7 @@ from latka_jazn.cli_commands import diagnostics
 from latka_jazn.tools.release_bundle import build_release_bundle, verify_release_zip_manifest
 from latka_jazn.tools.release_staging import create_release_staging, create_system_smoke_staging
 from latka_jazn.tools.source_provenance import SourceProvenanceError
-from latka_jazn.version import PACKAGE_VERSION_FULL
+from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL
 
 
 def _git(root: Path, *args: str) -> str:
@@ -34,8 +34,8 @@ def _minimal_release_repo(tmp_path: Path) -> Path:
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "__init__.py").write_text("", encoding="utf-8")
     (root / "latka_jazn" / "version.py").write_text(
-        "DISTRIBUTION_VERSION = '15.1.0.3.89'\n"
-        "PACKAGE_VERSION = 'v15.1.0.3.89'\n"
+        f"DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\n"
+        f"PACKAGE_VERSION = {PACKAGE_VERSION!r}\n"
         "PACKAGE_RELEASE_NAME = ''\n",
         encoding="utf-8",
     )
@@ -250,7 +250,7 @@ def test_release_build_persists_final_report_paths(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    output = tmp_path / "exports" / "jazn_latka_v15.1.0.3.89.zip"
+    output = tmp_path / "exports" / f"jazn_latka_{PACKAGE_VERSION}.zip"
 
     monkeypatch.setattr(
         "latka_jazn.tools.release_bundle.create_release_staging",
