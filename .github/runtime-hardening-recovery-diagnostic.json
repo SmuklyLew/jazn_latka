@@ -1,0 +1,139 @@
+{
+  "expected": {
+    "base64_chars": 90664,
+    "base64_sha256": "71cb2baad8b8817d0d82eec189a48eb82b10bcd271be6e2776bd04bb65b56e32",
+    "compressed_bytes": 67996,
+    "compressed_sha256": "135e1bf73e3873992f2ace03f72d201e862c9489733f72971a7ed98724cbb429",
+    "patch_bytes": 294562,
+    "patch_sha256": "80f0486c3d400d190fb6b98c7e0f8b607c9ac585409fcee0893862e37c99d754"
+  },
+  "records": [
+    {
+      "bytes": 512,
+      "path": ".github/recovered-runtime-hardening-patch/manifest.json",
+      "prefix32": "{\n  \"compressed_bytes\": 15008,\n ",
+      "sha256_raw": "869c1255a0dbcc2ea6c124866fc4d0c28169a626a1830c29c7a9ffdfaa8ba698",
+      "sha256_stripped": "ac6b80357dac995dece64b811904ec4a28f39fd186c7fefaf0ac91c028eb3725",
+      "stripped_bytes": 511,
+      "suffix32": "03d5116a5c67988ffdba3b75e7c34\"\n}"
+    },
+    {
+      "bytes": 20313,
+      "path": ".github/recovered-runtime-hardening-patch/part-0000.b64",
+      "prefix32": "ZGlmZiAtLWdpdCBhLy5naXRodWIvd29y",
+      "sha256_raw": "95c64d74993c9fd712292cbe2e70a785a91421b30cc15a0c7001d643d91ce2e9",
+      "sha256_stripped": "bf39672e51902fef2885c58db632e5703af40951173a169cfa021822e4450f17",
+      "stripped_bytes": 20312,
+      "suffix32": "X2F1ZGl0X3JlYWRvbmx5KHBhdGgpCg=="
+    },
+    {
+      "bytes": 1748,
+      "path": ".github/runtime-hardening-patch-v3/manifest.json",
+      "prefix32": "{\n  \"base64_chars\": 90664,\n  \"ba",
+      "sha256_raw": "22740696380328bd28cbf3b122eb2a6082230ef474bdae5cce6e78de96fa7415",
+      "sha256_stripped": "6c2749ac6358f737eb1aca943e7c8c5731ec82b2a8e0830a1ed3762977143e57",
+      "stripped_bytes": 1747,
+      "suffix32": "15.1.0.3.90-runtime-hardening\"\n}"
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v3/part-0000.b64",
+      "prefix32": "H4sIAAAAAAAC/+y925LjyJEg+p5fgcGc",
+      "sha256_raw": "532b799bdeb764a3aed6122505a81542cfb10b53e3bc3c50634b2a441feb7ff7",
+      "sha256_stripped": "532b799bdeb764a3aed6122505a81542cfb10b53e3bc3c50634b2a441feb7ff7",
+      "stripped_bytes": 8000,
+      "suffix32": "MH4bYqQWKfMC04QEE5g7YYBaSLN000ah"
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v3/part-0001.b64",
+      "prefix32": "mNSrX3yJ97kaH2wrIthiuhS95Q4G7LoU",
+      "sha256_raw": "d59960664878dce2ac95093bfb7a831b03b5bfbbc522b1a0583918a577ff1aa3",
+      "sha256_stripped": "d59960664878dce2ac95093bfb7a831b03b5bfbbc522b1a0583918a577ff1aa3",
+      "stripped_bytes": 8000,
+      "suffix32": "cqw76GG4sP5+d48HwVvBKAgqaw9JKclq"
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v3/part-0002.b64",
+      "prefix32": "RTzK0l5fmzYo4b/sYSId64lYcQSWooKt",
+      "sha256_raw": "97c71b17f2de281becf8bd26970fe40ce212093cd93b73946167a6c3d110b0c7",
+      "sha256_stripped": "97c71b17f2de281becf8bd26970fe40ce212093cd93b73946167a6c3d110b0c7",
+      "stripped_bytes": 8000,
+      "suffix32": "mH0z2GJqny47VrZGd83GElU6bJjHpOar"
+    },
+    {
+      "bytes": 14999,
+      "path": ".github/runtime-hardening-patch-v3/part-0003.b64",
+      "prefix32": "YBpqVhyt65Osym4ol7ZVfdBj9q723rIE",
+      "sha256_raw": "93ba6f5d7b842aa235b5ac92bc548206a7f76b02086a07dbb5b4a4c7baf86c27",
+      "sha256_stripped": "93ba6f5d7b842aa235b5ac92bc548206a7f76b02086a07dbb5b4a4c7baf86c27",
+      "stripped_bytes": 14999,
+      "suffix32": "J/GSYTC/mxRKuZyOC7BrxFQVgpsXGTPo"
+    },
+    {
+      "bytes": 15000,
+      "path": ".github/runtime-hardening-patch-v3/part-0004.b64",
+      "prefix32": "zqlp+HVQ14ybniuMcmIN8EtwNZgW6axL",
+      "sha256_raw": "67a44fe496889b7f0b7850f236ef76cdce65c8f68ff006ff954be317c4e168e0",
+      "sha256_stripped": "67a44fe496889b7f0b7850f236ef76cdce65c8f68ff006ff954be317c4e168e0",
+      "stripped_bytes": 15000,
+      "suffix32": "X8a4jhyU5MeLhh7BXnnRxNaBgAH3bWvJ"
+    },
+    {
+      "bytes": 15000,
+      "path": ".github/runtime-hardening-patch-v3/part-0006.b64",
+      "prefix32": "DgoW3EVLbAo6ryxlSOnSpLIKxssbpOlE",
+      "sha256_raw": "f269c8fdb8568dc06fdc5f51bb1a6ca87a89f8cf68f6697be0f62b1fc30daaba",
+      "sha256_stripped": "f269c8fdb8568dc06fdc5f51bb1a6ca87a89f8cf68f6697be0f62b1fc30daaba",
+      "stripped_bytes": 15000,
+      "suffix32": "ITnTK1oxKcSKg2iHiehEkStRFcDjjQqX"
+    },
+    {
+      "bytes": 6664,
+      "path": ".github/runtime-hardening-patch-v3/part-0007.b64",
+      "prefix32": "TEMug3jxs8FFz8IH1m4H5SLs8cSYIcoK",
+      "sha256_raw": "ebaef46a18fa7a7badc578f0eea4030b1b0e37e89035921a9a390d8fa7a70044",
+      "sha256_stripped": "ebaef46a18fa7a7badc578f0eea4030b1b0e37e89035921a9a390d8fa7a70044",
+      "stripped_bytes": 6664,
+      "suffix32": "bD/2VAlJQUGAls3S/wcgOORgon4EAA=="
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v4/part-0003.b64",
+      "prefix32": "YBpqVhyt65Osym4ol7ZVfdBj9q723rIE",
+      "sha256_raw": "ca5151e42c3e151baf9e2ca61e1116c82eba3f2eaa5f8cbb2f85dd4822a45956",
+      "sha256_stripped": "ca5151e42c3e151baf9e2ca61e1116c82eba3f2eaa5f8cbb2f85dd4822a45956",
+      "stripped_bytes": 8000,
+      "suffix32": "1niVAFbuSFXJUqcwCCXj+MmEh6RhJlH4"
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v4/part-0004.b64",
+      "prefix32": "i3SKLFxju69UKoQDq8DAfLo7itygV+rM",
+      "sha256_raw": "0cbbdc6bd5d6febd5d7a9b295dcdf576e3678a1c55766031c2bab763c064d481",
+      "sha256_stripped": "0cbbdc6bd5d6febd5d7a9b295dcdf576e3678a1c55766031c2bab763c064d481",
+      "stripped_bytes": 8000,
+      "suffix32": "1VkyLu7BsFx6ZjsUvFY0MrMHoCIr28aX"
+    },
+    {
+      "bytes": 8000,
+      "path": ".github/runtime-hardening-patch-v4/part-0005.b64",
+      "prefix32": "gIBlmuwswUEzSRWGsFadPmyycTEvtHok",
+      "sha256_raw": "2e9a3106e9123ec0e3b8ee7e01ae1e340bc4ae14f875ba59deedb4a218f6e18f",
+      "sha256_stripped": "2e9a3106e9123ec0e3b8ee7e01ae1e340bc4ae14f875ba59deedb4a218f6e18f",
+      "stripped_bytes": 8000,
+      "suffix32": "TbQdk/JeC8esEkTKdzyU02GwEamYdvKl"
+    },
+    {
+      "bytes": 20023,
+      "path": ".github/runtime-hardening.patch.gz.b64",
+      "prefix32": "H4sICKAIZ2oCA2phem5fdXBkYXRlLnBh",
+      "sha256_raw": "18c3e5d9b991dc9cf8b0df56030a80a3634c902716772d80cb9bc57df14aba5d",
+      "sha256_stripped": "18c3e5d9b991dc9cf8b0df56030a80a3634c902716772d80cb9bc57df14aba5d",
+      "stripped_bytes": 20023,
+      "suffix32": "C39mLlzBTivZ4tmD/w+TvQYl1MQFAA=="
+    }
+  ],
+  "schema_version": "runtime_hardening_recovery_diagnostic/v1"
+}
