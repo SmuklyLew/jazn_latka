@@ -1,0 +1,167 @@
+job_status=success
+stage=push
+target_branch=update/v15.1.0.3.90-runtime-hardening
+base_sha=30a30593901e0b8d24ba6f443f8f67d91d5078e1
+
+```text
+            "terminal_failure_total": 0,
+            "timestamp_refresh_count": 1,
+            "timestamp_refresh_in_progress": false,
+            "turn_count": 0,
+            "uptime_seconds": 0.670323
+          },
+          "runtime_process_active": true,
+          "runtime_root_valid": true,
+          "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+          "runtime_version_full": "v15.1.0.3.90-Memory Sqlite Pipeline",
+          "runtime_write_access_status": {
+            "access_mode": "ready_metadata_only",
+            "active_runtime_audit_database": "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3",
+            "active_runtime_write_database": "memory/sqlite/runtime_write_v1/runtime_memory.sqlite3",
+            "audit_db_exists": true,
+            "audit_error": null,
+            "audit_foreign_key_violations": 0,
+            "audit_integrity": "ready_metadata_only",
+            "audit_record_count": 0,
+            "audit_table_count": 2,
+            "initialized": true,
+            "memory_db_exists": true,
+            "memory_error": null,
+            "memory_foreign_key_violations": 0,
+            "memory_integrity": "ready_metadata_only",
+            "memory_record_count": 0,
+            "memory_table_count": 11,
+            "ok": true,
+            "schema_version": "runtime_write_access_contract/v15.1.0.3.90",
+            "status": "ready_metadata_only",
+            "truth_boundary": "runtime_write_v1 jest bieżącą lokalną warstwą zapisu runtime. Pole writes_enabled opisuje bieżące zezwolenie tej operacji/procesu, write_capable opisuje sprawność techniczną baz, a writes_observed potwierdza historyczne rekordy. Warstwa nie jest archiwum pełnych eksportów ChatGPT, repozytorium Git ani materiałem do publikacji.",
+            "verification_mode": "metadata_only",
+            "weak_points_repaired": [
+              "niepewny_czas_bez_trusted_timestamp",
+              "brak_biezacego_runtime_write_v1_po_odchudzeniu_paczki",
+              "osuwanie_glosu_Latki_w_trzecia_osobe_lub_techniczny_loader",
+              "status_initialized_false_mimo_spojnych_baz",
+              "mieszanie_biezacego_trybu_z_historia_zapisow"
+            ],
+            "write_capable": true,
+            "writes_enabled": false,
+            "writes_observed": false
+          },
+          "runtime_write_ready": true,
+          "runtime_write_verification_mode": "metadata_only",
+          "schema_version": "persistent_daemon_runtime/v15.1.0.3.90-Memory Sqlite Pipeline",
+          "should_reuse_existing_extraction": true,
+          "source_base_commit": "e19f6426344b125b9ae91e01095e0d1a4d2bd19c",
+          "source_provenance": {
+            "base_branch": "update/v15.1.0.3.90-runtime-hardening",
+            "base_merge_commit": "e19f6426344b125b9ae91e01095e0d1a4d2bd19c",
+            "base_pull_request": null,
+            "base_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+            "commit_matches_head": null,
+            "dirty": false,
+            "file_path": "/tmp/jazn-readiness-yyq599do/isolated/SOURCE_PROVENANCE.json",
+            "file_sha256": "a306d3584c76520fe28bf709bf820eb7a938cbe984c09594b9e6edf417b868a8",
+            "generation_mode": "release",
+            "git_directory_present": false,
+            "git_tree_sha": "8d18669b3a821da04ab70ee6d63e84c46918fd5a",
+            "head_sha": null,
+            "limitations": [
+              ".git is not included; local branch, tag and dirty state cannot be independently verified"
+            ],
+            "manifest_protected": true,
+            "merge_commit_shape_valid": true,
+            "repository": "SmuklyLew/jazn_latka",
+            "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+            "schema_version": "source_provenance_status/v15.1.0.3.90",
+            "status": "verified_export_without_git_history",
+            "tree_matches_commit": null,
+            "truth_boundary": "Git fields were read from this checkout. dirty=true is never promoted to release-clean. An export without .git can verify this document only through PACKAGE_INTEGRITY_MANIFEST.json; branch, tag and dirty state cannot then be independently rechecked.",
+            "validation_profile": "system_smoke",
+            "version_matches_runtime": true
+          },
+          "source_provenance_limitations": [
+            ".git is not included; local branch, tag and dirty state cannot be independently verified"
+          ],
+          "source_provenance_sha256": "a306d3584c76520fe28bf709bf820eb7a938cbe984c09594b9e6edf417b868a8",
+          "source_provenance_status": "verified_export_without_git_history",
+          "source_provenance_without_git_history_restriction": "Without .git, branch/tag/dirty state cannot be independently verified; trust is limited to the provenance hash protected by PACKAGE_INTEGRITY_MANIFEST.json.",
+          "source_zip": null,
+          "source_zip_sha256": null,
+          "start_file": "run.py",
+          "storage_detection": "filesystem_verified",
+          "storage_layout": "conversation_archive_v1+fts_v1+staging_v1+runtime_write_v1",
+          "time_trust_state": "network_time_unavailable_local_machine_unverified",
+          "timestamp_contract": {
+            "allow_degraded_local_visible": true,
+            "daemon_status_cache_age_seconds": 0.666691,
+            "daemon_status_cached_at_utc": "2026-07-27T20:27:03.036329+00:00",
+            "daemon_status_fast_path": true,
+            "daemon_status_network_time_allowed": false,
+            "daemon_status_network_time_checked": false,
+            "daemon_status_network_time_timeout_seconds": 0.35,
+            "daemon_status_refresh_in_progress": false,
+            "daemon_status_refresh_reason": "startup_background",
+            "daemon_status_time_mode": "local_machine_unverified_nonblocking",
+            "degradation_reason": "local_machine_time_unverified",
+            "does_not_block_startup": true,
+            "error": "trusted network or injected time unavailable; using explicit local machine fallback without blocking runtime startup",
+            "human_time_header": "🕒 2026-07-27 22:27:03",
+            "local_fallback_allowed_default": true,
+            "local_iso": "2026-07-27T22:27:03.036211+02:00",
+            "max_age_seconds": 120,
+            "network_first_default": false,
+            "network_time_in_normal_turn_default": false,
+            "network_timeout_seconds": 1.5,
+            "os_name": "posix",
+            "platform_system": "Linux",
+            "require_trusted_in_final_visible": true,
+            "runtime_startup_blocking": false,
+            "sample_iso": "2026-07-27T22:27:03.036211+02:00",
+            "schema_version": "timestamp_runtime_policy/v15.1.0.3.90",
+            "shell": "bash",
+            "source": "local_fallback",
+            "status": "active_degraded",
+            "terminal": "unknown",
+            "time_trust_state": "local_machine_unverified",
+            "timestamp_freshness_ok": true,
+            "timestamp_freshness_seconds": 0,
+            "timestamp_header": "🕒 2026-07-27 22:27:03",
+            "timestamp_source": "system_local",
+            "timestamp_source_detail": "local_fallback",
+            "timestamp_trusted": false,
+            "timezone": "Europe/Warsaw",
+            "timezone_key": "Europe/Warsaw",
+            "timezone_status": "iana_zoneinfo",
+            "trusted": false,
+            "truth_boundary": "Widoczny timestamp ma preferować czas sieciowy albo zaufany czas wstrzyknięty przez loader. Lokalny fallback jest dopuszczalny jako jawnie zdegradowany tryb awaryjny, który nie blokuje zwykłej rozmowy, ale nie jest pełnoprawnym aktualnym czasem internetowym.",
+            "utc_iso": "2026-07-27T20:27:03.036211+00:00"
+          },
+          "timestamp_degraded": true,
+          "timestamp_does_not_block_startup": true,
+          "timestamp_trusted": false,
+          "truth_boundary": "Ten marker oznacza działający lokalny proces daemonu, gdy PID żyje, heartbeat jest świeży i /status odpowiada z localhost. Zaufanie czasu jest osobnym time_trust_state: brak czasu sieciowego nie blokuje startu, tylko jawnie oznacza lokalny czas maszyny jako niezweryfikowany.",
+          "version": "v15.1.0.3.90-Memory Sqlite Pipeline"
+        },
+        "stopped": true,
+        "truth_boundary": "Stop jest sukcesem tylko wtedy, gdy właściwy endpoint Daemona został wcześniej potwierdzony przez zgodny root i PID, a po /shutdown proces nie żyje i endpoint nie odpowiada."
+      }
+    }
+  ],
+  "exit_code": 0,
+  "ok": true,
+  "profile": "release",
+  "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
+  "schema_version": "release_readiness_report/v15.1.0.3.90",
+  "summary": {
+    "failed": 0,
+    "optional_failed": 0,
+    "passed": 15,
+    "total": 15
+  },
+  "truth_boundary": "Development/system smoke uses an ephemeral current-tree staging. Release uses a clean commit staging. Export-without-git requires release provenance protected by its package manifest. Private memory is not required."
+}
+...................                                                      [100%]
+19 passed in 0.87s
+To https://github.com/SmuklyLew/jazn_latka
+   30a3059..e19f642  HEAD -> update/v15.1.0.3.90-runtime-hardening
+```
