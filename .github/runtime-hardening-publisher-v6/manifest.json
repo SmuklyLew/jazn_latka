@@ -1,5 +1,5 @@
 {
-  "schema_version": "runtime_hardening_patch_transport/v6.1",
+  "schema_version": "runtime_hardening_patch_transport/v6.2",
   "base_sha": "30a30593901e0b8d24ba6f443f8f67d91d5078e1",
   "target_branch": "update/v15.1.0.3.90-runtime-hardening",
   "parts": [
@@ -10,7 +10,8 @@
     {"name":"part-0003.b64","chars":7000,"sha256":"840c1864d28c46ead5adcb33102b626cb32abfd0e7f796be42c58e3f20b3ffc9"},
     {"name":"part-0004.b64","chars":7000,"sha256":"577898571ab81720508866ad300c5bd3c2982a58936dd75d00bee8f0cdaa55e1"},
     {"name":"part-0005.b64","chars":7000,"sha256":"28800fa42174aa208e822c5b2060c133bb7f29764ee769f55397b75eb93a3510"},
-    {"name":"part-0006.b64","chars":7000,"sha256":"14f8e3ca8fd00a628823c40675e9082117da09691b3d43fe81b7e87b64043cf3"},
+    {"name":"part-0006a.b64","chars":3500,"sha256":"c85f6c2f566974c6cecc7792e55456eb0d48e1c4111c45e877189d6c5f2f1d88"},
+    {"name":"part-0006b.b64","chars":3500,"sha256":"879de0e5b26b5c71cb6f93a5a9b51872e3dad602dfb710fc520c30e86748e887"},
     {"name":"part-0007.b64","chars":7000,"sha256":"af4b9a06e7a72abb6c3939094d8d1f70db3a7e98444b48785731f79adf3561b9"},
     {"name":"part-0008.b64","chars":7000,"sha256":"38a4443f4e93dac8d0d3da58dd4d41c32a5042d01af0e260aa68c8fc1e3c9f70"},
     {"name":"part-0009.b64","chars":7000,"sha256":"9d6a52a4d1301932246d53638b62c527506e77c5b2687bc1ef5fb3d54a25fd55"},
