@@ -1,10 +1,10 @@
 {
-  "schema_version": "runtime_hardening_supplemental_transport/v2",
-  "name": "smoke-fix-v2.patch.gz.b64",
-  "base64_chars": 4788,
-  "base64_sha256": "306bebaea0d203acc70c79b7b01bb98151a70e540a3e5f87fcd682994e9d38aa",
-  "compressed_bytes": 3589,
-  "compressed_sha256": "9628320c426daa0b12fba1d540bed386ede749a5f71a1d7c3c3448e574df0afd",
-  "patch_bytes": 11527,
-  "patch_sha256": "a0cf577a2c89c270a9d4618bc68f9c24ec746cd0a1e5011f240c63abb75de2d5"
+  "schema_version": "runtime_hardening_supplemental_transport/v4",
+  "name": "supplemental-v4.patch.gz.b64",
+  "base64_chars": 2984,
+  "base64_sha256": "2e3b606647382ceb67d1b1b6cb3a5b096738934671530de5f0e5ac3670d96444",
+  "compressed_bytes": 2237,
+  "compressed_sha256": "12a846550781938f403c9775d15380adc95a4819e2b6ed18de33185456b586ca",
+  "patch_bytes": 6756,
+  "patch_sha256": "c6eff1381e5af30d03660e4b6d5a9b928f545e65bf97a6762021ee06b1036e04"
 }
