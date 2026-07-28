@@ -27,6 +27,7 @@ TURN_STAGE_NAMES = (
     "truth_audit_generation",
     "candidate_persistence_staging",
     "synthesis",
+    "finalization_timestamp_refresh",
     "host_visible_finalization",
     "integrity_validation",
     "consensus",
