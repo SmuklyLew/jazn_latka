@@ -65,6 +65,15 @@ def generate_response_candidates(
     )
     request.metadata["candidate_prompt"] = prompt
     response = adapter.generate(request)
+    response_payload = (
+        response.to_dict()
+        if hasattr(response, "to_dict")
+        else {}
+    )
+    candidates[0].adapter_response = _adapter_diagnostics_payload(
+        response_payload
+    )
+    candidates[0].endpoint_used = getattr(response, "endpoint_used", None)
     text = _clean_model_text(getattr(response, "text", ""))
     if getattr(response, "status", "") == "completed" and text:
         candidates.append(
@@ -115,6 +124,16 @@ def _as_dict(value: Any) -> dict[str, Any]:
     if is_dataclass(value):
         return asdict(value)
     return {}
+
+
+def _adapter_diagnostics_payload(value: Any) -> dict[str, Any]:
+    payload = dict(value) if isinstance(value, dict) else {}
+    text = str(payload.pop("text", "") or "")
+    payload["text_present"] = bool(text)
+    payload["text_length"] = len(text)
+    payload.pop("structured_output", None)
+    payload.pop("tool_calls", None)
+    return payload
 
 
 def _memory_item_ids(context: dict[str, Any]) -> list[str]:

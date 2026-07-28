@@ -120,6 +120,13 @@ class ModelGuidedResponseSynthesizer:
                 selected.model,
                 "selected_runtime_fallback_candidate",
                 [],
+                endpoint_used=selected.endpoint_used,
+                adapter_response=selected.adapter_response or None,
+                candidate_validation=(
+                    selected_evaluation.to_dict()
+                    if selected_evaluation
+                    else None
+                ),
             )
         body = self._clean(selected.text)
         if not body:

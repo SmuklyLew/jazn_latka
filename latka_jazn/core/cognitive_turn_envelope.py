@@ -122,6 +122,86 @@ class CognitiveTurnEnvelope:
         self.runtime_turn_contract = dict(contract or {})
         self.cognitive_frame["runtime_turn_contract"] = self.runtime_turn_contract
 
+    def refresh_finalization_timestamp(
+        self,
+        *,
+        timestamp_header: str,
+        timestamp_contract: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Refresh the visible timestamp after long synthesis without losing turn-start time."""
+
+        header = str(timestamp_header or "").strip()
+        contract = copy.deepcopy(dict(timestamp_contract or {}))
+        if not header:
+            raise ValueError("timestamp_header is required")
+        missing = [
+            name
+            for name in ("sample_iso", "source", "trusted")
+            if name not in contract or contract.get(name) in (None, "")
+        ]
+        if missing:
+            raise ValueError(
+                "timestamp_contract missing required fields: " + ", ".join(missing)
+            )
+
+        started_header = str(
+            self.cognitive_frame.get("turn_started_timestamp_header")
+            or self.trace.timestamp_header
+            or ""
+        )
+        started_contract = self.cognitive_frame.get("turn_started_timestamp_contract")
+        if not isinstance(started_contract, dict):
+            previous_contract = self.cognitive_frame.get("timestamp_contract")
+            started_contract = (
+                copy.deepcopy(previous_contract)
+                if isinstance(previous_contract, dict)
+                else {}
+            )
+
+        self.cognitive_frame["turn_started_timestamp_header"] = started_header
+        self.cognitive_frame["turn_started_timestamp_contract"] = copy.deepcopy(
+            started_contract
+        )
+        self.cognitive_frame["finalization_timestamp_header"] = header
+        self.cognitive_frame["finalization_timestamp_contract"] = copy.deepcopy(
+            contract
+        )
+        self.cognitive_frame["timestamp"] = header
+        self.cognitive_frame["timestamp_contract"] = copy.deepcopy(contract)
+
+        self.trace.timestamp_header = header
+        self.cognitive_frame["turn_trace"] = self.trace.to_dict()
+
+        response_format = dict(self.cognitive_frame.get("response_format") or {})
+        response_format["timestamp_prefix"] = header
+        response_format["current_timestamp"] = header
+        response_format["example_start"] = f"{header} "
+        response_format.setdefault("timezone", self.trace.timezone)
+        self.cognitive_frame["response_format"] = response_format
+
+        if self.conversation_decision:
+            decision = dict(self.conversation_decision)
+            decision.setdefault(
+                "turn_started_timestamp_header",
+                started_header,
+            )
+            decision.setdefault(
+                "turn_started_timestamp_contract",
+                copy.deepcopy(started_contract),
+            )
+            decision["finalization_timestamp_header"] = header
+            decision["finalization_timestamp_contract"] = copy.deepcopy(contract)
+            decision["timestamp_contract"] = copy.deepcopy(contract)
+            self.attach_conversation_decision(decision)
+
+        self._refresh_full_canon_dynamic_context()
+        return {
+            "turn_started_timestamp_header": started_header,
+            "turn_started_timestamp_contract": copy.deepcopy(started_contract),
+            "finalization_timestamp_header": header,
+            "finalization_timestamp_contract": copy.deepcopy(contract),
+        }
+
     def _refresh_full_canon_dynamic_context(self) -> None:
         full_canon = build_full_canon_model_context(self.cognitive_frame)
         self.cognitive_frame["full_canon_model_context"] = full_canon

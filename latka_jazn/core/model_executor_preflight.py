@@ -42,8 +42,12 @@ def resolve_model_executor(adapter: Any) -> ModelExecutorPreflight:
         status.get("can_generate_model_guided_speech")
         or contract.get("can_generate_model_guided_speech")
     )
+    can_attempt = bool(
+        status.get("can_attempt_model_guided_speech")
+        or contract.get("can_attempt_model_guided_speech")
+    )
     configured = bool(status.get("configured") or contract.get("configured"))
-    if configured and can_generate and adapter_id not in {"null_model_adapter", "voice_model_adapter", "none"}:
+    if configured and (can_generate or can_attempt) and adapter_id not in {"null_model_adapter", "voice_model_adapter", "none"}:
         return ModelExecutorPreflight(
             executor="local_model",
             available=True,
@@ -51,7 +55,11 @@ def resolve_model_executor(adapter: Any) -> ModelExecutorPreflight:
             adapter_id=adapter_id,
             provider=provider,
             model=model,
-            reason="configured_local_generative_adapter",
+            reason=(
+                "configured_local_generative_adapter"
+                if can_generate
+                else "configured_local_adapter_ready_for_first_attempt"
+            ),
         )
 
     return ModelExecutorPreflight(

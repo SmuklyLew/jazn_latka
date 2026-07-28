@@ -1952,6 +1952,33 @@ class JaznEngine:
         decision.update(model_executor_preflight=preflight.to_dict(), can_generate_model_guided_speech=can_generate, model_guided_retry_limit=1 if preflight.retry_allowed else 0)
         return status, preflight, can_generate
 
+    def _refresh_finalization_timestamp_contract(
+        self,
+        *,
+        envelope: CognitiveTurnEnvelope,
+        decision: dict[str, Any],
+        turn_context: TurnExecutionContext | None,
+    ) -> dict[str, Any]:
+        if turn_context is not None:
+            turn_context.start_stage("finalization_timestamp_refresh")
+        sample = self.clock.now(
+            self.config.network_time_first
+            and self.config.network_time_allowed_in_normal_turn,
+            allow_fallback=self.config.local_time_fallback,
+        )
+        timestamp_contract = self.clock.sample_contract(sample)
+        refresh = envelope.refresh_finalization_timestamp(
+            timestamp_header=self.clock.header(sample),
+            timestamp_contract=timestamp_contract,
+        )
+        updated = dict(decision)
+        updated.update(refresh)
+        updated["timestamp_contract"] = timestamp_contract
+        envelope.attach_conversation_decision(updated)
+        if turn_context is not None:
+            turn_context.complete_stage("finalization_timestamp_refresh")
+        return updated
+
     def _audit_process_turn_started(self, text: str, context: dict[str, Any]) -> None:
         try:
             self.audit_store.append_event(
@@ -2461,6 +2488,13 @@ class JaznEngine:
             final_body=body,
             sync_stage="pre_final_response_contract",
         )
+
+        decision_dict = self._refresh_finalization_timestamp_contract(
+            envelope=envelope,
+            decision=decision_dict,
+            turn_context=turn_context,
+        )
+
         prospective_visible = FinalResponseContract.ensure_timestamp_prefix(
             envelope.trace.timestamp_header,
             str(decision_dict.get("state_emoticon") or ""),
@@ -2732,14 +2766,21 @@ class JaznEngine:
             "dialogue_state": {},
             "affect_mix": {"state_emoticon": state_emoticon},
         }
-        result = self.event_ledger.append_final_visible_reply(
+        ledger_result = self.event_ledger.append_final_visible_reply(
             envelope_stub,
-            capture.final_visible_text,
+            final_text=capture.final_visible_text,
             source=source,
             client_context=client_context or {},
+            local_time_label=timestamp_header,
         )
-        result["final_visible_reply_capture"] = capture.to_dict()
-        return result
+        if ledger_result is None:
+            raise RuntimeError("final_visible_reply_ledger_write_failed")
+        capture_payload = capture.to_dict()
+        return {
+            **capture_payload,
+            "final_visible_reply_capture": dict(capture_payload),
+            "ledger_append": asdict(ledger_result),
+        }
 
     def _is_status_request(low_text: str) -> bool:
         return any(x in low_text for x in [
