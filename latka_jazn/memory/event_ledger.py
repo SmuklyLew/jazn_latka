@@ -192,6 +192,7 @@ class RuntimeEventLedger:
         *,
         final_text: str,
         source: str = "process_turn",
+        client_context: dict[str, Any] | None = None,
         local_time_label: str | None = None,
     ) -> LedgerAppendResult | None:
         """Zapisuje finalną odpowiedź widoczną dla użytkownika w tej samej kopercie tury.
@@ -209,11 +210,13 @@ class RuntimeEventLedger:
             "dialogue_state": envelope.get("dialogue_state") or {},
             "affect_mix": envelope.get("affect_mix") or {},
             "final_text_sha256": hashlib.sha256(final_text.encode("utf-8")).hexdigest(),
+            "client_context": client_context or {},
         }
         self.append_turn(
             "assistant",
             final_text,
             source=source,
+            client_context=client_context or {},
             local_time_label=local_time_label or trace.get("timestamp_header"),
             metadata={
                 "entrypoint": "append_final_visible_reply",

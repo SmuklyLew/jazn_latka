@@ -2732,14 +2732,21 @@ class JaznEngine:
             "dialogue_state": {},
             "affect_mix": {"state_emoticon": state_emoticon},
         }
-        result = self.event_ledger.append_final_visible_reply(
+        ledger_result = self.event_ledger.append_final_visible_reply(
             envelope_stub,
-            capture.final_visible_text,
+            final_text=capture.final_visible_text,
             source=source,
             client_context=client_context or {},
+            local_time_label=timestamp_header,
         )
-        result["final_visible_reply_capture"] = capture.to_dict()
-        return result
+        if ledger_result is None:
+            raise RuntimeError("final_visible_reply_ledger_write_failed")
+        capture_payload = capture.to_dict()
+        return {
+            **capture_payload,
+            "final_visible_reply_capture": dict(capture_payload),
+            "ledger_append": asdict(ledger_result),
+        }
 
     def _is_status_request(low_text: str) -> bool:
         return any(x in low_text for x in [

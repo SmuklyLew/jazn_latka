@@ -323,8 +323,11 @@ def resolve_ollama_cli_settings(
 def _nonempty_text_from_fields(payload: dict[str, Any], fields: tuple[str, ...]) -> tuple[str, str]:
     for field in fields:
         value = payload.get(field)
-        if value is not None and str(value).strip():
-            return str(value).strip(), field
+        if value is None:
+            continue
+        text = str(value)
+        if text.strip():
+            return text, field
     return "", "<missing>"
 
 
