@@ -78,6 +78,17 @@ def _json_document(output: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def _inactive_snapshot_contract_ok(result: dict[str, Any], payload: dict[str, Any] | None) -> bool:
+    if payload is None or result.get("returncode") != 1 or payload.get("ok") is not False:
+        return False
+    daemon = payload.get("daemon") or {}
+    return (
+        daemon.get("active_state") == "inactive"
+        and daemon.get("endpoint_probe_performed") is False
+        and daemon.get("observation_state") == "endpoint_not_probed"
+    )
+
+
 def _chat_payload_from_output(output: str) -> dict[str, Any] | None:
     whole = _json_document(output)
     candidates: list[dict[str, Any]] = []
@@ -162,9 +173,7 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
     snapshot_daemon = (snapshot_payload or {}).get("daemon") or {}
     checks.append(_check(
         "cli_status_snapshot",
-        snapshot_result["returncode"] == 0
-        and snapshot_daemon.get("endpoint_probe_performed") is False
-        and snapshot_daemon.get("observation_state") == "endpoint_not_probed",
+        _inactive_snapshot_contract_ok(snapshot_result, snapshot_payload),
         returncode=snapshot_result["returncode"], daemon=snapshot_daemon,
     ))
     doctor_result = _run(isolated, "run.py", "doctor", "--json")

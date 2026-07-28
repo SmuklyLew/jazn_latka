@@ -68,6 +68,14 @@ TOOL_DEFINITIONS = [
             "type": "object",
             "properties": {
                 "required_timestamp_header": {"type": "string"},
+                "timezone": {"type": "string"},
+                "timestamp_sample_iso": {"type": "string"},
+                "timestamp_source": {"type": "string"},
+                "timestamp_trusted": {"type": "boolean"},
+                "author_id": {"type": "string"},
+                "author_label": {"type": "string"},
+                "author_source": {"type": "string"},
+                "state_emoticon": {"type": "string"},
                 "turn_id": {"type": "string"},
                 "trace_id": {"type": "string"},
                 "final_text": {"type": "string"},
@@ -76,7 +84,11 @@ TOOL_DEFINITIONS = [
                 "supplied_trace_id": {"type": "string"},
                 "idempotency_key": {"type": "string"},
             },
-            "required": ["required_timestamp_header", "turn_id", "trace_id", "final_text", "final_text_sha256"],
+            "required": [
+                "required_timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source",
+                "timestamp_trusted", "author_id", "author_label", "author_source", "state_emoticon",
+                "turn_id", "trace_id", "final_text", "final_text_sha256"
+            ],
         },
         "annotations": {
             "readOnlyHint": False,
@@ -191,6 +203,14 @@ class JaznMcpServer:
         if name == "jazn_finalize_reply":
             contract = HostVisibleFinalizationContract(
                 required_timestamp_header=str(args["required_timestamp_header"]),
+                timezone=str(args["timezone"]),
+                timestamp_sample_iso=str(args["timestamp_sample_iso"]),
+                timestamp_source=str(args["timestamp_source"]),
+                timestamp_trusted=bool(args["timestamp_trusted"]),
+                author_id=str(args["author_id"]),
+                author_label=str(args["author_label"]),
+                author_source=str(args["author_source"]),
+                state_emoticon=str(args["state_emoticon"]),
                 turn_id=str(args["turn_id"]),
                 trace_id=str(args["trace_id"]),
             )

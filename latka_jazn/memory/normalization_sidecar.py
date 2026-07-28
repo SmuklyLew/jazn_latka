@@ -14,6 +14,135 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("memory_normalization_sidecar")
+
+SIDECAR_TABLE_COPY_ORDER = (
+    "sidecar_meta",
+    "normalization_runs",
+    "actors",
+    "normalized_memory_items",
+    "wake_state_snapshots",
+    "layered_dedupe_runs",
+    "layered_dedupe_groups",
+    "layered_dedupe_members",
+)
+
+
+def _quote_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def _copy_legacy_sidecar_tables(
+    connection: sqlite3.Connection,
+    *,
+    legacy_path: Path,
+) -> dict[str, int]:
+    """Copy compatible sidecar data from a legacy mixed audit database.
+
+    The source is attached read-only and is never updated. Missing target
+    columns with schema defaults are left to those defaults. Required columns
+    introduced after the legacy schema receive explicit migration values only
+    where their meaning is well-defined. Tables that cannot be mapped safely
+    are skipped rather than being partially or silently fabricated.
+    """
+    if not legacy_path.is_file():
+        return {}
+    source_uri = legacy_path.resolve().as_uri() + "?mode=ro"
+    connection.execute("ATTACH DATABASE ? AS legacy_sidecar", (source_uri,))
+    copied: dict[str, int] = {}
+    try:
+        source_tables = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM legacy_sidecar.sqlite_schema WHERE type='table'"
+            )
+        }
+        if "wake_state_snapshots" not in source_tables:
+            return {}
+
+        connection.execute("BEGIN IMMEDIATE")
+        for table in SIDECAR_TABLE_COPY_ORDER:
+            if table not in source_tables:
+                continue
+
+            target_info = list(
+                connection.execute(
+                    f"PRAGMA main.table_info({_quote_identifier(table)})"
+                )
+            )
+            source_columns = {
+                str(row[1])
+                for row in connection.execute(
+                    f"PRAGMA legacy_sidecar.table_info({_quote_identifier(table)})"
+                )
+            }
+            insert_columns: list[str] = []
+            select_expressions: list[str] = []
+            parameters: list[Any] = []
+            compatible = True
+
+            for row in target_info:
+                name = str(row[1])
+                not_null = bool(row[3])
+                default_sql = row[4]
+                primary_key = bool(row[5])
+
+                if name in source_columns:
+                    insert_columns.append(name)
+                    if table == "wake_state_snapshots" and name == "source_run_id":
+                        select_expressions.append(
+                            "CASE WHEN s.source_run_id IS NULL OR EXISTS("
+                            "SELECT 1 FROM main.normalization_runs r "
+                            "WHERE r.run_id=s.source_run_id"
+                            ") THEN s.source_run_id ELSE NULL END"
+                        )
+                    else:
+                        select_expressions.append(f"s.{_quote_identifier(name)}")
+                    continue
+
+                if name == "truth_boundary":
+                    insert_columns.append(name)
+                    select_expressions.append("?")
+                    parameters.append(
+                        "Migrated from the legacy mixed audit/sidecar database. "
+                        "The source remained read-only and the snapshot is not "
+                        "treated as verified until normal wake-state validation succeeds."
+                    )
+                    continue
+
+                if default_sql is not None:
+                    continue
+                if not_null and not primary_key:
+                    compatible = False
+                    break
+
+            if not compatible or not insert_columns:
+                continue
+
+            quoted_columns = ",".join(
+                _quote_identifier(name) for name in insert_columns
+            )
+            select_sql = ",".join(select_expressions)
+            before = connection.total_changes
+            connection.execute(
+                f"INSERT OR IGNORE INTO main.{_quote_identifier(table)} "
+                f"({quoted_columns}) SELECT {select_sql} "
+                f"FROM legacy_sidecar.{_quote_identifier(table)} AS s",
+                tuple(parameters),
+            )
+            copied[table] = connection.total_changes - before
+
+        connection.execute(
+            "INSERT OR REPLACE INTO sidecar_meta(key,value) VALUES(?,?)",
+            ("legacy_sidecar_migration_source", str(legacy_path.resolve())),
+        )
+        connection.commit()
+        return copied
+    except (sqlite3.DatabaseError, OSError):
+        connection.rollback()
+        raise
+    finally:
+        connection.execute("DETACH DATABASE legacy_sidecar")
+
 WAKE_STATE_SCHEMA_VERSION = schema_version("wake_state_snapshot")
 LAYERED_DEDUPE_SCHEMA_VERSION = schema_version("layered_dedupe")
 FINGERPRINT_CONTRACT_VERSION = "memory_normalization_input/v1"
@@ -530,7 +659,8 @@ def _connect_readonly(path: Path, *, immutable: bool = False) -> sqlite3.Connect
 
 def _connect_write(path: Path) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(path)
+    uri = path.resolve().as_uri() + "?mode=rwc"
+    con = sqlite3.connect(uri, uri=True)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
     return con
@@ -587,9 +717,48 @@ def _snapshot_summary(
     created_at_utc: str | None = None,
     validation_status: str | None = None,
 ) -> dict[str, Any]:
-    namespace_policy = snapshot.get("namespace_policy") if isinstance(snapshot.get("namespace_policy"), dict) else {}
-    truth_digest = snapshot.get("truth_boundary_digest") if isinstance(snapshot.get("truth_boundary_digest"), dict) else {}
-    relationship = snapshot.get("relationship_digest") if isinstance(snapshot.get("relationship_digest"), dict) else {}
+    namespace_policy_value = snapshot.get("namespace_policy")
+    namespace_policy: dict[str, Any] = (
+        dict(namespace_policy_value)
+        if isinstance(namespace_policy_value, dict)
+        else {}
+    )
+
+    truth_digest_value = snapshot.get("truth_boundary_digest")
+    truth_digest: dict[str, Any] = (
+        dict(truth_digest_value)
+        if isinstance(truth_digest_value, dict)
+        else {}
+    )
+
+    relationship_value = snapshot.get("relationship_digest")
+    relationship: dict[str, Any] = (
+        dict(relationship_value)
+        if isinstance(relationship_value, dict)
+        else {}
+    )
+
+    source_counts_value = snapshot.get("source_counts")
+    source_counts: dict[str, Any] = (
+        dict(source_counts_value)
+        if isinstance(source_counts_value, dict)
+        else {}
+    )
+
+    namespace_counts_value = namespace_policy.get("namespace_counts")
+    namespace_counts: dict[str, Any] = (
+        dict(namespace_counts_value)
+        if isinstance(namespace_counts_value, dict)
+        else {}
+    )
+
+    source_truth_counts_value = truth_digest.get("source_truth_counts")
+    source_truth_counts: dict[str, Any] = (
+        dict(source_truth_counts_value)
+        if isinstance(source_truth_counts_value, dict)
+        else {}
+    )
+
     return {
         "snapshot_id": snapshot_id,
         "schema_version": snapshot.get("schema_version"),
@@ -597,20 +766,28 @@ def _snapshot_summary(
         "source_run_id": source_run_id,
         "snapshot_sha256": snapshot_sha256,
         "validation_status": validation_status or snapshot.get("validation_status"),
-        "source_counts": snapshot.get("source_counts") if isinstance(snapshot.get("source_counts"), dict) else {},
-        "namespace_counts": namespace_policy.get("namespace_counts") if isinstance(namespace_policy.get("namespace_counts"), dict) else {},
+        "source_counts": source_counts,
+        "namespace_counts": namespace_counts,
         "relationship_digest": {
-            "krzysztof_candidate_present": bool(relationship.get("krzysztof_candidate_present")),
-            "krzysztof_private_namespace_allowed": bool(relationship.get("krzysztof_private_namespace_allowed")),
+            "krzysztof_candidate_present": bool(
+                relationship.get("krzysztof_candidate_present")
+            ),
+            "krzysztof_private_namespace_allowed": bool(
+                relationship.get("krzysztof_private_namespace_allowed")
+            ),
             "private_namespace_requires_confirmed_actor": True,
         },
         "truth_boundary_digest": {
-            "must_not_claim_background_process": bool(truth_digest.get("must_not_claim_background_process")),
-            "must_not_claim_memory_without_source": bool(truth_digest.get("must_not_claim_memory_without_source")),
+            "must_not_claim_background_process": bool(
+                truth_digest.get("must_not_claim_background_process")
+            ),
+            "must_not_claim_memory_without_source": bool(
+                truth_digest.get("must_not_claim_memory_without_source")
+            ),
             "emotions_are_modelled_operational_relational": bool(
                 truth_digest.get("emotions_are_modelled_operational_relational")
             ),
-            "source_truth_counts": truth_digest.get("source_truth_counts") if isinstance(truth_digest.get("source_truth_counts"), dict) else {},
+            "source_truth_counts": source_truth_counts,
         },
     }
 
@@ -629,10 +806,17 @@ class MemoryNormalizationSidecar:
         self.runtime_version = runtime_version or cfg.version
         self.source_db_path = Path(source_db_path) if source_db_path else cfg.normalization_source_db_path
         self.sidecar_db_path = Path(sidecar_db_path) if sidecar_db_path else cfg.normalization_sidecar_db_path
+        self.legacy_sidecar_db_path = cfg.audit_db_path_readonly
 
     def ensure_schema(self) -> None:
+        target_preexisting = self.sidecar_db_path.is_file()
         with closing(_connect_write(self.sidecar_db_path)) as con:
             con.executescript(SIDE_SCHEMA)
+            if (
+                not target_preexisting
+                and self.legacy_sidecar_db_path.resolve() != self.sidecar_db_path.resolve()
+            ):
+                _copy_legacy_sidecar_tables(con, legacy_path=self.legacy_sidecar_db_path)
             columns = {str(row[1]) for row in con.execute("PRAGMA table_info(normalization_runs)")}
             for name, sql_type in (
                 ("source_db_size", "INTEGER"),

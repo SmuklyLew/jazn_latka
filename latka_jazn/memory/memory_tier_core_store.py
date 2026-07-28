@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Iterator
 import json
@@ -80,40 +81,102 @@ class MemoryTierCoreStore:
                                 evidence_written=summary.evidence_written,
                                 working_records_evicted=evicted)
 
+    def _merge_duplicate_record(self, existing: MemoryRecord, incoming: MemoryRecord) -> MemoryRecord:
+        if type(existing) is not type(incoming):
+            raise ValueError("canonical memory key collision across record types")
+        evidence_by_key = {item.evidence_key: item for item in existing.evidence}
+        evidence_by_key.update({item.evidence_key: item for item in incoming.evidence})
+        merged = replace(
+            existing,
+            confidence=max(float(existing.confidence), float(incoming.confidence)),
+            importance=max(float(existing.importance), float(incoming.importance)),
+            updated_at_utc=max(existing.updated_at_utc, incoming.updated_at_utc),
+            tags=tuple(dict.fromkeys((*existing.tags, *incoming.tags))),
+            evidence=tuple(evidence_by_key[key] for key in sorted(evidence_by_key)),
+        )
+        if isinstance(merged, WorkingMemoryRecord) and isinstance(incoming, WorkingMemoryRecord):
+            merged = replace(
+                merged,
+                session_id=incoming.session_id,
+                turn_id=incoming.turn_id or merged.turn_id,
+                active_goal=incoming.active_goal or merged.active_goal,
+                expires_on_session_end=bool(merged.expires_on_session_end and incoming.expires_on_session_end),
+                checkpoint_allowed=bool(merged.checkpoint_allowed or incoming.checkpoint_allowed),
+            )
+        elif isinstance(merged, ShortTermMemoryRecord) and isinstance(incoming, ShortTermMemoryRecord):
+            last_reinforced = max(
+                (value for value in (merged.last_reinforced_at_utc, incoming.last_reinforced_at_utc) if value is not None),
+                default=None,
+            )
+            merged = replace(
+                merged,
+                expires_at_utc=max(merged.expires_at_utc, incoming.expires_at_utc),
+                reinforcement_count=max(merged.reinforcement_count, incoming.reinforcement_count),
+                last_reinforced_at_utc=last_reinforced,
+                reinforcement_evidence_keys=tuple(dict.fromkeys((
+                    *merged.reinforcement_evidence_keys,
+                    *incoming.reinforcement_evidence_keys,
+                ))),
+            )
+        elif isinstance(merged, LongTermMemoryRecord) and isinstance(incoming, LongTermMemoryRecord):
+            merged = replace(
+                merged,
+                revision=max(merged.revision, incoming.revision),
+                invalidated_at_utc=incoming.invalidated_at_utc or merged.invalidated_at_utc,
+                invalidation_reason=incoming.invalidation_reason or merged.invalidation_reason,
+            )
+        return merged
+
     def write_record(self, record: MemoryRecord) -> WriteSummary:
         self._require_transaction()
-        payload = record.to_dict()
-        existing = self.con.execute(
+        existing_by_id = self.con.execute(
             "SELECT tier,content_sha256 FROM memory_records WHERE memory_id=?", (record.memory_id,),
         ).fetchone()
-        if existing and (str(existing["tier"]) != record.tier.value
-                         or str(existing["content_sha256"]) != record.content_sha256):
+        if existing_by_id and (str(existing_by_id["tier"]) != record.tier.value
+                               or str(existing_by_id["content_sha256"]) != record.content_sha256):
             raise ValueError("memory_id collision with different tier or content")
+
+        canonical_row = self.con.execute(
+            """SELECT memory_id,record_json FROM memory_records
+               WHERE tier=? AND kind=? AND content_sha256=? AND domain=? AND mode=?""",
+            (record.tier.value, record.kind.value, record.content_sha256, record.domain, record.mode),
+        ).fetchone()
+        effective_record = record
+        if canonical_row is not None:
+            existing_record = record_from_dict(json.loads(str(canonical_row["record_json"])))
+            effective_record = self._merge_duplicate_record(existing_record, record)
+            canonical_id = str(canonical_row["memory_id"])
+            if effective_record.memory_id != canonical_id:
+                effective_record = replace(effective_record, memory_id=canonical_id)
+
+        payload = effective_record.to_dict()
         self.con.execute(
             """INSERT INTO memory_records(
                memory_id,tier,kind,content,content_sha256,domain,mode,truth_status,
                confidence,importance,created_at_utc,updated_at_utc,tags_json,record_json,active)
                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(memory_id) DO UPDATE SET
-                 confidence=excluded.confidence,importance=excluded.importance,
+                 truth_status=excluded.truth_status,
+                 confidence=MAX(memory_records.confidence,excluded.confidence),
+                 importance=MAX(memory_records.importance,excluded.importance),
                  updated_at_utc=excluded.updated_at_utc,tags_json=excluded.tags_json,
                  record_json=excluded.record_json,active=excluded.active""",
-            (record.memory_id, record.tier.value, record.kind.value, record.content,
-             record.content_sha256, record.domain, record.mode, record.truth_status.value,
-             record.confidence, record.importance, iso(record.created_at_utc),
-             iso(record.updated_at_utc), json_text(record.tags), json_text(payload),
-             int(not isinstance(record, LongTermMemoryRecord) or record.active)),
+            (effective_record.memory_id, effective_record.tier.value, effective_record.kind.value, effective_record.content,
+             effective_record.content_sha256, effective_record.domain, effective_record.mode, effective_record.truth_status.value,
+             effective_record.confidence, effective_record.importance, iso(effective_record.created_at_utc),
+             iso(effective_record.updated_at_utc), json_text(effective_record.tags), json_text(payload),
+             int(not isinstance(effective_record, LongTermMemoryRecord) or effective_record.active)),
         )
         evidence_written = 0
-        for item in record.evidence:
+        for item in effective_record.evidence:
             cursor = self.con.execute(
                 """INSERT OR IGNORE INTO memory_evidence(
                    memory_id,evidence_key,source_type,source_id,evidence_json) VALUES(?,?,?,?,?)""",
-                (record.memory_id, item.evidence_key, item.source_type, item.source_id,
+                (effective_record.memory_id, item.evidence_key, item.source_type, item.source_id,
                  json_text(item.to_dict())),
             )
             evidence_written += max(0, cursor.rowcount)
-        if isinstance(record, WorkingMemoryRecord):
+        if isinstance(effective_record, WorkingMemoryRecord):
             self.con.execute(
                 """INSERT INTO working_memory_index(
                    memory_id,session_id,turn_id,active_goal,expires_on_session_end,checkpoint_allowed)
@@ -121,10 +184,10 @@ class MemoryTierCoreStore:
                    session_id=excluded.session_id,turn_id=excluded.turn_id,
                    active_goal=excluded.active_goal,expires_on_session_end=excluded.expires_on_session_end,
                    checkpoint_allowed=excluded.checkpoint_allowed""",
-                (record.memory_id, record.session_id, record.turn_id, record.active_goal,
-                 int(record.expires_on_session_end), int(record.checkpoint_allowed)),
+                (effective_record.memory_id, effective_record.session_id, effective_record.turn_id, effective_record.active_goal,
+                 int(effective_record.expires_on_session_end), int(effective_record.checkpoint_allowed)),
             )
-        elif isinstance(record, ShortTermMemoryRecord):
+        elif isinstance(effective_record, ShortTermMemoryRecord):
             self.con.execute(
                 """INSERT INTO short_term_memory_index(
                    memory_id,expires_at_utc,reinforcement_count,last_reinforced_at_utc,
@@ -134,11 +197,11 @@ class MemoryTierCoreStore:
                    last_reinforced_at_utc=excluded.last_reinforced_at_utc,
                    reinforcement_evidence_keys_json=excluded.reinforcement_evidence_keys_json,
                    promotion_status=excluded.promotion_status""",
-                (record.memory_id, iso(record.expires_at_utc), record.reinforcement_count,
-                 iso(record.last_reinforced_at_utc) if record.last_reinforced_at_utc else None,
-                 json_text(record.reinforcement_evidence_keys), record.promotion_status.value),
+                (effective_record.memory_id, iso(effective_record.expires_at_utc), effective_record.reinforcement_count,
+                 iso(effective_record.last_reinforced_at_utc) if effective_record.last_reinforced_at_utc else None,
+                 json_text(effective_record.reinforcement_evidence_keys), effective_record.promotion_status.value),
             )
-        elif isinstance(record, LongTermMemoryRecord):
+        elif isinstance(effective_record, LongTermMemoryRecord):
             self.con.execute(
                 """INSERT INTO long_term_memory_index(
                    memory_id,promoted_at_utc,promoted_from_memory_id,promotion_decision_id,
@@ -146,13 +209,13 @@ class MemoryTierCoreStore:
                    VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(memory_id) DO UPDATE SET
                    revision=excluded.revision,invalidated_at_utc=excluded.invalidated_at_utc,
                    invalidation_reason=excluded.invalidation_reason""",
-                (record.memory_id, iso(record.promoted_at_utc), record.promoted_from_memory_id,
-                 record.promotion_decision_id, record.approved_by, record.promotion_reason,
-                 record.revision, iso(record.invalidated_at_utc) if record.invalidated_at_utc else None,
-                 record.invalidation_reason),
+                (effective_record.memory_id, iso(effective_record.promoted_at_utc), effective_record.promoted_from_memory_id,
+                 effective_record.promotion_decision_id, effective_record.approved_by, effective_record.promotion_reason,
+                 effective_record.revision, iso(effective_record.invalidated_at_utc) if effective_record.invalidated_at_utc else None,
+                 effective_record.invalidation_reason),
             )
         else:
-            raise TypeError(f"unsupported memory record type: {type(record).__name__}")
+            raise TypeError(f"unsupported memory record type: {type(effective_record).__name__}")
         return WriteSummary(records_written=1, evidence_written=evidence_written)
 
     def enforce_working_budget(self, session_id: str, budget: WorkingMemoryBudget) -> int:

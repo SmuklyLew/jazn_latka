@@ -19,6 +19,8 @@ import sys
 import time
 import zipfile
 
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+
 from latka_jazn.tools.memory_restore import (
     DEVELOPER_CONFIRMATION,
     MemoryRestoreOrchestrator,
@@ -568,6 +570,7 @@ def inspect_zip_safety(path: Path) -> dict[str, Any]:
     }
     try:
         with zipfile.ZipFile(path, "r") as archive:
+            validate_zip_resources(archive)
             infos = [item for item in archive.infolist() if not item.is_dir()]
             names = [item.filename for item in infos]
             report["member_count"] = len(names)

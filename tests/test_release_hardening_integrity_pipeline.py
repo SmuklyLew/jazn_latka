@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import subprocess
 from latka_jazn.version import PACKAGE_VERSION
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import copy
 import hashlib
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
 from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
 from latka_jazn.core.runtime_session import JaznRuntimeSession
+from latka_jazn.tools import package_integrity
 
-HEADER = "[🕒 2026-07-16 12:00:00 GMT+2, czwartek, Europe/Warsaw]"
+SAMPLE_DT = datetime.now(timezone.utc).replace(microsecond=0)
+SAMPLE_ISO = SAMPLE_DT.isoformat()
+HEADER = f"🕒 {SAMPLE_DT.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
 BODY = "Działam uczciwie."
-VISIBLE = f"{HEADER} 🌿\n{BODY}"
+VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
 
 
 def _sha(value: str) -> str:
@@ -43,10 +48,17 @@ def _decision() -> dict:
         },
         "visible_answer_hash": _sha(VISIBLE),
         "runtime_text_hash": _sha(BODY),
+        "author_id": "latka_runtime",
+        "author_label": "Łatka",
+        "author_source": "jazn_runtime",
+        "voice_source_contract": {
+            "speaking_identity": "Łatka",
+            "active_source": "jazn_runtime",
+        },
         "timestamp_contract": {
-            "trusted": False,
-            "source": "local_machine",
-            "sample_iso": datetime.now(timezone.utc).isoformat(),
+            "trusted": True,
+            "source": "network_time",
+            "sample_iso": SAMPLE_ISO,
             "require_trusted_in_final_visible": False,
             "allow_degraded_local_visible": True,
         },
@@ -143,7 +155,7 @@ def test_process_user_text_restores_only_missing_timestamp_from_verified_contrac
 
 
 def test_process_user_text_rejects_changed_text_without_laundering_hash() -> None:
-    changed = f"{HEADER} 🌿\nTekst zmieniony po obliczeniu hasha."
+    changed = f"{HEADER}\n🌿 Łatka\n\nTekst zmieniony po obliczeniu hasha."
     result = _session(_envelope(final_text=changed)).process_user_text("test")
     assert result["final_visible_text"] != changed
     assert result["normal_response_blocked"] is True
@@ -176,7 +188,7 @@ def test_process_user_text_does_not_ignore_changed_first_body_line() -> None:
 
 
 def test_process_user_text_rejects_changed_contract_after_provenance_hash() -> None:
-    changed = f"{HEADER} 🌿\nZmieniony kontrakt."
+    changed = f"{HEADER}\n🌿 Łatka\n\nZmieniony kontrakt."
     result = _session(_envelope(final_text=changed, mutate_contract=True)).process_user_text("test")
     audit = result["final_visible_integrity_repair_audit"][0] if result.get("final_visible_integrity_repair_audit") else None
     assert audit is None or audit["applied"] is False
@@ -197,6 +209,14 @@ def test_valid_process_user_text_has_consensus_across_public_layers() -> None:
 def test_host_finalize_has_separate_hash_approval_stage() -> None:
     accepted = finalize_host_visible_text(
         required_timestamp_header=HEADER,
+        timezone="Europe/Warsaw",
+        timestamp_sample_iso=SAMPLE_ISO,
+        timestamp_source="network_time",
+        timestamp_trusted=True,
+        author_id="latka_runtime",
+        author_label="Łatka",
+        author_source="jazn_runtime",
+        state_emoticon="🌿",
         turn_id="turn-1",
         trace_id="trace-1",
         text=BODY,
@@ -208,10 +228,18 @@ def test_host_finalize_has_separate_hash_approval_stage() -> None:
     assert accepted.approval_stage == "host_finalize_hash_approval"
     assert accepted.state == "approved_envelope_completion"
     assert accepted.hash_valid is True
-    assert accepted.repaired is False
+    assert accepted.repaired is True
 
     rejected = finalize_host_visible_text(
         required_timestamp_header=HEADER,
+        timezone="Europe/Warsaw",
+        timestamp_sample_iso=SAMPLE_ISO,
+        timestamp_source="network_time",
+        timestamp_trusted=True,
+        author_id="latka_runtime",
+        author_label="Łatka",
+        author_source="jazn_runtime",
+        state_emoticon="🌿",
         turn_id="turn-1",
         trace_id="trace-1",
         text=BODY,
@@ -220,3 +248,22 @@ def test_host_finalize_has_separate_hash_approval_stage() -> None:
     assert rejected.accepted is False
     assert rejected.hash_valid is False
     assert any(item.code == "text_hash_mismatch" for item in rejected.violations)
+
+
+def test_git_path_selection_excludes_only_explicit_worktree_deletions(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+    (root / "keep.txt").write_text("keep", encoding="utf-8")
+    (root / "remove.txt").write_text("remove", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "keep.txt", "remove.txt"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "baseline"], check=True)
+
+    (root / "remove.txt").unlink()
+    candidates, missing = package_integrity._git_paths(root)
+
+    assert "keep.txt" in candidates
+    assert "remove.txt" not in candidates
+    assert missing == []

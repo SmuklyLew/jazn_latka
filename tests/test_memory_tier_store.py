@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import hashlib
 import sqlite3
+from dataclasses import replace
 
 import pytest
 
@@ -92,6 +93,28 @@ def test_short_term_round_trip_and_integrity(tmp_path) -> None:
         assert store.stats()["memory_evidence"] == 2
         assert store.validate()["ok"] is True
 
+
+
+def test_duplicate_content_reuses_canonical_memory_id_and_merges_evidence(tmp_path) -> None:
+    first = short_record("Ten sam fakt")
+    second = replace(
+        short_record("Ten sam fakt"),
+        memory_id="different-id-for-same-content",
+        confidence=0.99,
+        importance=0.95,
+        evidence=(evidence("third-source"),),
+    )
+    with MemoryTierStore(tmp_path / "tiers.sqlite3") as store:
+        store.save_record(first)
+        store.save_record(second)
+        assert store.stats()["memory_records"] == 1
+        restored = store.get_record(first.memory_id)
+        assert restored is not None
+        assert restored.memory_id == first.memory_id
+        assert restored.confidence == 0.99
+        assert restored.importance == 0.95
+        assert {item.source_id for item in restored.evidence} >= {"source", "confirmation", "third-source"}
+        assert store.stats()["memory_evidence"] == 3
 
 def test_working_budget_evicts_old_low_importance_records(tmp_path) -> None:
     with MemoryTierStore(tmp_path / "tiers.sqlite3") as store:

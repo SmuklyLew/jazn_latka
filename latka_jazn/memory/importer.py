@@ -6,7 +6,6 @@ import json
 from .store import MemoryStore
 from .file_sync import MemoryFileSync
 from .chat_html_importer import import_chat_html_to_store
-from .raw_archive import unpack_chat_html_archive
 
 class MemoryImporter:
     def __init__(self, store: MemoryStore, root: Path) -> None:
@@ -22,18 +21,14 @@ class MemoryImporter:
         """Rejestruje źródła pamięci i aktywuje dostępne warstwy.
 
         Jeżeli istnieje RAW_MEMORY_MANIFEST.json, ufa hashom utworzonym podczas
-        budowania paczki. Jeżeli chat.html.7z da się rozpakować i SQLite nie ma
-        jeszcze indeksu legacy_messages, importer wykonuje jednorazowy import
-        chat.html do SQLite. Dzięki temu świeże uruchomienie nie zostawia pełnej
-        surowej pamięci w stanie półaktywnym, gdy zależności są już dostępne.
+        budowania paczki. Automatyczny import jest wykonywany wyłącznie z jawnego
+        memory/raw/chat.html. Brak HTML nie uruchamia żadnego rozpakowywania.
         """
         manifest_path = self.root / "memory" / "RAW_MEMORY_MANIFEST.json"
-        archive_report = unpack_chat_html_archive(self.root, overwrite=False)
         counts = {
             "raw": 0,
             "versioned_sources": 0,
             "manifest_mode": False,
-            "raw_archive": archive_report.to_dict(),
             "chat_html_auto_import": "not_requested" if not auto_import_raw_chat_html else "not_needed",
         }
         if manifest_path.exists():
@@ -91,13 +86,11 @@ class MemoryImporter:
                     counts["chat_html_auto_import"] = {"status": "error", "error": repr(exc)}
             elif legacy_count > 0:
                 counts["chat_html_auto_import"] = {"status": "already_indexed", "legacy_messages": legacy_count}
-            elif not chat_path.exists() and archive_report.status in {
-                "missing_archive", "missing_safe_extractor", "validation_failed",
-            }:
+            elif not chat_path.exists():
                 counts["chat_html_auto_import"] = {
                     "status": "not_possible",
-                    "reason": archive_report.status,
-                    "error": archive_report.error,
+                    "reason": "chat_html_missing",
+                    "error": None,
                 }
 
         self.store.add_event("packaged_sources_registered", counts, source="MemoryImporter", actor="system", tags=["migration", "integrity", PACKAGE_VERSION], importance=0.8)
@@ -105,15 +98,11 @@ class MemoryImporter:
 
     def import_raw_chat_html(self, *, force: bool = False, limit_conversations: int | None = None) -> dict:
         path = self.root / "memory" / "raw" / "chat.html"
-        unpack_report = None
-        if not path.exists():
-            unpack_report = unpack_chat_html_archive(self.root, overwrite=False)
         if not path.exists():
             result = {
                 "status": "missing_raw_chat_html",
                 "path": str(path),
-                "unpack": unpack_report.to_dict() if unpack_report else None,
-                "errors": ["chat.html nie istnieje i nie udało się go rozpakować z chat.html.7z."],
+                "errors": ["memory/raw/chat.html nie istnieje; runtime nie rozpakowuje archiwów 7z."],
             }
             self.store.add_event(
                 "chat_html_import",
@@ -126,8 +115,6 @@ class MemoryImporter:
             return result
         report = import_chat_html_to_store(self.store, path, force=force, limit_conversations=limit_conversations)
         result = report.to_dict()
-        if unpack_report is not None:
-            result["unpack"] = unpack_report.to_dict()
         self.store.add_event(
             "chat_html_import",
             result,

@@ -97,6 +97,16 @@ def connect_runtime_audit(path: Path | str) -> sqlite3.Connection:
     return connection
 
 
+
+def connect_runtime_audit_readonly(path: Path | str) -> sqlite3.Connection:
+    db_path = Path(path).resolve()
+    if not db_path.is_file():
+        raise FileNotFoundError(db_path)
+    connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True, timeout=10.0)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA query_only=ON")
+    return connection
+
 def ensure_runtime_audit_schema(connection: sqlite3.Connection) -> None:
     with connection:
         for statement in DDL:

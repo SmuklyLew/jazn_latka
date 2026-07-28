@@ -156,10 +156,10 @@ def test_canonical_sidecar_path_and_health_contract(
     root = _prepared_root(tmp_path)
     cfg = JaznConfig(root=root)
 
-    assert cfg.normalization_sidecar_db_path == cfg.audit_db_path_readonly
-    assert "runtime_write_v2/memory_normalization_sidecar.sqlite3" not in str(
-        cfg.normalization_sidecar_db_path
-    ).replace("\\", "/")
+    assert cfg.normalization_sidecar_db_path != cfg.audit_db_path_readonly
+    assert str(cfg.normalization_sidecar_db_path).replace("\\", "/").endswith(
+        "runtime_write_v1/normalization_sidecar.sqlite3"
+    )
 
     report = validate_large_memory(
         root,
@@ -172,9 +172,9 @@ def test_canonical_sidecar_path_and_health_contract(
     assert report["ok"] is True, report
     assert report["summary"]["required_missing_count"] == 0
     assert report["summary"]["wake_state_ready"] is True
-    assert not any(
+    assert any(
         item["path"].replace("\\", "/").endswith(
-            "runtime_write_v2/memory_normalization_sidecar.sqlite3"
+            "runtime_write_v1/normalization_sidecar.sqlite3"
         )
         for item in report["databases"]
     )
@@ -184,7 +184,8 @@ def test_canonical_sidecar_path_and_health_contract(
         if "normalization_sidecar" in item["role"]
     ]
     assert len(sidecar_results) == 1
-    assert "runtime_audit" in sidecar_results[0]["role"]
+    assert "normalization_sidecar" in sidecar_results[0]["role"]
+    assert "runtime_audit" not in sidecar_results[0]["role"]
     assert sidecar_results[0]["table_counts"]["wake_state_snapshots"] == 1
 
     user_text = "Podaj bieżący stan runtime, wake-state i źródło tej odpowiedzi."

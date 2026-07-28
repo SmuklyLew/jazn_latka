@@ -179,9 +179,12 @@ jobs:
         shell: pwsh
         run: python -X utf8 tools/package_smoke_ci.py --profile release
 
-      - name: Security path regressions
-        run: python -X utf8 -m pytest -q tests/test_release_hardening_safe_paths.py tests/test_release_hardening_raw_archive.py
-
+      - name: Security path and archive resource regressions
+        run: >-
+          python -X utf8 -m pytest -q
+          tests/test_release_hardening_safe_paths.py
+          tests/test_zip_resource_limits.py
+          tests/test_shard_manifest_fail_closed.py
       - name: Full session integrity regressions
         run: python -X utf8 -m pytest -q tests/test_release_hardening_integrity_pipeline.py
 

@@ -222,7 +222,9 @@ class TimeSourceResolver:
     @staticmethod
     def _classify_source(sample: TimeSample) -> str:
         source = str(sample.source or "").strip().lower()
-        if sample.trusted and (source.startswith(NETWORK_TIME_SOURCE_PREFIXES) or "#http-date" in source):
+        if "#http-date" in source:
+            return "network_observed"
+        if sample.trusted and source.startswith(NETWORK_TIME_SOURCE_PREFIXES):
             return "network"
         if sample.trusted and source.startswith(TRUSTED_HOST_TIME_SOURCE_PREFIXES):
             return "host_injected"
@@ -236,10 +238,8 @@ class TimeSourceResolver:
 
     @staticmethod
     def _header(local_dt: datetime, timezone_name: str) -> str:
-        offset_seconds = int(local_dt.utcoffset().total_seconds()) if local_dt.utcoffset() else 0
-        offset_hours = offset_seconds // 3600
-        sign = "+" if offset_hours >= 0 else ""
-        return f"[🕒 {local_dt:%Y-%m-%d %H:%M:%S} GMT{sign}{offset_hours}, {POLISH_WEEKDAYS[local_dt.weekday()]}, {timezone_name}]"
+        del timezone_name  # timezone is retained in structured metadata
+        return f"🕒 {local_dt:%Y-%m-%d %H:%M:%S}"
 
     def resolve(self, sample: TimeSample, *, max_age_seconds: int = TIMESTAMP_MAX_AGE_SECONDS) -> TimeSourceResolution:
         environment = self.environment()
@@ -263,6 +263,8 @@ class TimeSourceResolver:
             degradation.append(f"timestamp_stale:{freshness_seconds}s>{max_age_seconds}s")
         if source_class == "host_injected":
             degradation.append("network_time_unavailable_using_host_injected_time")
+        elif source_class == "network_observed":
+            degradation.append("http_date_is_network_observation_not_trusted_time")
         elif source_class != "network":
             degradation.append("local_machine_time_unverified")
         status = "active_trusted" if trusted and not self.timezone_degraded else "active_degraded"
@@ -455,7 +457,7 @@ class WarsawClock:
                     candidates.append(TimeSample(dt.astimezone(self.tz), url, True))
                 if date_header:
                     parsed = email.utils.parsedate_to_datetime(date_header)
-                    candidates.append(TimeSample(parsed.astimezone(self.tz), url + "#http-date", True))
+                    candidates.append(TimeSample(parsed.astimezone(self.tz), url + "#http-date", False))
                 if not candidates:
                     note(url, "invalid_response", started, error="no supported time field or Date header")
                     continue
@@ -511,7 +513,7 @@ class WarsawClock:
                         max_age_seconds=TIMESTAMP_MAX_AGE_SECONDS,
                     )
                     continue
-                sample = TimeSample(parsed, url + "#http-date", True)
+                sample = TimeSample(parsed, url + "#http-date", False)
                 note(url, "ok", started, source=sample.source, freshness_seconds=freshness_seconds)
                 return sample
             except Exception as exc:

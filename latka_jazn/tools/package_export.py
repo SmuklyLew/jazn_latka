@@ -13,6 +13,7 @@ import zipfile
 
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
     resolve_safe_destination,
@@ -98,7 +99,6 @@ FORBIDDEN_PACKAGE_GLOBS = (
     "*/codex_session_bridge/logs/*",
     "*/codex_session_bridge/log/*",
 )
-SKIP_EXPANDED_RAW_CHAT_IF_ARCHIVE_PRESENT = True
 
 
 class PackagePlanValidationError(ValueError):
@@ -235,12 +235,6 @@ def _iter_files(root: Path, mode: str, output_zip: Path):
         rel = path.relative_to(root).as_posix()
         if _is_common_excluded(path.resolve(), rel, output_zip):
             continue
-        if (
-            SKIP_EXPANDED_RAW_CHAT_IF_ARCHIVE_PRESENT
-            and rel == "memory/raw/chat.html"
-            and (root / "memory" / "raw" / "chat.html.7z").exists()
-        ):
-            continue
         if mode == "system" and rel.startswith(SYSTEM_EXCLUDE_PREFIXES):
             continue
         if mode == "memory" and not (rel.startswith("memory/") or rel.startswith("workspace_runtime/")):
@@ -298,6 +292,7 @@ def _checkpoint_sqlite_databases(root: Path) -> list[str]:
 
 
 def _unsafe_zip_entries(zf: zipfile.ZipFile) -> list[str]:
+    validate_zip_resources(zf)
     unsafe: list[str] = []
     for info in zf.infolist():
         name = info.filename[:-1] if info.is_dir() and info.filename.endswith("/") else info.filename
@@ -313,6 +308,7 @@ def _unsafe_zip_entries(zf: zipfile.ZipFile) -> list[str]:
 
 
 def _extract_zip_safely(zf: zipfile.ZipFile, target: Path) -> list[str]:
+    validate_zip_resources(zf)
     extracted: list[str] = []
     for info in zf.infolist():
         relative = info.filename[:-1] if info.is_dir() and info.filename.endswith("/") else info.filename
@@ -334,6 +330,7 @@ def _extract_zip_safely(zf: zipfile.ZipFile, target: Path) -> list[str]:
 def build_package_manifest(zip_path: Path, *, mode: str) -> dict:
     zip_path = Path(zip_path)
     with zipfile.ZipFile(zip_path, "r") as zf:
+        validate_zip_resources(zf)
         entries = [
             {
                 "path": info.filename,
@@ -457,15 +454,10 @@ def export_package(root: Path, mode: str, output_zip: Path | None = None) -> Pac
         if continuity_index.exists():
             notes.append("Dołączono memory/raw/session_continuity_index.json oraz memory/layered/continuity.jsonl, jeśli istnieje.")
         raw_chat = root / "memory" / "raw" / "chat.html"
-        raw_archive = root / "memory" / "raw" / "chat.html.7z"
-        if raw_archive.exists():
-            notes.append(f"Dołączono skompresowaną surową pamięć chat.html.7z ({raw_archive.stat().st_size} B).")
-            if raw_chat.exists() and SKIP_EXPANDED_RAW_CHAT_IF_ARCHIVE_PRESENT:
-                notes.append("Pominięto rozpakowany memory/raw/chat.html, aby nie dublować danych.")
-        elif raw_chat.exists():
-            notes.append(f"Dołączono rozpakowaną surową pamięć chat.html ({raw_chat.stat().st_size} B).")
+        if raw_chat.exists():
+            notes.append(f"Dołączono jawny memory/raw/chat.html ({raw_chat.stat().st_size} B).")
         else:
-            notes.append("Nie znaleziono memory/raw/chat.html ani chat.html.7z.")
+            notes.append("Nie znaleziono memory/raw/chat.html; runtime nie rozpakowuje archiwów 7z.")
     if mode == "system":
         notes.append("Eksport system-only celowo pomija memory/ oraz workspace_runtime/.")
     if mode == "nlp":

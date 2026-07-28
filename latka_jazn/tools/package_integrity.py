@@ -10,6 +10,7 @@ import subprocess
 import zipfile
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
     resolve_safe_path,
@@ -185,16 +186,28 @@ def path_is_forbidden(relative: str) -> bool:
     return False
 
 
-def _git_paths(root: Path) -> tuple[list[str], list[str]]:
+def _git_name_set(root: Path, *args: str) -> set[str]:
     completed = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "--cached", "--others", "--exclude-standard"],
+        ["git", "-C", str(root), *args],
         capture_output=True, stdin=subprocess.DEVNULL, text=True, encoding="utf-8", errors="replace", check=False,
     )
     if completed.returncode != 0:
-        raise RuntimeError(f"git ls-files failed: {completed.stderr.strip()}")
-    candidates = sorted({line.strip().replace("\\", "/") for line in completed.stdout.splitlines() if line.strip()})
-    missing = [path for path in candidates if not (root / path).is_file()]
-    return candidates, missing
+        raise RuntimeError(f"git {' '.join(args)} failed: {completed.stderr.strip()}")
+    return {line.strip().replace("\\", "/") for line in completed.stdout.splitlines() if line.strip()}
+
+
+def _git_paths(root: Path) -> tuple[list[str], list[str]]:
+    candidates = _git_name_set(root, "ls-files", "--cached", "--others", "--exclude-standard")
+    deleted = _git_name_set(root, "diff", "--name-only", "--diff-filter=D", "--")
+    deleted |= _git_name_set(root, "diff", "--cached", "--name-only", "--diff-filter=D", "--")
+    # A release candidate is built from the current worktree. Paths that Git
+    # explicitly reports as deleted are intentional members of that state and
+    # must not be mistaken for a truncated checkout. Any other absent tracked
+    # or unignored path remains a hard error below.
+    candidates -= deleted
+    ordered = sorted(candidates)
+    missing = [path for path in ordered if not (root / path).is_file()]
+    return ordered, missing
 
 
 def _walk_paths(root: Path) -> Iterable[str]:
@@ -513,6 +526,7 @@ def verify_package_integrity_manifest_in_zips(
             continue
         try:
             with zipfile.ZipFile(zip_path, "r") as archive:
+                validate_zip_resources(archive)
                 for info in archive.infolist():
                     if info.is_dir():
                         continue
@@ -569,6 +583,7 @@ def verify_package_integrity_manifest_in_zips(
             errors.append({"code": "size_mismatch", "path": canonical, "expected": expected_size, "actual": info.file_size})
         digest = hashlib.sha256()
         with zipfile.ZipFile(zip_path, "r") as archive:
+            validate_zip_resources(archive)
             with archive.open(info, "r") as handle:
                 for chunk in iter(lambda: handle.read(1024 * 1024), b""):
                     digest.update(chunk)

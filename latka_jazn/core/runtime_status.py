@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.memory.raw_archive import chat_archive_diagnostics
 from latka_jazn.memory.conversation_archive import build_conversation_archive_status
 from latka_jazn.memory.event_ledger import (
     DEFAULT_JSONL_SHARD_MAX_BYTES,
@@ -179,7 +178,6 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
     root = Path(cfg.root).resolve()
     raw = root / "memory" / "raw"
     chat = raw / "chat.html"
-    archive_diag = chat_archive_diagnostics(root)
     counts = layer_counts(root)
     event_ledger_counts = build_event_ledger_status(root, raw)
 
@@ -204,26 +202,13 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
     issues: list[str] = []
     raw_memory_note = ""
     indexed_raw_memory_available = bool(imported_sha) and stats.get("legacy_messages", 0) > 0
-    if not chat.exists():
-        if archive_diag.get("archive_present"):
-            if indexed_raw_memory_available:
-                raw_memory_note = (
-                    "rozpakowany memory/raw/chat.html nie jest w katalogu, ale skompresowane chat.html.7z "
-                    "jest obecne, a SQLite ma aktywny indeks surowej pamięci; rozpakowanie HTML jest opcjonalne "
-                    "do awaryjnego pełnego skanu raw"
-                )
-            elif not archive_diag.get("py7zr_available") and not archive_diag.get("system_7z"):
-                issues.append(
-                    "chat.html.7z jest, ale py7zr nie jest zainstalowane i nie znaleziono systemowego 7z/7za/7zr — "
-                    "uruchom `python -m pip install -r requirements.txt`, a potem `python tools/memory_repair.py --import-chat-html`"
-                )
-            else:
-                issues.append(
-                    "chat.html.7z jest i ekstraktor jest dostępny, ale memory/raw/chat.html nie jest jeszcze rozpakowany ani zaindeksowany — "
-                    "uruchom `synchAll`, `/import_chat_html` albo `python tools/memory_repair.py --import-chat-html`"
-                )
-        else:
-            issues.append("brak memory/raw/chat.html i brak chat.html.7z — surowa pamięć nie jest dostępna")
+    if not chat.exists() and not indexed_raw_memory_available:
+        issues.append("brak memory/raw/chat.html i brak aktywnego indeksu surowej pamięci")
+    elif not chat.exists() and indexed_raw_memory_available:
+        raw_memory_note = (
+            "memory/raw/chat.html nie jest obecny, ale SQLite ma aktywny indeks surowej pamięci; "
+            "pełny ponowny import wymaga jawnego pliku HTML"
+        )
     if chat.exists() and stats.get("legacy_messages", 0) == 0:
         issues.append("chat.html istnieje, ale legacy_messages=0 — trzeba wykonać `/import_chat_html`, `synchAll` albo `python tools/memory_repair.py --import-chat-html`")
     episodic_file_count = counts.get("episodic.jsonl")
@@ -232,7 +217,6 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
 
     state_note = "ciągłość przerw jest zapisywana w workspace_runtime/runtime_state.json, ale to nadal nie jest Daemon w tle"
     root_note = ". (ścieżki diagnostyczne są względne względem katalogu paczki, żeby nie utrwalać ścieżek budowania)"
-    archive_path = display_path(root, archive_diag.get("archive_path"))
 
     return (
         f"Diagnoza runtime {cfg.version}:\n"
@@ -245,10 +229,8 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
         f"- shard manifest audytu: {display_path(root, root / cfg.audit_shard_manifest_name)}\n"
         f"- embedded bootstrap/README/AGENTS/contracts: {json.dumps(contract_status, ensure_ascii=False)}\n"
         f"- chat.html: {'jest' if chat.exists() else 'brak'}" + (f", ścieżka={display_path(root, chat)}, rozmiar={chat.stat().st_size} B" if chat.exists() else "") + "\n"
-        f"- chat.html.7z: {'jest' if archive_diag.get('archive_present') else 'brak'}" + (f", ścieżka={archive_path}, rozmiar={archive_diag.get('archive_size_bytes')} B" if archive_diag.get('archive_present') else "") + "\n"
-        f"- py7zr: {'dostępne' if archive_diag.get('py7zr_available') else 'brak'}\n"
-        f"- systemowy 7z/7za/7zr: {archive_diag.get('system_7z') or 'brak'}\n"
-        f"- pełny import raw możliwy teraz: {'tak' if archive_diag.get('can_unpack') else 'nie'}\n"
+        f"- import surowy: tylko jawny memory/raw/chat.html albo istniejący indeks SQLite\n"
+        f"- pełny import raw możliwy teraz: {'tak' if chat.exists() else 'nie'}\n"
         f"- chat_html_import_sha256: {'jest' if imported_sha else 'brak'}\n"
         f"- SQLite statystyki: {json.dumps(stats, ensure_ascii=False)}\n"
         f"- pliki warstwowe: {json.dumps(counts, ensure_ascii=False)}\n"

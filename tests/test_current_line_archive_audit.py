@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import pytest
 from pathlib import Path
 
 from latka_jazn.tools.current_line_archive_audit import ARCHIVE_ROOT, run_audit
@@ -11,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_current_active_tree_has_no_old_package_version_references() -> None:
+    if not (ROOT / ARCHIVE_ROOT / "ARCHIVE_MANIFEST.json").exists():
+        pytest.skip("developer archive is not included in the clean release tree")
     report = run_audit(ROOT)
     assert report.package_version == PACKAGE_VERSION
     assert report.active_old_references == []
@@ -19,6 +22,8 @@ def test_current_active_tree_has_no_old_package_version_references() -> None:
 
 
 def test_archive_preserves_exact_files_and_private_source_metadata_only() -> None:
+    if not (ROOT / ARCHIVE_ROOT / "ARCHIVE_MANIFEST.json").exists():
+        pytest.skip("developer archive is not included in the clean release tree")
     manifest = json.loads((ROOT / ARCHIVE_ROOT / "ARCHIVE_MANIFEST.json").read_text(encoding="utf-8"))
     private = [entry for entry in manifest["files"] if entry["retention"] == "metadata_only_private_source"]
     assert len(private) == 1

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Iterable
 
-from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, ensure_runtime_audit_schema
+from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, connect_runtime_audit_readonly, ensure_runtime_audit_schema
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("candidate_decision_ledger")
@@ -137,9 +137,11 @@ class CandidateDecisionLedger:
             connection.close()
 
     def get(self, decision_id: str, *, include_raw_text: bool = False) -> dict[str, Any] | None:
-        connection = connect_runtime_audit(self.path)
+        connection = connect_runtime_audit_readonly(self.path)
         try:
-            ensure_runtime_audit_schema(connection)
+            tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
+            if not {"candidate_decisions", "response_candidates"}.issubset(tables):
+                return None
             row = connection.execute(
                 "SELECT * FROM candidate_decisions WHERE decision_id=?", (decision_id,)
             ).fetchone()

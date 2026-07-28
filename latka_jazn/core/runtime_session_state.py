@@ -154,8 +154,13 @@ class RuntimeSessionStateStore:
     def _path_for_session(self, session_id: str | None) -> Path:
         if not session_id:
             return self.latest_path
-        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", session_id).strip("._") or "session"
-        return self.root / "workspace_runtime" / "runtime_sessions" / f"{safe}.json"
+        raw = str(session_id)
+        if len(raw.encode("utf-8")) > 512:
+            raise ValueError("session_id_too_long")
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("._") or "session"
+        safe = safe[:80].rstrip("._") or "session"
+        digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        return self.root / "workspace_runtime" / "runtime_sessions" / f"{safe}-{digest}.json"
 
     @staticmethod
     def _state_from_payload(payload: Mapping[str, Any]) -> RuntimeSessionState:
@@ -306,16 +311,18 @@ class RuntimeSessionStateStore:
             status = {
                 "status": "legacy_checkpoint_unverified",
                 "verified": False,
-                "carryover_allowed": True,
+                "carryover_allowed": False,
                 "checkpoint_present": False,
                 "truth_boundary": (
-                    "Legacy session state was loaded for compatibility, but it is not hash-bound to wake-state. "
-                    "The next successful save upgrades it to a verified checkpoint."
+                    "Legacy session state was loaded only for migration metadata. It is not hash-bound to "
+                    "wake-state, so previous text, route and intent are not eligible for carryover."
                 ),
             }
+            state.clear_carryover()
             self.last_load_metadata.update(
                 restart_continuity_status=status["status"],
                 restart_continuity_verified=False,
+                session_carryover_blocked=True,
             )
             return status
 
@@ -411,6 +418,23 @@ class RuntimeSessionStateStore:
         checkpoint["checkpoint_sha256"] = _sha256_json(self._checkpoint_hash_material(checkpoint))
         return {**state_payload, "_continuity": checkpoint}, checkpoint
 
+    def _should_replace_latest(self, payload: Mapping[str, Any]) -> tuple[bool, str]:
+        if not self.latest_path.is_file():
+            return True, "latest_pointer_missing"
+        try:
+            existing = json.loads(self.latest_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return True, "latest_pointer_unreadable"
+        candidate_time = _parse_utc(str(payload.get("last_turn_at") or payload.get("created_at") or ""))
+        existing_time = _parse_utc(str(existing.get("last_turn_at") or existing.get("created_at") or ""))
+        if candidate_time is None:
+            return False, "candidate_turn_time_missing"
+        if existing_time is None:
+            return True, "existing_turn_time_missing"
+        if candidate_time < existing_time:
+            return False, "existing_latest_pointer_is_newer"
+        return True, "candidate_is_not_older"
+
     def save(
         self,
         state: RuntimeSessionState,
@@ -434,20 +458,27 @@ class RuntimeSessionStateStore:
         except OSError as exc:
             errors.append(f"primary:{type(exc).__name__}:{exc}")
 
+        latest_pointer_reason = "carryover_disabled"
         if primary_saved and self.carryover_enabled:
-            try:
-                _atomic_write_json(self.latest_path, payload)
-                latest_saved = True
-            except OSError as exc:
-                errors.append(f"latest:{type(exc).__name__}:{exc}")
+            replace_latest, latest_pointer_reason = self._should_replace_latest(payload)
+            if replace_latest:
+                try:
+                    _atomic_write_json(self.latest_path, payload)
+                    latest_saved = True
+                except OSError as exc:
+                    errors.append(f"latest:{type(exc).__name__}:{exc}")
 
-        saved = primary_saved and (latest_saved or not self.carryover_enabled)
+        # A deliberately preserved newer pointer is a successful continuity
+        # outcome even though this session did not replace the shared pointer.
+        latest_requirement_satisfied = latest_saved or latest_pointer_reason == "existing_latest_pointer_is_newer"
+        saved = primary_saved and (latest_requirement_satisfied or not self.carryover_enabled)
         self.last_save_status = {
             "session_state_saved": saved,
             "session_state_path": str(primary),
             "latest_session_pointer_path": str(self.latest_path),
             "latest_session_pointer_saved": latest_saved,
             "latest_session_pointer_required": self.carryover_enabled,
+            "latest_session_pointer_reason": latest_pointer_reason,
             "continuity_checkpoint_written": primary_saved,
             "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256") if primary_saved else None,
             "continuity_generation": checkpoint.get("generation") if primary_saved else None,

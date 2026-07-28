@@ -342,36 +342,40 @@ def is_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> bool:
     return phase in {"host_visible_reply", "chatgpt_host_visible_reply", "host_visible_reply_record"}
 
 
-def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
-    """Extract and validate a ChatGPT-host visible reply JSONL payload."""
+def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Extract a fail-closed ChatGPT-host visible reply JSONL payload."""
     trace = payload.get("trace") if isinstance(payload.get("trace"), dict) else {}
     final_text, final_text_field = _nonempty_text_from_fields(payload, CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS)
-    turn_id = str(payload.get("turn_id") or trace.get("turn_id") or "").strip()
-    trace_id = str(payload.get("trace_id") or trace.get("trace_id") or "").strip()
-    timestamp_header = str(payload.get("timestamp_header") or trace.get("timestamp_header") or "").strip()
-    final_text_sha256 = str(payload.get("final_text_sha256") or "").strip().lower()
-    state_emoticon = str(payload.get("state_emoticon") or payload.get("emoticon") or "🌿").strip() or "🌿"
+    values: dict[str, Any] = {
+        "final_text": final_text,
+        "final_text_field": final_text_field,
+        "turn_id": str(payload.get("turn_id") or trace.get("turn_id") or "").strip(),
+        "trace_id": str(payload.get("trace_id") or trace.get("trace_id") or "").strip(),
+        "timestamp_header": str(payload.get("timestamp_header") or trace.get("timestamp_header") or "").strip(),
+        "timezone": str(payload.get("timezone") or trace.get("timezone") or "").strip(),
+        "timestamp_sample_iso": str(payload.get("timestamp_sample_iso") or "").strip(),
+        "timestamp_source": str(payload.get("timestamp_source") or "").strip(),
+        "timestamp_trusted": payload.get("timestamp_trusted"),
+        "author_id": str(payload.get("author_id") or "").strip(),
+        "author_label": str(payload.get("author_label") or "").strip(),
+        "author_source": str(payload.get("author_source") or "").strip(),
+        "state_emoticon": str(payload.get("state_emoticon") or payload.get("emoticon") or "").strip(),
+        "final_text_sha256": str(payload.get("final_text_sha256") or "").strip().lower(),
+    }
     missing: list[str] = []
     if not final_text:
         missing.append("final_text|host_visible_text|visible_text|assistant_text")
-    if not turn_id:
-        missing.append("turn_id")
-    if not trace_id:
-        missing.append("trace_id")
-    if not timestamp_header:
-        missing.append("timestamp_header")
-    if not re.fullmatch(r"[0-9a-f]{64}", final_text_sha256):
+    for field in (
+        "turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso",
+        "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon",
+    ):
+        if not values[field]:
+            missing.append(field)
+    if not isinstance(values["timestamp_trusted"], bool):
+        missing.append("timestamp_trusted")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(values["final_text_sha256"])):
         missing.append("final_text_sha256")
-    return {
-        "final_text": final_text,
-        "final_text_field": final_text_field,
-        "turn_id": turn_id,
-        "trace_id": trace_id,
-        "timestamp_header": timestamp_header,
-        "state_emoticon": state_emoticon,
-        "final_text_sha256": final_text_sha256,
-    }, missing
-
+    return values, missing
 
 def chatgpt_result_has_accepted_runtime_final(result: dict[str, Any]) -> bool:
     """Return true only for an accepted handler final that needs no host speech."""
@@ -440,6 +444,15 @@ def build_chatgpt_host_bridge_turn_contract(
     turn_id = str(trace.get("turn_id") or runtime_turn.get("turn_id") or final_contract.get("turn_id") or "")
     trace_id = str(trace.get("trace_id") or runtime_turn.get("trace_id") or final_contract.get("trace_id") or "")
     timestamp_header = str(trace.get("timestamp_header") or runtime_turn.get("timestamp_header") or final_contract.get("timestamp_header") or "")
+    timestamp_contract = decision.get("timestamp_contract") if isinstance(decision.get("timestamp_contract"), dict) else {}
+    timezone = str(final_contract.get("timezone") or trace.get("timezone") or timestamp_contract.get("timezone") or timestamp_contract.get("timezone_key") or "")
+    timestamp_sample_iso = str(final_contract.get("timestamp_sample_iso") or timestamp_contract.get("sample_iso") or "")
+    timestamp_source = str(final_contract.get("timestamp_source") or timestamp_contract.get("source") or "")
+    timestamp_trusted = final_contract.get("timestamp_trusted") if isinstance(final_contract.get("timestamp_trusted"), bool) else timestamp_contract.get("trusted")
+    author_id = str(final_contract.get("author_id") or "")
+    author_label = str(final_contract.get("author_label") or "")
+    author_source = str(final_contract.get("author_source") or "")
+    state_emoticon = str(final_contract.get("state_emoticon") or decision.get("state_emoticon") or "")
     return {
         "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
         "phase": "host_visible_generation_requested" if requires_host else "runtime_final_available",
@@ -449,6 +462,14 @@ def build_chatgpt_host_bridge_turn_contract(
         "turn_id": turn_id,
         "trace_id": trace_id,
         "timestamp_header": timestamp_header,
+        "timezone": timezone,
+        "timestamp_sample_iso": timestamp_sample_iso,
+        "timestamp_source": timestamp_source,
+        "timestamp_trusted": timestamp_trusted,
+        "author_id": author_id,
+        "author_label": author_label,
+        "author_source": author_source,
+        "state_emoticon": state_emoticon,
         "timestamp_required": bool(timestamp_header),
         "required_visible_prefix": timestamp_header,
         "host_reply_finalization_required": requires_host,
@@ -474,7 +495,15 @@ def build_chatgpt_host_bridge_turn_contract(
             "turn_id": turn_id,
             "trace_id": trace_id,
             "timestamp_header": timestamp_header,
-            "final_text": "<widoczna odpowiedź ułożona zgodnie z runtime_ownership_contract>",
+            "timezone": timezone,
+            "timestamp_sample_iso": timestamp_sample_iso,
+            "timestamp_source": timestamp_source,
+            "timestamp_trusted": timestamp_trusted,
+            "author_id": author_id,
+            "author_label": author_label,
+            "author_source": author_source,
+            "state_emoticon": state_emoticon,
+            "final_text": "<body albo kompletna widoczna koperta zgodna z runtime_ownership_contract>",
             "final_text_sha256": "<sha256 dokładnych bajtów UTF-8 pola final_text>",
         },
         "accepted_host_reply_text_fields": list(CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS),
@@ -487,7 +516,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "host_generation_rules": [
             *host_policy_rules,
             "Nie twierdź, że lokalny Python wywołał ChatGPT jako funkcję.",
-            "Widoczna odpowiedź MUSI zaczynać się dokładnie od required_visible_prefix/timestamp_header; faza finalizacji odrzuci obcy timestamp i naprawi brakujący.",
+            "Host może odesłać body albo kompletną kopertę. Finalizator renderuje wyłącznie zweryfikowany timestamp, stan i autora; odrzuca obcy lub częściowy nagłówek.",
             "Jeżeli runtime_truth_gate blokuje zwykłą odpowiedź, pokaż krótką diagnozę hosta zamiast imitować wypowiedź Łatki.",
         ],
     }
@@ -506,6 +535,14 @@ def persist_chatgpt_host_visible_reply(
         return None, missing
     finalization = finalize_host_visible_text(
         required_timestamp_header=reply["timestamp_header"],
+        timezone=reply["timezone"],
+        timestamp_sample_iso=reply["timestamp_sample_iso"],
+        timestamp_source=reply["timestamp_source"],
+        timestamp_trusted=reply["timestamp_trusted"],
+        author_id=reply["author_id"],
+        author_label=reply["author_label"],
+        author_source=reply["author_source"],
+        state_emoticon=reply["state_emoticon"],
         turn_id=reply["turn_id"],
         trace_id=reply["trace_id"],
         text=reply["final_text"],
@@ -525,6 +562,13 @@ def persist_chatgpt_host_visible_reply(
             turn_id=reply["turn_id"],
             trace_id=reply["trace_id"],
             timestamp_header=reply["timestamp_header"],
+            timezone=reply["timezone"],
+            timestamp_sample_iso=reply["timestamp_sample_iso"],
+            timestamp_source=reply["timestamp_source"],
+            timestamp_trusted=reply["timestamp_trusted"],
+            author_id=reply["author_id"],
+            author_label=reply["author_label"],
+            author_source=reply["author_source"],
             final_text=reply["final_text"],
             state_emoticon=reply["state_emoticon"],
             source="chatgpt_visible_layer_jsonl",

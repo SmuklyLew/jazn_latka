@@ -1,34 +1,38 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Any
 import hashlib
 
-from latka_jazn.core.final_response_contract import FinalResponseContract
+from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
+from latka_jazn.version import schema_version
 
-SCHEMA_VERSION = "final_visible_reply_capture/v1"
+SCHEMA_VERSION = schema_version("final_visible_reply_capture")
+
+
+def _sha(value: str) -> str:
+    return hashlib.sha256(normalize_newlines(value).encode("utf-8")).hexdigest()
 
 
 @dataclass(slots=True)
 class FinalVisibleReplyCapture:
-    """Ślad finalnej odpowiedzi widocznej dla użytkownika.
-
-    Ten obiekt jest dla mostu ChatGPT ⇄ Jaźń: gdy widoczna odpowiedź powstaje
-    poza samym runtime, nadal można dopisać ją do ledgera z tym samym turn_id,
-    trace_id i timestamp_header. Nie udaje to stałego procesu w tle; zapisuje
-    tylko to, co zostało pokazane użytkownikowi.
-    """
-
     turn_id: str
     trace_id: str
     timestamp_header: str
     timezone: str
+    timestamp_sample_iso: str
+    timestamp_source: str
+    timestamp_trusted: bool
+    author_id: str
+    author_label: str
+    author_source: str
+    state_emoticon: str
     source: str
     original_text_sha256: str
     final_text_sha256: str
-    timestamp_present_in_original: bool
-    timestamp_present_in_final: bool
-    was_repaired: bool
+    envelope_present_in_original: bool
+    envelope_present_in_final: bool
+    was_rendered_from_body: bool
     final_visible_text: str
     schema_version: str = SCHEMA_VERSION
 
@@ -39,33 +43,74 @@ class FinalVisibleReplyCapture:
         turn_id: str,
         trace_id: str,
         timestamp_header: str,
-        timezone: str = "Europe/Warsaw",
-        state_emoticon: str = "🌿",
+        timezone: str,
+        timestamp_sample_iso: str,
+        timestamp_source: str,
+        timestamp_trusted: bool,
+        author_id: str,
+        author_label: str,
+        author_source: str,
+        state_emoticon: str,
         final_text: str,
         source: str = "chatgpt_visible_layer",
     ) -> "FinalVisibleReplyCapture":
-        original = (final_text or "").strip()
-        if not turn_id:
-            raise ValueError("turn_id is required to persist a final visible reply")
-        if not trace_id:
-            raise ValueError("trace_id is required to persist a final visible reply")
-        if not timestamp_header:
-            raise ValueError("timestamp_header is required to persist a final visible reply")
-        repaired = FinalResponseContract.ensure_timestamp_prefix(timestamp_header, state_emoticon, original)
-        original_has_ts = original.startswith(timestamp_header)
-        final_has_ts = repaired.startswith(timestamp_header)
+        if not turn_id or not trace_id:
+            raise ValueError("turn_id and trace_id are required")
+        original = normalize_newlines(final_text)
+        envelope = MessageEnvelope.build(
+            timestamp_header=timestamp_header,
+            timezone=timezone,
+            timestamp_sample_iso=timestamp_sample_iso,
+            timestamp_source=timestamp_source,
+            timestamp_trusted=timestamp_trusted,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
+            state_emoticon=state_emoticon,
+            body="capture-validation",
+        )
+        prefix = f"{timestamp_header}\n{state_emoticon} {author_label}\n\n"
+        original_has_envelope = original.startswith(prefix)
+        if original_has_envelope:
+            final_visible_text = original
+            rendered = False
+        else:
+            if original.startswith(timestamp_header) or original.split("\n", 1)[0].startswith("🕒 "):
+                raise ValueError("partial or foreign message envelope cannot be repaired")
+            final_visible_text = MessageEnvelope.build(
+                timestamp_header=timestamp_header,
+                timezone=timezone,
+                timestamp_sample_iso=timestamp_sample_iso,
+                timestamp_source=timestamp_source,
+                timestamp_trusted=timestamp_trusted,
+                author_id=author_id,
+                author_label=author_label,
+                author_source=author_source,
+                state_emoticon=state_emoticon,
+                body=original,
+            ).render()
+            rendered = True
+        if not envelope.timestamp_matches_sample():
+            raise ValueError("timestamp header does not match timestamp sample")
         return cls(
             turn_id=turn_id,
             trace_id=trace_id,
             timestamp_header=timestamp_header,
             timezone=timezone,
+            timestamp_sample_iso=timestamp_sample_iso,
+            timestamp_source=timestamp_source,
+            timestamp_trusted=timestamp_trusted,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
+            state_emoticon=state_emoticon,
             source=source,
-            original_text_sha256=hashlib.sha256(original.encode("utf-8")).hexdigest(),
-            final_text_sha256=hashlib.sha256(repaired.encode("utf-8")).hexdigest(),
-            timestamp_present_in_original=original_has_ts,
-            timestamp_present_in_final=final_has_ts,
-            was_repaired=(repaired != original),
-            final_visible_text=repaired,
+            original_text_sha256=_sha(original),
+            final_text_sha256=_sha(final_visible_text),
+            envelope_present_in_original=original_has_envelope,
+            envelope_present_in_final=True,
+            was_rendered_from_body=rendered,
+            final_visible_text=final_visible_text,
         )
 
     def to_dict(self) -> dict[str, Any]:

@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, asdict
 from typing import Any
-import re
 
 from latka_jazn.version import PACKAGE_VERSION, schema_version
 from latka_jazn.core.visible_integrity import (
     evaluate_origin_truth,
     validate_visible_text as canonical_validate_visible_text,
+)
+from latka_jazn.core.message_envelope import (
+    MessageEnvelope,
+    normalize_newlines,
+    resolve_author,
 )
 
 SCHEMA_VERSION = schema_version("final_response_contract")
@@ -26,6 +30,9 @@ class FinalResponseContract:
     timestamp_header: str
     timezone: str
     state_emoticon: str
+    author_id: str
+    author_label: str
+    author_source: str
     body: str
     runtime_exact_text: str
     final_visible_text: str
@@ -62,6 +69,7 @@ class FinalResponseContract:
     runtime_rendering_mode: dict[str, Any] | None = None
     memory_recall_contract_status: dict[str, Any] | None = None
     final_visible_integrity: dict[str, Any] | None = None
+    message_envelope: dict[str, Any] | None = None
     schema_version: str = SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, Any]:
@@ -97,13 +105,36 @@ class FinalResponseContract:
         conversation_decision: dict[str, Any] | None = None,
         continuity_badge_policy: dict[str, Any] | None = None,
     ) -> "FinalResponseContract":
-        body = re.sub(r"\s+", " ", (body or "").strip())
+        body = normalize_newlines(body)
         decision = dict(conversation_decision or {})
+        if not body.strip():
+            raise ValueError("body is required for final visible response")
         if not timestamp_header:
             raise ValueError("timestamp_header is required for final visible response")
-        marker = state_emoticon or "🌿"
-        final_visible_text = cls.ensure_timestamp_prefix(timestamp_header, marker, body)
+        marker = str(state_emoticon or "").strip()
+        if not marker:
+            raise ValueError("state_emoticon is required; unknown affect must be explicit")
         timestamp_contract = dict(decision.get("timestamp_contract") or {})
+        timestamp_contract.setdefault("timezone", timezone)
+        decision["timestamp_contract"] = timestamp_contract
+        required_timestamp_fields = ("sample_iso", "source", "trusted")
+        missing_timestamp_fields = [name for name in required_timestamp_fields if name not in timestamp_contract or timestamp_contract.get(name) in (None, "")]
+        if missing_timestamp_fields:
+            raise ValueError(f"timestamp_contract missing required fields: {', '.join(missing_timestamp_fields)}")
+        author_id, author_label, author_source = resolve_author(decision)
+        envelope = MessageEnvelope.build(
+            timestamp_header=timestamp_header,
+            timezone=timezone,
+            timestamp_sample_iso=str(timestamp_contract.get("sample_iso")),
+            timestamp_source=str(timestamp_contract.get("source")),
+            timestamp_trusted=bool(timestamp_contract.get("trusted")),
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
+            state_emoticon=marker,
+            body=body,
+        )
+        final_visible_text = envelope.render()
         declared_fallback = str(decision.get("fallback_classification") or "").strip()
         fallback_classification = declared_fallback or cls.classify_fallback(
             decision.get("route"), body, runtime_version=runtime_version
@@ -124,6 +155,9 @@ class FinalResponseContract:
             timestamp_contract=timestamp_contract,
             validation_passed=validation_passed,
             origin_truth_valid=origin_truth_valid,
+            author_label=author_label,
+            state_emoticon=marker,
+            expected_body=body,
         )
         if fallback_classification == "rule_handler_response":
             runtime_answer_quality = str(decision.get("runtime_answer_quality") or "rule_handler_response")
@@ -147,6 +181,9 @@ class FinalResponseContract:
             timestamp_header=timestamp_header,
             timezone=timezone,
             state_emoticon=marker,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
             body=body,
             runtime_exact_text=body,
             final_visible_text=final_visible_text,
@@ -182,6 +219,7 @@ class FinalResponseContract:
             runtime_rendering_mode=decision.get("runtime_rendering_mode") or None,
             memory_recall_contract_status=decision.get("memory_recall_contract_status") or None,
             final_visible_integrity=final_visible_integrity,
+            message_envelope=envelope.to_dict(),
         )
 
     @staticmethod
@@ -220,12 +258,17 @@ class FinalResponseContract:
         return "not_fallback"
 
     @staticmethod
-    def ensure_timestamp_prefix(timestamp_header: str, state_emoticon: str, body_or_text: str) -> str:
-        text = (body_or_text or "").strip()
-        if text.startswith(timestamp_header):
-            return text
-        marker = state_emoticon or "🌿"
-        return f"{timestamp_header} {marker}\n{text}"
+    def ensure_timestamp_prefix(
+        timestamp_header: str,
+        state_emoticon: str,
+        author_label: str,
+        body_or_text: str,
+    ) -> str:
+        body = normalize_newlines(body_or_text)
+        prefix = f"{timestamp_header}\n{state_emoticon} {author_label}\n\n"
+        if body.startswith(prefix):
+            return body
+        return prefix + body
 
     @staticmethod
     def validate_visible_text(
@@ -235,6 +278,9 @@ class FinalResponseContract:
         timestamp_contract: dict[str, Any] | None = None,
         validation_passed: bool = True,
         origin_truth_valid: bool = True,
+        author_label: str | None = None,
+        state_emoticon: str | None = None,
+        expected_body: str | None = None,
     ) -> dict[str, Any]:
         return canonical_validate_visible_text(
             timestamp_header,
@@ -242,4 +288,7 @@ class FinalResponseContract:
             timestamp_contract=timestamp_contract,
             validation_passed=validation_passed,
             origin_truth_valid=origin_truth_valid,
+            author_label=author_label,
+            state_emoticon=state_emoticon,
+            expected_body=expected_body,
         )

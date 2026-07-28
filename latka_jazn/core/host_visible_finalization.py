@@ -4,13 +4,16 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
-import re
 from typing import Any, Mapping
 
+from latka_jazn.core.message_envelope import (
+    MessageEnvelope,
+    TIMESTAMP_HEADER_RE,
+    normalize_newlines,
+)
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("host_visible_finalization", version=PACKAGE_VERSION_FULL)
-TIMESTAMP_PREFIX_RE = re.compile(r"^\[[^\]\n]{1,240}\]")
 
 
 def _canonical_json(value: Mapping[str, Any]) -> bytes:
@@ -18,7 +21,7 @@ def _canonical_json(value: Mapping[str, Any]) -> bytes:
 
 
 def _sha_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return hashlib.sha256(normalize_newlines(text).encode("utf-8")).hexdigest()
 
 
 @dataclass(slots=True, frozen=True)
@@ -34,7 +37,7 @@ class HostVisibleFinalizationViolation:
 @dataclass(slots=True, frozen=True)
 class HostVisibleFinalizationPolicy:
     max_utf8_bytes: int = 2 * 1024 * 1024
-    repair_missing_timestamp: bool = True
+    render_body_when_envelope_missing: bool = True
     require_supplied_text_hash: bool = True
     reject_foreign_timestamp: bool = True
     reject_empty: bool = True
@@ -47,6 +50,14 @@ class HostVisibleFinalizationPolicy:
 @dataclass(slots=True)
 class HostVisibleFinalizationContract:
     required_timestamp_header: str
+    timezone: str
+    timestamp_sample_iso: str
+    timestamp_source: str
+    timestamp_trusted: bool
+    author_id: str
+    author_label: str
+    author_source: str
+    state_emoticon: str
     turn_id: str
     trace_id: str
     policy: HostVisibleFinalizationPolicy = field(default_factory=HostVisibleFinalizationPolicy)
@@ -55,23 +66,49 @@ class HostVisibleFinalizationContract:
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
-        self.required_timestamp_header = str(self.required_timestamp_header or "").strip()
-        self.turn_id = str(self.turn_id or "").strip()
-        self.trace_id = str(self.trace_id or "").strip()
-        if not self.required_timestamp_header:
-            raise ValueError("required_timestamp_header is required")
-        if not self.turn_id:
-            raise ValueError("turn_id is required")
-        if not self.trace_id:
-            raise ValueError("trace_id is required")
+        for field_name in (
+            "required_timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source",
+            "author_id", "author_label", "author_source", "state_emoticon", "turn_id", "trace_id",
+        ):
+            value = str(getattr(self, field_name) or "").strip()
+            if not value:
+                raise ValueError(f"{field_name} is required")
+            setattr(self, field_name, value)
+        if not TIMESTAMP_HEADER_RE.fullmatch(self.required_timestamp_header):
+            raise ValueError("required_timestamp_header has invalid shape")
+        envelope = self.envelope_for_body("contract-validation")
+        if not envelope.timestamp_matches_sample():
+            raise ValueError("required_timestamp_header does not match timestamp_sample_iso/timezone")
         calculated = self.calculate_hash()
         if self.contract_hash and self.contract_hash != calculated:
             raise ValueError("contract_hash mismatch")
         self.contract_hash = calculated
 
+    def envelope_for_body(self, body: str) -> MessageEnvelope:
+        return MessageEnvelope.build(
+            timestamp_header=self.required_timestamp_header,
+            timezone=self.timezone,
+            timestamp_sample_iso=self.timestamp_sample_iso,
+            timestamp_source=self.timestamp_source,
+            timestamp_trusted=self.timestamp_trusted,
+            author_id=self.author_id,
+            author_label=self.author_label,
+            author_source=self.author_source,
+            state_emoticon=self.state_emoticon,
+            body=body,
+        )
+
     def calculate_hash(self) -> str:
         payload = {
             "required_timestamp_header": self.required_timestamp_header,
+            "timezone": self.timezone,
+            "timestamp_sample_iso": self.timestamp_sample_iso,
+            "timestamp_source": self.timestamp_source,
+            "timestamp_trusted": self.timestamp_trusted,
+            "author_id": self.author_id,
+            "author_label": self.author_label,
+            "author_source": self.author_source,
+            "state_emoticon": self.state_emoticon,
             "turn_id": self.turn_id,
             "trace_id": self.trace_id,
             "policy": self.policy.to_dict(),
@@ -98,13 +135,14 @@ class HostVisibleFinalizationResult:
     hash_valid: bool
     approval_stage: str
     body_unchanged: bool
+    envelope_completed: bool
     violations: list[HostVisibleFinalizationViolation] = field(default_factory=list)
     created_at_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     schema_version: str = SCHEMA_VERSION
 
     @property
     def repaired(self) -> bool:
-        return self.state == "repair"
+        return self.envelope_completed
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -113,7 +151,7 @@ class HostVisibleFinalizationResult:
 
 
 class HostVisibleFinalizationGate:
-    """The single fail-closed gate for host-authored visible text."""
+    """Single fail-closed gate for host-authored visible text."""
 
     def finalize(
         self,
@@ -124,7 +162,7 @@ class HostVisibleFinalizationGate:
         trace_id: str | None = None,
         supplied_text_sha256: str | None = None,
     ) -> HostVisibleFinalizationResult:
-        original = str(text or "").strip()
+        original = normalize_newlines(text)
         original_hash = _sha_text(original)
         supplied_hash = str(supplied_text_sha256 or "").strip().lower() or None
         violations: list[HostVisibleFinalizationViolation] = []
@@ -133,7 +171,7 @@ class HostVisibleFinalizationGate:
             violations.append(HostVisibleFinalizationViolation("turn_id_mismatch", "The supplied turn_id does not match the contract."))
         if trace_id is not None and str(trace_id) != contract.trace_id:
             violations.append(HostVisibleFinalizationViolation("trace_id_mismatch", "The supplied trace_id does not match the contract."))
-        if contract.policy.reject_empty and not original:
+        if contract.policy.reject_empty and not original.strip():
             violations.append(HostVisibleFinalizationViolation("empty_text", "Visible text is empty."))
         if len(original.encode("utf-8")) > contract.policy.max_utf8_bytes:
             violations.append(HostVisibleFinalizationViolation("text_too_large", "Visible text exceeds the contract byte limit."))
@@ -142,13 +180,15 @@ class HostVisibleFinalizationGate:
         elif supplied_hash is not None and supplied_hash != original_hash:
             violations.append(HostVisibleFinalizationViolation("text_hash_mismatch", "The supplied host-finalize hash does not match the visible text."))
 
-        exact_timestamp = original.startswith(contract.required_timestamp_header)
-        detected_prefix = TIMESTAMP_PREFIX_RE.match(original)
-        if not exact_timestamp and detected_prefix:
-            if contract.policy.reject_foreign_timestamp:
-                violations.append(HostVisibleFinalizationViolation("foreign_timestamp", "A timestamp-like prefix differs from the required runtime timestamp."))
-        elif not exact_timestamp and original and contract.policy.repair_missing_timestamp:
-            violations.append(HostVisibleFinalizationViolation("missing_timestamp_repaired", "The required timestamp was prepended.", True))
+        expected_prefix = f"{contract.required_timestamp_header}\n{contract.state_emoticon} {contract.author_label}\n\n"
+        exact_envelope = original.startswith(expected_prefix)
+        first_line = original.split("\n", 1)[0].strip() if original else ""
+        foreign_timestamp = bool(TIMESTAMP_HEADER_RE.fullmatch(first_line) and first_line != contract.required_timestamp_header)
+        malformed_runtime_envelope = bool(original.startswith(contract.required_timestamp_header) and not exact_envelope)
+        if foreign_timestamp and contract.policy.reject_foreign_timestamp:
+            violations.append(HostVisibleFinalizationViolation("foreign_timestamp", "A timestamp differs from the required runtime timestamp."))
+        if malformed_runtime_envelope:
+            violations.append(HostVisibleFinalizationViolation("malformed_message_envelope", "The supplied runtime timestamp is followed by an invalid author/affect envelope."))
 
         fatal = [item for item in violations if not item.repairable]
         if fatal:
@@ -165,14 +205,35 @@ class HostVisibleFinalizationGate:
                 hash_valid=False,
                 approval_stage="host_finalize_rejected",
                 body_unchanged=False,
+                envelope_completed=False,
                 violations=violations,
             )
 
-        final_text = original if exact_timestamp else f"{contract.required_timestamp_header} {original}".strip()
-        state = "approved_envelope_completion" if violations else "approved"
+        if exact_envelope:
+            final_text = original
+            envelope_completed = False
+        elif contract.policy.render_body_when_envelope_missing:
+            final_text = contract.envelope_for_body(original).render()
+            envelope_completed = True
+            violations.append(HostVisibleFinalizationViolation(
+                "message_envelope_completed",
+                "The verified runtime envelope was rendered around the supplied body.",
+                True,
+            ))
+        else:
+            violations.append(HostVisibleFinalizationViolation("message_envelope_missing", "The verified runtime envelope is missing."))
+            return HostVisibleFinalizationResult(
+                accepted=False, state="reject", final_visible_text="", turn_id=contract.turn_id,
+                trace_id=contract.trace_id, contract_hash=contract.contract_hash,
+                original_text_sha256=original_hash, final_text_sha256=_sha_text(""),
+                supplied_text_sha256=supplied_hash, hash_valid=False,
+                approval_stage="host_finalize_rejected", body_unchanged=False,
+                envelope_completed=False, violations=violations,
+            )
+
         return HostVisibleFinalizationResult(
             accepted=True,
-            state=state,
+            state="approved_envelope_completion" if envelope_completed else "approved",
             final_visible_text=final_text,
             turn_id=contract.turn_id,
             trace_id=contract.trace_id,
@@ -182,7 +243,8 @@ class HostVisibleFinalizationGate:
             supplied_text_sha256=supplied_hash,
             hash_valid=supplied_hash == original_hash,
             approval_stage="host_finalize_hash_approval",
-            body_unchanged=(final_text == original or final_text.endswith(original)),
+            body_unchanged=(not envelope_completed or final_text.endswith(original)),
+            envelope_completed=envelope_completed,
             violations=violations,
         )
 
@@ -190,6 +252,14 @@ class HostVisibleFinalizationGate:
 def finalize_host_visible_text(
     *,
     required_timestamp_header: str,
+    timezone: str,
+    timestamp_sample_iso: str,
+    timestamp_source: str,
+    timestamp_trusted: bool,
+    author_id: str,
+    author_label: str,
+    author_source: str,
+    state_emoticon: str,
     turn_id: str,
     trace_id: str,
     text: str,
@@ -200,6 +270,14 @@ def finalize_host_visible_text(
 ) -> HostVisibleFinalizationResult:
     contract = HostVisibleFinalizationContract(
         required_timestamp_header=required_timestamp_header,
+        timezone=timezone,
+        timestamp_sample_iso=timestamp_sample_iso,
+        timestamp_source=timestamp_source,
+        timestamp_trusted=timestamp_trusted,
+        author_id=author_id,
+        author_label=author_label,
+        author_source=author_source,
+        state_emoticon=state_emoticon,
         turn_id=turn_id,
         trace_id=trace_id,
         policy=HostVisibleFinalizationPolicy(max_utf8_bytes=max_utf8_bytes),

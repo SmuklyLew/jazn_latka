@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from latka_jazn.version import PACKAGE_VERSION
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 import hashlib
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
@@ -12,9 +13,11 @@ from latka_jazn.core.visible_integrity import (
     validate_result_integrity,
 )
 
-HEADER = "[🕒 2026-07-16 12:00:00 GMT+2, czwartek, Europe/Warsaw]"
+SAMPLE = datetime.now(timezone.utc).astimezone(ZoneInfo("Europe/Warsaw")).replace(microsecond=0)
+HEADER = f"🕒 {SAMPLE:%Y-%m-%d %H:%M:%S}"
+SAMPLE_ISO = SAMPLE.isoformat()
 BODY = "Działam."
-VISIBLE = f"{HEADER} 🌿\n{BODY}"
+VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
 
 
 def _decision(*, classification: str = "rule_handler_response") -> dict:
@@ -43,9 +46,18 @@ def _decision(*, classification: str = "rule_handler_response") -> dict:
         "timestamp_contract": {
             "trusted": False,
             "source": "local_machine",
-            "sample_iso": datetime.now(timezone.utc).isoformat(),
+            "sample_iso": SAMPLE_ISO,
             "require_trusted_in_final_visible": False,
             "allow_degraded_local_visible": True,
+            "timezone": "Europe/Warsaw",
+            "max_age_seconds": 86400,
+        },
+        "author_id": "latka_runtime",
+        "author_label": "Łatka",
+        "author_source": "jazn_runtime",
+        "voice_source_contract": {
+            "speaking_identity": "Łatka",
+            "active_source": "jazn_runtime",
         },
     }
 

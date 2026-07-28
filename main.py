@@ -216,7 +216,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--nkjp-lookup-plan", action="store_true", dest="nkjp_lookup_plan", help="Zbuduj bezpieczny plan lookupu NKJP/concordance dla terminu; nie pobiera pełnego korpusu.")
     parser.add_argument("--voice-source-contract", action="store_true", dest="voice_source_contract", help="Pokaż kontrakt: Jaźń jako źródło, ChatGPT/model jako kanał głosu.")
     parser.add_argument("--rendering-mode", action="store_true", dest="rendering_mode", help="Pokaż decyzję naturalna odpowiedź vs exact runtime/diagnostyka.")
-    parser.add_argument("--raw-chat-status", action="store_true", dest="raw_chat_status", help="Pokaż status memory/raw/chat.html i chat.html.7z bez rozpakowywania.")
+    parser.add_argument("--raw-chat-status", action="store_true", dest="raw_chat_status", help="Pokaż status memory/raw/chat.html i istniejącego indeksu SQLite.")
     parser.add_argument("--raw-chat-status-json", action="store_true", dest="raw_chat_status_json", help="Pokaż uczciwy status raw memory/indexu jako JSON aktywnego runtime.")
     parser.add_argument("--conversation-archive-status", action="store_true", dest="conversation_archive_status", help="Pokaż status conversation_archive/FTS/staging zbudowanych z raw_chats/*.html.")
     parser.add_argument("--conversation-archive-search", action="store_true", dest="conversation_archive_search", help="Szukaj w osobnym conversation_fts i zwróć UID/provenance do archive/staging.")
@@ -258,7 +258,13 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--turn-id", default=None, help="turn_id z cognitive_turn_envelope dla --record-final-reply.")
     parser.add_argument("--trace-id", default=None, help="trace_id z cognitive_turn_envelope dla --record-final-reply.")
     parser.add_argument("--timestamp-header", default=None, help="timestamp_header z cognitive_turn_envelope dla --record-final-reply.")
-    parser.add_argument("--state-emoticon", default="🌿", help="Emotikon stanu używany, jeśli finalny tekst wymaga dopięcia timestampu.")
+    parser.add_argument("--timestamp-sample-iso", default=None)
+    parser.add_argument("--timestamp-source", default=None)
+    parser.add_argument("--timestamp-trusted", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--author-id", default=None)
+    parser.add_argument("--author-label", default=None)
+    parser.add_argument("--author-source", default=None)
+    parser.add_argument("--state-emoticon", default=None, help="Zweryfikowany emotikon stanu dla bieżącej tury.")
     parser.add_argument("--final-text-file", type=Path, default=None, help="Opcjonalny plik z finalną widoczną odpowiedzią do zapisania w ledgerze.")
     export_group = parser.add_mutually_exclusive_group()
     export_group.add_argument("--export-system", action="store_true", help="Utwórz paczkę system-only bez memory/ i workspace_runtime/.")
@@ -1524,8 +1530,16 @@ def main(argv: list[str] | None = None) -> int:
     if ns.record_final_reply:
         engine = JaznEngine(config)
         try:
-            if not ns.turn_id or not ns.trace_id or not ns.timestamp_header:
-                parser.error("--record-final-reply wymaga --turn-id, --trace-id i --timestamp-header")
+            required_capture_fields = {
+                "--turn-id": ns.turn_id, "--trace-id": ns.trace_id, "--timestamp-header": ns.timestamp_header,
+                "--timestamp-sample-iso": ns.timestamp_sample_iso, "--timestamp-source": ns.timestamp_source,
+                "--timestamp-trusted/--no-timestamp-trusted": ns.timestamp_trusted,
+                "--author-id": ns.author_id, "--author-label": ns.author_label,
+                "--author-source": ns.author_source, "--state-emoticon": ns.state_emoticon,
+            }
+            missing_capture = [name for name, value in required_capture_fields.items() if value is None or value == ""]
+            if missing_capture:
+                parser.error("--record-final-reply wymaga: " + ", ".join(missing_capture))
             if ns.final_text_file:
                 final_text = ns.final_text_file.read_text(encoding="utf-8")
             else:
@@ -1534,6 +1548,13 @@ def main(argv: list[str] | None = None) -> int:
                 turn_id=ns.turn_id,
                 trace_id=ns.trace_id,
                 timestamp_header=ns.timestamp_header,
+                timezone=(config or JaznConfig()).timezone,
+                timestamp_sample_iso=ns.timestamp_sample_iso,
+                timestamp_source=ns.timestamp_source,
+                timestamp_trusted=ns.timestamp_trusted,
+                author_id=ns.author_id,
+                author_label=ns.author_label,
+                author_source=ns.author_source,
                 final_text=final_text,
                 state_emoticon=ns.state_emoticon,
                 source="chatgpt_visible_layer_cli",

@@ -17,6 +17,7 @@ from latka_jazn.core.chat_command_contract import (
 )
 from latka_jazn.version import schema_version
 from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
+from latka_jazn.core.message_envelope import normalize_newlines
 
 MAX_HOST_BRIDGE_JSON_BYTES = 2 * 1024 * 1024
 
@@ -125,70 +126,80 @@ def build_chatgpt_host_visible_reply_payload(
     final_text: str,
     state_emoticon: str | None = None,
 ) -> tuple[dict[str, Any] | None, list[str]]:
-    """Build a phase-2 host_visible_reply JSONL payload from a phase-1 packet.
-
-    This avoids hand-copying turn_id/trace_id/timestamp_header in PowerShell and
-    keeps the existing --chat-gpt truth boundary: the visible text is authored by
-    the ChatGPT host and then recorded by the Jaźń runtime.
-    """
+    """Build phase-2 JSONL from the verified phase-1 turn envelope."""
     bridge = _host_bridge_from_runtime_packet(runtime_payload)
     shape = bridge.get("host_reply_jsonl_shape") if isinstance(bridge.get("host_reply_jsonl_shape"), dict) else {}
     trace = _trace_from_runtime_packet(runtime_payload)
     turn_contract = runtime_payload.get("runtime_turn_contract") if isinstance(runtime_payload.get("runtime_turn_contract"), dict) else {}
     final_contract = runtime_payload.get("final_response_contract") if isinstance(runtime_payload.get("final_response_contract"), dict) else {}
+    decision = runtime_payload.get("conversation_decision") if isinstance(runtime_payload.get("conversation_decision"), dict) else {}
+    timestamp_contract = decision.get("timestamp_contract") if isinstance(decision.get("timestamp_contract"), dict) else {}
 
-    turn_id = _safe_text(bridge.get("turn_id") or shape.get("turn_id") or trace.get("turn_id") or turn_contract.get("turn_id") or final_contract.get("turn_id"))
-    trace_id = _safe_text(bridge.get("trace_id") or shape.get("trace_id") or trace.get("trace_id") or turn_contract.get("trace_id") or final_contract.get("trace_id"))
-    timestamp_header = _safe_text(bridge.get("timestamp_header") or shape.get("timestamp_header") or trace.get("timestamp_header") or turn_contract.get("timestamp_header") or final_contract.get("timestamp_header"))
-    text = _safe_text(final_text)
-
+    values: dict[str, Any] = {
+        "turn_id": _safe_text(bridge.get("turn_id") or shape.get("turn_id") or trace.get("turn_id") or turn_contract.get("turn_id") or final_contract.get("turn_id")),
+        "trace_id": _safe_text(bridge.get("trace_id") or shape.get("trace_id") or trace.get("trace_id") or turn_contract.get("trace_id") or final_contract.get("trace_id")),
+        "timestamp_header": _safe_text(bridge.get("timestamp_header") or shape.get("timestamp_header") or trace.get("timestamp_header") or final_contract.get("timestamp_header")),
+        "timezone": _safe_text(bridge.get("timezone") or shape.get("timezone") or trace.get("timezone") or final_contract.get("timezone") or timestamp_contract.get("timezone") or timestamp_contract.get("timezone_key")),
+        "timestamp_sample_iso": _safe_text(bridge.get("timestamp_sample_iso") or shape.get("timestamp_sample_iso") or final_contract.get("timestamp_sample_iso") or timestamp_contract.get("sample_iso")),
+        "timestamp_source": _safe_text(bridge.get("timestamp_source") or shape.get("timestamp_source") or final_contract.get("timestamp_source") or timestamp_contract.get("source")),
+        "timestamp_trusted": bridge.get("timestamp_trusted") if isinstance(bridge.get("timestamp_trusted"), bool) else (shape.get("timestamp_trusted") if isinstance(shape.get("timestamp_trusted"), bool) else (final_contract.get("timestamp_trusted") if isinstance(final_contract.get("timestamp_trusted"), bool) else timestamp_contract.get("trusted"))),
+        "author_id": _safe_text(bridge.get("author_id") or shape.get("author_id") or final_contract.get("author_id")),
+        "author_label": _safe_text(bridge.get("author_label") or shape.get("author_label") or final_contract.get("author_label")),
+        "author_source": _safe_text(bridge.get("author_source") or shape.get("author_source") or final_contract.get("author_source")),
+        "state_emoticon": _safe_text(bridge.get("state_emoticon") or shape.get("state_emoticon") or final_contract.get("state_emoticon")),
+    }
+    text = normalize_newlines(final_text)
     missing: list[str] = []
     phase = _safe_text(bridge.get("phase"))
     if phase and phase != "host_visible_generation_requested" and bridge.get("host_must_generate_visible_reply") is not True:
         missing.append("chatgpt_host_bridge.phase=host_visible_generation_requested")
-    if not turn_id:
-        missing.append("turn_id")
-    if not trace_id:
-        missing.append("trace_id")
-    if not timestamp_header:
-        missing.append("timestamp_header")
-    if not text:
+    for field in ("turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon"):
+        if not values[field]:
+            missing.append(field)
+    if not isinstance(values["timestamp_trusted"], bool):
+        missing.append("timestamp_trusted")
+    if not text.strip():
         missing.append("final_text")
+    if state_emoticon is not None and _safe_text(state_emoticon) != values["state_emoticon"]:
+        missing.append("state_emoticon_mismatch")
     if missing:
         return None, missing
 
+    original_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
     finalization = finalize_host_visible_text(
-        required_timestamp_header=timestamp_header,
-        turn_id=turn_id,
-        trace_id=trace_id,
+        required_timestamp_header=values["timestamp_header"],
+        timezone=values["timezone"],
+        timestamp_sample_iso=values["timestamp_sample_iso"],
+        timestamp_source=values["timestamp_source"],
+        timestamp_trusted=values["timestamp_trusted"],
+        author_id=values["author_id"],
+        author_label=values["author_label"],
+        author_source=values["author_source"],
+        state_emoticon=values["state_emoticon"],
+        turn_id=values["turn_id"],
+        trace_id=values["trace_id"],
         text=text,
-        supplied_turn_id=turn_id,
-        supplied_trace_id=trace_id,
-        supplied_text_sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        supplied_turn_id=values["turn_id"],
+        supplied_trace_id=values["trace_id"],
+        supplied_text_sha256=original_hash,
         max_utf8_bytes=MAX_HOST_BRIDGE_JSON_BYTES,
     )
     if not finalization.accepted:
         return None, [f"finalization:{item.code}" for item in finalization.violations]
-    text = finalization.final_visible_text
 
     payload: dict[str, Any] = {
         "type": "host_visible_reply",
-        "turn_id": turn_id,
-        "trace_id": trace_id,
-        "timestamp_header": timestamp_header,
-        "final_text": text,
-        "final_text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        **values,
+        "final_text": finalization.final_visible_text,
+        "final_text_sha256": hashlib.sha256(finalization.final_visible_text.encode("utf-8")).hexdigest(),
         "finalization_result": finalization.to_dict(),
         "builder": {
             "schema_version": schema_version("chatgpt_host_visible_reply_builder"),
             "source": "chatgpt_host_bridge_helper",
-            "truth_boundary": "Ten JSONL nie jest lokalną generacją modelu. To widoczna odpowiedź hosta ChatGPT przygotowana do zapisu w runtime Jaźni.",
+            "truth_boundary": "Ten JSONL nie jest lokalną generacją modelu. To widoczna odpowiedź hosta ChatGPT oparta wyłącznie na zweryfikowanej kopercie tury.",
         },
     }
-    if state_emoticon:
-        payload["state_emoticon"] = state_emoticon
     return payload, []
-
 
 def build_chatgpt_host_reply_helper_meta(*, line_index: int | None = None) -> dict[str, Any]:
     meta: dict[str, Any] = {

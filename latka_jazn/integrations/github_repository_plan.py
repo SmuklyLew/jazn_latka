@@ -72,7 +72,7 @@ def build_github_repository_plan(root: Path | str | None = None) -> GitHubReposi
                     "DOWNLOAD_SAFE_MANIFEST.json", ".gitignore", "GITHUB_REPOSITORY_PLAN.json",
                 ),
                 exclude=(
-                    "memory/raw/chat.html", "memory/raw/chat.html.7z", "workspace_runtime/", "exports/", "*.sqlite3-wal", "*.sqlite3-shm",
+                    "memory/raw/chat.html", "workspace_runtime/", "exports/", "*.sqlite3-wal", "*.sqlite3-shm",
                     "__pycache__/", ".pytest_cache/", "*.zip", "*.tmp",
                 ),
                 commit_policy="commit po sprawdzonej aktualizacji systemu, po testach i po wygenerowaniu raportu; nie commitować każdej drobnej tury rozmowy",
@@ -88,7 +88,7 @@ def build_github_repository_plan(root: Path | str | None = None) -> GitHubReposi
                     "memory/RAW_MEMORY_MANIFEST.json", "memory/update_protocol.json", "MEMORY_CHECKPOINT_POLICY.md",
                 ),
                 exclude=(
-                    "memory/raw/chat.html", "memory/raw/chat.html.7z", "workspace_runtime/*.sqlite3-wal", "workspace_runtime/*.sqlite3-shm",
+                    "memory/raw/chat.html", "workspace_runtime/*.sqlite3-wal", "workspace_runtime/*.sqlite3-shm",
                     "exports/", "*.zip", "*.tmp", "__pycache__/",
                 ),
                 commit_policy="checkpointy zbiorcze: po ważnej rozmowie, po dniu pracy, po aktualizacji albo przed zamknięciem dłuższej sesji; append-only bez przepisywania historii bez potrzeby",
@@ -103,7 +103,6 @@ def build_github_repository_plan(root: Path | str | None = None) -> GitHubReposi
         ),
         files_to_keep_private=(
             "memory/raw/chat.html",
-            "memory/raw/chat.html.7z",
             "workspace_runtime/*.sqlite3",
             "*.env",
             "client_secret.json",
@@ -115,7 +114,7 @@ def build_github_repository_plan(root: Path | str | None = None) -> GitHubReposi
         ),
         commit_strategy=(
             "System i pamięć rozdzielać: Latka.Jazn dla kodu i dokumentacji; Latka.Jazn.Memory dla dziennika, ledgerów i warstw pamięci. "
-            "Najpierw testy, potem manifest, potem commit; duże surowe archiwum chat.html.7z trzymać poza zwykłym commitem albo przez osobną decyzję/LFS."
+            "Najpierw testy, potem manifest, potem commit; duży surowy memory/raw/chat.html trzymać poza zwykłym commitem albo przez osobną decyzję/LFS."
         ),
         export_strategy=(
             "Eksport ZIP zostaje jako przenośna kopia pełna. Repozytoria są źródłem prawdy między sesjami; ZIP jest snapshotem do pobrania i awaryjnego odtworzenia."

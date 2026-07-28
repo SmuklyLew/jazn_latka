@@ -6,6 +6,7 @@ from typing import Any
 import re
 
 from latka_jazn.core.route_registry import RouteRegistry
+from latka_jazn.nlp.utterance_components import analyse_utterance, missing_component_evidence
 from latka_jazn.core.current_turn_grounding import assess_current_turn_grounding
 from latka_jazn.version import schema_version
 from latka_jazn.core.legacy_route_policy import (
@@ -148,7 +149,7 @@ class RuntimeAnswerValidator:
         "language": ("język", "jezyk", "polsk"),
         "source_or_cache": ("cache", "źród", "zrod", "słownik", "slownik"),
         "operational_state": ("operacyj", "stan", "u mnie"),
-        "truth_boundary": ("nie biolog", "modelowany", "granica prawdy", "tle"),
+        "truth_boundary": ("nie biolog", "modelowany", "granica prawdy", "tle", "nieufny", "degraded", "fallback", "nie pełne potwierdzenie", "nie pelne potwierdzenie"),
         "no_random_memory_excerpt": ("nie z przypadkowego", "bez wstrzykiwania", "bieżąc", "aktualn", "operacyj"),
         "current_turn_reply": ("masz rację", "siemka", "cześć", "ojoj", "jestem przy tym", "bieżąc", "aktualn", "zwykłą rozmową", "zwykla rozmowa"),
         "no_generic_fallback": ("nie będę", "nie bede", "bez dokładania", "bez dokladania", "cofam", "jak ci leci", "zwykłą rozmową", "zwykla rozmowa"),
@@ -579,6 +580,20 @@ class RuntimeAnswerValidator:
         if detected_intent == "runtime_activation_status_question" and not any(x in low_body for x in ("chatgpt", "runtime", "aktywn", "folder", "proces")):
             checks.append('runtime_activation_status_missing_boundary')
             return self._bad('runtime_activation_status_missing_boundary', 'runtime_activation_status_repair', 'Trzeba odpowiedzieć wprost, czy runtime/aktywny folder działa, i oddzielić ChatGPT jako kanał od Jaźni jako źródła. Nie wolno udawać procesu w tle.', detected_intent, route, checks)
+        utterance_report = analyse_utterance(user_text)
+        if utterance_report.compound:
+            missing_questions = missing_component_evidence(body, utterance_report.components)
+            if missing_questions:
+                checks.append('missing_compound_question_components')
+                return self._bad(
+                    'missing_compound_question_components',
+                    entry.route + '_repair',
+                    'Odpowiedź nie pokrywa wszystkich niezależnych części pytania użytkownika.',
+                    detected_intent,
+                    route,
+                    checks,
+                    missing_questions,
+                )
         missing=self._missing_components(body, entry.required_components)
         if missing and detected_intent in self.SPECIFIC_INTENTS:
             checks.append('missing_required_components')

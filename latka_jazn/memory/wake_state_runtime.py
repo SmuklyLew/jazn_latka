@@ -101,6 +101,15 @@ class WakeStateRuntimeBridge:
             con = sqlite3.connect(f"file:{self.sidecar_path.resolve().as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
             try:
+                tables = {
+                    str(row[0])
+                    for row in con.execute("SELECT name FROM sqlite_schema WHERE type='table'")
+                }
+                if "wake_state_snapshots" not in tables:
+                    return self._status(
+                        "sidecar_schema_missing",
+                        errors=["missing table: wake_state_snapshots"],
+                    )
                 integrity = str(con.execute("PRAGMA quick_check").fetchone()[0])
                 fk_count = len(con.execute("PRAGMA foreign_key_check").fetchall())
                 rows = con.execute(
@@ -133,7 +142,7 @@ class WakeStateRuntimeBridge:
                 l1_memory_id=None,
                 errors=[],
             )
-        except Exception as exc:
+        except (sqlite3.DatabaseError, OSError, UnicodeError, json.JSONDecodeError) as exc:
             return self._status("read_error", errors=[f"{type(exc).__name__}: {exc}"])
 
     def hydrate_l1(self, *, session_id: str, active_goal: str = "verified_wake_state") -> WakeStateRuntimeStatus:
