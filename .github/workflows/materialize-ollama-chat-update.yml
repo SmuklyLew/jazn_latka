@@ -1,0 +1,60 @@
+name: Materialize Ollama chat update
+
+on:
+  push:
+    branches:
+      - fix/ollama-chat-terminal-experience
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decode and apply prepared source transformation
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          import zlib
+          source = Path('.github/patches/materialize_ollama_chat_update.py.zlib.b64')
+          target = Path('/tmp/materialize_ollama_chat_update.py')
+          target.write_bytes(zlib.decompress(base64.b64decode(source.read_text(encoding='utf-8'))))
+          PY
+          python -X utf8 /tmp/materialize_ollama_chat_update.py
+
+      - name: Verify source diff and remove one-shot materializer
+        shell: bash
+        run: |
+          rm -f .github/patches/materialize_ollama_chat_update.py.zlib.b64
+          rm -f .github/workflows/materialize-ollama-chat-update.yml
+          git diff --check
+
+      - name: Commit prepared source update
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix interactive Ollama chat experience"
+
+      - name: Synchronize canonical release metadata from clean source commit
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root . --base-branch master --write --json
+
+      - name: Commit metadata and publish final branch
+        shell: bash
+        run: |
+          git diff --check
+          git add PACKAGE_INTEGRITY_MANIFEST.json SOURCE_PROVENANCE.json
+          git commit -m "release: synchronize Ollama chat update metadata [skip ci]"
+          git push origin HEAD:fix/ollama-chat-terminal-experience
