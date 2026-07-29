@@ -44,7 +44,7 @@ class LatkaRuntimeShell(cmd.Cmd):
         "Ten proces utrzymuje jeden silnik do czasu /exit albo Ctrl+D; "
         "nie jest stałym procesem po zamknięciu terminala."
     )
-    prompt = "Łatka> "
+    prompt = "Ty> "
 
     def __init__(
         self,
@@ -84,7 +84,7 @@ class LatkaRuntimeShell(cmd.Cmd):
             stdin_is_tty=stdin_is_tty,
             process_persistence=process_persistence,
             background_process_claim_allowed=False,
-            session_id=session_id,
+            session_id=self.session_id,
             no_carryover=no_carryover,
         )
         self._last_user_text: str | None = None
@@ -131,6 +131,8 @@ class LatkaRuntimeShell(cmd.Cmd):
 
     def preloop(self) -> None:
         self._write("[runtime_lifecycle] " + json.dumps(self.lifecycle.to_dict(), ensure_ascii=False))
+        if self.session_id:
+            self._write(f"[runtime_session] session_id={self.session_id}")
 
     def default(self, line: str) -> bool | None:
         text = (line or "").strip()
@@ -151,6 +153,8 @@ class LatkaRuntimeShell(cmd.Cmd):
                         lifecycle="persistent_chat_loop",
                         session_id_source=self._session_id_source,
                         process_reused=True,
+                        previous_user_text=self._last_user_text,
+                        previous_visible_text=self._last_visible_text,
                     )
                 else:
                     result = run_with_runtime_turn_timeout(
@@ -160,6 +164,8 @@ class LatkaRuntimeShell(cmd.Cmd):
                             lifecycle="persistent_chat_loop",
                             session_id_source=self._session_id_source,
                             process_reused=True,
+                            previous_user_text=self._last_user_text,
+                            previous_visible_text=self._last_visible_text,
                         ),
                         command="--chat",
                         timeout_seconds=runtime_turn_timeout_seconds(getattr(self.runtime, "config", None)),
@@ -183,7 +189,9 @@ class LatkaRuntimeShell(cmd.Cmd):
                             "lifecycle": "persistent_chat_loop",
                             "preview_phase": "same_pipeline_as_one_shot_process_turn",
                             "session_id": self.session_id,
-                            "no_carryover": self.no_carryover,
+                            "no_carryover": bool(self.no_carryover and not self._last_user_text),
+                            "previous_user_text": self._last_user_text,
+                            "previous_visible_text": self._last_visible_text,
                         },
                     ),
                     command="--chat",

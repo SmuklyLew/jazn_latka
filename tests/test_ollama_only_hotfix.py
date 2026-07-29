@@ -267,7 +267,7 @@ def test_chat_ollama_with_piped_stdin_keeps_jsonl_contract(monkeypatch) -> None:
     assert calls["jsonl"]["output_mode"] == "jsonl"
 
 
-def test_chat_ollama_reports_ambiguous_models_before_start(monkeypatch, capsys) -> None:
+def test_chat_ollama_offers_ambiguous_models_for_interactive_selection(monkeypatch, capsys) -> None:
     import io
     import main as main_module
 
@@ -275,11 +275,12 @@ def test_chat_ollama_reports_ambiguous_models_before_start(monkeypatch, capsys) 
         def isatty(self) -> bool:
             return True
 
+    cfg = JaznConfig()
     monkeypatch.setattr(
         main_module,
         "resolve_ollama_cli_settings",
         lambda *args, **kwargs: (
-            JaznConfig(),
+            cfg,
             {
                 "available": False,
                 "reason": "ollama_model_ambiguous",
@@ -289,11 +290,15 @@ def test_chat_ollama_reports_ambiguous_models_before_start(monkeypatch, capsys) 
             },
         ),
     )
-    monkeypatch.setattr(main_module.sys, "stdin", TtyInput())
+    monkeypatch.setattr(main_module, "_ensure_daemon_or_error", lambda *args, **kwargs: (None, 17))
+    monkeypatch.setattr(main_module.sys, "stdin", TtyInput("2\n"))
 
     exit_code = main_module.main(["--chat-ollama", "--no-runtime-preflight", "--no-ensure-daemon"])
     captured = capsys.readouterr()
 
-    assert exit_code == 3
-    assert "Dostępne modele: gemma3:latest, qwen3:8b" in captured.err
-    assert "--ollama-model" in captured.err
+    assert exit_code == 17
+    assert cfg.local_model_name == "qwen3:8b"
+    assert "1. gemma3:latest" in captured.out
+    assert "2. qwen3:8b" in captured.out
+    assert "Wybrano model Ollama: qwen3:8b" in captured.out
+    assert "Nie można uruchomić --chat-ollama" not in captured.err

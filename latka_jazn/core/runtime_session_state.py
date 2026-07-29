@@ -79,6 +79,7 @@ class RuntimeSessionState:
     created_at: str
     last_turn_at: str | None = None
     last_user_text: str | None = None
+    last_visible_text: str | None = None
     last_intent: str | None = None
     last_route: str | None = None
     source_client: str = "unknown"
@@ -104,15 +105,17 @@ class RuntimeSessionState:
             expires_at=(now + timedelta(seconds=ttl_seconds)).isoformat(),
         )
 
-    def update(self, *, user_text: str, intent: str | None = None, route: str | None = None) -> None:
+    def update(self, *, user_text: str, visible_text: str | None = None, intent: str | None = None, route: str | None = None) -> None:
         self.last_turn_at = datetime.now(timezone.utc).isoformat()
         self.last_user_text = user_text
+        self.last_visible_text = visible_text
         self.last_intent = intent
         self.last_route = route
 
     def clear_carryover(self) -> None:
         self.last_turn_at = None
         self.last_user_text = None
+        self.last_visible_text = None
         self.last_intent = None
         self.last_route = None
 

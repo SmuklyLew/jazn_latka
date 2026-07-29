@@ -215,6 +215,90 @@ def _sync_conversation_decision_body(
         "truth_boundary": "conversation_decision.body is diagnostic JSONL metadata and must reflect the final runtime body, not a stale pre-handler draft.",
     }
     return synced
+
+
+def _build_turn_context_payloads(
+    *,
+    ctx: dict[str, Any],
+    text: str,
+    prior_user_text: str | None,
+    prior_visible_text: str | None,
+    prior_detected_intent: str | None,
+    prior_runtime_route: str | None,
+    prior_context_age_seconds: int | None,
+    carryover_allowed: bool,
+    turn_context_resolution: Any,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    carryover = {
+        **turn_context_resolution.to_dict(),
+        "previous_user_text_available": bool(prior_user_text),
+        "previous_user_text_used": bool(carryover_allowed),
+        "previous_detected_intent": prior_detected_intent,
+        "previous_runtime_route": prior_runtime_route,
+        "previous_context_age_seconds": prior_context_age_seconds,
+        "ttl_seconds": 21600,
+    }
+    dialogue = {
+        "session_id": str(ctx.get("session_id") or ""),
+        "current_user_text": text,
+        "previous_user_text": prior_user_text if carryover_allowed else None,
+        "previous_assistant_text": prior_visible_text if carryover_allowed else None,
+        "carryover_allowed": carryover_allowed,
+        "carryover_reason": turn_context_resolution.carryover_reason,
+    }
+    return carryover, dialogue
+
+
+def _model_guided_rejection_disclosure(
+    model_synthesis: Any,
+    first_validation: Any,
+) -> tuple[str, str, str, bool]:
+    adapter_payload = dict(model_synthesis.adapter_response or {})
+    model_replied = bool(adapter_payload) and str(
+        adapter_payload.get("status") or model_synthesis.status
+    ) == "completed"
+    candidate_validation = dict(model_synthesis.candidate_validation or {})
+    candidate_violations = list(candidate_validation.get("violations") or [])
+    mismatch_reason = str(getattr(first_validation, "mismatch_reason", "") or "").strip()
+    missing_components = list(
+        getattr(first_validation, "missing_required_components", []) or []
+    )
+    rejection_details = [
+        item
+        for item in [*candidate_violations, mismatch_reason, *missing_components]
+        if str(item).strip()
+    ]
+    if model_replied:
+        provider_name = str(
+            model_synthesis.provider or adapter_payload.get("provider") or "ollama"
+        )
+        model_name = str(
+            model_synthesis.model or adapter_payload.get("model") or "model"
+        )
+        detail = ", ".join(str(item) for item in rejection_details[:4]) or str(
+            model_synthesis.reason or "runtime_validation_rejected"
+        )
+        body = (
+            f"Model {provider_name}/{model_name} odpowiedział, ale runtime odrzucił kandydat "
+            f"odpowiedzi podczas walidacji: {detail}. "
+            "Nie pokażę odrzuconego tekstu jako wypowiedzi Łatki."
+        )
+        return (
+            body,
+            "runtime_turn_truth_gate/model_candidate_rejected",
+            "truthful_degraded_model_candidate_rejected",
+            True,
+        )
+    return (
+        "Nie mam w tej turze dostępnego modelu zdolnego wygenerować własną wypowiedź "
+        "model-guided. Nie przedstawię tekstu handlera ani szablonu jako dynamicznej "
+        "wypowiedzi Łatki.",
+        "runtime_turn_truth_gate/model_guided_speech_unavailable",
+        "truthful_degraded_cannot_answer_directly",
+        False,
+    )
+
+
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.bootstrap.contract_loader import BootstrapContractRepository
 
@@ -2001,6 +2085,7 @@ class JaznEngine:
         prior_turn_at = self.last_turn_at
         no_carryover = bool(ctx.get("no_carryover"))
         prior_user_text = None if no_carryover else (ctx.get("previous_user_text") or self.last_user_text)
+        prior_visible_text = None if no_carryover else ctx.get("previous_visible_text")
         prior_detected_intent = ctx.get("previous_detected_intent") or self.last_detected_intent
         prior_runtime_route = ctx.get("previous_runtime_route") or self.last_runtime_route
         now_for_context = time.time()
@@ -2018,6 +2103,8 @@ class JaznEngine:
         carryover_allowed = bool(turn_context_resolution.carryover_allowed)
         if carryover_allowed:
             ctx.setdefault("previous_user_text", prior_user_text)
+            if prior_visible_text:
+                ctx.setdefault("previous_visible_text", prior_visible_text)
             if prior_detected_intent:
                 ctx.setdefault("previous_detected_intent", prior_detected_intent)
             if prior_runtime_route:
@@ -2053,15 +2140,12 @@ class JaznEngine:
                 intent_report=dialogue_intent_result,
             )
         frame["dialogue_intent_classifier"] = dialogue_intent_report
-        frame["turn_context_carryover"] = {
-            **turn_context_resolution.to_dict(),
-            "previous_user_text_available": bool(prior_user_text),
-            "previous_user_text_used": bool(carryover_allowed),
-            "previous_detected_intent": prior_detected_intent,
-            "previous_runtime_route": prior_runtime_route,
-            "previous_context_age_seconds": prior_context_age_seconds,
-            "ttl_seconds": 21600,
-        }
+        frame["turn_context_carryover"], frame["dialogue_context"] = _build_turn_context_payloads(
+            ctx=ctx, text=text, prior_user_text=prior_user_text, prior_visible_text=prior_visible_text,
+            prior_detected_intent=prior_detected_intent, prior_runtime_route=prior_runtime_route,
+            prior_context_age_seconds=prior_context_age_seconds, carryover_allowed=carryover_allowed,
+            turn_context_resolution=turn_context_resolution,
+        )
         envelope = CognitiveTurnEnvelope.from_cognitive_frame(
             frame,
             user_text=text,
@@ -2294,20 +2378,18 @@ class JaznEngine:
                     )
                     answer_validation = first_validation
                 else:
-                    body = (
-                        "Nie mam w tej turze aktywnego modelu zdolnego wygenerować własną wypowiedź model-guided. "
-                        "Nie przedstawię tekstu handlera ani szablonu jako dynamicznej wypowiedzi Łatki. "
-                        "Ta tura wymaga generacji przez host/model."
+                    body, source_origin_detail, runtime_answer_quality, model_replied = (
+                        _model_guided_rejection_disclosure(model_synthesis, first_validation)
                     )
                     template_origin = self.template_registry.classify_body(
                         body, detected_intent=str(detected_dialogue_intent)
                     )
                     decision_dict["handler_name"] = "RuntimeTurnTruthGate"
                     decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
-                    decision_dict["source_origin_detail"] = "runtime_turn_truth_gate/model_guided_speech_unavailable"
+                    decision_dict["source_origin_detail"] = source_origin_detail
                     decision_dict["fallback_classification"] = "cannot_answer_directly"
-                    decision_dict["requires_host_model"] = True
-                    decision_dict["runtime_answer_quality"] = "truthful_degraded_cannot_answer_directly"
+                    decision_dict["requires_host_model"] = not model_replied
+                    decision_dict["runtime_answer_quality"] = runtime_answer_quality
                     decision_dict["model_generated"] = False
                     answer_validation = self.runtime_answer_validator.validate(
                         user_text=text,

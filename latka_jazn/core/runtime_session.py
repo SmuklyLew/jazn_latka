@@ -107,6 +107,8 @@ class JaznRuntimeSession:
         session_id_source: str | None = None,
         process_reused: bool = True,
         request_id: str | None = None,
+        previous_user_text: str | None = None,
+        previous_visible_text: str | None = None,
         _turn_context: TurnExecutionContext | None = None,
     ) -> dict[str, Any]:
         config = getattr(self, "config", None)
@@ -137,19 +139,26 @@ class JaznRuntimeSession:
                     "audit_persistence_available": False,
                 },
             )
+        live_previous_user = str(previous_user_text or "").strip() or None
+        current_previous_user = live_previous_user or (str(self.state.last_user_text or "").strip() or None)
+        current_previous_visible = str(previous_visible_text or getattr(self.state, "last_visible_text", None) or "").strip() or None
+        turn_scoped_no_carryover = bool(self.no_carryover and not current_previous_user)
         ctx = {
             "client": client,
             "lifecycle": lifecycle,
             "session_id": self.state.session_id,
-            "no_carryover": self.no_carryover,
+            "no_carryover": turn_scoped_no_carryover,
             "request_id": turn_context.request_id,
             "_turn_context": turn_context,
             "wake_state_runtime": self._wake_state_runtime_payload(),
         }
-        if not self.no_carryover and self.state.last_user_text:
-            ctx["previous_user_text"] = self.state.last_user_text
-            ctx["previous_detected_intent"] = self.state.last_intent
-            ctx["previous_runtime_route"] = self.state.last_route
+        if current_previous_user:
+            ctx["previous_user_text"] = current_previous_user
+            if not live_previous_user:
+                ctx["previous_detected_intent"] = self.state.last_intent
+                ctx["previous_runtime_route"] = self.state.last_route
+        if current_previous_visible:
+            ctx["previous_visible_text"] = current_previous_visible
         try:
             envelope = self.engine.process_turn(user_text, client_context=ctx)
             with turn_context.stage("final_result_serialization"):
@@ -237,6 +246,7 @@ class JaznRuntimeSession:
             if answer_ok:
                 self.state.update(
                     user_text=user_text,
+                    visible_text=str(result.get("final_visible_text") or ""),
                     intent=str(decision.get("detected_user_intent") or "unknown"),
                     route=str(decision.get("route") or "unknown"),
                 )

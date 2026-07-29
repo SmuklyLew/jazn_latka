@@ -14,10 +14,12 @@ Ten plik opisuje wyłącznie integrację lokalnego modelu Ollama z runtime Jaźn
 Uruchom lokalny runtime z natywnym adapterem Ollama:
 
 ```bash
-python -X utf8 main.py --chat-ollama --session-id local-runtime
+python -X utf8 main.py --chat-ollama
 ```
 
-W terminalu TTY ta komenda otwiera czytelną pętlę rozmowy z promptem `Łatka>`. Gdy wejście pochodzi z pipe lub przekierowanego stdin, zachowany zostaje maszynowy kontrakt JSONL. Jeżeli `/api/tags` zwróci dokładnie jeden jednoznaczny model (albo jeden model jest aktualnie uruchomiony), runtime wybiera go automatycznie. Przy wielu modelach trzeba użyć `--ollama-model`; runtime nie wybiera arbitralnie pierwszego wpisu.
+W terminalu TTY ta komenda otwiera czytelną pętlę rozmowy z promptem `Ty>`. Runtime generuje identyfikator sesji automatycznie, gdy `--session-id` nie został podany. Bez jawnego `--ollama-model` odczytuje `/api/ps` i `/api/tags`, pokazuje wszystkie dostępne modele w numerowanej liście oraz prosi o wybór; Enter zatwierdza model domyślny. Gdy wejście pochodzi z pipe lub przekierowanego stdin, zachowany zostaje maszynowy kontrakt JSONL i selektor nie pyta o wybór.
+
+`--no-carryover` oznacza czysty start bez wczytania checkpointu poprzedniego uruchomienia. Kolejne tury tej samej uruchomionej pętli nadal zachowują bezpośredni kontekst rozmowy.
 
 Można jawnie wskazać model i endpoint:
 
