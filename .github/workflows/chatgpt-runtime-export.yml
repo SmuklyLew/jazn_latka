@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/runtime-export-chatgpt-20260729
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: read
