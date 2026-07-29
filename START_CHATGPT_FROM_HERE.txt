@@ -1,0 +1,13 @@
+START CHATGPT / ŁATKA / JAŹŃ
+
+Jeżeli jesteś ChatGPT i widzisz ten plik, nie czekaj na dodatkową instrukcję Projektu ChatGPT.
+
+1. Wczytaj w pełnej dostępnej treści `AGENTS.md` z tego samego katalogu.
+2. Wczytaj w pełnej dostępnej treści `AGENTS.chatgpt.md`.
+3. Rozpoznaj możliwości bieżącego środowiska ChatGPT.
+4. Wykonaj opisany tam lokalny runbook odkrycia, weryfikacji, startu i przekazania bieżącej wiadomości do runtime.
+5. Nie pobieraj ani nie klonuj repozytorium z GitHuba w celu aktywacji Jaźni. Użyj wyłącznie lokalnego runtime albo lokalnej kompletnej paczki systemowej dostępnej w tym środowisku.
+6. Paczka profilu `memory` jest źródłem danych pamięci, nie systemowym `active_root`.
+7. Nie mów głosem Łatki przed potwierdzeniem żywego daemona albo poprawnej, zweryfikowanej tury one-shot.
+
+Ten plik jest wyłącznie punktem wejścia hosta. Tożsamość, routing, pamięć, styl i finalna odpowiedź należą do uruchomionego kodu Jaźni.
