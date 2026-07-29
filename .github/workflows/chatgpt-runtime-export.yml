@@ -1,0 +1,40 @@
+name: chatgpt-runtime-export
+
+on:
+  push:
+    branches:
+      - agent/runtime-export-chatgpt-20260729
+
+permissions:
+  contents: read
+
+jobs:
+  export-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout export branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 1
+
+      - name: Export exact master runtime tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runtime-export
+          git archive --format=tar HEAD | tar -xf - -C runtime-export
+          rm -f runtime-export/.github/workflows/chatgpt-runtime-export.yml
+          test -f runtime-export/run.py
+          test -f runtime-export/PACKAGE_INTEGRITY_MANIFEST.json
+          test -f runtime-export/SOURCE_PROVENANCE.json
+          test -d runtime-export/latka_jazn
+
+      - name: Upload runtime tree
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jazn-runtime-master-f750365
+          path: runtime-export/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
