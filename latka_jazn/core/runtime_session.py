@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import inspect
 from dataclasses import asdict
 from typing import Any
 from latka_jazn.config import JaznConfig
@@ -17,6 +19,50 @@ from latka_jazn.memory.wake_state_runtime import WakeStateRuntimeBridge
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("runtime_session")
+
+
+def _update_runtime_session_state(
+    state: Any,
+    *,
+    user_text: str,
+    visible_text: str,
+    intent: str,
+    route: str,
+) -> None:
+    """Update canonical and minimal session-state implementations compatibly.
+
+    The canonical RuntimeSessionState accepts ``visible_text`` and persists it as
+    ``last_visible_text``. A few integrity tests intentionally use a minimal state
+    double with the older ``update(user_text, intent, route)`` signature. Detect
+    support before calling instead of converting a valid runtime turn into a
+    TypeError. Minimal mutable states still receive ``last_visible_text`` when
+    possible, preserving live-turn continuity without weakening canonical writes.
+    """
+
+    update = getattr(state, "update")
+    kwargs: dict[str, Any] = {
+        "user_text": user_text,
+        "intent": intent,
+        "route": route,
+    }
+    try:
+        parameters = inspect.signature(update).parameters.values()
+    except (TypeError, ValueError):
+        parameters = ()
+    supports_visible_text = any(
+        parameter.name == "visible_text"
+        or parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters
+    )
+    if supports_visible_text:
+        kwargs["visible_text"] = visible_text
+    update(**kwargs)
+    if not supports_visible_text:
+        try:
+            setattr(state, "last_visible_text", visible_text)
+        except (AttributeError, TypeError):
+            pass
+
 
 class JaznRuntimeSession:
     """Wspólny rdzeń one-shot, --runtime-preview, --chat i --chat-gpt.
@@ -244,7 +290,8 @@ class JaznRuntimeSession:
             result["wake_state_runtime"] = self._wake_state_runtime_payload()
 
             if answer_ok:
-                self.state.update(
+                _update_runtime_session_state(
+                    self.state,
                     user_text=user_text,
                     visible_text=str(result.get("final_visible_text") or ""),
                     intent=str(decision.get("detected_user_intent") or "unknown"),
