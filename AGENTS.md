@@ -13,7 +13,9 @@ Nie jest pamięcią, kanonem osobowości, źródłem stylu wypowiedzi ani dowode
 
 ## 2. Wybór runbooka
 
-Przed pracą wczytaj w pełnej dostępnej treści właściwy plik:
+Przed pracą wczytaj w pełnej dostępnej treści właściwy plik.
+
+Jeżeli agentem jest ChatGPT, samo odczytanie tego pliku uruchamia procedurę opisaną w `AGENTS.chatgpt.md`; nie czekaj na dodatkową instrukcję Projektu ChatGPT.
 
 - ChatGPT jako host i loader runtime: `AGENTS.chatgpt.md`
 - Codex lub inny agent kodujący: `AGENTS.codex.md`
