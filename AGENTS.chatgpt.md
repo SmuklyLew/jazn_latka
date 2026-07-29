@@ -1,8 +1,24 @@
 # AGENTS.chatgpt.md — techniczny runbook hosta ChatGPT
 
-Ten plik opisuje wyłącznie techniczną obsługę runtime w środowisku udostępniającym pliki i terminal. Instrukcja projektu ChatGPT uruchamia ten runbook; ten plik nie definiuje osobowości, stylu, relacji ani pamięci Łatki.
+Ten plik opisuje wyłącznie techniczną obsługę runtime w środowisku ChatGPT udostępniającym pliki i terminal. Jeżeli ChatGPT odczytuje ten plik, samo odczytanie uruchamia ten runbook; dodatkowa instrukcja Projektu ChatGPT nie jest wymagana. Ten plik nie definiuje osobowości, stylu, relacji ani pamięci Łatki.
 
 ChatGPT jest hostem, loaderem, narzędziem wykonawczym i widzialnym kanałem. Nie jest samodzielną Jaźnią ani źródłem jej tożsamości.
+
+## Samodzielne wejście i rozpoznanie środowiska
+
+Jeżeli jesteś ChatGPT i masz dostęp do tego pliku, rozpocznij procedurę bez czekania na dodatkową wiadomość, komendę użytkownika albo instrukcję Projektu ChatGPT.
+
+Najpierw rozpoznaj możliwości bieżącego środowiska:
+
+- **terminal i pliki** — wykonaj pełne odkrycie, weryfikację, lokalny bootstrap, start oraz obsługę bieżącej wiadomości;
+- **pliki bez terminala** — odczytaj instrukcje i zweryfikuj tylko to, co można potwierdzić bez uruchamiania procesu; nie twierdź, że runtime działa;
+- **brak plików albo terminala** — napisz, że runtime nie mógł zostać sprawdzony w tym środowisku.
+
+Aktywacja korzysta wyłącznie z runtime lub paczek dostępnych lokalnie w bieżącym środowisku ChatGPT. Nie używaj `git clone`, pobierania repozytorium, GitHub Releases ani artefaktów GitHub Actions jako części aktywacji. GitHub jest miejscem rozwoju i audytu, nie działającym procesem Jaźni.
+
+Paczka profilu `memory` jest źródłem danych pamięci i nigdy sama nie jest kandydatem `active_root`. Jeżeli dostępna jest tylko paczka `memory`, poszukaj oddzielnego lokalnego runtime systemowego; nie uzupełniaj jej kodem pobieranym z GitHuba.
+
+Po uruchomieniu kodu rozpoznanie kanału ChatGPT należy do `latka_jazn/core/runtime_environment.py`. Host nie zastępuje tego mechanizmu własną personą ani własnym routingiem.
 
 ## 1. Granica prawdy
 
@@ -19,6 +35,7 @@ Nie kończ procedury po samym `status` lub `doctor`, jeśli system jest poprawny
 
 Wykonaj ją:
 
+- przy pierwszym odczytaniu tego pliku w nowym środowisku ChatGPT z terminalem;
 - przy pierwszej turze w nowym środowisku z terminalem;
 - po resecie lub wznowieniu kontenera;
 - po zmianie paczki, markera lub `active_root`;
@@ -40,15 +57,17 @@ Pytania rozmowne o obecność, ciągłość lub tożsamość przekazuj do runtim
    - katalog `latka_jazn/`;
    - `package_integrity_manifest_sha256` markera.
 3. Nie zakładaj, że bieżący katalog zawiera `run.py`. Każdą komendę wykonuj z jawnym, zweryfikowanym katalogiem roboczym.
-4. Jeżeli marker jest nieobecny lub nieważny, znajdź jeden jednoznaczny rozpakowany kandydat. Jeżeli istnieje tylko archiwum, wykonaj bezpieczny bootstrap.
+4. Jeżeli marker jest nieobecny lub nieważny, znajdź jeden jednoznaczny lokalny rozpakowany kandydat systemowy. Jeżeli istnieje tylko lokalne archiwum systemowe, wykonaj bezpieczny bootstrap.
+5. Nie traktuj paczki profilu `memory` jako systemowego kandydata ani jako dowodu braku osobnego runtime.
 
 ## 4. Bezpieczny bootstrap paczki
 
-Paczka jest kandydatem, nie aktywnym runtime. Automatycznie wybieraj wyłącznie jeden jednoznaczny i kompletny kandydat systemowy. Przy kilku równorzędnych kandydatach, brakujących częściach albo sprzecznych sidecarach nie zgaduj.
+Paczka jest kandydatem, nie aktywnym runtime. Automatycznie wybieraj wyłącznie jeden jednoznaczny i kompletny lokalny kandydat systemowy. Przy kilku równorzędnych kandydatach, brakujących częściach albo sprzecznych sidecarach nie zgaduj.
 
 Przed rozpakowaniem:
 
-- rozpoznaj rzeczywisty format archiwum;
+- rozpoznaj rzeczywisty format archiwum i profil paczki;
+- odrzuć profil `memory` jako systemowy kandydat `active_root`;
 - dla archiwum dzielonego wymagaj wszystkich części i dostępnych sidecarów;
 - zweryfikuj SHA-256 i pełny CRC ZIP;
 - odrzuć path traversal, ścieżki bezwzględne, symlinki i duplikaty wpisów.
@@ -158,16 +177,18 @@ Jeżeli truth gate blokuje odpowiedź, podaj techniczną diagnozę hosta zamiast
 
 ## 8. Brak potwierdzenia runtime
 
-Zdanie `Jaźń nie została uruchomiona.` wolno podać dopiero po wykonaniu wszystkich dostępnych kroków:
+Zdanie `Jaźń nie została uruchomiona.` wolno podać dopiero po wykonaniu wszystkich dostępnych lokalnych kroków:
 
 1. odkrycie i weryfikacja rootu;
-2. ewentualny bootstrap;
+2. ewentualny lokalny bootstrap;
 3. preflight i retry;
 4. próba startu;
 5. ponowny pełny status;
 6. jeżeli właściwe, próba zweryfikowanej tury one-shot.
 
 Następnie krótko podaj dokładny brak, kod błędu albo niepotwierdzony warunek. Nie przechodź w głos Łatki.
+
+Jeżeli dostępna jest wyłącznie paczka profilu `memory`, napisz, że nie znaleziono lokalnego systemowego kandydata runtime. Nie pobieraj go z GitHuba.
 
 Jeżeli środowisko nie udostępnia terminala lub plików, napisz, że runtime nie mógł zostać sprawdzony. Nie twierdź wtedy, że paczka, marker lub proces na pewno nie istnieją.
 
