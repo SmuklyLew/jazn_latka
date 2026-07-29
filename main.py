@@ -186,8 +186,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--recovery-skip-crc", action="store_true", help="Pomiń pełny test CRC ZIP-a; tylko do diagnostyki.")
     parser.add_argument("--recovery-force-reextract", action="store_true", help="Nie używaj istniejącego poprawnego folderu; rozpocznij czyste staging extraction.")
     parser.add_argument("--recovery-no-daemon", action="store_true", help="Po recovery nie uruchamiaj daemonu.")
-    parser.add_argument("--session-id", default=None, help="Jawny identyfikator sesji dla kontrolowanego carryover w --chat/--chat-gpt.")
-    parser.add_argument("--no-carryover", action="store_true", dest="no_carryover", help="Zablokuj użycie poprzedniej tury nawet jeśli istnieje runtime_state.json.")
+    parser.add_argument("--session-id", default=None, help="Opcjonalny identyfikator sesji. Gdy go nie podasz, runtime wygeneruje go automatycznie.")
+    parser.add_argument("--no-carryover", action="store_true", dest="no_carryover", help="Rozpocznij czystą sesję bez wczytywania checkpointu poprzedniego uruchomienia; bieżąca pętla nadal zachowuje kontekst między turami.")
     parser.add_argument("--github-plan", action="store_true", dest="github_plan", help="Zapisz i pokaż plan repozytoriów Latka.Jazn oraz Latka.Jazn.Memory bez wykonywania pushu.")
     parser.add_argument("--dedup-report", action="store_true", dest="dedup_report", help="Zbuduj raport duplikatów treści i SHA-256 bez usuwania plików.")
     parser.add_argument("--lexical-frame", action="store_true", dest="lexical_frame", help="Pokaż raport leksykalny aktualnej Jaźni: polskie rozumienie + rozszerzona semantyka słów i fraz.")
@@ -622,6 +622,54 @@ def _run_chat_command_one_shot(
         session.close()
 
 
+
+def _select_ollama_model_for_tty(
+    probe: dict[str, Any],
+    *,
+    stdin: Any | None = None,
+    stdout: Any | None = None,
+) -> str:
+    """Show one human-only numbered model picker for ``--chat-ollama``."""
+
+    input_stream = stdin if stdin is not None else sys.stdin
+    output_stream = stdout if stdout is not None else sys.stdout
+    running = [str(item).strip() for item in (probe.get("running_models") or []) if str(item).strip()]
+    installed = [str(item).strip() for item in (probe.get("installed_models") or []) if str(item).strip()]
+    models = list(dict.fromkeys([*running, *installed]))
+    if not models:
+        return ""
+
+    configured = str(probe.get("model") or probe.get("configured_model") or "").strip()
+    default_index = models.index(configured) + 1 if configured in models else 1
+    output_stream.write("Dostępne modele Ollama:\n")
+    for index, model_name in enumerate(models, start=1):
+        suffix = " (uruchomiony)" if model_name in running else ""
+        output_stream.write(f"  {index}. {model_name}{suffix}\n")
+    output_stream.write(f"Wybierz model [1-{len(models)}] (Enter = {default_index}): ")
+    output_stream.flush()
+
+    while True:
+        raw = input_stream.readline()
+        if raw == "":
+            selected = models[default_index - 1]
+            break
+        choice = raw.strip()
+        if not choice:
+            selected = models[default_index - 1]
+            break
+        if choice.isdigit() and 1 <= int(choice) <= len(models):
+            selected = models[int(choice) - 1]
+            break
+        if choice in models:
+            selected = choice
+            break
+        output_stream.write(f"Nieprawidłowy wybór. Podaj numer 1-{len(models)} albo dokładną nazwę modelu: ")
+        output_stream.flush()
+
+    output_stream.write(f"Wybrano model Ollama: {selected}\n")
+    output_stream.flush()
+    return selected
+
 def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     """Run Ollama in terminal-chat, one-shot, or JSONL mode.
 
@@ -630,15 +678,35 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     exactly one available model may be selected automatically; ambiguity is a
     startup error instead of an arbitrary first-model choice.
     """
+    bridge_text = _message_from_remainder(ns.message)
+    stdin_is_tty = bool(getattr(sys.stdin, "isatty", lambda: False)())
+    effective_ollama_timeout = (
+        float(ns.ollama_timeout)
+        if ns.ollama_timeout is not None
+        else max(float(getattr(cfg, "model_timeout_seconds", 45.0)), 120.0)
+    )
+    cfg.runtime_turn_timeout_seconds = max(
+        float(getattr(cfg, "runtime_turn_timeout_seconds", 45.0)),
+        effective_ollama_timeout + 30.0,
+    )
     cfg, ollama_probe = resolve_ollama_cli_settings(
         cfg,
         model=ns.ollama_model,
         api_base=ns.ollama_api_base,
-        timeout_seconds=ns.ollama_timeout,
+        timeout_seconds=effective_ollama_timeout,
         max_output_tokens=ns.ollama_max_output_tokens,
     )
-    bridge_text = _message_from_remainder(ns.message)
-    stdin_is_tty = bool(getattr(sys.stdin, "isatty", lambda: False)())
+    if stdin_is_tty and not bridge_text and not ns.ollama_model:
+        selected_model = _select_ollama_model_for_tty(ollama_probe)
+        if selected_model:
+            apply_ollama_cli_settings(cfg, model=selected_model)
+            ollama_probe = {
+                **ollama_probe,
+                "model": selected_model,
+                "available": True,
+                "reason": "interactive_model_selection",
+                "selection_mode": "interactive",
+            }
     if not ollama_probe.get("available"):
         reason = str(ollama_probe.get("reason") or "ollama_unavailable")
         installed_models = list(ollama_probe.get("installed_models") or [])

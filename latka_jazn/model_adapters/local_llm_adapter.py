@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from time import perf_counter
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -9,6 +10,127 @@ from urllib.request import Request, urlopen
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
 from latka_jazn.nlp.response_language_guard import assess_response_language, user_explicitly_requested_non_polish
+
+
+
+MODEL_CONTEXT_MAX_CHARS_DEFAULT = 24000
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _clip_context_value(value: Any, *, depth: int = 0) -> Any:
+    if depth >= 4:
+        return str(value)[:1200]
+    if isinstance(value, str):
+        return value[:2000]
+    if isinstance(value, (int, float, bool)) or value is None:
+        return value
+    if isinstance(value, list):
+        return [_clip_context_value(item, depth=depth + 1) for item in value[:8]]
+    if isinstance(value, dict):
+        return {str(key): _clip_context_value(item, depth=depth + 1) for key, item in list(value.items())[:40]}
+    return str(value)[:1200]
+
+
+def _compact_model_context(value: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+    raw = _as_dict(value)
+    selected_keys = (
+        "schema_version", "user_message", "detected_intent", "route", "nlg_plan",
+        "operational_thought_frame", "voice_source_contract", "allowed_memory_items",
+        "forbidden_claims", "required_truth_boundaries", "output_instructions",
+        "token_budget_hint", "dialogue_context", "self_state_runtime", "turn_response_policy",
+    )
+    compact = {
+        key: _clip_context_value(raw.get(key))
+        for key in selected_keys
+        if raw.get(key) not in (None, "", [], {})
+    }
+    full_canon = _as_dict(raw.get("full_canon_model_context"))
+    if full_canon:
+        immutable = _as_dict(full_canon.get("immutable_canon"))
+        compact["full_canon_model_context"] = {
+            "schema_version": full_canon.get("schema_version"),
+            "read_only": full_canon.get("read_only"),
+            "immutable_canon_sha256": full_canon.get("immutable_canon_sha256"),
+            "voice_source_contract": _clip_context_value(full_canon.get("voice_source_contract")),
+            "canon_presence": _clip_context_value(full_canon.get("canon_presence")),
+            "immutable_canon": {
+                key: _clip_context_value(immutable.get(key))
+                for key in ("identity_core", "character_profile", "relation_canon", "memory_truth_boundary", "symbolic_world")
+                if immutable.get(key) not in (None, "", [], {})
+            },
+        }
+    try:
+        max_chars = max(8000, int(os.environ.get("JAZN_MODEL_CONTEXT_MAX_CHARS", MODEL_CONTEXT_MAX_CHARS_DEFAULT)))
+    except (TypeError, ValueError):
+        max_chars = MODEL_CONTEXT_MAX_CHARS_DEFAULT
+    original_chars = len(json.dumps(raw, ensure_ascii=False, default=str))
+
+    def encoded() -> str:
+        return json.dumps(compact, ensure_ascii=False, default=str)
+
+    serialized = encoded()
+    for removable in ("operational_thought_frame", "self_state_runtime", "forbidden_claims", "required_truth_boundaries"):
+        if len(serialized) <= max_chars:
+            break
+        compact.pop(removable, None)
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        compact["allowed_memory_items"] = list(compact.get("allowed_memory_items") or [])[:3]
+        compact["context_budget_notice"] = "model context reduced to fit JAZN_MODEL_CONTEXT_MAX_CHARS"
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        compact = {
+            key: compact.get(key)
+            for key in ("user_message", "detected_intent", "route", "nlg_plan", "dialogue_context", "output_instructions", "full_canon_model_context")
+            if compact.get(key) not in (None, "", [], {})
+        }
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        canon = _as_dict(compact.get("full_canon_model_context"))
+        compact["full_canon_model_context"] = {
+            key: canon.get(key)
+            for key in ("schema_version", "read_only", "immutable_canon_sha256", "voice_source_contract", "canon_presence")
+            if canon.get(key) not in (None, "", [], {})
+        }
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        compact = {
+            "user_message": str(compact.get("user_message") or "")[:2000],
+            "detected_intent": compact.get("detected_intent"),
+            "route": compact.get("route"),
+            "dialogue_context": _clip_context_value(compact.get("dialogue_context") or {}),
+            "output_instructions": list(compact.get("output_instructions") or [])[:8],
+            "full_canon_model_context": {
+                "immutable_canon_sha256": _as_dict(compact.get("full_canon_model_context")).get("immutable_canon_sha256"),
+                "canon_presence": _as_dict(compact.get("full_canon_model_context")).get("canon_presence"),
+            },
+            "context_budget_notice": "hard-reduced to fit JAZN_MODEL_CONTEXT_MAX_CHARS",
+        }
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        compact["dialogue_context"] = {}
+        compact["output_instructions"] = []
+        serialized = encoded()
+    if len(serialized) > max_chars:
+        compact = {
+            "user_message": str(compact.get("user_message") or "")[:1000],
+            "detected_intent": str(compact.get("detected_intent") or "")[:120],
+            "route": str(compact.get("route") or "")[:120],
+            "full_canon_model_context": {
+                "immutable_canon_sha256": _as_dict(compact.get("full_canon_model_context")).get("immutable_canon_sha256"),
+            },
+            "context_budget_notice": "minimal context after hard budget enforcement",
+        }
+        serialized = encoded()
+    return compact, {
+        "original_context_chars": original_chars,
+        "compacted_context_chars": len(serialized),
+        "context_max_chars": max_chars,
+        "context_compacted": original_chars > len(serialized),
+    }
 
 
 class LocalLlmAdapter:
@@ -110,18 +232,20 @@ class LocalLlmAdapter:
         })
         return payload
 
-    def _system_text(self, request: ModelAdapterRequest, *, strict_retry: bool = False) -> str:
+    def _system_text(self, request: ModelAdapterRequest, *, strict_retry: bool = False, model_context: dict[str, Any] | None = None) -> str:
         text = (
             "Jesteś wyłącznie językową warstwą wykonawczą Jaźni Łatki. "
             "Odpowiadaj naturalnie po polsku, bez listy przypadkowych dalszych opcji. "
             "Nie wymyślaj pamięci ani faktów poza przekazanym kontekstem. "
             "Nie wspominaj o ChatGPT ani o zewnętrznym hoście, chyba że użytkownik pyta o nie wprost. "
+            "Odpowiedz bezpośrednio na ostatnią wiadomość użytkownika; gdy dialogue_context zawiera poprzednią parę, uwzględnij ją. "
+            "Nie kończ generycznym pytaniem w rodzaju „W czym mogę pomóc?”, jeśli użytkownik już podał temat. "
             f"Bieżący backend językowy: provider=ollama, adapter={self.name}, model={self.model}, endpoint={self.api_base}. "
             "Gdy użytkownik pyta o dostępny model lub adapter, podaj dokładnie te fakty."
         )
         if strict_retry:
             text += " POPRZEDNI KANDYDAT MIAŁ ZŁY JĘZYK. Odpowiedz wyłącznie po polsku i bez metakomentarza."
-        return text + "\n\nKONTEKST_JAZNI_JSON:\n" + json.dumps(request.system_context or {}, ensure_ascii=False)
+        return text + "\n\nKONTEKST_JAZNI_JSON:\n" + json.dumps(model_context if model_context is not None else request.system_context or {}, ensure_ascii=False)
 
     @staticmethod
     def _timed_out(exc: BaseException) -> bool:
@@ -139,16 +263,27 @@ class LocalLlmAdapter:
         *,
         strict_retry: bool,
     ) -> tuple[str, dict[str, Any], BaseException | None]:
-        system_text = self._system_text(request, strict_retry=strict_retry)
+        model_context, context_diagnostics = _compact_model_context(request.system_context or {})
+        system_text = self._system_text(request, strict_retry=strict_retry, model_context=model_context)
+        dialogue_context = _as_dict(model_context.get("dialogue_context"))
+        messages = [{"role": "system", "content": system_text}]
+        previous_user = str(dialogue_context.get("previous_user_text") or "").strip()
+        previous_assistant = str(dialogue_context.get("previous_assistant_text") or "").strip()
+        if previous_user:
+            messages.append({"role": "user", "content": previous_user})
+        if previous_assistant:
+            messages.append({"role": "assistant", "content": previous_assistant})
+        messages.append({"role": "user", "content": request.prompt})
+        try:
+            num_ctx = max(4096, int(os.environ.get("JAZN_OLLAMA_NUM_CTX", "8192")))
+        except (TypeError, ValueError):
+            num_ctx = 8192
         payload = {
             "model": self.model,
             "stream": False,
             "keep_alive": "5m",
-            "messages": [
-                {"role": "system", "content": system_text},
-                {"role": "user", "content": request.prompt},
-            ],
-            "options": {"num_predict": self.max_output_tokens},
+            "messages": messages,
+            "options": {"num_predict": self.max_output_tokens, "num_ctx": num_ctx},
         }
         encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         metadata: dict[str, Any] = {
@@ -157,7 +292,10 @@ class LocalLlmAdapter:
             "timeout_seconds": self.timeout_seconds,
             "system_prompt_chars": len(system_text),
             "user_prompt_chars": len(request.prompt),
+            "message_count": len(messages),
+            "ollama_num_ctx": num_ctx,
             "request_bytes": len(encoded),
+            **context_diagnostics,
         }
         req = Request(
             f"{self.api_base}/api/chat",
