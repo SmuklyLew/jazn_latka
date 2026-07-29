@@ -13,18 +13,55 @@ from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_project_instructions_are_bootstrap_not_latka_persona() -> None:
+def test_project_instructions_are_optional_pointer_not_activation_dependency() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
     assert len(text) <= 8000
+    assert "OPCJONALNA INSTRUKCJA PROJEKTU CHATGPT" in text
+    assert "Brak instrukcji Projektu ChatGPT nie blokuje" in text
     assert "wczytaj w pełnej dostępnej treści `AGENTS.md`" in text
     assert "wczytaj `AGENTS.chatgpt.md`" in text
+    assert "Nie klonuj ani nie pobieraj repozytorium z GitHuba w celu aktywacji Jaźni" in text
     assert "Routing, tożsamość, perspektywa, styl, pamięć i odpowiedź należą do kodu Jaźni" in text
     assert "Pytania „Działasz?”" not in text
     assert "odpowiadaj naturalnie i po polsku" not in text
 
 
-def test_chatgpt_runbook_does_not_reclassify_presence_as_health_check() -> None:
+def test_root_agents_router_self_starts_chatgpt_runbook_without_project_prompt() -> None:
+    text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "samo jego odczytanie jest wystarczającym wyzwalaczem procedury hosta" in text
+    assert "Nie czekaj na dodatkową instrukcję Projektu ChatGPT" in text
+    assert "Brak instrukcji Projektu ChatGPT nie jest błędem i nie blokuje aktywacji" in text
+    assert "Nie klonuj i nie pobieraj repozytorium z GitHuba w celu uruchomienia Jaźni" in text
+    assert "paczka `memory` zawiera dane pamięci i nigdy sama nie jest kandydatem `active_root`" in text
+
+
+def test_chatgpt_package_entrypoint_exists_and_routes_to_authoritative_runbook() -> None:
+    entrypoint = ROOT / "START_CHATGPT_FROM_HERE.txt"
+    assert entrypoint.is_file()
+    text = entrypoint.read_text(encoding="utf-8")
+    assert "nie czekaj na dodatkową instrukcję Projektu ChatGPT" in text
+    assert "`AGENTS.md`" in text
+    assert "`AGENTS.chatgpt.md`" in text
+    assert "Nie pobieraj ani nie klonuj repozytorium z GitHuba" in text
+    assert "Paczka profilu `memory`" in text
+    assert "Nie mów głosem Łatki przed potwierdzeniem" in text
+
+
+def test_package_profile_includes_chatgpt_entrypoint_and_runbooks() -> None:
+    text = (ROOT / "latka_jazn/resources/package_manifest_profiles.json").read_text(encoding="utf-8")
+    assert '"START_CHATGPT_FROM_HERE.txt"' in text
+    assert '"AGENTS.md"' in text
+    assert '"AGENTS.chatgpt.md"' in text
+
+
+def test_chatgpt_runbook_is_self_contained_and_does_not_download_runtime() -> None:
     text = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
+    assert "jego odczytanie jest wyzwalaczem procedury" in text
+    assert "Brak instrukcji Projektu nie blokuje" in text
+    assert "Rozpoznanie środowiska ChatGPT" in text
+    assert "Automatyczny start procedury" in text
+    assert "Nie używaj `git clone`" in text
+    assert "Jeżeli lokalnie dostępna jest wyłącznie paczka profilu `memory`" in text
     assert "Pytania rozmowne o obecność, ciągłość lub tożsamość przekazuj do runtime" in text
     assert "Pytania „Działasz?”" not in text
     assert "Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst" in text
