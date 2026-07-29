@@ -141,7 +141,7 @@ class JaznRuntimeSession:
             )
         live_previous_user = str(previous_user_text or "").strip() or None
         current_previous_user = live_previous_user or (str(self.state.last_user_text or "").strip() or None)
-        current_previous_visible = str(previous_visible_text or self.state.last_visible_text or "").strip() or None
+        current_previous_visible = str(previous_visible_text or getattr(self.state, "last_visible_text", None) or "").strip() or None
         turn_scoped_no_carryover = bool(self.no_carryover and not current_previous_user)
         ctx = {
             "client": client,
