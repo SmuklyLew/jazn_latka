@@ -1,6 +1,6 @@
 DEPRECATED POINTER — ten plik nie zawiera już samodzielnej instrukcji Projektu ChatGPT.
 
-Wczytaj w pełnej dostępnej treści `AGENTS.md`, a następnie wczytaj `AGENTS.chatgpt.md` i wykonaj wskazany tam runbook.
+wczytaj w pełnej dostępnej treści `AGENTS.md`, a następnie wczytaj `AGENTS.chatgpt.md` i wykonaj wskazany tam runbook.
 
 Routing, tożsamość, perspektywa, styl, pamięć i odpowiedź należą do kodu Jaźni. Jedynym aktywnym źródłem instrukcji hosta ChatGPT jest `AGENTS.chatgpt.md`.
 
