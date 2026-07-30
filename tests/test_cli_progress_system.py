@@ -117,6 +117,52 @@ def test_progress_renderer_never_wraps_and_preserves_counter(
     )
 
 
+def test_progress_renderer_keeps_uniform_bar_width_for_all_labels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        console_progress_module.shutil,
+        "get_terminal_size",
+        lambda _fallback: os.terminal_size((86, 24)),
+    )
+    stream = TtyBuffer()
+    progress = TerminalProgress(
+        "doctor",
+        style="stages",
+        stream=stream,
+        mode="always",
+        width=52,
+    )
+
+    progress.update(
+        100,
+        100,
+        "Wczytywanie stanu runtime i pamięci",
+    )
+    progress.update(
+        100,
+        100,
+        "Krótki etap",
+    )
+    progress.update(
+        100,
+        100,
+        "Bardzo długa nazwa etapu diagnostycznego, która musi zostać skrócona",
+    )
+    progress.finish(
+        True,
+        "Diagnostyka zakończona",
+        summary=False,
+    )
+
+    ansi_re = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+    rendered = ansi_re.sub("", stream.getvalue())
+    bars = re.findall(r"\[([* ]+)\]\s+\d{1,3}%", rendered)
+
+    assert len(bars) >= 4
+    assert {len(bar) for bar in bars} == {progress.width}
+
+
 def test_progress_renderer_has_ascii_fallback() -> None:
     stream = TtyBuffer()
     progress = TerminalProgress(
