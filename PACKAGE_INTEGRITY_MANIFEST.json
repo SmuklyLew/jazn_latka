@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-07-30T00:16:15+00:00",
-  "updated_at_utc": "2026-07-30T00:16:15+00:00",
+  "generated_at_utc": "2026-07-30T02:31:39+00:00",
+  "updated_at_utc": "2026-07-30T02:31:39+00:00",
   "start_file": "run.py",
-  "file_count": 560,
-  "static_file_count": 560,
+  "file_count": 564,
+  "static_file_count": 564,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -167,7 +167,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1288,
-      "sha256": "4dcf07130eedee3bcf015d5aaf767f5eae1a2137473a6167db1a1a7414c058f9",
+      "sha256": "abcf110d0b29741b18acb13df0ad1dccab19dd23b1f7d87ba6f1d3f04b6b0c59",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -402,6 +402,15 @@
       "path": "docs/tools/PRIVATE_MEMORY_VALIDATION.md",
       "size_bytes": 4013,
       "sha256": "eb9afce29216773fc55d1902149f8aa0daa245647a25ef5db2e9e21892c993a9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/tools/VERIFIED_MEMORY_RESTORE.md",
+      "size_bytes": 4762,
+      "sha256": "8b65c686e4ac6883b83eebaaa079f09126bbaafbe11c0fee6d063b1e510753f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4143,6 +4152,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/verified_memory_restore.py",
+      "size_bytes": 73984,
+      "sha256": "063361f7eccbf3ee6970342398a25e01be126dcd8fb12ec50ea2445d7358a88b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/version_consistency_audit.py",
       "size_bytes": 12884,
       "sha256": "336cb5f1def3a04519e11a22fb25235b2aa9d6bef56c34bd38d2ea71a0c362a7",
@@ -4962,6 +4980,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_verified_memory_restore.py",
+      "size_bytes": 11642,
+      "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_windows_daemon_console_policy.py",
       "size_bytes": 1759,
       "sha256": "be1d4f7de04792356d442b256a69cbaf963853a65b063946e1575de84cc87f1f",
@@ -4992,6 +5019,15 @@
       "path": "tools/Invoke-JaznPrivateMemoryValidation.ps1",
       "size_bytes": 28294,
       "sha256": "68094524e4582468fe2a5d3ff03a7cc0dfb59cc1897c1fad4ad8a9920063fcd2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/Invoke-JaznVerifiedMemoryRestore.ps1",
+      "size_bytes": 8999,
+      "sha256": "64137d1f0854d7f06800865497058ceb2880554de439daaddbd8f97bebd1fbf3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
