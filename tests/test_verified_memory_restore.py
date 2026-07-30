@@ -159,8 +159,13 @@ def _create_test04_root(root: Path) -> Path:
             start=1,
         ):
             con.execute(
-                """INSERT INTO nodes VALUES(
-                   ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                """INSERT INTO nodes(
+                   conversation_id,node_id,parent_node_id,message_id,role,
+                   create_time,timestamp_status,content_type,text_sha256,
+                   stable_node_sha256,raw_payload_sha256,structural_ordinal,
+                   on_current_path,branch_id,has_assets,first_seen_import_id,
+                   last_seen_import_id
+                   ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     "conv-1",
                     node_id,
