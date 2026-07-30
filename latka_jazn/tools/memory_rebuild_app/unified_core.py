@@ -14,10 +14,23 @@ from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 from latka_jazn.tools.memory_rebuild_journal import JournalReader, JournalStore
 
+from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
 from .unified_schema import (
     CANONICAL_DATABASE_NAME, EXTRA_SCHEMA, UNIFIED_SCHEMA_VERSION, UnifiedImportResult, quote, utc_now,
 )
+
+install_attachment_metadata_support()
+
+
+class _ClosingSQLiteConnection(sqlite3.Connection):
+    """Commit or roll back like sqlite3.Connection, then always release the file handle."""
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        try:
+            return bool(super().__exit__(exc_type, exc, tb))
+        finally:
+            self.close()
 
 
 class UnifiedCoreMixin:
@@ -42,9 +55,14 @@ class UnifiedCoreMixin:
 
     def connect(self, *, read_only: bool = False) -> sqlite3.Connection:
         if read_only:
-            con = sqlite3.connect(f"file:{self.path.as_posix()}?mode=ro", uri=True, timeout=30)
+            con = sqlite3.connect(
+                f"file:{self.path.as_posix()}?mode=ro",
+                uri=True,
+                timeout=30,
+                factory=_ClosingSQLiteConnection,
+            )
         else:
-            con = sqlite3.connect(self.path, timeout=30)
+            con = sqlite3.connect(self.path, timeout=30, factory=_ClosingSQLiteConnection)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA foreign_keys=ON")
         con.execute("PRAGMA busy_timeout=30000")
@@ -66,7 +84,10 @@ class UnifiedCoreMixin:
         temporary = target.with_name(target.name + ".tmp")
         if temporary.exists():
             temporary.unlink()
-        with self.connect(read_only=True) as source, sqlite3.connect(temporary) as destination:
+        with self.connect(read_only=True) as source, sqlite3.connect(
+            temporary,
+            factory=_ClosingSQLiteConnection,
+        ) as destination:
             source.backup(destination)
         os.replace(temporary, target)
         return target
