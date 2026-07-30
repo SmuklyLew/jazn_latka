@@ -141,6 +141,6 @@ class UnifiedImportResult:
 
 __all__ = [
     "CANONICAL_DATABASE_NAME", "COPY_ORDER", "EDITABLE_CANDIDATE_FIELDS", "EXTRA_SCHEMA",
-    "LEGACY_DATABASE_NAME", "UNIFIED_SCHEMA_VERSION", "UnifiedImportResult",
+    "LEGACY_DATABASE_NAMES", "UNIFIED_SCHEMA_VERSION", "UnifiedImportResult",
     "candidate_snapshot", "json_text", "quote", "sha_text", "utc_now",
 ]
