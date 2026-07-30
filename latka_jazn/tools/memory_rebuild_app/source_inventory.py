@@ -124,6 +124,8 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
     image_members: list[str] = []
     json_members: list[str] = []
     package_profiles: list[str] = []
+    bundle_manifest_members: list[str] = []
+    bundle_schemas: list[str] = []
 
     with zipfile.ZipFile(path) as archive:
         infos = archive.infolist()
@@ -160,6 +162,15 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
                         package_profiles.append(profile)
                 except (UnicodeDecodeError, json.JSONDecodeError, OSError, KeyError):
                     pass
+            if lower.endswith("bundle_manifest.json"):
+                bundle_manifest_members.append(name)
+                try:
+                    payload = json.loads(archive.read(info).decode("utf-8-sig", errors="strict"))
+                    schema = str(payload.get("schema_version") or "").strip()
+                    if schema:
+                        bundle_schemas.append(schema)
+                except (UnicodeDecodeError, json.JSONDecodeError, OSError, KeyError):
+                    pass
         crc_error = archive.testzip() if verify_crc else None
 
     return {
@@ -174,6 +185,8 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
         "unsafe_members": unsafe,
         "symlink_members": sorted(set(symlinks)),
         "package_profiles": sorted(set(package_profiles)),
+        "bundle_manifest_members": sorted(set(bundle_manifest_members)),
+        "bundle_schemas": sorted(set(bundle_schemas)),
         "crc_checked": bool(verify_crc),
         "crc_error_member": crc_error,
     }
@@ -250,6 +263,8 @@ def _classification(path: Path, metadata: dict[str, Any]) -> tuple[str, str, str
     if suffix == ".zip":
         if zip_meta.get("conversation_members"):
             return "chatgpt_export", "conversation_event", "memory_rebuild"
+        if zip_meta.get("bundle_schemas"):
+            return "reference_document", "technical", "catalog_only"
         if zip_meta.get("package_profiles") == ["memory"]:
             return "approved_l0", "source_recorded", "catalog_only"
         if int(zip_meta.get("image_member_count") or 0) > 0 and not zip_meta.get("json_member_count"):
