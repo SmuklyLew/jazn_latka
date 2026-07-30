@@ -48,11 +48,23 @@ _LEGACY_MODULE = _load_legacy_module()
 
 # Zachowaj publiczny i historycznie testowany kontrakt modułu starego narzędzia.
 # Nowy launcher nie nadpisuje własnego main/ROOT, ale udostępnia m.in.
-# TOOL_VERSION, ToolState, _ordered_restore_sources, _memory_boundary_rows i self_test.
+# TOOL_VERSION, ToolState, _ordered_restore_sources i _memory_boundary_rows.
 for _name in dir(_LEGACY_MODULE):
-    if _name.startswith("__") or _name in {"main", "ROOT"}:
+    if _name.startswith("__") or _name in {"main", "ROOT", "self_test"}:
         continue
     globals().setdefault(_name, getattr(_LEGACY_MODULE, _name))
+
+
+def self_test(state):
+    """Uruchom historyczny autotest, zachowując kanoniczną nazwę launchera."""
+    report = _LEGACY_MODULE.self_test(state)
+    for check in report.get("checks", []):
+        if check.get("name") == "canonical_filename":
+            check["ok"] = Path(__file__).name == "memory_rebuild.py"
+            check["value"] = Path(__file__).name
+            break
+    report["ok"] = all(bool(item.get("ok")) for item in report.get("checks", []))
+    return report
 
 
 def _legacy_requested(args: list[str]) -> bool:
@@ -65,6 +77,11 @@ def _run_legacy(args: list[str]) -> int:
     cleaned = [item for item in args if item != "--legacy-five-db"]
     if cleaned and cleaned[0] == "legacy":
         cleaned = cleaned[1:]
+    if "--self-test" in cleaned:
+        args = _LEGACY_MODULE.build_parser().parse_args(cleaned)
+        state = _LEGACY_MODULE._settings_from_args(args, _LEGACY_MODULE.load_state(args.config))
+        state.ui_mode = "text"
+        return 0 if self_test(state).get("ok") else 2
     return int(_LEGACY_MODULE.main(cleaned))
 
 
