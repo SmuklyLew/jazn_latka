@@ -219,9 +219,26 @@ class TerminalProgress:
         self.enabled = requested_mode == "always" or (requested_mode == "auto" and self.interactive)
         env_ascii = os.environ.get("JAZN_CLI_ASCII", "").strip().lower() in {"1", "true", "yes", "on"}
         self.symbols = ASCII_SYMBOLS if ascii_only or env_ascii or not _stream_supports_unicode(self.stream) else UNICODE_SYMBOLS
-        terminal_columns = shutil.get_terminal_size((100, 24)).columns
+        terminal_columns = max(
+            20,
+            shutil.get_terminal_size((100, 24)).columns,
+        )
         computed_width = max(20, min(52, terminal_columns - 42))
-        self.width = max(12, int(width or computed_width))
+        requested_width = max(12, int(width or computed_width))
+
+        # Ustal szerokość paska tylko raz dla całego renderera. Zostaw stałą
+        # rezerwę na symbol, procent oraz etykietę, aby wszystkie etapy miały
+        # identyczny pasek niezależnie od długości opisu.
+        fixed_overhead = 12
+        label_reserve = min(
+            24,
+            max(1, terminal_columns - 1 - fixed_overhead - 4),
+        )
+        maximum_uniform_width = max(
+            4,
+            terminal_columns - 1 - fixed_overhead - label_reserve,
+        )
+        self.width = min(requested_width, maximum_uniform_width)
         self.minimum_delay = max(0.0, float(minimum_delay))
         self.refresh_interval = max(0.04, float(refresh_interval))
         self.started_at = time.monotonic()
@@ -296,10 +313,7 @@ class TerminalProgress:
         if self.style == "dots":
             fixed = f" [{percentage:3d}%] "
             available = max(2, columns - _display_width(fixed))
-            label_width = _display_width(label_text)
-            meter_width = min(self.width, max(4, available - label_width))
-            if meter_width >= available:
-                meter_width = max(1, available - 1)
+            meter_width = self.width
             label_budget = max(1, available - meter_width)
             fitted_label = _fit_label(label_text, label_budget)
             filled = min(meter_width, round(meter_width * fraction))
@@ -309,14 +323,14 @@ class TerminalProgress:
         symbol_text = self._symbol(symbol)
         fixed = f"{symbol_text} [] {percentage:3d}% "
         available = max(2, columns - _display_width(fixed))
-        label_width = _display_width(label_text)
-        meter_width = min(self.width, max(8, available - label_width))
-        if meter_width >= available:
-            meter_width = max(1, available - 1)
+        meter_width = self.width
         label_budget = max(1, available - meter_width)
         fitted_label = _fit_label(label_text, label_budget)
         filled = min(meter_width, round(meter_width * fraction))
-        bar = self.symbols.fill * filled + self.symbols.empty * (meter_width - filled)
+        bar = (
+            self.symbols.fill * filled
+            + self.symbols.empty * (meter_width - filled)
+        )
         return f"{symbol_text} [{bar}] {percentage:3d}% {fitted_label}"
 
     def _finalize_active_stage(self, *, ok: bool, percentage: int) -> None:
