@@ -22,7 +22,7 @@ ROLE_LABELS = {
 PIPELINE_LABELS = {
     "memory_rebuild": "Wejdzie do odbudowy pamięci",
     "html_control": "Tylko kontrola HTML",
-    "catalog_only": "Tylko katalog źródeł",
+    "catalog_only": "Źródło referencyjne — bez bezpośredniego importu",
     "sqlite_baseline": "Baza porównawcza",
     "excluded": "Pominięte",
 }
@@ -54,7 +54,7 @@ WARNING_LABELS = {
 
 ERROR_LABELS = {
     "target_root_missing": "Nie ustawiono katalogu docelowego.",
-    "enabled_sources_missing": "Co najmniej jeden włączony plik źródłowy nie istnieje.",
+    "enabled_sources_missing": "Co najmniej jeden włączony wpis nie wskazuje na istniejący plik.",
     "enabled_sources_blocked": "Co najmniej jedno źródło jest zablokowane przez kontrolę bezpieczeństwa.",
     "no_memory_rebuild_sources": "Nie ma żadnego źródła przeznaczonego do odbudowy pamięci.",
     "developer_target_inside_repository": "W trybie developer katalog docelowy musi być poza repozytorium.",
@@ -156,18 +156,30 @@ def format_preflight(report: dict[str, Any]) -> str:
         "",
         f"Katalog docelowy: {report.get('target_root') or 'nie ustawiono'}",
         f"Włączone źródła: {report.get('enabled_source_count', 0)}",
-        f"Źródła odbudowy pamięci: {report.get('memory_rebuild_source_count', 0)}",
-        f"Źródła tylko katalogowe: {report.get('catalog_only_source_count', 0)}",
-        f"Źródła HTML do kontroli: {report.get('html_control_source_count', 0)}",
+        f"Źródła importowane do odbudowy: {report.get('memory_rebuild_source_count', 0)}",
+        f"Źródła referencyjne — bez bezpośredniego importu: {report.get('catalog_only_source_count', 0)}",
+        f"Źródła HTML używane tylko do kontroli: {report.get('html_control_source_count', 0)}",
     ]
     errors = list(report.get("errors") or [])
     if errors:
         lines.extend(("", "Co trzeba poprawić:"))
         lines.extend(f"  • {ERROR_LABELS.get(item, item)}" for item in errors)
-    missing = list(report.get("missing_sources") or [])
-    if missing:
-        lines.extend(("", "Brakujące ścieżki:"))
-        lines.extend(f"  • {item}" for item in missing)
+
+    invalid_paths = [Path(str(item)) for item in report.get("missing_sources") or []]
+    folder_entries = [path for path in invalid_paths if path.is_dir()]
+    missing_files = [path for path in invalid_paths if not path.exists()]
+    other_invalid = [path for path in invalid_paths if path.exists() and not path.is_dir() and not path.is_file()]
+
+    if missing_files:
+        lines.extend(("", "Nieistniejące pliki źródłowe:"))
+        lines.extend(f"  • {item}" for item in missing_files)
+    if folder_entries:
+        lines.extend(("", "Foldery dodane omyłkowo jako pliki źródłowe:"))
+        lines.extend(f"  • {item}" for item in folder_entries)
+    if other_invalid:
+        lines.extend(("", "Ścieżki, które nie wskazują na zwykłe pliki:"))
+        lines.extend(f"  • {item}" for item in other_invalid)
+
     blocked = list(report.get("blocked_sources") or [])
     if blocked:
         lines.extend(("", "Zablokowane źródła:"))
@@ -183,9 +195,9 @@ def format_preflight(report: dict[str, Any]) -> str:
                 "",
                 "Najczęstsza naprawa:",
                 "  1. Otwórz „Źródła pamięci”.",
-                "  2. Wybierz „Przeskanuj folder źródeł”.",
-                "  3. Wskaż folder zawierający ZIP-y/JSON-y.",
-                "  4. Wyłącz albo usuń wpisy wskazujące na folder zamiast pliku.",
+                "  2. Wybierz „Usuń z projektu wpisy nieistniejące lub będące folderami”.",
+                "  3. Wybierz „Przeskanuj folder źródeł”.",
+                "  4. Wskaż folder zawierający ZIP-y/JSON-y i dodaj znalezione pliki.",
             )
         )
     return "\n".join(lines)
