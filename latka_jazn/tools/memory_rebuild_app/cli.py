@@ -8,19 +8,23 @@ import json
 from latka_jazn.tools.memory_restore import confirmation_token
 
 from .baseline_registry import discover_baseline_roots
+from .cli_unified import UNIFIED_COMMANDS, add_unified_subcommands, run_unified_command
 from .controller import MemoryRebuildAppController
 from .models import RebuildProject
 from .project_store import ProjectStore
 from .source_inventory import inspect_source
-from .tui import run_studio
+from .tui_v24 import run_studio_v24
 
-APP_VERSION = "1.0.0"
+APP_VERSION = "2.4.0"
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rebuild_memory_app",
-        description="Kursorowa aplikacja operatorska do projektowania, porównywania i uruchamiania odbudowy pamięci Jaźni.",
+        description=(
+            "Jaźń Memory Rebuild v2.4: projekty źródeł, jedna baza memory_jazn.sqlite3, "
+            "import nowych wątków, kandydaci, Testy 01–04 i finalny eksport."
+        ),
         allow_abbrev=False,
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {APP_VERSION}")
@@ -30,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true", help="Wypisz wynik jako JSON.")
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("studio", help="Uruchom interfejs kursorowy.")
+    sub.add_parser("studio", help="Uruchom pełną aplikację v2.4.")
     sub.add_parser("list-projects", help="Pokaż projekty.")
 
     create = sub.add_parser("create-project", help="Utwórz projekt.")
@@ -61,17 +65,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("show-project", help="Pokaż pełną konfigurację projektu.")
     sub.add_parser("preflight", help="Sprawdź projekt bez zapisu baz.")
-    sub.add_parser("plan", help="Uruchom plan silnika bez zapisu baz.")
+    sub.add_parser("plan", help="Uruchom plan starego silnika bez zapisu baz.")
     sub.add_parser("compare", help="Porównaj cel z baseline’ami.")
 
-    export = sub.add_parser("export", help="Eksportuj manifest.")
+    export = sub.add_parser("export", help="Eksportuj manifest starego projektu lub Testu 04.")
     export.add_argument("--format", choices=("project", "test04"), required=True)
     export.add_argument("--output", required=True, type=Path)
     export.add_argument("--baseline-test03-root", type=Path)
     export.add_argument("--legacy-memory-root", type=Path)
 
-    run = sub.add_parser("run", help="Uruchom odbudowę po jawnym tokenie.")
+    run = sub.add_parser("run", help="Uruchom zgodnościową pięciobazową odbudowę po jawnym tokenie.")
     run.add_argument("--confirm", required=True)
+
+    add_unified_subcommands(sub)
     return parser
 
 
@@ -93,12 +99,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     command = args.command or "studio"
     try:
         if command == "studio":
-            return run_studio(
+            return run_studio_v24(
                 project_root=args.project_root,
                 project=args.project,
                 tool_root=Path.cwd(),
                 text_ui=args.text_ui,
             )
+
+        if command in UNIFIED_COMMANDS:
+            payload = run_unified_command(args)
+            _emit(payload, json_mode=True)
+            return 0 if payload.get("ok") else 2
 
         store = ProjectStore(args.project_root)
         if command == "list-projects":

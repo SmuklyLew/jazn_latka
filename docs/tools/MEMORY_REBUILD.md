@@ -1,144 +1,87 @@
-# Odbudowa pamięci Jaźni — Memory Rebuild v24.0.2.05
+# Odbudowa pamięci Jaźni — Memory Rebuild v2.4
 
-Kanonicznym programem operatorskim jest wyłącznie:
+Kanonicznym programem operatorskim jest:
 
 ```powershell
 py -X utf8 .\tools\memory_rebuild.py
 ```
 
-Silnik pozostaje w `latka_jazn.tools.memory_restore`, lecz nie jest drugim programem dla operatora.
-Narzędzie buduje i weryfikuje pięć baz:
+## Finalny magazyn
+
+W profilu v2.4 finalna pamięć jest przechowywana w jednej fizycznej bazie:
 
 ```text
-memory/sqlite/
-├── archive_chats.sqlite3
-├── journal.sqlite3
-├── memory_jazn.sqlite3
-├── experience.sqlite3
-└── import_catalog.sqlite3
+memory_jazn.sqlite3
 ```
 
-## Granica działania
+Jedna baza zawiera logiczne sekcje rozmów, dziennika, kandydatów, doświadczeń, pamięci L1/L2/L3, katalogu importów, konfliktów i ledgerów decyzji.
 
-- `archive_chats.sqlite3` jest bezstratnym L0 rozmów i ich gałęzi.
-- `journal.sqlite3` przechowuje wpisy dziennika oraz rewizje.
-- `experience.sqlite3` przechowuje kandydatów i ręcznie zatwierdzone doświadczenia.
-- `memory_jazn.sqlite3` jest bazą L1/L2/L3 runtime.
-- `import_catalog.sqlite3` zapisuje źródła, operacje, walidacje i relacje.
+Historyczne pliki:
 
-Import, analiza tematów ani utworzenie kandydata nie promują automatycznie treści do L2 lub L3.
+```text
+archive_chats.sqlite3
+journal.sqlite3
+experience.sqlite3
+import_catalog.sqlite3
+```
 
-## Jawne granice w interfejsie v24.0.2.05
+pozostają obsługiwane jako baseline’y Testów 01–04 oraz źródła migracji. Nie są aktywnymi osobnymi magazynami finalnego systemu.
 
-Ekran ustawień pokazuje teraz faktyczny stan całego pipeline'u, a nie tylko pola konfiguracyjne:
+## Zgodność ze starszym narzędziem
 
-- `Kandydaci doświadczeń: OFF` przy limicie `0`; wartość dodatnia oznacza wyłącznie próbkę do ręcznego review.
-- `Automatyczna akceptacja doświadczeń: OFF — STAŁE`.
-- `Automatyczna promocja L2: OFF — STAŁE`.
-- `Automatyczna promocja L3: OFF — STAŁE`.
-- `Analiza grafik i mediów: OFF — NIEOBSŁUGIWANA`.
+Pierwotny pięciobazowy program został zachowany jako:
 
-Cztery ostatnie pozycje są informacyjne i nie można ich przełączyć. Nie dodano ukrytej drogi do automatycznego
-zatwierdzania doświadczeń ani promocji pamięci. Grafiki pozostają osobnym, odłożonym etapem archiwum L0.
+```text
+tools/memory_rebuild_legacy_v24.py
+```
 
-## Źródła rozmów w v24.0.2.05
+Można go uruchomić przez główny launcher:
 
-Reader rozróżnia trzy rodzaje danych:
+```powershell
+py -X utf8 .\tools\memory_rebuild.py legacy --self-test
+```
 
-1. `conversations.json` — kanoniczna historia rozmów.
-2. Ponumerowane pliki rozmów, np. `conversations-001.json`, `conversations-002.json` — części jednego dużego eksportu, czytane w kolejności numerycznej.
-3. `shared_conversations.json` — metadane udostępnionych linków: ID, conversation ID, tytuł i ustawienie anonimowości. Nie jest to treść rozmowy i nie może tworzyć pustych czatów.
+Flagi starego narzędzia są przekazywane do trybu zgodności. Domyślne uruchomienie bez takich flag otwiera nową aplikację v2.4.
 
-Dopasowanie jest wykonywane po dokładnej nazwie pliku. Nazwy takie jak `my_conversations.json` nie są uznawane za kanoniczne źródło.
+## Obsługiwane źródła
 
-`chat.html` pozostaje pomocniczym źródłem mapy załączników. Sam HTML nie jest bezstratnym archiwum drzewa rozmowy.
+- eksporty ChatGPT JSON i ZIP;
+- ponumerowane części rozmów;
+- HTML z osadzonym `jsonData`;
+- kontrolny HTML `div.conversation` / `pre.message`;
+- dzienniki JSON, JSONL i NDJSON;
+- istniejące bazy SQLite Testów 01–04;
+- pozostałe pliki jako źródła referencyjne bez automatycznego importu.
+
+Import nowych eksportów jest przyrostowy i aktualizuje ten sam `memory_jazn.sqlite3`.
 
 ## Plan bez zapisu
 
-Plan jest narastającą symulacją:
+Plan importu i migracji działa na tymczasowej kopii bazy. Docelowy plik nie jest zmieniany. Symulacja zachowuje kolejność źródeł i uwzględnia wynik każdego wcześniejszego importu.
 
-1. tworzona jest tymczasowa kopia istniejącego `archive_chats.sqlite3`;
-2. pierwszy ZIP jest planowany i symulacyjnie importowany wyłącznie do tej kopii;
-3. drugi ZIP jest porównywany z wynikiem pierwszego;
-4. kolejne źródła widzą wcześniejsze `new`, `identical`, `older_subset`, `extends_active` i konflikty;
-5. katalog docelowy nie jest modyfikowany.
+## Kandydaci
 
-Dzięki temu liczników z wielu ZIP-ów nie sumuje się tak, jakby każdy był porównywany z pustą bazą.
+Kandydaci są generowani z rozmów i dziennika jako materiał do ręcznego przeglądu. Aplikacja pozwala:
 
-Plan zapisuje SHA-256 i rozmiar każdego źródła. Wykonanie jest blokowane, gdy plik zmieni się po planowaniu.
+- zobaczyć kandydatów i dowody;
+- edytować klasyfikację i treść z zachowaniem rewizji;
+- dodawać dokładne fragmenty źródłowe;
+- łączyć i rozdzielać kandydatów;
+- zatwierdzać do doświadczenia L1;
+- odrzucać albo przywracać do przeglądu.
 
-## Kolejność źródeł
+Brak automatycznej promocji do L2 i L3 pozostaje twardą granicą.
 
-Jawna kolejność wybrana przez operatora jest zachowywana, a powtórzona ścieżka jest usuwana bez zmiany pierwszego wystąpienia.
+## Testy
 
-Dla automatycznego wyboru wszystkich plików program używa daty `YYYY-MM-DD`, `YYYY.MM.DD` albo `YYYY_MM_DD` z nazwy lub ścieżki. Rozmiar pliku nie jest traktowany jako chronologia. Gdy daty nie ma, używana jest stabilna kolejność nazw.
+Profile `test01`, `test02`, `test03`, `test04` oraz `final` są bramkami jakości nad jednym aktualnym silnikiem. Finalny profil jest nadzbiorem wymagań historycznych testów i nie importuje tych samych źródeł cztery razy.
 
-## Walidacja rekordów
+## Finalny eksport
 
-Rekord rozmowy musi mieć:
+Finalny eksport powstaje stagingowo, zawiera jeden `memory_jazn.sqlite3`, manifesty, ledgery, raport profilu finalnego, SHA-256 i pełną walidację SQLite. Publikacja nie aktywuje runtime.
 
-- identyfikator rozmowy;
-- niepuste drzewo `mapping`;
-- poprawne węzły i role możliwe do zbudowania przez reader.
-
-Rekord bez `mapping` jest raportowany jako metadany i pomijany. Jeżeli dwa ponumerowane pliki zawierają identyczną rozmowę, druga kopia jest pomijana z ostrzeżeniem. Rozbieżne wersje tego samego ID w jednym eksporcie blokują import i wymagają kontroli.
-
-ZIP jest sprawdzany pod kątem CRC, niebezpiecznych ścieżek, powtórzonych nazw i kolizji wielkości liter.
-
-## Zalecana kolejność odbudowy
-
-1. Utwórz nowy pusty katalog testowy.
-2. Wybierz wszystkie eksporty rozmów w kolejności chronologicznej.
-3. Uruchom plan bez zapisu i sprawdź źródła odrzucone.
-4. Sprawdź liczniki relacji każdego kolejnego ZIP-a.
-5. Uruchom odbudowę L0.
-6. Ponownie zaimportuj wybrany ZIP i potwierdź idempotencję.
-7. Uruchom pełne `verify`: `integrity_check=ok` i pusty `foreign_key_check` dla wszystkich baz.
-8. Zaimportuj i zweryfikuj dziennik.
-9. Dopiero po skompletowaniu L0 uruchom analizę tematów.
-10. Utwórz małą próbkę kandydatów doświadczeń i przeglądaj ją ręcznie.
-11. L2 i L3 odbudowuj osobnym, jawnym procesem promocji.
-
-## Tryby celu
-
-### Developer
-
-Cel musi znajdować się poza repozytorium. Domyślny token zapisu:
+Pełna instrukcja operatorska:
 
 ```text
-RESTORE
+docs/tools/REBUILD_MEMORY_APP.md
 ```
-
-### System
-
-Wymaga pełnego runtime, poprawnego `doctor`, aktualnej integralności oraz zatrzymanego daemona. Token jest związany z dokładną ścieżką:
-
-```text
-SYSTEM_RESTORE:<bezwzględna ścieżka>
-```
-
-## Raporty
-
-Każdy przebieg zapisuje osobny katalog z:
-
-- `settings.json`;
-- `plan.json`;
-- `events.jsonl`;
-- raportem każdego importu;
-- pełną walidacją;
-- `summary.json`;
-- opcjonalnym porównaniem do testów bazowych.
-
-Podsumowanie podaje osobno liczbę źródeł zaplanowanych i wykonanych. Etap z błędem nie może zostać oznaczony jako poprawny.
-
-## Granice bezpieczeństwa
-
-- brak automatycznego zatwierdzania doświadczeń;
-- brak automatycznej promocji L2/L3;
-- sceny książkowe i roleplay nie stają się wydarzeniami fizycznymi;
-- sny i wizje pozostają materiałem symbolicznym;
-- surowe źródła nie są zmieniane;
-- plan nie zapisuje do celu;
-- zmiana źródła po planie blokuje wykonanie;
-- błąd domyślnie zatrzymuje dalszy import;
-- `continue_on_error` wymaga jawnego włączenia.

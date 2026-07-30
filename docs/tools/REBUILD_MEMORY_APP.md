@@ -1,10 +1,34 @@
-# Jaźń Memory Rebuild Studio
+# Jaźń Memory Rebuild v2.4
 
-`Jaźń Memory Rebuild Studio` jest projektową aplikacją operatorską nad kanonicznym silnikiem `latka_jazn.tools.memory_restore`. Nie zastępuje silnika, nie zmienia surowych źródeł i nie promuje automatycznie pamięci do L2 ani L3.
+`tools/memory_rebuild.py` jest głównym programem operatorskim do przygotowania, importowania, przeglądania i eksportowania pamięci Jaźni.
+
+## Najważniejsza zmiana v2.4
+
+Finalnym aktywnym magazynem jest jeden plik:
+
+```text
+memory_jazn.sqlite3
+```
+
+W tym samym pliku znajdują się logiczne sekcje:
+
+- rozmowy historyczne i nowe wątki;
+- pełne drzewa wiadomości, gałęzie i załączniki;
+- dziennik i jego rewizje;
+- kandydaci pamięci oraz ich rewizje i dowody;
+- ręcznie zatwierdzone doświadczenia L1;
+- kontrolowane warstwy pamięci roboczej, krótkoterminowej i długoterminowej;
+- źródła, operacje, konflikty, walidacje i ledgery decyzji.
+
+Nazwy `archive_chats.sqlite3`, `journal.sqlite3`, `experience.sqlite3` i `import_catalog.sqlite3` pozostają obsługiwane wyłącznie jako stare baseline’y i źródła migracji. Nie są aktywnymi osobnymi magazynami finalnej pamięci.
 
 ## Uruchomienie
 
-Najprościej:
+```powershell
+py -X utf8 .\tools\memory_rebuild.py
+```
+
+Alternatywny launcher prowadzi do tego samego interfejsu:
 
 ```powershell
 py -X utf8 .\tools\rebuild_memory_app.py
@@ -13,233 +37,192 @@ py -X utf8 .\tools\rebuild_memory_app.py
 Tryb tekstowy:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py --text-ui
+py -X utf8 .\tools\memory_rebuild.py --text-ui
 ```
 
-Konfiguracje projektów są domyślnie zapisywane poza repozytorium:
+Zależność interfejsu kursorowego:
+
+```powershell
+py -X utf8 -m pip install -e ".[memory-rebuild-ui]"
+```
+
+## Główne ekrany
+
+1. **Projekty, źródła i baseline’y** — czytelne listy, skan folderów, podgląd, edycja metadanych, wyłączanie i usuwanie wpisu tylko z projektu.
+2. **Wybór bazy** — wskazanie istniejącego `memory_jazn.sqlite3` albo utworzenie nowej bazy w wybranym folderze.
+3. **Stan bazy** — `integrity_check`, `foreign_key_check`, SHA-256, rozmiar i liczniki.
+4. **Import** — eksporty ChatGPT JSON/ZIP, HTML, dzienniki, nowe wątki oraz migracja starych baz.
+5. **Kandydaci pamięci** — lista, podgląd, edycja, rewizje, dowody, zatwierdzanie, odrzucanie, łączenie i rozdzielanie.
+6. **Profile Testów 01–04 i finalny** — powtarzalne bramki zgodności nad jednym aktualnym silnikiem.
+7. **Finalny eksport** — staging, pełna walidacja, manifesty i atomowa publikacja gotowego zestawu.
+
+## Import rozmów
+
+Obsługiwane są:
+
+- `conversations.json`;
+- ponumerowane części `conversations-001.json`, `conversations-002.json`, ...;
+- ZIP-y eksportu ChatGPT;
+- HTML z osadzonym `var jsonData = ...`;
+- kontrolny wariant HTML z widoczną strukturą:
+
+```html
+<div class="conversation">
+  <h4>Nazwa okna czatu</h4>
+  <pre class="message">...</pre>
+</div>
+```
+
+Gdy HTML zawiera osadzone `jsonData`, importer zachowuje pełne drzewo rozmowy. Wariant `div/pre` jest kontrolowanym fallbackiem i może odtworzyć tylko widoczną kolejność wiadomości.
+
+Import jest przyrostowy. Ten sam eksport jest rozpoznawany po SHA-256, a rozmowy są deduplikowane po identyfikatorach i strukturze. Nowe wątki można dopisywać później do tego samego `memory_jazn.sqlite3` bez pełnej odbudowy od zera.
+
+## Plan bez zapisu
+
+`unified-import --dry-run` i plan migracji działają na tymczasowej kopii bazy. Docelowy plik nie jest zmieniany. Kolejne źródła w planie widzą wynik wcześniejszych źródeł, więc raport odzwierciedla rzeczywistą kolejność importu.
+
+## Migracja Testów 01–04
+
+Stare bazy pozostają nienaruszone. Migrator:
+
+1. wyszukuje znane pliki SQLite;
+2. tworzy plan tabel i liczników;
+3. kopiuje kompatybilne rekordy przez `INSERT OR IGNORE` w kolejności zależności;
+4. odbudowuje indeksy FTS;
+5. wykonuje pełny `integrity_check` i `foreign_key_check`.
+
+CLI:
+
+```powershell
+py -X utf8 .\tools\memory_rebuild.py unified-migrate `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --legacy-root D:\PRIVATE\jazn_memory_tests
+```
+
+Plan bez zapisu:
+
+```powershell
+py -X utf8 .\tools\memory_rebuild.py unified-migrate `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --legacy-root D:\PRIVATE\jazn_memory_tests `
+  --dry-run
+```
+
+## Kandydaci pamięci
+
+Generowanie kandydatów nie zatwierdza ich automatycznie. Każda ręczna edycja zapisuje poprzedni stan w `candidate_revisions`.
+
+Dostępne operacje:
+
+- filtrowanie i wyszukiwanie;
+- edycja tytułu, treści, rodzaju prawdy, pewności, ważności i domen;
+- dodawanie dokładnych fragmentów źródłowych i kontekstu przed/po;
+- zatwierdzenie do doświadczenia L1;
+- odrzucenie albo przywrócenie do przeglądu;
+- połączenie kilku kandydatów;
+- rozdzielenie części treści do osobnego kandydata.
+
+Zatwierdzenie kandydata nie promuje go automatycznie do L2 ani L3.
+
+## Profile testowe
 
 ```text
-%USERPROFILE%\.jazn\memory_rebuild_projects\
+test01  — integralność, jedna baza, rozmowy, węzły i wyszukiwanie
+test02  — wymagania Testu 01 + dziennik
+test03  — wymagania Testu 02 + proweniencja i brak nierozwiązanych konfliktów
+test04  — wymagania Testu 03 + porównanie z baseline’ami
+final   — nadzbiór Testów 01–04 + kontrola kandydatów i doświadczeń
 ```
 
-Inny prywatny katalog:
+Test finalny nie uruchamia czterech importerów po kolei. Używa jednego aktualnego silnika i sprawdza, czy wynik spełnia wymagania historycznych testów.
+
+Przykład:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects
+py -X utf8 .\tools\memory_rebuild.py test-profile `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --profile final `
+  --baseline D:\PRIVATE\jazn_memory_tests
 ```
 
-## Najważniejsza zasada
+## Finalny eksport
 
-Bazy z Testów 01–04 pozostają niezmiennymi baseline’ami. Aplikacja otwiera je w trybie tylko do odczytu i wykorzystuje do:
-
-- `quick_check` albo pełnego `integrity_check`;
-- `foreign_key_check`;
-- odczytu liczników znanych tabel;
-- obliczenia SHA-256;
-- porównania spadków, przyrostów i brakujących baz.
-
-Usunięcie baseline’u z projektu usuwa tylko wpis konfiguracji. Nie usuwa baz z dysku.
-
-## Projekty odbudowy
-
-Projekt zapisuje:
-
-- nazwę i prywatny identyfikator;
-- katalog docelowy;
-- tryb `developer` albo `system`;
-- źródła i ich kolejność;
-- dowolną liczbę baseline’ów;
-- ustawienia walidacji i bezpieczeństwa;
-- ostatni plan i wynik;
-- notatki operatora;
-- rewizję konfiguracji.
-
-Każdy wcześniejszy zapis projektu jest archiwizowany pod `.history/<project-id>/` przed zastąpieniem pliku bieżącego.
-
-## Rejestr źródeł
-
-Każdy plik może otrzymać:
+Eksport powstaje najpierw w katalogu stagingowym. Po powodzeniu zawiera:
 
 ```text
-role
-source_family
-truth_domain
-pipeline
-enabled
-approved
-notes
-sha256
-status
-warnings
-metadata
+memory_jazn.sqlite3
+source-manifest.json
+test-profile-final.json
+candidate-review-ledger.json
+promotion-ledger.json
+database-manifest.json
+final-export-summary.json
 ```
 
-Obsługiwane role:
-
-```text
-chatgpt_export
-chatgpt_html_export
-journal
-approved_l0
-layered_memory
-runtime_event_ledger
-sqlite_snapshot
-reference_document
-visual_asset
-unknown
-```
-
-Pipeline’y:
-
-```text
-memory_rebuild
-html_control
-catalog_only
-sqlite_baseline
-excluded
-```
-
-Granice prawdy:
-
-```text
-conversation_event
-source_recorded
-user_confirmed
-assistant_claim
-runtime_claim
-dream
-imagination
-book_scene
-roleplay
-symbolic
-technical
-unknown
-```
-
-Sama klasyfikacja nie zmienia treści źródłowej i nie stanowi zatwierdzenia pamięci.
-
-## Inspekcja ZIP
-
-Aplikacja wykrywa:
-
-- `conversations.json` i ponumerowane części rozmów;
-- pliki HTML i zasoby graficzne;
-- niebezpieczne ścieżki i ścieżki bezwzględne;
-- symlinki;
-- powtórzone wpisy i kolizje wielkości liter;
-- profil paczki z wewnętrznych plików `.package.json`;
-- opcjonalnie pełny test CRC.
-
-SHA-256 jest domyślnie obliczany. Pełny CRC dużych archiwów jest domyślnie wyłączony i wymaga jawnego włączenia.
-
-## HTML rozmów
-
-HTML jest rejestrowany jako `chatgpt_html_export` i domyślnie trafia do `html_control`. Nie zastępuje kanonicznego drzewa rozmów z JSON. Służy do kontroli, mapowania zasobów i porównania widocznej ścieżki rozmowy.
-
-## Manifest projektu i manifest Testu 04
-
-Aplikacja eksportuje:
-
-1. pełny manifest projektu, zawierający wszystkie role i metadane;
-2. zgodny manifest `jazn_memory_sqlite_test04_sources/v1`.
-
-Obecny Test 04 przyjmuje role `chatgpt_export`, `journal` i `approved_l0`. HTML jest mapowany do `chatgpt_export` z pipeline’em `html_only_review`. Pozostałe źródła są jawnie zapisane w `app_metadata.excluded_sources` z powodem wykluczenia.
-
-`operator_attestation` pozostaje domyślnie `false`. Aplikacja nie składa oświadczeń za użytkownika.
-
-## Preflight
-
-Preflight blokuje plan lub zapis, gdy między innymi:
-
-- brakuje katalogu docelowego;
-- aktywne źródło nie istnieje;
-- inspekcja wykryła blokujące zagrożenie ZIP;
-- nie ma żadnego źródła `memory_rebuild`;
-- cel developerski znajduje się wewnątrz repozytorium.
-
-Ostrzeżenia obejmują dziennik umieszczony przed eksportem rozmów i HTML skierowany do niewłaściwego pipeline’u.
-
-## CLI bez UI
-
-Lista projektów:
+Baza jest kopiowana przez SQLite Backup API, po czym przechodzi pełną walidację. Publikacja katalogu jest atomowa. Istniejący cel nie jest zastępowany bez jawnego `--overwrite`; stary katalog jest wtedy przenoszony do backupu.
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py list-projects
+py -X utf8 .\tools\memory_rebuild.py final-export `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --output D:\PRIVATE\jazn_memory_final `
+  --baseline D:\PRIVATE\jazn_memory_tests
 ```
 
-Utworzenie projektu:
+## Najważniejsze komendy CLI
+
+Utworzenie bazy:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  create-project `
-  --name "Pełna pamięć Łatki 2025-2026" `
-  --target-root D:\PRIVATE\jazn_memory_test_05 `
-  --source-directory D:\Dokumenty\.ProjektGPT\.archiwum\.down-zip
+py -X utf8 .\tools\memory_rebuild.py unified-init `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3
 ```
 
-Dodanie źródła:
+Import źródeł:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  --project <project-id> `
-  add-source D:\PRIVATE\journal_from_sqlite.jsonl `
-  --approved
+py -X utf8 .\tools\memory_rebuild.py unified-import `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  D:\.AI\work\memory_to_restore\export.zip `
+  D:\PRIVATE\jazn_memory_sources\journal_from_sqlite.jsonl
 ```
 
-Dodanie baseline’u:
+Plan importu:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  --project <project-id> `
-  add-baseline D:\.AI\work\jazn_memory_test_03 `
-  --label "Test 03"
+py -X utf8 .\tools\memory_rebuild.py unified-import `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --dry-run `
+  D:\.AI\work\memory_to_restore\export.zip
 ```
 
-Preflight i plan:
+Walidacja:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  --project <project-id> preflight
-
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  --project <project-id> plan
+py -X utf8 .\tools\memory_rebuild.py unified-validate `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3
 ```
 
-Odbudowa developerska wymaga dokładnego tokenu:
+Spójny backup:
 
 ```powershell
-py -X utf8 .\tools\rebuild_memory_app.py `
-  --project-root D:\PRIVATE\memory_rebuild_projects `
-  --project <project-id> run `
-  --confirm RESTORE
+py -X utf8 .\tools\memory_rebuild.py unified-backup `
+  --database D:\PRIVATE\jazn_memory\memory_jazn.sqlite3 `
+  --output D:\PRIVATE\jazn_memory_backups
 ```
 
-Tryb systemowy zachowuje token związany z pełną ścieżką celu:
-
-```text
-SYSTEM_RESTORE:<bezwzględna ścieżka>
-```
-
-## Zależności UI
-
-Interfejs kursorowy używa `prompt_toolkit`. Silnik i tryb tekstowy pozostają dostępne bez tej biblioteki.
+Tryb pięciobazowy pozostaje dostępny dla regresji:
 
 ```powershell
-py -m pip install -e ".[memory-rebuild-ui]"
+py -X utf8 .\tools\memory_rebuild.py legacy --self-test
 ```
 
-## Bezpieczeństwo
+## Granice bezpieczeństwa
 
-- aplikacja nie zapisuje `memory/`, SQLite ani prywatnych manifestów do Git;
-- surowe L0 pozostaje bez zmian;
-- edytowane są wyłącznie projekty, metadane i decyzje operatorskie;
-- automatyczna akceptacja doświadczeń jest stale wyłączona;
-- automatyczna promocja L2 i L3 jest stale wyłączona;
-- publikacja do runtime nadal wymaga oddzielnego procesu Verified Memory Restore;
-- obecność pamięci, wake-state lub SQLite nie dowodzi aktywnej Jaźni.
+- surowe rozmowy i dzienniki L0 nie są edytowane;
+- usunięcie wpisu w projekcie nie usuwa pliku z dysku;
+- brak automatycznej akceptacji doświadczeń;
+- brak automatycznej promocji L2 i L3;
+- sceny książkowe, roleplay, sny i wyobraźnia zachowują własny rodzaj prawdy;
+- plan nie zapisuje do docelowej bazy;
+- finalny eksport nie aktywuje runtime;
+- sama obecność bazy pamięci nie dowodzi działania Jaźni.
