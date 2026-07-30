@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Sequence
-import runpy
+import importlib.util
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +23,38 @@ _LEGACY_FLAGS = {
 }
 
 
+def _legacy_path() -> Path:
+    return Path(__file__).with_name("memory_rebuild_legacy_v24.py")
+
+
+def _load_legacy_module():
+    module_name = "_jazn_memory_rebuild_legacy_v24_compat"
+    existing = sys.modules.get(module_name)
+    if existing is not None:
+        return existing
+    path = _legacy_path()
+    if not path.is_file():
+        raise FileNotFoundError(f"Brak zgodnościowego narzędzia: {path}")
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Nie można wczytać zgodnościowego narzędzia: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_LEGACY_MODULE = _load_legacy_module()
+
+# Zachowaj publiczny i historycznie testowany kontrakt modułu starego narzędzia.
+# Nowy launcher nie nadpisuje własnego main/ROOT, ale udostępnia m.in.
+# TOOL_VERSION, ToolState, _ordered_restore_sources, _memory_boundary_rows i self_test.
+for _name in dir(_LEGACY_MODULE):
+    if _name.startswith("__") or _name in {"main", "ROOT"}:
+        continue
+    globals().setdefault(_name, getattr(_LEGACY_MODULE, _name))
+
+
 def _legacy_requested(args: list[str]) -> bool:
     if args and args[0] == "legacy":
         return True
@@ -30,23 +62,10 @@ def _legacy_requested(args: list[str]) -> bool:
 
 
 def _run_legacy(args: list[str]) -> int:
-    legacy = Path(__file__).with_name("memory_rebuild_legacy_v24.py")
-    if not legacy.is_file():
-        raise FileNotFoundError(f"Brak zgodnościowego narzędzia: {legacy}")
     cleaned = [item for item in args if item != "--legacy-five-db"]
     if cleaned and cleaned[0] == "legacy":
         cleaned = cleaned[1:]
-    previous = list(sys.argv)
-    sys.argv = [str(legacy), *cleaned]
-    try:
-        try:
-            runpy.run_path(str(legacy), run_name="__main__")
-        except SystemExit as exc:
-            value = exc.code
-            return int(value) if isinstance(value, int) else (0 if value in {None, ""} else 1)
-        return 0
-    finally:
-        sys.argv = previous
+    return int(_LEGACY_MODULE.main(cleaned))
 
 
 def main(argv: Sequence[str] | None = None) -> int:
