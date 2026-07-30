@@ -14,10 +14,13 @@ from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 from latka_jazn.tools.memory_rebuild_journal import JournalReader, JournalStore
 
+from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
 from .unified_schema import (
     CANONICAL_DATABASE_NAME, EXTRA_SCHEMA, UNIFIED_SCHEMA_VERSION, UnifiedImportResult, quote, utc_now,
 )
+
+install_attachment_metadata_support()
 
 
 class _ClosingSQLiteConnection(sqlite3.Connection):
