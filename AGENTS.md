@@ -65,7 +65,7 @@ Przed modyfikacją:
 3. utwórz bezpieczny punkt przywracania;
 4. nie nadpisuj działającego runtime ani danych użytkownika.
 
-Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych. Workflow `release-metadata-sync` może synchronizować je na dozwolonych branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` po otwarciu PR do `master`.
+Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych. Job `manifest_sync` w workflow `release-hardening` może synchronizować je na dozwolonych branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` po otwarciu PR do `master`.
 
 Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia.
 

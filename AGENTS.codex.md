@@ -61,7 +61,7 @@ python -X utf8 -m latka_jazn.tools.release_metadata_sync \
   --root . --base-branch master --write --json
 ```
 
-Na branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` workflow `release-metadata-sync` może wykonać synchronizację po otwarciu PR do `master`. Nie commituj ręcznie samodzielnie obliczonych hashy.
+Na branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może wykonać synchronizację po otwarciu PR do `master`. Nie commituj ręcznie samodzielnie obliczonych hashy.
 
 ## 5. Walidacja
 
