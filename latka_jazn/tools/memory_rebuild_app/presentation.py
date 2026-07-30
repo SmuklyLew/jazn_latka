@@ -106,6 +106,17 @@ def format_source(source: SourceSpec) -> str:
                 f"  • CRC sprawdzone: {_yes(bool(zip_meta.get('crc_checked')))}",
             )
         )
+        bundle_schemas = list(zip_meta.get("bundle_schemas") or [])
+        if bundle_schemas:
+            lines.extend(
+                (
+                    "",
+                    "Pakiet planu i dowodów testowych:",
+                    *(f"  • schemat: {schema}" for schema in bundle_schemas),
+                    "  • ten ZIP nie jest źródłem wspomnień",
+                    "  • pozostaje materiałem referencyjnym do porównań i audytu",
+                )
+            )
     json_meta = metadata.get("json") if isinstance(metadata, dict) else None
     if isinstance(json_meta, dict):
         count = json_meta.get("entry_count", json_meta.get("item_count"))
