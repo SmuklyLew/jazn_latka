@@ -130,7 +130,7 @@ def doctor_payload(
         daemon_port=daemon_port,
         marker_output=marker_output,
     )
-    _report_progress(progress, 1, progress_total, "Stan runtime i pamięci wczytany")
+    _report_progress(progress, 1, progress_total, "Wczytywanie stanu runtime i pamięci")
     startup = status.get("startup") or {}
     daemon = status.get("daemon") or {}
     transactional_memory = status.get("transactional_memory") or {}
@@ -261,7 +261,7 @@ def doctor_payload(
         },
         "time": timestamp,
     }
-    _report_progress(progress, 7, progress_total, "Raport podsystemów złożony")
+    _report_progress(progress, 7, progress_total, "Gotowość aktywacji i wydania obliczona")
     payload = {
         "schema_version": schema_version("runpy_doctor"),
         # Backward compatibility: ``ok`` continues to mean structural installation health.
@@ -287,7 +287,7 @@ def doctor_payload(
             "for activation_prerequisites_ready; it does not mean that a daemon is running."
         ),
     }
-    _report_progress(progress, 8, progress_total, "Diagnostyka zakończona")
+    _report_progress(progress, 8, progress_total, "Gotowość aktywacji i wydania obliczona")
     return payload
 
 

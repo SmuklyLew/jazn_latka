@@ -230,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
         _emit(payload, as_json=ns.as_json)
         return 0 if payload.get("ok") else 1
     if ns.command == "doctor":
-        progress = _progress(ns, "doctor", style="bar")
+        progress = _progress(ns, "doctor", style="stages")
         try:
             payload = diagnostics.doctor_payload(
                 root,
@@ -242,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:
             progress.fail(f"Diagnostyka przerwana: {type(exc).__name__}")
             raise
-        progress.finish(bool(payload.get("ok")), "Diagnostyka zakończona")
+        progress.finish(bool(payload.get("ok")), "Diagnostyka zakończona", summary=True)
         _emit(payload, as_json=ns.as_json)
         return 0 if payload.get("ok") else 1
     if ns.command == "bridge-discovery":

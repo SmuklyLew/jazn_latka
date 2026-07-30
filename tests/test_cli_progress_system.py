@@ -3,12 +3,15 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
+import re
 from pathlib import Path
 import sqlite3
 
 import pytest
 
 from latka_jazn import cli
+from latka_jazn.tools import console_progress as console_progress_module
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 from latka_jazn.tools import release_metadata_sync
 from latka_jazn.tools.runtime_contract_version_normalizer import normalize_runtime_contract_versions
@@ -42,6 +45,76 @@ def test_progress_renderer_uses_semantic_symbols_and_elapsed_time() -> None:
     assert "✔" in rendered
     assert "100%" in rendered
     assert "Diagnostyka zakończona" in rendered
+
+
+def test_stage_renderer_persists_completed_lines_and_summary() -> None:
+    stream = TtyBuffer()
+    progress = TerminalProgress(
+        "doctor",
+        style="stages",
+        stream=stream,
+        mode="always",
+        width=20,
+    )
+    progress.update(0, 100, "Wczytywanie stanu runtime i pamięci")
+    progress.update(25, 100, "Manifest i kontrakty podstawowe")
+    progress.update(47, 100, "Przetwarzanie plików Git: 346/490", symbol="folder")
+    progress.update(48, 100, "Przetwarzanie plików Git: 347/490", symbol="folder")
+    progress.finish(True, "Diagnostyka zakończona", summary=True)
+
+    rendered = stream.getvalue()
+    assert "✔ [********************] 100% Wczytywanie stanu runtime i pamięci" in rendered
+    assert "✔ [********************] 100% Manifest i kontrakty podstawowe" in rendered
+    assert "✔ [********************] 100% Przetwarzanie plików Git: 347/490" in rendered
+    assert "📝 Diagnostyka zakończona" in rendered
+    assert "347/490" in rendered
+
+
+def test_progress_renderer_never_wraps_and_preserves_counter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        console_progress_module.shutil,
+        "get_terminal_size",
+        lambda _fallback: os.terminal_size((64, 24)),
+    )
+    stream = TtyBuffer()
+    progress = TerminalProgress(
+        "release",
+        style="stages",
+        stream=stream,
+        mode="always",
+        width=42,
+    )
+    progress.update(
+        346,
+        903,
+        "Przetwarzanie plików Git: 346/903",
+        symbol="folder",
+    )
+    progress.update(
+        347,
+        903,
+        "Przetwarzanie plików Git: 347/903",
+        symbol="folder",
+    )
+
+    rendered = stream.getvalue()
+    assert "\x1b[2K" in rendered
+    assert "347/903" in rendered
+    assert rendered.count("\n") == 0
+
+    ansi_re = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+    frames = [
+        ansi_re.sub("", frame)
+        for frame in rendered.split("\r")
+        if frame
+    ]
+    assert frames
+    assert all(
+        console_progress_module._display_width(frame) <= 63
+        for frame in frames
+    )
 
 
 def test_progress_renderer_has_ascii_fallback() -> None:

@@ -341,7 +341,7 @@ def build_canonical_package_manifest(
     files: list[dict[str, Any]] = []
     excluded: list[str] = []
     candidate_total = max(1, len(candidates))
-    _report_progress(progress, progress_start, 100, f"Skanowanie {len(candidates)} obiektów Git")
+    _report_progress(progress, progress_start, 100, f"Przetwarzanie plików Git: 0/{len(candidates)}")
 
     for index, relative in enumerate(candidates, start=1):
         if path_is_forbidden(relative):
@@ -523,7 +523,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     progress = TerminalProgress.from_namespace(
         ns,
         "release-metadata-write" if ns.write else "release-metadata-check",
-        style="bar" if ns.write else "dots",
+        style="stages" if ns.write else "dots",
     )
 
     try:

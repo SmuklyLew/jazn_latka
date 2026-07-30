@@ -4,10 +4,12 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
 import os
+import re
 import shutil
 import sys
 import threading
 import time
+import unicodedata
 from typing import Callable, Iterator, TextIO
 
 
@@ -20,6 +22,7 @@ class ProgressSymbols:
     error: str
     warning: str
     info: str
+    summary: str
     arrow: str
     work: str
     wait: str
@@ -37,6 +40,7 @@ UNICODE_SYMBOLS = ProgressSymbols(
     error="✖",
     warning="⚠",
     info="ℹ",
+    summary="📝",
     arrow="➜",
     work="⚙",
     wait="⌛",
@@ -53,6 +57,7 @@ ASCII_SYMBOLS = ProgressSymbols(
     error="X",
     warning="!",
     info="i",
+    summary="NOTE",
     arrow="->",
     work="*",
     wait="...",
@@ -118,6 +123,74 @@ def _format_elapsed(seconds: float) -> tuple[str, str]:
     return compact, str(timedelta(seconds=whole))
 
 
+_STAGE_COUNTER_RE = re.compile(r":\s*\d+/\d+\s*$")
+
+
+def _display_width(value: str) -> int:
+    width = 0
+    for character in value:
+        if character in "\r\n":
+            continue
+        if unicodedata.combining(character):
+            continue
+        if unicodedata.category(character) == "Cf":
+            continue
+        width += 2 if unicodedata.east_asian_width(character) in {"W", "F"} else 1
+    return width
+
+
+def _truncate_display(value: str, max_width: int) -> str:
+    text = str(value)
+    limit = max(0, int(max_width))
+    if limit == 0:
+        return ""
+    if _display_width(text) <= limit:
+        return text
+
+    output: list[str] = []
+    used = 0
+    content_limit = max(0, limit - 1)
+    for character in text:
+        if character in "\r\n":
+            continue
+        if unicodedata.combining(character) or unicodedata.category(character) == "Cf":
+            if output:
+                output.append(character)
+            continue
+        cell_width = 2 if unicodedata.east_asian_width(character) in {"W", "F"} else 1
+        if used + cell_width > content_limit:
+            break
+        output.append(character)
+        used += cell_width
+    return "".join(output).rstrip() + "…"
+
+
+def _fit_label(label: str, max_width: int) -> str:
+    text = str(label).strip()
+    limit = max(1, int(max_width))
+    if _display_width(text) <= limit:
+        return text
+
+    match = _STAGE_COUNTER_RE.search(text)
+    if match is None:
+        return _truncate_display(text, limit)
+
+    suffix = match.group(0)
+    suffix_width = _display_width(suffix)
+    if suffix_width >= limit:
+        return _truncate_display(suffix.lstrip(": "), limit)
+
+    prefix = _truncate_display(
+        text[: match.start()].rstrip(),
+        max(1, limit - suffix_width),
+    )
+    return f"{prefix}{suffix}"
+
+
+def _stage_key(label: str) -> str:
+    return _STAGE_COUNTER_RE.sub("", str(label).strip())
+
+
 class TerminalProgress:
     """Dependency-free progress renderer that never writes to stdout.
 
@@ -155,6 +228,9 @@ class TerminalProgress:
         self._last_line_length = 0
         self._last_percentage: int | None = None
         self._last_non_tty_bucket: int | None = None
+        self._active_stage_key: str | None = None
+        self._active_stage_label: str | None = None
+        self._active_stage_symbol = "work"
         self._closed = False
         self._spinner_stop = threading.Event()
         self._spinner_thread: threading.Thread | None = None
@@ -189,9 +265,15 @@ class TerminalProgress:
             return
         with self._lock:
             if self.interactive:
-                padding = " " * max(0, self._last_line_length - len(line))
-                print(f"\r{line}{padding}", end="\n" if final else "", file=self.stream, flush=True)
-                self._last_line_length = 0 if final else len(line)
+                columns = max(20, shutil.get_terminal_size((100, 24)).columns)
+                fitted = _truncate_display(str(line), max(1, columns - 1))
+                print(
+                    f"\r\x1b[2K{fitted}",
+                    end="\n" if final else "",
+                    file=self.stream,
+                    flush=True,
+                )
+                self._last_line_length = 0 if final else _display_width(fitted)
             else:
                 print(line, file=self.stream, flush=True)
 
@@ -200,7 +282,7 @@ class TerminalProgress:
             return
         with self._lock:
             if self._last_line_length:
-                print("\r" + (" " * self._last_line_length) + "\r", end="", file=self.stream, flush=True)
+                print("\r\x1b[2K", end="", file=self.stream, flush=True)
                 self._last_line_length = 0
 
     def _render_meter(self, completed: int, total: int, label: str, *, symbol: str) -> str:
@@ -208,13 +290,50 @@ class TerminalProgress:
         safe_completed = min(max(0, int(completed)), safe_total)
         fraction = safe_completed / safe_total
         percentage = min(100, max(0, round(fraction * 100)))
+        label_text = str(label).strip()
+        columns = max(20, shutil.get_terminal_size((100, 24)).columns - 1)
+
         if self.style == "dots":
-            filled = min(self.width, round(self.width * fraction))
-            meter = "." * filled + " " * (self.width - filled)
-            return f"{meter} [{percentage:3d}%] {label}"
-        filled = min(self.width, round(self.width * fraction))
-        bar = self.symbols.fill * filled + self.symbols.empty * (self.width - filled)
-        return f"{self._symbol(symbol)} [{bar}] {percentage:3d}% {label}"
+            fixed = f" [{percentage:3d}%] "
+            available = max(2, columns - _display_width(fixed))
+            label_width = _display_width(label_text)
+            meter_width = min(self.width, max(4, available - label_width))
+            if meter_width >= available:
+                meter_width = max(1, available - 1)
+            label_budget = max(1, available - meter_width)
+            fitted_label = _fit_label(label_text, label_budget)
+            filled = min(meter_width, round(meter_width * fraction))
+            meter = "." * filled + " " * (meter_width - filled)
+            return f"{meter} [{percentage:3d}%] {fitted_label}"
+
+        symbol_text = self._symbol(symbol)
+        fixed = f"{symbol_text} [] {percentage:3d}% "
+        available = max(2, columns - _display_width(fixed))
+        label_width = _display_width(label_text)
+        meter_width = min(self.width, max(8, available - label_width))
+        if meter_width >= available:
+            meter_width = max(1, available - 1)
+        label_budget = max(1, available - meter_width)
+        fitted_label = _fit_label(label_text, label_budget)
+        filled = min(meter_width, round(meter_width * fraction))
+        bar = self.symbols.fill * filled + self.symbols.empty * (meter_width - filled)
+        return f"{symbol_text} [{bar}] {percentage:3d}% {fitted_label}"
+
+    def _finalize_active_stage(self, *, ok: bool, percentage: int) -> None:
+        if self.style != "stages" or not self.interactive or self._active_stage_label is None:
+            return
+        safe_percentage = min(100, max(0, int(percentage)))
+        status_symbol = "success" if ok else "error"
+        line = self._render_meter(
+            safe_percentage,
+            100,
+            self._active_stage_label,
+            symbol=status_symbol,
+        )
+        self._write_dynamic(line, final=True)
+        self._active_stage_key = None
+        self._active_stage_label = None
+        self._active_stage_symbol = "work"
 
     def update(
         self,
@@ -231,6 +350,13 @@ class TerminalProgress:
         safe_total = max(1, int(total))
         safe_completed = min(max(0, int(completed)), safe_total)
         percentage = min(100, max(0, round(safe_completed * 100 / safe_total)))
+        if self.style == "stages" and self.interactive:
+            stage_key = _stage_key(str(label))
+            if self._active_stage_key is not None and stage_key != self._active_stage_key:
+                self._finalize_active_stage(ok=True, percentage=100)
+            self._active_stage_key = stage_key
+            self._active_stage_label = str(label)
+            self._active_stage_symbol = symbol
         if not self.interactive and not force:
             bucket = percentage // 10
             if percentage not in {0, 100} and bucket == self._last_non_tty_bucket:
@@ -298,13 +424,36 @@ class TerminalProgress:
         self.stop_spinner(clear=True)
         self._write_dynamic(f"{self._symbol(symbol)} {label}", final=True)
 
-    def finish(self, ok: bool, label: str, *, percentage: int = 100) -> None:
+    def finish(
+        self,
+        ok: bool,
+        label: str,
+        *,
+        percentage: int = 100,
+        summary: bool = False,
+    ) -> None:
         if not self.enabled or self._closed:
             return
         self.stop_spinner(clear=True)
         compact, clock = _format_elapsed(time.monotonic() - self.started_at)
         status_symbol = self.symbols.success if ok else self.symbols.error
         safe_percentage = min(100, max(0, int(percentage)))
+
+        if self.style == "stages" and self.interactive:
+            self._finalize_active_stage(
+                ok=ok,
+                percentage=100 if ok else safe_percentage,
+            )
+            if summary:
+                summary_symbol = self.symbols.summary if ok else self.symbols.error
+                line = f"{summary_symbol} {label} in {compact} ({clock})"
+            else:
+                bar = self.symbols.fill * self.width
+                line = f"{status_symbol} [{bar}] {safe_percentage:3d}% {label} in {compact} ({clock})"
+            self._write_dynamic(line, final=True)
+            self._closed = True
+            return
+
         if self.style in {"bar", "dots", "stages"}:
             if self.style == "dots":
                 meter = "." * self.width
