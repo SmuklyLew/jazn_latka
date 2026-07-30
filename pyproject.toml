@@ -30,6 +30,9 @@ markers = [
 ]
 
 [project.optional-dependencies]
+memory-rebuild-ui = [
+  "prompt-toolkit>=3.0.52,<4",
+]
 polish-nlp = [
   "spacy>=3.7,<3.9",
   "morfeusz2>=1.99.15",
