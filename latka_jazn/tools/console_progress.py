@@ -139,6 +139,54 @@ def _display_width(value: str) -> int:
     return width
 
 
+def _truncate_display(value: str, max_width: int) -> str:
+    text = str(value)
+    limit = max(0, int(max_width))
+    if limit == 0:
+        return ""
+    if _display_width(text) <= limit:
+        return text
+
+    output: list[str] = []
+    used = 0
+    content_limit = max(0, limit - 1)
+    for character in text:
+        if character in "\r\n":
+            continue
+        if unicodedata.combining(character) or unicodedata.category(character) == "Cf":
+            if output:
+                output.append(character)
+            continue
+        cell_width = 2 if unicodedata.east_asian_width(character) in {"W", "F"} else 1
+        if used + cell_width > content_limit:
+            break
+        output.append(character)
+        used += cell_width
+    return "".join(output).rstrip() + "…"
+
+
+def _fit_label(label: str, max_width: int) -> str:
+    text = str(label).strip()
+    limit = max(1, int(max_width))
+    if _display_width(text) <= limit:
+        return text
+
+    match = _STAGE_COUNTER_RE.search(text)
+    if match is None:
+        return _truncate_display(text, limit)
+
+    suffix = match.group(0)
+    suffix_width = _display_width(suffix)
+    if suffix_width >= limit:
+        return _truncate_display(suffix.lstrip(": "), limit)
+
+    prefix = _truncate_display(
+        text[: match.start()].rstrip(),
+        max(1, limit - suffix_width),
+    )
+    return f"{prefix}{suffix}"
+
+
 def _stage_key(label: str) -> str:
     return _STAGE_COUNTER_RE.sub("", str(label).strip())
 
@@ -217,10 +265,15 @@ class TerminalProgress:
             return
         with self._lock:
             if self.interactive:
-                line_width = _display_width(line)
-                padding = " " * max(0, self._last_line_length - line_width)
-                print(f"\r{line}{padding}", end="\n" if final else "", file=self.stream, flush=True)
-                self._last_line_length = 0 if final else line_width
+                columns = max(20, shutil.get_terminal_size((100, 24)).columns)
+                fitted = _truncate_display(str(line), max(1, columns - 1))
+                print(
+                    f"\r\x1b[2K{fitted}",
+                    end="\n" if final else "",
+                    file=self.stream,
+                    flush=True,
+                )
+                self._last_line_length = 0 if final else _display_width(fitted)
             else:
                 print(line, file=self.stream, flush=True)
 
@@ -229,7 +282,7 @@ class TerminalProgress:
             return
         with self._lock:
             if self._last_line_length:
-                print("\r" + (" " * self._last_line_length) + "\r", end="", file=self.stream, flush=True)
+                print("\r\x1b[2K", end="", file=self.stream, flush=True)
                 self._last_line_length = 0
 
     def _render_meter(self, completed: int, total: int, label: str, *, symbol: str) -> str:
@@ -237,13 +290,34 @@ class TerminalProgress:
         safe_completed = min(max(0, int(completed)), safe_total)
         fraction = safe_completed / safe_total
         percentage = min(100, max(0, round(fraction * 100)))
+        label_text = str(label).strip()
+        columns = max(20, shutil.get_terminal_size((100, 24)).columns - 1)
+
         if self.style == "dots":
-            filled = min(self.width, round(self.width * fraction))
-            meter = "." * filled + " " * (self.width - filled)
-            return f"{meter} [{percentage:3d}%] {label}"
-        filled = min(self.width, round(self.width * fraction))
-        bar = self.symbols.fill * filled + self.symbols.empty * (self.width - filled)
-        return f"{self._symbol(symbol)} [{bar}] {percentage:3d}% {label}"
+            fixed = f" [{percentage:3d}%] "
+            available = max(2, columns - _display_width(fixed))
+            label_width = _display_width(label_text)
+            meter_width = min(self.width, max(4, available - label_width))
+            if meter_width >= available:
+                meter_width = max(1, available - 1)
+            label_budget = max(1, available - meter_width)
+            fitted_label = _fit_label(label_text, label_budget)
+            filled = min(meter_width, round(meter_width * fraction))
+            meter = "." * filled + " " * (meter_width - filled)
+            return f"{meter} [{percentage:3d}%] {fitted_label}"
+
+        symbol_text = self._symbol(symbol)
+        fixed = f"{symbol_text} [] {percentage:3d}% "
+        available = max(2, columns - _display_width(fixed))
+        label_width = _display_width(label_text)
+        meter_width = min(self.width, max(8, available - label_width))
+        if meter_width >= available:
+            meter_width = max(1, available - 1)
+        label_budget = max(1, available - meter_width)
+        fitted_label = _fit_label(label_text, label_budget)
+        filled = min(meter_width, round(meter_width * fraction))
+        bar = self.symbols.fill * filled + self.symbols.empty * (meter_width - filled)
+        return f"{symbol_text} [{bar}] {percentage:3d}% {fitted_label}"
 
     def _finalize_active_stage(self, *, ok: bool, percentage: int) -> None:
         if self.style != "stages" or not self.interactive or self._active_stage_label is None:
