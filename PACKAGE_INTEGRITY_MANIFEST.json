@@ -66,18 +66,9 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": ".github/workflows/apply-master-release-metadata-auto-sync.yml",
-      "size_bytes": 3058,
-      "sha256": "33cde83ebb005ff2493fa80d4257477df9ce291198afd123b3f0b7420ae051ee",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": ".github/workflows/cursor-windows-conpty.yml",
-      "size_bytes": 1085,
-      "sha256": "e934d6af734d533b0c117869d34db455324cab02ad767df98a1b7fcb8636d7a2",
+      "size_bytes": 1075,
+      "sha256": "9351f1db87dc140c3d781a051699a7c4d5fc44945afa9faae50e9e5e2fb14729",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -85,17 +76,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 11820,
-      "sha256": "d06e57dc15995ab59c83dc3e346c55abce39c93a1e101ad6b707f0187e5edd21",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": ".github/workflows/release-metadata-sync.yml",
-      "size_bytes": 3812,
-      "sha256": "f439eca4c1d9edc09f2ae2d27da5fafa97d091e43c90aaaae11d7a2216d31fe8",
+      "size_bytes": 9971,
+      "sha256": "a22099cd8247f9e815063c41d85fb73e056858d46e4c425793b0458111effa07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -121,8 +103,8 @@
     },
     {
       "path": "AGENTS.codex.md",
-      "size_bytes": 4248,
-      "sha256": "97c70a81b996e6bfe689a51c35689d25b08b111b9fa7d1898029f49172353fb5",
+      "size_bytes": 4266,
+      "sha256": "26ecd0cd72e9877baff4cf832356e0c09614e1a662231bcb2761c8658cbb8488",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -130,8 +112,8 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 4390,
-      "sha256": "1799408c7add99d9d4af6a9e603333b7487ed17e65ee61b5a9f088598aef3b97",
+      "size_bytes": 4408,
+      "sha256": "e0a1c05fa8d06294c9a34734c2f9f07c1f6b90e5bdcf3f242bdb3b276241d1cf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4792,8 +4774,8 @@
     },
     {
       "path": "tests/test_release_workflow_hardening.py",
-      "size_bytes": 2418,
-      "sha256": "68d4a6d9381e685b39335951d14011ade6fbfe1959436ad2ba2c3fdc55e35600",
+      "size_bytes": 3155,
+      "sha256": "6444bf5b9e3c9097f76e471498a8c3f163cb8effc615ddbf10ad3fe60244a7aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

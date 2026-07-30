@@ -1,9 +1,6 @@
 name: cursor-windows-conpty
 
 on:
-  push:
-    branches:
-      - tools/memory-import-to-db
   pull_request:
     branches:
       - master
@@ -12,17 +9,19 @@ on:
       - "tools/memory_import_ui.py"
       - "tools/windows_cursor_conpty_smoke.py"
       - ".github/workflows/cursor-windows-conpty.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: cursor-windows-conpty-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   conpty-smoke:
     runs-on: windows-latest
+    timeout-minutes: 10
     env:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
