@@ -78,6 +78,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--confirm", required=True)
 
     add_unified_subcommands(sub)
+    for child in sub.choices.values():
+        child.allow_abbrev = False
     return parser
 
 
