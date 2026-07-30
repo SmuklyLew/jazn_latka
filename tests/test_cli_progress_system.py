@@ -44,6 +44,29 @@ def test_progress_renderer_uses_semantic_symbols_and_elapsed_time() -> None:
     assert "Diagnostyka zakończona" in rendered
 
 
+def test_stage_renderer_persists_completed_lines_and_summary() -> None:
+    stream = TtyBuffer()
+    progress = TerminalProgress(
+        "doctor",
+        style="stages",
+        stream=stream,
+        mode="always",
+        width=20,
+    )
+    progress.update(0, 100, "Wczytywanie stanu runtime i pamięci")
+    progress.update(25, 100, "Manifest i kontrakty podstawowe")
+    progress.update(47, 100, "Przetwarzanie plików Git: 346/490", symbol="folder")
+    progress.update(48, 100, "Przetwarzanie plików Git: 347/490", symbol="folder")
+    progress.finish(True, "Diagnostyka zakończona", summary=True)
+
+    rendered = stream.getvalue()
+    assert "✔ [********************] 100% Wczytywanie stanu runtime i pamięci" in rendered
+    assert "✔ [********************] 100% Manifest i kontrakty podstawowe" in rendered
+    assert "✔ [********************] 100% Przetwarzanie plików Git: 347/490" in rendered
+    assert "📝 Diagnostyka zakończona" in rendered
+    assert "347/490" in rendered
+
+
 def test_progress_renderer_has_ascii_fallback() -> None:
     stream = TtyBuffer()
     progress = TerminalProgress(
