@@ -1885,7 +1885,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             raise VerifiedMemoryRestoreError(f"Nieznana komenda: {args.command}")
         _emit(payload, as_json=bool(args.as_json))
-        if hasattr(payload, "ok"):
+        if isinstance(payload, PhaseReport):
             return 0 if bool(payload.ok) else 1
         return 0 if payload.get("status") not in {"failed", "error"} else 1
     except VerifiedMemoryRestoreError as exc:

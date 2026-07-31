@@ -810,8 +810,15 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self._chat_state_path = self.marker_path.parent / "daemon_chat_jobs.json"
         self._recover_chat_jobs()
 
-    def process_request(self, request: socket.socket, client_address: Any) -> None:
+    def process_request(
+        self,
+        request: socket.socket | tuple[bytes, socket.socket],
+        client_address: Any,
+    ) -> None:
         if not self._http_worker_slots.acquire(blocking=False):
+            if not isinstance(request, socket.socket):
+                self.shutdown_request(request)
+                return
             try:
                 request.sendall(
                     b"HTTP/1.1 503 Service Unavailable\r\n"
@@ -830,7 +837,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._http_worker_slots.release()
             raise
 
-    def process_request_thread(self, request: socket.socket, client_address: Any) -> None:
+    def process_request_thread(
+        self,
+        request: socket.socket | tuple[bytes, socket.socket],
+        client_address: Any,
+    ) -> None:
         try:
             super().process_request_thread(request, client_address)
         finally:
@@ -1683,12 +1694,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._chat_queue.put_nowait(None)
         except queue.Full:
             pass
-        worker_alive = bool(
-            self._chat_worker_thread is not None
-            and self._chat_worker_thread.is_alive()
-        )
-        if worker_alive:
-            self._chat_worker_thread.join(timeout=5.0)
+        chat_worker_thread = self._chat_worker_thread
+        worker_alive = bool(chat_worker_thread is not None and chat_worker_thread.is_alive())
+        if worker_alive and chat_worker_thread is not None:
+            chat_worker_thread.join(timeout=5.0)
         worker_alive = bool(
             self._chat_worker_thread is not None
             and self._chat_worker_thread.is_alive()
@@ -1713,9 +1722,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
 
 
 class JaznDaemonHandler(BaseHTTPRequestHandler):
-    server: JaznDaemonServer
     protocol_version = "HTTP/1.1"
     PUBLIC_STATUS_PATHS = {"/live", "/liveness", "/ready", "/status-lite", "/readiness"}
+
+    def _daemon_server(self) -> JaznDaemonServer:
+        if not isinstance(self.server, JaznDaemonServer):
+            raise RuntimeError("jazn_daemon_handler_requires_jazn_server")
+        return self.server
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002 - stdlib signature
         return
@@ -1732,7 +1745,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
 
     def _authenticated(self, *, mutating: bool = False) -> bool:
         if mutating and self.headers.get("Origin"):
-            self.server.state.auth_failure_count += 1
+            self._daemon_server().state.auth_failure_count += 1
             self._json_response(
                 {"ok": False, "error_code": "browser_origin_not_allowed"},
                 status=HTTPStatus.FORBIDDEN,
@@ -1743,9 +1756,9 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             authorization = str(self.headers.get("Authorization") or "").strip()
             if authorization.lower().startswith("bearer "):
                 supplied = authorization[7:].strip()
-        if supplied and secrets.compare_digest(supplied, self.server.auth_token):
+        if supplied and secrets.compare_digest(supplied, self._daemon_server().auth_token):
             return True
-        self.server.state.auth_failure_count += 1
+        self._daemon_server().state.auth_failure_count += 1
         self._json_response(
             {"ok": False, "error_code": "daemon_auth_required"},
             status=HTTPStatus.UNAUTHORIZED,
@@ -1818,8 +1831,8 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             self.wfile.flush()
             self.close_connection = True
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, socket.timeout, OSError) as exc:
-            self.server.state.response_write_error_count += 1
-            self.server.state.last_response_write_error = f"{type(exc).__name__}: client disconnected before daemon response was written"
+            self._daemon_server().state.response_write_error_count += 1
+            self._daemon_server().state.last_response_write_error = f"{type(exc).__name__}: client disconnected before daemon response was written"
             self.close_connection = True
 
     def _request_path_and_query(self) -> tuple[str, dict[str, list[str]]]:
@@ -1830,8 +1843,8 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         snapshot = job.snapshot(include_result=True)
         snapshot["created"] = bool(created)
         snapshot["idempotent_replay"] = not bool(created)
-        snapshot["daemon_chat_jobs"] = self.server.chat_job_summary()
-        snapshot["runtime_daemon"] = self.server.state.to_dict()
+        snapshot["daemon_chat_jobs"] = self._daemon_server().chat_job_summary()
+        snapshot["runtime_daemon"] = self._daemon_server().state.to_dict()
         if job.status == "completed" and isinstance(job.result, dict) and not force_envelope:
             result = dict(job.result)
             result.setdefault("ok", True)
@@ -1860,7 +1873,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         no_carryover = bool(payload.get("no_carryover")) if isinstance(payload, dict) else False
         client = str(payload.get("client") or "daemon_http") if isinstance(payload, dict) else "daemon_http"
         request_id = payload.get("request_id") if isinstance(payload, dict) else None
-        return self.server.submit_chat_job(
+        return self._daemon_server().submit_chat_job(
             user_text=user_text,
             input_field=input_field,
             session_id=session_id,
@@ -1883,32 +1896,32 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             if not request_id:
                 self._json_response({"ok": False, "error_code": "missing_request_id"}, status=HTTPStatus.BAD_REQUEST)
                 return
-            job = self.server.get_chat_job(request_id)
+            job = self._daemon_server().get_chat_job(request_id)
             if job is None:
                 self._json_response({"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}, status=HTTPStatus.NOT_FOUND)
                 return
             self._chat_job_response(job, created=False, force_envelope=True)
             return
         if path == "/chat-jobs":
-            self._json_response({"ok": True, "daemon_chat_jobs": self.server.chat_job_summary()})
+            self._json_response({"ok": True, "daemon_chat_jobs": self._daemon_server().chat_job_summary()})
             return
         if path in {"/live", "/liveness"}:
             latency_ms = int((time.perf_counter() - started) * 1000)
-            self.server.state.note_request(latency_ms=latency_ms)
-            payload = self.server.lite_status_payload(endpoint=path, latency_ms=latency_ms)
+            self._daemon_server().state.note_request(latency_ms=latency_ms)
+            payload = self._daemon_server().lite_status_payload(endpoint=path, latency_ms=latency_ms)
             payload["ok"] = bool(payload.get("liveness_ok"))
             self._json_response(payload)
             return
         if path in {"/ready", "/status-lite", "/readiness"}:
             latency_ms = int((time.perf_counter() - started) * 1000)
-            self.server.state.note_request(latency_ms=latency_ms)
-            payload = self.server.lite_status_payload(endpoint=path, latency_ms=latency_ms)
+            self._daemon_server().state.note_request(latency_ms=latency_ms)
+            payload = self._daemon_server().lite_status_payload(endpoint=path, latency_ms=latency_ms)
             self._json_response(payload)
             return
         if path in {"/", "/status", "/health"}:
-            payload = self.server.write_marker()
+            payload = self._daemon_server().write_marker()
             latency_ms = int((time.perf_counter() - started) * 1000)
-            self.server.state.note_request(latency_ms=latency_ms)
+            self._daemon_server().state.note_request(latency_ms=latency_ms)
             payload["endpoint_ok"] = True
             payload["ok"] = payload.get("active_state") == "active_trusted"
             payload["endpoint"] = path
@@ -1923,8 +1936,8 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             return
         if path == "/runtime-write-status":
             latency_ms = int((time.perf_counter() - started) * 1000)
-            self.server.state.note_request(latency_ms=latency_ms)
-            payload = build_runtime_write_access_status(self.server.config, initialize=False).to_dict()
+            self._daemon_server().state.note_request(latency_ms=latency_ms)
+            payload = build_runtime_write_access_status(self._daemon_server().config, initialize=False).to_dict()
             payload["endpoint"] = path
             payload["status_latency_ms"] = latency_ms
             self._json_response(payload)
@@ -1937,18 +1950,18 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         path, _query = self._request_path_and_query()
         if not self._authenticated(mutating=True):
             return
-        self.server.state.note_request()
+        self._daemon_server().state.note_request()
         if path == "/refresh-time":
-            self.server.refresh_timestamp_contract(
+            self._daemon_server().refresh_timestamp_contract(
                 reason="manual_http_refresh",
                 background=True,
                 force=True,
             )
-            payload = self.server.lite_status_payload(endpoint=path, latency_ms=0)
+            payload = self._daemon_server().lite_status_payload(endpoint=path, latency_ms=0)
             payload.update({
                 "ok": True,
                 "refresh_started": True,
-                "timestamp_refresh_in_progress": self.server.state.timestamp_refresh_in_progress,
+                "timestamp_refresh_in_progress": self._daemon_server().state.timestamp_refresh_in_progress,
             })
             self._json_response(payload)
             return
@@ -1972,9 +1985,10 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 self._chat_job_response(job, created=created, force_envelope=True)
                 return
             inline_wait = _env_float_value("JAZN_DAEMON_CHAT_INLINE_WAIT_SECONDS", DEFAULT_DAEMON_CHAT_INLINE_WAIT_SECONDS)
-            if isinstance(payload, dict) and payload.get("inline_wait_seconds") is not None:
+            inline_wait_value = payload.get("inline_wait_seconds") if isinstance(payload, dict) else None
+            if inline_wait_value is not None:
                 try:
-                    inline_wait = float(payload.get("inline_wait_seconds"))
+                    inline_wait = float(inline_wait_value)
                 except (TypeError, ValueError):
                     inline_wait = DEFAULT_DAEMON_CHAT_INLINE_WAIT_SECONDS
             inline_wait = max(0.0, min(float(inline_wait), 5.0))
@@ -2001,7 +2015,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 source=str(payload_in.get("source") or "chatgpt_loader_time"),
                 max_age_seconds=max_age,
             )
-            installed = self.server.install_injected_timestamp_contract(reason="manual_trusted_time_injection")
+            installed = self._daemon_server().install_injected_timestamp_contract(reason="manual_trusted_time_injection")
             if not installed.get("ok"):
                 self._json_response(
                     {
@@ -2013,28 +2027,28 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                     status=HTTPStatus.UNPROCESSABLE_ENTITY,
                 )
                 return
-            marker = self.server.write_marker(timestamp_contract=installed["timestamp_contract"])
+            marker = self._daemon_server().write_marker(timestamp_contract=installed["timestamp_contract"])
             marker["trusted_time_env"] = env_status
             marker["trusted_time_installation"] = installed
             marker["ok"] = marker.get("active_state") == "active_trusted"
             self._json_response(marker)
             return
         if path == "/runtime-write-init":
-            status_payload = build_runtime_write_access_status(self.server.config, initialize=True, writes_enabled=True).to_dict()
-            marker = self.server.write_marker()
+            status_payload = build_runtime_write_access_status(self._daemon_server().config, initialize=True, writes_enabled=True).to_dict()
+            marker = self._daemon_server().write_marker()
             marker["runtime_write_access_status"] = status_payload
             marker["runtime_write_ready"] = bool(status_payload.get("ok"))
             marker["ok"] = marker.get("active_state") == "active_trusted" and bool(status_payload.get("ok"))
             self._json_response(marker)
             return
         if path == "/shutdown":
-            payload = self.server.write_marker(status="shutdown_requested")
+            payload = self._daemon_server().write_marker(status="shutdown_requested")
             payload["ok"] = True
             self._json_response(payload)
             def stop_later() -> None:
                 time.sleep(0.15)
-                self.server.shutdown_requested.set()
-                self.server.shutdown()
+                self._daemon_server().shutdown_requested.set()
+                self._daemon_server().shutdown()
             threading.Thread(target=stop_later, name="jazn-daemon-shutdown", daemon=True).start()
             return
         self._json_response({"ok": False, "error": "not_found", "path": path}, status=404)

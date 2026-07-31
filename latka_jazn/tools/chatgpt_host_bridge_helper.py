@@ -17,6 +17,7 @@ from latka_jazn.core.chat_command_contract import (
 )
 from latka_jazn.version import schema_version
 from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
+from latka_jazn.core.json_types import is_json_object, json_object
 from latka_jazn.core.message_envelope import normalize_newlines
 
 MAX_HOST_BRIDGE_JSON_BYTES = 2 * 1024 * 1024
@@ -92,9 +93,8 @@ def load_chatgpt_host_request_from_text(text: str) -> dict[str, Any]:
     first_object: dict[str, Any] | None = None
     for value in iter_json_values_from_text(text):
         first_object = first_object or value
-        bridge = value.get("chatgpt_host_bridge") if isinstance(value.get("chatgpt_host_bridge"), dict) else value
-        if not isinstance(bridge, dict):
-            continue
+        bridge_value = value.get("chatgpt_host_bridge")
+        bridge = bridge_value if is_json_object(bridge_value) else value
         if bridge.get("phase") == "host_visible_generation_requested" or bridge.get("host_must_generate_visible_reply") is True:
             return value
     if first_object is not None:
@@ -108,7 +108,7 @@ def load_chatgpt_host_request(path: Path | str, *, max_bytes: int = MAX_HOST_BRI
 
 def _host_bridge_from_runtime_packet(runtime_payload: dict[str, Any]) -> dict[str, Any]:
     bridge = runtime_payload.get("chatgpt_host_bridge")
-    if isinstance(bridge, dict):
+    if is_json_object(bridge):
         return bridge
     if runtime_payload.get("phase") or runtime_payload.get("host_reply_jsonl_shape"):
         return runtime_payload
@@ -116,8 +116,7 @@ def _host_bridge_from_runtime_packet(runtime_payload: dict[str, Any]) -> dict[st
 
 
 def _trace_from_runtime_packet(runtime_payload: dict[str, Any]) -> dict[str, Any]:
-    trace = runtime_payload.get("trace")
-    return trace if isinstance(trace, dict) else {}
+    return json_object(runtime_payload.get("trace"))
 
 
 def build_chatgpt_host_visible_reply_payload(
@@ -128,12 +127,12 @@ def build_chatgpt_host_visible_reply_payload(
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """Build phase-2 JSONL from the verified phase-1 turn envelope."""
     bridge = _host_bridge_from_runtime_packet(runtime_payload)
-    shape = bridge.get("host_reply_jsonl_shape") if isinstance(bridge.get("host_reply_jsonl_shape"), dict) else {}
+    shape = json_object(bridge.get("host_reply_jsonl_shape"))
     trace = _trace_from_runtime_packet(runtime_payload)
-    turn_contract = runtime_payload.get("runtime_turn_contract") if isinstance(runtime_payload.get("runtime_turn_contract"), dict) else {}
-    final_contract = runtime_payload.get("final_response_contract") if isinstance(runtime_payload.get("final_response_contract"), dict) else {}
-    decision = runtime_payload.get("conversation_decision") if isinstance(runtime_payload.get("conversation_decision"), dict) else {}
-    timestamp_contract = decision.get("timestamp_contract") if isinstance(decision.get("timestamp_contract"), dict) else {}
+    turn_contract = json_object(runtime_payload.get("runtime_turn_contract"))
+    final_contract = json_object(runtime_payload.get("final_response_contract"))
+    decision = json_object(runtime_payload.get("conversation_decision"))
+    timestamp_contract = json_object(decision.get("timestamp_contract"))
 
     values: dict[str, Any] = {
         "turn_id": _safe_text(bridge.get("turn_id") or shape.get("turn_id") or trace.get("turn_id") or turn_contract.get("turn_id") or final_contract.get("turn_id")),
@@ -289,12 +288,16 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None, *, stdin: TextIO | None = None, stdout: TextIO | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
-    stdin = stdin or sys.stdin
-    stdout = stdout or sys.stdout
+    stdin = stdin if stdin is not None else sys.stdin
+    stdout = stdout if stdout is not None else sys.stdout
+    if stdout is None:
+        raise RuntimeError("chatgpt_host_bridge_stdout_unavailable")
     try:
         if args.from_runtime_json and str(args.from_runtime_json) != "-":
             runtime_payload = load_chatgpt_host_request(args.from_runtime_json)
         else:
+            if stdin is None:
+                raise ChatgptHostBridgeHelperError("stdin jest niedostępny dla pakietu host bridge.")
             runtime_payload = load_chatgpt_host_request_from_text(_read_stdin_limited(stdin))
         final_text = _resolve_final_text(args)
         reply_payload, missing = build_chatgpt_host_visible_reply_payload(

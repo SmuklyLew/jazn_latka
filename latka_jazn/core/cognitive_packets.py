@@ -143,7 +143,11 @@ class CognitivePacketLibrary:
                 "emoticons": "emoticons" in {p.key for p in packets},
             },
             "state_emoticon": emoticon.to_dict(),
-            "granular_affect_bridge": granular_affect.to_dict() if hasattr(granular_affect, "to_dict") else None,
+            "granular_affect_bridge": (
+                granular_affect.to_dict()
+                if granular_affect is not None and hasattr(granular_affect, "to_dict")
+                else None
+            ),
             "reply_guidance": self._reply_guidance(packets, emoticon),
             "limitations": [
                 "Pakiety są jawnością roboczą runtime: pomagają odpowiedzi, ale nie są biologiczną psychiką.",

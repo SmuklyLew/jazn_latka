@@ -7,6 +7,7 @@ import hashlib
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate, evaluate_final_response_contract
+from latka_jazn.core.session_provenance import repair_final_visible_integrity
 from latka_jazn.core.visible_integrity import (
     enforce_integrity_consensus,
     evaluate_origin_truth,
@@ -158,6 +159,21 @@ def test_runtime_truth_gate_cannot_promote_invalid_contract() -> None:
     assert gate.final_visible_origin_valid is False
 
 
+def test_non_object_truth_gate_contract_fails_closed() -> None:
+    updated, gate_payload = apply_runtime_truth_gate(
+        {
+            "final_response_contract": ["invalid", "shape"],
+            "final_visible_text": "tekst bez kontraktu",
+            "conversation_decision": ["invalid", "shape"],
+        }
+    )
+
+    assert gate_payload["ok"] is False
+    assert gate_payload["error_code"] == "runtime_not_started"
+    assert updated["normal_response_blocked"] is True
+    assert updated["conversation_decision"]["normal_response_allowed"] is False
+
+
 def test_consensus_mismatch_blocks_normal_response() -> None:
     result = _result()
     result["final_visible_integrity"] = {"valid": True}
@@ -172,3 +188,44 @@ def test_consensus_mismatch_blocks_normal_response() -> None:
     assert updated["final_response_contract"]["final_visible_integrity"]["valid"] is False
     assert updated["runtime_truth_gate"]["final_visible_integrity_valid"] is False
     assert updated["session_provenance"]["final_visible_integrity_valid"] is False
+
+
+def test_non_object_provenance_layers_fail_closed() -> None:
+    result = _result()
+    result["runtime_provenance"] = ["invalid", "shape"]
+    result["conversation_decision"]["runtime_provenance"] = ["invalid", "shape"]
+
+    integrity = validate_result_integrity(result)
+
+    assert integrity["valid"] is False
+    assert "visible_answer_text_missing" in integrity["errors"]
+    assert "visible_answer_hash_missing" in integrity["errors"]
+
+
+def test_non_object_integrity_repair_layers_are_not_used_as_evidence() -> None:
+    source = {
+        "final_visible_text": "niezweryfikowany tekst",
+        "trace": ["invalid"],
+        "final_response_contract": ["invalid"],
+        "runtime_provenance": ["invalid"],
+    }
+
+    repaired, audit = repair_final_visible_integrity(source)
+
+    assert repaired["final_visible_text"] == "niezweryfikowany tekst"
+    assert audit == []
+
+
+def test_non_object_consensus_layers_cannot_be_promoted() -> None:
+    updated, consensus = enforce_integrity_consensus(
+        {
+            "final_response_contract": ["invalid"],
+            "final_visible_integrity": ["invalid"],
+            "runtime_truth_gate": ["invalid"],
+            "session_provenance": ["invalid"],
+        }
+    )
+
+    assert consensus["valid"] is False
+    assert updated["final_visible_integrity"]["valid"] is False
+    assert updated["final_response_contract"]["final_visible_integrity"]["valid"] is False

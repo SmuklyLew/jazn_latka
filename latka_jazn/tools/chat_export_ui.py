@@ -106,7 +106,9 @@ class CursorMenu:
         output: TextIO | None = None,
         input_func: Callable[[str], str] = input,
     ) -> int | set[int] | None:
-        output = output or sys.stdout
+        output = output if output is not None else sys.stdout
+        if output is None:
+            raise RuntimeError("chat_export_ui_stdout_unavailable")
         if not self.options:
             return set() if self.multi else None
         if key_source is None and (not sys.stdin.isatty() or not output.isatty()):
@@ -115,6 +117,26 @@ class CursorMenu:
             return self._interactive(key_source, output)
         with TerminalKeySource() as source:
             return self._interactive(source, output)
+
+    def choose_one(
+        self,
+        *,
+        key_source: KeySource | None = None,
+        output: TextIO | None = None,
+        input_func: Callable[[str], str] = input,
+    ) -> int | None:
+        selected = self.choose(key_source=key_source, output=output, input_func=input_func)
+        return selected if isinstance(selected, int) else None
+
+    def choose_many(
+        self,
+        *,
+        key_source: KeySource | None = None,
+        output: TextIO | None = None,
+        input_func: Callable[[str], str] = input,
+    ) -> set[int] | None:
+        selected = self.choose(key_source=key_source, output=output, input_func=input_func)
+        return selected if isinstance(selected, set) else None
 
     def _interactive(self, source: KeySource, output: TextIO) -> int | set[int] | None:
         cursor = 0
@@ -205,7 +227,7 @@ class MemoryImportCursorApp:
                 f"Baza: {self.state.database}\n"
                 f"Wybrane źródła: {len(self.state.sources)}"
             )
-            choice = CursorMenu(title, list(self.MENU)).choose(output=self.output, input_func=self.input)
+            choice = CursorMenu(title, list(self.MENU)).choose_one(output=self.output, input_func=self.input)
             if choice is None:
                 continue
             if choice == 10:
@@ -327,7 +349,7 @@ class MemoryImportCursorApp:
             "Wybierz domeny do ręcznej kolejki przeglądu",
             list(DOMAIN_OPTIONS),
             multi=True,
-        ).choose(output=self.output, input_func=self.input)
+        ).choose_many(output=self.output, input_func=self.input)
         if not selected:
             self._write("Nie wybrano domen.")
             return

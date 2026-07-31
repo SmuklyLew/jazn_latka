@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from latka_jazn.core.json_types import json_object
+
 
 @dataclass(frozen=True, slots=True)
 class ModelExecutorPreflight:
@@ -19,10 +21,9 @@ class ModelExecutorPreflight:
 
 
 def resolve_model_executor(adapter: Any) -> ModelExecutorPreflight:
-    status = adapter.describe() if hasattr(adapter, "describe") else {}
-    if not isinstance(status, dict):
-        status = {}
-    contract = status.get("adapter_contract") if isinstance(status.get("adapter_contract"), dict) else {}
+    described_status = adapter.describe() if hasattr(adapter, "describe") else {}
+    status = json_object(described_status)
+    contract = json_object(status.get("adapter_contract"))
     adapter_id = str(status.get("adapter_id") or status.get("name") or contract.get("adapter_id") or "unknown")
     provider = str(status.get("provider") or contract.get("provider") or adapter_id)
     model = str(status.get("model") or status.get("model_name") or contract.get("model_name") or "none")

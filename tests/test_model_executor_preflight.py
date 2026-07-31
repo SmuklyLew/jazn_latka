@@ -67,6 +67,18 @@ def test_non_language_voice_adapter_is_unavailable() -> None:
     assert resolve_model_executor(VoiceLike()).executor == "unavailable"
 
 
+def test_non_object_adapter_status_is_unavailable() -> None:
+    class MalformedAdapter:
+        def describe(self) -> object:
+            return None
+
+    preflight = resolve_model_executor(MalformedAdapter())
+
+    assert preflight.executor == "unavailable"
+    assert preflight.available is False
+    assert preflight.retry_allowed is False
+
+
 def test_configured_local_model_is_only_retry_eligible_executor() -> None:
     preflight = resolve_model_executor(LocalAdapter())
     assert preflight.executor == "local_model"

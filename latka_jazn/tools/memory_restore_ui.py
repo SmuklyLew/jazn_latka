@@ -85,7 +85,7 @@ class MemoryRestoreCursorApp:
                 f"Tryb: {self.state.settings.mode}\n"
                 f"Cel: {self.state.settings.target_root or '(nie ustawiono)'}"
             )
-            choice = CursorMenu(title, list(self.MENU)).choose(output=self.output, input_func=self.input)
+            choice = CursorMenu(title, list(self.MENU)).choose_one(output=self.output, input_func=self.input)
             if choice is None:
                 continue
             if int(choice) == len(self.MENU) - 1:
@@ -199,7 +199,7 @@ class MemoryRestoreCursorApp:
         self._write(f"Wybrano {len(self.state.selected_paths)} plików.")
 
     def _set_target(self) -> None:
-        selected = CursorMenu("Tryb docelowy", ["developer — poza repo, np. test_03", "system — bezpośrednio do aktywnego folderu systemu"]).choose(
+        selected = CursorMenu("Tryb docelowy", ["developer — poza repo, np. test_03", "system — bezpośrednio do aktywnego folderu systemu"]).choose_one(
             output=self.output, input_func=self.input
         )
         if selected is None:
@@ -217,7 +217,9 @@ class MemoryRestoreCursorApp:
         chosen = self._choose_multi("Ustawienia restore", labels, initial)
         if chosen is None:
             return
-        changes = {key: index in chosen for index, (key, _) in enumerate(BOOLEAN_SETTINGS)}
+        changes: dict[str, object] = {
+            key: index in chosen for index, (key, _) in enumerate(BOOLEAN_SETTINGS)
+        }
         raw_limit = self.input(f"Limit próbki kandydatów [0 = wyłączone, obecnie {self.state.settings.candidate_limit}]: ").strip()
         if raw_limit:
             changes["candidate_limit"] = max(0, int(raw_limit))

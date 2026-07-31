@@ -8,6 +8,7 @@ import json, re, time, uuid
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.emotions import AffectiveState
 from latka_jazn.core.emotion_layers import EmotionalLayerModel
 from latka_jazn.core.temporal_awareness import TemporalAwareness
@@ -193,7 +194,7 @@ def _sync_conversation_decision_body(
         synced.setdefault("pre_final_body", previous_body)
     synced["body"] = final_body
 
-    handler_result = synced.get("handler_result") if isinstance(synced.get("handler_result"), dict) else {}
+    handler_result = json_object(synced.get("handler_result"))
     handler_body = str(handler_result.get("body") or "").strip()
     preserve_handler_body = bool(synced.get("preserve_handler_body"))
     if preserve_handler_body and handler_body and handler_body == final_body:
@@ -904,7 +905,7 @@ class JaznEngine:
         detected_model_intent = intent_tags[0] if intent_tags and intent_tags[0] != "conversation" else "ordinary_conversation"
         speech_cognitive_frame = {
             "identity_continuity": identity_vector.to_dict(),
-            "truth_boundary": [item.to_dict() for item in user_truth_audit],
+            "truth_boundary": [dict(item) for item in user_truth_audit],
             "logical_reasoning": logical_report.to_dict(),
             "operational_awareness": awareness_report.to_dict(),
             "self_state_runtime": self_state_packet.to_dict(),
@@ -2483,7 +2484,7 @@ class JaznEngine:
             primary_intent_initial=str((dialogue_intent_report or {}).get("primary_intent") or "unknown"),
             primary_intent_final=str(detected_dialogue_intent),
             secondary_intents=list((dialogue_intent_report or {}).get("secondary_intents") or []),
-            topic_guard=frame.get("topic_mismatch_guard") if isinstance(frame.get("topic_mismatch_guard"), dict) else {},
+            topic_guard=json_object(frame.get("topic_mismatch_guard")),
             turn_logic_audit=logic_audit.to_dict(),
             selected_route=str(decision_dict.get("route") or route_entry.route),
             selected_handler=str(decision_dict.get("handler_name") or route_entry.handler_name),
@@ -2864,7 +2865,7 @@ class JaznEngine:
             "ledger_append": asdict(ledger_result),
         }
 
-    def _is_status_request(low_text: str) -> bool:
+    def _is_status_request(self, low_text: str) -> bool:
         return any(x in low_text for x in [
             "/status", "status jaźni", "status jazni", "co jeszcze nie działa", "co jeszcze nie dziala",
             "co nie działa", "co nie dziala", "diagnoza", "diagnostyka"

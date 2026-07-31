@@ -17,6 +17,15 @@ def _todict(obj: Any) -> Any:
         return obj
 
 
+def _float_or_none(value: object) -> float | None:
+    if not isinstance(value, (str, int, float)):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 @dataclass(slots=True)
 class SelfStatePacket:
     schema_version: str
@@ -115,10 +124,12 @@ class SelfStateRuntime:
         confidence = 0.70
         if memory_counts["memory_is_active_source"]:
             confidence += 0.08
-        if source_dict.get("confidence"):
-            confidence = (confidence + float(source_dict.get("confidence"))) / 2
-        if nlp_report.get("average_confidence") is not None:
-            confidence = (confidence + float(nlp_report.get("average_confidence"))) / 2
+        source_confidence = _float_or_none(source_dict.get("confidence"))
+        if source_confidence is not None:
+            confidence = (confidence + source_confidence) / 2
+        nlp_confidence = _float_or_none(nlp_report.get("average_confidence"))
+        if nlp_confidence is not None:
+            confidence = (confidence + nlp_confidence) / 2
         confidence = round(max(0.10, min(0.96, confidence)), 3)
 
         return SelfStatePacket(

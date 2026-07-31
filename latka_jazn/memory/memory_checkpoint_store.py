@@ -6,6 +6,7 @@ import json
 import sqlite3
 import zlib
 
+from latka_jazn.memory.memory_tier_store_contracts import MemoryTierStoreMixinHost
 from latka_jazn.memory.memory_tier_support import iso, json_text
 from latka_jazn.memory.memory_tiers import utc_now
 from latka_jazn.version import schema_version
@@ -13,9 +14,7 @@ from latka_jazn.version import schema_version
 SCHEMA_VERSION = schema_version("memory_checkpoint_store")
 
 
-class MemoryCheckpointStoreMixin:
-    con: Any
-
+class MemoryCheckpointStoreMixin(MemoryTierStoreMixinHost):
     def checkpoint_session(
         self,
         session_id: str,

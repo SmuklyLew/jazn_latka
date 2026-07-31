@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from pathlib import Path
 import json
 import sqlite3
@@ -20,17 +21,7 @@ from latka_jazn.tools.memory_restore import (
 )
 
 
-class _NonTtyBuffer:
-    def __init__(self) -> None:
-        self.parts: list[str] = []
-
-    def write(self, value: str) -> int:
-        self.parts.append(value)
-        return len(value)
-
-    def flush(self) -> None:
-        return None
-
+class _NonTtyBuffer(io.StringIO):
     def isatty(self) -> bool:
         return False
 

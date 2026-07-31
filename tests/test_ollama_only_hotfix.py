@@ -263,8 +263,10 @@ def test_chat_ollama_with_piped_stdin_keeps_jsonl_contract(monkeypatch) -> None:
     exit_code = main_module.main(["--chat-ollama", "--no-runtime-preflight", "--no-ensure-daemon"])
 
     assert exit_code == 0
-    assert calls["jsonl"]["command"] == "--chat-ollama"
-    assert calls["jsonl"]["output_mode"] == "jsonl"
+    jsonl_call = calls["jsonl"]
+    assert isinstance(jsonl_call, dict)
+    assert jsonl_call["command"] == "--chat-ollama"
+    assert jsonl_call["output_mode"] == "jsonl"
 
 
 def test_chat_ollama_offers_ambiguous_models_for_interactive_selection(monkeypatch, capsys) -> None:

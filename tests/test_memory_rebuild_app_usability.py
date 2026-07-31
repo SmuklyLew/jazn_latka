@@ -23,7 +23,7 @@ def test_source_discovery_includes_dot_prefixed_old_folder(tmp_path: Path) -> No
     (old / "journal.jsonl.sha256").write_text("digest", encoding="utf-8")
 
     discovered = discover_source_files(tmp_path, recursive=True)
-    relative = [str(path.relative_to(tmp_path)) for path in discovered]
+    relative = [path.relative_to(tmp_path).as_posix() for path in discovered]
 
     assert relative == [".BardzoStareCos/journal.jsonl", "chat-export.zip"]
     preview = format_discovered_files(tmp_path, discovered)

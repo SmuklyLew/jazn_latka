@@ -14,6 +14,21 @@ def test_cursor_menu_navigation_and_multi_selection() -> None:
     assert selected == {1, 2}
 
 
+def test_cursor_menu_typed_single_and_multi_entrypoints() -> None:
+    output = StringIO()
+    selected_one = CursorMenu("Menu", ["a", "b"]).choose_one(
+        key_source=ScriptedKeySource(["down", "enter"]),
+        output=output,
+    )
+    selected_many = CursorMenu("Menu", ["a", "b"], multi=True).choose_many(
+        key_source=ScriptedKeySource(["space", "enter"]),
+        output=output,
+    )
+
+    assert selected_one == 1
+    assert selected_many == {0}
+
+
 def test_cursor_menu_escape_and_ctrl_x() -> None:
     output = StringIO()
     assert CursorMenu("Menu", ["a"]).choose(

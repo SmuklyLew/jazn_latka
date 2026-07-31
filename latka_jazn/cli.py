@@ -5,8 +5,10 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any, Callable
+from typing import Any, Callable, NoReturn
 
+from latka_jazn.core.json_types import json_object
+from latka_jazn.model_adapters.base import AdapterStatusSnapshot
 from latka_jazn.cli_commands import audit as audit_commands
 from latka_jazn.cli_commands import diagnostics, export as export_commands, host as host_commands, lifecycle
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
@@ -14,7 +16,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 class StableArgumentParser(argparse.ArgumentParser):
-    def error(self, message: str) -> None:
+    def error(self, message: str) -> NoReturn:
         self.print_usage(sys.stderr)
         raise SystemExit(2)
 
@@ -401,8 +403,13 @@ def main(argv: list[str] | None = None) -> int:
 
         cfg = JaznConfig(root=root)
         adapter = build_model_adapter(cfg)
-        if ns.probe and hasattr(adapter, "probe"):
-            payload = adapter.probe()
+        probe = getattr(adapter, "probe", None)
+        if ns.probe and callable(probe):
+            probe_result = probe()
+            if isinstance(probe_result, AdapterStatusSnapshot):
+                payload = probe_result.to_dict()
+            else:
+                payload = json_object(probe_result)
         else:
             payload = build_model_adapter_status(cfg, command="model-status", infer_host_environment=False)
         _emit(payload, as_json=ns.as_json)

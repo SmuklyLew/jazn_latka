@@ -49,7 +49,7 @@ def _as_dict(value: Any) -> dict[str, Any]:
     if hasattr(value, "to_dict") and callable(value.to_dict):
         maybe = value.to_dict()
         return dict(maybe) if isinstance(maybe, Mapping) else {}
-    if is_dataclass(value):
+    if is_dataclass(value) and not isinstance(value, type):
         return asdict(value)
     return {}
 

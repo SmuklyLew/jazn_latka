@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Mapping
 from latka_jazn.model_adapters.null_model_adapter import NullModelAdapter
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.llm_route_resolver import (
     ROUTE_CHATGPT_BRIDGE,
     ROUTE_LOCAL,
@@ -180,8 +181,9 @@ def build_model_guided_speech_status(
         effective_adapter = adapter or NullModelAdapter()
     else:
         effective_adapter = adapter or build_model_adapter(routed_config)
-    adapter_status = effective_adapter.describe() if hasattr(effective_adapter, "describe") else {"status": "unknown"}
-    contract = adapter_status.get("adapter_contract") if isinstance(adapter_status.get("adapter_contract"), dict) else {}
+    described_status = effective_adapter.describe() if hasattr(effective_adapter, "describe") else {"status": "unknown"}
+    adapter_status = json_object(described_status)
+    contract = json_object(adapter_status.get("adapter_contract"))
     adapter_id = str(
         adapter_status.get("adapter_id")
         or adapter_status.get("name")

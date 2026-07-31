@@ -10,6 +10,7 @@ import os
 import re
 import uuid
 
+from latka_jazn.core.json_types import mapping_object
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("runtime_session_state")
@@ -167,9 +168,26 @@ class RuntimeSessionStateStore:
 
     @staticmethod
     def _state_from_payload(payload: Mapping[str, Any]) -> RuntimeSessionState:
-        fields = RuntimeSessionState.__dataclass_fields__
-        values = {name: payload.get(name) for name in fields if name in payload}
-        return RuntimeSessionState(**values)
+        def text_field(name: str, *, required: bool = False, default: str | None = None) -> str | None:
+            value = payload.get(name, default)
+            if value is None and not required:
+                return None
+            if not isinstance(value, str):
+                raise TypeError(f"{name}_must_be_string")
+            return value
+
+        return RuntimeSessionState(
+            session_id=text_field("session_id", required=True) or "",
+            created_at=text_field("created_at", required=True) or "",
+            last_turn_at=text_field("last_turn_at"),
+            last_user_text=text_field("last_user_text"),
+            last_visible_text=text_field("last_visible_text"),
+            last_intent=text_field("last_intent"),
+            last_route=text_field("last_route"),
+            source_client=text_field("source_client", default="unknown") or "unknown",
+            expires_at=text_field("expires_at"),
+            schema_version=text_field("schema_version", default=SCHEMA_VERSION) or SCHEMA_VERSION,
+        )
 
     @staticmethod
     def _checkpoint_hash_material(checkpoint: Mapping[str, Any]) -> dict[str, Any]:
@@ -281,9 +299,9 @@ class RuntimeSessionStateStore:
         if status is None:
             return {}
         if hasattr(status, "to_dict") and callable(status.to_dict):
-            raw = status.to_dict()
+            raw = mapping_object(status.to_dict())
         elif isinstance(status, Mapping):
-            raw = dict(status)
+            raw = mapping_object(status)
         else:
             return {}
         return {
@@ -330,7 +348,7 @@ class RuntimeSessionStateStore:
             return status
 
         current_wake = self._wake_context(wake_state_status)
-        stored_wake = checkpoint.get("wake_state") if isinstance(checkpoint.get("wake_state"), dict) else {}
+        stored_wake = mapping_object(checkpoint.get("wake_state"))
         stored_id = str(stored_wake.get("snapshot_id") or "")
         stored_sha = str(stored_wake.get("snapshot_sha256") or "")
         current_id = str(current_wake.get("snapshot_id") or "")

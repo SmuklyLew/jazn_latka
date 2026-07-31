@@ -6,6 +6,7 @@ from .path_picker import choose_directory, choose_files
 from .tui_common import HAS_PROMPT_TOOLKIT, ask_text, run_dialog
 from .unified_memory import CANONICAL_DATABASE_NAME
 
+radiolist_dialog = None
 if HAS_PROMPT_TOOLKIT:  # pragma: no cover
     from prompt_toolkit.shortcuts import radiolist_dialog
 
@@ -17,7 +18,7 @@ def choose_database(current: Path | None = None) -> Path | None:
         ("type", "Wpisz pełną ścieżkę ręcznie"),
         ("cancel", "Wróć"),
     ]
-    if HAS_PROMPT_TOOLKIT:
+    if HAS_PROMPT_TOOLKIT and radiolist_dialog is not None:
         choice = run_dialog(radiolist_dialog(
             title="Zunifikowana baza pamięci",
             text=f"Bieżąca baza: {current or 'nie wybrano'}\nWybierz sposób ustawienia ścieżki.",

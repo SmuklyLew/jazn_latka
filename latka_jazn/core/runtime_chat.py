@@ -134,7 +134,15 @@ class LatkaRuntimeShell(cmd.Cmd):
         if self.session_id:
             self._write(f"[runtime_session] session_id={self.session_id}")
 
-    def default(self, line: str) -> bool | None:
+    def onecmd(self, line: str) -> bool:
+        self._default_stop = False
+        result = super().onecmd(line)
+        return bool(result or self._default_stop)
+
+    def default(self, line: str) -> None:
+        self._default_stop = bool(self._handle_default(line))
+
+    def _handle_default(self, line: str) -> bool | None:
         text = (line or "").strip()
         if not text:
             return False

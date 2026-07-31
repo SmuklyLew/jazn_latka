@@ -209,6 +209,7 @@ def test_checkpoint_round_trip_retention_and_session_end(tmp_path) -> None:
         assert first != second
         assert store.stats()["session_checkpoints"] == 1
         payload = store.load_latest_checkpoint("session-1")
+        assert payload is not None
         assert payload["state"] == {"route": "development"}
         assert len(payload["records"]) == 2
         assert store.end_session("session-1") == 2

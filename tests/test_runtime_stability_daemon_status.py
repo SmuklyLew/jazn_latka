@@ -192,6 +192,7 @@ def test_probe_retries_and_third_attempt_can_succeed(monkeypatch) -> None:
     payload, error, endpoint = runtime_daemon._probe_daemon_status("127.0.0.1", 8787)
     assert error is None
     assert endpoint == "/ready"
+    assert payload is not None
     assert payload["endpoint_probe_attempt"] == 3
     assert len(calls) == 3
 
@@ -278,6 +279,7 @@ def test_execution_timeout_is_terminal_and_worker_accepts_next_job(tmp_path: Pat
         assert created is True and error is None and slow is not None
         assert slow.done_event.wait(1.0)
         assert slow.status == "execution_timeout"
+        assert slow.result is not None
         assert slow.result["error_code"] == "execution_timeout"
 
         fast, created, error = server.submit_chat_job(
@@ -327,6 +329,7 @@ def test_execution_timeout_replaces_poisoned_session_worker_for_same_session(tmp
         assert created is True and error is None and fast is not None
         assert fast.done_event.wait(1.0)
         assert fast.status == "completed"
+        assert fast.result is not None
         assert fast.result["instance_id"] >= 2
 
         _BlockingSession.release_slow.set()
@@ -360,6 +363,7 @@ def test_restart_recovers_nonterminal_job_without_double_execution(tmp_path: Pat
         assert recovered is not None
         assert recovered.status == "recovered_after_restart"
         assert recovered.recovery_disposition == "failed_without_replay"
+        assert recovered.result is not None
         assert recovered.result["automatic_replay_performed"] is False
 
         replay, created, error = second.submit_chat_job(

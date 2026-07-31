@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
-from typing import Any, BinaryIO, Iterator, TextIO
+from typing import Any, IO, Iterator, TextIO
 import hashlib
 import io
 import json
@@ -10,6 +10,7 @@ import re
 import zipfile
 
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.core.json_types import json_object
 
 from latka_jazn.tools.chat_export_models import (
     AssetReference,
@@ -189,7 +190,7 @@ def probe_json_source_kind(path: str | Path) -> str:
     return "other"
 
 
-def _read_js_object_assignment(handle: BinaryIO, marker: bytes, *, chunk_size: int = 1024 * 1024) -> dict[str, str]:
+def _read_js_object_assignment(handle: IO[bytes], marker: bytes, *, chunk_size: int = 1024 * 1024) -> dict[str, str]:
     """Read a JSON object assigned to a JS variable without loading all chat.html."""
     buffer = b""
     start = -1
@@ -241,9 +242,10 @@ def _read_js_object_assignment(handle: BinaryIO, marker: bytes, *, chunk_size: i
 
 
 def _message_text_and_assets(message: dict[str, Any], assets_map: dict[str, str]) -> tuple[str, tuple[AssetReference, ...], str]:
-    content = message.get("content") if isinstance(message.get("content"), dict) else {}
+    content = json_object(message.get("content"))
     content_type = str(content.get("content_type") or "unknown")
-    parts = content.get("parts") if isinstance(content.get("parts"), list) else []
+    parts_value = content.get("parts")
+    parts = parts_value if isinstance(parts_value, list) else []
     text_parts: list[str] = []
     assets: dict[str, AssetReference] = {}
 
@@ -292,7 +294,7 @@ def _current_path(mapping: dict[str, Any], current_node_id: str | None) -> tuple
     while node_id and node_id in mapping and node_id not in seen:
         seen.add(node_id)
         path.append(node_id)
-        node = mapping.get(node_id) if isinstance(mapping.get(node_id), dict) else {}
+        node = json_object(mapping.get(node_id))
         parent = node.get("parent")
         node_id = str(parent) if parent else None
     path.reverse()
@@ -313,7 +315,7 @@ def _structural_order(mapping: dict[str, Any]) -> tuple[str, ...]:
             return
         seen.add(node_id)
         order.append(node_id)
-        node = mapping.get(node_id) if isinstance(mapping.get(node_id), dict) else {}
+        node = json_object(mapping.get(node_id))
         for child in node.get("children") or []:
             visit(str(child))
 
@@ -327,10 +329,10 @@ def _structural_order(mapping: dict[str, Any]) -> tuple[str, ...]:
 def _branch_ids(mapping: dict[str, Any], order: tuple[str, ...]) -> dict[str, str]:
     result: dict[str, str] = {}
     for node_id in order:
-        node = mapping.get(node_id) if isinstance(mapping.get(node_id), dict) else {}
+        node = json_object(mapping.get(node_id))
         parent = str(node.get("parent")) if node.get("parent") else None
         if parent and parent in mapping:
-            siblings = (mapping.get(parent) or {}).get("children") or []
+            siblings = json_object(mapping.get(parent)).get("children") or []
             result[node_id] = f"branch:{parent}:{node_id}" if len(siblings) > 1 else result.get(parent, "main")
         else:
             result[node_id] = "main"
@@ -342,8 +344,9 @@ def build_conversation_graph(conversation: dict[str, Any], *, assets_map: dict[s
     conversation_id = str(conversation.get("id") or conversation.get("conversation_id") or "").strip()
     if not conversation_id:
         raise ValueError("conversation is missing id")
-    mapping = conversation.get("mapping") if isinstance(conversation.get("mapping"), dict) else {}
-    mapping = {str(key): value for key, value in mapping.items()}
+    mapping_value = conversation.get("mapping")
+    raw_mapping = mapping_value if isinstance(mapping_value, dict) else {}
+    mapping = {str(key): value for key, value in raw_mapping.items()}
     current_node_id = str(conversation.get("current_node")) if conversation.get("current_node") else None
     current_path = _current_path(mapping, current_node_id)
     current_set = set(current_path)
@@ -357,9 +360,9 @@ def build_conversation_graph(conversation: dict[str, Any], *, assets_map: dict[s
     times: list[float] = []
 
     for node_id in order:
-        raw_node = mapping.get(node_id) if isinstance(mapping.get(node_id), dict) else {}
-        message = raw_node.get("message") if isinstance(raw_node.get("message"), dict) else {}
-        author = message.get("author") if isinstance(message.get("author"), dict) else {}
+        raw_node = json_object(mapping.get(node_id))
+        message = json_object(raw_node.get("message"))
+        author = json_object(message.get("author"))
         role = str(author.get("role")) if author.get("role") else None
         create_time = message.get("create_time")
         try:

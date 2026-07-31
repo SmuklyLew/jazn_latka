@@ -7,6 +7,7 @@ import os
 from .project_store import ProjectStore
 from .unified_memory import CANONICAL_DATABASE_NAME
 
+input_dialog = message_dialog = radiolist_dialog = None
 try:  # pragma: no cover - terminal dependent
     from prompt_toolkit.shortcuts import input_dialog, message_dialog, radiolist_dialog
     HAS_PROMPT_TOOLKIT = True
@@ -19,14 +20,14 @@ def run_dialog(dialog: Any) -> Any:
 
 
 def message(title: str, text: str) -> None:
-    if HAS_PROMPT_TOOLKIT:
+    if HAS_PROMPT_TOOLKIT and message_dialog is not None:
         run_dialog(message_dialog(title=title, text=text))
     else:
         print(f"\n=== {title} ===\n{text}\n")
 
 
 def ask_text(title: str, label: str, default: str = "") -> str | None:
-    if HAS_PROMPT_TOOLKIT:
+    if HAS_PROMPT_TOOLKIT and input_dialog is not None:
         value = run_dialog(input_dialog(title=title, text=label, default=default))
         return str(value) if value is not None else None
     value = input(f"{label} [{default}]: ").strip()

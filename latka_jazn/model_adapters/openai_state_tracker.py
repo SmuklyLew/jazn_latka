@@ -7,6 +7,7 @@ from typing import Any
 import json
 import os
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("openai_state_tracker")
@@ -40,14 +41,18 @@ class OpenAIStateTracker:
 
     def load(self, session_id: str) -> OpenAIConversationState:
         payload = self._read_all()
-        entry = payload.get(session_id) if isinstance(payload.get(session_id), dict) else {}
+        entry = json_object(payload.get(session_id))
+
+        def text(value: object) -> str | None:
+            return value if isinstance(value, str) and value else None
+
         return OpenAIConversationState(
             session_id=session_id,
-            previous_response_id=entry.get("previous_response_id") or entry.get("last_response_id"),
-            last_response_id=entry.get("last_response_id"),
-            conversation_id=entry.get("conversation_id"),
+            previous_response_id=text(entry.get("previous_response_id")) or text(entry.get("last_response_id")),
+            last_response_id=text(entry.get("last_response_id")),
+            conversation_id=text(entry.get("conversation_id")),
             store_policy=bool(entry.get("store_policy", False)),
-            updated_at_utc=entry.get("updated_at_utc"),
+            updated_at_utc=text(entry.get("updated_at_utc")),
         )
 
     def update_from_response(
@@ -76,7 +81,7 @@ class OpenAIStateTracker:
     def _read_all(self) -> dict[str, Any]:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
-            return data if isinstance(data, dict) else {}
+            return json_object(data)
         except Exception:
             return {}
 

@@ -11,6 +11,8 @@ import uuid
 import json
 import os
 
+from latka_jazn.core.json_types import json_object
+
 
 TURN_STAGE_NAMES = (
     "request_accepted",
@@ -258,13 +260,13 @@ class TurnExecutionContext:
             return "result_not_ok"
         if not str(result.get("final_visible_text") or "").strip():
             return "final_visible_text_missing"
-        integrity = result.get("final_visible_integrity") if isinstance(result.get("final_visible_integrity"), dict) else {}
+        integrity = json_object(result.get("final_visible_integrity"))
         if integrity.get("valid") is not True:
             return "integrity_invalid"
-        consensus = result.get("final_visible_integrity_consensus") if isinstance(result.get("final_visible_integrity_consensus"), dict) else {}
+        consensus = json_object(result.get("final_visible_integrity_consensus"))
         if consensus.get("mismatch") is True or integrity.get("consensus") is False:
             return "consensus_mismatch"
-        gate = result.get("runtime_truth_gate") if isinstance(result.get("runtime_truth_gate"), dict) else {}
+        gate = json_object(result.get("runtime_truth_gate"))
         if gate.get("ok") is not True:
             return "runtime_truth_gate_failed"
         if gate.get("normal_response_allowed") is False:

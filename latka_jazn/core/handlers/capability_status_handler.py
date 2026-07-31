@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from latka_jazn.version import PACKAGE_VERSION, version_number
+from latka_jazn.version import PACKAGE_VERSION, version_number as parse_version_number
 from typing import Any
 import json
 import os
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.startup_contract import build_startup_status
 from latka_jazn.memory.raw_memory_status import RawMemoryInspector
@@ -41,7 +42,7 @@ class CapabilityStatusHandler:
                 marker = loaded if isinstance(loaded, dict) else {}
             except Exception:
                 marker = {}
-        daemon = marker.get("runtime_daemon") if isinstance(marker.get("runtime_daemon"), dict) else {}
+        daemon = json_object(marker.get("runtime_daemon"))
         start_file = cfg.start_file_path
         lifecycle = str(ctx.get("lifecycle") or "one_shot")
         memory_path = cfg.memory_db_path_readonly
@@ -68,8 +69,8 @@ class CapabilityStatusHandler:
                 "error_type": type(exc).__name__,
                 "error": str(exc),
             }
-        adapter = ctx.get("model_adapter_status") if isinstance(ctx.get("model_adapter_status"), dict) else {}
-        timestamp = ctx.get("timestamp_contract") if isinstance(ctx.get("timestamp_contract"), dict) else {}
+        adapter = json_object(ctx.get("model_adapter_status"))
+        timestamp = json_object(ctx.get("timestamp_contract"))
         endpoint_host = daemon.get("host") or marker.get("host")
         endpoint_port = daemon.get("port") or marker.get("port")
         endpoint = f"http://{endpoint_host}:{endpoint_port}" if endpoint_host and endpoint_port else None
@@ -113,28 +114,28 @@ class CapabilityStatusHandler:
             status = self._fast_health_status(cfg, ctx)
         else:
             status = build_startup_status(cfg).to_dict() if cfg else {}
-        active_cache = status.get("active_cache_status") if isinstance(status.get("active_cache_status"), dict) else {}
-        raw_memory = status.get("raw_memory_status") if isinstance(status.get("raw_memory_status"), dict) else {}
-        archive_memory = status.get("conversation_archive_status") if isinstance(status.get("conversation_archive_status"), dict) else {}
-        wake_state = status.get("wake_state_status") if isinstance(status.get("wake_state_status"), dict) else {}
-        wake_snapshot = wake_state.get("active_snapshot") if isinstance(wake_state.get("active_snapshot"), dict) else {}
-        wake_freshness = wake_state.get("freshness") if isinstance(wake_state.get("freshness"), dict) else {}
+        active_cache = json_object(status.get("active_cache_status"))
+        raw_memory = json_object(status.get("raw_memory_status"))
+        archive_memory = json_object(status.get("conversation_archive_status"))
+        wake_state = json_object(status.get("wake_state_status"))
+        wake_snapshot = json_object(wake_state.get("active_snapshot"))
+        wake_freshness = json_object(wake_state.get("freshness"))
         if cfg and not raw_memory.get("status"):
             try:
                 raw_memory = RawMemoryInspector(cfg.root, cfg.memory_db_path).inspect().to_dict()
             except Exception:
                 raw_memory = raw_memory or {"status": "status_not_available"}
         runtime_version = str(active_cache.get("version") or status.get("runtime_version") or getattr(cfg, "version", "") or PACKAGE_VERSION)
-        version_number = runtime_version.lstrip("v").split("-", 1)[0] or version_number(PACKAGE_VERSION)
-        network = status.get("network_policy_status") if isinstance(status.get("network_policy_status"), dict) else {}
-        dictionary = status.get("dictionary_provider_status") if isinstance(status.get("dictionary_provider_status"), dict) else {}
-        cli = status.get("cli_capabilities") if isinstance(status.get("cli_capabilities"), dict) else {}
+        runtime_version_number = runtime_version.lstrip("v").split("-", 1)[0] or parse_version_number(PACKAGE_VERSION)
+        network = json_object(status.get("network_policy_status"))
+        dictionary = json_object(status.get("dictionary_provider_status"))
+        cli = json_object(status.get("cli_capabilities"))
 
         if intent == "model_adapter_status_question":
-            adapter = ctx.get("model_adapter_status") if isinstance(ctx.get("model_adapter_status"), dict) else {}
+            adapter = json_object(ctx.get("model_adapter_status"))
             if not adapter and isinstance(status.get("model_adapter_status"), dict):
                 adapter = status["model_adapter_status"]
-            contract = adapter.get("adapter_contract") if isinstance(adapter.get("adapter_contract"), dict) else {}
+            contract = json_object(adapter.get("adapter_contract"))
             provider = adapter.get("provider") or contract.get("provider") or "not_available"
             model = adapter.get("model") or adapter.get("model_name") or contract.get("model_name") or "not_configured"
             adapter_id = adapter.get("adapter_id") or adapter.get("name") or contract.get("adapter_id") or adapter.get("selected_backend_adapter") or "not_configured"
@@ -184,7 +185,7 @@ class CapabilityStatusHandler:
                 f"cache_miss_reasons={active_cache.get('cache_miss_reasons') or []}, "
                 f"runtime_write_raw_memory_status={raw_memory.get('status') or 'status_not_available'}, "
                 f"source_origin=runtime_rule_handler_response, "
-                f"source_origin_detail=capability_status_handler/v{version_number}. "
+                f"source_origin_detail=capability_status_handler/v{runtime_version_number}. "
                 "(runtime_write jest kontrolnym statusem bieżących zapisów; conversation_archive/FTS pozostaje głównym indeksem pełnych rozmów). "
                 + (
                     "To jest pytanie o stan działania po aktualizacji, nie polecenie wykonania nowej aktualizacji kodu. "
@@ -222,6 +223,6 @@ class CapabilityStatusHandler:
             required_components=ctx.get("required_components", []),
             satisfied_components=satisfied,
             confidence=0.88,
-            source_origin_detail=f"capability_status_handler/v{version_number}",
+            source_origin_detail=f"capability_status_handler/v{runtime_version_number}",
             truth_boundary="Odpowiedź opisuje możliwości aktywnego runtime i konfiguracji; nie udaje udanego narzędzia, internetu ani procesu w tle bez realnego statusu.",
         )

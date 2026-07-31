@@ -66,7 +66,7 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
         # The integration test targets persistence wiring, not threshold tuning.
         # Routing, answer validation, staging and commit remain the real runtime path.
         monkeypatch.setattr(
-            session.engine.runtime_memory.classifier,
+            session.engine.runtime_memory,
             "should_persist",
             lambda _candidate: (True, "forced_for_full_turn_integration_test"),
         )

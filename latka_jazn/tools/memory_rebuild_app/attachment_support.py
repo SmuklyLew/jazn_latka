@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.tools import chat_export_reader as reader_module
 from latka_jazn.tools.chat_export_models import AssetReference
 
@@ -22,8 +23,9 @@ def install_attachment_metadata_support() -> None:
     ) -> tuple[str, tuple[AssetReference, ...], str]:
         text, existing, content_type = _ORIGINAL_MESSAGE_TEXT_AND_ASSETS(message, assets_map)
         assets = {item.asset_pointer: item for item in existing}
-        metadata = message.get("metadata") if isinstance(message.get("metadata"), dict) else {}
-        attachments = metadata.get("attachments") if isinstance(metadata.get("attachments"), list) else []
+        metadata = json_object(message.get("metadata"))
+        attachments_value = metadata.get("attachments")
+        attachments: list[Any] = attachments_value if isinstance(attachments_value, list) else []
         for attachment in attachments:
             if not isinstance(attachment, dict):
                 continue

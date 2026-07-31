@@ -5,6 +5,7 @@ import re
 from typing import Any
 import unicodedata
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.version import schema_version
@@ -209,7 +210,7 @@ class SelfMemoryRecallHandler:
         presenter = MemoryRecallPresenter()
         payload = presenter.build_payload(memory_context, user_text=text, limit=10)
         items = self._filter_items(payload.get("items") or [], user_text=text)
-        counts = payload.get("counts") if isinstance(payload.get("counts"), dict) else {}
+        counts = json_object(payload.get("counts"))
 
         if items:
             body = self._render_items(items, counts)

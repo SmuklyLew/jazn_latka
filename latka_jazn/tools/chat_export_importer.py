@@ -5,7 +5,7 @@ from typing import Any, Callable, Iterable
 import time
 
 from latka_jazn.tools.chat_export_dedupe import plan_conversation, summarize_relations
-from latka_jazn.tools.chat_export_models import ExportSourceInfo, ImportPlan, ImportResult
+from latka_jazn.tools.chat_export_models import ExportSourceInfo, ImportPlan, ImportResult, SourceKind
 from latka_jazn.tools.chat_export_reader import ChatExportReader, sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 from latka_jazn.version import schema_version
@@ -14,7 +14,7 @@ SCHEMA_VERSION = schema_version("chat_export_importer")
 ProgressCallback = Callable[[dict[str, Any]], None]
 
 
-def _source_kind(path: Path) -> str:
+def _source_kind(path: Path) -> SourceKind:
     if path.is_dir():
         return "directory"
     suffix = path.suffix.lower()

@@ -15,6 +15,7 @@ from .tui_paths import choose_database
 from .tui_tests import test_menu
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
+radiolist_dialog = None
 if HAS_PROMPT_TOOLKIT:  # pragma: no cover - terminal dependent
     from prompt_toolkit.shortcuts import radiolist_dialog
 
@@ -99,7 +100,7 @@ def run_studio_v24(
 ) -> int:
     root = Path(tool_root or Path.cwd()).expanduser().resolve()
     database = _default_database(project_root, project)
-    if text_ui or not HAS_PROMPT_TOOLKIT:
+    if text_ui or not HAS_PROMPT_TOOLKIT or radiolist_dialog is None:
         return _text_menu(database, project_root=project_root, project=project, tool_root=root)
 
     while True:

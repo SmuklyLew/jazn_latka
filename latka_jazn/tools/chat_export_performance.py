@@ -5,6 +5,7 @@ import hashlib
 import json
 import zlib
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.tools.chat_export_models import ConversationGraph, MessageNode
 from latka_jazn.tools import chat_export_reader as reader_module
 from latka_jazn.tools import chat_export_store as store_module
@@ -52,7 +53,7 @@ def build_conversation_graph(conversation: dict[str, Any], *, assets_map: dict[s
     conversation_id = str(conversation.get("id") or conversation.get("conversation_id") or "").strip()
     if not conversation_id:
         raise ValueError("conversation is missing id")
-    mapping = conversation.get("mapping") if isinstance(conversation.get("mapping"), dict) else {}
+    mapping = json_object(conversation.get("mapping"))
     mapping = {str(key): value for key, value in mapping.items()}
     current_node_id = str(conversation.get("current_node")) if conversation.get("current_node") else None
     current_path = reader_module._current_path(mapping, current_node_id)
@@ -68,9 +69,9 @@ def build_conversation_graph(conversation: dict[str, Any], *, assets_map: dict[s
     times: list[float] = []
 
     for node_id in order:
-        raw_node = mapping.get(node_id) if isinstance(mapping.get(node_id), dict) else {}
-        message = raw_node.get("message") if isinstance(raw_node.get("message"), dict) else {}
-        author = message.get("author") if isinstance(message.get("author"), dict) else {}
+        raw_node = json_object(mapping.get(node_id))
+        message = json_object(raw_node.get("message"))
+        author = json_object(message.get("author"))
         role = str(author.get("role")) if author.get("role") else None
         create_time = message.get("create_time")
         try:

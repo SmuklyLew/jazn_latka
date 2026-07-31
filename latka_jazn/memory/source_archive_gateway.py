@@ -8,6 +8,7 @@ import json
 import sqlite3
 import zlib
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tiers import SourceEvidence
 from latka_jazn.version import schema_version
 
@@ -171,7 +172,10 @@ class SourceArchiveGateway:
             raise KeyError(conversation_id)
         if row["payload_codec"] != "zlib-json-v1":
             raise ValueError(f"unsupported L0 payload codec: {row['payload_codec']}")
-        return json.loads(zlib.decompress(row["payload_blob"]).decode("utf-8"))
+        payload = json.loads(zlib.decompress(row["payload_blob"]).decode("utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("L0 conversation payload must be a JSON object")
+        return json_object(payload)
 
     def context_for_node(
         self,
@@ -182,7 +186,7 @@ class SourceArchiveGateway:
         include_target: bool = True,
     ) -> ArchiveContext:
         payload = self.conversation_payload(conversation_id)
-        mapping = payload.get("mapping") if isinstance(payload.get("mapping"), dict) else {}
+        mapping = json_object(payload.get("mapping"))
         if node_id not in mapping:
             raise KeyError(f"node {node_id!r} is absent from conversation {conversation_id!r}")
         selected: list[str] = []
@@ -192,7 +196,7 @@ class SourceArchiveGateway:
             seen.add(current)
             if include_target or current != node_id:
                 selected.append(current)
-            raw = mapping.get(current) if isinstance(mapping.get(current), dict) else {}
+            raw = json_object(mapping.get(current))
             current = str(raw.get("parent")) if raw.get("parent") else None
         selected.reverse()
         metadata_rows = {
@@ -206,10 +210,11 @@ class SourceArchiveGateway:
         } if selected else {}
         nodes: list[ArchiveContextNode] = []
         for selected_id in selected:
-            raw = mapping.get(selected_id) if isinstance(mapping.get(selected_id), dict) else {}
-            message = raw.get("message") if isinstance(raw.get("message"), dict) else {}
-            content = message.get("content") if isinstance(message.get("content"), dict) else {}
-            parts = content.get("parts") if isinstance(content.get("parts"), list) else []
+            raw = json_object(mapping.get(selected_id))
+            message = json_object(raw.get("message"))
+            content = json_object(message.get("content"))
+            parts_value = content.get("parts")
+            parts: list[Any] = parts_value if isinstance(parts_value, list) else []
             text = "\n".join(str(part) for part in parts if isinstance(part, str)).strip()
             row = metadata_rows.get(selected_id)
             nodes.append(ArchiveContextNode(

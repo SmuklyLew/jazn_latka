@@ -196,8 +196,11 @@ class PolishUnderstandingEngine:
     def _analyse_tokens_morfeusz(self, text: str) -> list[PolishToken]:
         out: list[PolishToken] = []
         seen: set[tuple[int, int, str]] = set()
+        morfeusz = self._morfeusz
+        if morfeusz is None:
+            return []
         try:
-            analyses = self._morfeusz.analyse(text)
+            analyses = morfeusz.analyse(text)
         except Exception:
             return []
         for start, end, interp in analyses:

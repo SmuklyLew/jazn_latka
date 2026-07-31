@@ -2299,9 +2299,12 @@ class Test04Protocol:
                     raise Test04Error("fresh rebuild reproducibility failed")
                 self._mark_phase("fresh_rebuild_comparison")
 
+            baseline_root = self.baseline_root
+            if baseline_root is None:
+                raise Test04Error("Test 03 reconciliation requires a baseline root")
             baseline = compare_test03(
                 self.request.target_root,
-                self.baseline_root,
+                baseline_root,
                 plan_payload=plan_payload,
                 inventory=inventory,
                 justifications=self.manifest.decline_justifications,

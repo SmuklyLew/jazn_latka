@@ -5,6 +5,10 @@ from typing import Any, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import hashlib
 
+from latka_jazn.core.json_types import (
+    is_string_keyed_mapping,
+    mapping_object,
+)
 from latka_jazn.core.message_envelope import (
     TIMESTAMP_HEADER_RE,
     extract_body_from_visible_text,
@@ -55,10 +59,10 @@ def evaluate_origin_truth(
 ) -> tuple[bool, list[str]]:
     decision = dict(decision or {})
     classification = str(decision.get("fallback_classification") or "not_fallback")
-    validation = decision.get("final_answer_validation") if isinstance(decision.get("final_answer_validation"), Mapping) else {}
+    validation = mapping_object(decision.get("final_answer_validation"))
     accepted = validation.get("accepted") is True and validation.get("must_regenerate") is not True
-    template = decision.get("template_origin") if isinstance(decision.get("template_origin"), Mapping) else {}
-    provenance = decision.get("runtime_provenance") if isinstance(decision.get("runtime_provenance"), Mapping) else {}
+    template = mapping_object(decision.get("template_origin"))
+    provenance = mapping_object(decision.get("runtime_provenance"))
     canonical_body = _canonical_body(body)
     visible_body = _visible_body(timestamp_header, final_visible_text)
     reasons: list[str] = []
@@ -74,7 +78,7 @@ def evaluate_origin_truth(
         reasons.append("runtime_provenance_missing")
 
     if classification == "rule_handler_response":
-        handler = decision.get("handler_result") if isinstance(decision.get("handler_result"), Mapping) else {}
+        handler = mapping_object(decision.get("handler_result"))
         handler_body = _canonical_body(str(handler.get("body") or ""))
         required = set(handler.get("required_components") or [])
         satisfied = set(handler.get("satisfied_components") or decision.get("handler_satisfied_components") or [])
@@ -101,7 +105,7 @@ def evaluate_origin_truth(
             reasons.append("model_candidate_not_runtime_accepted")
         return not reasons, reasons
 
-    finalization = decision.get("host_visible_finalization") if isinstance(decision.get("host_visible_finalization"), Mapping) else {}
+    finalization = mapping_object(decision.get("host_visible_finalization"))
     if finalization.get("accepted") is True:
         if str(finalization.get("final_visible_text") or "") != str(final_visible_text or ""):
             reasons.append("host_finalization_text_mismatch")
@@ -241,19 +245,29 @@ def validate_visible_text(
 
 def validate_result_integrity(result: Mapping[str, Any]) -> dict[str, Any]:
     result = dict(result or {})
-    contract = result.get("final_response_contract") if isinstance(result.get("final_response_contract"), Mapping) else {}
-    decision = result.get("conversation_decision") if isinstance(result.get("conversation_decision"), Mapping) else {}
-    trace = result.get("trace") if isinstance(result.get("trace"), Mapping) else {}
+    contract = mapping_object(result.get("final_response_contract"))
+    decision = mapping_object(result.get("conversation_decision"))
+    trace = mapping_object(result.get("trace"))
     final_text = str(result.get("final_visible_text") if "final_visible_text" in result else contract.get("final_visible_text") or "")
     timestamp_header = str(trace.get("timestamp_header") or contract.get("timestamp_header") or "")
     body = str(contract.get("body") if "body" in contract else result.get("exact_runtime_text") or "")
     origin_valid, origin_errors = evaluate_origin_truth(decision, body=body, final_visible_text=final_text, timestamp_header=timestamp_header)
-    validation = decision.get("final_answer_validation") if isinstance(decision.get("final_answer_validation"), Mapping) else contract.get("validation") or {}
+    validation_value = decision.get("final_answer_validation")
+    validation = (
+        validation_value
+        if is_string_keyed_mapping(validation_value)
+        else mapping_object(contract.get("validation"))
+    )
     validation_passed = bool(validation.get("accepted") is True and validation.get("must_regenerate") is not True)
-    provenance = result.get("runtime_provenance") if isinstance(result.get("runtime_provenance"), Mapping) else decision.get("runtime_provenance") or {}
-    decision_provenance = decision.get("runtime_provenance") if isinstance(decision.get("runtime_provenance"), Mapping) else {}
+    provenance_value = result.get("runtime_provenance")
+    provenance = (
+        provenance_value
+        if is_string_keyed_mapping(provenance_value)
+        else mapping_object(decision.get("runtime_provenance"))
+    )
+    decision_provenance = mapping_object(decision.get("runtime_provenance"))
     expected_hash = str(provenance.get("visible_answer_hash") or contract.get("visible_answer_hash") or "") or None
-    timestamp_payload = dict(decision.get("timestamp_contract") or {})
+    timestamp_payload = dict(mapping_object(decision.get("timestamp_contract")))
     timestamp_payload.setdefault("trusted", contract.get("timestamp_trusted"))
     timestamp_payload.setdefault("source", contract.get("timestamp_source"))
     timestamp_payload.setdefault("sample_iso", contract.get("timestamp_sample_iso"))
@@ -323,11 +337,11 @@ def validate_result_integrity(result: Mapping[str, Any]) -> dict[str, Any]:
 
 def enforce_integrity_consensus(result: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     updated = dict(result or {})
-    contract = dict(updated.get("final_response_contract") or {})
-    contract_integrity = dict(contract.get("final_visible_integrity") or {})
-    result_integrity = dict(updated.get("final_visible_integrity") or {})
-    gate = dict(updated.get("runtime_truth_gate") or {})
-    session = dict(updated.get("session_provenance") or {})
+    contract = dict(mapping_object(updated.get("final_response_contract")))
+    contract_integrity = dict(mapping_object(contract.get("final_visible_integrity")))
+    result_integrity = dict(mapping_object(updated.get("final_visible_integrity")))
+    gate = dict(mapping_object(updated.get("runtime_truth_gate")))
+    session = dict(mapping_object(updated.get("session_provenance")))
     values = {
         "pre_repair_contract": updated.get("final_visible_integrity_pre_repair_contract_valid"),
         "result": result_integrity.get("valid"),
