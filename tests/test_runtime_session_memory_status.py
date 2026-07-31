@@ -29,7 +29,7 @@ def test_initialized_session_reports_ready_store(tmp_path: Path) -> None:
     with MemoryTierStore(database) as store:
         assert store.validate(full=False)["ok"] is True
     session = object.__new__(JaznRuntimeSession)
-    session.transactional_memory_install_status = FakeInstallStatus(str(database))
+    setattr(session, "transactional_memory_install_status", FakeInstallStatus(str(database)))
 
     payload = session._transactional_memory_status_payload()
 

@@ -623,8 +623,8 @@ def test_split_package(
 
 # Public helpers with test-like names. Prevent pytest from collecting them when
 # imported into test modules.
-test_joined_zip.__test__ = False
-test_split_package.__test__ = False
+setattr(test_joined_zip, "__test__", False)
+setattr(test_split_package, "__test__", False)
 
 def _build_cli_parser():
     import argparse

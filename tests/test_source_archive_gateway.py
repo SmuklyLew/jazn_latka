@@ -83,3 +83,20 @@ def test_gateway_rejects_incomplete_schema(tmp_path: Path) -> None:
     sqlite3.connect(path).close()
     with pytest.raises(sqlite3.DatabaseError, match="missing"):
         SourceArchiveGateway(path)
+
+
+def test_gateway_rejects_non_object_conversation_payload(tmp_path: Path) -> None:
+    path = archive(tmp_path / "archive.sqlite3")
+    con = sqlite3.connect(path)
+    try:
+        con.execute(
+            "UPDATE conversations SET payload_blob=? WHERE conversation_id='conv-1'",
+            (zlib.compress(b"[]"),),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+    with SourceArchiveGateway(path) as gateway:
+        with pytest.raises(ValueError, match="JSON object"):
+            gateway.conversation_payload("conv-1")

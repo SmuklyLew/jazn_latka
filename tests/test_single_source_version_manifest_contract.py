@@ -172,7 +172,9 @@ def test_16_audit_rejects_legacy_files(tmp_path: Path) -> None:
     # Minimal metadata files expected by the audit.
     (root / "pyproject.toml").write_text('[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\nversion = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}\n', encoding="utf-8")
     report = build_audit(root)
-    kinds = {item["kind"] for item in report["errors"]}
+    errors = report["errors"]
+    assert isinstance(errors, list)
+    kinds = {item["kind"] for item in errors}
     assert "forbidden_legacy_version_checkpoint_present" in kinds
     assert "forbidden_legacy_manifest_alias_present" in kinds
 
@@ -182,7 +184,9 @@ def test_17_audit_accepts_canonical_files_only(tmp_path: Path) -> None:
     (root / "pyproject.toml").write_text('[project]\ndynamic = ["version"]\n[tool.setuptools.dynamic]\nversion = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}\n', encoding="utf-8")
     report = build_audit(root)
     forbidden = {"forbidden_legacy_version_checkpoint_present", "forbidden_legacy_manifest_alias_present", "package_integrity_manifest_missing"}
-    assert not (forbidden & {item["kind"] for item in report["errors"]})
+    errors = report["errors"]
+    assert isinstance(errors, list)
+    assert not (forbidden & {item["kind"] for item in errors})
 
 
 def test_18_doctor_requires_version_py_and_primary_manifest(tmp_path: Path) -> None:

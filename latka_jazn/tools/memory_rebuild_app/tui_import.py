@@ -15,6 +15,8 @@ except Exception:  # pragma: no cover
 
 
 def source_import_menu(database: Path) -> None:
+    if radiolist_dialog is None or yes_no_dialog is None or checkboxlist_dialog is None:
+        raise RuntimeError("prompt_toolkit_dialogs_unavailable")
     store = UnifiedMemoryDatabase(database)
     while True:
         choice = run_dialog(radiolist_dialog(

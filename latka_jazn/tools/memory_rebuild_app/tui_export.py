@@ -14,6 +14,8 @@ except Exception:  # pragma: no cover
 
 
 def final_export_menu(database: Path) -> None:
+    if yes_no_dialog is None:
+        raise RuntimeError("prompt_toolkit_yes_no_dialog_unavailable")
     output = choose_directory(title="Wybierz katalog nadrzędny finalnego eksportu")
     if not output:
         return

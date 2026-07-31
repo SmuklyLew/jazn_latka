@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal, TextIO
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
@@ -61,7 +62,7 @@ def attach_cli_flag_warning(result: dict[str, Any], warning: dict[str, Any] | No
     if warning is None:
         return
     result["chat_bridge_input_warning"] = warning
-    trace = result.get("trace") if isinstance(result.get("trace"), dict) else {}
+    trace = json_object(result.get("trace"))
     trace["chat_bridge_original_user_text"] = warning["original_user_text"]
     trace["chat_bridge_classification_text"] = warning["classification_text"]
     trace["chat_bridge_input_warning_code"] = warning["code"]
@@ -347,7 +348,7 @@ def is_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> bool:
 
 def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     """Extract a fail-closed ChatGPT-host visible reply JSONL payload."""
-    trace = payload.get("trace") if isinstance(payload.get("trace"), dict) else {}
+    trace = json_object(payload.get("trace"))
     final_text, final_text_field = _nonempty_text_from_fields(payload, CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS)
     values: dict[str, Any] = {
         "final_text": final_text,
@@ -382,10 +383,10 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
 
 def chatgpt_result_has_accepted_runtime_final(result: dict[str, Any]) -> bool:
     """Return true only for an accepted handler final that needs no host speech."""
-    decision = result.get("conversation_decision") if isinstance(result.get("conversation_decision"), dict) else {}
-    runtime_turn = result.get("runtime_turn_contract") if isinstance(result.get("runtime_turn_contract"), dict) else {}
-    final_contract = result.get("final_response_contract") if isinstance(result.get("final_response_contract"), dict) else {}
-    validation = runtime_turn.get("validation") if isinstance(runtime_turn.get("validation"), dict) else {}
+    decision = json_object(result.get("conversation_decision"))
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    final_contract = json_object(result.get("final_response_contract"))
+    validation = json_object(runtime_turn.get("validation"))
     handler_name = str(decision.get("handler_name") or runtime_turn.get("handler_name") or "")
     return bool(
         validation.get("accepted") is True
@@ -399,10 +400,10 @@ def chatgpt_result_has_accepted_runtime_final(result: dict[str, Any]) -> bool:
 
 def chatgpt_result_requires_host_visible_reply(result: dict[str, Any]) -> bool:
     """Detect when the runtime produced a truthful request for host speech."""
-    decision = result.get("conversation_decision") if isinstance(result.get("conversation_decision"), dict) else {}
-    runtime_turn = result.get("runtime_turn_contract") if isinstance(result.get("runtime_turn_contract"), dict) else {}
-    final_contract = result.get("final_response_contract") if isinstance(result.get("final_response_contract"), dict) else {}
-    validation = runtime_turn.get("validation") if isinstance(runtime_turn.get("validation"), dict) else {}
+    decision = json_object(result.get("conversation_decision"))
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    final_contract = json_object(result.get("final_response_contract"))
+    validation = json_object(runtime_turn.get("validation"))
     if chatgpt_result_has_accepted_runtime_final(result):
         # The final/runtime contracts are authoritative at the bridge boundary.
         # Reconcile stale pre-final flags left in the decision/top-level payload.
@@ -425,10 +426,10 @@ def build_chatgpt_host_bridge_turn_contract(
     chat_bridge_meta: dict[str, Any],
 ) -> dict[str, Any]:
     """Attach a machine-readable ChatGPT-host handshake to --chat-gpt output."""
-    trace = result.get("trace") if isinstance(result.get("trace"), dict) else {}
-    decision = result.get("conversation_decision") if isinstance(result.get("conversation_decision"), dict) else {}
-    runtime_turn = result.get("runtime_turn_contract") if isinstance(result.get("runtime_turn_contract"), dict) else {}
-    final_contract = result.get("final_response_contract") if isinstance(result.get("final_response_contract"), dict) else {}
+    trace = json_object(result.get("trace"))
+    decision = json_object(result.get("conversation_decision"))
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    final_contract = json_object(result.get("final_response_contract"))
     requires_host = chatgpt_result_requires_host_visible_reply(result)
     detected_intent = str(
         decision.get("detected_user_intent")
@@ -442,12 +443,12 @@ def build_chatgpt_host_bridge_turn_contract(
         detected_intent=detected_intent,
         route=runtime_route,
     )
-    host_policy = ownership.get("host_visible_generation_contract") or {}
+    host_policy = json_object(ownership.get("host_visible_generation_contract"))
     host_policy_rules = [str(item) for item in host_policy.get("rules", []) if str(item).strip()]
     turn_id = str(trace.get("turn_id") or runtime_turn.get("turn_id") or final_contract.get("turn_id") or "")
     trace_id = str(trace.get("trace_id") or runtime_turn.get("trace_id") or final_contract.get("trace_id") or "")
     timestamp_header = str(trace.get("timestamp_header") or runtime_turn.get("timestamp_header") or final_contract.get("timestamp_header") or "")
-    timestamp_contract = decision.get("timestamp_contract") if isinstance(decision.get("timestamp_contract"), dict) else {}
+    timestamp_contract = json_object(decision.get("timestamp_contract"))
     timezone = str(final_contract.get("timezone") or trace.get("timezone") or timestamp_contract.get("timezone") or timestamp_contract.get("timezone_key") or "")
     timestamp_sample_iso = str(final_contract.get("timestamp_sample_iso") or timestamp_contract.get("sample_iso") or "")
     timestamp_source = str(final_contract.get("timestamp_source") or timestamp_contract.get("source") or "")
@@ -638,7 +639,7 @@ def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
 
 
 def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output_mode: BridgeOutputMode = "jsonl") -> None:
-    host_bridge = payload.get("chatgpt_host_bridge") if isinstance(payload.get("chatgpt_host_bridge"), dict) else {}
+    host_bridge = json_object(payload.get("chatgpt_host_bridge"))
     host_generation_required = bool(host_bridge.get("host_must_generate_visible_reply"))
     if output_mode == "final_visible_text" and not host_generation_required:
         stdout.write(extract_final_visible_text_from_result(payload) + "\n")
@@ -666,8 +667,12 @@ def run_jsonl_chat_bridge(
     output_mode: BridgeOutputMode = "jsonl",
     one_shot_degraded: bool = False,
 ) -> int:
-    stdin = stdin or sys.stdin
-    stdout = stdout or sys.stdout
+    stdin = stdin if stdin is not None else sys.stdin
+    stdout = stdout if stdout is not None else sys.stdout
+    if stdin is None:
+        raise RuntimeError("chat_bridge_stdin_unavailable")
+    if stdout is None:
+        raise RuntimeError("chat_bridge_stdout_unavailable")
     if output_mode not in CHAT_BRIDGE_OUTPUT_MODES:
         raise ValueError(f"unsupported chat bridge output_mode: {output_mode}")
     if command == "--chat-gpt":

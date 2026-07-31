@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 
 
@@ -13,8 +14,8 @@ class IdentityMemoryExistenceHandler:
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}
         cfg = ctx.get("config")
-        memory_context = ctx.get("memory_context") if isinstance(ctx.get("memory_context"), dict) else {}
-        counts = memory_context.get("counts") if isinstance(memory_context.get("counts"), dict) else {}
+        memory_context = json_object(ctx.get("memory_context"))
+        counts = json_object(memory_context.get("counts"))
         active_root = str(getattr(cfg, "root", "unknown"))
         version = str(getattr(cfg, "version", "unknown"))
         body = (

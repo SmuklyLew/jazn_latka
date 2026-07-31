@@ -47,7 +47,8 @@ class SelfStateAffectiveBridge:
         fallback: OperationalSelfState | None = None,
     ) -> SelfStateAffectiveBridgeReport:
         data = granular_affect if isinstance(granular_affect, dict) else {}
-        blend_raw = data.get("blend") if isinstance(data.get("blend"), list) else []
+        blend_value = data.get("blend")
+        blend_raw: list[Any] = blend_value if isinstance(blend_value, list) else []
         blend = []
         for item in blend_raw[:4]:
             if isinstance(item, dict) and item.get("name"):

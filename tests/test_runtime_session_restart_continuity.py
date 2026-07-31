@@ -181,3 +181,17 @@ def test_older_session_cannot_replace_newer_latest_pointer(tmp_path: Path) -> No
     assert status["latest_session_pointer_reason"] == "existing_latest_pointer_is_newer"
     assert (tmp_path / "workspace_runtime/runtime_session_state.json").read_bytes() == original
     assert older_store._path_for_session("older").is_file()
+
+
+def test_checkpoint_with_non_string_session_field_is_rejected(tmp_path: Path) -> None:
+    store = RuntimeSessionStateStore(tmp_path)
+    payload = {
+        "session_id": 17,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    state, checkpoint, error = store._validate_payload(payload)
+
+    assert state is None
+    assert checkpoint is None
+    assert error == "session_state_schema_error:TypeError"

@@ -78,8 +78,11 @@ def _run_legacy(args: list[str]) -> int:
     if cleaned and cleaned[0] == "legacy":
         cleaned = cleaned[1:]
     if "--self-test" in cleaned:
-        args = _LEGACY_MODULE.build_parser().parse_args(cleaned)
-        state = _LEGACY_MODULE._settings_from_args(args, _LEGACY_MODULE.load_state(args.config))
+        parsed_args = _LEGACY_MODULE.build_parser().parse_args(cleaned)
+        state = _LEGACY_MODULE._settings_from_args(
+            parsed_args,
+            _LEGACY_MODULE.load_state(parsed_args.config),
+        )
         state.ui_mode = "text"
         return 0 if self_test(state).get("ok") else 2
     return int(_LEGACY_MODULE.main(cleaned))

@@ -139,9 +139,9 @@ class _RecordingLedger:
 
 def test_engine_persists_host_reply_with_keyword_contract_and_dict_result() -> None:
     engine = object.__new__(JaznEngine)
-    engine.config = SimpleNamespace(version="test-version")
+    setattr(engine, "config", SimpleNamespace(version="test-version"))
     ledger = _RecordingLedger()
-    engine.event_ledger = ledger
+    setattr(engine, "event_ledger", ledger)
     client_context = {
         "client": "chatgpt_visible_layer_jsonl",
         "lifecycle": "chatgpt_host_visible_reply_record",

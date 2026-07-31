@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, TypedDict
 import json
 
 from latka_jazn.memory.memory_tiers import (
@@ -54,6 +54,23 @@ class WriteSummary:
         return asdict(self)
 
 
+class _CommonMemoryRecordFields(TypedDict):
+    memory_id: str
+    tier: MemoryTier
+    kind: MemoryKind
+    content: str
+    content_sha256: str
+    domain: str
+    mode: str
+    truth_status: MemoryTruthStatus
+    confidence: float
+    importance: float
+    created_at_utc: datetime
+    updated_at_utc: datetime
+    evidence: tuple[SourceEvidence, ...]
+    tags: tuple[str, ...]
+
+
 def evidence_from_dict(data: dict[str, Any]) -> SourceEvidence:
     return SourceEvidence(
         source_type=str(data["source_type"]),
@@ -69,22 +86,22 @@ def evidence_from_dict(data: dict[str, Any]) -> SourceEvidence:
 
 
 def record_from_dict(data: dict[str, Any]) -> MemoryRecord:
-    common = dict(
-        memory_id=str(data["memory_id"]),
-        tier=MemoryTier(data["tier"]),
-        kind=MemoryKind(data["kind"]),
-        content=str(data["content"]),
-        content_sha256=str(data["content_sha256"]),
-        domain=str(data["domain"]),
-        mode=str(data["mode"]),
-        truth_status=MemoryTruthStatus(data["truth_status"]),
-        confidence=float(data["confidence"]),
-        importance=float(data["importance"]),
-        created_at_utc=datetime.fromisoformat(data["created_at_utc"]),
-        updated_at_utc=datetime.fromisoformat(data["updated_at_utc"]),
-        evidence=tuple(evidence_from_dict(item) for item in data.get("evidence") or ()),
-        tags=tuple(data.get("tags") or ()),
-    )
+    common: _CommonMemoryRecordFields = {
+        "memory_id": str(data["memory_id"]),
+        "tier": MemoryTier(data["tier"]),
+        "kind": MemoryKind(data["kind"]),
+        "content": str(data["content"]),
+        "content_sha256": str(data["content_sha256"]),
+        "domain": str(data["domain"]),
+        "mode": str(data["mode"]),
+        "truth_status": MemoryTruthStatus(data["truth_status"]),
+        "confidence": float(data["confidence"]),
+        "importance": float(data["importance"]),
+        "created_at_utc": datetime.fromisoformat(data["created_at_utc"]),
+        "updated_at_utc": datetime.fromisoformat(data["updated_at_utc"]),
+        "evidence": tuple(evidence_from_dict(item) for item in data.get("evidence") or ()),
+        "tags": tuple(data.get("tags") or ()),
+    }
     tier = common["tier"]
     if tier is MemoryTier.WORKING:
         return WorkingMemoryRecord(

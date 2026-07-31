@@ -5,10 +5,11 @@ import uuid
 
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 
+from .unified_contracts import UnifiedMixinHost
 from .unified_schema import EDITABLE_CANDIDATE_FIELDS, candidate_snapshot, json_text, quote, sha_text, utc_now
 
 
-class CandidateEditorMixin:
+class CandidateEditorMixin(UnifiedMixinHost):
     def list_candidates(self, *, status: str | None = None, limit: int = 200, query: str | None = None) -> list[dict[str, Any]]:
         self.initialize()
         sql = "SELECT * FROM candidates"

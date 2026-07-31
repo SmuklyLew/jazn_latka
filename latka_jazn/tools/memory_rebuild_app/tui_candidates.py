@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 import json
 
 from .tui_common import HAS_PROMPT_TOOLKIT, ask_text, message, run_dialog
 from .unified_memory import UnifiedMemoryDatabase
 
+radiolist_dialog = None
 if HAS_PROMPT_TOOLKIT:  # pragma: no cover - terminal dependent
     from prompt_toolkit.shortcuts import radiolist_dialog
+
+
+def _radio_dialog(*, title: str, text: str, values: list[tuple[str, str]]) -> Any:
+    if radiolist_dialog is None:
+        raise RuntimeError("prompt_toolkit_radiolist_unavailable")
+    return radiolist_dialog(title=title, text=text, values=values)
 
 
 def _candidate_label(item: dict) -> str:
@@ -51,7 +59,7 @@ def _edit_candidate(store: UnifiedMemoryDatabase, candidate_id: str) -> None:
 
 
 def _review_candidate(store: UnifiedMemoryDatabase, candidate_id: str) -> None:
-    decision = run_dialog(radiolist_dialog(
+    decision = run_dialog(_radio_dialog(
         title="Decyzja o kandydacie",
         text="Zatwierdzenie tworzy doświadczenie L1. Nie promuje automatycznie do L2 ani L3.",
         values=[
@@ -75,7 +83,7 @@ def _review_candidate(store: UnifiedMemoryDatabase, candidate_id: str) -> None:
 def candidate_menu(database: Path) -> None:
     store = UnifiedMemoryDatabase(database)
     while True:
-        status = run_dialog(radiolist_dialog(
+        status = run_dialog(_radio_dialog(
             title="Kandydaci pamięci",
             text="Wybierz listę. Surowe rozmowy i dzienniki pozostają niezmienne; edycja zapisuje rewizję.",
             values=[
@@ -98,7 +106,7 @@ def candidate_menu(database: Path) -> None:
         if not items:
             message("Kandydaci", "Brak kandydatów w tej grupie.")
             continue
-        selected = run_dialog(radiolist_dialog(
+        selected = run_dialog(_radio_dialog(
             title="Lista kandydatów",
             text="Enter: otwórz wpis. Esc: wróć.",
             values=[(str(item["candidate_id"]), _candidate_label(item)) for item in items],
@@ -107,7 +115,7 @@ def candidate_menu(database: Path) -> None:
             continue
         while True:
             item = store.get_candidate(selected)
-            action = run_dialog(radiolist_dialog(
+            action = run_dialog(_radio_dialog(
                 title=str(item.get("title") or "Kandydat"),
                 text=(str(item.get("summary") or "")[:1200] + "\n\n"
                       f"Status: {item.get('status')} | Prawda: {item.get('truth_status')}\n"

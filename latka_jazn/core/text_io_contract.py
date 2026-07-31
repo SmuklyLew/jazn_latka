@@ -70,6 +70,7 @@ def decode_text_bytes(
         raise TypeError("data must be bytes")
     raw = bytes(data)
     bom_present = False
+    raw_for_decode = raw
     if raw.startswith(codecs.BOM_UTF8):
         encoding = "utf-8-sig"
         family = "utf-8-bom"

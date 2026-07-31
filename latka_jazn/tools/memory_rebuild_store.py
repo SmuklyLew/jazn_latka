@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, Self
 import sqlite3
 
 from latka_jazn.tools.memory_rebuild_common import TRUTH_BOUNDARY, sqlite_check
@@ -39,7 +39,7 @@ class Store:
     def close(self) -> None:
         self.con.close()
 
-    def __enter__(self) -> "Store":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:

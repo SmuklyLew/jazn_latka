@@ -155,6 +155,15 @@ def _item_from_paragraph(text: str, category: str, tags: list[str], confidence: 
     )
 
 
+def _float_value(value: object, *, default: float) -> float:
+    if not isinstance(value, (str, int, float)):
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def extract_conversation_memory(text: str, *, source: str = "conversation", max_items: int = 12) -> ConversationMemoryPayload:
     """Czyta pełny dostarczony tekst rozmowy i wybiera konkretne ślady do zapisania.
 
@@ -245,7 +254,7 @@ def payload_from_mapping(data: dict[str, Any], *, source: str = "memory_json") -
                         excerpt=str(raw.get("excerpt") or raw.get("treść") or raw.get("text") or raw),
                         significance_for_latka=str(raw.get("significance_for_latka") or raw.get("znaczenie") or _meaning_for(str(raw.get("category") or name))),
                         grounding=str(raw.get("grounding") or "memory_json_payload"),
-                        confidence=float(raw.get("confidence") if raw.get("confidence") is not None else 0.74),
+                        confidence=_float_value(raw.get("confidence"), default=0.74),
                         truth_boundary=str(raw.get("truth_boundary") or raw.get("granica_prawdy") or TRUTH_BOUNDARY_CONVERSATION),
                         tags=list(raw.get("tags") or [name]),
                     )

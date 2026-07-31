@@ -11,6 +11,7 @@ import sys
 import tempfile
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_daemon import start_daemon, status_daemon, stop_daemon
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
@@ -32,9 +33,11 @@ def _run(root: Path, *args: str, input_text: str | None = None, timeout: float =
     env = dict(os.environ)
     env["PYTHONPYCACHEPREFIX"] = str(root / "workspace_runtime" / "smoke_pycache")
     env["JAZN_DAEMON_AUTOSTART"] = "0"
-    stdin_args = {"input": input_text} if input_text is not None else {"stdin": subprocess.DEVNULL}
     completed = subprocess.run(
-        [sys.executable, "-X", "utf8", *args], cwd=root, **stdin_args,
+        [sys.executable, "-X", "utf8", *args],
+        cwd=root,
+        input=input_text,
+        stdin=subprocess.DEVNULL if input_text is None else None,
         capture_output=True, text=True, encoding="utf-8", errors="replace",
         timeout=timeout, env=env, check=False,
     )
@@ -81,7 +84,7 @@ def _json_document(output: str) -> dict[str, Any] | None:
 def _inactive_snapshot_contract_ok(result: dict[str, Any], payload: dict[str, Any] | None) -> bool:
     if payload is None or result.get("returncode") != 1 or payload.get("ok") is not False:
         return False
-    daemon = payload.get("daemon") or {}
+    daemon = json_object(payload.get("daemon"))
     return (
         daemon.get("active_state") == "inactive"
         and daemon.get("endpoint_probe_performed") is False
@@ -117,7 +120,7 @@ def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
             input_text=chat_input, timeout=120.0,
         )
         chat = _chat_payload_from_output(result["stdout"])
-        consensus = (chat or {}).get("final_visible_integrity_consensus") or {}
+        consensus = json_object((chat or {}).get("final_visible_integrity_consensus"))
         has_final_text = bool((chat or {}).get("final_visible_text"))
         ok = (
             result["returncode"] == 0
@@ -170,7 +173,7 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
 
     snapshot_result = _run(isolated, "run.py", "status", "--snapshot", "--json")
     snapshot_payload = _json_document(snapshot_result["stdout"])
-    snapshot_daemon = (snapshot_payload or {}).get("daemon") or {}
+    snapshot_daemon = json_object((snapshot_payload or {}).get("daemon"))
     checks.append(_check(
         "cli_status_snapshot",
         _inactive_snapshot_contract_ok(snapshot_result, snapshot_payload),
@@ -197,7 +200,7 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
             "--daemon-marker-output", str(marker), "--json", timeout=60.0,
         )
         cli_live_payload = _json_document(cli_live["stdout"])
-        cli_live_daemon = (cli_live_payload or {}).get("daemon") or {}
+        cli_live_daemon = json_object((cli_live_payload or {}).get("daemon"))
         daemon_ok = (
             daemon_status.get("active_state") == "active_trusted"
             and cli_live["returncode"] == 0
@@ -295,11 +298,19 @@ def build_release_readiness_report(root: Path | str, *, profile: str = "system")
             "clean_checkout_verified", "development_dirty_verified", "verified_export_without_git_history",
         }
         checks.append(_check("source_provenance", provenance_ok, report=provenance))
+        manifest_errors_value = manifest.get("errors")
+        manifest_errors = manifest_errors_value if isinstance(manifest_errors_value, list) else []
+        version_consistency_ok = bool(
+            provenance.get("runtime_version") == PACKAGE_VERSION_FULL
+            and manifest.get("ok") is True
+            and not any(
+                json_object(error).get("code") == "version_mismatch"
+                for error in manifest_errors
+            )
+        )
         checks.append(_check(
             "version_consistency",
-            provenance.get("runtime_version") == PACKAGE_VERSION_FULL
-            and manifest.get("ok")
-            and not any(error.get("code") == "version_mismatch" for error in manifest.get("errors") or []),
+            version_consistency_ok,
             runtime_version=PACKAGE_VERSION_FULL,
         ))
 

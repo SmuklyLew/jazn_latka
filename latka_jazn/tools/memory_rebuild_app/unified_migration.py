@@ -11,12 +11,11 @@ from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 from latka_jazn.tools.memory_rebuild_journal import JournalStore
 
+from .unified_contracts import UnifiedMixinHost
 from .unified_schema import CANONICAL_DATABASE_NAME, COPY_ORDER, LEGACY_DATABASE_NAMES, quote
 
 
-class UnifiedMigrationMixin:
-    path: Path
-
+class UnifiedMigrationMixin(UnifiedMixinHost):
     def discover_legacy_databases(self, root: str | Path) -> list[Path]:
         base = Path(root).expanduser().resolve()
         if base.is_file():

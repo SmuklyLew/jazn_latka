@@ -63,8 +63,8 @@ def test_runtime_shell_uses_user_prompt_generated_session_and_live_pair() -> Non
     assert shell.session_id == "generated-session-123"
     assert shell.lifecycle.session_id == "generated-session-123"
 
-    assert shell.default("Pierwsza wiadomość") is False
-    assert shell.default("Co z poprzednią turą?") is False
+    assert shell.onecmd("Pierwsza wiadomość") is False
+    assert shell.onecmd("Co z poprzednią turą?") is False
     assert calls[1]["previous_user_text"] == "Pierwsza wiadomość"
     assert calls[1]["previous_visible_text"] == "odpowiedź-1"
 

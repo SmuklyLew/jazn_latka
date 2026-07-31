@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 from latka_jazn.version import PACKAGE_VERSION
 from datetime import datetime, timezone
@@ -133,9 +134,9 @@ class _StateStore:
 
 def _session(payload: dict) -> JaznRuntimeSession:
     session = object.__new__(JaznRuntimeSession)
-    session.engine = _Engine(payload)
-    session.state_store = _StateStore()
-    session.state = _State()
+    setattr(session, "engine", _Engine(payload))
+    setattr(session, "state_store", _StateStore())
+    setattr(session, "state", _State())
     session.no_carryover = True
     session._turn_count = 0
     return session

@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, field
 import json
 from pathlib import Path
 from typing import Any, Mapping
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.memory_activation_gate import MemoryHealthEvidence, assess_memory_activation
 from latka_jazn.core.source_classifier import SourceClassifier
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
@@ -48,16 +49,17 @@ class RuntimeActivationCascade:
         trusted=bool(matches and marker); lifecycle=str(marker.get('marker_lifecycle_state') or ('trusted' if trusted else 'imported' if marker else 'missing'))
         return {'ok':trusted,'trusted':trusted,'lifecycle_state':lifecycle,'active_root':ar or None,'active_root_matches':matches,'path':str(marker_path) if marker_path else None,'source_classification':source.to_dict()}
     def _daemon_status(self,supplied:Mapping[str,Any]|None):
-        d=dict(supplied or {}); nested=d.get('status') if isinstance(d.get('status'),dict) else {}; merged={**d,**nested}; pid=merged.get('pid') or merged.get('daemon_pid')
-        try: pid_ok=int(pid)>0
-        except (TypeError,ValueError): pid_ok=False
+        d=dict(supplied or {}); nested=json_object(d.get('status')); merged={**d,**nested}; pid=merged.get('pid') or merged.get('daemon_pid')
+        try: pid_number=int(pid) if pid is not None else None
+        except (TypeError,ValueError): pid_number=None
+        pid_ok=bool(pid_number is not None and pid_number>0)
         endpoint=bool(merged.get('endpoint_ok') or merged.get('endpoint_reachable') or str(merged.get('endpoint_status') or '').lower() in {'ok','ready','active'})
         fresh=bool(merged.get('heartbeat_fresh')); age=merged.get('heartbeat_age_seconds')
         if age is not None:
             try: fresh=fresh and float(age)<=self.heartbeat_max_age_seconds
             except (TypeError,ValueError): fresh=False
         ok=bool(pid_ok and endpoint and fresh)
-        return {'ok':ok,'pid':int(pid) if pid_ok else None,'pid_alive':bool(merged.get('pid_alive',pid_ok)),'endpoint_ok':endpoint,'heartbeat_fresh':fresh,'heartbeat_age_seconds':age,'background_claim_allowed':ok,'reason':'pid_endpoint_heartbeat_confirmed' if ok else 'pid_endpoint_heartbeat_required'}
+        return {'ok':ok,'pid':pid_number if pid_ok else None,'pid_alive':bool(merged.get('pid_alive',pid_ok)),'endpoint_ok':endpoint,'heartbeat_fresh':fresh,'heartbeat_age_seconds':age,'background_claim_allowed':ok,'reason':'pid_endpoint_heartbeat_confirmed' if ok else 'pid_endpoint_heartbeat_required'}
     def evaluate(self,*,marker_status=None,daemon_status=None,time_status=None,memory_status=None,model_status=None,tool_status=None,voice_status=None)->RuntimeActivationStatus:
         folder,errors=self._folder_status(); manifest,version=self._manifest_status()
         marker=self._marker_status(marker_status)

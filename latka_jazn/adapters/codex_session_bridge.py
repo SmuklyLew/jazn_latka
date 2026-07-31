@@ -124,7 +124,11 @@ class CodexSessionBridge:
         self.stop_path.write_text(_utc_now(), encoding="utf-8")
 
     def status(self) -> dict[str, Any]:
-        runtime = self._read_json(self.runtime_status_path) if self.runtime_status_path.exists() else {"state": "missing"}
+        runtime: dict[str, Any] = (
+            self._read_json(self.runtime_status_path)
+            if self.runtime_status_path.exists()
+            else {"state": "missing"}
+        )
         recorded_root = runtime.get("bridge_root")
         if runtime.get("state") in {"active", "processing_once"} and recorded_root and not _same_path(recorded_root, self.root.resolve()):
             runtime["state"] = "stale"

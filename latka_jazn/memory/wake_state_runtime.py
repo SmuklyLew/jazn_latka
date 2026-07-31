@@ -9,6 +9,7 @@ import json
 import sqlite3
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tier_store import MemoryTierStore, WorkingMemoryBudget
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
@@ -58,11 +59,13 @@ def _sha256_text(value: str) -> str:
 
 
 def _bounded_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
-    recent = snapshot.get("recent_events") if isinstance(snapshot.get("recent_events"), list) else []
-    threads = snapshot.get("open_threads") if isinstance(snapshot.get("open_threads"), list) else []
-    relationship = snapshot.get("relationship_digest") if isinstance(snapshot.get("relationship_digest"), dict) else {}
-    truth = snapshot.get("truth_boundary_digest") if isinstance(snapshot.get("truth_boundary_digest"), dict) else {}
-    policy = snapshot.get("namespace_policy") if isinstance(snapshot.get("namespace_policy"), dict) else {}
+    recent_value = snapshot.get("recent_events")
+    recent: list[Any] = recent_value if isinstance(recent_value, list) else []
+    threads_value = snapshot.get("open_threads")
+    threads: list[Any] = threads_value if isinstance(threads_value, list) else []
+    relationship = json_object(snapshot.get("relationship_digest"))
+    truth = json_object(snapshot.get("truth_boundary_digest"))
+    policy = json_object(snapshot.get("namespace_policy"))
     return {
         "schema_version": SCHEMA_VERSION,
         "wake_state_schema_version": snapshot.get("schema_version"),
@@ -77,11 +80,11 @@ def _bounded_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         "namespace_policy": {
             "default_for_unknown_interlocutor": policy.get("default_for_unknown_interlocutor"),
             "private_namespace_requires_confirmed_actor": bool(policy.get("private_namespace_requires_confirmed_actor", True)),
-            "namespace_counts": policy.get("namespace_counts") if isinstance(policy.get("namespace_counts"), dict) else {},
+            "namespace_counts": json_object(policy.get("namespace_counts")),
         },
         "recent_events": recent[:8],
         "open_threads": [str(item)[:320] for item in threads[:8]],
-        "source_counts": snapshot.get("source_counts") if isinstance(snapshot.get("source_counts"), dict) else {},
+        "source_counts": json_object(snapshot.get("source_counts")),
         "source_run_id": snapshot.get("source_run_id"),
         "validation_status": snapshot.get("validation_status"),
         "truth_boundary": TRUTH_BOUNDARY,

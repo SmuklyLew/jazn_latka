@@ -187,6 +187,11 @@ def _payload_bytes(graph: ConversationGraph) -> tuple[bytes, bytes]:
     return raw, zlib.compress(raw, level=6)
 
 
+def _compressed_payload(graph: ConversationGraph) -> tuple[bytes, int]:
+    raw, compressed = _payload_bytes(graph)
+    return compressed, len(raw)
+
+
 class ChatExportArchiveStore:
     """Canonical archive store; it never promotes text to autobiographical memory."""
 
@@ -318,7 +323,7 @@ class ChatExportArchiveStore:
         }
         now = _utc_now()
         if plan.relation == "new":
-            raw, compressed = _payload_bytes(graph)
+            compressed, raw_size = _compressed_payload(graph)
             self.con.execute(
                 """INSERT INTO conversations(
                    conversation_id,title,create_time,update_time,current_node_id,raw_tree_sha256,
@@ -329,7 +334,7 @@ class ChatExportArchiveStore:
                 (
                     graph.conversation_id, graph.title, graph.create_time, graph.update_time,
                     graph.current_node_id, graph.raw_tree_sha256, graph.semantic_tree_sha256,
-                    PAYLOAD_CODEC, compressed, len(raw), len(compressed), graph.node_count,
+                    PAYLOAD_CODEC, compressed, raw_size, len(compressed), graph.node_count,
                     graph.message_count, len(graph.current_path), len(graph.branch_points),
                     import_id, import_id, now,
                 ),
@@ -337,7 +342,7 @@ class ChatExportArchiveStore:
             counters["conversations_inserted"] = 1
             new_nodes = list(graph.nodes)
         elif plan.relation == "extends_active":
-            raw, compressed = _payload_bytes(graph)
+            compressed, raw_size = _compressed_payload(graph)
             self.con.execute(
                 """UPDATE conversations SET title=?,create_time=?,update_time=?,current_node_id=?,
                    raw_tree_sha256=?,semantic_tree_sha256=?,payload_codec=?,payload_blob=?,
@@ -347,7 +352,7 @@ class ChatExportArchiveStore:
                 (
                     graph.title, graph.create_time, graph.update_time, graph.current_node_id,
                     graph.raw_tree_sha256, graph.semantic_tree_sha256, PAYLOAD_CODEC, compressed,
-                    len(raw), len(compressed), graph.node_count, graph.message_count,
+                    raw_size, len(compressed), graph.node_count, graph.message_count,
                     len(graph.current_path), len(graph.branch_points), import_id, now,
                     graph.conversation_id,
                 ),

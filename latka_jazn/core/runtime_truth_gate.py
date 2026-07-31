@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from latka_jazn.core.json_types import is_json_object, json_object
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 from latka_jazn.core.visible_integrity import RUNTIME_OWNED_NON_FALLBACK_CLASSIFICATIONS
 
@@ -103,7 +104,7 @@ def _source_is_network(source: Any) -> bool:
 
 def evaluate_final_response_contract(contract: dict[str, Any] | None) -> RuntimeTruthGateResult:
     contract = dict(contract or {})
-    integrity = contract.get("final_visible_integrity") if isinstance(contract.get("final_visible_integrity"), dict) else {}
+    integrity = json_object(contract.get("final_visible_integrity"))
     errors: list[str] = []
     if not contract:
         errors.extend([RUNTIME_NOT_STARTED_ERROR, "final_response_contract_missing"])
@@ -227,8 +228,9 @@ def build_blocked_visible_text(gate: RuntimeTruthGateResult) -> str:
 
 def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     updated = dict(result or {})
+    contract_value = updated.get("final_response_contract")
     gate = evaluate_final_response_contract(
-        updated.get("final_response_contract") if isinstance(updated.get("final_response_contract"), dict) else None
+        contract_value if is_json_object(contract_value) else None
     )
     if gate.ok and not str(updated.get("final_visible_text") or "").strip():
         gate.ok = False
@@ -254,8 +256,7 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
         updated["blocked_final_visible_text"] = original_final
         updated["final_visible_text"] = build_blocked_visible_text(gate)
         updated["runtime_response_status"] = "blocked_by_runtime_truth_gate"
-        decision = updated.get("conversation_decision") if isinstance(updated.get("conversation_decision"), dict) else {}
-        decision = dict(decision)
+        decision = dict(json_object(updated.get("conversation_decision")))
         decision["runtime_truth_gate"] = gate_payload
         decision["normal_response_allowed"] = False
         decision["error_code"] = updated["error_code"]
@@ -267,8 +268,7 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
             updated["normal_response_blocked"] = True
             updated["runtime_response_status"] = "truthful_degraded_cannot_answer_directly"
             updated["requires_host_model"] = True
-            decision = updated.get("conversation_decision") if isinstance(updated.get("conversation_decision"), dict) else {}
-            decision = dict(decision)
+            decision = dict(json_object(updated.get("conversation_decision")))
             decision["runtime_truth_gate"] = gate_payload
             decision["normal_response_allowed"] = False
             decision["requires_host_model"] = True
@@ -276,8 +276,7 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
         elif gate.error_code == "timestamp_degraded" or gate.time_trust_state == "local_machine_unverified":
             updated["timestamp_degraded"] = True
             updated["runtime_response_status"] = "normal_response_allowed_degraded_timestamp"
-            decision = updated.get("conversation_decision") if isinstance(updated.get("conversation_decision"), dict) else {}
-            decision = dict(decision)
+            decision = dict(json_object(updated.get("conversation_decision")))
             decision["runtime_truth_gate"] = gate_payload
             decision["normal_response_allowed"] = True
             decision["timestamp_degraded"] = True

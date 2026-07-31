@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
 from latka_jazn.core.startup_contract import build_startup_status
@@ -18,7 +19,7 @@ class PresenceStatusHandler:
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}
         intent = str(ctx.get("intent") or "presence_check")
-        route_entry = ctx.get("route_entry") if isinstance(ctx.get("route_entry"), dict) else {}
+        route_entry = json_object(ctx.get("route_entry"))
         route = str(route_entry.get("route") or self.route)
         ownership = build_runtime_ownership_contract(detected_intent=intent, route=route)
         identity = ownership.get("identity_voice") or {}

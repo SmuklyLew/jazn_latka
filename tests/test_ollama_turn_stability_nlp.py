@@ -17,9 +17,8 @@ class FakeResponse(io.BytesIO):
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc, tb):
+    def __exit__(self, exc_type, exc, tb) -> None:
         self.close()
-        return False
 
 
 def _ollama_payload(text: str, *, model: str = "gemma3:4b", reason: str = "stop") -> FakeResponse:

@@ -8,6 +8,8 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from latka_jazn.core.json_types import json_object
+
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
 from .openai_state_tracker import OpenAIStateTracker
@@ -233,7 +235,7 @@ class OpenaiResponsesAdapter:
 
     def _load_state_for_request(self, request: ModelAdapterRequest):
         context = request.system_context or {}
-        client_context = context.get("client_context") if isinstance(context.get("client_context"), dict) else {}
+        client_context = json_object(context.get("client_context"))
         session_id = str(request.session_id or client_context.get("session_id") or context.get("session_id") or "").strip() or None
         if not self.state_tracker or not session_id:
             return None, session_id

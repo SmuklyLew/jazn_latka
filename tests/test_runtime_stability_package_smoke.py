@@ -43,6 +43,27 @@ def test_system_profile_does_not_require_memory(monkeypatch, tmp_path: Path) -> 
     assert not any(item["name"] == "memory_wake_state" for item in report["checks"])
 
 
+def test_release_check_runner_handles_text_input_and_closed_input(
+    tmp_path: Path,
+) -> None:
+    with_input = release_readiness._run(
+        tmp_path,
+        "-c",
+        "import sys; print(sys.stdin.read())",
+        input_text="payload",
+    )
+    without_input = release_readiness._run(
+        tmp_path,
+        "-c",
+        "import sys; print(sys.stdin.read())",
+    )
+
+    assert with_input["returncode"] == 0
+    assert with_input["stdout"].strip() == "payload"
+    assert without_input["returncode"] == 0
+    assert without_input["stdout"].strip() == ""
+
+
 def test_backups_are_forbidden_export_paths() -> None:
     assert forbidden_package_reason("backups/pre-change/working-tree.patch") is not None
 

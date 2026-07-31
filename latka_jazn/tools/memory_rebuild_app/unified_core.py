@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Literal
 import os
 import sqlite3
 import tempfile
@@ -16,6 +16,7 @@ from latka_jazn.tools.memory_rebuild_journal import JournalReader, JournalStore
 
 from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
+from .unified_contracts import UnifiedMixinHost
 from .unified_schema import (
     CANONICAL_DATABASE_NAME, EXTRA_SCHEMA, UNIFIED_SCHEMA_VERSION, UnifiedImportResult, quote, utc_now,
 )
@@ -26,14 +27,14 @@ install_attachment_metadata_support()
 class _ClosingSQLiteConnection(sqlite3.Connection):
     """Commit or roll back like sqlite3.Connection, then always release the file handle."""
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(self, exc_type, exc, tb) -> Literal[False]:
         try:
-            return bool(super().__exit__(exc_type, exc, tb))
+            return super().__exit__(exc_type, exc, tb)
         finally:
             self.close()
 
 
-class UnifiedCoreMixin:
+class UnifiedCoreMixin(UnifiedMixinHost):
     path: Path
 
     def initialize(self) -> dict[str, Any]:

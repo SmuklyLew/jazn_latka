@@ -45,10 +45,13 @@ class MemoryRebuildAppController:
 
     def settings(self) -> MemoryRestoreSettings:
         values = self.project.settings
+        mode = self.project.mode
+        if mode not in ("developer", "system"):
+            raise ValueError(f"unsupported restore mode: {mode}")
         return MemoryRestoreSettings(
             source_directory=self.project.source_directory,
             target_root=self.project.target_root,
-            mode=self.project.mode,
+            mode=mode,
             recursive_scan=bool(values.get("recursive_scan", False)),
             verify_after_each=bool(values.get("verify_after_each", True)),
             full_validation=bool(values.get("full_validation", True)),

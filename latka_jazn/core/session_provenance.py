@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 import hashlib
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.version import schema_version
 from latka_jazn.core.visible_integrity import validate_result_integrity
 from latka_jazn.core.message_envelope import normalize_newlines
@@ -95,15 +96,15 @@ def repair_final_visible_integrity(result: dict[str, Any]) -> tuple[dict[str, An
     """
     repaired = dict(result or {})
     audit: list[dict[str, Any]] = []
-    trace = repaired.get("trace") if isinstance(repaired.get("trace"), dict) else {}
-    timestamp_header = str((trace or {}).get("timestamp_header") or "")
+    trace = json_object(repaired.get("trace"))
+    timestamp_header = str(trace.get("timestamp_header") or "")
     if not timestamp_header:
         return repaired, audit
 
     final_text = str(repaired.get("final_visible_text") or "").strip()
-    contract = repaired.get("final_response_contract") if isinstance(repaired.get("final_response_contract"), dict) else {}
-    contract_text = str((contract or {}).get("final_visible_text") or "").strip()
-    provenance = repaired.get("runtime_provenance") if isinstance(repaired.get("runtime_provenance"), dict) else {}
+    contract = json_object(repaired.get("final_response_contract"))
+    contract_text = str(contract.get("final_visible_text") or "").strip()
+    provenance = json_object(repaired.get("runtime_provenance"))
     provenance_hash_before = str(provenance.get("visible_answer_hash") or "")
     contract_body = str(contract.get("body") or contract.get("runtime_exact_text") or "")
     final_body = _body(final_text, timestamp_header) if final_text.startswith(timestamp_header + "\n") else final_text

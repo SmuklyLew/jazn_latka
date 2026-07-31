@@ -5,6 +5,7 @@ from dataclasses import asdict
 from typing import Any
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.engine import JaznEngine
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.session_provenance import build_session_provenance, repair_final_visible_integrity, validate_final_visible_integrity
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
@@ -100,7 +101,7 @@ class JaznRuntimeSession:
         status = getattr(self, "wake_state_runtime_status", None)
         to_dict = getattr(status, "to_dict", None)
         if callable(to_dict):
-            payload = to_dict()
+            payload = json_object(to_dict())
             payload["restart_continuity"] = dict(
                 getattr(self, "restart_continuity_status", {}) or {}
             )

@@ -44,7 +44,7 @@ class StartupResponsibilitySplit:
 @dataclass(slots=True)
 class StartupStatus:
     schema_version: str
-    runtime_version: JaznConfig.VERSION
+    runtime_version: str
     active_root: str
     start_file: str | None
     active_database: str

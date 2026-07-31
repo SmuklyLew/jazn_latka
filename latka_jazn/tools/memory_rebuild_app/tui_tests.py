@@ -12,6 +12,8 @@ except Exception:  # pragma: no cover
 
 
 def test_menu(database: Path) -> None:
+    if radiolist_dialog is None or yes_no_dialog is None:
+        raise RuntimeError("prompt_toolkit_dialogs_unavailable")
     while True:
         profile = run_dialog(radiolist_dialog(
             title="Testy pamięci",

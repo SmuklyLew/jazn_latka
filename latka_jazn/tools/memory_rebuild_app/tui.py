@@ -894,7 +894,7 @@ class MemoryRebuildStudio:
             f"Plan jest gotowy. Aby rozpocząć zapis do nowych baz, wpisz dokładnie:\n\n{expected}",
             "",
         )
-        if token != expected:
+        if token is None or token != expected:
             self.show("ANULOWANO", "Token nie jest zgodny. Nie wykonano zapisu.")
             return
         if not self.confirm(

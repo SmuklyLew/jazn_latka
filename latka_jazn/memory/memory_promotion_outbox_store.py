@@ -7,13 +7,12 @@ import hashlib
 import json
 
 from latka_jazn.memory.memory_promotion import PromotionDecision, PromotionOutcome, PromotionRequest
+from latka_jazn.memory.memory_tier_store_contracts import MemoryTierStoreMixinHost
 from latka_jazn.memory.memory_tier_support import WriteSummary, iso, json_text
 from latka_jazn.memory.memory_tiers import LongTermMemoryRecord, PromotionStatus, ShortTermMemoryRecord, utc_now
 
 
-class PromotionOutboxStoreMixin:
-    con: Any
-
+class PromotionOutboxStoreMixin(MemoryTierStoreMixinHost):
     def write_promotion(
         self,
         source: ShortTermMemoryRecord,

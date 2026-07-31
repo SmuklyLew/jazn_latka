@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import Any, Iterable
 import uuid
 
+from .unified_contracts import UnifiedMixinHost
 from .unified_schema import CANONICAL_DATABASE_NAME, json_text, sha_text, utc_now
 
 
-class CandidateRelationsMixin:
+class CandidateRelationsMixin(UnifiedMixinHost):
     def merge_candidates(self, candidate_ids: Iterable[str], *, title: str, summary: str, edited_by: str, reason: str) -> dict[str, Any]:
         ids = list(dict.fromkeys(str(item) for item in candidate_ids if str(item).strip()))
         if len(ids) < 2:

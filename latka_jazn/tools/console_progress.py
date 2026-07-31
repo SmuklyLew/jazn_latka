@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
@@ -71,7 +72,7 @@ ASCII_SYMBOLS = ProgressSymbols(
 )
 
 
-def add_progress_arguments(parser: object) -> None:
+def add_progress_arguments(parser: argparse.ArgumentParser) -> None:
     """Add the shared progress switches to an argparse parser."""
 
     group = parser.add_mutually_exclusive_group()

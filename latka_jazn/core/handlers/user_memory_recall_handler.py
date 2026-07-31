@@ -4,6 +4,7 @@ from difflib import SequenceMatcher
 import re
 from typing import Any
 
+from latka_jazn.core.json_types import json_object
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.version import schema_version
@@ -100,7 +101,7 @@ class UserMemoryRecallHandler:
         memory_context = ctx.get("memory_context") if isinstance(ctx.get("memory_context"), dict) else {}
         payload = MemoryRecallPresenter().build_payload(memory_context, user_text=text, limit=12)
         items = self._filter_items(payload.get("items") or [])
-        counts = payload.get("counts") if isinstance(payload.get("counts"), dict) else {}
+        counts = json_object(payload.get("counts"))
         if items:
             body = self._render_items(items, counts)
             satisfied = ["memory_content", "source_or_index_status", "truth_boundary", "user_memory_not_self_memory"]
