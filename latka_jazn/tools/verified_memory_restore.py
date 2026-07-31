@@ -1838,6 +1838,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    payload: PhaseReport | dict[str, Any]
     try:
         if args.command == "validate-test04":
             payload = {
