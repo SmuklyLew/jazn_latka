@@ -15,10 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_project_instructions_are_bootstrap_not_latka_persona() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    assert len(text) <= 8000
-    assert "wczytaj w pełnej dostępnej treści `AGENTS.md`" in text
-    assert "wczytaj `AGENTS.chatgpt.md`" in text
-    assert "Routing, tożsamość, perspektywa, styl, pamięć i odpowiedź należą do kodu Jaźni" in text
+    assert text == (
+        "Wczytaj w pełnej dostępnej treści `AGENTS.md` ze zweryfikowanego `active_root` "
+        "i wykonaj wskazany tam runbook.\n"
+    )
+    assert "AGENTS.chatgpt.md" not in text
     assert "Pytania „Działasz?”" not in text
     assert "odpowiadaj naturalnie i po polsku" not in text
 
@@ -86,18 +87,36 @@ def test_chatgpt_bridge_exports_runtime_owned_host_generation_policy() -> None:
             "route": "ordinary_dialogue",
             "requires_host_model": True,
             "handler_name": "OrdinaryDialogueHandler",
+            "timestamp_contract": {
+                "timezone": "Europe/Warsaw",
+                "sample_iso": "2026-07-31T22:00:00+02:00",
+                "source": "local_fallback",
+                "trusted": False,
+            },
         },
         "runtime_turn_contract": {
             "requires_host_model": True,
             "turn_id": "turn-1",
             "trace_id": "trace-1",
-            "timestamp_header": "[🕒 test]",
+            "timestamp_header": "🕒 2026-07-31 22:00:00",
         },
-        "final_response_contract": {"requires_host_model": True},
+        "final_response_contract": {
+            "requires_host_model": True,
+            "runtime_version": "test-version",
+            "timestamp_header": "🕒 2026-07-31 22:00:00",
+            "timezone": "Europe/Warsaw",
+            "timestamp_sample_iso": "2026-07-31T22:00:00+02:00",
+            "timestamp_source": "local_fallback",
+            "timestamp_trusted": False,
+            "author_id": "latka_runtime",
+            "author_label": "Łatka",
+            "author_source": "jazn_runtime",
+            "state_emoticon": "🌿",
+        },
         "trace": {
             "turn_id": "turn-1",
             "trace_id": "trace-1",
-            "timestamp_header": "[🕒 test]",
+            "timestamp_header": "🕒 2026-07-31 22:00:00",
         },
     }
     bridge = build_chatgpt_host_bridge_turn_contract(

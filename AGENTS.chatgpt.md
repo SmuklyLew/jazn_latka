@@ -141,23 +141,18 @@ Host nie wybiera trasy rozmownej, nie podstawia własnej odpowiedzi i nie używa
 
 ## 7. Walidacja i pokazanie odpowiedzi
 
-Przed użyciem wyniku sprawdź co najmniej:
+Kanoniczna ścieżka one-shot zwraca zwarty `chatgpt_host_presentation` z jedną akcją. Nie wyprowadzaj akcji samodzielnie z luźnych pól pakietu:
 
-- `final_visible_text`
-- `final_visible_integrity.valid`
-- `runtime_truth_gate.ok`
-- `runtime_answer_validation`
-- `runtime_provenance`
-- `route`
-- `source_origin_detail`
-- `chatgpt_host_bridge`
-- `turn_id`
-- `trace_id`
-- `timestamp_header`
+- `action=display_exact` — pokaż wyłącznie `final_visible_text` znak w znak;
+- `action=generate_then_finalize` — utwórz tekst z bieżącego kontraktu hosta i przeprowadź drugą fazę;
+- `action=poll_runtime` — nie wysyłaj ponownie wiadomości; pobierz istniejący wynik przez podane `request_id`/`poll_command`;
+- `action=host_diagnostic` — nie imituj Łatki, tylko pokaż krótką diagnozę hosta.
+
+Pełny JSONL pozostaje źródłem audytu. Przed użyciem wyniku sprawdź co najmniej `turn_id`, `trace_id`, `runtime_checks`, `chatgpt_host_bridge`, `host_request_contract_hash` przy drugiej fazie oraz wymagany timestamp.
 
 ### Zaakceptowany final runtime
 
-Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst. Nie parafrazuj, nie tłumacz, nie skracaj, nie rozszerzaj i nie zmieniaj osoby gramatycznej, tonu, języka, deklaracji tożsamości ani treści pamięci.
+Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst. W pakiecie action-first odpowiada temu `chatgpt_host_presentation.action=display_exact`. Nie parafrazuj, nie tłumacz, nie skracaj, nie rozszerzaj i nie zmieniaj osoby gramatycznej, tonu, języka, deklaracji tożsamości ani treści pamięci. Brak nagłówka, inny SHA-256 lub własny tekst hosta oznacza naruszenie kontraktu.
 
 Informację techniczną hosta dodaj wyłącznie poza tekstem runtime i tylko wtedy, gdy użytkownik o nią prosi albo wynik jest zdegradowany.
 
@@ -168,8 +163,9 @@ Jeżeli runtime jawnie wymaga zewnętrznej warstwy językowej:
 1. użyj wyłącznie bieżącego pakietu wyniku oraz maszynowego kontraktu wygenerowanego przez kod runtime, w tym `chatgpt_host_bridge`, `host_generation_policy` lub zgodnych pól kontraktu;
 2. nie pobieraj osobowości, stylu ani wspomnień z instrukcji projektu lub historii rozmowy poza danymi jawnie dopuszczonymi przez runtime;
 3. zachowaj `turn_id`, `trace_id` i wymagany `timestamp_header`;
-4. odeślij drugą linię JSONL `type=host_visible_reply` z SHA-256 dokładnego tekstu;
-5. pokaż dopiero tekst przyjęty przez finalizację runtime i zapisany jako external final visible reply.
+4. odeślij drugą linię JSONL `type=host_visible_reply` z niezmienionym `host_request_contract_hash` i SHA-256 tekstu po kanonizacji UTF-8/LF;
+5. pokaż dopiero tekst przyjęty przez finalizację runtime i zapisany jako external final visible reply;
+6. nie ponawiaj zużytego kontraktu — druga próba ma zostać odrzucona jako replay.
 
 Nie przedstawiaj tej ścieżki jako lokalnego wywołania ChatGPT przez Python.
 

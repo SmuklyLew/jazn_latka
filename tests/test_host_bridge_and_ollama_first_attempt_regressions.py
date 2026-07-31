@@ -62,6 +62,7 @@ def test_host_reply_extraction_preserves_exact_trailing_newline_for_hash() -> No
         "state_emoticon": "🛠️",
         "final_text": final_text,
         "final_text_sha256": _sha(final_text),
+        "host_request_contract_hash": "a" * 64,
     }
 
     extracted, missing = extract_chatgpt_host_visible_reply_payload(payload)

@@ -20,8 +20,17 @@ def _canonical_json(value: Mapping[str, Any]) -> bytes:
     return json.dumps(dict(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
+def canonicalize_host_visible_text(text: str) -> str:
+    """Canonical host text representation: UTF-8 text with LF newlines and no BOM."""
+    return normalize_newlines(str(text or "")).lstrip("\ufeff")
+
+
+def sha256_host_visible_text(text: str) -> str:
+    return hashlib.sha256(canonicalize_host_visible_text(text).encode("utf-8")).hexdigest()
+
+
 def _sha_text(text: str) -> str:
-    return hashlib.sha256(normalize_newlines(text).encode("utf-8")).hexdigest()
+    return sha256_host_visible_text(text)
 
 
 @dataclass(slots=True, frozen=True)
@@ -162,7 +171,7 @@ class HostVisibleFinalizationGate:
         trace_id: str | None = None,
         supplied_text_sha256: str | None = None,
     ) -> HostVisibleFinalizationResult:
-        original = normalize_newlines(text)
+        original = canonicalize_host_visible_text(text)
         original_hash = _sha_text(original)
         supplied_hash = str(supplied_text_sha256 or "").strip().lower() or None
         violations: list[HostVisibleFinalizationViolation] = []

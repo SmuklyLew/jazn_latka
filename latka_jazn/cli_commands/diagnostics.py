@@ -65,13 +65,34 @@ def status_payload(
         marker_output=marker_output, probe_endpoint=probe_endpoint,
     )
     active_state = str(daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive")
-    ok = active_state in {"active_trusted", "active_degraded"}
+    process_ok = active_state in {"active_trusted", "active_degraded"}
+    runtime_write_ready = bool(daemon.get("runtime_write_ready"))
+    transactional_memory_ready = bool(transactional_memory.get("ready"))
+    fully_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
+    if not process_ok:
+        operational_state = "inactive_or_untrusted"
+    elif fully_ready and active_state == "active_trusted":
+        operational_state = "active_ready"
+    elif not runtime_write_ready or not transactional_memory_ready:
+        operational_state = "active_memory_degraded"
+    else:
+        operational_state = "active_process_degraded"
     return {
         "schema_version": schema_version("runpy_status"),
         "runtime_version": PACKAGE_VERSION_FULL,
         "root": str(root),
-        "ok": ok,
-        "status_exit_contract": "zero_only_for_confirmed_active_process",
+        "ok": process_ok,
+        "process_ok": process_ok,
+        "fully_ready": fully_ready,
+        "operational_state": operational_state,
+        "operational_reasons": [
+            reason for reason, failed in (
+                ("daemon_not_confirmed", not process_ok),
+                ("runtime_write_not_ready", not runtime_write_ready),
+                ("transactional_memory_not_ready", not transactional_memory_ready),
+            ) if failed
+        ],
+        "status_exit_contract": "zero_only_for_confirmed_active_process; fully_ready is reported separately",
         "startup": startup,
         "transactional_memory": transactional_memory,
         "daemon": daemon,
