@@ -20,6 +20,7 @@ import time
 import zipfile
 
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.core.runtime_root import workspace_runtime_path
 
 from latka_jazn.tools.memory_restore import (
     DEVELOPER_CONFIRMATION,
@@ -1723,7 +1724,7 @@ def l3_status(target_root: Path | None) -> dict[str, Any]:
 
 
 def _checkpoint_snapshot(root: Path) -> dict[str, Any]:
-    path = root / "workspace_runtime" / "runtime_session_state.json"
+    path = workspace_runtime_path(root) / "runtime_session_state.json"
     if not path.is_file():
         return {
             "present": False,
@@ -2004,11 +2005,7 @@ class Test04Protocol:
 
     @property
     def workspace_root(self) -> Path:
-        return (
-            self.request.root
-            / "workspace_runtime"
-            / "memory_sqlite_test_04"
-        )
+        return workspace_runtime_path(self.request.root) / "memory_sqlite_test_04"
 
     def _settings_payload(self) -> dict[str, Any]:
         return {
@@ -2735,7 +2732,7 @@ class Test04Protocol:
 
 def write_templates(root: Path) -> list[Path]:
     template_root = root / "docs" / "templates" / "memory_sqlite_test_04"
-    destination = root / "workspace_runtime" / "memory_sqlite_test_04"
+    destination = workspace_runtime_path(root) / "memory_sqlite_test_04"
     if not template_root.is_dir():
         raise Test04Error(f"tracked template directory is missing: {template_root}")
     destination.mkdir(parents=True, exist_ok=True)

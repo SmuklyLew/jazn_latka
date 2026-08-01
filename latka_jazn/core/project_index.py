@@ -9,6 +9,8 @@ import json
 import mimetypes
 import time
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "project_startup_index/v1"
 DEFAULT_OUTPUT = "workspace_runtime/project_startup_index_current_line.json"
 
@@ -87,7 +89,11 @@ class ProjectStartupIndexer:
     def __init__(self, root: Path, *, output_rel: str = DEFAULT_OUTPUT) -> None:
         self.root = Path(root).resolve()
         self.output_rel = output_rel
-        self.output_path = self.root / output_rel
+        self.output_path = (
+            workspace_runtime_path(self.root) / Path(DEFAULT_OUTPUT).name
+            if output_rel == DEFAULT_OUTPUT
+            else self.root / output_rel
+        )
 
     def build(self, *, write: bool = True) -> dict[str, Any]:
         started = time.time()

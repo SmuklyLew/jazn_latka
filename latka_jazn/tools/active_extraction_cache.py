@@ -6,6 +6,7 @@ from typing import Any
 
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, version_number
 from latka_jazn.core.version_source import (
     VERSION_MODULE_RELATIVE_PATH,
@@ -24,6 +25,7 @@ from latka_jazn.core.runtime_root import (
     find_start_file,
     resolve_active_runtime_root,
     resolve_active_runtime_marker_path,
+    workspace_runtime_path,
 )
 
 FALLBACK_PACKAGE_VERSION = PACKAGE_VERSION_FULL
@@ -194,11 +196,12 @@ def _active_storage_from_bootstrap(root: Path, version: str | None) -> dict[str,
             "storage_detection": "filesystem_verified",
         }
 
+    runtime_workspace = workspace_runtime_path(root)
     legacy_candidates = [
         path.relative_to(root).as_posix()
-        for path in sorted((root / "workspace_runtime").glob("latka_jazn_v*.sqlite3"), reverse=True)
-        if path.is_file()
-    ] if (root / "workspace_runtime").is_dir() else []
+        for path in sorted(runtime_workspace.glob("latka_jazn_v*.sqlite3"), reverse=True)
+        if path.is_file() and path.is_relative_to(root)
+    ] if runtime_workspace.is_dir() else []
     active = _existing_relative(root, legacy_candidates)
     return {
         "active_database": active,
@@ -220,6 +223,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
     version = read_runtime_version_from_version_py(root, fallback=FALLBACK_PACKAGE_VERSION)
     start_file = detect_start_file(root)
     package_manifest_status = package_integrity_manifest_status(root)
+    package_manifest_verification = verify_package_integrity_manifest(root)
     current_manifest_sha256 = package_manifest_status.sha256
     source_zip = Path(source_zip).resolve() if source_zip else None
     source_zip_sha256 = _sha256_file(source_zip) if source_zip else None
@@ -248,6 +252,10 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
         cache_hit_reasons.append("package_integrity_manifest_exists")
     else:
         cache_miss_reasons.append("package_integrity_manifest_missing")
+    if package_manifest_verification.get("ok") is True:
+        cache_hit_reasons.append("package_integrity_manifest_verified")
+    else:
+        cache_miss_reasons.append("package_integrity_verification_failed")
 
     if existing_marker and existing_marker.get("valid", True):
         if existing_marker.get("active_root") == str(root):
@@ -277,7 +285,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
 
     if marker_rejected and root_resolution.error:
         cache_miss_reasons.append(root_resolution.error)
-    hard_missing_reasons = {"active_root_missing", "latka_jazn_package_missing", "version_py_missing", "start_file_missing_main_run_jazn", "package_integrity_manifest_missing"}
+    hard_missing_reasons = {"active_root_missing", "latka_jazn_package_missing", "version_py_missing", "start_file_missing_main_run_jazn", "package_integrity_manifest_missing", "package_integrity_verification_failed"}
     missing_hard_requirement = any(reason in hard_missing_reasons for reason in cache_miss_reasons)
     marker_differs = any("differs" in reason for reason in cache_miss_reasons)
     marker_refresh_required = any(reason.startswith("marker_") or reason.startswith("active_marker_") for reason in cache_miss_reasons)
@@ -287,6 +295,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
         and version
         and start_file
         and bool(current_manifest_sha256)
+        and package_manifest_verification.get("ok") is True
         and not missing_hard_requirement
         and not marker_rejected
         and not source_zip_mismatch
@@ -296,10 +305,26 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
     cache_contract_version = active_cache_contract_version(version)
     storage = _active_storage_from_bootstrap(root, version)
     source_provenance = read_source_provenance(root).to_dict()
+    source_provenance_verified = source_provenance.get("status") in {
+        "clean_checkout_verified",
+        "development_dirty_verified",
+        "verified_export_without_git_history",
+    }
+    if source_provenance_verified:
+        cache_hit_reasons.append("source_provenance_verified")
+    else:
+        cache_miss_reasons.append("source_provenance_not_verified")
+        missing_hard_requirement = True
+        should_reuse_existing_extraction = False
     if not existing_marker:
         marker_lifecycle_state = "missing"
         marker_trusted = False
-    elif marker_rejected or not root_resolution.marker_valid:
+    elif (
+        marker_rejected
+        or not root_resolution.marker_valid
+        or package_manifest_verification.get("ok") is not True
+        or not source_provenance_verified
+    ):
         marker_lifecycle_state = "imported" if root_resolution.source in {"marker", "imported_marker"} else "error"
         marker_trusted = False
     elif not marker_refresh_required:
@@ -314,7 +339,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
         "cache_contract_version": cache_contract_version,
         "requested_runtime_root": str(requested_root),
         "active_root_source": root_resolution.source,
-        "active_marker_valid": root_resolution.marker_valid,
+        "active_marker_valid": bool(root_resolution.marker_valid and not missing_hard_requirement),
         "active_root_validation_error": root_resolution.error,
         "runtime_root_valid": not missing_hard_requirement,
         "checked_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -324,6 +349,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
         **storage,
         "source_provenance": source_provenance,
         "source_provenance_status": source_provenance.get("status"),
+        "source_provenance_verified": source_provenance_verified,
         "source_provenance_sha256": source_provenance.get("file_sha256"),
         "source_base_commit": source_provenance.get("base_merge_commit"),
         "source_provenance_limitations": list(source_provenance.get("limitations") or []),
@@ -332,6 +358,7 @@ def build_active_runtime_status(root: Path, *, source_zip: Path | None = None, m
             if not source_provenance.get("git_directory_present") else None
         ),
         "package_integrity_manifest": package_manifest_status.to_dict(),
+        "package_integrity_verification": package_manifest_verification,
         "package_integrity_manifest_sha256": current_manifest_sha256,
         "source_zip": str(source_zip) if source_zip else None,
         "source_zip_sha256": source_zip_sha256,
@@ -372,7 +399,15 @@ def write_active_runtime_marker(root: Path, *, source_zip: Path | None = None, m
         for reason in status["cache_miss_reasons"]
     )
     status["marker_differs"] = any("differs" in reason for reason in status["cache_miss_reasons"])
-    hard_missing = {"active_root_missing", "latka_jazn_package_missing", "version_py_missing", "start_file_missing_main_run_jazn", "package_integrity_manifest_missing"}
+    hard_missing = {
+        "active_root_missing",
+        "latka_jazn_package_missing",
+        "version_py_missing",
+        "start_file_missing_main_run_jazn",
+        "package_integrity_manifest_missing",
+        "package_integrity_verification_failed",
+        "source_provenance_not_verified",
+    }
     status["should_reuse_existing_extraction"] = not any(reason in hard_missing for reason in status["cache_miss_reasons"])
     status["active_marker_valid"] = status["runtime_root_valid"]
     status["active_root_validation_error"] = None if status["runtime_root_valid"] else status.get("active_root_validation_error")
@@ -386,7 +421,7 @@ def write_active_runtime_marker(root: Path, *, source_zip: Path | None = None, m
         "written_at_utc": datetime.now(timezone.utc).isoformat(),
         "action": action,
         "memory_write_root": str(effective_root / "memory"),
-        "workspace_runtime_root": str(effective_root / "workspace_runtime"),
+        "workspace_runtime_root": str(workspace_runtime_path(effective_root)),
         "exports_root": str(effective_root / "exports"),
         "visible_runtime_preview_contract": {
             "schema_version": visible_preview_contract_version(effective_root, status.get("version")),

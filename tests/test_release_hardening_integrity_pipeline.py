@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import copy
 import hashlib
+import pytest
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
 from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
@@ -18,6 +19,17 @@ SAMPLE_ISO = SAMPLE_DT.isoformat()
 HEADER = f"🕒 {SAMPLE_DT.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
 BODY = "Działam uczciwie."
 VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
+
+
+@pytest.fixture(autouse=True)
+def _fresh_timestamp_contract() -> None:
+    """Keep freshness tests independent from total suite collection time."""
+
+    global SAMPLE_DT, SAMPLE_ISO, HEADER, VISIBLE
+    SAMPLE_DT = datetime.now(timezone.utc).replace(microsecond=0)
+    SAMPLE_ISO = SAMPLE_DT.isoformat()
+    HEADER = f"🕒 {SAMPLE_DT.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
+    VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
 
 
 def _sha(value: str) -> str:
@@ -66,7 +78,9 @@ def _decision() -> dict:
     }
 
 
-def _envelope(*, final_text: str = VISIBLE, mutate_contract: bool = False) -> dict:
+def _envelope(*, final_text: str | None = None, mutate_contract: bool = False) -> dict:
+    if final_text is None:
+        final_text = VISIBLE
     decision = _decision()
     contract = FinalResponseContract.build(
         turn_id="turn-1",

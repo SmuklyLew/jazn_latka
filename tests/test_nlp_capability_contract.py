@@ -71,6 +71,32 @@ def test_compound_answer_with_all_components_is_accepted() -> None:
     assert result.accepted is True
 
 
+def test_failed_first_wake_question_routes_to_runtime_diagnostic() -> None:
+    text = (
+        "Co się działo na początku, że nie mogłaś się obudzić po mojej "
+        "pierwszej wiadomości do Ciebie? Gdzie leży jeszcze taki błąd?"
+    )
+    report = DialogueIntentClassifier().classify(text)
+    assert report.primary_intent == "runtime_behavior_diagnostic_request"
+    assert report.diagnostic_request is True
+    assert report.question_object == "runtime_startup_failure"
+
+
+def test_failed_first_wake_question_cannot_be_accepted_as_generic_fallback() -> None:
+    text = (
+        "Co się działo na początku, że nie mogłaś się obudzić po mojej "
+        "pierwszej wiadomości do Ciebie? Gdzie leży jeszcze taki błąd?"
+    )
+    result = RuntimeAnswerValidator().validate(
+        user_text=text,
+        body="Widzę tu sedno. Jestem przy tej wiadomości.",
+        route="fallback",
+        detected_intent="negative_feedback_without_update_request",
+    )
+    assert result.accepted is False
+    assert result.mismatch_reason == "runtime_startup_failure_misrouted_as_fallback"
+
+
 def test_nlp_audit_never_claims_ready_for_missing_evidence(tmp_path: Path) -> None:
     report = NLPCapabilityAudit(tmp_path).audit()
     layer = next(item for item in report.layers if item.layer == "evaluation_and_ood_regression")

@@ -7,6 +7,7 @@ import hashlib
 import json, re, time, uuid
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.clock import WarsawClock
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.emotions import AffectiveState
@@ -302,7 +303,6 @@ def _model_guided_rejection_disclosure(
 
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.bootstrap.contract_loader import BootstrapContractRepository
-
 class JaznEngine:
     def __init__(self, config: JaznConfig | None = None) -> None:
         self.config = config or JaznConfig()
@@ -392,7 +392,7 @@ class JaznEngine:
         self.chatgpt_adapter = ChatGPTAdapter(self.config)
         self.last_granular_affect = None
         self.started_at = time.time()
-        self.runtime_state_path = self.config.root / "workspace_runtime" / "runtime_state.json"
+        self.runtime_state_path = workspace_runtime_path(self.config.root) / "runtime_state.json"
         state = self._load_runtime_state()
         self.last_turn_at: float | None = state.get("last_turn_at") if isinstance(state.get("last_turn_at"), (int, float)) else None
         self.last_user_text: str | None = state.get("last_user_text") if isinstance(state.get("last_user_text"), str) else None

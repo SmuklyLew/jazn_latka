@@ -195,6 +195,13 @@ class DialogueIntentClassifier:
         "czas żebyś się obudziła", "czas zebys sie obudzila",
         "uruchom jaźń i odpowiedz", "uruchom jazn i odpowiedz",
     )
+    RUNTIME_STARTUP_FAILURE_DIAGNOSTIC_TERMS = (
+        "nie mogłaś się obudzić", "nie moglas sie obudzic",
+        "nie mogłaś wystartować", "nie moglas wystartowac",
+        "nie uruchomiłaś się", "nie uruchomilas sie",
+        "po mojej pierwszej wiadomości", "po mojej pierwszej wiadomosci",
+        "błąd pierwszej wiadomości", "blad pierwszej wiadomosci",
+    )
     RUNTIME_STATUS_AFTER_UPDATE_TERMS = (
         "aktywny folder", "active_root", "active database", "active_database",
         "cache_miss_reasons", "should_reuse_existing_extraction",
@@ -435,6 +442,11 @@ class DialogueIntentClassifier:
             and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS)
         )
         has_runtime_wake_health_check=self._has_any(norm,folded,self.RUNTIME_WAKE_HEALTH_CHECK_TERMS)
+        has_runtime_startup_failure_diagnostic=(
+            self._has_any(norm, folded, self.RUNTIME_STARTUP_FAILURE_DIAGNOSTIC_TERMS)
+            and any(marker in folded for marker in ("obudz", "uruchom", "wystart", "pierwsz"))
+            and any(marker in folded for marker in ("blad", "nie mogl", "co sie dzialo", "gdzie lezy"))
+        )
         has_user_memory_recall=self._has_any(norm,folded,self.USER_MEMORY_RECALL_TERMS) or (self._has_any(norm,folded,self.SELF_MEMORY_RECALL_TERMS) and self._has_any(norm,folded,self.USER_MEMORY_PERSON_TERMS))
         has_self_memory_recall=self._has_any(norm,folded,self.SELF_MEMORY_RECALL_TERMS)
         has_self_memory_persona=self._has_any(norm,folded,self.SELF_MEMORY_PERSONA_TERMS)
@@ -459,6 +471,13 @@ class DialogueIntentClassifier:
                 norm, folded, 'system_diagnostic_question',
                 ['negacja/modalność blokuje wykonanie; bieżący akt mowy jest diagnostyczny'],
                 0.91, diag=True, speech_act=speech.speech_act, question_object='runtime',
+            )
+        if has_runtime_startup_failure_diagnostic:
+            return report(
+                norm, folded, 'runtime_behavior_diagnostic_request',
+                ['pytanie o nieudany start/obudzenie po pierwszej wiadomości wymaga diagnostyki łańcucha loader-runtime-host'],
+                0.95, diag=True, speech_act=speech.speech_act,
+                question_object='runtime_startup_failure',
             )
         if has_runtime_wake_health_check:
             return report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')

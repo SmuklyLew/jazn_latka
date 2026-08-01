@@ -6,8 +6,11 @@ from typing import Any, Mapping
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.memory_activation_gate import MemoryHealthEvidence, assess_memory_activation
 from latka_jazn.core.source_classifier import SourceClassifier
+from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
-from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+from latka_jazn.core.runtime_root import active_runtime_marker_path
+from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version, version_number
 from latka_jazn.core.version_source import (
     read_runtime_version_from_version_py,
 )
@@ -36,18 +39,27 @@ class RuntimeActivationCascade:
         status=package_integrity_manifest_status(self.root)
         canonical=read_runtime_version_from_version_py(self.root)
         manifest_matches=bool(canonical and status.version==canonical)
-        ok=bool(status.present and status.valid_json and manifest_matches)
-        payload={**status.to_dict(),'ok':ok,'canonical_version':canonical,'matches_version_py':manifest_matches,'runtime_start_blocking':False,'reason':'verified' if ok else 'missing_stale_or_invalid_nonblocking'}
+        verification=verify_package_integrity_manifest(self.root)
+        provenance=read_source_provenance(self.root,profile='system_smoke').to_dict()
+        provenance_ok=provenance.get('status') in {'clean_checkout_verified','development_dirty_verified','verified_export_without_git_history'}
+        ok=bool(status.present and status.valid_json and manifest_matches and verification.get('ok') is True and provenance_ok)
+        payload={**status.to_dict(),'ok':ok,'canonical_version':canonical,'matches_version_py':manifest_matches,'verification':verification,'source_provenance':provenance,'source_provenance_verified':provenance_ok,'runtime_start_blocking':True,'reason':'verified' if ok else 'missing_stale_hash_or_provenance_invalid_blocking'}
         return payload,canonical or status.version
     def _marker_status(self,supplied:Mapping[str,Any]|None):
         marker=dict(supplied or {}); marker_path=None
         if not marker:
-            for c in (self.root/'workspace_runtime'/'JAZN_ACTIVE_RUNTIME.json',self.root/'JAZN_ACTIVE_RUNTIME.json'):
+            for c in (active_runtime_marker_path(self.root),self.root/'JAZN_ACTIVE_RUNTIME.json'):
                 if c.exists(): marker_path=c; marker=self._read_json(c) or {}; break
         ar=str(marker.get('active_root') or marker.get('active_folder') or '').strip(); matches=bool(ar and Path(ar).resolve()==self.root)
-        kind=str(marker.get('marker_source') or marker.get('source') or 'generated_marker'); source=SourceClassifier().classify(kind,validated=matches)
-        trusted=bool(matches and marker); lifecycle=str(marker.get('marker_lifecycle_state') or ('trusted' if trusted else 'imported' if marker else 'missing'))
-        return {'ok':trusted,'trusted':trusted,'lifecycle_state':lifecycle,'active_root':ar or None,'active_root_matches':matches,'path':str(marker_path) if marker_path else None,'source_classification':source.to_dict()}
+        canonical=read_runtime_version_from_version_py(self.root)
+        marker_version=str(marker.get('version') or '').strip()
+        version_matches=bool(canonical and marker_version and version_number(canonical)==version_number(marker_version))
+        manifest_status=package_integrity_manifest_status(self.root)
+        marker_manifest_sha=str(marker.get('package_integrity_manifest_sha256') or '').strip().lower()
+        manifest_hash_matches=bool(manifest_status.sha256 and marker_manifest_sha==manifest_status.sha256.lower())
+        trusted=bool(matches and marker and version_matches and manifest_hash_matches); lifecycle=str(marker.get('marker_lifecycle_state') or ('trusted' if trusted else 'imported' if marker else 'missing'))
+        kind=str(marker.get('marker_source') or marker.get('source') or 'generated_marker'); source=SourceClassifier().classify(kind,validated=trusted)
+        return {'ok':trusted,'trusted':trusted,'lifecycle_state':lifecycle,'active_root':ar or None,'active_root_matches':matches,'version_matches':version_matches,'package_integrity_manifest_sha256_matches':manifest_hash_matches,'path':str(marker_path) if marker_path else None,'source_classification':source.to_dict()}
     def _daemon_status(self,supplied:Mapping[str,Any]|None):
         d=dict(supplied or {}); nested=json_object(d.get('status')); merged={**d,**nested}; pid=merged.get('pid') or merged.get('daemon_pid')
         try: pid_number=int(pid) if pid is not None else None
@@ -62,6 +74,8 @@ class RuntimeActivationCascade:
         return {'ok':ok,'pid':pid_number if pid_ok else None,'pid_alive':bool(merged.get('pid_alive',pid_ok)),'endpoint_ok':endpoint,'heartbeat_fresh':fresh,'heartbeat_age_seconds':age,'background_claim_allowed':ok,'reason':'pid_endpoint_heartbeat_confirmed' if ok else 'pid_endpoint_heartbeat_required'}
     def evaluate(self,*,marker_status=None,daemon_status=None,time_status=None,memory_status=None,model_status=None,tool_status=None,voice_status=None)->RuntimeActivationStatus:
         folder,errors=self._folder_status(); manifest,version=self._manifest_status()
+        if not manifest['ok']: errors.append('package_integrity_not_verified')
+        if not manifest['source_provenance_verified']: errors.append('source_provenance_not_verified')
         marker=self._marker_status(marker_status)
         if not marker['ok']: errors.append('marker_not_trusted')
         daemon=self._daemon_status(daemon_status)
@@ -72,5 +86,5 @@ class RuntimeActivationCascade:
         model={'selected_backend_adapter':selected,'visible_channel_adapter':visible,'backend_ready':selected not in {'','null_model_adapter','none'},'host_channel_only':selected=='chatgpt_runtime_adapter' or visible in {'chatgpt_host','chatgpt_runtime_adapter'},'truth_boundary':'chatgpt_runtime_adapter oznacza kanał hosta, nie lokalny model Pythona.'}
         t=dict(tool_status or {}); tools={'tool_access_state':t.get('tool_access_state','host_only'),'provenance_required':bool(t.get('provenance_required',True)),'write_confirmation_required':bool(t.get('write_confirmation_required',True))}
         v=dict(voice_status or {}); voice={'voice_allowed':bool(v.get('voice_allowed')) and marker['ok'],'reason':v.get('reason') or ('runtime_confirmed' if marker['ok'] else 'runtime_not_confirmed')}
-        required=bool(folder['ok'] and marker['ok'] and daemon['ok']); state='active_trusted' if required and time['trusted'] else 'active_degraded' if required else 'inactive'; fail=None if required else (errors[0] if errors else 'runtime_not_confirmed')
+        required=bool(folder['ok'] and manifest['ok'] and marker['ok'] and daemon['ok']); state='active_trusted' if required and time['trusted'] else 'active_degraded' if required else 'inactive'; fail=None if required else (errors[0] if errors else 'runtime_not_confirmed')
         return RuntimeActivationStatus(required,state,str(self.root),version,manifest.get('start_file') or ('main.py' if (self.root/'main.py').exists() else None),folder,manifest,marker,daemon,time,memory,model,tools,voice,fail,errors)

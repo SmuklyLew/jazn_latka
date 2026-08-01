@@ -30,6 +30,7 @@ from latka_jazn.core.runtime_root import (
     find_start_file,
     resolve_active_runtime_marker_path,
     resolve_active_runtime_root,
+    workspace_runtime_path,
 )
 from latka_jazn.core.clock import (
     TRUSTED_HOST_TIME_ISO_ENV_NAMES,
@@ -51,6 +52,8 @@ from latka_jazn.tools.active_extraction_cache import (
     build_active_runtime_status,
     write_active_runtime_marker,
 )
+from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version
 
 DEFAULT_DAEMON_HOST = "127.0.0.1"
@@ -96,12 +99,12 @@ def daemon_default_marker_path(root: Path) -> Path:
 
 
 def daemon_pid_path(root: Path) -> Path:
-    return Path(root).resolve() / "workspace_runtime" / "jazn_daemon.pid"
+    return workspace_runtime_path(Path(root)) / "jazn_daemon.pid"
 
 
 
 def daemon_auth_token_path(root: Path) -> Path:
-    return Path(root).resolve() / "workspace_runtime" / "daemon" / "capability.token"
+    return workspace_runtime_path(Path(root)) / "daemon" / "capability.token"
 
 
 def _write_private_token(path: Path, token: str) -> None:
@@ -143,7 +146,7 @@ def normalize_daemon_session_id(value: str | None) -> str | None:
     return candidate
 
 def daemon_log_dir(root: Path) -> Path:
-    return Path(root).resolve() / "workspace_runtime" / "daemon"
+    return workspace_runtime_path(Path(root)) / "daemon"
 
 
 def daemon_process_event_path(root: Path) -> Path:
@@ -708,6 +711,9 @@ class DaemonChatJob:
             "completed_at_utc": self.completed_at_utc,
             "session_id": self.session_id,
             "client": self.client,
+            "input_field": self.input_field,
+            "user_text": self.user_text,
+            "user_text_sha256": hashlib.sha256(self.user_text.encode("utf-8")).hexdigest(),
             "error": self.error,
             "last_heartbeat_at_utc": self.last_heartbeat_at_utc,
             "execution_timeout_seconds": self.execution_timeout_seconds,
@@ -2084,6 +2090,32 @@ def run_daemon(
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
 ) -> int:
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
+    package_verification = verify_package_integrity_manifest(config.root)
+    source_provenance = read_source_provenance(config.root, profile="system_smoke").to_dict()
+    source_provenance_verified = source_provenance.get("status") in {
+        "clean_checkout_verified",
+        "development_dirty_verified",
+        "verified_export_without_git_history",
+    }
+    if package_verification.get("ok") is not True or not source_provenance_verified:
+        payload = {
+            "ok": False,
+            "started": False,
+            "error_code": (
+                "package_integrity_verification_failed"
+                if package_verification.get("ok") is not True
+                else "source_provenance_not_verified"
+            ),
+            "package_integrity_verification": package_verification,
+            "source_provenance": source_provenance,
+            "marker_path": str(marker_path),
+            "truth_boundary": (
+                "Niskopoziomowe wejście Daemona podlega tym samym bramom integralności i pochodzenia "
+                "co kanoniczne `run.py start`; nie może ominąć preflightu."
+            ),
+        }
+        print(json.dumps(payload, ensure_ascii=False, sort_keys=True), file=sys.stderr)
+        return 3
     # runtime_write_v1 is a critical local write layer; initialize a clean store if the release pack omitted stale shards.
     build_runtime_write_access_status(config, initialize=True, writes_enabled=True)
     # Write the normal active-runtime marker first; then the daemon marker extends it.
@@ -2244,6 +2276,37 @@ def start_daemon(
     startup_timeout: float = DEFAULT_START_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
+    package_verification = verify_package_integrity_manifest(config.root)
+    if package_verification.get("ok") is not True:
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "package_integrity_verification_failed",
+            "package_integrity_verification": package_verification,
+            "marker_path": str(marker_path),
+            "truth_boundary": (
+                "Daemon nie może wystartować ani zapisać aktywnego markera, dopóki rozmiary i SHA-256 "
+                "wszystkich plików chronionych manifestem nie są zgodne."
+            ),
+        }
+    source_provenance = read_source_provenance(config.root, profile="system_smoke").to_dict()
+    source_provenance_verified = source_provenance.get("status") in {
+        "clean_checkout_verified",
+        "development_dirty_verified",
+        "verified_export_without_git_history",
+    }
+    if not source_provenance_verified:
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "source_provenance_not_verified",
+            "source_provenance": source_provenance,
+            "marker_path": str(marker_path),
+            "truth_boundary": (
+                "Daemon nie może wystartować tylko dlatego, że pliki pasują do lokalnego manifestu. "
+                "SOURCE_PROVENANCE.json musi dodatkowo wiarygodnie wiązać paczkę z wersją i źródłem."
+            ),
+        }
     try:
         existing, existing_error, existing_endpoint = _probe_daemon_status(host, int(port))
         if isinstance(existing, dict):
@@ -2281,12 +2344,92 @@ def start_daemon(
     except Exception:
         pass
     log_dir = daemon_log_dir(config.root)
-    log_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "runtime_workspace_unwritable",
+            "error": f"{type(exc).__name__}: {exc}",
+            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "marker_path": str(marker_path),
+            "recovery_hint": (
+                "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
+                "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
+            ),
+        }
     stdout_path = log_dir / "stdout.log"
     stderr_path = log_dir / "stderr.log"
+    console_mode = resolve_daemon_console_mode()
+    write_probe = log_dir / f".startup-write-probe-{uuid.uuid4().hex}.tmp"
+    try:
+        with write_probe.open("xb") as handle:
+            handle.write(b"")
+        write_probe.unlink()
+        if not (os.name == "nt" and console_mode == DAEMON_CONSOLE_VISIBLE):
+            with stdout_path.open("ab"), stderr_path.open("ab"):
+                pass
+    except OSError as exc:
+        try:
+            write_probe.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "runtime_workspace_unwritable",
+            "error": f"{type(exc).__name__}: {exc}",
+            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "stdout_log": str(stdout_path),
+            "stderr_log": str(stderr_path),
+            "marker_path": str(marker_path),
+            "recovery_hint": (
+                "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
+                "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
+            ),
+        }
+    try:
+        runtime_write_status = build_runtime_write_access_status(
+            config,
+            initialize=True,
+            writes_enabled=True,
+        ).to_dict()
+    except Exception as exc:
+        lowered_error = str(exc).casefold()
+        permission_failure = isinstance(exc, PermissionError) or any(
+            token in lowered_error
+            for token in ("readonly", "read-only", "permission denied", "access is denied")
+        )
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": (
+                "runtime_memory_root_unwritable"
+                if permission_failure
+                else "runtime_memory_initialization_failed"
+            ),
+            "error": f"{type(exc).__name__}: {exc}",
+            "memory_write_root": str(Path(config.root).resolve() / "memory"),
+            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "marker_path": str(marker_path),
+            "recovery_hint": (
+                "Uruchom `python -X utf8 run.py runtime-bootstrap` z nowym, zapisywalnym, "
+                "wersjonowanym destination. Sam zewnętrzny workspace nie przenosi pamięci."
+            ),
+        }
+    if runtime_write_status.get("write_capable") is not True:
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "runtime_memory_initialization_failed",
+            "runtime_write_access_status": runtime_write_status,
+            "memory_write_root": str(Path(config.root).resolve() / "memory"),
+            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "marker_path": str(marker_path),
+        }
     event_path = daemon_process_event_path(config.root)
     cmd = build_daemon_start_command(config.root, host=host, port=port, marker_output=marker_path, heartbeat_interval=heartbeat_interval)
-    console_mode = resolve_daemon_console_mode()
     creationflags = 0
     popen_kwargs: dict[str, Any] = {}
     if os.name == "nt":
@@ -2303,25 +2446,48 @@ def start_daemon(
         stdout_log=str(stdout_path),
         stderr_log=str(stderr_path),
     )
-    if os.name == "nt" and console_mode == DAEMON_CONSOLE_VISIBLE:
-        proc = subprocess.Popen(
-            cmd,
-            cwd=str(config.root),
-            stdin=subprocess.DEVNULL,
-            creationflags=creationflags,
-            **popen_kwargs,
-        )
-    else:
-        with stdout_path.open("ab") as out, stderr_path.open("ab") as err:
+    try:
+        if os.name == "nt" and console_mode == DAEMON_CONSOLE_VISIBLE:
             proc = subprocess.Popen(
                 cmd,
                 cwd=str(config.root),
-                stdout=out,
-                stderr=err,
                 stdin=subprocess.DEVNULL,
                 creationflags=creationflags,
                 **popen_kwargs,
             )
+        else:
+            with stdout_path.open("ab") as out, stderr_path.open("ab") as err:
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(config.root),
+                    stdout=out,
+                    stderr=err,
+                    stdin=subprocess.DEVNULL,
+                    creationflags=creationflags,
+                    **popen_kwargs,
+                )
+    except OSError as exc:
+        permission_failure = isinstance(exc, PermissionError)
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": (
+                "runtime_workspace_unwritable"
+                if permission_failure
+                else "daemon_process_spawn_failed"
+            ),
+            "error": f"{type(exc).__name__}: {exc}",
+            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "stdout_log": str(stdout_path),
+            "stderr_log": str(stderr_path),
+            "marker_path": str(marker_path),
+            "recovery_hint": (
+                "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
+                "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
+                if permission_failure
+                else "Sprawdź dostępność interpretera, limit procesów oraz reguły uruchamiania hosta."
+            ),
+        }
     append_daemon_process_event(
         config.root,
         "spawned",
@@ -2385,6 +2551,14 @@ def status_daemon(
     marker = read_json_file(marker_path)
     root_resolution = resolve_active_runtime_root(config.root, marker_path=marker_path)
     marker_root_valid = bool(marker is not None and root_resolution.marker_valid)
+    package_verification = verify_package_integrity_manifest(config.root)
+    package_integrity_verified = package_verification.get("ok") is True
+    source_provenance = read_source_provenance(config.root, profile="system_smoke").to_dict()
+    source_provenance_verified = source_provenance.get("status") in {
+        "clean_checkout_verified",
+        "development_dirty_verified",
+        "verified_export_without_git_history",
+    }
     pid_int = _daemon_pid_from_status(marker or {})
     os_pid_alive = pid_is_alive(pid_int) if pid_int else False
 
@@ -2437,7 +2611,11 @@ def status_daemon(
 
     active_state = "inactive"
     active_state_reason = "daemon_process_not_confirmed"
-    if marker is not None and not marker_root_valid:
+    if not package_integrity_verified:
+        active_state_reason = "package_integrity_verification_failed"
+    elif not source_provenance_verified:
+        active_state_reason = "source_provenance_not_verified"
+    elif marker is not None and not marker_root_valid:
         active_state_reason = root_resolution.error or "active_root_marker_invalid"
     elif not marker_root_valid:
         active_state_reason = "active_runtime_marker_missing"
@@ -2512,6 +2690,10 @@ def status_daemon(
         "marker_path": str(marker_path),
         "marker_found": marker is not None,
         "marker_valid": marker_root_valid,
+        "package_integrity_verified": package_integrity_verified,
+        "package_integrity_verification": package_verification,
+        "source_provenance_verified": source_provenance_verified,
+        "source_provenance": source_provenance,
         "marker": marker,
         "pid": pid_int,
         "pid_alive": alive,
@@ -2546,7 +2728,9 @@ def status_daemon(
             heartbeat_fresh=heartbeat_is_fresh,
         ),
         "truth_boundary": (
-            "Status active_trusted wymaga zgodnego markera, zgodności rootu runtime, tego samego PID-u "
+            "Status active_trusted wymaga pełnej zgodności rozmiarów i SHA-256 manifestu, "
+            "zweryfikowanego pochodzenia źródła, zgodnego markera, "
+            "zgodności rootu runtime, tego samego PID-u "
             "w markerze i endpointcie, runtime_process_active=true, świeżego heartbeat oraz odpowiedzi lokalnego endpointu. "
             "Żywy PID bez potwierdzonej tożsamości nie wystarcza. Zaufanie czasu jest raportowane osobno; "
             "brak czasu sieciowego nie blokuje startu. Endpoint chwilowo niedostępny przy żywym PID i świeżym "

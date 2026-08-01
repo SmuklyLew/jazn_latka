@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from latka_jazn.core.private_data_export_gate import PrivateDataExportGate
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.tools.package_export import build_package_plan, export_package
 
@@ -21,7 +22,7 @@ def export_payload(
     preview_output = output if output is not None else root / "exports" / ".preview.zip"
     package_plan = build_package_plan(root, mode, preview_output)
     candidate_paths = [path for path, _ in package_plan]
-    gate = PrivateDataExportGate(root / "workspace_runtime/private_export_confirmations.json")
+    gate = PrivateDataExportGate(workspace_runtime_path(root) / "private_export_confirmations.json")
     preview = gate.preview(profile=profile, paths=candidate_paths)
     if preview_only:
         token = gate.issue_confirmation(preview) if preview.requires_confirmation else None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -307,7 +308,7 @@ def _optional_positive_env_int(name: str) -> int | None:
 
 
 def _chatgpt_daemon_marker_path(cfg: JaznConfig) -> Path:
-    return Path(cfg.root).resolve() / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    return cfg.active_runtime_marker_path
 
 
 def _daemon_status_allows_chatgpt_fast_path(status: dict[str, object]) -> bool:
@@ -575,11 +576,31 @@ def _prepare_chatgpt_daemon_presentation(
     })
     result["chat_bridge"] = bridge_meta
     result["chatgpt_bridge"] = bridge_meta
+    resolved_user_text, user_text_binding_error = _resolve_daemon_user_text_binding(
+        outer=outer,
+        result=result,
+        explicit_user_text=user_text,
+    )
     result["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
         result,
-        user_text=user_text,
+        user_text=resolved_user_text or "",
         chat_bridge_meta=bridge_meta,
     )
+    if (
+        result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested"
+        and user_text_binding_error is not None
+    ):
+        result["chatgpt_host_bridge"].update({
+            "phase": "host_diagnostic_required",
+            "status": user_text_binding_error,
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "diagnostic_reason": user_text_binding_error,
+            "truth_boundary": (
+                "Asynchroniczny wynik daemonu nie zachował jednoznacznego związania z dokładnym tekstem "
+                "wiadomości użytkownika. Host nie może wygenerować odpowiedzi ani imitować Łatki."
+            ),
+        })
     if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
         try:
             pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
@@ -594,6 +615,40 @@ def _prepare_chatgpt_daemon_presentation(
                 "diagnostic_reason": f"pending_host_request:{exc}",
             })
     return result
+
+
+def _resolve_daemon_user_text_binding(
+    *,
+    outer: dict[str, Any],
+    result: dict[str, Any],
+    explicit_user_text: str,
+) -> tuple[str | None, str | None]:
+    """Recover one exact, hash-consistent input for a completed daemon job."""
+
+    daemon_job = _as_dict(result.get("daemon_job"))
+    decision = _as_dict(result.get("conversation_decision"))
+    turn_logic_audit = _as_dict(decision.get("turn_logic_audit"))
+    candidates: list[tuple[str, str, str | None]] = []
+    for source, container in (
+        ("explicit", {"user_text": explicit_user_text}),
+        ("daemon_transport", outer),
+        ("daemon_job", daemon_job),
+        ("turn_logic_audit", turn_logic_audit),
+    ):
+        value = container.get("user_text")
+        if not isinstance(value, str) or not value:
+            continue
+        digest = container.get("user_text_sha256")
+        candidates.append((source, value, str(digest).strip().lower() if digest else None))
+    if not candidates:
+        return None, "daemon_user_text_binding_missing"
+    selected = candidates[0][1]
+    if any(value != selected for _source, value, _digest in candidates[1:]):
+        return None, "daemon_user_text_binding_conflict"
+    actual_sha256 = hashlib.sha256(selected.encode("utf-8")).hexdigest()
+    if any(digest and digest != actual_sha256 for _source, _value, digest in candidates):
+        return None, "daemon_user_text_hash_mismatch"
+    return selected, None
 
 
 _SUCCESSFUL_CHATGPT_PRESENTATION_PHASES = frozenset({
@@ -2068,4 +2123,3 @@ if __name__ == "__main__":
         except Exception:
             pass
         raise SystemExit(0)
-

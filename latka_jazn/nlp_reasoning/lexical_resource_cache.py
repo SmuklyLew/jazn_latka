@@ -6,6 +6,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 
 LEXICAL_RESOURCE_CACHE_SCHEMA = "lexical_resource_cache/v1"
 
@@ -22,7 +24,7 @@ class LexicalResourceCache:
     def __init__(self, root: str | Path | None = None, path: str | Path | None = None) -> None:
         base = Path(root) if root else Path.cwd()
         self.root = base
-        self.path = Path(path) if path else base / "workspace_runtime" / "dictionary_cache.sqlite3"
+        self.path = Path(path) if path else workspace_runtime_path(base) / "dictionary_cache.sqlite3"
 
     def lookup(self, source_id: str, key: str) -> dict[str, Any] | None:
         source_id = (source_id or "").strip()

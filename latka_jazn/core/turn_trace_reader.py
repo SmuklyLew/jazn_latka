@@ -3,12 +3,14 @@ from pathlib import Path
 from typing import Any
 import json
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "turn_trace_reader/v1"
 
 class TurnTraceReader:
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
-        self.base = self.root / 'workspace_runtime' / 'turn_checkpoints'
+        self.base = workspace_runtime_path(self.root) / 'turn_checkpoints'
     def latest(self) -> dict[str, Any] | None:
         p = self.base / 'LATEST_TURN_CHECKPOINT.json'
         if not p.exists(): return None

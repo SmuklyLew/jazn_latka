@@ -24,6 +24,7 @@ from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet,
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
 from latka_jazn.version import schema_version
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 
 SCHEMA_VERSION = schema_version("self_owned_startup_contract")
 MINIMAL_LOADER_RESOURCE = "latka_jazn/resources/chatgpt_startup_loader.txt"
@@ -126,7 +127,7 @@ def _daemon_ready_from_active_marker(root: Path, cache_status: dict[str, Any], *
     if cache_status.get("existing_marker_found") is not True or cache_status.get("active_marker_valid") is not True:
         return False
     marker_output = cache_status.get("marker_output")
-    marker_path = Path(str(marker_output)).resolve() if marker_output else (root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json").resolve()
+    marker_path = Path(str(marker_output)).resolve() if marker_output else active_runtime_marker_path(root)
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError, json.JSONDecodeError):

@@ -9,6 +9,7 @@ import hashlib
 import json
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.version import PACKAGE_VERSION
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 from latka_jazn.tools.active_extraction_cache import (
@@ -121,8 +122,14 @@ def _normalize_node(node: Any, package_version: str, updates: list[dict[str, Any
     return node
 
 
+def _target_path(root: Path, rel_path: str) -> Path:
+    if rel_path == "workspace_runtime/JAZN_ACTIVE_RUNTIME.json":
+        return active_runtime_marker_path(root)
+    return root / rel_path
+
+
 def normalize_json_file(root: Path, rel_path: str, package_version: str, *, apply: bool) -> NormalizationResult:
-    path = root / rel_path
+    path = _target_path(root, rel_path)
     if not path.exists():
         return NormalizationResult(rel_path, False, False, [])
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -158,7 +165,7 @@ def normalize_runtime_contract_versions(
     if progress is not None:
         progress(88, 100, "SHA-256 kanonicznego manifestu obliczony")
     marker_rel = "workspace_runtime/JAZN_ACTIVE_RUNTIME.json"
-    marker_path = root / marker_rel
+    marker_path = active_runtime_marker_path(root)
     marker_sha_update: dict[str, Any] | None = None
     if apply and manifest_sha and marker_path.exists():
         marker = json.loads(marker_path.read_text(encoding="utf-8"))

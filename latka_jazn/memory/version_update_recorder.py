@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory.dziennik import DziennikRawJournal
 from latka_jazn.memory.layered_memory import LayeredMemory
 from latka_jazn.memory.store import MemoryStore
@@ -38,7 +39,7 @@ class VersionUpdateRecorder:
     def __init__(self, *, root: Path, store: MemoryStore | None = None, layered_memory: LayeredMemory | None = None) -> None:
         self.root = Path(root)
         self.owns_store = store is None
-        self.store = store or MemoryStore(self.root / "workspace_runtime" / "latka_jazn_current_line.sqlite3")
+        self.store = store or MemoryStore(workspace_runtime_path(self.root) / "latka_jazn_current_line.sqlite3")
         self.layered_memory = layered_memory or LayeredMemory(self.store, self.root)
         self.dziennik = DziennikRawJournal(self.root)
 

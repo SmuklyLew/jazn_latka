@@ -11,6 +11,7 @@ import re
 import uuid
 
 from latka_jazn.core.json_types import mapping_object
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("runtime_session_state")
@@ -132,7 +133,8 @@ class RuntimeSessionStateStore:
 
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
-        self.latest_path = self.root / "workspace_runtime" / "runtime_session_state.json"
+        self.workspace_root = workspace_runtime_path(self.root)
+        self.latest_path = self.workspace_root / "runtime_session_state.json"
         self.path = self.latest_path
         self.carryover_enabled = True
         self.loaded_continuity: dict[str, Any] | None = None
@@ -164,7 +166,7 @@ class RuntimeSessionStateStore:
         safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", raw).strip("._") or "session"
         safe = safe[:80].rstrip("._") or "session"
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
-        return self.root / "workspace_runtime" / "runtime_sessions" / f"{safe}-{digest}.json"
+        return self.workspace_root / "runtime_sessions" / f"{safe}-{digest}.json"
 
     @staticmethod
     def _state_from_payload(payload: Mapping[str, Any]) -> RuntimeSessionState:

@@ -22,6 +22,7 @@ from latka_jazn.tools.active_extraction_cache import (
     build_active_runtime_status,
     write_active_runtime_marker,
 )
+from latka_jazn.tools.package_integrity import write_package_integrity_manifest
 from latka_jazn.tools.runtime_contract_version_normalizer import normalize_runtime_contract_versions
 from latka_jazn.tools.version_consistency_audit import SOURCE_OF_TRUTH_FILES, build_audit
 from latka_jazn.version import (
@@ -43,15 +44,23 @@ def _runtime(tmp_path: Path, *, legacy_manifest: bool = False, legacy_version: b
         encoding="utf-8",
     )
     (root / "run.py").write_text("print('ok')\n", encoding="utf-8")
-    manifest = {
-        "schema_version": f"package_integrity_manifest/{PACKAGE_VERSION}",
-        "version": PACKAGE_VERSION_FULL,
-        "runtime_version": PACKAGE_VERSION_FULL,
-        "package_version": PACKAGE_VERSION_FULL,
-        "start_file": "run.py",
-        "files": [],
-    }
-    (root / PACKAGE_INTEGRITY_MANIFEST_NAME).write_text(json.dumps(manifest), encoding="utf-8")
+    (root / "main.py").write_text("print('ok')\n", encoding="utf-8")
+    (root / "SOURCE_PROVENANCE.json").write_text(
+        json.dumps(
+            {
+                "repository": "local/test",
+                "base_branch": "master",
+                "base_version": PACKAGE_VERSION_FULL,
+                "base_merge_commit": "a" * 40,
+                "runtime_version": PACKAGE_VERSION_FULL,
+                "git_tree_sha": "b" * 40,
+                "dirty": False,
+                "generation_mode": "release",
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = write_package_integrity_manifest(root)
     if legacy_manifest:
         (root / "MANIFEST_CURRENT.json").write_text(json.dumps(manifest), encoding="utf-8")
     if legacy_version:

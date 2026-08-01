@@ -376,6 +376,11 @@ class RuntimeAnswerValidator:
             )
         )
         user_asks_timestamp = any(marker in folded_user for marker in ('timestamp', 'znacznik czasu', 'gubisz czas', 'turn_id', 'trace_id'))
+        runtime_startup_failure_question = (
+            any(marker in folded_user for marker in ('obudz', 'uruchom', 'wystart', 'pierwsz'))
+            and any(marker in folded_user for marker in ('blad', 'nie mogl', 'co sie dzialo', 'gdzie lezy'))
+            and any(marker in folded_user for marker in ('wiadom', 'runtime', 'jazn', 'obudz', 'start'))
+        )
         grounding = assess_current_turn_grounding(
             user_text=user_text,
             response_body=body,
@@ -383,6 +388,31 @@ class RuntimeAnswerValidator:
             route=route,
             runtime_version=SCHEMA_VERSION.rsplit("/", 1)[-1],
         )
+        diagnostic_route = (
+            detected_intent in {
+                'runtime_behavior_diagnostic_request',
+                'system_diagnostic_question',
+                'runtime_health_check',
+                'runtime_health_check_after_update',
+            }
+            or any(marker in route_low for marker in ('diagnostic', 'runtime_health', 'runtime_behavior'))
+        )
+        if runtime_startup_failure_question and not diagnostic_route:
+            checks.append('runtime_startup_failure_question_requires_diagnostic_route')
+            return self._bad(
+                'runtime_startup_failure_misrouted_as_fallback',
+                'runtime_behavior_diagnostic_repair',
+                (
+                    'To pytanie dotyczy nieudanego startu Jaźni po pierwszej wiadomości. '
+                    'Odpowiedź musi wskazać etap loadera, zapisu stanu, procesu daemonu i hostowej finalizacji '
+                    'na podstawie bieżących dowodów, zamiast używać ogólnego fallbacku.'
+                ),
+                detected_intent,
+                route,
+                checks,
+                ['startup_stage', 'runtime_workspace', 'daemon_or_one_shot', 'host_finalization'],
+                current_turn_grounding=grounding.to_dict(),
+            )
         if detected_intent in self.HANDLER_PRESERVED_INTENTS and self._handler_preserved_answer_is_direct(body, detected_intent, route) and grounding.valid:
             required_handler_components: list[str] = []
             if detected_intent in {"runtime_health_check", "runtime_health_check_after_update"}:

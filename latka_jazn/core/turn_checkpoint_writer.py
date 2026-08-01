@@ -5,6 +5,8 @@ from typing import Any
 from datetime import datetime, timezone
 import json, hashlib
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "turn_checkpoint/v1"
 
 @dataclass(slots=True)
@@ -40,7 +42,7 @@ class TurnCheckpoint:
 class TurnCheckpointWriter:
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
-        self.base = self.root / 'workspace_runtime' / 'turn_checkpoints'
+        self.base = workspace_runtime_path(self.root) / 'turn_checkpoints'
     def append(self, checkpoint: TurnCheckpoint) -> Path:
         date = (checkpoint.created_at_utc or datetime.now(timezone.utc).isoformat())[:10]
         path = self.base / date / 'turns.jsonl'
@@ -58,4 +60,9 @@ class TurnCheckpointWriter:
             route=route, response_generation_mode=response_generation_mode, template_origin=template_origin or {},
             validator=validator or {}, source_origin=source_origin or {}, memory_sources=memory_sources or [], file_sources=file_sources or [], dictionary_sources=dictionary_sources or [])
         path = self.append(cp)
-        data = cp.to_dict(); data['written_to'] = str(path.relative_to(self.root)); return data
+        data = cp.to_dict()
+        try:
+            data['written_to'] = str(path.relative_to(self.root))
+        except ValueError:
+            data['written_to'] = str(path)
+        return data
