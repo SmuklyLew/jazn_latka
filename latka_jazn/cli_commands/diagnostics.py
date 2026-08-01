@@ -7,22 +7,28 @@ from typing import Any, Callable
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayConfig, GatewayError
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
+from latka_jazn.core.chatgpt_host_pending_store import host_request_store_status
+from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 from latka_jazn.core.readiness import evaluate_runtime_readiness
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
-from latka_jazn.core.startup_contract import build_startup_status
-from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 from latka_jazn.core.source_provenance import read_source_provenance
+from latka_jazn.core.startup_contract import build_startup_status
+from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
-from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 
 DoctorProgressCallback = Callable[[int, int, str], None]
 
 
-def _report_progress(callback: DoctorProgressCallback | None, completed: int, total: int, label: str) -> None:
+def _report_progress(
+    callback: DoctorProgressCallback | None,
+    completed: int,
+    total: int,
+    label: str,
+) -> None:
     if callback is not None:
         callback(completed, total, label)
 
@@ -49,6 +55,26 @@ def _transactional_memory_status(cfg: JaznConfig) -> dict[str, Any]:
     return inspect_memory_tier_store(path, full=False).to_dict()
 
 
+def _daemon_runtime_write_ready(daemon: dict[str, Any]) -> tuple[bool, str]:
+    """Read readiness from the live response without treating a missing top-level alias as false."""
+    direct = daemon.get("runtime_write_ready")
+    if isinstance(direct, bool):
+        return direct, "daemon.runtime_write_ready"
+
+    ping = daemon.get("ping") if isinstance(daemon.get("ping"), dict) else {}
+    nested = ping.get("runtime_write_ready")
+    if isinstance(nested, bool):
+        return nested, "daemon.ping.runtime_write_ready"
+
+    for source, payload in (
+        ("daemon.runtime_write_access_status.ok", daemon.get("runtime_write_access_status")),
+        ("daemon.ping.runtime_write_access_status.ok", ping.get("runtime_write_access_status")),
+    ):
+        if isinstance(payload, dict) and isinstance(payload.get("ok"), bool):
+            return bool(payload["ok"]), source
+    return False, "unavailable"
+
+
 def status_payload(
     root: Path,
     *,
@@ -61,12 +87,15 @@ def status_payload(
     startup = build_startup_status(cfg, mode="fast", infer_host_environment=True).to_dict()
     transactional_memory = _transactional_memory_status(cfg)
     daemon = status_daemon(
-        cfg, host=daemon_host, port=daemon_port,
-        marker_output=marker_output, probe_endpoint=probe_endpoint,
+        cfg,
+        host=daemon_host,
+        port=daemon_port,
+        marker_output=marker_output,
+        probe_endpoint=probe_endpoint,
     )
     active_state = str(daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive")
     process_ok = active_state in {"active_trusted", "active_degraded"}
-    runtime_write_ready = bool(daemon.get("runtime_write_ready"))
+    runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     transactional_memory_ready = bool(transactional_memory.get("ready"))
     fully_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
     if not process_ok:
@@ -86,13 +115,23 @@ def status_payload(
         "fully_ready": fully_ready,
         "operational_state": operational_state,
         "operational_reasons": [
-            reason for reason, failed in (
+            reason
+            for reason, failed in (
                 ("daemon_not_confirmed", not process_ok),
                 ("runtime_write_not_ready", not runtime_write_ready),
                 ("transactional_memory_not_ready", not transactional_memory_ready),
-            ) if failed
+            )
+            if failed
         ],
-        "status_exit_contract": "zero_only_for_confirmed_active_process; fully_ready is reported separately",
+        "runtime_write_ready": runtime_write_ready,
+        "runtime_write_ready_source": runtime_write_ready_source,
+        "endpoint_probe_requested": bool(probe_endpoint),
+        "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
+        "activation_truth_gate_eligible": bool(probe_endpoint),
+        "status_exit_contract": (
+            "zero_only_for_confirmed_active_process; fully_ready is reported separately; "
+            "offline_snapshot is never sufficient to prove a live runtime"
+        ),
         "startup": startup,
         "transactional_memory": transactional_memory,
         "daemon": daemon,
@@ -120,6 +159,7 @@ def _live_evidence(
     timestamp: dict[str, Any],
     transactional_memory: dict[str, Any],
 ) -> dict[str, Any]:
+    runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     return {
         "marker_found": bool(marker.get("existing_marker_found") or daemon.get("marker_found")),
         "marker_valid": bool(marker.get("active_marker_valid") or daemon.get("marker_valid")),
@@ -131,6 +171,8 @@ def _live_evidence(
         "timestamp_status_available": bool(timestamp),
         "timestamp_trusted": timestamp.get("trusted"),
         "time_trust_state": timestamp.get("time_trust_state") or daemon.get("time_trust_state") or "unknown",
+        "runtime_write_ready": runtime_write_ready,
+        "runtime_write_ready_source": runtime_write_ready_source,
         "transactional_memory_ready": bool(transactional_memory.get("ready")),
     }
 
@@ -188,7 +230,7 @@ def doctor_payload(
         user_confirmed=False,
     )
     try:
-        GatewayConfig().validate()
+        GatewayConfig(runtime_root=root).validate()
         mcp_policy_error = None
     except GatewayError as exc:  # pragma: no cover - defensive serialization path
         mcp_policy_error = f"{type(exc).__name__}: {exc}"
@@ -237,7 +279,10 @@ def doctor_payload(
     _report_progress(progress, 6, progress_total, "Gotowość aktywacji i wydania obliczona")
 
     live_evidence = _live_evidence(
-        marker=marker, daemon=daemon, timestamp=timestamp, transactional_memory=transactional_memory
+        marker=marker,
+        daemon=daemon,
+        timestamp=timestamp,
+        transactional_memory=transactional_memory,
     )
     subsystem_status = {
         "package_integrity_manifest": {
@@ -274,7 +319,8 @@ def doctor_payload(
             "loopback_policy_valid": mcp_policy_error is None,
             "policy_error": mcp_policy_error,
             "public_ingress_default": False,
-            "transport": "local stdio/loopback; optional outbound tunnel",
+            "transport": "authenticated local stdio/loopback; optional outbound tunnel",
+            "host_request_store": host_request_store_status(root),
         },
         "privacy": {
             "gate_file_exists": (root / "latka_jazn/core/private_data_export_gate.py").is_file(),
@@ -285,8 +331,6 @@ def doctor_payload(
     _report_progress(progress, 7, progress_total, "Gotowość aktywacji i wydania obliczona")
     payload = {
         "schema_version": schema_version("runpy_doctor"),
-        # Backward compatibility: ``ok`` continues to mean structural installation health.
-        # Read activation/release/live readiness from the explicit fields below.
         "ok": readiness.installation_ok,
         "installation_ok": readiness.installation_ok,
         "activation_ready": readiness.activation_ready,
@@ -316,9 +360,10 @@ def bridge_payload(root: Path) -> dict[str, Any]:
     payload = discover_runtime_bridges(JaznConfig(root=root))
     payload["v15_secure_mcp"] = {
         "server": "python -X utf8 -m latka_jazn.mcp.server",
-        "transport": "stdio/local + optional outbound Secure MCP Tunnel",
+        "transport": "authenticated stdio/local + optional outbound Secure MCP Tunnel",
         "public_ingress_default": False,
         "auth_required": True,
+        "two_phase_continuation": True,
     }
     payload["finalization_gate"] = "latka_jazn.core.host_visible_finalization.HostVisibleFinalizationGate"
     payload["audit"] = "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
