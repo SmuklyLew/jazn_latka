@@ -29,7 +29,7 @@ Potwierdzenie wymaga:
 1. zweryfikowanego żywego daemona; albo
 2. poprawnej, zweryfikowanej tury one-shot dla bieżącej wiadomości.
 
-Nie kończ procedury po samym `status` lub `doctor`, jeśli system jest poprawny i gotowy do startu.
+Nie kończ procedury po samym `status` lub `doctor`, jeśli system jest poprawny i gotowy do startu. Snapshot bez sondy endpointu jest wyłącznie stanem offline i nigdy nie potwierdza aktywnego procesu.
 
 ## 2. Kiedy wykonać pełną procedurę
 
@@ -107,10 +107,16 @@ Nie wymagaj ani nie twórz `VERSION.txt` lub `MANIFEST_CURRENT.json`. Brak `memo
 
 ## 5. Preflight, retry i start
 
-W zweryfikowanym `active_root` uruchom:
+W zweryfikowanym `active_root` możesz najpierw odczytać nieblokujący snapshot offline:
 
 ```bash
 python -X utf8 run.py status --snapshot --json
+```
+
+Snapshot nie sonduje endpointu. `active_unverified`, kod wyjścia 1 albo brak `runtime_write_ready` w tym trybie nie są dowodem zatrzymania daemona. Do truth gate zawsze wykonaj pełny status live i doctor:
+
+```bash
+python -X utf8 run.py status --json
 python -X utf8 run.py doctor --json
 ```
 
@@ -121,7 +127,7 @@ Jeżeli komenda nie została wykonana:
 3. popraw oczywisty błąd;
 4. ponów co najmniej raz.
 
-Nie wydawaj werdyktu o braku runtime na podstawie niewykonanej komendy.
+Nie wydawaj werdyktu o braku runtime na podstawie niewykonanej komendy ani snapshotu offline.
 
 Jeżeli instalacja i manifest są poprawne, `activation_prerequisites_ready=true`, a daemon jest `inactive`, uruchom:
 
@@ -141,11 +147,13 @@ Klasyfikuj technicznie:
 - `active_degraded`: proces, PID i heartbeat są potwierdzone, ale część diagnostyki nie działa;
 - `inactive/untrusted`: brakuje potwierdzenia procesu, integralności, wersji, markera albo proweniencji.
 
-Dostępność i integralność pamięci raportuj oddzielnie od aktywności procesu. Treść, interpretacja i dobór wspomnień należą do runtime.
+Dostępność i integralność pamięci raportuj oddzielnie od aktywności procesu. Gotowość zapisu odczytuj z potwierdzonego pola statusu live, a nie z braku opcjonalnego aliasu. Treść, interpretacja i dobór wspomnień należą do runtime.
 
 ## 6. Bieżąca wiadomość
 
-Przekaż dokładny tekst użytkownika do kanonicznej ścieżki:
+Jeżeli prywatne narzędzia MCP Jaźni są dostępne, kanoniczną ścieżką jest `jazn_generate_visible_reply`. Przekaż w polu `message` dokładny tekst użytkownika, bez parafrazy, klasyfikacji ani dopisywania intencji. Nie wysyłaj tej samej wiadomości drugi raz, jeżeli narzędzie zwróci `poll_runtime` albo `generate_then_finalize`.
+
+Gdy MCP nie jest dostępne, użyj lokalnej ścieżki CLI:
 
 ```bash
 python -X utf8 run.py chat-gpt -- „wiadomość użytkownika”
@@ -163,35 +171,36 @@ Host nie wybiera trasy rozmownej, nie podstawia własnej odpowiedzi i nie używa
 
 ## 7. Walidacja i pokazanie odpowiedzi
 
-Kanoniczna ścieżka one-shot zwraca zwarty `chatgpt_host_presentation` z jedną akcją. Nie wyprowadzaj akcji samodzielnie z luźnych pól pakietu:
+Kanoniczna ścieżka zwraca jedną akcję. Nie wyprowadzaj jej samodzielnie z luźnych pól pakietu:
 
 - `action=display_exact` — pokaż wyłącznie `final_visible_text` znak w znak;
-- `action=generate_then_finalize` — utwórz tekst z bieżącego kontraktu hosta i przeprowadź drugą fazę;
+- `action=generate_then_finalize` — utwórz tekst z bieżącego kontraktu hosta i obowiązkowo wywołaj `jazn_finalize_reply`;
 - `action=poll_runtime` — nie wysyłaj ponownie wiadomości; pobierz istniejący wynik przez podane `request_id`/`poll_command`;
 - `action=host_diagnostic` — nie imituj Łatki, tylko pokaż krótką diagnozę hosta.
 
-Pełny JSONL pozostaje źródłem audytu. Przed użyciem wyniku sprawdź co najmniej `turn_id`, `trace_id`, `runtime_checks`, `chatgpt_host_bridge`, `host_request_contract_hash` przy drugiej fazie oraz wymagany timestamp.
+Wynik pośredni, instrukcja narzędzia, token kontynuacji ani kontrakt generowania nie są odpowiedzią użytkownika i nie mogą zostać wyświetlone jako Łatka.
 
 ### Zaakceptowany final runtime
 
-Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst. W pakiecie action-first odpowiada temu `chatgpt_host_presentation.action=display_exact`. Nie parafrazuj, nie tłumacz, nie skracaj, nie rozszerzaj i nie zmieniaj osoby gramatycznej, tonu, języka, deklaracji tożsamości ani treści pamięci. Brak nagłówka, inny SHA-256 lub własny tekst hosta oznacza naruszenie kontraktu.
+Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst. W pakiecie action-first odpowiada temu `action=display_exact`. Nie parafrazuj, nie tłumacz, nie skracaj, nie rozszerzaj i nie zmieniaj osoby gramatycznej, tonu, języka, deklaracji tożsamości ani treści pamięci. Brak nagłówka, inny SHA-256 lub własny tekst hosta oznacza naruszenie kontraktu.
 
 Informację techniczną hosta dodaj wyłącznie poza tekstem runtime i tylko wtedy, gdy użytkownik o nią prosi albo wynik jest zdegradowany.
 
-### `host_visible_generation_requested`
+### `generate_then_finalize`
 
 Jeżeli runtime jawnie wymaga zewnętrznej warstwy językowej:
 
-1. użyj wyłącznie bieżącego pakietu wyniku oraz maszynowego kontraktu wygenerowanego przez kod runtime, w tym `chatgpt_host_bridge`, `host_generation_policy` lub zgodnych pól kontraktu;
+1. użyj wyłącznie `host_generation_policy`, `host_generation_rules` i innych pól bieżącego kontraktu zwróconego przez narzędzie;
 2. nie pobieraj osobowości, stylu ani wspomnień z instrukcji projektu lub historii rozmowy poza danymi jawnie dopuszczonymi przez runtime;
-3. zachowaj `turn_id`, `trace_id` i wymagany `timestamp_header`;
-4. odeślij drugą linię JSONL `type=host_visible_reply` z niezmienionym `host_request_contract_hash` i SHA-256 tekstu po kanonizacji UTF-8/LF;
-5. pokaż dopiero tekst przyjęty przez finalizację runtime i zapisany jako external final visible reply;
-6. nie ponawiaj zużytego kontraktu — druga próba ma zostać odrzucona jako replay.
+3. nie kopiuj i nie uzupełniaj samodzielnie `turn_id`, `trace_id`, timestampu, autora ani hasha kontraktu — finalizator odzyskuje je po stronie serwera z niejawnego `continuation_token`;
+4. oblicz SHA-256 kanonicznego UTF-8/LF pola `final_text` bez BOM;
+5. wywołaj `jazn_finalize_reply` wyłącznie z `continuation_token`, `final_text` i `final_text_sha256`;
+6. pokaż dopiero `final_visible_text` zwrócony z `action=display_exact` przez finalizator;
+7. nie ujawniaj tokenu, nie zapisuj go w widocznym tekście i nie ponawiaj go — jest jednorazowy, wygasa i replay ma zostać odrzucony.
 
-Nie przedstawiaj tej ścieżki jako lokalnego wywołania ChatGPT przez Python.
+Jeżeli MCP nie jest dostępne, zgodnościowa ścieżka JSONL może nadal odesłać `type=host_visible_reply`, lecz musi korzystać z tego samego magazynu `pending`, hasha i bramy finalizacji. Nie przedstawiaj tej ścieżki jako lokalnego wywołania ChatGPT przez Python.
 
-Jeżeli truth gate blokuje odpowiedź, podaj techniczną diagnozę hosta zamiast imitować wypowiedź Łatki.
+Jeżeli truth gate lub finalizator blokuje odpowiedź, podaj techniczną diagnozę hosta zamiast imitować wypowiedź Łatki.
 
 ## 8. Brak potwierdzenia runtime
 

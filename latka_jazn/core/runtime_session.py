@@ -3,20 +3,24 @@ from __future__ import annotations
 import inspect
 from dataclasses import asdict
 from typing import Any
+
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.engine import JaznEngine
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
-from latka_jazn.core.session_provenance import build_session_provenance, repair_final_visible_integrity, validate_final_visible_integrity
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
-from latka_jazn.core.visible_integrity import enforce_integrity_consensus
+from latka_jazn.core.session_provenance import (
+    build_session_provenance,
+    repair_final_visible_integrity,
+    validate_final_visible_integrity,
+)
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.turn_timeout import runtime_turn_timeout_seconds
+from latka_jazn.core.visible_integrity import enforce_integrity_consensus
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
 from latka_jazn.memory.runtime_memory import RuntimeMemoryWriteContext
 from latka_jazn.memory.runtime_memory_install import install_runtime_memory
 from latka_jazn.memory.wake_state_runtime import WakeStateRuntimeBridge
-
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("runtime_session")
@@ -30,16 +34,7 @@ def _update_runtime_session_state(
     intent: str,
     route: str,
 ) -> None:
-    """Update canonical and minimal session-state implementations compatibly.
-
-    The canonical RuntimeSessionState accepts ``visible_text`` and persists it as
-    ``last_visible_text``. A few integrity tests intentionally use a minimal state
-    double with the older ``update(user_text, intent, route)`` signature. Detect
-    support before calling instead of converting a valid runtime turn into a
-    TypeError. Minimal mutable states still receive ``last_visible_text`` when
-    possible, preserving live-turn continuity without weakening canonical writes.
-    """
-
+    """Update canonical and minimal session-state implementations compatibly."""
     update = getattr(state, "update")
     kwargs: dict[str, Any] = {
         "user_text": user_text,
@@ -65,12 +60,62 @@ def _update_runtime_session_state(
             pass
 
 
-class JaznRuntimeSession:
-    """Wspólny rdzeń one-shot, --runtime-preview, --chat i --chat-gpt.
+def _host_finalization_pending(result: dict[str, Any], *, can_continue: bool) -> tuple[bool, list[str]]:
+    """Recognize a complete, safe phase-1 contract without treating it as a final answer."""
+    decision = json_object(result.get("conversation_decision"))
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    final_contract = json_object(result.get("final_response_contract"))
+    requires_host = bool(
+        decision.get("requires_host_model")
+        or runtime_turn.get("requires_host_model")
+        or final_contract.get("requires_host_model")
+        or str(
+            runtime_turn.get("fallback_classification")
+            or final_contract.get("fallback_classification")
+            or ""
+        )
+        == "cannot_answer_directly"
+    )
+    if not requires_host or str(result.get("final_visible_text") or "").strip():
+        return False, []
 
-    Różnice między trybami dotyczą tylko cyklu życia procesu i formatu I/O; każda tura
-    przechodzi przez JaznEngine.process_turn().
-    """
+    trace = json_object(result.get("trace"))
+    timestamp_contract = json_object(decision.get("timestamp_contract"))
+    required_values = {
+        "turn_id": trace.get("turn_id") or runtime_turn.get("turn_id") or final_contract.get("turn_id"),
+        "trace_id": trace.get("trace_id") or runtime_turn.get("trace_id") or final_contract.get("trace_id"),
+        "timestamp_header": trace.get("timestamp_header")
+        or runtime_turn.get("timestamp_header")
+        or final_contract.get("timestamp_header"),
+        "timezone": final_contract.get("timezone")
+        or trace.get("timezone")
+        or timestamp_contract.get("timezone")
+        or timestamp_contract.get("timezone_key"),
+        "timestamp_sample_iso": final_contract.get("timestamp_sample_iso")
+        or timestamp_contract.get("sample_iso"),
+        "timestamp_source": final_contract.get("timestamp_source")
+        or timestamp_contract.get("source"),
+        "author_id": final_contract.get("author_id"),
+        "author_label": final_contract.get("author_label"),
+        "author_source": final_contract.get("author_source"),
+        "state_emoticon": final_contract.get("state_emoticon") or decision.get("state_emoticon"),
+    }
+    missing = [name for name, value in required_values.items() if not str(value or "").strip()]
+    timestamp_trusted = (
+        final_contract.get("timestamp_trusted")
+        if isinstance(final_contract.get("timestamp_trusted"), bool)
+        else timestamp_contract.get("trusted")
+    )
+    if not isinstance(timestamp_trusted, bool):
+        missing.append("timestamp_trusted")
+    if not can_continue:
+        missing.append("turn_context")
+    return not missing, missing
+
+
+class JaznRuntimeSession:
+    """Wspólny rdzeń one-shot, --runtime-preview, --chat i --chat-gpt."""
+
     def __init__(
         self,
         config: JaznConfig | None = None,
@@ -89,13 +134,17 @@ class JaznRuntimeSession:
             no_carryover=no_carryover,
         )
         self.wake_state_bridge = WakeStateRuntimeBridge(self.config)
-        self.wake_state_runtime_status = self.wake_state_bridge.hydrate_l1(session_id=self.state.session_id)
+        self.wake_state_runtime_status = self.wake_state_bridge.hydrate_l1(
+            session_id=self.state.session_id
+        )
         self.restart_continuity_status = self.state_store.verify_loaded_continuity(
             self.state,
             self.wake_state_runtime_status,
         )
         self.no_carryover = no_carryover
-        self._turn_count = int(self.state_store.last_load_metadata.get("continuity_turn_count") or 0)
+        self._turn_count = int(
+            self.state_store.last_load_metadata.get("continuity_turn_count") or 0
+        )
 
     def _wake_state_runtime_payload(self) -> dict[str, Any]:
         status = getattr(self, "wake_state_runtime_status", None)
@@ -168,7 +217,9 @@ class JaznRuntimeSession:
         )
         persistence_available = config is not None
         memory_context_token = None
-        bind_memory_context = getattr(getattr(self.engine, "runtime_memory", None), "bind_context", None)
+        bind_memory_context = getattr(
+            getattr(self.engine, "runtime_memory", None), "bind_context", None
+        )
         if callable(bind_memory_context):
             memory_context_token = bind_memory_context(
                 RuntimeMemoryWriteContext(
@@ -187,8 +238,12 @@ class JaznRuntimeSession:
                 },
             )
         live_previous_user = str(previous_user_text or "").strip() or None
-        current_previous_user = live_previous_user or (str(self.state.last_user_text or "").strip() or None)
-        current_previous_visible = str(previous_visible_text or getattr(self.state, "last_visible_text", None) or "").strip() or None
+        current_previous_user = live_previous_user or (
+            str(self.state.last_user_text or "").strip() or None
+        )
+        current_previous_visible = str(
+            previous_visible_text or getattr(self.state, "last_visible_text", None) or ""
+        ).strip() or None
         turn_scoped_no_carryover = bool(self.no_carryover and not current_previous_user)
         ctx = {
             "client": client,
@@ -210,7 +265,9 @@ class JaznRuntimeSession:
             envelope = self.engine.process_turn(user_text, client_context=ctx)
             with turn_context.stage("final_result_serialization"):
                 env = envelope.to_dict()
-                decision = (env.get("cognitive_frame") or {}).get("conversation_decision") or {}
+                decision = (env.get("cognitive_frame") or {}).get(
+                    "conversation_decision"
+                ) or {}
                 runtime_provenance = decision.get("runtime_provenance") or {}
                 result = {
                     "schema_version": SCHEMA_VERSION,
@@ -227,21 +284,34 @@ class JaznRuntimeSession:
 
             with turn_context.stage("integrity_validation"):
                 engine_contract_integrity = dict(
-                    ((result.get("final_response_contract") or {}).get("final_visible_integrity") or {})
+                    (
+                        (result.get("final_response_contract") or {}).get(
+                            "final_visible_integrity"
+                        )
+                        or {}
+                    )
                 )
                 if isinstance(engine_contract_integrity.get("valid"), bool):
-                    result["final_visible_integrity_pre_repair_contract_valid"] = engine_contract_integrity["valid"]
+                    result["final_visible_integrity_pre_repair_contract_valid"] = (
+                        engine_contract_integrity["valid"]
+                    )
                 result, integrity_repair_audit = repair_final_visible_integrity(result)
                 result["final_visible_integrity"] = validate_final_visible_integrity(result)
                 if integrity_repair_audit:
                     result["final_visible_integrity"]["repair_audit"] = integrity_repair_audit
                     result["final_visible_integrity_repair_audit"] = integrity_repair_audit
                 contract = dict(result.get("final_response_contract") or {})
-                contract["final_visible_integrity"] = dict(result["final_visible_integrity"])
+                contract["final_visible_integrity"] = dict(
+                    result["final_visible_integrity"]
+                )
                 result["final_response_contract"] = contract
                 decision = dict(result.get("conversation_decision") or {})
-                decision["origin_truth_valid"] = bool(result["final_visible_integrity"].get("origin_truth_valid"))
-                decision["origin_truth_errors"] = list(result["final_visible_integrity"].get("errors") or [])
+                decision["origin_truth_valid"] = bool(
+                    result["final_visible_integrity"].get("origin_truth_valid")
+                )
+                decision["origin_truth_errors"] = list(
+                    result["final_visible_integrity"].get("errors") or []
+                )
                 result["conversation_decision"] = decision
 
             with turn_context.stage("runtime_truth_gate"):
@@ -252,9 +322,15 @@ class JaznRuntimeSession:
 
             gate_payload = dict(result.get("runtime_truth_gate") or gate_payload)
             if gate_payload.get("normal_response_allowed") is False:
-                result["final_visible_integrity"]["runtime_truth_gate_blocked"] = not bool(gate_payload.get("ok"))
-                result["final_visible_integrity"]["truthful_degraded_disclosure"] = bool(gate_payload.get("truthful_degraded_disclosure"))
-                result["final_visible_integrity"]["runtime_truth_gate_errors"] = list(gate_payload.get("errors") or [])
+                result["final_visible_integrity"]["runtime_truth_gate_blocked"] = not bool(
+                    gate_payload.get("ok")
+                )
+                result["final_visible_integrity"]["truthful_degraded_disclosure"] = bool(
+                    gate_payload.get("truthful_degraded_disclosure")
+                )
+                result["final_visible_integrity"]["runtime_truth_gate_errors"] = list(
+                    gate_payload.get("errors") or []
+                )
 
             integrity = result.get("final_visible_integrity") or {}
             answer_ok = bool(
@@ -267,14 +343,44 @@ class JaznRuntimeSession:
                 and result.get("normal_response_blocked") is not True
                 and turn_context.can_continue()
             )
+            host_pending, host_pending_missing = _host_finalization_pending(
+                result,
+                can_continue=turn_context.can_continue(),
+            )
             result["answer_ok"] = answer_ok
-            result["ok"] = answer_ok
-            if persistence_available:
+            result["host_finalization_pending"] = host_pending
+            result["host_finalization_contract_missing"] = host_pending_missing
+            result["execution_state"] = (
+                "final_visible_answer"
+                if answer_ok
+                else "awaiting_host_finalization"
+                if host_pending
+                else "rejected"
+            )
+            # A complete phase-1 request is a successful runtime execution, but it
+            # is not a displayable answer and must not commit final-answer state.
+            result["ok"] = bool(answer_ok or host_pending)
+
+            if persistence_available and answer_ok:
                 commit_status = turn_context.commit_if_allowed(result, job_status="completed")
+            elif host_pending:
+                commit_status = turn_context.reject_staging(
+                    reason="awaiting_host_finalization"
+                )
+                commit_status["intermediate_state"] = True
+                commit_status["finalization_required"] = True
             else:
-                commit_status = turn_context.reject_staging(reason="runtime_config_unavailable")
-                commit_status["available"] = False
-                commit_status["diagnostic"] = "canonical persistence skipped because session config is unavailable"
+                commit_status = turn_context.reject_staging(
+                    reason="runtime_config_unavailable"
+                    if not persistence_available
+                    else "turn_not_accepted"
+                )
+                if not persistence_available:
+                    commit_status["available"] = False
+                    commit_status["diagnostic"] = (
+                        "canonical persistence skipped because session config is unavailable"
+                    )
+            if not persistence_available:
                 commit_status["persistence_degraded"] = bool(answer_ok)
             canonical_persistence_ok = bool(commit_status.get("committed"))
             persistence_degraded = bool(answer_ok and not canonical_persistence_ok)
@@ -282,8 +388,12 @@ class JaznRuntimeSession:
             result["canonical_persistence_ok"] = canonical_persistence_ok
             result["persistence_degraded"] = persistence_degraded
             result["persistence_state"] = (
-                "committed" if canonical_persistence_ok
-                else "degraded" if persistence_degraded
+                "committed"
+                if canonical_persistence_ok
+                else "awaiting_finalization"
+                if host_pending
+                else "degraded"
+                if persistence_degraded
                 else "not_committed"
             )
 
@@ -318,8 +428,13 @@ class JaznRuntimeSession:
             else:
                 save_status = {
                     "saved": False,
-                    "reason": commit_status.get("reason") or "turn_not_committed",
+                    "reason": (
+                        "awaiting_host_finalization"
+                        if host_pending
+                        else commit_status.get("reason") or "turn_not_committed"
+                    ),
                     "persistence_degraded": False,
+                    "intermediate_state": host_pending,
                 }
             result["session_persistence"] = dict(save_status)
             result["session_persistence_ok"] = bool(save_status.get("saved"))
@@ -334,20 +449,36 @@ class JaznRuntimeSession:
                     load_metadata=self.state_store.last_load_metadata,
                     save_status=save_status,
                 )
-                session_provenance["final_visible_integrity_valid"] = bool(integrity.get("valid"))
-                session_provenance["transactional_memory_ready"] = bool(
-                    ((result.get("transactional_memory") or {}).get("store") or {}).get("ready")
+                session_provenance["final_visible_integrity_valid"] = bool(
+                    integrity.get("valid")
                 )
+                session_provenance["transactional_memory_ready"] = bool(
+                    ((result.get("transactional_memory") or {}).get("store") or {}).get(
+                        "ready"
+                    )
+                )
+                session_provenance["host_finalization_pending"] = host_pending
                 result["session_provenance"] = session_provenance
 
             final_status = (
-                "completed_persistence_degraded"
+                "awaiting_host_finalization"
+                if host_pending
+                else "completed_persistence_degraded"
                 if result.get("ok") and result.get("persistence_degraded")
-                else "completed" if result.get("ok")
+                else "completed"
+                if result.get("ok")
                 else "rejected"
             )
             turn_context.finalize_total(status=final_status)
-            audit_status = turn_context.persist_audit()
+            audit_status = turn_context.persist_audit(
+                event_type=(
+                    "runtime_turn_awaiting_host_finalization"
+                    if host_pending
+                    else "runtime_turn_completed"
+                    if answer_ok
+                    else "runtime_turn_rejected"
+                )
+            )
             result["turn_audit_persistence"] = audit_status
             result["audit_persistence_ok"] = bool(audit_status.get("ok"))
             result["audit_persistence_degraded"] = not bool(audit_status.get("ok"))
@@ -364,7 +495,9 @@ class JaznRuntimeSession:
             raise
         finally:
             if memory_context_token is not None:
-                reset_memory_context = getattr(getattr(self.engine, "runtime_memory", None), "reset_context", None)
+                reset_memory_context = getattr(
+                    getattr(self.engine, "runtime_memory", None), "reset_context", None
+                )
                 if callable(reset_memory_context):
                     reset_memory_context(memory_context_token)
 

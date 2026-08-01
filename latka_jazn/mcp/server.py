@@ -9,34 +9,60 @@ import sys
 from typing import Any
 
 from latka_jazn.bridge.auth_policy import AuthPolicy
-from latka_jazn.bridge.secure_host_runtime_gateway import GatewayConfig, GatewayError, SecureHostRuntimeGateway
-from latka_jazn.core.host_visible_finalization import HostVisibleFinalizationContract
-from latka_jazn.mcp.tools import jazn_audit_lookup, jazn_finalize_reply, jazn_generate_visible_reply, jazn_status
+from latka_jazn.bridge.secure_host_runtime_gateway import (
+    GatewayConfig,
+    GatewayError,
+    SecureHostRuntimeGateway,
+)
+from latka_jazn.mcp.tools import (
+    jazn_audit_lookup,
+    jazn_finalize_reply,
+    jazn_generate_visible_reply,
+    jazn_status,
+)
 from latka_jazn.runtime.host_bridge_audit import HostBridgeAuditEvent, HostBridgeAuditStore
 from latka_jazn.runtime.idempotency import IdempotencyStore, build_idempotency_key, payload_hash
 from latka_jazn.runtime.mcp_tool_audit import McpToolAuditEvent, McpToolAuditStore
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("jazn_mcp_server")
-SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply", "jazn_finalize_reply"}
+# Generation is idempotent. Finalization is intentionally one-shot and is guarded
+# by the runtime pending-request store rather than by replaying a cached MCP result.
+IDEMPOTENT_SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply"}
 READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup"}
 DENIED_APPROVAL_STATES = {"denied", "rejected", "not_approved"}
+
+
+def _object_schema(
+    properties: dict[str, Any],
+    *,
+    required: list[str] | None = None,
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": list(required or []),
+        "additionalProperties": False,
+    }
+
 
 TOOL_DEFINITIONS = [
     {
         "name": "jazn_generate_visible_reply",
-        "title": "Generate validated Jaźń reply",
-        "description": "Generate a validated Jaźń runtime reply through the private loopback gateway.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "message": {"type": "string"},
-                "session_id": {"type": "string"},
-                "request_id": {"type": "string"},
-                "idempotency_key": {"type": "string"},
+        "title": "Start a validated Jaźń turn",
+        "description": (
+            "Send the exact user message to the private Jaźń runtime. Returns exactly one action: "
+            "display_exact, generate_then_finalize, poll_runtime, or a fail-closed diagnostic."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "message": {"type": "string", "minLength": 1},
+                "session_id": {"type": "string", "minLength": 1, "maxLength": 128},
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },
-            "required": ["message"],
-        },
+            required=["message"],
+        ),
         "annotations": {
             "readOnlyHint": False,
             "destructiveHint": False,
@@ -47,11 +73,13 @@ TOOL_DEFINITIONS = [
     {
         "name": "jazn_status",
         "title": "Read Jaźń runtime status",
-        "description": "Read private runtime/gateway status without mutation.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"request_id": {"type": "string"}, "idempotency_key": {"type": "string"}},
-        },
+        "description": "Read authenticated private runtime/gateway status without mutation.",
+        "inputSchema": _object_schema(
+            {
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            }
+        ),
         "annotations": {
             "readOnlyHint": True,
             "destructiveHint": False,
@@ -62,55 +90,47 @@ TOOL_DEFINITIONS = [
     },
     {
         "name": "jazn_finalize_reply",
-        "title": "Finalize host-visible Jaźń reply",
-        "description": "Validate, audit, and idempotently finalize host-authored visible text.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "required_timestamp_header": {"type": "string"},
-                "timezone": {"type": "string"},
-                "timestamp_sample_iso": {"type": "string"},
-                "timestamp_source": {"type": "string"},
-                "timestamp_trusted": {"type": "boolean"},
-                "author_id": {"type": "string"},
-                "author_label": {"type": "string"},
-                "author_source": {"type": "string"},
-                "state_emoticon": {"type": "string"},
-                "turn_id": {"type": "string"},
-                "trace_id": {"type": "string"},
-                "final_text": {"type": "string"},
+        "title": "Finalize a host-visible Jaźń reply",
+        "description": (
+            "Consume one opaque continuation token and atomically validate, persist, and return the exact "
+            "runtime-approved visible text. Immutable turn, author, timestamp, and contract fields are loaded "
+            "server-side and cannot be supplied by the host."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "continuation_token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 256,
+                    "pattern": "^jct1\\.[A-Za-z0-9_-]+$",
+                },
+                "final_text": {"type": "string", "minLength": 1, "maxLength": 2097152},
                 "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
-                "supplied_turn_id": {"type": "string"},
-                "supplied_trace_id": {"type": "string"},
-                "idempotency_key": {"type": "string"},
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },
-            "required": [
-                "required_timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source",
-                "timestamp_trusted", "author_id", "author_label", "author_source", "state_emoticon",
-                "turn_id", "trace_id", "final_text", "final_text_sha256"
-            ],
-        },
+            required=["continuation_token", "final_text", "final_text_sha256"],
+        ),
         "annotations": {
             "readOnlyHint": False,
             "destructiveHint": False,
             "openWorldHint": False,
-            "idempotentHint": True,
+            "idempotentHint": False,
         },
     },
     {
         "name": "jazn_audit_lookup",
         "title": "Read redacted Jaźń audit",
         "description": "Read redacted audit evidence for one turn.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "turn_id": {"type": "string"},
-                "trace_id": {"type": "string"},
-                "request_id": {"type": "string"},
-                "idempotency_key": {"type": "string"},
+        "inputSchema": _object_schema(
+            {
+                "turn_id": {"type": "string", "minLength": 1},
+                "trace_id": {"type": "string", "minLength": 1},
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },
-            "required": ["turn_id"],
-        },
+            required=["turn_id"],
+        ),
         "annotations": {
             "readOnlyHint": True,
             "destructiveHint": False,
@@ -124,7 +144,11 @@ TOOL_DEFINITIONS = [
 
 def _tool_contract_hash(tool_name: str) -> str:
     raw = json.dumps(
-        {"tool_name": tool_name, "server_schema": SCHEMA_VERSION, "runtime_version": PACKAGE_VERSION_FULL},
+        {
+            "tool_name": tool_name,
+            "server_schema": SCHEMA_VERSION,
+            "runtime_version": PACKAGE_VERSION_FULL,
+        },
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -133,7 +157,7 @@ def _tool_contract_hash(tool_name: str) -> str:
 
 
 def _tool_error(reason: str, **details: Any) -> dict[str, Any]:
-    structured: dict[str, Any] = {"ok": False, "reason": reason}
+    structured: dict[str, Any] = {"ok": False, "reason": reason, "action": "host_diagnostic"}
     structured.update(details)
     return {
         "content": [{"type": "text", "text": f"Jaźń MCP tool failed safely: {reason}."}],
@@ -159,7 +183,10 @@ class JaznMcpServer:
             allow_unauthenticated_local_test=allow_unauthenticated_local_test,
             trust_stdio_parent=trust_stdio_parent,
         )
-        self.gateway = SecureHostRuntimeGateway(GatewayConfig(daemon_url=daemon_url), auth_policy=auth)
+        self.gateway = SecureHostRuntimeGateway(
+            GatewayConfig(daemon_url=daemon_url, runtime_root=self.root),
+            auth_policy=auth,
+        )
         self.audit_database = self.root / "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
         self.idempotency = IdempotencyStore(self.audit_database)
         self.host_audit = HostBridgeAuditStore(self.audit_database)
@@ -178,9 +205,6 @@ class JaznMcpServer:
             return declared
         if name in READ_ONLY_TOOLS:
             return "not_required_read_only"
-        # OpenAI MCP approval is normally enforced by the host before the call.
-        # The server still authenticates, allowlists, rate-limits and records that
-        # the approval evidence belongs to the authenticated host boundary.
         return "host_managed_authenticated"
 
     @staticmethod
@@ -201,22 +225,23 @@ class JaznMcpServer:
         request_id: str | None,
     ) -> tuple[str, str, str]:
         if name == "jazn_finalize_reply":
-            contract = HostVisibleFinalizationContract(
-                required_timestamp_header=str(args["required_timestamp_header"]),
-                timezone=str(args["timezone"]),
-                timestamp_sample_iso=str(args["timestamp_sample_iso"]),
-                timestamp_source=str(args["timestamp_source"]),
-                timestamp_trusted=bool(args["timestamp_trusted"]),
-                author_id=str(args["author_id"]),
-                author_label=str(args["author_label"]),
-                author_source=str(args["author_source"]),
-                state_emoticon=str(args["state_emoticon"]),
-                turn_id=str(args["turn_id"]),
-                trace_id=str(args["trace_id"]),
-            )
-            return contract.turn_id, contract.trace_id, contract.contract_hash
+            token_digest = hashlib.sha256(str(args["continuation_token"]).encode("utf-8")).hexdigest()
+            return token_digest, token_digest, token_digest
         if name == "jazn_generate_visible_reply":
-            identity = request_id or str(args.get("session_id") or "mcp-generate")
+            if request_id:
+                identity = request_id
+            else:
+                material = json.dumps(
+                    {
+                        "message": str(args.get("message") or ""),
+                        "session_id": str(args.get("session_id") or ""),
+                        "subject": subject,
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                identity = hashlib.sha256(material.encode("utf-8")).hexdigest()
             return identity, identity, _tool_contract_hash(name)
         if name == "jazn_audit_lookup":
             turn_id = str(args["turn_id"])
@@ -297,13 +322,15 @@ class JaznMcpServer:
         approval_state: str,
     ) -> str:
         structured = dict((result or {}).get("structuredContent") or {})
+        actual_turn_id = str(structured.get("turn_id") or turn_id)
+        actual_trace_id = str(structured.get("trace_id") or trace_id)
         return self.host_audit.append(
             HostBridgeAuditEvent(
                 event_type=event_type,
-                turn_id=turn_id,
-                trace_id=trace_id,
+                turn_id=actual_turn_id,
+                trace_id=actual_trace_id,
                 idempotency_key=key,
-                contract_hash=contract_hash,
+                contract_hash=str(structured.get("host_request_contract_hash") or contract_hash),
                 payload_hash=payload_digest,
                 final_hash=structured.get("final_text_sha256"),
                 metadata={
@@ -311,6 +338,7 @@ class JaznMcpServer:
                     "approval_state": approval_state,
                     "accepted": structured.get("accepted"),
                     "state": structured.get("state"),
+                    "opaque_identity_used_before_resolution": actual_turn_id == turn_id,
                 },
             )
         )
@@ -325,7 +353,7 @@ class JaznMcpServer:
                 session_id=args.get("session_id"),
             )
         if name == "jazn_finalize_reply":
-            return jazn_finalize_reply.run(**args)
+            return jazn_finalize_reply.run(root=self.root, **args)
         if name == "jazn_audit_lookup":
             return jazn_audit_lookup.run(
                 audit_database=self.audit_database,
@@ -334,7 +362,12 @@ class JaznMcpServer:
             )
         raise GatewayError("tool_not_allowlisted")
 
-    def call_tool(self, name: str, arguments: dict[str, Any], meta: dict[str, Any] | None = None) -> dict[str, Any]:
+    def call_tool(
+        self,
+        name: str,
+        arguments: dict[str, Any],
+        meta: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         args = dict(arguments or {})
         metadata = dict(meta or {})
         subject = self._authorize(name, args, metadata)
@@ -373,7 +406,7 @@ class JaznMcpServer:
                 audit_id=audit_id,
             )
 
-        if name in SIDE_EFFECT_TOOLS:
+        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
             decision = self.idempotency.claim(
                 idempotency_key=key,
                 payload_hash_value=payload_digest,
@@ -383,18 +416,6 @@ class JaznMcpServer:
                 contract_hash=contract_hash,
             )
             if decision.state == "conflict":
-                host_audit_id = None
-                if name == "jazn_finalize_reply":
-                    host_audit_id = self._append_host_audit(
-                        event_type="conflict",
-                        turn_id=turn_id,
-                        trace_id=trace_id,
-                        key=key,
-                        contract_hash=contract_hash,
-                        payload_digest=payload_digest,
-                        result=None,
-                        approval_state=approval_state,
-                    )
                 audit_id = self._append_mcp_audit(
                     name=name,
                     subject=subject,
@@ -402,7 +423,6 @@ class JaznMcpServer:
                     payload_digest=payload_digest,
                     approval_state=approval_state,
                     outcome="conflict",
-                    metadata={"host_bridge_audit_id": host_audit_id},
                 )
                 return self._augment_result(
                     _tool_error("idempotency_conflict"),
@@ -410,22 +430,9 @@ class JaznMcpServer:
                     idempotency_state="conflict",
                     approval_state=approval_state,
                     audit_id=audit_id,
-                    host_bridge_audit_id=host_audit_id,
                 )
             if decision.state == "replay":
                 stored = decision.result or _tool_error("idempotency_result_unavailable")
-                host_audit_id = None
-                if name == "jazn_finalize_reply":
-                    host_audit_id = self._append_host_audit(
-                        event_type="replay",
-                        turn_id=turn_id,
-                        trace_id=trace_id,
-                        key=key,
-                        contract_hash=contract_hash,
-                        payload_digest=payload_digest,
-                        result=stored,
-                        approval_state=approval_state,
-                    )
                 replay_audit_id = self._append_mcp_audit(
                     name=name,
                     subject=subject,
@@ -433,16 +440,16 @@ class JaznMcpServer:
                     payload_digest=payload_digest,
                     approval_state=approval_state,
                     outcome="replay",
-                    metadata={"host_bridge_audit_id": host_audit_id},
                 )
-                original_audit_id = str((stored.get("structuredContent") or {}).get("audit_id") or replay_audit_id)
+                original_audit_id = str(
+                    (stored.get("structuredContent") or {}).get("audit_id") or replay_audit_id
+                )
                 return self._augment_result(
                     stored,
                     idempotency_key=key,
                     idempotency_state="replay",
                     approval_state=approval_state,
                     audit_id=original_audit_id,
-                    host_bridge_audit_id=host_audit_id,
                     replay_audit_id=replay_audit_id,
                 )
 
@@ -473,17 +480,25 @@ class JaznMcpServer:
             payload_digest=payload_digest,
             approval_state=approval_state,
             outcome="error" if is_error else "completed",
-            metadata={"host_bridge_audit_id": host_audit_id, "turn_id": turn_id, "trace_id": trace_id},
+            metadata={
+                "host_bridge_audit_id": host_audit_id,
+                "turn_id": (result.get("structuredContent") or {}).get("turn_id") or turn_id,
+                "trace_id": (result.get("structuredContent") or {}).get("trace_id") or trace_id,
+            },
         )
         result = self._augment_result(
             result,
             idempotency_key=key,
-            idempotency_state="completed" if name in SIDE_EFFECT_TOOLS else "read_only",
+            idempotency_state=(
+                "completed"
+                if name in IDEMPOTENT_SIDE_EFFECT_TOOLS
+                else "one_shot" if name == "jazn_finalize_reply" else "read_only"
+            ),
             approval_state=approval_state,
             audit_id=audit_id,
             host_bridge_audit_id=host_audit_id,
         )
-        if name in SIDE_EFFECT_TOOLS:
+        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
             self.idempotency.finalize(key, result, state="error" if is_error else "completed")
         return result
 
@@ -495,7 +510,9 @@ class JaznMcpServer:
         try:
             if method == "initialize":
                 result: dict[str, Any] = {
-                    "protocolVersion": request_value.get("params", {}).get("protocolVersion", "2025-06-18"),
+                    "protocolVersion": request_value.get("params", {}).get(
+                        "protocolVersion", "2025-06-18"
+                    ),
                     "capabilities": {"tools": {"listChanged": False}},
                     "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
                 }
@@ -509,10 +526,18 @@ class JaznMcpServer:
                     dict(params.get("_meta") or {}),
                 )
             else:
-                return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32601, "message": "Method not found"}}
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {"code": -32601, "message": "Method not found"},
+                }
             return {"jsonrpc": "2.0", "id": request_id, "result": result}
         except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
-            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32001, "message": str(exc)}}
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {"code": -32001, "message": str(exc)},
+            }
 
     def serve_stdio(self) -> int:
         for line in sys.stdin:
@@ -525,7 +550,11 @@ class JaznMcpServer:
                     raise ValueError("request must be an object")
                 response = self.handle(request_value)
             except Exception as exc:
-                response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": f"Parse error: {exc}"}}
+                response = {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {"code": -32700, "message": f"Parse error: {exc}"},
+                }
             if response is not None:
                 sys.stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":")) + "\n")
                 sys.stdout.flush()
