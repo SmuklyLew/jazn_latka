@@ -16,7 +16,7 @@ from latka_jazn.core.chat_command_contract import (
     write_chat_bridge_payload,
 )
 from latka_jazn.version import schema_version
-from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
+from latka_jazn.core.host_visible_finalization import finalize_host_visible_text, sha256_host_visible_text
 from latka_jazn.core.json_types import is_json_object, json_object
 from latka_jazn.core.message_envelope import normalize_newlines
 
@@ -89,17 +89,23 @@ def read_limited_text(path: Path | str, *, max_bytes: int = MAX_HOST_BRIDGE_JSON
 
 
 def load_chatgpt_host_request_from_text(text: str) -> dict[str, Any]:
-    """Select the phase-1 runtime packet that asks the ChatGPT host to speak."""
-    first_object: dict[str, Any] | None = None
+    """Select exactly one unambiguous phase-1 host-generation request."""
+    matches: list[dict[str, Any]] = []
     for value in iter_json_values_from_text(text):
-        first_object = first_object or value
         bridge_value = value.get("chatgpt_host_bridge")
+        if not is_json_object(bridge_value):
+            presentation = json_object(value.get("chatgpt_host_presentation"))
+            bridge_value = presentation.get("chatgpt_host_bridge") if presentation else None
         bridge = bridge_value if is_json_object(bridge_value) else value
-        if bridge.get("phase") == "host_visible_generation_requested" or bridge.get("host_must_generate_visible_reply") is True:
-            return value
-    if first_object is not None:
-        return first_object
-    raise ChatgptHostBridgeHelperError("Nie znaleziono obiektu JSON z pakietem runtime/host bridge.")
+        if bridge.get("phase") == "host_visible_generation_requested" and bridge.get("host_must_generate_visible_reply") is True:
+            matches.append(value)
+    if not matches:
+        raise ChatgptHostBridgeHelperError("Nie znaleziono pakietu phase=host_visible_generation_requested.")
+    if len(matches) != 1:
+        raise ChatgptHostBridgeHelperError(
+            f"Znaleziono {len(matches)} pakiety host-generation; wybór jest niejednoznaczny. Podaj plik z jedną turą."
+        )
+    return matches[0]
 
 
 def load_chatgpt_host_request(path: Path | str, *, max_bytes: int = MAX_HOST_BRIDGE_JSON_BYTES) -> dict[str, Any]:
@@ -108,6 +114,10 @@ def load_chatgpt_host_request(path: Path | str, *, max_bytes: int = MAX_HOST_BRI
 
 def _host_bridge_from_runtime_packet(runtime_payload: dict[str, Any]) -> dict[str, Any]:
     bridge = runtime_payload.get("chatgpt_host_bridge")
+    if is_json_object(bridge):
+        return bridge
+    presentation = json_object(runtime_payload.get("chatgpt_host_presentation"))
+    bridge = presentation.get("chatgpt_host_bridge") if presentation else None
     if is_json_object(bridge):
         return bridge
     if runtime_payload.get("phase") or runtime_payload.get("host_reply_jsonl_shape"):
@@ -146,17 +156,20 @@ def build_chatgpt_host_visible_reply_payload(
         "author_label": _safe_text(bridge.get("author_label") or shape.get("author_label") or final_contract.get("author_label")),
         "author_source": _safe_text(bridge.get("author_source") or shape.get("author_source") or final_contract.get("author_source")),
         "state_emoticon": _safe_text(bridge.get("state_emoticon") or shape.get("state_emoticon") or final_contract.get("state_emoticon")),
+        "host_request_contract_hash": _safe_text(bridge.get("host_request_contract_hash") or shape.get("host_request_contract_hash")),
     }
     text = normalize_newlines(final_text)
     missing: list[str] = []
     phase = _safe_text(bridge.get("phase"))
-    if phase and phase != "host_visible_generation_requested" and bridge.get("host_must_generate_visible_reply") is not True:
+    if phase != "host_visible_generation_requested" or bridge.get("host_must_generate_visible_reply") is not True:
         missing.append("chatgpt_host_bridge.phase=host_visible_generation_requested")
     for field in ("turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon"):
         if not values[field]:
             missing.append(field)
     if not isinstance(values["timestamp_trusted"], bool):
         missing.append("timestamp_trusted")
+    if not values["host_request_contract_hash"]:
+        missing.append("host_request_contract_hash")
     if not text.strip():
         missing.append("final_text")
     if state_emoticon is not None and _safe_text(state_emoticon) != values["state_emoticon"]:
@@ -164,7 +177,7 @@ def build_chatgpt_host_visible_reply_payload(
     if missing:
         return None, missing
 
-    original_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    original_hash = sha256_host_visible_text(text)
     finalization = finalize_host_visible_text(
         required_timestamp_header=values["timestamp_header"],
         timezone=values["timezone"],
@@ -190,7 +203,7 @@ def build_chatgpt_host_visible_reply_payload(
         "type": "host_visible_reply",
         **values,
         "final_text": finalization.final_visible_text,
-        "final_text_sha256": hashlib.sha256(finalization.final_visible_text.encode("utf-8")).hexdigest(),
+        "final_text_sha256": sha256_host_visible_text(finalization.final_visible_text),
         "finalization_result": finalization.to_dict(),
         "builder": {
             "schema_version": schema_version("chatgpt_host_visible_reply_builder"),
@@ -338,7 +351,11 @@ def main(argv: list[str] | None = None, *, stdin: TextIO | None = None, stdout: 
             stdout.write(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
             stdout.flush()
         else:
-            write_chat_bridge_payload(stdout, output or {})
+            write_chat_bridge_payload(
+                stdout,
+                output or {},
+                output_mode="jsonl" if args.build_only else "host_packet",
+            )
         return 0
     except (OSError, json.JSONDecodeError, ChatgptHostBridgeHelperError) as exc:
         payload = {

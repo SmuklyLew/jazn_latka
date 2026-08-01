@@ -19,7 +19,9 @@ class RuntimeVisibleComparison:
     runtime_text_hash: str
     visible_answer_hash: str
     diff_ratio: float
-    truth_boundary: str = "Porównanie pokazuje różnicę tekstów. Nie rekonstruuje prywatnych myśli ani niewykonanego procesu."
+    visible_text_observation: str = "runtime_checkpoint_expected_visible_text"
+    actual_host_ui_observed: bool = False
+    truth_boundary: str = "Porównanie dotyczy tekstu oczekiwanego i zapisanego przez runtime. Nie obserwuje interfejsu ChatGPT i nie dowodzi, że host wyświetlił tekst znak w znak."
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class RuntimeVisibleAnswerComparator:

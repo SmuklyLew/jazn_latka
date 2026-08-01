@@ -225,9 +225,12 @@ class RuntimeEventLedger:
                 "schema_version": envelope.get("schema_version"),
             },
         )
+        generation_executor = str((client_context or {}).get("generation_executor") or "runtime")
+        payload["generation_executor"] = generation_executor
+        actor = "chatgpt_host" if generation_executor == "chatgpt_host" else "latka_runtime"
         return self.append_event(
             "final_visible_assistant_reply",
-            actor="latka_runtime",
+            actor=actor,
             source=source,
             payload=payload,
             tags=["final_visible_reply", "cognitive_turn_envelope", "timestamp_contract", self.version],

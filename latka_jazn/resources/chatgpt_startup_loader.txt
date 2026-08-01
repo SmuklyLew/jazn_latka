@@ -1,6 +1,1 @@
-DEPRECATED POINTER — ten plik nie zawiera już instrukcji wykonawczych.
-
-Jedyne aktywne źródło instrukcji hosta ChatGPT: `AGENTS.chatgpt.md`.
-Ten plik istnieje przejściowo wyłącznie dla zgodności starszej ścieżki ładowania.
-
-Dawna treść została zachowana historycznie w `docs/archive/chatgpt_host_legacy/chatgpt_startup_loader.txt` i nie może być używana jako źródło stylu, pamięci, tożsamości ani prawdy o aktywnym runtime.
+Wczytaj w pełnej dostępnej treści `AGENTS.md` ze zweryfikowanego `active_root` i wykonaj wskazany tam runbook.

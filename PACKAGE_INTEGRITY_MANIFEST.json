@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-07-31T09:32:49+00:00",
-  "updated_at_utc": "2026-07-31T09:32:49+00:00",
+  "generated_at_utc": "2026-08-01T17:23:49+00:00",
+  "updated_at_utc": "2026-08-01T17:23:49+00:00",
   "start_file": "run.py",
-  "file_count": 613,
-  "static_file_count": 613,
+  "file_count": 617,
+  "static_file_count": 617,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -103,8 +103,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 10064,
-      "sha256": "5f8aad20638521738b9c0a9c9d2c91393e006bde9d6527a517e9fa650725fc7d",
+      "size_bytes": 10881,
+      "sha256": "6b1c65c8674e495155aa08e353a5b9838eb2650074024c34a50a6ff07871cc58",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -158,7 +158,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1288,
-      "sha256": "b5cffba25016988b9dde981b9f0c047d4cda599b4c55df5fa1f84d2b97d586d2",
+      "sha256": "e34ecda8a3a362c922f1bb74d559d9ac1fca3e0972a287c787d376b654a472fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -256,8 +256,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 554,
-      "sha256": "74620966bb788b787fa79e389e52102dde946d1ace506fb45f53da25a29a24cc",
+      "size_bytes": 114,
+      "sha256": "4297be0a23fce5c019751683dbd3bef078cbd3026dfaf5a7438a0907dcbe6a4c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -571,8 +571,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/diagnostics.py",
-      "size_bytes": 13905,
-      "sha256": "c0a091b77f67ef3e19ad375df6b9066e4c8366c2d4ee63a2add6cd016fbd87c0",
+      "size_bytes": 14989,
+      "sha256": "31848c16f4a61b93493a3fbe6ab6d92a4d85975604def67278ad9afc7ea61d6c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -841,8 +841,17 @@
     },
     {
       "path": "latka_jazn/core/chat_command_contract.py",
-      "size_bytes": 42887,
-      "sha256": "05fd61064b9f70ea3c70dc9de0f0380fd400b6c8e269f54a019d718a85f3443e",
+      "size_bytes": 56486,
+      "sha256": "cbc1b264d280253f14dbf7c6fa04cfc3fb9db616308fb7dd541212046706988d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_pending_store.py",
+      "size_bytes": 9028,
+      "sha256": "53c7f10676c8cacae3f971e1daae3793502bd327d2b800adfb2c7cf287f12315",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1291,8 +1300,8 @@
     },
     {
       "path": "latka_jazn/core/host_visible_finalization.py",
-      "size_bytes": 12110,
-      "sha256": "dcb0f04786056ea411ca3792f654f0bce4c63d78613929eb36cd28ff2f02b8d6",
+      "size_bytes": 12432,
+      "sha256": "c8a989964f359125710cd220a9c8920c1e42332ba6e5ee82c4bd5fc72de5bdd8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1876,8 +1885,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_visible_answer_comparator.py",
-      "size_bytes": 1910,
-      "sha256": "51236e2ce70fbac35923e5c444177f4d303134ccc186921bf5cf6d1ea5a95e39",
+      "size_bytes": 2084,
+      "sha256": "fa805818f7358b1246545ddc2aa6fb620354113a1324bbfa83e8b584deba7abc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2452,8 +2461,8 @@
     },
     {
       "path": "latka_jazn/memory/event_ledger.py",
-      "size_bytes": 13986,
-      "sha256": "4698ab64412462dffbe43d328da8eeb1ebb42459e9016ea79231d554be31f52b",
+      "size_bytes": 14228,
+      "sha256": "76ff92c38e7dedb5754933a7f4cf1687e0757da46d2d6b0a61bf186231d4e2c5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2955,6 +2964,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/nlp/control_text.py",
+      "size_bytes": 2066,
+      "sha256": "6da39aa5af76ea9f7c6f413e26665995b89c8900ee6365b4f0e64d7616115f18",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/nlp/creative_material_detector.py",
       "size_bytes": 5671,
       "sha256": "2256225d85bc6e6bfd169a2c5db90c352b0ae5dd3c99cbb2e58bdd784d2988c3",
@@ -2965,8 +2983,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 53616,
-      "sha256": "b4fedb2302dbd6fb1a1f1b2d3f2ba66c7b56b5ada2ff2f07c7ef01a8c344f4e5",
+      "size_bytes": 54092,
+      "sha256": "dda8adaeeddc2f07eb1a5b699bef8c4c844408f38afd4a721b7f5bbf8fa38bd1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3568,8 +3586,8 @@
     },
     {
       "path": "latka_jazn/resources/chatgpt_startup_loader.txt",
-      "size_bytes": 448,
-      "sha256": "9bf5b6d780f2db0ff9a5a6d812673effaea3182375bc4e33414c8630f9ca1a52",
+      "size_bytes": 114,
+      "sha256": "4297be0a23fce5c019751683dbd3bef078cbd3026dfaf5a7438a0907dcbe6a4c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3865,8 +3883,8 @@
     },
     {
       "path": "latka_jazn/tools/chatgpt_host_bridge_helper.py",
-      "size_bytes": 16720,
-      "sha256": "86b233a8d9d8c83c32245c0c503d112f816f04a342376d58bd0ccd2a6c202913",
+      "size_bytes": 17629,
+      "sha256": "f3ad739f51fb8eef2730e36e19a0a043010f798be879538884d18e13e415a07c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4585,8 +4603,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 108041,
-      "sha256": "7e7dd812b0ec01ed4cb2d82c09f90d5bb089654085fde52e32846c596515fa65",
+      "size_bytes": 115279,
+      "sha256": "1021b6c7caffb27468a5360d084d2be55dce5aeab60780d029eb13e7e219e113",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4728,6 +4746,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_host_contract_hardening.py",
+      "size_bytes": 11805,
+      "sha256": "66ec2a02990e4493f07f17888138d35b2b352624f5fb384abb3d5563f1fb0e66",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_cli_exit_and_audit_contract.py",
       "size_bytes": 3284,
       "sha256": "8a8a20afc7b1d7a3a77e5962725ab4f8bbed443784ccfe19af8a2e815492e77d",
@@ -4810,8 +4837,8 @@
     },
     {
       "path": "tests/test_host_bridge_and_ollama_first_attempt_regressions.py",
-      "size_bytes": 6092,
-      "sha256": "9ac6e0c1404ef0a0caedb4832f65463fb135ad028cfc314dc36d8c2a5cecc284",
+      "size_bytes": 6140,
+      "sha256": "9f10e70b8062693a15b17ebc0229facb0d9d8b8c71c821fcd4356b78e9b4b5a0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5142,6 +5169,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_quoted_control_text_routing.py",
+      "size_bytes": 1242,
+      "sha256": "3d0cec0b5c17653ab5c02f846b8148f2f2084b901c0b6e017c9673f381ab0a0f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_readiness_contract.py",
       "size_bytes": 2877,
       "sha256": "fe52faa989b85862f4a1d39c36ce907caf1c35ea2341f60b812febbb2e9120b4",
@@ -5260,8 +5296,8 @@
     },
     {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
-      "size_bytes": 5020,
-      "sha256": "c6003c67173fcc34d51327b618ce6324904fff14d3045887cd2cf64e65d95542",
+      "size_bytes": 5718,
+      "sha256": "698de7234ea5e4986dbc993a58dc4eaaf50b642be71a39ba262a2364c718a7dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

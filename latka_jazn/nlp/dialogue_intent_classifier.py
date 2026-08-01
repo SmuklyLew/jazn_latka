@@ -14,6 +14,7 @@ from latka_jazn.nlp.creative_material_detector import CreativeMaterialDetector
 from latka_jazn.nlp.source_preservation_detector import SourcePreservationDetector
 from latka_jazn.nlp.intent_feature_engine import IntentFeatureEngine
 from latka_jazn.nlp.utterance_components import analyse_utterance
+from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
@@ -47,6 +48,9 @@ class DialogueIntentReport:
     question_components: list[str] = field(default_factory=list)
     negated_actions: list[str] = field(default_factory=list)
     compound: bool = False
+    control_text: str = ""
+    quoted_material_masked: bool = False
+    masked_span_count: int = 0
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -284,7 +288,7 @@ class DialogueIntentClassifier:
         if len(text) > 900 and ("[" in text and "]" in text): return True
         line_count = len([x for x in text.splitlines() if x.strip()])
         return line_count >= 10 and len(text) > 500
-    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown'):
+    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None):
         conf=self.calibrator.calibrate(intent, base, len(evidence))
         frame=self.feature_engine.analyse(norm, speech_act=speech_act)
         component_report = analyse_utterance(norm)
@@ -306,11 +310,20 @@ class DialogueIntentClassifier:
             question_components=list(component_report.components),
             negated_actions=list(component_report.negated_actions),
             compound=component_report.compound,
+            control_text=(control_report.control_text if control_report is not None else norm),
+            quoted_material_masked=bool(control_report and control_report.quoted_material_masked),
+            masked_span_count=int(control_report.masked_span_count if control_report is not None else 0),
         )
     def classify(self, text: str, *, previous_text: str | None = None) -> DialogueIntentReport:
-        norm=self.normalize(text); folded=self.fold(norm); evidence=[]; secondary=[]
-        speech=self.speech.detect(text); qobj=self.qobj.detect(text); creative_report=self.creative.detect(text); preservation=self.preserve_detector.detect(text)
-        decision_frame=self.feature_engine.analyse(text, speech_act=speech.speech_act, previous_text=previous_text)
+        control_report=extract_intent_control_text(text)
+        control_text=control_report.control_text
+        def report(*args, **kwargs):
+            return self._report(*args, **kwargs, control_report=control_report)
+        norm=self.normalize(control_text); folded=self.fold(norm); evidence=[]; secondary=[]
+        if control_report.quoted_material_masked:
+            evidence.append(f"quoted_material_masked:{control_report.masked_span_count}")
+        speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text); creative_report=self.creative.detect(text); preservation=self.preserve_detector.detect(text)
+        decision_frame=self.feature_engine.analyse(control_text, speech_act=speech.speech_act, previous_text=previous_text)
         has_system=self._has_any(norm,folded,self.SYSTEM_TERMS); has_update=self._has_any(norm,folded,self.UPDATE_TERMS); has_diag=self._has_any(norm,folded,self.DIAGNOSTIC_TERMS)
         has_self_plan=self._has_any(norm,folded,self.SELF_PLAN_TERMS) and any(token in folded for token in ("plan", "zamierzasz", "pomijajac mnie", "poza mna"))
         has_self_preference=self._has_any(norm,folded,self.SELF_PREFERENCE_TERMS) and speech.speech_act == "question"
@@ -362,7 +375,7 @@ class DialogueIntentClassifier:
             if package_candidate and package_candidate.negative_evidence:
                 package_evidence.extend(f'negative:{item}' for item in package_candidate.negative_evidence)
             package_evidence.append('intent_feature_engine:contextual_generator_disambiguation')
-            return self._report(
+            return report(
                 norm,folded,'package_runtime_status_question',package_evidence,max(0.88,decision_frame.top_score),
                 diag=True,speech_act=speech.speech_act,question_object='package_runtime_status',
             )
@@ -372,13 +385,13 @@ class DialogueIntentClassifier:
         # and system/version context are more specific and must win first.
         broad_audit_signal = sum(1 for marker in ("co umiesz", "co potrafisz", "co dziala", "co trzeba naprawic", "kod zrodlowy", "gdzie sa luki", "jakie sa luki", "co blokuje", "moduly i narzedzia") if marker in folded)
         if has_self_architecture_audit and broad_audit_signal >= 2 and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS):
-            return self._report(norm,folded,'self_architecture_audit_request',['pełne pytanie o możliwości, kod, luki i blokady ma pierwszeństwo przed health-checkiem'],0.96,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
+            return report(norm,folded,'self_architecture_audit_request',['pełne pytanie o możliwości, kod, luki i blokady ma pierwszeństwo przed health-checkiem'],0.96,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or mentions_jazn_version(folded)):
             secondary = ['system_update_execution_request'] if (has_update or (any(x in folded for x in ('patch', 'hotfix', 'aktualiz')) or mentions_jazn_version(folded))) else []
-            return self._report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
+            return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         route_contract_hint = self.route_contract_matrix.classify(norm)
         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
-            return self._report(
+            return report(
                 norm,
                 folded,
                 route_contract_hint.primary_intent,
@@ -442,150 +455,150 @@ class DialogueIntentClassifier:
         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
         component_report = analyse_utterance(norm)
         if component_report.diagnostic_only and (has_update or has_system or 'kod' in folded or 'patch' in folded):
-            return self._report(
+            return report(
                 norm, folded, 'system_diagnostic_question',
                 ['negacja/modalność blokuje wykonanie; bieżący akt mowy jest diagnostyczny'],
                 0.91, diag=True, speech_act=speech.speech_act, question_object='runtime',
             )
         if has_runtime_wake_health_check:
-            return self._report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
+            return report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
         if component_report.explicit_execution and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded)):
-            return self._report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+            return report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
-            return self._report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
+            return report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
         if has_health_concern:
-            return self._report(norm,folded,'self_state_question',['pytanie, czy Łatka jest chora; odpowiedź ma opisać stan operacyjny i granicę prawdy, nie timestamp'],0.92,diag=True,speech_act=speech.speech_act,question_object='self_state')
+            return report(norm,folded,'self_state_question',['pytanie, czy Łatka jest chora; odpowiedź ma opisać stan operacyjny i granicę prawdy, nie timestamp'],0.92,diag=True,speech_act=speech.speech_act,question_object='self_state')
         if has_self_state_diagnostic:
-            return self._report(norm,folded,'self_state_question',['jawna prośba o diagnostyczny raport stanu/osi afektu'],0.93,diag=True,speech_act=speech.speech_act,question_object='self_state')
+            return report(norm,folded,'self_state_question',['jawna prośba o diagnostyczny raport stanu/osi afektu'],0.93,diag=True,speech_act=speech.speech_act,question_object='self_state')
         if has_runtime_health_check:
-            return self._report(norm,folded,'runtime_health_check_after_update',['krótki health-check po aktualizacji: nie traktować jako polecenia nowej aktualizacji kodu'],0.93,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
+            return report(norm,folded,'runtime_health_check_after_update',['krótki health-check po aktualizacji: nie traktować jako polecenia nowej aktualizacji kodu'],0.93,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
         if has_plain_runtime_activation_question:
-            return self._report(norm,folded,'runtime_activation_status_question',['pytanie o działanie/uruchomienie Jaźni nie może być ordinary_conversation'],0.92,ident=True,speech_act=speech.speech_act,question_object='runtime_status')
+            return report(norm,folded,'runtime_activation_status_question',['pytanie o działanie/uruchomienie Jaźni nie może być ordinary_conversation'],0.92,ident=True,speech_act=speech.speech_act,question_object='runtime_status')
         if has_voice_perspective_bug:
-            return self._report(norm,folded,'voice_perspective_diagnostic_request',['użytkownik zgłasza problem perspektywy głosu: trzecia osoba zamiast bezpośredniej pierwszej osoby Łatki'],0.94,diag=True,speech_act=speech.speech_act,question_object='voice_perspective')
+            return report(norm,folded,'voice_perspective_diagnostic_request',['użytkownik zgłasza problem perspektywy głosu: trzecia osoba zamiast bezpośredniej pierwszej osoby Łatki'],0.94,diag=True,speech_act=speech.speech_act,question_object='voice_perspective')
         if has_direct_latka_voice:
-            return self._report(norm,folded,'direct_latka_voice_request',['jawna prośba o bezpośredni głos Łatki przez runtime'],0.92,ident=True,speech_act=speech.speech_act,question_object='direct_latka_voice')
+            return report(norm,folded,'direct_latka_voice_request',['jawna prośba o bezpośredni głos Łatki przez runtime'],0.92,ident=True,speech_act=speech.speech_act,question_object='direct_latka_voice')
         if has_identity_memory_existence and has_self_memory_recall and any(marker in folded for marker in ("kim jestes", "powstalas", "istota", "uwazasz")):
-            return self._report(norm,folded,'identity_memory_existence_compound_question',['złożone pytanie o tożsamość, pamięć, wiedzę/niewiedzę, powstanie i granicę istoty'],0.93,ident=True,speech_act=speech.speech_act,question_object='identity_memory_existence')
+            return report(norm,folded,'identity_memory_existence_compound_question',['złożone pytanie o tożsamość, pamięć, wiedzę/niewiedzę, powstanie i granicę istoty'],0.93,ident=True,speech_act=speech.speech_act,question_object='identity_memory_existence')
         if speech.speech_act == 'question' and any(marker in folded for marker in ('jaki model', 'jaki masz model', 'dostepny model', 'dostępny model', 'aktywny model', 'silnik ollama', 'jaki adapter', 'ktory model', 'który model')):
-            return self._report(norm,folded,'model_adapter_status_question',['bezpośrednie pytanie o faktycznie używany model/provider/adapter'],0.96,diag=True,speech_act=speech.speech_act,question_object='model_adapter_status')
+            return report(norm,folded,'model_adapter_status_question',['bezpośrednie pytanie o faktycznie używany model/provider/adapter'],0.96,diag=True,speech_act=speech.speech_act,question_object='model_adapter_status')
         if has_internet_access:
-            return self._report(norm,folded,'internet_access_question',['bezpośrednie pytanie o dostęp runtime do internetu/sieci'],0.92,diag=False,speech_act=speech.speech_act,question_object='internet_access')
+            return report(norm,folded,'internet_access_question',['bezpośrednie pytanie o dostęp runtime do internetu/sieci'],0.92,diag=False,speech_act=speech.speech_act,question_object='internet_access')
         if has_direct_capability and not has_update:
-            return self._report(norm,folded,'capability_status_question',['bezpośrednie pytanie o możliwości Jaźni/runtime; nie ordinary fallback'],0.91,speech_act=speech.speech_act,question_object='capabilities')
+            return report(norm,folded,'capability_status_question',['bezpośrednie pytanie o możliwości Jaźni/runtime; nie ordinary fallback'],0.91,speech_act=speech.speech_act,question_object='capabilities')
         if has_user_memory_recall:
-            return self._report(norm,folded,'user_memory_recall_request',['pytanie o pamięć dotyczącą użytkownika/Krzysztofa; nie mieszać z self_memory Łatki'],0.91,speech_act=speech.speech_act,question_object='user_memory')
+            return report(norm,folded,'user_memory_recall_request',['pytanie o pamięć dotyczącą użytkownika/Krzysztofa; nie mieszać z self_memory Łatki'],0.91,speech_act=speech.speech_act,question_object='user_memory')
         if has_self_memory_recall and (has_self_memory_persona or any(x in folded for x in ('co pamietasz', 'co pamiętasz', 'poszukaj w pamieci', 'poszukaj w pamięci'))):
-            return self._report(norm,folded,'self_memory_recall_request',['pytanie o pamięć dotyczącą Łatki/postaci/tożsamości albo szerokie "co pamiętasz" bez wskazania użytkownika'],0.90,speech_act=speech.speech_act,question_object='self_memory')
+            return report(norm,folded,'self_memory_recall_request',['pytanie o pamięć dotyczącą Łatki/postaci/tożsamości albo szerokie "co pamiętasz" bez wskazania użytkownika'],0.90,speech_act=speech.speech_act,question_object='self_memory')
         if has_casual_feedback:
-            return self._report(norm,folded,'casual_feedback',['krótka ocena jakości poprzedniej odpowiedzi; trzeba uznać błąd, nie powtarzać fallbacku'],0.88,speech_act=speech.speech_act,question_object='current_turn_feedback')
+            return report(norm,folded,'casual_feedback',['krótka ocena jakości poprzedniej odpowiedzi; trzeba uznać błąd, nie powtarzać fallbacku'],0.88,speech_act=speech.speech_act,question_object='current_turn_feedback')
         if exact_casual_greeting:
-            return self._report(norm,folded,'casual_greeting',['luźne samodzielne powitanie; odpowiedź ma być naturalna, nie generyczny fallback'],0.88,speech_act=speech.speech_act,question_object='greeting')
+            return report(norm,folded,'casual_greeting',['luźne samodzielne powitanie; odpowiedź ma być naturalna, nie generyczny fallback'],0.88,speech_act=speech.speech_act,question_object='greeting')
         if has_expressive_reaction:
-            return self._report(norm,folded,'expressive_reaction',['krótka reakcja emocjonalna/rozmowna; odpowiedź ma podjąć kontekst, nie prosić o doprecyzowanie'],0.82,speech_act=speech.speech_act,question_object='expressive_reaction')
+            return report(norm,folded,'expressive_reaction',['krótka reakcja emocjonalna/rozmowna; odpowiedź ma podjąć kontekst, nie prosić o doprecyzowanie'],0.82,speech_act=speech.speech_act,question_object='expressive_reaction')
         if has_runtime_status:
-            return self._report(norm,folded,'runtime_activation_status_question',['pytanie o aktywną Jaźń/runtime/ChatGPT ma pierwszeństwo przed ellipsis i ordinary'],0.91,ident=True,speech_act=speech.speech_act,question_object='runtime_status')
+            return report(norm,folded,'runtime_activation_status_question',['pytanie o aktywną Jaźń/runtime/ChatGPT ma pierwszeństwo przed ellipsis i ordinary'],0.91,ident=True,speech_act=speech.speech_act,question_object='runtime_status')
         if has_chat_mode:
-            return self._report(norm,folded,'runtime_chat_mode_request',['pytanie o --chat/runtime-preview/stdin ma własną trasę, nie aktualizację'],0.91,diag=True,speech_act=speech.speech_act,question_object='runtime_chat_mode')
+            return report(norm,folded,'runtime_chat_mode_request',['pytanie o --chat/runtime-preview/stdin ma własną trasę, nie aktualizację'],0.91,diag=True,speech_act=speech.speech_act,question_object='runtime_chat_mode')
         if has_current_time:
-            return self._report(norm,folded,'current_time_question',['pytanie o aktualną godzinę ma własną trasę; nie wolno odpowiadać szablonem rozmownym'],0.92,speech_act=speech.speech_act,question_object='current_time')
+            return report(norm,folded,'current_time_question',['pytanie o aktualną godzinę ma własną trasę; nie wolno odpowiadać szablonem rozmownym'],0.92,speech_act=speech.speech_act,question_object='current_time')
         if has_repetition_bug:
-            return self._report(norm,folded,'runtime_behavior_diagnostic_request',['użytkownik zgłasza powtarzanie/zapętlenie odpowiedzi w bieżącej rozmowie'],0.91,diag=True,speech_act=speech.speech_act,question_object='runtime_repetition_bug')
+            return report(norm,folded,'runtime_behavior_diagnostic_request',['użytkownik zgłasza powtarzanie/zapętlenie odpowiedzi w bieżącej rozmowie'],0.91,diag=True,speech_act=speech.speech_act,question_object='runtime_repetition_bug')
         if has_module_inventory:
-            return self._report(norm,folded,'module_inventory_request',['pytanie o moduły runtime wymaga listy warstw i źródeł, nie ordinary dialogue'],0.90,diag=True,speech_act=speech.speech_act,question_object='module_inventory')
+            return report(norm,folded,'module_inventory_request',['pytanie o moduły runtime wymaga listy warstw i źródeł, nie ordinary dialogue'],0.90,diag=True,speech_act=speech.speech_act,question_object='module_inventory')
         if has_capability_gap and (has_system or speech.speech_act == 'question'):
-            return self._report(norm,folded,'system_capability_gap_question',['pytanie o to, co runtime ma i czego mu brakuje'],0.88,diag=True,speech_act=speech.speech_act,question_object='capability_gap')
+            return report(norm,folded,'system_capability_gap_question',['pytanie o to, co runtime ma i czego mu brakuje'],0.88,diag=True,speech_act=speech.speech_act,question_object='capability_gap')
         if has_self_expression:
-            return self._report(norm,folded,'self_expression_request',['prośba o wypowiedź od siebie: rozmowna odpowiedź Jaźni z granicą prawdy'],0.84,speech_act=speech.speech_act,question_object='self_expression')
+            return report(norm,folded,'self_expression_request',['prośba o wypowiedź od siebie: rozmowna odpowiedź Jaźni z granicą prawdy'],0.84,speech_act=speech.speech_act,question_object='self_expression')
         if has_negative_feedback:
-            return self._report(norm,folded,'negative_feedback_current_turn',['użytkownik zgłasza irytację aktualnymi odpowiedziami; trzeba uznać błąd i zmienić sposób odpowiedzi'],0.84,diag=False,speech_act=speech.speech_act,question_object='current_turn_feedback')
+            return report(norm,folded,'negative_feedback_current_turn',['użytkownik zgłasza irytację aktualnymi odpowiedziami; trzeba uznać błąd i zmienić sposób odpowiedzi'],0.84,diag=False,speech_act=speech.speech_act,question_object='current_turn_feedback')
         if has_positive_feedback:
-            return self._report(norm,folded,'positive_feedback_current_turn',['krótki pozytywny feedback wymaga krótkiej, naturalnej odpowiedzi bez naprawczego meta-szablonu'],0.84,speech_act=speech.speech_act,question_object='current_turn_feedback')
+            return report(norm,folded,'positive_feedback_current_turn',['krótki pozytywny feedback wymaga krótkiej, naturalnej odpowiedzi bez naprawczego meta-szablonu'],0.84,speech_act=speech.speech_act,question_object='current_turn_feedback')
         if has_repair_plan:
             intent='logic_reasoning_audit_request' if any(x in folded for x in ('logik', 'rozumow')) else 'system_repair_plan_request'
-            return self._report(norm,folded,intent,['prośba o kodowy plan/naprawę logiki systemu ma pierwszeństwo przed source-origin'],0.90,update=False,diag=True,speech_act=speech.speech_act,question_object='system_repair_plan')
+            return report(norm,folded,intent,['prośba o kodowy plan/naprawę logiki systemu ma pierwszeństwo przed source-origin'],0.90,update=False,diag=True,speech_act=speech.speech_act,question_object='system_repair_plan')
         if has_memory_experience_followup or (previous_memory_context and len(folded.split()) <= 7 and any(x in folded for x in ('przezyc', 'przezy', 'wspomn', '2025'))):
-            return self._report(norm,folded,'memory_experience_question',['doprecyzowanie lub follow-up do pytania o wspomnienia/przeżycia; zachować zakres rozmowy'],0.86,speech_act=speech.speech_act,question_object='memory_experience')
+            return report(norm,folded,'memory_experience_question',['doprecyzowanie lub follow-up do pytania o wspomnienia/przeżycia; zachować zakres rozmowy'],0.86,speech_act=speech.speech_act,question_object='memory_experience')
         ell=self.ellipsis.resolve(text, previous_text=previous_text)
         if ell.resolved_intent_hint == "system_update_execution_request":
             evidence.extend(ell.resolution_basis)
-            return self._report(norm,folded,"system_update_execution_request",evidence,0.89,update=True,diag=True,speech_act=speech.speech_act,question_object="system")
+            return report(norm,folded,"system_update_execution_request",evidence,0.89,update=True,diag=True,speech_act=speech.speech_act,question_object="system")
         if ('manifest narodzin' in folded or 'narodzin jazni' in folded or 'narodzin jaźni' in norm):
-            return self._report(norm,folded,'ordinary_conversation',['manifest narodzin prowadzony przez legacy birth_source_contract'],0.70,speech_act=speech.speech_act,question_object='runtime')
+            return report(norm,folded,'ordinary_conversation',['manifest narodzin prowadzony przez legacy birth_source_contract'],0.70,speech_act=speech.speech_act,question_object='runtime')
         if re.fullmatch(r"(hejka|hej|cześć|czesc|witaj|dzień dobry|dzien dobry|dobry wieczór|dobry wieczor)[!.,;:…\-—– ]*", norm):
-            return self._report(norm,folded,'standalone_greeting',['samodzielne powitanie bez treści pracy ani starego kontekstu'],0.86,speech_act=speech.speech_act,question_object='greeting')
+            return report(norm,folded,'standalone_greeting',['samodzielne powitanie bez treści pracy ani starego kontekstu'],0.86,speech_act=speech.speech_act,question_object='greeting')
         if has_sleep_close and not has_update:
-            return self._report(norm,folded,'sleep_closure_statement',['użytkownik zamyka rozmowę i idzie spać; odpowiedź ma być ciepła, bez diagnostyki i bez starego kontekstu'],0.86,speech_act=speech.speech_act,question_object='sleep_close')
+            return report(norm,folded,'sleep_closure_statement',['użytkownik zamyka rozmowę i idzie spać; odpowiedź ma być ciepła, bez diagnostyki i bez starego kontekstu'],0.86,speech_act=speech.speech_act,question_object='sleep_close')
         if has_canon_source:
-            return self._report(norm,folded,'canon_source_question',['pytanie o źródła kanonu Łatki; nie mylić ze źródłem aktualnej odpowiedzi runtime'],0.93,src=True,speech_act=speech.speech_act,question_object='canon_source')
+            return report(norm,folded,'canon_source_question',['pytanie o źródła kanonu Łatki; nie mylić ze źródłem aktualnej odpowiedzi runtime'],0.93,src=True,speech_act=speech.speech_act,question_object='canon_source')
         if has_source and not source_negative_context:
             intent='runtime_exact_quote_request' if any(x in folded for x in ('co runtime odpowiedzial','co runtime dokladnie odpowiedzial','co dokladnie odpowiedzial runtime','cytat runtime','tylko tyle jazn','tylko tyle jaźń')) else 'runtime_source_question'
-            return self._report(norm,folded,intent,[*evidence,'pytanie o źródło/decyzję/cytat runtime'],0.88,src=True,speech_act=speech.speech_act,question_object=qobj.object_type)
+            return report(norm,folded,intent,[*evidence,'pytanie o źródło/decyzję/cytat runtime'],0.88,src=True,speech_act=speech.speech_act,question_object=qobj.object_type)
         if has_identity:
             boundary_terms = (
                 'chatgpt', 'runtime', 'jaźń czy', 'jazn czy', 'jaźń/chatgpt', 'jazn/chatgpt',
                 'z kim rozmawiam', 'kim rozmawiam', 'granica', 'źródło', 'zrodlo'
             )
             if any(term in norm or term in folded for term in boundary_terms):
-                return self._report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
-            return self._report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
+                return report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
+            return report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
         if component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
             evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupiem słownikowym')
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
-                return self._report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
-            return self._report(norm,folded,'system_update_execution_request',evidence,0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+                return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+            return report(norm,folded,'system_update_execution_request',evidence,0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_research:
             reason = 'aktualna prognoza pogody wymaga zewnętrznych źródeł' if has_weather_research else 'jawna prośba o internet/research/źródła'
-            return self._report(norm,folded,'external_research_request',[reason],0.88 if has_weather_research else 0.86,speech_act=speech.speech_act,question_object='weather_forecast' if has_weather_research else qobj.object_type)
+            return report(norm,folded,'external_research_request',[reason],0.88 if has_weather_research else 0.86,speech_act=speech.speech_act,question_object='weather_forecast' if has_weather_research else qobj.object_type)
         if has_dict:
-            return self._report(norm,folded,'dictionary_lookup_request',['pytanie słownikowe/językowe'],0.84,speech_act=speech.speech_act,question_object='dictionary')
+            return report(norm,folded,'dictionary_lookup_request',['pytanie słownikowe/językowe'],0.84,speech_act=speech.speech_act,question_object='dictionary')
         if has_creative:
             evidence.append('rozpoznano materiał twórczy lub polecenie twórcze')
             if preservation.preserve_required or any(x in folded for x in ('przygotuj','format','generator')):
-                return self._report(norm,folded,'creative_text_formatting',evidence,0.88,['source_text_preservation_required'],True,True,speech_act=speech.speech_act,question_object='creative_text')
+                return report(norm,folded,'creative_text_formatting',evidence,0.88,['source_text_preservation_required'],True,True,speech_act=speech.speech_act,question_object='creative_text')
             if any(x in folded for x in ('co myslisz','co myślisz','ocen','analiz')):
-                return self._report(norm,folded,'creative_text_analysis',evidence,0.85,creative=True,preserve=True,speech_act=speech.speech_act,question_object='creative_text')
-            return self._report(norm,folded,'creative_text_analysis',evidence,0.74,creative=True,preserve=not preservation.revision_allowed,speech_act=speech.speech_act,question_object='creative_text')
+                return report(norm,folded,'creative_text_analysis',evidence,0.85,creative=True,preserve=True,speech_act=speech.speech_act,question_object='creative_text')
+            return report(norm,folded,'creative_text_analysis',evidence,0.74,creative=True,preserve=not preservation.revision_allowed,speech_act=speech.speech_act,question_object='creative_text')
         if has_update and any(x in folded for x in ("behavioral runtime", "dialogue intent", "source integrity", "topic-mismatch")):
-            return self._report(norm,folded,'legacy_behavioral_runtime_dialogue_update_reference',['jawna prośba o historyczny zakres behavioral runtime/dialogue/source integrity; aktywny runtime ma użyć legacy_diagnostic_only albo aktualnego system_update'],0.79,speech_act=speech.speech_act,question_object='legacy_system_update')
+            return report(norm,folded,'legacy_behavioral_runtime_dialogue_update_reference',['jawna prośba o historyczny zakres behavioral runtime/dialogue/source integrity; aktywny runtime ma użyć legacy_diagnostic_only albo aktualnego system_update'],0.79,speech_act=speech.speech_act,question_object='legacy_system_update')
         if component_report.explicit_execution and has_update and has_system:
             if 'lista' in folded or 'manifest' in folded:
-                return self._report(norm,folded,'system_update_manifest_request',['jawne polecenie manifestu/listy aktualizacji'],0.88,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
-            return self._report(norm,folded,'system_update_execution_request',['jawne polecenie aktualizacji systemu Jaźni'],0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
+                return report(norm,folded,'system_update_manifest_request',['jawne polecenie manifestu/listy aktualizacji'],0.88,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
+            return report(norm,folded,'system_update_execution_request',['jawne polecenie aktualizacji systemu Jaźni'],0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
         if has_diag and any(x in folded for x in ('sprawdz gdzie', 'sprawdź gdzie', 'jak to zmienic', 'jak to zmienić', 'prawidlowe dzialanie', 'prawidłowe działanie')):
-            return self._report(norm,folded,'runtime_behavior_diagnostic_request',['kontekstowe polecenie sprawdzenia miejsca i sposobu naprawy działania'],0.86,diag=True,speech_act=speech.speech_act,question_object='runtime')
+            return report(norm,folded,'runtime_behavior_diagnostic_request',['kontekstowe polecenie sprawdzenia miejsca i sposobu naprawy działania'],0.86,diag=True,speech_act=speech.speech_act,question_object='runtime')
         if has_audit and has_system:
-            return self._report(norm,folded,'memory_audit_request',['prośba o audyt rozmów/pamięci/systemu'],0.84,['system_diagnostic_question'],diag=True,speech_act=speech.speech_act,question_object='runtime')
+            return report(norm,folded,'memory_audit_request',['prośba o audyt rozmów/pamięci/systemu'],0.84,['system_diagnostic_question'],diag=True,speech_act=speech.speech_act,question_object='runtime')
         if has_diag and has_system:
             ev = ['pytanie diagnostyczne o system, nie sama korekta']
             if "stale-route" in folded or "starego kontekstu" in folded or "stary kontekst" in folded:
                 ev.append("jawny problem stale-route / starego kontekstu w odpowiedzi runtime")
-            return self._report(norm,folded,'system_diagnostic_question',ev,0.90 if len(ev)>1 else 0.88,diag=True,speech_act=speech.speech_act,question_object='runtime')
+            return report(norm,folded,'system_diagnostic_question',ev,0.90 if len(ev)>1 else 0.88,diag=True,speech_act=speech.speech_act,question_object='runtime')
         if ("nlp" in folded or "polish_nlp" in folded) and any(x in folded for x in ("zbyt ogoln", "ogolnym tropem", "stale-route", "stara trasa", "regresj", "fallback")) and (version_number(PACKAGE_VERSION).lower() in folded or "co trzeba" in folded or "co teraz" in folded):
-            return self._report(norm,folded,'current_hotfix_for_stale_nlp_route',['pytanie o bieżący hotfix/regresję NLP, nie historyczna trasa aktualizacji'],0.86,speech_act=speech.speech_act,question_object='runtime_hotfix')
+            return report(norm,folded,'current_hotfix_for_stale_nlp_route',['pytanie o bieżący hotfix/regresję NLP, nie historyczna trasa aktualizacji'],0.86,speech_act=speech.speech_act,question_object='runtime_hotfix')
         if any(x in folded for x in ("wspominasz", "wspomnij", "wspomn", "pamietasz", "pamiętasz")) and speech.speech_act == "question":
-            return self._report(norm,folded,'memory_experience_question',['pytanie doświadczeniowe o pamięć/wspomnienie'],0.82,speech_act=speech.speech_act,question_object='memory_experience')
+            return report(norm,folded,'memory_experience_question',['pytanie doświadczeniowe o pamięć/wspomnienie'],0.82,speech_act=speech.speech_act,question_object='memory_experience')
         if any(x in folded for x in ("zlecen", "drzwi", "sztuk drzwi", "jade na kolejne")) and not has_system and not has_update:
-            return self._report(norm,folded,'ordinary_workday_report',['bieżąca zwykła wypowiedź o pracy/zleceniu użytkownika'],0.80,speech_act=speech.speech_act,question_object='workday')
+            return report(norm,folded,'ordinary_workday_report',['bieżąca zwykła wypowiedź o pracy/zleceniu użytkownika'],0.80,speech_act=speech.speech_act,question_object='workday')
         if has_past_year and not has_system and not has_update:
-            return self._report(norm,folded,'substantive_question_about_last_year',['pytanie o zeszły/miniony rok; powitanie nie może maskować treści'],0.83,speech_act=speech.speech_act,question_object='past_year_reflection')
+            return report(norm,folded,'substantive_question_about_last_year',['pytanie o zeszły/miniony rok; powitanie nie może maskować treści'],0.83,speech_act=speech.speech_act,question_object='past_year_reflection')
         if has_self_preference and not has_system and not has_update:
-            return self._report(norm,folded,'self_preference_question',['pytanie o własną ochotę/impuls operacyjny Łatki, nie prośba o losowy stary kontekst pamięci'],0.87,speech_act=speech.speech_act,question_object='self_preference')
+            return report(norm,folded,'self_preference_question',['pytanie o własną ochotę/impuls operacyjny Łatki, nie prośba o losowy stary kontekst pamięci'],0.87,speech_act=speech.speech_act,question_object='self_preference')
         if has_self_plan and not has_system and not has_update:
-            return self._report(norm,folded,'self_plan_question',['pytanie o własne plany/zakres działań Łatki bez przenoszenia starego kontekstu użytkownika'],0.84,speech_act=speech.speech_act,question_object='self_plan')
+            return report(norm,folded,'self_plan_question',['pytanie o własne plany/zakres działań Łatki bez przenoszenia starego kontekstu użytkownika'],0.84,speech_act=speech.speech_act,question_object='self_plan')
         if has_auto:
-            return self._report(norm,folded,'automotive_warning_light_question',['pytanie praktyczne motoryzacyjne'],0.83,speech_act=speech.speech_act,question_object='automotive')
+            return report(norm,folded,'automotive_warning_light_question',['pytanie praktyczne motoryzacyjne'],0.83,speech_act=speech.speech_act,question_object='automotive')
         if has_practical:
-            return self._report(norm,folded,'practical_repair_advice',['pytanie praktyczne/naprawcze'],0.82,speech_act=speech.speech_act,question_object='practical')
+            return report(norm,folded,'practical_repair_advice',['pytanie praktyczne/naprawcze'],0.82,speech_act=speech.speech_act,question_object='practical')
         if ell.resolved_intent_hint and not (has_system and (has_diag or has_update)):
             evidence.extend(ell.resolution_basis)
-            return self._report(norm,folded,ell.resolved_intent_hint,evidence,0.86,src=ell.resolved_intent_hint=='runtime_source_question',speech_act=speech.speech_act,question_object=qobj.object_type)
+            return report(norm,folded,ell.resolved_intent_hint,evidence,0.86,src=ell.resolved_intent_hint=='runtime_source_question',speech_act=speech.speech_act,question_object=qobj.object_type)
         if has_state:
             intent='reciprocal_self_state_question' if any(x in folded for x in ('a ty','a tobie','a jak tobie','a jak ci','a ci','a u ciebie','a jak u ciebie','u ciebie')) else 'self_state_question'
-            return self._report(norm,folded,intent,['pytanie o stan/samopoczucie Łatki'],0.82,speech_act=speech.speech_act,question_object='self_state')
+            return report(norm,folded,intent,['pytanie o stan/samopoczucie Łatki'],0.82,speech_act=speech.speech_act,question_object='self_state')
         if has_diag:
-            return self._report(norm,folded,'negative_feedback_without_update_request',['sygnał korekty/diagnozy bez mocnego kontekstu systemowego'],0.68,speech_act=speech.speech_act,question_object=qobj.object_type)
+            return report(norm,folded,'negative_feedback_without_update_request',['sygnał korekty/diagnozy bez mocnego kontekstu systemowego'],0.68,speech_act=speech.speech_act,question_object=qobj.object_type)
         greeting_prefix = folded.startswith(('witaj ', 'czesc ', 'cześć ', 'hej ', 'hejka ', 'dzien dobry', 'dzień dobry', 'dobry wieczor', 'dobry wieczór'))
         if speech.speech_act == 'statement' and 0 < len(folded.split()) <= 5 and not (has_system or has_update or greeting_prefix):
-            return self._report(norm,folded,'short_free_dialogue',['krótka zwykła wypowiedź wymaga naturalnej odpowiedzi, nie generycznego fallbacku i nie losowej pamięci'],0.66,speech_act=speech.speech_act,question_object='short_free_dialogue')
-        return self._report(norm,folded,'ordinary_conversation',['brak mocnej intencji specjalistycznej'],0.52,speech_act=speech.speech_act,question_object=qobj.object_type)
+            return report(norm,folded,'short_free_dialogue',['krótka zwykła wypowiedź wymaga naturalnej odpowiedzi, nie generycznego fallbacku i nie losowej pamięci'],0.66,speech_act=speech.speech_act,question_object='short_free_dialogue')
+        return report(norm,folded,'ordinary_conversation',['brak mocnej intencji specjalistycznej'],0.52,speech_act=speech.speech_act,question_object=qobj.object_type)

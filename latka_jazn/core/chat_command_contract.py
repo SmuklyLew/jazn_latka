@@ -11,16 +11,29 @@ from typing import Any, Literal, TextIO
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session import JaznRuntimeSession
-from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
+from latka_jazn.core.host_visible_finalization import (
+    HostVisibleFinalizationContract,
+    finalize_host_visible_text,
+    sha256_host_visible_text,
+)
+from latka_jazn.core.chatgpt_host_pending_store import (
+    HostRequestStoreError,
+    calculate_host_request_contract_hash,
+    claim_pending_host_request,
+    consume_claimed_host_request,
+    mark_claimed_host_request_indeterminate,
+    persist_pending_host_request,
+    release_claimed_host_request,
+)
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
-from latka_jazn.version import schema_version
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 ACCEPTED_CHATGPT_INPUT_FIELDS = ("message", "text", "user_text", "content", "prompt")
 CHATGPT_BRIDGE_PROTOCOL = schema_version("chatgpt_bridge_jsonl")
 CHAT_OPENAI_PROTOCOL = schema_version("chat_open_ai_jsonl")
 OLLAMA_PROTOCOL = schema_version("chat_ollama_jsonl")
-CHAT_BRIDGE_OUTPUT_MODES = ("jsonl", "final_visible_text")
+CHAT_BRIDGE_OUTPUT_MODES = ("jsonl", "host_packet", "final_visible_text")
 KNOWN_CLI_FLAG_VALUE_POLICY = {
     "--session-id": True,
     "--no-carryover": False,
@@ -67,7 +80,7 @@ def attach_cli_flag_warning(result: dict[str, Any], warning: dict[str, Any] | No
     trace["chat_bridge_classification_text"] = warning["classification_text"]
     trace["chat_bridge_input_warning_code"] = warning["code"]
     result["trace"] = trace
-BridgeOutputMode = Literal["jsonl", "final_visible_text"]
+BridgeOutputMode = Literal["jsonl", "host_packet", "final_visible_text"]
 
 CHATGPT_HOST_VISIBLE_REPLY_TYPES = (
     "host_visible_reply",
@@ -120,8 +133,8 @@ def chat_gpt_contract(*, process_lifecycle: str = "one_shot") -> ChatCommandCont
         truth_boundary=(
             "--chat-gpt jest jedyną kanoniczną flagą mostu dla aplikacji ChatGPT/copy-paste/JSONL. "
             "Nie wymaga OPENAI_API_KEY i nie wykonuje żądań do OpenAI API. "
-            "Użycie z wiadomością po `--` wypisuje final_visible_text dla człowieka; stdin JSONL zachowuje pełny pakiet dla narzędzi. "
-            "Legacy aliasy `--chat-gpt-final-only` i `--chat-gpt --final-only` są tylko zgodnością wsteczną i nie zmieniają routingu."
+            "Użycie z wiadomością po `--` zwraca zwarty pakiet hosta z jednoznaczną akcją: display_exact, generate_then_finalize albo host_diagnostic. "
+            "Pełny stdin JSONL zachowuje audyt techniczny. Tylko jawne `--final-only` prosi o tekst, a brama nadal odmawia jego pokazania, gdy integralność nie jest potwierdzona."
         ),
     )
 
@@ -365,6 +378,7 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         "author_source": str(payload.get("author_source") or "").strip(),
         "state_emoticon": str(payload.get("state_emoticon") or payload.get("emoticon") or "").strip(),
         "final_text_sha256": str(payload.get("final_text_sha256") or "").strip().lower(),
+        "host_request_contract_hash": str(payload.get("host_request_contract_hash") or "").strip().lower(),
     }
     missing: list[str] = []
     if not final_text:
@@ -379,14 +393,34 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         missing.append("timestamp_trusted")
     if not re.fullmatch(r"[0-9a-f]{64}", str(values["final_text_sha256"])):
         missing.append("final_text_sha256")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(values["host_request_contract_hash"])):
+        missing.append("host_request_contract_hash")
     return values, missing
+
+def _runtime_validation(result: dict[str, Any]) -> dict[str, Any]:
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    return json_object(runtime_turn.get("validation") or result.get("runtime_answer_validation"))
+
+
+def _runtime_integrity(result: dict[str, Any]) -> dict[str, Any]:
+    final_contract = json_object(result.get("final_response_contract"))
+    return json_object(result.get("final_visible_integrity") or final_contract.get("final_visible_integrity"))
+
+
+def _runtime_integrity_consensus(result: dict[str, Any]) -> dict[str, Any]:
+    return json_object(result.get("final_visible_integrity_consensus"))
+
+
+def _runtime_truth_gate(result: dict[str, Any]) -> dict[str, Any]:
+    return json_object(result.get("runtime_truth_gate"))
+
 
 def chatgpt_result_has_accepted_runtime_final(result: dict[str, Any]) -> bool:
     """Return true only for an accepted handler final that needs no host speech."""
     decision = json_object(result.get("conversation_decision"))
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
-    validation = json_object(runtime_turn.get("validation"))
+    validation = _runtime_validation(result)
     handler_name = str(decision.get("handler_name") or runtime_turn.get("handler_name") or "")
     return bool(
         validation.get("accepted") is True
@@ -398,15 +432,78 @@ def chatgpt_result_has_accepted_runtime_final(result: dict[str, Any]) -> bool:
     )
 
 
+def chatgpt_result_has_displayable_runtime_final(result: dict[str, Any]) -> bool:
+    """Fail closed unless every runtime-owned presentation gate accepts one exact envelope."""
+    if not chatgpt_result_has_accepted_runtime_final(result):
+        return False
+    final_text = extract_final_visible_text_from_result(result)
+    trace = json_object(result.get("trace"))
+    final_contract = json_object(result.get("final_response_contract"))
+    contract_text = final_contract.get("final_visible_text")
+    integrity = _runtime_integrity(result)
+    consensus = _runtime_integrity_consensus(result)
+    truth_gate = _runtime_truth_gate(result)
+    if not final_text or integrity.get("valid") is not True:
+        return False
+    # Brak konsensusu nie jest sukcesem. Host nie może sam uznać, że jedna z
+    # kilku kopii kontraktu jest wystarczająca.
+    if consensus.get("valid") is not True or consensus.get("mismatch") is not False:
+        return False
+    if truth_gate.get("ok") is not True or truth_gate.get("normal_response_allowed") is not True:
+        return False
+    if contract_text is None or str(contract_text) != final_text:
+        return False
+    expected_hash = str(integrity.get("text_sha256") or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        return False
+    if expected_hash != sha256_host_visible_text(final_text):
+        return False
+    timestamp_header = str(
+        integrity.get("timestamp_header")
+        or trace.get("timestamp_header")
+        or final_contract.get("timestamp_header")
+        or ""
+    ).strip()
+    author_line = str(integrity.get("author_line") or "").strip()
+    if not author_line:
+        emoticon = str(final_contract.get("state_emoticon") or "").strip()
+        author_label = str(final_contract.get("author_label") or "").strip()
+        author_line = f"{emoticon} {author_label}".strip()
+    if not timestamp_header or not author_line:
+        return False
+    if not final_text.startswith(f"{timestamp_header}\n{author_line}\n\n"):
+        return False
+    return True
+
+
+def chatgpt_result_has_displayable_host_final(result: dict[str, Any]) -> bool:
+    """Validate a phase-2 final without trusting the phase label by itself."""
+    bridge = json_object(result.get("chatgpt_host_bridge"))
+    finalization = json_object(result.get("host_visible_finalization"))
+    final_text = extract_final_visible_text_from_result(result)
+    if finalization.get("accepted") is not True or not final_text:
+        return False
+    if str(finalization.get("final_visible_text") or "") != final_text:
+        return False
+    expected_hash = str(finalization.get("final_text_sha256") or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        return False
+    if expected_hash != sha256_host_visible_text(final_text):
+        return False
+    if str(finalization.get("turn_id") or "") != str(bridge.get("turn_id") or ""):
+        return False
+    if str(finalization.get("trace_id") or "") != str(bridge.get("trace_id") or ""):
+        return False
+    return True
+
+
 def chatgpt_result_requires_host_visible_reply(result: dict[str, Any]) -> bool:
-    """Detect when the runtime produced a truthful request for host speech."""
+    """Detect when runtime explicitly delegates model-guided wording to the host."""
     decision = json_object(result.get("conversation_decision"))
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
-    validation = json_object(runtime_turn.get("validation"))
-    if chatgpt_result_has_accepted_runtime_final(result):
-        # The final/runtime contracts are authoritative at the bridge boundary.
-        # Reconcile stale pre-final flags left in the decision/top-level payload.
+    validation = _runtime_validation(result)
+    if chatgpt_result_has_displayable_runtime_final(result):
         decision["requires_host_model"] = False
         result["requires_host_model"] = False
         return False
@@ -419,18 +516,26 @@ def chatgpt_result_requires_host_visible_reply(result: dict[str, Any]) -> bool:
     )
 
 
+def chatgpt_result_requires_host_diagnostic(result: dict[str, Any]) -> bool:
+    return not (
+        chatgpt_result_has_displayable_runtime_final(result)
+        or chatgpt_result_requires_host_visible_reply(result)
+    )
+
+
 def build_chatgpt_host_bridge_turn_contract(
     result: dict[str, Any],
     *,
     user_text: str,
     chat_bridge_meta: dict[str, Any],
 ) -> dict[str, Any]:
-    """Attach a machine-readable ChatGPT-host handshake to --chat-gpt output."""
+    """Attach one authoritative presentation action to --chat-gpt output."""
     trace = json_object(result.get("trace"))
     decision = json_object(result.get("conversation_decision"))
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
-    requires_host = chatgpt_result_requires_host_visible_reply(result)
+    displayable_runtime_final = chatgpt_result_has_displayable_runtime_final(result)
+    requires_host = bool(not displayable_runtime_final and chatgpt_result_requires_host_visible_reply(result))
     detected_intent = str(
         decision.get("detected_user_intent")
         or decision.get("intent")
@@ -438,11 +543,8 @@ def build_chatgpt_host_bridge_turn_contract(
         or runtime_turn.get("intent")
         or ""
     )
-    runtime_route = str(decision.get("route") or runtime_turn.get("runtime_route") or "")
-    ownership = build_runtime_ownership_contract(
-        detected_intent=detected_intent,
-        route=runtime_route,
-    )
+    runtime_route = str(decision.get("route") or runtime_turn.get("runtime_route") or runtime_turn.get("route") or "")
+    ownership = build_runtime_ownership_contract(detected_intent=detected_intent, route=runtime_route)
     host_policy = json_object(ownership.get("host_visible_generation_contract"))
     host_policy_rules = [str(item) for item in host_policy.get("rules", []) if str(item).strip()]
     turn_id = str(trace.get("turn_id") or runtime_turn.get("turn_id") or final_contract.get("turn_id") or "")
@@ -457,11 +559,43 @@ def build_chatgpt_host_bridge_turn_contract(
     author_label = str(final_contract.get("author_label") or "")
     author_source = str(final_contract.get("author_source") or "")
     state_emoticon = str(final_contract.get("state_emoticon") or decision.get("state_emoticon") or "")
-    return {
+    runtime_version = str(final_contract.get("runtime_version") or result.get("runtime_version") or PACKAGE_VERSION_FULL)
+    runtime_summary = {
+        "route": runtime_route,
+        "detected_intent": detected_intent,
+        "handler_name": decision.get("handler_name") or runtime_turn.get("handler_name"),
+        "fallback_classification": runtime_turn.get("fallback_classification") or final_contract.get("fallback_classification"),
+        "runtime_answer_quality": runtime_turn.get("runtime_answer_quality") or final_contract.get("runtime_answer_quality"),
+        "response_generation_mode": runtime_turn.get("response_generation_mode") or decision.get("response_generation_mode"),
+        "source_origin_detail": runtime_turn.get("source_origin_detail") or decision.get("source_origin_detail"),
+        "can_generate_model_guided_speech": True if requires_host else runtime_turn.get("can_generate_model_guided_speech"),
+        "can_generate_model_guided_speech_locally": False if requires_host else runtime_turn.get("can_generate_model_guided_speech"),
+        "can_complete_model_guided_speech_via_host": bool(requires_host),
+        "generation_executor": "chatgpt_host" if requires_host else "runtime",
+        "requires_host_model": requires_host,
+    }
+    context_for_hash = {
+        "runtime_summary": runtime_summary,
+        "runtime_ownership_contract": ownership,
+        "host_generation_policy": host_policy,
+    }
+    runtime_context_sha256 = hashlib.sha256(
+        json.dumps(context_for_hash, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    phase = "host_visible_generation_requested" if requires_host else (
+        "runtime_final_available" if displayable_runtime_final else "host_diagnostic_required"
+    )
+    status = {
+        "host_visible_generation_requested": "requires_host_chatgpt_visible_response",
+        "runtime_final_available": "runtime_final_visible_text_available",
+        "host_diagnostic_required": "runtime_final_not_displayable",
+    }[phase]
+    bridge: dict[str, Any] = {
         "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
-        "phase": "host_visible_generation_requested" if requires_host else "runtime_final_available",
+        "runtime_version": runtime_version,
+        "phase": phase,
         "host_must_generate_visible_reply": requires_host,
-        "status": "requires_host_chatgpt_visible_response" if requires_host else "runtime_final_visible_text_available",
+        "status": status,
         "command": "--chat-gpt",
         "turn_id": turn_id,
         "trace_id": trace_id,
@@ -478,52 +612,132 @@ def build_chatgpt_host_bridge_turn_contract(
         "required_visible_prefix": timestamp_header,
         "host_reply_finalization_required": requires_host,
         "user_text_sha256": hashlib.sha256((user_text or "").encode("utf-8")).hexdigest(),
-        "runtime_summary": {
-            "route": runtime_route,
-            "detected_intent": detected_intent,
-            "handler_name": decision.get("handler_name") or runtime_turn.get("handler_name"),
-            "fallback_classification": runtime_turn.get("fallback_classification") or final_contract.get("fallback_classification"),
-            "runtime_answer_quality": runtime_turn.get("runtime_answer_quality") or final_contract.get("runtime_answer_quality"),
-            "response_generation_mode": runtime_turn.get("response_generation_mode") or decision.get("response_generation_mode"),
-            "source_origin_detail": runtime_turn.get("source_origin_detail") or decision.get("source_origin_detail"),
-            "can_generate_model_guided_speech": True if requires_host else runtime_turn.get("can_generate_model_guided_speech"),
-            "can_generate_model_guided_speech_locally": False if requires_host else runtime_turn.get("can_generate_model_guided_speech"),
-            "can_complete_model_guided_speech_via_host": bool(requires_host),
-            "generation_executor": "chatgpt_host" if requires_host else "runtime",
-            "requires_host_model": requires_host,
-        },
+        "runtime_context_sha256": runtime_context_sha256,
+        "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
         "host_generation_policy": host_policy,
-        "host_reply_jsonl_shape": {
-            "type": "host_visible_reply",
-            "turn_id": turn_id,
-            "trace_id": trace_id,
-            "timestamp_header": timestamp_header,
-            "timezone": timezone,
-            "timestamp_sample_iso": timestamp_sample_iso,
-            "timestamp_source": timestamp_source,
-            "timestamp_trusted": timestamp_trusted,
-            "author_id": author_id,
-            "author_label": author_label,
-            "author_source": author_source,
-            "state_emoticon": state_emoticon,
-            "final_text": "<body albo kompletna widoczna koperta zgodna z runtime_ownership_contract>",
-            "final_text_sha256": "<sha256 dokładnych bajtów UTF-8 pola final_text>",
-        },
         "accepted_host_reply_text_fields": list(CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS),
         "chat_bridge": chat_bridge_meta,
+        "display_exact_runtime_final": displayable_runtime_final,
         "truth_boundary": (
-            "--chat-gpt nie wywołuje lokalnie modelu ChatGPT. Runtime Jaźni zwraca kopertę i, gdy potrzebny jest język hosta, "
-            "oznacza fazę host_visible_generation_requested. Host ChatGPT może odesłać drugą linię JSONL type=host_visible_reply, "
-            "która zostanie zapisana przez runtime jako external_final_visible_reply bez udawania lokalnego modelu."
+            "Host wykonuje wyłącznie akcję wskazaną w phase. runtime_final_available oznacza dosłowne wyświetlenie tekstu; "
+            "host_visible_generation_requested wymaga związanej z turą drugiej fazy; host_diagnostic_required zabrania imitowania Łatki."
         ),
-        "host_generation_rules": [
-            *host_policy_rules,
-            "Nie twierdź, że lokalny Python wywołał ChatGPT jako funkcję.",
-            "Host może odesłać body albo kompletną kopertę. Finalizator renderuje wyłącznie zweryfikowany timestamp, stan i autora; odrzuca obcy lub częściowy nagłówek.",
-            "Jeżeli runtime_truth_gate blokuje zwykłą odpowiedź, pokaż krótką diagnozę hosta zamiast imitować wypowiedź Łatki.",
-        ],
     }
+    if requires_host:
+        try:
+            finalization_contract = HostVisibleFinalizationContract(
+                required_timestamp_header=timestamp_header,
+                timezone=timezone,
+                timestamp_sample_iso=timestamp_sample_iso,
+                timestamp_source=timestamp_source,
+                timestamp_trusted=bool(timestamp_trusted),
+                author_id=author_id,
+                author_label=author_label,
+                author_source=author_source,
+                state_emoticon=state_emoticon,
+                turn_id=turn_id,
+                trace_id=trace_id,
+            )
+            bridge["finalization_contract_hash"] = finalization_contract.contract_hash
+            bridge["host_request_contract_hash"] = calculate_host_request_contract_hash(bridge)
+            bridge["host_reply_jsonl_shape"] = {
+                "type": "host_visible_reply",
+                "turn_id": turn_id,
+                "trace_id": trace_id,
+                "host_request_contract_hash": bridge["host_request_contract_hash"],
+                "timestamp_header": timestamp_header,
+                "timezone": timezone,
+                "timestamp_sample_iso": timestamp_sample_iso,
+                "timestamp_source": timestamp_source,
+                "timestamp_trusted": timestamp_trusted,
+                "author_id": author_id,
+                "author_label": author_label,
+                "author_source": author_source,
+                "state_emoticon": state_emoticon,
+                "final_text": "<body albo kompletna widoczna koperta zgodna z runtime_ownership_contract>",
+                "final_text_sha256": "<sha256 kanonicznego UTF-8/LF pola final_text>",
+            }
+        except (TypeError, ValueError) as exc:
+            bridge.update({
+                "phase": "host_diagnostic_required",
+                "host_must_generate_visible_reply": False,
+                "status": "host_finalization_contract_invalid",
+                "host_reply_finalization_required": False,
+                "diagnostic_reason": f"host_finalization_contract_invalid:{type(exc).__name__}",
+            })
+            requires_host = False
+    bridge["host_generation_rules"] = [
+        *host_policy_rules,
+        "Nie twierdź, że lokalny Python wywołał ChatGPT jako funkcję.",
+        "Nie zmieniaj turn_id, trace_id, timestampu, autora ani host_request_contract_hash.",
+        "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
+        "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
+    ]
+    return bridge
+
+
+def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return a compact action packet after re-validating the requested phase."""
+    bridge = json_object(payload.get("chatgpt_host_bridge"))
+    phase = str(bridge.get("phase") or "host_diagnostic_required")
+    if phase == "runtime_final_available" and chatgpt_result_has_displayable_runtime_final(payload):
+        action = "display_exact"
+    elif phase == "host_visible_reply_recorded" and chatgpt_result_has_displayable_host_final(payload):
+        action = "display_exact"
+    elif (
+        phase == "host_visible_generation_requested"
+        and bridge.get("host_must_generate_visible_reply") is True
+        and bridge.get("pending_request_persisted") is True
+        and re.fullmatch(r"[0-9a-f]{64}", str(bridge.get("host_request_contract_hash") or ""))
+    ):
+        action = "generate_then_finalize"
+    elif (
+        phase == "runtime_result_pending"
+        and str(bridge.get("daemon_request_id") or "").strip()
+        and str(bridge.get("poll_command") or "").strip()
+    ):
+        action = "poll_runtime"
+    else:
+        action = "host_diagnostic"
+    final_text = extract_final_visible_text_from_result(payload) if action == "display_exact" else ""
+    validation = _runtime_validation(payload)
+    integrity = _runtime_integrity(payload)
+    consensus = _runtime_integrity_consensus(payload)
+    truth_gate = _runtime_truth_gate(payload)
+    packet: dict[str, Any] = {
+        "schema_version": schema_version("chatgpt_host_presentation_packet"),
+        "type": "chatgpt_host_presentation",
+        "action": action,
+        "phase": phase,
+        "turn_id": bridge.get("turn_id"),
+        "trace_id": bridge.get("trace_id"),
+        "must_display_exactly": action == "display_exact",
+        "must_not_paraphrase": action == "display_exact",
+        "must_not_claim_latka_voice": action in {"host_diagnostic", "poll_runtime"},
+        "required_visible_prefix": bridge.get("required_visible_prefix"),
+        "final_visible_text": final_text,
+        "final_text_sha256": sha256_host_visible_text(final_text) if final_text else None,
+        "chatgpt_host_bridge": bridge,
+        "daemon_request_id": bridge.get("daemon_request_id"),
+        "poll_command": bridge.get("poll_command"),
+        "runtime_checks": {
+            "validation_accepted": validation.get("accepted"),
+            "final_visible_integrity_valid": integrity.get("valid"),
+            "integrity_consensus_valid": consensus.get("valid") if consensus else None,
+            "integrity_consensus_mismatch": consensus.get("mismatch") if consensus else None,
+            "runtime_truth_gate_ok": truth_gate.get("ok"),
+            "normal_response_allowed": truth_gate.get("normal_response_allowed"),
+            "runtime_truth_gate_errors": list(truth_gate.get("errors") or []),
+        },
+        "host_instruction": {
+            "display_exact": "Pokaż wyłącznie final_visible_text znak w znak.",
+            "generate_then_finalize": "Wygeneruj tekst wyłącznie z host_generation_policy, odeślij host_visible_reply i pokaż dopiero final zaakceptowany przez runtime.",
+            "poll_runtime": "Nie uruchamiaj ponownie wiadomości. Pobierz wynik istniejącej tury przez poll_command/request_id.",
+            "host_diagnostic": "Nie imituj Łatki; pokaż krótką diagnozę jako Host ChatGPT.",
+        }[action],
+    }
+    return packet
 
 
 def persist_chatgpt_host_visible_reply(
@@ -533,58 +747,101 @@ def persist_chatgpt_host_visible_reply(
     chat_bridge_meta: dict[str, Any],
     contract: dict[str, Any],
 ) -> tuple[dict[str, Any] | None, list[str]]:
-    """Persist a second-phase ChatGPT host reply in the Jaźń ledger."""
+    """Persist phase-2 text only when it matches one unconsumed phase-1 request."""
     reply, missing = extract_chatgpt_host_visible_reply_payload(payload)
     if missing:
         return None, missing
+    try:
+        pending = claim_pending_host_request(
+            config.root,
+            turn_id=reply["turn_id"],
+            request_contract_hash=reply["host_request_contract_hash"],
+        )
+    except HostRequestStoreError as exc:
+        return None, [f"host_request:{exc}"]
+    binding = json_object(pending.get("binding"))
+    immutable_fields = (
+        "turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso",
+        "timestamp_source", "timestamp_trusted", "author_id", "author_label",
+        "author_source", "state_emoticon",
+    )
+    mismatches = [
+        field for field in immutable_fields
+        if reply.get(field) != binding.get(field)
+    ]
+    if mismatches:
+        release_claimed_host_request(config.root, turn_id=reply["turn_id"])
+        return None, [f"host_request_binding_mismatch:{field}" for field in mismatches]
     finalization = finalize_host_visible_text(
-        required_timestamp_header=reply["timestamp_header"],
-        timezone=reply["timezone"],
-        timestamp_sample_iso=reply["timestamp_sample_iso"],
-        timestamp_source=reply["timestamp_source"],
-        timestamp_trusted=reply["timestamp_trusted"],
-        author_id=reply["author_id"],
-        author_label=reply["author_label"],
-        author_source=reply["author_source"],
-        state_emoticon=reply["state_emoticon"],
-        turn_id=reply["turn_id"],
-        trace_id=reply["trace_id"],
+        required_timestamp_header=str(binding["timestamp_header"]),
+        timezone=str(binding["timezone"]),
+        timestamp_sample_iso=str(binding["timestamp_sample_iso"]),
+        timestamp_source=str(binding["timestamp_source"]),
+        timestamp_trusted=bool(binding["timestamp_trusted"]),
+        author_id=str(binding["author_id"]),
+        author_label=str(binding["author_label"]),
+        author_source=str(binding["author_source"]),
+        state_emoticon=str(binding["state_emoticon"]),
+        turn_id=str(binding["turn_id"]),
+        trace_id=str(binding["trace_id"]),
         text=reply["final_text"],
         supplied_turn_id=reply["turn_id"],
         supplied_trace_id=reply["trace_id"],
         supplied_text_sha256=reply["final_text_sha256"],
     )
     if not finalization.accepted:
+        release_claimed_host_request(config.root, turn_id=reply["turn_id"])
         return None, [f"finalization:{item.code}" for item in finalization.violations]
     reply["final_text"] = finalization.final_visible_text
 
     from latka_jazn.core.engine import JaznEngine
 
-    engine = JaznEngine(config)
     try:
-        capture = engine.persist_final_visible_reply(
+        engine = JaznEngine(config)
+        try:
+            capture = engine.persist_final_visible_reply(
+                turn_id=str(binding["turn_id"]),
+                trace_id=str(binding["trace_id"]),
+                timestamp_header=str(binding["timestamp_header"]),
+                timezone=str(binding["timezone"]),
+                timestamp_sample_iso=str(binding["timestamp_sample_iso"]),
+                timestamp_source=str(binding["timestamp_source"]),
+                timestamp_trusted=bool(binding["timestamp_trusted"]),
+                author_id=str(binding["author_id"]),
+                author_label=str(binding["author_label"]),
+                author_source=str(binding["author_source"]),
+                final_text=reply["final_text"],
+                state_emoticon=str(binding["state_emoticon"]),
+                source="chatgpt_visible_layer_jsonl",
+                client_context={
+                    "client": "chatgpt_visible_layer_jsonl",
+                    "lifecycle": "chatgpt_host_visible_reply_record",
+                    "chat_bridge": chat_bridge_meta,
+                    "final_text_field": reply["final_text_field"],
+                    "host_request_contract_hash": reply["host_request_contract_hash"],
+                    "generation_executor": "chatgpt_host",
+                },
+            )
+        finally:
+            engine.shutdown()
+        consumed = consume_claimed_host_request(
+            config.root,
             turn_id=reply["turn_id"],
-            trace_id=reply["trace_id"],
-            timestamp_header=reply["timestamp_header"],
-            timezone=reply["timezone"],
-            timestamp_sample_iso=reply["timestamp_sample_iso"],
-            timestamp_source=reply["timestamp_source"],
-            timestamp_trusted=reply["timestamp_trusted"],
-            author_id=reply["author_id"],
-            author_label=reply["author_label"],
-            author_source=reply["author_source"],
-            final_text=reply["final_text"],
-            state_emoticon=reply["state_emoticon"],
-            source="chatgpt_visible_layer_jsonl",
-            client_context={
-                "client": "chatgpt_visible_layer_jsonl",
-                "lifecycle": "chatgpt_host_visible_reply_record",
-                "chat_bridge": chat_bridge_meta,
-                "final_text_field": reply["final_text_field"],
-            },
+            request_contract_hash=reply["host_request_contract_hash"],
         )
-    finally:
-        engine.shutdown()
+    except Exception as exc:
+        # Once persistence begins, a failure may have happened after one append-only
+        # write succeeded.  Releasing the claim would permit a duplicate visible
+        # reply.  Keep it fail-closed and expose an auditable indeterminate state.
+        try:
+            mark_claimed_host_request_indeterminate(
+                config.root,
+                turn_id=reply["turn_id"],
+                error=f"{type(exc).__name__}:{exc}",
+            )
+        except Exception:
+            pass
+        return None, [f"host_persistence_indeterminate:{type(exc).__name__}"]
     result = {
         "schema_version": schema_version("chatgpt_host_visible_reply_recorded"),
         "ok": True,
@@ -596,9 +853,10 @@ def persist_chatgpt_host_visible_reply(
             "phase": "host_visible_reply_recorded",
             "status": "host_visible_reply_finalized",
             "host_must_generate_visible_reply": False,
-            "turn_id": reply["turn_id"],
-            "trace_id": reply["trace_id"],
-            "timestamp_header": reply["timestamp_header"],
+            "turn_id": binding["turn_id"],
+            "trace_id": binding["trace_id"],
+            "host_request_contract_hash": reply["host_request_contract_hash"],
+            "timestamp_header": binding["timestamp_header"],
             "timestamp_required": True,
             "timestamp_enforced": True,
             "final_text_field": reply["final_text_field"],
@@ -606,13 +864,15 @@ def persist_chatgpt_host_visible_reply(
             "can_generate_model_guided_speech_locally": False,
             "can_complete_model_guided_speech_via_host": True,
             "generation_executor": "chatgpt_host",
-            "truth_boundary": "Widoczna odpowiedź powstała w hoście ChatGPT, przeszła obowiązkową finalizację timestampu i została zapisana w runtime; lokalny Python nie udawał lokalnej generacji modelu.",
+            "replay_protected": True,
+            "truth_boundary": "Odpowiedź hosta została związana z jednym niezużytym kontraktem phase-1, sfinalizowana i dopiero wtedy zapisana.",
         },
         "host_must_generate_visible_reply": False,
         "can_generate_model_guided_speech": True,
         "final_visible_text": capture.get("final_visible_text"),
         "host_visible_finalization": finalization.to_dict(),
         "host_visible_reply_capture": capture,
+        "host_request_consumption": consumed,
     }
     return result, []
 
@@ -635,22 +895,22 @@ def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
     if final is None and payload.get("error"):
         error_code = str(payload.get("error_code") or "chat_bridge_error")
         final = f"[{error_code}] {payload.get('error')}"
-    return str(final or "").strip()
+    return str(final or "")
 
 
 def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output_mode: BridgeOutputMode = "jsonl") -> None:
-    host_bridge = json_object(payload.get("chatgpt_host_bridge"))
-    host_generation_required = bool(host_bridge.get("host_must_generate_visible_reply"))
-    if output_mode == "final_visible_text" and not host_generation_required:
-        stdout.write(extract_final_visible_text_from_result(payload) + "\n")
+    presentation = build_chatgpt_host_presentation_packet(payload)
+    action = str(presentation.get("action") or "host_diagnostic")
+    if output_mode == "final_visible_text" and action == "display_exact":
+        # Dosłowny tryb nie może nawet dopisać końcowego LF.
+        stdout.write(str(presentation.get("final_visible_text") or ""))
+    elif output_mode == "host_packet" or output_mode == "final_visible_text":
+        if output_mode == "final_visible_text" and action != "display_exact":
+            presentation["requested_mode"] = "final_visible_text"
+            presentation["effective_mode"] = "host_packet"
+            presentation["reason"] = "plain_text_blocked_by_host_presentation_gate"
+        stdout.write(json.dumps(presentation, ensure_ascii=False, sort_keys=True) + "\n")
     else:
-        if output_mode == "final_visible_text" and host_generation_required:
-            payload = dict(payload)
-            payload["chat_bridge_output"] = {
-                "requested_mode": "final_visible_text",
-                "effective_mode": "jsonl_host_bridge_envelope",
-                "reason": "host_visible_generation_requested_cannot_be_hidden_by_final_only",
-            }
         stdout.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
     stdout.flush()
 
@@ -892,12 +1152,11 @@ def run_jsonl_chat_bridge(
                 result["process_lifecycle"] = "one_shot"
                 result["daemon_confirmed"] = False
                 result["background_claim_allowed"] = False
-                final_text = str(result.get("final_visible_text") or "")
-                if final_text and "one_shot_degraded" not in final_text.lower():
-                    result["final_visible_text"] = (
-                        "[one_shot_degraded] daemon nie został potwierdzony; proces jest jednorazowy.\n"
-                        + final_text
-                    )
+                result["host_transport_diagnostic"] = {
+                    "code": "one_shot_degraded",
+                    "message": "Daemon nie został potwierdzony; wykonano zweryfikowaną turę jednorazową.",
+                    "must_not_modify_final_visible_text": True,
+                }
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
@@ -907,6 +1166,19 @@ def run_jsonl_chat_bridge(
                     user_text=user_text,
                     chat_bridge_meta=result["chat_bridge"],
                 )
+                if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+                    try:
+                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"])
+                        result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+                        result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+                    except HostRequestStoreError as exc:
+                        result["chatgpt_host_bridge"].update({
+                            "phase": "host_diagnostic_required",
+                            "status": "pending_host_request_persistence_failed",
+                            "host_must_generate_visible_reply": False,
+                            "host_reply_finalization_required": False,
+                            "diagnostic_reason": f"pending_host_request:{exc}",
+                        })
             result["chat_command_contract"] = contract
             # poprzednia linia runtime: most nie może nadpisać blokady runtime truth gate przez ok=True.
             result["ok"] = bool(result.get("ok", True))

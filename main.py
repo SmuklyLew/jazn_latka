@@ -76,7 +76,9 @@ from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPl
 from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
 from latka_jazn.core.chat_command_contract import BridgeOutputMode
-from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
+from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
+from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, persist_pending_host_request
+from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
 from latka_jazn.core.cli_normalization import normalize_cli_argv
@@ -130,7 +132,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cognitive-frame", "--chatgpt-frame", "--brain-frame", action="store_true", dest="cognitive_frame", help="Zwróć wewnętrzny pakiet poznawczy JSON dla ChatGPT, nie gotową odpowiedź użytkownikowi.")
     parser.add_argument("--debug-direct", action="store_true", dest="debug_direct", help="Pokaż techniczną ścieżkę bezpośrednią i fallback diagnostyczny zamiast rozmownej odpowiedzi.")
     parser.add_argument("--chat", "--loop", action="store_true", dest="chat_loop", help="Uruchom stałą pętlę rozmowy: jeden JaznEngine działa przez wiele tur aż do /exit lub EOF.")
-    parser.add_argument("--chat-gpt", "--chatgpt", action="store_true", dest="chat_gpt", help="Kanoniczny most ChatGPT. Z wiadomością po -- wypisuje tylko final_visible_text; ze stdin JSONL działa jako protokół maszynowy. Nie używa OPENAI_API_KEY.")
+    parser.add_argument("--chat-gpt", "--chatgpt", action="store_true", dest="chat_gpt", help="Kanoniczny most ChatGPT. Z wiadomością po -- zwraca zwarty pakiet hosta z jednoznaczną akcją; stdin zachowuje pełny JSONL. Jawne --final-only pokazuje tekst tylko po przejściu bramy prezentacji.")
     parser.add_argument("--chat-gpt-final-only", action="store_true", dest="chat_gpt_final_only", help=argparse.SUPPRESS)
     parser.add_argument("--final-only", action="store_true", dest="final_only", help=argparse.SUPPRESS)
     parser.add_argument("--chat-open-ai", "--openai-api", action="store_true", dest="chat_open_ai", help="Uruchom lokalny runtime Jaźni z model_adapter przez OpenAI Responses API; wymaga OPENAI_API_KEY i nie udaje połączenia bez klucza.")
@@ -254,9 +256,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--write-active-runtime-marker", action="store_true", dest="write_active_runtime_marker", help="Zapisz JAZN_ACTIVE_RUNTIME.json dla aktywnego folderu i cache rozpakowania.")
     parser.add_argument("--source-zip", type=Path, default=None, help="Opcjonalna ścieżka ZIP-a źródłowego do porównania checksum w aktywnym cache.")
     parser.add_argument("--marker-output", type=Path, default=None, help="Opcjonalna ścieżka pliku JAZN_ACTIVE_RUNTIME.json.")
-    parser.add_argument("--record-final-reply", action="store_true", dest="record_final_reply", help="Dopisz do ledgera finalną widoczną odpowiedź ChatGPT dla podanego turn_id/trace_id/timestamp_header.")
+    parser.add_argument("--record-final-reply", action="store_true", dest="record_final_reply", help="Zgodnościowa druga faza hosta; wymaga niezużytego host_request_contract_hash i przechodzi tę samą bramę co helper.")
     parser.add_argument("--turn-id", default=None, help="turn_id z cognitive_turn_envelope dla --record-final-reply.")
     parser.add_argument("--trace-id", default=None, help="trace_id z cognitive_turn_envelope dla --record-final-reply.")
+    parser.add_argument("--host-request-contract-hash", default=None, help="Hash niezużytego kontraktu phase-1 wymagany przez --record-final-reply.")
     parser.add_argument("--timestamp-header", default=None, help="timestamp_header z cognitive_turn_envelope dla --record-final-reply.")
     parser.add_argument("--timestamp-sample-iso", default=None)
     parser.add_argument("--timestamp-source", default=None)
@@ -453,7 +456,7 @@ def _try_chat_gpt_one_shot_via_daemon(
             "host_must_poll_runtime": True,
             "host_must_generate_visible_reply": False,
             "daemon_request_id": pending_request_id,
-            "poll_command": f"python -X utf8 main.py --daemon-result {pending_request_id}",
+            "poll_command": f"python -X utf8 main.py --chat-gpt --daemon-result {pending_request_id}",
             "truth_boundary": "Tura została przyjęta przez żywy daemon i działa niezależnie od połączenia CLI. Host nie może uruchamiać tej samej wiadomości ponownie; powinien pobrać wynik po request_id.",
         }
         result["chat_bridge_output"] = {
@@ -461,15 +464,144 @@ def _try_chat_gpt_one_shot_via_daemon(
             "effective_mode": "jsonl_runtime_pending_envelope",
             "reason": "runtime_turn_outlived_single_cli_wait_budget",
         }
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+        write_chat_bridge_payload(sys.stdout, result, output_mode=output_mode)
         return 0
     result["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
         result,
         user_text=text,
         chat_bridge_meta=result["chat_bridge"],
     )
+    if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+        try:
+            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
+            result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+            result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+        except HostRequestStoreError as exc:
+            result["chatgpt_host_bridge"].update({
+                "phase": "host_diagnostic_required",
+                "status": "pending_host_request_persistence_failed",
+                "host_must_generate_visible_reply": False,
+                "host_reply_finalization_required": False,
+                "diagnostic_reason": f"pending_host_request:{exc}",
+            })
     write_chat_bridge_payload(sys.stdout, result, output_mode=output_mode)
     return 0
+
+
+def _prepare_chatgpt_daemon_presentation(
+    *,
+    cfg: JaznConfig,
+    payload: dict[str, Any],
+    request_id: str | None,
+    user_text: str = "",
+) -> dict[str, Any]:
+    """Normalize daemon submit/poll output into the canonical ChatGPT host contract.
+
+    Daemon HTTP payloads are transport envelopes, not user-visible answers.  This
+    helper makes the transport state explicit and routes completed jobs through
+    the same presentation/finalization gate as the local JSONL bridge.
+    """
+    outer = dict(payload) if isinstance(payload, dict) else {}
+    normalized_request_id = str(
+        outer.get("request_id")
+        or request_id
+        or _as_dict(outer.get("daemon_job")).get("request_id")
+        or ""
+    )
+    raw_result = outer.get("result")
+    if outer.get("done") is True and isinstance(raw_result, dict):
+        result = dict(raw_result)
+        result["daemon_job"] = outer
+    elif outer.get("error_code") == "daemon_chat_pending" or outer.get("done") is False:
+        result = outer
+        bridge_meta = _as_dict(result.get("chat_bridge"))
+        bridge_meta.update({
+            "command": "--chat-gpt",
+            "canonical_command": "--chat-gpt",
+            "daemon_poll_path": True,
+            "daemon_request_id": normalized_request_id,
+        })
+        result["chat_bridge"] = bridge_meta
+        result["chatgpt_bridge"] = bridge_meta
+        result["chatgpt_host_bridge"] = {
+            "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
+            "runtime_version": str(result.get("runtime_version") or PACKAGE_VERSION_FULL),
+            "phase": "runtime_result_pending",
+            "status": "runtime_result_pending",
+            "host_must_poll_runtime": True,
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "daemon_request_id": normalized_request_id,
+            "poll_command": f"python -X utf8 main.py --chat-gpt --daemon-result {normalized_request_id}",
+            "truth_boundary": (
+                "Tura działa już w daemonie. Host nie może ponownie wysłać wiadomości ani tworzyć odpowiedzi; "
+                "ma pobrać istniejący wynik przez request_id."
+            ),
+        }
+        return result
+    elif any(key in outer for key in ("final_visible_text", "runtime", "trace", "conversation_decision")):
+        # `chat_daemon()` already unwraps completed jobs.
+        result = outer
+    else:
+        result = outer
+        bridge_meta = _as_dict(result.get("chat_bridge"))
+        bridge_meta.update({
+            "command": "--chat-gpt",
+            "canonical_command": "--chat-gpt",
+            "daemon_poll_path": True,
+            "daemon_request_id": normalized_request_id,
+        })
+        result["chat_bridge"] = bridge_meta
+        result["chatgpt_bridge"] = bridge_meta
+        result["chatgpt_host_bridge"] = {
+            "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
+            "runtime_version": str(result.get("runtime_version") or PACKAGE_VERSION_FULL),
+            "phase": "host_diagnostic_required",
+            "status": "daemon_result_not_accepted",
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "daemon_request_id": normalized_request_id,
+            "diagnostic_reason": str(result.get("error_code") or "daemon_result_not_accepted"),
+            "truth_boundary": "Transport daemonu nie zwrócił zweryfikowanej finalnej tury. Host nie może imitować Łatki.",
+        }
+        return result
+
+    bridge_meta = _as_dict(result.get("chat_bridge"))
+    bridge_meta.update({
+        "command": "--chat-gpt",
+        "canonical_command": "--chat-gpt",
+        "daemon_poll_path": True,
+        "daemon_request_id": normalized_request_id,
+    })
+    result["chat_bridge"] = bridge_meta
+    result["chatgpt_bridge"] = bridge_meta
+    result["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
+        result,
+        user_text=user_text,
+        chat_bridge_meta=bridge_meta,
+    )
+    if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+        try:
+            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
+            result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+            result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+        except HostRequestStoreError as exc:
+            result["chatgpt_host_bridge"].update({
+                "phase": "host_diagnostic_required",
+                "status": "pending_host_request_persistence_failed",
+                "host_must_generate_visible_reply": False,
+                "host_reply_finalization_required": False,
+                "diagnostic_reason": f"pending_host_request:{exc}",
+            })
+    return result
+
+
+_SUCCESSFUL_CHATGPT_PRESENTATION_PHASES = frozenset({
+    "runtime_result_pending",
+    "runtime_final_available",
+    "host_visible_generation_requested",
+    "host_visible_reply_recorded",
+})
 
 
 def _runtime_command_from_cli_args(ns: argparse.Namespace) -> str | None:
@@ -522,16 +654,12 @@ def _bridge_text_output_mode(
     ns: argparse.Namespace,
     bridge_text: str,
 ) -> BridgeOutputMode:
-    """Human one-shot chat commands render final_visible_text; stdin keeps JSONL."""
-    return (
-        "final_visible_text"
-        if (
-            getattr(ns, "chat_gpt_final_only", False)
-            or getattr(ns, "final_only", False)
-            or bridge_text
-        )
-        else "jsonl"
-    )
+    """One-shot ChatGPT calls default to an action-first host packet."""
+    if getattr(ns, "chat_gpt_final_only", False) or getattr(ns, "final_only", False):
+        return "final_visible_text"
+    if bridge_text:
+        return "host_packet"
+    return "jsonl"
 
 
 
@@ -1069,18 +1197,19 @@ def main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
-        if ns.daemon_final_only and isinstance(payload, dict):
-            raw_result = payload.get("result")
-            result_payload = raw_result if isinstance(raw_result, dict) else payload
-            raw_runtime = result_payload.get("runtime")
-            runtime_payload = raw_runtime if isinstance(raw_runtime, dict) else {}
-            final_text = (
-                result_payload.get("final_visible_text")
-                or runtime_payload.get("final_visible_text")
+        if ns.chat_gpt or ns.daemon_final_only:
+            presented = _prepare_chatgpt_daemon_presentation(
+                cfg=cfg,
+                payload=payload,
+                request_id=ns.daemon_result,
             )
-            if final_text:
-                print(str(final_text))
-                return 0
+            write_chat_bridge_payload(
+                sys.stdout,
+                presented,
+                output_mode="host_packet" if ns.chat_gpt else "final_visible_text",
+            )
+            phase = str(_as_dict(presented.get("chatgpt_host_bridge")).get("phase") or "")
+            return 0 if phase in _SUCCESSFUL_CHATGPT_PRESENTATION_PHASES else 1
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if payload.get("done") is False or payload.get("ok") else 1
 
@@ -1128,11 +1257,15 @@ def main(argv: list[str] | None = None) -> int:
         if trusted_time_env is not None:
             payload.setdefault("trusted_time_env", trusted_time_env)
         if ns.daemon_final_only and isinstance(payload, dict):
-            runtime_payload = _as_dict(payload.get("runtime"))
-            final_text = payload.get("final_visible_text") or runtime_payload.get("final_visible_text")
-            if final_text:
-                print(str(final_text))
-                return 0
+            presented = _prepare_chatgpt_daemon_presentation(
+                cfg=cfg,
+                payload=payload,
+                request_id=ns.daemon_request_id,
+                user_text=text,
+            )
+            write_chat_bridge_payload(sys.stdout, presented, output_mode="final_visible_text")
+            phase = str(_as_dict(presented.get("chatgpt_host_bridge")).get("phase") or "")
+            return 0 if phase in _SUCCESSFUL_CHATGPT_PRESENTATION_PHASES else 1
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if payload.get("ok") or payload.get("error_code") == "daemon_chat_pending" else 1
 
@@ -1596,41 +1729,58 @@ def main(argv: list[str] | None = None) -> int:
 
 
     if ns.record_final_reply:
-        engine = JaznEngine(config)
-        try:
-            required_capture_fields = {
-                "--turn-id": ns.turn_id, "--trace-id": ns.trace_id, "--timestamp-header": ns.timestamp_header,
-                "--timestamp-sample-iso": ns.timestamp_sample_iso, "--timestamp-source": ns.timestamp_source,
-                "--timestamp-trusted/--no-timestamp-trusted": ns.timestamp_trusted,
-                "--author-id": ns.author_id, "--author-label": ns.author_label,
-                "--author-source": ns.author_source, "--state-emoticon": ns.state_emoticon,
-            }
-            missing_capture = [name for name, value in required_capture_fields.items() if value is None or value == ""]
-            if missing_capture:
-                parser.error("--record-final-reply wymaga: " + ", ".join(missing_capture))
-            if ns.final_text_file:
-                final_text = ns.final_text_file.read_text(encoding="utf-8")
-            else:
-                final_text = _message_from_remainder(ns.message)
-            result = engine.persist_final_visible_reply(
-                turn_id=ns.turn_id,
-                trace_id=ns.trace_id,
-                timestamp_header=ns.timestamp_header,
-                timezone=(config or JaznConfig()).timezone,
-                timestamp_sample_iso=ns.timestamp_sample_iso,
-                timestamp_source=ns.timestamp_source,
-                timestamp_trusted=ns.timestamp_trusted,
-                author_id=ns.author_id,
-                author_label=ns.author_label,
-                author_source=ns.author_source,
-                final_text=final_text,
-                state_emoticon=ns.state_emoticon,
-                source="chatgpt_visible_layer_cli",
-                client_context={"client": "chatgpt_visible_layer_cli", "lifecycle": "one_shot_visible_capture"},
-            )
-            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
-        finally:
-            engine.shutdown()
+        required_capture_fields = {
+            "--turn-id": ns.turn_id, "--trace-id": ns.trace_id,
+            "--host-request-contract-hash": ns.host_request_contract_hash,
+            "--timestamp-header": ns.timestamp_header,
+            "--timestamp-sample-iso": ns.timestamp_sample_iso, "--timestamp-source": ns.timestamp_source,
+            "--timestamp-trusted/--no-timestamp-trusted": ns.timestamp_trusted,
+            "--author-id": ns.author_id, "--author-label": ns.author_label,
+            "--author-source": ns.author_source, "--state-emoticon": ns.state_emoticon,
+        }
+        missing_capture = [name for name, value in required_capture_fields.items() if value is None or value == ""]
+        if missing_capture:
+            parser.error("--record-final-reply wymaga: " + ", ".join(missing_capture))
+        if ns.final_text_file:
+            final_text = ns.final_text_file.read_text(encoding="utf-8")
+        else:
+            final_text = _message_from_remainder(ns.message)
+        payload = {
+            "type": "host_visible_reply",
+            "turn_id": ns.turn_id,
+            "trace_id": ns.trace_id,
+            "host_request_contract_hash": ns.host_request_contract_hash,
+            "timestamp_header": ns.timestamp_header,
+            "timezone": (config or JaznConfig()).timezone,
+            "timestamp_sample_iso": ns.timestamp_sample_iso,
+            "timestamp_source": ns.timestamp_source,
+            "timestamp_trusted": ns.timestamp_trusted,
+            "author_id": ns.author_id,
+            "author_label": ns.author_label,
+            "author_source": ns.author_source,
+            "state_emoticon": ns.state_emoticon,
+            "final_text": final_text,
+            "final_text_sha256": sha256_host_visible_text(final_text),
+        }
+        result, missing = persist_chatgpt_host_visible_reply(
+            config=config or JaznConfig(),
+            payload=payload,
+            chat_bridge_meta={
+                "client": "chatgpt_visible_layer_cli",
+                "lifecycle": "host_visible_reply_compatibility_cli",
+                "generation_executor": "chatgpt_host",
+            },
+            contract={"command": "--record-final-reply", "deprecated": True},
+        )
+        if missing:
+            print(json.dumps({
+                "ok": False,
+                "error_code": "invalid_host_visible_reply",
+                "missing": missing,
+                "truth_boundary": "--record-final-reply nie omija już kontraktu phase-1 ani ochrony replay.",
+            }, ensure_ascii=False, sort_keys=True))
+            return 2
+        write_chat_bridge_payload(sys.stdout, result or {}, output_mode="host_packet")
         return 0
 
     if ns.runtime_preview or ns.dev_preview:
@@ -1744,8 +1894,8 @@ def main(argv: list[str] | None = None) -> int:
         cfg = apply_chatgpt_cli_settings(config or JaznConfig())
         bridge_text = _message_from_remainder(ns.message)
         # Current release: --chat-gpt is the single public ChatGPT bridge.
-        # Human one-shot usage (`--chat-gpt -- "..."`) renders only
-        # final_visible_text, while stdin keeps the JSONL protocol for tools.
+        # One-shot usage returns a compact action-first host packet.
+        # Full stdin mode remains JSONL for tools and multi-line phase-2 exchange.
         output_mode = _bridge_text_output_mode(ns, bridge_text)
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-gpt")
         if daemon_exit is not None:
