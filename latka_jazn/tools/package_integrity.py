@@ -22,7 +22,9 @@ from latka_jazn.version import schema_version
 MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
 REQUIRED_STATIC_PATHS = {"SOURCE_PROVENANCE.json", "run.py", "main.py", "latka_jazn/version.py"}
 FORBIDDEN_ROOT_NAMES = {
-    ".git", ".archives", "memory", "workspace_runtime", "backups", ".pytest_cache", "__pycache__",
+    ".git", ".archives", "memory", "workspace_runtime", "backups", "backups_git",
+    "exports", "processed", "requests", "responses", "status", "checkpoints",
+    ".pytest_cache", "__pycache__",
 }
 FORBIDDEN_FILE_NAMES = {
     MANIFEST_NAME, "MANIFEST_CURRENT.json", "VERSION.txt", "RUNTIME_STATE.json",
@@ -71,7 +73,7 @@ def _git_checkout_head_for_verification(root: Path) -> tuple[str | None, str]:
     except (OSError, RuntimeError):
         return None, "git_root_unresolvable"
     if repository_root != root:
-        return None, "not_exact_repository_root"
+        return None, "not_a_git_checkout"
 
     unstaged = subprocess.run(
         ["git", "-C", str(root), "diff", "--quiet", "--ignore-submodules", "--"],
@@ -442,6 +444,42 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     for required in sorted(REQUIRED_STATIC_PATHS):
         if required not in seen:
             errors.append({"code": "required_path_unprotected", "path": required})
+    # Old manifests predate a complete inventory contract. Preserve their
+    # hash verification for recovery compatibility, but require exact static
+    # membership whenever the manifest declares file_count (all current packs).
+    if "file_count" in payload:
+        declared_count = payload.get("file_count")
+        try:
+            normalized_declared_count = int(declared_count)
+        except (TypeError, ValueError):
+            normalized_declared_count = -1
+        if normalized_declared_count != len(entries):
+            errors.append(
+                {
+                    "code": "manifest_file_count_mismatch",
+                    "declared": declared_count,
+                    "actual": len(entries),
+                }
+            )
+        try:
+            candidate_paths = (
+                _git_name_set(root, "ls-tree", "-r", "--name-only", git_head)
+                if git_head
+                else set(_walk_paths(root))
+            )
+        except (OSError, RuntimeError) as exc:
+            errors.append({"code": "static_file_inventory_failed", "detail": str(exc)})
+            candidate_paths = set()
+        actual_static_paths: set[str] = set()
+        for relative in candidate_paths:
+            try:
+                canonical = validate_safe_relative_path(relative)
+            except UnsafeRelativePathError:
+                continue
+            if not path_is_forbidden(canonical):
+                actual_static_paths.add(canonical)
+        for unexpected in sorted(actual_static_paths - seen):
+            errors.append({"code": "unexpected_static_file", "path": unexpected})
     if git_head:
         version_bytes = _git_blob_bytes(root, git_head, "latka_jazn/version.py")
         runtime_version = _version_from_python_bytes(version_bytes) if version_bytes is not None else None

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -59,8 +60,45 @@ def find_runtime_root(start: Path | None = None) -> Path:
     )
 
 
-def workspace_runtime_path(root: Path) -> Path:
-    return Path(root).expanduser().resolve() / WORKSPACE_RUNTIME_DIR_NAME
+def workspace_runtime_path(
+    root: Path,
+    configured: str | Path | None = None,
+) -> Path:
+    """Resolve mutable runtime state independently from the code installation.
+
+    A verified package may be mounted read-only by a host.  In that case the
+    operator can set ``JAZN_RUNTIME_WORKSPACE_DIR`` to an absolute writable
+    directory.  Relative values intentionally remain relative to ``active_root``
+    for backward compatibility.
+    """
+
+    runtime_root = Path(root).expanduser().resolve()
+    raw = configured
+    if raw is None:
+        raw = os.environ.get("JAZN_RUNTIME_WORKSPACE_DIR", WORKSPACE_RUNTIME_DIR_NAME)
+    candidate = Path(str(raw or WORKSPACE_RUNTIME_DIR_NAME).strip() or WORKSPACE_RUNTIME_DIR_NAME).expanduser()
+    return candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
+
+
+def runtime_state_path(root: Path, configured: str | Path) -> Path:
+    """Resolve legacy ``workspace_runtime/...`` state through the writable root."""
+
+    runtime_root = Path(root).expanduser().resolve()
+    candidate = Path(configured).expanduser()
+    if candidate.is_absolute():
+        return candidate.resolve()
+    parts = candidate.parts
+    if parts and parts[0].casefold() == WORKSPACE_RUNTIME_DIR_NAME.casefold():
+        base = workspace_runtime_path(runtime_root)
+        target = base.joinpath(*parts[1:]).resolve()
+    else:
+        base = runtime_root
+        target = (runtime_root / candidate).resolve()
+    try:
+        target.relative_to(base)
+    except ValueError as exc:
+        raise ValueError(f"runtime state path escapes its configured root: {configured}") from exc
+    return target
 
 
 def active_runtime_marker_path(root: Path) -> Path:

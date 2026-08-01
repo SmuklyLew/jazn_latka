@@ -9,6 +9,7 @@ import json
 import re
 import zipfile
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory.version_update_recorder import VersionUpdateRecorder
 from latka_jazn.core.version_source import (
     read_runtime_version_from_version_py,
@@ -304,7 +305,7 @@ def record_conversation_payload(root: Path, *, version: str, payload: Conversati
     wpisów dziennika i odpowiadające rekordy JSONL/SQLite z grounding/confidence.
     """
     journal = DziennikRawJournal(root)
-    store = MemoryStore(root / "workspace_runtime" / "latka_jazn_current_line.sqlite3")
+    store = MemoryStore(workspace_runtime_path(root) / "latka_jazn_current_line.sqlite3")
     layered = LayeredMemory(store, root)
     entry_ids: list[str] = []
     notes: list[str] = []

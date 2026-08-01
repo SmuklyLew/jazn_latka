@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 import ast, json, hashlib
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "module_responsibility_map/v1"
 
 
@@ -34,7 +36,7 @@ class ModuleResponsibilityMap:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.output_path = root / "workspace_runtime" / "module_responsibility_map_current_line.json"
+        self.output_path = workspace_runtime_path(root) / "module_responsibility_map_current_line.json"
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _analyse_py(self, path: Path) -> tuple[list[str], list[str]]:

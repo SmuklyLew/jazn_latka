@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Iterable
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.nlp_reasoning.models import MorphCandidate, ProviderStatus
 from latka_jazn.nlp_reasoning.morph_tags import parse_morfeusz_tag
 from latka_jazn.nlp_reasoning.normalizer import fold_polish
@@ -56,8 +57,8 @@ class PolimorfDictionaryAdapter:
         candidates = [
             self.root / "external_data" / "polimorf" / "polimorf.tsv",
             self.root / "external_data" / "polimorf" / "polimorf.tab",
-            self.root / "workspace_runtime" / "polish_reasoning" / "polimorf.tsv",
-            self.root / "workspace_runtime" / "polish_reasoning" / "polimorf.tab",
+            workspace_runtime_path(self.root) / "polish_reasoning" / "polimorf.tsv",
+            workspace_runtime_path(self.root) / "polish_reasoning" / "polimorf.tab",
         ]
         for candidate in candidates:
             if candidate.exists():

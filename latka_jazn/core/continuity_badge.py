@@ -7,6 +7,8 @@ import hashlib
 import json
 import time
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "continuity_badge_policy/v1"
 
 
@@ -41,7 +43,7 @@ class ContinuityBadgePolicy:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.state_path = root / "workspace_runtime" / "continuity_badge_state.json"
+        self.state_path = workspace_runtime_path(root) / "continuity_badge_state.json"
 
     def apply(self, body: str, decision: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         route = str(decision.get("route") or "unknown")

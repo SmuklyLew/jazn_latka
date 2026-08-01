@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from typing import Any, Mapping
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
@@ -29,7 +30,7 @@ def _safe_id(value: str) -> str:
 
 
 def _store_root(root: Path) -> Path:
-    return Path(root).resolve() / "workspace_runtime" / "chatgpt_host_bridge"
+    return workspace_runtime_path(Path(root)) / "chatgpt_host_bridge"
 
 
 def _path(root: Path, state: str, turn_id: str) -> Path:

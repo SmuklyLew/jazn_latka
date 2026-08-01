@@ -8,6 +8,8 @@ from latka_jazn.core.runtime_root import (
     active_runtime_marker_path,
     find_runtime_root,
     find_start_file,
+    runtime_state_path,
+    workspace_runtime_path,
 )
 from latka_jazn.version import PACKAGE_VERSION, version_number
 from latka_jazn.core.timestamp_policy import (
@@ -135,7 +137,12 @@ class JaznConfig:
     )
     lexical_resources_registry_path: str = "latka_jazn/resources/nlp/verified_sources.json"
     latka_project_lexicon_path: str = "latka_jazn/resources/nlp/latka_project_lexicon.json"
-    lexical_resource_cache_name: str = field(default_factory=lambda: os.environ.get("JAZN_LEXICAL_RESOURCE_CACHE", "workspace_runtime/dictionary_cache.sqlite3").strip())
+    lexical_resource_cache_name: str = field(
+        default_factory=lambda: (
+            os.environ.get("JAZN_LEXICAL_RESOURCE_CACHE", "workspace_runtime/dictionary_cache.sqlite3").strip()
+            or "workspace_runtime/dictionary_cache.sqlite3"
+        )
+    )
     lexical_resource_cache_ttl_seconds: int = field(default_factory=lambda: _env_int("JAZN_LEXICAL_RESOURCE_CACHE_TTL", 604800))
     lexical_resource_status_include_optional: bool = field(default_factory=lambda: _env_bool("JAZN_LEXICAL_STATUS_OPTIONAL", True))
 
@@ -175,11 +182,11 @@ class JaznConfig:
 
     @property
     def runtime_workspace_dir(self) -> Path:
-        return self._path_under_runtime_root(self.runtime_workspace_dir_name)
+        return workspace_runtime_path(self.root, self.runtime_workspace_dir_name)
 
     @property
     def active_runtime_marker_path(self) -> Path:
-        return active_runtime_marker_path(self.root)
+        return self.runtime_workspace_dir / active_runtime_marker_path(self.root).name
 
     @property
     def package_integrity_manifest_path(self) -> Path:
@@ -207,7 +214,7 @@ class JaznConfig:
 
     @property
     def lexical_resource_cache_path(self) -> Path:
-        return self.root / self.lexical_resource_cache_name
+        return runtime_state_path(self.root, self.lexical_resource_cache_name)
 
     def _active_shard_path(
         self,

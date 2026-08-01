@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.nlp_reasoning.lexical_resource_cache import LexicalResourceCache
 
 
@@ -181,8 +182,8 @@ class LexicalResourceRegistry:
         candidates = [
             self.root / "external_data" / "polimorf" / "polimorf.tsv",
             self.root / "external_data" / "polimorf" / "polimorf.tab",
-            self.root / "workspace_runtime" / "polish_reasoning" / "polimorf.tsv",
-            self.root / "workspace_runtime" / "polish_reasoning" / "polimorf.tab",
+            workspace_runtime_path(self.root) / "polish_reasoning" / "polimorf.tsv",
+            workspace_runtime_path(self.root) / "polish_reasoning" / "polimorf.tab",
         ]
         return next((candidate for candidate in candidates if candidate.exists()), candidates[0])
 

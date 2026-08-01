@@ -7,6 +7,7 @@ import json
 from latka_jazn.bridge_secure_gateway import SecureGatewayPolicy
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.version import schema_version
 
 
@@ -31,7 +32,7 @@ def discover_runtime_bridges(
     port: int = DEFAULT_DAEMON_PORT,
 ) -> dict[str, Any]:
     root = Path(config.root).resolve()
-    marker_path = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    marker_path = active_runtime_marker_path(root)
     marker = _read_json(marker_path)
     daemon = status_daemon(config, host=host, port=port, probe_endpoint=False)
     return {

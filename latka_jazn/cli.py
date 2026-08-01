@@ -65,6 +65,21 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common(child)
     child.add_argument("--output", type=Path)
 
+    child = sub.add_parser("runtime-bootstrap", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--parts-dir", type=Path, required=True)
+    child.add_argument("--destination", type=Path, required=True)
+    child.add_argument("--zip-name")
+    child.add_argument("--work-dir", type=Path)
+    child.add_argument("--time-budget-seconds", type=float, default=25.0)
+    child.add_argument("--no-crc", action="store_true")
+    child.add_argument(
+        "--force-reextract",
+        action="store_true",
+        help="Wyczyść tylko katalog stagingowy; nigdy nie zastępuje zajętego destination.",
+    )
+    child.add_argument("--no-start-daemon", action="store_true")
+
     for name in ("memory-prepare", "memory-status"):
         child = sub.add_parser(name, allow_abbrev=False)
         _add_common(child)
@@ -209,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
-        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
+        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
         return _legacy_main(args)
@@ -222,6 +237,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
     root = Path(ns.root).resolve()
+
+    if ns.command == "runtime-bootstrap":
+        from latka_jazn.bootstrap.chatgpt_recovery import recover_chatgpt_runtime
+
+        result = recover_chatgpt_runtime(
+            parts_dir=ns.parts_dir,
+            destination=ns.destination,
+            base_zip_name=ns.zip_name,
+            work_dir=ns.work_dir,
+            time_budget_seconds=ns.time_budget_seconds,
+            run_crc=not ns.no_crc,
+            force_reextract=bool(ns.force_reextract),
+            start_runtime_daemon=not ns.no_start_daemon,
+        )
+        _emit(result.to_dict(), as_json=True)
+        return int(result.exit_code)
 
     if ns.command == "status":
         payload = diagnostics.status_payload(

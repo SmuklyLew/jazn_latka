@@ -84,6 +84,34 @@ python -X utf8 run.py chat-gpt -- "wiadomość"
 
 `run.py` jest kanonicznym interfejsem operatora. `main.py` pozostaje technicznym punktem zgodności dla kompatybilnych flag, daemona i mostów niskiego poziomu.
 
+### Przenośny bootstrap paczki
+
+Aktualną lokalną paczkę systemową albo `combined` można bezpiecznie zmaterializować do nowego,
+zapisywalnego i wersjonowanego katalogu:
+
+```powershell
+python -X utf8 run.py runtime-bootstrap `
+  --parts-dir D:\lokalne_paczki `
+  --destination D:\Jaźń\active-v15.1.0.3.90 `
+  --json
+```
+
+Loader rozpoznaje bieżący `*.zip.package.json`, starszy sidecar zgodnościowy, binarnie dzielony ZIP
+oraz niezależne woluminy ZIP. Sprawdza hashe części, CRC, bezpieczne ścieżki, pełny manifest kodu
+i — dla profilu `combined` — osobny manifest pamięci. Bieżąca paczka wymaga znanego profilu i schematu,
+zgodnej wersji, zweryfikowanego `SOURCE_PROVENANCE.json` oraz dokładnego inwentarza statycznych plików.
+Obcy kod i zapakowany stan `workspace_runtime` blokują materializację. Paczka `memory` nigdy sama nie
+staje się `active_root`, a zajęty katalog docelowy nie jest automatycznie zastępowany.
+
+`--no-start-daemon` wykonuje wyłącznie materializację i walidację. Nawet gdy pamięć jest zdrowa,
+wynik pozostaje `installed_inactive`; stan `active` wymaga osiągalnego procesu, zgodnej tożsamości
+endpointu, świeżego heartbeat oraz sprawnej pamięci. Brak zapisu, części paczki lub uprawnień daje
+ustrukturyzowany raport `bootstrap_blocked`, nigdy pozorny start.
+
+`JAZN_RUNTIME_WORKSPACE_DIR` przenosi stan techniczny (marker, PID, logi, checkpointy i cache)
+poza katalog kodu. Nie przenosi pamięci SQLite i `memory/`; pełna instalacja tylko do odczytu musi
+zostać najpierw zmaterializowana do zapisywalnego `active_root`.
+
 ## Walidacja dużej pamięci
 
 Szybka, read-only kontrola znanych baz i shardów:

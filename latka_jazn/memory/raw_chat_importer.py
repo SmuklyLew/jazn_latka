@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any
 import hashlib
 
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "raw_chat_importer/v2"
 
 
@@ -40,12 +43,19 @@ class RawChatImporter:
 
     def inspect(self) -> RawChatStatus:
         raw = self.root / "memory" / "raw" / "chat.html"
-        runtime = self.root / "workspace_runtime"
+        runtime = workspace_runtime_path(self.root)
         sqlite_dir = self.root / "memory" / "sqlite"
-        dbs = []
-        for parent in (runtime, sqlite_dir):
-            if parent.exists():
-                dbs.extend(parent.glob("*.sqlite3"))
+        config = JaznConfig(root=self.root)
+        dbs = [
+            path
+            for path in (
+                config.recovered_memory_db_path,
+                config.memory_db_path_readonly,
+                sqlite_dir / "chat_context.sqlite3",
+                runtime / "latka_jazn_current_line.sqlite3",
+            )
+            if path.is_file()
+        ]
         chat_present = raw.is_file()
         index_available = bool(dbs)
         if chat_present and index_available:

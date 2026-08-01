@@ -67,6 +67,8 @@ Paczka jest kandydatem, nie aktywnym runtime. Automatycznie wybieraj wyłącznie
 Przed rozpakowaniem:
 
 - rozpoznaj rzeczywisty format archiwum i profil paczki;
+- rozpoznawaj bieżący sidecar `*.zip.package.json` oraz zgodnościowy `*.zip.manifest.json`;
+- obsłuż zarówno jeden binarnie dzielony ZIP (`.zip.001`, `.002`), jak i zestaw niezależnych woluminów ZIP;
 - odrzuć profil `memory` jako systemowy kandydat `active_root`;
 - dla archiwum dzielonego wymagaj wszystkich części i dostępnych sidecarów;
 - zweryfikuj SHA-256 i pełny CRC ZIP;
@@ -80,6 +82,26 @@ Rozpakuj do nowego, wersjonowanego folderu. Nigdy nie nadpisuj działającego ru
 - rozmiary oraz SHA-256 wszystkich pozycji manifestu;
 - zgodność drzewa z manifestem;
 - `SOURCE_PROVENANCE.json` osobno od integralności.
+
+Kanoniczna materializacja lokalnej paczki do nowego, zapisywalnego katalogu:
+
+```bash
+python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT> --json
+```
+
+`--force-reextract` czyści wyłącznie staging. Nie zezwala na zastąpienie zajętego `destination`.
+Profil `combined` wymaga dodatkowo zgodnego `memory/MEMORY_PACKAGE_MANIFEST.json` oraz SHA-256 każdego pliku pamięci.
+Profil `system` nie może zawierać prywatnego drzewa `memory/`.
+Bieżący sidecar wymaga schematu `jazn_package_set/v1`, jawnego profilu i wersji zgodnej z rozpakowanym runtime.
+Loader odrzuca nieobjęty manifestem kod, semantycznie niewiarygodny `SOURCE_PROVENANCE.json` oraz spakowany
+stan mutable (`workspace_runtime`, marker, cache aktywacji). Błąd I/O ma zwrócić `bootstrap_blocked`, bez tracebacku.
+
+`--no-start-daemon` nigdy nie oznacza aktywacji: także z poprawną pamięcią wynik ma pozostać
+`installed_inactive`. `active` wolno przyjąć dopiero po potwierdzeniu żywego endpointu Daemona i zdrowia SQLite.
+
+Jeżeli kod jest zamontowany tylko do odczytu, `JAZN_RUNTIME_WORKSPACE_DIR` może przenieść PID, marker, logi,
+checkpointy i cache do zapisywalnego katalogu. Nie przenosi jednak `memory/`. Pełny start z zapisem pamięci
+wymaga zapisywalnego `active_root`, dlatego w takim środowisku użyj materializacji do nowego katalogu.
 
 Nie wymagaj ani nie twórz `VERSION.txt` lub `MANIFEST_CURRENT.json`. Brak `memory/` albo `workspace_runtime/` oznacza brak danych lub stanu, nie brak kodu.
 

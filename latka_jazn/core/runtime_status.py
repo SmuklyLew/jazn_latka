@@ -16,6 +16,7 @@ from latka_jazn.memory.event_ledger import (
 )
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.bootstrap.contract_loader import BootstrapContractRepository
+from latka_jazn.core.runtime_root import workspace_runtime_path
 
 STAT_TABLES = [
     "events",
@@ -182,7 +183,7 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
     event_ledger_counts = build_event_ledger_status(root, raw)
 
     previous_sqlite = []
-    previous_dir = root / "workspace_runtime" / "previous_versions"
+    previous_dir = workspace_runtime_path(root) / "previous_versions"
     if previous_dir.exists():
         for db in sorted(previous_dir.glob("*.sqlite3")):
             previous_sqlite.append({"path": display_path(root, db), "size_bytes": db.stat().st_size})

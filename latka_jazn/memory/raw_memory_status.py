@@ -4,6 +4,9 @@ from pathlib import Path
 from typing import Any
 import hashlib, sqlite3
 
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.runtime_root import workspace_runtime_path
+
 SCHEMA_VERSION = "raw_memory_status/v1"
 
 def _sha(path: Path) -> str | None:
@@ -92,10 +95,16 @@ class RawMemoryInspector:
         html = raw_dir / "chat.html"
         db = self.sqlite_path or self.root / "memory" / "sqlite" / "chat_context.sqlite3"
         if not db.exists():
-            candidates: list[Path] = []
-            for parent in (self.root / "memory" / "sqlite", self.root / "workspace_runtime"):
-                if parent.exists():
-                    candidates.extend(parent.glob("*.sqlite3"))
+            config = JaznConfig(root=self.root)
+            candidates = [
+                path
+                for path in (
+                    config.recovered_memory_db_path,
+                    config.memory_db_path_readonly,
+                    workspace_runtime_path(self.root) / "latka_jazn_current_line.sqlite3",
+                )
+                if path.is_file()
+            ]
             db = sorted(candidates)[-1] if candidates else db
         legacy_count, message_count, chunk_count, sha_meta, kind = self._inspect_sqlite(db)
         sqlite_present = db.exists()

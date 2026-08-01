@@ -202,6 +202,46 @@ def test_completed_daemon_poll_uses_same_exact_display_gate(tmp_path) -> None:
     assert presented["daemon_job"]["request_id"] == "request-456"
 
 
+def test_completed_daemon_poll_preserves_exact_user_text_for_host_generation(tmp_path) -> None:
+    user_text = "Dlaczego nie mogłaś się obudzić po mojej pierwszej wiadomości?"
+    runtime = _host_generation_payload()
+    presented = main_module._prepare_chatgpt_daemon_presentation(
+        cfg=JaznConfig(root=tmp_path),
+        payload={
+            "ok": True,
+            "done": True,
+            "request_id": "request-host",
+            "job_status": "completed",
+            "user_text": user_text,
+            "user_text_sha256": sha256_host_visible_text(user_text),
+            "result": runtime,
+        },
+        request_id="request-host",
+    )
+    bridge = presented["chatgpt_host_bridge"]
+    assert bridge["phase"] == "host_visible_generation_requested"
+    assert bridge["user_text_sha256"] == sha256_host_visible_text(user_text)
+    assert bridge["pending_request_persisted"] is True
+
+
+def test_completed_daemon_host_generation_fails_closed_without_user_text_binding(tmp_path) -> None:
+    presented = main_module._prepare_chatgpt_daemon_presentation(
+        cfg=JaznConfig(root=tmp_path),
+        payload={
+            "ok": True,
+            "done": True,
+            "request_id": "request-unbound",
+            "job_status": "completed",
+            "result": _host_generation_payload(),
+        },
+        request_id="request-unbound",
+    )
+    bridge = presented["chatgpt_host_bridge"]
+    assert bridge["phase"] == "host_diagnostic_required"
+    assert bridge["status"] == "daemon_user_text_binding_missing"
+    assert bridge["host_must_generate_visible_reply"] is False
+
+
 def test_failed_daemon_poll_cannot_fall_through_to_latka_voice(tmp_path) -> None:
     presented = main_module._prepare_chatgpt_daemon_presentation(
         cfg=JaznConfig(root=tmp_path),

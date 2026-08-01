@@ -6,9 +6,24 @@ from types import SimpleNamespace
 import os
 import threading
 import time
+import pytest
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon
+
+
+@pytest.fixture(autouse=True)
+def _verified_source_provenance(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {
+                "status": "verified_export_without_git_history",
+                "limitations": ["test fixture without Git history"],
+            }
+        ),
+    )
 
 
 class _FakeSession:
@@ -120,6 +135,11 @@ def _install(monkeypatch, root: Path, marker: dict, ping: dict | None, *, pid_al
     )
     monkeypatch.setattr(runtime_daemon, "pid_is_alive", lambda _pid: pid_alive)
     monkeypatch.setattr(runtime_daemon, "_probe_daemon_status", lambda *_args, **_kwargs: (ping, None if ping else "timeout", "/ready" if ping else None))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
 
 
 def test_healthy_daemon_is_active_trusted_even_with_local_time(tmp_path: Path, monkeypatch) -> None:
@@ -129,6 +149,53 @@ def test_healthy_daemon_is_active_trusted_even_with_local_time(tmp_path: Path, m
     assert result["active_state"] == "active_trusted"
     assert result["readiness_state"] == "ready"
     assert result["time_trust_state"] == "local_machine_unverified"
+
+
+def test_live_endpoint_is_not_trusted_when_current_package_hashes_fail(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, trusted=True))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {
+            "ok": False,
+            "errors": [{"code": "sha256_mismatch", "path": "main.py"}],
+        },
+    )
+
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+
+    assert result["active_state"] == "inactive"
+    assert result["ok"] is False
+    assert result["process_state"] == "active"
+    assert result["package_integrity_verified"] is False
+    assert result["active_state_reason"] == "package_integrity_verification_failed"
+
+
+def test_live_endpoint_is_not_trusted_when_source_provenance_is_invalid(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, trusted=True))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+
+    assert result["active_state"] == "inactive"
+    assert result["ok"] is False
+    assert result["process_state"] == "active"
+    assert result["source_provenance_verified"] is False
+    assert result["active_state_reason"] == "source_provenance_not_verified"
 
 
 def test_snapshot_does_not_probe_or_claim_live_verification(tmp_path: Path, monkeypatch) -> None:
@@ -377,3 +444,185 @@ def test_restart_recovers_nonterminal_job_without_double_execution(tmp_path: Pat
     finally:
         second.close_sessions()
         second.server_close()
+
+
+def test_daemon_job_snapshot_carries_transient_exact_user_text_binding() -> None:
+    user_text = "Pierwsza dokładna wiadomość użytkownika."
+    job = runtime_daemon.DaemonChatJob(
+        request_id="binding-request",
+        user_text=user_text,
+        input_field="message",
+        session_id="binding-session",
+        no_carryover=False,
+        client="isolated-test",
+    )
+    snapshot = job.snapshot()
+    assert snapshot["user_text"] == user_text
+    assert snapshot["user_text_sha256"] == runtime_daemon.hashlib.sha256(
+        user_text.encode("utf-8")
+    ).hexdigest()
+    assert snapshot["input_field"] == "message"
+
+
+def test_start_daemon_rejects_invalid_source_provenance_before_side_effects(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("endpoint probe must not run before provenance gate")
+        ),
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "source_provenance_not_verified"
+    assert not (tmp_path / "memory").exists()
+
+
+def test_low_level_daemon_entrypoint_cannot_bypass_provenance_gate(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("memory initialization must not run before provenance gate")
+        ),
+    )
+
+    exit_code = runtime_daemon.run_daemon(JaznConfig(root=tmp_path), port=0)
+    diagnostic = capsys.readouterr().err
+
+    assert exit_code == 3
+    assert '"error_code": "source_provenance_not_verified"' in diagnostic
+    assert not (tmp_path / "memory").exists()
+
+
+def test_start_daemon_reports_unwritable_runtime_workspace_without_traceback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    blocked_parent = tmp_path / "not-a-directory"
+    blocked_parent.write_text("blocked", encoding="utf-8")
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "daemon_log_dir",
+        lambda _root: blocked_parent / "daemon",
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_workspace_unwritable"
+
+
+def test_start_daemon_reports_log_open_permission_failure_without_traceback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    log_dir = tmp_path / "external-runtime-state" / "daemon"
+    original_open = Path.open
+
+    def blocked_log_open(path: Path, *args, **kwargs):
+        if path == log_dir / "stdout.log":
+            raise PermissionError(13, "host denied daemon log write", str(path))
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(runtime_daemon, "daemon_log_dir", lambda _root: log_dir)
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("memory initialization must follow the workspace write preflight")
+        ),
+    )
+    monkeypatch.setattr(Path, "open", blocked_log_open)
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_workspace_unwritable"
+    assert result["stdout_log"] == str(log_dir / "stdout.log")
+
+
+def test_start_daemon_reports_unwritable_memory_root_before_spawning(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            PermissionError(13, "host denied memory write")
+        ),
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_memory_root_unwritable"
+    assert "runtime-bootstrap" in result["recovery_hint"]

@@ -12,6 +12,7 @@ import traceback
 import uuid
 from typing import Any
 
+from latka_jazn.core.runtime_root import find_runtime_root, workspace_runtime_path
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 
@@ -223,7 +224,11 @@ def _same_path(left: Any, right: Any) -> bool:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Persistent Codex file bridge for the active Jazn runtime.")
     parser.add_argument("command", choices=["serve", "send", "status", "stop"])
-    parser.add_argument("--root", default="workspace_runtime/codex_session_bridge")
+    active_root = find_runtime_root(Path(__file__))
+    parser.add_argument(
+        "--root",
+        default=str(workspace_runtime_path(active_root) / "codex_session_bridge"),
+    )
     parser.add_argument("--session", default="codex-live")
     parser.add_argument("--client", default="codex")
     parser.add_argument("--text", default="")

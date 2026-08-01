@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import time
 import uuid
 import zipfile
@@ -50,6 +51,14 @@ def sha256_file(path: Path, *, chunk_size: int = CHUNK_SIZE) -> str:
     return h.hexdigest()
 
 
+def _crc32_file(path: Path) -> int:
+    crc = 0
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(CHUNK_SIZE), b""):
+            crc = zlib.crc32(chunk, crc)
+    return crc & 0xFFFFFFFF
+
+
 def parse_sha256sum_file(path: Path) -> list[tuple[str, str]]:
     rows: list[tuple[str, str]] = []
     path = Path(path)
@@ -63,8 +72,75 @@ def parse_sha256sum_file(path: Path) -> list[tuple[str, str]]:
         match = re.match(r"^([0-9a-fA-F]{64})\s+\*?(.+)$", raw)
         if not match:
             continue
-        rows.append((match.group(1).lower(), match.group(2).strip()))
+        rows.append((match.group(1).lower(), _safe_part_filename(match.group(2).strip())))
     return rows
+
+
+def _safe_part_filename(value: str) -> str:
+    """Package volumes are always flat files next to their sidecars."""
+
+    raw = str(value or "").strip()
+    if (
+        not raw
+        or raw in {".", ".."}
+        or "\x00" in raw
+        or "/" in raw
+        or "\\" in raw
+        or Path(raw).name != raw
+    ):
+        raise ValueError(f"Niebezpieczna nazwa części paczki: {value!r}")
+    return raw
+
+
+def load_package_set_metadata(parts_dir: Path, base_zip_name: str) -> dict[str, Any]:
+    """Read the current package-set contract, with an explicit legacy fallback."""
+
+    parts_dir = Path(parts_dir).expanduser().resolve()
+    base_zip_name = sanitize_zip_name(base_zip_name)
+    current_path = parts_dir / f"{base_zip_name}.package.json"
+    legacy_path = parts_dir / f"{base_zip_name}.manifest.json"
+    if current_path.is_file():
+        payload = json.loads(current_path.read_text(encoding="utf-8-sig"))
+        if not isinstance(payload, dict):
+            raise ValueError("package.json paczki nie jest obiektem JSON")
+        if payload.get("schema_version") != "jazn_package_set/v1":
+            raise ValueError(
+                "Nieobsługiwany schema_version package.json paczki: "
+                f"{payload.get('schema_version')!r}"
+            )
+        declared_name = sanitize_zip_name(str(payload.get("package_name") or base_zip_name))
+        if declared_name != base_zip_name:
+            raise ValueError(
+                f"package.json wskazuje inną paczkę: {declared_name!r} != {base_zip_name!r}"
+            )
+        archive_format = str(payload.get("archive_format") or "").strip().lower()
+        if archive_format not in {"binary", "independent"}:
+            raise ValueError(f"Nieobsługiwany archive_format paczki: {archive_format!r}")
+        return {
+            "source": "package.json",
+            "path": str(current_path),
+            "profile": str(payload.get("profile") or "unknown").strip().lower(),
+            "archive_format": archive_format,
+            "package_version": str(payload.get("package_version") or "").strip() or None,
+            "schema_version": payload.get("schema_version"),
+        }
+    if legacy_path.is_file():
+        return {
+            "source": "legacy_manifest",
+            "path": str(legacy_path),
+            "profile": "unknown",
+            "archive_format": "binary",
+            "package_version": None,
+            "schema_version": None,
+        }
+    return {
+        "source": "filesystem_fallback",
+        "path": None,
+        "profile": "unknown",
+        "archive_format": "binary",
+        "package_version": None,
+        "schema_version": None,
+    }
 
 
 def infer_base_zip_name(parts_dir: Path, base_zip_name: str | None = None) -> str:
@@ -73,9 +149,17 @@ def infer_base_zip_name(parts_dir: Path, base_zip_name: str | None = None) -> st
     if base_zip_name:
         return sanitize_zip_name(base_zip_name)
 
-    manifests = sorted(parts_dir.glob("*.zip.manifest.json"))
-    if len(manifests) == 1:
-        return manifests[0].name[: -len(".manifest.json")]
+    current_sidecars = sorted(parts_dir.glob("*.zip.package.json"))
+    legacy_sidecars = sorted(parts_dir.glob("*.zip.manifest.json"))
+    sidecar_names = {
+        path.name[: -len(".package.json")]
+        for path in current_sidecars
+    } | {
+        path.name[: -len(".manifest.json")]
+        for path in legacy_sidecars
+    }
+    if len(sidecar_names) == 1:
+        return next(iter(sidecar_names))
 
     groups: dict[str, int] = {}
     for part in parts_dir.glob("*.zip.[0-9][0-9][0-9]"):
@@ -85,7 +169,7 @@ def infer_base_zip_name(parts_dir: Path, base_zip_name: str | None = None) -> st
     if len(groups) == 1:
         return next(iter(groups))
 
-    if not manifests and not groups:
+    if not sidecar_names and not groups:
         raise FileNotFoundError(f"Nie znaleziono części ZIP w folderze: {parts_dir}")
 
     raise ValueError(
@@ -101,6 +185,7 @@ def load_package_expectations(
     parts_dir = Path(parts_dir).expanduser().resolve()
     base_zip_name = sanitize_zip_name(base_zip_name)
 
+    package_path = parts_dir / f"{base_zip_name}.package.json"
     manifest_path = parts_dir / f"{base_zip_name}.manifest.json"
     parts_sha_path = parts_dir / f"{base_zip_name}.parts.sha256"
     full_sha_path = parts_dir / f"{base_zip_name}.sha256"
@@ -109,16 +194,35 @@ def load_package_expectations(
     expected_full_sha: str | None = None
     source = "glob"
 
-    if manifest_path.exists():
+    if package_path.exists():
+        source = "package.json"
+        data = json.loads(package_path.read_text(encoding="utf-8-sig"))
+        if not isinstance(data, dict):
+            raise ValueError("package.json paczki nie jest obiektem JSON")
+        expected_full_sha = str(data.get("logical_zip_sha256") or "").strip().lower() or None
+        for item in data.get("outputs") or []:
+            if not isinstance(item, dict):
+                raise ValueError("package.json zawiera niepoprawny rekord outputs")
+            expected.append(
+                PackagePartExpectation(
+                    part_no=int(item["part_no"]),
+                    filename=_safe_part_filename(str(item["filename"])),
+                    size_bytes=int(item["size_bytes"]) if item.get("size_bytes") is not None else None,
+                    sha256=str(item.get("sha256") or "").strip().lower() or None,
+                )
+            )
+    elif manifest_path.exists():
         source = "manifest"
         data = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        expected_full_sha = str(data.get("logical_full_zip_sha256") or "").strip().lower() or None
+        expected_full_sha = str(
+            data.get("logical_full_zip_sha256") or data.get("logical_zip_sha256") or ""
+        ).strip().lower() or None
 
         for item in data.get("parts") or []:
             expected.append(
                 PackagePartExpectation(
                     part_no=int(item["part_no"]),
-                    filename=str(item["filename"]),
+                    filename=_safe_part_filename(str(item["filename"])),
                     size_bytes=int(item["size_bytes"]) if item.get("size_bytes") is not None else None,
                     sha256=str(item.get("sha256") or "").strip().lower() or None,
                 )
@@ -137,7 +241,9 @@ def load_package_expectations(
 
     if not expected:
         for part_no, path in enumerate(sorted(parts_dir.glob(f"{base_zip_name}.[0-9][0-9][0-9]")), start=1):
-            expected.append(PackagePartExpectation(part_no=part_no, filename=path.name))
+            expected.append(
+                PackagePartExpectation(part_no=part_no, filename=_safe_part_filename(path.name))
+            )
 
     if not expected_full_sha and full_sha_path.exists():
         rows = parse_sha256sum_file(full_sha_path)
@@ -176,7 +282,8 @@ def resolve_renamed_package_parts(
 
     all_candidates = [path for path in parts_dir.iterdir() if path.is_file() and _part_suffix_number(path) is not None]
     for part in expected:
-        exact = parts_dir / part.filename
+        safe_filename = _safe_part_filename(part.filename)
+        exact = parts_dir / safe_filename
         candidates = [exact] if exact.is_file() else []
         candidates.extend(
             path for path in all_candidates
@@ -214,7 +321,7 @@ def resolve_renamed_package_parts(
                 )
         source, digest = matches[0]
         used.add(source)
-        target = canonical_dir / part.filename
+        target = canonical_dir / safe_filename
         if target.exists():
             target.unlink()
         try:
@@ -256,6 +363,7 @@ def verify_extracted_zip_tree(
     destination = Path(destination).expanduser().resolve()
     missing: list[str] = []
     wrong_size: list[dict[str, Any]] = []
+    wrong_crc: list[dict[str, Any]] = []
     expected_files: set[str] = set()
     expected_dirs: set[str] = set()
     with zipfile.ZipFile(zip_path, "r") as zf:
@@ -279,6 +387,16 @@ def verify_extracted_zip_tree(
                         "actual": target.stat().st_size,
                         "expected": info.file_size,
                     })
+                else:
+                    actual_crc = _crc32_file(target)
+                    if actual_crc != info.CRC:
+                        wrong_crc.append(
+                            {
+                                "path": info.filename,
+                                "actual": f"{actual_crc:08x}",
+                                "expected": f"{info.CRC:08x}",
+                            }
+                        )
     extra_files: list[str] = []
     if destination.exists():
         for path in destination.rglob("*"):
@@ -286,7 +404,7 @@ def verify_extracted_zip_tree(
                 rel = path.relative_to(destination).as_posix()
                 if rel not in expected_files:
                     extra_files.append(rel)
-    ok = not missing and not wrong_size and (not reject_extra_files or not extra_files)
+    ok = not missing and not wrong_size and not wrong_crc and (not reject_extra_files or not extra_files)
     return {
         "ok": ok,
         "zip_path": str(zip_path),
@@ -295,6 +413,78 @@ def verify_extracted_zip_tree(
         "expected_directory_count": len(expected_dirs),
         "missing": missing,
         "wrong_size": wrong_size,
+        "wrong_crc": wrong_crc,
+        "extra_files": extra_files,
+        "reject_extra_files": reject_extra_files,
+    }
+
+
+def verify_extracted_zip_set(
+    zip_paths: list[Path],
+    destination: Path,
+    *,
+    reject_extra_files: bool = False,
+) -> dict[str, Any]:
+    """Verify a set of independent ZIP volumes as one non-overlapping tree."""
+
+    resolved = [Path(path).expanduser().resolve() for path in zip_paths]
+    destination = Path(destination).expanduser().resolve()
+    expected: dict[str, tuple[int, int]] = {}
+    duplicate_members: list[str] = []
+    for zip_path in resolved:
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            validate_zip_member_names(zf)
+            for info in zf.infolist():
+                relative = info.filename.rstrip("/")
+                if not relative or info.is_dir():
+                    continue
+                if relative in expected:
+                    duplicate_members.append(relative)
+                    continue
+                expected[relative] = (int(info.file_size), int(info.CRC))
+    if duplicate_members:
+        raise ValueError(
+            "Niezależne woluminy ZIP zawierają duplikaty wpisów: "
+            + ", ".join(sorted(set(duplicate_members))[:20])
+        )
+
+    missing: list[str] = []
+    wrong_size: list[dict[str, Any]] = []
+    wrong_crc: list[dict[str, Any]] = []
+    for relative, (expected_size, expected_crc) in expected.items():
+        target = destination / Path(*PurePosixPath(relative).parts)
+        if not target.is_file():
+            missing.append(relative)
+        elif target.stat().st_size != expected_size:
+            wrong_size.append(
+                {"path": relative, "actual": target.stat().st_size, "expected": expected_size}
+            )
+        else:
+            actual_crc = _crc32_file(target)
+            if actual_crc != expected_crc:
+                wrong_crc.append(
+                    {
+                        "path": relative,
+                        "actual": f"{actual_crc:08x}",
+                        "expected": f"{expected_crc:08x}",
+                    }
+                )
+    actual_files = {
+        path.relative_to(destination).as_posix()
+        for path in destination.rglob("*")
+        if path.is_file()
+    } if destination.exists() else set()
+    extra_files = sorted(actual_files - set(expected))
+    ok = not missing and not wrong_size and not wrong_crc and (not reject_extra_files or not extra_files)
+    return {
+        "ok": ok,
+        "archive_format": "independent",
+        "zip_paths": [str(path) for path in resolved],
+        "destination": str(destination),
+        "expected_file_count": len(expected),
+        "missing": missing,
+        "wrong_size": wrong_size,
+        "wrong_crc": wrong_crc,
         "extra_files": extra_files,
         "reject_extra_files": reject_extra_files,
     }
@@ -355,7 +545,13 @@ def extract_joined_zip_resumable(
                 target.mkdir(parents=True, exist_ok=True)
                 continue
             record = completed.get(info.filename)
-            if record and target.is_file() and target.stat().st_size == info.file_size and int(record.get("crc32", -1)) == int(info.CRC):
+            if (
+                record
+                and target.is_file()
+                and target.stat().st_size == info.file_size
+                and int(record.get("crc32", -1)) == int(info.CRC)
+                and _crc32_file(target) == int(info.CRC)
+            ):
                 skipped_completed += 1
                 continue
             if time_budget_seconds is not None and extracted_now > 0 and (time.monotonic() - started) >= float(time_budget_seconds):
@@ -413,6 +609,65 @@ def extract_joined_zip_resumable(
         "completed_count": len(completed),
         "extracted_now": extracted_now,
         "skipped_completed": skipped_completed,
+        "verification": verification,
+    }
+
+
+def extract_independent_zip_set_resumable(
+    zip_paths: list[Path],
+    destination: Path,
+    *,
+    progress_path: Path | None = None,
+    time_budget_seconds: float | None = None,
+) -> dict[str, Any]:
+    """Safely resume extraction of current independent package volumes."""
+
+    resolved = [Path(path).expanduser().resolve() for path in zip_paths]
+    destination = Path(destination).expanduser().resolve()
+    progress_path = (
+        Path(progress_path).expanduser().resolve()
+        if progress_path
+        else destination.parent / f".{destination.name}.extract-progress.json"
+    )
+    # Validate the complete member namespace before writing the first byte.
+    verify_extracted_zip_set(resolved, destination, reject_extra_files=False)
+    started = time.monotonic()
+    volume_reports: list[dict[str, Any]] = []
+    for index, zip_path in enumerate(resolved, start=1):
+        remaining = None
+        if time_budget_seconds is not None:
+            remaining = max(0.0, float(time_budget_seconds) - (time.monotonic() - started))
+        volume_progress = progress_path.with_name(
+            f"{progress_path.stem}.volume-{index:03d}{progress_path.suffix}"
+        )
+        report = extract_joined_zip_resumable(
+            zip_path,
+            destination,
+            progress_path=volume_progress,
+            time_budget_seconds=remaining,
+        )
+        volume_reports.append(report)
+        if report.get("pending"):
+            return {
+                "ok": False,
+                "pending": True,
+                "archive_format": "independent",
+                "destination": str(destination),
+                "completed_volumes": index - 1,
+                "total_volumes": len(resolved),
+                "volume_reports": volume_reports,
+            }
+    verification = verify_extracted_zip_set(resolved, destination, reject_extra_files=False)
+    if not verification.get("ok"):
+        raise ValueError(f"Rozpakowany filesystem nie odpowiada zestawowi ZIP: {verification}")
+    return {
+        "ok": True,
+        "pending": False,
+        "archive_format": "independent",
+        "destination": str(destination),
+        "completed_volumes": len(resolved),
+        "total_volumes": len(resolved),
+        "volume_reports": volume_reports,
         "verification": verification,
     }
 
@@ -516,6 +771,8 @@ def unsafe_zip_member_name(name: str) -> str | None:
     normalized = str(name).replace("\\", "/")
     path = PurePosixPath(normalized)
 
+    if "\\" in name:
+        return "backslash separator"
     if name.startswith(("/", "\\")):
         return "absolute path"
     if len(name) >= 2 and name[1] == ":":
@@ -531,10 +788,37 @@ def unsafe_zip_member_name(name: str) -> str | None:
 def validate_zip_member_names(zf: zipfile.ZipFile) -> None:
     validate_zip_resources(zf)
     bad: list[str] = []
+    seen: set[str] = set()
+    files: set[str] = set()
+    directories: set[str] = set()
     for info in zf.infolist():
         reason = unsafe_zip_member_name(info.filename)
         if reason:
             bad.append(f"{info.filename!r}: {reason}")
+            continue
+        relative = info.filename.rstrip("/")
+        if relative in seen:
+            bad.append(f"{info.filename!r}: duplicate entry")
+            continue
+        seen.add(relative)
+        unix_type = (int(info.external_attr) >> 16) & 0o170000
+        if unix_type == stat.S_IFLNK:
+            bad.append(f"{info.filename!r}: symbolic link")
+            continue
+        if info.is_dir():
+            directories.add(relative)
+        else:
+            files.add(relative)
+
+    for file_name in sorted(files):
+        if file_name in directories:
+            bad.append(f"{file_name!r}: file-directory collision")
+        parts = PurePosixPath(file_name).parts
+        for index in range(1, len(parts)):
+            parent = PurePosixPath(*parts[:index]).as_posix()
+            if parent in files:
+                bad.append(f"{file_name!r}: parent path is a file ({parent!r})")
+                break
 
     if bad:
         sample = "\n".join(bad[:20])

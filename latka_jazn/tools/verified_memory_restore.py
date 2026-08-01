@@ -16,6 +16,7 @@ from urllib.parse import quote
 import uuid
 import zlib
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 
 SCHEMA_VERSION = "jazn_verified_memory_restore/v1"
 L2_DRAFT_SCHEMA = "jazn_verified_memory_restore_l2_draft/v1"
@@ -1566,7 +1567,7 @@ def prepare(
     test04_summary = test04_summary.expanduser().resolve()
     if not (root / "run.py").is_file():
         raise VerifiedMemoryRestoreError(f"Brak run.py pod rootem: {root}")
-    run_dir = root / "workspace_runtime" / "verified_memory_restore" / _run_id()
+    run_dir = workspace_runtime_path(root) / "verified_memory_restore" / _run_id()
     staged_root = run_dir / "staged_runtime"
     backup_root = run_dir / "backup_before_publish"
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -1709,8 +1710,7 @@ def activate(
         max_errors=100,
         table_counts=True,
         hash_files=True,
-        output=root
-        / "workspace_runtime"
+        output=workspace_runtime_path(root)
         / "memory_validation"
         / "before_activation.json",
     )
@@ -1750,7 +1750,7 @@ def activate(
             "Status po starcie nie potwierdził active_trusted."
         )
 
-    run_dir = root / "workspace_runtime" / "verified_memory_restore" / _run_id()
+    run_dir = workspace_runtime_path(root) / "verified_memory_restore" / _run_id()
     run_dir.mkdir(parents=True, exist_ok=False)
     report = PhaseReport(
         schema_version=SCHEMA_VERSION,

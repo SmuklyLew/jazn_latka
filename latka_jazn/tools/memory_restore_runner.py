@@ -9,6 +9,7 @@ import re
 import sqlite3
 import tempfile
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
 from latka_jazn.tools.chat_export_reader import ChatExportReader
 from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
@@ -241,7 +242,7 @@ class MemoryRestoreOrchestrator:
         root = Path(self.settings.target_root)
         run_id = f"restore_{utc_stamp()}"
         report_dir = (
-            root / "workspace_runtime" / "memory_restore" / run_id
+            workspace_runtime_path(root) / "memory_restore" / run_id
             if self.settings.mode == "system"
             else root / "reports" / "memory_restore" / run_id
         )
@@ -308,8 +309,8 @@ class MemoryRestoreOrchestrator:
                 })
                 if self.settings.create_backup:
                     backup_root = (
-                        Path(self.settings.target_root)
-                        / "workspace_runtime" / "memory_restore" / "backups" / f"before_{report_dir.name}"
+                        workspace_runtime_path(Path(self.settings.target_root))
+                        / "memory_restore" / "backups" / f"before_{report_dir.name}"
                         if self.settings.mode == "system"
                         else Path(self.settings.target_root) / "backups" / f"before_{report_dir.name}"
                     )

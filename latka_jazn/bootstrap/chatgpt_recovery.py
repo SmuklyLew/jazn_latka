@@ -20,12 +20,15 @@ from latka_jazn.core.runtime_daemon import (
     status_daemon,
 )
 from latka_jazn.packaging.split_zip_package import (
+    extract_independent_zip_set_resumable,
     extract_joined_zip_resumable,
     infer_base_zip_name,
     join_split_package_to_zip,
     load_package_expectations,
+    load_package_set_metadata,
     resolve_renamed_package_parts,
     test_joined_zip,
+    verify_extracted_zip_set,
     verify_extracted_zip_tree,
 )
 from latka_jazn.tools.active_extraction_cache import write_active_runtime_marker
@@ -35,6 +38,9 @@ from latka_jazn.core.package_integrity_manifest import (
     PACKAGE_INTEGRITY_MANIFEST_NAME,
     sha256_file,
 )
+from latka_jazn.core.runtime_root import active_runtime_marker_path, workspace_runtime_path
+from latka_jazn.core.source_provenance import read_source_provenance
+from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 
 REQUIRED_FILES = ("latka_jazn/version.py", PACKAGE_INTEGRITY_MANIFEST_NAME)
 REQUIRED_DIRECTORIES = ("latka_jazn",)
@@ -43,6 +49,7 @@ START_FILES = ("run.py", "main.py")
 DEFAULT_CHATGPT_ROOT = Path("/mnt/data/jazn_runtime_current_full")
 DEFAULT_CHATGPT_PARTS_DIR = Path("/mnt/data")
 RECOVERY_SCHEMA_VERSION = schema_version("chatgpt_runtime_recovery", version=PACKAGE_VERSION_FULL)
+MEMORY_PACKAGE_MANIFEST_PATH = "memory/MEMORY_PACKAGE_MANIFEST.json"
 
 
 @dataclass(slots=True)
@@ -51,6 +58,7 @@ class RuntimePreflightReport:
     active_root: str
     structure_ok: bool
     manifest_ok: bool
+    provenance_ok: bool
     marker_ok: bool
     start_file: str | None
     version: str | None
@@ -58,6 +66,8 @@ class RuntimePreflightReport:
     marker_path: str | None
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    manifest_verification: dict[str, Any] | None = None
+    source_provenance: dict[str, Any] | None = None
     schema_version: str = RECOVERY_SCHEMA_VERSION
     truth_boundary: str = (
         "Preflight potwierdza folder, start file, manifest i marker. Żywy daemon, "
@@ -66,11 +76,11 @@ class RuntimePreflightReport:
 
     @property
     def needs_recovery(self) -> bool:
-        return not (self.structure_ok and self.manifest_ok)
+        return not (self.structure_ok and self.manifest_ok and self.provenance_ok)
 
     @property
     def needs_marker_refresh(self) -> bool:
-        return bool(self.structure_ok and self.manifest_ok and not self.marker_ok)
+        return bool(self.structure_ok and self.manifest_ok and self.provenance_ok and not self.marker_ok)
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -89,8 +99,10 @@ class RecoveryResult:
     exit_code: int = 0
     schema_version: str = RECOVERY_SCHEMA_VERSION
     truth_boundary: str = (
-        "Folder staje się aktywny dopiero po pełnym SHA256/CRC, rozpakowaniu bez uciętych plików, "
-        "porównaniu ZIP–filesystem, atomowej aktywacji i zapisaniu markera."
+        "Folder zostaje zainstalowany dopiero po pełnym SHA256/CRC, rozpakowaniu bez uciętych "
+        "plików, porównaniu ZIP–filesystem, atomowym przeniesieniu i zapisaniu markera. Stan "
+        "active wymaga dodatkowo rzeczywiście osiągalnego Daemona oraz sprawnej pamięci; tryb "
+        "bez startu procesu pozostaje installed_inactive."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -133,8 +145,12 @@ def _part_resolution_cache_valid(cache: dict[str, Any] | None, expected: list[An
             return False
         if part.size_bytes is not None and target.stat().st_size != part.size_bytes:
             return False
-        if part.sha256 and str(row.get("sha256") or "").lower() != part.sha256.lower():
-            return False
+        if part.sha256:
+            expected_sha = part.sha256.lower()
+            if str(row.get("sha256") or "").lower() != expected_sha:
+                return False
+            if sha256_file(source).lower() != expected_sha or sha256_file(target).lower() != expected_sha:
+                return False
     return True
 
 
@@ -144,7 +160,12 @@ def _zip_verification_cache_valid(cache: dict[str, Any] | None, zip_path: Path, 
     stat = zip_path.stat()
     if int(cache.get("size_bytes", -1)) != stat.st_size or int(cache.get("mtime_ns", -1)) != stat.st_mtime_ns:
         return False
-    if expected_sha and str(cache.get("sha256") or "").lower() != expected_sha.lower():
+    if not expected_sha:
+        return False
+    normalized_expected = expected_sha.lower()
+    if str(cache.get("sha256") or "").lower() != normalized_expected:
+        return False
+    if sha256_file(zip_path).lower() != normalized_expected:
         return False
     if run_crc and cache.get("crc_tested") is not True:
         return False
@@ -166,7 +187,7 @@ def _candidate_marker_paths(root: Path, explicit: Path | None = None) -> list[Pa
     paths: list[Path] = []
     if explicit is not None:
         paths.append(Path(explicit).expanduser().resolve())
-    paths.extend((root / "JAZN_ACTIVE_RUNTIME.json", root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"))
+    paths.extend((root / "JAZN_ACTIVE_RUNTIME.json", active_runtime_marker_path(root)))
     unique: list[Path] = []
     for path in paths:
         if path not in unique:
@@ -185,7 +206,8 @@ def runtime_preflight(root: Path, *, marker_path: Path | None = None) -> Runtime
         if not (root / name).is_dir():
             errors.append(f"missing_directory:{name}")
     for name in OPTIONAL_RUNTIME_DIRECTORIES:
-        if not (root / name).is_dir():
+        candidate = workspace_runtime_path(root) if name == "workspace_runtime" else root / name
+        if not candidate.is_dir():
             warnings.append(f"runtime_directory_missing_will_be_initialized:{name}")
     start_file = _find_start_file(root)
     if not start_file:
@@ -197,6 +219,7 @@ def runtime_preflight(root: Path, *, marker_path: Path | None = None) -> Runtime
     manifest = _read_json(manifest_path)
     manifest_version = None
     manifest_ok = False
+    manifest_verification: dict[str, Any] | None = None
     manifest_sha256 = sha256_file(manifest_path) if manifest_path.is_file() else None
     if manifest is None:
         if manifest_path.exists():
@@ -208,11 +231,22 @@ def runtime_preflight(root: Path, *, marker_path: Path | None = None) -> Runtime
             version and manifest_version and version_number(version) == version_number(manifest_version)
         )
         start_matches = bool(start_file and (not manifest_start or manifest_start == start_file or (root / manifest_start).is_file()))
-        manifest_ok = bool(versions_match and start_matches)
+        manifest_verification = verify_package_integrity_manifest(root)
+        manifest_ok = bool(versions_match and start_matches and manifest_verification.get("ok") is True)
         if not versions_match:
             errors.append(f"manifest_version_mismatch:{version!r}!={manifest_version!r}")
         if not start_matches:
             errors.append(f"manifest_start_file_invalid:{manifest_start!r}")
+        if manifest_verification.get("ok") is not True:
+            error_codes = sorted({
+                str(item.get("code") or "unknown")
+                for item in manifest_verification.get("errors", [])
+                if isinstance(item, dict)
+            })
+            errors.append(
+                "package_integrity_verification_failed:"
+                + (",".join(error_codes) if error_codes else "unknown")
+            )
 
     selected_marker: Path | None = None
     marker_ok = False
@@ -245,11 +279,24 @@ def runtime_preflight(root: Path, *, marker_path: Path | None = None) -> Runtime
     if not marker_ok:
         warnings.append("active_marker_missing_or_not_trusted")
 
+    source_provenance = read_source_provenance(root, profile="system_smoke").to_dict()
+    provenance_ok = source_provenance.get("status") in {
+        "clean_checkout_verified",
+        "development_dirty_verified",
+        "verified_export_without_git_history",
+    }
+    if not provenance_ok:
+        errors.append(
+            "source_provenance_not_verified:"
+            + str(source_provenance.get("status") or "unknown")
+        )
+
     return RuntimePreflightReport(
-        ok=bool(structure_ok and manifest_ok and marker_ok),
+        ok=bool(structure_ok and manifest_ok and provenance_ok and marker_ok),
         active_root=str(root),
         structure_ok=structure_ok,
         manifest_ok=manifest_ok,
+        provenance_ok=provenance_ok,
         marker_ok=marker_ok,
         start_file=start_file,
         version=version,
@@ -257,6 +304,8 @@ def runtime_preflight(root: Path, *, marker_path: Path | None = None) -> Runtime
         marker_path=str(selected_marker) if selected_marker else None,
         errors=errors,
         warnings=warnings,
+        manifest_verification=manifest_verification,
+        source_provenance=source_provenance,
     )
 
 
@@ -295,11 +344,54 @@ def _atomic_activate(staging: Path, destination: Path, *, work_dir: Path) -> dic
 
 
 def _sqlite_health(root: Path) -> dict[str, Any]:
+    root = Path(root).resolve()
     bootstrap = _read_json(root / "BOOTSTRAP_JAZN_CURRENT.json") or {}
     rel = str(bootstrap.get("active_database") or "").strip()
-    if not rel:
-        return {"ok": False, "reason": "active_database_not_declared"}
-    db_path = (root / rel).resolve()
+    candidates: list[tuple[str, Path]] = []
+    if rel:
+        declared = (root / rel).resolve()
+        try:
+            declared.relative_to(root)
+        except ValueError:
+            return {
+                "ok": False,
+                "reason": "active_database_escapes_runtime_root",
+                "declared_active_database": rel,
+            }
+        candidates.append(("bootstrap_active_database", declared))
+    try:
+        config = JaznConfig(root=root)
+        candidates.extend(
+            (
+                ("recovered_memory_database", config.recovered_memory_db_path),
+                ("runtime_memory_database", config.memory_db_path_readonly),
+                ("conversation_archive_manifest", config.conversation_archive_manifest_path),
+            )
+        )
+    except Exception as exc:
+        return {
+            "ok": False,
+            "reason": "memory_database_resolution_failed",
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    unique: list[tuple[str, Path]] = []
+    seen: set[Path] = set()
+    for source, candidate in candidates:
+        resolved = Path(candidate).resolve()
+        if resolved not in seen:
+            unique.append((source, resolved))
+            seen.add(resolved)
+    selected = next(((source, path) for source, path in unique if path.is_file()), None)
+    if selected is None:
+        return {
+            "ok": False,
+            "reason": "active_database_missing",
+            "candidates": [
+                {"source": source, "database": str(path), "exists": path.is_file()}
+                for source, path in unique
+            ],
+        }
+    source, db_path = selected
     if not db_path.is_file():
         return {"ok": False, "reason": "active_database_missing", "database": str(db_path)}
     try:
@@ -311,6 +403,7 @@ def _sqlite_health(root: Path) -> dict[str, Any]:
         return {
             "ok": integrity == ["ok"] and not foreign_rows,
             "database": str(db_path),
+            "database_source": source,
             "integrity_check": integrity,
             "foreign_key_check_count": len(foreign_rows),
             "table_count": int(tables[0]) if tables else 0,
@@ -319,7 +412,122 @@ def _sqlite_health(root: Path) -> dict[str, Any]:
         return {"ok": False, "database": str(db_path), "reason": f"{type(exc).__name__}: {exc}"}
 
 
-def recover_chatgpt_runtime(
+def _verify_memory_package_manifest(root: Path) -> dict[str, Any]:
+    root = Path(root).resolve()
+    manifest_path = root / MEMORY_PACKAGE_MANIFEST_PATH
+    if not manifest_path.is_file():
+        return {
+            "ok": False,
+            "status": "not_present",
+            "manifest_path": str(manifest_path),
+            "errors": [{"code": "memory_package_manifest_missing"}],
+        }
+    payload = _read_json(manifest_path)
+    if not isinstance(payload, dict):
+        return {
+            "ok": False,
+            "status": "invalid",
+            "manifest_path": str(manifest_path),
+            "errors": [{"code": "memory_package_manifest_invalid_json"}],
+        }
+    errors: list[dict[str, Any]] = []
+    if payload.get("schema_version") != "jazn_memory_package_manifest/v1":
+        errors.append(
+            {
+                "code": "memory_package_manifest_schema_unsupported",
+                "actual": payload.get("schema_version"),
+            }
+        )
+    declared_version = str(payload.get("runtime_version") or "").strip()
+    actual_version = _runtime_version(root)
+    if not declared_version or not actual_version or version_number(declared_version) != version_number(actual_version):
+        errors.append(
+            {
+                "code": "memory_package_runtime_version_mismatch",
+                "declared": declared_version or None,
+                "actual": actual_version,
+            }
+        )
+    expected_paths: set[str] = set()
+    verified_count = 0
+    for item in payload.get("files") or []:
+        if not isinstance(item, dict):
+            errors.append({"code": "memory_package_file_entry_invalid"})
+            continue
+        relative = str(item.get("path") or "").replace("\\", "/").strip()
+        parts = Path(relative).parts
+        if not relative or Path(relative).is_absolute() or ".." in parts or not relative.startswith("memory/"):
+            errors.append({"code": "memory_package_path_unsafe", "path": relative})
+            continue
+        if relative == MEMORY_PACKAGE_MANIFEST_PATH or relative in expected_paths:
+            errors.append({"code": "memory_package_path_duplicate_or_self", "path": relative})
+            continue
+        expected_paths.add(relative)
+        target = (root / Path(*relative.split("/"))).resolve()
+        try:
+            target.relative_to(root)
+        except ValueError:
+            errors.append({"code": "memory_package_path_escapes_root", "path": relative})
+            continue
+        if not target.is_file():
+            errors.append({"code": "memory_package_file_missing", "path": relative})
+            continue
+        expected_size = int(item.get("size_bytes", -1))
+        expected_sha = str(item.get("sha256") or "").strip().lower()
+        actual_size = target.stat().st_size
+        actual_sha = sha256_file(target)
+        if actual_size != expected_size:
+            errors.append(
+                {
+                    "code": "memory_package_file_size_mismatch",
+                    "path": relative,
+                    "expected": expected_size,
+                    "actual": actual_size,
+                }
+            )
+        if actual_sha != expected_sha:
+            errors.append(
+                {
+                    "code": "memory_package_file_sha256_mismatch",
+                    "path": relative,
+                    "expected": expected_sha,
+                    "actual": actual_sha,
+                }
+            )
+        if actual_size == expected_size and actual_sha == expected_sha:
+            verified_count += 1
+    memory_root = root / "memory"
+    actual_paths = {
+        path.relative_to(root).as_posix()
+        for path in memory_root.rglob("*")
+        if path.is_file() and path.resolve() != manifest_path.resolve()
+    } if memory_root.is_dir() else set()
+    for extra in sorted(actual_paths - expected_paths):
+        errors.append({"code": "memory_package_unlisted_file", "path": extra})
+    declared_count = int(payload.get("file_count", -1))
+    if declared_count != len(expected_paths):
+        errors.append(
+            {
+                "code": "memory_package_file_count_mismatch",
+                "declared": declared_count,
+                "actual": len(expected_paths),
+            }
+        )
+    return {
+        "ok": not errors,
+        "status": "verified" if not errors else "invalid",
+        "manifest_path": str(manifest_path),
+        "declared_file_count": declared_count,
+        "verified_file_count": verified_count,
+        "errors": errors,
+        "truth_boundary": (
+            "Weryfikacja pamięci potwierdza rozmiar i SHA-256 każdego pliku z paczki; "
+            "nie zatwierdza treści wspomnień ani promocji L2/L3."
+        ),
+    }
+
+
+def _recover_chatgpt_runtime_impl(
     *,
     parts_dir: Path = DEFAULT_CHATGPT_PARTS_DIR,
     destination: Path = DEFAULT_CHATGPT_ROOT,
@@ -350,7 +558,7 @@ def recover_chatgpt_runtime(
 
     preflight = runtime_preflight(destination)
     report["preflight_before"] = preflight.to_dict()
-    if preflight.structure_ok and preflight.manifest_ok and not force_reextract:
+    if preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok and not force_reextract:
         marker = write_active_runtime_marker(destination, action="chatgpt_recovery_reuse_verified_folder")
         report["marker"] = marker
         config = JaznConfig(root=destination)
@@ -375,15 +583,78 @@ def recover_chatgpt_runtime(
         report["daemon_status"] = status_daemon(config, host=daemon_host, port=daemon_port)
         report["sqlite"] = _sqlite_health(destination)
         report["preflight_after"] = runtime_preflight(destination).to_dict()
-        ok = bool(
-            report["preflight_after"]["ok"]
-            and report["sqlite"].get("ok")
-            and (not start_runtime_daemon or report["daemon_status"].get("active_state") in {"active_trusted", "active_degraded"})
+        installation_ok = bool(report["preflight_after"]["ok"])
+        daemon_gate_ok = bool(
+            not start_runtime_daemon
+            or report["daemon_status"].get("active_state") in {"active_trusted", "active_degraded"}
         )
-        return RecoveryResult(ok=ok, state="reused", active_root=str(destination), report=report, exit_code=0 if ok else 4)
+        daemon_active = report["daemon_status"].get("active_state") in {"active_trusted", "active_degraded"}
+        memory_ok = report["sqlite"].get("ok") is True
+        memory_absent = report["sqlite"].get("reason") == "active_database_missing"
+        memory_gate_ok = bool(memory_ok or (not start_runtime_daemon and memory_absent))
+        ok = bool(installation_ok and daemon_gate_ok and memory_gate_ok)
+        report["installation_ok"] = installation_ok
+        report["activation_ok"] = bool(installation_ok and daemon_active and memory_ok)
+        state = "reused" if report["activation_ok"] else "reused_installed_inactive" if ok else "reused_degraded"
+        return RecoveryResult(ok=ok, state=state, active_root=str(destination), report=report, exit_code=0 if ok else 4)
+
+    destination_occupied = bool(
+        destination.exists()
+        and (not destination.is_dir() or any(destination.iterdir()))
+    )
+    if destination_occupied:
+        report["replacement_blocked"] = {
+            "ok": False,
+            "reason": "destination_not_empty_and_not_verified",
+            "destination": str(destination),
+            "recovery_hint": (
+                "Wskaż nowy, wersjonowany katalog destination. Loader nie zastępuje automatycznie "
+                "istniejącego, niezweryfikowanego runtime."
+            ),
+        }
+        return RecoveryResult(
+            ok=False,
+            state="destination_replacement_blocked",
+            active_root=str(destination),
+            report=report,
+            exit_code=9,
+        )
 
     zip_name = infer_base_zip_name(parts_dir, base_zip_name)
     report["base_zip_name"] = zip_name
+    package_set = load_package_set_metadata(parts_dir, zip_name)
+    report["package_set"] = package_set
+    declared_profile = str(package_set.get("profile") or "unknown").strip().lower()
+    package_contract_source = str(package_set.get("source") or "")
+    if package_contract_source == "package.json" and declared_profile not in {"system", "memory", "combined"}:
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "current_package_profile_missing_or_unsupported",
+            "declared_profile": declared_profile,
+        }
+        return RecoveryResult(
+            ok=False,
+            state="package_profile_rejected",
+            active_root=str(destination),
+            report=report,
+            exit_code=8,
+        )
+    if declared_profile == "memory":
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "memory_profile_is_not_a_runtime_root",
+            "truth_boundary": (
+                "Paczka memory może zostać dołączona wyłącznie do osobno zweryfikowanego systemu; "
+                "sama nie zawiera startowego active_root."
+            ),
+        }
+        return RecoveryResult(
+            ok=False,
+            state="memory_profile_rejected",
+            active_root=str(destination),
+            report=report,
+            exit_code=8,
+        )
     expected, expected_full_sha, source = load_package_expectations(parts_dir, zip_name)
     report["expectations_source"] = source
     report["expected_parts_count"] = len(expected)
@@ -405,42 +676,63 @@ def recover_chatgpt_runtime(
         aliases["cache_reused"] = False
         _write_json_atomic(resolution_cache_path, aliases)
     report["part_resolution"] = aliases
-    for suffix in (".manifest.json", ".parts.sha256", ".sha256"):
+    for suffix in (".package.json", ".manifest.json", ".parts.sha256", ".sha256"):
         source_sidecar = parts_dir / f"{zip_name}{suffix}"
         if source_sidecar.is_file():
             shutil.copy2(source_sidecar, canonical_dir / source_sidecar.name)
-    zip_out = work_dir / zip_name
-    zip_cache_path = work_dir / "zip-verification.json"
-    zip_cache = _read_json(zip_cache_path)
-    if _zip_verification_cache_valid(zip_cache, zip_out, expected_full_sha, run_crc):
-        zip_report = dict(zip_cache or {})
-        zip_report["cache_reused"] = True
-    else:
-        zip_out = join_split_package_to_zip(
-            canonical_dir,
-            zip_name,
-            zip_out=zip_out,
-            force=False,
-            keep_existing=True,
-        )
-        zip_report = test_joined_zip(zip_out, run_crc=run_crc)
-        zip_report.update({
-            "sha256": expected_full_sha,
-            "mtime_ns": zip_out.stat().st_mtime_ns,
+    archive_format = str(package_set.get("archive_format") or "binary")
+    zip_out: Path | None = None
+    independent_paths: list[Path] = []
+    if archive_format == "independent":
+        independent_paths = [canonical_dir / part.filename for part in expected]
+        zip_report = {
+            "ok": True,
+            "archive_format": "independent",
+            "volumes": [test_joined_zip(path, run_crc=run_crc) for path in independent_paths],
             "cache_reused": False,
-        })
-        _write_json_atomic(zip_cache_path, zip_report)
+        }
+    else:
+        zip_out = work_dir / zip_name
+        zip_cache_path = work_dir / "zip-verification.json"
+        zip_cache = _read_json(zip_cache_path)
+        if _zip_verification_cache_valid(zip_cache, zip_out, expected_full_sha, run_crc):
+            zip_report = dict(zip_cache or {})
+            zip_report["cache_reused"] = True
+        else:
+            zip_out = join_split_package_to_zip(
+                canonical_dir,
+                zip_name,
+                zip_out=zip_out,
+                force=True,
+                keep_existing=False,
+            )
+            zip_report = test_joined_zip(zip_out, run_crc=run_crc)
+            zip_report.update({
+                "sha256": expected_full_sha,
+                "mtime_ns": zip_out.stat().st_mtime_ns,
+                "cache_reused": False,
+            })
+            _write_json_atomic(zip_cache_path, zip_report)
     report["zip_test"] = zip_report
 
     staging = destination.parent / f".{destination.name}.staging"
     if force_reextract and staging.exists():
         _safe_remove_tree(staging)
-    extraction = extract_joined_zip_resumable(
-        zip_out,
-        staging,
-        progress_path=work_dir / "extract-progress.json",
-        time_budget_seconds=time_budget_seconds,
-    )
+    if archive_format == "independent":
+        extraction = extract_independent_zip_set_resumable(
+            independent_paths,
+            staging,
+            progress_path=work_dir / "extract-progress.json",
+            time_budget_seconds=time_budget_seconds,
+        )
+    else:
+        assert zip_out is not None
+        extraction = extract_joined_zip_resumable(
+            zip_out,
+            staging,
+            progress_path=work_dir / "extract-progress.json",
+            time_budget_seconds=time_budget_seconds,
+        )
     report["extraction"] = extraction
     if extraction.get("pending"):
         report["resume_command"] = (
@@ -456,18 +748,115 @@ def recover_chatgpt_runtime(
             exit_code=75,
         )
 
-    verification = verify_extracted_zip_tree(zip_out, staging, reject_extra_files=False)
+    verification = (
+        verify_extracted_zip_set(independent_paths, staging, reject_extra_files=True)
+        if archive_format == "independent"
+        else verify_extracted_zip_tree(zip_out, staging, reject_extra_files=True)
+    )
     report["filesystem_verification"] = verification
     if not verification["ok"]:
         return RecoveryResult(ok=False, state="verification_failed", active_root=str(destination), report=report, exit_code=5)
 
     staging_preflight = runtime_preflight(staging)
     report["staging_preflight"] = staging_preflight.to_dict()
-    if not (staging_preflight.structure_ok and staging_preflight.manifest_ok):
+    if not (
+        staging_preflight.structure_ok
+        and staging_preflight.manifest_ok
+        and staging_preflight.provenance_ok
+    ):
         return RecoveryResult(ok=False, state="staging_runtime_invalid", active_root=str(destination), report=report, exit_code=6)
 
+    memory_manifest = _verify_memory_package_manifest(staging)
+    report["memory_manifest_verification"] = memory_manifest
+    memory_files_present = bool(
+        (staging / "memory").is_dir()
+        and any(path.is_file() for path in (staging / "memory").rglob("*"))
+    )
+    profile = (
+        "combined" if declared_profile == "unknown" and memory_files_present
+        else "system" if declared_profile == "unknown"
+        else declared_profile
+    )
+    report["effective_profile"] = profile
+    declared_package_version = str(package_set.get("package_version") or "").strip()
+    if (
+        declared_package_version
+        and staging_preflight.version
+        and version_number(declared_package_version) != version_number(staging_preflight.version)
+    ):
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "package_sidecar_runtime_version_mismatch",
+            "declared": declared_package_version,
+            "actual": staging_preflight.version,
+        }
+        return RecoveryResult(
+            ok=False,
+            state="package_profile_tree_mismatch",
+            active_root=str(destination),
+            report=report,
+            exit_code=10,
+        )
+    runtime_state_files = []
+    packaged_workspace = staging / "workspace_runtime"
+    if packaged_workspace.is_dir():
+        runtime_state_files.extend(
+            path.relative_to(staging).as_posix()
+            for path in packaged_workspace.rglob("*")
+            if path.is_file()
+        )
+    for relative in (
+        "RUNTIME_STATE.json",
+        "JAZN_ACTIVE_RUNTIME.json",
+        "BOOTSTRAP_JAZN_CURRENT.json",
+        "ACTIVE_RUNTIME_CACHE_CONTRACT.json",
+    ):
+        if (staging / relative).is_file():
+            runtime_state_files.append(relative)
+    if runtime_state_files:
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "package_contains_mutable_runtime_state",
+            "paths": sorted(set(runtime_state_files)),
+        }
+        return RecoveryResult(
+            ok=False,
+            state="package_profile_tree_mismatch",
+            active_root=str(destination),
+            report=report,
+            exit_code=10,
+        )
+    if profile == "system" and memory_files_present:
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "system_profile_contains_memory",
+        }
+        return RecoveryResult(
+            ok=False,
+            state="package_profile_tree_mismatch",
+            active_root=str(destination),
+            report=report,
+            exit_code=10,
+        )
+    if profile == "combined" and memory_manifest.get("ok") is not True:
+        report["profile_gate"] = {
+            "ok": False,
+            "reason": "combined_profile_memory_verification_failed",
+        }
+        return RecoveryResult(
+            ok=False,
+            state="memory_verification_failed",
+            active_root=str(destination),
+            report=report,
+            exit_code=10,
+        )
+
     report["activation"] = _atomic_activate(staging, destination, work_dir=work_dir)
-    marker = write_active_runtime_marker(destination, source_zip=zip_out, action="chatgpt_recovery_atomic_activation")
+    marker = write_active_runtime_marker(
+        destination,
+        source_zip=zip_out,
+        action="chatgpt_recovery_atomic_activation",
+    )
     report["marker"] = marker
     config = JaznConfig(root=destination)
     if start_runtime_daemon:
@@ -493,8 +882,106 @@ def recover_chatgpt_runtime(
     after = runtime_preflight(destination)
     report["preflight_after"] = after.to_dict()
     daemon_ok = not start_runtime_daemon or report["daemon_status"].get("active_state") in {"active_trusted", "active_degraded"}
-    ok = bool(after.ok and daemon_ok and report["sqlite"].get("ok"))
-    return RecoveryResult(ok=ok, state="active" if ok else "activated_degraded", active_root=str(destination), report=report, exit_code=0 if ok else 7)
+    memory_ok = report["sqlite"].get("ok") is True
+    memory_absent = report["sqlite"].get("reason") == "active_database_missing"
+    memory_required = bool(profile == "combined" or memory_files_present)
+    memory_gate_ok = bool(
+        memory_ok
+        or (not start_runtime_daemon and not memory_required and memory_absent)
+    )
+    installation_ok = bool(after.ok)
+    daemon_active = report["daemon_status"].get("active_state") in {"active_trusted", "active_degraded"}
+    activation_ok = bool(installation_ok and daemon_active and memory_ok)
+    ok = bool(installation_ok and daemon_ok and memory_gate_ok)
+    report["installation_ok"] = installation_ok
+    report["activation_ok"] = activation_ok
+    state = "active" if activation_ok else "installed_inactive" if ok else "activated_degraded"
+    return RecoveryResult(ok=ok, state=state, active_root=str(destination), report=report, exit_code=0 if ok else 7)
+
+
+def recover_chatgpt_runtime(
+    *,
+    parts_dir: Path = DEFAULT_CHATGPT_PARTS_DIR,
+    destination: Path = DEFAULT_CHATGPT_ROOT,
+    base_zip_name: str | None = None,
+    work_dir: Path | None = None,
+    time_budget_seconds: float | None = 25.0,
+    run_crc: bool = True,
+    force_reextract: bool = False,
+    start_runtime_daemon: bool = True,
+    daemon_host: str = DEFAULT_DAEMON_HOST,
+    daemon_port: int = DEFAULT_DAEMON_PORT,
+    heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
+    startup_timeout: float = DEFAULT_START_TIMEOUT_SECONDS,
+    trusted_time_iso: str | None = None,
+    trusted_time_source: str | None = None,
+    trusted_time_max_age_seconds: int | None = None,
+) -> RecoveryResult:
+    """Run the portable loader as a fail-closed, no-traceback host boundary."""
+
+    try:
+        return _recover_chatgpt_runtime_impl(
+            parts_dir=parts_dir,
+            destination=destination,
+            base_zip_name=base_zip_name,
+            work_dir=work_dir,
+            time_budget_seconds=time_budget_seconds,
+            run_crc=run_crc,
+            force_reextract=force_reextract,
+            start_runtime_daemon=start_runtime_daemon,
+            daemon_host=daemon_host,
+            daemon_port=daemon_port,
+            heartbeat_interval=heartbeat_interval,
+            startup_timeout=startup_timeout,
+            trusted_time_iso=trusted_time_iso,
+            trusted_time_source=trusted_time_source,
+            trusted_time_max_age_seconds=trusted_time_max_age_seconds,
+        )
+    except PermissionError as exc:
+        error = exc
+        error_code = "runtime_bootstrap_path_unwritable"
+        recovery_hint = "Wskaż zapisywalne destination i work-dir albo ustaw JAZN_RUNTIME_WORKSPACE_DIR."
+    except FileNotFoundError as exc:
+        error = exc
+        error_code = "runtime_package_source_missing"
+        recovery_hint = "Sprawdź parts-dir, nazwy części i wymagane sidecary paczki."
+    except ValueError as exc:
+        error = exc
+        error_code = "runtime_package_contract_invalid"
+        recovery_hint = "Użyj kompletnej paczki wygenerowanej przez bieżący generator Jaźni."
+    except OSError as exc:
+        error = exc
+        error_code = "runtime_bootstrap_io_error"
+        recovery_hint = "Sprawdź uprawnienia, wolne miejsce i czy destination/work-dir są dostępne."
+    except Exception as exc:
+        error = exc
+        error_code = "runtime_bootstrap_failed"
+        recovery_hint = "Zachowaj raport i zweryfikuj paczkę; runtime nie został uznany za aktywny."
+    try:
+        active_root = str(Path(destination).expanduser().resolve())
+    except (OSError, RuntimeError):
+        active_root = str(destination)
+    return RecoveryResult(
+        ok=False,
+        state="bootstrap_blocked",
+        active_root=active_root,
+        report={
+            "parts_dir": str(parts_dir),
+            "destination": str(destination),
+            "work_dir": str(work_dir) if work_dir is not None else None,
+            "error": {
+                "code": error_code,
+                "type": type(error).__name__,
+                "detail": str(error),
+            },
+            "recovery_hint": recovery_hint,
+            "truth_boundary": (
+                "Loader zakończył się przed potwierdzoną instalacją lub aktywacją. "
+                "Host nie może na tej podstawie mówić głosem uruchomionej Jaźni."
+            ),
+        },
+        exit_code=11,
+    )
 
 
 __all__ = [

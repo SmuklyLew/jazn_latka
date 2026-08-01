@@ -13,6 +13,7 @@ import tempfile
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_daemon import start_daemon, status_daemon, stop_daemon
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
@@ -31,7 +32,7 @@ def _check(name: str, ok: bool, *, required: bool = True, **details: Any) -> dic
 
 def _run(root: Path, *args: str, input_text: str | None = None, timeout: float = 60.0) -> dict[str, Any]:
     env = dict(os.environ)
-    env["PYTHONPYCACHEPREFIX"] = str(root / "workspace_runtime" / "smoke_pycache")
+    env["PYTHONPYCACHEPREFIX"] = str(workspace_runtime_path(root) / "smoke_pycache")
     env["JAZN_DAEMON_AUTOSTART"] = "0"
     completed = subprocess.run(
         [sys.executable, "-X", "utf8", *args],

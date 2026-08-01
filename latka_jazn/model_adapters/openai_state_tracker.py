@@ -8,6 +8,7 @@ import json
 import os
 
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.runtime_root import runtime_state_path
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("openai_state_tracker")
@@ -36,7 +37,7 @@ class OpenAIStateTracker:
 
     def __init__(self, root: Path, *, filename: str = "workspace_runtime/openai_response_state.json") -> None:
         self.root = Path(root)
-        self.path = self.root / filename
+        self.path = runtime_state_path(self.root, filename)
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def load(self, session_id: str) -> OpenAIConversationState:
