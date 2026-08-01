@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-08-01T21:07:04+00:00",
-  "updated_at_utc": "2026-08-01T21:07:04+00:00",
+  "generated_at_utc": "2026-08-01T22:39:31+00:00",
+  "updated_at_utc": "2026-08-01T22:39:31+00:00",
   "start_file": "run.py",
-  "file_count": 620,
-  "static_file_count": 620,
+  "file_count": 645,
+  "static_file_count": 645,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 12478,
-      "sha256": "61a54d621b97e0a9f1e5b1634e6c09ac7bb14178dba88f89a7af8560b3db469a",
+      "size_bytes": 13564,
+      "sha256": "0ec74a77f1c7714f6835b40743fe31f53ef3935fd9d00fa046425e5454f6902a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -165,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1288,
-      "sha256": "c6790819efb296888377cdfcab65e94ca3e7413b4b84b8f6cb0f0a8c46d6af05",
+      "sha256": "3b08855c81c3bb28c30b959842b2c6217f3d017bbc421bbb774b231b81962cc1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -199,6 +199,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md",
+      "size_bytes": 2163,
+      "sha256": "c25a7992b0a4d31e622cea354ed9cbfaca192f1265000247784486a33ef80b00",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
       "size_bytes": 2268,
       "sha256": "eab7ea3ddab8e3a263b93b7dae82b6e923016019da446d4bf394b192a00295a7",
@@ -220,6 +229,213 @@
       "path": "docs/plans/memory_rebuild_plan/jazn_memory_tests_sqlite_audit.json",
       "size_bytes": 69176,
       "sha256": "c27346e751d9e6d5d83a6a78353c49687f57903bfb03c196757372af4383f5cd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_ACCEPTANCE.md",
+      "size_bytes": 887,
+      "sha256": "a13a6a5c9ab0a7bf8600c84dfbb5a1763b72ac4b5ccf313a218b2204058f776a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_BRANCH_STATE.md",
+      "size_bytes": 192,
+      "sha256": "a77912a9d39356c4ca9c676a1b396e55774a9d1f8f7b3d5c4f9d5b1ac1ba5242",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_CHANGELOG.md",
+      "size_bytes": 845,
+      "sha256": "b27cef718d4b30394f1c13759a82d44225a5307b258012ee204adf6995a54736",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_CI_EXPECTATIONS.md",
+      "size_bytes": 338,
+      "sha256": "f619fecdb96898383fa73b49f2c4802a05eca5bce3b7a4cda717200c36452973",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_DRAFT_PR_BODY.md",
+      "size_bytes": 587,
+      "sha256": "840fbbeddf29e5c69e5e4860bda44e8c88e7b7d492f95631972c67e831f120e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_FINAL_NOTES.md",
+      "size_bytes": 488,
+      "sha256": "0d82f0be4dec7dbb346297236685fa59d9fc9ac184071d56151d3f44c917411d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_FIX.md",
+      "size_bytes": 2445,
+      "sha256": "52a38312dfdc482d793477d32440d34e104f164cd0490a04e8bbffb2e1bd3acc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_LAST_PRE_PR_NOTE.md",
+      "size_bytes": 53,
+      "sha256": "8240c38f4986f1ae6b6fb74fe736bd3f5242bffe5018568b34dc9992ab01c69a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_NO_MORE_SCOPE.md",
+      "size_bytes": 135,
+      "sha256": "ec5b1916f6d7e222a102edeaf6ce469921ed870a65a672147349bb8e4bf6682d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_OPERATOR_CHECKLIST.md",
+      "size_bytes": 894,
+      "sha256": "7889cf12d97f52310136d3c054283df45f7a78d8b191d5114e8f8870e57f4704",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_PR_CREATION_REQUIRED.md",
+      "size_bytes": 62,
+      "sha256": "ec5031a2e258874c27795e67658d47b9242e934fda435dc1ae66fcc6f1679f74",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_PR_NOW.md",
+      "size_bytes": 59,
+      "sha256": "6eee265249d85f7867e3dc46740079a20336925e08285d3a39922a49d072c309",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_PR_PENDING.md",
+      "size_bytes": 125,
+      "sha256": "04f2ae6b4bf10a640f4a9e8b111a7e38861b89120b7ea7baa6580e61d373709f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_PR_READY_MARKER.md",
+      "size_bytes": 55,
+      "sha256": "8f416a7c0590835b374643a1528e30eced364c3fffca70268de2fa4ed361b996",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_PR_SUMMARY.md",
+      "size_bytes": 679,
+      "sha256": "cfc069f110cb7e4816ccdf09041941dad68064e8d37bcdeeba330de5b723e6d2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_READY_FOR_PR.md",
+      "size_bytes": 225,
+      "sha256": "d67c5d150f7d6a1793c3dcd2af46c4121f4385457b0b224041aec6c2abfe77ad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_REVIEW_GUIDE.md",
+      "size_bytes": 1120,
+      "sha256": "da834c8f1a759bb2aa50cf72136c6513c40953496f4340a3388a515700ee0275",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_ROLLOUT.md",
+      "size_bytes": 1169,
+      "sha256": "1241feb0072a14fced6a7a68e69281acf2a6bd3264d865f2e154ad870b1874cf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_SCOPE.md",
+      "size_bytes": 361,
+      "sha256": "6e4d1be332191e0903ae41c76b3ce858333224c9afb1bf469af0dbab3c02aad3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_SECURITY_NOTES.md",
+      "size_bytes": 1830,
+      "sha256": "d5aeefaf93dc40c442ce2a6eefc4afab79c0964c33ad2e425866a333cdc3f6de",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_STATUS.md",
+      "size_bytes": 695,
+      "sha256": "ef9b5e3d5caa1b9f5bd0d7b70e6ec4341580bcca7df1a454040dee28a2005c6f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_STOP_ADDING_FILES.md",
+      "size_bytes": 92,
+      "sha256": "f6d20fc1ff4d688d85c29a4a2aaf86dcd386cbbf81f8b8fabce4828f36a155b7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_TRACEABILITY.md",
+      "size_bytes": 1229,
+      "sha256": "b9b19061b90001278d9d7d6e9ff810a272d2587dc08c9455c2066c4a300e7dd8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -533,8 +749,8 @@
     },
     {
       "path": "latka_jazn/bridge/secure_host_runtime_gateway.py",
-      "size_bytes": 4345,
-      "sha256": "3f91749dfe0155ace131a8fef390b6d1df5ca4edc35363c1f3214fe14793624d",
+      "size_bytes": 7365,
+      "sha256": "c25d2d58eaf4665230052620f8d15ac5c578892109555ae6d6ad192c4be9ba40",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -578,8 +794,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/diagnostics.py",
-      "size_bytes": 14989,
-      "sha256": "31848c16f4a61b93493a3fbe6ab6d92a4d85975604def67278ad9afc7ea61d6c",
+      "size_bytes": 16709,
+      "sha256": "c93a2793c21ee5cc06622dddaa63bed1c1b48faa5cb6a1e07581d5dc69034053",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -857,8 +1073,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_pending_store.py",
-      "size_bytes": 9084,
-      "sha256": "6387507ca512f0c85a403fdfa3e5a8203154dbe3efb31508fd0ece37e77d510c",
+      "size_bytes": 18678,
+      "sha256": "c94253988130dc3325780da6616a4af5aea84e64f78a82b69c0e4bf34c5a7c5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1847,8 +2063,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_session.py",
-      "size_bytes": 18617,
-      "sha256": "717365c1b2f7c6a6cdad2e851f28203135420a1d9cca15da811a6bd86569462e",
+      "size_bytes": 23342,
+      "sha256": "1172b428398dd6e2976317e13a89f2c2e4cb1846e49ebe432f4c110bdf2eea0c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2306,8 +2522,8 @@
     },
     {
       "path": "latka_jazn/mcp/server.py",
-      "size_bytes": 22788,
-      "sha256": "2978881b0e284487588dfb2b37586ae11cfae9662436e074d4faedb3fec31f81",
+      "size_bytes": 22597,
+      "sha256": "0e92f30bfa098462a691a74151ee538f06a8fb7a5533a3dbf408189e149a325c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2333,8 +2549,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_finalize_reply.py",
-      "size_bytes": 1587,
-      "sha256": "1df2c3188bf898c3320cd3a471236df94ce705686a4e5b1d6c902dcff6f6c87f",
+      "size_bytes": 5673,
+      "sha256": "377c1e5386ea3f628e5ddc091676e6c4b90789a8cc21284f31fe939f824fd92f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2342,8 +2558,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_generate_visible_reply.py",
-      "size_bytes": 1428,
-      "sha256": "c5334a945035edd95673ef4ac1eca5695a463ca1d7b94c1a2bb819d069acb28a",
+      "size_bytes": 6020,
+      "sha256": "b6053bab53edc6db8137cbc67aff7a1b072d81f696121a0879b6c6f6ea5a95a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4756,6 +4972,15 @@
       "path": "tests/test_chatgpt_host_contract_hardening.py",
       "size_bytes": 13412,
       "sha256": "31b8cbd441f52106a4d17e0cdb383ad14c561ec43c0f35235518460415ba4432",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
+      "size_bytes": 10673,
+      "sha256": "40407c8459f54d9fabd9040a6429765028e11bdefdaf804f2fefcf4b0a538e94",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
