@@ -106,6 +106,11 @@ TOOL_DEFINITIONS = [
                 },
                 "final_text": {"type": "string", "minLength": 1, "maxLength": 2097152},
                 "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+                "used_memory_item_ids": {
+                    "type": "array",
+                    "items": {"type": "string", "minLength": 1, "maxLength": 256},
+                    "maxItems": 8,
+                },
                 "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
                 "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },

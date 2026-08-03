@@ -13,6 +13,7 @@ from latka_jazn.cli_commands.diagnostics import _daemon_runtime_write_ready
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     calculate_host_request_contract_hash,
+    calculate_runtime_context_sha256,
     claim_pending_host_request,
     cleanup_expired_host_requests,
     consume_claimed_host_request,
@@ -21,12 +22,34 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     resolve_continuation_token,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+from latka_jazn.core.full_canon_model_context import build_full_canon_model_context
+from latka_jazn.core.host_model_bridge import build_host_model_context
 from latka_jazn.core.runtime_session import _host_finalization_pending
 from latka_jazn.mcp.server import TOOL_DEFINITIONS
 from latka_jazn.mcp.tools import jazn_finalize_reply, jazn_generate_visible_reply
 
 
 def _bridge(turn_id: str = "turn-1") -> dict[str, Any]:
+    host_model_context = build_host_model_context(
+        {
+            "schema_version": "model_context_packet/test",
+            "user_text": "Opowiedz coś naturalnie.",
+            "nlg_plan": {
+                "answer_kind": "natural_dialogue",
+                "memory_policy": "not_needed",
+                "source_policy": "runtime_only",
+            },
+            "operational_thought_frame": {"selected_goal": "odpowiedzieć naturalnie"},
+            "voice_source_contract": {"identity_name": "Łatka", "grammar_gender": "feminine"},
+            "full_canon_model_context": build_full_canon_model_context(),
+            "allowed_memory_items": [],
+            "forbidden_claims": ["invented_memory_or_unbacked_recall"],
+            "required_truth_boundaries": ["Nie udawaj biologicznego życia."],
+            "output_instructions": ["Odpowiedz po polsku."],
+        },
+        detected_intent="ordinary_conversation",
+        route="ordinary_dialogue",
+    )
     value: dict[str, Any] = {
         "runtime_version": "test-runtime",
         "phase": "host_visible_generation_requested",
@@ -43,8 +66,12 @@ def _bridge(turn_id: str = "turn-1") -> dict[str, Any]:
         "state_emoticon": "🌿",
         "user_text_sha256": "a" * 64,
         "finalization_contract_hash": "b" * 64,
-        "runtime_context_sha256": "c" * 64,
+        "runtime_summary": {"requires_host_model": True},
+        "runtime_ownership_contract": {"runtime_owns_identity": True},
+        "host_generation_policy": {"rules": ["Use only runtime context"]},
+        "host_model_context": host_model_context,
     }
+    value["runtime_context_sha256"] = calculate_runtime_context_sha256(value)
     value["host_request_contract_hash"] = calculate_host_request_contract_hash(value)
     return value
 
@@ -146,6 +173,7 @@ def test_generation_tool_returns_intermediate_action_not_visible_reply() -> None
                 "chatgpt_host_bridge": {
                     "host_generation_policy": {"rules": ["Use only runtime context"]},
                     "host_generation_rules": ["Do not display before finalization"],
+                    "host_model_context": {"context_sha256": "e" * 64, "model_context": {"user_text": "dokładna wiadomość"}},
                     "host_request_contract_hash": "d" * 64,
                     "turn_id": "turn-1",
                 },
@@ -170,6 +198,7 @@ def test_generation_tool_returns_intermediate_action_not_visible_reply() -> None
     assert structured["action"] == "generate_then_finalize"
     assert structured["continuation_token"] == "jct1.token"
     assert structured["must_not_display_intermediate"] is True
+    assert structured["host_model_context"]["model_context"]["user_text"] == "dokładna wiadomość"
     assert "final_visible_text" not in structured
 
 
@@ -234,6 +263,7 @@ def test_mcp_finalizer_schema_rejects_host_supplied_identity_fields() -> None:
         "final_text",
         "final_text_sha256",
     }
+    assert "used_memory_item_ids" in properties
     for forbidden in (
         "turn_id",
         "trace_id",

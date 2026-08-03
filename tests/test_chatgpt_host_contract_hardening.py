@@ -20,6 +20,8 @@ from latka_jazn.core.chat_command_contract import (
 )
 from latka_jazn.core.chatgpt_host_pending_store import persist_pending_host_request
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
+from latka_jazn.model_adapters.chatgpt_runtime_adapter import ChatgptRuntimeAdapter
 from latka_jazn.tools.chatgpt_host_bridge_helper import (
     ChatgptHostBridgeHelperError,
     build_chatgpt_host_visible_reply_payload,
@@ -30,6 +32,18 @@ SAMPLE = datetime(2026, 7, 31, 20, 0, 0, tzinfo=timezone.utc)
 SAMPLE_ISO = SAMPLE.isoformat()
 HEADER = f"🕒 {SAMPLE.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
 FINAL = f"{HEADER}\n🌿 Łatka\n\nDokładny tekst.\n"
+
+
+def _host_model_synthesis(user_text: str = "Witaj") -> dict:
+    return ModelGuidedResponseSynthesizer().synthesize(
+        adapter=ChatgptRuntimeAdapter(),
+        user_text=user_text,
+        draft_body="Stały szkic handlera.",
+        detected_intent="standalone_greeting",
+        route="greeting",
+        cognitive_frame={},
+        response_policy={"exact_runtime_required": False},
+    ).to_dict()
 
 
 def _runtime_final_payload(*, integrity_valid: bool = True) -> dict:
@@ -62,6 +76,8 @@ def _host_generation_payload() -> dict:
         "trace": {"turn_id": "turn-host", "trace_id": "trace-host", "timestamp_header": HEADER, "timezone": "Europe/Warsaw"},
         "conversation_decision": {
             "handler_name": "RuntimeTurnTruthGate", "route": "greeting", "requires_host_model": True,
+            "detected_user_intent": "standalone_greeting",
+            "model_guided_synthesis": _host_model_synthesis(),
             "timestamp_contract": {"timezone": "Europe/Warsaw", "sample_iso": SAMPLE_ISO, "source": "local_fallback", "trusted": False},
         },
         "runtime_turn_contract": {
@@ -105,6 +121,25 @@ def test_runtime_final_is_displayed_only_after_all_presentation_gates() -> None:
     assert packet["reason"] == "plain_text_blocked_by_host_presentation_gate"
 
 
+def test_ordinary_handler_text_cannot_be_displayed_as_a_model_guided_final() -> None:
+    runtime = _runtime_final_payload()
+    runtime["conversation_decision"].update(
+        {
+            "detected_user_intent": "ordinary_conversation",
+            "model_generated": False,
+        }
+    )
+    runtime["runtime_turn_contract"]["detected_user_intent"] = "ordinary_conversation"
+    runtime["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
+        runtime,
+        user_text="Jak się masz?",
+        chat_bridge_meta={},
+    )
+    presentation = build_chatgpt_host_presentation_packet(runtime)
+    assert presentation["action"] != "display_exact"
+    assert presentation["final_visible_text"] == ""
+
+
 def test_exact_final_extraction_preserves_leading_and_trailing_whitespace() -> None:
     text = "\n  tekst bez stripowania  \n"
     assert extract_final_visible_text_from_result({"final_visible_text": text}) == text
@@ -115,6 +150,7 @@ def test_host_request_is_bound_to_phase_one_and_replay_is_rejected(tmp_path, mon
     bridge = build_chatgpt_host_bridge_turn_contract(runtime, user_text="Witaj", chat_bridge_meta={})
     runtime["chatgpt_host_bridge"] = bridge
     persist_pending_host_request(tmp_path, bridge)
+    assert bridge["host_model_context"]["model_context"]["user_text"] == "Witaj"
     reply, missing = build_chatgpt_host_visible_reply_payload(runtime, final_text="Witaj, Krzysztofie.")
     assert missing == []
     assert reply is not None
@@ -135,6 +171,7 @@ def test_host_request_is_bound_to_phase_one_and_replay_is_rejected(tmp_path, mon
     assert errors == []
     assert result is not None
     assert result["chatgpt_host_bridge"]["replay_protected"] is True
+    assert result["host_model_candidate_validation"]["accepted"] is True
 
     replay, replay_errors = persist_chatgpt_host_visible_reply(config=cfg, payload=reply, chat_bridge_meta={}, contract={})
     assert replay is None
@@ -154,6 +191,32 @@ def test_tampered_phase_two_envelope_is_rejected(tmp_path) -> None:
     )
     assert result is None
     assert errors == ["host_request_binding_mismatch:author_label"]
+
+
+def test_template_like_host_candidate_gets_one_repair_then_fails_closed(tmp_path) -> None:
+    runtime = _host_generation_payload()
+    bridge = build_chatgpt_host_bridge_turn_contract(runtime, user_text="Witaj", chat_bridge_meta={})
+    runtime["chatgpt_host_bridge"] = bridge
+    persist_pending_host_request(tmp_path, bridge)
+    reply, missing = build_chatgpt_host_visible_reply_payload(
+        runtime,
+        final_text="Jestem przy Tobie. Możemy spokojnie iść dalej.",
+    )
+    assert missing == [] and reply is not None
+
+    first, first_errors = persist_chatgpt_host_visible_reply(
+        config=JaznConfig(root=tmp_path), payload=reply, chat_bridge_meta={}, contract={}
+    )
+    assert first is None
+    assert first_errors
+    assert all(item.startswith("host_candidate_repair:") for item in first_errors)
+
+    second, second_errors = persist_chatgpt_host_visible_reply(
+        config=JaznConfig(root=tmp_path), payload=reply, chat_bridge_meta={}, contract={}
+    )
+    assert second is None
+    assert second_errors
+    assert all(item.startswith("host_candidate_rejected:") for item in second_errors)
 
 
 def test_helper_rejects_non_request_and_ambiguous_multiple_requests() -> None:

@@ -73,6 +73,9 @@ def run(
         if not isinstance(bridge, dict):
             bridge = response.get("chatgpt_host_bridge") if isinstance(response.get("chatgpt_host_bridge"), dict) else {}
         host_policy = bridge.get("host_generation_policy") if isinstance(bridge.get("host_generation_policy"), dict) else {}
+        host_model_context = bridge.get("host_model_context") if isinstance(bridge.get("host_model_context"), dict) else {}
+        if not host_model_context:
+            return _tool_error("host_model_context_missing", response=response)
         return {
             "content": [{
                 "type": "text",
@@ -89,7 +92,14 @@ def run(
                 "required_visible_prefix": presentation.get("required_visible_prefix"),
                 "host_generation_policy": host_policy,
                 "host_generation_rules": list(bridge.get("host_generation_rules") or []),
+                "host_model_context": host_model_context,
                 "finalization_tool": "jazn_finalize_reply",
+                "finalization_arguments": {
+                    "continuation_token": "Use the opaque token returned above.",
+                    "final_text": "Return only the candidate reply body, without adding a timestamp envelope.",
+                    "final_text_sha256": "SHA-256 of canonical UTF-8/LF final_text.",
+                    "used_memory_item_ids": "Declare only IDs actually used from allowed_memory_item_ids; otherwise [].",
+                },
                 "must_not_display_intermediate": True,
             },
             "_meta": {

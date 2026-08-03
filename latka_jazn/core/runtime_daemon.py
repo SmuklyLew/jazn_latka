@@ -1499,12 +1499,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
         active = build_active_runtime_status(self.config.root, marker_output=self.marker_path)
         timestamp_contract = timestamp_contract or self.cached_timestamp_contract()
         runtime_version = str(active.get("version") or PACKAGE_VERSION)
-        active_state = daemon_active_state(
-            marker_found=True,
-            pid_alive=True,
-            ping_ok=True,
-            timestamp_trusted=timestamp_contract.get("trusted"),
-        )
+        # A marker can attest that its writer process refreshed a heartbeat, but
+        # it cannot prove that the HTTP endpoint is reachable from the outside.
+        # Only status_daemon may promote this to active_trusted after matching
+        # root/PID identity and a live endpoint response.
+        active_state = "active_unverified"
         time_state = time_trust_state(
             timestamp_trusted=timestamp_contract.get("trusted"),
             timestamp_source=timestamp_contract.get("source"),
@@ -1546,11 +1545,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "last_heartbeat_at_utc": self.state.last_heartbeat_at_utc,
             "heartbeat_interval_seconds": self.heartbeat_interval,
             "runtime_process_active": True,
+            "marker_claim_scope": "process_identity_and_heartbeat_only",
+            "endpoint_reachability_verified": False,
             "runtime_version": runtime_version,
             "runtime_version_full": PACKAGE_VERSION_FULL,
             "start_file": (find_start_file(self.config.root) or Path(self.config.root).resolve() / "main.py").name,
             "version": runtime_version,
-            "truth_boundary": "Ten marker oznacza działający lokalny proces daemonu, gdy PID żyje, heartbeat jest świeży i /status odpowiada z localhost. Zaufanie czasu jest osobnym time_trust_state: brak czasu sieciowego nie blokuje startu, tylko jawnie oznacza lokalny czas maszyny jako niezweryfikowany.",
+            "truth_boundary": "Ten marker potwierdza wyłącznie deklarowaną tożsamość procesu i odświeżony heartbeat. Sam nie dowodzi dostępności endpointu ani active_trusted. Taki status wolno nadać dopiero po zewnętrznym sprawdzeniu zgodnego PID-u, rootu i odpowiedzi localhost /status. Zaufanie czasu jest osobnym time_trust_state.",
         }
         fresh, age, threshold = _heartbeat_fresh(payload)
         payload["heartbeat_fresh"] = fresh

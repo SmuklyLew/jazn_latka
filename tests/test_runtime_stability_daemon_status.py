@@ -125,6 +125,21 @@ def _ping(root: Path, *, pid: int = 1234, age: int = 0, trusted: bool = False) -
     }
 
 
+def test_marker_never_self_claims_active_trusted(tmp_path: Path) -> None:
+    server = _test_server(tmp_path)
+    try:
+        marker = server.marker_payload(
+            timestamp_contract={"trusted": False, "source": "local_machine"}
+        )
+        assert marker["active_state"] == "active_unverified"
+        assert marker["runtime_active_state"] == "active_unverified"
+        assert marker["marker_claim_scope"] == "process_identity_and_heartbeat_only"
+        assert marker["endpoint_reachability_verified"] is False
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
 def _install(monkeypatch, root: Path, marker: dict, ping: dict | None, *, pid_alive: bool = True) -> None:
     monkeypatch.setattr(runtime_daemon, "resolve_active_runtime_marker_path", lambda *_args, **_kwargs: root / "marker.json")
     monkeypatch.setattr(runtime_daemon, "read_json_file", lambda _path: marker)

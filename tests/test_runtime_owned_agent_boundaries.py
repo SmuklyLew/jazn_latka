@@ -8,6 +8,8 @@ from latka_jazn.core.handlers.direct_latka_voice_handler import DirectLatkaVoice
 from latka_jazn.core.handlers.identity_runtime_truth_handler import IdentityRuntimeTruthHandler
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
+from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
+from latka_jazn.model_adapters.chatgpt_runtime_adapter import ChatgptRuntimeAdapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,12 +83,22 @@ def test_direct_voice_handler_uses_runtime_owned_contract(tmp_path: Path) -> Non
 
 
 def test_chatgpt_bridge_exports_runtime_owned_host_generation_policy() -> None:
+    model_synthesis = ModelGuidedResponseSynthesizer().synthesize(
+        adapter=ChatgptRuntimeAdapter(),
+        user_text="Porozmawiajmy.",
+        draft_body="Stały szkic handlera.",
+        detected_intent="ordinary_conversation",
+        route="ordinary_dialogue",
+        cognitive_frame={},
+        response_policy={"exact_runtime_required": False},
+    ).to_dict()
     result = {
         "conversation_decision": {
             "detected_user_intent": "ordinary_conversation",
             "route": "ordinary_dialogue",
             "requires_host_model": True,
             "handler_name": "OrdinaryDialogueHandler",
+            "model_guided_synthesis": model_synthesis,
             "timestamp_contract": {
                 "timezone": "Europe/Warsaw",
                 "sample_iso": "2026-07-31T22:00:00+02:00",
@@ -128,4 +140,5 @@ def test_chatgpt_bridge_exports_runtime_owned_host_generation_policy() -> None:
     assert bridge["runtime_summary"]["detected_intent"] == "ordinary_conversation"
     assert bridge["runtime_ownership_contract"]["current_turn"]["route"] == "ordinary_dialogue"
     assert bridge["host_generation_policy"]["source"] == "runtime_code_and_source_controlled_canon"
+    assert bridge["host_model_context"]["model_context"]["user_text"] == "Porozmawiajmy."
     assert any("Instrukcje projektu" in rule for rule in bridge["host_generation_rules"])

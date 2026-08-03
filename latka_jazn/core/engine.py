@@ -72,6 +72,7 @@ from latka_jazn.core.template_registry import TemplateRegistry
 from latka_jazn.core.response_generation_mode import build_runtime_provenance
 from latka_jazn.core.runtime_response_synthesizer import RuntimeResponseSynthesizer
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
+from latka_jazn.core.host_model_bridge import MODEL_GUIDED_SPEECH_INTENTS
 from latka_jazn.core.model_executor_preflight import resolve_model_executor
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.route_handler_dispatcher import RouteHandlerDispatcher
@@ -104,23 +105,6 @@ from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_summary
 from latka_jazn.core.turn_execution import TurnExecutionContext
 
-
-MODEL_GUIDED_SPEECH_INTENTS = {
-    "ordinary_conversation",
-    "standalone_greeting",
-    "casual_greeting",
-    "casual_feedback",
-    "expressive_reaction",
-    "short_free_dialogue",
-    "negative_feedback_current_turn",
-    "positive_feedback_current_turn",
-    "ordinary_workday_report",
-    "sleep_closure_statement",
-    "self_state_question",
-    "reciprocal_self_state_question",
-    "self_preference_question",
-    "direct_latka_voice_request",
-}
 
 FAST_HEALTH_CHECK_INTENTS = {
     "runtime_health_check",
@@ -2348,56 +2332,25 @@ class JaznEngine:
                         decision_dict["handler_generation_mode"] = "runtime_model_guided"
                         decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis_retry"
             if not candidate_valid:
-                host_bridge_accepts_handler = _handler_body_can_cross_chatgpt_host_bridge(
-                    adapter_status=adapter_status,
-                    handler_result=handler_result,
-                    handler_missing=handler_missing,
-                    handler_required=handler_required,
-                    handler_satisfied=handler_satisfied,
-                    template_origin=template_origin,
-                    validation=first_validation,
+                body, source_origin_detail, runtime_answer_quality, model_replied = (
+                    _model_guided_rejection_disclosure(model_synthesis, first_validation)
                 )
-                if host_bridge_accepts_handler:
-                    decision_dict["chatgpt_host_visible_bridge"] = {
-                        "accepted": True,
-                        "reason": "validated_runtime_handler_body_no_local_model_call",
-                        "adapter_id": str(adapter_status.get("adapter_id") or adapter_status.get("name") or "chatgpt_runtime_adapter"),
-                        "provider": str(adapter_status.get("provider") or "chatgpt_host"),
-                        "truth_boundary": (
-                            "--chat-gpt uses the ChatGPT host as the visible language channel, but the local "
-                            "runtime still owns intent, routing, memory policy, validation and source provenance. "
-                            "This pass-through does not claim local model-guided generation."
-                        ),
-                    }
-                    decision_dict["fallback_classification"] = "not_fallback"
-                    decision_dict["requires_host_model"] = False
-                    decision_dict["runtime_answer_quality"] = "topic_aligned"
-                    decision_dict["model_generated"] = False
-                    decision_dict.setdefault(
-                        "source_origin_detail",
-                        str(getattr(handler_result, "source_origin_detail", "") or "chatgpt_host_bridge/validated_runtime_handler_body"),
-                    )
-                    answer_validation = first_validation
-                else:
-                    body, source_origin_detail, runtime_answer_quality, model_replied = (
-                        _model_guided_rejection_disclosure(model_synthesis, first_validation)
-                    )
-                    template_origin = self.template_registry.classify_body(
-                        body, detected_intent=str(detected_dialogue_intent)
-                    )
-                    decision_dict["handler_name"] = "RuntimeTurnTruthGate"
-                    decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
-                    decision_dict["source_origin_detail"] = source_origin_detail
-                    decision_dict["fallback_classification"] = "cannot_answer_directly"
-                    decision_dict["requires_host_model"] = not model_replied
-                    decision_dict["runtime_answer_quality"] = runtime_answer_quality
-                    decision_dict["model_generated"] = False
-                    answer_validation = self.runtime_answer_validator.validate(
-                        user_text=text,
-                        body=body,
-                        route=str(decision_dict.get("route") or ""),
-                        detected_intent=str(detected_dialogue_intent),
-                    )
+                template_origin = self.template_registry.classify_body(
+                    body, detected_intent=str(detected_dialogue_intent)
+                )
+                decision_dict["handler_name"] = "RuntimeTurnTruthGate"
+                decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
+                decision_dict["source_origin_detail"] = source_origin_detail
+                decision_dict["fallback_classification"] = "cannot_answer_directly"
+                decision_dict["requires_host_model"] = not model_replied
+                decision_dict["runtime_answer_quality"] = runtime_answer_quality
+                decision_dict["model_generated"] = False
+                answer_validation = self.runtime_answer_validator.validate(
+                    user_text=text,
+                    body=body,
+                    route=str(decision_dict.get("route") or ""),
+                    detected_intent=str(detected_dialogue_intent),
+                )
             else:
                 decision_dict["fallback_classification"] = "not_fallback"
                 decision_dict["requires_host_model"] = False

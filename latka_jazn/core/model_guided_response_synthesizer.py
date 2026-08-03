@@ -5,6 +5,10 @@ import re
 from typing import Any
 
 from latka_jazn.core.model_context_compiler import compile_model_context
+from latka_jazn.core.host_model_bridge import (
+    build_host_model_context,
+    host_model_generation_required,
+)
 from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
 from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight, resolve_model_executor
 from latka_jazn.core.nlg_planner import build_nlg_plan
@@ -26,6 +30,7 @@ class ModelGuidedSynthesis:
     endpoint_used: str | None = None
     adapter_response: dict[str, Any] | None = None
     candidate_validation: dict[str, Any] | None = None
+    host_model_context: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -67,19 +72,45 @@ class ModelGuidedResponseSynthesizer:
         adapter_id = str(status.get("adapter_id") or status.get("name") or "none")
         provider = str(status.get("provider") or adapter_id)
         model = str(status.get("model") or status.get("model_name") or "none")
+        generation_required = host_model_generation_required(
+            detected_intent=detected_intent,
+            route=route,
+            handler_name="",
+            exact_runtime_required=bool(response_policy.get("exact_runtime_required")),
+        )
+        if detected_intent in self.PROTECTED_INTENTS or not generation_required:
+            return ModelGuidedSynthesis(
+                False,
+                draft_body,
+                "skipped",
+                str(status.get("name") or "unknown"),
+                str(status.get("model") or "unknown"),
+                "intent_requires_exact_runtime_or_external_source",
+                [],
+            )
         if preflight.executor == "host_bridge":
+            context = self._build_context(
+                user_text=user_text,
+                draft_body=draft_body,
+                detected_intent=detected_intent,
+                route=route,
+                cognitive_frame=cognitive_frame,
+                response_policy=response_policy,
+            )
             return ModelGuidedSynthesis(
                 False, draft_body, "host_visible_generation_requested", provider, model,
                 preflight.reason, [], source_origin="chatgpt_host_bridge",
+                host_model_context=build_host_model_context(
+                    context,
+                    detected_intent=detected_intent,
+                    route=route,
+                ),
             )
         if preflight.executor == "unavailable":
             return ModelGuidedSynthesis(
                 False, draft_body, str(status.get("status") or "not_configured"),
                 provider, model, preflight.reason, [],
             )
-        if detected_intent in self.PROTECTED_INTENTS or bool(response_policy.get("exact_runtime_required")):
-            return ModelGuidedSynthesis(False, draft_body, "skipped", str(status.get("name") or "unknown"), str(status.get("model") or "unknown"), "intent_requires_exact_runtime_or_external_source", [])
-
         context = self._build_context(
             user_text=user_text,
             draft_body=draft_body,

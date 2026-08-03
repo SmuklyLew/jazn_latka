@@ -13,11 +13,12 @@ from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 
 
 def _error(reason: str, **details: Any) -> dict[str, Any]:
+    state = str(details.pop("state", "reject") or "reject")
     structured: dict[str, Any] = {
         "ok": False,
         "accepted": False,
         "action": "host_diagnostic",
-        "state": "reject",
+        "state": state,
         "reason": reason,
     }
     structured.update(details)
@@ -35,6 +36,7 @@ def run(
     continuation_token: str,
     final_text: str,
     final_text_sha256: str,
+    used_memory_item_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     canonical_hash = sha256_host_visible_text(final_text)
     supplied_hash = str(final_text_sha256 or "").strip().lower()
@@ -89,6 +91,7 @@ def run(
         "state_emoticon": str(binding["state_emoticon"]),
         "final_text": str(final_text),
         "final_text_sha256": supplied_hash,
+        "used_memory_item_ids": list(used_memory_item_ids or [])[:8],
     }
     persisted, errors = persist_chatgpt_host_visible_reply(
         config=JaznConfig(root=runtime_root),
@@ -102,8 +105,10 @@ def run(
         contract=command_contract("--chat-gpt", process_lifecycle="mcp_two_phase"),
     )
     if errors or not isinstance(persisted, dict):
+        repairable = bool(errors) and all(str(item).startswith("host_candidate_repair:") for item in errors)
         return _error(
             "runtime_finalization_rejected",
+            state="repair" if repairable else "reject",
             violations=list(errors),
             turn_id=binding["turn_id"],
             trace_id=binding["trace_id"],
@@ -141,6 +146,8 @@ def run(
             "turn_id": str(binding["turn_id"]),
             "trace_id": str(binding["trace_id"]),
             "host_request_contract_hash": request_contract_hash,
+            "used_memory_item_ids": list(used_memory_item_ids or [])[:8],
+            "host_model_candidate_validation": persisted.get("host_model_candidate_validation"),
             "host_visible_finalization": persisted.get("host_visible_finalization"),
             "host_request_consumption": persisted.get("host_request_consumption"),
         },

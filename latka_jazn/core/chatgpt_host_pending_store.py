@@ -12,6 +12,7 @@ import secrets
 from typing import Any, Mapping
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.host_model_bridge import host_model_context_hash_valid
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
@@ -138,6 +139,30 @@ def calculate_host_request_contract_hash(bridge: Mapping[str, Any]) -> str:
     return hashlib.sha256(_canonical_json(canonical_host_request_binding(bridge))).hexdigest()
 
 
+def calculate_runtime_context_sha256(bridge: Mapping[str, Any]) -> str:
+    """Bind the complete sanitized generation context to the phase-1 request."""
+
+    value = {
+        "runtime_summary": bridge.get("runtime_summary") if isinstance(bridge.get("runtime_summary"), dict) else {},
+        "runtime_ownership_contract": (
+            bridge.get("runtime_ownership_contract")
+            if isinstance(bridge.get("runtime_ownership_contract"), dict)
+            else {}
+        ),
+        "host_generation_policy": (
+            bridge.get("host_generation_policy")
+            if isinstance(bridge.get("host_generation_policy"), dict)
+            else {}
+        ),
+        "host_model_context": (
+            bridge.get("host_model_context")
+            if isinstance(bridge.get("host_model_context"), dict)
+            else {}
+        ),
+    }
+    return hashlib.sha256(_canonical_json(value)).hexdigest()
+
+
 @dataclass(slots=True)
 class PendingHostRequest:
     state: str
@@ -145,6 +170,8 @@ class PendingHostRequest:
     binding: dict[str, Any]
     created_at_utc: str
     expires_at_utc: str
+    host_model_context: dict[str, Any]
+    host_candidate_attempts: int = 0
     continuation_token_sha256: str | None = None
     token_issued_at_utc: str | None = None
     claimed_at_utc: str | None = None
@@ -238,6 +265,12 @@ def persist_pending_host_request(
         missing.append("timestamp_trusted")
     if missing:
         raise HostRequestStoreError("host_request_binding_missing:" + ",".join(missing))
+    host_model_context = bridge.get("host_model_context")
+    if not isinstance(host_model_context, dict) or not host_model_context_hash_valid(host_model_context):
+        raise HostRequestStoreError("host_model_context_invalid")
+    supplied_runtime_hash = str(bridge.get("runtime_context_sha256") or "").strip().lower()
+    if supplied_runtime_hash != calculate_runtime_context_sha256(bridge):
+        raise HostRequestStoreError("runtime_context_sha256_mismatch")
     calculated = calculate_host_request_contract_hash(bridge)
     supplied = str(bridge.get("host_request_contract_hash") or "").strip().lower()
     if supplied != calculated:
@@ -268,6 +301,7 @@ def persist_pending_host_request(
         binding=binding,
         created_at_utc=now.isoformat(),
         expires_at_utc=(now + timedelta(seconds=ttl)).isoformat(),
+        host_model_context=dict(host_model_context),
     ).to_dict()
     _atomic_write(pending_path, record)
     return record
@@ -402,6 +436,40 @@ def release_claimed_host_request(root: Path, *, turn_id: str) -> None:
     _atomic_write(claimed_path, record)
     pending_path.parent.mkdir(parents=True, exist_ok=True)
     os.replace(claimed_path, pending_path)
+
+
+def record_host_candidate_rejection(
+    root: Path,
+    *,
+    turn_id: str,
+    violations: list[str],
+    max_repair_attempts: int = 1,
+) -> dict[str, Any]:
+    """Allow one bounded semantic repair, then quarantine the request."""
+
+    claimed_path = _path(root, "claimed", turn_id)
+    record = _read(claimed_path)
+    attempts = int(record.get("host_candidate_attempts") or 0) + 1
+    record["host_candidate_attempts"] = attempts
+    record["last_candidate_violations"] = [str(item)[:240] for item in violations[:32]]
+    record["last_candidate_rejected_at_utc"] = _utc_now().isoformat()
+    if attempts <= max(0, int(max_repair_attempts)):
+        record["state"] = "pending"
+        record["claimed_at_utc"] = None
+        pending_path = _path(root, "pending", turn_id)
+        _atomic_write(claimed_path, record)
+        pending_path.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(claimed_path, pending_path)
+        return {"state": "repair", "repair_allowed": True, "attempts": attempts}
+
+    record["state"] = "expired"
+    record["expired_at_utc"] = _utc_now().isoformat()
+    record["expiration_reason"] = "host_candidate_repair_limit_exhausted"
+    expired_path = _path(root, "expired", turn_id)
+    _atomic_write(claimed_path, record)
+    expired_path.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(claimed_path, expired_path)
+    return {"state": "reject", "repair_allowed": False, "attempts": attempts}
 
 
 def mark_claimed_host_request_indeterminate(root: Path, *, turn_id: str, error: str) -> dict[str, Any]:
