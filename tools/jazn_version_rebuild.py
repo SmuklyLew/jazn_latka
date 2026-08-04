@@ -7,19 +7,24 @@ import difflib
 import json
 import os
 from pathlib import Path
+import queue
 import re
 import subprocess
 import sys
 import tempfile
 import threading
+import time
 import tkinter as tk
 from dataclasses import dataclass
 from datetime import datetime
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Callable, Iterable, Mapping
 
+ProgressCallback = Callable[[int, str], None]
+OutputCallback = Callable[[str], None]
+
 APP_NAME = "Jaźń Version Rebuild"
-APP_VERSION = "0.1"
+APP_VERSION = "0.2"
 SETTINGS_NAME = "jazn_version_rebuild.settings.json"
 BACKUP_PREFIX = "jazn_version_rebuild_backup"
 VERSION_PATH = Path("latka_jazn/version.py")
@@ -119,7 +124,7 @@ def atomic_write(path: Path, raw: bytes) -> None:
 
 def save_settings(path: Path, settings: Settings) -> None:
     payload = {
-        "schema_version": "jazn_version_rebuild_settings/v0.1",
+        "schema_version": "jazn_version_rebuild_settings/v0.2",
         "app_version": APP_VERSION,
         "root": settings.root,
         "python": settings.python,
@@ -229,6 +234,68 @@ def command(args: list[str], root: Path, timeout: int = 300) -> subprocess.Compl
         raise RebuildError("Przekroczono limit czasu: " + " ".join(args)) from exc
 
 
+def command_streaming(
+    args: list[str],
+    root: Path,
+    *,
+    timeout: int,
+    on_output: OutputCallback | None = None,
+) -> subprocess.CompletedProcess[str]:
+    """Uruchamia proces i przekazuje jego wyjście do GUI w czasie rzeczywistym."""
+
+    try:
+        process = subprocess.Popen(
+            args,
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdin=subprocess.DEVNULL,
+            bufsize=1,
+        )
+    except FileNotFoundError as exc:
+        raise RebuildError(f"Nie znaleziono programu: {args[0]}") from exc
+
+    assert process.stdout is not None
+    output_queue: queue.Queue[str | None] = queue.Queue()
+
+    def reader() -> None:
+        try:
+            for line in process.stdout:
+                output_queue.put(line.rstrip("\r\n"))
+        finally:
+            output_queue.put(None)
+
+    threading.Thread(target=reader, daemon=True).start()
+    started = time.monotonic()
+    lines: list[str] = []
+    reader_finished = False
+    while not reader_finished or process.poll() is None:
+        if time.monotonic() - started > timeout:
+            process.kill()
+            process.wait()
+            raise RebuildError("Przekroczono limit czasu: " + " ".join(args))
+        try:
+            item = output_queue.get(timeout=0.10)
+        except queue.Empty:
+            continue
+        if item is None:
+            reader_finished = True
+            continue
+        lines.append(item)
+        if on_output is not None and item.strip():
+            on_output(item)
+
+    return subprocess.CompletedProcess(
+        args=args,
+        returncode=process.wait(),
+        stdout="\n".join(lines),
+        stderr="",
+    )
+
+
 def git(root: Path, *args: str, timeout: int = 60) -> subprocess.CompletedProcess[str]:
     return command(["git", *args], root, timeout)
 
@@ -243,6 +310,15 @@ def git_lines(root: Path) -> list[str]:
     if result.returncode:
         raise RebuildError(result.stderr.strip() or "Nie można odczytać stanu Git.")
     return [line for line in result.stdout.splitlines() if line.strip()]
+
+
+def git_status_paths(lines: Iterable[str]) -> set[str]:
+    paths: set[str] = set()
+    for line in lines:
+        raw = line[3:].strip().split(" -> ")[-1].strip('"').replace("\\", "/")
+        if raw:
+            paths.add(raw)
+    return paths
 
 
 def unrelated_changes(root: Path, allowed: Iterable[Path]) -> list[str]:
@@ -343,6 +419,7 @@ def metadata_current(root: Path, path: Path, version: VersionData) -> bool:
     if path == PROVENANCE_PATH:
         expected = {
             "schema_version": f"source_provenance/{version.package}",
+            "base_version": version.full,
             "runtime_version": version.full,
             "update_version": version.full,
             "version_source": "latka_jazn/version.py",
@@ -372,29 +449,101 @@ def compile_version(root: Path, python: str) -> str:
     return result.stdout.strip() or "Kompilacja version.py: OK"
 
 
-def audit(root: Path, python: str) -> tuple[bool, str]:
-    result = command(
-        [python, "-X", "utf8", "-m", "latka_jazn.tools.version_consistency_audit", "--root", str(root), "--no-progress"],
+def audit(
+    root: Path,
+    python: str,
+    *,
+    on_output: OutputCallback | None = None,
+    progress: ProgressCallback | None = None,
+) -> tuple[bool, str]:
+    if progress is not None:
+        progress(10, "Uruchamiam audyt spójności wersji")
+    result = command_streaming(
+        [python, "-X", "utf8", "-m", "latka_jazn.tools.version_consistency_audit", "--root", str(root)],
         root,
-        360,
+        timeout=360,
+        on_output=on_output,
     )
+    if progress is not None:
+        progress(95, "Odczytuję wynik audytu")
     output = "\n".join(item for item in (result.stdout.strip(), result.stderr.strip()) if item)
+    if progress is not None:
+        progress(100, "Audyt zakończony")
     return result.returncode == 0, output or "Audyt nie zwrócił tekstu."
 
 
-def sync_metadata(root: Path, python: str, branch: str) -> str:
+def sync_metadata(
+    root: Path,
+    python: str,
+    branch: str,
+    *,
+    on_output: OutputCallback | None = None,
+    progress: ProgressCallback | None = None,
+) -> str:
+    if progress is not None:
+        progress(5, "Sprawdzam stan Git")
     status = git_lines(root)
     if status:
-        raise RebuildError("Synchronizacja wymaga czystego drzewa Git. Najpierw zatwierdź version.py.\n\n" + "\n".join(status[:20]))
-    result = command(
-        [python, "-X", "utf8", "-m", "latka_jazn.tools.release_metadata_sync", "--root", str(root), "--base-branch", branch or "master", "--write", "--json", "--no-progress"],
+        changed_paths = git_status_paths(status)
+        metadata_paths = {path.as_posix() for path in GENERATED_PATHS}
+        version = read_version(root)
+        if changed_paths and changed_paths.issubset(metadata_paths):
+            if all(metadata_current(root, path, version) for path in GENERATED_PATHS):
+                if progress is not None:
+                    progress(100, "Metadane są już aktualne i czekają na commit")
+                return "Metadane są już aktualne. Zatwierdź SOURCE_PROVENANCE.json i PACKAGE_INTEGRITY_MANIFEST.json w Git."
+            raise RebuildError(
+                "Pliki metadanych mają niezapisane, niespójne zmiany. Zatwierdź poprawny stan albo cofnij te dwa pliki przed ponowną synchronizacją.\n\n"
+                + "\n".join(status[:20])
+            )
+        raise RebuildError(
+            "Synchronizacja wymaga czystego drzewa Git. Najpierw zatwierdź zmianę version.py i pozostałe zmiany.\n\n"
+            + "\n".join(status[:20])
+        )
+    if progress is not None:
+        progress(15, "Uruchamiam kanoniczną synchronizację metadanych")
+    result = command_streaming(
+        [
+            python, "-X", "utf8", "-m", "latka_jazn.tools.release_metadata_sync",
+            "--root", str(root), "--base-branch", branch or "master", "--write", "--json",
+        ],
         root,
-        900,
+        timeout=900,
+        on_output=on_output,
     )
     output = "\n".join(item for item in (result.stdout.strip(), result.stderr.strip()) if item)
     if result.returncode:
         raise RebuildError(output or "Synchronizacja metadanych nie powiodła się.")
+    if progress is not None:
+        progress(100, "Synchronizacja metadanych zakończona")
     return output or "Synchronizacja metadanych: OK"
+
+
+def workflow_guidance(root: Path, version: VersionData) -> str:
+    """Zwraca jednoznaczny następny krok dla użytkownika."""
+
+    provenance_ok = metadata_current(root, PROVENANCE_PATH, version)
+    manifest_ok = metadata_current(root, MANIFEST_PATH, version)
+    if not is_git(root):
+        return "Git jest niedostępny. Możesz edytować version.py, ale synchronizacja wydania wymaga repozytorium Git."
+    changes = git_lines(root)
+    if changes:
+        changed_paths = git_status_paths(changes)
+        if VERSION_PATH.as_posix() in changed_paths:
+            return (
+                "Następny krok: zatwierdź latka_jazn/version.py w Git, a potem kliknij "
+                "„2. Synchronizuj metadane po commicie”."
+            )
+        metadata_paths = {path.as_posix() for path in GENERATED_PATHS}
+        if changed_paths and changed_paths.issubset(metadata_paths) and provenance_ok and manifest_ok:
+            return (
+                "Metadane są świeże i gotowe. Zatwierdź SOURCE_PROVENANCE.json oraz "
+                "PACKAGE_INTEGRITY_MANIFEST.json w Git; generator paczek może już użyć tej samej pary."
+            )
+        return "Git zawiera inne zmiany. Uporządkuj lub zatwierdź je przed synchronizacją metadanych."
+    if not provenance_ok or not manifest_ok:
+        return "Następny krok: kliknij „2. Synchronizuj metadane po commicie”."
+    return "Wersja, proweniencja i manifest są spójne. Możesz uruchomić generator paczek."
 
 
 class App(tk.Tk):
@@ -423,6 +572,11 @@ class App(tk.Tk):
         self.preview_var = tk.StringVar(value="—")
         self.repo_var = tk.StringVar(value="Repozytorium: sprawdzanie…")
         self.status_var = tk.StringVar(value="Gotowe")
+        self.operation_var = tk.StringVar(value="Brak aktywnej operacji")
+        self.next_step_var = tk.StringVar(value="Wczytywanie stanu projektu…")
+        self.progress_text_var = tk.StringVar(value="0%")
+        self.progress_value = tk.DoubleVar(value=0.0)
+        self.action_buttons: list[ttk.Button] = []
         for variable in (self.version_var, self.dist_var, self.name_var):
             variable.trace_add("write", lambda *_: self.preview())
 
@@ -446,8 +600,11 @@ class App(tk.Tk):
         footer = ttk.Frame(self, padding=(14, 3, 14, 10))
         footer.pack(fill="x")
         ttk.Label(footer, textvariable=self.status_var).pack(side="left")
-        self.progress = ttk.Progressbar(footer, mode="indeterminate", length=180)
+        self.progress = ttk.Progressbar(
+            footer, mode="determinate", maximum=100, variable=self.progress_value, length=220
+        )
         self.progress.pack(side="right")
+        ttk.Label(footer, textvariable=self.progress_text_var, width=5).pack(side="right", padx=(0, 8))
 
     def _version_ui(self) -> None:
         form = ttk.LabelFrame(self.version_page, text="Nowa wersja", padding=10)
@@ -462,15 +619,22 @@ class App(tk.Tk):
         ttk.Entry(form, textvariable=self.name_var).grid(row=1, column=1, columnspan=3, sticky="ew", pady=5)
         ttk.Label(form, text="Podgląd:").grid(row=2, column=0, sticky="w", pady=(8, 2))
         ttk.Label(form, textvariable=self.preview_var, font=("Consolas", 10, "bold")).grid(row=2, column=1, columnspan=3, sticky="w", pady=(8, 2))
+        guide = ttk.LabelFrame(self.version_page, text="Co teraz?", padding=9)
+        guide.pack(fill="x", pady=(9, 0))
+        ttk.Label(guide, textvariable=self.next_step_var, wraplength=1040).pack(anchor="w")
+        ttk.Label(guide, textvariable=self.operation_var, wraplength=1040).pack(anchor="w", pady=(5, 0))
+
         buttons = ttk.Frame(self.version_page)
         buttons.pack(fill="x", pady=9)
         for label, callback in (
-            ("Odśwież", self.refresh),
-            ("Zapisz zmianę wersji", self.save_version),
-            ("Synchronizuj metadane", self.synchronize),
-            ("Sprawdź spójność", self.run_audit),
+            ("Odśwież stan", self.refresh),
+            ("1. Zapisz version.py", self.save_version),
+            ("2. Synchronizuj metadane po commicie", self.synchronize),
+            ("3. Sprawdź całość", self.run_audit),
         ):
-            ttk.Button(buttons, text=label, command=callback).pack(side="left", padx=(0, 8))
+            button = ttk.Button(buttons, text=label, command=callback)
+            button.pack(side="left", padx=(0, 8))
+            self.action_buttons.append(button)
         box = ttk.LabelFrame(self.version_page, text="Pliki objęte edycją, synchronizacją i kontrolą", padding=7)
         box.pack(fill="both", expand=True)
         self.files = ttk.Treeview(box, columns=("state", "path", "role", "action"), show="headings", height=9)
@@ -547,19 +711,47 @@ class App(tk.Tk):
     def write_log(self, text: str, clear: bool = False) -> None:
         if clear:
             self.log.delete("1.0", "end")
-        self.log.insert("end", f"[{datetime.now():%H:%M:%S}] {text.rstrip()}\n")
+        lines = str(text).rstrip().splitlines() or [""]
+        for line in lines:
+            self.log.insert("end", f"[{datetime.now():%H:%M:%S}] {line}\n")
         self.log.see("end")
 
-    def background(self, label: str, worker: Callable[[], object], done: Callable[[object], None]) -> None:
+    def _set_controls_enabled(self, enabled: bool) -> None:
+        state = "normal" if enabled else "disabled"
+        for button in self.action_buttons:
+            button.configure(state=state)
+
+    def _apply_progress(self, value: int, message: str, *, log: bool = False) -> None:
+        value = max(0, min(100, int(value)))
+        self.progress_value.set(value)
+        self.progress_text_var.set(f"{value}%")
+        self.operation_var.set(message)
+        self.status_var.set(message)
+        if log:
+            self.write_log(message)
+
+    def report_progress(self, value: int, message: str, *, log: bool = True) -> None:
+        self.after(0, lambda: self._apply_progress(value, message, log=log))
+
+    def report_output(self, line: str) -> None:
+        self.after(0, lambda: self.write_log(line))
+
+    def background(
+        self,
+        label: str,
+        worker: Callable[[ProgressCallback, OutputCallback], object],
+        done: Callable[[object], None],
+    ) -> None:
         if self.busy:
             return
         self.busy = True
-        self.status_var.set(label)
-        self.progress.start(12)
+        self._set_controls_enabled(False)
+        self.write_log(f"START: {label}", clear=True)
+        self._apply_progress(0, label, log=False)
 
         def run() -> None:
             try:
-                result = worker()
+                result = worker(self.report_progress, self.report_output)
             except Exception as exc:
                 self.after(0, lambda: self.failed(exc))
             else:
@@ -569,18 +761,19 @@ class App(tk.Tk):
 
     def failed(self, exc: Exception) -> None:
         self.busy = False
-        self.progress.stop()
+        self._set_controls_enabled(True)
         self.status_var.set("Błąd")
+        self.operation_var.set("Operacja zakończona błędem — szczegóły są w logu.")
         self.write_log("BŁĄD: " + str(exc))
         messagebox.showerror(APP_NAME, str(exc), parent=self)
 
     def succeeded(self, result: object, done: Callable[[object], None]) -> None:
         self.busy = False
-        self.progress.stop()
-        self.status_var.set("Gotowe")
+        self._set_controls_enabled(True)
+        self._apply_progress(100, "Operacja zakończona poprawnie", log=True)
         done(result)
 
-    def refresh(self) -> None:
+    def refresh(self, *, clear_log: bool = True, reset_progress: bool = True) -> None:
         try:
             root = self.root()
             version = read_version(root)
@@ -603,8 +796,13 @@ class App(tk.Tk):
             for state, path, role, action in rows:
                 self.files.insert("", "end", values=(state, path.as_posix(), role, action))
             self.refresh_diffs()
-            self.write_log(f"Wczytano {version.full}", clear=True)
+            self.next_step_var.set(workflow_guidance(root, version))
+            self.write_log(f"Wczytano {version.full}", clear=clear_log)
             self.status_var.set(f"Wczytano {version.full}")
+            if not self.busy and reset_progress:
+                self.operation_var.set("Stan projektu odświeżony.")
+                self.progress_value.set(0)
+                self.progress_text_var.set("0%")
         except Exception as exc:
             self.failed(exc)
 
@@ -625,22 +823,30 @@ class App(tk.Tk):
         python = self.python_var.get().strip() or sys.executable
         prefix = self.prefix_var.get()
 
-        def worker() -> dict[str, object]:
+        def worker(progress: ProgressCallback, output: OutputCallback) -> dict[str, object]:
+            progress(5, "Sprawdzam stan Git")
             if is_git(root) and not allow_dirty:
                 other = unrelated_changes(root, [VERSION_PATH])
                 if other:
                     raise RebuildError("Git wykrył niezwiązane zmiany:\n\n" + "\n".join(other[:20]))
+            progress(20, "Tworzę punkt przywracania version.py")
             before = snapshot(root, [VERSION_PATH])
             try:
+                progress(35, f"Zapisuję {target.full} do version.py")
                 atomic_write(root / VERSION_PATH, render_version(root / VERSION_PATH, target))
+                progress(55, "Kompiluję version.py")
                 compile_result = compile_version(root, python)
+                output(compile_result)
+                progress(70, "Potwierdzam odczyt nowej wersji")
                 if read_version(root) != target:
                     raise RebuildError("Kontrola odczytu nie potwierdziła nowej wersji.")
+                progress(85, "Tworzę odwracalną kopię diff")
                 after = snapshot(root, [VERSION_PATH])
                 backup = diff_backup(self.folder, prefix, "version", current.full, target.full, before, after)
             except Exception:
                 restore(root, before)
                 raise
+            progress(100, "Zmiana version.py została zapisana i zweryfikowana")
             return {"backup": backup, "compile": compile_result}
 
         def done(result: object) -> None:
@@ -648,8 +854,8 @@ class App(tk.Tk):
             self.write_log(f"Zapisano {target.full}")
             self.write_log(str(data.get("compile", "")))
             self.write_log(f"Kopia diff: {data.get('backup')}")
-            self.write_log("Po commicie version.py uruchom synchronizację metadanych.")
-            self.refresh()
+            self.write_log("Następny krok: zatwierdź version.py w Git, potem uruchom synchronizację metadanych.")
+            self.refresh(clear_log=False, reset_progress=False)
             messagebox.showinfo(APP_NAME, f"Wersja zaktualizowana.\n\nKopia diff:\n{data.get('backup')}", parent=self)
 
         self.background("Zapisywanie wersji…", worker, done)
@@ -667,24 +873,39 @@ class App(tk.Tk):
         branch = self.branch_var.get().strip() or "master"
         prefix = self.prefix_var.get()
 
-        def worker() -> dict[str, object]:
+        def worker(progress: ProgressCallback, output_line: OutputCallback) -> dict[str, object]:
+            progress(5, "Tworzę punkt przywracania metadanych")
             before = snapshot(root, GENERATED_PATHS)
             try:
-                output = sync_metadata(root, python, branch)
+                output = sync_metadata(
+                    root, python, branch, on_output=output_line, progress=progress
+                )
+                progress(90, "Porównuję wynik synchronizacji z poprzednim stanem")
                 after = snapshot(root, GENERATED_PATHS)
-                backup = diff_backup(self.folder, prefix, "metadata", version.full, version.full, before, after)
+                changed = before != after
+                backup = (
+                    diff_backup(self.folder, prefix, "metadata", version.full, version.full, before, after)
+                    if changed
+                    else None
+                )
             except Exception:
                 restore(root, before)
                 raise
-            return {"output": output, "backup": backup}
+            progress(100, "Metadane są zsynchronizowane")
+            return {"output": output, "backup": backup, "changed": changed}
 
         def done(result: object) -> None:
             data = result if isinstance(result, dict) else {}
-            self.write_log("Metadane zsynchronizowane.")
-            self.write_log(str(data.get("output", "")))
-            self.write_log(f"Kopia diff: {data.get('backup')}")
-            self.refresh()
-            messagebox.showinfo(APP_NAME, f"Metadane zsynchronizowane.\n\nKopia diff:\n{data.get('backup')}", parent=self)
+            changed = bool(data.get("changed"))
+            self.write_log("Metadane zsynchronizowane." if changed else "Metadane już były aktualne — nie zapisano pustej kopii diff.")
+            backup = data.get("backup")
+            if backup:
+                self.write_log(f"Kopia diff: {backup}")
+            self.refresh(clear_log=False, reset_progress=False)
+            message = "Metadane zsynchronizowane." if changed else "Metadane były już aktualne."
+            if backup:
+                message += f"\n\nKopia diff:\n{backup}"
+            messagebox.showinfo(APP_NAME, message, parent=self)
 
         self.background("Synchronizowanie metadanych…", worker, done)
 
@@ -696,12 +917,18 @@ class App(tk.Tk):
             return
         python = self.python_var.get().strip() or sys.executable
 
+        def worker(progress: ProgressCallback, output_line: OutputCallback) -> tuple[bool, str]:
+            return audit(root, python, on_output=output_line, progress=progress)
+
         def done(result: object) -> None:
             ok, output = result if isinstance(result, tuple) else (False, str(result))
-            self.write_log(("AUDYT OK\n" if ok else "AUDYT: NIESPÓJNOŚCI\n") + output, clear=True)
+            self.write_log("AUDYT OK" if ok else "AUDYT: NIESPÓJNOŚCI")
+            if not output.strip():
+                self.write_log("Audyt nie zwrócił dodatkowego tekstu.")
+            self.refresh(clear_log=False, reset_progress=False)
             messagebox.showinfo(APP_NAME, "Audyt poprawny." if ok else "Audyt wykrył niespójności. Szczegóły są w logu.", parent=self)
 
-        self.background("Uruchamianie audytu…", lambda: audit(root, python), done)
+        self.background("Uruchamianie audytu spójności…", worker, done)
 
     def refresh_diffs(self) -> None:
         self.diffs.delete(*self.diffs.get_children())
@@ -729,10 +956,16 @@ class App(tk.Tk):
 
         def done(result: object) -> None:
             self.write_log(str(result))
-            self.refresh()
+            self.refresh(clear_log=False, reset_progress=False)
             messagebox.showinfo(APP_NAME, "Operacja diff zakończona poprawnie.", parent=self)
 
-        self.background("Przetwarzanie diff…", lambda: apply_patch(root, path, reverse), done)
+        def worker(progress: ProgressCallback, _output: OutputCallback) -> str:
+            progress(20, "Sprawdzam możliwość zastosowania diff")
+            result = apply_patch(root, path, reverse)
+            progress(100, "Operacja diff zakończona")
+            return result
+
+        self.background("Przetwarzanie diff…", worker, done)
 
     def pick_diff(self) -> None:
         value = filedialog.askopenfilename(parent=self, initialdir=self.folder, filetypes=(("Diff", "*.diff"), ("Wszystkie", "*.*")))
