@@ -1,0 +1,47 @@
+name: Apply package and version tool fix
+
+on:
+  push:
+    branches:
+      - agent/fix-package-version-workflow
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reassemble verified patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/tool-fix.patch.part.* > /tmp/tool-fix.patch
+          echo "13b4c7ed05b15232a275a1c995a3b0ca95e182e7630139d9143079cf2a507063  /tmp/tool-fix.patch" | sha256sum --check --strict
+          git apply --check /tmp/tool-fix.patch
+          git apply /tmp/tool-fix.patch
+
+      - name: Validate tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile tools/jazn_pack_generator.py tools/jazn_version_rebuild.py
+          python tools/jazn_pack_generator.py self-test
+          python -m pytest -q tests/test_package_version_workflow_regression.py
+
+      - name: Commit intended changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/jazn_pack_generator.py tools/jazn_version_rebuild.py tests/test_package_version_workflow_regression.py
+          git diff --cached --check
+          git commit -m "Fix package and version tooling workflow"
+          git push
