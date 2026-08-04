@@ -544,12 +544,14 @@ class WarsawClock:
                     )
                     return freshest
 
+                reference_utc: datetime = now_utc
+
                 def freshness_distance(candidate: TimeSample) -> int:
                     candidate_dt = candidate.dt
                     if candidate_dt is None:
                         return 2**63 - 1
                     return abs(
-                        int((now_utc - candidate_dt.astimezone(timezone.utc)).total_seconds())
+                        int((reference_utc - candidate_dt.astimezone(timezone.utc)).total_seconds())
                     )
 
                 freshest = min(candidates, key=freshness_distance)
@@ -563,7 +565,7 @@ class WarsawClock:
                     )
                     continue
                 freshest_age = abs(
-                    int((now_utc - freshest_dt.astimezone(timezone.utc)).total_seconds())
+                    int((reference_utc - freshest_dt.astimezone(timezone.utc)).total_seconds())
                 )
                 if freshest_age <= TIMESTAMP_MAX_AGE_SECONDS:
                     note(url, "ok", started, source=freshest.source, freshness_seconds=freshest_age)

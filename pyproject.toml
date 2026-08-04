@@ -67,3 +67,7 @@ exclude = [
   "workspace_runtime",
   "**/workspace_runtime/**",
 ]
+ignore = [
+  "workspace_runtime",
+  "**/workspace_runtime/**",
+]
