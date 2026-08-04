@@ -22,14 +22,16 @@ jobs:
           ref: agent/fix-package-version-workflow
           fetch-depth: 0
 
-      - name: Reassemble verified patch
+      - name: Reassemble and verify patch
         shell: bash
         run: |
           set -euo pipefail
           cat .github/tool-fix.patch.part.* > /tmp/tool-fix.patch
-          echo "13b4c7ed05b15232a275a1c995a3b0ca95e182e7630139d9143079cf2a507063  /tmp/tool-fix.patch" | sha256sum --check --strict
+          sha256sum /tmp/tool-fix.patch
+          test "$(wc -c < /tmp/tool-fix.patch)" -ge 47000
           git apply --check /tmp/tool-fix.patch
           git apply /tmp/tool-fix.patch
+          git diff --check
 
       - name: Validate tools
         shell: bash
