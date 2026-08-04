@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -144,7 +145,7 @@ def test_system_package_accepts_matching_virtual_release_metadata(tmp_path: Path
     generator.validate_system_plan_release_metadata(plan)
 
 
-def make_rebuild_fixture(root: Path, rebuild) -> rebuild.VersionData:
+def make_rebuild_fixture(root: Path, rebuild: Any) -> Any:
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "version.py").write_text(
         'DISTRIBUTION_VERSION = "15.1.0.3"\n'

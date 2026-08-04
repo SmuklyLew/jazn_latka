@@ -275,7 +275,8 @@ def persist_pending_host_request(
 
 def _token_for_record(root: Path, record: Mapping[str, Any]) -> str:
     contract_hash = str(record.get("request_contract_hash") or "").strip().lower()
-    binding = record.get("binding") if isinstance(record.get("binding"), dict) else {}
+    binding_value = record.get("binding")
+    binding: dict[str, Any] = binding_value if isinstance(binding_value, dict) else {}
     turn_id = str(binding.get("turn_id") or "").strip()
     created_at = str(record.get("created_at_utc") or "").strip()
     if not contract_hash or not turn_id or not created_at:

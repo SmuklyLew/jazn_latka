@@ -51,7 +51,8 @@ def run(
     except HostRequestStoreError as exc:
         return _error(f"host_request:{exc}")
 
-    binding = pending.get("binding") if isinstance(pending.get("binding"), dict) else {}
+    binding_value = pending.get("binding")
+    binding: dict[str, Any] = binding_value if isinstance(binding_value, dict) else {}
     request_contract_hash = str(pending.get("request_contract_hash") or "").strip().lower()
     required = (
         "turn_id",
