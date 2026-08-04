@@ -51,9 +51,12 @@
       "python_support_note": "PyPI release 1.99.15 provides CPython 3.10+ abi3 wheels including win_amd64.",
       "redistribution": "install_from_upstream_or_local_package",
       "role": "morfologia, lematyzacja właściwa, tagi fleksyjne i synteza",
-      "runtime_contract": "Adapter reports unavailable instead of pretending analysis if package is missing.",
+      "runtime_contract": "Installed from PyPI; runtime reports unavailable instead of opening or depending on the project homepage.",
       "source_id": "morfeusz2-sgjp",
-      "url": "https://morfeusz.sgjp.pl/"
+      "url": "https://pypi.org/project/morfeusz2/",
+      "distribution_source": "PyPI wheel",
+      "runtime_data": "SGJP dictionary bundled with the installed Morfeusz2 distribution",
+      "bootstrap_tool": "tools/bootstrap_polish_reasoning_resources.py"
     },
     "nkjp": {
       "allow_bulk_mirror": false,
@@ -147,7 +150,12 @@
       "redistribution": "install_from_upstream",
       "role": "alternatywny provider UD: tokenizacja, POS, lematy, depparse",
       "source_id": "stanza-pl",
-      "url": "https://stanfordnlp.github.io/stanza/"
+      "url": "https://stanfordnlp.github.io/stanza/download_models.html",
+      "bootstrap_tool": "tools/bootstrap_polish_reasoning_resources.py",
+      "environment_variable": "LATKA_NLP_DATA_DIR",
+      "default_data_path": "latka_jazn/local_resources/nlp/stanza",
+      "runtime_contract": "Runtime loads only the verified local Polish model with download_method=None; no network access is attempted during a conversation turn.",
+      "storage_policy": "persistent local data next to the Jaźń package, excluded from Git and release manifests"
     },
     "walenty": {
       "allow_bulk_mirror": false,

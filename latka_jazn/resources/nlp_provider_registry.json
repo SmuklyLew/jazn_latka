@@ -1,6 +1,6 @@
 {
   "schema_version": "nlp_provider_registry/v1",
-  "description": "Rejestr providerów NLP Jaźni. Domyślnie aktywny jest tylko builtin_safe; zewnętrzne providery są opcjonalne i nie są dołączane jako ciężkie zależności. bieżąca wersja Jaźni dopisuje jawny podgląd runtime, source_origin i self_state_runtime bez obowiązkowych modeli ciężkich.",
+  "description": "Rejestr providerów NLP Jaźni. Builtin_safe jest zawsze dostępny; lokalne providery Morfeusz2/Stanza mogą aktywować się po zweryfikowanej instalacji w latka_jazn/local_resources/nlp. Brak ciężkich zasobów nie blokuje runtime.",
   "enable_optional_providers_by_default": false,
   "providers": [
     {
@@ -18,7 +18,7 @@
     {
       "name": "optional_morfeusz2_pl",
       "required": false,
-      "status": "adapter_prepared_not_required",
+      "status": "auto_enable_after_verified_local_install",
       "features": [
         "morphological_analysis",
         "lemma_candidates",
@@ -28,13 +28,15 @@
     {
       "name": "optional_stanza_pl",
       "required": false,
-      "status": "adapter_prepared_not_required",
+      "status": "auto_enable_after_verified_local_install",
       "features": [
         "tokenize",
         "pos",
         "lemma",
         "morphological_features"
-      ]
+      ],
+      "data_root": "latka_jazn/local_resources/nlp/stanza",
+      "network_during_turn": false
     },
     {
       "name": "future_llm_context_provider",
@@ -61,5 +63,6 @@
   },
   "active_runtime_version": "v15.1.0.3.90",
   "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
-  "version_source": "latka_jazn.version.PACKAGE_VERSION"
+  "version_source": "latka_jazn.version.PACKAGE_VERSION",
+  "enable_optional_providers_if_installed": true
 }

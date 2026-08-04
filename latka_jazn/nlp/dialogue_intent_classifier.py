@@ -118,7 +118,11 @@ class DialogueIntentClassifier:
     PRACTICAL_TERMS = ("glazur", "kafelk", "zawór", "zawor", "kapie", "rączka", "raczka", "naprawić", "naprawic", "wyciąć otwór", "wyciac otwor")
     AUTOMOTIVE_TERMS = ("tpms", "kontrolka", "samoch", "ciśnienie opon", "cisnienie opon")
     DICTIONARY_TERMS = ("słownik", "slownik", "sjp", "wsjp", "synonim", "antonim", "odmian", "lemma", "lema", "znaczenie słowa", "znaczenie slowa", "czy to słowo", "czy to slowo")
-    RESEARCH_TERMS = ("sprawdź w internecie", "sprawdz w internecie", "poszukaj w internecie", "źródła", "zrodla", "web", "research")
+    RESEARCH_TERMS = (
+        "sprawdź w internecie", "sprawdz w internecie", "poszukaj w internecie",
+        "wyszukiwanie w sieci", "wyszukaj w sieci", "przeszukaj sieć", "przeszukaj siec",
+        "źródła", "zrodla", "web", "research",
+    )
     WEATHER_RESEARCH_TERMS = (
         "jaka będzie pogoda", "jaka bedzie pogoda", "prognoza pogody", "pogoda przez najbliższe",
         "pogoda przez najblizsze", "sprawdź pogodę", "sprawdz pogode",
@@ -566,6 +570,17 @@ class DialogueIntentClassifier:
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
                 return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
             return report(norm,folded,'system_update_execution_request',evidence,0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+        if has_research and has_creative:
+            evidence.extend([
+                'zadanie łączy materiał twórczy z prośbą o research',
+                *creative_report.evidence,
+            ])
+            return report(
+                norm,folded,'creative_text_analysis',evidence,0.91,
+                ['external_research_request'],creative=True,
+                preserve=not preservation.revision_allowed,
+                speech_act=speech.speech_act,question_object='creative_text',
+            )
         if has_research:
             reason = 'aktualna prognoza pogody wymaga zewnętrznych źródeł' if has_weather_research else 'jawna prośba o internet/research/źródła'
             return report(norm,folded,'external_research_request',[reason],0.88 if has_weather_research else 0.86,speech_act=speech.speech_act,question_object='weather_forecast' if has_weather_research else qobj.object_type)

@@ -10,7 +10,7 @@ class LanguageResourceRegistry:
     def resources(self)->list[LanguageResource]:
         return [
             LanguageResource('local_jazn_mini_lexicon','mini_domain_lexicon',['pl'],False,False,None,'własny mały zasób runtime','always_available'),
-            LanguageResource('Morfeusz2','morphological_analyzer',['pl'],False,True,'https://morfeusz.sgjp.pl/','sprawdź licencję instalacji lokalnej','optional_local_provider'),
+            LanguageResource('Morfeusz2','morphological_analyzer',['pl'],False,True,'https://pypi.org/project/morfeusz2/','sprawdź licencję instalacji lokalnej','optional_local_provider'),
             LanguageResource('Stanza','nlp_pipeline',['multi','pl'],False,True,'https://stanfordnlp.github.io/stanza/','modele i paczki według licencji Stanza/UD','optional_heavy_provider'),
             LanguageResource('plWordNet/Słowosieć','lexico_semantic_network',['pl'],True,True,'https://clarin-pl.eu/','zapisuj wersję/licencję zasobu','semantic_relations_if_available'),
             LanguageResource('WordNet/OMW','wordnet',['multi','en'],True,True,'https://omwn.org/','różne wordnety mają różne licencje','semantic_relations_if_available'),

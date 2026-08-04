@@ -5,6 +5,7 @@ from pathlib import Path
 from latka_jazn.nlp_reasoning.adapters.morfeusz_adapter import MorfeuszReasoningAdapter
 from latka_jazn.nlp_reasoning.adapters.polimorf_adapter import PolimorfDictionaryAdapter
 from latka_jazn.nlp_reasoning.adapters.resource_placeholders import optional_provider_statuses
+from latka_jazn.nlp_reasoning.adapters.stanza_provider_adapter import StanzaReasoningAdapter
 from latka_jazn.nlp_reasoning.adapters.typo_normalizer import TypoNormalizerAdapter
 from latka_jazn.nlp_reasoning.lemma_selector import build_token_morph_analyses
 from latka_jazn.nlp_reasoning.models import MorphCandidate, PolishReasoningFrame, ProviderStatus
@@ -21,6 +22,7 @@ class PolishReasoningPipeline:
         self.typo = TypoNormalizerAdapter()
         self.morfeusz = MorfeuszReasoningAdapter(engine=morfeusz_engine) if use_optional_providers else None
         self.polimorf = PolimorfDictionaryAdapter(root=self.root, path=polimorf_path) if use_optional_providers else None
+        self.stanza = StanzaReasoningAdapter(root=self.root) if use_optional_providers else None
         self.registry = PolishReasoningSourceRegistry(root)
 
     def analyse(self, text: str) -> PolishReasoningFrame:
@@ -35,6 +37,10 @@ class PolishReasoningPipeline:
             statuses.append(self.morfeusz.status)
             morphology.extend(self.morfeusz.analyse(normalized))
 
+        if self.stanza is not None:
+            statuses.append(self.stanza.status)
+            morphology.extend(self.stanza.analyse(normalized))
+
         if self.polimorf is not None:
             # PoliMorf ma być realnym fallbackiem coverage, nie duplikatem masowego mirroru.
             # Jeżeli Morfeusz nie działa albo token nie ma żadnego kandydata, PoliMorf może dołożyć formy z lokalnego pliku.
@@ -44,7 +50,7 @@ class PolishReasoningPipeline:
 
         morphology.extend(self._fallback_morphology(tokens, morphology))
         token_analyses = build_token_morph_analyses(tokens, morphology)
-        statuses.extend(optional_provider_statuses())
+        statuses.extend(optional_provider_statuses(exclude={status.provider for status in statuses}))
         semantic_frame, reply_policy = infer_semantic_frame(source_text, normalized)
         sources_used = self._sources_used(statuses)
         return PolishReasoningFrame(
