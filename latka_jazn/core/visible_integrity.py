@@ -15,6 +15,10 @@ from latka_jazn.core.message_envelope import (
     normalize_newlines,
     parse_timestamp_header,
 )
+from latka_jazn.core.visible_message_format import (
+    clock_header_matches_datetime,
+    is_clock_unavailable_header,
+)
 from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_ALLOW_DEGRADED_LOCAL_VISIBLE,
     TIMESTAMP_MAX_AGE_SECONDS,
@@ -24,6 +28,21 @@ from latka_jazn.core.timestamp_policy import (
 from latka_jazn.version import schema_version
 
 RUNTIME_OWNED_NON_FALLBACK_CLASSIFICATIONS = frozenset({"rule_handler_response"})
+
+CLOCK_NONBLOCKING_ERRORS = frozenset({
+    "timestamp_missing",
+    "timestamp_header_invalid",
+    "timestamp_sample_missing",
+    "timestamp_sample_invalid",
+    "timestamp_sample_naive",
+    "timestamp_source_missing",
+    "timestamp_timezone_missing",
+    "timestamp_timezone_invalid",
+    "timestamp_header_sample_mismatch",
+    "timestamp_stale",
+    "timestamp_trust_missing",
+    "timestamp_trust_invalid",
+})
 RENDER_ARTIFACTS = (
     "aaaktywny", "aaktywny", "prrzez", "nieddziela", "niedzielaa",
     "pierwszoossobową", "pierwszoosobowąą", "GMMT", "2026-066", "221:",
@@ -147,23 +166,33 @@ def validate_visible_text(
     trusted = contract.get("trusted")
     source = str(contract.get("source") or "").strip()
     timezone_key = str(contract.get("timezone") or contract.get("timezone_key") or "").strip()
-    sample, sample_error = _parse_sample(contract)
-    header_dt = parse_timestamp_header(timestamp_header)
-    has_timestamp = bool(timestamp_header) and visible.startswith(timestamp_header + "\n")
-    header_shape_valid = bool(TIMESTAMP_HEADER_RE.fullmatch(str(timestamp_header or "").strip()))
+    header_value = str(timestamp_header or "").strip()
+    clock_unavailable = is_clock_unavailable_header(header_value)
+    sample, sample_error = (None, None) if clock_unavailable else _parse_sample(contract)
+    header_dt = parse_timestamp_header(header_value)
+    clock_header_present = bool(header_value) and visible.startswith(header_value + "\n")
+    header_shape_valid = bool(TIMESTAMP_HEADER_RE.fullmatch(header_value))
+    clock_available = bool(clock_header_present and header_shape_valid and not clock_unavailable and header_dt is not None)
     max_age_seconds = int(contract.get("max_age_seconds") or TIMESTAMP_MAX_AGE_SECONDS)
     freshness_seconds: int | None = None
     freshness_ok = False
     timestamp_matches_sample = False
     timezone_valid = False
-    if sample is not None:
-        freshness_seconds = abs(int((datetime.now(timezone.utc) - sample.astimezone(timezone.utc)).total_seconds()))
-        freshness_ok = freshness_seconds <= max_age_seconds
+    if clock_unavailable:
+        timestamp_matches_sample = sample is None
+        timezone_valid = bool(timezone_key)
+    elif sample is not None:
+        try:
+            freshness_seconds = abs(int((datetime.now(timezone.utc) - sample.astimezone(timezone.utc)).total_seconds()))
+            freshness_ok = freshness_seconds <= max_age_seconds
+        except Exception:
+            freshness_seconds = None
+            freshness_ok = False
         if header_dt is not None and timezone_key:
             try:
                 zone = ZoneInfo(timezone_key)
-                expected_local = sample.astimezone(zone).replace(tzinfo=None, microsecond=0)
-                timestamp_matches_sample = header_dt == expected_local
+                expected_local = sample.astimezone(zone)
+                timestamp_matches_sample = clock_header_matches_datetime(header_value, expected_local)
                 timezone_valid = True
             except ZoneInfoNotFoundError:
                 timezone_valid = False
@@ -178,12 +207,12 @@ def validate_visible_text(
     expected_author_line: str | None = None
     if author_label is not None or state_emoticon is not None or expected_body is not None:
         expected_author_line = f"{state_emoticon or ''} {author_label or ''}".strip()
-        expected_prefix = f"{timestamp_header}\n{expected_author_line}\n\n"
+        expected_prefix = f"{header_value}\n{expected_author_line}\n\n"
         envelope_shape_ok = bool(author_label and state_emoticon and visible.startswith(expected_prefix))
         if expected_body is not None:
             extracted = extract_body_from_visible_text(
                 visible,
-                timestamp_header=timestamp_header,
+                timestamp_header=header_value,
                 state_emoticon=str(state_emoticon or ""),
                 author_label=str(author_label or ""),
             )
@@ -191,36 +220,70 @@ def validate_visible_text(
 
     text_hash = _sha(visible)
     hash_valid = expected_visible_hash in (None, "", text_hash)
-    errors: list[str] = []
-    if not has_timestamp: errors.append("timestamp_missing")
-    if not header_shape_valid: errors.append("timestamp_header_invalid")
-    if sample_error: errors.append(sample_error)
-    if not source_ok: errors.append("timestamp_source_missing")
-    if not timezone_key: errors.append("timestamp_timezone_missing")
-    elif not timezone_valid: errors.append("timestamp_timezone_invalid")
-    if not timestamp_matches_sample: errors.append("timestamp_header_sample_mismatch")
-    if not freshness_ok: errors.append("timestamp_stale")
-    if not trust_declared: errors.append("timestamp_trust_missing")
-    if not trust_ok: errors.append("timestamp_trust_invalid")
-    if not envelope_shape_ok: errors.append("message_envelope_invalid")
-    if not body_exact: errors.append("visible_body_mismatch")
-    if not validation_passed: errors.append("answer_validation_failed")
-    if not origin_truth_valid: errors.append("origin_truth_invalid")
-    if not hash_valid: errors.append("visible_text_hash_mismatch")
+    timestamp_errors: list[str] = []
+    if not clock_header_present:
+        timestamp_errors.append("timestamp_missing")
+    if not header_shape_valid:
+        timestamp_errors.append("timestamp_header_invalid")
+    if not clock_unavailable:
+        if sample_error:
+            timestamp_errors.append(sample_error)
+        if not source_ok:
+            timestamp_errors.append("timestamp_source_missing")
+        if not timezone_key:
+            timestamp_errors.append("timestamp_timezone_missing")
+        elif not timezone_valid:
+            timestamp_errors.append("timestamp_timezone_invalid")
+        if not timestamp_matches_sample:
+            timestamp_errors.append("timestamp_header_sample_mismatch")
+        if not freshness_ok:
+            timestamp_errors.append("timestamp_stale")
+        if not trust_declared:
+            timestamp_errors.append("timestamp_trust_missing")
+        if not trust_ok:
+            timestamp_errors.append("timestamp_trust_invalid")
+
+    blocking_errors: list[str] = []
+    if not envelope_shape_ok:
+        blocking_errors.append("message_envelope_invalid")
+    if not body_exact:
+        blocking_errors.append("visible_body_mismatch")
+    if not validation_passed:
+        blocking_errors.append("answer_validation_failed")
+    if not origin_truth_valid:
+        blocking_errors.append("origin_truth_invalid")
+    if not hash_valid:
+        blocking_errors.append("visible_text_hash_mismatch")
+
     timestamp_valid = bool(
-        has_timestamp and header_shape_valid and sample is not None and source_ok and timezone_valid
-        and timestamp_matches_sample and freshness_ok and trust_declared and trust_ok
+        clock_header_present
+        and header_shape_valid
+        and (
+            clock_unavailable
+            or (
+                sample is not None
+                and source_ok
+                and timezone_valid
+                and timestamp_matches_sample
+                and freshness_ok
+                and trust_declared
+                and trust_ok
+            )
+        )
     )
-    valid = bool(timestamp_valid and envelope_shape_ok and body_exact and validation_passed and origin_truth_valid and hash_valid)
+    content_integrity_valid = not blocking_errors
     return {
         "schema_version": schema_version("final_visible_integrity"),
         "timestamp_policy": timestamp_runtime_policy(),
-        "timestamp_header": timestamp_header,
-        "timestamp_present": has_timestamp,
+        "timestamp_header": header_value,
+        "clock_header_present": clock_header_present,
+        "clock_available": clock_available,
+        "clock_status": "unavailable" if clock_unavailable else ("available" if clock_available else "degraded"),
+        "timestamp_present": clock_available,
         "timestamp_header_shape_valid": header_shape_valid,
         "timestamp_header_matches_sample": timestamp_matches_sample,
-        "timestamp_source": source or None,
-        "timestamp_trusted": trusted,
+        "timestamp_source": source or ("unavailable" if clock_unavailable else None),
+        "timestamp_trusted": False if clock_unavailable else trusted,
         "timestamp_sample_iso": contract.get("sample_iso"),
         "timestamp_timezone": timezone_key or None,
         "timestamp_timezone_valid": timezone_valid,
@@ -229,16 +292,19 @@ def validate_visible_text(
         "timestamp_freshness_ok": freshness_ok,
         "timestamp_trust_ok": trust_ok,
         "timestamp_degraded_allowed": degraded_allowed,
-        "timestamp_degraded_visible_ok": bool(degraded_allowed and trusted is False and timestamp_valid),
+        "timestamp_degraded_visible_ok": bool(clock_unavailable or (degraded_allowed and trusted is False and timestamp_valid)),
         "timestamp_valid": timestamp_valid,
+        "timestamp_errors": timestamp_errors,
         "author_line": expected_author_line,
         "message_envelope_valid": envelope_shape_ok,
         "body_exact": body_exact,
         "validation_passed": bool(validation_passed),
         "origin_truth_valid": bool(origin_truth_valid),
         "hash_valid": hash_valid,
-        "valid": valid,
-        "errors": errors,
+        "content_integrity_valid": content_integrity_valid,
+        "blocking_errors": blocking_errors,
+        "valid": content_integrity_valid,
+        "errors": timestamp_errors + blocking_errors,
         "text_sha256": text_hash,
     }
 
@@ -329,9 +395,18 @@ def validate_result_integrity(result: Mapping[str, Any]) -> dict[str, Any]:
             errors.append(f"render_artifact_detected:{artifact}")
     if "\ufffd" in final_text or "\ufffd" in exact_runtime_text:
         errors.append("unicode_replacement_character_detected")
-    integrity["errors"] = sorted(set(errors))
+    unique_errors = sorted(set(errors))
+    blocking_errors = sorted(
+        error for error in set(errors) if error not in CLOCK_NONBLOCKING_ERRORS
+    )
+    integrity["errors"] = unique_errors
+    integrity["blocking_errors"] = blocking_errors
+    integrity["timestamp_errors"] = sorted(
+        error for error in set(errors) if error in CLOCK_NONBLOCKING_ERRORS
+    )
     integrity["checked_artifact_count"] = len(RENDER_ARTIFACTS)
-    integrity["valid"] = bool(integrity.get("valid") and not errors)
+    integrity["valid"] = bool(integrity.get("valid") and not blocking_errors)
+    integrity["content_integrity_valid"] = integrity["valid"]
     return integrity
 
 

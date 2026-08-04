@@ -12,6 +12,7 @@ import secrets
 from typing import Any, Mapping
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.visible_message_format import is_clock_unavailable_header
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
@@ -228,11 +229,13 @@ def persist_pending_host_request(
     binding = canonical_host_request_binding(bridge)
     if binding["phase"] != "host_visible_generation_requested":
         raise HostRequestStoreError("host_request_phase_invalid")
-    required = (
-        "turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso",
+    required = [
+        "turn_id", "trace_id", "timestamp_header", "timezone",
         "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon",
         "user_text_sha256", "finalization_contract_hash", "runtime_context_sha256",
-    )
+    ]
+    if not is_clock_unavailable_header(str(binding.get("timestamp_header") or "")):
+        required.append("timestamp_sample_iso")
     missing = [name for name in required if not str(binding.get(name) or "").strip()]
     if not isinstance(binding.get("timestamp_trusted"), bool):
         missing.append("timestamp_trusted")
@@ -275,7 +278,8 @@ def persist_pending_host_request(
 
 def _token_for_record(root: Path, record: Mapping[str, Any]) -> str:
     contract_hash = str(record.get("request_contract_hash") or "").strip().lower()
-    binding = record.get("binding") if isinstance(record.get("binding"), dict) else {}
+    binding_value = record.get("binding")
+    binding: dict[str, Any] = binding_value if isinstance(binding_value, dict) else {}
     turn_id = str(binding.get("turn_id") or "").strip()
     created_at = str(record.get("created_at_utc") or "").strip()
     if not contract_hash or not turn_id or not created_at:

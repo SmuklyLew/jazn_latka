@@ -11,6 +11,7 @@ from latka_jazn.core.message_envelope import (
     TIMESTAMP_HEADER_RE,
     normalize_newlines,
 )
+from latka_jazn.core.visible_message_format import is_clock_unavailable_header
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("host_visible_finalization", version=PACKAGE_VERSION_FULL)
@@ -60,7 +61,7 @@ class HostVisibleFinalizationPolicy:
 class HostVisibleFinalizationContract:
     required_timestamp_header: str
     timezone: str
-    timestamp_sample_iso: str
+    timestamp_sample_iso: str | None
     timestamp_source: str
     timestamp_trusted: bool
     author_id: str
@@ -75,8 +76,9 @@ class HostVisibleFinalizationContract:
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
+        clock_unavailable = is_clock_unavailable_header(self.required_timestamp_header)
         for field_name in (
-            "required_timestamp_header", "timezone", "timestamp_sample_iso", "timestamp_source",
+            "required_timestamp_header", "timezone", "timestamp_source",
             "author_id", "author_label", "author_source", "state_emoticon", "turn_id", "trace_id",
         ):
             value = str(getattr(self, field_name) or "").strip()
@@ -85,6 +87,15 @@ class HostVisibleFinalizationContract:
             setattr(self, field_name, value)
         if not TIMESTAMP_HEADER_RE.fullmatch(self.required_timestamp_header):
             raise ValueError("required_timestamp_header has invalid shape")
+        sample_value = str(self.timestamp_sample_iso or "").strip() or None
+        if clock_unavailable:
+            self.timestamp_sample_iso = None
+            self.timestamp_source = self.timestamp_source or "unavailable"
+            self.timestamp_trusted = False
+        elif sample_value is None:
+            raise ValueError("timestamp_sample_iso is required for an available clock")
+        else:
+            self.timestamp_sample_iso = sample_value
         envelope = self.envelope_for_body("contract-validation")
         if not envelope.timestamp_matches_sample():
             raise ValueError("required_timestamp_header does not match timestamp_sample_iso/timezone")
@@ -262,7 +273,7 @@ def finalize_host_visible_text(
     *,
     required_timestamp_header: str,
     timezone: str,
-    timestamp_sample_iso: str,
+    timestamp_sample_iso: str | None,
     timestamp_source: str,
     timestamp_trusted: bool,
     author_id: str,

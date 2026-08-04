@@ -173,6 +173,60 @@ def test_generation_tool_returns_intermediate_action_not_visible_reply() -> None
     assert "final_visible_text" not in structured
 
 
+def test_generation_tool_handles_missing_optional_bridge_mappings() -> None:
+    class _Gateway:
+        def chat(self, _message: str, *, session_id: str | None = None) -> dict[str, Any]:
+            return {
+                "action": "generate_then_finalize",
+                "type": "chatgpt_host_presentation",
+                "turn_id": "turn-optional",
+                "trace_id": "trace-optional",
+                "chatgpt_host_bridge": None,
+            }
+
+        def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:
+            return {
+                "continuation_token": "jct1.optional",
+                "request_contract_hash": "e" * 64,
+            }
+
+    result = jazn_generate_visible_reply.run(
+        _Gateway(),  # type: ignore[arg-type]
+        message="wiadomość",
+    )
+
+    structured = result["structuredContent"]
+    assert result["isError"] is False
+    assert structured["host_generation_policy"] == {}
+    assert structured["host_generation_rules"] == []
+
+
+def test_finalizer_rejects_missing_binding_without_optional_access_crash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        jazn_finalize_reply,
+        "resolve_continuation_token",
+        lambda _root, _token: {
+            "state": "pending",
+            "request_contract_hash": "f" * 64,
+            "binding": None,
+        },
+    )
+    body = "Treść."
+
+    result = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token="jct1.missing-binding",
+        final_text=body,
+        final_text_sha256=sha256_host_visible_text(body),
+    )
+
+    assert result["isError"] is True
+    assert result["structuredContent"]["reason"] == "pending_binding_incomplete"
+
+
 def test_finalizer_loads_all_immutable_fields_from_pending_store(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -253,6 +307,14 @@ def test_status_reads_runtime_write_readiness_from_live_ping() -> None:
     )
     assert ready is True
     assert source == "daemon.ping.runtime_write_ready"
+
+
+def test_status_treats_non_mapping_ping_as_unavailable() -> None:
+    ready, source = _daemon_runtime_write_ready(
+        {"runtime_write_ready": None, "ping": None}
+    )
+    assert ready is False
+    assert source == "unavailable"
 
 
 def test_complete_host_contract_is_valid_intermediate_runtime_state() -> None:

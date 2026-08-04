@@ -748,11 +748,26 @@ def _recover_chatgpt_runtime_impl(
             exit_code=75,
         )
 
-    verification = (
-        verify_extracted_zip_set(independent_paths, staging, reject_extra_files=True)
-        if archive_format == "independent"
-        else verify_extracted_zip_tree(zip_out, staging, reject_extra_files=True)
-    )
+    if archive_format == "independent":
+        verification = verify_extracted_zip_set(
+            independent_paths,
+            staging,
+            reject_extra_files=True,
+        )
+    else:
+        if zip_out is None:
+            return RecoveryResult(
+                ok=False,
+                state="joined_zip_missing",
+                active_root=str(destination),
+                report=report,
+                exit_code=5,
+            )
+        verification = verify_extracted_zip_tree(
+            zip_out,
+            staging,
+            reject_extra_files=True,
+        )
     report["filesystem_verification"] = verification
     if not verification["ok"]:
         return RecoveryResult(ok=False, state="verification_failed", active_root=str(destination), report=report, exit_code=5)

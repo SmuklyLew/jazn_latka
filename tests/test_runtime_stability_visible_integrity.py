@@ -113,13 +113,20 @@ def test_text_changed_after_hash_is_rejected() -> None:
     assert "visible_text_hash_mismatch" in integrity["errors"]
 
 
-def test_stale_timestamp_is_rejected() -> None:
+def test_stale_timestamp_is_reported_without_blocking_content() -> None:
     decision = _decision()
     decision["timestamp_contract"]["sample_iso"] = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
     result = _result(decision)
     integrity = validate_result_integrity(result)
-    assert integrity["valid"] is False
+    assert integrity["valid"] is True
+    assert integrity["content_integrity_valid"] is True
     assert "timestamp_stale" in integrity["errors"]
+    assert integrity["blocking_errors"] == []
+
+    updated, gate_payload = apply_runtime_truth_gate(result)
+    assert gate_payload["ok"] is True
+    assert gate_payload["normal_response_allowed"] is True
+    assert updated["final_visible_text"] == VISIBLE
 
 
 def test_not_fallback_without_provenance_and_technical_fallback_are_rejected() -> None:

@@ -26,6 +26,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     release_claimed_host_request,
 )
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
+from latka_jazn.core.visible_message_format import is_clock_unavailable_header
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -383,10 +384,13 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
     missing: list[str] = []
     if not final_text:
         missing.append("final_text|host_visible_text|visible_text|assistant_text")
-    for field in (
-        "turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso",
+    required_fields = [
+        "turn_id", "trace_id", "timestamp_header", "timezone",
         "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon",
-    ):
+    ]
+    if not is_clock_unavailable_header(values["timestamp_header"]):
+        required_fields.append("timestamp_sample_iso")
+    for field in required_fields:
         if not values[field]:
             missing.append(field)
     if not isinstance(values["timestamp_trusted"], bool):
@@ -775,7 +779,7 @@ def persist_chatgpt_host_visible_reply(
     finalization = finalize_host_visible_text(
         required_timestamp_header=str(binding["timestamp_header"]),
         timezone=str(binding["timezone"]),
-        timestamp_sample_iso=str(binding["timestamp_sample_iso"]),
+        timestamp_sample_iso=(str(binding.get("timestamp_sample_iso") or "").strip() or None),
         timestamp_source=str(binding["timestamp_source"]),
         timestamp_trusted=bool(binding["timestamp_trusted"]),
         author_id=str(binding["author_id"]),
@@ -804,7 +808,7 @@ def persist_chatgpt_host_visible_reply(
                 trace_id=str(binding["trace_id"]),
                 timestamp_header=str(binding["timestamp_header"]),
                 timezone=str(binding["timezone"]),
-                timestamp_sample_iso=str(binding["timestamp_sample_iso"]),
+                timestamp_sample_iso=(str(binding.get("timestamp_sample_iso") or "").strip() or None),
                 timestamp_source=str(binding["timestamp_source"]),
                 timestamp_trusted=bool(binding["timestamp_trusted"]),
                 author_id=str(binding["author_id"]),

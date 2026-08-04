@@ -374,10 +374,9 @@ def daemon_timestamp_contract(
     timeout_seconds: float | None = None,
     reason: str = "direct",
 ) -> dict[str, Any]:
-    # /status nadal musi być szybki, ale nie może z definicji fałszować stanu
-    # czasu. Jeśli daemon może pobrać zaufany czas sieciowy albo dostał świeży
-    # czas wstrzyknięty przez loader, marker ma prawo przejść w active_trusted.
-    # Gdy sieć zawiedzie, wracamy do jawnego active_degraded.
+    # Status korzysta najpierw z czasu środowiska. Sieć jest wyłącznie
+    # awaryjnym źródłem, gdy środowisko nie udostępnia zegara. Jakość czasu
+    # pozostaje diagnostyką i nigdy nie decyduje o aktywności daemona.
     clock = WarsawClock(config.timezone)
     network_allowed = bool(getattr(config, "allow_network", True)) and _env_bool_value("JAZN_DAEMON_STATUS_NETWORK_TIME", True)
     if network_first is None:
@@ -390,9 +389,15 @@ def daemon_timestamp_contract(
         network_first=network_first,
         allow_fallback=True,
         timeout_seconds=float(timeout_seconds),
+        allow_network_fallback=network_allowed,
     )
     contract = clock.sample_contract(sample)
-    contract["daemon_status_network_time_checked"] = bool(network_first)
+    source_value = str(contract.get("source") or "").strip().lower()
+    network_attempted = source_value not in {"environment_clock"} and not source_value.startswith((
+        "chatgpt_", "openai_", "external_trusted_time", "injected_trusted_time", "host_injected_time"
+    ))
+    contract["daemon_status_network_time_requested"] = bool(network_first)
+    contract["daemon_status_network_time_checked"] = bool(network_attempted and network_allowed)
     contract["daemon_status_network_time_allowed"] = network_allowed
     contract["daemon_status_network_time_timeout_seconds"] = float(timeout_seconds)
     contract["daemon_status_refresh_reason"] = reason
@@ -409,9 +414,12 @@ def daemon_timestamp_contract(
         else:
             contract["daemon_status_time_mode"] = "trusted_time_confirmed"
         contract["error"] = None
+    elif contract.get("clock_available") is True:
+        contract["daemon_status_time_mode"] = "environment_clock_unverified_nonblocking"
+        contract["error"] = contract.get("error") or "environment clock available; source accuracy is unverified and nonblocking"
     else:
-        contract["daemon_status_time_mode"] = "local_machine_unverified_nonblocking"
-        contract["error"] = contract.get("error") or "trusted network or injected time unavailable; using explicit local machine fallback without blocking runtime startup"
+        contract["daemon_status_time_mode"] = "clock_unavailable_nonblocking"
+        contract["error"] = contract.get("error") or "environment and network clocks unavailable; runtime remains operational"
     return contract
 
 
@@ -1550,7 +1558,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "runtime_version_full": PACKAGE_VERSION_FULL,
             "start_file": (find_start_file(self.config.root) or Path(self.config.root).resolve() / "main.py").name,
             "version": runtime_version,
-            "truth_boundary": "Ten marker oznacza działający lokalny proces daemonu, gdy PID żyje, heartbeat jest świeży i /status odpowiada z localhost. Zaufanie czasu jest osobnym time_trust_state: brak czasu sieciowego nie blokuje startu, tylko jawnie oznacza lokalny czas maszyny jako niezweryfikowany.",
+            "truth_boundary": "Ten marker oznacza działający lokalny proces daemonu, gdy PID żyje, heartbeat jest świeży i /status odpowiada z localhost. Dostępność i jakość czasu są osobnym time_trust_state: środowisko ma pierwszeństwo, sieć jest tylko fallbackiem, a brak zegara nie blokuje startu ani odpowiedzi.",
         }
         fresh, age, threshold = _heartbeat_fresh(payload)
         payload["heartbeat_fresh"] = fresh
@@ -2815,7 +2823,7 @@ def inject_daemon_trusted_time(
         "inject_response": response,
         "inject_error": error,
         "status": status,
-        "truth_boundary": "Trusted time is accepted only when explicitly injected by the host/loader or confirmed by network time; local fallback is never silently promoted.",
+        "truth_boundary": "Clock acquisition is environment-first with an optional network fallback; clock quality is diagnostic and never blocks runtime operation.",
     }
 
 

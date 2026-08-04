@@ -33,7 +33,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _write_current_package_set(parts_dir: Path, *, profile: str = "system") -> list[Path]:
+def _write_current_package_set(
+    parts_dir: Path,
+    *,
+    profile: str = "system",
+    schema_version: str = "jazn_package_set/v1",
+) -> list[Path]:
     first = parts_dir / "jazn-current.zip"
     second = parts_dir / "jazn-current.part002.zip"
     with zipfile.ZipFile(first, "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -54,7 +59,7 @@ def _write_current_package_set(parts_dir: Path, *, profile: str = "system") -> l
     (parts_dir / "jazn-current.zip.package.json").write_text(
         json.dumps(
             {
-                "schema_version": "jazn_package_set/v1",
+                "schema_version": schema_version,
                 "package_name": "jazn-current.zip",
                 "profile": profile,
                 "archive_format": "independent",
@@ -160,6 +165,23 @@ def test_current_package_sidecar_is_discovered_and_independent_volumes_extract(
     assert extraction["ok"] is True
     assert (destination / "run.py").is_file()
     assert (destination / "latka_jazn" / "version.py").is_file()
+
+
+def test_generator_v84_package_set_v2_is_accepted_by_runtime_loader(
+    tmp_path: Path,
+) -> None:
+    parts_dir = tmp_path / "parts"
+    parts_dir.mkdir()
+    _write_current_package_set(parts_dir, schema_version="jazn_package_set/v2")
+
+    metadata = load_package_set_metadata(parts_dir, "jazn-current.zip")
+    expected, full_sha, source = load_package_expectations(parts_dir, "jazn-current.zip")
+
+    assert metadata["schema_version"] == "jazn_package_set/v2"
+    assert metadata["archive_format"] == "independent"
+    assert source == "package.json"
+    assert full_sha is None
+    assert len(expected) == 2
 
 
 def test_package_sidecar_rejects_traversal_in_volume_filename(tmp_path: Path) -> None:
@@ -431,6 +453,29 @@ def test_current_package_with_unknown_profile_is_rejected(tmp_path: Path) -> Non
     assert result.ok is False
     assert result.state == "package_profile_rejected"
     assert result.report["profile_gate"]["reason"] == "current_package_profile_missing_or_unsupported"
+
+
+def test_current_package_with_v2_schema_installs_without_bootstrap_block(
+    tmp_path: Path,
+) -> None:
+    source = _write_installable_source(tmp_path / "source")
+    parts_dir = tmp_path / "parts"
+    _write_installable_package(
+        parts_dir,
+        source,
+        profile="system",
+        schema_version="jazn_package_set/v2",
+    )
+
+    result = recover_chatgpt_runtime(
+        parts_dir=parts_dir,
+        destination=tmp_path / "active",
+        start_runtime_daemon=False,
+    )
+
+    assert result.ok is True
+    assert result.state == "installed_inactive"
+    assert result.report["package_set"]["schema_version"] == "jazn_package_set/v2"
 
 
 def test_current_package_with_unsupported_schema_is_blocked_without_traceback(

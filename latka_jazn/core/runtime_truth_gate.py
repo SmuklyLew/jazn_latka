@@ -9,12 +9,13 @@ from latka_jazn.core.visible_integrity import RUNTIME_OWNED_NON_FALLBACK_CLASSIF
 
 STRICT_RUNTIME_TRUTH_SCHEMA = schema_version("strict_runtime_truth_gate", version=PACKAGE_VERSION_FULL)
 TIMESTAMP_DEGRADED_ERRORS = {
+    "timestamp_missing",
     "timestamp_untrusted",
     "timestamp_source_not_network",
+    "timestamp_stale_or_missing_freshness",
+    "clock_unavailable",
 }
 TIMESTAMP_BLOCKING_ERRORS = {
-    "timestamp_missing",
-    "timestamp_stale_or_missing_freshness",
     "final_visible_integrity_invalid",
     "final_response_contract_missing",
     "daemon_persistence_unconfirmed",
@@ -68,6 +69,7 @@ class RuntimeTruthGateResult:
     timestamp_source: str | None = None
     timestamp_trusted: bool | None = None
     timestamp_present: bool | None = None
+    clock_available: bool | None = None
     timestamp_freshness_seconds: int | None = None
     timestamp_max_age_seconds: int | None = None
     time_trust_state: str | None = None
@@ -128,6 +130,8 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
 
     valid = bool(integrity.get("valid"))
     present = bool(integrity.get("timestamp_present"))
+    clock_available_raw = integrity.get("clock_available")
+    clock_available = bool(clock_available_raw) if clock_available_raw is not None else present
     source = integrity.get("timestamp_source") or contract.get("timestamp_source")
     trusted = integrity.get("timestamp_trusted")
     if trusted is None:
@@ -158,13 +162,15 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
         else "classified_non_dynamic_response"
     )
 
+    if not clock_available:
+        errors.append("clock_unavailable")
     if not present:
         errors.append("timestamp_missing")
     if trusted is not True:
         errors.append("timestamp_untrusted")
-    if not _source_is_network(source):
+    if clock_available and not _source_is_network(source):
         errors.append("timestamp_source_not_network")
-    if not freshness_ok:
+    if clock_available and not freshness_ok:
         errors.append("timestamp_stale_or_missing_freshness")
     if not valid and not truthful_degraded_disclosure:
         errors.append("final_visible_integrity_invalid")
@@ -179,11 +185,13 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
     degraded_errors = [error for error in errors if error in TIMESTAMP_DEGRADED_ERRORS]
     ok = not blocking_errors
     degraded = bool(degraded_errors) and ok
-    if trusted is True and _source_is_network(source):
+    if not clock_available:
+        time_trust = "clock_unavailable"
+    elif trusted is True and _source_is_network(source):
         source_text = str(source or "").strip().lower()
         time_trust = "trusted_host_time_network_unavailable" if source_text.startswith(TRUSTED_EXTERNAL_TIME_SOURCE_PREFIXES) else "trusted_time"
     else:
-        time_trust = "local_machine_unverified" if present and freshness_ok else "time_unavailable"
+        time_trust = "environment_clock_unverified" if present and freshness_ok else "time_metadata_degraded"
     active_state = "active_blocked" if not ok else "active_trusted"
     if truthful_degraded_disclosure:
         active_state = "active_degraded"
@@ -196,6 +204,7 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
         timestamp_source=str(source) if source is not None else None,
         timestamp_trusted=bool(trusted) if trusted is not None else None,
         timestamp_present=present,
+        clock_available=clock_available,
         timestamp_freshness_seconds=int(freshness_seconds) if isinstance(freshness_seconds, int) else None,
         timestamp_max_age_seconds=int(max_age_seconds) if isinstance(max_age_seconds, int) else None,
         time_trust_state=time_trust,
@@ -217,12 +226,9 @@ def build_blocked_visible_text(gate: RuntimeTruthGateResult) -> str:
     header = gate.untrusted_timestamp_header or "brak timestampu runtime"
     errors = ", ".join(gate.errors) if gate.errors else "runtime_truth_gate_blocked"
     return (
-        "[czas lokalny niezweryfikowany — Europe/Warsaw] ⚠️\n"
-        "Nie zwracam zwykłej odpowiedzi Jaźni, bo brama prawdy runtime zablokowała turę: "
-        f"{gate.error_code or 'runtime_truth_gate_blocked'}.\n"
-        f"Niezaufany nagłówek tury: {header}\n"
-        f"Źródło czasu: {source}; błędy: {errors}.\n"
-        "Uruchom diagnostykę czasu sieciowego (`python main.py --network-time-check`) albo powtórz turę, gdy czas sieciowy będzie dostępny."
+        "Host ChatGPT: brama prawdy runtime zablokowała turę z powodu integralności lub stanu procesu, "
+        f"nie z powodu jakości zegara: {gate.error_code or 'runtime_truth_gate_blocked'}.\n"
+        f"Nagłówek tury: {header}; źródło czasu: {source}; błędy: {errors}."
     )
 
 
@@ -273,7 +279,9 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
             decision["normal_response_allowed"] = False
             decision["requires_host_model"] = True
             updated["conversation_decision"] = decision
-        elif gate.error_code == "timestamp_degraded" or gate.time_trust_state == "local_machine_unverified":
+        elif gate.error_code == "timestamp_degraded" or gate.time_trust_state in {
+            "environment_clock_unverified", "time_metadata_degraded", "clock_unavailable"
+        }:
             updated["timestamp_degraded"] = True
             updated["runtime_response_status"] = "normal_response_allowed_degraded_timestamp"
             decision = dict(json_object(updated.get("conversation_decision")))
@@ -292,10 +300,12 @@ def time_trust_state(*, timestamp_trusted: bool | None, timestamp_source: str | 
         if source.startswith(TRUSTED_EXTERNAL_TIME_SOURCE_PREFIXES) or source == "host_injected":
             return "trusted_host_time_network_unavailable"
         return "trusted_time"
+    if source in {"unavailable", "clock_unavailable"}:
+        return "clock_unavailable"
     if time_error or "network_time_unavailable" in source:
-        return "network_time_unavailable_local_machine_unverified"
+        return "network_time_unavailable_environment_clock_unverified"
     if source:
-        return "local_machine_unverified"
+        return "environment_clock_unverified"
     return "unknown_time_source"
 
 

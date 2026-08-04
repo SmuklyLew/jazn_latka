@@ -21,6 +21,12 @@ from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arg
 CHUNK_SIZE = 8 * 1024 * 1024
 
 
+SUPPORTED_PACKAGE_SET_SCHEMAS = frozenset({
+    "jazn_package_set/v1",
+    "jazn_package_set/v2",
+})
+
+
 @dataclass(slots=True)
 class PackagePartExpectation:
     part_no: int
@@ -103,7 +109,8 @@ def load_package_set_metadata(parts_dir: Path, base_zip_name: str) -> dict[str, 
         payload = json.loads(current_path.read_text(encoding="utf-8-sig"))
         if not isinstance(payload, dict):
             raise ValueError("package.json paczki nie jest obiektem JSON")
-        if payload.get("schema_version") != "jazn_package_set/v1":
+        package_schema = str(payload.get("schema_version") or "").strip()
+        if package_schema not in SUPPORTED_PACKAGE_SET_SCHEMAS:
             raise ValueError(
                 "Nieobsługiwany schema_version package.json paczki: "
                 f"{payload.get('schema_version')!r}"

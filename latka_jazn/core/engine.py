@@ -2791,7 +2791,7 @@ class JaznEngine:
         trace_id: str,
         timestamp_header: str,
         timezone: str,
-        timestamp_sample_iso: str,
+        timestamp_sample_iso: str | None,
         timestamp_source: str,
         timestamp_trusted: bool,
         author_id: str,

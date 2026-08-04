@@ -148,7 +148,7 @@ def test_healthy_daemon_is_active_trusted_even_with_local_time(tmp_path: Path, m
     result = runtime_daemon.status_daemon(JaznConfig(root=root))
     assert result["active_state"] == "active_trusted"
     assert result["readiness_state"] == "ready"
-    assert result["time_trust_state"] == "local_machine_unverified"
+    assert result["time_trust_state"] == "environment_clock_unverified"
 
 
 def test_live_endpoint_is_not_trusted_when_current_package_hashes_fail(

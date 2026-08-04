@@ -164,3 +164,26 @@ def test_manifest_override_hashes_virtual_provenance_without_touching_source(tmp
     row = next(item for item in payload["files"] if item["path"] == "SOURCE_PROVENANCE.json")
     assert row["size_bytes"] == len(virtual)
     assert row["sha256"] == hashlib.sha256(virtual).hexdigest()
+
+
+def test_manifest_with_non_integer_file_count_fails_cleanly(tmp_path: Path) -> None:
+    root = _release_repo(tmp_path)
+    exported = tmp_path / "exported-invalid-count"
+    shutil.copytree(root, exported, ignore=shutil.ignore_patterns(".git"))
+    manifest_path = exported / "PACKAGE_INTEGRITY_MANIFEST.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["file_count"] = None
+    manifest_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    report = verify_package_integrity_manifest(exported)
+
+    assert report["ok"] is False
+    assert any(
+        item.get("code") == "manifest_file_count_mismatch"
+        and item.get("declared") is None
+        for item in report["errors"]
+    )

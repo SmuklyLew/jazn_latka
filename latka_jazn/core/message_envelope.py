@@ -4,32 +4,28 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import re
 
+from latka_jazn.core.visible_message_format import (
+    CLOCK_HEADER_RE,
+    CLOCK_UNAVAILABLE_HEADER,
+    clock_header_matches_datetime,
+    extract_visible_body,
+    is_clock_unavailable_header,
+    normalize_newlines,
+    parse_clock_header,
+    render_clock_header,
+    render_visible_message,
+    strip_visible_message_envelope,
+)
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("message_envelope")
-TIMESTAMP_HEADER_RE = re.compile(r"^🕒 (?P<value>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$")
 
-
-def normalize_newlines(value: str | None) -> str:
-    return str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-
-
-def render_timestamp_header(local_dt: datetime) -> str:
-    if local_dt.tzinfo is None:
-        raise ValueError("timestamp datetime must be timezone-aware")
-    return f"🕒 {local_dt:%Y-%m-%d %H:%M:%S}"
-
-
-def parse_timestamp_header(header: str) -> datetime | None:
-    match = TIMESTAMP_HEADER_RE.fullmatch(str(header or "").strip())
-    if not match:
-        return None
-    try:
-        return datetime.strptime(match.group("value"), "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        return None
+# Compatibility exports.  New code should import presentation primitives from
+# visible_message_format.py, the canonical source for visible message shape.
+TIMESTAMP_HEADER_RE = CLOCK_HEADER_RE
+render_timestamp_header = render_clock_header
+parse_timestamp_header = parse_clock_header
 
 
 def resolve_author(decision: Mapping[str, Any] | None) -> tuple[str, str, str]:
@@ -50,7 +46,7 @@ def resolve_author(decision: Mapping[str, Any] | None) -> tuple[str, str, str]:
 class MessageEnvelope:
     timestamp_header: str
     timezone: str
-    timestamp_sample_iso: str
+    timestamp_sample_iso: str | None
     timestamp_source: str
     timestamp_trusted: bool
     author_id: str
@@ -66,8 +62,8 @@ class MessageEnvelope:
         *,
         timestamp_header: str,
         timezone: str,
-        timestamp_sample_iso: str,
-        timestamp_source: str,
+        timestamp_sample_iso: str | None,
+        timestamp_source: str | None,
         timestamp_trusted: bool,
         author_id: str,
         author_label: str,
@@ -78,23 +74,34 @@ class MessageEnvelope:
         normalized_body = normalize_newlines(body)
         if not normalized_body.strip():
             raise ValueError("message body is required")
-        if not TIMESTAMP_HEADER_RE.fullmatch(str(timestamp_header or "").strip()):
+        header = str(timestamp_header or "").strip()
+        if not TIMESTAMP_HEADER_RE.fullmatch(header):
             raise ValueError("timestamp header has invalid shape")
-        if not str(timezone or "").strip():
-            raise ValueError("timezone is required")
-        if not str(timestamp_sample_iso or "").strip():
-            raise ValueError("timestamp_sample_iso is required")
-        if not str(timestamp_source or "").strip():
-            raise ValueError("timestamp_source is required")
+        unavailable = is_clock_unavailable_header(header)
+        timezone_value = str(timezone or "").strip()
+        sample_value = str(timestamp_sample_iso or "").strip() or None
+        source_value = str(timestamp_source or "").strip()
+        if unavailable:
+            timezone_value = timezone_value or "Europe/Warsaw"
+            source_value = source_value or "unavailable"
+            sample_value = None
+            timestamp_trusted = False
+        else:
+            if not timezone_value:
+                raise ValueError("timezone is required")
+            if sample_value is None:
+                raise ValueError("timestamp_sample_iso is required for an available clock")
+            if not source_value:
+                raise ValueError("timestamp_source is required for an available clock")
         if not str(author_id or "").strip() or not str(author_label or "").strip() or not str(author_source or "").strip():
             raise ValueError("verified author metadata is required")
         if not str(state_emoticon or "").strip():
             raise ValueError("state_emoticon is required; unknown affect must be explicit")
         return cls(
-            timestamp_header=str(timestamp_header).strip(),
-            timezone=str(timezone).strip(),
-            timestamp_sample_iso=str(timestamp_sample_iso).strip(),
-            timestamp_source=str(timestamp_source).strip(),
+            timestamp_header=header,
+            timezone=timezone_value,
+            timestamp_sample_iso=sample_value,
+            timestamp_source=source_value,
             timestamp_trusted=bool(timestamp_trusted),
             author_id=str(author_id).strip(),
             author_label=str(author_label).strip(),
@@ -103,25 +110,34 @@ class MessageEnvelope:
             body=normalized_body,
         )
 
+    @property
+    def clock_available(self) -> bool:
+        return not is_clock_unavailable_header(self.timestamp_header)
+
     def render(self) -> str:
-        return f"{self.timestamp_header}\n{self.state_emoticon} {self.author_label}\n\n{self.body}"
+        return render_visible_message(
+            clock_header=self.timestamp_header,
+            state_emoticon=self.state_emoticon,
+            author_label=self.author_label,
+            body=self.body,
+        )
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["clock_available"] = self.clock_available
+        return payload
 
     def timestamp_matches_sample(self) -> bool:
-        parsed = parse_timestamp_header(self.timestamp_header)
-        if parsed is None:
-            return False
+        if not self.clock_available:
+            return self.timestamp_sample_iso is None
         try:
-            sample = datetime.fromisoformat(self.timestamp_sample_iso.replace("Z", "+00:00"))
+            sample = datetime.fromisoformat(str(self.timestamp_sample_iso).replace("Z", "+00:00"))
             if sample.tzinfo is None:
                 return False
             zone = ZoneInfo(self.timezone)
         except (ValueError, ZoneInfoNotFoundError):
             return False
-        expected = sample.astimezone(zone).replace(tzinfo=None, microsecond=0)
-        return parsed == expected
+        return clock_header_matches_datetime(self.timestamp_header, sample.astimezone(zone))
 
 
 def extract_body_from_visible_text(
@@ -131,15 +147,26 @@ def extract_body_from_visible_text(
     state_emoticon: str,
     author_label: str,
 ) -> str | None:
-    value = normalize_newlines(text)
-    prefix = f"{timestamp_header}\n{state_emoticon} {author_label}\n\n"
-    if not value.startswith(prefix):
-        return None
-    return value[len(prefix):]
+    return extract_visible_body(
+        text,
+        clock_header=timestamp_header,
+        state_emoticon=state_emoticon,
+        author_label=author_label,
+    )
+
 
 def strip_recognized_visible_envelope(text: str) -> str:
-    value = normalize_newlines(text).strip()
-    lines = value.split("\n")
-    if len(lines) >= 4 and TIMESTAMP_HEADER_RE.fullmatch(lines[0].strip()) and lines[1].strip() and not lines[2].strip():
-        return "\n".join(lines[3:]).strip()
-    return value
+    return strip_visible_message_envelope(text)
+
+
+__all__ = [
+    "CLOCK_UNAVAILABLE_HEADER",
+    "MessageEnvelope",
+    "TIMESTAMP_HEADER_RE",
+    "extract_body_from_visible_text",
+    "normalize_newlines",
+    "parse_timestamp_header",
+    "render_timestamp_header",
+    "resolve_author",
+    "strip_recognized_visible_envelope",
+]

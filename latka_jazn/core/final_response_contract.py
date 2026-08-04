@@ -13,6 +13,7 @@ from latka_jazn.core.message_envelope import (
     normalize_newlines,
     resolve_author,
 )
+from latka_jazn.core.visible_message_format import is_clock_unavailable_header
 
 SCHEMA_VERSION = schema_version("final_response_contract")
 @dataclass(slots=True)
@@ -116,16 +117,30 @@ class FinalResponseContract:
             raise ValueError("state_emoticon is required; unknown affect must be explicit")
         timestamp_contract = dict(decision.get("timestamp_contract") or {})
         timestamp_contract.setdefault("timezone", timezone)
+        clock_unavailable = is_clock_unavailable_header(timestamp_header)
+        if clock_unavailable:
+            timestamp_contract["clock_available"] = False
+            timestamp_contract["sample_iso"] = None
+            timestamp_contract["source"] = str(timestamp_contract.get("source") or "unavailable")
+            timestamp_contract["trusted"] = False
+        else:
+            timestamp_contract.setdefault("clock_available", True)
+            required_timestamp_fields = ("sample_iso", "source", "trusted")
+            missing_timestamp_fields = [
+                name
+                for name in required_timestamp_fields
+                if name not in timestamp_contract or timestamp_contract.get(name) in (None, "")
+            ]
+            if missing_timestamp_fields:
+                raise ValueError(
+                    f"timestamp_contract missing required fields: {', '.join(missing_timestamp_fields)}"
+                )
         decision["timestamp_contract"] = timestamp_contract
-        required_timestamp_fields = ("sample_iso", "source", "trusted")
-        missing_timestamp_fields = [name for name in required_timestamp_fields if name not in timestamp_contract or timestamp_contract.get(name) in (None, "")]
-        if missing_timestamp_fields:
-            raise ValueError(f"timestamp_contract missing required fields: {', '.join(missing_timestamp_fields)}")
         author_id, author_label, author_source = resolve_author(decision)
         envelope = MessageEnvelope.build(
             timestamp_header=timestamp_header,
             timezone=timezone,
-            timestamp_sample_iso=str(timestamp_contract.get("sample_iso")),
+            timestamp_sample_iso=timestamp_contract.get("sample_iso"),
             timestamp_source=str(timestamp_contract.get("source")),
             timestamp_trusted=bool(timestamp_contract.get("trusted")),
             author_id=author_id,

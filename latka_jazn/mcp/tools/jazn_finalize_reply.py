@@ -10,6 +10,11 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     resolve_continuation_token,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+from latka_jazn.core.visible_message_format import is_clock_unavailable_header
+
+
+def _as_dict(value: object) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
 
 
 def _error(reason: str, **details: Any) -> dict[str, Any]:
@@ -51,20 +56,21 @@ def run(
     except HostRequestStoreError as exc:
         return _error(f"host_request:{exc}")
 
-    binding = pending.get("binding") if isinstance(pending.get("binding"), dict) else {}
+    binding = _as_dict(pending.get("binding"))
     request_contract_hash = str(pending.get("request_contract_hash") or "").strip().lower()
-    required = (
+    required = [
         "turn_id",
         "trace_id",
         "timestamp_header",
         "timezone",
-        "timestamp_sample_iso",
         "timestamp_source",
         "author_id",
         "author_label",
         "author_source",
         "state_emoticon",
-    )
+    ]
+    if not is_clock_unavailable_header(str(binding.get("timestamp_header") or "")):
+        required.append("timestamp_sample_iso")
     missing_binding = [name for name in required if not str(binding.get(name) or "").strip()]
     if not isinstance(binding.get("timestamp_trusted"), bool):
         missing_binding.append("timestamp_trusted")
@@ -80,7 +86,7 @@ def run(
         "host_request_contract_hash": request_contract_hash,
         "timestamp_header": str(binding["timestamp_header"]),
         "timezone": str(binding["timezone"]),
-        "timestamp_sample_iso": str(binding["timestamp_sample_iso"]),
+        "timestamp_sample_iso": str(binding.get("timestamp_sample_iso") or ""),
         "timestamp_source": str(binding["timestamp_source"]),
         "timestamp_trusted": bool(binding["timestamp_trusted"]),
         "author_id": str(binding["author_id"]),
