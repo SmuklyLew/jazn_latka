@@ -162,12 +162,60 @@ def test_current_package_sidecar_is_discovered_and_independent_volumes_extract(
     assert (destination / "latka_jazn" / "version.py").is_file()
 
 
+def test_v2_package_sidecar_is_supported(tmp_path: Path) -> None:
+    source = _write_installable_source(tmp_path / "source")
+    parts_dir = tmp_path / "parts"
+    archive = _write_installable_package(
+        parts_dir,
+        source,
+        profile="system",
+        schema_version="jazn_package_set/v2",
+    )
+
+    metadata = load_package_set_metadata(parts_dir, archive.name)
+    expected, _, source_kind = load_package_expectations(parts_dir, archive.name)
+
+    assert metadata["schema_version"] == "jazn_package_set/v2"
+    assert metadata["profile"] == "system"
+    assert source_kind == "package.json"
+    assert [item.filename for item in expected] == [archive.name]
+
+
+def test_host_renamed_v2_sidecar_and_single_zip_are_resolved_by_hash(tmp_path: Path) -> None:
+    source = _write_installable_source(tmp_path / "source")
+    parts_dir = tmp_path / "parts"
+    archive = _write_installable_package(
+        parts_dir,
+        source,
+        profile="system",
+        schema_version="jazn_package_set/v2",
+    )
+    sidecar = parts_dir / f"{archive.name}.package.json"
+    renamed_archive = archive.with_name(f"{archive.stem}(2){archive.suffix}")
+    renamed_sidecar = sidecar.with_name(f"{archive.name}.package(2).json")
+    archive.rename(renamed_archive)
+    sidecar.rename(renamed_sidecar)
+
+    base_name = infer_base_zip_name(parts_dir)
+    metadata = load_package_set_metadata(parts_dir, base_name)
+    expected, _, _ = load_package_expectations(parts_dir, base_name)
+    canonical = tmp_path / "canonical"
+    resolved = resolve_renamed_package_parts(parts_dir, expected, canonical_dir=canonical)
+
+    assert base_name == archive.name
+    assert Path(metadata["path"]).name == renamed_sidecar.name
+    assert resolved["renamed_parts_count"] == 1
+    assert resolved["resolved_parts"][0]["source_name"] == renamed_archive.name
+    assert (canonical / archive.name).is_file()
+
+
 def test_package_sidecar_rejects_traversal_in_volume_filename(tmp_path: Path) -> None:
     parts_dir = tmp_path / "parts"
     parts_dir.mkdir()
     (parts_dir / "jazn-current.zip.package.json").write_text(
         json.dumps(
             {
+                "schema_version": "jazn_package_set/v2",
                 "package_name": "jazn-current.zip",
                 "profile": "system",
                 "archive_format": "independent",

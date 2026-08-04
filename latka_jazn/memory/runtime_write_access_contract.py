@@ -8,6 +8,7 @@ import sqlite3
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.config import JaznConfig
 from latka_jazn.db.shard_manifest import ensure_manifest
+from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.memory.store import MemoryStore
 from latka_jazn.version import schema_version
 
@@ -160,6 +161,14 @@ def ensure_runtime_write_v1(config: JaznConfig) -> RuntimeWriteAccessStatus:
         default_db_path=config.audit_db_name,
         max_file_bytes=config.max_sqlite_file_bytes,
     )
+    transactional = initialize_transactional_memory_store(
+        config.root, configured=config.memory_tier_db_path
+    )
+    if transactional.get("ok") is not True:
+        raise RuntimeError(
+            "transactional memory startup initialization failed: "
+            + str(transactional.get("error") or transactional.get("validation") or "unknown error")
+        )
     return build_runtime_write_access_status(config, initialize=False, writes_enabled=True)
 
 

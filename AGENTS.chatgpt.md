@@ -92,7 +92,7 @@ python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destin
 `--force-reextract` czyści wyłącznie staging. Nie zezwala na zastąpienie zajętego `destination`.
 Profil `combined` wymaga dodatkowo zgodnego `memory/MEMORY_PACKAGE_MANIFEST.json` oraz SHA-256 każdego pliku pamięci.
 Profil `system` nie może zawierać prywatnego drzewa `memory/`.
-Bieżący sidecar wymaga schematu `jazn_package_set/v1`, jawnego profilu i wersji zgodnej z rozpakowanym runtime.
+Bieżący sidecar generatora używa schematu `jazn_package_set/v2`; loader zachowuje zgodność z `jazn_package_set/v1`. Sidecar wymaga jawnego profilu i wersji zgodnej z rozpakowanym runtime.
 Loader odrzuca nieobjęty manifestem kod, semantycznie niewiarygodny `SOURCE_PROVENANCE.json` oraz spakowany
 stan mutable (`workspace_runtime`, marker, cache aktywacji). Błąd I/O ma zwrócić `bootstrap_blocked`, bez tracebacku.
 

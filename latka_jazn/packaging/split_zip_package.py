@@ -19,6 +19,7 @@ from typing import Any
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 
 CHUNK_SIZE = 8 * 1024 * 1024
+SUPPORTED_PACKAGE_SET_SCHEMAS = frozenset({"jazn_package_set/v1", "jazn_package_set/v2"})
 
 
 @dataclass(slots=True)
@@ -92,22 +93,51 @@ def _safe_part_filename(value: str) -> str:
     return raw
 
 
+def _read_package_sidecar(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    if not isinstance(payload, dict):
+        raise ValueError("package.json paczki nie jest obiektem JSON")
+    schema_version = str(payload.get("schema_version") or "").strip()
+    if schema_version not in SUPPORTED_PACKAGE_SET_SCHEMAS:
+        raise ValueError(
+            "Nieobsługiwany schema_version package.json paczki: "
+            f"{payload.get('schema_version')!r}"
+        )
+    return payload
+
+
+def _find_package_sidecar(parts_dir: Path, base_zip_name: str) -> tuple[Path | None, dict[str, Any] | None]:
+    exact = parts_dir / f"{base_zip_name}.package.json"
+    if exact.is_file():
+        return exact, _read_package_sidecar(exact)
+
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for candidate in sorted(parts_dir.glob("*.json")):
+        if candidate == exact or ".package" not in candidate.name:
+            continue
+        try:
+            payload = _read_package_sidecar(candidate)
+            declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+        if declared_name == base_zip_name:
+            matches.append((candidate, payload))
+    if len(matches) > 1:
+        raise ValueError(
+            "Niejednoznaczne sidecary package.json dla paczki "
+            f"{base_zip_name!r}: " + ", ".join(path.name for path, _ in matches)
+        )
+    return matches[0] if matches else (None, None)
+
+
 def load_package_set_metadata(parts_dir: Path, base_zip_name: str) -> dict[str, Any]:
     """Read the current package-set contract, with an explicit legacy fallback."""
 
     parts_dir = Path(parts_dir).expanduser().resolve()
     base_zip_name = sanitize_zip_name(base_zip_name)
-    current_path = parts_dir / f"{base_zip_name}.package.json"
+    current_path, payload = _find_package_sidecar(parts_dir, base_zip_name)
     legacy_path = parts_dir / f"{base_zip_name}.manifest.json"
-    if current_path.is_file():
-        payload = json.loads(current_path.read_text(encoding="utf-8-sig"))
-        if not isinstance(payload, dict):
-            raise ValueError("package.json paczki nie jest obiektem JSON")
-        if payload.get("schema_version") != "jazn_package_set/v1":
-            raise ValueError(
-                "Nieobsługiwany schema_version package.json paczki: "
-                f"{payload.get('schema_version')!r}"
-            )
+    if current_path is not None and payload is not None:
         declared_name = sanitize_zip_name(str(payload.get("package_name") or base_zip_name))
         if declared_name != base_zip_name:
             raise ValueError(
@@ -158,6 +188,15 @@ def infer_base_zip_name(parts_dir: Path, base_zip_name: str | None = None) -> st
         path.name[: -len(".manifest.json")]
         for path in legacy_sidecars
     }
+    for candidate in sorted(parts_dir.glob("*.json")):
+        if candidate in current_sidecars or ".package" not in candidate.name:
+            continue
+        try:
+            payload = _read_package_sidecar(candidate)
+            declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+        sidecar_names.add(declared_name)
     if len(sidecar_names) == 1:
         return next(iter(sidecar_names))
 
@@ -185,7 +224,7 @@ def load_package_expectations(
     parts_dir = Path(parts_dir).expanduser().resolve()
     base_zip_name = sanitize_zip_name(base_zip_name)
 
-    package_path = parts_dir / f"{base_zip_name}.package.json"
+    package_path, package_payload = _find_package_sidecar(parts_dir, base_zip_name)
     manifest_path = parts_dir / f"{base_zip_name}.manifest.json"
     parts_sha_path = parts_dir / f"{base_zip_name}.parts.sha256"
     full_sha_path = parts_dir / f"{base_zip_name}.sha256"
@@ -194,11 +233,9 @@ def load_package_expectations(
     expected_full_sha: str | None = None
     source = "glob"
 
-    if package_path.exists():
+    if package_path is not None and package_payload is not None:
         source = "package.json"
-        data = json.loads(package_path.read_text(encoding="utf-8-sig"))
-        if not isinstance(data, dict):
-            raise ValueError("package.json paczki nie jest obiektem JSON")
+        data = package_payload
         expected_full_sha = str(data.get("logical_zip_sha256") or "").strip().lower() or None
         for item in data.get("outputs") or []:
             if not isinstance(item, dict):
@@ -280,15 +317,23 @@ def resolve_renamed_package_parts(
     resolved: list[dict[str, Any]] = []
     used: set[Path] = set()
 
-    all_candidates = [path for path in parts_dir.iterdir() if path.is_file() and _part_suffix_number(path) is not None]
+    all_files = [path for path in parts_dir.iterdir() if path.is_file()]
+    numbered_candidates = [path for path in all_files if _part_suffix_number(path) is not None]
     for part in expected:
         safe_filename = _safe_part_filename(part.filename)
         exact = parts_dir / safe_filename
         candidates = [exact] if exact.is_file() else []
         candidates.extend(
-            path for path in all_candidates
+            path for path in numbered_candidates
             if path != exact and _part_suffix_number(path) == part.part_no
         )
+        if not exact.is_file() and part.size_bytes is not None and part.sha256:
+            candidates.extend(
+                path for path in all_files
+                if path != exact
+                and path not in candidates
+                and path.suffix.lower() in {".zip", f".{part.part_no:03d}"}
+            )
         matches: list[tuple[Path, str | None]] = []
         rejected: list[dict[str, Any]] = []
         for candidate in candidates:

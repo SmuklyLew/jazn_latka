@@ -76,7 +76,7 @@ def test_progress_renderer_never_wraps_and_preserves_counter(
     monkeypatch.setattr(
         console_progress_module.shutil,
         "get_terminal_size",
-        lambda _fallback: os.terminal_size((64, 24)),
+        lambda *_args, **_kwargs: os.terminal_size((64, 24)),
     )
     stream = TtyBuffer()
     progress = TerminalProgress(
@@ -123,7 +123,7 @@ def test_progress_renderer_keeps_uniform_bar_width_for_all_labels(
     monkeypatch.setattr(
         console_progress_module.shutil,
         "get_terminal_size",
-        lambda _fallback: os.terminal_size((86, 24)),
+        lambda *_args, **_kwargs: os.terminal_size((86, 24)),
     )
     stream = TtyBuffer()
     progress = TerminalProgress(
