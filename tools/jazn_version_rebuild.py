@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Jaźń Version Rebuild v0.1 — graficzna przebudowa wersji bez tworzenia branchy."""
+"""Jaźń Version Rebuild v0.2 — graficzna przebudowa wersji bez tworzenia branchy."""
 
 import ast
 import difflib
