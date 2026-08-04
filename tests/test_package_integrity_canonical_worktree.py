@@ -6,6 +6,7 @@ import json
 import shutil
 import subprocess
 
+from latka_jazn.tools import package_integrity
 from latka_jazn.tools.package_integrity import (
     build_package_integrity_manifest,
     verify_package_integrity_manifest,
@@ -164,3 +165,37 @@ def test_manifest_override_hashes_virtual_provenance_without_touching_source(tmp
     row = next(item for item in payload["files"] if item["path"] == "SOURCE_PROVENANCE.json")
     assert row["size_bytes"] == len(virtual)
     assert row["sha256"] == hashlib.sha256(virtual).hexdigest()
+
+
+def test_clean_checkout_uses_one_cat_file_batch_process(tmp_path: Path, monkeypatch) -> None:
+    root = _release_repo(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = package_integrity._run_git
+
+    def recording(root_path: Path, *args: str, **kwargs):
+        calls.append(tuple(args))
+        return original(root_path, *args, **kwargs)
+
+    monkeypatch.setattr(package_integrity, "_run_git", recording)
+
+    report = verify_package_integrity_manifest(root)
+
+    assert report["ok"] is True
+    cat_file_calls = [args for args in calls if args and args[0] == "cat-file"]
+    assert cat_file_calls == [("cat-file", "--batch")]
+
+
+def test_batch_failure_is_reported_without_per_file_process_loop(tmp_path: Path, monkeypatch) -> None:
+    root = _release_repo(tmp_path)
+    original = package_integrity._git_blob_bytes_batch
+
+    def fail_batch(*args, **kwargs):
+        raise RuntimeError("simulated batch failure")
+
+    monkeypatch.setattr(package_integrity, "_git_blob_bytes_batch", fail_batch)
+    report = verify_package_integrity_manifest(root)
+    monkeypatch.setattr(package_integrity, "_git_blob_bytes_batch", original)
+
+    assert report["ok"] is False
+    assert any(item.get("code") == "git_blob_batch_failed" for item in report["errors"])
+    assert not any(item.get("code") == "git_blob_missing" for item in report["errors"])

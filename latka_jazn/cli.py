@@ -219,6 +219,15 @@ def _legacy_main(args: list[str]) -> int:
     return int(legacy_main(args))
 
 
+def _legacy_args_with_canonical_root(args: list[str]) -> list[str]:
+    """Make legacy flags independent of the caller's current directory."""
+
+    if any(item == "--root" or item.startswith("--root=") for item in args):
+        return list(args)
+    canonical_root = Path(__file__).resolve().parents[1]
+    return ["--root", str(canonical_root), *args]
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     known = {
@@ -227,9 +236,9 @@ def main(argv: list[str] | None = None) -> int:
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
-        return _legacy_main(args)
+        return _legacy_main(_legacy_args_with_canonical_root(args))
     if args and args[0] not in known and args[0] not in {"--version", "--help", "-h"}:
-        return _legacy_main(args)
+        return _legacy_main(_legacy_args_with_canonical_root(args))
 
     parser = build_parser()
     ns = parser.parse_args(args)

@@ -1,5 +1,22 @@
 # Łatka / Jaźń
 
+## Uruchamianie bez `.venv` na Windows
+
+Runtime nie wymaga aktywnego środowiska wirtualnego. Z dowolnego katalogu można uruchomić:
+
+```powershell
+D:\sciezka\do\jazn_latka_master\JAZN.cmd --chat
+```
+
+Launcher wybiera globalnego Pythona 3.12+ (najpierw `py -3`), zawsze wskazuje `run.py` przez bezwzględną ścieżkę katalogu repozytorium i nie polega na bieżącym katalogu ani na `.venv`. Bez launchera działa też bezpośrednio:
+
+```powershell
+py -3 -X utf8 D:\sciezka\do\jazn_latka_master\run.py --chat
+```
+
+Po aktywacji dowolnego poprawnego środowiska można nadal użyć `python -X utf8 .\run.py --chat`, ale aktywacja `.venv` jest opcjonalna.
+
+
 **Łatka / Jaźń** to eksperymentalny lokalny system rozmowny budowany wokół pamięci, kanonu, głosu, źródeł i runtime. Nie jest pojedynczym chatbotem ani samym promptem. System rozdziela aktywny proces, pamięć, tożsamość, model językowy, narzędzia, pochodzenie odpowiedzi i finalną walidację.
 
 Projekt ma umieć powiedzieć, kiedy runtime naprawdę działa, z jakiego katalogu został uruchomiony, z jakiej pamięci korzysta, jaką trasą powstała odpowiedź oraz czy widoczny tekst pochodzi z runtime, host bridge, lokalnego modelu czy kontrolowanego fallbacku.
