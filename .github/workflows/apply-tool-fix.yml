@@ -26,9 +26,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .github/tool-fix.patch.part.* > /tmp/tool-fix.patch
-          sha256sum /tmp/tool-fix.patch
-          test "$(wc -c < /tmp/tool-fix.patch)" -ge 47000
+          cat .github/tool-fix.patch.b64.part.* | tr -d '[:space:]' > /tmp/tool-fix.patch.b64
+          echo "794c17778f9761bffb757121b08d8c539255bed045cd3326c571286449c67851  /tmp/tool-fix.patch.b64" | sha256sum --check --strict
+          base64 --decode /tmp/tool-fix.patch.b64 > /tmp/tool-fix.patch
+          echo "13b4c7ed05b15232a275a1c995a3b0ca95e182e7630139d9143079cf2a507063  /tmp/tool-fix.patch" | sha256sum --check --strict
           git apply --check /tmp/tool-fix.patch
           git apply /tmp/tool-fix.patch
           git diff --check
@@ -41,13 +42,16 @@ jobs:
           python tools/jazn_pack_generator.py self-test
           python -m pytest -q tests/test_package_version_workflow_regression.py
 
-      - name: Commit intended changes
+      - name: Commit intended changes and remove transport files
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tools/jazn_pack_generator.py tools/jazn_version_rebuild.py tests/test_package_version_workflow_regression.py
+          git rm .github/workflows/apply-tool-fix.yml
+          git rm .github/tool-fix.patch.part.*
+          git rm .github/tool-fix.patch.b64.part.*
           git diff --cached --check
           git commit -m "Fix package and version tooling workflow"
           git push origin HEAD:agent/fix-package-version-workflow
