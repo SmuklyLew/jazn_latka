@@ -46,6 +46,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/finalize-package-workflow.trigger
+          git rm .github/pr109-finalization.ready
           git rm .github/workflows/finalize-pr109-post-merge.yml
           git diff --cached --check
           git commit -m "Remove post-merge finalization helpers"
