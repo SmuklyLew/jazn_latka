@@ -1784,6 +1784,12 @@ def _emit(payload: Any, *, as_json: bool) -> None:
         print(payload)
 
 
+def _payload_exit_code(payload: PhaseReport | dict[str, Any]) -> int:
+    if isinstance(payload, PhaseReport):
+        return 0 if payload.ok else 1
+    return 0 if payload.get("status") not in {"failed", "error"} else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="verified-memory-restore",
@@ -1838,6 +1844,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    payload: PhaseReport | dict[str, Any]
     try:
         if args.command == "validate-test04":
             payload = {
@@ -1885,9 +1892,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             raise VerifiedMemoryRestoreError(f"Nieznana komenda: {args.command}")
         _emit(payload, as_json=bool(args.as_json))
-        if isinstance(payload, PhaseReport):
-            return 0 if bool(payload.ok) else 1
-        return 0 if payload.get("status") not in {"failed", "error"} else 1
+        return _payload_exit_code(payload)
     except VerifiedMemoryRestoreError as exc:
         error = {
             "schema_version": SCHEMA_VERSION,

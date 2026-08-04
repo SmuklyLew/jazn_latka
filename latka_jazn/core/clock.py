@@ -381,7 +381,7 @@ class WarsawClock:
         attempts: list[dict[str, Any]] = []
         try:
             injected = self._injected_trusted_time()
-            if injected:
+            if injected is not None and injected.dt is not None:
                 elapsed_ms = int((perf_counter() - started) * 1000)
                 return NetworkTimeCheckResult(
                     status="ok",
@@ -543,14 +543,27 @@ class WarsawClock:
                         freshness_check="environment_clock_unavailable",
                     )
                     return freshest
-                freshest = min(
-                    candidates,
-                    key=lambda candidate: abs(
-                        int((now_utc - candidate.dt.astimezone(timezone.utc)).total_seconds())
-                    ),
-                )
+
+                def freshness_distance(candidate: TimeSample) -> int:
+                    candidate_dt = candidate.dt
+                    if candidate_dt is None:
+                        return 2**63 - 1
+                    return abs(
+                        int((now_utc - candidate_dt.astimezone(timezone.utc)).total_seconds())
+                    )
+
+                freshest = min(candidates, key=freshness_distance)
+                freshest_dt = freshest.dt
+                if freshest_dt is None:
+                    note(
+                        url,
+                        "invalid_response",
+                        started,
+                        error="selected time candidate has no datetime",
+                    )
+                    continue
                 freshest_age = abs(
-                    int((now_utc - freshest.dt.astimezone(timezone.utc)).total_seconds())
+                    int((now_utc - freshest_dt.astimezone(timezone.utc)).total_seconds())
                 )
                 if freshest_age <= TIMESTAMP_MAX_AGE_SECONDS:
                     note(url, "ok", started, source=freshest.source, freshness_seconds=freshest_age)
