@@ -56,7 +56,7 @@ def test_terminal_key_source_uses_concrete_posix_file_descriptor(monkeypatch) ->
 
     calls: list[tuple[str, int]] = []
 
-    class FakeInput:
+    class FakeInput(StringIO):
         def fileno(self) -> int:
             return 17
 
