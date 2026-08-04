@@ -1,3 +1,15 @@
+diff --git a/tests/test_jazn_pack_generator_v82_contract.py b/tests/test_jazn_pack_generator_v82_contract.py
+index 464d9d3..e6dbe3a 100644
+--- a/tests/test_jazn_pack_generator_v82_contract.py
++++ b/tests/test_jazn_pack_generator_v82_contract.py
+@@ -18,5 +18,5 @@ def test_v82_contract_is_retired_after_v84_synchronization() -> None:
+     sys.modules[module_name] = module
+     spec.loader.exec_module(module)
+ 
+-    assert module.GENERATOR_VERSION == "8.4"
+-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.4"
++    assert module.GENERATOR_VERSION == "8.5"
++    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"
 diff --git a/tests/test_jazn_pack_generator_v84_contract.py b/tests/test_jazn_pack_generator_v84_contract.py
 index 7f89d56..2757649 100644
 --- a/tests/test_jazn_pack_generator_v84_contract.py
