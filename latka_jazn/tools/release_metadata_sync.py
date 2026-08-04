@@ -28,7 +28,17 @@ PROVENANCE_NAME = "SOURCE_PROVENANCE.json"
 METADATA_ONLY_PATHS = frozenset({PROVENANCE_NAME, MANIFEST_NAME})
 _RELEASE_MODE = "release_metadata"
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_PACKAGE_VERSION_RE = re.compile(r"^v\d+(?:\.\d+)+$")
 ProgressCallback = Callable[[int, int, str], None]
+
+
+def _schema_version_for_runtime(component: str, runtime_version: str) -> str:
+    package_version = str(runtime_version or "").strip().split("-", 1)[0]
+    if not _PACKAGE_VERSION_RE.fullmatch(package_version):
+        raise ReleaseMetadataSyncError(
+            f"runtime version does not contain a valid package version: {runtime_version!r}"
+        )
+    return f"{component}/{package_version}"
 
 
 def _report_progress(callback: ProgressCallback | None, completed: int, total: int, label: str) -> None:
@@ -265,7 +275,7 @@ def build_release_provenance_document(
     ]
     generated_at = _commit_timestamp_utc(root, source)
     return {
-        "schema_version": schema_version("source_provenance"),
+        "schema_version": _schema_version_for_runtime("source_provenance", runtime_version),
         "repository": _repository_name(remote_url),
         "remote_url": remote_url,
         "base_branch": _canonical_base_branch(root, base_branch),
@@ -373,7 +383,7 @@ def build_canonical_package_manifest(
 
     generated_at = generated_at_utc or datetime.now(timezone.utc).isoformat()
     return {
-        "schema_version": schema_version("package_integrity_manifest"),
+        "schema_version": _schema_version_for_runtime("package_integrity_manifest", runtime_version),
         "version": runtime_version,
         "runtime_version": runtime_version,
         "package_version": runtime_version,
