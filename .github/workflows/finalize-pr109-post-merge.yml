@@ -1,0 +1,54 @@
+name: Finalize PR 109 post-merge cleanup
+
+on:
+  push:
+    branches:
+      - fix/package-version-workflow-finalize
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-clean:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: fix/package-version-workflow-finalize
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-tk
+          python -m pip install --disable-pip-version-check -e . pytest
+
+      - name: Validate final code
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            tools/jazn_pack_generator.py \
+            tools/jazn_version_rebuild.py \
+            tests/test_package_version_workflow_regression.py \
+            tests/test_jazn_pack_generator_v84_contract.py \
+            tests/test_jazn_pack_generator_v82_contract.py
+          python tools/jazn_pack_generator.py self-test
+          python -m pytest -q -ra --tb=short -m "not live_model and not live_mcp"
+
+      - name: Remove finalization-only files
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/finalize-package-workflow.trigger
+          git rm .github/workflows/finalize-pr109-post-merge.yml
+          git diff --cached --check
+          git commit -m "Remove post-merge finalization helpers"
+          git fetch origin fix/package-version-workflow-finalize
+          git rebase origin/fix/package-version-workflow-finalize
+          git push origin HEAD:fix/package-version-workflow-finalize
