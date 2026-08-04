@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-08-04T22:28:14+00:00",
-  "updated_at_utc": "2026-08-04T22:28:14+00:00",
+  "generated_at_utc": "2026-08-04T23:27:30+00:00",
+  "updated_at_utc": "2026-08-04T23:27:30+00:00",
   "start_file": "run.py",
-  "file_count": 624,
-  "static_file_count": 624,
+  "file_count": 627,
+  "static_file_count": 627,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -145,6 +145,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "JAZN.cmd",
+      "size_bytes": 821,
+      "sha256": "55243ab8c0d75edfe28b644629ce474744ebbbb1614d4068ac2ac6354befb44d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
       "size_bytes": 215,
       "sha256": "ee08fd6fedf6602949aa3e154dc106deeaf1a2630d080af243619273ea83abcd",
@@ -155,8 +164,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 8483,
-      "sha256": "e565f344c5e191121b4aeaad4223bba908cbe511551046d56d8f9b6ace95eb7b",
+      "size_bytes": 9140,
+      "sha256": "37364b61491c8c9a1cf28b278edbd3ccd50cfa368ce29a65f2baa7aac0ce3313",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -164,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1288,
-      "sha256": "d06814c9a081ebd7cb81f7e612e4ba72e900296e8b90ac449c21c810f8a182f7",
+      "size_bytes": 1283,
+      "sha256": "2095c44e3b300f7cc4ad7fca08075716210d816035c38a63b2026a40f0a0579c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -569,8 +578,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 21906,
-      "sha256": "b1cb01f9d479959fc2fe0d7e4456fe33cf29c2ec24cd701ea91cfae1d3d55ebc",
+      "size_bytes": 22330,
+      "sha256": "4def38a6f2e7105267bdde1a1530222a42bcd90a6d0ff045b75217abe581031b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4403,8 +4412,8 @@
     },
     {
       "path": "latka_jazn/tools/package_integrity.py",
-      "size_bytes": 27658,
-      "sha256": "2377b94cf46f13248022df9a93dee6d9f14d5a286cec3d1a6f248bb92e703081",
+      "size_bytes": 32594,
+      "sha256": "aff3b01b9dc97249a87f9636bc0a50c49f399cc2c73880f1021fd2c0e68f6f14",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4798,6 +4807,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_cli_canonical_root.py",
+      "size_bytes": 939,
+      "sha256": "114c882b538b70859d32ba51b4c815b09425d14e75d75013a107e0688059071f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_cli_exit_and_audit_contract.py",
       "size_bytes": 3284,
       "sha256": "8a8a20afc7b1d7a3a77e5962725ab4f8bbed443784ccfe19af8a2e815492e77d",
@@ -5177,8 +5195,8 @@
     },
     {
       "path": "tests/test_package_integrity_canonical_worktree.py",
-      "size_bytes": 5385,
-      "sha256": "43fd7fe3e4fd1642cbee255d9fb1a7e3dcd048353ef9bb2f48bece41d56a506c",
+      "size_bytes": 6787,
+      "sha256": "18bf3c6b4863469af6a37dc607f47bdc78466cf0a4c26db691055330aa5c70db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5530,6 +5548,15 @@
       "path": "tests/test_windows_daemon_console_policy.py",
       "size_bytes": 1759,
       "sha256": "be1d4f7de04792356d442b256a69cbaf963853a65b063946e1575de84cc87f1f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_windows_launchers_contract.py",
+      "size_bytes": 427,
+      "sha256": "134eb50840016202314d9e71a13080e678cfb2759d6cbb9c237a1cfdf87d618c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
