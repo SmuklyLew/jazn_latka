@@ -36,9 +36,10 @@ class TerminalKeySource:
         if os.name != "nt":
             import termios
             import tty
-            self._fd = self.input.fileno()
-            self._old_termios = termios.tcgetattr(self._fd)
-            tty.setraw(self._fd)
+            fd = self.input.fileno()
+            self._fd = fd
+            self._old_termios = termios.tcgetattr(fd)
+            tty.setraw(fd)
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
