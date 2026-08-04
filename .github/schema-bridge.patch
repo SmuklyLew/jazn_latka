@@ -1,0 +1,142 @@
+diff --git a/tests/test_jazn_pack_generator_v84_contract.py b/tests/test_jazn_pack_generator_v84_contract.py
+index 7f89d56..2757649 100644
+--- a/tests/test_jazn_pack_generator_v84_contract.py
++++ b/tests/test_jazn_pack_generator_v84_contract.py
+@@ -65,8 +65,8 @@ def _zip_path(result) -> Path:
+ def test_generator_identity_examples_and_default_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+     generator = _load_generator()
+ 
+-    assert generator.GENERATOR_VERSION == "8.4"
+-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.4"
++    assert generator.GENERATOR_VERSION == "8.5"
++    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"
+     assert generator.__doc__ is not None
+     assert r"py -X utf8 .\tools\jazn_pack_generator.py" in generator.__doc__
+     assert "py _jazn_pack_generator.py" not in generator.__doc__
+diff --git a/tools/jazn_pack_generator.py b/tools/jazn_pack_generator.py
+index 56109c0..f25c749 100644
+--- a/tools/jazn_pack_generator.py
++++ b/tools/jazn_pack_generator.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+ """
+-Jaźń / Łatka — generator paczek v8.4
++Jaźń / Łatka — generator paczek v8.5
+ 
+ Najważniejsza zasada: podgląd, manifest i ZIP korzystają z jednego,
+ zamrożonego planu plików. Generator nie pakuje archiwów, baz systemowych,
+@@ -115,7 +115,7 @@ except ImportError:  # pragma: no cover
+     HAS_PROMPT_TOOLKIT = False
+ 
+ 
+-GENERATOR_VERSION = "8.4"
++GENERATOR_VERSION = "8.5"
+ CHUNK_SIZE = 1024 * 1024
+ DEFAULT_PART_SIZE_MB = 400
+ DEFAULT_COMPRESSION_LEVEL = 6
+@@ -124,7 +124,7 @@ DEFAULT_FORMAT = "auto"
+ 
+ SETTINGS_FILE_NAME = "jazn_pack_generator_settings.json"
+ LEGACY_SETTINGS_FILE_NAMES = ("__jazn_pack_generator_settings.json",)
+-SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.4"
++SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.5"
+ UI_MODE_CHOICES = ("tekstowy", "kursorowy")
+ UI_EXIT_MARKER = "__JAZN_UI_EXIT__"
+ UI_CANCEL_MARKER = "__JAZN_UI_CANCEL__"
+@@ -157,7 +157,7 @@ class Theme:
+     kontrolowany ekran ``window_too_small`` zamiast ściskać zawartość.
+     """
+ 
+-    name: str = "latka-cyan-v8.4"
++    name: str = "latka-cyan-v8.5"
+     left_panel_width: int = 36
+     right_min_width: int = 36
+     compact_breakpoint: int = 96
+@@ -1217,6 +1217,20 @@ print("__JAZN_RESULT__" + json.dumps(result, ensure_ascii=False))
+         raw = base64.b64decode(encoded, validate=True)
+     except (ValueError, TypeError) as exc:
+         raise PackError("Synchronizator proweniencji zwrócił niepoprawne bajty Base64.") from exc
++
++    # Synchronizator może zostać zaimportowany z aktywnego środowiska hosta,
++    # natomiast pakowany root ma własne version.py. Pola wersji są wyliczane
++    # z przekazanego rootu, ale schema_version starszego modułu hosta mogłoby
++    # opisywać inną linię wydania. Kanoniczne schema_version zawsze pochodzi
++    # z version.py wskazanego rootu.
++    target_version = read_version_info(root)
++    expected_schema = f"source_provenance/{target_version.package_version}"
++    if str(payload.get("schema_version") or "").strip() != expected_schema:
++        payload = dict(payload)
++        payload["schema_version"] = expected_schema
++        raw = (
++            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
++        ).encode("utf-8")
+     return payload, raw
+ 
+ 
+@@ -4266,7 +4280,7 @@ def _legacy_main_menu_details_v611(state: InteractiveState) -> list[str]:
+         "Python zipfile jest obowiązkowy; dostępne 7-Zip, WinRAR, WinZip i Info-ZIP są testowane automatycznie.",
+         "Osobna edycja listy podstawowej i ręcznej, dodawanie, edycja, usuwanie i przełącznik aktywności.",
+         "Wybór interfejsu. Proste zmiany w trybie kursorowym nie przełączają aplikacji do trybu tekstowego.",
+-        "Zapisuje konfigurację v8.4 atomowo obok skryptu.",
++        "Zapisuje konfigurację v8.5 atomowo obok skryptu.",
+         "Sprawdza sidecar, SHA-256, CRC i kompletność wpisów.",
+         "Najpierw weryfikuje, potem rozpakowuje z ochroną przed path traversal.",
+         "Jawnie synchronizuje SOURCE_PROVENANCE.json i PACKAGE_INTEGRITY_MANIFEST.json bez tworzenia ZIP-a.",
+@@ -4828,7 +4842,7 @@ def print_results(results: Sequence[PackageResult]) -> None:
+ 
+ 
+ def run_self_test() -> dict[str, Any]:
+-    """Regresja v8.4: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
++    """Regresja v8.5: wersja, ZIP, nawigacja, mysz, ścieżki, worker UI i przewijanie logu."""
+     with tempfile.TemporaryDirectory(prefix="jazn-pack-v8-selftest-") as tmp_raw:
+         temp = Path(tmp_raw)
+         version = VersionInfo(
+@@ -5001,7 +5015,7 @@ def run_self_test() -> dict[str, Any]:
+ 
+ 
+ # -----------------------------------------------------------------------------
+-# Interfejs v8.4 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
++# Interfejs v8.5 — stabilny fokus, responsywny układ, przewijanie i bezpieczne operacje
+ # -----------------------------------------------------------------------------
+ 
+ DASHBOARD_GROUPS: dict[int, str] = {
+@@ -5190,7 +5204,7 @@ def cursor_dashboard(
+     _output: Any = None,
+     _debug_state: dict[str, Any] | None = None,
+ ) -> str:
+-    """Uruchamia stabilny pulpit v8.4.
++    """Uruchamia stabilny pulpit v8.5.
+ 
+     Interfejs ma jeden stały punkt fokusu dla menu i po jednym trwałym punkcie
+     fokusu dla każdego rodzaju prawego widoku. Przy małej szerokości działa jak
+@@ -5198,7 +5212,7 @@ def cursor_dashboard(
+     """
+ 
+     if not _dashboard_available():
+-        raise PackError("Pulpit v8.4 wymaga kompletnej biblioteki prompt_toolkit.")
++        raise PackError("Pulpit v8.5 wymaga kompletnej biblioteki prompt_toolkit.")
+ 
+     application_cls = cast(Any, _pt_Application)
+     condition_cls = cast(Any, _pt_Condition)
+@@ -7365,7 +7379,7 @@ def interactive(ui_override: str | None = None) -> int:
+ 
+ 
+ def parser() -> argparse.ArgumentParser:
+-    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v8.4", allow_abbrev=False)
++    root = argparse.ArgumentParser(description="Jaźń / Łatka — kanoniczny generator paczek ZIP v8.5", allow_abbrev=False)
+     root.add_argument("--version", action="version", version=GENERATOR_VERSION)
+     sub = root.add_subparsers(dest="command")
+ 
+diff --git a/tools/jazn_version_rebuild.py b/tools/jazn_version_rebuild.py
+index 0178f8a..6e96e97 100644
+--- a/tools/jazn_version_rebuild.py
++++ b/tools/jazn_version_rebuild.py
+@@ -1,6 +1,6 @@
+ from __future__ import annotations
+ 
+-"""Jaźń Version Rebuild v0.1 — graficzna przebudowa wersji bez tworzenia branchy."""
++"""Jaźń Version Rebuild v0.2 — graficzna przebudowa wersji bez tworzenia branchy."""
+ 
+ import ast
+ import difflib

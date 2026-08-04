@@ -879,6 +879,69 @@ def archived_version_from_bytes(raw: bytes) -> str:
     return compose_runtime_version_full(base, values.get("PACKAGE_RELEASE_NAME", ""))
 
 
+def validate_release_provenance_payload(
+    payload: Mapping[str, Any],
+    version: VersionInfo,
+    *,
+    context: str,
+) -> None:
+    """Odrzuca proweniencję, która nie opisuje dokładnie bieżącego runtime.
+
+    Paczka systemowa nie może być uznana za poprawną tylko dlatego, że jej
+    CRC i SHA-256 się zgadzają. ``version.py``, manifest i proweniencja muszą
+    wskazywać tę samą pełną wersję wraz z nazwą wydania.
+    """
+
+    if not isinstance(payload, Mapping):
+        raise PackError(f"{context}: SOURCE_PROVENANCE.json nie jest obiektem JSON.")
+
+    expected = normalize_version(version.full_version)
+    mismatches: list[str] = []
+    for field in ("base_version", "runtime_version", "update_version"):
+        raw = str(payload.get(field) or "").strip()
+        if not raw:
+            mismatches.append(f"{field}=<brak>")
+            continue
+        try:
+            actual = normalize_version(raw)
+        except ValueError:
+            mismatches.append(f"{field}={raw!r}")
+            continue
+        if actual != expected:
+            mismatches.append(f"{field}={raw!r}")
+
+    expected_schema = f"source_provenance/{version.package_version}"
+    schema = str(payload.get("schema_version") or "").strip()
+    if schema != expected_schema:
+        mismatches.append(f"schema_version={schema!r}")
+
+    version_source = str(payload.get("version_source") or "").strip()
+    if version_source != "latka_jazn/version.py":
+        mismatches.append(f"version_source={version_source!r}")
+
+    if mismatches:
+        raise PackError(
+            f"{context}: proweniencja wydania nie odpowiada version.py "
+            f"({version.full_version!r}); " + ", ".join(mismatches)
+        )
+
+
+def release_provenance_from_bytes(
+    raw: bytes,
+    version: VersionInfo,
+    *,
+    context: str,
+) -> dict[str, Any]:
+    try:
+        payload = json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise PackError(f"{context}: niepoprawny SOURCE_PROVENANCE.json: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise PackError(f"{context}: SOURCE_PROVENANCE.json nie jest obiektem JSON.")
+    validate_release_provenance_payload(payload, version, context=context)
+    return payload
+
+
 # -----------------------------------------------------------------------------
 # Skanowanie i polityka planu
 # -----------------------------------------------------------------------------
@@ -1336,10 +1399,11 @@ def build_system_plan(
 ) -> PackPlan:
     """Buduje jeden zamrożony plan systemu bez modyfikowania source root.
 
-    W trybie synchronizacji proweniencja jest wyliczana z kanonicznych obiektów
-    Git i trafia do planu jako plik wirtualny. Manifest hashuje dokładnie te
-    wirtualne bajty, więc podgląd i ZIP są spójne jeszcze przed ewentualnym
-    zapisaniem metadanych z powrotem do repozytorium.
+    Normalny przepływ pakowania zawsze wywołuje tę funkcję z
+    ``synchronize_release_metadata=True`` i umieszcza świeżą kanoniczną
+    proweniencję jako wpis wirtualny. Tryb ``False`` pozostaje tylko dla
+    podglądu/zgodności API; ``package_one`` odrzuci taki plan, więc nie można
+    z niego opublikować paczki systemowej ze starymi metadanymi.
     """
 
     candidates = [path for path in candidates if path != PACKAGE_INTEGRITY_MANIFEST]
@@ -1347,19 +1411,11 @@ def build_system_plan(
     provenance_payload: dict[str, Any] | None = None
     if synchronize_release_metadata:
         provenance_payload, provenance_bytes = source_provenance_bridge(root)
-        provenance_version = str(
-            provenance_payload.get("runtime_version")
-            or provenance_payload.get("base_version")
-            or ""
-        ).strip()
-        if provenance_version != version.full_version:
-            if re.sub(r"^v", "", provenance_version, flags=re.I) != re.sub(
-                r"^v", "", version.full_version, flags=re.I
-            ):
-                raise PackError(
-                    "Kanoniczna proweniencja różni się od version.py: "
-                    f"provenance={provenance_version!r}, version.py={version.full_version!r}"
-                )
+        validate_release_provenance_payload(
+            provenance_payload,
+            version,
+            context="Kanoniczna proweniencja planu systemowego",
+        )
         candidates = [path for path in candidates if path != SOURCE_PROVENANCE]
         overrides[SOURCE_PROVENANCE] = provenance_bytes
 
@@ -2017,6 +2073,13 @@ def verify_zip_stream(zf: zipfile.ZipFile, plan: PackPlan) -> dict[str, Any]:
                     f"Wersja w ZIP-ie jest inna: {archived_version!r} != {plan.version.full_version!r}"
                 )
 
+    if SOURCE_PROVENANCE in expected:
+        release_provenance_from_bytes(
+            zf.read(SOURCE_PROVENANCE),
+            plan.version,
+            context="Weryfikacja ZIP",
+        )
+
     if PACKAGE_INTEGRITY_MANIFEST in expected:
         payload = json.loads(zf.read(PACKAGE_INTEGRITY_MANIFEST).decode("utf-8-sig"))
         manifest_paths = {str(item.get("path")) for item in payload.get("files") or [] if isinstance(item, dict)}
@@ -2084,6 +2147,11 @@ def verify_outputs(temp_dir: Path, outputs: Sequence[OutputPart], archive_format
                 archived_version = archived_version_from_bytes(_read_member_from_set(temp_dir, outputs, "latka_jazn/version.py"))
                 if re.sub(r"^v", "", archived_version, flags=re.I) != re.sub(r"^v", "", plan.version.full_version, flags=re.I):
                     raise PackError("Wersja archiwalna nie zgadza się z planem.")
+                release_provenance_from_bytes(
+                    _read_member_from_set(temp_dir, outputs, SOURCE_PROVENANCE),
+                    plan.version,
+                    context="Weryfikacja zestawu ZIP",
+                )
                 payload = json.loads(zf.read(PACKAGE_INTEGRITY_MANIFEST).decode("utf-8-sig"))
                 manifest_paths = {str(item.get("path")) for item in payload.get("files") or [] if isinstance(item, dict)}
                 static_paths = {item.relative for item in plan.entries if item.classification == "static_project_file"}
@@ -2652,7 +2720,33 @@ def write_source_manifest_from_plan(plan: PackPlan) -> Path | None:
     return paths.get(PACKAGE_INTEGRITY_MANIFEST)
 
 
+def validate_system_plan_release_metadata(plan: PackPlan) -> None:
+    """Wymusza kanoniczną wirtualną parę metadanych przed zapisem ZIP-a."""
+
+    if plan.profile not in {"system", "combined"}:
+        return
+    entries = {entry.relative: entry for entry in plan.entries}
+    provenance = entries.get(SOURCE_PROVENANCE)
+    manifest = entries.get(PACKAGE_INTEGRITY_MANIFEST)
+    if provenance is None or provenance.virtual_bytes is None:
+        raise PackError(
+            "Odmowa pakowania: plan systemowy nie zawiera świeżej kanonicznej "
+            "proweniencji jako wpisu wirtualnego. Zbuduj plan przez "
+            "build_plans_for_options albo włącz synchronizację metadanych."
+        )
+    if manifest is None or manifest.virtual_bytes is None:
+        raise PackError(
+            "Odmowa pakowania: plan systemowy nie zawiera świeżego wirtualnego manifestu."
+        )
+    release_provenance_from_bytes(
+        provenance.virtual_bytes,
+        plan.version,
+        context="Kontrola planu przed pakowaniem",
+    )
+
+
 def package_one(plan: PackPlan, options: PackOptions, base_zip_name: str) -> PackageResult:
+    validate_system_plan_release_metadata(plan)
     part_size = options.part_size_mb * 1024 * 1024
     archive_format = choose_format(options.archive_format, plan, part_size)
     options.out_dir.mkdir(parents=True, exist_ok=True)
@@ -2793,7 +2887,7 @@ def plan_configuration_signature(options: PackOptions) -> str:
         "base_excludes": list(options.base_excludes),
         "custom_excludes": list(options.custom_excludes),
         "manual_excludes_enabled": bool(options.manual_excludes_enabled),
-        "synchronize_release_metadata": bool(options.update_source_manifest),
+        "release_metadata_policy": "canonical_virtual_always",
     }
     raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
@@ -2900,7 +2994,7 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
             source, "system", options.custom_excludes,
             base_excludes=options.base_excludes,
             manual_excludes_enabled=options.manual_excludes_enabled,
-            synchronize_release_metadata=options.update_source_manifest,
+            synchronize_release_metadata=True,
         )]
         try:
             plans.append(build_plan(
@@ -2916,9 +3010,7 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
         source, options.profile, options.custom_excludes,
         base_excludes=options.base_excludes,
         manual_excludes_enabled=options.manual_excludes_enabled,
-        synchronize_release_metadata=(
-            options.update_source_manifest and options.profile in {"system", "combined"}
-        ),
+        synchronize_release_metadata=(options.profile in {"system", "combined"}),
     )]
 
 
@@ -3425,7 +3517,7 @@ def settings_preview_lines(state: InteractiveState) -> list[str]:
         "  • force — nadpisywanie",
         "  • base_excludes / custom_excludes / manual_excludes_enabled",
         "  • sidecars — pliki pomocnicze",
-        "  • update_source_manifest — synchronizacja proweniencji i manifestu po sukcesie ZIP",
+        "  • update_source_manifest — zapis świeżej pary metadanych do repo po sukcesie ZIP; paczka zawsze używa świeżej pary",
         "  • compatibility_checks — testy ZIP",
         "  • ui_mode / ui_auto_start",
         "  • auto_save_settings",
@@ -4145,7 +4237,7 @@ def _legacy_main_menu_rows_v611(state: InteractiveState) -> list[str]:
         f"Kompresja: [{state.compression_level}]",
         f"Nadpisywanie: [{'TAK' if state.force else 'NIE'}]",
         f"Pliki pomocnicze: [{'TAK' if state.sidecars else 'NIE'}]",
-        f"Synchronizacja metadanych: [{'TAK' if state.update_source_manifest else 'NIE'}]",
+        f"Zapis metadanych do repo po ZIP: [{'TAK' if state.update_source_manifest else 'NIE'}]",
         f"Testy zgodności ZIP: [{'TAK' if state.compatibility_checks else 'NIE'}]",
         f"Wykluczenia: [podstawowe {len(state.base_excludes)} • ręczne {len(state.custom_excludes)} {manual}]",
         f"Interfejs: [{state.ui_mode}]",
@@ -4188,7 +4280,7 @@ def _state_status_lines(state: InteractiveState) -> list[str]:
         f"Format       {state.archive_format}",
         f"Limit        {state.part_size_mb} MiB",
         f"Kompresja    DEFLATE {state.compression_level}",
-        f"Metadane     {'po sukcesie ZIP' if state.update_source_manifest else 'tylko w ZIP'}",
+        f"Metadane     {'świeże w ZIP + zapis do repo' if state.update_source_manifest else 'świeże tylko w ZIP'}",
         f"Zgodność     {'włączona' if state.compatibility_checks else 'wyłączona'}",
         f"Zmiany       {'NIEZAPISANE' if state.dirty else 'zapisane'}",
     ]
@@ -4934,7 +5026,7 @@ OPTIONS_LABELS: tuple[str, ...] = (
     "Interfejs",
     "Wykluczenia",
     "Ustawienia zapisywania",
-    "Aktualizuj mapę przy pakowaniu",
+    "Zapisz metadane do repo po pakowaniu",
     "Testy zgodności ZIP",
 )
 
@@ -4947,7 +5039,7 @@ OPTIONS_DESCRIPTIONS: tuple[str, ...] = (
     "Wybiera preferowany interfejs przy następnym uruchomieniu.",
     "Otwiera zarządzanie podstawowymi i ręcznymi wzorcami wykluczeń.",
     "Otwiera ustawienia automatycznego zapisu oraz podgląd pól i lokalizacji pliku JSON.",
-    "Przed pakowaniem zapisuje świeży PACKAGE_INTEGRITY_MANIFEST.json z dokładnie zatwierdzonego planu.",
+    "Paczka zawsze dostaje świeżą kanoniczną proweniencję i manifest. Ta opcja steruje tylko zapisem tej samej pary do repo po poprawnym ZIP-ie.",
     "Uruchamia Python zipfile oraz wykryte 7-Zip, WinRAR, WinZip i Info-ZIP.",
 )
 
@@ -5681,7 +5773,11 @@ def cursor_dashboard(
         elif options_index == 8:
             state.update_source_manifest = not state.update_source_manifest
             mark_interactive_state_changed(state)
-            set_info("Synchronizacja metadanych zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
+            set_info(
+                "Zapis metadanych do repo zmieniony.",
+                "Paczka zawsze używa świeżej pary; zapis do repo po ZIP: "
+                f"{'TAK' if state.update_source_manifest else 'NIE'}",
+            )
         elif options_index == 9:
             state.compatibility_checks = not state.compatibility_checks
             mark_interactive_state_changed(state)
@@ -7307,7 +7403,7 @@ def parser() -> argparse.ArgumentParser:
     plan.add_argument(
         "--no-synchronize-release-metadata",
         action="store_true",
-        help="Użyj istniejącej proweniencji zamiast kanonicznej proweniencji Git.",
+        help="Użyj istniejącej proweniencji wyłącznie w podglądzie planu; takiego planu nie można spakować.",
     )
     plan.add_argument("--files", action="store_true")
     plan.add_argument("--json", type=Path)

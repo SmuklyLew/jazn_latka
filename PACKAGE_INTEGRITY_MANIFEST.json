@@ -3,11 +3,11 @@
   "version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "runtime_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
   "package_version": "v15.1.0.3.90-Memory Sqlite Pipeline",
-  "generated_at_utc": "2026-08-01T22:36:25+00:00",
-  "updated_at_utc": "2026-08-01T22:36:25+00:00",
+  "generated_at_utc": "2026-08-04T19:57:24+00:00",
+  "updated_at_utc": "2026-08-04T19:57:24+00:00",
   "start_file": "run.py",
-  "file_count": 623,
-  "static_file_count": 623,
+  "file_count": 627,
+  "static_file_count": 627,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -67,6 +67,33 @@
       "path": ".gitattributes",
       "size_bytes": 968,
       "sha256": "914234876d3fcd72779396819fdcd39753d2b16057b4c14139c5ef41360f0925",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/schema-bridge.patch",
+      "size_bytes": 6828,
+      "sha256": "46d6e9d82bb4d4188367f59a0b4744371cc9739b45bb05e46f2230a2dc69259d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/schema-bridge.trigger",
+      "size_bytes": 29,
+      "sha256": "3fcc5bd38c7d91031895b84570160011423f2e817d1029db0cf498a9556466a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/apply-schema-bridge-fix.yml",
+      "size_bytes": 2289,
+      "sha256": "ab2c5c8d18f162f5a560f06b319640c5e0389f0b29d818c444cbd0417f98d584",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -165,7 +192,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1288,
-      "sha256": "d5c58f42a84284ea4d881399c298b1c7f3aa106e0b5d220d2d286ded230b3df5",
+      "sha256": "c56aa044acd965341aad0fa26c6aa992c46033db7a02ca6f2d76d9388945615c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5194,6 +5221,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_package_version_workflow_regression.py",
+      "size_bytes": 9620,
+      "sha256": "0daa3baef12d98f63f6a32bff252967e5dcc39ca481f378dafe39c4fa267471c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_private_memory_validation_empty_collection_contract.py",
       "size_bytes": 629,
       "sha256": "8b14f92b80f1e588baf4bb7e27a1a62030dc04ab89ee778d06b44db89480f5e7",
@@ -5564,8 +5600,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 311524,
-      "sha256": "a34c2b8e16ad9937bf423a6c3504484a01db126324f263101f5b347685b4137c",
+      "size_bytes": 315121,
+      "sha256": "e6bd902b6a7e042063c13f8bbd43bff04b1d71de59a7d2945382488a00fc15e9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5573,8 +5609,8 @@
     },
     {
       "path": "tools/jazn_version_rebuild.py",
-      "size_bytes": 34611,
-      "sha256": "455fa8e9e198313285a3590750025a92c921c4912d18776282b4178c2334e4e3",
+      "size_bytes": 44464,
+      "sha256": "80a7a07f59ec34be4a1d23d9dad70a25b8a0716762fa73b9cda8dc4b08dd31f7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
