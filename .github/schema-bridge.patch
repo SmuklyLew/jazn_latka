@@ -1,0 +1,22 @@
+diff --git a/tools/jazn_pack_generator.py b/tools/jazn_pack_generator.py
+--- a/tools/jazn_pack_generator.py
++++ b/tools/jazn_pack_generator.py
+@@ -1218,6 +1218,20 @@ def source_provenance_bridge(root: Path) -> tuple[dict[str, Any], bytes]:
+         raw = base64.b64decode(encoded, validate=True)
+     except (ValueError, TypeError) as exc:
+         raise PackError("Synchronizator proweniencji zwrócił niepoprawne bajty Base64.") from exc
++
++    # Bridge może korzystać z modułu narzędziowego zainstalowanego w środowisku
++    # hosta, podczas gdy pakowany root ma własny version.py. Pola wersji są
++    # wyliczane przez synchronizator z przekazanego rootu, ale schema_version
++    # mogłoby pochodzić z wersji modułu hosta. Kanonicznym źródłem dla paczki
++    # pozostaje zawsze version.py wskazanego rootu.
++    target_version = read_version_info(root)
++    expected_schema = f"source_provenance/{target_version.package_version}"
++    if str(payload.get("schema_version") or "").strip() != expected_schema:
++        payload = dict(payload)
++        payload["schema_version"] = expected_schema
++        raw = (
++            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
++        ).encode("utf-8")
+     return payload, raw
