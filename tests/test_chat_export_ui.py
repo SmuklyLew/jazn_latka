@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import StringIO
 
-from latka_jazn.tools.chat_export_ui import CursorMenu, ScriptedKeySource, explicit_confirmation
+from latka_jazn.tools.chat_export_ui import CursorMenu, ScriptedKeySource, TerminalKeySource, explicit_confirmation
 
 
 def test_cursor_menu_navigation_and_multi_selection() -> None:
@@ -48,3 +48,23 @@ def test_write_confirmation_requires_exact_nonempty_token() -> None:
     assert explicit_confirmation(lambda _: "", "", token="IMPORTUJ") is False
     assert explicit_confirmation(lambda _: "tak", "", token="IMPORTUJ") is False
     assert explicit_confirmation(lambda _: "IMPORTUJ", "", token="IMPORTUJ") is True
+
+
+def test_terminal_key_source_uses_concrete_posix_file_descriptor(monkeypatch) -> None:
+    import termios
+    import tty
+
+    calls: list[tuple[str, int]] = []
+
+    class FakeInput:
+        def fileno(self) -> int:
+            return 17
+
+    monkeypatch.setattr(termios, "tcgetattr", lambda fd: calls.append(("tcgetattr", fd)) or [1, 2, 3])
+    monkeypatch.setattr(tty, "setraw", lambda fd: calls.append(("setraw", fd)))
+    monkeypatch.setattr(termios, "tcsetattr", lambda fd, _when, _state: calls.append(("tcsetattr", fd)))
+
+    with TerminalKeySource(FakeInput()):
+        pass
+
+    assert calls == [("tcgetattr", 17), ("setraw", 17), ("tcsetattr", 17)]
