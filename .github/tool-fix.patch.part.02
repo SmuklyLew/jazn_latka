@@ -1,0 +1,196 @@
+Plan, options: PackOptions, base_zip_name: str) -> PackageResult:
++    validate_system_plan_release_metadata(plan)
+     part_size = options.part_size_mb * 1024 * 1024
+     archive_format = choose_format(options.archive_format, plan, part_size)
+     options.out_dir.mkdir(parents=True, exist_ok=True)
+@@ -2793,7 +2887,7 @@ def plan_configuration_signature(options: PackOptions) -> str:
+         "base_excludes": list(options.base_excludes),
+         "custom_excludes": list(options.custom_excludes),
+         "manual_excludes_enabled": bool(options.manual_excludes_enabled),
+-        "synchronize_release_metadata": bool(options.update_source_manifest),
++        "release_metadata_policy": "canonical_virtual_always",
+     }
+     raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+     return hashlib.sha256(raw).hexdigest()
+@@ -2900,7 +2994,7 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
+             source, "system", options.custom_excludes,
+             base_excludes=options.base_excludes,
+             manual_excludes_enabled=options.manual_excludes_enabled,
+-            synchronize_release_metadata=options.update_source_manifest,
++            synchronize_release_metadata=True,
+         )]
+         try:
+             plans.append(build_plan(
+@@ -2916,9 +3010,7 @@ def build_plans_for_options(options: PackOptions) -> list[PackPlan]:
+         source, options.profile, options.custom_excludes,
+         base_excludes=options.base_excludes,
+         manual_excludes_enabled=options.manual_excludes_enabled,
+-        synchronize_release_metadata=(
+-            options.update_source_manifest and options.profile in {"system", "combined"}
+-        ),
++        synchronize_release_metadata=(options.profile in {"system", "combined"}),
+     )]
+ 
+ 
+@@ -3425,7 +3517,7 @@ def settings_preview_lines(state: InteractiveState) -> list[str]:
+         "  • force — nadpisywanie",
+         "  • base_excludes / custom_excludes / manual_excludes_enabled",
+         "  • sidecars — pliki pomocnicze",
+-        "  • update_source_manifest — synchronizacja proweniencji i manifestu po sukcesie ZIP",
++        "  • update_source_manifest — zapis świeżej pary metadanych do repo po sukcesie ZIP; paczka zawsze używa świeżej pary",
+         "  • compatibility_checks — testy ZIP",
+         "  • ui_mode / ui_auto_start",
+         "  • auto_save_settings",
+@@ -4145,7 +4237,7 @@ def _legacy_main_menu_rows_v611(state: InteractiveState) -> list[str]:
+         f"Kompresja: [{state.compression_level}]",
+         f"Nadpisywanie: [{'TAK' if state.force else 'NIE'}]",
+         f"Pliki pomocnicze: [{'TAK' if state.sidecars else 'NIE'}]",
+-        f"Synchronizacja metadanych: [{'TAK' if state.update_source_manifest else 'NIE'}]",
++        f"Zapis metadanych do repo po ZIP: [{'TAK' if state.update_source_manifest else 'NIE'}]",
+         f"Testy zgodności ZIP: [{'TAK' if state.compatibility_checks else 'NIE'}]",
+         f"Wykluczenia: [podstawowe {len(state.base_excludes)} • ręczne {len(state.custom_excludes)} {manual}]",
+         f"Interfejs: [{state.ui_mode}]",
+@@ -4188,7 +4280,7 @@ def _state_status_lines(state: InteractiveState) -> list[str]:
+         f"Format       {state.archive_format}",
+         f"Limit        {state.part_size_mb} MiB",
+         f"Kompresja    DEFLATE {state.compression_level}",
+-        f"Metadane     {'po sukcesie ZIP' if state.update_source_manifest else 'tylko w ZIP'}",
++        f"Metadane     {'świeże w ZIP + zapis do repo' if state.update_source_manifest else 'świeże tylko w ZIP'}",
+         f"Zgodność     {'włączona' if state.compatibility_checks else 'wyłączona'}",
+         f"Zmiany       {'NIEZAPISANE' if state.dirty else 'zapisane'}",
+     ]
+@@ -4934,7 +5026,7 @@ OPTIONS_LABELS: tuple[str, ...] = (
+     "Interfejs",
+     "Wykluczenia",
+     "Ustawienia zapisywania",
+-    "Aktualizuj mapę przy pakowaniu",
++    "Zapisz metadane do repo po pakowaniu",
+     "Testy zgodności ZIP",
+ )
+ 
+@@ -4947,7 +5039,7 @@ OPTIONS_DESCRIPTIONS: tuple[str, ...] = (
+     "Wybiera preferowany interfejs przy następnym uruchomieniu.",
+     "Otwiera zarządzanie podstawowymi i ręcznymi wzorcami wykluczeń.",
+     "Otwiera ustawienia automatycznego zapisu oraz podgląd pól i lokalizacji pliku JSON.",
+-    "Przed pakowaniem zapisuje świeży PACKAGE_INTEGRITY_MANIFEST.json z dokładnie zatwierdzonego planu.",
++    "Paczka zawsze dostaje świeżą kanoniczną proweniencję i manifest. Ta opcja steruje tylko zapisem tej samej pary do repo po poprawnym ZIP-ie.",
+     "Uruchamia Python zipfile oraz wykryte 7-Zip, WinRAR, WinZip i Info-ZIP.",
+ )
+ 
+@@ -5681,7 +5773,11 @@ def cursor_dashboard(
+         elif options_index == 8:
+             state.update_source_manifest = not state.update_source_manifest
+             mark_interactive_state_changed(state)
+-            set_info("Synchronizacja metadanych zmieniona.", f"Teraz: {'TAK' if state.update_source_manifest else 'NIE'}")
++            set_info(
++                "Zapis metadanych do repo zmieniony.",
++                "Paczka zawsze używa świeżej pary; zapis do repo po ZIP: "
++                f"{'TAK' if state.update_source_manifest else 'NIE'}",
++            )
+         elif options_index == 9:
+             state.compatibility_checks = not state.compatibility_checks
+             mark_interactive_state_changed(state)
+@@ -7307,7 +7403,7 @@ def parser() -> argparse.ArgumentParser:
+     plan.add_argument(
+         "--no-synchronize-release-metadata",
+         action="store_true",
+-        help="Użyj istniejącej proweniencji zamiast kanonicznej proweniencji Git.",
++        help="Użyj istniejącej proweniencji wyłącznie w podglądzie planu; takiego planu nie można spakować.",
+     )
+     plan.add_argument("--files", action="store_true")
+     plan.add_argument("--json", type=Path)
+diff --git a/tools/jazn_version_rebuild.py b/tools/jazn_version_rebuild.py
+index 132e348..0178f8a 100644
+--- a/tools/jazn_version_rebuild.py
++++ b/tools/jazn_version_rebuild.py
+@@ -7,19 +7,24 @@ import difflib
+ import json
+ import os
+ from pathlib import Path
++import queue
+ import re
+ import subprocess
+ import sys
+ import tempfile
+ import threading
++import time
+ import tkinter as tk
+ from dataclasses import dataclass
+ from datetime import datetime
+ from tkinter import filedialog, messagebox, scrolledtext, ttk
+ from typing import Callable, Iterable, Mapping
+ 
++ProgressCallback = Callable[[int, str], None]
++OutputCallback = Callable[[str], None]
++
+ APP_NAME = "Jaźń Version Rebuild"
+-APP_VERSION = "0.1"
++APP_VERSION = "0.2"
+ SETTINGS_NAME = "jazn_version_rebuild.settings.json"
+ BACKUP_PREFIX = "jazn_version_rebuild_backup"
+ VERSION_PATH = Path("latka_jazn/version.py")
+@@ -119,7 +124,7 @@ def atomic_write(path: Path, raw: bytes) -> None:
+ 
+ def save_settings(path: Path, settings: Settings) -> None:
+     payload = {
+-        "schema_version": "jazn_version_rebuild_settings/v0.1",
++        "schema_version": "jazn_version_rebuild_settings/v0.2",
+         "app_version": APP_VERSION,
+         "root": settings.root,
+         "python": settings.python,
+@@ -229,6 +234,68 @@ def command(args: list[str], root: Path, timeout: int = 300) -> subprocess.Compl
+         raise RebuildError("Przekroczono limit czasu: " + " ".join(args)) from exc
+ 
+ 
++def command_streaming(
++    args: list[str],
++    root: Path,
++    *,
++    timeout: int,
++    on_output: OutputCallback | None = None,
++) -> subprocess.CompletedProcess[str]:
++    """Uruchamia proces i przekazuje jego wyjście do GUI w czasie rzeczywistym."""
++
++    try:
++        process = subprocess.Popen(
++            args,
++            cwd=root,
++            stdout=subprocess.PIPE,
++            stderr=subprocess.STDOUT,
++            text=True,
++            encoding="utf-8",
++            errors="replace",
++            stdin=subprocess.DEVNULL,
++            bufsize=1,
++        )
++    except FileNotFoundError as exc:
++        raise RebuildError(f"Nie znaleziono programu: {args[0]}") from exc
++
++    assert process.stdout is not None
++    output_queue: queue.Queue[str | None] = queue.Queue()
++
++    def reader() -> None:
++        try:
++            for line in process.stdout:
++                output_queue.put(line.rstrip("\r\n"))
++        finally:
++            output_queue.put(None)
++
++    threading.Thread(target=reader, daemon=True).start()
++    started = time.monotonic()
++    lines: list[str] = []
++    reader_finished = False
++    while not reader_finished or process.poll() is None:
++        if time.monotonic() - started > timeout:
++            process.kill()
++            process.wait()
++            raise RebuildError("Przekroczono limit czasu: " + " ".join(args))
++        try:
++            item = output_queue.get(timeout=0.10)
++        except queue.Empty:
++            continue
++        if item is None:
++            reader_finished = True
++            continue
++        lines.append(item)
++        if on_output is not N
