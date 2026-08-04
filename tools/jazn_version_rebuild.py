@@ -258,12 +258,16 @@ def command_streaming(
     except FileNotFoundError as exc:
         raise RebuildError(f"Nie znaleziono programu: {args[0]}") from exc
 
-    assert process.stdout is not None
+    stdout = process.stdout
+    if stdout is None:
+        process.kill()
+        process.wait()
+        raise RebuildError("Nie udało się otworzyć potoku stdout procesu.")
     output_queue: queue.Queue[str | None] = queue.Queue()
 
     def reader() -> None:
         try:
-            for line in process.stdout:
+            for line in stdout:
                 output_queue.put(line.rstrip("\r\n"))
         finally:
             output_queue.put(None)

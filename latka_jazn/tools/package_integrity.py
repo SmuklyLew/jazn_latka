@@ -448,10 +448,17 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     # hash verification for recovery compatibility, but require exact static
     # membership whenever the manifest declares file_count (all current packs).
     if "file_count" in payload:
-        declared_count = payload.get("file_count")
-        try:
-            normalized_declared_count = int(declared_count)
-        except (TypeError, ValueError):
+        declared_count: object = payload.get("file_count")
+        if isinstance(declared_count, bool):
+            normalized_declared_count = -1
+        elif isinstance(declared_count, int):
+            normalized_declared_count = declared_count
+        elif isinstance(declared_count, str):
+            try:
+                normalized_declared_count = int(declared_count)
+            except ValueError:
+                normalized_declared_count = -1
+        else:
             normalized_declared_count = -1
         if normalized_declared_count != len(entries):
             errors.append(

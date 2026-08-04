@@ -706,7 +706,7 @@ def _as_dict(value: object) -> dict[str, Any]:
 
 
 def _bridge_text_output_mode(
-    ns: argparse.Namespace,
+    ns: object,
     bridge_text: str,
 ) -> BridgeOutputMode:
     """One-shot ChatGPT calls default to an action-first host packet."""

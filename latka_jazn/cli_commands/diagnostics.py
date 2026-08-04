@@ -61,7 +61,8 @@ def _daemon_runtime_write_ready(daemon: dict[str, Any]) -> tuple[bool, str]:
     if isinstance(direct, bool):
         return direct, "daemon.runtime_write_ready"
 
-    ping = daemon.get("ping") if isinstance(daemon.get("ping"), dict) else {}
+    ping_value = daemon.get("ping")
+    ping: dict[str, Any] = ping_value if isinstance(ping_value, dict) else {}
     nested = ping.get("runtime_write_ready")
     if isinstance(nested, bool):
         return nested, "daemon.ping.runtime_write_ready"
