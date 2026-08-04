@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError, SecureHostRuntimeGateway
 
 
+def _object_or_none(value: Any) -> dict[str, Any] | None:
+    if isinstance(value, dict):
+        return cast(dict[str, Any], value)
+    return None
+
+
 def _presentation_from(response: dict[str, Any]) -> dict[str, Any]:
-    nested = response.get("chatgpt_host_presentation")
-    if isinstance(nested, dict):
+    nested = _object_or_none(response.get("chatgpt_host_presentation"))
+    if nested is not None:
         return nested
     if str(response.get("type") or "") == "chatgpt_host_presentation" or response.get("action"):
         return response
@@ -37,11 +43,11 @@ def run(
 
     if action == "display_exact":
         final_text = str(presentation.get("final_visible_text") or response.get("final_visible_text") or "")
-        checks = presentation.get("runtime_checks") if isinstance(presentation.get("runtime_checks"), dict) else {}
-        integrity = response.get("final_visible_integrity")
-        if not isinstance(integrity, dict):
-            final_contract = response.get("final_response_contract")
-            integrity = final_contract.get("final_visible_integrity", {}) if isinstance(final_contract, dict) else {}
+        checks = _object_or_none(presentation.get("runtime_checks")) or {}
+        integrity = _object_or_none(response.get("final_visible_integrity"))
+        if integrity is None:
+            final_contract = _object_or_none(response.get("final_response_contract")) or {}
+            integrity = _object_or_none(final_contract.get("final_visible_integrity")) or {}
         integrity_valid = integrity.get("valid") is True or checks.get("final_visible_integrity_valid") is True
         truth_ok = checks.get("runtime_truth_gate_ok")
         if truth_ok is None:
@@ -69,10 +75,12 @@ def run(
             continuation = gateway.issue_continuation(response)
         except GatewayError as exc:
             return _tool_error(f"continuation_issue_failed:{exc}", response=response)
-        bridge = presentation.get("chatgpt_host_bridge")
-        if not isinstance(bridge, dict):
-            bridge = response.get("chatgpt_host_bridge") if isinstance(response.get("chatgpt_host_bridge"), dict) else {}
-        host_policy = bridge.get("host_generation_policy") if isinstance(bridge.get("host_generation_policy"), dict) else {}
+        bridge = (
+            _object_or_none(presentation.get("chatgpt_host_bridge"))
+            or _object_or_none(response.get("chatgpt_host_bridge"))
+            or {}
+        )
+        host_policy = _object_or_none(bridge.get("host_generation_policy")) or {}
         return {
             "content": [{
                 "type": "text",
@@ -119,10 +127,11 @@ def run(
             "isError": False,
         }
 
+    diagnostic_bridge = _object_or_none(presentation.get("chatgpt_host_bridge")) or {}
     reason = str(
         presentation.get("reason")
         or presentation.get("diagnostic_reason")
-        or (presentation.get("chatgpt_host_bridge") or {}).get("diagnostic_reason")
+        or diagnostic_bridge.get("diagnostic_reason")
         or "runtime_host_diagnostic_required"
     )
     return _tool_error(reason, response=response)

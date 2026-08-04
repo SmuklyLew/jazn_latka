@@ -5,7 +5,10 @@ from pathlib import Path
 from latka_jazn.cli_commands import diagnostics
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
-from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
+from latka_jazn.memory.runtime_memory_install import (
+    initialize_transactional_memory_store,
+    resolve_memory_tier_database_path,
+)
 
 
 def test_transactional_memory_diagnostic_reports_missing_then_ready_without_writes(tmp_path: Path) -> None:
@@ -29,6 +32,19 @@ def test_transactional_memory_diagnostic_reports_missing_then_ready_without_writ
     assert database.stat().st_mtime_ns == before_mtime
     assert sorted(path.name for path in database.parent.iterdir()) == before_files
 
+
+
+def test_transactional_memory_startup_initializer_creates_valid_store(tmp_path: Path) -> None:
+    database = resolve_memory_tier_database_path(tmp_path)
+    assert database.exists() is False
+
+    initialized = initialize_transactional_memory_store(tmp_path)
+
+    assert initialized["ok"] is True
+    assert initialized["database_path"] == str(database)
+    assert initialized["validation"]["ok"] is True
+    assert database.is_file()
+    assert diagnostics._transactional_memory_status(JaznConfig(root=tmp_path))["ready"] is True
 
 def test_status_and_doctor_expose_separate_transactional_memory_subsystem(tmp_path: Path, monkeypatch) -> None:
     cfg = JaznConfig(root=tmp_path)

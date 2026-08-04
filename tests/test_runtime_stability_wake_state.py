@@ -320,8 +320,12 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
             runtime_root, daemon_host="127.0.0.1", daemon_port=port, marker_output=marker
         )
         wake = sidecar.wake_state_status(deep_verify=True).to_dict()
-        assert current_status["daemon"]["active_state"] in {"active_trusted", "active_degraded"}
+        assert current_status["daemon"]["active_state"] == "active_trusted"
+        assert current_status["transactional_memory"]["ready"] is True
+        assert current_status["fully_ready"] is True
+        assert current_status["operational_state"] == "active_ready"
         assert current_doctor["ok"] is True
+        assert current_doctor["readiness"]["transactional_memory_ready"] is True
         assert current_doctor["live_evidence"]["endpoint_reachable"] is True
         assert wake["status"] == "ready"
         assert wake["active_snapshot_count"] == 1

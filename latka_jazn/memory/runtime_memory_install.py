@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 import os
 
+from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.runtime_memory import RuntimeMemoryCoordinator
 from latka_jazn.version import schema_version
 
@@ -73,6 +74,33 @@ def resolve_memory_tier_database_path(
         resolved = (runtime_root / path).resolve()
     resolved.relative_to(runtime_root)
     return resolved
+
+
+
+
+def initialize_transactional_memory_store(root: str | Path, *, configured: str | Path | None = None) -> dict[str, Any]:
+    """Create and validate the canonical transactional L1/L2/L3 store.
+
+    Daemon readiness includes this store, so startup must not defer its creation
+    until the first conversational session. The helper is intentionally small
+    and returns a JSON-ready status for startup diagnostics.
+    """
+    database_path = resolve_memory_tier_database_path(root, configured=configured)
+    try:
+        with MemoryTierStore(database_path) as store:
+            validation = store.validate(full=False)
+    except (OSError, RuntimeError, ValueError) as exc:
+        return {
+            "ok": False,
+            "database_path": str(database_path),
+            "error": f"{type(exc).__name__}: {exc}",
+            "validation": {},
+        }
+    return {
+        "ok": validation.get("ok") is True,
+        "database_path": str(database_path),
+        "validation": validation,
+    }
 
 
 def _tier_database_path(engine: Any) -> Path:
