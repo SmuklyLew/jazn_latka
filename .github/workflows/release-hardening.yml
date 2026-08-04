@@ -143,13 +143,22 @@ jobs:
             requirements.txt
             pyproject.toml
 
+      - name: Set up Node.js for Pyright
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e . pytest
+          python -m pip install -e ".[memory-rebuild-ui]" pytest
+          npm install --global pyright@1.1.411
 
       - name: Compile all active Python
         run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+
+      - name: Static type audit
+        run: pyright latka_jazn main.py run.py
 
       - name: Full deterministic test suite
         run: >-
