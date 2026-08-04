@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 import hashlib
+import io
 import json
 import subprocess
 import zipfile
@@ -37,6 +38,57 @@ FORBIDDEN_SUFFIXES = {
     ".zip", ".log", ".tmp", ".temp", ".bak", ".pyc", ".before.py",
 }
 _VERSION_VARIABLES = ("PACKAGE_VERSION", "__version__", "VERSION", "DISTRIBUTION_VERSION")
+_GIT_PROBE_TIMEOUT_SECONDS = 15.0
+_GIT_BATCH_TIMEOUT_SECONDS = 60.0
+
+
+class _GitCommandTimeout(RuntimeError):
+    def __init__(self, args: tuple[str, ...], timeout_seconds: float) -> None:
+        self.args_tuple = args
+        self.timeout_seconds = timeout_seconds
+        super().__init__(
+            f"git command timed out after {timeout_seconds:.1f}s: git {' '.join(args)}"
+        )
+
+
+def _run_git(
+    root: Path,
+    *args: str,
+    text: bool = False,
+    encoding: str = "utf-8",
+    timeout_seconds: float = _GIT_PROBE_TIMEOUT_SECONDS,
+    input_bytes: bytes | None = None,
+) -> subprocess.CompletedProcess[Any]:
+    command = ["git", "-C", str(root), *args]
+    try:
+        if text:
+            return subprocess.run(
+                command,
+                capture_output=True,
+                stdin=subprocess.DEVNULL,
+                text=True,
+                encoding=encoding,
+                errors="replace",
+                check=False,
+                timeout=timeout_seconds,
+            )
+        if input_bytes is not None:
+            return subprocess.run(
+                command,
+                capture_output=True,
+                input=input_bytes,
+                check=False,
+                timeout=timeout_seconds,
+            )
+        return subprocess.run(
+            command,
+            capture_output=True,
+            stdin=subprocess.DEVNULL,
+            check=False,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise _GitCommandTimeout(tuple(args), timeout_seconds) from exc
 
 
 def sha256_file(path: Path) -> str:
@@ -54,113 +106,159 @@ def _git_checkout_head_for_verification(root: Path) -> tuple[str | None, str]:
     CRLF produced by Git on Windows, while the release manifest intentionally
     protects canonical Git blobs. Canonical verification is allowed only for
     the exact repository root, a clean index/worktree and ordinary tracked
-    files without ``assume-unchanged`` or ``skip-worktree`` flags.
+    files without ``assume-unchanged`` or ``skip-worktree`` flags. Every Git
+    probe has a finite timeout so startup cannot block indefinitely.
     """
 
-    top_level = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    if top_level.returncode != 0:
-        return None, "not_a_git_checkout"
     try:
-        repository_root = Path(top_level.stdout.strip()).resolve()
-    except (OSError, RuntimeError):
-        return None, "git_root_unresolvable"
-    if repository_root != root:
-        return None, "not_a_git_checkout"
+        top_level = _run_git(
+            root, "rev-parse", "--show-toplevel", text=True, encoding="utf-8"
+        )
+        if top_level.returncode != 0:
+            return None, "not_a_git_checkout"
+        try:
+            repository_root = Path(top_level.stdout.strip()).resolve()
+        except (OSError, RuntimeError):
+            return None, "git_root_unresolvable"
+        if repository_root != root:
+            return None, "not_a_git_checkout"
 
-    unstaged = subprocess.run(
-        ["git", "-C", str(root), "diff", "--quiet", "--ignore-submodules", "--"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
-    )
-    if unstaged.returncode not in {0, 1}:
-        return None, "git_diff_failed"
-    if unstaged.returncode == 1:
-        return None, "dirty"
+        unstaged = _run_git(root, "diff", "--quiet", "--ignore-submodules", "--")
+        if unstaged.returncode not in {0, 1}:
+            return None, "git_diff_failed"
+        if unstaged.returncode == 1:
+            return None, "dirty"
 
-    staged = subprocess.run(
-        ["git", "-C", str(root), "diff", "--cached", "--quiet", "--ignore-submodules", "--"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
-    )
-    if staged.returncode not in {0, 1}:
-        return None, "git_diff_failed"
-    if staged.returncode == 1:
-        return None, "dirty"
+        staged = _run_git(
+            root, "diff", "--cached", "--quiet", "--ignore-submodules", "--"
+        )
+        if staged.returncode not in {0, 1}:
+            return None, "git_diff_failed"
+        if staged.returncode == 1:
+            return None, "dirty"
 
-    untracked = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "--others", "--exclude-standard", "-z"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
-    )
-    if untracked.returncode != 0:
-        return None, "git_untracked_probe_failed"
-    if untracked.stdout:
-        return None, "dirty"
+        untracked = _run_git(root, "ls-files", "--others", "--exclude-standard", "-z")
+        if untracked.returncode != 0:
+            return None, "git_untracked_probe_failed"
+        if untracked.stdout:
+            return None, "dirty"
 
-    assume_flags = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "-v", "-z"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
-    )
-    if assume_flags.returncode != 0:
-        return None, "git_index_flags_unavailable"
-    for record in assume_flags.stdout.split(b"\0"):
-        tag = record[:1]
-        if tag and tag.isalpha() and tag.islower():
-            return None, "assume_unchanged_present"
+        assume_flags = _run_git(root, "ls-files", "-v", "-z")
+        if assume_flags.returncode != 0:
+            return None, "git_index_flags_unavailable"
+        for record in assume_flags.stdout.split(b"\0"):
+            tag = record[:1]
+            if tag and tag.isalpha() and tag.islower():
+                return None, "assume_unchanged_present"
 
-    stage_flags = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "-t", "-z"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
-    )
-    if stage_flags.returncode != 0:
-        return None, "git_index_flags_unavailable"
-    if any(record[:1] == b"S" for record in stage_flags.stdout.split(b"\0") if record):
-        return None, "skip_worktree_present"
+        stage_flags = _run_git(root, "ls-files", "-t", "-z")
+        if stage_flags.returncode != 0:
+            return None, "git_index_flags_unavailable"
+        if any(record[:1] == b"S" for record in stage_flags.stdout.split(b"\0") if record):
+            return None, "skip_worktree_present"
 
-    head = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "HEAD"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        text=True,
-        encoding="ascii",
-        errors="replace",
-        check=False,
-    )
-    value = head.stdout.strip().lower()
-    if (
-        head.returncode != 0
-        or len(value) != 40
-        or any(ch not in "0123456789abcdef" for ch in value)
-    ):
-        return None, "git_head_invalid"
-    return value, "clean"
+        head = _run_git(root, "rev-parse", "HEAD", text=True, encoding="ascii")
+        value = head.stdout.strip().lower()
+        if (
+            head.returncode != 0
+            or len(value) != 40
+            or any(ch not in "0123456789abcdef" for ch in value)
+        ):
+            return None, "git_head_invalid"
+        return value, "clean"
+    except _GitCommandTimeout:
+        return None, "git_timeout"
+    except OSError:
+        return None, "git_unavailable"
 
 
-def _git_blob_bytes(root: Path, head: str, relative: str) -> bytes | None:
-    completed = subprocess.run(
-        ["git", "-C", str(root), "cat-file", "blob", f"{head}:{relative}"],
-        capture_output=True,
-        stdin=subprocess.DEVNULL,
-        check=False,
+def _git_tree_blob_oids(root: Path, head: str) -> tuple[dict[str, str], set[str]]:
+    completed = _run_git(
+        root,
+        "ls-tree",
+        "-r",
+        "-z",
+        "--full-tree",
+        head,
+        timeout_seconds=_GIT_BATCH_TIMEOUT_SECONDS,
     )
     if completed.returncode != 0:
-        return None
-    return completed.stdout
+        stderr = completed.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"git ls-tree failed: {stderr}")
+
+    blob_oids: dict[str, str] = {}
+    tree_paths: set[str] = set()
+    for record in completed.stdout.split(b"\0"):
+        if not record:
+            continue
+        try:
+            metadata, raw_path = record.split(b"\t", 1)
+            _mode, object_type, object_id = metadata.split(b" ", 2)
+        except ValueError as exc:
+            raise RuntimeError("git ls-tree returned malformed output") from exc
+        relative = raw_path.decode("utf-8", errors="surrogateescape").replace("\\", "/")
+        tree_paths.add(relative)
+        if object_type == b"blob":
+            blob_oids[relative] = object_id.decode("ascii")
+    return blob_oids, tree_paths
+
+
+def _git_blob_bytes_batch(
+    root: Path,
+    head: str,
+    relatives: Iterable[str],
+) -> tuple[dict[str, bytes], set[str]]:
+    """Read canonical HEAD blobs with one long-lived ``git cat-file`` process.
+
+    The former implementation spawned one ``git cat-file blob`` process for
+    every manifest entry. On Windows that could take minutes or block startup
+    indefinitely. This implementation resolves paths once and streams all
+    unique object IDs through ``git cat-file --batch`` under a finite timeout.
+    """
+
+    blob_oids, tree_paths = _git_tree_blob_oids(root, head)
+    requested = list(dict.fromkeys(str(item) for item in relatives))
+    unique_oids = list(
+        dict.fromkeys(blob_oids[item] for item in requested if item in blob_oids)
+    )
+    if not unique_oids:
+        return {}, tree_paths
+
+    completed = _run_git(
+        root,
+        "cat-file",
+        "--batch",
+        input_bytes=("\n".join(unique_oids) + "\n").encode("ascii"),
+        timeout_seconds=_GIT_BATCH_TIMEOUT_SECONDS,
+    )
+    if completed.returncode != 0:
+        stderr = completed.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"git cat-file --batch failed: {stderr}")
+
+    stream = io.BytesIO(completed.stdout)
+    by_oid: dict[str, bytes] = {}
+    for expected_oid in unique_oids:
+        header = stream.readline()
+        parts = header.rstrip(b"\n").split(b" ")
+        if len(parts) != 3:
+            raise RuntimeError("git cat-file --batch returned malformed header")
+        actual_oid = parts[0].decode("ascii", errors="replace")
+        object_type = parts[1]
+        try:
+            size = int(parts[2])
+        except ValueError as exc:
+            raise RuntimeError("git cat-file --batch returned invalid size") from exc
+        if actual_oid != expected_oid or object_type != b"blob" or size < 0:
+            raise RuntimeError("git cat-file --batch returned an unexpected object")
+        raw = stream.read(size)
+        if len(raw) != size or stream.read(1) != b"\n":
+            raise RuntimeError("git cat-file --batch returned truncated content")
+        by_oid[expected_oid] = raw
+
+    return (
+        {relative: by_oid[oid] for relative, oid in blob_oids.items() if oid in by_oid},
+        tree_paths,
+    )
 
 
 def path_is_forbidden(relative: str) -> bool:
@@ -189,10 +287,10 @@ def path_is_forbidden(relative: str) -> bool:
 
 
 def _git_name_set(root: Path, *args: str) -> set[str]:
-    completed = subprocess.run(
-        ["git", "-C", str(root), *args],
-        capture_output=True, stdin=subprocess.DEVNULL, text=True, encoding="utf-8", errors="replace", check=False,
-    )
+    try:
+        completed = _run_git(root, *args, text=True, encoding="utf-8")
+    except _GitCommandTimeout as exc:
+        raise RuntimeError(str(exc)) from exc
     if completed.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)} failed: {completed.stderr.strip()}")
     return {line.strip().replace("\\", "/") for line in completed.stdout.splitlines() if line.strip()}
@@ -397,8 +495,6 @@ def _manifest_entries(payload: dict[str, Any]) -> list[dict[str, Any]] | None:
 
 def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     root = Path(root).resolve()
-    git_head, worktree_state = _git_checkout_head_for_verification(root)
-    verification_basis = "canonical_git_head_blobs" if git_head else "filesystem_bytes"
     path = root / MANIFEST_NAME
     errors: list[dict[str, Any]] = []
     if not path.is_file():
@@ -410,7 +506,11 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     entries = _manifest_entries(payload) if isinstance(payload, dict) else None
     if entries is None:
         return {"ok": False, "configuration_error": True, "errors": [{"code": "manifest_files_missing"}]}
+
+    git_head, worktree_state = _git_checkout_head_for_verification(root)
+    verification_basis = "canonical_git_head_blobs" if git_head else "filesystem_bytes"
     seen: set[str] = set()
+    prepared: list[tuple[dict[str, Any], str, Path]] = []
     for entry in entries:
         raw_relative = entry.get("path")
         relative = str(raw_relative) if raw_relative is not None else ""
@@ -427,8 +527,25 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         if not file_path.is_file():
             errors.append({"code": "file_missing", "path": canonical})
             continue
+        prepared.append((entry, canonical, file_path))
+
+    git_blobs: dict[str, bytes] = {}
+    git_tree_paths: set[str] | None = None
+    git_batch_failed = False
+    if git_head:
+        try:
+            git_blobs, git_tree_paths = _git_blob_bytes_batch(
+                root, git_head, [canonical for _entry, canonical, _file_path in prepared]
+            )
+        except (_GitCommandTimeout, OSError, RuntimeError) as exc:
+            errors.append({"code": "git_blob_batch_failed", "detail": str(exc)})
+            git_batch_failed = True
+
+    for entry, canonical, file_path in prepared:
         if git_head:
-            raw = _git_blob_bytes(root, git_head, canonical)
+            if git_batch_failed:
+                continue
+            raw = git_blobs.get(canonical)
             if raw is None:
                 errors.append({"code": "git_blob_missing", "path": canonical})
                 continue
@@ -469,11 +586,12 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
                 }
             )
         try:
-            candidate_paths = (
-                _git_name_set(root, "ls-tree", "-r", "--name-only", git_head)
-                if git_head
-                else set(_walk_paths(root))
-            )
+            if git_head:
+                candidate_paths = git_tree_paths or set()
+                if git_tree_paths is None and not git_batch_failed:
+                    candidate_paths = _git_name_set(root, "ls-tree", "-r", "--name-only", git_head)
+            else:
+                candidate_paths = set(_walk_paths(root))
         except (OSError, RuntimeError) as exc:
             errors.append({"code": "static_file_inventory_failed", "detail": str(exc)})
             candidate_paths = set()
@@ -487,9 +605,11 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
                 actual_static_paths.add(canonical)
         for unexpected in sorted(actual_static_paths - seen):
             errors.append({"code": "unexpected_static_file", "path": unexpected})
-    if git_head:
-        version_bytes = _git_blob_bytes(root, git_head, "latka_jazn/version.py")
+    if git_head and not git_batch_failed:
+        version_bytes = git_blobs.get("latka_jazn/version.py")
         runtime_version = _version_from_python_bytes(version_bytes) if version_bytes is not None else None
+    elif git_head:
+        runtime_version = None
     else:
         runtime_version = read_runtime_version_from_version_py(root)
     if not runtime_version or str(payload.get("runtime_version") or payload.get("version") or "") != runtime_version:
