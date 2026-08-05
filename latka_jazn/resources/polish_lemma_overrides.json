@@ -31,7 +31,7 @@
     "czestochowe": "częstochowa",
     "częstochowę": "częstochowa"
   },
-  "active_runtime_version": "v15.1.0.3.90",
+  "active_runtime_version": "v15.1.0.3.92",
   "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
   "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

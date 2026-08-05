@@ -95,7 +95,7 @@ def test_manifest_copy_rejects_destination_symlink_escape_before_copy(tmp_path: 
 def test_malicious_package_integrity_manifest_fails_closed(tmp_path: Path) -> None:
     (tmp_path / "latka_jazn").mkdir()
     (tmp_path / "latka_jazn" / "version.py").write_text(
-        'DISTRIBUTION_VERSION="15.1.0.3"\nPACKAGE_VERSION="v15.1.0.3.90"\nPACKAGE_RELEASE_NAME=""\n',
+        f'DISTRIBUTION_VERSION="15.1.0.3"\nPACKAGE_VERSION="{PACKAGE_VERSION}"\nPACKAGE_RELEASE_NAME=""\n',
         encoding="utf-8",
     )
     payload = {

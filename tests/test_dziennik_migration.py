@@ -10,6 +10,7 @@ from latka_jazn.memory.dziennik_migration import DziennikJsonScanner
 from latka_jazn.memory.legacy_fanout_migration import LegacyFanoutMigrationStore
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.memory_tiers import MemoryKind, MemoryTier
+from latka_jazn.version_contract import V90_MIGRATION_TARGET_VERSION
 
 NOW = datetime(2026, 7, 18, 10, 0, tzinfo=timezone.utc)
 
@@ -17,7 +18,7 @@ NOW = datetime(2026, 7, 18, 10, 0, tzinfo=timezone.utc)
 def _journal(path: Path) -> Path:
     payload = {
         "meta": {
-            "schema_version": "v15.1.0.3.90",
+            "schema_version": V90_MIGRATION_TARGET_VERSION,
             "opis": "kanoniczny dziennik testowy",
         },
         "entries": [

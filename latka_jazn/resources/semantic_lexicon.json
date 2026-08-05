@@ -506,7 +506,7 @@
       "Zachowaj aktualny temat i wymień konkretne moduły oraz testy."
     ]
   },
-  "active_runtime_version": "v15.1.0.3.90",
+  "active_runtime_version": "v15.1.0.3.92",
   "hotfix_note": "Bieżące wydanie używa semantycznych nazw tras i zasobów oraz utrzymuje TopicMismatchGuard, samoekspresję runtime i indeks projektu.",
   "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

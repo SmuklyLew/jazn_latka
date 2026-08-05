@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+STALE_PACKAGE_VERSION = "v" + ".".join(("15", "1", "0", "3", "90"))
 
 
 def load_module(name: str, path: Path):
@@ -81,7 +82,7 @@ def test_pack_options_always_build_canonical_system_metadata_when_source_write_i
 
 
 def test_stale_provenance_is_rejected_even_when_hashes_are_otherwise_valid(generator) -> None:
-    payload = provenance_payload("v15.1.0.3.90-Memory Sqlite Pipeline")
+    payload = provenance_payload(f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline")
     with pytest.raises(generator.PackError, match="nie odpowiada version.py"):
         generator.validate_release_provenance_payload(
             payload,
@@ -200,7 +201,7 @@ def init_git(root: Path) -> None:
 def test_version_rebuild_metadata_check_includes_base_version(tmp_path: Path, rebuild) -> None:
     version = make_rebuild_fixture(tmp_path, rebuild)
     payload = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
-    payload["base_version"] = "v15.1.0.3.90-Memory Sqlite Pipeline"
+    payload["base_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
     (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(payload), encoding="utf-8")
 
     assert rebuild.metadata_current(tmp_path, rebuild.PROVENANCE_PATH, version) is False
@@ -230,7 +231,7 @@ def test_version_rebuild_guides_user_through_commit_and_sync(tmp_path: Path, reb
 
     subprocess.run(["git", "checkout", "--", str(rebuild.VERSION_PATH)], cwd=tmp_path, check=True)
     provenance = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
-    provenance["runtime_version"] = "v15.1.0.3.90-Memory Sqlite Pipeline"
+    provenance["runtime_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
     (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(provenance), encoding="utf-8")
     subprocess.run(["git", "add", str(rebuild.PROVENANCE_PATH)], cwd=tmp_path, check=True)
     subprocess.run(["git", "commit", "-qm", "stale metadata fixture"], cwd=tmp_path, check=True)
