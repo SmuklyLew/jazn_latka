@@ -1,0 +1,35 @@
+name: Apply current-line v92 consistency patch
+
+on:
+  push:
+    branches:
+      - fix/living-memory-recall-pyright
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - name: Verify and apply patch
+        shell: bash
+        run: |
+          payload='docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/current_line_v92_consistency.patch.gz.b64'
+          patch_path='/tmp/fix_jazn_current_line_v92_consistency.patch'
+          base64 --decode "$payload" | gzip --decompress > "$patch_path"
+          echo 'ee9c3d4db42d7124f5ded03f51283eac8f48ed69e44354b8c29cba7212fb2629  '"$patch_path" | sha256sum --check --strict
+          git apply --check "$patch_path"
+          git apply "$patch_path"
+          cp "$patch_path" docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_current_line_v92_consistency.patch
+          git rm "$payload"
+          git rm .github/workflows/apply-current-line-v92-consistency.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m 'fix(release): complete current-line v92 consistency'
+          git push origin HEAD:fix/living-memory-recall-pyright
