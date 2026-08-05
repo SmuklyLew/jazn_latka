@@ -15,7 +15,8 @@ from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
-DEFAULT_CONTINUATION_TTL_SECONDS = 15 * 60
+DEFAULT_CONTINUATION_TTL_SECONDS = 60 * 60
+LONG_WORK_CONTINUATION_TTL_SECONDS = 4 * 60 * 60
 MIN_CONTINUATION_TTL_SECONDS = 30
 MAX_CONTINUATION_TTL_SECONDS = 24 * 60 * 60
 _TOKEN_PREFIX = "jct1"
@@ -109,6 +110,35 @@ def _normalize_ttl(ttl_seconds: int | float | None) -> int:
     except (TypeError, ValueError) as exc:
         raise HostRequestStoreError("continuation_ttl_invalid") from exc
     return max(MIN_CONTINUATION_TTL_SECONDS, min(requested, MAX_CONTINUATION_TTL_SECONDS))
+
+
+LONG_WORK_INTENTS = frozenset({
+    "external_research_request",
+    "system_update_execution_request",
+    "system_update_manifest_request",
+    "runtime_behavior_diagnostic_request",
+    "system_diagnostic_question",
+    "self_architecture_audit_request",
+    "memory_audit_request",
+})
+LONG_WORK_ROUTES = frozenset({
+    "external_research",
+    "system_update",
+    "runtime_diagnostic_repair",
+    "self_architecture_audit",
+    "memory_audit",
+})
+
+
+def continuation_ttl_for_bridge(bridge: Mapping[str, Any]) -> int:
+    """Return a bounded lease selected from immutable phase-1 work metadata."""
+    summary_value = bridge.get("runtime_summary")
+    summary: Mapping[str, Any] = summary_value if isinstance(summary_value, Mapping) else {}
+    intent = str(summary.get("detected_intent") or bridge.get("detected_intent") or "").strip()
+    route = str(summary.get("route") or bridge.get("route") or "").strip()
+    if intent in LONG_WORK_INTENTS or route in LONG_WORK_ROUTES:
+        return LONG_WORK_CONTINUATION_TTL_SECONDS
+    return DEFAULT_CONTINUATION_TTL_SECONDS
 
 
 def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
@@ -441,6 +471,7 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
         "counts": counts,
         "cleanup": cleanup,
         "continuation_ttl_default_seconds": DEFAULT_CONTINUATION_TTL_SECONDS,
+        "continuation_ttl_long_work_seconds": LONG_WORK_CONTINUATION_TTL_SECONDS,
         "replay_protection": True,
         "plaintext_tokens_persisted": False,
     }

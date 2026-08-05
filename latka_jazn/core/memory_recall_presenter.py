@@ -55,6 +55,43 @@ class MemoryRecallPresenter:
         terms = [str(x) for x in (memory_context.get("query_terms") or []) if str(x).strip()]
         items: list[MemoryRecallItem] = []
 
+        for hit in memory_context.get("living_memory_hits") or []:
+            if not isinstance(hit, dict):
+                continue
+            content = self._clean(hit.get("content_excerpt") or hit.get("content"))
+            if not content:
+                continue
+            confidence = self._float_or_none(hit.get("confidence"))
+            base_score, label, assessment = self._assess(content, terms, user_text, confidence=confidence)
+            gateway_score = self._float_or_none(hit.get("relevance"))
+            score = max(base_score, gateway_score or 0.0)
+            if score >= 0.62:
+                label = "wysoka"
+            elif score >= 0.43:
+                label = "średnia"
+            else:
+                label = "słaba"
+            layer = self._clean(hit.get("source_layer")) or "living_memory"
+            truth_status = self._clean(hit.get("truth_status")) or "source_recorded"
+            assessment = (
+                f"odczyt tylko do odczytu z warstwy {layer}; truth_status={truth_status}; "
+                "trafienie jest źródłem lub zapisem, nie automatycznym wspomnieniem L3"
+            )
+            source_parts = [self._clean(hit.get("source_database")), self._clean(hit.get("source_locator"))]
+            source = " / ".join(part for part in source_parts if part) or layer
+            items.append(MemoryRecallItem(
+                item_type=f"living_memory:{layer}",
+                query_term=self._first_matching_term(content, terms),
+                timestamp=self._clean(hit.get("timestamp")),
+                source=source,
+                confidence=confidence,
+                grounding=self._clean(hit.get("grounding")) or "read_only_living_memory_gateway",
+                relevance_score=score,
+                relevance_label=label,
+                meaning_assessment=assessment,
+                content_excerpt=self._excerpt(content, max_len=520),
+            ))
+
         for ep in memory_context.get("episodes") or []:
             if not isinstance(ep, dict):
                 continue
@@ -185,7 +222,17 @@ class MemoryRecallPresenter:
 
         # Kolejność: najpierw trafność znaczeniowa, potem epizody przed legacy,
         # przy zachowaniu stabilnej kolejności dla równych wyników.
-        type_bonus = {"episode": 0.04, "conversation_archive": 0.038, "source_file": 0.035, "legacy_message": 0.02, "raw_chat_fallback": 0.0}
+        type_bonus = {
+            "living_memory:memory_jazn": 0.08,
+            "living_memory:experience": 0.07,
+            "living_memory:journal": 0.06,
+            "living_memory:archive_chats": 0.05,
+            "episode": 0.04,
+            "conversation_archive": 0.038,
+            "source_file": 0.035,
+            "legacy_message": 0.02,
+            "raw_chat_fallback": 0.0,
+        }
         items.sort(key=lambda x: (x.relevance_score + type_bonus.get(x.item_type, 0.0)), reverse=True)
         return items[:limit]
 
@@ -196,6 +243,7 @@ class MemoryRecallPresenter:
             "schema_version": "memory_recall_content/v1",
             "query_terms": (memory_context or {}).get("query_terms") if isinstance(memory_context, dict) else [],
             "memory_search_plan": (memory_context or {}).get("memory_search_plan") if isinstance(memory_context, dict) else None,
+            "living_memory_search": (memory_context or {}).get("living_memory_search") if isinstance(memory_context, dict) else None,
             "counts": counts or {},
             "items": [i.to_dict() for i in items],
             "summary": self.summary(items, counts or {}),
@@ -209,9 +257,15 @@ class MemoryRecallPresenter:
         terms = payload.get("query_terms") or []
         counts_note = self._counts_text(counts)
         if not items:
+            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
+            living_status = str(living.get("status") or "unknown")
+            ready_sources = int(((living.get("counts") or {}).get("sources_recall_ready") or 0))
+            issues = [str(value) for value in (living.get("issues") or []) if str(value).strip()]
+            issue_note = f" Pierwszy błąd źródła: {issues[0]}." if issues else ""
             return (
                 f"Szukałam treściowych tropów pamięci po hasłach: {', '.join(map(str, terms)) or 'brak haseł'}. "
                 f"Nie znalazłam fragmentów, które mogłabym uczciwie przywołać jako treść wspomnienia. {counts_note} "
+                f"Stan pięciu baz: {living_status}; gotowe źródła: {ready_sources}.{issue_note} "
                 "W tej sytuacji nie wolno mi udawać przypomnienia tylko dlatego, że istnieje licznik albo indeks."
             ).strip()
 

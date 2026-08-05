@@ -56,6 +56,7 @@ from latka_jazn.memory.event_ledger import RuntimeEventLedger
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.memory.chat_html_importer import search_raw_chat_html_snippets
 from latka_jazn.memory.conversation_archive import ConversationArchiveStore
+from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.core.runtime_status import build_runtime_status
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
@@ -333,6 +334,7 @@ class JaznEngine:
         self.affective_granularity = AffectiveGranularityModel()
         self.cognitive_topics = CognitiveTopicExpansion(self.config.root)
         self.memory_search_planner = MemorySearchPlanner(self.config.root)
+        self.living_memory_gateway = LivingMemoryGateway(self.config.root)
         self.memory_use_gate = MemoryUseGate()
         self.neurological_signal_router = NeurologicalSignalRouter()
         self.topic_mismatch_guard = TopicMismatchGuard()
@@ -422,6 +424,7 @@ class JaznEngine:
                 "source_origin": "enabled",
                 "self_state_runtime": "enabled",
                 "memory_search_planner": "enabled",
+                "living_memory_gateway": "enabled_read_only_five_database_recall",
                 "free_dialogue_memory_nlp_bridge": "enabled",
                 "neurological_signal_router": "enabled",
                 "topic_mismatch_guard": "enabled",
@@ -1135,6 +1138,8 @@ class JaznEngine:
             "memory_search_plan": {
                 "schema_version": "memory_search_planner_skipped/v1",
                 "original_query": text,
+                "context_query": None,
+                "search_mode": "skipped_by_memory_gate",
                 "recall_requested": False,
                 "focus_terms": terms,
                 "rejected_terms": [],
@@ -1151,6 +1156,17 @@ class JaznEngine:
             "episodes": [],
             "legacy_messages": [],
             "source_file_hits": [],
+            "living_memory_hits": [],
+            "living_memory_search": {
+                "status": "skipped_by_memory_gate",
+                "search_mode": "skipped_by_memory_gate",
+                "counts": {"hits": 0, "sources_discovered": 0, "sources_recall_ready": 0},
+                "sources": [],
+                "issues": [],
+                "search_order": [],
+                "import_catalog_used_for_recall": False,
+                "truth_boundary": "Pięć baz żywej pamięci nie było odpytywanych, bo brama pamięci zablokowała recall dla tej intencji.",
+            },
             "conversation_archive_hits": [],
             "conversation_archive_search": {
                 "status": "skipped_by_memory_gate",
@@ -1162,6 +1178,7 @@ class JaznEngine:
                 "episodes": 0,
                 "legacy_messages": 0,
                 "source_file_hits": 0,
+                "living_memory_hits": 0,
                 "conversation_archive_hits": 0,
                 "raw_chat_fallback": 0,
             },
@@ -1231,8 +1248,16 @@ class JaznEngine:
         pytać warstwy pamięci.
         """
         legacy_candidates = self._keyword_candidates(text)
-        search_plan = self.memory_search_planner.plan(text, fallback_terms=legacy_candidates)
+        search_plan = self.memory_search_planner.plan(
+            text,
+            fallback_terms=legacy_candidates,
+            previous_query=self.last_user_text,
+        )
         phrases = search_plan.search_terms or legacy_candidates
+        living_memory_search = self.living_memory_gateway.search(search_plan, limit=limit)
+        living_memory_hits = [
+            dict(hit) for hit in (living_memory_search.get("hits") or []) if isinstance(hit, dict)
+        ][:limit]
         # poprzednia linia runtime: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
         # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
         # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
@@ -1299,7 +1324,7 @@ class JaznEngine:
         raw_path = self.config.root / "memory" / "raw" / "chat.html"
         # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
         # conversation_archive i pliki kanoniczne nie zwróciły treści.
-        if not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
+        if not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
             raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
 
         context = {
@@ -1308,6 +1333,18 @@ class JaznEngine:
             "episodes": episodes,
             "legacy_messages": legacy,
             "source_file_hits": source_file_hits[:limit],
+            "living_memory_hits": living_memory_hits,
+            "living_memory_search": {
+                "status": living_memory_search.get("status"),
+                "search_mode": living_memory_search.get("search_mode"),
+                "query": living_memory_search.get("query"),
+                "counts": living_memory_search.get("counts") or {},
+                "sources": living_memory_search.get("sources") or [],
+                "issues": living_memory_search.get("issues") or [],
+                "search_order": living_memory_search.get("search_order") or [],
+                "import_catalog_used_for_recall": living_memory_search.get("import_catalog_used_for_recall"),
+                "truth_boundary": living_memory_search.get("truth_boundary"),
+            },
             "conversation_archive_hits": conversation_archive_hits[:limit],
             "conversation_archive_search": {
                 "status": conversation_archive_search.get("status"),
@@ -1322,6 +1359,7 @@ class JaznEngine:
                 "episodes": len(episodes),
                 "legacy_messages": len(legacy),
                 "source_file_hits": len(source_file_hits[:limit]),
+                "living_memory_hits": len(living_memory_hits),
                 "conversation_archive_hits": len(conversation_archive_hits[:limit]),
                 "raw_chat_fallback": len(raw_fallback[:3]),
             },
@@ -2905,7 +2943,9 @@ class JaznEngine:
         stats = self.store.stats()
         terms = self._keyword_candidates(text)
         counts = (memory_context or {}).get("counts") or {}
-        found_any = any(int(counts.get(k) or 0) > 0 for k in ["episodes", "legacy_messages", "raw_chat_fallback"])
+        found_any = any(int(counts.get(k) or 0) > 0 for k in [
+            "living_memory_hits", "episodes", "legacy_messages", "conversation_archive_hits", "raw_chat_fallback"
+        ])
         return {
             "status": "context_available" if found_any else "no_specific_route_found",
             "query_terms": terms,

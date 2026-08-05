@@ -216,14 +216,25 @@ class SelfMemoryRecallHandler:
             body = self._render_items(items, counts)
             satisfied = ["memory_content", "source_or_index_status", "truth_boundary", "deduplicated_presentation", "no_raw_json_dump", "no_update_route_substitution"]
         else:
-            status_hint = ""
-            if counts:
-                status_hint = " Indeks/planer zwrócił diagnostykę, ale bez bezpiecznego fragmentu do widocznej odpowiedzi."
+            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
+            living_counts = json_object(living.get("counts"))
+            status = str(living.get("status") or "unknown")
+            mode = str(living.get("search_mode") or "semantic_query")
+            ready_sources = int(living_counts.get("sources_recall_ready") or 0)
+            issues = [str(value) for value in (living.get("issues") or []) if str(value).strip()]
+            if ready_sources == 0:
+                next_action = "podłączyć katalog zawierający pięć baz odbudowy albo utworzyć je w memory/sqlite aktywnego runtime"
+            elif issues:
+                next_action = "naprawić pierwszy zgłoszony błąd źródła i ponowić tę samą strategię wyszukiwania"
+            else:
+                next_action = "zachować wynik „brak potwierdzenia” albo zawęzić temat bez zmiany granicy prawdy"
+            issue_hint = f" Pierwszy błąd: {issues[0]}." if issues else ""
             body = (
-                "Szukałam w swojej pamięci tropów o mnie, ale w tej turze nie dostałam fragmentu, który mogłabym uczciwie przywołać jako własny ślad."
-                f"{status_hint} Nie wypełnię tej luki wpisem o aktualizacji ani ogólnym szablonem. Najbezpieczniejszy następny krok to poszerzyć zapytanie o: Łatka, tożsamość, własny głos, bohaterka, dziennik, kanon albo pokój Łatki."
+                "Szukałam w swojej pamięci tropów o mnie, ale w tej turze nie dostałam fragmentu, który mogłabym uczciwie przywołać jako własny ślad. "
+                f"Tryb wyszukiwania: {mode}; stan pięciu baz: {status}; gotowe źródła: {ready_sources}.{issue_hint} "
+                f"Nie wypełnię luki szablonem ani domysłem. Następne działanie: {next_action}."
             )
-            satisfied = ["source_or_index_status", "truth_boundary", "no_update_route_substitution"]
+            satisfied = ["source_or_index_status", "truth_boundary", "no_update_route_substitution", "actionable_recall_diagnostic"]
 
         return RouteHandlerResult(
             self.name,
@@ -235,6 +246,7 @@ class SelfMemoryRecallHandler:
                 "filtered_item_count": len(items),
                 "presentation_schema_version": SCHEMA_VERSION,
                 "diagnostic_counts": counts,
+                "living_memory_search": payload.get("living_memory_search"),
                 "deduplication_rule": "normalized text + SequenceMatcher + five-word shingle Jaccard",
                 "preserve_handler_body": True,
             },

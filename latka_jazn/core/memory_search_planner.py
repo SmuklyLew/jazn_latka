@@ -28,6 +28,8 @@ class MemorySearchTopic:
 class MemorySearchPlan:
     schema_version: str
     original_query: str
+    context_query: str | None
+    search_mode: str
     recall_requested: bool
     focus_terms: list[str]
     rejected_terms: list[str]
@@ -71,6 +73,21 @@ class MemorySearchPlanner:
     RESOURCE_NAME = "memory_search_topics.json"
     RESOURCE_SCHEMA_VERSION = "memory_search_topics/v1"
 
+    EARLIEST_MARKERS = {
+        "pierwsze wspomnienie", "najwcześniejsze wspomnienie", "najwczesniejsze wspomnienie",
+        "co pamiętasz jako pierwsze", "co pamietasz jako pierwsze", "od początku", "od poczatku",
+        "pierwszy wspólny ślad", "pierwszy wspolny slad",
+    }
+    LATEST_MARKERS = {
+        "ostatnie wspomnienie", "najnowsze wspomnienie", "co pamiętasz ostatnio",
+        "co pamietasz ostatnio", "ostatni wspólny ślad", "ostatni wspolny slad",
+    }
+    REFERENTIAL_MARKERS = {
+        "tego wspomnienia", "to wspomnienie", "do tego wspomnienia", "odnajdź je", "odnajdz je",
+        "poszukaj go", "poszukaj tego", "wróć do niego", "wroc do niego", "wróćmy do niego",
+        "wrocmy do niego", "znajdź je", "znajdz je",
+    }
+
     RECALL_MARKERS = {
         "pamiętasz", "pamietasz", "przypomnij", "przypomnieć", "przypomniec",
         "wspomnienie", "wspomnienia", "pamięci", "pamieci", "szukaj", "znajdź", "znajdz",
@@ -85,6 +102,7 @@ class MemorySearchPlanner:
         "moge", "możesz", "mozesz", "na", "nad", "nam", "nas", "nasz", "nasza", "nasze", "naszego",
         "naszych", "nie", "nich", "nią", "nia", "nim", "nim", "nim", "no", "o", "od", "oraz", "po",
         "pod", "powiedz", "proszę", "prosze", "przez", "przy", "sam", "sama", "same", "samo", "sobie",
+        "swoja", "swoją", "swoje", "swojej", "swoim", "swoich", "twoja", "twoją", "twoje", "twojej", "twoim", "twoich",
         "są", "sa", "tak", "takie", "tam", "te", "tego", "tej", "ten", "teraz", "to", "tobie", "trochę",
         "troche", "tu", "twoje", "u", "umiesz", "w", "we", "więc", "wiec", "więcej", "wiecej",
         "wszystko", "z", "za", "żeby", "zeby", "że", "ze", "źe",
@@ -98,11 +116,22 @@ class MemorySearchPlanner:
         self.resource_status: dict[str, Any] = {}
         self.topics = self._load_topics()
 
-    def plan(self, text: str, *, fallback_terms: list[str] | None = None) -> MemorySearchPlan:
+    def plan(
+        self,
+        text: str,
+        *,
+        fallback_terms: list[str] | None = None,
+        previous_query: str | None = None,
+    ) -> MemorySearchPlan:
         original = text or ""
         normalized_query = self._norm(original)
-        recall_requested = self._is_recall_request(normalized_query)
+        normalized_previous = self._norm(previous_query or "")
+        search_mode = self._search_mode(normalized_query, normalized_previous)
+        recall_requested = self._is_recall_request(normalized_query) or search_mode != "semantic_query"
+        context_query = previous_query if search_mode in {"referential_followup", "chronological_earliest", "chronological_latest"} and self._is_referential(normalized_query) else None
         raw_tokens = self._raw_tokens(original)
+        if context_query:
+            raw_tokens.extend(self._raw_tokens(context_query))
         rejected: list[str] = []
         focus: list[str] = []
 
@@ -125,8 +154,11 @@ class MemorySearchPlanner:
         expanded: list[str] = []
         source_hints: list[str] = []
         routing_notes: list[str] = [
-            "topic_resource=" + str(self.resource_status.get("status") or "unknown")
+            "topic_resource=" + str(self.resource_status.get("status") or "unknown"),
+            f"search_mode={search_mode}",
         ]
+        if context_query:
+            routing_notes.append("referential_context=previous_user_query")
         for key, score in topic_scores:
             if score <= 0:
                 continue
@@ -161,6 +193,21 @@ class MemorySearchPlanner:
 
         passes = [
             {
+                "name": "chronological_recall",
+                "terms": [],
+                "weight": 1.0,
+                "layers": ["living_memory"],
+                "enabled": search_mode in {"chronological_earliest", "chronological_latest"},
+                "purpose": "odczytać pierwszy albo ostatni potwierdzony ślad bez wymuszania przypadkowych tokenów",
+            },
+            {
+                "name": "living_memory_recall",
+                "terms": search_terms[:18],
+                "weight": 1.0,
+                "layers": ["memory_jazn", "experience", "journal", "archive_chats"],
+                "purpose": "najpierw przeszukać kanoniczne pięć baz odbudowy w trybie tylko do odczytu",
+            },
+            {
                 "name": "exact_focus_terms",
                 "terms": focus[:10],
                 "weight": 1.0,
@@ -194,6 +241,8 @@ class MemorySearchPlanner:
         return MemorySearchPlan(
             schema_version=self.SCHEMA_VERSION,
             original_query=original,
+            context_query=context_query,
+            search_mode=search_mode,
             recall_requested=recall_requested,
             focus_terms=focus[:12],
             rejected_terms=self._dedupe_preserve(rejected)[:20],
@@ -409,6 +458,34 @@ class MemorySearchPlanner:
 
     def _is_recall_request(self, normalized_query: str) -> bool:
         return any(marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS})
+
+    def _is_referential(self, normalized_query: str) -> bool:
+        return any(self._norm(marker) in normalized_query for marker in self.REFERENTIAL_MARKERS)
+
+    def _search_mode(self, normalized_query: str, normalized_previous: str) -> str:
+        def earliest(value: str) -> bool:
+            return (
+                any(self._norm(marker) in value for marker in self.EARLIEST_MARKERS)
+                or ("wspomn" in value and any(token in value for token in ("pierwsz", "najwczesniejs", "poczatek")))
+            )
+
+        def latest(value: str) -> bool:
+            return (
+                any(self._norm(marker) in value for marker in self.LATEST_MARKERS)
+                or ("wspomn" in value and any(token in value for token in ("ostatn", "najnowsz")))
+            )
+
+        if earliest(normalized_query):
+            return "chronological_earliest"
+        if latest(normalized_query):
+            return "chronological_latest"
+        if self._is_referential(normalized_query):
+            if earliest(normalized_previous):
+                return "chronological_earliest"
+            if latest(normalized_previous):
+                return "chronological_latest"
+            return "referential_followup"
+        return "semantic_query"
 
     def _raw_tokens(self, text: str) -> list[str]:
         quoted = re.findall(r"[„\"']([^„\"']{3,120})[”\"']", text or "")

@@ -21,6 +21,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     calculate_host_request_contract_hash,
     claim_pending_host_request,
     consume_claimed_host_request,
+    continuation_ttl_for_bridge,
     mark_claimed_host_request_indeterminate,
     persist_pending_host_request,
     release_claimed_host_request,
@@ -1170,9 +1171,12 @@ def run_jsonl_chat_bridge(
                 )
                 if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
                     try:
-                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"])
+                        ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
+                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
                         result["chatgpt_host_bridge"]["pending_request_persisted"] = True
                         result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+                        result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
+                        result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
                     except HostRequestStoreError as exc:
                         result["chatgpt_host_bridge"].update({
                             "phase": "host_diagnostic_required",

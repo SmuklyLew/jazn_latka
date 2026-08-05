@@ -50,6 +50,7 @@ class SourceOriginAnalyzer:
             "episodic_memories": int(((memory_context.get("counts") or {}).get("episodes") or 0)),
             "legacy_messages": int(((memory_context.get("counts") or {}).get("legacy_messages") or 0)),
             "raw_chat_fallback": int(((memory_context.get("counts") or {}).get("raw_chat_fallback") or 0)),
+            "living_memory_hits": int(((memory_context.get("counts") or {}).get("living_memory_hits") or 0)),
             "selected_lemmas": len(nlp_report.get("selected_lemmas") or []),
             "low_confidence_terms": len(nlp_report.get("unknown_or_low_confidence_terms") or []),
         }
@@ -76,7 +77,7 @@ class SourceOriginAnalyzer:
             sources.append("web_sources")
         if inference_used:
             sources.append("inference")
-        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["raw_chat_fallback"]:
+        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["raw_chat_fallback"] or evidence["living_memory_hits"]:
             sources.append("memory")
         if nlp_report:
             sources.append("polish_nlp")
@@ -87,7 +88,7 @@ class SourceOriginAnalyzer:
 
         contributing = self._unique(sources)
         confidence = 0.72
-        if evidence["episodic_memories"] or evidence["legacy_messages"]:
+        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["living_memory_hits"]:
             confidence += 0.10
         if web_sources_used:
             confidence += 0.10
