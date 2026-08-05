@@ -20,7 +20,7 @@ A third defect was an overly broad standalone `dziala` health-check phrase. Ordi
 - Added turn-logic audit failures for affective questions collapsed to ordinary dialogue and for research markers taking over the primary conversational goal.
 - Added an explicit host voice-continuity policy.
 - Added a fail-closed finalization rule rejecting plain or Markdown-formatted `Host ChatGPT:` as the body prefix of active-runtime host-assisted speech.
-- Synchronized 21 stale active-line references from v15.1.0.3.92 to v15.1.0.3.95; historical archives remain untouched.
+- Synchronized 21 stale references from the previous active line to the current v15.1.0.3.95 line; historical archives remain untouched.
 - Added a lexicon-wide regression that checks every deterministic route phrase against the classifier.
 
 ## Neurological design rationale
