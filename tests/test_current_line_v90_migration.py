@@ -13,6 +13,7 @@ from latka_jazn.version import PACKAGE_VERSION
 from latka_jazn.version_contract import (
     LEGACY_CURRENT_LINE_VERSION,
     LEGACY_MEMORY_SOURCE_VERSION,
+    V90_MIGRATION_TARGET_VERSION,
     component_schema_aliases,
     component_schema_version,
     mentions_current_jazn_version,
@@ -55,7 +56,7 @@ def test_v90_archive_manifest_preserves_exact_bytes() -> None:
         pytest.skip("developer archive is not included in the clean release tree")
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert payload["schema_version"] == "current_line_archive/v1"
-    assert payload["target_package_version"] == PACKAGE_VERSION
+    assert payload["target_package_version"] == V90_MIGRATION_TARGET_VERSION
     for entry in payload["files"]:
         if entry["retention"] != "exact_copy":
             continue

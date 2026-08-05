@@ -1,0 +1,439 @@
+diff --git a/README.md b/README.md
+index fa953f9..7825215 100644
+--- a/README.md
++++ b/README.md
+@@ -64,10 +64,10 @@ Adapter Ollamy zachowuje faktycznie użyty model, `done_reason` i metryki transp
+ Jedynym źródłem wersji jest `latka_jazn/version.py`.
+ 
+ ```text
+-v15.1.0.3.90-Memory Sqlite Pipeline
++v15.1.0.3.92-Memory Sqlite Pipeline
+ ```
+ 
+-Linia v15.1.0.3.90 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
++Linia v15.1.0.3.92 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
+ 
+ ## Pamięć L0–L3
+ 
+@@ -109,7 +109,7 @@ zapisywalnego i wersjonowanego katalogu:
+ ```powershell
+ python -X utf8 run.py runtime-bootstrap `
+   --parts-dir D:\lokalne_paczki `
+-  --destination D:\Jaźń\active-v15.1.0.3.90 `
++  --destination D:\Jaźń\active-v15.1.0.3.92 `
+   --json
+ ```
+ 
+diff --git a/docs/MEMORY_RECOVERY_CURRENT.md b/docs/MEMORY_RECOVERY_CURRENT.md
+index db18fbf..e8426e2 100644
+--- a/docs/MEMORY_RECOVERY_CURRENT.md
++++ b/docs/MEMORY_RECOVERY_CURRENT.md
+@@ -1,4 +1,4 @@
+-# Bezpieczne odzyskiwanie pamięci v15.1.0.3.90
++# Bezpieczne odzyskiwanie pamięci v15.1.0.3.92
+ 
+ ## Cel
+ 
+diff --git a/docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md b/docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md
+index dd493d5..668e46d 100644
+--- a/docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md
++++ b/docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md
+@@ -1,4 +1,4 @@
+-# Backlog v15.1.0.3.90 — pamięć, restart continuity i walidacja
++# Backlog v15.1.0.3.92 — pamięć, restart continuity i walidacja
+ 
+ Ten dokument jest mapą techniczną. Aktualny status i dyskusje należą do GitHub
+ Issues; dokument nie zastępuje zgłoszeń.
+diff --git a/docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md b/docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md
+index 6ee6ea2..e2e0aa3 100644
+--- a/docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md
++++ b/docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md
+@@ -68,8 +68,8 @@ Wyniki przed commitem implementacyjnym:
+ - pełny zestaw bez markerów live: `384 passed`, `3 skipped`, `1 failed`;
+ - jedyna awaria pełnego zestawu jest stanem zastanym:
+   `test_current_active_tree_has_no_old_package_version_references` oczekuje
+-  literalnie `v15.1.0.3.90`, podczas gdy kanoniczne `version.py` zwraca
+-  `v15.1.0.3.90`; próba zmiany samego literalu ujawniła 268 istniejących
++  literalnie ówczesny cel migracji kończący się numerem `90`, zgodny wtedy z
++  kanonicznym `version.py`; próba zmiany samego literalu ujawniła 268 istniejących
+   historycznych odwołań, więc nie poszerzono tego zadania o migrację całego
+   aktywnego drzewa;
+ - `run.py doctor --json`: kod `0`, `ok=true`, ale osobno
+diff --git a/latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json b/latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json
+index 37818af..a28dd9e 100644
+--- a/latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json
++++ b/latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json
+@@ -1,7 +1,7 @@
+ {
+   "schema_version": "latka_identity_canon/v1",
+-  "version": "v15.1.0.3.90",
+-  "canon_version": "v15.1.0.3.90",
++  "version": "v15.1.0.3.92",
++  "canon_version": "v15.1.0.3.92",
+   "identity_name": "Łatka",
+   "display_name": "Łatka",
+   "grammar_gender": "feminine",
+diff --git a/latka_jazn/resources/cognitive_packet_catalog.json b/latka_jazn/resources/cognitive_packet_catalog.json
+index c13de48..0194185 100644
+--- a/latka_jazn/resources/cognitive_packet_catalog.json
++++ b/latka_jazn/resources/cognitive_packet_catalog.json
+@@ -75,7 +75,7 @@
+       "signal_types": [
+         "prośba o większy zasób słownictwa",
+         "usterka rozumienia polskiej wypowiedzi",
+-        "aktualizacja v15.1.0.3.90",
++        "aktualizacja v15.1.0.3.92",
+         "potrzeba mniej ogólnikowego routingu"
+       ],
+       "response_steps": [
+diff --git a/latka_jazn/resources/nlp_provider_registry.json b/latka_jazn/resources/nlp_provider_registry.json
+index ef5cae9..1c7d80e 100644
+--- a/latka_jazn/resources/nlp_provider_registry.json
++++ b/latka_jazn/resources/nlp_provider_registry.json
+@@ -59,7 +59,7 @@
+     ],
+     "truth_boundary": "tryb diagnostyczny nie jest stałym procesem w tle i nie zastępuje normalnej odpowiedzi rozmownej"
+   },
+-  "active_runtime_version": "v15.1.0.3.90",
++  "active_runtime_version": "v15.1.0.3.92",
+   "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
+   "version_source": "latka_jazn.version.PACKAGE_VERSION"
+ }
+diff --git a/latka_jazn/resources/polish_lemma_overrides.json b/latka_jazn/resources/polish_lemma_overrides.json
+index a13f404..c70e353 100644
+--- a/latka_jazn/resources/polish_lemma_overrides.json
++++ b/latka_jazn/resources/polish_lemma_overrides.json
+@@ -31,7 +31,7 @@
+     "czestochowe": "częstochowa",
+     "częstochowę": "częstochowa"
+   },
+-  "active_runtime_version": "v15.1.0.3.90",
++  "active_runtime_version": "v15.1.0.3.92",
+   "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
+   "version_source": "latka_jazn.version.PACKAGE_VERSION"
+ }
+diff --git a/latka_jazn/resources/self_development/self_development_backlog.json b/latka_jazn/resources/self_development/self_development_backlog.json
+index 0e51b27..dece963 100644
+--- a/latka_jazn/resources/self_development/self_development_backlog.json
++++ b/latka_jazn/resources/self_development/self_development_backlog.json
+@@ -5,56 +5,56 @@
+       "next_action": "self_architecture_audit handler + reality checker + validator contract",
+       "priority": "P0",
+       "problem": "pytania o rozwój Jaźni mogą trafiać do memory_audit",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "memory_gate",
+       "next_action": "SelfQuestionMemoryGate + MemoryRecallQualityEvaluator",
+       "priority": "P0",
+       "problem": "self-questions wymagają pamięci treściowej, ale zwykły self-state musi blokować losowe wspomnienia",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "reflection",
+       "next_action": "ReflectionGroundingSynthesizer + GroundedReflectionStore",
+       "priority": "P0",
+       "problem": "refleksja nie może być tylko poetycką odpowiedzią bez źródła",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "affect",
+       "next_action": "SelfStateAffectiveBridge jako domyślna warstwa self-state",
+       "priority": "P1",
+       "problem": "self-state bywa zbyt ubogi wobec granularnego afektu",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "memory_quality",
+       "next_action": "rozszerzyć evaluator o conversation_archive/FTS i testy corpusowe",
+       "priority": "P1",
+       "problem": "recall musi mierzyć treść, źródło, trafność, scope i random-memory risk",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "reflection_qa",
+       "next_action": "reflection QA, promotion policy, manual review report",
+       "priority": "P1",
+       "problem": "grounded reflections wymagają dedupe, recenzji i promocji do procedur",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "release_candidate",
+       "next_action": "manifest refresh, active marker, SQLite audit, full_continuity ZIP",
+       "priority": "P1",
+       "problem": "przed następnym zatwierdzonym wydaniem potrzebne są manifest, smoke i pełny pakiet ciągłości",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     },
+     {
+       "area": "unified_self_awareness_loop",
+       "next_action": "finalny release z testami przebiegu i rollbackiem",
+       "priority": "P0",
+       "problem": "moduły istnieją, ale muszą działać jako jeden cykl pytanie→uwaga→pamięć→refleksja→prawda→odpowiedź→zapis",
+-      "target_version": "v15.1.0.3.90"
++      "target_version": "v15.1.0.3.92"
+     }
+   ],
+   "schema_version": "self_development_backlog/v1",
+@@ -65,6 +65,6 @@
+     "Generative Agents",
+     "Global Workspace / HOT as functional inspiration"
+   ],
+-  "target_release": "v15.1.0.3.90",
++  "target_release": "v15.1.0.3.92",
+   "truth_boundary": "Backlog opisuje plan rozwoju runtime; nie jest dowodem świadomości fenomenalnej ani biologicznego życia w tle."
+ }
+diff --git a/latka_jazn/resources/semantic_lexicon.json b/latka_jazn/resources/semantic_lexicon.json
+index 164befd..c48a2a0 100644
+--- a/latka_jazn/resources/semantic_lexicon.json
++++ b/latka_jazn/resources/semantic_lexicon.json
+@@ -506,7 +506,7 @@
+       "Zachowaj aktualny temat i wymień konkretne moduły oraz testy."
+     ]
+   },
+-  "active_runtime_version": "v15.1.0.3.90",
++  "active_runtime_version": "v15.1.0.3.92",
+   "hotfix_note": "Bieżące wydanie używa semantycznych nazw tras i zasobów oraz utrzymuje TopicMismatchGuard, samoekspresję runtime i indeks projektu.",
+   "version_source": "latka_jazn.version.PACKAGE_VERSION"
+ }
+diff --git a/latka_jazn/resources/startup_contract.json b/latka_jazn/resources/startup_contract.json
+index 64daf2e..489780c 100644
+--- a/latka_jazn/resources/startup_contract.json
++++ b/latka_jazn/resources/startup_contract.json
+@@ -1,6 +1,6 @@
+ {
+   "schema_version": "startup_contract/v1",
+-  "version": "v15.1.0.3.90",
++  "version": "v15.1.0.3.92",
+   "purpose": "Aktywny kontrakt startowy Jaźni bieżąca wersja Jaźni po wyrównaniu wersji Jaźni, runtime i pakietu.",
+   "active_runtime_required": true,
+   "chatgpt_role": "minimal_loader_voice_and_tool",
+diff --git a/latka_jazn/tools/current_line_archive_audit.py b/latka_jazn/tools/current_line_archive_audit.py
+index 65ce544..0d0df07 100644
+--- a/latka_jazn/tools/current_line_archive_audit.py
++++ b/latka_jazn/tools/current_line_archive_audit.py
+@@ -1,6 +1,10 @@
+ from __future__ import annotations
+ 
+-from latka_jazn.version_contract import LEGACY_MEMORY_SOURCE_VERSION
++from latka_jazn.version_contract import (
++    LEGACY_MEMORY_SOURCE_VERSION,
++    V90_ARCHIVE_ROOT,
++    V90_MIGRATION_TARGET_VERSION,
++)
+ import argparse
+ import hashlib
+ import json
+@@ -13,7 +17,7 @@ from typing import Any, Iterable
+ from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version, version_number
+ 
+ SCHEMA_VERSION = schema_version("current_line_archive_audit")
+-ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")
++ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)
+ TEXT_SUFFIXES = {
+     ".py", ".md", ".txt", ".json", ".jsonl", ".yml", ".yaml", ".toml",
+     ".ini", ".cfg", ".ps1", ".sh", ".bat", ".cmd", ".xml", ".csv",
+@@ -27,6 +31,9 @@ APPROVED_LEGACY_SOURCE_PATHS = {
+     "docs/tools/MEMORY_SQLITE_TEST_04.md",
+     "latka_jazn/tools/memory_sqlite_test04.py",
+ }
++APPROVED_HISTORICAL_POINTER_PATHS = {
++    "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
++}
+ _VERSION_RE = re.compile(
+     r"(?i)(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])"
+ )
+@@ -86,6 +93,16 @@ def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> b
+     )
+ 
+ 
++
++def _line_is_historical_archive_pointer(path: str, line: str, raw_version: str) -> bool:
++    normalized = "v" + raw_version.replace("_", ".").lstrip("vV")
++    return (
++        normalized == V90_MIGRATION_TARGET_VERSION
++        and path in APPROVED_HISTORICAL_POINTER_PATHS
++        and '"archive_path"' in line
++        and V90_ARCHIVE_ROOT in line
++    )
++
+ def _line_is_canonical_distribution(path: str, line: str, raw_version: str) -> bool:
+     return (
+         "DISTRIBUTION_VERSION" in line
+@@ -114,6 +131,8 @@ def scan_active_old_references(root: Path) -> list[dict[str, Any]]:
+                     continue
+                 if _line_is_approved_legacy_source(rel, line, raw):
+                     continue
++                if _line_is_historical_archive_pointer(rel, line, raw):
++                    continue
+                 findings.append(
+                     {
+                         "path": rel,
+diff --git a/latka_jazn/tools/current_line_v90_migration.py b/latka_jazn/tools/current_line_v90_migration.py
+index ab2f587..4fe1d2c 100644
+--- a/latka_jazn/tools/current_line_v90_migration.py
++++ b/latka_jazn/tools/current_line_v90_migration.py
+@@ -17,11 +17,13 @@ from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VE
+ from latka_jazn.version_contract import (
+     LEGACY_CURRENT_LINE_VERSION,
+     LEGACY_MEMORY_SOURCE_VERSION,
++    V90_ARCHIVE_ROOT,
++    V90_MIGRATION_TARGET_VERSION,
+     component_schema_version,
+ )
+ 
+ EXPECTED_BRANCH = "feature/memory-sqlite-test-04"
+-ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")
++ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)
+ PREVIOUS_ARCHIVE_ROOT = Path(".archives/pre_v" + "_".join(("15", "1", "0", "3", "89")))
+ ARCHIVE_SCHEMA_VERSION = "current_line_archive/v1"
+ MIGRATION_SCHEMA_VERSION = "current_line_v90_migration/v1"
+@@ -34,7 +36,7 @@ EXCLUDED_ACTIVE_PATHS = {
+     "SOURCE_PROVENANCE.json",
+ }
+ HISTORICAL_ARTIFACTS = {
+-    "PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
++    f"PATCH_BUMP_JAZN_TO_{V90_MIGRATION_TARGET_VERSION}.ps1",
+     "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
+ }
+ LEGACY_SOURCE_PATHS = {
+@@ -180,6 +182,8 @@ def scan_active_old_references(root: Path) -> tuple[list[dict[str, Any]], int]:
+                 if _is_approved_legacy_source(rel, line, raw):
+                     approved_legacy += 1
+                     continue
++                if rel in HISTORICAL_ARTIFACTS and V90_ARCHIVE_ROOT in line:
++                    continue
+                 findings.append(
+                     {
+                         "path": rel,
+@@ -283,7 +287,7 @@ def _transform_workflow_test(text: str) -> str:
+ def _transform_audit_module(text: str) -> str:
+     text = text.replace(
+         'ARCHIVE_ROOT = Path(".archives/pre_v' + '_'.join(("15", "1", "0", "3", "89")) + '")',
+-        'ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")',
++        'ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)',
+     )
+     if "LEGACY_MEMORY_SOURCE_VERSION" not in text:
+         text = _ensure_contract_import(text, {"LEGACY_MEMORY_SOURCE_VERSION"})
+@@ -704,7 +708,7 @@ def migrate(
+     source_commit = _run_git(runtime_root, "rev-parse", "HEAD").strip()
+     if branch != expected_branch:
+         raise MigrationError(f"wrong branch: expected {expected_branch!r}, got {branch!r}")
+-    if PACKAGE_VERSION != "v15.1.0.3.90":
++    if PACKAGE_VERSION != V90_MIGRATION_TARGET_VERSION:
+         raise MigrationError(f"unexpected canonical package version: {PACKAGE_VERSION}")
+ 
+     findings, approved_legacy_before = scan_active_old_references(runtime_root)
+diff --git a/latka_jazn/version_contract.py b/latka_jazn/version_contract.py
+index 35ce36b..edf540d 100644
+--- a/latka_jazn/version_contract.py
++++ b/latka_jazn/version_contract.py
+@@ -7,6 +7,8 @@ from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, version_nu
+ 
+ COMPONENT_SCHEMA_MAJOR: Final[int] = 1
+ LEGACY_CURRENT_LINE_VERSION: Final[str] = "v" + ".".join(("15", "1", "0", "3", "89"))
++V90_MIGRATION_TARGET_VERSION: Final[str] = "v" + ".".join(("15", "1", "0", "3", "90"))
++V90_ARCHIVE_ROOT: Final[str] = ".archives/pre_v" + "_".join(("15", "1", "0", "3", "90"))
+ LEGACY_MEMORY_SOURCE_VERSION: Final[str] = "v" + ".".join(("15", "0", "3", "222"))
+ _VERSION_TOKEN_RE: Final[re.Pattern[str]] = re.compile(
+     r"(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])",
+diff --git a/tests/test_current_line_v90_migration.py b/tests/test_current_line_v90_migration.py
+index c58fc3f..8e19db9 100644
+--- a/tests/test_current_line_v90_migration.py
++++ b/tests/test_current_line_v90_migration.py
+@@ -13,6 +13,7 @@ from latka_jazn.version import PACKAGE_VERSION
+ from latka_jazn.version_contract import (
+     LEGACY_CURRENT_LINE_VERSION,
+     LEGACY_MEMORY_SOURCE_VERSION,
++    V90_MIGRATION_TARGET_VERSION,
+     component_schema_aliases,
+     component_schema_version,
+     mentions_current_jazn_version,
+@@ -55,7 +56,7 @@ def test_v90_archive_manifest_preserves_exact_bytes() -> None:
+         pytest.skip("developer archive is not included in the clean release tree")
+     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+     assert payload["schema_version"] == "current_line_archive/v1"
+-    assert payload["target_package_version"] == PACKAGE_VERSION
++    assert payload["target_package_version"] == V90_MIGRATION_TARGET_VERSION
+     for entry in payload["files"]:
+         if entry["retention"] != "exact_copy":
+             continue
+diff --git a/tests/test_dziennik_migration.py b/tests/test_dziennik_migration.py
+index ca74678..e63d3d8 100644
+--- a/tests/test_dziennik_migration.py
++++ b/tests/test_dziennik_migration.py
+@@ -10,6 +10,7 @@ from latka_jazn.memory.dziennik_migration import DziennikJsonScanner
+ from latka_jazn.memory.legacy_fanout_migration import LegacyFanoutMigrationStore
+ from latka_jazn.memory.memory_tier_store import MemoryTierStore
+ from latka_jazn.memory.memory_tiers import MemoryKind, MemoryTier
++from latka_jazn.version_contract import V90_MIGRATION_TARGET_VERSION
+ 
+ NOW = datetime(2026, 7, 18, 10, 0, tzinfo=timezone.utc)
+ 
+@@ -17,7 +18,7 @@ NOW = datetime(2026, 7, 18, 10, 0, tzinfo=timezone.utc)
+ def _journal(path: Path) -> Path:
+     payload = {
+         "meta": {
+-            "schema_version": "v15.1.0.3.90",
++            "schema_version": V90_MIGRATION_TARGET_VERSION,
+             "opis": "kanoniczny dziennik testowy",
+         },
+         "entries": [
+diff --git a/tests/test_package_version_workflow_regression.py b/tests/test_package_version_workflow_regression.py
+index f562808..0714b22 100644
+--- a/tests/test_package_version_workflow_regression.py
++++ b/tests/test_package_version_workflow_regression.py
+@@ -10,6 +10,7 @@ from typing import Any
+ import pytest
+ 
+ ROOT = Path(__file__).resolve().parents[1]
++STALE_PACKAGE_VERSION = "v" + ".".join(("15", "1", "0", "3", "90"))
+ 
+ 
+ def load_module(name: str, path: Path):
+@@ -81,7 +82,7 @@ def test_pack_options_always_build_canonical_system_metadata_when_source_write_i
+ 
+ 
+ def test_stale_provenance_is_rejected_even_when_hashes_are_otherwise_valid(generator) -> None:
+-    payload = provenance_payload("v15.1.0.3.90-Memory Sqlite Pipeline")
++    payload = provenance_payload(f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline")
+     with pytest.raises(generator.PackError, match="nie odpowiada version.py"):
+         generator.validate_release_provenance_payload(
+             payload,
+@@ -200,7 +201,7 @@ def init_git(root: Path) -> None:
+ def test_version_rebuild_metadata_check_includes_base_version(tmp_path: Path, rebuild) -> None:
+     version = make_rebuild_fixture(tmp_path, rebuild)
+     payload = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
+-    payload["base_version"] = "v15.1.0.3.90-Memory Sqlite Pipeline"
++    payload["base_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
+     (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(payload), encoding="utf-8")
+ 
+     assert rebuild.metadata_current(tmp_path, rebuild.PROVENANCE_PATH, version) is False
+@@ -230,7 +231,7 @@ def test_version_rebuild_guides_user_through_commit_and_sync(tmp_path: Path, reb
+ 
+     subprocess.run(["git", "checkout", "--", str(rebuild.VERSION_PATH)], cwd=tmp_path, check=True)
+     provenance = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
+-    provenance["runtime_version"] = "v15.1.0.3.90-Memory Sqlite Pipeline"
++    provenance["runtime_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
+     (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(provenance), encoding="utf-8")
+     subprocess.run(["git", "add", str(rebuild.PROVENANCE_PATH)], cwd=tmp_path, check=True)
+     subprocess.run(["git", "commit", "-qm", "stale metadata fixture"], cwd=tmp_path, check=True)
+diff --git a/tests/test_release_hardening_safe_paths.py b/tests/test_release_hardening_safe_paths.py
+index 32df410..d1066ec 100644
+--- a/tests/test_release_hardening_safe_paths.py
++++ b/tests/test_release_hardening_safe_paths.py
+@@ -95,7 +95,7 @@ def test_manifest_copy_rejects_destination_symlink_escape_before_copy(tmp_path:
+ def test_malicious_package_integrity_manifest_fails_closed(tmp_path: Path) -> None:
+     (tmp_path / "latka_jazn").mkdir()
+     (tmp_path / "latka_jazn" / "version.py").write_text(
+-        'DISTRIBUTION_VERSION="15.1.0.3"\nPACKAGE_VERSION="v15.1.0.3.90"\nPACKAGE_RELEASE_NAME=""\n',
++        f'DISTRIBUTION_VERSION="15.1.0.3"\nPACKAGE_VERSION="{PACKAGE_VERSION}"\nPACKAGE_RELEASE_NAME=""\n',
+         encoding="utf-8",
+     )
+     payload = {

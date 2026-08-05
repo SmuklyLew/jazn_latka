@@ -68,8 +68,8 @@ Wyniki przed commitem implementacyjnym:
 - pełny zestaw bez markerów live: `384 passed`, `3 skipped`, `1 failed`;
 - jedyna awaria pełnego zestawu jest stanem zastanym:
   `test_current_active_tree_has_no_old_package_version_references` oczekuje
-  literalnie `v15.1.0.3.90`, podczas gdy kanoniczne `version.py` zwraca
-  `v15.1.0.3.90`; próba zmiany samego literalu ujawniła 268 istniejących
+  literalnie ówczesny cel migracji kończący się numerem `90`, zgodny wtedy z
+  kanonicznym `version.py`; próba zmiany samego literalu ujawniła 268 istniejących
   historycznych odwołań, więc nie poszerzono tego zadania o migrację całego
   aktywnego drzewa;
 - `run.py doctor --json`: kod `0`, `ok=true`, ale osobno

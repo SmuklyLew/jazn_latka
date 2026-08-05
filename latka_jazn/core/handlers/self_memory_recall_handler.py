@@ -224,7 +224,8 @@ class SelfMemoryRecallHandler:
                 "self_memory_not_user_memory",
             ]
         else:
-            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
+            living_value = payload.get("living_memory_search")
+            living: dict[str, Any] = living_value if isinstance(living_value, dict) else {}
             living_counts = json_object(living.get("counts"))
             status = str(living.get("status") or "unknown")
             mode = str(living.get("search_mode") or "semantic_query")

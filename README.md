@@ -64,10 +64,10 @@ Adapter Ollamy zachowuje faktycznie użyty model, `done_reason` i metryki transp
 Jedynym źródłem wersji jest `latka_jazn/version.py`.
 
 ```text
-v15.1.0.3.90-Memory Sqlite Pipeline
+v15.1.0.3.92-Memory Sqlite Pipeline
 ```
 
-Linia v15.1.0.3.90 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
+Linia v15.1.0.3.92 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
 
 ## Pamięć L0–L3
 
@@ -109,7 +109,7 @@ zapisywalnego i wersjonowanego katalogu:
 ```powershell
 python -X utf8 run.py runtime-bootstrap `
   --parts-dir D:\lokalne_paczki `
-  --destination D:\Jaźń\active-v15.1.0.3.90 `
+  --destination D:\Jaźń\active-v15.1.0.3.92 `
   --json
 ```
 

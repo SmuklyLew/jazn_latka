@@ -1,6 +1,6 @@
 {
   "schema_version": "startup_contract/v1",
-  "version": "v15.1.0.3.90",
+  "version": "v15.1.0.3.92",
   "purpose": "Aktywny kontrakt startowy Jaźni bieżąca wersja Jaźni po wyrównaniu wersji Jaźni, runtime i pakietu.",
   "active_runtime_required": true,
   "chatgpt_role": "minimal_loader_voice_and_tool",

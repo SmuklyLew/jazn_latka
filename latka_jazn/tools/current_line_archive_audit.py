@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from latka_jazn.version_contract import LEGACY_MEMORY_SOURCE_VERSION
+from latka_jazn.version_contract import (
+    LEGACY_MEMORY_SOURCE_VERSION,
+    V90_ARCHIVE_ROOT,
+    V90_MIGRATION_TARGET_VERSION,
+)
 import argparse
 import hashlib
 import json
@@ -13,7 +17,7 @@ from typing import Any, Iterable
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version, version_number
 
 SCHEMA_VERSION = schema_version("current_line_archive_audit")
-ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")
+ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)
 TEXT_SUFFIXES = {
     ".py", ".md", ".txt", ".json", ".jsonl", ".yml", ".yaml", ".toml",
     ".ini", ".cfg", ".ps1", ".sh", ".bat", ".cmd", ".xml", ".csv",
@@ -26,6 +30,9 @@ APPROVED_LEGACY_SOURCE_PATHS = {
     "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
     "docs/tools/MEMORY_SQLITE_TEST_04.md",
     "latka_jazn/tools/memory_sqlite_test04.py",
+}
+APPROVED_HISTORICAL_POINTER_PATHS = {
+    "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
 }
 _VERSION_RE = re.compile(
     r"(?i)(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])"
@@ -86,6 +93,16 @@ def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> b
     )
 
 
+
+def _line_is_historical_archive_pointer(path: str, line: str, raw_version: str) -> bool:
+    normalized = "v" + raw_version.replace("_", ".").lstrip("vV")
+    return (
+        normalized == V90_MIGRATION_TARGET_VERSION
+        and path in APPROVED_HISTORICAL_POINTER_PATHS
+        and '"archive_path"' in line
+        and V90_ARCHIVE_ROOT in line
+    )
+
 def _line_is_canonical_distribution(path: str, line: str, raw_version: str) -> bool:
     return (
         "DISTRIBUTION_VERSION" in line
@@ -113,6 +130,8 @@ def scan_active_old_references(root: Path) -> list[dict[str, Any]]:
                 if _line_is_canonical_distribution(rel, line, raw):
                     continue
                 if _line_is_approved_legacy_source(rel, line, raw):
+                    continue
+                if _line_is_historical_archive_pointer(rel, line, raw):
                     continue
                 findings.append(
                     {

@@ -257,9 +257,12 @@ class MemoryRecallPresenter:
         terms = payload.get("query_terms") or []
         counts_note = self._counts_text(counts)
         if not items:
-            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
+            living_value = payload.get("living_memory_search")
+            living: dict[str, Any] = living_value if isinstance(living_value, dict) else {}
             living_status = str(living.get("status") or "unknown")
-            ready_sources = int(((living.get("counts") or {}).get("sources_recall_ready") or 0))
+            living_counts_value = living.get("counts")
+            living_counts: dict[str, Any] = living_counts_value if isinstance(living_counts_value, dict) else {}
+            ready_sources = int(living_counts.get("sources_recall_ready") or 0)
             issues = [str(value) for value in (living.get("issues") or []) if str(value).strip()]
             issue_note = f" Pierwszy błąd źródła: {issues[0]}." if issues else ""
             return (

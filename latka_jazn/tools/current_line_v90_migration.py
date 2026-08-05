@@ -17,11 +17,13 @@ from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VE
 from latka_jazn.version_contract import (
     LEGACY_CURRENT_LINE_VERSION,
     LEGACY_MEMORY_SOURCE_VERSION,
+    V90_ARCHIVE_ROOT,
+    V90_MIGRATION_TARGET_VERSION,
     component_schema_version,
 )
 
 EXPECTED_BRANCH = "feature/memory-sqlite-test-04"
-ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")
+ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)
 PREVIOUS_ARCHIVE_ROOT = Path(".archives/pre_v" + "_".join(("15", "1", "0", "3", "89")))
 ARCHIVE_SCHEMA_VERSION = "current_line_archive/v1"
 MIGRATION_SCHEMA_VERSION = "current_line_v90_migration/v1"
@@ -34,7 +36,7 @@ EXCLUDED_ACTIVE_PATHS = {
     "SOURCE_PROVENANCE.json",
 }
 HISTORICAL_ARTIFACTS = {
-    "PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
+    f"PATCH_BUMP_JAZN_TO_{V90_MIGRATION_TARGET_VERSION}.ps1",
     "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
 }
 LEGACY_SOURCE_PATHS = {
@@ -180,6 +182,8 @@ def scan_active_old_references(root: Path) -> tuple[list[dict[str, Any]], int]:
                 if _is_approved_legacy_source(rel, line, raw):
                     approved_legacy += 1
                     continue
+                if rel in HISTORICAL_ARTIFACTS and V90_ARCHIVE_ROOT in line:
+                    continue
                 findings.append(
                     {
                         "path": rel,
@@ -283,7 +287,7 @@ def _transform_workflow_test(text: str) -> str:
 def _transform_audit_module(text: str) -> str:
     text = text.replace(
         'ARCHIVE_ROOT = Path(".archives/pre_v' + '_'.join(("15", "1", "0", "3", "89")) + '")',
-        'ARCHIVE_ROOT = Path(".archives/pre_v15_1_0_3_90")',
+        'ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)',
     )
     if "LEGACY_MEMORY_SOURCE_VERSION" not in text:
         text = _ensure_contract_import(text, {"LEGACY_MEMORY_SOURCE_VERSION"})
@@ -704,7 +708,7 @@ def migrate(
     source_commit = _run_git(runtime_root, "rev-parse", "HEAD").strip()
     if branch != expected_branch:
         raise MigrationError(f"wrong branch: expected {expected_branch!r}, got {branch!r}")
-    if PACKAGE_VERSION != "v15.1.0.3.90":
+    if PACKAGE_VERSION != V90_MIGRATION_TARGET_VERSION:
         raise MigrationError(f"unexpected canonical package version: {PACKAGE_VERSION}")
 
     findings, approved_legacy_before = scan_active_old_references(runtime_root)
