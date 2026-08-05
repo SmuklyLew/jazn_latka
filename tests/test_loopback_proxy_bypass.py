@@ -66,8 +66,8 @@ def test_runtime_http_json_reaches_loopback_with_dead_proxy_configured(
             self.end_headers()
             self.wfile.write(body)
 
-        def log_message(self, _format: str, *_args: object) -> None:
-            return
+        def log_message(self, format: str, *args: object) -> None:
+            del format, args
 
     server = HTTPServer(("127.0.0.1", 0), _Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -87,8 +87,7 @@ def test_runtime_http_json_reaches_loopback_with_dead_proxy_configured(
         monkeypatch.setenv("HTTP_PROXY", "http://10.255.255.1:9")
         ensure_loopback_proxy_bypass(os.environ)
 
-        proxies = urllib.request.getproxies_environment()
-        assert urllib.request.proxy_bypass_environment("127.0.0.1", proxies) is True
+        assert urllib.request.proxy_bypass("127.0.0.1") is True
         result = http_json(
             "GET",
             f"http://127.0.0.1:{server.server_address[1]}/ready",
