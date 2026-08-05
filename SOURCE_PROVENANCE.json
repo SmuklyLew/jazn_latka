@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "7d6a4018b3c6f57c8390a749440485683b2a93be",
+  "base_merge_commit": "ca04797ff35757a150d38a75e22e4ce2573479e0",
   "base_version": "v15.1.0.3.94-SELF MEMORY ORIGIN TRUTH HOTFIX",
-  "commit_date": "2026-08-05T20:58:04+02:00",
+  "commit_date": "2026-08-05T21:35:48+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-05T18:58:04+00:00",
+  "generated_at_utc": "2026-08-05T19:35:48+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "05603f03c9300a499eb04f6fbc3a331511b67e8b",
+  "git_tree_sha": "f7079acc141bfb58479d2d1ffda52843d6a99eca",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
