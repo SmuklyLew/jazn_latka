@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "900ebff63da6968931a425a88a680d68d18317c4",
-  "base_version": "v15.1.0.3.93-os time nonblocking and recall",
-  "commit_date": "2026-08-05T19:50:58+02:00",
+  "base_merge_commit": "7d6a4018b3c6f57c8390a749440485683b2a93be",
+  "base_version": "v15.1.0.3.94-SELF MEMORY ORIGIN TRUTH HOTFIX",
+  "commit_date": "2026-08-05T20:58:04+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-05T17:50:58+00:00",
+  "generated_at_utc": "2026-08-05T18:58:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "811b12e56275d27c3c6806f964d9eaf184cd24bf",
+  "git_tree_sha": "05603f03c9300a499eb04f6fbc3a331511b67e8b",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.1.0.3.93-os time nonblocking and recall",
-  "schema_version": "source_provenance/v15.1.0.3.93",
+  "runtime_version": "v15.1.0.3.94-SELF MEMORY ORIGIN TRUTH HOTFIX",
+  "schema_version": "source_provenance/v15.1.0.3.94",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.1.0.3.93-os time nonblocking and recall",
+  "update_version": "v15.1.0.3.94-SELF MEMORY ORIGIN TRUTH HOTFIX",
   "version_source": "latka_jazn/version.py"
 }
