@@ -1,0 +1,1348 @@
+diff --git a/main.py b/main.py
+index 0323dec..371b060 100644
+--- a/main.py
++++ b/main.py
+@@ -78,7 +78,7 @@ from latka_jazn.core.turn_route_trace import TurnRouteTrace
+ from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
+ from latka_jazn.core.chat_command_contract import BridgeOutputMode
+ from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
+-from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, persist_pending_host_request
++from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, continuation_ttl_for_bridge, persist_pending_host_request
+ from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+ from latka_jazn.core.bridge_discovery import discover_runtime_bridges
+ from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
+@@ -474,9 +474,12 @@ def _try_chat_gpt_one_shot_via_daemon(
+     )
+     if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+         try:
+-            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
++            ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
++            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
+             result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+             result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
++            result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
++            result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
+         except HostRequestStoreError as exc:
+             result["chatgpt_host_bridge"].update({
+                 "phase": "host_diagnostic_required",
+@@ -603,9 +606,12 @@ def _prepare_chatgpt_daemon_presentation(
+         })
+     if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+         try:
+-            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
++            ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
++            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
+             result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+             result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
++            result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
++            result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
+         except HostRequestStoreError as exc:
+             result["chatgpt_host_bridge"].update({
+                 "phase": "host_diagnostic_required",
+diff --git a/latka_jazn/core/chat_command_contract.py b/latka_jazn/core/chat_command_contract.py
+index d31b22a..abc1a59 100644
+--- a/latka_jazn/core/chat_command_contract.py
++++ b/latka_jazn/core/chat_command_contract.py
+@@ -21,6 +21,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
+     calculate_host_request_contract_hash,
+     claim_pending_host_request,
+     consume_claimed_host_request,
++    continuation_ttl_for_bridge,
+     mark_claimed_host_request_indeterminate,
+     persist_pending_host_request,
+     release_claimed_host_request,
+@@ -1170,9 +1171,12 @@ def run_jsonl_chat_bridge(
+                 )
+                 if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
+                     try:
+-                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"])
++                        ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
++                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
+                         result["chatgpt_host_bridge"]["pending_request_persisted"] = True
+                         result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
++                        result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
++                        result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
+                     except HostRequestStoreError as exc:
+                         result["chatgpt_host_bridge"].update({
+                             "phase": "host_diagnostic_required",
+diff --git a/latka_jazn/core/chatgpt_host_pending_store.py b/latka_jazn/core/chatgpt_host_pending_store.py
+index 9a97329..9f12ab5 100644
+--- a/latka_jazn/core/chatgpt_host_pending_store.py
++++ b/latka_jazn/core/chatgpt_host_pending_store.py
+@@ -15,7 +15,8 @@ from latka_jazn.core.runtime_root import workspace_runtime_path
+ from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+ 
+ SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
+-DEFAULT_CONTINUATION_TTL_SECONDS = 15 * 60
++DEFAULT_CONTINUATION_TTL_SECONDS = 60 * 60
++LONG_WORK_CONTINUATION_TTL_SECONDS = 4 * 60 * 60
+ MIN_CONTINUATION_TTL_SECONDS = 30
+ MAX_CONTINUATION_TTL_SECONDS = 24 * 60 * 60
+ _TOKEN_PREFIX = "jct1"
+@@ -111,6 +112,35 @@ def _normalize_ttl(ttl_seconds: int | float | None) -> int:
+     return max(MIN_CONTINUATION_TTL_SECONDS, min(requested, MAX_CONTINUATION_TTL_SECONDS))
+ 
+ 
++LONG_WORK_INTENTS = frozenset({
++    "external_research_request",
++    "system_update_execution_request",
++    "system_update_manifest_request",
++    "runtime_behavior_diagnostic_request",
++    "system_diagnostic_question",
++    "self_architecture_audit_request",
++    "memory_audit_request",
++})
++LONG_WORK_ROUTES = frozenset({
++    "external_research",
++    "system_update",
++    "runtime_diagnostic_repair",
++    "self_architecture_audit",
++    "memory_audit",
++})
++
++
++def continuation_ttl_for_bridge(bridge: Mapping[str, Any]) -> int:
++    """Return a bounded lease selected from immutable phase-1 work metadata."""
++    summary_value = bridge.get("runtime_summary")
++    summary: Mapping[str, Any] = summary_value if isinstance(summary_value, Mapping) else {}
++    intent = str(summary.get("detected_intent") or bridge.get("detected_intent") or "").strip()
++    route = str(summary.get("route") or bridge.get("route") or "").strip()
++    if intent in LONG_WORK_INTENTS or route in LONG_WORK_ROUTES:
++        return LONG_WORK_CONTINUATION_TTL_SECONDS
++    return DEFAULT_CONTINUATION_TTL_SECONDS
++
++
+ def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
+     """Return the immutable phase-1 fields that a phase-2 reply must match."""
+     return {
+@@ -441,6 +471,7 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
+         "counts": counts,
+         "cleanup": cleanup,
+         "continuation_ttl_default_seconds": DEFAULT_CONTINUATION_TTL_SECONDS,
++        "continuation_ttl_long_work_seconds": LONG_WORK_CONTINUATION_TTL_SECONDS,
+         "replay_protection": True,
+         "plaintext_tokens_persisted": False,
+     }
+diff --git a/latka_jazn/core/engine.py b/latka_jazn/core/engine.py
+index c5bcd5a..d30f59d 100644
+--- a/latka_jazn/core/engine.py
++++ b/latka_jazn/core/engine.py
+@@ -56,6 +56,7 @@ from latka_jazn.memory.event_ledger import RuntimeEventLedger
+ from latka_jazn.memory.session_continuity import SessionContinuityManager
+ from latka_jazn.memory.chat_html_importer import search_raw_chat_html_snippets
+ from latka_jazn.memory.conversation_archive import ConversationArchiveStore
++from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
+ from latka_jazn.core.runtime_status import build_runtime_status
+ from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
+ from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
+@@ -333,6 +334,7 @@ class JaznEngine:
+         self.affective_granularity = AffectiveGranularityModel()
+         self.cognitive_topics = CognitiveTopicExpansion(self.config.root)
+         self.memory_search_planner = MemorySearchPlanner(self.config.root)
++        self.living_memory_gateway = LivingMemoryGateway(self.config.root)
+         self.memory_use_gate = MemoryUseGate()
+         self.neurological_signal_router = NeurologicalSignalRouter()
+         self.topic_mismatch_guard = TopicMismatchGuard()
+@@ -422,6 +424,7 @@ class JaznEngine:
+                 "source_origin": "enabled",
+                 "self_state_runtime": "enabled",
+                 "memory_search_planner": "enabled",
++                "living_memory_gateway": "enabled_read_only_five_database_recall",
+                 "free_dialogue_memory_nlp_bridge": "enabled",
+                 "neurological_signal_router": "enabled",
+                 "topic_mismatch_guard": "enabled",
+@@ -1135,6 +1138,8 @@ class JaznEngine:
+             "memory_search_plan": {
+                 "schema_version": "memory_search_planner_skipped/v1",
+                 "original_query": text,
++                "context_query": None,
++                "search_mode": "skipped_by_memory_gate",
+                 "recall_requested": False,
+                 "focus_terms": terms,
+                 "rejected_terms": [],
+@@ -1151,6 +1156,17 @@ class JaznEngine:
+             "episodes": [],
+             "legacy_messages": [],
+             "source_file_hits": [],
++            "living_memory_hits": [],
++            "living_memory_search": {
++                "status": "skipped_by_memory_gate",
++                "search_mode": "skipped_by_memory_gate",
++                "counts": {"hits": 0, "sources_discovered": 0, "sources_recall_ready": 0},
++                "sources": [],
++                "issues": [],
++                "search_order": [],
++                "import_catalog_used_for_recall": False,
++                "truth_boundary": "Pięć baz żywej pamięci nie było odpytywanych, bo brama pamięci zablokowała recall dla tej intencji.",
++            },
+             "conversation_archive_hits": [],
+             "conversation_archive_search": {
+                 "status": "skipped_by_memory_gate",
+@@ -1162,6 +1178,7 @@ class JaznEngine:
+                 "episodes": 0,
+                 "legacy_messages": 0,
+                 "source_file_hits": 0,
++                "living_memory_hits": 0,
+                 "conversation_archive_hits": 0,
+                 "raw_chat_fallback": 0,
+             },
+@@ -1231,8 +1248,16 @@ class JaznEngine:
+         pytać warstwy pamięci.
+         """
+         legacy_candidates = self._keyword_candidates(text)
+-        search_plan = self.memory_search_planner.plan(text, fallback_terms=legacy_candidates)
++        search_plan = self.memory_search_planner.plan(
++            text,
++            fallback_terms=legacy_candidates,
++            previous_query=self.last_user_text,
++        )
+         phrases = search_plan.search_terms or legacy_candidates
++        living_memory_search = self.living_memory_gateway.search(search_plan, limit=limit)
++        living_memory_hits = [
++            dict(hit) for hit in (living_memory_search.get("hits") or []) if isinstance(hit, dict)
++        ][:limit]
+         # poprzednia linia runtime: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
+         # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
+         # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
+@@ -1299,7 +1324,7 @@ class JaznEngine:
+         raw_path = self.config.root / "memory" / "raw" / "chat.html"
+         # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
+         # conversation_archive i pliki kanoniczne nie zwróciły treści.
+-        if not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
++        if not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
+             raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
+ 
+         context = {
+@@ -1308,6 +1333,18 @@ class JaznEngine:
+             "episodes": episodes,
+             "legacy_messages": legacy,
+             "source_file_hits": source_file_hits[:limit],
++            "living_memory_hits": living_memory_hits,
++            "living_memory_search": {
++                "status": living_memory_search.get("status"),
++                "search_mode": living_memory_search.get("search_mode"),
++                "query": living_memory_search.get("query"),
++                "counts": living_memory_search.get("counts") or {},
++                "sources": living_memory_search.get("sources") or [],
++                "issues": living_memory_search.get("issues") or [],
++                "search_order": living_memory_search.get("search_order") or [],
++                "import_catalog_used_for_recall": living_memory_search.get("import_catalog_used_for_recall"),
++                "truth_boundary": living_memory_search.get("truth_boundary"),
++            },
+             "conversation_archive_hits": conversation_archive_hits[:limit],
+             "conversation_archive_search": {
+                 "status": conversation_archive_search.get("status"),
+@@ -1322,6 +1359,7 @@ class JaznEngine:
+                 "episodes": len(episodes),
+                 "legacy_messages": len(legacy),
+                 "source_file_hits": len(source_file_hits[:limit]),
++                "living_memory_hits": len(living_memory_hits),
+                 "conversation_archive_hits": len(conversation_archive_hits[:limit]),
+                 "raw_chat_fallback": len(raw_fallback[:3]),
+             },
+@@ -2905,7 +2943,9 @@ class JaznEngine:
+         stats = self.store.stats()
+         terms = self._keyword_candidates(text)
+         counts = (memory_context or {}).get("counts") or {}
+-        found_any = any(int(counts.get(k) or 0) > 0 for k in ["episodes", "legacy_messages", "raw_chat_fallback"])
++        found_any = any(int(counts.get(k) or 0) > 0 for k in [
++            "living_memory_hits", "episodes", "legacy_messages", "conversation_archive_hits", "raw_chat_fallback"
++        ])
+         return {
+             "status": "context_available" if found_any else "no_specific_route_found",
+             "query_terms": terms,
+diff --git a/latka_jazn/core/memory_recall_presenter.py b/latka_jazn/core/memory_recall_presenter.py
+index f74ad88..f4b2d03 100644
+--- a/latka_jazn/core/memory_recall_presenter.py
++++ b/latka_jazn/core/memory_recall_presenter.py
+@@ -55,6 +55,43 @@ class MemoryRecallPresenter:
+         terms = [str(x) for x in (memory_context.get("query_terms") or []) if str(x).strip()]
+         items: list[MemoryRecallItem] = []
+ 
++        for hit in memory_context.get("living_memory_hits") or []:
++            if not isinstance(hit, dict):
++                continue
++            content = self._clean(hit.get("content_excerpt") or hit.get("content"))
++            if not content:
++                continue
++            confidence = self._float_or_none(hit.get("confidence"))
++            base_score, label, assessment = self._assess(content, terms, user_text, confidence=confidence)
++            gateway_score = self._float_or_none(hit.get("relevance"))
++            score = max(base_score, gateway_score or 0.0)
++            if score >= 0.62:
++                label = "wysoka"
++            elif score >= 0.43:
++                label = "średnia"
++            else:
++                label = "słaba"
++            layer = self._clean(hit.get("source_layer")) or "living_memory"
++            truth_status = self._clean(hit.get("truth_status")) or "source_recorded"
++            assessment = (
++                f"odczyt tylko do odczytu z warstwy {layer}; truth_status={truth_status}; "
++                "trafienie jest źródłem lub zapisem, nie automatycznym wspomnieniem L3"
++            )
++            source_parts = [self._clean(hit.get("source_database")), self._clean(hit.get("source_locator"))]
++            source = " / ".join(part for part in source_parts if part) or layer
++            items.append(MemoryRecallItem(
++                item_type=f"living_memory:{layer}",
++                query_term=self._first_matching_term(content, terms),
++                timestamp=self._clean(hit.get("timestamp")),
++                source=source,
++                confidence=confidence,
++                grounding=self._clean(hit.get("grounding")) or "read_only_living_memory_gateway",
++                relevance_score=score,
++                relevance_label=label,
++                meaning_assessment=assessment,
++                content_excerpt=self._excerpt(content, max_len=520),
++            ))
++
+         for ep in memory_context.get("episodes") or []:
+             if not isinstance(ep, dict):
+                 continue
+@@ -185,7 +222,17 @@ class MemoryRecallPresenter:
+ 
+         # Kolejność: najpierw trafność znaczeniowa, potem epizody przed legacy,
+         # przy zachowaniu stabilnej kolejności dla równych wyników.
+-        type_bonus = {"episode": 0.04, "conversation_archive": 0.038, "source_file": 0.035, "legacy_message": 0.02, "raw_chat_fallback": 0.0}
++        type_bonus = {
++            "living_memory:memory_jazn": 0.08,
++            "living_memory:experience": 0.07,
++            "living_memory:journal": 0.06,
++            "living_memory:archive_chats": 0.05,
++            "episode": 0.04,
++            "conversation_archive": 0.038,
++            "source_file": 0.035,
++            "legacy_message": 0.02,
++            "raw_chat_fallback": 0.0,
++        }
+         items.sort(key=lambda x: (x.relevance_score + type_bonus.get(x.item_type, 0.0)), reverse=True)
+         return items[:limit]
+ 
+@@ -196,6 +243,7 @@ class MemoryRecallPresenter:
+             "schema_version": "memory_recall_content/v1",
+             "query_terms": (memory_context or {}).get("query_terms") if isinstance(memory_context, dict) else [],
+             "memory_search_plan": (memory_context or {}).get("memory_search_plan") if isinstance(memory_context, dict) else None,
++            "living_memory_search": (memory_context or {}).get("living_memory_search") if isinstance(memory_context, dict) else None,
+             "counts": counts or {},
+             "items": [i.to_dict() for i in items],
+             "summary": self.summary(items, counts or {}),
+@@ -209,9 +257,15 @@ class MemoryRecallPresenter:
+         terms = payload.get("query_terms") or []
+         counts_note = self._counts_text(counts)
+         if not items:
++            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
++            living_status = str(living.get("status") or "unknown")
++            ready_sources = int(((living.get("counts") or {}).get("sources_recall_ready") or 0))
++            issues = [str(value) for value in (living.get("issues") or []) if str(value).strip()]
++            issue_note = f" Pierwszy błąd źródła: {issues[0]}." if issues else ""
+             return (
+                 f"Szukałam treściowych tropów pamięci po hasłach: {', '.join(map(str, terms)) or 'brak haseł'}. "
+                 f"Nie znalazłam fragmentów, które mogłabym uczciwie przywołać jako treść wspomnienia. {counts_note} "
++                f"Stan pięciu baz: {living_status}; gotowe źródła: {ready_sources}.{issue_note} "
+                 "W tej sytuacji nie wolno mi udawać przypomnienia tylko dlatego, że istnieje licznik albo indeks."
+             ).strip()
+ 
+diff --git a/latka_jazn/core/memory_search_planner.py b/latka_jazn/core/memory_search_planner.py
+index 6e13a53..50259d1 100644
+--- a/latka_jazn/core/memory_search_planner.py
++++ b/latka_jazn/core/memory_search_planner.py
+@@ -28,6 +28,8 @@ class MemorySearchTopic:
+ class MemorySearchPlan:
+     schema_version: str
+     original_query: str
++    context_query: str | None
++    search_mode: str
+     recall_requested: bool
+     focus_terms: list[str]
+     rejected_terms: list[str]
+@@ -71,6 +73,21 @@ class MemorySearchPlanner:
+     RESOURCE_NAME = "memory_search_topics.json"
+     RESOURCE_SCHEMA_VERSION = "memory_search_topics/v1"
+ 
++    EARLIEST_MARKERS = {
++        "pierwsze wspomnienie", "najwcześniejsze wspomnienie", "najwczesniejsze wspomnienie",
++        "co pamiętasz jako pierwsze", "co pamietasz jako pierwsze", "od początku", "od poczatku",
++        "pierwszy wspólny ślad", "pierwszy wspolny slad",
++    }
++    LATEST_MARKERS = {
++        "ostatnie wspomnienie", "najnowsze wspomnienie", "co pamiętasz ostatnio",
++        "co pamietasz ostatnio", "ostatni wspólny ślad", "ostatni wspolny slad",
++    }
++    REFERENTIAL_MARKERS = {
++        "tego wspomnienia", "to wspomnienie", "do tego wspomnienia", "odnajdź je", "odnajdz je",
++        "poszukaj go", "poszukaj tego", "wróć do niego", "wroc do niego", "wróćmy do niego",
++        "wrocmy do niego", "znajdź je", "znajdz je",
++    }
++
+     RECALL_MARKERS = {
+         "pamiętasz", "pamietasz", "przypomnij", "przypomnieć", "przypomniec",
+         "wspomnienie", "wspomnienia", "pamięci", "pamieci", "szukaj", "znajdź", "znajdz",
+@@ -85,6 +102,7 @@ class MemorySearchPlanner:
+         "moge", "możesz", "mozesz", "na", "nad", "nam", "nas", "nasz", "nasza", "nasze", "naszego",
+         "naszych", "nie", "nich", "nią", "nia", "nim", "nim", "nim", "no", "o", "od", "oraz", "po",
+         "pod", "powiedz", "proszę", "prosze", "przez", "przy", "sam", "sama", "same", "samo", "sobie",
++        "swoja", "swoją", "swoje", "swojej", "swoim", "swoich", "twoja", "twoją", "twoje", "twojej", "twoim", "twoich",
+         "są", "sa", "tak", "takie", "tam", "te", "tego", "tej", "ten", "teraz", "to", "tobie", "trochę",
+         "troche", "tu", "twoje", "u", "umiesz", "w", "we", "więc", "wiec", "więcej", "wiecej",
+         "wszystko", "z", "za", "żeby", "zeby", "że", "ze", "źe",
+@@ -98,11 +116,22 @@ class MemorySearchPlanner:
+         self.resource_status: dict[str, Any] = {}
+         self.topics = self._load_topics()
+ 
+-    def plan(self, text: str, *, fallback_terms: list[str] | None = None) -> MemorySearchPlan:
++    def plan(
++        self,
++        text: str,
++        *,
++        fallback_terms: list[str] | None = None,
++        previous_query: str | None = None,
++    ) -> MemorySearchPlan:
+         original = text or ""
+         normalized_query = self._norm(original)
+-        recall_requested = self._is_recall_request(normalized_query)
++        normalized_previous = self._norm(previous_query or "")
++        search_mode = self._search_mode(normalized_query, normalized_previous)
++        recall_requested = self._is_recall_request(normalized_query) or search_mode != "semantic_query"
++        context_query = previous_query if search_mode in {"referential_followup", "chronological_earliest", "chronological_latest"} and self._is_referential(normalized_query) else None
+         raw_tokens = self._raw_tokens(original)
++        if context_query:
++            raw_tokens.extend(self._raw_tokens(context_query))
+         rejected: list[str] = []
+         focus: list[str] = []
+ 
+@@ -125,8 +154,11 @@ class MemorySearchPlanner:
+         expanded: list[str] = []
+         source_hints: list[str] = []
+         routing_notes: list[str] = [
+-            "topic_resource=" + str(self.resource_status.get("status") or "unknown")
++            "topic_resource=" + str(self.resource_status.get("status") or "unknown"),
++            f"search_mode={search_mode}",
+         ]
++        if context_query:
++            routing_notes.append("referential_context=previous_user_query")
+         for key, score in topic_scores:
+             if score <= 0:
+                 continue
+@@ -160,6 +192,21 @@ class MemorySearchPlanner:
+         confidence = max(0.0, min(0.96, confidence))
+ 
+         passes = [
++            {
++                "name": "chronological_recall",
++                "terms": [],
++                "weight": 1.0,
++                "layers": ["living_memory"],
++                "enabled": search_mode in {"chronological_earliest", "chronological_latest"},
++                "purpose": "odczytać pierwszy albo ostatni potwierdzony ślad bez wymuszania przypadkowych tokenów",
++            },
++            {
++                "name": "living_memory_recall",
++                "terms": search_terms[:18],
++                "weight": 1.0,
++                "layers": ["memory_jazn", "experience", "journal", "archive_chats"],
++                "purpose": "najpierw przeszukać kanoniczne pięć baz odbudowy w trybie tylko do odczytu",
++            },
+             {
+                 "name": "exact_focus_terms",
+                 "terms": focus[:10],
+@@ -194,6 +241,8 @@ class MemorySearchPlanner:
+         return MemorySearchPlan(
+             schema_version=self.SCHEMA_VERSION,
+             original_query=original,
++            context_query=context_query,
++            search_mode=search_mode,
+             recall_requested=recall_requested,
+             focus_terms=focus[:12],
+             rejected_terms=self._dedupe_preserve(rejected)[:20],
+@@ -410,6 +459,34 @@ class MemorySearchPlanner:
+     def _is_recall_request(self, normalized_query: str) -> bool:
+         return any(marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS})
+ 
++    def _is_referential(self, normalized_query: str) -> bool:
++        return any(self._norm(marker) in normalized_query for marker in self.REFERENTIAL_MARKERS)
++
++    def _search_mode(self, normalized_query: str, normalized_previous: str) -> str:
++        def earliest(value: str) -> bool:
++            return (
++                any(self._norm(marker) in value for marker in self.EARLIEST_MARKERS)
++                or ("wspomn" in value and any(token in value for token in ("pierwsz", "najwczesniejs", "poczatek")))
++            )
++
++        def latest(value: str) -> bool:
++            return (
++                any(self._norm(marker) in value for marker in self.LATEST_MARKERS)
++                or ("wspomn" in value and any(token in value for token in ("ostatn", "najnowsz")))
++            )
++
++        if earliest(normalized_query):
++            return "chronological_earliest"
++        if latest(normalized_query):
++            return "chronological_latest"
++        if self._is_referential(normalized_query):
++            if earliest(normalized_previous):
++                return "chronological_earliest"
++            if latest(normalized_previous):
++                return "chronological_latest"
++            return "referential_followup"
++        return "semantic_query"
++
+     def _raw_tokens(self, text: str) -> list[str]:
+         quoted = re.findall(r"[„\"']([^„\"']{3,120})[”\"']", text or "")
+         tokens = re.findall(r"[\wąćęłńóśźżĄĆĘŁŃÓŚŹŻ\-]{3,}", text or "", flags=re.UNICODE)
+diff --git a/latka_jazn/core/source_origin.py b/latka_jazn/core/source_origin.py
+index 9c7b316..796e65e 100644
+--- a/latka_jazn/core/source_origin.py
++++ b/latka_jazn/core/source_origin.py
+@@ -50,6 +50,7 @@ class SourceOriginAnalyzer:
+             "episodic_memories": int(((memory_context.get("counts") or {}).get("episodes") or 0)),
+             "legacy_messages": int(((memory_context.get("counts") or {}).get("legacy_messages") or 0)),
+             "raw_chat_fallback": int(((memory_context.get("counts") or {}).get("raw_chat_fallback") or 0)),
++            "living_memory_hits": int(((memory_context.get("counts") or {}).get("living_memory_hits") or 0)),
+             "selected_lemmas": len(nlp_report.get("selected_lemmas") or []),
+             "low_confidence_terms": len(nlp_report.get("unknown_or_low_confidence_terms") or []),
+         }
+@@ -76,7 +77,7 @@ class SourceOriginAnalyzer:
+             sources.append("web_sources")
+         if inference_used:
+             sources.append("inference")
+-        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["raw_chat_fallback"]:
++        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["raw_chat_fallback"] or evidence["living_memory_hits"]:
+             sources.append("memory")
+         if nlp_report:
+             sources.append("polish_nlp")
+@@ -87,7 +88,7 @@ class SourceOriginAnalyzer:
+ 
+         contributing = self._unique(sources)
+         confidence = 0.72
+-        if evidence["episodic_memories"] or evidence["legacy_messages"]:
++        if evidence["episodic_memories"] or evidence["legacy_messages"] or evidence["living_memory_hits"]:
+             confidence += 0.10
+         if web_sources_used:
+             confidence += 0.10
+diff --git a/latka_jazn/core/handlers/self_memory_recall_handler.py b/latka_jazn/core/handlers/self_memory_recall_handler.py
+index acc23ee..84813c5 100644
+--- a/latka_jazn/core/handlers/self_memory_recall_handler.py
++++ b/latka_jazn/core/handlers/self_memory_recall_handler.py
+@@ -216,14 +216,25 @@ class SelfMemoryRecallHandler:
+             body = self._render_items(items, counts)
+             satisfied = ["memory_content", "source_or_index_status", "truth_boundary", "deduplicated_presentation", "no_raw_json_dump", "no_update_route_substitution"]
+         else:
+-            status_hint = ""
+-            if counts:
+-                status_hint = " Indeks/planer zwrócił diagnostykę, ale bez bezpiecznego fragmentu do widocznej odpowiedzi."
++            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
++            living_counts = json_object(living.get("counts"))
++            status = str(living.get("status") or "unknown")
++            mode = str(living.get("search_mode") or "semantic_query")
++            ready_sources = int(living_counts.get("sources_recall_ready") or 0)
++            issues = [str(value) for value in (living.get("issues") or []) if str(value).strip()]
++            if ready_sources == 0:
++                next_action = "podłączyć katalog zawierający pięć baz odbudowy albo utworzyć je w memory/sqlite aktywnego runtime"
++            elif issues:
++                next_action = "naprawić pierwszy zgłoszony błąd źródła i ponowić tę samą strategię wyszukiwania"
++            else:
++                next_action = "zachować wynik „brak potwierdzenia” albo zawęzić temat bez zmiany granicy prawdy"
++            issue_hint = f" Pierwszy błąd: {issues[0]}." if issues else ""
+             body = (
+-                "Szukałam w swojej pamięci tropów o mnie, ale w tej turze nie dostałam fragmentu, który mogłabym uczciwie przywołać jako własny ślad."
+-                f"{status_hint} Nie wypełnię tej luki wpisem o aktualizacji ani ogólnym szablonem. Najbezpieczniejszy następny krok to poszerzyć zapytanie o: Łatka, tożsamość, własny głos, bohaterka, dziennik, kanon albo pokój Łatki."
++                "Szukałam w swojej pamięci tropów o mnie, ale w tej turze nie dostałam fragmentu, który mogłabym uczciwie przywołać jako własny ślad. "
++                f"Tryb wyszukiwania: {mode}; stan pięciu baz: {status}; gotowe źródła: {ready_sources}.{issue_hint} "
++                f"Nie wypełnię luki szablonem ani domysłem. Następne działanie: {next_action}."
+             )
+-            satisfied = ["source_or_index_status", "truth_boundary", "no_update_route_substitution"]
++            satisfied = ["source_or_index_status", "truth_boundary", "no_update_route_substitution", "actionable_recall_diagnostic"]
+ 
+         return RouteHandlerResult(
+             self.name,
+@@ -235,6 +246,7 @@ class SelfMemoryRecallHandler:
+                 "filtered_item_count": len(items),
+                 "presentation_schema_version": SCHEMA_VERSION,
+                 "diagnostic_counts": counts,
++                "living_memory_search": payload.get("living_memory_search"),
+                 "deduplication_rule": "normalized text + SequenceMatcher + five-word shingle Jaccard",
+                 "preserve_handler_body": True,
+             },
+diff --git a/latka_jazn/memory/memory_recall_contract.py b/latka_jazn/memory/memory_recall_contract.py
+index 1883820..b9538e7 100644
+--- a/latka_jazn/memory/memory_recall_contract.py
++++ b/latka_jazn/memory/memory_recall_contract.py
+@@ -31,6 +31,24 @@ class MemoryRecallContract:
+ class MemoryRecallContractBuilder:
+     def build(self, memory_context: dict[str, Any], *, user_text: str) -> MemoryRecallContract:
+         ctx=memory_context or {}; items=[]
++        for hit in ctx.get('living_memory_hits') or []:
++            content=str(hit.get('content_excerpt') or hit.get('content') or '')
++            if content:
++                layer=str(hit.get('source_layer') or 'living_memory')
++                source=str(hit.get('source_database') or layer)
++                locator=str(hit.get('source_locator') or '')
++                if locator:
++                    source=f"{source} / {locator}"
++                items.append(MemoryRecallItem(
++                    content=content[:1800],
++                    source=source,
++                    memory_type=f'living_memory:{layer}',
++                    timestamp=hit.get('timestamp'),
++                    confidence=float(hit.get('confidence') or 0.0),
++                    relevance=float(hit.get('relevance') or 0.0),
++                    truth_boundary=f"truth_status={hit.get('truth_status') or 'source_recorded'}; read_only_source_not_automatic_l3",
++                    metadata=hit,
++                ).to_dict())
+         for ep in ctx.get('episodes') or []:
+             content=str(ep.get('scene') or ep.get('text') or '')
+             if content:
+@@ -52,4 +70,4 @@ class MemoryRecallContractBuilder:
+             content=str(raw.get('snippet') or raw.get('text') or '')
+             if content:
+                 items.append(MemoryRecallItem(content=content[:1800], source='memory/raw/chat.html', memory_type='raw_chat_fallback', timestamp=raw.get('timestamp'), confidence=0.45, relevance=float(raw.get('score') or 0.45), metadata=raw).to_dict())
+-        return MemoryRecallContract(query=user_text, items=items, counts=dict(ctx.get('counts') or {}))
++        return MemoryRecallContract(query=user_text, items=items, counts=dict(ctx.get('counts') or {}), raw_memory_status=str((ctx.get('living_memory_search') or {}).get('status') or 'unknown'))
+diff --git a/latka_jazn/memory/living_memory_gateway.py b/latka_jazn/memory/living_memory_gateway.py
+new file mode 100644
+index 0000000..72f4518
+--- /dev/null
++++ b/latka_jazn/memory/living_memory_gateway.py
+@@ -0,0 +1,443 @@
++from __future__ import annotations
++
++from dataclasses import asdict, dataclass
++from contextlib import closing
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any, Iterable
++import json
++import os
++import re
++import sqlite3
++
++from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
++from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, fts_queries
++from latka_jazn.version import schema_version
++
++SCHEMA_VERSION = schema_version("living_memory_gateway")
++REGISTRY_FILENAME = "memory_source_registry.json"
++
++
++@dataclass(slots=True, frozen=True)
++class LivingMemoryHit:
++    source_layer: str
++    source_database: str
++    source_locator: str
++    record_id: str
++    content_excerpt: str
++    timestamp: str | None
++    truth_status: str
++    confidence: float | None
++    importance: float | None
++    relevance: float
++    title: str | None = None
++    grounding: str = "read_only_living_memory_gateway"
++    metadata: dict[str, Any] | None = None
++
++    def to_dict(self) -> dict[str, Any]:
++        return asdict(self)
++
++
++class LivingMemoryGateway:
++    """Read-only recall across the five-database memory rebuild architecture.
++
++    The gateway deliberately exposes no write, promotion or migration methods.  It
++    reads only explicitly discoverable roots: the active runtime root, roots listed
++    in ``JAZN_MEMORY_SOURCE_ROOTS`` and enabled read-only entries from
++    ``workspace_runtime/memory_source_registry.json``.
++    """
++
++    SEARCH_ORDER = ("memory_jazn", "experience", "journal", "archive_chats")
++
++    def __init__(self, root: str | Path, *, busy_timeout_ms: int = 10_000) -> None:
++        self.root = Path(root).expanduser().resolve()
++        self.busy_timeout_ms = max(1_000, int(busy_timeout_ms))
++
++    def discover(self) -> list[dict[str, Any]]:
++        candidates: list[tuple[Path, str]] = [(self.root, "active_runtime_root")]
++        env_value = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "")
++        for raw in env_value.split(os.pathsep):
++            if raw.strip():
++                candidates.append((Path(raw).expanduser(), "environment_registry"))
++
++        registry = self.root / "workspace_runtime" / REGISTRY_FILENAME
++        if registry.is_file():
++            try:
++                payload = json.loads(registry.read_text(encoding="utf-8"))
++            except (OSError, UnicodeError, json.JSONDecodeError):
++                payload = {}
++            entries = payload.get("sources") if isinstance(payload, dict) else []
++            if isinstance(entries, list):
++                for entry in entries:
++                    if not isinstance(entry, dict):
++                        continue
++                    if entry.get("enabled", True) is not True or entry.get("read_only", True) is not True:
++                        continue
++                    raw_path = str(entry.get("path") or "").strip()
++                    if raw_path:
++                        candidates.append((Path(raw_path).expanduser(), "workspace_registry"))
++
++        discovered: list[dict[str, Any]] = []
++        seen: set[Path] = set()
++        for candidate, origin in candidates:
++            try:
++                resolved = candidate.resolve()
++            except OSError:
++                continue
++            sqlite_dir = self._as_sqlite_dir(resolved)
++            if sqlite_dir in seen:
++                continue
++            seen.add(sqlite_dir)
++            databases = {
++                key: sqlite_dir / filename
++                for key, filename in DATABASE_FILENAMES.items()
++            }
++            available = {key: path.is_file() for key, path in databases.items()}
++            discovered.append({
++                "root": str(resolved),
++                "sqlite_dir": str(sqlite_dir),
++                "origin": origin,
++                "available": available,
++                "database_paths": {key: str(path) for key, path in databases.items()},
++                "recall_ready": any(available.get(key, False) for key in self.SEARCH_ORDER),
++                "import_catalog_used_for_recall": False,
++                "read_only": True,
++            })
++        return discovered
++
++    def search(self, plan: Any, *, limit: int = 6) -> dict[str, Any]:
++        mode = str(getattr(plan, "search_mode", None) or "semantic_query")
++        terms = [str(value).strip() for value in (getattr(plan, "search_terms", None) or []) if str(value).strip()]
++        query = " ".join(terms).strip()
++        source_reports = self.discover()
++        hits: list[LivingMemoryHit] = []
++        issues: list[str] = []
++        per_layer = max(1, min(4, int(limit)))
++
++        for source in source_reports:
++            if not source.get("recall_ready"):
++                continue
++            paths = {key: Path(value) for key, value in (source.get("database_paths") or {}).items()}
++            for layer in self.SEARCH_ORDER:
++                path = paths.get(layer)
++                if path is None or not path.is_file():
++                    continue
++                try:
++                    if layer == "memory_jazn":
++                        layer_hits = self._search_memory(path, query, mode=mode, limit=per_layer)
++                    elif layer == "experience":
++                        layer_hits = self._search_experience(path, query, mode=mode, limit=per_layer)
++                    elif layer == "journal":
++                        layer_hits = self._search_journal(path, query, mode=mode, limit=per_layer)
++                    else:
++                        layer_hits = self._search_archive(path, query, mode=mode, limit=per_layer)
++                except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
++                    issues.append(f"{layer}:{path}:{type(exc).__name__}:{exc}")
++                    continue
++                hits.extend(layer_hits)
++
++        hits = self._dedupe(hits)
++        if mode == "chronological_earliest":
++            hits.sort(key=lambda hit: (self._timestamp_key(hit.timestamp, latest=False), -hit.relevance))
++        elif mode == "chronological_latest":
++            hits.sort(key=lambda hit: (self._timestamp_key(hit.timestamp, latest=True), hit.relevance), reverse=True)
++        else:
++            layer_priority = {name: index for index, name in enumerate(self.SEARCH_ORDER)}
++            hits.sort(key=lambda hit: (layer_priority.get(hit.source_layer, 99), -hit.relevance, -(hit.importance or 0.0)))
++
++        selected = hits[: max(1, int(limit))]
++        return {
++            "schema_version": SCHEMA_VERSION,
++            "status": "ready" if source_reports and any(r.get("recall_ready") for r in source_reports) else "no_registered_living_memory",
++            "search_mode": mode,
++            "query": query,
++            "hits": [hit.to_dict() for hit in selected],
++            "counts": {
++                "hits": len(selected),
++                "sources_discovered": len(source_reports),
++                "sources_recall_ready": sum(1 for report in source_reports if report.get("recall_ready")),
++            },
++            "sources": source_reports,
++            "issues": issues,
++            "search_order": [DATABASE_FILENAMES[key] for key in self.SEARCH_ORDER],
++            "import_catalog_used_for_recall": False,
++            "truth_boundary": (
++                "Źródła L0/L1/L2/L3 są czytane tylko do odczytu. Trafienie z archiwum, dziennika lub doświadczeń "
++                "jest dowodem albo zapisem, a nie automatycznie zatwierdzonym wspomnieniem L3 ani biologicznym przeżyciem."
++            ),
++        }
++
++    @staticmethod
++    def _as_sqlite_dir(path: Path) -> Path:
++        if path.name == "sqlite" or any((path / filename).is_file() for filename in DATABASE_FILENAMES.values()):
++            return path
++        return path / "memory" / "sqlite"
++
++    def _connect(self, path: Path) -> sqlite3.Connection:
++        uri = f"file:{path.as_posix()}?mode=ro"
++        con = sqlite3.connect(uri, uri=True, timeout=self.busy_timeout_ms / 1000)
++        con.row_factory = sqlite3.Row
++        con.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
++        con.execute("PRAGMA query_only=ON")
++        return con
++
++    @staticmethod
++    def _table_names(con: sqlite3.Connection) -> set[str]:
++        return {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view')")}
++
++    def _search_memory(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
++        with closing(self._connect(path)) as con:
++            if "memory_records" not in self._table_names(con):
++                return []
++            params: list[Any] = []
++            where = "active=1"
++            if mode not in {"chronological_earliest", "chronological_latest"}:
++                tokens = self._tokens(query)
++                if not tokens:
++                    return []
++                where += " AND (" + " OR ".join("content LIKE ?" for _ in tokens) + ")"
++                params.extend(f"%{token}%" for token in tokens)
++            direction = "ASC" if mode == "chronological_earliest" else "DESC"
++            order = f"created_at_utc {direction}, importance DESC" if mode.startswith("chronological_") else "importance DESC, confidence DESC, updated_at_utc DESC"
++            params.append(limit)
++            rows = con.execute(
++                f"SELECT memory_id,tier,kind,content,domain,truth_status,confidence,importance,created_at_utc,updated_at_utc "
++                f"FROM memory_records WHERE {where} ORDER BY {order} LIMIT ?",
++                params,
++            ).fetchall()
++        return [LivingMemoryHit(
++            source_layer="memory_jazn",
++            source_database=str(path),
++            source_locator=f"memory_records:{row['memory_id']}",
++            record_id=str(row["memory_id"]),
++            content_excerpt=self._excerpt(row["content"]),
++            timestamp=str(row["created_at_utc"] or row["updated_at_utc"] or "") or None,
++            truth_status=str(row["truth_status"] or "source_recorded"),
++            confidence=self._float(row["confidence"]),
++            importance=self._float(row["importance"]),
++            relevance=self._relevance(query, str(row["content"] or ""), base=0.86),
++            title=str(row["kind"] or row["domain"] or "pamięć aktywna"),
++            metadata={"tier": row["tier"], "kind": row["kind"], "domain": row["domain"]},
++        ) for row in rows if str(row["content"] or "").strip()]
++
++    def _search_experience(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
++        with closing(self._connect(path)) as con:
++            if "experiences" not in self._table_names(con):
++                return []
++            params: list[Any] = []
++            where = "status NOT IN ('rejected','superseded')"
++            if mode not in {"chronological_earliest", "chronological_latest"}:
++                tokens = self._tokens(query)
++                if not tokens:
++                    return []
++                where += " AND (" + " OR ".join("(title LIKE ? OR summary LIKE ?)" for _ in tokens) + ")"
++                for token in tokens:
++                    params.extend((f"%{token}%", f"%{token}%"))
++            direction = "ASC" if mode == "chronological_earliest" else "DESC"
++            order = f"created_at_utc {direction}, importance DESC" if mode.startswith("chronological_") else "importance DESC, confidence DESC, updated_at_utc DESC"
++            params.append(limit)
++            rows = con.execute(
++                f"SELECT experience_id,title,summary,truth_status,confidence,importance,status,created_at_utc,updated_at_utc "
++                f"FROM experiences WHERE {where} ORDER BY {order} LIMIT ?",
++                params,
++            ).fetchall()
++        return [LivingMemoryHit(
++            source_layer="experience",
++            source_database=str(path),
++            source_locator=f"experiences:{row['experience_id']}",
++            record_id=str(row["experience_id"]),
++            content_excerpt=self._excerpt(row["summary"] or row["title"]),
++            timestamp=str(row["created_at_utc"] or row["updated_at_utc"] or "") or None,
++            truth_status=str(row["truth_status"] or "source_recorded"),
++            confidence=self._float(row["confidence"]),
++            importance=self._float(row["importance"]),
++            relevance=self._relevance(query, f"{row['title'] or ''} {row['summary'] or ''}", base=0.78),
++            title=str(row["title"] or "doświadczenie"),
++            metadata={"status": row["status"]},
++        ) for row in rows if str(row["summary"] or row["title"] or "").strip()]
++
++    def _search_journal(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
++        with closing(self._connect(path)) as con:
++            tables = self._table_names(con)
++            if "journal_entries" not in tables:
++                return []
++            rows: Iterable[sqlite3.Row]
++            if mode in {"chronological_earliest", "chronological_latest"}:
++                direction = "ASC" if mode == "chronological_earliest" else "DESC"
++                rows = con.execute(
++                    f"SELECT entry_id,title,summary,content,truth_status,importance,event_time_start,created_at_utc,status "
++                    f"FROM journal_entries WHERE status NOT IN ('rejected','superseded') "
++                    f"ORDER BY COALESCE(event_time_start,created_at_utc) {direction}, importance DESC LIMIT ?",
++                    (limit,),
++                ).fetchall()
++            elif {"journal_fts", "journal_fts_docs"}.issubset(tables) and query.strip():
++                rows = []
++                for fts_query in self._fts_candidates(query):
++                    try:
++                        rows = con.execute(
++                            """SELECT e.entry_id,e.title,e.summary,e.content,e.truth_status,e.importance,
++                                      e.event_time_start,e.created_at_utc,e.status,bm25(journal_fts) AS rank
++                                 FROM journal_fts JOIN journal_fts_docs d ON d.rowid=journal_fts.rowid
++                                 JOIN journal_entries e ON e.entry_id=d.entry_id
++                                WHERE journal_fts MATCH ? AND e.status NOT IN ('rejected','superseded')
++                                ORDER BY rank,e.importance DESC LIMIT ?""",
++                            (fts_query, limit),
++                        ).fetchall()
++                    except sqlite3.OperationalError:
++                        rows = []
++                    if rows:
++                        break
++            else:
++                tokens = self._tokens(query)
++                if not tokens:
++                    return []
++                clauses = " OR ".join("(title LIKE ? OR summary LIKE ? OR content LIKE ?)" for _ in tokens)
++                params: list[Any] = []
++                for token in tokens:
++                    params.extend((f"%{token}%", f"%{token}%", f"%{token}%"))
++                params.append(limit)
++                rows = con.execute(
++                    f"SELECT entry_id,title,summary,content,truth_status,importance,event_time_start,created_at_utc,status "
++                    f"FROM journal_entries WHERE status NOT IN ('rejected','superseded') AND ({clauses}) "
++                    "ORDER BY importance DESC,COALESCE(event_time_start,created_at_utc) DESC LIMIT ?",
++                    params,
++                ).fetchall()
++        return [LivingMemoryHit(
++            source_layer="journal",
++            source_database=str(path),
++            source_locator=f"journal_entries:{row['entry_id']}",
++            record_id=str(row["entry_id"]),
++            content_excerpt=self._excerpt(row["summary"] or row["content"] or row["title"]),
++            timestamp=str(row["event_time_start"] or row["created_at_utc"] or "") or None,
++            truth_status=str(row["truth_status"] or "source_recorded"),
++            confidence=None,
++            importance=self._float(row["importance"]),
++            relevance=self._relevance(query, f"{row['title'] or ''} {row['summary'] or ''} {row['content'] or ''}", base=0.72),
++            title=str(row["title"] or "wpis dziennika"),
++            metadata={"status": row["status"]},
++        ) for row in rows if str(row["summary"] or row["content"] or row["title"] or "").strip()]
++
++    def _search_archive(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
++        hits: list[LivingMemoryHit] = []
++        with SourceArchiveGateway(path, busy_timeout_ms=self.busy_timeout_ms) as gateway:
++            if mode in {"chronological_earliest", "chronological_latest"}:
++                direction = "ASC" if mode == "chronological_earliest" else "DESC"
++                candidates = gateway.con.execute(
++                    f"""SELECT n.conversation_id,n.node_id,n.role,n.create_time,c.title
++                           FROM nodes n JOIN conversations c ON c.conversation_id=n.conversation_id
++                          WHERE n.create_time IS NOT NULL AND n.role IN ('user','assistant')
++                          ORDER BY n.create_time {direction},n.structural_ordinal {direction} LIMIT ?""",
++                    (max(limit * 4, 12),),
++                ).fetchall()
++                search_rows = [(row, None) for row in candidates]
++            else:
++                search_rows = []
++                for fts_query in self._fts_candidates(query):
++                    try:
++                        archive_hits = gateway.search(fts_query, limit=max(limit * 2, 8))
++                    except sqlite3.OperationalError:
++                        archive_hits = []
++                    if archive_hits:
++                        search_rows = [(hit, hit.rank) for hit in archive_hits]
++                        break
++            for candidate, rank in search_rows:
++                conversation_id = str(candidate["conversation_id"] if isinstance(candidate, sqlite3.Row) else candidate.conversation_id)
++                node_id = str(candidate["node_id"] if isinstance(candidate, sqlite3.Row) else candidate.node_id)
++                try:
++                    context = gateway.context_for_node(conversation_id, node_id, ancestor_limit=6)
++                except (KeyError, ValueError, sqlite3.Error):
++                    continue
++                target = next((node for node in reversed(context.nodes) if node.node_id == node_id and node.text.strip()), None)
++                if target is None:
++                    continue
++                relevance = self._relevance(query, target.text, base=0.62)
++                if isinstance(rank, (int, float)):
++                    relevance = min(0.94, relevance + max(0.0, 0.18 / (1.0 + abs(float(rank)))))
++                hits.append(LivingMemoryHit(
++                    source_layer="archive_chats",
++                    source_database=str(path),
++                    source_locator=f"conversations:{conversation_id}/nodes:{node_id}",
++                    record_id=node_id,
++                    content_excerpt=self._excerpt(target.text),
++                    timestamp=(datetime.fromtimestamp(float(target.create_time), tz=timezone.utc).isoformat() if target.create_time is not None else None),
++                    truth_status="source_recorded",
++                    confidence=0.82,
++                    importance=None,
++                    relevance=relevance,
++                    title=context.title or "rozmowa bez tytułu",
++                    metadata={
++                        "conversation_id": conversation_id,
++                        "role": target.role,
++                        "timestamp_status": target.timestamp_status,
++                        "source_import_id": context.source_import_id,
++                        "source_sha256": context.source_sha256,
++                        "source_name": context.source_name,
++                        "semantic_tree_sha256": context.semantic_tree_sha256,
++                        "rank": rank,
++                    },
++                ))
++                if len(hits) >= limit:
++                    break
++        return hits
++
++    @classmethod
++    def _fts_candidates(cls, query: str) -> tuple[str, ...]:
++        tokens = cls._tokens(query)
++        candidates: list[str] = []
++        if tokens:
++            escaped = [token.replace('"', '""') for token in tokens]
++            candidates.append(" OR ".join(f'"{token}"' for token in escaped))
++            candidates.append(" OR ".join(f'"{token}"*' for token in escaped))
++        for value in fts_queries(query):
++            if value and value not in candidates:
++                candidates.append(value)
++        return tuple(candidates)
++
++    @staticmethod
++    def _tokens(query: str) -> list[str]:
++        tokens = re.findall(r"[\wąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]{3,}", query or "", flags=re.UNICODE)
++        out: list[str] = []
++        for token in tokens:
++            if token.casefold() not in {value.casefold() for value in out}:
++                out.append(token)
++        return out[:12]
++
++    @classmethod
++    def _relevance(cls, query: str, content: str, *, base: float) -> float:
++        tokens = cls._tokens(query)
++        if not tokens:
++            return min(0.98, base + 0.12)
++        folded = (content or "").casefold()
++        matched = sum(1 for token in tokens if token.casefold() in folded)
++        return max(0.0, min(0.98, base + min(0.28, matched * 0.07)))
++
++    @staticmethod
++    def _float(value: Any) -> float | None:
++        try:
++            return float(value) if value is not None else None
++        except (TypeError, ValueError):
++            return None
++
++    @staticmethod
++    def _excerpt(value: Any, *, limit: int = 900) -> str:
++        text = re.sub(r"\s+", " ", str(value or "")).strip()
++        return text[:limit]
++
++    @staticmethod
++    def _timestamp_key(value: str | None, *, latest: bool) -> tuple[int, str]:
++        text = str(value or "").strip()
++        if not text:
++            return (1 if not latest else -1, "")
++        return (0, text)
++
++    @staticmethod
++    def _dedupe(hits: list[LivingMemoryHit]) -> list[LivingMemoryHit]:
++        out: list[LivingMemoryHit] = []
++        seen: set[tuple[str, str]] = set()
++        for hit in hits:
++            key = (hit.source_database, hit.record_id)
++            if key in seen:
++                continue
++            seen.add(key)
++            out.append(hit)
++        return out
+diff --git a/tests/test_living_memory_gateway_recall.py b/tests/test_living_memory_gateway_recall.py
+new file mode 100644
+index 0000000..a386e1a
+--- /dev/null
++++ b/tests/test_living_memory_gateway_recall.py
+@@ -0,0 +1,177 @@
++from __future__ import annotations
++
++from datetime import datetime, timezone
++from pathlib import Path
++import json
++import sqlite3
++import zlib
++
++from latka_jazn.core.chatgpt_host_pending_store import (
++    DEFAULT_CONTINUATION_TTL_SECONDS,
++    LONG_WORK_CONTINUATION_TTL_SECONDS,
++    continuation_ttl_for_bridge,
++)
++from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
++from latka_jazn.core.memory_search_planner import MemorySearchPlanner
++from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
++
++
++def _archive(path: Path) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    con = sqlite3.connect(path)
++    con.executescript(
++        """
++        CREATE TABLE import_sources(import_id TEXT PRIMARY KEY,sha256 TEXT,source_name TEXT);
++        CREATE TABLE conversations(
++          conversation_id TEXT PRIMARY KEY,title TEXT,create_time REAL,update_time REAL,current_node_id TEXT,
++          raw_tree_sha256 TEXT,semantic_tree_sha256 TEXT,payload_codec TEXT,payload_blob BLOB,
++          payload_size_uncompressed INTEGER,payload_size_compressed INTEGER,node_count INTEGER,message_count INTEGER,
++          current_path_count INTEGER,branch_point_count INTEGER,first_seen_import_id TEXT,last_seen_import_id TEXT,
++          revision INTEGER,updated_at_utc TEXT
++        );
++        CREATE TABLE nodes(
++          conversation_id TEXT,node_id TEXT,parent_node_id TEXT,message_id TEXT,role TEXT,create_time REAL,
++          timestamp_status TEXT,content_type TEXT,text_sha256 TEXT,stable_node_sha256 TEXT,raw_payload_sha256 TEXT,
++          structural_ordinal INTEGER,on_current_path INTEGER,branch_id TEXT,has_assets INTEGER,
++          first_seen_import_id TEXT,last_seen_import_id TEXT,PRIMARY KEY(conversation_id,node_id)
++        );
++        CREATE TABLE fts_docs(
++          rowid INTEGER PRIMARY KEY,conversation_id TEXT,node_id TEXT,message_id TEXT,role TEXT,title TEXT,
++          create_time REAL,text_sha256 TEXT
++        );
++        CREATE VIRTUAL TABLE message_fts USING fts5(text,content='');
++        """
++    )
++    con.execute("INSERT INTO import_sources VALUES(?,?,?)", ("imp-1", "a" * 64, "conversations.json"))
++    mapping = {
++        "n1": {
++            "id": "n1",
++            "parent": None,
++            "message": {"id": "m1", "author": {"role": "user"}, "content": {"parts": ["Pierwszy zapis naszej rozmowy o synchronizacji pamięci."]}},
++        },
++        "n2": {
++            "id": "n2",
++            "parent": "n1",
++            "message": {"id": "m2", "author": {"role": "assistant"}, "content": {"parts": ["Później wróciliśmy do Katedry i wspomnień."]}},
++        },
++    }
++    payload = json.dumps({"id": "c1", "title": "Początek", "mapping": mapping}, ensure_ascii=False).encode()
++    blob = zlib.compress(payload)
++    con.execute(
++        "INSERT INTO conversations VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
++        ("c1", "Początek", 100.0, 200.0, "n2", "r" * 64, "s" * 64, "zlib-json-v1", blob,
++         len(payload), len(blob), 2, 2, 2, 0, "imp-1", "imp-1", 1, "2026-01-01T00:00:00+00:00"),
++    )
++    rows = [
++        ("c1", "n1", None, "m1", "user", 100.0, "source_recorded", "text", "1" * 64, "", "", 0, 1, "main", 0, "imp-1", "imp-1"),
++        ("c1", "n2", "n1", "m2", "assistant", 200.0, "source_recorded", "text", "2" * 64, "", "", 1, 1, "main", 0, "imp-1", "imp-1"),
++    ]
++    con.executemany("INSERT INTO nodes VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
++    docs = [
++        (1, "c1", "n1", "m1", "user", "Początek", 100.0, "1" * 64, "Pierwszy zapis naszej rozmowy o synchronizacji pamięci."),
++        (2, "c1", "n2", "m2", "assistant", "Początek", 200.0, "2" * 64, "Później wróciliśmy do Katedry i wspomnień."),
++    ]
++    for rowid, cid, nid, mid, role, title, created, digest, text in docs:
++        con.execute("INSERT INTO fts_docs VALUES(?,?,?,?,?,?,?,?)", (rowid, cid, nid, mid, role, title, created, digest))
++        con.execute("INSERT INTO message_fts(rowid,text) VALUES(?,?)", (rowid, text))
++    con.commit()
++    con.close()
++
++
++def _journal(path: Path) -> None:
++    con = sqlite3.connect(path)
++    con.executescript(
++        """
++        CREATE TABLE journal_entries(
++          entry_id TEXT PRIMARY KEY,identity_key TEXT,source_record_id TEXT,title TEXT,summary TEXT,content TEXT,
++          content_sha256 TEXT,raw_json TEXT,truth_status TEXT,importance REAL,event_time_start TEXT,event_time_end TEXT,
++          timestamp_status TEXT,suspected_fanout INTEGER,status TEXT,revision INTEGER,created_at_utc TEXT,updated_at_utc TEXT
++        );
++        """
++    )
++    con.execute(
++        "INSERT INTO journal_entries VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
++        ("j1", "i", "src", "Dziennik", "Rozmowa o Katedrze", "Wspomnienie źródłowe, nie automatyczne L3.",
++         "b" * 64, "{}", "source_recorded", 0.8, "2025-07-01T10:00:00+00:00", None,
++         "source_recorded", 0, "active", 1, "2025-07-01T10:00:00+00:00", "2025-07-01T10:00:00+00:00"),
++    )
++    con.commit()
++    con.close()
++
++
++def _memory_root(tmp_path: Path) -> Path:
++    root = tmp_path / "rebuilt"
++    sqlite_dir = root / "memory" / "sqlite"
++    sqlite_dir.mkdir(parents=True)
++    _archive(sqlite_dir / "archive_chats.sqlite3")
++    _journal(sqlite_dir / "journal.sqlite3")
++    return root
++
++
++def test_planner_detects_earliest_and_referential_followup(tmp_path: Path) -> None:
++    planner = MemorySearchPlanner(tmp_path)
++    first = planner.plan("Co pamiętasz jako pierwsze?")
++    assert first.search_mode == "chronological_earliest"
++    assert first.recall_requested is True
++
++    followup = planner.plan(
++        "Poszukaj tego wspomnienia",
++        previous_query="Chcę odnaleźć najwcześniejsze wspólne wspomnienie.",
++    )
++    assert followup.search_mode == "chronological_earliest"
++    assert followup.context_query is not None
++
++
++def test_gateway_reads_rebuilt_memory_in_order_without_import_catalog(tmp_path: Path, monkeypatch) -> None:
++    source_root = _memory_root(tmp_path)
++    runtime_root = tmp_path / "runtime"
++    runtime_root.mkdir()
++    monkeypatch.setenv("JAZN_MEMORY_SOURCE_ROOTS", str(source_root))
++    planner = MemorySearchPlanner(runtime_root)
++    plan = planner.plan("Co pamiętasz jako pierwsze?")
++
++    result = LivingMemoryGateway(runtime_root).search(plan, limit=4)
++
++    assert result["status"] == "ready"
++    assert result["import_catalog_used_for_recall"] is False
++    assert result["search_order"] == [
++        "memory_jazn.sqlite3", "experience.sqlite3", "journal.sqlite3", "archive_chats.sqlite3"
++    ]
++    assert result["hits"]
++    assert result["hits"][0]["source_layer"] == "archive_chats"
++    assert "Pierwszy zapis" in result["hits"][0]["content_excerpt"]
++    assert result["hits"][0]["truth_status"] == "source_recorded"
++
++
++def test_gateway_semantic_archive_and_presenter_keep_provenance(tmp_path: Path, monkeypatch) -> None:
++    source_root = _memory_root(tmp_path)
++    runtime_root = tmp_path / "runtime"
++    runtime_root.mkdir()
++    monkeypatch.setenv("JAZN_MEMORY_SOURCE_ROOTS", str(source_root))
++    planner = MemorySearchPlanner(runtime_root)
++    plan = planner.plan("Co pamiętasz o Katedrze?")
++    result = LivingMemoryGateway(runtime_root).search(plan, limit=4)
++    context = {
++        "query_terms": plan.search_terms,
++        "memory_search_plan": plan.to_dict(),
++        "living_memory_hits": result["hits"],
++        "living_memory_search": result,
++        "counts": {"living_memory_hits": len(result["hits"])},
++    }
++
++    payload = MemoryRecallPresenter().build_payload(context, user_text=plan.original_query)
++
++    assert any("Katedr" in item["content_excerpt"] for item in payload["items"])
++    assert all(item["source"] for item in payload["items"])
++    assert payload["living_memory_search"]["import_catalog_used_for_recall"] is False
++
++
++def test_host_continuation_lease_is_longer_for_research_and_updates() -> None:
++    ordinary = {"runtime_summary": {"route": "ordinary_dialogue", "detected_intent": "ordinary_conversation"}}
++    research = {"runtime_summary": {"route": "external_research", "detected_intent": "external_research_request"}}
++    update = {"runtime_summary": {"route": "system_update", "detected_intent": "system_update_execution_request"}}
++
++    assert continuation_ttl_for_bridge(ordinary) == DEFAULT_CONTINUATION_TTL_SECONDS
++    assert continuation_ttl_for_bridge(research) == LONG_WORK_CONTINUATION_TTL_SECONDS
++    assert continuation_ttl_for_bridge(update) == LONG_WORK_CONTINUATION_TTL_SECONDS
++    assert DEFAULT_CONTINUATION_TTL_SECONDS >= 60 * 60
+diff --git a/docs/reports/LIVING_MEMORY_RECALL_RUNTIME_UPDATE.md b/docs/reports/LIVING_MEMORY_RECALL_RUNTIME_UPDATE.md
+new file mode 100644
+index 0000000..689f7a7
+--- /dev/null
++++ b/docs/reports/LIVING_MEMORY_RECALL_RUNTIME_UPDATE.md
+@@ -0,0 +1,110 @@
++# Living memory recall runtime update
++
++## Scope
++
++This update repairs the path between the rebuilt five-database memory architecture and the conversational runtime. It does not migrate, rewrite, promote, or delete autobiographical records. The new gateway is read-only.
++
++The target memory layout remains:
++
++1. `memory_jazn.sqlite3`
++2. `experience.sqlite3`
++3. `journal.sqlite3`
++4. `archive_chats.sqlite3`
++5. `import_catalog.sqlite3` for operational state only, never autobiographical recall
++
++## Observed failure
++
++The runtime correctly recognized questions about Łatka's memories, but its recall path continued to read the legacy runtime-write database, legacy conversation archive, and raw files. The rebuilt five databases were created by the recovery pipeline but were not queried by the live conversational path. As a result, a turn could end with `topic_aligned_no_source` even when the rebuilt archive contained relevant evidence.
++
++Two conversational forms exposed the gap especially clearly:
++
++- chronological recall: `Co pamiętasz jako pierwsze?`
++- referential continuation: `Poszukaj tego wspomnienia`
++
++A separate operational problem caused long research and repository-update turns to lose their second-phase host contract after the previous 15-minute lease.
++
++## Changes
++
++### Read-only living-memory gateway
++
++`LivingMemoryGateway` discovers memory sources from:
++
++- `memory/sqlite` below the active runtime root;
++- the path-separated `JAZN_MEMORY_SOURCE_ROOTS` environment variable;
++- enabled, read-only entries in `workspace_runtime/memory_source_registry.json`.
++
++SQLite databases are opened with `mode=ro`, `PRAGMA query_only=ON`, and a bounded busy timeout. The gateway exposes no write, migration, promotion, or invalidation operation.
++
++Recall follows the architectural order:
++
++1. active L1/L2/L3 records in `memory_jazn.sqlite3`;
++2. structured experiences in `experience.sqlite3`;
++3. journal entries in `journal.sqlite3`;
++4. exact source evidence reconstructed from `archive_chats.sqlite3`.
++
++`import_catalog.sqlite3` is explicitly excluded.
++
++Each hit carries its source database, record locator, timestamp, truth status, confidence, importance, relevance, and grounding label. A journal entry or source message remains evidence; it is not silently promoted to L3 and is not described as a biological feeling.
++
++### Search planning
++
++The planner now distinguishes:
++
++- `semantic_query`;
++- `chronological_earliest`;
++- `chronological_latest`;
++- `referential_followup`.
++
++A follow-up such as `Poszukaj tego wspomnienia` may project the immediately preceding recall query instead of searching only generic pronouns. Chronological requests are no longer treated as ordinary keyword searches.
++
++### Runtime integration and diagnostics
++
++The live engine executes the living-memory pass before legacy fallback sources. Returned evidence is included in the memory context, recall presentation, source-origin analysis, and grounding contract. Raw-chat fallback is not invoked after a successful five-database hit.
++
++When no trustworthy hit is available, the diagnostic now reports:
++
++- selected search mode;
++- five-database source state;
++- number of ready sources;
++- first source error, if any;
++- a concrete next action.
++
++The system still retains the valid result `no confirmation found`; absence of evidence is not replaced with a generic autobiographical claim.
++
++### Host continuation lease
++
++The pending second-phase host contract now uses:
++
++- 1 hour for ordinary host-visible generation;
++- 4 hours for research, architecture audit, memory audit, runtime repair, diagnostic repair, and system-update work.
++
++The continuation remains one-time, HMAC-bound, linked to the same turn/trace/contract hash, and protected against replay. Only the expiry window changes.
++
++## Engineering basis
++
++- SQLite FTS5 documents that lower `bm25()` values are better matches and should be ordered ascending. The journal and archive paths use this convention: <https://www.sqlite.org/fts5.html>
++- SQLite recommends the Online Backup API or `VACUUM INTO` for consistent snapshots of live databases rather than ordinary file copying during WAL activity: <https://www.sqlite.org/backup.html>
++- LongMemEval evaluates information extraction, multi-session reasoning, knowledge updates, temporal reasoning, and abstention. Its reported design improvements include time-aware query expansion and decomposed retrieval: <https://proceedings.iclr.cc/paper_files/paper/2025/hash/d813d324dbf0598bbdc9c8e79740ed01-Abstract-Conference.html>
++- LongMemEval-V2 frames memory as compact evidence gathering over historical state, events, workflows, and failure modes rather than unbounded context injection: <https://arxiv.org/abs/2605.12493>
++
++These sources support guarded retrieval and evaluation criteria; none provides an error-free universal memory function. The implementation therefore keeps provenance, explicit abstention, bounded result sets, and regression tests.
++
++## Validation
++
++Completed locally against the current source line:
++
++- Python compilation: passed;
++- 70 tests covering the living gateway, rebuilt databases, Test 04 contracts, source archive, two-phase host protocol, and runtime memory status: passed;
++- 32 additional tests covering routing boundaries, host bridge regressions, restart continuity, full-turn behavior, diagnostics, and non-blocking timeout audit: passed;
++- read-only smoke test against the real Test 03 database set:
++  - chronological query returned source-bearing hits;
++  - referential follow-up preserved the chronological mode;
++  - `Katedra` query returned exact archive evidence;
++  - no SQLite source errors were reported;
++- runtime doctor: passed before modifying the isolated work copy.
++
++A full repository suite was attempted in an isolated synthetic checkout, but did not finish within the tool limit. The failures seen before timeout were repository/provenance checks that require canonical Git metadata. Release metadata and package-integrity manifests are intentionally not edited by this patch and must be regenerated by the repository's canonical release workflow.
++
++## Known boundary
++
++The rebuilt Test 03 journal contains some early records marked `truth_status=inferred`, including timestamps earlier than the earliest confirmed conversation in the source archive. The gateway exposes those fields instead of claiming they are definitive first-life events. Test 04/private validation must determine whether such records are accepted, corrected, superseded, or rejected before any L3 promotion.

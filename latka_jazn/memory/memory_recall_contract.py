@@ -31,6 +31,24 @@ class MemoryRecallContract:
 class MemoryRecallContractBuilder:
     def build(self, memory_context: dict[str, Any], *, user_text: str) -> MemoryRecallContract:
         ctx=memory_context or {}; items=[]
+        for hit in ctx.get('living_memory_hits') or []:
+            content=str(hit.get('content_excerpt') or hit.get('content') or '')
+            if content:
+                layer=str(hit.get('source_layer') or 'living_memory')
+                source=str(hit.get('source_database') or layer)
+                locator=str(hit.get('source_locator') or '')
+                if locator:
+                    source=f"{source} / {locator}"
+                items.append(MemoryRecallItem(
+                    content=content[:1800],
+                    source=source,
+                    memory_type=f'living_memory:{layer}',
+                    timestamp=hit.get('timestamp'),
+                    confidence=float(hit.get('confidence') or 0.0),
+                    relevance=float(hit.get('relevance') or 0.0),
+                    truth_boundary=f"truth_status={hit.get('truth_status') or 'source_recorded'}; read_only_source_not_automatic_l3",
+                    metadata=hit,
+                ).to_dict())
         for ep in ctx.get('episodes') or []:
             content=str(ep.get('scene') or ep.get('text') or '')
             if content:
@@ -52,4 +70,4 @@ class MemoryRecallContractBuilder:
             content=str(raw.get('snippet') or raw.get('text') or '')
             if content:
                 items.append(MemoryRecallItem(content=content[:1800], source='memory/raw/chat.html', memory_type='raw_chat_fallback', timestamp=raw.get('timestamp'), confidence=0.45, relevance=float(raw.get('score') or 0.45), metadata=raw).to_dict())
-        return MemoryRecallContract(query=user_text, items=items, counts=dict(ctx.get('counts') or {}))
+        return MemoryRecallContract(query=user_text, items=items, counts=dict(ctx.get('counts') or {}), raw_memory_status=str((ctx.get('living_memory_search') or {}).get('status') or 'unknown'))

@@ -78,7 +78,7 @@ from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
 from latka_jazn.core.chat_command_contract import BridgeOutputMode
 from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
-from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, persist_pending_host_request
+from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, continuation_ttl_for_bridge, persist_pending_host_request
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
@@ -474,9 +474,12 @@ def _try_chat_gpt_one_shot_via_daemon(
     )
     if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
         try:
-            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
+            ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
+            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
             result["chatgpt_host_bridge"]["pending_request_persisted"] = True
             result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+            result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
+            result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
         except HostRequestStoreError as exc:
             result["chatgpt_host_bridge"].update({
                 "phase": "host_diagnostic_required",
@@ -603,9 +606,12 @@ def _prepare_chatgpt_daemon_presentation(
         })
     if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
         try:
-            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"])
+            ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
+            pending = persist_pending_host_request(cfg.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
             result["chatgpt_host_bridge"]["pending_request_persisted"] = True
             result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
+            result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
+            result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
         except HostRequestStoreError as exc:
             result["chatgpt_host_bridge"].update({
                 "phase": "host_diagnostic_required",
