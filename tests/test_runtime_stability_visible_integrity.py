@@ -7,6 +7,8 @@ import hashlib
 
 from latka_jazn.core.final_response_contract import FinalResponseContract
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate, evaluate_final_response_contract
+from latka_jazn.core.timestamp_policy import timestamp_runtime_policy
+from latka_jazn.core.visible_integrity import validate_visible_text
 from latka_jazn.core.session_provenance import repair_final_visible_integrity
 from latka_jazn.core.visible_integrity import (
     enforce_integrity_consensus,
@@ -48,7 +50,6 @@ def _decision(*, classification: str = "rule_handler_response") -> dict:
             "trusted": False,
             "source": "local_machine",
             "sample_iso": SAMPLE_ISO,
-            "require_trusted_in_final_visible": False,
             "allow_degraded_local_visible": True,
             "timezone": "Europe/Warsaw",
             "max_age_seconds": 86400,
@@ -229,3 +230,44 @@ def test_non_object_consensus_layers_cannot_be_promoted() -> None:
     assert consensus["valid"] is False
     assert updated["final_visible_integrity"]["valid"] is False
     assert updated["final_response_contract"]["final_visible_integrity"]["valid"] is False
+
+
+def test_default_policy_accepts_fresh_local_os_time_without_network_trust() -> None:
+    policy = timestamp_runtime_policy()
+    assert policy["require_trusted_in_final_visible"] is False
+    assert policy["local_fallback_allowed_default"] is True
+    assert policy["allow_degraded_local_visible"] is True
+
+    result = _result()
+    integrity = validate_result_integrity(result)
+    gate = evaluate_final_response_contract(result["final_response_contract"])
+
+    assert integrity["valid"] is True
+    assert integrity["timestamp_local_os_source"] is True
+    assert integrity["timestamp_degraded_visible_ok"] is True
+    assert gate.ok is True
+    assert gate.normal_response_allowed is True
+    assert gate.error_code is None
+    assert gate.errors == []
+    assert set(gate.degradations) == {"timestamp_untrusted", "timestamp_source_not_network"}
+    assert gate.timestamp_degraded is True
+
+
+def test_untrusted_non_os_timestamp_cannot_use_local_fallback_exception() -> None:
+    contract = dict(_decision()["timestamp_contract"])
+    contract["source"] = "manual_unverified"
+    integrity = validate_visible_text(
+        HEADER,
+        VISIBLE,
+        timestamp_contract=contract,
+        validation_passed=True,
+        origin_truth_valid=True,
+        author_label="Łatka",
+        state_emoticon="🌿",
+        expected_body=BODY,
+    )
+
+    assert integrity["timestamp_local_os_source"] is False
+    assert integrity["timestamp_trust_ok"] is False
+    assert integrity["valid"] is False
+    assert "timestamp_trust_invalid" in integrity["errors"]

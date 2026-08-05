@@ -6,12 +6,9 @@ from typing import Any
 from latka_jazn.core.json_types import is_json_object, json_object
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 from latka_jazn.core.visible_integrity import RUNTIME_OWNED_NON_FALLBACK_CLASSIFICATIONS
+from latka_jazn.core.timestamp_policy import timestamp_source_is_local_os
 
 STRICT_RUNTIME_TRUTH_SCHEMA = schema_version("strict_runtime_truth_gate", version=PACKAGE_VERSION_FULL)
-TIMESTAMP_DEGRADED_ERRORS = {
-    "timestamp_untrusted",
-    "timestamp_source_not_network",
-}
 TIMESTAMP_BLOCKING_ERRORS = {
     "timestamp_missing",
     "timestamp_stale_or_missing_freshness",
@@ -65,6 +62,8 @@ class RuntimeTruthGateResult:
     active_state: str = "active_trusted"
     error_code: str | None = None
     errors: list[str] = field(default_factory=list)
+    degradations: list[str] = field(default_factory=list)
+    timestamp_degraded: bool = False
     timestamp_source: str | None = None
     timestamp_trusted: bool | None = None
     timestamp_present: bool | None = None
@@ -82,9 +81,9 @@ class RuntimeTruthGateResult:
     rule_id: str | None = None
     diagnostic_status: dict[str, Any] | None = None
     truth_boundary: str = (
-        "Brama prawdy runtime rozdziela aktywność Jaźni od jakości źródła czasu. "
-        "Brak czasu sieciowego nie blokuje startu runtime ani zwykłej odpowiedzi, jeżeli timestamp jest obecny i świeży. "
-        "Lokalny czas maszyny pozostaje jawnie oznaczony jako niezweryfikowany, ale nie robi z żywego runtime active_degraded."
+        "Brama prawdy runtime rozdziela aktywność Jaźni od sposobu weryfikacji czasu. "
+        "Brak czasu sieciowego nie blokuje startu ani odpowiedzi, jeżeli świeży timestamp pochodzi z zegara OS. "
+        "Lokalny czas jest raportowany jako zdegradowany metadanymi, nie jako błąd runtime."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -94,6 +93,8 @@ class RuntimeTruthGateResult:
 def _source_is_network(source: Any) -> bool:
     value = str(source or "").strip().lower()
     if not value:
+        return False
+    if timestamp_source_is_local_os(value):
         return False
     if any(marker in value for marker in LOCAL_OR_UNTRUSTED_SOURCE_MARKERS):
         return False
@@ -158,12 +159,13 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
         else "classified_non_dynamic_response"
     )
 
+    degradations: list[str] = []
     if not present:
         errors.append("timestamp_missing")
     if trusted is not True:
-        errors.append("timestamp_untrusted")
+        degradations.append("timestamp_untrusted")
     if not _source_is_network(source):
-        errors.append("timestamp_source_not_network")
+        degradations.append("timestamp_source_not_network")
     if not freshness_ok:
         errors.append("timestamp_stale_or_missing_freshness")
     if not valid and not truthful_degraded_disclosure:
@@ -176,9 +178,8 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
         errors.append("one_shot_degraded_disclosure_missing")
 
     blocking_errors = [error for error in errors if error in TIMESTAMP_BLOCKING_ERRORS]
-    degraded_errors = [error for error in errors if error in TIMESTAMP_DEGRADED_ERRORS]
     ok = not blocking_errors
-    degraded = bool(degraded_errors) and ok
+    degraded = bool(degradations) and ok
     if trusted is True and _source_is_network(source):
         source_text = str(source or "").strip().lower()
         time_trust = "trusted_host_time_network_unavailable" if source_text.startswith(TRUSTED_EXTERNAL_TIME_SOURCE_PREFIXES) else "trusted_time"
@@ -191,8 +192,10 @@ def evaluate_final_response_contract(contract: dict[str, Any] | None) -> Runtime
         ok=ok,
         normal_response_allowed=bool(ok and not truthful_degraded_disclosure),
         active_state=active_state,
-        error_code=(disclosure_error if truthful_degraded_disclosure else ("timestamp_degraded" if degraded else (None if ok else "runtime_truth_gate_blocked"))),
+        error_code=(disclosure_error if truthful_degraded_disclosure else (None if ok else "runtime_truth_gate_blocked")),
         errors=errors,
+        degradations=degradations,
+        timestamp_degraded=degraded,
         timestamp_source=str(source) if source is not None else None,
         timestamp_trusted=bool(trusted) if trusted is not None else None,
         timestamp_present=present,
@@ -216,13 +219,19 @@ def build_blocked_visible_text(gate: RuntimeTruthGateResult) -> str:
     source = gate.timestamp_source or "unknown"
     header = gate.untrusted_timestamp_header or "brak timestampu runtime"
     errors = ", ".join(gate.errors) if gate.errors else "runtime_truth_gate_blocked"
+    time_blocked = any(error in {"timestamp_missing", "timestamp_stale_or_missing_freshness"} for error in gate.errors)
+    next_step = (
+        "Sprawdź zegar OS (`Get-Date`) oraz diagnostykę czasu (`python main.py --network-time-check`)."
+        if time_blocked
+        else "Sprawdź finalną integralność odpowiedzi i ślad bieżącej tury; sam brak czasu sieciowego nie jest blokadą."
+    )
     return (
-        "[czas lokalny niezweryfikowany — Europe/Warsaw] ⚠️\n"
+        "[diagnostyka runtime] ⚠️\n"
         "Nie zwracam zwykłej odpowiedzi Jaźni, bo brama prawdy runtime zablokowała turę: "
         f"{gate.error_code or 'runtime_truth_gate_blocked'}.\n"
-        f"Niezaufany nagłówek tury: {header}\n"
-        f"Źródło czasu: {source}; błędy: {errors}.\n"
-        "Uruchom diagnostykę czasu sieciowego (`python main.py --network-time-check`) albo powtórz turę, gdy czas sieciowy będzie dostępny."
+        f"Nagłówek tury: {header}\n"
+        f"Źródło czasu: {source}; błędy blokujące: {errors}.\n"
+        f"{next_step}"
     )
 
 
@@ -273,7 +282,7 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
             decision["normal_response_allowed"] = False
             decision["requires_host_model"] = True
             updated["conversation_decision"] = decision
-        elif gate.error_code == "timestamp_degraded" or gate.time_trust_state == "local_machine_unverified":
+        elif gate.timestamp_degraded or gate.time_trust_state == "local_machine_unverified":
             updated["timestamp_degraded"] = True
             updated["runtime_response_status"] = "normal_response_allowed_degraded_timestamp"
             decision = dict(json_object(updated.get("conversation_decision")))

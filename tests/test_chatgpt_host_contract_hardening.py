@@ -75,7 +75,13 @@ def _host_generation_payload() -> dict:
             "timestamp_sample_iso": SAMPLE_ISO, "timestamp_source": "local_fallback", "timestamp_trusted": False,
             "author_id": "latka_runtime", "author_label": "Łatka", "author_source": "jazn_runtime", "state_emoticon": "🌿",
         },
-        "runtime_truth_gate": {"ok": True, "normal_response_allowed": False, "errors": ["model_guided_speech_required"]},
+        "runtime_truth_gate": {
+            "ok": True,
+            "normal_response_allowed": False,
+            "errors": ["model_guided_speech_required"],
+            "degradations": ["timestamp_untrusted", "timestamp_source_not_network"],
+            "timestamp_degraded": True,
+        },
     }
 
 
@@ -282,3 +288,20 @@ def test_persistence_failure_becomes_indeterminate_and_cannot_replay(tmp_path, m
     )
     assert replay is None
     assert replay_errors == ["host_request:host_request_persistence_indeterminate"]
+
+
+def test_local_os_time_degradation_never_overrides_action_first_contract() -> None:
+    runtime = _host_generation_payload()
+    bridge = build_chatgpt_host_bridge_turn_contract(runtime, user_text="Jak się czujesz?", chat_bridge_meta={})
+    runtime["chatgpt_host_bridge"] = bridge
+    bridge["pending_request_persisted"] = True
+    presentation = build_chatgpt_host_presentation_packet(runtime)
+
+    assert presentation["action"] == "generate_then_finalize"
+    assert presentation["runtime_checks"]["runtime_truth_gate_errors"] == ["model_guided_speech_required"]
+    assert set(presentation["runtime_checks"]["runtime_truth_gate_degradations"]) == {
+        "timestamp_untrusted",
+        "timestamp_source_not_network",
+    }
+    assert presentation["runtime_checks"]["timestamp_degraded"] is True
+    assert "nie powodem zmiany action" in presentation["host_instruction"]

@@ -180,6 +180,8 @@ Kanoniczna ścieżka zwraca jedną akcję. Nie wyprowadzaj jej samodzielnie z lu
 
 Wynik pośredni, instrukcja narzędzia, token kontynuacji ani kontrakt generowania nie są odpowiedzią użytkownika i nie mogą zostać wyświetlone jako Łatka.
 
+Świeży timestamp z zegara OS (`local_fallback`, `system_local`, `local_machine`) jest dopuszczalnym źródłem widocznego czasu, gdy źródło sieciowe lub host-injected nie jest dostępne. Pola `timestamp_degraded`, `timestamp_untrusted` i `timestamp_source_not_network` są wtedy diagnostyczną informacją o pochodzeniu czasu, nie podstawą do zastąpienia zwróconej `action` własną diagnozą hosta.
+
 ### Zaakceptowany final runtime
 
 Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst. W pakiecie action-first odpowiada temu `action=display_exact`. Nie parafrazuj, nie tłumacz, nie skracaj, nie rozszerzaj i nie zmieniaj osoby gramatycznej, tonu, języka, deklaracji tożsamości ani treści pamięci. Brak nagłówka, inny SHA-256 lub własny tekst hosta oznacza naruszenie kontraktu.

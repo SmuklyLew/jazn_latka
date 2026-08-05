@@ -20,6 +20,7 @@ from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_MAX_AGE_SECONDS,
     TIMESTAMP_REQUIRE_TRUSTED_IN_FINAL_VISIBLE,
     timestamp_runtime_policy,
+    timestamp_source_is_local_os,
 )
 from latka_jazn.version import schema_version
 
@@ -170,7 +171,12 @@ def validate_visible_text(
     trust_required = bool(contract.get("require_trusted_in_final_visible", TIMESTAMP_REQUIRE_TRUSTED_IN_FINAL_VISIBLE))
     degraded_allowed = bool(contract.get("allow_degraded_local_visible", TIMESTAMP_ALLOW_DEGRADED_LOCAL_VISIBLE))
     trust_declared = isinstance(trusted, bool)
-    trust_ok = bool(trusted) or (trust_declared and degraded_allowed) or not trust_required
+    local_os_source = timestamp_source_is_local_os(source)
+    degraded_local_ok = bool(trusted is False and degraded_allowed and local_os_source)
+    # `trusted` means externally verified, not "permitted to be visible".  A fresh,
+    # timezone-valid OS clock sample is an accepted degraded source unless a caller
+    # explicitly opts into the stricter trusted-only policy.
+    trust_ok = bool(trusted is True or (degraded_local_ok and not trust_required))
     source_ok = bool(source)
 
     envelope_shape_ok = True
@@ -228,8 +234,9 @@ def validate_visible_text(
         "timestamp_max_age_seconds": max_age_seconds,
         "timestamp_freshness_ok": freshness_ok,
         "timestamp_trust_ok": trust_ok,
+        "timestamp_local_os_source": local_os_source,
         "timestamp_degraded_allowed": degraded_allowed,
-        "timestamp_degraded_visible_ok": bool(degraded_allowed and trusted is False and timestamp_valid),
+        "timestamp_degraded_visible_ok": bool(degraded_local_ok and timestamp_valid),
         "timestamp_valid": timestamp_valid,
         "author_line": expected_author_line,
         "message_envelope_valid": envelope_shape_ok,
