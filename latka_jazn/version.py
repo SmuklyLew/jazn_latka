@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 DISTRIBUTION_VERSION = "15.1.0.3"
-PACKAGE_VERSION = "v15.1.0.3.92"
-PACKAGE_RELEASE_NAME = "os time nonblocking"
+PACKAGE_VERSION = "v15.1.0.3.93"
+PACKAGE_RELEASE_NAME = "os time nonblocking and recall"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
