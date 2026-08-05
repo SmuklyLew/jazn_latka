@@ -216,7 +216,8 @@ class SelfMemoryRecallHandler:
             body = self._render_items(items, counts)
             satisfied = ["memory_content", "source_or_index_status", "truth_boundary", "deduplicated_presentation", "no_raw_json_dump", "no_update_route_substitution"]
         else:
-            living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
+            living_value = payload.get("living_memory_search")
+            living: dict[str, Any] = living_value if isinstance(living_value, dict) else {}
             living_counts = json_object(living.get("counts"))
             status = str(living.get("status") or "unknown")
             mode = str(living.get("search_mode") or "semantic_query")
