@@ -103,7 +103,7 @@ class IntentFeatureEngine:
         r"\bbez zmian\b",
     )
     UPDATE_ACTION_PATTERNS = (
-        r"\bnapraw\w*\b",
+        r"\bnapraw(?!de\b)\w*\b",
         r"\bpopraw\w*\b",
         r"\bwdroz\w*\b",
         r"\bwprowadz\w*\b",

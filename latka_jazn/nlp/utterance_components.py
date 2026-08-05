@@ -84,7 +84,10 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
         if re.search(pattern, folded):
             negated.append(action)
 
-    explicit_execution = any(marker in folded for marker in _EXECUTION_VERBS)
+    explicit_execution = (
+        any(marker in folded for marker in _EXECUTION_VERBS)
+        or re.search(r"\bnapraw(?!de\b)\w*", folded) is not None
+    )
     modal_description = any(marker in folded for marker in _MODAL_DESCRIPTION)
     diagnostic = any(marker in folded for marker in _DIAGNOSTIC_MARKERS)
     if negated or modal_description:

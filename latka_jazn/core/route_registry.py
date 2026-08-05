@@ -24,7 +24,7 @@ class RouteRegistry:
         "system_update_execution_request": 95, "system_update_manifest_request": 94,
         "creative_text_formatting": 92, "creative_text_analysis": 90,
         "creative_source_preservation_request": 89, "identity_boundary_question": 88, "identity_direct_question": 88,
-        "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
+        "affective_self_state_reality_check": 89, "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
         "memory_audit_request": 84, "memory_recall_request": 83,
         "dictionary_lookup_request": 82, "language_question": 81,
         "external_research_request": 80, "practical_repair_advice": 78,
@@ -66,6 +66,7 @@ class RouteRegistry:
         "creative_source_preservation_request": ("creative_text", "CreativeTextHandler"),
         "identity_boundary_question": ("identity_boundary", "IdentityBoundaryHandler"),
         "identity_direct_question": ("identity_runtime_truth_contract", "IdentityRuntimeTruthHandler"),
+        "affective_self_state_reality_check": ("self_state", "SelfStateHandler"),
         "self_state_question": ("self_state", "SelfStateHandler"),
         "self_state_time_awareness": ("self_state", "SelfStateHandler"),
         "reciprocal_self_state_question": ("self_state", "SelfStateHandler"),
@@ -172,6 +173,8 @@ class RouteRegistry:
             return ["problem", "tools_or_materials", "steps", "risks", "when_to_stop"]
         if intent in {"dictionary_lookup_request", "language_question"}:
             return ["term", "language", "source_or_cache", "truth_boundary"]
+        if intent == "affective_self_state_reality_check":
+            return ["operational_state", "affective_truth_boundary", "visualization_not_embodiment", "first_person_voice", "no_random_memory_excerpt"]
         if intent in {"self_state_question", "reciprocal_self_state_question", "self_preference_question", "self_expression_request", "self_state_time_awareness"}:
             return ["operational_state", "truth_boundary", "no_random_memory_excerpt"]
         if intent == "sleep_closure_statement":

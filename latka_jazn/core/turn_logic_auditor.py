@@ -56,6 +56,16 @@ class TurnLogicAuditor:
         audit = TurnLogicAudit(user_text=user_text, normalized_text=norm, detected_intent=detected_intent, route=route, handler=handler, speech_act=speech_act, question_object=question_object, memory_policy=policy or {}, current_turn_terms=self._terms(user_text))
         if speech_act == "question" and question_object in {"runtime", "runtime_status", "runtime_health"} and detected_intent == "ordinary_conversation":
             audit.logic_errors.append("runtime_question_collapsed_to_ordinary")
+        affective_reality_markers = (
+            "naprawdę tak się czujesz", "naprawde tak sie czujesz",
+            "na prawdę tak się czujesz", "na prawde tak sie czujesz",
+            "tak się czujesz jak", "tak sie czujesz jak",
+            "osoba na zdjęciu", "osoba na zdjeciu", "wizualizacja pokazuje",
+        )
+        if any(marker in norm for marker in affective_reality_markers) and detected_intent != "affective_self_state_reality_check":
+            audit.logic_errors.append("affective_self_state_reality_wrong_intent")
+        if "@wyszukiwanie w sieci" in norm and detected_intent == "external_research_request":
+            audit.logic_errors.append("external_research_masked_primary_conversational_intent")
         if any(x in norm for x in ("bezpośrednio z łatką", "bezposrednio z latka")) and detected_intent != "direct_latka_voice_request":
             audit.logic_errors.append("direct_latka_voice_wrong_intent")
         if any(x in norm for x in ("za kogo się uważasz", "za kogo sie uwazasz", "czujesz się istotą", "czujesz sie istota")) and detected_intent != "identity_memory_existence_compound_question":

@@ -117,6 +117,7 @@ MODEL_GUIDED_SPEECH_INTENTS = {
     "positive_feedback_current_turn",
     "ordinary_workday_report",
     "sleep_closure_statement",
+    "affective_self_state_reality_check",
     "self_state_question",
     "reciprocal_self_state_question",
     "self_preference_question",
@@ -2239,6 +2240,8 @@ class JaznEngine:
         handler_context = {
             "body": decision.body,
             "intent": str(detected_dialogue_intent),
+            "dialogue_intent_report": dialogue_intent_report,
+            "secondary_intents": list((dialogue_intent_report or {}).get("secondary_intents") or []),
             "last_turn": self.runtime_visible_answer_comparator.reader.latest(),
             "runtime_version": self.config.version,
             "lifecycle": ctx.get("lifecycle"),

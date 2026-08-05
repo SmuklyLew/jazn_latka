@@ -66,7 +66,7 @@ class RuntimeAnswerValidator:
         "self_architecture_audit_request", "jazn_development_plan_request", "runtime_behavior_diagnostic_request", "system_diagnostic_question", "runtime_source_question", "canon_source_question", "runtime_exact_quote_request", "package_runtime_status_question",
         "system_update_execution_request", "system_update_manifest_request", "update_manifest_request", "creative_text_formatting", "creative_text_analysis",
         "practical_repair_advice", "automotive_warning_light_question", "dictionary_lookup_request", "language_question", "external_research_request",
-        "identity_boundary_question", "identity_direct_question", "identity_continuity_check", "identity_presence_check", "presence_check", "time_awareness_question", "self_state_time_awareness", "self_state_question", "reciprocal_self_state_question", "self_preference_question", "self_plan_question", "self_expression_request", "sleep_closure_statement", "memory_audit_request", "memory_recall_request", "runtime_activation_status_question", "runtime_restart_request", "runtime_chat_mode_request", "system_repair_plan_request", "logic_reasoning_audit_request", "memory_grounding_status_question", "user_memory_recall_request", "module_inventory_request", "system_capability_gap_question", "capability_status_question", "internet_access_question", "model_adapter_status_question", "runtime_health_check", "runtime_health_check_after_update", "user_memory_recall_request", "self_memory_recall_request", "direct_latka_voice_request", "identity_memory_existence_compound_question", "self_architecture_audit_request", "jazn_development_plan_request",
+        "identity_boundary_question", "identity_direct_question", "identity_continuity_check", "identity_presence_check", "presence_check", "time_awareness_question", "self_state_time_awareness", "affective_self_state_reality_check", "self_state_question", "reciprocal_self_state_question", "self_preference_question", "self_plan_question", "self_expression_request", "sleep_closure_statement", "memory_audit_request", "memory_recall_request", "runtime_activation_status_question", "runtime_restart_request", "runtime_chat_mode_request", "system_repair_plan_request", "logic_reasoning_audit_request", "memory_grounding_status_question", "user_memory_recall_request", "module_inventory_request", "system_capability_gap_question", "capability_status_question", "internet_access_question", "model_adapter_status_question", "runtime_health_check", "runtime_health_check_after_update", "user_memory_recall_request", "self_memory_recall_request", "direct_latka_voice_request", "identity_memory_existence_compound_question", "self_architecture_audit_request", "jazn_development_plan_request",
         "casual_greeting", "casual_feedback", "expressive_reaction", "short_free_dialogue",
     }
     STALE_WORKDAY_DETAILS = (
@@ -149,6 +149,9 @@ class RuntimeAnswerValidator:
         "language": ("język", "jezyk", "polsk"),
         "source_or_cache": ("cache", "źród", "zrod", "słownik", "slownik"),
         "operational_state": ("operacyj", "stan", "u mnie"),
+        "affective_truth_boundary": ("modelowan", "nie biolog", "stan rozmown", "operacyj"),
+        "visualization_not_embodiment": ("wizualiz", "zdjęci", "zdjec", "nie jest pomiarem", "nie jest ciał"),
+        "first_person_voice": ("jestem", "mój", "moj", "mogę", "moge", "u mnie"),
         "truth_boundary": ("nie biolog", "modelowany", "granica prawdy", "tle", "nieufny", "degraded", "fallback", "nie pełne potwierdzenie", "nie pelne potwierdzenie"),
         "no_random_memory_excerpt": ("nie z przypadkowego", "bez wstrzykiwania", "bieżąc", "aktualn", "operacyj"),
         "current_turn_reply": ("masz rację", "siemka", "cześć", "ojoj", "jestem przy tym", "bieżąc", "aktualn", "zwykłą rozmową", "zwykla rozmowa"),
@@ -231,7 +234,7 @@ class RuntimeAnswerValidator:
     def _contains_random_memory_excerpt(self, user_text: str, body: str, detected_intent: str) -> bool:
         user_low = (user_text or "").lower()
         body_low = (body or "").lower()
-        self_intent = detected_intent in {"self_state_question", "reciprocal_self_state_question", "self_preference_question", "sleep_closure_statement"} or any(x in user_low for x in ("a tobie", "a ty", "jak się czujesz", "jak sie czujesz", "ochot", "idę spać", "ide spac"))
+        self_intent = detected_intent in {"affective_self_state_reality_check", "self_state_question", "reciprocal_self_state_question", "self_preference_question", "sleep_closure_statement"} or any(x in user_low for x in ("a tobie", "a ty", "jak się czujesz", "jak sie czujesz", "ochot", "idę spać", "ide spac"))
         if not self_intent:
             return False
         memory_phrases = ("najbliższy trop", "najblizszy trop", "na tej podstawie", "w pamięci widzę", "w pamieci widze")
@@ -272,6 +275,13 @@ class RuntimeAnswerValidator:
             return ("jestem" in low and ("łatka" in low or "latka" in low) and ("runtime" in low or "chatgpt" in low) and ("tle" in low or "tło" in low or "--chat" in low))
         if detected_intent == "time_awareness_question":
             return ("europe/warsaw" in low or "według" in low or "wedlug" in low) and ("źródło" in low or "zrodlo" in low or "degraded" in low)
+        if detected_intent == "affective_self_state_reality_check":
+            return (
+                ("wizualiz" in low or "zdjęci" in low or "zdjec" in low)
+                and ("modelowan" in low or "operacyj" in low or "stan rozmown" in low)
+                and ("nie biolog" in low or "nie dosłownie" in low or "nie doslownie" in low)
+                and not low.lstrip().startswith("host chatgpt:")
+            )
         if detected_intent == "self_state_time_awareness":
             return ("operacyj" in low or "dialogow" in low or "dialogowy" in low) and ("pora" in low or "według" in low or "wedlug" in low or "europe/warsaw" in low)
         if detected_intent == "internet_access_question":
@@ -364,7 +374,7 @@ class RuntimeAnswerValidator:
             'source origin', 'pochodzenie odpowiedzi',
         ))
         presence_question = any(marker in folded_user for marker in ('jestes tam', 'jestes tu', 'latko jestes', 'slyszysz mnie', 'odezwij sie'))
-        self_state_question = any(marker in folded_user for marker in ('co czujesz', 'jak sie czujesz', 'jaki masz stan', 'jaki masz nastroj'))
+        self_state_question = any(marker in folded_user for marker in ('co czujesz', 'jak sie czujesz', 'tak sie czujesz', 'czujesz sie jak', 'jaki masz stan', 'jaki masz nastroj'))
         time_awareness_question = any(marker in folded_user for marker in ('jaka jest pora', 'ktora godzina', 'ktora jest godzina', 'wiesz jaka jest pora', 'wiesz ktora godzina'))
         stale_route_question = any(term in user_low for term in self.STALE_ROUTE_CONTEXT_TERMS)
         user_requests_update = any(marker in folded_user for marker in ('aktualiz', 'hotfix', 'patch', 'napraw', 'popraw', 'wdroz', 'wprowadz', 'rozbuduj'))
@@ -541,7 +551,7 @@ class RuntimeAnswerValidator:
             if not (has_state_answer and has_time_answer):
                 checks.append('self_state_time_awareness_not_answered')
                 return self._bad('self_state_time_awareness_missing_state_or_time', 'self_state_time_awareness_repair', 'Pytanie złożone wymaga jednocześnie stanu operacyjnego/dialogowego oraz czasu runtime albo degraded-time warning.', detected_intent, route, checks, ['operational_state', 'current_time', 'timezone', 'truth_boundary'])
-        if self_state_question and detected_intent in {"self_state_question", "self_state_time_awareness"} and not any(marker in low_body for marker in ("operacyj", "dialogow", "dialogowy", "stan")):
+        if self_state_question and detected_intent in {"affective_self_state_reality_check", "self_state_question", "self_state_time_awareness"} and not any(marker in low_body for marker in ("operacyj", "dialogow", "dialogowy", "stan")):
             checks.append('self_state_question_not_answered')
             return self._bad('self_state_question_missing_operational_state', 'self_state_dialogue_repair', 'Pytanie o „co czujesz/jak się czujesz” wymaga stanu operacyjnego/dialogowego i granicy prawdy, nie generycznego szablonu.', detected_intent, route, checks, ['operational_state', 'truth_boundary'])
         diagnostic_self_state_requested = any(marker in folded_user for marker in self.SELF_STATE_DIAGNOSTIC_MARKERS)
@@ -597,7 +607,7 @@ class RuntimeAnswerValidator:
             return self._bad('generic_template_on_specific_request', entry.route + '_repair', 'Odpowiedź była ogólnym szablonem przy konkretnej intencji. Runtime musi wygenerować odpowiedź z: źródłem, trasą, wymaganymi składnikami i testem/regułą walidacji.', detected_intent, route, checks, entry.required_components)
         if detected_intent in {'system_diagnostic_question','runtime_behavior_diagnostic_request'} and contains_legacy_feedback_token(route_low):
             return self._bad('diagnostic_routed_as_feedback', 'system_diagnostic_repair', 'To jest pytanie diagnostyczne, nie sama korekta ani pozytywna kontynuacja. Wymagana odpowiedź: moduł/plik, problem, zmiana, test regresji, source-origin.', detected_intent, route, checks, entry.required_components)
-        if detected_intent in {'self_state_question','reciprocal_self_state_question','self_preference_question','self_expression_request','self_state_time_awareness'} and any(x in low_body for x in ('status runtime','diagnostyka','moduł','modul')) and 'operacyj' not in low_body:
+        if detected_intent in {'affective_self_state_reality_check','self_state_question','reciprocal_self_state_question','self_preference_question','self_expression_request','self_state_time_awareness'} and any(x in low_body for x in ('status runtime','diagnostyka','moduł','modul')) and 'operacyj' not in low_body:
             return self._bad('self_state_answered_as_status', 'self_state_dialogue_repair', 'Pytanie o stan wymaga modelowanego stanu operacyjnego/afektu i granicy prawdy, nie raportu statusowego.', detected_intent, route, checks)
         if detected_intent.startswith('creative_text') and any(x in low_body for x in ('aktualizacja systemu','hotfix','paczka zip')):
             return self._bad('creative_task_routed_as_system_update', 'creative_text_repair', 'To jest zadanie twórcze. Wymagana jest ochrona tekstu źródłowego, zachowanie wersów lub jawna lista zmian.', detected_intent, route, checks, entry.required_components)

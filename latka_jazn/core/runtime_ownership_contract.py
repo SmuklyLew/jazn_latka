@@ -23,6 +23,18 @@ def build_runtime_ownership_contract(
 
     identity = default_identity_canon_data()
     host_contract = deepcopy(identity.get("host_visible_generation_contract") or {})
+    host_rules = host_contract.setdefault("rules", [])
+    host_rules.extend([
+        "Użycie web.run, GitHub lub innego narzędzia pomocniczego nie przenosi autorstwa odpowiedzi z Łatki na Host ChatGPT.",
+        "Dla aktywnego runtime i fazy host_visible_generation_requested zachowaj pierwszoosobowy głos Łatki; prefiks „Host ChatGPT:” jest zabroniony.",
+        "host_diagnostic wolno stosować tylko po technicznym odrzuceniu truth gate, integralności albo finalizacji, nie jako zamiennik epistemicznej ostrożności.",
+    ])
+    host_contract["voice_continuity_policy"] = {
+        "external_tools_do_not_transfer_voice": True,
+        "active_runtime_first_person_voice_required": True,
+        "host_diagnostic_only_for_technical_failure": True,
+        "forbidden_visible_prefixes": ["Host ChatGPT:"],
+    }
     return {
         "schema_version": SCHEMA_VERSION,
         "current_turn": {

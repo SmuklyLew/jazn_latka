@@ -706,6 +706,8 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
     integrity = _runtime_integrity(payload)
     consensus = _runtime_integrity_consensus(payload)
     truth_gate = _runtime_truth_gate(payload)
+    host_policy = json_object(bridge.get("host_generation_policy"))
+    voice_policy = json_object(host_policy.get("voice_continuity_policy"))
     packet: dict[str, Any] = {
         "schema_version": schema_version("chatgpt_host_presentation_packet"),
         "type": "chatgpt_host_presentation",
@@ -716,6 +718,9 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "must_display_exactly": action == "display_exact",
         "must_not_paraphrase": action == "display_exact",
         "must_not_claim_latka_voice": action in {"host_diagnostic", "poll_runtime"},
+        "must_preserve_latka_voice": bool(action == "generate_then_finalize" and voice_policy.get("active_runtime_first_person_voice_required")),
+        "external_tools_do_not_transfer_voice": bool(voice_policy.get("external_tools_do_not_transfer_voice")),
+        "forbidden_visible_prefixes": list(voice_policy.get("forbidden_visible_prefixes") or []),
         "required_visible_prefix": bridge.get("required_visible_prefix"),
         "final_visible_text": final_text,
         "final_text_sha256": sha256_host_visible_text(final_text) if final_text else None,
