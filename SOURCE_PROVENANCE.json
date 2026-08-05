@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "df070b29e887b3329589aca39242889efe98d626",
+  "base_merge_commit": "40f31b420adc489c9d3a6bcc95918b8f9f196965",
   "base_version": "v15.1.0.3.95-living-memory-recall-pyright",
-  "commit_date": "2026-08-06T01:27:00+02:00",
+  "commit_date": "2026-08-06T01:38:04+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-05T23:27:00+00:00",
+  "generated_at_utc": "2026-08-05T23:38:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "418a83ba6e77f0374989f8ac0c81126acdf47fe2",
+  "git_tree_sha": "3ac452b87f9770a1d9f01006eeea026912e3b5c8",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
