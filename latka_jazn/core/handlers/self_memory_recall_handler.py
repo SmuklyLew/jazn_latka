@@ -214,7 +214,15 @@ class SelfMemoryRecallHandler:
 
         if items:
             body = self._render_items(items, counts)
-            satisfied = ["memory_content", "source_or_index_status", "truth_boundary", "deduplicated_presentation", "no_raw_json_dump", "no_update_route_substitution"]
+            satisfied = [
+                "memory_content",
+                "source_or_index_status",
+                "truth_boundary",
+                "deduplicated_presentation",
+                "no_raw_json_dump",
+                "no_update_route_substitution",
+                "self_memory_not_user_memory",
+            ]
         else:
             living = payload.get("living_memory_search") if isinstance(payload.get("living_memory_search"), dict) else {}
             living_counts = json_object(living.get("counts"))
@@ -234,7 +242,14 @@ class SelfMemoryRecallHandler:
                 f"Tryb wyszukiwania: {mode}; stan pięciu baz: {status}; gotowe źródła: {ready_sources}.{issue_hint} "
                 f"Nie wypełnię luki szablonem ani domysłem. Następne działanie: {next_action}."
             )
-            satisfied = ["source_or_index_status", "truth_boundary", "no_update_route_substitution", "actionable_recall_diagnostic"]
+            satisfied = [
+                "memory_content",
+                "source_or_index_status",
+                "truth_boundary",
+                "no_update_route_substitution",
+                "actionable_recall_diagnostic",
+                "self_memory_not_user_memory",
+            ]
 
         return RouteHandlerResult(
             self.name,

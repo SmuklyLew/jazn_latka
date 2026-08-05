@@ -11,6 +11,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     LONG_WORK_CONTINUATION_TTL_SECONDS,
     continuation_ttl_for_bridge,
 )
+from latka_jazn.core.handlers.self_memory_recall_handler import SelfMemoryRecallHandler
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
@@ -175,3 +176,80 @@ def test_host_continuation_lease_is_longer_for_research_and_updates() -> None:
     assert continuation_ttl_for_bridge(research) == LONG_WORK_CONTINUATION_TTL_SECONDS
     assert continuation_ttl_for_bridge(update) == LONG_WORK_CONTINUATION_TTL_SECONDS
     assert DEFAULT_CONTINUATION_TTL_SECONDS >= 60 * 60
+
+
+def test_self_memory_handler_satisfies_self_vs_user_memory_boundary_with_hits() -> None:
+    context = {
+        "intent": "self_memory_recall_request",
+        "required_components": [
+            "memory_content",
+            "source_or_index_status",
+            "truth_boundary",
+            "no_update_route_substitution",
+            "self_memory_not_user_memory",
+        ],
+        "memory_context": {
+            "query_terms": ["pierwsze"],
+            "living_memory_hits": [
+                {
+                    "source_layer": "archive_chats",
+                    "source_database": "/private/archive_chats.sqlite3",
+                    "source_locator": "conversations:c1/nodes:n1",
+                    "record_id": "n1",
+                    "content_excerpt": "Pierwszy zapis naszej rozmowy o synchronizacji pamięci.",
+                    "timestamp": "2025-06-16T05:05:48+00:00",
+                    "truth_status": "source_recorded",
+                    "confidence": 0.82,
+                    "importance": None,
+                    "relevance": 0.69,
+                    "grounding": "read_only_living_memory_gateway",
+                }
+            ],
+            "living_memory_search": {
+                "status": "ready",
+                "search_mode": "chronological_earliest",
+                "counts": {"sources_recall_ready": 1},
+                "issues": [],
+                "import_catalog_used_for_recall": False,
+            },
+            "counts": {"living_memory_hits": 1},
+        },
+    }
+
+    result = SelfMemoryRecallHandler().handle("Co pamiętasz jako pierwsze?", context)
+
+    assert "self_memory_not_user_memory" in result.satisfied_components
+    assert set(result.required_components).issubset(result.satisfied_components)
+    assert result.missing_components == []
+
+
+def test_self_memory_handler_satisfies_self_vs_user_memory_boundary_without_hits() -> None:
+    context = {
+        "intent": "self_memory_recall_request",
+        "required_components": [
+            "memory_content",
+            "source_or_index_status",
+            "truth_boundary",
+            "no_update_route_substitution",
+            "self_memory_not_user_memory",
+        ],
+        "memory_context": {
+            "query_terms": ["pierwsze"],
+            "living_memory_hits": [],
+            "living_memory_search": {
+                "status": "no_registered_living_memory",
+                "search_mode": "chronological_earliest",
+                "counts": {"sources_recall_ready": 0},
+                "issues": [],
+                "import_catalog_used_for_recall": False,
+            },
+            "counts": {"living_memory_hits": 0},
+        },
+    }
+
+    result = SelfMemoryRecallHandler().handle("Co pamiętasz jako pierwsze?", context)
+
+    assert "self_memory_not_user_memory" in result.satisfied_components
+    assert "memory_content" in result.satisfied_components
+    assert set(result.required_components).issubset(result.satisfied_components)
+    assert result.missing_components == []
