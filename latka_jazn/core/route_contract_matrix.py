@@ -46,9 +46,11 @@ class RouteContractMatrix:
         "identity_presence_check",
         "identity_continuity_check",
         "presence_check",
+        "affective_self_state_reality_check",
         "self_state_time_awareness",
         "self_state_question",
         "time_awareness_question",
+        "external_research_request",
     )
     UPDATE_EXECUTION_MARKERS = (
         "napraw", "popraw", "wdroż", "wdroz", "zaimplementuj",
@@ -185,6 +187,8 @@ class RouteContractMatrix:
             "identity_presence_check": "identity_presence",
             "identity_continuity_check": "identity_continuity",
             "self_state_question": "self_state",
+            "affective_self_state_reality_check": "affective_self_state_reality",
+            "external_research_request": "external_research",
             "time_awareness_question": "current_time",
             "self_state_time_awareness": "self_state_time",
             "ordinary_dialogue": "ordinary_dialogue",

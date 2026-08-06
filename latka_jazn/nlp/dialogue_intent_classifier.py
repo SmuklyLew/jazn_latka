@@ -283,6 +283,10 @@ class DialogueIntentClassifier:
         # Complete one-word markers use token boundaries. Multi-word markers remain phrase based;
         # stem-like markers used elsewhere in the legacy lexicon retain prefix behaviour.
         complete_words = {"dziala", "dzialasz", "uruchomiona", "status", "modul", "runtime", "jazn"}
+        if fm == "napraw":
+            # Po złożeniu diakrytyki „naprawdę” staje się „naprawde”.
+            # To słowo nie jest imperatywem ani rdzeniem czasownika „naprawić”.
+            return re.search(r"(?<!\w)napraw(?!de\b)\w*", folded) is not None
         if fm in complete_words:
             return re.search(rf"(?<!\w){re.escape(fm)}(?!\w)", folded) is not None
         if len(fm) <= 4 and fm.isalpha():
@@ -481,8 +485,18 @@ class DialogueIntentClassifier:
             )
         if has_runtime_wake_health_check:
             return report(norm,folded,'runtime_health_check_after_update',['wake/health-check po przeładowaniu Jaźni: nie traktować jako wykonanie kolejnego patcha'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_health')
-        if component_report.explicit_execution and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded)):
-            return report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania patcha/aktualizacji ma pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+        system_execution_target = any(
+            marker in folded for marker in (
+                'jazn', 'jaźń', 'runtime', 'routing', 'trasa', 'handler', 'klasyfikator',
+                'kod', 'system', 'modul', 'moduł', 'finalizac', 'host',
+            )
+        )
+        feature_engine_execution = (
+            decision_frame.top_intent == 'system_update_execution_request'
+            and decision_frame.top_score >= 0.50
+        )
+        if (component_report.explicit_execution or feature_engine_execution) and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded) or system_execution_target):
+            return report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania oraz cel systemowy mają pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
             return report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
         if has_health_concern:
