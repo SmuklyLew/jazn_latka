@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 DISTRIBUTION_VERSION = "15.1.0.3"
-PACKAGE_VERSION = "v15.1.0.3.95"
-PACKAGE_RELEASE_NAME = "living-memory-recall-pyright"
+PACKAGE_VERSION = "v15.1.0.3.96"
+PACKAGE_RELEASE_NAME = "semantic-routing-completion"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

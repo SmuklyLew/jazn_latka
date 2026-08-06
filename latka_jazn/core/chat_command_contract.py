@@ -25,8 +25,10 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     mark_claimed_host_request_indeterminate,
     persist_pending_host_request,
     release_claimed_host_request,
+    request_host_regeneration,
 )
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
+from latka_jazn.core.host_regeneration_policy import decide_host_regeneration
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -798,8 +800,71 @@ def persist_chatgpt_host_visible_reply(
         supplied_text_sha256=reply["final_text_sha256"],
     )
     if not finalization.accepted:
-        release_claimed_host_request(config.root, turn_id=reply["turn_id"])
-        return None, [f"finalization:{item.code}" for item in finalization.violations]
+        violation_codes = [item.code for item in finalization.violations]
+        attempts_used = int(pending.get('regeneration_attempts') or 0)
+        maximum = int(pending.get('max_regeneration_attempts') or 1)
+        regeneration = decide_host_regeneration(
+            violation_codes, attempts_used=attempts_used, max_attempts=maximum
+        )
+        if regeneration.regenerate:
+            try:
+                retry_record = request_host_regeneration(
+                    config.root, turn_id=reply['turn_id'], reason=regeneration.reason
+                )
+            except HostRequestStoreError as exc:
+                return None, [f'host_regeneration:{exc}', *[f'finalization:{code}' for code in violation_codes]]
+            binding_retry = json_object(retry_record.get('binding'))
+            generation_context = json_object(retry_record.get('generation_context'))
+            retry_bridge = {
+                'schema_version': schema_version('chatgpt_host_bridge_turn'),
+                'phase': 'host_visible_generation_requested',
+                'status': 'host_regeneration_requested',
+                'host_must_generate_visible_reply': True,
+                'pending_request_persisted': True,
+                'turn_id': binding_retry.get('turn_id'),
+                'trace_id': binding_retry.get('trace_id'),
+                'runtime_version': binding_retry.get('runtime_version'),
+                'timestamp_header': binding_retry.get('timestamp_header'),
+                'timezone': binding_retry.get('timezone'),
+                'timestamp_sample_iso': binding_retry.get('timestamp_sample_iso'),
+                'timestamp_source': binding_retry.get('timestamp_source'),
+                'timestamp_trusted': binding_retry.get('timestamp_trusted'),
+                'author_id': binding_retry.get('author_id'),
+                'author_label': binding_retry.get('author_label'),
+                'author_source': binding_retry.get('author_source'),
+                'state_emoticon': binding_retry.get('state_emoticon'),
+                'host_request_contract_hash': retry_record.get('request_contract_hash'),
+                'required_visible_prefix': generation_context.get('required_visible_prefix'),
+                'host_generation_policy': generation_context.get('host_generation_policy') or {},
+                'host_generation_rules': generation_context.get('host_generation_rules') or [],
+                'runtime_summary': generation_context.get('runtime_summary') or {},
+                'regeneration_attempt': retry_record.get('regeneration_attempts'),
+                'max_regeneration_attempts': retry_record.get('max_regeneration_attempts'),
+                'regeneration_reason': regeneration.reason,
+            }
+            retry_result = {
+                'schema_version': schema_version('chatgpt_host_regeneration_requested'),
+                'ok': True,
+                'runtime_version': binding_retry.get('runtime_version'),
+                'chat_bridge': chat_bridge_meta,
+                'chatgpt_bridge': chat_bridge_meta,
+                'chat_command_contract': contract,
+                'chatgpt_host_bridge': retry_bridge,
+                'host_must_generate_visible_reply': True,
+                'runtime_truth_gate': {
+                    'ok': True, 'normal_response_allowed': False,
+                    'errors': ['model_guided_speech_required'], 'degradations': [],
+                },
+                'host_visible_finalization': finalization.to_dict(),
+                'host_regeneration': regeneration.to_dict(),
+            }
+            retry_result['chatgpt_host_presentation'] = build_chatgpt_host_presentation_packet(retry_result)
+            return retry_result, []
+        release_claimed_host_request(config.root, turn_id=reply['turn_id'])
+        terminal_errors = [f'finalization:{item.code}' for item in finalization.violations]
+        if regeneration.reason == 'regeneration_budget_exhausted':
+            terminal_errors.insert(0, 'host_regeneration:host_regeneration_budget_exhausted')
+        return None, terminal_errors
     reply["final_text"] = finalization.final_visible_text
 
     from latka_jazn.core.engine import JaznEngine

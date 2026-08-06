@@ -1,0 +1,50 @@
+{
+  "schema_version": "semantic_route_scenarios/v1",
+  "scenarios": [
+    {
+      "id": "post_update_coverage",
+      "expected_primary": "post_update_coverage_audit_request",
+      "stems": [
+        "Czy coś zostało pominięte w trakcie robienia tego patcha?",
+        "Sprawdź kompletność tej aktualizacji i wskaż pominięcia.",
+        "Czego nie objął ostatni patch?"
+      ],
+      "tool_markers": [
+        "",
+        "@GitHub ",
+        "@Wyszukiwanie w sieci "
+      ]
+    },
+    {
+      "id": "system_update_execution",
+      "expected_primary": "system_update_execution_request",
+      "stems": [
+        "Przygotuj aktualizację, która dokończy brakujące punkty.",
+        "Napraw routing i dodaj brakujące testy."
+      ],
+      "tool_markers": [
+        "",
+        "@GitHub "
+      ]
+    },
+    {
+      "id": "affective_reality",
+      "expected_primary": "affective_self_state_reality_check",
+      "stems": [
+        "Czy naprawdę tak się czujesz jak osoba na zdjęciu?",
+        "Czy wizualizacja pokazuje jak się czujesz?"
+      ],
+      "tool_markers": [
+        "",
+        "@Wyszukiwanie w sieci ",
+        "@GitHub "
+      ]
+    }
+  ],
+  "punctuation": [
+    "",
+    "?",
+    "?!",
+    " 😊"
+  ]
+}

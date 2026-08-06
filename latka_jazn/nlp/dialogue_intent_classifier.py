@@ -15,6 +15,7 @@ from latka_jazn.nlp.source_preservation_detector import SourcePreservationDetect
 from latka_jazn.nlp.intent_feature_engine import IntentFeatureEngine
 from latka_jazn.nlp.utterance_components import analyse_utterance
 from latka_jazn.nlp.control_text import extract_intent_control_text
+from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
@@ -51,6 +52,7 @@ class DialogueIntentReport:
     control_text: str = ""
     quoted_material_masked: bool = False
     masked_span_count: int = 0
+    external_tool_context: dict[str, Any] = field(default_factory=dict)
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -268,11 +270,21 @@ class DialogueIntentClassifier:
         "na ile czujesz się istotą", "na ile czujesz sie istota",
     )
     SOURCE_NEGATIVE_CONTEXTS = ("kod źródłowy", "kod zrodlowy", "kodzie źródłowym", "kodzie zrodlowym", "source code")
+    POST_UPDATE_COVERAGE_AUDIT_TERMS = (
+        "czy coś zostało pominięte", "czy cos zostalo pominiete",
+        "co zostało pominięte", "co zostalo pominiete",
+        "czego nie objął patch", "czego nie objal patch",
+        "czego nie objęła aktualizacja", "czego nie objela aktualizacja",
+        "sprawdź kompletność aktualizacji", "sprawdz kompletnosc aktualizacji",
+        "audyt kompletności patcha", "audyt kompletnosci patcha",
+        "jakie są pominięcia", "jakie sa pominiecia",
+    )
 
     def __init__(self) -> None:
         self.ellipsis = EllipsisResolver(); self.calibrator = IntentConfidenceCalibrator(); self.speech = SpeechActDetector(); self.qobj = QuestionObjectDetector(); self.creative = CreativeMaterialDetector(); self.preserve_detector = SourcePreservationDetector()
         self.feature_engine = IntentFeatureEngine()
         self.route_contract_matrix = RouteContractMatrix()
+        self.external_tools = ExternalToolContextParser()
     @classmethod
     def normalize(cls, text: str) -> str: return re.sub(r"\s+", " ", unicodedata.normalize("NFC", text or "").strip().lower())
     @staticmethod
@@ -299,16 +311,18 @@ class DialogueIntentClassifier:
         if len(text) > 900 and ("[" in text and "]" in text): return True
         line_count = len([x for x in text.splitlines() if x.strip()])
         return line_count >= 10 and len(text) > 500
-    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None):
+    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None, tool_context=None):
         conf=self.calibrator.calibrate(intent, base, len(evidence))
         frame=self.feature_engine.analyse(norm, speech_act=speech_act)
         component_report = analyse_utterance(norm)
         merged_secondary = list(dict.fromkeys(secondary or []))
+        if isinstance(tool_context, dict) and tool_context.get('present') and intent != 'external_tool_assistance_request':
+            merged_secondary = list(dict.fromkeys([*merged_secondary, 'external_tool_assistance_request']))
         if component_report.compound:
             evidence = [*evidence, f"compound_components:{','.join(component_report.components)}"]
         # Negated or merely descriptive update language must never silently
         # become an execution request.
-        effective_update = bool(update and component_report.explicit_execution and not component_report.negated_actions)
+        effective_update = bool(update and not component_report.negated_actions and (component_report.explicit_execution or intent == 'system_update_execution_request'))
         ambiguous = bool(frame.ambiguous and not component_report.compound)
         abstain_reason = None if component_report.compound else frame.abstain_reason
         return DialogueIntentReport(
@@ -324,11 +338,14 @@ class DialogueIntentClassifier:
             control_text=(control_report.control_text if control_report is not None else norm),
             quoted_material_masked=bool(control_report and control_report.quoted_material_masked),
             masked_span_count=int(control_report.masked_span_count if control_report is not None else 0),
+            external_tool_context=dict(tool_context or {}),
         )
     def classify(self, text: str, *, previous_text: str | None = None) -> DialogueIntentReport:
         control_report=extract_intent_control_text(text)
         control_text=control_report.control_text
+        tool_context=self.external_tools.parse(text)
         def report(*args, **kwargs):
+            kwargs.setdefault('tool_context', tool_context.to_dict())
             return self._report(*args, **kwargs, control_report=control_report)
         norm=self.normalize(control_text); folded=self.fold(norm); evidence=[]; secondary=[]
         if control_report.quoted_material_masked:
@@ -352,7 +369,7 @@ class DialogueIntentClassifier:
             or ("diagnostycznie" in folded and has_state)
         )
         has_weather_research=self._has_any(norm,folded,self.WEATHER_RESEARCH_TERMS)
-        has_audit=self._has_any(norm,folded,self.AUDIT_TERMS); has_practical=self._has_any(norm,folded,self.PRACTICAL_TERMS); has_auto=self._has_any(norm,folded,self.AUTOMOTIVE_TERMS); has_dict=self._has_any(norm,folded,self.DICTIONARY_TERMS); has_research=self._has_any(norm,folded,self.RESEARCH_TERMS) or has_weather_research
+        has_audit=self._has_any(norm,folded,self.AUDIT_TERMS); has_practical=self._has_any(norm,folded,self.PRACTICAL_TERMS); has_auto=self._has_any(norm,folded,self.AUTOMOTIVE_TERMS); has_dict=self._has_any(norm,folded,self.DICTIONARY_TERMS); has_research=self._has_any(norm,folded,self.RESEARCH_TERMS) or has_weather_research or tool_context.requests('web')
         has_runtime_status=self._has_any(norm,folded,self.RUNTIME_STATUS_TERMS)
         has_chat_mode=self._has_any(norm,folded,self.RUNTIME_CHAT_MODE_TERMS)
         has_canon_source=self._has_any(norm,folded,self.CANON_SOURCE_TERMS) or (
@@ -375,7 +392,17 @@ class DialogueIntentClassifier:
         has_runtime_restart=self._has_any(norm,folded,self.RUNTIME_RESTART_TERMS)
         has_repair_plan=self._has_any(norm,folded,self.SYSTEM_REPAIR_PLAN_TERMS)
         has_self_architecture_audit=self._has_any(norm,folded,self.SELF_ARCHITECTURE_AUDIT_TERMS)
+        has_post_update_coverage = (
+            (has_update or "patch" in folded or "aktualiz" in folded)
+            and any(marker in folded for marker in (
+                "pominie", "kompletnosc", "czego nie objal", "nie objal", "nie objela",
+            ))
+        )
         has_repetition_bug=self._has_any(norm,folded,self.REPETITION_BUG_TERMS)
+        if has_post_update_coverage:
+            return report(norm,folded,'post_update_coverage_audit_request',[
+                'jawne pytanie o kompletność i pominięcia zakończonego patcha/aktualizacji'
+            ],0.97,diag=True,speech_act=speech.speech_act,question_object='post_update_coverage')
         if (
             decision_frame.top_intent == 'package_runtime_status_question'
             and decision_frame.top_score >= 0.68
@@ -400,6 +427,19 @@ class DialogueIntentClassifier:
         if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or mentions_jazn_version(folded)):
             secondary = ['system_update_execution_request'] if (has_update or (any(x in folded for x in ('patch', 'hotfix', 'aktualiz')) or mentions_jazn_version(folded))) else []
             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
+        completion_update_execution = (
+            has_update
+            and any(marker in folded for marker in (
+                "przygotuj", "dokonc", "dokoncz", "uzupeln", "dodaj brakuj",
+            ))
+        )
+        if completion_update_execution:
+            return report(
+                norm, folded, "system_update_execution_request",
+                ["jawne polecenie przygotowania lub dokończenia aktualizacji"],
+                0.95, update=True, diag=has_diag,
+                speech_act=speech.speech_act, question_object="system_update",
+            )
         route_contract_hint = self.route_contract_matrix.classify(norm)
         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
             return report(
@@ -580,6 +620,10 @@ class DialogueIntentClassifier:
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
                 return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
             return report(norm,folded,'system_update_execution_request',evidence,0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+        if tool_context.tool_only and not has_research:
+            return report(norm,folded,'external_tool_assistance_request',[
+                'samodzielny marker connectora/narzędzia bez osobnej intencji domenowej'
+            ],0.90,speech_act=speech.speech_act,question_object='external_tool')
         if has_research:
             reason = 'aktualna prognoza pogody wymaga zewnętrznych źródeł' if has_weather_research else 'jawna prośba o internet/research/źródła'
             return report(norm,folded,'external_research_request',[reason],0.88 if has_weather_research else 0.86,speech_act=speech.speech_act,question_object='weather_forecast' if has_weather_research else qobj.object_type)

@@ -1,0 +1,63 @@
+{
+  "schema_version": "update_coverage_contract/v1",
+  "runtime_version": "v15.1.0.3.96",
+  "requirements": [
+    {
+      "id": "post_update_coverage_route",
+      "description": "Dedicated route for questions about omissions and completeness of a finished patch.",
+      "evidence_paths": [
+        "latka_jazn/core/update_coverage_audit.py",
+        "latka_jazn/core/handlers/post_update_coverage_audit_handler.py",
+        "tests/test_semantic_routing_completion_v96.py"
+      ]
+    },
+    {
+      "id": "generic_external_tool_context",
+      "description": "Connector markers are supporting context and never replace the primary goal or voice.",
+      "evidence_paths": [
+        "latka_jazn/nlp/external_tool_context.py",
+        "latka_jazn/core/handlers/external_tool_assistance_handler.py"
+      ]
+    },
+    {
+      "id": "single_regeneration_reflex",
+      "description": "A forbidden host voice prefix receives exactly one controlled regeneration attempt.",
+      "evidence_paths": [
+        "latka_jazn/core/host_regeneration_policy.py",
+        "latka_jazn/core/chatgpt_host_pending_store.py",
+        "latka_jazn/core/chat_command_contract.py"
+      ]
+    },
+    {
+      "id": "cli_daemon_mcp_contract_e2e",
+      "description": "Contract-level end-to-end test spans daemon presentation and both private MCP phases.",
+      "evidence_paths": [
+        "tests/test_chatgpt_mcp_end_to_end_v96.py"
+      ]
+    },
+    {
+      "id": "generative_language_matrix",
+      "description": "Generated spelling, punctuation, quotation and tool-marker variants are audited.",
+      "evidence_paths": [
+        "latka_jazn/resources/nlp/semantic_route_scenarios.json",
+        "latka_jazn/tools/semantic_route_audit.py"
+      ]
+    },
+    {
+      "id": "runtime_version_bump",
+      "description": "Changed runtime behaviour has a new v15.1.0.3.96 identity and package name.",
+      "evidence_paths": [
+        "latka_jazn/version.py"
+      ]
+    },
+    {
+      "id": "independent_semantic_gate",
+      "description": "A separately invoked semantic audit lane runs before the full test suite.",
+      "evidence_paths": [
+        ".github/workflows/release-hardening.yml",
+        "latka_jazn/tools/semantic_route_audit.py",
+        "docs/reviews/SEMANTIC_REVIEW_V96.md"
+      ]
+    }
+  ]
+}

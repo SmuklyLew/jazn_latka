@@ -7,6 +7,7 @@ from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.route_registry import RouteRegistryEntry
 from latka_jazn.core.handlers.dictionary_lookup_handler import DictionaryLookupHandler
 from latka_jazn.core.handlers.external_research_handler import ExternalResearchHandler
+from latka_jazn.core.handlers.external_tool_assistance_handler import ExternalToolAssistanceHandler
 from latka_jazn.core.handlers.ordinary_dialogue_handler import OrdinaryDialogueHandler
 from latka_jazn.core.handlers.runtime_diagnostic_handler import RuntimeDiagnosticHandler
 from latka_jazn.core.handlers.package_runtime_status_handler import PackageRuntimeStatusHandler
@@ -30,6 +31,7 @@ from latka_jazn.core.handlers.user_memory_recall_handler import UserMemoryRecall
 from latka_jazn.core.handlers.direct_latka_voice_handler import DirectLatkaVoiceHandler
 from latka_jazn.core.handlers.identity_memory_existence_handler import IdentityMemoryExistenceHandler
 from latka_jazn.core.handlers.self_architecture_audit_handler import SelfArchitectureAuditHandler
+from latka_jazn.core.handlers.post_update_coverage_audit_handler import PostUpdateCoverageAuditHandler
 from latka_jazn.core.handlers.presence_status_handler import PresenceStatusHandler
 from latka_jazn.core.handlers.time_awareness_handler import TimeAwarenessHandler
 
@@ -49,7 +51,7 @@ class RouteDispatchReport:
 class RouteHandlerDispatcher:
     def __init__(self) -> None:
         handlers=[
-            SelfArchitectureAuditHandler(), DictionaryLookupHandler(), ExternalResearchHandler(), OrdinaryDialogueHandler(), RuntimeDiagnosticHandler(), PackageRuntimeStatusHandler(), RuntimeSourceHandler(), CanonSourceHandler(), MemoryAuditHandler(), SystemUpdateHandler(),
+            PostUpdateCoverageAuditHandler(), SelfArchitectureAuditHandler(), DictionaryLookupHandler(), ExternalToolAssistanceHandler(), ExternalResearchHandler(), OrdinaryDialogueHandler(), RuntimeDiagnosticHandler(), PackageRuntimeStatusHandler(), RuntimeSourceHandler(), CanonSourceHandler(), MemoryAuditHandler(), SystemUpdateHandler(),
             CreativeTextHandler(), FileOperationHandler(), IdentityBoundaryHandler(), IdentityRuntimeTruthHandler(), PracticalAdviceHandler(), SelfStateHandler(), PresenceStatusHandler(), TimeAwarenessHandler(), RuntimeActivationStatusHandler(), RuntimeChatModeHandler(), SystemRepairPlanHandler(), CapabilityStatusHandler(), UserMemoryRecallHandler(), SelfMemoryRecallHandler(), DirectLatkaVoiceHandler(), IdentityMemoryExistenceHandler(), FallbackHandler(),
         ]
         self.handlers_by_name={h.name:h for h in handlers}

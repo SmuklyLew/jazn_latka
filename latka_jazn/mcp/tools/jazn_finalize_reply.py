@@ -7,6 +7,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import command_contract, persist_chatgpt_host_visible_reply
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
+    issue_continuation_token,
     resolve_continuation_token,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
@@ -115,6 +116,32 @@ def run(
         from latka_jazn.core.chat_command_contract import build_chatgpt_host_presentation_packet
 
         presentation = build_chatgpt_host_presentation_packet(persisted)
+    if str(presentation.get('action') or '') == 'generate_then_finalize':
+        bridge_value = presentation.get('chatgpt_host_bridge')
+        bridge: dict[str, Any] = bridge_value if isinstance(bridge_value, dict) else {}
+        retry_continuation = issue_continuation_token(
+            runtime_root,
+            turn_id=str(binding["turn_id"]),
+            request_contract_hash=request_contract_hash,
+        )
+        return {
+            'content': [{'type': 'text', 'text': 'Regenerate once from the same runtime contract, then call jazn_finalize_reply again. Do not display this intermediate result.'}],
+            'structuredContent': {
+                'ok': True, 'accepted': False, 'action': 'generate_then_finalize',
+                'state': 'regenerate', 'continuation_token': retry_continuation['continuation_token'],
+                'expires_at_utc': retry_continuation.get('expires_at_utc'),
+                'turn_id': binding['turn_id'], 'trace_id': binding['trace_id'],
+                'host_request_contract_hash': request_contract_hash,
+                'regeneration_attempt': bridge.get('regeneration_attempt'),
+                'max_regeneration_attempts': bridge.get('max_regeneration_attempts'),
+                'host_generation_policy': bridge.get('host_generation_policy') or {},
+                'host_generation_rules': list(bridge.get('host_generation_rules') or []),
+                'must_not_display_intermediate': True,
+            },
+            '_meta': {'transport': 'authenticated_private_mcp', 'continuation_consumed': False},
+            'isError': False,
+        }
+
     final_visible_text = str(
         presentation.get("final_visible_text")
         or persisted.get("final_visible_text")
