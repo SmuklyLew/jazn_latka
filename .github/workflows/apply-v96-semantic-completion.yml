@@ -53,16 +53,20 @@ jobs:
 
           tool_path = Path("latka_jazn/core/handlers/external_tool_assistance_handler.py")
           tool_text = tool_path.read_text(encoding="utf-8")
-          old_tool = '''        report = ctx.get("dialogue_intent_report") if isinstance(ctx.get("dialogue_intent_report"), dict) else {}
-        tool_context = report.get("external_tool_context") if isinstance(report.get("external_tool_context"), dict) else {}
-        tools = [str(item) for item in tool_context.get("requested_tools", [])]
-'''
-          new_tool = '''        report_value = ctx.get("dialogue_intent_report")
-        report: dict[str, Any] = report_value if isinstance(report_value, dict) else {}
-        tool_context_value = report.get("external_tool_context")
-        tool_context: dict[str, Any] = tool_context_value if isinstance(tool_context_value, dict) else {}
-        tools = [str(item) for item in tool_context.get("requested_tools", [])]
-'''
+          old_tool = "\n".join([
+              '        report = ctx.get("dialogue_intent_report") if isinstance(ctx.get("dialogue_intent_report"), dict) else {}',
+              '        tool_context = report.get("external_tool_context") if isinstance(report.get("external_tool_context"), dict) else {}',
+              '        tools = [str(item) for item in tool_context.get("requested_tools", [])]',
+              '',
+          ])
+          new_tool = "\n".join([
+              '        report_value = ctx.get("dialogue_intent_report")',
+              '        report: dict[str, Any] = report_value if isinstance(report_value, dict) else {}',
+              '        tool_context_value = report.get("external_tool_context")',
+              '        tool_context: dict[str, Any] = tool_context_value if isinstance(tool_context_value, dict) else {}',
+              '        tools = [str(item) for item in tool_context.get("requested_tools", [])]',
+              '',
+          ])
           if old_tool not in tool_text:
               raise SystemExit("expected external-tool narrowing anchor was not found")
           tool_path.write_text(tool_text.replace(old_tool, new_tool, 1), encoding="utf-8")
