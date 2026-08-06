@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 import base64
 import hashlib
@@ -119,6 +119,8 @@ LONG_WORK_INTENTS = frozenset({
     "runtime_behavior_diagnostic_request",
     "system_diagnostic_question",
     "self_architecture_audit_request",
+    "post_update_coverage_audit_request",
+    "external_tool_assistance_request",
     "memory_audit_request",
 })
 LONG_WORK_ROUTES = frozenset({
@@ -126,6 +128,8 @@ LONG_WORK_ROUTES = frozenset({
     "system_update",
     "runtime_diagnostic_repair",
     "self_architecture_audit",
+    "post_update_coverage_audit",
+    "external_tool_assistance",
     "memory_audit",
 })
 
@@ -175,6 +179,11 @@ class PendingHostRequest:
     binding: dict[str, Any]
     created_at_utc: str
     expires_at_utc: str
+    generation_context: dict[str, Any] = field(default_factory=dict)
+    regeneration_attempts: int = 0
+    max_regeneration_attempts: int = 1
+    last_regeneration_reason: str | None = None
+    last_regeneration_at_utc: str | None = None
     continuation_token_sha256: str | None = None
     token_issued_at_utc: str | None = None
     claimed_at_utc: str | None = None
@@ -298,6 +307,12 @@ def persist_pending_host_request(
         binding=binding,
         created_at_utc=now.isoformat(),
         expires_at_utc=(now + timedelta(seconds=ttl)).isoformat(),
+        generation_context={
+            'host_generation_policy': dict(bridge.get('host_generation_policy') or {}),
+            'host_generation_rules': list(bridge.get('host_generation_rules') or []),
+            'required_visible_prefix': bridge.get('required_visible_prefix'),
+            'runtime_summary': dict(bridge.get('runtime_summary') or {}),
+        },
     ).to_dict()
     _atomic_write(pending_path, record)
     return record
@@ -435,6 +450,26 @@ def release_claimed_host_request(root: Path, *, turn_id: str) -> None:
     os.replace(claimed_path, pending_path)
 
 
+def request_host_regeneration(root: Path, *, turn_id: str, reason: str) -> dict[str, Any]:
+    claimed_path = _path(root, 'claimed', turn_id)
+    record = _read(claimed_path)
+    attempts = int(record.get('regeneration_attempts') or 0)
+    maximum = int(record.get('max_regeneration_attempts') or 1)
+    if attempts >= maximum:
+        _expire_record(root, claimed_path, record, reason='regeneration_budget_exhausted')
+        raise HostRequestStoreError('host_regeneration_budget_exhausted')
+    record['state'] = 'pending'
+    record['claimed_at_utc'] = None
+    record['regeneration_attempts'] = attempts + 1
+    record['last_regeneration_reason'] = str(reason or 'host_finalization_rejected')
+    record['last_regeneration_at_utc'] = _utc_now().isoformat()
+    pending_path = _path(root, 'pending', turn_id)
+    _atomic_write(claimed_path, record)
+    pending_path.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(claimed_path, pending_path)
+    return record
+
+
 def mark_claimed_host_request_indeterminate(root: Path, *, turn_id: str, error: str) -> dict[str, Any]:
     """Fail closed after persistence starts and its exact outcome cannot be proven."""
     claimed_path = _path(root, "claimed", turn_id)
@@ -473,5 +508,6 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
         "continuation_ttl_default_seconds": DEFAULT_CONTINUATION_TTL_SECONDS,
         "continuation_ttl_long_work_seconds": LONG_WORK_CONTINUATION_TTL_SECONDS,
         "replay_protection": True,
+        "max_host_regeneration_attempts": 1,
         "plaintext_tokens_persisted": False,
     }

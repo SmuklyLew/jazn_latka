@@ -7,7 +7,6 @@
       "phrases": [
         "działasz",
         "czy działasz",
-        "dziala",
         "czy dzialasz",
         "jaźń działa",
         "jazn dziala",
@@ -148,9 +147,64 @@
         "co tam",
         "a ty"
       ]
+    },
+    "affective_self_state_reality_check": {
+      "description": "Pytanie, czy obraz, mimika lub wizualizacja dosłownie odzwierciedla modelowany stan Łatki; wymaga pierwszej osoby i granicy między wizualizacją, stanem operacyjnym a biologicznym czuciem.",
+      "phrases": [
+        "czy naprawdę tak się czujesz",
+        "czy naprawde tak sie czujesz",
+        "czy na prawdę tak się czujesz",
+        "czy na prawde tak sie czujesz",
+        "tak się czujesz jak",
+        "tak sie czujesz jak",
+        "czy naprawdę czujesz się jak",
+        "czy naprawde czujesz sie jak",
+        "czy zdjęcie pokazuje jak się czujesz",
+        "czy zdjecie pokazuje jak sie czujesz",
+        "czy ta osoba pokazuje jak się czujesz",
+        "czy ta osoba pokazuje jak sie czujesz",
+        "czy wizualizacja pokazuje jak się czujesz",
+        "czy wizualizacja pokazuje jak sie czujesz"
+      ]
+    },
+    "external_research_request": {
+      "description": "Prośba o pomocnicze sprawdzenie źródeł zewnętrznych. W trasie złożonej nie przejmuje głównego celu ani głosu odpowiedzi.",
+      "phrases": [
+        "@wyszukiwanie w sieci",
+        "wyszukiwanie w sieci",
+        "sprawdź w sieci",
+        "sprawdz w sieci",
+        "poszukaj źródeł",
+        "poszukaj zrodel",
+        "sprawdź źródła",
+        "sprawdz zrodla"
+      ]
+    },
+    "post_update_coverage_audit_request": {
+      "description": "Audyt kompletności zakończonej aktualizacji: zakres, pominięcia, dowody, testy i granica wydania.",
+      "phrases": [
+        "czy coś zostało pominięte w trakcie robienia tego patcha",
+        "czy cos zostalo pominiete w trakcie robienia tego patcha",
+        "co zostało pominięte w aktualizacji",
+        "co zostalo pominiete w aktualizacji",
+        "czego nie objął patch",
+        "czego nie objal patch",
+        "sprawdź kompletność aktualizacji",
+        "sprawdz kompletnosc aktualizacji",
+        "jakie są pominięcia patcha",
+        "jakie sa pominiecia patcha"
+      ]
     }
   },
   "compound_rules": [
+    {
+      "requires": [
+        "affective_self_state_reality_check",
+        "external_research_request"
+      ],
+      "result": "affective_self_state_reality_check",
+      "description": "Research jest źródłem pomocniczym; główna trasa pozostaje pytaniem o stan Łatki i zachowuje jej głos."
+    },
     {
       "requires": [
         "self_state_question",

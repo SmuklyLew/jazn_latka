@@ -19,15 +19,15 @@ class RouteRegistryEntry:
 class RouteRegistry:
     """Priorytetowy rejestr tras: DialogueIntentClassifier > RouteRegistry > LegacyMarkers."""
     PRIORITIES = {
-        "self_architecture_audit_request": 101, "jazn_development_plan_request": 100, "runtime_behavior_diagnostic_request": 100, "voice_perspective_diagnostic_request": 100, "runtime_exact_quote_request": 99,
+        "post_update_coverage_audit_request": 102, "self_architecture_audit_request": 101, "jazn_development_plan_request": 100, "runtime_behavior_diagnostic_request": 100, "voice_perspective_diagnostic_request": 100, "runtime_exact_quote_request": 99,
         "runtime_source_question": 98, "canon_source_question": 98, "package_runtime_status_question": 97, "runtime_activation_status_question": 97, "runtime_chat_mode_request": 97, "system_repair_plan_request": 96, "logic_reasoning_audit_request": 96, "memory_grounding_status_question": 96, "system_diagnostic_question": 96,
         "system_update_execution_request": 95, "system_update_manifest_request": 94,
         "creative_text_formatting": 92, "creative_text_analysis": 90,
         "creative_source_preservation_request": 89, "identity_boundary_question": 88, "identity_direct_question": 88,
-        "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
+        "affective_self_state_reality_check": 89, "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
         "memory_audit_request": 84, "memory_recall_request": 83,
         "dictionary_lookup_request": 82, "language_question": 81,
-        "external_research_request": 80, "practical_repair_advice": 78,
+        "external_tool_assistance_request": 81, "external_research_request": 80, "practical_repair_advice": 78,
         "automotive_warning_light_question": 77, "visual_style_advice": 76,
         "module_inventory_request": 96, "system_capability_gap_question": 96,
         "runtime_restart_request": 98, "runtime_health_check": 97, "runtime_health_check_after_update": 97, "presence_check": 87, "identity_presence_check": 89, "identity_continuity_check": 88, "time_awareness_question": 86, "self_state_time_awareness": 88, "internet_access_question": 96, "model_adapter_status_question": 97, "capability_status_question": 95,
@@ -41,6 +41,7 @@ class RouteRegistry:
         "ordinary_conversation": 10,
     }
     HANDLERS = {
+        "post_update_coverage_audit_request": ("post_update_coverage_audit", "PostUpdateCoverageAuditHandler"),
         "self_architecture_audit_request": ("self_architecture_audit", "SelfArchitectureAuditHandler"),
         "jazn_development_plan_request": ("self_architecture_audit", "SelfArchitectureAuditHandler"),
         "runtime_source_question": ("runtime_source", "RuntimeSourceHandler"),
@@ -66,6 +67,7 @@ class RouteRegistry:
         "creative_source_preservation_request": ("creative_text", "CreativeTextHandler"),
         "identity_boundary_question": ("identity_boundary", "IdentityBoundaryHandler"),
         "identity_direct_question": ("identity_runtime_truth_contract", "IdentityRuntimeTruthHandler"),
+        "affective_self_state_reality_check": ("self_state", "SelfStateHandler"),
         "self_state_question": ("self_state", "SelfStateHandler"),
         "self_state_time_awareness": ("self_state", "SelfStateHandler"),
         "reciprocal_self_state_question": ("self_state", "SelfStateHandler"),
@@ -94,6 +96,7 @@ class RouteRegistry:
         "dictionary_lookup_request": ("dictionary_lookup", "DictionaryLookupHandler"),
         "language_question": ("dictionary_lookup", "DictionaryLookupHandler"),
         "external_research_request": ("external_research", "ExternalResearchHandler"),
+        "external_tool_assistance_request": ("external_tool_assistance", "ExternalToolAssistanceHandler"),
         "runtime_health_check": ("runtime_health_check", "CapabilityStatusHandler"),
         "runtime_health_check_after_update": ("runtime_health_check_after_update", "CapabilityStatusHandler"),
         "internet_access_question": ("internet_access_status", "CapabilityStatusHandler"),
@@ -118,6 +121,10 @@ class RouteRegistry:
         return RouteRegistryEntry(intent, route, handler, priority, required, legacy_forbidden_routes_for(priority))
 
     def required_components_for(self, intent: str) -> list[str]:
+        if intent == "post_update_coverage_audit_request":
+            return ["patch_scope", "covered_items", "omissions", "evidence", "tests", "release_boundary", "truth_boundary"]
+        if intent == "external_tool_assistance_request":
+            return ["tool_context", "primary_intent_preservation", "voice_continuity", "truth_boundary"]
         if intent in {"self_architecture_audit_request", "jazn_development_plan_request"}:
             return ["self_architecture_audit", "reflection_grounding", "grounded_reflection_store", "memory_gate", "recall_quality", "capability_reality_check", "development_backlog", "scientific_basis", "tests", "truth_boundary"]
         if intent == "package_runtime_status_question":
@@ -172,6 +179,8 @@ class RouteRegistry:
             return ["problem", "tools_or_materials", "steps", "risks", "when_to_stop"]
         if intent in {"dictionary_lookup_request", "language_question"}:
             return ["term", "language", "source_or_cache", "truth_boundary"]
+        if intent == "affective_self_state_reality_check":
+            return ["operational_state", "affective_truth_boundary", "visualization_not_embodiment", "first_person_voice", "no_random_memory_excerpt"]
         if intent in {"self_state_question", "reciprocal_self_state_question", "self_preference_question", "self_expression_request", "self_state_time_awareness"}:
             return ["operational_state", "truth_boundary", "no_random_memory_excerpt"]
         if intent == "sleep_closure_statement":

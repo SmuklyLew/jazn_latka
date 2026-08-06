@@ -1,4 +1,4 @@
-# Bezpieczne odzyskiwanie pamięci v15.1.0.3.92
+# Bezpieczne odzyskiwanie pamięci v15.1.0.3.96
 
 ## Cel
 

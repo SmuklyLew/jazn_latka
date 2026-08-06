@@ -39,6 +39,7 @@ class RouteContractMatrix:
 
     RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "nlp" / "polish_dialogue_route_lexicon.json"
     SPECIAL_PRIORITY = (
+        "post_update_coverage_audit_request",
         "self_architecture_audit_request",
         "system_capability_gap_question",
         "runtime_health_check_after_update",
@@ -46,9 +47,12 @@ class RouteContractMatrix:
         "identity_presence_check",
         "identity_continuity_check",
         "presence_check",
+        "affective_self_state_reality_check",
         "self_state_time_awareness",
         "self_state_question",
         "time_awareness_question",
+        "external_research_request",
+        "external_tool_assistance_request",
     )
     UPDATE_EXECUTION_MARKERS = (
         "napraw", "popraw", "wdroż", "wdroz", "zaimplementuj",
@@ -176,7 +180,7 @@ class RouteContractMatrix:
         primary, secondary, evidence = self._apply_compounds(matched)
         for intent, hits in sorted(matched.items()):
             evidence.append(f"{intent}:{', '.join(hits[:4])}")
-        diagnostic = primary in {"runtime_health_check", "runtime_health_check_after_update"}
+        diagnostic = primary in {"runtime_health_check", "runtime_health_check_after_update", "post_update_coverage_audit_request"}
         identity = primary in {"identity_continuity_check", "identity_presence_check"}
         question_object = {
             "runtime_health_check": "runtime_health",
@@ -185,6 +189,10 @@ class RouteContractMatrix:
             "identity_presence_check": "identity_presence",
             "identity_continuity_check": "identity_continuity",
             "self_state_question": "self_state",
+            "affective_self_state_reality_check": "affective_self_state_reality",
+            "post_update_coverage_audit_request": "post_update_coverage",
+            "external_tool_assistance_request": "external_tool",
+            "external_research_request": "external_research",
             "time_awareness_question": "current_time",
             "self_state_time_awareness": "self_state_time",
             "ordinary_dialogue": "ordinary_dialogue",

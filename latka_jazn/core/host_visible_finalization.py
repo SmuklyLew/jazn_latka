@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
+import re
 from typing import Any, Mapping
 
 from latka_jazn.core.message_envelope import (
@@ -50,6 +51,7 @@ class HostVisibleFinalizationPolicy:
     require_supplied_text_hash: bool = True
     reject_foreign_timestamp: bool = True
     reject_empty: bool = True
+    forbidden_body_prefixes: tuple[str, ...] = ("Host ChatGPT:",)
     schema_version: str = schema_version("host_visible_finalization_policy")
 
     def to_dict(self) -> dict[str, Any]:
@@ -184,12 +186,23 @@ class HostVisibleFinalizationGate:
             violations.append(HostVisibleFinalizationViolation("empty_text", "Visible text is empty."))
         if len(original.encode("utf-8")) > contract.policy.max_utf8_bytes:
             violations.append(HostVisibleFinalizationViolation("text_too_large", "Visible text exceeds the contract byte limit."))
+        candidate_body = original
+        expected_prefix = f"{contract.required_timestamp_header}\n{contract.state_emoticon} {contract.author_label}\n\n"
+        if candidate_body.startswith(expected_prefix):
+            candidate_body = candidate_body[len(expected_prefix):]
+        stripped_body = candidate_body.lstrip()
+        forbidden_literal = any(stripped_body.startswith(prefix) for prefix in contract.policy.forbidden_body_prefixes)
+        forbidden_formatted = re.match(r"^(?:\*\*|__)?host\s+chatgpt(?:\*\*|__)?\s*[:—–-]", stripped_body, flags=re.IGNORECASE) is not None
+        if forbidden_literal or forbidden_formatted:
+            violations.append(HostVisibleFinalizationViolation(
+                "forbidden_host_voice_prefix",
+                "Active-runtime host generation may not replace Łatka's voice with a Host ChatGPT diagnostic prefix.",
+            ))
         if contract.policy.require_supplied_text_hash and supplied_hash is None:
             violations.append(HostVisibleFinalizationViolation("text_hash_missing", "Explicit host-finalize approval hash is required."))
         elif supplied_hash is not None and supplied_hash != original_hash:
             violations.append(HostVisibleFinalizationViolation("text_hash_mismatch", "The supplied host-finalize hash does not match the visible text."))
 
-        expected_prefix = f"{contract.required_timestamp_header}\n{contract.state_emoticon} {contract.author_label}\n\n"
         exact_envelope = original.startswith(expected_prefix)
         first_line = original.split("\n", 1)[0].strip() if original else ""
         foreign_timestamp = bool(TIMESTAMP_HEADER_RE.fullmatch(first_line) and first_line != contract.required_timestamp_header)
