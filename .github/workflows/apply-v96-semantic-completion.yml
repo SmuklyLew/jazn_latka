@@ -61,6 +61,9 @@ jobs:
           python -X utf8 -m latka_jazn.tools.semantic_route_audit --root . --json
           git diff --check
 
+      - name: Keep workflow-file publication outside Actions token
+        run: git checkout HEAD -- .github/workflows/release-hardening.yml
+
       - name: Remove staging machinery
         run: |
           rm -rf .github/update_scripts
