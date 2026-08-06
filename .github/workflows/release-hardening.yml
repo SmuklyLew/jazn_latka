@@ -160,6 +160,9 @@ jobs:
       - name: Static type audit
         run: pyright latka_jazn main.py run.py
 
+      - name: Independent semantic route audit
+        run: python -X utf8 -m latka_jazn.tools.semantic_route_audit --root . --json
+
       - name: Full deterministic test suite
         run: >-
           python -X utf8 -m pytest

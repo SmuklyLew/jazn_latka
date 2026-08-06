@@ -179,6 +179,21 @@
         "sprawdź źródła",
         "sprawdz zrodla"
       ]
+    },
+    "post_update_coverage_audit_request": {
+      "description": "Audyt kompletności zakończonej aktualizacji: zakres, pominięcia, dowody, testy i granica wydania.",
+      "phrases": [
+        "czy coś zostało pominięte w trakcie robienia tego patcha",
+        "czy cos zostalo pominiete w trakcie robienia tego patcha",
+        "co zostało pominięte w aktualizacji",
+        "co zostalo pominiete w aktualizacji",
+        "czego nie objął patch",
+        "czego nie objal patch",
+        "sprawdź kompletność aktualizacji",
+        "sprawdz kompletnosc aktualizacji",
+        "jakie są pominięcia patcha",
+        "jakie sa pominiecia patcha"
+      ]
     }
   },
   "compound_rules": [
