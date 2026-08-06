@@ -38,24 +38,48 @@ jobs:
       - name: Apply deterministic transformation
         run: python -X utf8 .github/update_scripts/apply_v96_semantic_completion.py
 
-      - name: Normalize generated source literals
+      - name: Normalize generated sources
         run: |
           python -X utf8 - <<'PY'
           from pathlib import Path
 
-          path = Path("latka_jazn/core/handlers/post_update_coverage_audit_handler.py")
-          text = path.read_text(encoding="utf-8")
-          broken = '            "\n".join(lines),'
-          fixed = '            "\\n".join(lines),'
-          if broken not in text:
+          handler_path = Path("latka_jazn/core/handlers/post_update_coverage_audit_handler.py")
+          handler_text = handler_path.read_text(encoding="utf-8")
+          broken_newline = '            "\n".join(lines),'
+          fixed_newline = '            "\\n".join(lines),'
+          if broken_newline not in handler_text:
               raise SystemExit("expected generated newline literal was not found")
-          path.write_text(text.replace(broken, fixed, 1), encoding="utf-8")
+          handler_path.write_text(handler_text.replace(broken_newline, fixed_newline, 1), encoding="utf-8")
+
+          tool_path = Path("latka_jazn/core/handlers/external_tool_assistance_handler.py")
+          tool_text = tool_path.read_text(encoding="utf-8")
+          old_tool = '''        report = ctx.get("dialogue_intent_report") if isinstance(ctx.get("dialogue_intent_report"), dict) else {}
+        tool_context = report.get("external_tool_context") if isinstance(report.get("external_tool_context"), dict) else {}
+        tools = [str(item) for item in tool_context.get("requested_tools", [])]
+'''
+          new_tool = '''        report_value = ctx.get("dialogue_intent_report")
+        report: dict[str, Any] = report_value if isinstance(report_value, dict) else {}
+        tool_context_value = report.get("external_tool_context")
+        tool_context: dict[str, Any] = tool_context_value if isinstance(tool_context_value, dict) else {}
+        tools = [str(item) for item in tool_context.get("requested_tools", [])]
+'''
+          if old_tool not in tool_text:
+              raise SystemExit("expected external-tool narrowing anchor was not found")
+          tool_path.write_text(tool_text.replace(old_tool, new_tool, 1), encoding="utf-8")
+
+          finalize_path = Path("latka_jazn/mcp/tools/jazn_finalize_reply.py")
+          finalize_text = finalize_path.read_text(encoding="utf-8")
+          old_finalize = "        bridge = presentation.get('chatgpt_host_bridge') if isinstance(presentation.get('chatgpt_host_bridge'), dict) else {}\n"
+          new_finalize = "        bridge_value = presentation.get('chatgpt_host_bridge')\n        bridge: dict[str, Any] = bridge_value if isinstance(bridge_value, dict) else {}\n"
+          if old_finalize not in finalize_text:
+              raise SystemExit("expected finalizer narrowing anchor was not found")
+          finalize_path.write_text(finalize_text.replace(old_finalize, new_finalize, 1), encoding="utf-8")
           PY
 
       - name: Install verification dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e . pytest
+          python -m pip install -e ".[memory-rebuild-ui]" pytest
           npm install --global pyright@1.1.411
 
       - name: Compile and type-check changed runtime
