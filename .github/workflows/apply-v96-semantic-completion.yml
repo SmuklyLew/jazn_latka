@@ -38,6 +38,20 @@ jobs:
       - name: Apply deterministic transformation
         run: python -X utf8 .github/update_scripts/apply_v96_semantic_completion.py
 
+      - name: Normalize generated source literals
+        run: |
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+
+          path = Path("latka_jazn/core/handlers/post_update_coverage_audit_handler.py")
+          text = path.read_text(encoding="utf-8")
+          broken = '            "\n".join(lines),'
+          fixed = '            "\\n".join(lines),'
+          if broken not in text:
+              raise SystemExit("expected generated newline literal was not found")
+          path.write_text(text.replace(broken, fixed, 1), encoding="utf-8")
+          PY
+
       - name: Install verification dependencies
         run: |
           python -m pip install --upgrade pip
