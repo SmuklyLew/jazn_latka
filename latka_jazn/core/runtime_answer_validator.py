@@ -8,6 +8,11 @@ import re
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.nlp.utterance_components import analyse_utterance, missing_component_evidence
 from latka_jazn.core.current_turn_grounding import assess_current_turn_grounding
+from latka_jazn.nlp.domain_context import (
+    has_conversation_archive_context,
+    has_conversation_archive_recall_context,
+    has_explicit_package_context,
+)
 from latka_jazn.version import schema_version
 from latka_jazn.core.legacy_route_policy import (
     contains_legacy_dotted_version,
@@ -378,11 +383,14 @@ class RuntimeAnswerValidator:
         time_awareness_question = any(marker in folded_user for marker in ('jaka jest pora', 'ktora godzina', 'ktora jest godzina', 'wiesz jaka jest pora', 'wiesz ktora godzina'))
         stale_route_question = any(term in user_low for term in self.STALE_ROUTE_CONTEXT_TERMS)
         user_requests_update = any(marker in folded_user for marker in ('aktualiz', 'hotfix', 'patch', 'napraw', 'popraw', 'wdroz', 'wprowadz', 'rozbuduj'))
+        conversation_archive_context = has_conversation_archive_context(folded_user)
+        conversation_archive_recall = has_conversation_archive_recall_context(folded_user)
+        explicit_package_context = has_explicit_package_context(folded_user)
         package_domain_question = (
-            bool(re.search(r"\b(?:pacz\w*|zip\w*|archiw\w*|manifest\w*|crc|rozpak\w*|wypak\w*)\b", folded_user, flags=re.UNICODE))
+            explicit_package_context
             and (
                 bool(re.search(r"\bgenerator\w*\b", folded_user, flags=re.UNICODE))
-                or any(marker in folded_user for marker in ('jak tam', 'co wyszlo', 'status', 'dziala', 'po nowej'))
+                or any(marker in folded_user for marker in ('jak tam', 'co wyszlo', 'status', 'dziala', 'po nowej', 'integraln', 'crc', 'sha'))
             )
         )
         user_asks_timestamp = any(marker in folded_user for marker in ('timestamp', 'znacznik czasu', 'gubisz czas', 'turn_id', 'trace_id'))
@@ -391,6 +399,54 @@ class RuntimeAnswerValidator:
             and any(marker in folded_user for marker in ('blad', 'nie mogl', 'co sie dzialo', 'gdzie lezy'))
             and any(marker in folded_user for marker in ('wiadom', 'runtime', 'jazn', 'obudz', 'start'))
         )
+        if conversation_archive_recall and (
+            detected_intent == "package_runtime_status_question"
+            or "package_runtime_status" in route_low
+        ):
+            checks.append("conversation_archive_recall_misrouted_as_package_status")
+            return self._bad(
+                "conversation_archive_recall_misrouted_as_package_status",
+                "self_memory_recall_repair",
+                (
+                    "Bieżąca wiadomość prosi o odzyskanie historii z archiwum rozmów. "
+                    "To jest recall pamięci źródłowej, nie status paczki ZIP/runtime. "
+                    "Trzeba uruchomić trasę pamięci, zwrócić trafienia źródłowe albo jawnie "
+                    "powiedzieć, że nie znaleziono potwierdzenia."
+                ),
+                detected_intent,
+                route,
+                checks,
+                ["conversation_archive_memory", "memory_sources", "truth_boundary"],
+            )
+        if conversation_archive_recall and detected_intent not in {
+            "self_memory_recall_request",
+            "user_memory_recall_request",
+            "memory_recall_request",
+        }:
+            checks.append("conversation_archive_recall_requires_memory_intent")
+            return self._bad(
+                "conversation_archive_recall_requires_memory_intent",
+                "self_memory_recall_repair",
+                (
+                    "Prośba o chronologiczne odtworzenie rozmów wymaga intencji pamięciowej. "
+                    "Nie wolno zastąpić jej health-checkiem, statusem paczki ani ordinary fallbackiem."
+                ),
+                detected_intent,
+                route,
+                checks,
+                ["memory_route", "conversation_archive_memory", "source_or_index_status"],
+            )
+        if conversation_archive_context and not explicit_package_context and detected_intent == "package_runtime_status_question":
+            checks.append("bare_conversation_archive_cannot_establish_package_domain")
+            return self._bad(
+                "bare_conversation_archive_cannot_establish_package_domain",
+                "current_turn_grounding_repair",
+                "Samo słowo „archiwum” w kontekście rozmów nie jest dowodem domeny paczki. Wymagany jest jawny kontekst ZIP/paczki/manifestu/CRC/SHA.",
+                detected_intent,
+                route,
+                checks,
+                ["current_user_text_grounding"],
+            )
         grounding = assess_current_turn_grounding(
             user_text=user_text,
             response_body=body,

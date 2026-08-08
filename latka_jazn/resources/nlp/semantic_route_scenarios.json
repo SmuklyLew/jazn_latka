@@ -39,6 +39,20 @@
         "@Wyszukiwanie w sieci ",
         "@GitHub "
       ]
+    },
+    {
+      "id": "conversation_archive_memory_recall",
+      "expected_primary": "self_memory_recall_request",
+      "stems": [
+        "Przejrzyj archiwum rozmów i odzyskaj chronologicznie historię Pamiętnika.",
+        "Przeszukaj archiwum czatów i odtwórz naszą historię z rozmów źródłowych.",
+        "Znajdź w archiwum konwersacji, co wtedy działo się między nami."
+      ],
+      "tool_markers": [
+        "",
+        "@Wyszukiwanie w sieci ",
+        "@GitHub "
+      ]
     }
   ],
   "punctuation": [
