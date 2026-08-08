@@ -1,0 +1,84 @@
+name: Apply conversation archive routing guard
+
+on:
+  push:
+    branches:
+      - fix/conversation-archive-routing-guard
+
+permissions:
+  contents: write
+
+concurrency:
+  group: conversation-archive-routing-guard-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPECTED_BASE_SHA: 9108ab5b1ca31c54e6495a6f4d6ba273d22b9d0a
+      PATCH_SHA256: c28c0d65ccf3c0aea04ac3551c923ac44ac6491952143dba1bd2a0643a1c059a
+      PATCH_B64: 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
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm branch lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$EXPECTED_BASE_SHA" HEAD
+
+      - name: Decode, verify and apply patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64, gzip, hashlib, os
+          from pathlib import Path
+          payload = gzip.decompress(base64.b64decode(os.environ['PATCH_B64']))
+          actual = hashlib.sha256(payload).hexdigest()
+          expected = os.environ['PATCH_SHA256']
+          if actual != expected:
+              raise SystemExit(f'patch sha mismatch: {actual} != {expected}')
+          Path('/tmp/conversation_archive_routing_guard.patch').write_bytes(payload)
+          PY
+          git apply --check /tmp/conversation_archive_routing_guard.patch
+          git apply /tmp/conversation_archive_routing_guard.patch
+          rm -f .github/workflows/apply-conversation-archive-routing-guard.yml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -e .
+
+      - name: Validate update
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q latka_jazn tests
+          python -m pytest -q tests/test_conversation_archive_routing_guard.py tests/test_current_line_v90_migration.py tests/test_semantic_routing_completion_v96.py
+          python -m latka_jazn.tools.semantic_route_audit --root . --json
+          git diff --check
+
+      - name: Commit verified update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: disambiguate conversation archive recall routing'
+          git push origin HEAD:fix/conversation-archive-routing-guard
