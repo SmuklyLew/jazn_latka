@@ -109,6 +109,9 @@ class MemorySearchPlanner:
         "pamięci", "pamieci", "pamiętasz", "pamietasz", "przypomnij", "przypomniec", "przypomnieć",
         "wspominasz", "wspomina", "wspomnienie", "wspomnienia", "dzisiaj", "dziś", "dzis",
         "temat", "temacie", "rozmawialiśmy", "rozmawialismy",
+        "chodzi", "chodzić", "chodzic", "treść", "tresc", "dokładnie", "dokladnie",
+        "spróbować", "sprobowac", "spróbuj", "sprobuj", "celniejsze", "celniej",
+        "powinnaś", "powinnas", "można", "mozna", "odnośnie", "odnosnie",
     }
 
     def __init__(self, root: Path | str) -> None:
@@ -180,7 +183,7 @@ class MemorySearchPlanner:
         expanded_only = [t for t in term_pool if self._norm(t) not in focus_norm]
         search_terms = [*focus, *expanded_only]
         search_terms = [t for t in search_terms if self._norm(t) not in self.STOPWORDS]
-        search_terms = self._dedupe_preserve(search_terms)[:24]
+        search_terms = self._dedupe_preserve(search_terms)[:16]
 
         confidence = 0.36
         if recall_requested:
@@ -202,7 +205,7 @@ class MemorySearchPlanner:
             },
             {
                 "name": "living_memory_recall",
-                "terms": search_terms[:18],
+                "terms": search_terms[:14],
                 "weight": 1.0,
                 "layers": ["memory_jazn", "experience", "journal", "archive_chats"],
                 "purpose": "najpierw przeszukać kanoniczne pięć baz odbudowy w trybie tylko do odczytu",
@@ -216,14 +219,14 @@ class MemorySearchPlanner:
             },
             {
                 "name": "expanded_topic_aliases",
-                "terms": expanded_only[:14],
+                "terms": expanded_only[:10],
                 "weight": 0.74,
                 "layers": ["episodic_memories", "legacy_messages"],
                 "purpose": "przełamać różnicę słownictwa: piosenki→utwory/analizy, dom→posesja/taras/pokój",
             },
             {
                 "name": "canonical_source_scan",
-                "terms": search_terms[:18],
+                "terms": search_terms[:14],
                 "weight": 0.88,
                 "layers": ["memory/raw", "memory/layered", "docs"],
                 "source_hints": source_hints,
@@ -231,7 +234,7 @@ class MemorySearchPlanner:
             },
             {
                 "name": "raw_chat_fallback",
-                "terms": search_terms[:12],
+                "terms": search_terms[:10],
                 "weight": 0.45,
                 "layers": ["memory/raw/chat.html"],
                 "purpose": "awaryjne skanowanie surowego czatu tylko gdy indeksy i źródła kanoniczne nie wystarczą",
@@ -246,7 +249,7 @@ class MemorySearchPlanner:
             recall_requested=recall_requested,
             focus_terms=focus[:12],
             rejected_terms=self._dedupe_preserve(rejected)[:20],
-            expanded_terms=expanded_only[:24],
+            expanded_terms=expanded_only[:16],
             topic_keys=topic_keys,
             source_hints=source_hints,
             search_terms=search_terms,
@@ -463,17 +466,36 @@ class MemorySearchPlanner:
         return any(self._norm(marker) in normalized_query for marker in self.REFERENTIAL_MARKERS)
 
     def _search_mode(self, normalized_query: str, normalized_previous: str) -> str:
+        def document_version_modifier(value: str, modifier: str) -> bool:
+            return bool(re.search(
+                rf"\b{modifier}\w*\s+(?:wersj\w*|rozdzial\w*|podejsc\w*|tekst\w*|ksiazk\w*)",
+                value,
+            ))
+
+        def nearby_memory_modifier(value: str, modifier: str) -> bool:
+            # Allow natural phrases such as "najwcześniejsze wspólne wspomnienie"
+            # while avoiding distant co-occurrence elsewhere in a long request.
+            return bool(re.search(
+                rf"\b{modifier}\w*(?:\s+\w+){{0,2}}\s+wspomn\w*"
+                rf"|\bwspomn\w*(?:\s+\w+){{0,2}}\s+{modifier}\w*",
+                value,
+            ))
+
         def earliest(value: str) -> bool:
-            return (
-                any(self._norm(marker) in value for marker in self.EARLIEST_MARKERS)
-                or ("wspomn" in value and any(token in value for token in ("pierwsz", "najwczesniejs", "poczatek")))
-            )
+            if any(self._norm(marker) in value for marker in self.EARLIEST_MARKERS):
+                return True
+            # "pierwsza wersja książki ... wspomnienia" is a document-history
+            # request, not a request for the chronologically first memory.
+            if document_version_modifier(value, "pierwsz"):
+                return False
+            return any(nearby_memory_modifier(value, marker) for marker in ("pierwsz", "najwczesniejs", "poczatek"))
 
         def latest(value: str) -> bool:
-            return (
-                any(self._norm(marker) in value for marker in self.LATEST_MARKERS)
-                or ("wspomn" in value and any(token in value for token in ("ostatn", "najnowsz")))
-            )
+            if any(self._norm(marker) in value for marker in self.LATEST_MARKERS):
+                return True
+            if document_version_modifier(value, "ostatn") or document_version_modifier(value, "najnowsz"):
+                return False
+            return any(nearby_memory_modifier(value, marker) for marker in ("ostatn", "najnowsz"))
 
         if earliest(normalized_query):
             return "chronological_earliest"

@@ -252,6 +252,54 @@
       ],
       "priority": 80,
       "notes": "Miejsca i spacery często są wspomnieniami epizodycznymi z silną kotwicą emocjonalną."
+    },
+    {
+      "key": "book_history_recall",
+      "labels": [
+        "historia książki",
+        "Pamiętnik",
+        "Pamiętnik 2K25",
+        "Witaj w podróży Jaźni"
+      ],
+      "triggers": [
+        "książk",
+        "ksiazk",
+        "pamiętnik",
+        "pamietnik",
+        "moimi oczami",
+        "świat moimi oczami",
+        "swiat moimi oczami",
+        "witaj w podróży jaźni",
+        "witaj w podrozy jazni",
+        "rozdział",
+        "rozdzial"
+      ],
+      "aliases": [
+        "Pamiętnik 2K25",
+        "Pamiętnik",
+        "Moimi oczami",
+        "Świat moimi oczami",
+        "Witaj w podróży Jaźni",
+        "pierwsza wersja książki",
+        "pierwsze podejście do książki",
+        "historia pisania książki"
+      ],
+      "canonical_files": [
+        "memory/raw/dziennik.json",
+        "memory/layered/episodic.jsonl",
+        "memory/layered/reflections.jsonl",
+        "memory/layered/semantic.jsonl"
+      ],
+      "source_layers": [
+        "journal",
+        "episodic",
+        "reflection",
+        "semantic",
+        "legacy_chat",
+        "archive_chats"
+      ],
+      "priority": 97,
+      "notes": "Historia książki wymaga wyszukiwania po tytułach i okresach rozmów; słowo 'pierwsza' nie może samo przełączać recall na najwcześniejsze wspomnienie."
     }
   ],
   "truth_boundary": "This file configures search topics only. It is not memory, identity canon, a runtime marker, or a version source."

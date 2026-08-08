@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 import hashlib
 import json
 import sqlite3
@@ -100,15 +100,36 @@ class ArchiveContext:
 class SourceArchiveGateway:
     """Read-only access to importer L0; it has no write or promotion methods."""
 
-    def __init__(self, path: str | Path, *, busy_timeout_ms: int = 10_000) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        busy_timeout_ms: int = 10_000,
+        should_continue: Callable[[], bool] | None = None,
+        progress_instructions: int = 2_000,
+    ) -> None:
         self.path = Path(path).expanduser().resolve()
         if not self.path.is_file():
             raise FileNotFoundError(self.path)
+        self._should_continue = should_continue
         uri = f"file:{self.path.as_posix()}?mode=ro"
         self.con = sqlite3.connect(uri, uri=True, timeout=max(1.0, busy_timeout_ms / 1000))
         self.con.row_factory = sqlite3.Row
         self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
+        self.con.execute("PRAGMA query_only=ON")
+        if should_continue is not None:
+            def _progress() -> int:
+                try:
+                    return 0 if should_continue() else 1
+                except Exception:
+                    return 1
+            self.con.set_progress_handler(_progress, max(100, int(progress_instructions)))
         self._verify_schema()
+
+    def interrupt(self) -> None:
+        """Interrupt a currently running SQLite statement from another thread."""
+
+        self.con.interrupt()
 
     def close(self) -> None:
         self.con.close()

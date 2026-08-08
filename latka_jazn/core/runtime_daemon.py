@@ -43,6 +43,7 @@ from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.turn_timeout import (
     RuntimeSessionWorker,
     RuntimeTurnTimeoutError,
+    runtime_turn_timeout_for_text,
     runtime_turn_timeout_seconds,
 )
 from latka_jazn.core.turn_execution import TurnExecutionContext
@@ -691,6 +692,7 @@ class DaemonChatJob:
     error: str | None = None
     last_heartbeat_at_utc: str | None = None
     execution_timeout_seconds: float | None = None
+    timeout_profile: str = "default"
     recovery_disposition: str | None = None
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
@@ -717,6 +719,7 @@ class DaemonChatJob:
             "error": self.error,
             "last_heartbeat_at_utc": self.last_heartbeat_at_utc,
             "execution_timeout_seconds": self.execution_timeout_seconds,
+            "timeout_profile": self.timeout_profile,
             "recovery_disposition": self.recovery_disposition,
             "result_endpoint": f"/chat-result/{urllib.parse.quote(self.request_id, safe='')}",
         }
@@ -941,6 +944,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "status": job.status,
                 "last_heartbeat_at_utc": job.last_heartbeat_at_utc,
                 "execution_timeout_seconds": job.execution_timeout_seconds,
+                "timeout_profile": job.timeout_profile,
             })
         write_json_atomic(
             self._chat_state_path,
@@ -1020,6 +1024,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 error="interrupted daemon job recovered without automatic replay",
                 last_heartbeat_at_utc=str(raw.get("last_heartbeat_at_utc")) if raw.get("last_heartbeat_at_utc") else None,
                 execution_timeout_seconds=float(raw.get("execution_timeout_seconds") or self.execution_timeout_seconds),
+                timeout_profile=str(raw.get("timeout_profile") or "default"),
                 recovery_disposition="failed_without_replay",
                 result={
                     "ok": False,
@@ -1165,6 +1170,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
             no_carryover=no_carryover,
             client=client,
         )
+        job_timeout_seconds, timeout_profile = runtime_turn_timeout_for_text(
+            user_text,
+            config=self.config,
+            base_timeout_seconds=self.execution_timeout_seconds,
+        )
 
         with self._chat_jobs_lock:
             self._cleanup_chat_jobs_locked()
@@ -1195,11 +1205,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 no_carryover=bool(no_carryover),
                 client=client,
                 request_fingerprint=request_fingerprint,
-                execution_timeout_seconds=self.execution_timeout_seconds,
+                execution_timeout_seconds=job_timeout_seconds,
+                timeout_profile=timeout_profile,
                 turn_context=TurnExecutionContext.create(
                     request_id=normalized_id,
                     session_id=session_id or "daemon-generated-session",
-                    timeout_seconds=self.execution_timeout_seconds,
+                    timeout_seconds=job_timeout_seconds,
                     audit_db_path=self.config.audit_db_path,
                 ),
             )
@@ -1275,6 +1286,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 session_id_source=session_id_source,
                 process_reused=True,
                 _turn_context=job.turn_context,
+                _timeout_seconds_override=job.execution_timeout_seconds,
+                _timeout_profile=job.timeout_profile,
                 _heartbeat_callback=lambda: setattr(job, "last_heartbeat_at_utc", utc_now_iso()),
             )
             result["ok"] = bool(result.get("ok", True))
@@ -1330,7 +1343,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "error_code": "execution_timeout",
                     "error": error,
                     "request_id": job.request_id,
-                    "execution_timeout_seconds": self.execution_timeout_seconds,
+                    "execution_timeout_seconds": job.execution_timeout_seconds,
+                    "timeout_profile": job.timeout_profile,
                     "schema_version": DAEMON_SCHEMA_VERSION,
                 }
                 job.status = "execution_timeout"

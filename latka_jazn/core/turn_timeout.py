@@ -4,6 +4,7 @@ import os
 import queue
 import threading
 import time
+import unicodedata
 from typing import Any, Callable, TypeVar
 
 from latka_jazn.core.turn_execution import TurnExecutionContext
@@ -11,6 +12,16 @@ from latka_jazn.core.turn_execution import TurnExecutionContext
 T = TypeVar("T")
 
 DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS = 45.0
+DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS = 120.0
+
+_DEEP_RECALL_MEMORY_MARKERS = (
+    "pamiet", "wspomn", "archiw", "baza danych", "dziennik", "rozmow", "histori",
+)
+_DEEP_RECALL_SCOPE_MARKERS = (
+    "przeszuk", "przejrz", "odtworz", "rekonstruk", "znajdz", "wszystk",
+    "co sie dzialo", "pierwsz wers", "ksiazk", "pamietnik", "moimi oczami",
+    "swiat moimi oczami", "witaj w podrozy jazni",
+)
 
 
 class RuntimeTurnTimeoutError(TimeoutError):
@@ -39,6 +50,46 @@ def runtime_turn_timeout_seconds(config: object | None = None) -> float:
         return value if value > 0 else DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS
     except Exception:
         return DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS
+
+
+def _timeout_normalize(text: str) -> str:
+    value = unicodedata.normalize("NFKD", str(text or "").casefold())
+    value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    return " ".join(value.replace("ł", "l").split())
+
+
+def runtime_turn_timeout_for_text(
+    user_text: str,
+    *,
+    config: object | None = None,
+    base_timeout_seconds: float | None = None,
+) -> tuple[float, str]:
+    """Return a bounded per-turn budget without turning every turn into a long wait.
+
+    Deep autobiographical/archive recall is the known expensive class.  It gets a
+    larger hard deadline, while ordinary dialogue keeps the existing default.
+    This is deliberately a conservative pre-routing classifier: it only extends
+    the deadline when both a memory signal and a broad/deep retrieval signal are
+    present.
+    """
+
+    base = float(base_timeout_seconds or runtime_turn_timeout_seconds(config))
+    normalized = _timeout_normalize(user_text)
+    memory_signal = any(marker in normalized for marker in _DEEP_RECALL_MEMORY_MARKERS)
+    scope_signal = any(marker in normalized for marker in _DEEP_RECALL_SCOPE_MARKERS)
+    if not (memory_signal and scope_signal):
+        return max(0.001, base), "default"
+
+    raw = os.environ.get("JAZN_DEEP_RECALL_TURN_TIMEOUT_SECONDS")
+    configured = getattr(config, "deep_recall_turn_timeout_seconds", None)
+    candidate = raw if raw is not None else configured
+    try:
+        deep = float(candidate) if candidate is not None else DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
+    except (TypeError, ValueError):
+        deep = DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
+    if deep <= 0:
+        deep = DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
+    return max(base, deep), "deep_memory_recall"
 
 
 def _persist_turn_audit_async(turn_context: TurnExecutionContext, *, event_type: str) -> None:
@@ -206,6 +257,8 @@ class RuntimeSessionWorker:
         *,
         heartbeat_callback: Callable[[], None] | None = None,
         turn_context: TurnExecutionContext | None = None,
+        timeout_seconds: float | None = None,
+        timeout_profile: str = "default",
     ) -> Any:
         if self._closed:
             raise RuntimeError("RuntimeSessionWorker is closed")
@@ -213,7 +266,8 @@ class RuntimeSessionWorker:
             raise RuntimeError("RuntimeSessionWorker is retired after an execution timeout")
         response_queue: queue.Queue[tuple[str, object]] = queue.Queue(maxsize=1)
         self._requests.put((op, payload, response_queue))
-        deadline = time.monotonic() + self._timeout_seconds
+        effective_timeout = max(0.001, float(timeout_seconds or self._timeout_seconds))
+        deadline = time.monotonic() + effective_timeout
         while True:
             if heartbeat_callback is not None:
                 heartbeat_callback()
@@ -239,7 +293,8 @@ class RuntimeSessionWorker:
                         "runtime_turn_execution_timeout",
                         {
                             "command": self._command,
-                            "timeout_seconds": self._timeout_seconds,
+                            "timeout_seconds": effective_timeout,
+                            "timeout_profile": timeout_profile,
                             "phase": "runtime_turn",
                         },
                     )
@@ -247,7 +302,7 @@ class RuntimeSessionWorker:
                         turn_context,
                         event_type="runtime_turn_execution_timeout",
                     )
-                raise RuntimeTurnTimeoutError(command=self._command, timeout_seconds=self._timeout_seconds)
+                raise RuntimeTurnTimeoutError(command=self._command, timeout_seconds=effective_timeout)
             try:
                 status, value = response_queue.get(timeout=min(0.25, remaining))
                 break
@@ -260,15 +315,36 @@ class RuntimeSessionWorker:
     def process_user_text(self, user_text: str, **kwargs: Any) -> dict[str, Any]:
         heartbeat_callback = kwargs.pop("_heartbeat_callback", None)
         request_id = str(kwargs.pop("request_id", "") or kwargs.pop("_request_id", "") or "") or None
+        timeout_override = kwargs.pop("_timeout_seconds_override", None)
+        timeout_profile_override = str(kwargs.pop("_timeout_profile", "") or "").strip() or None
+        effective_timeout, timeout_profile = runtime_turn_timeout_for_text(
+            user_text,
+            config=self._config,
+            base_timeout_seconds=float(timeout_override or self._timeout_seconds),
+        )
+        if timeout_profile_override is not None:
+            timeout_profile = timeout_profile_override
         turn_context = kwargs.pop("_turn_context", None)
         if not isinstance(turn_context, TurnExecutionContext):
             turn_context = TurnExecutionContext.create(
                 request_id=request_id,
                 session_id=str(getattr(self.state, "session_id", None) or self._session_id or "runtime-session"),
-                timeout_seconds=self._timeout_seconds,
+                timeout_seconds=effective_timeout,
                 audit_db_path=getattr(self._config, "audit_db_path", None),
             )
+        else:
+            # The daemon creates the shared context with the same adaptive budget.
+            # Never extend an already-created context here; only respect its bound.
+            effective_timeout = min(effective_timeout, max(0.001, turn_context.remaining_seconds()))
         turn_context.mark_stage("session_initialization", status="reused")
+        turn_context.record_technical_event(
+            "runtime_turn_timeout_budget",
+            {
+                "timeout_seconds": round(float(effective_timeout), 6),
+                "timeout_profile": timeout_profile,
+                "base_timeout_seconds": self._timeout_seconds,
+            },
+        )
         self.last_turn_context = turn_context
         payload = {"user_text": user_text, "_turn_context": turn_context, **kwargs}
         return self._call(
@@ -276,6 +352,8 @@ class RuntimeSessionWorker:
             payload,
             heartbeat_callback=heartbeat_callback,
             turn_context=turn_context,
+            timeout_seconds=effective_timeout,
+            timeout_profile=timeout_profile,
         )
 
     def close(self) -> None:

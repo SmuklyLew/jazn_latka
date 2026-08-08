@@ -100,3 +100,19 @@ def test_gateway_rejects_non_object_conversation_payload(tmp_path: Path) -> None
     with SourceArchiveGateway(path) as gateway:
         with pytest.raises(ValueError, match="JSON object"):
             gateway.conversation_payload("conv-1")
+
+
+def test_gateway_progress_handler_aborts_query_when_turn_is_cancelled(tmp_path: Path) -> None:
+    path = archive(tmp_path / "archive.sqlite3")
+    allow = True
+
+    def should_continue() -> bool:
+        return allow
+
+    with SourceArchiveGateway(path, should_continue=should_continue, progress_instructions=100) as gateway:
+        allow = False
+        with pytest.raises(sqlite3.DatabaseError, match="interrupted"):
+            gateway.con.execute(
+                "WITH RECURSIVE cnt(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM cnt WHERE x<1000000) "
+                "SELECT sum(x) FROM cnt"
+            ).fetchone()

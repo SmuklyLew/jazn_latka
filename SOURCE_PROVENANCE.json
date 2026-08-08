@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a1ae666719469071502a4d47e4c20c018e8262bd",
+  "base_merge_commit": "4782c71348f29fafc268f804b052f73c0ef496d0",
   "base_version": "v15.1.0.3.97-semantic-routing-completion",
-  "commit_date": "2026-08-08T14:56:26+02:00",
+  "commit_date": "2026-08-08T14:57:45+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-08T12:56:26+00:00",
+  "generated_at_utc": "2026-08-08T12:57:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "fa743b4532e05cf7d83c4cca56b2ffc75c7a30c7",
+  "git_tree_sha": "91b2042563092bf41b9f75703a9540fb4fd7d516",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
