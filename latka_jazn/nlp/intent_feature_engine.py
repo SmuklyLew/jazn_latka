@@ -6,6 +6,12 @@ import unicodedata
 from typing import Any
 
 from latka_jazn.version import schema_version
+from latka_jazn.nlp.domain_context import (
+    has_conversation_archive_context,
+    has_conversation_archive_recall_context,
+    has_explicit_package_context,
+    has_runtime_status_operation_context,
+)
 
 SCHEMA_VERSION = schema_version("intent_feature_engine")
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -63,7 +69,6 @@ class IntentFeatureEngine:
     PACKAGE_PATTERNS = (
         r"\bpacz\w*\b",
         r"\bzip\w*\b",
-        r"\barchiw\w*\b",
         r"\bmanifest\w*\b",
         r"\bcrc\b",
         r"\bsha(?:256)?\b",
@@ -119,7 +124,7 @@ class IntentFeatureEngine:
         r"\bjaki wynik\b",
         r"\bstatus\w*\b",
         r"\budal\w*\b",
-        r"\bdzial\w*\b",
+        r"\bdziala\b",
         r"\bpo now\w*\b",
         r"\bsprawdzil\w*\b",
         r"\btest\w* przeszed\w*\b",
@@ -156,19 +161,25 @@ class IntentFeatureEngine:
         previous_folded = self.fold(self.normalize(previous_text or ""))
 
         package_hits = self._matches(folded, self.PACKAGE_PATTERNS)
+        explicit_package_context = has_explicit_package_context(folded)
+        conversation_archive_context = has_conversation_archive_context(folded)
+        conversation_archive_recall = has_conversation_archive_recall_context(folded)
         generator_present = bool(re.search(self.GENERATOR_PATTERN, folded, flags=re.UNICODE))
         creative_hits = self._matches(folded, self.CREATIVE_PATTERNS)
         creative_action_hits = self._matches(folded, self.CREATIVE_ACTION_PATTERNS)
         update_action_hits = self._matches(folded, self.UPDATE_ACTION_PATTERNS)
         status_hits = self._matches(folded, self.STATUS_PATTERNS)
+        runtime_status_operation = has_runtime_status_operation_context(folded)
         prompt_present = bool(re.search(self.PROMPT_PATTERN, folded, flags=re.UNICODE))
         structured_creative = bool(self.STRUCTURED_CREATIVE_PATTERN.search(text or ""))
-        question_like = speech_act == "question" or "?" in (text or "") or bool(status_hits)
-        previous_package_context = bool(previous_folded and self._matches(previous_folded, self.PACKAGE_PATTERNS))
+        question_like = speech_act == "question" or "?" in (text or "") or bool(status_hits) or runtime_status_operation
+        previous_package_context = bool(previous_folded and has_explicit_package_context(previous_folded))
 
         domains: list[str] = []
-        if package_hits:
+        if explicit_package_context:
             domains.append("package_runtime")
+        if conversation_archive_context:
+            domains.append("conversation_archive_memory")
         if creative_hits or prompt_present or structured_creative:
             domains.append("creative")
         if update_action_hits:
@@ -179,21 +190,27 @@ class IntentFeatureEngine:
         package_positive: list[str] = []
         package_negative: list[str] = []
         package_score = 0.0
-        if package_hits:
+        if explicit_package_context:
             package_score += 0.38
             package_positive.append("package_or_runtime_domain")
-        if generator_present and package_hits:
+        if conversation_archive_context and not explicit_package_context:
+            package_score -= 0.55
+            package_negative.append("conversation_archive_is_not_package_archive")
+        if generator_present and explicit_package_context:
             package_score += 0.24
             package_positive.append("generator_grounded_by_package_domain")
-        if question_like:
+        if question_like and explicit_package_context:
             package_score += 0.18
             package_positive.append("status_or_question_act")
-        if status_hits:
+        if status_hits and explicit_package_context:
             package_score += 0.15
             package_positive.append("status_followup_marker")
-        if previous_package_context:
-            package_score += 0.08
-            package_positive.append("previous_turn_package_context")
+        if runtime_status_operation and explicit_package_context:
+            package_score += 0.15
+            package_positive.append("runtime_status_operation")
+        if previous_package_context and status_hits and not conversation_archive_context:
+            package_score += 0.68
+            package_positive.append("previous_turn_package_status_followup")
         if update_action_hits:
             package_score -= 0.35
             package_negative.append("explicit_update_execution_action")
@@ -219,7 +236,7 @@ class IntentFeatureEngine:
         if generator_present and (creative_hits or prompt_present):
             creative_score += 0.18
             creative_positive.append("generator_grounded_by_creative_domain")
-        if package_hits:
+        if explicit_package_context:
             creative_score -= 0.55
             creative_negative.append("package_runtime_domain_conflict")
         if question_like and not creative_action_hits and not structured_creative:
@@ -235,7 +252,7 @@ class IntentFeatureEngine:
         if update_action_hits:
             update_score += 0.52
             update_positive.append("explicit_execution_action")
-        if package_hits or any(token in tokens for token in ("nlp", "kod", "runtime", "system", "jazn")):
+        if explicit_package_context or any(token in tokens for token in ("nlp", "kod", "runtime", "system", "jazn")):
             update_score += 0.20
             update_positive.append("system_or_package_target")
         if any(token in tokens for token in ("patch", "branch", "testy", "test")):
@@ -245,9 +262,25 @@ class IntentFeatureEngine:
             update_score -= 0.25
             update_negative.append("question_without_execution_verb")
 
+        memory_positive: list[str] = []
+        memory_negative: list[str] = []
+        memory_score = 0.0
+        if conversation_archive_context:
+            memory_score += 0.48
+            memory_positive.append("conversation_archive_context")
+        if conversation_archive_recall:
+            memory_score += 0.34
+            memory_positive.append("conversation_history_recall_action_or_target")
+        if any(token in tokens for token in ("pamietnik", "pamiec", "wspomnienia", "historia", "chronologicznie")):
+            memory_score += 0.12
+            memory_positive.append("memory_history_target")
+        if explicit_package_context and not conversation_archive_context:
+            memory_score -= 0.45
+            memory_negative.append("explicit_package_context_without_conversation_archive")
+
         ordinary_score = 0.12
         ordinary_positive = ["fallback_candidate"]
-        if not (package_hits or creative_hits or update_action_hits or prompt_present):
+        if not (explicit_package_context or conversation_archive_context or creative_hits or update_action_hits or prompt_present):
             ordinary_score += 0.23
             ordinary_positive.append("no_specialized_domain")
 
@@ -274,6 +307,13 @@ class IntentFeatureEngine:
                 ["system_update"],
             ),
             IntentCandidate(
+                "self_memory_recall_request",
+                self._clamp(memory_score),
+                memory_positive,
+                memory_negative,
+                ["conversation_archive_memory"],
+            ),
+            IntentCandidate(
                 "ordinary_conversation",
                 self._clamp(ordinary_score),
                 ordinary_positive,
@@ -290,8 +330,10 @@ class IntentFeatureEngine:
             conflicts.append("generator_has_package_and_creative_context")
         elif generator_present and not package_hits and not (creative_hits or prompt_present):
             conflicts.append("generator_without_domain_grounding")
-        if update_action_hits and question_like and status_hits:
+        if update_action_hits and question_like and (status_hits or runtime_status_operation):
             conflicts.append("status_question_and_execution_action_overlap")
+        if conversation_archive_context and explicit_package_context:
+            conflicts.append("conversation_archive_and_package_context_overlap")
 
         ambiguous = top.score < 0.56 or margin < 0.12 or bool(conflicts and margin < 0.22)
         abstain_reason: str | None = None

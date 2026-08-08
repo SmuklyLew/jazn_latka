@@ -13,10 +13,9 @@ from latka_jazn.tools.semantic_route_audit import run_audit
 from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL
 
 
-def test_version_bumped_for_changed_runtime_behaviour() -> None:
-    assert PACKAGE_VERSION == "v15.1.0.3.96"
-    assert PACKAGE_VERSION_FULL == "v15.1.0.3.96-semantic-routing-completion"
-
+def test_semantic_routing_completion_release_contract_tracks_current_version() -> None:
+    assert PACKAGE_VERSION_FULL.startswith(PACKAGE_VERSION)
+    assert PACKAGE_VERSION_FULL.endswith("-semantic-routing-completion")
 
 def test_post_update_coverage_question_has_dedicated_route_and_github_secondary() -> None:
     report = DialogueIntentClassifier().classify(

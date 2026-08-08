@@ -5,6 +5,10 @@ import re
 from typing import Any
 
 from latka_jazn.version import schema_version
+from latka_jazn.nlp.domain_context import (
+    conversation_archive_evidence,
+    has_conversation_archive_context,
+)
 
 SCHEMA_VERSION = schema_version("question_object_detector")
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -22,7 +26,7 @@ class QuestionObjectReport:
 
 class QuestionObjectDetector:
     PACKAGE_RE = re.compile(
-        r"\b(?:pacz\w*|zip\w*|archiw\w*|manifest\w*|crc|sha256|rozpak\w*|"
+        r"\b(?:pacz\w*|zip\w*|manifest\w*|crc|sha256|rozpak\w*|"
         r"wypak\w*|generator\w*\s+pacz\w*)\b",
         re.IGNORECASE | re.UNICODE,
     )
@@ -38,6 +42,11 @@ class QuestionObjectDetector:
 
     def detect(self, text: str) -> QuestionObjectReport:
         folded = self._fold(text)
+        if has_conversation_archive_context(folded):
+            return QuestionObjectReport(
+                "conversation_archive_memory",
+                conversation_archive_evidence(folded),
+            )
         if self.PACKAGE_RE.search(folded):
             evidence = [match.group(0) for match in self.PACKAGE_RE.finditer(folded)]
             return QuestionObjectReport("package_runtime_status", evidence[:6])

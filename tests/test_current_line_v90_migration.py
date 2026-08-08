@@ -49,6 +49,17 @@ def test_current_tree_has_no_unapproved_old_references() -> None:
     assert approved_legacy >= 0
 
 
+def test_v90_scanner_does_not_treat_later_release_history_as_unfinished_migration(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+    sample = repo / "later-release.md"
+    sample.write_text("Historical report for v15.1.0.3.96\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "later-release.md"], check=True)
+    findings, _ = scan_active_old_references(repo)
+    assert findings == []
+
+
 def test_v90_archive_manifest_preserves_exact_bytes() -> None:
     root = Path(__file__).resolve().parents[1]
     manifest_path = root / ARCHIVE_ROOT / "ARCHIVE_MANIFEST.json"

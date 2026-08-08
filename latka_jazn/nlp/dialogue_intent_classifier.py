@@ -242,6 +242,9 @@ class DialogueIntentClassifier:
         "przypomnij sobie", "pamiętasz o sobie", "pamietasz o sobie", "co wiesz o sobie",
         "o swojej postaci", "swojej postaci", "o swojej osobie", "swojej osobie", "o sobie łatko", "o sobie latko",
         "informacji o sobie", "czegoś o swojej postaci", "czegos o swojej postaci",
+        "archiwum rozmów", "archiwum rozmow", "archiwum czatów", "archiwum czatow",
+        "rozmowy źródłowe", "rozmowy zrodlowe", "historia rozmów", "historia rozmow",
+        "odzyskać historię", "odzyskac historie", "odtworzyć historię", "odtworzyc historie",
     )
     SELF_MEMORY_PERSONA_TERMS = (
         "łatka", "latka", "jaźń", "jazn", "sobie", "siebie", "swojej", "osobie", "postaci",
@@ -403,6 +406,20 @@ class DialogueIntentClassifier:
             return report(norm,folded,'post_update_coverage_audit_request',[
                 'jawne pytanie o kompletność i pominięcia zakończonego patcha/aktualizacji'
             ],0.97,diag=True,speech_act=speech.speech_act,question_object='post_update_coverage')
+        if (
+            decision_frame.top_intent == 'self_memory_recall_request'
+            and decision_frame.top_score >= 0.68
+            and (decision_frame.decision_margin >= 0.12 or not decision_frame.ambiguous)
+        ):
+            memory_candidate=next((candidate for candidate in decision_frame.candidates if candidate.intent == 'self_memory_recall_request'), None)
+            memory_evidence=list(memory_candidate.positive_evidence if memory_candidate else [])
+            if memory_candidate and memory_candidate.negative_evidence:
+                memory_evidence.extend(f'negative:{item}' for item in memory_candidate.negative_evidence)
+            memory_evidence.append('intent_feature_engine:conversation_archive_disambiguation')
+            return report(
+                norm,folded,'self_memory_recall_request',memory_evidence,max(0.90,decision_frame.top_score),
+                speech_act=speech.speech_act,question_object='conversation_archive_memory',
+            )
         if (
             decision_frame.top_intent == 'package_runtime_status_question'
             and decision_frame.top_score >= 0.68

@@ -131,10 +131,14 @@ def _padded(parts: tuple[int, ...], width: int = 7) -> tuple[int, ...]:
 
 def _is_old_package_version(raw: str) -> bool:
     candidate = _version_tuple(raw)
-    current = _version_tuple(version_number(PACKAGE_VERSION))
-    if candidate is None or current is None or candidate[0] not in {14, 15}:
+    migration_target = _version_tuple(version_number(V90_MIGRATION_TARGET_VERSION))
+    if candidate is None or migration_target is None or candidate[0] not in {14, 15}:
         return False
-    return _padded(candidate) < _padded(current)
+    # This scanner belongs to the one-time v89 -> v90 migration.  Comparing
+    # against the *current* package version made every later historical release
+    # (for example v96 after a v98 bump) look like an unfinished v90 migration.
+    # Keep the migration boundary fixed to its own target instead.
+    return _padded(candidate) < _padded(migration_target)
 
 
 def _is_active_path(path: str) -> bool:
