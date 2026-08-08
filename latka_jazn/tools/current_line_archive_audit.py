@@ -14,7 +14,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version, version_number
+from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("current_line_archive_audit")
 ARCHIVE_ROOT = Path(V90_ARCHIVE_ROOT)
@@ -62,12 +62,16 @@ def _padded(parts: tuple[int, ...], width: int = 7) -> tuple[int, ...]:
 
 def _is_old_package_version(raw: str) -> bool:
     candidate = _version_tuple(raw)
-    current = _version_tuple(version_number(PACKAGE_VERSION))
-    if candidate is None or current is None:
+    migration_target = _version_tuple(V90_MIGRATION_TARGET_VERSION)
+    if candidate is None or migration_target is None:
         return False
     if candidate[0] not in {14, 15}:
         return False
-    return _padded(candidate) < _padded(current)
+    # This audit belongs to the one-time v90 current-line migration.  Later
+    # releases may legitimately retain historical references to post-v90
+    # versions (for example v96 reports/tests), so the boundary must not move
+    # forward with PACKAGE_VERSION.
+    return _padded(candidate) < _padded(migration_target)
 
 
 def _tracked_paths(root: Path) -> list[str]:
@@ -102,6 +106,7 @@ def _line_is_historical_archive_pointer(path: str, line: str, raw_version: str) 
         and '"archive_path"' in line
         and V90_ARCHIVE_ROOT in line
     )
+
 
 def _line_is_canonical_distribution(path: str, line: str, raw_version: str) -> bool:
     return (
