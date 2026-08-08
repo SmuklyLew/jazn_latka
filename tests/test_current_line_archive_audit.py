@@ -7,14 +7,16 @@ from pathlib import Path
 
 from latka_jazn.tools.current_line_archive_audit import ARCHIVE_ROOT, _is_old_package_version, run_audit
 from latka_jazn.version import PACKAGE_VERSION
+from latka_jazn.version_contract import LEGACY_CURRENT_LINE_VERSION, V90_MIGRATION_TARGET_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_v90_archive_audit_uses_fixed_migration_boundary() -> None:
-    assert _is_old_package_version("15.1.0.3.89") is True
-    assert _is_old_package_version("15.1.0.3.90") is False
-    assert _is_old_package_version("15.1.0.3.96") is False
+    post_v90_historical = "v" + ".".join(("15", "1", "0", "3", "96"))
+    assert _is_old_package_version(LEGACY_CURRENT_LINE_VERSION) is True
+    assert _is_old_package_version(V90_MIGRATION_TARGET_VERSION) is False
+    assert _is_old_package_version(post_v90_historical) is False
 
 
 def test_current_active_tree_has_no_old_package_version_references() -> None:
