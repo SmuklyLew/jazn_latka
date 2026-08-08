@@ -1105,6 +1105,7 @@ class JaznEngine:
         *,
         intent_report: Any | None = None,
         intent_tags: list[str] | None = None,
+        turn_context: TurnExecutionContext | None = None,
     ) -> dict:
         """Buduje pamięć tylko wtedy, gdy intencja tego naprawdę wymaga.
 
@@ -1116,7 +1117,7 @@ class JaznEngine:
         decision = self.memory_use_gate.decide(text, detected_intent=primary_intent)
         if primary_intent in self.NON_MEMORY_RETRIEVAL_INTENTS or not decision.allow_memory_content:
             return self._empty_memory_context_for_chatgpt(text, primary_intent=primary_intent, memory_gate=decision.to_dict())
-        return self._memory_context_for_chatgpt(text, limit=limit)
+        return self._memory_context_for_chatgpt(text, limit=limit, turn_context=turn_context)
 
     def _primary_intent_for_memory_gate(self, intent_report: Any | None, intent_tags: list[str] | None = None) -> str:
         if isinstance(intent_report, dict):
@@ -1240,7 +1241,13 @@ class JaznEngine:
             })
         return hits[:limit], search_result
 
-    def _memory_context_for_chatgpt(self, text: str, limit: int = 5) -> dict:
+    def _memory_context_for_chatgpt(
+        self,
+        text: str,
+        limit: int = 5,
+        *,
+        turn_context: TurnExecutionContext | None = None,
+    ) -> dict:
         """Buduje kontekst pamięci przez planer wyszukiwania, nie przez gołe tokeny.
 
         poprzednia linia runtime naprawia problem ujawniony przy pytaniu o piosenki i dom:
@@ -1249,21 +1256,48 @@ class JaznEngine:
         pytać warstwy pamięci.
         """
         legacy_candidates = self._keyword_candidates(text)
+        if turn_context is not None:
+            turn_context.start_stage("memory_search_plan")
         search_plan = self.memory_search_planner.plan(
             text,
             fallback_terms=legacy_candidates,
             previous_query=self.last_user_text,
         )
+        if turn_context is not None:
+            turn_context.complete_stage("memory_search_plan")
         phrases = search_plan.search_terms or legacy_candidates
-        living_memory_search = self.living_memory_gateway.search(search_plan, limit=limit)
+
+        if turn_context is not None:
+            turn_context.start_stage("memory_living_recall")
+        living_memory_search = self.living_memory_gateway.search(
+            search_plan,
+            limit=limit,
+            should_continue=turn_context.can_continue if turn_context is not None else None,
+        )
         living_memory_hits = [
             dict(hit) for hit in (living_memory_search.get("hits") or []) if isinstance(hit, dict)
         ][:limit]
+        if turn_context is not None:
+            turn_context.complete_stage(
+                "memory_living_recall",
+                status="cancelled" if living_memory_search.get("cancelled") else "completed",
+                error_code="turn_cancelled" if living_memory_search.get("cancelled") else None,
+            )
+        living_counts = living_memory_search.get("counts") or {}
+        hits_by_layer = living_counts.get("hits_by_layer") if isinstance(living_counts, dict) else {}
+        archive_fts_hit = (
+            isinstance(hits_by_layer, dict)
+            and int(hits_by_layer.get("archive_chats") or 0) > 0
+        ) or any(
+            str(hit.get("source_layer") or "") == "archive_chats" for hit in living_memory_hits
+        )
         # poprzednia linia runtime: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
         # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
         # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
         # i dopiero potem przycinamy widoczny kontekst.
         collection_limit = max(limit * 4, 16)
+        if turn_context is not None:
+            turn_context.start_stage("memory_legacy_recall")
         episodes: list[dict] = []
         legacy: list[dict] = []
         seen_ep: set[str] = set()
@@ -1271,11 +1305,15 @@ class JaznEngine:
 
         # Wyszukiwanie wieloprzejściowe: najpierw focus, potem rozszerzenia.
         for search_pass in search_plan.search_passes:
+            if turn_context is not None and not turn_context.can_continue():
+                break
             pass_terms = [str(x) for x in (search_pass.get("terms") or []) if str(x).strip()]
             if not pass_terms or search_pass.get("name") == "raw_chat_fallback":
                 continue
             per_phrase = 4 if search_pass.get("name") == "exact_focus_terms" else 2
             for phrase in pass_terms:
+                if turn_context is not None and not turn_context.can_continue():
+                    break
                 if "episodic_memories" in (search_pass.get("layers") or []):
                     for ep in self.layered_memory.search_episodes(phrase, per_phrase):
                         key = ep.get("episode_id") or ep.get("scene", "")[:120]
@@ -1293,7 +1331,7 @@ class JaznEngine:
                         })
                         if len(episodes) >= collection_limit:
                             break
-                if "legacy_messages" in (search_pass.get("layers") or []):
+                if "legacy_messages" in (search_pass.get("layers") or []) and not archive_fts_hit:
                     for row in self.store.search_messages_any([phrase], per_phrase):
                         d = dict(row)
                         key = f"{d.get('conversation_id')}:{d.get('author_role')}:{d.get('create_time_warsaw')}:{str(d.get('text') or '')[:80]}"
@@ -1317,20 +1355,72 @@ class JaznEngine:
 
         episodes = self._filter_memory_context_candidates(episodes, user_text=text, kind="episode")[:limit]
         legacy = self._filter_memory_context_candidates(legacy, user_text=text, kind="legacy_message")[:limit]
+        if turn_context is not None:
+            if archive_fts_hit and turn_context.can_continue():
+                turn_context.record_technical_event(
+                    "memory_retrieval_strategy",
+                    {
+                        "strategy": "fts_first",
+                        "archive_fts_hit": True,
+                        "legacy_message_scan_skipped": True,
+                    },
+                )
+            turn_context.complete_stage(
+                "memory_legacy_recall",
+                status="completed" if turn_context.can_continue() else "cancelled",
+                error_code=None if turn_context.can_continue() else "turn_cancelled",
+            )
 
-        source_file_hits = [hit.to_dict() for hit in self.memory_search_planner.search_source_files(search_plan, limit=limit)]
-        conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(phrases, limit=limit)
+        if turn_context is not None:
+            turn_context.start_stage("memory_source_file_scan")
+        source_file_hits = []
+        if turn_context is None or turn_context.can_continue():
+            source_file_hits = [hit.to_dict() for hit in self.memory_search_planner.search_source_files(search_plan, limit=limit)]
+        if turn_context is not None:
+            turn_context.complete_stage(
+                "memory_source_file_scan",
+                status="completed" if turn_context.can_continue() else "cancelled",
+                error_code=None if turn_context.can_continue() else "turn_cancelled",
+            )
+
+        if turn_context is not None:
+            turn_context.start_stage("memory_conversation_archive_recall")
+        if turn_context is None or turn_context.can_continue():
+            conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(phrases, limit=limit)
+        else:
+            conversation_archive_hits, conversation_archive_search = [], {
+                "status": "cancelled", "issues": ["turn_cancelled_before_conversation_archive"]
+            }
+        if turn_context is not None:
+            turn_context.complete_stage(
+                "memory_conversation_archive_recall",
+                status="completed" if turn_context.can_continue() else "cancelled",
+                error_code=None if turn_context.can_continue() else "turn_cancelled",
+            )
 
         raw_fallback: list[dict] = []
         raw_path = self.config.root / "memory" / "raw" / "chat.html"
+        if turn_context is not None:
+            turn_context.start_stage("memory_raw_fallback")
         # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
         # conversation_archive i pliki kanoniczne nie zwróciły treści.
-        if not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
+        if (turn_context is None or turn_context.can_continue()) and not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
             raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
+        if turn_context is not None:
+            turn_context.complete_stage(
+                "memory_raw_fallback",
+                status="completed" if turn_context.can_continue() else "cancelled",
+                error_code=None if turn_context.can_continue() else "turn_cancelled",
+            )
 
         context = {
             "query_terms": phrases,
             "memory_search_plan": search_plan.to_dict(),
+            "retrieval_strategy": {
+                "fts_first": True,
+                "archive_fts_hit": archive_fts_hit,
+                "legacy_message_scan_skipped": archive_fts_hit,
+            },
             "episodes": episodes,
             "legacy_messages": legacy,
             "source_file_hits": source_file_hits[:limit],
@@ -1678,7 +1768,7 @@ class JaznEngine:
         )
         if turn_context is not None:
             turn_context.start_stage("memory_use_gate")
-        memory_context = self._gated_memory_context_for_chatgpt(text, intent_report=memory_gate_intent_report)
+        memory_context = self._gated_memory_context_for_chatgpt(text, intent_report=memory_gate_intent_report, turn_context=turn_context)
         if turn_context is not None:
             turn_context.complete_stage("memory_use_gate")
             memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"

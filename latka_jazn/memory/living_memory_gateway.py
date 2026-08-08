@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 import json
 import os
 import re
@@ -105,7 +105,13 @@ class LivingMemoryGateway:
             })
         return discovered
 
-    def search(self, plan: Any, *, limit: int = 6) -> dict[str, Any]:
+    def search(
+        self,
+        plan: Any,
+        *,
+        limit: int = 6,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> dict[str, Any]:
         mode = str(getattr(plan, "search_mode", None) or "semantic_query")
         terms = [str(value).strip() for value in (getattr(plan, "search_terms", None) or []) if str(value).strip()]
         query = " ".join(terms).strip()
@@ -114,27 +120,47 @@ class LivingMemoryGateway:
         issues: list[str] = []
         per_layer = max(1, min(4, int(limit)))
 
+        def can_continue() -> bool:
+            if should_continue is None:
+                return True
+            try:
+                return bool(should_continue())
+            except Exception:
+                return False
+
+        cancelled = False
         for source in source_reports:
+            if not can_continue():
+                cancelled = True
+                break
             if not source.get("recall_ready"):
                 continue
             paths = {key: Path(value) for key, value in (source.get("database_paths") or {}).items()}
             for layer in self.SEARCH_ORDER:
+                if not can_continue():
+                    cancelled = True
+                    break
                 path = paths.get(layer)
                 if path is None or not path.is_file():
                     continue
                 try:
                     if layer == "memory_jazn":
-                        layer_hits = self._search_memory(path, query, mode=mode, limit=per_layer)
+                        layer_hits = self._search_memory(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
                     elif layer == "experience":
-                        layer_hits = self._search_experience(path, query, mode=mode, limit=per_layer)
+                        layer_hits = self._search_experience(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
                     elif layer == "journal":
-                        layer_hits = self._search_journal(path, query, mode=mode, limit=per_layer)
+                        layer_hits = self._search_journal(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
                     else:
-                        layer_hits = self._search_archive(path, query, mode=mode, limit=per_layer)
+                        layer_hits = self._search_archive(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
                 except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
                     issues.append(f"{layer}:{path}:{type(exc).__name__}:{exc}")
                     continue
                 hits.extend(layer_hits)
+            if cancelled:
+                break
+
+        if cancelled:
+            issues.append("search_cancelled:turn_deadline_or_cancellation")
 
         hits = self._dedupe(hits)
         if mode == "chronological_earliest":
@@ -145,15 +171,21 @@ class LivingMemoryGateway:
             layer_priority = {name: index for index, name in enumerate(self.SEARCH_ORDER)}
             hits.sort(key=lambda hit: (layer_priority.get(hit.source_layer, 99), -hit.relevance, -(hit.importance or 0.0)))
 
+        layer_hit_counts: dict[str, int] = {}
+        for hit in hits:
+            layer_hit_counts[hit.source_layer] = layer_hit_counts.get(hit.source_layer, 0) + 1
         selected = hits[: max(1, int(limit))]
         return {
             "schema_version": SCHEMA_VERSION,
             "status": "ready" if source_reports and any(r.get("recall_ready") for r in source_reports) else "no_registered_living_memory",
             "search_mode": mode,
             "query": query,
+            "cancelled": cancelled,
             "hits": [hit.to_dict() for hit in selected],
             "counts": {
                 "hits": len(selected),
+                "candidate_hits": len(hits),
+                "hits_by_layer": layer_hit_counts,
                 "sources_discovered": len(source_reports),
                 "sources_recall_ready": sum(1 for report in source_reports if report.get("recall_ready")),
             },
@@ -173,20 +205,35 @@ class LivingMemoryGateway:
             return path
         return path / "memory" / "sqlite"
 
-    def _connect(self, path: Path) -> sqlite3.Connection:
+    def _connect(
+        self,
+        path: Path,
+        *,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> sqlite3.Connection:
         uri = f"file:{path.as_posix()}?mode=ro"
         con = sqlite3.connect(uri, uri=True, timeout=self.busy_timeout_ms / 1000)
         con.row_factory = sqlite3.Row
         con.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
         con.execute("PRAGMA query_only=ON")
+        if should_continue is not None:
+            def _progress() -> int:
+                try:
+                    return 0 if should_continue() else 1
+                except Exception:
+                    return 1
+            con.set_progress_handler(_progress, 2_000)
         return con
 
     @staticmethod
     def _table_names(con: sqlite3.Connection) -> set[str]:
         return {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view')")}
 
-    def _search_memory(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
-        with closing(self._connect(path)) as con:
+    def _search_memory(
+        self, path: Path, query: str, *, mode: str, limit: int,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[LivingMemoryHit]:
+        with closing(self._connect(path, should_continue=should_continue)) as con:
             if "memory_records" not in self._table_names(con):
                 return []
             params: list[Any] = []
@@ -220,8 +267,11 @@ class LivingMemoryGateway:
             metadata={"tier": row["tier"], "kind": row["kind"], "domain": row["domain"]},
         ) for row in rows if str(row["content"] or "").strip()]
 
-    def _search_experience(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
-        with closing(self._connect(path)) as con:
+    def _search_experience(
+        self, path: Path, query: str, *, mode: str, limit: int,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[LivingMemoryHit]:
+        with closing(self._connect(path, should_continue=should_continue)) as con:
             if "experiences" not in self._table_names(con):
                 return []
             params: list[Any] = []
@@ -256,8 +306,11 @@ class LivingMemoryGateway:
             metadata={"status": row["status"]},
         ) for row in rows if str(row["summary"] or row["title"] or "").strip()]
 
-    def _search_journal(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
-        with closing(self._connect(path)) as con:
+    def _search_journal(
+        self, path: Path, query: str, *, mode: str, limit: int,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[LivingMemoryHit]:
+        with closing(self._connect(path, should_continue=should_continue)) as con:
             tables = self._table_names(con)
             if "journal_entries" not in tables:
                 return []
@@ -317,9 +370,12 @@ class LivingMemoryGateway:
             metadata={"status": row["status"]},
         ) for row in rows if str(row["summary"] or row["content"] or row["title"] or "").strip()]
 
-    def _search_archive(self, path: Path, query: str, *, mode: str, limit: int) -> list[LivingMemoryHit]:
+    def _search_archive(
+        self, path: Path, query: str, *, mode: str, limit: int,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[LivingMemoryHit]:
         hits: list[LivingMemoryHit] = []
-        with SourceArchiveGateway(path, busy_timeout_ms=self.busy_timeout_ms) as gateway:
+        with SourceArchiveGateway(path, busy_timeout_ms=self.busy_timeout_ms, should_continue=should_continue) as gateway:
             if mode in {"chronological_earliest", "chronological_latest"}:
                 direction = "ASC" if mode == "chronological_earliest" else "DESC"
                 candidates = gateway.con.execute(
@@ -341,6 +397,8 @@ class LivingMemoryGateway:
                         search_rows = [(hit, hit.rank) for hit in archive_hits]
                         break
             for candidate, rank in search_rows:
+                if should_continue is not None and not should_continue():
+                    break
                 conversation_id = str(candidate["conversation_id"] if isinstance(candidate, sqlite3.Row) else candidate.conversation_id)
                 node_id = str(candidate["node_id"] if isinstance(candidate, sqlite3.Row) else candidate.node_id)
                 try:

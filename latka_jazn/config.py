@@ -160,6 +160,7 @@ class JaznConfig:
     model_timeout_seconds: float = field(default_factory=lambda: _env_float("JAZN_MODEL_TIMEOUT", 45.0))
     model_max_output_tokens: int = field(default_factory=lambda: _env_int("JAZN_MODEL_MAX_OUTPUT_TOKENS", 800))
     runtime_turn_timeout_seconds: float = field(default_factory=lambda: _env_float("JAZN_RUNTIME_TURN_TIMEOUT_SECONDS", 45.0))
+    deep_recall_turn_timeout_seconds: float = field(default_factory=lambda: _env_float("JAZN_DEEP_RECALL_TURN_TIMEOUT_SECONDS", 120.0))
     terminal_model_name: str = field(default_factory=lambda: os.environ.get("JAZN_TERMINAL_MODEL_NAME", "terminal_visible_layer").strip())
     local_model_name: str = field(default_factory=lambda: _env_first("JAZN_OLLAMA_MODEL", "JAZN_LOCAL_LLM_MODEL", "JAZN_LOCAL_MODEL_NAME", default="").strip())
     local_model_api_base: str = field(default_factory=lambda: _env_first("JAZN_OLLAMA_BASE_URL", "JAZN_LOCAL_LLM_BASE_URL", "JAZN_LOCAL_LLM_API_BASE", "JAZN_LOCAL_MODEL_API_BASE", default="http://127.0.0.1:11434").strip().rstrip("/"))
