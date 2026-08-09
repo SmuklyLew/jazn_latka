@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   apply-reviewed-update:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -41,7 +42,7 @@ jobs:
           gzip -dc /tmp/v154.patch.gz > /tmp/v154.patch
           git apply --check /tmp/v154.patch
 
-      - name: Apply reviewed v15.4 architecture update
+      - name: Apply reviewed v15.4 source update
         shell: bash
         run: |
           set -euo pipefail
@@ -57,7 +58,7 @@ jobs:
               path.write_text('\n'.join(line.rstrip() for line in lines).rstrip() + '\n', encoding='utf-8')
           PY
           rm -rf .v154-bootstrap-parts
-          rm -f .github/workflows/v154-bootstrap.yml
+          git checkout HEAD -- .github/workflows/release-hardening.yml
 
       - name: Static safety gates before push
         shell: bash
@@ -71,7 +72,7 @@ jobs:
             exit 1
           fi
 
-      - name: Commit final source update
+      - name: Commit source update without workflow mutation
         shell: bash
         run: |
           set -euo pipefail
