@@ -14,6 +14,14 @@ CONVERSATION_ARCHIVE_RES = (
     re.compile(r"\b(?:rozm\w*|czat\w*|konwersac\w*|wiadom\w*)\s+(?:z\s+)?archiw\w*\b", re.IGNORECASE | re.UNICODE),
     re.compile(r"\b(?:histori\w*|chronolog\w*)\b.{0,80}\b(?:rozm\w*|czat\w*|konwersac\w*)\b", re.IGNORECASE | re.UNICODE),
     re.compile(r"\b(?:rozm\w*|czat\w*|konwersac\w*)\s+zrodl\w*\b", re.IGNORECASE | re.UNICODE),
+    re.compile(
+        r"\bco\s+(?:sie\s+)?(?:wtedy\s+)?dzialo\s+sie\b.{0,100}\b(?:miedzy\s+nami|rozm\w*|czat\w*|konwersac\w*)\b",
+        re.IGNORECASE | re.UNICODE,
+    ),
+    re.compile(
+        r"\b(?:miedzy\s+nami|nasz\w*\s+relac\w*)\b.{0,100}\b(?:rozm\w*|czat\w*|konwersac\w*)\b",
+        re.IGNORECASE | re.UNICODE,
+    ),
 )
 MEMORY_RECALL_ACTION_RE = re.compile(
     r"\b(?:przejrz\w*|przeszuk\w*|wyszuk\w*|szuk\w*|odtworz\w*|odzysk\w*|przypomn\w*|znajdz\w*|wydobadz\w*)\b",

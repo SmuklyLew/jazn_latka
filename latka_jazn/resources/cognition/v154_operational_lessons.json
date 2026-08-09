@@ -1,0 +1,28 @@
+{
+  "schema_version": "operational_lessons/v15.4.0.0",
+  "truth_boundary": "Only verified regressions tied to source tests belong here. These entries guide checks; they do not rewrite code or become autobiographical memory.",
+  "lessons": [
+    {
+      "trigger_signature": "archiwum rozmów",
+      "expected_behavior": "Route a request to recover source conversations to self-memory recall, not package/runtime status.",
+      "observed_failure": "Conversation archive was misread as a ZIP/package archive and a package status answer was returned.",
+      "root_cause": "Over-broad archive/status lexical patterns lacked conversational-source context.",
+      "repair_rule": "Prefer conversation-archive evidence over package archive markers unless an explicit package/ZIP/manifest object is present.",
+      "regression_test_id": "tests/test_conversation_archive_routing_guard.py",
+      "applicability_terms": ["archiwum rozmów", "pamiętnik", "rozmowy źródłowe", "co wtedy działo się"],
+      "confidence": 1.0,
+      "verified": true
+    },
+    {
+      "trigger_signature": "zrób to wszystko sama",
+      "expected_behavior": "Continue the active structured task when the user explicitly approves and commands execution.",
+      "observed_failure": "The command was classified as a generic contextual continuation and fell through to fallback.",
+      "root_cause": "A bare connective marker dominated classification while the router had no safe contextual-continuation mapping and no structured task state.",
+      "repair_rule": "Resolve active task/referent before loose ellipsis classification; unresolved continuation must use ordinary dialogue, not an unsafe fallback action.",
+      "regression_test_id": "tests/test_dialogue_task_state_v154.py",
+      "applicability_terms": ["zrób to", "zacznij teraz", "kontynuuj", "zgadzam się"],
+      "confidence": 1.0,
+      "verified": true
+    }
+  ]
+}

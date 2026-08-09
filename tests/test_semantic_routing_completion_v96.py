@@ -10,12 +10,12 @@ from latka_jazn.core.update_coverage_audit import UpdateCoverageAuditor
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
 from latka_jazn.tools.semantic_route_audit import run_audit
-from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL
+from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION, PACKAGE_VERSION_FULL
 
 
 def test_semantic_routing_completion_release_contract_tracks_current_version() -> None:
     assert PACKAGE_VERSION_FULL.startswith(PACKAGE_VERSION)
-    assert PACKAGE_VERSION_FULL.endswith("-semantic-routing-completion")
+    assert PACKAGE_VERSION_FULL == f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}"
 
 def test_post_update_coverage_question_has_dedicated_route_and_github_secondary() -> None:
     report = DialogueIntentClassifier().classify(

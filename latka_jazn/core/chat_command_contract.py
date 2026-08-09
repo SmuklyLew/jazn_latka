@@ -11,6 +11,7 @@ from typing import Any, Literal, TextIO
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session import JaznRuntimeSession
+from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.host_visible_finalization import (
     HostVisibleFinalizationContract,
     finalize_host_visible_text,
@@ -526,6 +527,125 @@ def chatgpt_result_requires_host_diagnostic(result: dict[str, Any]) -> bool:
     )
 
 
+def _canonical_mapping_sha256(value: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    ).hexdigest()
+
+
+def _build_session_continuity_commit(
+    result: dict[str, Any],
+    *,
+    user_text: str,
+    detected_intent: str,
+    runtime_route: str,
+) -> dict[str, Any]:
+    """Bind the accepted phase-2 reply back to the phase-1 conversation state.
+
+    The payload is local runtime bookkeeping, not autobiographical memory.  It
+    lets host-finalized turns advance the durable dialogue/task checkpoint only
+    when the pre-finalization session state still matches exactly.
+    """
+    session_snapshot = json_object(result.get("session"))
+    session_id = str(session_snapshot.get("session_id") or "").strip()
+    if not session_id:
+        return {}
+    decision = json_object(result.get("conversation_decision"))
+    task_state = json_object(decision.get("dialogue_task_state"))
+    provenance = json_object(result.get("session_provenance"))
+    try:
+        turn_count_before = max(0, int(provenance.get("continuity_turn_count") or 0))
+    except (TypeError, ValueError):
+        turn_count_before = 0
+    return {
+        "schema_version": schema_version("host_finalized_session_continuity_commit"),
+        "session_id": session_id,
+        "source_client": str(session_snapshot.get("source_client") or "chatgpt_host"),
+        "user_text": str(user_text or ""),
+        "detected_intent": str(detected_intent or "unknown"),
+        "runtime_route": str(runtime_route or "unknown"),
+        "dialogue_task_state": task_state,
+        "session_state_before_sha256": _canonical_mapping_sha256(session_snapshot),
+        "turn_count_before": turn_count_before,
+        "wake_state_runtime": json_object(result.get("wake_state_runtime")),
+        "truth_boundary": (
+            "This record advances only durable dialogue/task continuity after an accepted host-visible reply; "
+            "it is not an autobiographical memory and cannot create L3 memory."
+        ),
+    }
+
+
+def _commit_host_finalized_session_continuity(
+    *,
+    config: JaznConfig,
+    pending: dict[str, Any],
+    binding: dict[str, Any],
+    final_visible_text: str,
+) -> dict[str, Any]:
+    generation_context = json_object(pending.get("generation_context"))
+    commit = json_object(generation_context.get("session_continuity_commit"))
+    expected_commit_hash = str(binding.get("session_continuity_commit_sha256") or "").strip().lower()
+    if not commit or not expected_commit_hash:
+        return {
+            "saved": False,
+            "status": "not_bound_by_phase_one",
+            "backward_compatible": True,
+        }
+    calculated_commit_hash = _canonical_mapping_sha256(commit)
+    if calculated_commit_hash != expected_commit_hash:
+        return {
+            "saved": False,
+            "status": "continuity_commit_hash_mismatch",
+            "expected_sha256": expected_commit_hash,
+            "calculated_sha256": calculated_commit_hash,
+        }
+    session_id = str(commit.get("session_id") or "").strip()
+    if not session_id:
+        return {"saved": False, "status": "continuity_session_id_missing"}
+    store = RuntimeSessionStateStore(config.root)
+    state = store.load_or_create(
+        session_id=session_id,
+        source_client=str(commit.get("source_client") or "chatgpt_host"),
+        no_carryover=False,
+    )
+    current_hash = _canonical_mapping_sha256(state.to_dict())
+    expected_before = str(commit.get("session_state_before_sha256") or "").strip().lower()
+    if not expected_before or current_hash != expected_before:
+        return {
+            "saved": False,
+            "status": "session_advanced_or_phase_one_checkpoint_missing",
+            "current_state_sha256": current_hash,
+            "expected_state_sha256": expected_before or None,
+            "truth_boundary": (
+                "A newer or non-matching durable session state was preserved instead of being overwritten by a delayed finalizer."
+            ),
+        }
+    task_state = json_object(commit.get("dialogue_task_state"))
+    state.update(
+        user_text=str(commit.get("user_text") or ""),
+        visible_text=final_visible_text,
+        intent=str(commit.get("detected_intent") or "unknown"),
+        route=str(commit.get("runtime_route") or "unknown"),
+        task_state=task_state,
+    )
+    try:
+        before_count = max(0, int(commit.get("turn_count_before") or 0))
+    except (TypeError, ValueError):
+        before_count = 0
+    save_status = store.save(
+        state,
+        continuity_context=json_object(commit.get("wake_state_runtime")),
+        turn_count=before_count + 1,
+    )
+    return {
+        "saved": bool(save_status.get("session_state_saved")),
+        "status": "saved" if save_status.get("session_state_saved") else "save_degraded",
+        "session_id": session_id,
+        "task_state_persisted": bool(task_state),
+        "save_status": save_status,
+    }
+
+
 def build_chatgpt_host_bridge_turn_contract(
     result: dict[str, Any],
     *,
@@ -577,6 +697,15 @@ def build_chatgpt_host_bridge_turn_contract(
         "generation_executor": "chatgpt_host" if requires_host else "runtime",
         "requires_host_model": requires_host,
     }
+    session_continuity_commit = _build_session_continuity_commit(
+        result,
+        user_text=user_text,
+        detected_intent=detected_intent,
+        runtime_route=runtime_route,
+    )
+    session_continuity_commit_sha256 = (
+        _canonical_mapping_sha256(session_continuity_commit) if session_continuity_commit else ""
+    )
     context_for_hash = {
         "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
@@ -616,6 +745,8 @@ def build_chatgpt_host_bridge_turn_contract(
         "host_reply_finalization_required": requires_host,
         "user_text_sha256": hashlib.sha256((user_text or "").encode("utf-8")).hexdigest(),
         "runtime_context_sha256": runtime_context_sha256,
+        "session_continuity_commit": session_continuity_commit,
+        "session_continuity_commit_sha256": session_continuity_commit_sha256,
         "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
         "host_generation_policy": host_policy,
@@ -897,6 +1028,23 @@ def persist_chatgpt_host_visible_reply(
             )
         finally:
             engine.shutdown()
+        try:
+            session_continuity = _commit_host_finalized_session_continuity(
+                config=config,
+                pending=pending,
+                binding=binding,
+                final_visible_text=reply["final_text"],
+            )
+        except Exception as continuity_exc:
+            # Final visible persistence is already authoritative.  Conversation
+            # continuity is reported as degraded instead of pretending that the
+            # final reply itself failed or replaying the append-only write.
+            session_continuity = {
+                "saved": False,
+                "status": "continuity_commit_exception",
+                "error_type": type(continuity_exc).__name__,
+                "error": str(continuity_exc),
+            }
         consumed = consume_claimed_host_request(
             config.root,
             turn_id=reply["turn_id"],
@@ -946,6 +1094,7 @@ def persist_chatgpt_host_visible_reply(
         "host_visible_finalization": finalization.to_dict(),
         "host_visible_reply_capture": capture,
         "host_request_consumption": consumed,
+        "session_continuity_persistence": session_continuity,
     }
     return result, []
 

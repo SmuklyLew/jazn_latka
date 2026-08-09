@@ -84,6 +84,7 @@ class RouteRegistry:
         "casual_greeting": ("greeting", "OrdinaryDialogueHandler"),
         "expressive_reaction": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "short_free_dialogue": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
+        "contextual_continuation_question": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "sleep_closure_statement": ("sleep_closure", "OrdinaryDialogueHandler"),
         "current_time_question": ("current_time", "OrdinaryDialogueHandler"),
         "substantive_question_about_last_year": ("last_year_reflection", "OrdinaryDialogueHandler"),

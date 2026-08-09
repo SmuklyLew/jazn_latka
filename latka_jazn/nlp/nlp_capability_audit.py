@@ -135,11 +135,43 @@ class NLPCapabilityAudit:
             ),
             NLPLayerStatus(
                 "dialogue_context_and_ellipsis",
-                "partial",
-                ["latka_jazn/nlp/ellipsis_resolver.py", "latka_jazn/core/current_turn_grounding.py"],
-                ["explicit previous-turn carryover", "stale-context guards"],
-                ["no general coreference resolver or long-context discourse parser"],
-                research_source_ids=["rasa_nlu_components"],
+                "ready",
+                [
+                    "latka_jazn/nlp/ellipsis_resolver.py",
+                    "latka_jazn/core/current_turn_grounding.py",
+                    "latka_jazn/core/dialogue_task_state.py",
+                    "latka_jazn/core/turn_context_resolver.py",
+                ],
+                [
+                    "explicit previous-turn carryover",
+                    "stale-context guards",
+                    "structured active-goal/task continuation",
+                    "referent-aware execution directives",
+                ],
+                ["general unrestricted coreference and long-document discourse parsing remain bounded"],
+                research_source_ids=["respact_acl_2025", "recap_eacl_2026"],
+            ),
+            NLPLayerStatus(
+                "lexical_semantic_resources",
+                "ready_with_optional_provider" if morfeusz_available else "ready",
+                [
+                    "latka_jazn/nlp/lexical_intelligence.py",
+                    "latka_jazn/nlp/providers/optional_morfeusz_provider.py",
+                    "latka_jazn/nlp/providers/plwordnet_optional_provider.py",
+                    "latka_jazn/resources/nlp/v154_lexical_sources.json",
+                ],
+                [
+                    "provenance-preserving lexical evidence",
+                    "Polish morphological candidates",
+                    "read-only local plWordNet semantic relations when provisioned",
+                    "rebuildable context-keyed lexical cache",
+                ],
+                [
+                    "large licensed lexical/corpus resources are not bundled or auto-downloaded",
+                    "contextual word-sense disambiguation remains evidence-driven rather than guessed",
+                ],
+                optional_provider="morfeusz2 + local plWordNet",
+                research_source_ids=["morfeusz2_official", "plwordnet_clarin", "nkjp_official"],
             ),
             NLPLayerStatus(
                 "response_semantic_validation",
@@ -169,7 +201,8 @@ class NLPCapabilityAudit:
             "mierzyć precision/recall/F1 per-intent, macierz pomyłek, coverage i abstention rate",
             "skalibrować score/margins na korpusie zamiast traktować heurystyki jak prawdopodobieństwa",
             "włączyć składnię zależnościową i NER tylko po wykryciu lokalnych modeli Stanza",
-            "dodać ogólny resolver koreferencji i zakresu negacji po zebraniu danych regresyjnych",
+            "rozszerzać resolver koreferencji poza bezpieczny task-state dopiero po zebraniu danych regresyjnych",
+            "prowizjonować duże zasoby leksykalne/korpusowe wyłącznie zgodnie z ich licencją i z jawną proweniencją",
         ]
         return NLPCapabilityReport(
             schema_version=SCHEMA_VERSION,

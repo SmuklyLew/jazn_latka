@@ -75,6 +75,26 @@ class ExternalDictionaryAdapter:
         statuses.append({'provider':mor.provider,'status':mor.status,'message':mor.error})
         self._merge_unique(lemmas, mor.lemmas); self._merge_unique(pos_candidates, mor.part_of_speech)
         if mor.status == 'ok': confidence=max(confidence,mor.confidence)
+        # Local semantic provider is independent of network availability.  Its
+        # data is merged only when an explicitly provisioned read-only index is
+        # present; otherwise the provider reports an honest unavailable status.
+        plwn=self.plwordnet.lookup(normalized, lang)
+        statuses.append({'provider':plwn.provider,'status':plwn.status,'message':plwn.error})
+        if plwn.status == 'ok':
+            self._merge_unique(definitions, plwn.definitions)
+            self._merge_unique(lemmas, plwn.lemmas)
+            self._merge_unique(pos_candidates, plwn.part_of_speech)
+            raw = plwn.raw if isinstance(plwn.raw, dict) else {}
+            raw_relations = raw.get('relations')
+            relations = raw_relations if isinstance(raw_relations, dict) else {}
+            for relation_name, relation_terms in relations.items():
+                values=[str(item) for item in relation_terms if str(item).strip()] if isinstance(relation_terms,list) else []
+                if values:
+                    semantic.append({'relation':str(relation_name),'terms':values,'source':plwn.provider})
+            confidence=max(confidence,float(plwn.confidence or 0.0))
+            source_name=plwn.provider
+            license_note=plwn.license_hint or license_note
+            sources.append(LexicalSource(plwn.provider,None,plwn.license_hint,plwn.retrieved_at_utc,'local_read_only',plwn.confidence,plwn.truth_boundary).to_dict())
         if self.allow_network:
             wiki=self.wiktionary.lookup(normalized, lang)
             statuses.append({'provider':wiki.provider,'status':wiki.status,'source_url':wiki.source_url,'elapsed_ms':wiki.elapsed_ms,'message':wiki.error})
@@ -89,7 +109,6 @@ class ExternalDictionaryAdapter:
             sources.append(LexicalSource(sjp.provider, sjp.source_url, sjp.license_hint, sjp.retrieved_at_utc, 'reference_link_only', sjp.confidence, sjp.truth_boundary).to_dict())
             wsjp=self.wsjp.lookup(normalized, lang); statuses.append({'provider':wsjp.provider,'status':wsjp.status,'source_url':wsjp.source_url})
             sources.append(LexicalSource(wsjp.provider, wsjp.source_url, wsjp.license_hint, wsjp.retrieved_at_utc, 'reference_link_only', wsjp.confidence, wsjp.truth_boundary).to_dict())
-            plwn=self.plwordnet.lookup(normalized, lang); statuses.append({'provider':plwn.provider,'status':plwn.status,'message':plwn.error})
         else:
             statuses.append({'provider':'wiktionary_mediawiki_api','status':'network_disabled','message':'allow_network=False'})
             sjp=self.sjp.lookup(normalized, lang); statuses.append({'provider':sjp.provider,'status':sjp.status,'source_url':sjp.source_url})

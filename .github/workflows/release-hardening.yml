@@ -163,6 +163,9 @@ jobs:
       - name: Independent semantic route audit
         run: python -X utf8 -m latka_jazn.tools.semantic_route_audit --root . --json
 
+      - name: Cognitive architecture audit
+        run: python -X utf8 -m latka_jazn.tools.cognitive_architecture_audit --root . --json
+
       - name: Full deterministic test suite
         run: >-
           python -X utf8 -m pytest
@@ -230,6 +233,13 @@ jobs:
           tests/test_release_hardening_safe_paths.py
           tests/test_zip_resource_limits.py
           tests/test_shard_manifest_fail_closed.py
+          tests/test_dialogue_task_state_v154.py
+          tests/test_host_finalized_session_continuity_v154.py
+          tests/test_reasoning_orchestrator_v154.py
+          tests/test_knowledge_fabric_v154.py
+          tests/test_lexical_intelligence_v154.py
+          tests/test_operational_learning_memory_v154.py
+          tests/test_external_dictionary_v154.py
 
       - name: Upload Windows pytest report on failure
         if: failure()

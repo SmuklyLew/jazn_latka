@@ -9,6 +9,8 @@ from typing import Any
 
 import pytest
 
+from latka_jazn.version import DISTRIBUTION_VERSION
+
 ROOT = Path(__file__).resolve().parents[1]
 STALE_PACKAGE_VERSION = "v" + ".".join(("15", "1", "0", "3", "90"))
 
@@ -149,7 +151,7 @@ def test_system_package_accepts_matching_virtual_release_metadata(tmp_path: Path
 def make_rebuild_fixture(root: Path, rebuild: Any) -> Any:
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "version.py").write_text(
-        'DISTRIBUTION_VERSION = "15.1.0.3"\n'
+        f'DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\n'
         'PACKAGE_VERSION = "v15.1.0.3.99"\n'
         'PACKAGE_RELEASE_NAME = "Memory Sqlite Pipeline"\n',
         encoding="utf-8",
