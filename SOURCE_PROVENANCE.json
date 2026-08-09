@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e6334b7e7395fded32f5f36f48f6d09731850e4f",
-  "base_version": "v15.1.0.3.99-semantic-routing-completion",
-  "commit_date": "2026-08-08T21:57:51+02:00",
+  "base_merge_commit": "80e7bcc0042c9219d75c29688392e25d73df6150",
+  "base_version": "v15.4.0.0-cognitive-architecture",
+  "commit_date": "2026-08-09T15:30:45+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-08T19:57:51+00:00",
+  "generated_at_utc": "2026-08-09T13:30:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a8f7c7aae24f3ba24e591e95db8c53addf0f191c",
+  "git_tree_sha": "4d857880f6c0a89d963650b817b739d0b79c168c",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.1.0.3.99-semantic-routing-completion",
-  "schema_version": "source_provenance/v15.1.0.3.99",
+  "runtime_version": "v15.4.0.0-cognitive-architecture",
+  "schema_version": "source_provenance/v15.4.0.0",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.1.0.3.99-semantic-routing-completion",
+  "update_version": "v15.4.0.0-cognitive-architecture",
   "version_source": "latka_jazn/version.py"
 }
