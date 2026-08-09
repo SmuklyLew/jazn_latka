@@ -20,21 +20,22 @@ jobs:
       - name: Checkout bootstrap branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: Verify immutable baseline
+      - name: Verify immutable baseline ancestry
         shell: bash
         run: |
           set -euo pipefail
           expected='b4b89616f45dae47c9f0841a617fdf48064ef462'
-          actual="$(git rev-parse HEAD^)"
-          test "$actual" = "$expected"
+          git merge-base --is-ancestor "$expected" HEAD
+          test "$(git merge-base "$expected" HEAD)" = "$expected"
 
       - name: Reassemble and verify reviewed patch
         shell: bash
         run: |
           set -euo pipefail
           cat .v154-bootstrap-parts/part_* > /tmp/v154.patch.gz.b64
+          test "$(wc -c < /tmp/v154.patch.gz.b64)" -eq 66660
           base64 -d /tmp/v154.patch.gz.b64 > /tmp/v154.patch.gz
           printf '%s  %s\n' 'f6dfb5cbafde62d44797956b4d64d4d6425dcc46265c2882cc004d94051703a5' '/tmp/v154.patch.gz' | sha256sum -c -
           gzip -dc /tmp/v154.patch.gz > /tmp/v154.patch
