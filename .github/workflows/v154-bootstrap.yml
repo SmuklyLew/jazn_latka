@@ -1,0 +1,74 @@
+name: v15.4 architecture bootstrap
+
+on:
+  push:
+    branches:
+      - upgrade/v15.4.0.0-cognitive-architecture
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v154-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply-reviewed-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout bootstrap branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Verify immutable baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='b4b89616f45dae47c9f0841a617fdf48064ef462'
+          actual="$(git rev-parse HEAD^)"
+          test "$actual" = "$expected"
+
+      - name: Reassemble and verify reviewed patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .v154-bootstrap-parts/part_* > /tmp/v154.patch.gz.b64
+          base64 -d /tmp/v154.patch.gz.b64 > /tmp/v154.patch.gz
+          printf '%s  %s\n' 'f6dfb5cbafde62d44797956b4d64d4d6425dcc46265c2882cc004d94051703a5' '/tmp/v154.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/v154.patch.gz > /tmp/v154.patch
+          git apply --check /tmp/v154.patch
+
+      - name: Apply reviewed v15.4 architecture update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply /tmp/v154.patch
+          rm -rf .v154-bootstrap-parts
+          rm -f .github/workflows/v154-bootstrap.yml
+
+      - name: Static safety gates before push
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          python -X utf8 -m compileall -q latka_jazn tests
+          forbidden="$(git diff --name-only --diff-filter=ACMR HEAD -- | grep -E '(^memory/|(^|/)(runtime_write|runtime_audit|chat_context).*\.sqlite3($|-)|\.sqlite3-(wal|shm)$|\.zip($|\.)|capability\.token$)' || true)"
+          if [ -n "$forbidden" ]; then
+            echo 'Forbidden runtime/private/package artifacts in source update:' >&2
+            printf '%s\n' "$forbidden" >&2
+            exit 1
+          fi
+
+      - name: Commit final source update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'feat: upgrade Jaźń cognitive architecture to v15.4.0.0'
+          git push origin HEAD:upgrade/v15.4.0.0-cognitive-architecture
