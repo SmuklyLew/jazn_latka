@@ -39,10 +39,13 @@ użytkownik
 → host rozmowy
 → source classifier / tool access gate
 → runtime Jaźni
-→ bramy pamięci / kanonu / narzędzi
+→ DialogueTaskState (cel / aktywne zadanie / referencje)
+→ routing + ReasoningOrchestrator (fast / standard / deliberative)
+→ bramy pamięci / Knowledge Fabric / kanonu / narzędzi / lexical intelligence
 → adapter modelu albo host bridge
 → truth gate i walidator odpowiedzi
 → final_visible_text
+→ commit trwałej ciągłości sesji po zaakceptowanej finalizacji
 ```
 
 Każda warstwa jest osobno audytowana. Aktywacja runtime rozdziela folder, wersję, manifest, marker, PID, endpoint, heartbeat, czas, pamięć, model, narzędzia i voice.
@@ -64,10 +67,10 @@ Adapter Ollamy zachowuje faktycznie użyty model, `done_reason` i metryki transp
 Jedynym źródłem wersji jest `latka_jazn/version.py`.
 
 ```text
-v15.1.0.3.96-Memory Sqlite Pipeline
+<wartość PACKAGE_VERSION_FULL z latka_jazn/version.py>
 ```
 
-Linia v15.1.0.3.96 obejmuje runtime-owned identity, bezpieczne recovery pamięci L0–L3, stabilny daemon Windows, adapter Ollamy, atomowość tur, provenance wydania, integralność paczki oraz pełne CI Windows/Ubuntu.
+Bieżąca linia rozwoju zachowuje runtime-owned identity, recovery pamięci L0–L3, stabilność daemona, atomowość tur, provenance, integralność paczki i pełne CI Windows/Ubuntu, a dodatkowo wprowadza strukturalny stan celu/zadania rozmowy, selektywną orkiestrację rozumowania, Knowledge Fabric, warstwę Polish Lexical Intelligence, zweryfikowane lekcje antyregresyjne oraz commit ciągłości sesji dopiero po zaakceptowanej finalizacji widocznej odpowiedzi. Szczegółowy projekt: `docs/plans/JAZN_V15_4_0_0_COGNITIVE_ARCHITECTURE.md`.
 
 ## Pamięć L0–L3
 
@@ -109,7 +112,7 @@ zapisywalnego i wersjonowanego katalogu:
 ```powershell
 python -X utf8 run.py runtime-bootstrap `
   --parts-dir D:\lokalne_paczki `
-  --destination D:\Jaźń\active-v15.1.0.3.96 `
+  --destination D:\Jaźń\active-current `
   --json
 ```
 

@@ -1,0 +1,25 @@
+# Jaźń v15.4.0.0 — research sources and design decisions
+
+**Purpose:** record the external technical basis used while designing the cognitive-architecture upgrade. This document is not runtime truth, personality, memory, or a license grant. Source licenses must be checked independently before redistributing third-party datasets.
+
+| Source | Primary finding used | Design consequence |
+|---|---|---|
+| ReSpAct, ACL Anthology 2025 — https://aclanthology.org/2025.iwsds-1.7/ | Conversational agents should combine reasoning, speaking, acting, clarification and plan updates from intermediate user feedback. | Introduce structured task state and a reason/speak/act-compatible orchestration boundary rather than isolated-turn routing. |
+| RECAP, Findings EACL 2026 — https://aclanthology.org/2026.findings-eacl.105/ | Open dialogue is ambiguous, underspecified and dynamic; concise goal rewrites can improve planning utility. | Resolve a compact current goal/task representation before loose lexical fallback. |
+| SQLite FTS5 — https://www.sqlite.org/fts5.html | FTS5 supports phrase/prefix/NEAR/boolean queries, BM25 and rank ordering. | Keep local FTS5/BM25 as the default bounded retrieval layer; do not require a vector/graph service for ordinary recall. |
+| Morfeusz 2 — https://morfeusz.sgjp.pl/en | Official tooling exposes programmer APIs including Python and custom-dictionary tooling for Polish morphology. | Treat Morfeusz as optional local morphology/lemmatization evidence; keep built-in NLP as fallback. |
+| Morfeusz documentation/description — https://morfeusz.sgjp.pl/ | Morphological analysis yields possible interpretations; contextual disambiguation is a separate problem. | Never treat a morphology candidate as final contextual meaning without other evidence. |
+| plWordNet 4.2 / CLARIN-PL — https://clarin-pl.eu/dspace/handle/11321/891 | Public lexical-conceptual Polish/English resource, including mapping to Princeton WordNet; distributed under its own plWordNet license. | Add a versioned, license-aware, read-only local provider contract; do not silently bundle the 400+ MB resource. |
+| NKJP — https://nkjp.pl/ | A large balanced reference corpus supports investigation of typical word/construction usage, inflection-aware search and language technology. | Reserve a corpus-evidence provider for usage/collocation/register evidence; do not copy corpus content into source without license review. |
+| GraphRAG paper — https://www.microsoft.com/en-us/research/publication/from-local-to-global-a-graph-rag-approach-to-query-focused-summarization/ | Conventional RAG can be weak on global corpus-wide questions; graph/community summaries support corpus-level sensemaking. | Separate local retrieval from optional global/relational retrieval. |
+| GraphRAG dynamic community selection — https://www.microsoft.com/en-us/research/blog/graphrag-improving-global-search-via-dynamic-community-selection/ | Relevance pruning can avoid sending every community report to an expensive global query; Microsoft reports large cost savings in its evaluated AP News setup. | Graph/global retrieval must be selective and conditional, not executed on every turn. |
+| DRIFT — https://www.microsoft.com/en-us/research/blog/introducing-drift-search-combining-global-and-local-search-methods-to-improve-quality-and-efficiency/ | Global context can improve local query exploration; query routing and flexible traversal can balance quality/cost. | Knowledge Fabric exposes local/global modes through a router/provider boundary instead of a single universal retrieval algorithm. |
+| Reflexion, NeurIPS 2023 — https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html | Agents can use linguistic feedback stored episodically to improve later trials without changing model weights. | Store compact verified anti-regression lessons, but require reproducible tests and forbid autonomous source-code modification. |
+
+## Project-specific constraints stronger than the research baselines
+
+1. No external paper can override the Jaźń truth boundary or host-finalization protocol.
+2. No research result justifies persisting hidden chain-of-thought.
+3. Third-party data is not included merely because it is technically downloadable; redistribution/license review remains mandatory.
+4. Retrieval experiments are feature-gated until they pass deterministic project regressions and performance checks.
+5. Existing memory databases remain the autobiographical source of truth; knowledge and lexical resources remain evidence providers.

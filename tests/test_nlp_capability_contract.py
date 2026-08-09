@@ -110,3 +110,14 @@ def test_nlp_audit_uses_version_independent_contract_file() -> None:
     layer = next(item for item in report.layers if item.layer == "evaluation_and_ood_regression")
     assert layer.status == "ready"
     assert layer.implemented_by == ["tests/test_nlp_capability_contract.py"]
+
+
+def test_v154_nlp_audit_exposes_structured_dialogue_and_lexical_layers() -> None:
+    root = Path(__file__).resolve().parents[1]
+    report = NLPCapabilityAudit(root).audit()
+    dialogue = next(item for item in report.layers if item.layer == "dialogue_context_and_ellipsis")
+    lexical = next(item for item in report.layers if item.layer == "lexical_semantic_resources")
+    assert dialogue.status == "ready"
+    assert "latka_jazn/core/dialogue_task_state.py" in dialogue.implemented_by
+    assert lexical.status in {"ready", "ready_with_optional_provider"}
+    assert "latka_jazn/nlp/lexical_intelligence.py" in lexical.implemented_by

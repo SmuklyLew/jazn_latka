@@ -165,6 +165,11 @@ def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
         "user_text_sha256": str(bridge.get("user_text_sha256") or ""),
         "finalization_contract_hash": str(bridge.get("finalization_contract_hash") or ""),
         "runtime_context_sha256": str(bridge.get("runtime_context_sha256") or ""),
+        # Optional v15.4 binding.  Empty remains valid for pending requests
+        # produced by pre-v15.4 code, preserving replay-safe compatibility.
+        "session_continuity_commit_sha256": str(
+            bridge.get("session_continuity_commit_sha256") or ""
+        ),
     }
 
 
@@ -312,6 +317,7 @@ def persist_pending_host_request(
             'host_generation_rules': list(bridge.get('host_generation_rules') or []),
             'required_visible_prefix': bridge.get('required_visible_prefix'),
             'runtime_summary': dict(bridge.get('runtime_summary') or {}),
+            'session_continuity_commit': dict(bridge.get('session_continuity_commit') or {}),
         },
     ).to_dict()
     _atomic_write(pending_path, record)

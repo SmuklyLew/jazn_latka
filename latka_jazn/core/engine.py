@@ -68,6 +68,8 @@ from latka_jazn.nlp.topic_mismatch_guard import TopicMismatchGuard
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
 from latka_jazn.core.turn_context_resolver import TurnContextResolver
+from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
+from latka_jazn.core.operational_learning_memory import OperationalLearningMemory
 from latka_jazn.core.source_origin_ledger import SourceOriginLedger
 from latka_jazn.core.template_registry import TemplateRegistry
 from latka_jazn.core.response_generation_mode import build_runtime_provenance
@@ -342,6 +344,10 @@ class JaznEngine:
         self.dialogue_intent_classifier = DialogueIntentClassifier()
         self.runtime_answer_validator = RuntimeAnswerValidator()
         self.turn_context_resolver = TurnContextResolver()
+        self.dialogue_task_state_resolver = DialogueTaskStateResolver()
+        self.operational_learning_memory = OperationalLearningMemory.from_json_file(
+            self.config.root / "latka_jazn" / "resources" / "cognition" / "v154_operational_lessons.json"
+        )
         self.source_origin_ledger = SourceOriginLedger(self.config.root)
         self.template_registry = TemplateRegistry(self.config.root)
         self.runtime_response_synthesizer = RuntimeResponseSynthesizer()
@@ -401,6 +407,7 @@ class JaznEngine:
         self.last_user_text: str | None = state.get("last_user_text") if isinstance(state.get("last_user_text"), str) else None
         self.last_detected_intent: str | None = state.get("last_detected_intent") if isinstance(state.get("last_detected_intent"), str) else None
         self.last_runtime_route: str | None = state.get("last_runtime_route") if isinstance(state.get("last_runtime_route"), str) else None
+        self.last_dialogue_task_state: dict[str, Any] = dict(state.get("dialogue_task_state") or {}) if isinstance(state.get("dialogue_task_state"), dict) else {}
         self.store.add_event(
             "engine_started",
             {
@@ -430,6 +437,9 @@ class JaznEngine:
                 "neurological_signal_router": "enabled",
                 "topic_mismatch_guard": "enabled",
                 "dialogue_intent_classifier": "enabled_behavioral_intent_router",
+                "dialogue_task_state": "enabled_structured_goal_and_continuation_state",
+                "reasoning_orchestrator": "enabled_selective_fast_standard_deliberative",
+                "operational_learning": "verified_resource_loaded",
                 "runtime_answer_validator": "enabled_topic_alignment_guard",
                 "source_origin_ledger": "enabled",
                 "module_responsibility_map": "enabled",
@@ -510,6 +520,7 @@ class JaznEngine:
                 "last_user_text": self.last_user_text,
                 "last_detected_intent": self.last_detected_intent,
                 "last_runtime_route": self.last_runtime_route,
+                "dialogue_task_state": dict(self.last_dialogue_task_state or {}),
                 "context_carryover_ttl_seconds": 21600,
                 "updated_at_unix": time.time(),
                 "invocations": invocations,
@@ -1668,6 +1679,46 @@ class JaznEngine:
             },
         }
 
+    def _build_preliminary_cognitive_runtime_plan(
+        self,
+        text: str,
+        *,
+        memory_gate_intent_report: Any,
+        intent_report: Any | None,
+        client_context: dict[str, Any] | None,
+        tool_use_decision: dict[str, Any],
+        untrusted_source_assessment: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self.cognitive_runtime_coordinator.plan_turn(
+            user_text=text,
+            explicit_intent=(
+                memory_gate_intent_report.primary_intent
+                if hasattr(memory_gate_intent_report, "primary_intent")
+                else None
+            ),
+            homeostasis_input=HomeostasisInput(
+                load=0.2,
+                source_conflict=0.7 if not untrusted_source_assessment.get("safe_to_use", True) else 0.0,
+                uncertainty=0.3,
+                truth_need=0.8 if tool_use_decision.get("allowed") else 0.2,
+                action_cost=0.2,
+                write_action=False,
+                sensitive_action=False,
+            ),
+            dialogue_task_state=(
+                dict((client_context or {}).get("previous_task_state") or {})
+                if isinstance((client_context or {}).get("previous_task_state"), dict)
+                else {}
+            ),
+            classifier_confidence=(
+                float(getattr(intent_report, "confidence", 0.0))
+                if intent_report is not None
+                else None
+            ),
+            source_available=bool((client_context or {}).get("memory_source_available")),
+            tool_available=bool(tool_use_decision.get("allowed")),
+        )
+
     def build_cognitive_frame(
         self,
         text: str,
@@ -1790,18 +1841,13 @@ class JaznEngine:
                 write_action=False,
                 user_confirmed=False,
             ).to_dict()
-        cognitive_runtime_plan = self.cognitive_runtime_coordinator.plan_turn(
-            user_text=text,
-            explicit_intent=(memory_gate_intent_report.primary_intent if hasattr(memory_gate_intent_report, "primary_intent") else None),
-            homeostasis_input=HomeostasisInput(
-                load=0.2,
-                source_conflict=0.7 if not untrusted_source_assessment.get("safe_to_use", True) else 0.0,
-                uncertainty=0.3,
-                truth_need=0.8 if tool_use_decision.get("allowed") else 0.2,
-                action_cost=0.2,
-                write_action=False,
-                sensitive_action=False,
-            ),
+        cognitive_runtime_plan = self._build_preliminary_cognitive_runtime_plan(
+            text,
+            memory_gate_intent_report=memory_gate_intent_report,
+            intent_report=intent_report,
+            client_context=client_context,
+            tool_use_decision=tool_use_decision,
+            untrusted_source_assessment=untrusted_source_assessment,
         )
         polish_report = self.polish_understanding.analyse(text)
         nlp_report = self.polish_lemmatizer.analyse(text)
@@ -2203,6 +2249,137 @@ class JaznEngine:
         except (OSError, RuntimeError, ValueError):
             return
 
+    def _apply_current_dialogue_control(
+        self,
+        *,
+        text: str,
+        frame: dict[str, Any],
+        envelope: CognitiveTurnEnvelope,
+        decision_dict: dict[str, Any],
+        dialogue_intent_report: dict[str, Any],
+        previous_task_state: dict[str, Any],
+        client_context: dict[str, Any],
+    ) -> tuple[str, Any, dict[str, Any], TurnResponsePolicy]:
+        detected_intent = str(
+            (envelope.cognitive_frame.get("dialogue_intent_classifier") or {}).get("primary_intent")
+            or decision_dict.get("detected_user_intent")
+            or "unknown"
+        )
+        confidence = float((dialogue_intent_report or {}).get("confidence") or 0.0)
+        route_entry = self.route_registry.resolve(detected_intent, confidence=confidence)
+        task_resolution = (
+            dict((dialogue_intent_report or {}).get("task_resolution") or {})
+            if isinstance((dialogue_intent_report or {}).get("task_resolution"), dict)
+            else {}
+        )
+        task_state = self.dialogue_task_state_resolver.derive_state(
+            user_text=text,
+            intent=detected_intent,
+            route=str(route_entry.route or ""),
+            previous_state=previous_task_state,
+            inherited=bool(task_resolution.get("inherited")),
+            confidence=confidence,
+        ).to_dict()
+        reasoning_plan = self.cognitive_runtime_coordinator.reasoning.plan(
+            user_text=text,
+            intent=detected_intent,
+            route=str(route_entry.route or ""),
+            task_state=task_state,
+            classifier_confidence=confidence,
+            source_available=bool(
+                any(((frame.get("memory_context") or {}).get("counts") or {}).values())
+                if isinstance(frame.get("memory_context"), dict)
+                else False
+            ) or bool(
+                (frame.get("memory_recall_contract") or {}).get("items")
+                if isinstance(frame.get("memory_recall_contract"), dict)
+                else False
+            ),
+            tool_available=bool(
+                (frame.get("tool_use_decision") or {}).get("allowed")
+                if isinstance(frame.get("tool_use_decision"), dict)
+                else False
+            ),
+        ).to_dict()
+        lessons = [lesson.to_dict() for lesson in self.operational_learning_memory.relevant(text, limit=3)]
+        response_policy = TurnResponsePolicy.build(
+            intent=detected_intent,
+            route=route_entry.route,
+            context={
+                "client_context": client_context,
+                "dialogue_intent_report": dialogue_intent_report,
+                "dialogue_task_state": task_state,
+            },
+        )
+        for target in (frame, envelope.cognitive_frame):
+            target["dialogue_task_state"] = task_state
+            target["reasoning_plan"] = reasoning_plan
+            target["operational_learning_lessons"] = lessons
+            target["turn_response_policy"] = response_policy.to_dict()
+        decision_dict.update(
+            {
+                "turn_response_policy": response_policy.to_dict(),
+                "detected_user_intent": detected_intent,
+                "route_registry": route_entry.to_dict(),
+                "dialogue_task_state": task_state,
+                "reasoning_plan": reasoning_plan,
+                "operational_learning_lessons": lessons,
+            }
+        )
+        decision_dict.setdefault("handler_name", route_entry.handler_name)
+        return detected_intent, route_entry, task_state, response_policy
+
+    def _build_route_handler_context(
+        self,
+        *,
+        decision: Any,
+        detected_intent: str,
+        dialogue_intent_report: dict[str, Any],
+        client_context: dict[str, Any],
+        frame: dict[str, Any],
+        route_entry: Any,
+        task_state: dict[str, Any],
+        response_policy: TurnResponsePolicy,
+        carryover_allowed: bool,
+        prior_user_text: str | None,
+        prior_detected_intent: str | None,
+        prior_runtime_route: str | None,
+        previous_task_state: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "body": decision.body,
+            "intent": detected_intent,
+            "dialogue_intent_report": dialogue_intent_report,
+            "secondary_intents": list((dialogue_intent_report or {}).get("secondary_intents") or []),
+            "last_turn": self.runtime_visible_answer_comparator.reader.latest(),
+            "runtime_version": self.config.version,
+            "lifecycle": client_context.get("lifecycle"),
+            "request_id": client_context.get("request_id"),
+            "timestamp_contract": frame.get("timestamp_contract") if isinstance(frame.get("timestamp_contract"), dict) else {},
+            "turn_context_carryover": frame.get("turn_context_carryover") if isinstance(frame.get("turn_context_carryover"), dict) else {},
+            "previous_user_text": prior_user_text if carryover_allowed else None,
+            "previous_detected_intent": prior_detected_intent if carryover_allowed else None,
+            "previous_runtime_route": prior_runtime_route if carryover_allowed else None,
+            "previous_task_state": previous_task_state if carryover_allowed else {},
+            "dialogue_task_state": task_state,
+            "config": self.config,
+            "clock": self.clock,
+            "memory_context": frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
+            "fallback_diagnostics": frame.get("fallback_diagnostics") if isinstance(frame.get("fallback_diagnostics"), dict) else {},
+            "polish_understanding": frame.get("polish_understanding") if isinstance(frame.get("polish_understanding"), dict) else {},
+            "lexical_semantic_understanding": frame.get("lexical_semantic_understanding") if isinstance(frame.get("lexical_semantic_understanding"), dict) else {},
+            "dictionary_adapter": self.external_dictionary_adapter,
+            "store_stats": self.store.stats(),
+            "store": self.store,
+            "model_adapter_status": self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else {},
+            "granular_affect": frame.get("granular_affect") if isinstance(frame.get("granular_affect"), dict) else {},
+            "affective_state": frame.get("affective_state") if isinstance(frame.get("affective_state"), dict) else {},
+            "emotional_profile": frame.get("emotional_profile") if isinstance(frame.get("emotional_profile"), dict) else {},
+            "route_entry": route_entry.to_dict(),
+            "required_components": route_entry.required_components,
+            "turn_response_policy": response_policy.to_dict(),
+        }
+
     def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
         """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
         ctx = dict(client_context or {})
@@ -2229,6 +2406,11 @@ class JaznEngine:
             no_carryover=no_carryover,
             time_gap_seconds=prior_context_age_seconds,
             explicit_previous_user_text=bool(ctx.get("previous_user_text")),
+            previous_task_state=(
+                dict(ctx.get("previous_task_state") or self.last_dialogue_task_state or {})
+                if isinstance(ctx.get("previous_task_state") or self.last_dialogue_task_state or {}, dict)
+                else {}
+            ),
         )
         carryover_allowed = bool(turn_context_resolution.carryover_allowed)
         if carryover_allowed:
@@ -2242,8 +2424,19 @@ class JaznEngine:
             ctx.setdefault("previous_context_age_seconds", prior_context_age_seconds)
         if turn_context is not None:
             turn_context.start_stage("route_classification")
+        previous_task_state = (
+            dict(ctx.get("previous_task_state") or self.last_dialogue_task_state or {})
+            if isinstance(ctx.get("previous_task_state") or self.last_dialogue_task_state or {}, dict)
+            else {}
+        )
         dialogue_intent_result = self.dialogue_intent_classifier.classify(
-            text, previous_text=str(prior_user_text or "") if carryover_allowed else None,
+            text,
+            previous_text=str(prior_user_text or "") if carryover_allowed else None,
+            previous_intent=str(prior_detected_intent or "") or None,
+            previous_route=str(prior_runtime_route or "") or None,
+            previous_task_state=previous_task_state if carryover_allowed else None,
+            context_age_seconds=prior_context_age_seconds,
+            carryover_allowed=carryover_allowed,
         )
         dialogue_intent_report = dialogue_intent_result.to_dict()
         if turn_context is not None:
@@ -2318,46 +2511,28 @@ class JaznEngine:
             "schema_version": "memory_recall_contract_status/v1",
             "truth_boundary": "same liczniki nie wystarczają; pełny payload jest w cognitive_frame.memory_recall_contract",
         }
-        detected_dialogue_intent = (envelope.cognitive_frame.get("dialogue_intent_classifier") or {}).get("primary_intent") or decision_dict.get("detected_user_intent") or "unknown"
-        route_entry = self.route_registry.resolve(str(detected_dialogue_intent), confidence=float((dialogue_intent_report or {}).get("confidence") or 0.0))
-        turn_response_policy = TurnResponsePolicy.build(intent=str(detected_dialogue_intent), route=route_entry.route, context={"client_context": ctx, "dialogue_intent_report": dialogue_intent_report})
-        frame["turn_response_policy"] = turn_response_policy.to_dict()
-        envelope.cognitive_frame["turn_response_policy"] = turn_response_policy.to_dict()
-        decision_dict["turn_response_policy"] = turn_response_policy.to_dict()
-        decision_dict["detected_user_intent"] = str(detected_dialogue_intent)
-        decision_dict["route_registry"] = route_entry.to_dict()
-        decision_dict.setdefault("handler_name", route_entry.handler_name)
-        handler_context = {
-            "body": decision.body,
-            "intent": str(detected_dialogue_intent),
-            "dialogue_intent_report": dialogue_intent_report,
-            "secondary_intents": list((dialogue_intent_report or {}).get("secondary_intents") or []),
-            "last_turn": self.runtime_visible_answer_comparator.reader.latest(),
-            "runtime_version": self.config.version,
-            "lifecycle": ctx.get("lifecycle"),
-            "request_id": ctx.get("request_id"),
-            "timestamp_contract": frame.get("timestamp_contract") if isinstance(frame.get("timestamp_contract"), dict) else {},
-            "turn_context_carryover": frame.get("turn_context_carryover") if isinstance(frame.get("turn_context_carryover"), dict) else {},
-            "previous_user_text": prior_user_text if carryover_allowed else None,
-            "previous_detected_intent": prior_detected_intent if carryover_allowed else None,
-            "previous_runtime_route": prior_runtime_route if carryover_allowed else None,
-            "config": self.config,
-            "clock": self.clock,
-            "memory_context": frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
-            "fallback_diagnostics": frame.get("fallback_diagnostics") if isinstance(frame.get("fallback_diagnostics"), dict) else {},
-            "polish_understanding": frame.get("polish_understanding") if isinstance(frame.get("polish_understanding"), dict) else {},
-            "lexical_semantic_understanding": frame.get("lexical_semantic_understanding") if isinstance(frame.get("lexical_semantic_understanding"), dict) else {},
-            "dictionary_adapter": self.external_dictionary_adapter,
-            "store_stats": self.store.stats(),
-            "store": self.store,
-            "model_adapter_status": self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else {},
-            "granular_affect": frame.get("granular_affect") if isinstance(frame.get("granular_affect"), dict) else {},
-            "affective_state": frame.get("affective_state") if isinstance(frame.get("affective_state"), dict) else {},
-            "emotional_profile": frame.get("emotional_profile") if isinstance(frame.get("emotional_profile"), dict) else {},
-            "route_entry": route_entry.to_dict(),
-            "required_components": route_entry.required_components,
-            "turn_response_policy": turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
-        }
+        detected_dialogue_intent, route_entry, current_dialogue_task_state, turn_response_policy = (
+            self._apply_current_dialogue_control(
+                text=text, frame=frame, envelope=envelope, decision_dict=decision_dict,
+                dialogue_intent_report=dialogue_intent_report, previous_task_state=previous_task_state,
+                client_context=ctx,
+            )
+        )
+        handler_context = self._build_route_handler_context(
+            decision=decision,
+            detected_intent=detected_dialogue_intent,
+            dialogue_intent_report=dialogue_intent_report,
+            client_context=ctx,
+            frame=frame,
+            route_entry=route_entry,
+            task_state=current_dialogue_task_state,
+            response_policy=turn_response_policy,
+            carryover_allowed=carryover_allowed,
+            prior_user_text=prior_user_text,
+            prior_detected_intent=prior_detected_intent,
+            prior_runtime_route=prior_runtime_route,
+            previous_task_state=previous_task_state,
+        )
         if turn_context is not None and health_check_fast_path:
             turn_context.start_stage("startup_status_collection")
         handler_result = self.route_handler_dispatcher.dispatch(route_entry, text, handler_context)
@@ -2905,6 +3080,7 @@ class JaznEngine:
             self.last_user_text = text
             self.last_detected_intent = str(detected_dialogue_intent)
             self.last_runtime_route = str(decision_dict.get("route") or route_entry.route or "")
+            self.last_dialogue_task_state = dict(current_dialogue_task_state or {})
             self._save_runtime_state()
 
         self._stage_turn_write(

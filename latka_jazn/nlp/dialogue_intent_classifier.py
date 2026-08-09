@@ -17,6 +17,7 @@ from latka_jazn.nlp.utterance_components import analyse_utterance
 from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
+from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -53,6 +54,7 @@ class DialogueIntentReport:
     quoted_material_masked: bool = False
     masked_span_count: int = 0
     external_tool_context: dict[str, Any] = field(default_factory=dict)
+    task_resolution: dict[str, Any] = field(default_factory=dict)
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -288,6 +290,7 @@ class DialogueIntentClassifier:
         self.feature_engine = IntentFeatureEngine()
         self.route_contract_matrix = RouteContractMatrix()
         self.external_tools = ExternalToolContextParser()
+        self.task_state_resolver = DialogueTaskStateResolver()
     @classmethod
     def normalize(cls, text: str) -> str: return re.sub(r"\s+", " ", unicodedata.normalize("NFC", text or "").strip().lower())
     @staticmethod
@@ -314,7 +317,7 @@ class DialogueIntentClassifier:
         if len(text) > 900 and ("[" in text and "]" in text): return True
         line_count = len([x for x in text.splitlines() if x.strip()])
         return line_count >= 10 and len(text) > 500
-    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None, tool_context=None):
+    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None, tool_context=None, task_resolution=None):
         conf=self.calibrator.calibrate(intent, base, len(evidence))
         frame=self.feature_engine.analyse(norm, speech_act=speech_act)
         component_report = analyse_utterance(norm)
@@ -342,8 +345,19 @@ class DialogueIntentClassifier:
             quoted_material_masked=bool(control_report and control_report.quoted_material_masked),
             masked_span_count=int(control_report.masked_span_count if control_report is not None else 0),
             external_tool_context=dict(tool_context or {}),
+            task_resolution=dict(task_resolution or {}),
         )
-    def classify(self, text: str, *, previous_text: str | None = None) -> DialogueIntentReport:
+    def classify(
+        self,
+        text: str,
+        *,
+        previous_text: str | None = None,
+        previous_intent: str | None = None,
+        previous_route: str | None = None,
+        previous_task_state: dict[str, Any] | None = None,
+        context_age_seconds: int | None = None,
+        carryover_allowed: bool = True,
+    ) -> DialogueIntentReport:
         control_report=extract_intent_control_text(text)
         control_text=control_report.control_text
         tool_context=self.external_tools.parse(text)
@@ -600,6 +614,30 @@ class DialogueIntentClassifier:
             return report(norm,folded,'system_capability_gap_question',['pytanie o to, co runtime ma i czego mu brakuje'],0.88,diag=True,speech_act=speech.speech_act,question_object='capability_gap')
         if has_self_expression:
             return report(norm,folded,'self_expression_request',['prośba o wypowiedź od siebie: rozmowna odpowiedź Jaźni z granicą prawdy'],0.84,speech_act=speech.speech_act,question_object='self_expression')
+        task_resolution = self.task_state_resolver.resolve(
+            current_text=text,
+            previous_task_state=previous_task_state,
+            previous_user_text=previous_text,
+            previous_intent=previous_intent,
+            previous_route=previous_route,
+            carryover_allowed=carryover_allowed,
+            context_age_seconds=context_age_seconds,
+        )
+        if task_resolution.inherited and task_resolution.resolved_intent:
+            evidence.extend(task_resolution.evidence)
+            inherited_intent = task_resolution.resolved_intent
+            return report(
+                norm,
+                folded,
+                inherited_intent,
+                evidence,
+                max(0.88, task_resolution.confidence),
+                update='update' in inherited_intent or 'repair' in inherited_intent,
+                diag='audit' in inherited_intent or 'diagnostic' in inherited_intent,
+                speech_act=speech.speech_act,
+                question_object='contextual_active_task',
+                task_resolution=task_resolution.to_dict(),
+            )
         if has_negative_feedback:
             return report(norm,folded,'negative_feedback_current_turn',['użytkownik zgłasza irytację aktualnymi odpowiedziami; trzeba uznać błąd i zmienić sposób odpowiedzi'],0.84,diag=False,speech_act=speech.speech_act,question_object='current_turn_feedback')
         if has_positive_feedback:

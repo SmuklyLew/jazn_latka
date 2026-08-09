@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -84,6 +84,7 @@ class RuntimeSessionState:
     last_visible_text: str | None = None
     last_intent: str | None = None
     last_route: str | None = None
+    task_state: dict[str, Any] = field(default_factory=dict)
     source_client: str = "unknown"
     expires_at: str | None = None
     schema_version: str = SCHEMA_VERSION
@@ -107,12 +108,22 @@ class RuntimeSessionState:
             expires_at=(now + timedelta(seconds=ttl_seconds)).isoformat(),
         )
 
-    def update(self, *, user_text: str, visible_text: str | None = None, intent: str | None = None, route: str | None = None) -> None:
+    def update(
+        self,
+        *,
+        user_text: str,
+        visible_text: str | None = None,
+        intent: str | None = None,
+        route: str | None = None,
+        task_state: Mapping[str, Any] | None = None,
+    ) -> None:
         self.last_turn_at = datetime.now(timezone.utc).isoformat()
         self.last_user_text = user_text
         self.last_visible_text = visible_text
         self.last_intent = intent
         self.last_route = route
+        if task_state is not None:
+            self.task_state = dict(task_state)
 
     def clear_carryover(self) -> None:
         self.last_turn_at = None
@@ -120,6 +131,7 @@ class RuntimeSessionState:
         self.last_visible_text = None
         self.last_intent = None
         self.last_route = None
+        self.task_state = {}
 
 
 class RuntimeSessionStateStore:
@@ -178,6 +190,8 @@ class RuntimeSessionStateStore:
                 raise TypeError(f"{name}_must_be_string")
             return value
 
+        task_state_raw = payload.get("task_state")
+        task_state = dict(task_state_raw) if isinstance(task_state_raw, Mapping) else {}
         return RuntimeSessionState(
             session_id=text_field("session_id", required=True) or "",
             created_at=text_field("created_at", required=True) or "",
@@ -186,6 +200,7 @@ class RuntimeSessionStateStore:
             last_visible_text=text_field("last_visible_text"),
             last_intent=text_field("last_intent"),
             last_route=text_field("last_route"),
+            task_state=task_state,
             source_client=text_field("source_client", default="unknown") or "unknown",
             expires_at=text_field("expires_at"),
             schema_version=text_field("schema_version", default=SCHEMA_VERSION) or SCHEMA_VERSION,

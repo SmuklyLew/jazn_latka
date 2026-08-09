@@ -30,8 +30,8 @@ class EllipsisResolver:
         "a ty", "a u ciebie", "a co u ciebie", "a jak u ciebie", "a ty?", "u ciebie?",
         "a ty jak", "a ty co", "a jak ty", "co u ciebie",
     )
-    CONTINUATION = ("co dalej", "czyli", "no i", "co jeszcze", "a dalej", "to co")
-    CONTEXTUAL_EXECUTION = ("możesz to teraz zrobić", "mozesz to teraz zrobic", "możesz to zrobić", "mozesz to zrobic", "zrób to teraz", "zrob to teraz", "to zrób", "to zrob", "tak, zrób", "tak zrób", "tak, zrob", "tak zrob")
+    CONTINUATION = ("co dalej", "no i", "co jeszcze", "a dalej", "to co", "i co dalej")
+    CONTEXTUAL_EXECUTION = ("możesz to teraz zrobić", "mozesz to teraz zrobic", "możesz to zrobić", "mozesz to zrobic", "zrób to teraz", "zrob to teraz", "zrób to wszystko", "zrob to wszystko", "zrób to sama", "zrob to sama", "zacznij teraz", "kontynuuj", "działaj", "dzialaj", "to zrób", "to zrob", "tak, zrób", "tak zrób", "tak, zrob", "tak zrob")
     SOURCE_FOLLOWUP = ("dlaczego", "czemu", "skad", "skąd", "z czego", "przez co")
 
     @classmethod

@@ -1,0 +1,79 @@
+{
+  "schema_version": "jazn_dialogue_benchmark/v15.4.0.0",
+  "purpose": "Deterministic multi-turn regression cases for dialogue goal continuity, archive/package separation and update intent safety.",
+  "truth_boundary": "Passing these cases proves only the encoded regressions. It is not a general-language benchmark.",
+  "cases": [
+    {
+      "id": "continue-self-recall-exact-20260808",
+      "text": "Zgadzam się z Tobą. Zrób to wszystko sama, czyli zacznij teraz.",
+      "expected_intent": "self_memory_recall_request",
+      "previous_text": "Odbuduję Pamiętnik z rozmów źródłowych.",
+      "previous_intent": "self_memory_recall_request",
+      "previous_route": "self_memory_recall",
+      "active_task": true
+    },
+    {
+      "id": "continue-self-recall-short",
+      "text": "Dobrze, to kontynuuj.",
+      "expected_intent": "self_memory_recall_request",
+      "previous_text": "Przeglądam źródłowe rozmowy chronologicznie.",
+      "previous_intent": "self_memory_recall_request",
+      "previous_route": "self_memory_recall",
+      "active_task": true
+    },
+    {
+      "id": "continue-self-recall-do-it",
+      "text": "Tak, zrób to teraz.",
+      "expected_intent": "self_memory_recall_request",
+      "previous_text": "Mogę zacząć od najwcześniejszych rozmów.",
+      "previous_intent": "self_memory_recall_request",
+      "previous_route": "self_memory_recall",
+      "active_task": true
+    },
+    {
+      "id": "unbound-do-it-safe",
+      "text": "Zrób to teraz",
+      "expected_intent": "contextual_continuation_question",
+      "previous_text": "Luźna rozmowa bez aktywnego zadania.",
+      "previous_intent": "ordinary_conversation",
+      "previous_route": "ordinary_dialogue",
+      "active_task": false
+    },
+    {
+      "id": "conversation-archive-source-recall",
+      "text": "Przejrzyj archiwum rozmów i odzyskaj chronologicznie historię Pamiętnika.",
+      "expected_intent": "self_memory_recall_request",
+      "active_task": false
+    },
+    {
+      "id": "relationship-history-not-runtime-status",
+      "text": "Co wtedy działo się między nami w tamtych rozmowach?",
+      "expected_intent": "self_memory_recall_request",
+      "active_task": false
+    },
+    {
+      "id": "zip-archive-remains-technical-not-memory",
+      "text": "Sprawdź archiwum ZIP i manifest paczki runtime.",
+      "expected_intent": "system_diagnostic_question",
+      "active_task": false
+    },
+    {
+      "id": "explicit-update",
+      "text": "Zaktualizuj system i przygotuj poprawkę.",
+      "expected_intent": "system_update_execution_request",
+      "active_task": false
+    },
+    {
+      "id": "negated-update-is-diagnostic",
+      "text": "Nie aktualizuj kodu, tylko sprawdź co jest źle.",
+      "expected_intent": "system_diagnostic_question",
+      "active_task": false
+    },
+    {
+      "id": "future-update-is-diagnostic-now",
+      "text": "Później zrobimy aktualizację, teraz tylko sprawdź problem.",
+      "expected_intent": "system_diagnostic_question",
+      "active_task": false
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from typing import Any, Mapping
 
 from latka_jazn.version import schema_version
 
@@ -17,6 +18,11 @@ CURRENT_TURN_ONLY_MARKERS = (
     "czy działa", "czy dziala", "uruchom jaźń", "uruchom jazn", "czy uruchomiona",
     "co pamiętasz", "co pamietasz", "dzień dobry", "dzien dobry", "dobry wieczór",
     "dobry wieczor", "hej", "cześć", "czesc", "siemka", "dobranoc",
+)
+
+CONTEXTUAL_ACTION_MARKERS = (
+    "zrob to", "zrob to wszystko", "zrob to sama", "zacznij teraz", "zacznij",
+    "kontynuuj", "dzialaj", "wykonaj to", "zajmij sie tym", "zgadzam sie",
 )
 
 SYSTEM_UPDATE_ROUTE_MARKERS = (
@@ -56,6 +62,7 @@ class TurnContextResolver:
         no_carryover: bool = False,
         time_gap_seconds: int | None = None,
         explicit_previous_user_text: bool = False,
+        previous_task_state: Mapping[str, Any] | None = None,
     ) -> TurnContextResolution:
         text = _fold(current_user_text)
         previous_route_folded = _fold(previous_route or "")
@@ -70,18 +77,25 @@ class TurnContextResolver:
 
         if any(marker in text for marker in CURRENT_TURN_ONLY_MARKERS):
             risks.append("current_turn_only_marker")
+        contextual_action = any(marker in text for marker in CONTEXTUAL_ACTION_MARKERS)
+        active_task = bool(isinstance(previous_task_state, Mapping) and previous_task_state.get("active"))
         if any(marker in previous_route_folded for marker in SYSTEM_UPDATE_ROUTE_MARKERS) or any(marker in previous_intent_folded for marker in SYSTEM_UPDATE_ROUTE_MARKERS):
-            risks.append("previous_system_or_update_route")
+            if not (contextual_action and active_task):
+                risks.append("previous_system_or_update_route")
+            else:
+                risks.append("structured_active_task_continuation")
         if time_gap_seconds is not None and time_gap_seconds > 21600 and not explicit_previous_user_text:
             risks.append("previous_context_expired")
 
         short_or_ellipsis = (
             text in SHORT_CONTINUATION_EXACT
+            or contextual_action
             or len(words) <= 4
             or (text.startswith(("a ", "wiec ", "więc ", "czyli ")) and len(words) <= 8)
         )
 
-        if risks and not explicit_previous_user_text:
+        blocking_risks = [risk for risk in risks if risk != "structured_active_task_continuation"]
+        if blocking_risks and not explicit_previous_user_text:
             return TurnContextResolution(
                 SCHEMA_VERSION, False, "forced_current_turn_only_due_to_risk", False, None, True, risks, time_gap_seconds
             )

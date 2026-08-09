@@ -33,6 +33,7 @@ def _update_runtime_session_state(
     visible_text: str,
     intent: str,
     route: str,
+    task_state: dict[str, Any] | None = None,
 ) -> None:
     """Update canonical and minimal session-state implementations compatibly."""
     update = getattr(state, "update")
@@ -52,6 +53,13 @@ def _update_runtime_session_state(
     )
     if supports_visible_text:
         kwargs["visible_text"] = visible_text
+    supports_task_state = any(
+        parameter.name == "task_state"
+        or parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in parameters
+    )
+    if supports_task_state and task_state is not None:
+        kwargs["task_state"] = task_state
     update(**kwargs)
     if not supports_visible_text:
         try:
@@ -254,11 +262,14 @@ class JaznRuntimeSession:
             "_turn_context": turn_context,
             "wake_state_runtime": self._wake_state_runtime_payload(),
         }
+        previous_task_state = dict(getattr(self.state, "task_state", {}) or {})
         if current_previous_user:
             ctx["previous_user_text"] = current_previous_user
             if not live_previous_user:
                 ctx["previous_detected_intent"] = self.state.last_intent
                 ctx["previous_runtime_route"] = self.state.last_route
+            if previous_task_state:
+                ctx["previous_task_state"] = previous_task_state
         if current_previous_visible:
             ctx["previous_visible_text"] = current_previous_visible
         try:
@@ -407,6 +418,11 @@ class JaznRuntimeSession:
                     visible_text=str(result.get("final_visible_text") or ""),
                     intent=str(decision.get("detected_user_intent") or "unknown"),
                     route=str(decision.get("route") or "unknown"),
+                    task_state=(
+                        dict(decision.get("dialogue_task_state") or {})
+                        if isinstance(decision.get("dialogue_task_state"), dict)
+                        else None
+                    ),
                 )
                 self._turn_count += 1
                 try:
@@ -426,16 +442,45 @@ class JaznRuntimeSession:
                     result["persistence_degraded"] = True
                     result["persistence_state"] = "degraded"
             else:
-                save_status = {
-                    "saved": False,
-                    "reason": (
-                        "awaiting_host_finalization"
-                        if host_pending
-                        else commit_status.get("reason") or "turn_not_committed"
-                    ),
-                    "persistence_degraded": False,
-                    "intermediate_state": host_pending,
-                }
+                if persistence_available and host_pending:
+                    # Persist the *pre-turn* checkpoint only.  This binds the
+                    # session identity/state that phase-2 is allowed to advance
+                    # without committing an unfinalized visible answer.
+                    try:
+                        pending_checkpoint = self.state_store.save(
+                            self.state,
+                            continuity_context=self.wake_state_runtime_status,
+                            turn_count=self._turn_count,
+                        )
+                        save_status = {
+                            **pending_checkpoint,
+                            "saved": bool(pending_checkpoint.get("session_state_saved")),
+                            "reason": "awaiting_host_finalization_pre_turn_checkpoint",
+                            "persistence_degraded": False,
+                            "intermediate_state": True,
+                            "final_turn_state_committed": False,
+                        }
+                    except Exception as exc:
+                        save_status = {
+                            "saved": False,
+                            "reason": "awaiting_host_finalization_checkpoint_failed",
+                            "error_code": type(exc).__name__,
+                            "error": str(exc),
+                            "persistence_degraded": True,
+                            "intermediate_state": True,
+                            "final_turn_state_committed": False,
+                        }
+                else:
+                    save_status = {
+                        "saved": False,
+                        "reason": (
+                            "awaiting_host_finalization"
+                            if host_pending
+                            else commit_status.get("reason") or "turn_not_committed"
+                        ),
+                        "persistence_degraded": False,
+                        "intermediate_state": host_pending,
+                    }
             result["session_persistence"] = dict(save_status)
             result["session_persistence_ok"] = bool(save_status.get("saved"))
             result["session"] = self.state.to_dict()
