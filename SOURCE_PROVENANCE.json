@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "310fd5adab2b7bcd0d53583552858f5de3788275",
+  "base_merge_commit": "b9a759063b110d9a71e4afe02033659264807b95",
   "base_version": "v15.4.0.0-cognitive-architecture",
-  "commit_date": "2026-08-09T15:35:10+02:00",
+  "commit_date": "2026-08-09T15:39:04+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-09T13:35:10+00:00",
+  "generated_at_utc": "2026-08-09T13:39:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a5aa328d405403b449ff693dac4d0f19e7a5082b",
+  "git_tree_sha": "7ab0b4225fd94e4d23a8ae1766233a718c16df84",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
