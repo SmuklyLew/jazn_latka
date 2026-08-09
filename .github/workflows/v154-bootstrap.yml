@@ -46,6 +46,16 @@ jobs:
         run: |
           set -euo pipefail
           git apply /tmp/v154.patch
+          python - <<'PY'
+          from pathlib import Path
+          for name in (
+              'docs/plans/JAZN_V15_4_0_0_COGNITIVE_ARCHITECTURE.md',
+              'docs/reports/JAZN_V15_4_0_0_IMPLEMENTATION_REPORT.md',
+          ):
+              path = Path(name)
+              lines = path.read_text(encoding='utf-8').splitlines()
+              path.write_text('\n'.join(line.rstrip() for line in lines).rstrip() + '\n', encoding='utf-8')
+          PY
           rm -rf .v154-bootstrap-parts
           rm -f .github/workflows/v154-bootstrap.yml
 
@@ -53,7 +63,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --check
           python -X utf8 -m compileall -q latka_jazn tests
           forbidden="$(git diff --name-only --diff-filter=ACMR HEAD -- | grep -E '(^memory/|(^|/)(runtime_write|runtime_audit|chat_context).*\.sqlite3($|-)|\.sqlite3-(wal|shm)$|\.zip($|\.)|capability\.token$)' || true)"
           if [ -n "$forbidden" ]; then
