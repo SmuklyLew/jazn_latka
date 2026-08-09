@@ -85,7 +85,8 @@ class ExternalDictionaryAdapter:
             self._merge_unique(lemmas, plwn.lemmas)
             self._merge_unique(pos_candidates, plwn.part_of_speech)
             raw = plwn.raw if isinstance(plwn.raw, dict) else {}
-            relations = raw.get('relations') if isinstance(raw.get('relations'), dict) else {}
+            raw_relations = raw.get('relations')
+            relations = raw_relations if isinstance(raw_relations, dict) else {}
             for relation_name, relation_terms in relations.items():
                 values=[str(item) for item in relation_terms if str(item).strip()] if isinstance(relation_terms,list) else []
                 if values:
