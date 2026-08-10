@@ -212,11 +212,16 @@ class NormalizationRunReport:
     source_db_path: str
     sidecar_db_path: str
     input_counts: dict[str, int]
-    output_counts: dict[str, int]
+    output_counts: dict[str, Any]
     errors: list[str]
     source_integrity_check: str | None
     source_foreign_key_error_count: int | None
     source_fingerprint: dict[str, Any] | None = None
+    requested_limit: int | None = None
+    expected_item_count: int = 0
+    normalized_item_count: int = 0
+    coverage_complete: bool = False
+    coverage_ratio: float = 0.0
     truth_boundary: str = TRUTH_BOUNDARY
 
     def to_dict(self) -> dict[str, Any]:
@@ -328,6 +333,11 @@ CREATE TABLE IF NOT EXISTS normalization_runs(
   source_foreign_key_error_count INTEGER,
   input_counts_json TEXT NOT NULL DEFAULT '{}',
   output_counts_json TEXT NOT NULL DEFAULT '{}',
+  requested_limit INTEGER,
+  expected_item_count INTEGER NOT NULL DEFAULT 0,
+  normalized_item_count INTEGER NOT NULL DEFAULT 0,
+  coverage_complete INTEGER NOT NULL DEFAULT 0,
+  coverage_ratio REAL NOT NULL DEFAULT 0.0,
   status TEXT NOT NULL,
   errors_json TEXT NOT NULL DEFAULT '[]',
   dry_run INTEGER NOT NULL DEFAULT 0,
@@ -830,6 +840,11 @@ class MemoryNormalizationSidecar:
                 ("relevant_row_count", "INTEGER"),
                 ("relevant_revision", "TEXT"),
                 ("fingerprint_contract_version", "TEXT"),
+                ("requested_limit", "INTEGER"),
+                ("expected_item_count", "INTEGER NOT NULL DEFAULT 0"),
+                ("normalized_item_count", "INTEGER NOT NULL DEFAULT 0"),
+                ("coverage_complete", "INTEGER NOT NULL DEFAULT 0"),
+                ("coverage_ratio", "REAL NOT NULL DEFAULT 0.0"),
             ):
                 if name not in columns:
                     con.execute(f"ALTER TABLE normalization_runs ADD COLUMN {name} {sql_type}")
@@ -1015,8 +1030,14 @@ class MemoryNormalizationSidecar:
             status = "read_error"
         elif not last_run:
             status = "normalization_required"
+        elif str(last_run.get("status")) == "partial":
+            status = "normalization_partial"
         elif str(last_run.get("status")) != "ok" or not last_run.get("ended_at_utc"):
             status = "source_run_invalid"
+        elif not bool(last_run.get("coverage_complete")):
+            status = "normalization_coverage_unverified"
+        elif int(last_run.get("normalized_item_count") or 0) < int(last_run.get("expected_item_count") or 0):
+            status = "normalization_partial"
         elif str(last_run.get("schema_version")) != SCHEMA_VERSION or str(last_run.get("runtime_version")) != self.runtime_version:
             status = "normalization_stale"
         else:
@@ -1049,6 +1070,7 @@ class MemoryNormalizationSidecar:
         )
 
     def normalize(self, *, dry_run: bool = False, limit: int | None = None) -> NormalizationRunReport:
+        requested_limit = None if limit is None else max(0, int(limit))
         if not self.source_db_path.exists():
             return NormalizationRunReport(
                 schema_version=SCHEMA_VERSION,
@@ -1062,9 +1084,14 @@ class MemoryNormalizationSidecar:
                 errors=[f"missing source db: {self.source_db_path}"],
                 source_integrity_check=None,
                 source_foreign_key_error_count=None,
+                requested_limit=requested_limit,
             )
         integrity, fk_count, check_errors = _sqlite_checks(self.source_db_path)
         input_counts = self._source_counts()
+        expected_item_count = self._normalizable_source_count()
+        planned_item_count = expected_item_count if requested_limit is None else min(expected_item_count, requested_limit)
+        planned_coverage_complete = planned_item_count >= expected_item_count
+        planned_coverage_ratio = 1.0 if expected_item_count == 0 else min(1.0, planned_item_count / expected_item_count)
         if check_errors or integrity != "ok" or fk_count != 0:
             return NormalizationRunReport(
                 schema_version=SCHEMA_VERSION,
@@ -1078,6 +1105,11 @@ class MemoryNormalizationSidecar:
                 errors=check_errors or [f"integrity={integrity!r}, foreign_key_errors={fk_count!r}"],
                 source_integrity_check=integrity,
                 source_foreign_key_error_count=fk_count,
+                requested_limit=requested_limit,
+                expected_item_count=expected_item_count,
+                normalized_item_count=0,
+                coverage_complete=False,
+                coverage_ratio=0.0,
             )
         logical_fingerprint = _relevant_logical_fingerprint(self.source_db_path, include_content=True)
         physical_fingerprint = _physical_sqlite_state(self.source_db_path, include_hash=True)
@@ -1085,27 +1117,46 @@ class MemoryNormalizationSidecar:
         source_size = physical_fingerprint["source_db_size"]
         source_mtime_ns = physical_fingerprint["source_db_mtime_ns"]
         source_schema_hash = _sqlite_schema_sha256(self.source_db_path)
+        planned_output_counts = {
+            "actors": 3,
+            "normalized_memory_items": planned_item_count,
+            "expected_normalized_memory_items": expected_item_count,
+            "coverage_complete": planned_coverage_complete,
+            "coverage_ratio": planned_coverage_ratio,
+        }
         if dry_run:
             return NormalizationRunReport(
                 schema_version=SCHEMA_VERSION,
                 run_id=None,
                 dry_run=True,
-                status="dry_run_ok",
+                status="dry_run_ok" if planned_coverage_complete else "dry_run_partial",
                 source_db_path=str(self.source_db_path),
                 sidecar_db_path=str(self.sidecar_db_path),
                 input_counts=input_counts,
-                output_counts=self._estimated_output_counts(input_counts, limit=limit),
+                output_counts=planned_output_counts,
                 errors=[],
                 source_integrity_check=integrity,
                 source_foreign_key_error_count=fk_count,
                 source_fingerprint=logical_fingerprint,
+                requested_limit=requested_limit,
+                expected_item_count=expected_item_count,
+                normalized_item_count=planned_item_count,
+                coverage_complete=planned_coverage_complete,
+                coverage_ratio=planned_coverage_ratio,
             )
 
         self.ensure_schema()
         run_id = str(uuid.uuid4())
         started = _now()
         errors: list[str] = []
-        output_counts = {"actors": 0, "normalized_memory_items": 0}
+        output_counts: dict[str, Any] = {
+            "actors": 0,
+            "normalized_memory_items": 0,
+            "expected_normalized_memory_items": expected_item_count,
+            "coverage_complete": False,
+            "coverage_ratio": 0.0,
+        }
+        normalized_item_count = 0
         with closing(_connect_readonly(self.source_db_path)) as source:
             with closing(_connect_write(self.sidecar_db_path)) as side:
                 side.execute(
@@ -1116,8 +1167,9 @@ class MemoryNormalizationSidecar:
                          source_schema_sha256,relevant_content_sha256,relevant_schema_sha256,
                          relevant_row_count,relevant_revision,fingerprint_contract_version,
                          source_integrity_check,source_foreign_key_error_count,
-                         input_counts_json,output_counts_json,status,errors_json,dry_run,truth_boundary)
-                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                         input_counts_json,output_counts_json,requested_limit,expected_item_count,
+                         normalized_item_count,coverage_complete,coverage_ratio,status,errors_json,dry_run,truth_boundary)
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
                         run_id,
                         SCHEMA_VERSION,
@@ -1141,6 +1193,11 @@ class MemoryNormalizationSidecar:
                         fk_count,
                         _json(input_counts),
                         "{}",
+                        requested_limit,
+                        expected_item_count,
+                        0,
+                        0,
+                        0.0,
                         "running",
                         "[]",
                         0,
@@ -1148,22 +1205,32 @@ class MemoryNormalizationSidecar:
                     ),
                 )
                 output_counts["actors"] = self._upsert_default_actors(side)
-                inserted = 0
-                for item in self._iter_normalized_items(source, run_id=run_id, limit=limit):
+                for item in self._iter_normalized_items(source, run_id=run_id, limit=requested_limit):
                     try:
-                        before = side.total_changes
                         self._insert_item(side, item)
-                        if side.total_changes > before:
-                            inserted += 1
+                        normalized_item_count += 1
                     except Exception as exc:
                         errors.append(repr(exc))
-                output_counts["normalized_memory_items"] = inserted
-                status = "ok" if not errors and integrity == "ok" and fk_count == 0 else "completed_with_warnings"
+                coverage_complete = normalized_item_count >= expected_item_count and not errors
+                coverage_ratio = 1.0 if expected_item_count == 0 else min(1.0, normalized_item_count / expected_item_count)
+                output_counts["normalized_memory_items"] = normalized_item_count
+                output_counts["coverage_complete"] = coverage_complete
+                output_counts["coverage_ratio"] = coverage_ratio
+                if errors or integrity != "ok" or fk_count != 0:
+                    status = "completed_with_warnings"
+                elif not coverage_complete:
+                    status = "partial"
+                else:
+                    status = "ok"
                 side.execute(
                     """UPDATE normalization_runs
-                          SET ended_at_utc=?, output_counts_json=?, status=?, errors_json=?
+                          SET ended_at_utc=?, output_counts_json=?, requested_limit=?, expected_item_count=?,
+                              normalized_item_count=?, coverage_complete=?, coverage_ratio=?, status=?, errors_json=?
                         WHERE run_id=?""",
-                    (_now(), _json(output_counts), status, _json(errors), run_id),
+                    (
+                        _now(), _json(output_counts), requested_limit, expected_item_count, normalized_item_count,
+                        int(coverage_complete), coverage_ratio, status, _json(errors), run_id,
+                    ),
                 )
                 side.commit()
         return NormalizationRunReport(
@@ -1179,6 +1246,11 @@ class MemoryNormalizationSidecar:
             source_integrity_check=integrity,
             source_foreign_key_error_count=fk_count,
             source_fingerprint={**logical_fingerprint, **physical_fingerprint},
+            requested_limit=requested_limit,
+            expected_item_count=expected_item_count,
+            normalized_item_count=normalized_item_count,
+            coverage_complete=coverage_complete,
+            coverage_ratio=coverage_ratio,
         )
 
     def wake_state_status(self, *, deep_verify: bool = False) -> WakeStateStatus:
@@ -1235,6 +1307,12 @@ class MemoryNormalizationSidecar:
                             status = "snapshot_hash_mismatch"
                         elif run is None or str(run["status"]) != "ok" or not run["ended_at_utc"] or int(run["dry_run"]):
                             status = "source_run_invalid"
+                        elif not {"expected_item_count", "normalized_item_count", "coverage_complete"}.issubset(set(run.keys())):
+                            status = "normalization_coverage_unverified"
+                        elif not bool(run["coverage_complete"]):
+                            status = "normalization_partial"
+                        elif int(run["normalized_item_count"] or 0) < int(run["expected_item_count"] or 0):
+                            status = "normalization_partial"
                         elif str(row["validation_status"]) != "valid" or snapshot.get("validation_status") != "valid":
                             status = "validation_failed"
                         # Empty snapshots are valid when the source and sidecar pass
@@ -1913,6 +1991,30 @@ class MemoryNormalizationSidecar:
             counts["read_error_repr_hash"] = int(_hash_text(repr(exc))[:8], 16)
         return counts
 
+    def _normalizable_source_count(self) -> int:
+        if not self.source_db_path.exists():
+            return 0
+        with closing(_connect_readonly(self.source_db_path)) as con:
+            total = 0
+            count_specs = (
+                ("procedural_rules", None),
+                ("semantic_facts", None),
+                ("episodic_memories", None),
+                ("reflection_entries", None),
+                ("truth_audits", None),
+                ("journal", "COALESCE(text,'') <> ''"),
+                ("legacy_chunks", "COALESCE(content_text,'') <> ''"),
+                ("messages", "role IN ('user','assistant') AND COALESCE(content_text,'') <> ''"),
+            )
+            for table, predicate in count_specs:
+                if not _table_exists(con, table):
+                    continue
+                sql = f"SELECT COUNT(*) FROM {_quote_identifier(table)}"
+                if predicate:
+                    sql += f" WHERE {predicate}"
+                total += int(con.execute(sql).fetchone()[0] or 0)
+            return total
+
     def _estimated_output_counts(self, input_counts: dict[str, int], *, limit: int | None) -> dict[str, int]:
         total = (
             (input_counts.get("messages_user_assistant", 0) or input_counts.get("messages", 0))
@@ -1959,6 +2061,8 @@ class MemoryNormalizationSidecar:
         limit: int | None,
     ) -> Iterable[dict[str, Any]]:
         emitted = 0
+        if limit is not None and int(limit) <= 0:
+            return
         # Curated/source-labelled records are normalized before raw dialogue. The
         # complete dialogue remains searchable in L0; a bounded sidecar limit must
         # not starve procedural, semantic, truth-boundary, or journal material.
@@ -2336,7 +2440,26 @@ class MemoryNormalizationSidecar:
         ).fetchone()[0])
         integrity = con.execute("PRAGMA integrity_check").fetchone()[0]
         fk_count = len(con.execute("PRAGMA foreign_key_check").fetchall())
-        validation_status = "valid" if integrity == "ok" and fk_count == 0 else "invalid"
+        run_row = con.execute(
+            "SELECT status,requested_limit,expected_item_count,normalized_item_count,coverage_complete,coverage_ratio "
+            "FROM normalization_runs WHERE run_id=?",
+            (run_id,),
+        ).fetchone()
+        coverage = {
+            "status": str(run_row["status"]) if run_row else "missing",
+            "requested_limit": int(run_row["requested_limit"]) if run_row and run_row["requested_limit"] is not None else None,
+            "expected_item_count": int(run_row["expected_item_count"] or 0) if run_row else 0,
+            "normalized_item_count": int(run_row["normalized_item_count"] or 0) if run_row else 0,
+            "coverage_complete": bool(run_row["coverage_complete"]) if run_row else False,
+            "coverage_ratio": float(run_row["coverage_ratio"] or 0.0) if run_row else 0.0,
+        }
+        coverage_valid = bool(
+            run_row
+            and str(run_row["status"]) == "ok"
+            and coverage["coverage_complete"]
+            and coverage["normalized_item_count"] >= coverage["expected_item_count"]
+        )
+        validation_status = "valid" if integrity == "ok" and fk_count == 0 and coverage_valid else "invalid"
         return {
             "schema_version": WAKE_STATE_SCHEMA_VERSION,
             "created_at_utc": _now(),
@@ -2369,6 +2492,7 @@ class MemoryNormalizationSidecar:
                 "actors": len(actors),
                 "memory_is_empty": item_count == 0,
             },
+            "normalization_coverage": coverage,
             "source_run_id": run_id,
             "validation_status": validation_status,
             "validation": {

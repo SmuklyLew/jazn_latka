@@ -190,3 +190,33 @@ def test_memory_prepare_prefers_recovered_database(tmp_path: Path) -> None:
     assert cfg.memory_db_path == cfg.recovered_memory_db_path
     sidecar = MemoryNormalizationSidecar(root)
     assert sidecar.source_db_path == cfg.recovered_memory_db_path
+
+
+def test_pipeline_default_normalization_is_unbounded(tmp_path: Path, monkeypatch) -> None:
+    root = _root(tmp_path)
+    pipeline = MemoryRecoveryPipeline(root)
+    observed: dict[str, int | None] = {}
+    original = pipeline.sidecar.normalize
+
+    def wrapped(*, dry_run: bool = False, limit: int | None = None):
+        observed["limit"] = limit
+        return original(dry_run=dry_run, limit=limit)
+
+    monkeypatch.setattr(pipeline.sidecar, "normalize", wrapped)
+    report = pipeline.run()
+    assert report.ok, report.errors
+    assert observed["limit"] is None
+    assert report.normalization is not None
+    assert report.normalization["coverage_complete"] is True
+
+
+def test_pipeline_explicit_normalization_limit_fails_closed_before_wake(tmp_path: Path) -> None:
+    root = _root(tmp_path)
+    pipeline = MemoryRecoveryPipeline(root)
+    report = pipeline.run(normalize_limit=1)
+    assert report.status == "normalization_incomplete"
+    assert report.ok is False
+    assert report.wake_state is None
+    assert report.normalization is not None
+    assert report.normalization["status"] == "partial"
+    assert report.normalization["coverage_complete"] is False

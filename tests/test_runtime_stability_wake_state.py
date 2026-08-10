@@ -373,3 +373,84 @@ def test_memory_prepare_cli_usage_error_is_exit_two() -> None:
     with pytest.raises(SystemExit) as exc:
         cli.main(["memory-prepare", "--unknown-option"])
     assert exc.value.code == 2
+
+
+def test_limited_normalization_is_explicitly_partial_and_cannot_build_wake(tmp_path: Path) -> None:
+    sidecar = _sidecar(tmp_path, count=5)
+    normalized = sidecar.normalize(limit=2)
+    assert normalized.status == "partial"
+    assert normalized.requested_limit == 2
+    assert normalized.expected_item_count == 5
+    assert normalized.normalized_item_count == 2
+    assert normalized.coverage_complete is False
+    assert 0.0 < normalized.coverage_ratio < 1.0
+    assert sidecar.status().status == "normalization_partial"
+    wake = sidecar.build_wake_state()
+    assert wake.status == "blocked:normalization_partial"
+    assert wake.snapshot_id is None
+
+
+def test_zero_limit_normalization_emits_zero_items_and_is_partial(tmp_path: Path) -> None:
+    sidecar = _sidecar(tmp_path, count=3)
+    normalized = sidecar.normalize(limit=0)
+    assert normalized.status == "partial"
+    assert normalized.normalized_item_count == 0
+    assert normalized.expected_item_count == 3
+    assert normalized.coverage_ratio == 0.0
+    with sqlite3.connect(sidecar.sidecar_db_path) as con:
+        assert con.execute("SELECT COUNT(*) FROM normalized_memory_items").fetchone()[0] == 0
+
+
+def test_full_prepare_after_partial_run_recovers_complete_coverage(tmp_path: Path) -> None:
+    sidecar = _sidecar(tmp_path, count=7)
+    assert sidecar.normalize(limit=2).status == "partial"
+    prepared = sidecar.prepare(deep_verify=True).to_dict()
+    assert prepared["status"] == "ready"
+    normalization = prepared["normalization"]
+    assert normalization["coverage_complete"] is True
+    assert normalization["expected_item_count"] == 7
+    assert normalization["normalized_item_count"] == 7
+    wake = prepared["wake_state"]["active_snapshot"]
+    assert wake["validation_status"] == "valid"
+    assert wake["source_counts"]["normalized_memory_items"] == 7
+
+
+def test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered(tmp_path: Path) -> None:
+    from latka_jazn.memory.wake_state_runtime import WakeStateRuntimeBridge
+
+    root = tmp_path / "runtime"
+    cfg = JaznConfig(root=root)
+    cfg.recovered_memory_db_path.parent.mkdir(parents=True, exist_ok=True)
+    _source(cfg.recovered_memory_db_path, count=4)
+    sidecar = MemoryNormalizationSidecar(
+        root,
+        source_db_path=cfg.recovered_memory_db_path,
+        sidecar_db_path=cfg.normalization_sidecar_db_path,
+        runtime_version=cfg.version,
+    )
+    assert sidecar.prepare().status == "ready"
+    with sqlite3.connect(sidecar.sidecar_db_path) as con:
+        run_id = con.execute("SELECT source_run_id FROM wake_state_snapshots WHERE active=1").fetchone()[0]
+        con.execute(
+            "UPDATE normalization_runs SET coverage_complete=0, normalized_item_count=1 WHERE run_id=?",
+            (run_id,),
+        )
+        con.commit()
+    status = WakeStateRuntimeBridge(cfg).load()
+    assert status.status == "normalization_partial"
+    assert status.ok is False
+    assert any("1/4" in error for error in status.errors)
+
+
+def test_unbounded_normalization_exceeds_legacy_12000_ceiling(tmp_path: Path) -> None:
+    sidecar = _sidecar(tmp_path, count=12037)
+    report = sidecar.normalize()
+    assert report.status == "ok", report.errors
+    assert report.requested_limit is None
+    assert report.expected_item_count == 12037
+    assert report.normalized_item_count == 12037
+    assert report.coverage_complete is True
+    assert report.coverage_ratio == 1.0
+    wake = sidecar.build_wake_state()
+    assert wake.status == "ready", wake.errors
+    assert wake.item_count == 12037

@@ -119,11 +119,18 @@ class MemoryRecoveryPipeline:
         recovery_report = self.recovery.rebuild(force=force_recovery, progress=progress)
         if not recovery_report.ok:
             return self._report("recovery_failed", recovery=recovery_report.to_dict(), errors=recovery_report.errors)
-        normalization = self.sidecar.normalize(limit=normalize_limit if normalize_limit is not None else 12000)
+        normalization = self.sidecar.normalize(limit=normalize_limit)
         if normalization.status != "ok":
+            pipeline_status = "normalization_incomplete" if normalization.status == "partial" else "normalization_failed"
+            errors = list(normalization.errors)
+            if normalization.status == "partial":
+                errors.append(
+                    f"normalization coverage incomplete: {normalization.normalized_item_count}/"
+                    f"{normalization.expected_item_count} ({normalization.coverage_ratio:.4f})"
+                )
             return self._report(
-                "normalization_failed", recovery=recovery_report.to_dict(),
-                normalization=normalization.to_dict(), errors=normalization.errors,
+                pipeline_status, recovery=recovery_report.to_dict(),
+                normalization=normalization.to_dict(), errors=errors,
             )
         wake = self.sidecar.build_wake_state()
         if wake.status != "ready":
