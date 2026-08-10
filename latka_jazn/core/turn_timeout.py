@@ -12,7 +12,7 @@ from latka_jazn.core.turn_execution import TurnExecutionContext
 T = TypeVar("T")
 
 DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS = 45.0
-DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS = 120.0
+DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS = 600.0
 
 _DEEP_RECALL_MEMORY_MARKERS = (
     "pamiet", "wspomn", "archiw", "baza danych", "dziennik", "rozmow", "histori",
@@ -228,7 +228,9 @@ class RuntimeSessionWorker:
                             error_code="execution_timeout",
                         )
                         turn_context.finalize_total(status="late_completion_ignored", error_code="execution_timeout")
-                        turn_context.persist_audit(event_type="runtime_turn_late_completion")
+                        _persist_turn_audit_async(
+                            turn_context, event_type="runtime_turn_late_completion"
+                        )
                     if response_queue is not None:
                         response_queue.put(("ok", result))
                 except BaseException as exc:  # noqa: BLE001
@@ -238,7 +240,9 @@ class RuntimeSessionWorker:
                             {"error_code": type(exc).__name__, "error": str(exc)},
                         )
                         turn_context.finalize_total(status="late_exception_ignored", error_code=type(exc).__name__)
-                        turn_context.persist_audit(event_type="runtime_turn_late_exception")
+                        _persist_turn_audit_async(
+                            turn_context, event_type="runtime_turn_late_exception"
+                        )
                     if response_queue is not None:
                         response_queue.put(("error", exc))
 

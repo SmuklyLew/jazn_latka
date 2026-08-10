@@ -3,6 +3,7 @@ from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable
 import json, uuid
 from latka_jazn.core.truth_boundary import TruthBoundary
 from latka_jazn.core.uncertainty_model import UncertaintyModel
@@ -185,8 +186,16 @@ class LayeredMemory:
         self.store.add_truth_audit(record)
         return audit
 
-    def search_episodes(self, phrase: str, limit: int=5) -> list[dict]:
-        return self.store.search_episodic_memories(phrase, limit=limit)
+    def search_episodes(
+        self,
+        phrase: str,
+        limit: int = 5,
+        *,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[dict]:
+        return self.store.search_episodic_memories(
+            phrase, limit=limit, should_continue=should_continue
+        )
 
 
 

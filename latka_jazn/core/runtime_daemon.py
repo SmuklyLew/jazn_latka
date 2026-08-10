@@ -44,7 +44,6 @@ from latka_jazn.core.turn_timeout import (
     RuntimeSessionWorker,
     RuntimeTurnTimeoutError,
     runtime_turn_timeout_for_text,
-    runtime_turn_timeout_seconds,
 )
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.runtime_truth_gate import daemon_active_state, time_trust_state
@@ -71,6 +70,7 @@ DEFAULT_DAEMON_CHAT_INLINE_WAIT_SECONDS = 0.5
 DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS = 0.25
 DEFAULT_DAEMON_CHAT_JOB_TTL_SECONDS = 3600.0
 DEFAULT_DAEMON_CHAT_QUEUE_SIZE = 64
+DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS = 0.25
 DEFAULT_HEARTBEAT_FRESH_MULTIPLIER = 3.0
 DAEMON_CONSOLE_ENV = "JAZN_DAEMON_CONSOLE"
 DAEMON_CONSOLE_HIDDEN = "hidden"
@@ -694,7 +694,10 @@ class DaemonChatJob:
     execution_timeout_seconds: float | None = None
     timeout_profile: str = "default"
     recovery_disposition: str | None = None
+    worker_generation: int | None = None
+    watchdog_terminalized: bool = False
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
+    active_session_worker: RuntimeSessionWorker | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
 
     def terminal(self) -> bool:
@@ -721,6 +724,8 @@ class DaemonChatJob:
             "execution_timeout_seconds": self.execution_timeout_seconds,
             "timeout_profile": self.timeout_profile,
             "recovery_disposition": self.recovery_disposition,
+            "worker_generation": self.worker_generation,
+            "watchdog_terminalized": self.watchdog_terminalized,
             "result_endpoint": f"/chat-result/{urllib.parse.quote(self.request_id, safe='')}",
         }
         if self.turn_context is not None:
@@ -779,8 +784,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self.marker_path = Path(marker_path)
         self.heartbeat_interval = float(heartbeat_interval)
         self._session_factory = session_factory
+        # Persistent daemon turns have a separate hard execution budget from
+        # one-shot/runtime-session calls.  The public daemon CLI already exposes
+        # a 180 s per-turn budget; using the generic 45 s runtime default here was
+        # an accidental wiring mismatch that made healthy long turns fail early.
         self.execution_timeout_seconds = float(
-            execution_timeout_seconds or runtime_turn_timeout_seconds(config)
+            execution_timeout_seconds
+            or getattr(config, "daemon_chat_execution_timeout_seconds", DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS)
         )
         self.sessions: dict[str, RuntimeSessionWorker] = {}
         bound_host, bound_port = self.server_address[:2]
@@ -814,8 +824,15 @@ class JaznDaemonServer(ThreadingHTTPServer):
         )
         self._chat_worker_thread: threading.Thread | None = None
         self._chat_worker_start_lock = threading.Lock()
+        self._chat_worker_generation = 0
         self._chat_worker_state = "not_started_lazy"
         self._chat_worker_error: str | None = None
+        self._chat_watchdog_thread: threading.Thread | None = None
+        self._chat_watchdog_start_lock = threading.Lock()
+        self._chat_watchdog_interval_seconds = max(0.01, _env_float_value(
+            "JAZN_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS",
+            DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS,
+        ))
         self._chat_state_path = self.marker_path.parent / "daemon_chat_jobs.json"
         self._recover_chat_jobs()
 
@@ -1073,6 +1090,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "worker_alive": worker_alive,
                 "worker_state": self._chat_worker_state,
                 "worker_error": self._chat_worker_error,
+                "worker_generation": self._chat_worker_generation,
+                "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
+                "watchdog_interval_seconds": self._chat_watchdog_interval_seconds,
                 "execution_timeout_seconds": self.execution_timeout_seconds,
                 "pending": pending,
                 "submitted_total": self.state.chat_job_submitted_count,
@@ -1094,17 +1114,130 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 **counts,
             }
 
-    def start_chat_worker(self) -> None:
-        with self._chat_worker_start_lock:
-            if self._chat_worker_thread is not None and self._chat_worker_thread.is_alive():
+    def _terminalize_watchdog_timeout_locked(
+        self,
+        job: DaemonChatJob,
+        *,
+        source: str,
+    ) -> RuntimeSessionWorker | None:
+        """Make an overdue non-terminal job terminal without waiting for its worker.
+
+        The normal RuntimeSessionWorker timeout remains the first line of defence.
+        This daemon-level guard covers orchestration stalls before/around that
+        worker, where a job could otherwise stay ``running`` forever and poison
+        the single queue consumer.  Late work is cancelled through the shared
+        TurnExecutionContext and its semantic result is ignored.
+        """
+        if job.terminal():
+            return None
+        timeout_seconds = float(job.execution_timeout_seconds or self.execution_timeout_seconds)
+        if job.turn_context is not None:
+            job.turn_context.cancel(
+                reason=f"daemon watchdog execution deadline exceeded ({source})",
+                error_code="execution_timeout",
+            )
+            job.turn_context.record_technical_event(
+                "daemon_chat_watchdog_timeout",
+                {
+                    "source": source,
+                    "timeout_seconds": timeout_seconds,
+                    "timeout_profile": job.timeout_profile,
+                    "worker_generation": job.worker_generation,
+                },
+            )
+        error = (
+            f"daemon watchdog terminalized {job.status} job after "
+            f"{timeout_seconds:.3g}s execution deadline"
+        )
+        job.error = error
+        job.result = {
+            "ok": False,
+            "error_code": "execution_timeout",
+            "error": error,
+            "request_id": job.request_id,
+            "execution_timeout_seconds": job.execution_timeout_seconds,
+            "timeout_profile": job.timeout_profile,
+            "timeout_owner": "daemon_chat_watchdog",
+            "schema_version": DAEMON_SCHEMA_VERSION,
+        }
+        job.status = "execution_timeout"
+        job.completed_at_utc = utc_now_iso()
+        job.recovery_disposition = "watchdog_terminalized_without_replay"
+        job.watchdog_terminalized = True
+        job.done_event.set()
+        self.state.chat_job_execution_timeout_count += 1
+        self.state.chat_job_pending_count = max(0, self.state.chat_job_pending_count - 1)
+        self._persist_chat_jobs_locked(stage="watchdog_terminal")
+        return job.active_session_worker
+
+    def _scan_overdue_chat_jobs(self) -> bool:
+        retired: list[RuntimeSessionWorker] = []
+        replace_worker = False
+        with self._chat_jobs_lock:
+            now = time.monotonic()
+            for job in self.chat_jobs.values():
+                if job.terminal() or job.turn_context is None:
+                    continue
+                if now < job.turn_context.deadline_monotonic:
+                    continue
+                was_running = job.status == "running"
+                session = self._terminalize_watchdog_timeout_locked(
+                    job, source="turn_context_deadline"
+                )
+                if session is not None:
+                    retired.append(session)
+                replace_worker = replace_worker or was_running
+        for session in {id(worker): worker for worker in retired}.values():
+            self._retire_session_worker(session)
+        if replace_worker and not self.shutdown_requested.is_set():
+            self.start_chat_worker(force_new=True)
+        return bool(retired or replace_worker)
+
+    def start_chat_watchdog(self) -> None:
+        with self._chat_watchdog_start_lock:
+            if self._chat_watchdog_thread is not None and self._chat_watchdog_thread.is_alive():
                 return
+
+            def watchdog() -> None:
+                while not self.shutdown_requested.is_set():
+                    try:
+                        self._scan_overdue_chat_jobs()
+                    except (RuntimeError, OSError, ValueError, TypeError) as exc:
+                        append_daemon_process_event(
+                            self.config.root,
+                            "chat_watchdog_scan_failed",
+                            error=f"{type(exc).__name__}: {exc}",
+                        )
+                    self.shutdown_requested.wait(self._chat_watchdog_interval_seconds)
+
+            self._chat_watchdog_thread = threading.Thread(
+                target=watchdog,
+                name="jazn-daemon-chat-watchdog",
+                daemon=True,
+            )
+            self._chat_watchdog_thread.start()
+
+    def start_chat_worker(self, *, force_new: bool = False) -> None:
+        with self._chat_worker_start_lock:
+            if (
+                not force_new
+                and self._chat_worker_thread is not None
+                and self._chat_worker_thread.is_alive()
+            ):
+                return
+            self._chat_worker_generation += 1
+            generation = self._chat_worker_generation
             self._chat_worker_state = "starting"
             self._chat_worker_error = None
 
             def worker() -> None:
-                self._chat_worker_state = "alive"
+                if generation == self._chat_worker_generation:
+                    self._chat_worker_state = "alive"
                 try:
-                    while not self.shutdown_requested.is_set():
+                    while (
+                        not self.shutdown_requested.is_set()
+                        and generation == self._chat_worker_generation
+                    ):
                         try:
                             job = self._chat_queue.get(timeout=0.25)
                         except queue.Empty:
@@ -1113,37 +1246,46 @@ class JaznDaemonServer(ThreadingHTTPServer):
                             if job is None:
                                 break
                             try:
-                                self._process_chat_job(job)
+                                self._process_chat_job(job, worker_generation=generation)
                             except (RuntimeError, OSError, ValueError, TypeError) as exc:
                                 error = f"{type(exc).__name__}: {exc}"
                                 with self._chat_jobs_lock:
-                                    job.error = error
-                                    job.result = {
-                                        "ok": False,
-                                        "error_code": "daemon_worker_job_failed",
-                                        "error": error,
-                                        "request_id": job.request_id,
-                                        "schema_version": DAEMON_SCHEMA_VERSION,
-                                    }
-                                    job.status = "failed"
-                                    job.completed_at_utc = utc_now_iso()
-                                    job.done_event.set()
-                                    self.state.chat_job_failed_count += 1
-                                    self._persist_chat_jobs_locked(stage="worker_job_failure")
-                                self._chat_worker_error = error
+                                    if not job.terminal():
+                                        job.error = error
+                                        job.result = {
+                                            "ok": False,
+                                            "error_code": "daemon_worker_job_failed",
+                                            "error": error,
+                                            "request_id": job.request_id,
+                                            "schema_version": DAEMON_SCHEMA_VERSION,
+                                        }
+                                        job.status = "failed"
+                                        job.completed_at_utc = utc_now_iso()
+                                        job.done_event.set()
+                                        self.state.chat_job_pending_count = max(
+                                            0, self.state.chat_job_pending_count - 1
+                                        )
+                                        self.state.chat_job_failed_count += 1
+                                        self._persist_chat_jobs_locked(stage="worker_job_failure")
+                                if generation == self._chat_worker_generation:
+                                    self._chat_worker_error = error
                                 continue
                         finally:
                             self._chat_queue.task_done()
                 except BaseException as exc:  # noqa: BLE001 - process-level failure is surfaced
-                    self._chat_worker_state = "failed"
-                    self._chat_worker_error = f"{type(exc).__name__}: {exc}"
+                    if generation == self._chat_worker_generation:
+                        self._chat_worker_state = "failed"
+                        self._chat_worker_error = f"{type(exc).__name__}: {exc}"
                 finally:
-                    if self._chat_worker_state != "failed":
+                    if (
+                        generation == self._chat_worker_generation
+                        and self._chat_worker_state != "failed"
+                    ):
                         self._chat_worker_state = "stopped"
 
             self._chat_worker_thread = threading.Thread(
                 target=worker,
-                name="jazn-daemon-chat-worker",
+                name=f"jazn-daemon-chat-worker-{generation}",
                 daemon=True,
             )
             self._chat_worker_thread.start()
@@ -1238,6 +1380,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self.state.chat_job_pending_count += 1
             self.state.last_chat_job_id = normalized_id
 
+        self.start_chat_watchdog()
         self.start_chat_worker()
         return job, True, None
 
@@ -1246,12 +1389,20 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._cleanup_chat_jobs_locked()
             return self.chat_jobs.get(str(request_id))
 
-    def _process_chat_job(self, job: DaemonChatJob) -> None:
+    def _process_chat_job(
+        self,
+        job: DaemonChatJob,
+        *,
+        worker_generation: int | None = None,
+    ) -> None:
         pickup_started = time.monotonic()
         session: RuntimeSessionWorker | None = None
         session_key: str | None = None
         with self._chat_jobs_lock:
+            if job.terminal():
+                return
             job.status = "running"
+            job.worker_generation = worker_generation
             job.started_at_utc = utc_now_iso()
             job.last_heartbeat_at_utc = job.started_at_utc
             self._persist_chat_jobs_locked(stage="job_started")
@@ -1268,6 +1419,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 no_carryover=job.no_carryover,
                 client=job.client,
             )
+            with self._chat_jobs_lock:
+                terminalized_while_initializing = job.terminal()
+                if not terminalized_while_initializing:
+                    job.active_session_worker = session
+            if terminalized_while_initializing:
+                self._retire_session_worker(session)
+                return
             session_key = str(getattr(session.state, "session_id", None) or job.session_id or "") or None
             if session_key:
                 with self._sessions_lock:
@@ -1291,6 +1449,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 _heartbeat_callback=lambda: setattr(job, "last_heartbeat_at_utc", utc_now_iso()),
             )
             result["ok"] = bool(result.get("ok", True))
+
+            # The independent watchdog may have terminalized this job while the
+            # session worker was still unwinding.  Never let a late result
+            # overwrite the terminal timeout or re-enable semantic persistence.
+            with self._chat_jobs_lock:
+                if job.terminal():
+                    return
+
             if result["ok"]:
                 self.state.turn_count += 1
 
@@ -1324,6 +1490,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "async_job": True,
             }
             with self._chat_jobs_lock:
+                if job.terminal():
+                    return
                 job.result = result
                 if result["ok"]:
                     job.status = "completed"
@@ -1337,55 +1505,62 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 self._retire_session_worker(session)
             error = f"{type(exc).__name__}: {exc}"
             with self._chat_jobs_lock:
-                job.error = error
-                job.result = {
-                    "ok": False,
-                    "error_code": "execution_timeout",
-                    "error": error,
-                    "request_id": job.request_id,
-                    "execution_timeout_seconds": job.execution_timeout_seconds,
-                    "timeout_profile": job.timeout_profile,
-                    "schema_version": DAEMON_SCHEMA_VERSION,
-                }
-                job.status = "execution_timeout"
-                self.state.chat_job_execution_timeout_count += 1
+                if not job.terminal():
+                    job.error = error
+                    job.result = {
+                        "ok": False,
+                        "error_code": "execution_timeout",
+                        "error": error,
+                        "request_id": job.request_id,
+                        "execution_timeout_seconds": job.execution_timeout_seconds,
+                        "timeout_profile": job.timeout_profile,
+                        "timeout_owner": "runtime_session_worker",
+                        "schema_version": DAEMON_SCHEMA_VERSION,
+                    }
+                    job.status = "execution_timeout"
+                    self.state.chat_job_execution_timeout_count += 1
         except RuntimeError as exc:
             error_code = str(exc) if str(exc).startswith("daemon_session_") else "runtime_turn_failed"
             error = f"{type(exc).__name__}: {exc}"
             with self._chat_jobs_lock:
-                job.error = error
-                job.result = {
-                    "ok": False,
-                    "error_code": error_code,
-                    "error": error,
-                    "request_id": job.request_id,
-                    "schema_version": DAEMON_SCHEMA_VERSION,
-                }
-                job.status = "failed"
-                self.state.chat_job_failed_count += 1
+                if not job.terminal():
+                    job.error = error
+                    job.result = {
+                        "ok": False,
+                        "error_code": error_code,
+                        "error": error,
+                        "request_id": job.request_id,
+                        "schema_version": DAEMON_SCHEMA_VERSION,
+                    }
+                    job.status = "failed"
+                    self.state.chat_job_failed_count += 1
         except (OSError, ValueError, TypeError) as exc:
             error = f"{type(exc).__name__}: {exc}"
             with self._chat_jobs_lock:
-                job.error = error
-                job.result = {
-                    "ok": False,
-                    "error_code": "runtime_turn_failed",
-                    "error": error,
-                    "request_id": job.request_id,
-                    "schema_version": DAEMON_SCHEMA_VERSION,
-                }
-                job.status = "failed"
-                self.state.chat_job_failed_count += 1
+                if not job.terminal():
+                    job.error = error
+                    job.result = {
+                        "ok": False,
+                        "error_code": "runtime_turn_failed",
+                        "error": error,
+                        "request_id": job.request_id,
+                        "schema_version": DAEMON_SCHEMA_VERSION,
+                    }
+                    job.status = "failed"
+                    self.state.chat_job_failed_count += 1
         finally:
             if session_key:
                 with self._sessions_lock:
                     self._active_session_ids.discard(session_key)
                     self._session_last_used_monotonic[session_key] = time.monotonic()
             with self._chat_jobs_lock:
-                job.completed_at_utc = utc_now_iso()
-                self.state.chat_job_pending_count = max(0, self.state.chat_job_pending_count - 1)
-                job.done_event.set()
-                self._persist_chat_jobs_locked(stage="job_terminal")
+                if job.active_session_worker is session:
+                    job.active_session_worker = None
+                if not job.done_event.is_set():
+                    job.completed_at_utc = utc_now_iso()
+                    self.state.chat_job_pending_count = max(0, self.state.chat_job_pending_count - 1)
+                    job.done_event.set()
+                    self._persist_chat_jobs_locked(stage="job_terminal")
             try:
                 self.write_marker()
             except (OSError, RuntimeError, ValueError, TypeError) as exc:
@@ -1715,6 +1890,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
         except queue.Full:
             pass
         chat_worker_thread = self._chat_worker_thread
+        watchdog_thread = self._chat_watchdog_thread
+        if watchdog_thread is not None and watchdog_thread.is_alive():
+            watchdog_thread.join(timeout=1.0)
         worker_alive = bool(chat_worker_thread is not None and chat_worker_thread.is_alive())
         if worker_alive and chat_worker_thread is not None:
             chat_worker_thread.join(timeout=5.0)
@@ -2102,6 +2280,7 @@ def run_daemon(
     port: int = DEFAULT_DAEMON_PORT,
     marker_output: Path | None = None,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
+    execution_timeout_seconds: float | None = None,
 ) -> int:
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
     package_verification = verify_package_integrity_manifest(config.root)
@@ -2134,7 +2313,14 @@ def run_daemon(
     build_runtime_write_access_status(config, initialize=True, writes_enabled=True)
     # Write the normal active-runtime marker first; then the daemon marker extends it.
     write_active_runtime_marker(config.root, marker_output=marker_path, action="daemon_run_start")
-    server = JaznDaemonServer((host, int(port)), JaznDaemonHandler, config=config, marker_path=marker_path, heartbeat_interval=heartbeat_interval)
+    server = JaznDaemonServer(
+        (host, int(port)),
+        JaznDaemonHandler,
+        config=config,
+        marker_path=marker_path,
+        heartbeat_interval=heartbeat_interval,
+        execution_timeout_seconds=execution_timeout_seconds,
+    )
     server.refresh_timestamp_contract(reason="startup_background", background=True, force=True)
     server.write_marker()
     _emit_visible_daemon_event("started", host=host, port=int(port), root=str(config.root), heartbeat_interval_seconds=float(heartbeat_interval))
@@ -2174,10 +2360,13 @@ def build_daemon_start_command(
     port: int = DEFAULT_DAEMON_PORT,
     marker_output: Path | None = None,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
+    execution_timeout_seconds: float | None = None,
 ) -> list[str]:
     root = Path(root).resolve()
     start_file = root / "main.py" if (root / "main.py").is_file() else (find_start_file(root) or root / "main.py")
     cmd = [sys.executable, str(start_file), "--root", str(root), "--daemon-run", "--daemon-host", host, "--daemon-port", str(int(port)), "--daemon-heartbeat-interval", str(float(heartbeat_interval))]
+    if execution_timeout_seconds is not None:
+        cmd.extend(["--daemon-chat-timeout", str(float(execution_timeout_seconds))])
     if marker_output:
         cmd.extend(["--daemon-marker-output", str(resolve_active_runtime_marker_path(root, marker_output))])
     return cmd
@@ -2288,6 +2477,7 @@ def start_daemon(
     marker_output: Path | None = None,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
     startup_timeout: float = DEFAULT_START_TIMEOUT_SECONDS,
+    execution_timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
     package_verification = verify_package_integrity_manifest(config.root)
@@ -2443,7 +2633,14 @@ def start_daemon(
             "marker_path": str(marker_path),
         }
     event_path = daemon_process_event_path(config.root)
-    cmd = build_daemon_start_command(config.root, host=host, port=port, marker_output=marker_path, heartbeat_interval=heartbeat_interval)
+    cmd = build_daemon_start_command(
+        config.root,
+        host=host,
+        port=port,
+        marker_output=marker_path,
+        heartbeat_interval=heartbeat_interval,
+        execution_timeout_seconds=execution_timeout_seconds,
+    )
     creationflags = 0
     popen_kwargs: dict[str, Any] = {}
     if os.name == "nt":
