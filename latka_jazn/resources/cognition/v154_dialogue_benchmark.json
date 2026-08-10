@@ -74,6 +74,18 @@
       "text": "Później zrobimy aktualizację, teraz tylko sprawdź problem.",
       "expected_intent": "system_diagnostic_question",
       "active_task": false
+    },
+    {
+      "id": "web-assisted-update-remains-execution",
+      "text": "@Wyszukiwanie w sieci Przejrzyj wiarygodne źródła i napraw błędy, złe trasy oraz brakujące elementy systemu Jaźni.",
+      "expected_intent": "system_update_execution_request",
+      "active_task": false
+    },
+    {
+      "id": "negated-write-with-web-remains-read-only",
+      "text": "@Wyszukiwanie w sieci Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić.",
+      "expected_intent": "external_research_request",
+      "active_task": false
     }
   ]
 }

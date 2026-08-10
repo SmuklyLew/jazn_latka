@@ -81,3 +81,14 @@ def test_independent_semantic_route_audit_is_green() -> None:
     result = run_audit(Path(__file__).resolve().parents[1])
     assert result["independent_lane"] is True
     assert result["ok"] is True, json.dumps(result["failures"], ensure_ascii=False, indent=2)
+
+
+def test_every_registered_route_resolves_to_a_concrete_dispatcher_handler() -> None:
+    registry = RouteRegistry()
+    dispatcher = RouteHandlerDispatcher()
+    missing: list[tuple[str, str, str]] = []
+    for intent in registry.HANDLERS:
+        entry = registry.resolve(intent)
+        if entry.handler_name not in dispatcher.handlers_by_name and entry.route not in dispatcher.handlers_by_route:
+            missing.append((intent, entry.route, entry.handler_name))
+    assert missing == []

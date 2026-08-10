@@ -20,11 +20,13 @@
       "expected_primary": "system_update_execution_request",
       "stems": [
         "Przygotuj aktualizację, która dokończy brakujące punkty.",
-        "Napraw routing i dodaj brakujące testy."
+        "Napraw routing i dodaj brakujące testy.",
+        "Sprawdź wiarygodne źródła, napraw błędy, złe trasy i brakujące elementy systemu Jaźni."
       ],
       "tool_markers": [
         "",
-        "@GitHub "
+        "@GitHub ",
+        "@Wyszukiwanie w sieci "
       ]
     },
     {
