@@ -66,7 +66,7 @@ class DialogueIntentClassifier:
     """
     SYSTEM_TERMS = ("jaźń", "jaźni", "jazn", "jazni", "runtime", "system jaźni", "system jazni", "moduł", "modul", "funkcj", "router", "nlp", "fallback", "chatgpt", "source origin", "template")
     UPDATE_TERMS = ("aktualizac", "aktualiz", "hotfix", "patch", "wersj", "wersję", "paczka", "zip", "do pobrania", "manifest", "pełną listę", "pelna liste", "dokładny plan", "dokladny plan")
-    DIAGNOSTIC_TERMS = ("co jeszcze", "co jest", "źle", "zle", "nie działa", "nie dziala", "słabe", "slabe", "pominięte", "pominiete", "błąd", "blad", "sprawdź gdzie", "sprawdz gdzie", "jak to zmienić", "jak to zmienic")
+    DIAGNOSTIC_TERMS = ("co jeszcze", "co jest", "źle", "zle", "nie działa", "nie dziala", "słabe", "slabe", "pominięte", "pominiete", "błąd", "blad", "sprawdź gdzie", "sprawdz gdzie", "jak to zmienić", "jak to zmienic", "powiedz co poprawić", "powiedz co poprawic")
     CREATIVE_TERMS = ("tekst piosenki", "lyrics", "zwrotka", "refren", "bridge", "chorus", "verse", "musicgenerator", "generatora muzyki", "prompt", "wiersz", "utwór", "utwor", "fragment książki", "fragment ksiazki", "post na x")
     SOURCE_TERMS = ("dlaczego zmieni", "czemu zmieni", "przez jaźń", "przez jazn", "przez chatgpt", "skąd", "skad", "źródło", "zrodlo", "source_origin", "source origin", "runtime czy szablon", "co runtime odpowiedział", "co runtime odpowiedzial", "co runtime dokładnie odpowiedział", "co runtime dokladnie odpowiedzial", "co dokładnie odpowiedział runtime", "co dokladnie odpowiedzial runtime", "cytat runtime", "tylko tyle jaźń", "tylko tyle jazn", "skąd bierzesz myśli", "skad bierzesz mysli")
     CANON_SOURCE_TERMS = (
@@ -369,6 +369,10 @@ class DialogueIntentClassifier:
             evidence.append(f"quoted_material_masked:{control_report.masked_span_count}")
         speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text); creative_report=self.creative.detect(text); preservation=self.preserve_detector.detect(text)
         decision_frame=self.feature_engine.analyse(control_text, speech_act=speech.speech_act, previous_text=previous_text)
+        # Analyse execution/negation before any deterministic route-matrix shortcut.
+        # Tool markers such as @Wyszukiwanie w sieci are supporting capabilities;
+        # they must not take the primary route away from an explicit system write.
+        component_report = analyse_utterance(norm)
         has_system=self._has_any(norm,folded,self.SYSTEM_TERMS); has_update=self._has_any(norm,folded,self.UPDATE_TERMS); has_diag=self._has_any(norm,folded,self.DIAGNOSTIC_TERMS)
         has_self_plan=self._has_any(norm,folded,self.SELF_PLAN_TERMS) and any(token in folded for token in ("plan", "zamierzasz", "pomijajac mnie", "poza mna"))
         has_self_preference=self._has_any(norm,folded,self.SELF_PREFERENCE_TERMS) and speech.speech_act == "question"
@@ -460,6 +464,7 @@ class DialogueIntentClassifier:
             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         completion_update_execution = (
             has_update
+            and not component_report.negated_actions
             and any(marker in folded for marker in (
                 "przygotuj", "dokonc", "dokoncz", "uzupeln", "dodaj brakuj",
             ))
@@ -468,9 +473,41 @@ class DialogueIntentClassifier:
             return report(
                 norm, folded, "system_update_execution_request",
                 ["jawne polecenie przygotowania lub dokończenia aktualizacji"],
-                0.95, update=True, diag=has_diag,
+                0.95, ['external_research_request'] if has_research else [],
+                update=True, diag=has_diag,
                 speech_act=speech.speech_act, question_object="system_update",
             )
+
+        # Explicit system execution outranks a research/tool marker.  Research is
+        # preserved as a secondary requirement so the execution handler can ask
+        # the host for web evidence without misrouting the whole turn to a read-only
+        # research route.  Negated or merely diagnostic language never executes.
+        system_execution_target_early = any(
+            marker in folded for marker in (
+                'jazn', 'jaźń', 'runtime', 'routing', 'trasa', 'handler', 'klasyfikator',
+                'kod', 'system', 'modul', 'moduł', 'finalizac', 'host', 'master', 'branch',
+            )
+        )
+        feature_engine_execution_early = (
+            decision_frame.top_intent == 'system_update_execution_request'
+            and decision_frame.top_score >= 0.50
+        )
+        strong_execution_early = (
+            not component_report.negated_actions
+            and not component_report.diagnostic_only
+            and (component_report.explicit_execution or feature_engine_execution_early)
+            and self._has_any(norm, folded, self.UPDATE_EXECUTION_VERBS)
+            and (has_update or mentions_jazn_version(folded) or system_execution_target_early)
+        )
+        if strong_execution_early:
+            secondary_intents = ['external_research_request'] if has_research else []
+            return report(
+                norm, folded, 'system_update_execution_request',
+                ['jawne wykonanie na systemie ma pierwszeństwo przed markerem research/tool'],
+                0.96, secondary_intents, update=True, diag=has_diag,
+                speech_act=speech.speech_act, question_object='system_update',
+            )
+
         route_contract_hint = self.route_contract_matrix.classify(norm)
         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
             return report(
@@ -540,7 +577,6 @@ class DialogueIntentClassifier:
             and ("uruchomil" in folded or "uruchomi" in folded or "jazn" in folded or "jaźń" in norm)
         )
         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
-        component_report = analyse_utterance(norm)
         if component_report.diagnostic_only and (has_update or has_system or 'kod' in folded or 'patch' in folded):
             return report(
                 norm, folded, 'system_diagnostic_question',
@@ -566,7 +602,7 @@ class DialogueIntentClassifier:
             decision_frame.top_intent == 'system_update_execution_request'
             and decision_frame.top_score >= 0.50
         )
-        if (component_report.explicit_execution or feature_engine_execution) and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded) or system_execution_target):
+        if (not component_report.negated_actions) and (component_report.explicit_execution or feature_engine_execution) and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded) or system_execution_target):
             return report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania oraz cel systemowy mają pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
         if has_runtime_restart:
             return report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
@@ -670,7 +706,7 @@ class DialogueIntentClassifier:
             if any(term in norm or term in folded for term in boundary_terms):
                 return report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
             return report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
-        if component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
+        if (not component_report.negated_actions) and component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
             evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupiem słownikowym')
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
                 return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
@@ -693,7 +729,7 @@ class DialogueIntentClassifier:
             return report(norm,folded,'creative_text_analysis',evidence,0.74,creative=True,preserve=not preservation.revision_allowed,speech_act=speech.speech_act,question_object='creative_text')
         if has_update and any(x in folded for x in ("behavioral runtime", "dialogue intent", "source integrity", "topic-mismatch")):
             return report(norm,folded,'legacy_behavioral_runtime_dialogue_update_reference',['jawna prośba o historyczny zakres behavioral runtime/dialogue/source integrity; aktywny runtime ma użyć legacy_diagnostic_only albo aktualnego system_update'],0.79,speech_act=speech.speech_act,question_object='legacy_system_update')
-        if component_report.explicit_execution and has_update and has_system:
+        if (not component_report.negated_actions) and component_report.explicit_execution and has_update and has_system:
             if 'lista' in folded or 'manifest' in folded:
                 return report(norm,folded,'system_update_manifest_request',['jawne polecenie manifestu/listy aktualizacji'],0.88,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
             return report(norm,folded,'system_update_execution_request',['jawne polecenie aktualizacji systemu Jaźni'],0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')

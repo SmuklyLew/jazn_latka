@@ -626,3 +626,101 @@ def test_start_daemon_reports_unwritable_memory_root_before_spawning(
     assert result["started"] is False
     assert result["error_code"] == "runtime_memory_root_unwritable"
     assert "runtime-bootstrap" in result["recovery_hint"]
+
+
+def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp_path: Path) -> None:
+    """A stall before RuntimeSessionWorker._call must not poison the daemon queue.
+
+    This reproduces the production failure where a job remained ``running``
+    beyond its execution deadline because the normal per-session timeout owner
+    was never reached.  The daemon-level watchdog must terminalize that job and
+    allow a fresh queue worker to process later requests.
+    """
+
+    _FakeSession.execution_count = 0
+    server = _test_server(tmp_path, execution_timeout=0.04)
+    original_get_session = server.get_session
+    stalled = threading.Event()
+    release = threading.Event()
+
+    def blocking_get_session(session_id, *, no_carryover=False, client="daemon_http"):
+        if session_id == "orchestration-stall":
+            stalled.set()
+            release.wait(2.0)
+        return original_get_session(session_id, no_carryover=no_carryover, client=client)
+
+    server.get_session = blocking_get_session  # type: ignore[method-assign]
+    try:
+        slow, created, error = server.submit_chat_job(
+            user_text="fast",
+            input_field="test",
+            session_id="orchestration-stall",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="orchestration-stall-request",
+        )
+        assert created is True and error is None and slow is not None
+        assert stalled.wait(1.0)
+        assert slow.done_event.wait(1.0)
+        assert slow.status == "execution_timeout"
+        assert slow.result is not None
+        assert slow.result["error_code"] == "execution_timeout"
+        assert slow.recovery_disposition == "watchdog_terminalized_without_replay"
+
+        fast, created, error = server.submit_chat_job(
+            user_text="fast",
+            input_field="test",
+            session_id="after-orchestration-stall",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="after-orchestration-stall-request",
+        )
+        assert created is True and error is None and fast is not None
+        assert fast.done_event.wait(1.0)
+        assert fast.status == "completed"
+
+        release.set()
+        time.sleep(0.05)
+        assert slow.status == "execution_timeout"
+        assert slow.result is not None
+        assert slow.result["error_code"] == "execution_timeout"
+        summary = server.chat_job_summary()
+        assert summary["execution_timeout"] == 1
+        assert summary["completed"] == 1
+        assert summary["watchdog_alive"] is True
+        assert summary["worker_generation"] >= 2
+    finally:
+        release.set()
+        server.close_sessions()
+        server.server_close()
+
+
+def test_daemon_default_execution_budget_is_distinct_from_one_shot_runtime(tmp_path: Path) -> None:
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    config = JaznConfig(root=root)
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=config,
+        marker_path=marker,
+        session_factory=_FakeSession,
+    )
+    try:
+        assert config.runtime_turn_timeout_seconds == 45.0
+        assert config.daemon_chat_execution_timeout_seconds == 180.0
+        assert config.deep_recall_turn_timeout_seconds == 600.0
+        assert server.execution_timeout_seconds == 180.0
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
+def test_daemon_start_command_propagates_execution_timeout(tmp_path: Path) -> None:
+    (tmp_path / "main.py").write_text("", encoding="utf-8")
+    cmd = runtime_daemon.build_daemon_start_command(
+        tmp_path,
+        execution_timeout_seconds=321.0,
+    )
+    idx = cmd.index("--daemon-chat-timeout")
+    assert cmd[idx + 1] == "321.0"

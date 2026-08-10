@@ -9,6 +9,12 @@ from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
 from latka_jazn.core.operational_learning_memory import OperationalLearningMemory
 from latka_jazn.core.reasoning_orchestrator import ReasoningOrchestrator
 from latka_jazn.core.route_registry import RouteRegistry
+from latka_jazn.core.route_handler_dispatcher import RouteHandlerDispatcher
+from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
+from latka_jazn.core.turn_timeout import (
+    DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS,
+    DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,
+)
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -19,6 +25,10 @@ REQUIRED_FILES = (
     "latka_jazn/core/reasoning_orchestrator.py",
     "latka_jazn/core/knowledge_fabric.py",
     "latka_jazn/core/operational_learning_memory.py",
+    "latka_jazn/core/runtime_daemon.py",
+    "latka_jazn/core/turn_timeout.py",
+    "latka_jazn/memory/conversation_archive.py",
+    "latka_jazn/memory/store.py",
     "latka_jazn/nlp/lexical_intelligence.py",
     "latka_jazn/resources/cognition/v154_architecture.json",
     "latka_jazn/resources/cognition/v154_dialogue_benchmark.json",
@@ -93,6 +103,20 @@ def run_audit(root: Path) -> dict[str, Any]:
         root / "latka_jazn/resources/cognition/v154_operational_lessons.json"
     )
     lesson_payload = lessons.to_dict()
+
+    mixed_report = DialogueIntentClassifier().classify(
+        "@Wyszukiwanie w sieci Przejrzyj wiarygodne źródła i napraw błędy, złe trasy oraz brakujące elementy systemu Jaźni."
+    )
+    negated_report = DialogueIntentClassifier().classify(
+        "@Wyszukiwanie w sieci Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić."
+    )
+    dispatcher = RouteHandlerDispatcher()
+    route_dispatch_missing = []
+    for intent in RouteRegistry.HANDLERS:
+        entry = RouteRegistry().resolve(intent)
+        if entry.handler_name not in dispatcher.handlers_by_name and entry.route not in dispatcher.handlers_by_route:
+            route_dispatch_missing.append(intent)
+
     checks = {
         "required_files": not missing,
         "contextual_continuation_route_safe": route_ok,
@@ -101,6 +125,21 @@ def run_audit(root: Path) -> dict[str, Any]:
         "private_chain_of_thought_not_required": all("chain" not in step for step in reasoning.operational_steps),
         "conversation_regressions": bool(regressions) and all(item.get("ok") for item in regressions),
         "verified_operational_lessons": int(lesson_payload.get("verified_count") or 0) >= 2,
+        "mixed_web_execution_route_safe": (
+            mixed_report.primary_intent == "system_update_execution_request"
+            and mixed_report.update_request is True
+            and "external_research_request" in mixed_report.secondary_intents
+        ),
+        "negated_write_route_safe": (
+            negated_report.primary_intent != "system_update_execution_request"
+            and negated_report.update_request is False
+        ),
+        "route_dispatcher_complete": not route_dispatch_missing,
+        "deadline_hierarchy_safe": (
+            0 < DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS
+            < DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
+            <= DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
+        ),
     }
     return {
         "schema_version": SCHEMA_VERSION,
@@ -109,6 +148,17 @@ def run_audit(root: Path) -> dict[str, Any]:
         "checks": checks,
         "missing_files": missing,
         "conversation_regressions": regressions,
+        "routing_resilience": {
+            "mixed_web_execution_primary": mixed_report.primary_intent,
+            "mixed_web_execution_secondary": mixed_report.secondary_intents,
+            "negated_write_primary": negated_report.primary_intent,
+            "route_dispatch_missing": route_dispatch_missing,
+        },
+        "deadline_contract": {
+            "runtime_turn_seconds": DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,
+            "daemon_chat_seconds": DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS,
+            "deep_recall_seconds": DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS,
+        },
         "reasoning_probe": reasoning.to_dict(),
         "operational_learning": {
             "lesson_count": lesson_payload.get("lesson_count"),

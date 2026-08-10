@@ -1204,7 +1204,13 @@ class JaznEngine:
             },
         }
 
-    def _conversation_archive_context_hits(self, phrases: list[str], *, limit: int = 5) -> tuple[list[dict], dict]:
+    def _conversation_archive_context_hits(
+        self,
+        phrases: list[str],
+        *,
+        limit: int = 5,
+        turn_context: TurnExecutionContext | None = None,
+    ) -> tuple[list[dict], dict]:
         """Pobiera treściowe trafienia z conversation_archive/FTS jako normalną warstwę pamięci.
 
         Wcześniejsze wersje miały osobną komendę --conversation-archive-search,
@@ -1217,7 +1223,12 @@ class JaznEngine:
             return [], {"status": "empty_query", "issues": ["empty_query"]}
         try:
             store = ConversationArchiveStore(self.config.root)
-            search_result = store.search(query, limit=max(1, limit), include_snippets=True).to_dict()
+            search_result = store.search(
+                query,
+                limit=max(1, limit),
+                include_snippets=True,
+                should_continue=turn_context.can_continue if turn_context is not None else None,
+            ).to_dict()
         except Exception as exc:
             return [], {
                 "status": "error",
@@ -1326,7 +1337,11 @@ class JaznEngine:
                 if turn_context is not None and not turn_context.can_continue():
                     break
                 if "episodic_memories" in (search_pass.get("layers") or []):
-                    for ep in self.layered_memory.search_episodes(phrase, per_phrase):
+                    for ep in self.layered_memory.search_episodes(
+                        phrase,
+                        per_phrase,
+                        should_continue=turn_context.can_continue if turn_context is not None else None,
+                    ):
                         key = ep.get("episode_id") or ep.get("scene", "")[:120]
                         if key in seen_ep:
                             continue
@@ -1343,7 +1358,11 @@ class JaznEngine:
                         if len(episodes) >= collection_limit:
                             break
                 if "legacy_messages" in (search_pass.get("layers") or []) and not archive_fts_hit:
-                    for row in self.store.search_messages_any([phrase], per_phrase):
+                    for row in self.store.search_messages_any(
+                        [phrase],
+                        per_phrase,
+                        should_continue=turn_context.can_continue if turn_context is not None else None,
+                    ):
                         d = dict(row)
                         key = f"{d.get('conversation_id')}:{d.get('author_role')}:{d.get('create_time_warsaw')}:{str(d.get('text') or '')[:80]}"
                         if key in seen_legacy:
@@ -1397,7 +1416,9 @@ class JaznEngine:
         if turn_context is not None:
             turn_context.start_stage("memory_conversation_archive_recall")
         if turn_context is None or turn_context.can_continue():
-            conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(phrases, limit=limit)
+            conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(
+                phrases, limit=limit, turn_context=turn_context
+            )
         else:
             conversation_archive_hits, conversation_archive_search = [], {
                 "status": "cancelled", "issues": ["turn_cancelled_before_conversation_archive"]

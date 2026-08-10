@@ -1164,6 +1164,7 @@ def main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             marker_output=ns.daemon_marker_output,
             heartbeat_interval=ns.daemon_heartbeat_interval,
+            execution_timeout_seconds=ns.daemon_chat_timeout,
         )
 
     if ns.daemon_start:
@@ -1175,6 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
             marker_output=ns.daemon_marker_output,
             heartbeat_interval=ns.daemon_heartbeat_interval,
             startup_timeout=ns.daemon_start_timeout,
+            execution_timeout_seconds=ns.daemon_chat_timeout,
         )
         if trusted_time_env is not None:
             payload["trusted_time_env"] = trusted_time_env

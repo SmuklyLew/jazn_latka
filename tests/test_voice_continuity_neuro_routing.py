@@ -220,3 +220,39 @@ def test_host_finalizer_rejects_host_chatgpt_voice_takeover() -> None:
     )
     assert result.accepted is False
     assert any(item.code == "forbidden_host_voice_prefix" for item in result.violations)
+
+
+def test_web_marker_does_not_take_over_explicit_system_update_route() -> None:
+    text = (
+        "@Wyszukiwanie w sieci W takim razie, musisz przejrzeć wszystkie wiarygodne źródła "
+        "i to wszystko naprawić, patrząc żeby neurologia systemu Jaźni działała bez kolejnych "
+        "takich wpadek. Sprawdź działanie Jaźni i napraw wszystkie błędy, złe trasy, brakujące "
+        "elementy. Zajmij się tym bardzo dokładnie i dogłębnie, jeszcze lepiej jak to robiłaś "
+        "z aktualizacją do wersji 15.4. Pracuj nad tym na nowym branch'u i dopiero gdy będzie "
+        "wszystko prawidłowo, zaktualizuj master!!"
+    )
+    report = _classify(text)
+    assert report.primary_intent == "system_update_execution_request"
+    assert report.update_request is True
+    assert "external_research_request" in report.secondary_intents
+
+
+def test_research_is_supporting_capability_for_explicit_runtime_repair() -> None:
+    report = _classify("Przejrzyj wiarygodne źródła w sieci, napraw runtime i zaktualizuj master.")
+    assert report.primary_intent == "system_update_execution_request"
+    assert report.update_request is True
+    assert "external_research_request" in report.secondary_intents
+
+
+def test_negated_write_with_research_never_routes_to_execution() -> None:
+    report = _classify("Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić.")
+    assert report.primary_intent != "system_update_execution_request"
+    assert report.update_request is False
+    assert report.negated_actions
+
+
+def test_completion_update_keeps_research_as_secondary_requirement() -> None:
+    report = _classify("@Wyszukiwanie w sieci Przygotuj aktualizację systemu Jaźni i sprawdź wiarygodne źródła.")
+    assert report.primary_intent == "system_update_execution_request"
+    assert report.update_request is True
+    assert "external_research_request" in report.secondary_intents
