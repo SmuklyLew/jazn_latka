@@ -1,0 +1,80 @@
+             issues=issues,
+         )
+ 
+-    def search(self, query: str, *, limit: int = 8, include_snippets: bool = False) -> ConversationArchiveSearchResult:
++    def search(
++        self,
++        query: str,
++        *,
++        limit: int = 8,
++        include_snippets: bool = False,
++        should_continue: Callable[[], bool] | None = None,
++    ) -> ConversationArchiveSearchResult:
++        def can_continue() -> bool:
++            if should_continue is None:
++                return True
++            try:
++                return bool(should_continue())
++            except Exception:
++                return False
++
+         input_query = (query or "").strip()
+         query = _repair_common_cp1250_mojibake(input_query)
+         terms = self._query_terms(query)
+@@ -288,6 +303,11 @@ class ConversationArchiveStore:
+             return ConversationArchiveSearchResult(SCHEMA_VERSION, "empty_query", query, None, [], 0, ["empty_query"])
+         if not fts_query:
+             return ConversationArchiveSearchResult(SCHEMA_VERSION, "no_search_terms", query, None, [], 0, ["no_search_terms"])
++        if not can_continue():
++            return ConversationArchiveSearchResult(
++                SCHEMA_VERSION, "cancelled", query, fts_query, [], 0,
++                ["search_cancelled:turn_deadline_or_cancellation"],
++            )
+ 
+         status = self.status(health_mode="metadata")
+         if not status.ready_for_search:
+@@ -304,13 +324,21 @@ class ConversationArchiveStore:
+         shard_rows = self._manifest_rows("SELECT * FROM shard_files WHERE family='fts' ORDER BY ordinal")
+         raw_hits: list[tuple[float, dict[str, Any]]] = []
+         searched = 0
++        cancelled = False
+         for shard in shard_rows:
++            if not can_continue():
++                cancelled = True
++                break
+             path = self._shard_path(shard["family"], shard["relative_path"])
+             if not path.exists():
+                 issues.append(f"missing_fts_shard:{shard['shard_id']}")
+                 continue
+             try:
+                 with closing(_connect_ro(path)) as con:
++                    if should_continue is not None:
++                        def _progress() -> int:
++                            return 0 if can_continue() else 1
++                        con.set_progress_handler(_progress, 2_000)
+                     searched += 1
+                     for row in con.execute(
+                         """
+@@ -326,10 +354,16 @@ class ConversationArchiveStore:
+                         rank = float(row["rank"] if row["rank"] is not None else 0.0)
+                         raw_hits.append((rank, dict(row)))
+             except sqlite3.OperationalError as exc:
++                if not can_continue() or "interrupt" in str(exc).casefold():
++                    cancelled = True
++                    break
+                 issues.append(f"fts_query_error:{shard['shard_id']}:{exc}")
+             except sqlite3.DatabaseError as exc:
+                 issues.append(f"fts_database_error:{shard['shard_id']}:{exc}")
+ 
++        if cancelled:
++            issues.append("search_cancelled:turn_deadline_or_cancellation")
++
+         raw_hits.sort(key=lambda item: item[0])
+         hits: list[dict[str, Any]] = []
+         for rank, row in raw_hits[: max(1, limit)]:
+@@ -339,7 +373,7 @@ class ConversationArchiveStore:
+ 
+         return ConversationArchiveSearchResult(
+             schema_version=SCHEMA_VERSION,
+-            status="ok" if hits else "no_hits",
++            status="cancelled" if cancelled else ("ok" if hits else "no_hits"),

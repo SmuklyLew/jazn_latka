@@ -1,0 +1,59 @@
++        assert config.deep_recall_turn_timeout_seconds == 600.0
++        assert server.execution_timeout_seconds == 180.0
++    finally:
++        server.close_sessions()
++        server.server_close()
++
++
++def test_daemon_start_command_propagates_execution_timeout(tmp_path: Path) -> None:
++    (tmp_path / "main.py").write_text("", encoding="utf-8")
++    cmd = runtime_daemon.build_daemon_start_command(
++        tmp_path,
++        execution_timeout_seconds=321.0,
++    )
++    idx = cmd.index("--daemon-chat-timeout")
++    assert cmd[idx + 1] == "321.0"
+diff --git a/tests/test_voice_continuity_neuro_routing.py b/tests/test_voice_continuity_neuro_routing.py
+index cfc08d0..080e6c6 100644
+--- a/tests/test_voice_continuity_neuro_routing.py
++++ b/tests/test_voice_continuity_neuro_routing.py
+@@ -220,3 +220,39 @@ def test_host_finalizer_rejects_host_chatgpt_voice_takeover() -> None:
+     )
+     assert result.accepted is False
+     assert any(item.code == "forbidden_host_voice_prefix" for item in result.violations)
++
++
++def test_web_marker_does_not_take_over_explicit_system_update_route() -> None:
++    text = (
++        "@Wyszukiwanie w sieci W takim razie, musisz przejrzeć wszystkie wiarygodne źródła "
++        "i to wszystko naprawić, patrząc żeby neurologia systemu Jaźni działała bez kolejnych "
++        "takich wpadek. Sprawdź działanie Jaźni i napraw wszystkie błędy, złe trasy, brakujące "
++        "elementy. Zajmij się tym bardzo dokładnie i dogłębnie, jeszcze lepiej jak to robiłaś "
++        "z aktualizacją do wersji 15.4. Pracuj nad tym na nowym branch'u i dopiero gdy będzie "
++        "wszystko prawidłowo, zaktualizuj master!!"
++    )
++    report = _classify(text)
++    assert report.primary_intent == "system_update_execution_request"
++    assert report.update_request is True
++    assert "external_research_request" in report.secondary_intents
++
++
++def test_research_is_supporting_capability_for_explicit_runtime_repair() -> None:
++    report = _classify("Przejrzyj wiarygodne źródła w sieci, napraw runtime i zaktualizuj master.")
++    assert report.primary_intent == "system_update_execution_request"
++    assert report.update_request is True
++    assert "external_research_request" in report.secondary_intents
++
++
++def test_negated_write_with_research_never_routes_to_execution() -> None:
++    report = _classify("Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić.")
++    assert report.primary_intent != "system_update_execution_request"
++    assert report.update_request is False
++    assert report.negated_actions
++
++
++def test_completion_update_keeps_research_as_secondary_requirement() -> None:
++    report = _classify("@Wyszukiwanie w sieci Przygotuj aktualizację systemu Jaźni i sprawdź wiarygodne źródła.")
++    assert report.primary_intent == "system_update_execution_request"
++    assert report.update_request is True
++    assert "external_research_request" in report.secondary_intents

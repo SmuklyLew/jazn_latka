@@ -1,0 +1,80 @@
+-               WHERE scene LIKE ? OR emotional_anchor LIKE ? OR raw_excerpt LIKE ?
+-               ORDER BY created_at_utc DESC LIMIT ?""",
+-            (like, like, like, limit),
+-        ).fetchall()
++        try:
++            with self._sqlite_progress_guard(should_continue):
++                rows = self.con.execute(
++                    """SELECT * FROM episodic_memories
++                       WHERE scene LIKE ? OR emotional_anchor LIKE ? OR raw_excerpt LIKE ?
++                       ORDER BY created_at_utc DESC LIMIT ?""",
++                    (like, like, like, limit),
++                ).fetchall()
++        except sqlite3.OperationalError as exc:
++            if self._continuation_cancelled(should_continue) or "interrupt" in str(exc).casefold():
++                return []
++            raise
+         out=[]
+         for r in rows:
+             d=dict(r)
+diff --git a/latka_jazn/nlp/dialogue_intent_classifier.py b/latka_jazn/nlp/dialogue_intent_classifier.py
+index 8551d46..f913cd6 100644
+--- a/latka_jazn/nlp/dialogue_intent_classifier.py
++++ b/latka_jazn/nlp/dialogue_intent_classifier.py
+@@ -66,7 +66,7 @@ class DialogueIntentClassifier:
+     """
+     SYSTEM_TERMS = ("jaźń", "jaźni", "jazn", "jazni", "runtime", "system jaźni", "system jazni", "moduł", "modul", "funkcj", "router", "nlp", "fallback", "chatgpt", "source origin", "template")
+     UPDATE_TERMS = ("aktualizac", "aktualiz", "hotfix", "patch", "wersj", "wersję", "paczka", "zip", "do pobrania", "manifest", "pełną listę", "pelna liste", "dokładny plan", "dokladny plan")
+-    DIAGNOSTIC_TERMS = ("co jeszcze", "co jest", "źle", "zle", "nie działa", "nie dziala", "słabe", "slabe", "pominięte", "pominiete", "błąd", "blad", "sprawdź gdzie", "sprawdz gdzie", "jak to zmienić", "jak to zmienic")
++    DIAGNOSTIC_TERMS = ("co jeszcze", "co jest", "źle", "zle", "nie działa", "nie dziala", "słabe", "slabe", "pominięte", "pominiete", "błąd", "blad", "sprawdź gdzie", "sprawdz gdzie", "jak to zmienić", "jak to zmienic", "powiedz co poprawić", "powiedz co poprawic")
+     CREATIVE_TERMS = ("tekst piosenki", "lyrics", "zwrotka", "refren", "bridge", "chorus", "verse", "musicgenerator", "generatora muzyki", "prompt", "wiersz", "utwór", "utwor", "fragment książki", "fragment ksiazki", "post na x")
+     SOURCE_TERMS = ("dlaczego zmieni", "czemu zmieni", "przez jaźń", "przez jazn", "przez chatgpt", "skąd", "skad", "źródło", "zrodlo", "source_origin", "source origin", "runtime czy szablon", "co runtime odpowiedział", "co runtime odpowiedzial", "co runtime dokładnie odpowiedział", "co runtime dokladnie odpowiedzial", "co dokładnie odpowiedział runtime", "co dokladnie odpowiedzial runtime", "cytat runtime", "tylko tyle jaźń", "tylko tyle jazn", "skąd bierzesz myśli", "skad bierzesz mysli")
+     CANON_SOURCE_TERMS = (
+@@ -369,6 +369,10 @@ class DialogueIntentClassifier:
+             evidence.append(f"quoted_material_masked:{control_report.masked_span_count}")
+         speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text); creative_report=self.creative.detect(text); preservation=self.preserve_detector.detect(text)
+         decision_frame=self.feature_engine.analyse(control_text, speech_act=speech.speech_act, previous_text=previous_text)
++        # Analyse execution/negation before any deterministic route-matrix shortcut.
++        # Tool markers such as @Wyszukiwanie w sieci are supporting capabilities;
++        # they must not take the primary route away from an explicit system write.
++        component_report = analyse_utterance(norm)
+         has_system=self._has_any(norm,folded,self.SYSTEM_TERMS); has_update=self._has_any(norm,folded,self.UPDATE_TERMS); has_diag=self._has_any(norm,folded,self.DIAGNOSTIC_TERMS)
+         has_self_plan=self._has_any(norm,folded,self.SELF_PLAN_TERMS) and any(token in folded for token in ("plan", "zamierzasz", "pomijajac mnie", "poza mna"))
+         has_self_preference=self._has_any(norm,folded,self.SELF_PREFERENCE_TERMS) and speech.speech_act == "question"
+@@ -460,6 +464,7 @@ class DialogueIntentClassifier:
+             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
+         completion_update_execution = (
+             has_update
++            and not component_report.negated_actions
+             and any(marker in folded for marker in (
+                 "przygotuj", "dokonc", "dokoncz", "uzupeln", "dodaj brakuj",
+             ))
+@@ -468,9 +473,41 @@ class DialogueIntentClassifier:
+             return report(
+                 norm, folded, "system_update_execution_request",
+                 ["jawne polecenie przygotowania lub dokończenia aktualizacji"],
+-                0.95, update=True, diag=has_diag,
++                0.95, ['external_research_request'] if has_research else [],
++                update=True, diag=has_diag,
+                 speech_act=speech.speech_act, question_object="system_update",
+             )
++
++        # Explicit system execution outranks a research/tool marker.  Research is
++        # preserved as a secondary requirement so the execution handler can ask
++        # the host for web evidence without misrouting the whole turn to a read-only
++        # research route.  Negated or merely diagnostic language never executes.
++        system_execution_target_early = any(
++            marker in folded for marker in (
++                'jazn', 'jaźń', 'runtime', 'routing', 'trasa', 'handler', 'klasyfikator',
++                'kod', 'system', 'modul', 'moduł', 'finalizac', 'host', 'master', 'branch',
++            )
++        )
++        feature_engine_execution_early = (
++            decision_frame.top_intent == 'system_update_execution_request'
++            and decision_frame.top_score >= 0.50
++        )
++        strong_execution_early = (
++            not component_report.negated_actions
++            and not component_report.diagnostic_only
++            and (component_report.explicit_execution or feature_engine_execution_early)
++            and self._has_any(norm, folded, self.UPDATE_EXECUTION_VERBS)

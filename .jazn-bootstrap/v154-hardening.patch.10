@@ -1,0 +1,80 @@
++            return True
++
++    def search_messages(
++        self,
++        phrase: str,
++        limit: int = 10,
++        *,
++        should_continue: Callable[[], bool] | None = None,
++    ) -> list[sqlite3.Row]:
++        if self._continuation_cancelled(should_continue):
++            return []
+         like = f"%{phrase}%"
+-        return list(self.con.execute(
+-            """SELECT conversation_id, conversation_title, author_role, create_time_warsaw, visible_index,
+-                      substr(text,1,1200) AS text
+-                 FROM legacy_messages
+-                WHERE text LIKE ? OR conversation_title LIKE ?
+-                ORDER BY is_visible_path DESC, create_time DESC, legacy_rowid DESC
+-                LIMIT ?""",
+-            (like, like, limit),
+-        ))
++        try:
++            with self._sqlite_progress_guard(should_continue):
++                return list(self.con.execute(
++                    """SELECT conversation_id, conversation_title, author_role, create_time_warsaw, visible_index,
++                              substr(text,1,1200) AS text
++                         FROM legacy_messages
++                        WHERE text LIKE ? OR conversation_title LIKE ?
++                        ORDER BY is_visible_path DESC, create_time DESC, legacy_rowid DESC
++                        LIMIT ?""",
++                    (like, like, limit),
++                ))
++        except sqlite3.OperationalError as exc:
++            if self._continuation_cancelled(should_continue) or "interrupt" in str(exc).casefold():
++                return []
++            raise
+ 
+-    def search_messages_any(self, phrases: list[str], limit: int=10) -> list[sqlite3.Row]:
++    def search_messages_any(
++        self,
++        phrases: list[str],
++        limit: int = 10,
++        *,
++        should_continue: Callable[[], bool] | None = None,
++    ) -> list[sqlite3.Row]:
+         clean = [p.strip() for p in phrases if p and p.strip()]
+         if not clean:
+             return []
+@@ -185,7 +237,13 @@ class MemoryStore:
+         out: list[sqlite3.Row] = []
+         per = max(limit, 3)
+         for phrase in clean:
+-            for row in self.search_messages(phrase, per):
++            if should_continue is not None:
++                try:
++                    if not should_continue():
++                        break
++                except Exception:
++                    break
++            for row in self.search_messages(phrase, per, should_continue=should_continue):
+                 key = row["conversation_id"], row["author_role"], row["create_time_warsaw"], row["text"]
+                 h = hash(key)
+                 if h in seen:
+@@ -240,14 +298,28 @@ class MemoryStore:
+         self.con.commit()
+         return aid
+ 
+-    def search_episodic_memories(self, phrase: str, limit: int=5) -> list[dict]:
++    def search_episodic_memories(
++        self,
++        phrase: str,
++        limit: int = 5,
++        *,
++        should_continue: Callable[[], bool] | None = None,
++    ) -> list[dict]:
++        if self._continuation_cancelled(should_continue):
++            return []
+         like = f"%{phrase}%"
+-        rows = self.con.execute(
+-            """SELECT * FROM episodic_memories

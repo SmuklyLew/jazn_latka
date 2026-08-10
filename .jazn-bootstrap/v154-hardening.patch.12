@@ -1,0 +1,80 @@
++            and (has_update or mentions_jazn_version(folded) or system_execution_target_early)
++        )
++        if strong_execution_early:
++            secondary_intents = ['external_research_request'] if has_research else []
++            return report(
++                norm, folded, 'system_update_execution_request',
++                ['jawne wykonanie na systemie ma pierwszeństwo przed markerem research/tool'],
++                0.96, secondary_intents, update=True, diag=has_diag,
++                speech_act=speech.speech_act, question_object='system_update',
++            )
++
+         route_contract_hint = self.route_contract_matrix.classify(norm)
+         if route_contract_hint.primary_intent and route_contract_hint.primary_intent != "ordinary_dialogue":
+             return report(
+@@ -540,7 +577,6 @@ class DialogueIntentClassifier:
+             and ("uruchomil" in folded or "uruchomi" in folded or "jazn" in folded or "jaźń" in norm)
+         )
+         source_negative_context=self._has_any(norm,folded,self.SOURCE_NEGATIVE_CONTEXTS)
+-        component_report = analyse_utterance(norm)
+         if component_report.diagnostic_only and (has_update or has_system or 'kod' in folded or 'patch' in folded):
+             return report(
+                 norm, folded, 'system_diagnostic_question',
+@@ -566,7 +602,7 @@ class DialogueIntentClassifier:
+             decision_frame.top_intent == 'system_update_execution_request'
+             and decision_frame.top_score >= 0.50
+         )
+-        if (component_report.explicit_execution or feature_engine_execution) and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded) or system_execution_target):
++        if (not component_report.negated_actions) and (component_report.explicit_execution or feature_engine_execution) and self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_update or mentions_jazn_version(folded) or system_execution_target):
+             return report(norm,folded,'system_update_execution_request',['jawny czasownik wykonania oraz cel systemowy mają pierwszeństwo przed audytem i ordinary dialogue'],0.93,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+         if has_runtime_restart:
+             return report(norm,folded,'runtime_restart_request',['jawna prośba o ponowne uruchomienie procesu Jaźni/runtime'],0.94,diag=True,speech_act=speech.speech_act,question_object='runtime_restart')
+@@ -670,7 +706,7 @@ class DialogueIntentClassifier:
+             if any(term in norm or term in folded for term in boundary_terms):
+                 return report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
+             return report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
+-        if component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
++        if (not component_report.negated_actions) and component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
+             evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupiem słownikowym')
+             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
+                 return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
+@@ -693,7 +729,7 @@ class DialogueIntentClassifier:
+             return report(norm,folded,'creative_text_analysis',evidence,0.74,creative=True,preserve=not preservation.revision_allowed,speech_act=speech.speech_act,question_object='creative_text')
+         if has_update and any(x in folded for x in ("behavioral runtime", "dialogue intent", "source integrity", "topic-mismatch")):
+             return report(norm,folded,'legacy_behavioral_runtime_dialogue_update_reference',['jawna prośba o historyczny zakres behavioral runtime/dialogue/source integrity; aktywny runtime ma użyć legacy_diagnostic_only albo aktualnego system_update'],0.79,speech_act=speech.speech_act,question_object='legacy_system_update')
+-        if component_report.explicit_execution and has_update and has_system:
++        if (not component_report.negated_actions) and component_report.explicit_execution and has_update and has_system:
+             if 'lista' in folded or 'manifest' in folded:
+                 return report(norm,folded,'system_update_manifest_request',['jawne polecenie manifestu/listy aktualizacji'],0.88,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
+             return report(norm,folded,'system_update_execution_request',['jawne polecenie aktualizacji systemu Jaźni'],0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system')
+diff --git a/main.py b/main.py
+index 371b060..76a3b6f 100644
+--- a/main.py
++++ b/main.py
+@@ -1164,6 +1164,7 @@ def main(argv: list[str] | None = None) -> int:
+             port=ns.daemon_port,
+             marker_output=ns.daemon_marker_output,
+             heartbeat_interval=ns.daemon_heartbeat_interval,
++            execution_timeout_seconds=ns.daemon_chat_timeout,
+         )
+ 
+     if ns.daemon_start:
+@@ -1175,6 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
+             marker_output=ns.daemon_marker_output,
+             heartbeat_interval=ns.daemon_heartbeat_interval,
+             startup_timeout=ns.daemon_start_timeout,
++            execution_timeout_seconds=ns.daemon_chat_timeout,
+         )
+         if trusted_time_env is not None:
+             payload["trusted_time_env"] = trusted_time_env
+diff --git a/tests/test_memory_recall_timeout_hardening.py b/tests/test_memory_recall_timeout_hardening.py
+index 41af60b..35cb6c6 100644
+--- a/tests/test_memory_recall_timeout_hardening.py
++++ b/tests/test_memory_recall_timeout_hardening.py
+@@ -91,17 +91,18 @@ def test_archive_fts_hit_skips_redundant_legacy_message_scan(tmp_path: Path) ->
+             }
+ 
+     class FakeLayeredMemory:
+-        def search_episodes(self, phrase, limit):
++        def search_episodes(self, phrase, limit, should_continue=None):
++            assert should_continue is not None

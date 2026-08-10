@@ -1,0 +1,80 @@
+             return []
+ 
+     class FailingLegacyStore:
+-        def search_messages_any(self, phrases, limit):
++        def search_messages_any(self, phrases, limit, should_continue=None):
+             raise AssertionError("legacy LIKE scan must be skipped after an archive FTS hit")
+ 
+     engine.living_memory_gateway = FakeLivingGateway()
+     engine.layered_memory = FakeLayeredMemory()
+     engine.store = FailingLegacyStore()
+-    engine._conversation_archive_context_hits = MethodType(lambda self, phrases, limit: ([], {
++    engine._conversation_archive_context_hits = MethodType(lambda self, phrases, limit, turn_context=None: ([], {
+         "status": "ready", "query": "", "fts_query": "", "searched_shards": 0,
+         "issues": [], "truth_boundary": "source evidence only",
+     }), engine)
+@@ -120,3 +121,53 @@ def test_archive_fts_hit_skips_redundant_legacy_message_scan(tmp_path: Path) ->
+     assert stages["memory_search_plan"]["status"] == "completed"
+     assert stages["memory_living_recall"]["status"] == "completed"
+     assert stages["memory_legacy_recall"]["status"] == "completed"
++
++
++def test_engine_propagates_turn_cancellation_to_conversation_archive(tmp_path: Path, monkeypatch) -> None:
++    engine = object.__new__(JaznEngine)
++    engine.config = SimpleNamespace(root=tmp_path)
++    observed = {}
++
++    class FakeStore:
++        def __init__(self, root):
++            assert root == tmp_path
++
++        def search(self, query, *, limit, include_snippets, should_continue=None):
++            observed["callback"] = should_continue
++            observed["allowed"] = bool(should_continue and should_continue())
++            return SimpleNamespace(to_dict=lambda: {"status": "no_hits", "hits": [], "issues": []})
++
++    monkeypatch.setattr("latka_jazn.core.engine.ConversationArchiveStore", FakeStore)
++    context = TurnExecutionContext.create(timeout_seconds=10.0)
++    hits, result = engine._conversation_archive_context_hits(
++        ["ważne wspomnienie"], limit=3, turn_context=context
++    )
++    assert hits == []
++    assert result["status"] == "no_hits"
++    assert callable(observed["callback"])
++    assert observed["allowed"] is True
++
++    context.cancel(reason="test cancellation", error_code="execution_timeout")
++    hits, result = engine._conversation_archive_context_hits(
++        ["ważne wspomnienie"], limit=3, turn_context=context
++    )
++    assert hits == []
++    assert observed["allowed"] is False
++
++
++def test_legacy_sqlite_search_cancellation_is_fail_soft(tmp_path: Path) -> None:
++    from latka_jazn.memory.store import MemoryStore
++
++    store = MemoryStore(tmp_path / "memory.sqlite3")
++    try:
++        store.con.execute(
++            "INSERT INTO legacy_messages(legacy_rowid,conversation_id,conversation_title,author_role,text) "
++            "VALUES(?,?,?,?,?)",
++            (1, "c1", "Historia", "user", "ważne wspomnienie"),
++        )
++        store.con.commit()
++        should_continue = lambda: False
++        assert store.search_messages("wspomnienie", should_continue=should_continue) == []
++        assert store.search_episodic_memories("wspomnienie", should_continue=should_continue) == []
++    finally:
++        store.close()
+diff --git a/tests/test_runtime_stability_daemon_status.py b/tests/test_runtime_stability_daemon_status.py
+index f9a560f..2cab46b 100644
+--- a/tests/test_runtime_stability_daemon_status.py
++++ b/tests/test_runtime_stability_daemon_status.py
+@@ -626,3 +626,101 @@ def test_start_daemon_reports_unwritable_memory_root_before_spawning(
+     assert result["started"] is False
+     assert result["error_code"] == "runtime_memory_root_unwritable"
+     assert "runtime-bootstrap" in result["recovery_hint"]
++
++
++def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp_path: Path) -> None:

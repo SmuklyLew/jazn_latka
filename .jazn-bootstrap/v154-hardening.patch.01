@@ -1,0 +1,80 @@
+ from latka_jazn.core.turn_execution import TurnExecutionContext
+ from latka_jazn.core.runtime_truth_gate import daemon_active_state, time_trust_state
+@@ -71,6 +70,7 @@ DEFAULT_DAEMON_CHAT_INLINE_WAIT_SECONDS = 0.5
+ DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS = 0.25
+ DEFAULT_DAEMON_CHAT_JOB_TTL_SECONDS = 3600.0
+ DEFAULT_DAEMON_CHAT_QUEUE_SIZE = 64
++DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS = 0.25
+ DEFAULT_HEARTBEAT_FRESH_MULTIPLIER = 3.0
+ DAEMON_CONSOLE_ENV = "JAZN_DAEMON_CONSOLE"
+ DAEMON_CONSOLE_HIDDEN = "hidden"
+@@ -694,7 +694,10 @@ class DaemonChatJob:
+     execution_timeout_seconds: float | None = None
+     timeout_profile: str = "default"
+     recovery_disposition: str | None = None
++    worker_generation: int | None = None
++    watchdog_terminalized: bool = False
+     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
++    active_session_worker: RuntimeSessionWorker | None = field(default=None, repr=False)
+     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
+ 
+     def terminal(self) -> bool:
+@@ -721,6 +724,8 @@ class DaemonChatJob:
+             "execution_timeout_seconds": self.execution_timeout_seconds,
+             "timeout_profile": self.timeout_profile,
+             "recovery_disposition": self.recovery_disposition,
++            "worker_generation": self.worker_generation,
++            "watchdog_terminalized": self.watchdog_terminalized,
+             "result_endpoint": f"/chat-result/{urllib.parse.quote(self.request_id, safe='')}",
+         }
+         if self.turn_context is not None:
+@@ -779,8 +784,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
+         self.marker_path = Path(marker_path)
+         self.heartbeat_interval = float(heartbeat_interval)
+         self._session_factory = session_factory
++        # Persistent daemon turns have a separate hard execution budget from
++        # one-shot/runtime-session calls.  The public daemon CLI already exposes
++        # a 180 s per-turn budget; using the generic 45 s runtime default here was
++        # an accidental wiring mismatch that made healthy long turns fail early.
+         self.execution_timeout_seconds = float(
+-            execution_timeout_seconds or runtime_turn_timeout_seconds(config)
++            execution_timeout_seconds
++            or getattr(config, "daemon_chat_execution_timeout_seconds", DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS)
+         )
+         self.sessions: dict[str, RuntimeSessionWorker] = {}
+         bound_host, bound_port = self.server_address[:2]
+@@ -814,8 +824,15 @@ class JaznDaemonServer(ThreadingHTTPServer):
+         )
+         self._chat_worker_thread: threading.Thread | None = None
+         self._chat_worker_start_lock = threading.Lock()
++        self._chat_worker_generation = 0
+         self._chat_worker_state = "not_started_lazy"
+         self._chat_worker_error: str | None = None
++        self._chat_watchdog_thread: threading.Thread | None = None
++        self._chat_watchdog_start_lock = threading.Lock()
++        self._chat_watchdog_interval_seconds = max(0.01, _env_float_value(
++            "JAZN_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS",
++            DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS,
++        ))
+         self._chat_state_path = self.marker_path.parent / "daemon_chat_jobs.json"
+         self._recover_chat_jobs()
+ 
+@@ -1073,6 +1090,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
+                 "worker_alive": worker_alive,
+                 "worker_state": self._chat_worker_state,
+                 "worker_error": self._chat_worker_error,
++                "worker_generation": self._chat_worker_generation,
++                "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
++                "watchdog_interval_seconds": self._chat_watchdog_interval_seconds,
+                 "execution_timeout_seconds": self.execution_timeout_seconds,
+                 "pending": pending,
+                 "submitted_total": self.state.chat_job_submitted_count,
+@@ -1094,17 +1114,130 @@ class JaznDaemonServer(ThreadingHTTPServer):
+                 **counts,
+             }
+ 
+-    def start_chat_worker(self) -> None:
++    def _terminalize_watchdog_timeout_locked(
++        self,
++        job: DaemonChatJob,
++        *,

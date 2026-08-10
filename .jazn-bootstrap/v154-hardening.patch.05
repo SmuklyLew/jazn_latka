@@ -1,0 +1,80 @@
++
++            # The independent watchdog may have terminalized this job while the
++            # session worker was still unwinding.  Never let a late result
++            # overwrite the terminal timeout or re-enable semantic persistence.
++            with self._chat_jobs_lock:
++                if job.terminal():
++                    return
++
+             if result["ok"]:
+                 self.state.turn_count += 1
+ 
+@@ -1324,6 +1490,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
+                 "async_job": True,
+             }
+             with self._chat_jobs_lock:
++                if job.terminal():
++                    return
+                 job.result = result
+                 if result["ok"]:
+                     job.status = "completed"
+@@ -1337,55 +1505,62 @@ class JaznDaemonServer(ThreadingHTTPServer):
+                 self._retire_session_worker(session)
+             error = f"{type(exc).__name__}: {exc}"
+             with self._chat_jobs_lock:
+-                job.error = error
+-                job.result = {
+-                    "ok": False,
+-                    "error_code": "execution_timeout",
+-                    "error": error,
+-                    "request_id": job.request_id,
+-                    "execution_timeout_seconds": job.execution_timeout_seconds,
+-                    "timeout_profile": job.timeout_profile,
+-                    "schema_version": DAEMON_SCHEMA_VERSION,
+-                }
+-                job.status = "execution_timeout"
+-                self.state.chat_job_execution_timeout_count += 1
++                if not job.terminal():
++                    job.error = error
++                    job.result = {
++                        "ok": False,
++                        "error_code": "execution_timeout",
++                        "error": error,
++                        "request_id": job.request_id,
++                        "execution_timeout_seconds": job.execution_timeout_seconds,
++                        "timeout_profile": job.timeout_profile,
++                        "timeout_owner": "runtime_session_worker",
++                        "schema_version": DAEMON_SCHEMA_VERSION,
++                    }
++                    job.status = "execution_timeout"
++                    self.state.chat_job_execution_timeout_count += 1
+         except RuntimeError as exc:
+             error_code = str(exc) if str(exc).startswith("daemon_session_") else "runtime_turn_failed"
+             error = f"{type(exc).__name__}: {exc}"
+             with self._chat_jobs_lock:
+-                job.error = error
+-                job.result = {
+-                    "ok": False,
+-                    "error_code": error_code,
+-                    "error": error,
+-                    "request_id": job.request_id,
+-                    "schema_version": DAEMON_SCHEMA_VERSION,
+-                }
+-                job.status = "failed"
+-                self.state.chat_job_failed_count += 1
++                if not job.terminal():
++                    job.error = error
++                    job.result = {
++                        "ok": False,
++                        "error_code": error_code,
++                        "error": error,
++                        "request_id": job.request_id,
++                        "schema_version": DAEMON_SCHEMA_VERSION,
++                    }
++                    job.status = "failed"
++                    self.state.chat_job_failed_count += 1
+         except (OSError, ValueError, TypeError) as exc:
+             error = f"{type(exc).__name__}: {exc}"
+             with self._chat_jobs_lock:
+-                job.error = error
+-                job.result = {

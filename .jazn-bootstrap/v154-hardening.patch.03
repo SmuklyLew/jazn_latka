@@ -1,0 +1,80 @@
++            def watchdog() -> None:
++                while not self.shutdown_requested.is_set():
++                    try:
++                        self._scan_overdue_chat_jobs()
++                    except (RuntimeError, OSError, ValueError, TypeError) as exc:
++                        append_daemon_process_event(
++                            self.config.root,
++                            "chat_watchdog_scan_failed",
++                            error=f"{type(exc).__name__}: {exc}",
++                        )
++                    self.shutdown_requested.wait(self._chat_watchdog_interval_seconds)
++
++            self._chat_watchdog_thread = threading.Thread(
++                target=watchdog,
++                name="jazn-daemon-chat-watchdog",
++                daemon=True,
++            )
++            self._chat_watchdog_thread.start()
++
++    def start_chat_worker(self, *, force_new: bool = False) -> None:
+         with self._chat_worker_start_lock:
+-            if self._chat_worker_thread is not None and self._chat_worker_thread.is_alive():
++            if (
++                not force_new
++                and self._chat_worker_thread is not None
++                and self._chat_worker_thread.is_alive()
++            ):
+                 return
++            self._chat_worker_generation += 1
++            generation = self._chat_worker_generation
+             self._chat_worker_state = "starting"
+             self._chat_worker_error = None
+ 
+             def worker() -> None:
+-                self._chat_worker_state = "alive"
++                if generation == self._chat_worker_generation:
++                    self._chat_worker_state = "alive"
+                 try:
+-                    while not self.shutdown_requested.is_set():
++                    while (
++                        not self.shutdown_requested.is_set()
++                        and generation == self._chat_worker_generation
++                    ):
+                         try:
+                             job = self._chat_queue.get(timeout=0.25)
+                         except queue.Empty:
+@@ -1113,37 +1246,46 @@ class JaznDaemonServer(ThreadingHTTPServer):
+                             if job is None:
+                                 break
+                             try:
+-                                self._process_chat_job(job)
++                                self._process_chat_job(job, worker_generation=generation)
+                             except (RuntimeError, OSError, ValueError, TypeError) as exc:
+                                 error = f"{type(exc).__name__}: {exc}"
+                                 with self._chat_jobs_lock:
+-                                    job.error = error
+-                                    job.result = {
+-                                        "ok": False,
+-                                        "error_code": "daemon_worker_job_failed",
+-                                        "error": error,
+-                                        "request_id": job.request_id,
+-                                        "schema_version": DAEMON_SCHEMA_VERSION,
+-                                    }
+-                                    job.status = "failed"
+-                                    job.completed_at_utc = utc_now_iso()
+-                                    job.done_event.set()
+-                                    self.state.chat_job_failed_count += 1
+-                                    self._persist_chat_jobs_locked(stage="worker_job_failure")
+-                                self._chat_worker_error = error
++                                    if not job.terminal():
++                                        job.error = error
++                                        job.result = {
++                                            "ok": False,
++                                            "error_code": "daemon_worker_job_failed",
++                                            "error": error,
++                                            "request_id": job.request_id,
++                                            "schema_version": DAEMON_SCHEMA_VERSION,
++                                        }
++                                        job.status = "failed"
++                                        job.completed_at_utc = utc_now_iso()

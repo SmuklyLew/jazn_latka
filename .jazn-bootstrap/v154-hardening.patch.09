@@ -1,0 +1,80 @@
+             query=query,
+             fts_query=fts_query,
+             hits=hits,
+diff --git a/latka_jazn/memory/layered_memory.py b/latka_jazn/memory/layered_memory.py
+index 57dad05..d226635 100644
+--- a/latka_jazn/memory/layered_memory.py
++++ b/latka_jazn/memory/layered_memory.py
+@@ -3,6 +3,7 @@ from latka_jazn.version import PACKAGE_VERSION
+ from dataclasses import dataclass, asdict
+ from datetime import datetime, timezone
+ from pathlib import Path
++from typing import Callable
+ import json, uuid
+ from latka_jazn.core.truth_boundary import TruthBoundary
+ from latka_jazn.core.uncertainty_model import UncertaintyModel
+@@ -185,8 +186,16 @@ class LayeredMemory:
+         self.store.add_truth_audit(record)
+         return audit
+ 
+-    def search_episodes(self, phrase: str, limit: int=5) -> list[dict]:
+-        return self.store.search_episodic_memories(phrase, limit=limit)
++    def search_episodes(
++        self,
++        phrase: str,
++        limit: int = 5,
++        *,
++        should_continue: Callable[[], bool] | None = None,
++    ) -> list[dict]:
++        return self.store.search_episodic_memories(
++            phrase, limit=limit, should_continue=should_continue
++        )
+ 
+ 
+ 
+diff --git a/latka_jazn/memory/store.py b/latka_jazn/memory/store.py
+index 0790dea..bcf1702 100644
+--- a/latka_jazn/memory/store.py
++++ b/latka_jazn/memory/store.py
+@@ -3,6 +3,8 @@ from latka_jazn.version import PACKAGE_VERSION
+ from dataclasses import dataclass
+ from datetime import datetime, timezone
+ from pathlib import Path
++from contextlib import contextmanager
++from typing import Callable, Iterator
+ import hashlib, json, sqlite3, uuid
+ 
+ SCHEMA = """
+@@ -165,19 +167,69 @@ class MemoryStore:
+         self.con.commit()
+         return sha
+ 
+-    def search_messages(self, phrase: str, limit: int=10) -> list[sqlite3.Row]:
++    @contextmanager
++    def _sqlite_progress_guard(
++        self,
++        should_continue: Callable[[], bool] | None,
++    ) -> Iterator[None]:
++        if should_continue is None:
++            yield
++            return
++
++        def _progress() -> int:
++            try:
++                return 0 if should_continue() else 1
++            except Exception:
++                return 1
++
++        self.con.set_progress_handler(_progress, 2_000)
++        try:
++            yield
++        finally:
++            self.con.set_progress_handler(None, 0)
++
++    @staticmethod
++    def _continuation_cancelled(should_continue: Callable[[], bool] | None) -> bool:
++        if should_continue is None:
++            return False
++        try:
++            return not bool(should_continue())
++        except Exception:
