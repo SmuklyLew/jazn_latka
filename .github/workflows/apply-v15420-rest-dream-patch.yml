@@ -1,0 +1,59 @@
+name: apply-v15420-rest-dream-patch
+
+on:
+  push:
+    branches:
+      - update/v15420-rest-replay-dream-continuity-20260811
+    paths:
+      - .github/v15420_patch_00.b64
+      - .github/v15420_patch_01.b64
+      - .github/v15420_patch_02.b64
+      - .github/v15420_patch_03.b64
+      - .github/workflows/apply-v15420-rest-dream-patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout transport branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: update/v15420-rest-replay-dream-continuity-20260811
+
+      - name: Verify transport scope and reconstruct patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=b0c19d46db371c9362dca82b5cc23bc2dae21945
+          git merge-base --is-ancestor "$base" HEAD
+          unexpected="$(git diff --name-only "$base"...HEAD | grep -Ev '^\.github/(v15420_patch_[0-9]{2}\.b64|workflows/apply-v15420-rest-dream-patch\.yml)$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected pre-existing branch changes:" >&2
+            echo "$unexpected" >&2
+            exit 2
+          fi
+          cat .github/v15420_patch_00.b64 .github/v15420_patch_01.b64 .github/v15420_patch_02.b64 .github/v15420_patch_03.b64 > /tmp/v15420.patch.gz.b64
+          test "$(wc -c < /tmp/v15420.patch.gz.b64 | tr -d ' ')" = "46388"
+          base64 -d /tmp/v15420.patch.gz.b64 | gzip -dc > /tmp/v15420.patch
+          echo '54e17acc965f4887bc7b917adffa57cf69f669a48b7f12553ff8af168bf9301a  /tmp/v15420.patch' | sha256sum -c -
+          git apply --check /tmp/v15420.patch
+
+      - name: Apply verified update and remove transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply /tmp/v15420.patch
+          rm -f .github/v15420_patch_00.b64 .github/v15420_patch_01.b64 .github/v15420_patch_02.b64 .github/v15420_patch_03.b64
+          rm -f .github/workflows/apply-v15420-rest-dream-patch.yml
+          git add -A
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Add auditable rest replay and dream continuity'
+          git push origin HEAD:update/v15420-rest-replay-dream-continuity-20260811
