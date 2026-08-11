@@ -77,15 +77,22 @@ jobs:
           echo '54e17acc965f4887bc7b917adffa57cf69f669a48b7f12553ff8af168bf9301a  /tmp/v15420.patch' | sha256sum -c -
           git apply --check /tmp/v15420.patch
 
-      - name: Apply verified update and remove transport
+      - name: Apply non-workflow update and remove transport
         shell: bash
         run: |
           set -euo pipefail
           git apply /tmp/v15420.patch
+          # GitHub Actions' GITHUB_TOKEN cannot push workflow-file updates.
+          # Publish all ordinary files here; release-hardening.yml is applied separately
+          # through the connected GitHub write path after this verified commit lands.
+          git checkout HEAD -- .github/workflows/release-hardening.yml
           rm -f .github/v15420_patch_*.b64
-          rm -f .github/workflows/apply-v15420-rest-dream-patch.yml
           git add -A
           git diff --cached --check
+          if git diff --cached --name-only | grep -q '^\.github/workflows/'; then
+            echo 'Refusing to push a workflow mutation from GITHUB_TOKEN.' >&2
+            exit 2
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'Add auditable rest replay and dream continuity'
