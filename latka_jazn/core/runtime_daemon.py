@@ -32,6 +32,7 @@ from latka_jazn.core.runtime_root import (
     resolve_active_runtime_root,
     workspace_runtime_path,
 )
+from latka_jazn.core.rest_cycle_controller import RestCycleController
 from latka_jazn.core.clock import (
     TRUSTED_HOST_TIME_ISO_ENV_NAMES,
     TRUSTED_HOST_TIME_MAX_AGE_ENV_NAMES,
@@ -835,6 +836,40 @@ class JaznDaemonServer(ThreadingHTTPServer):
         ))
         self._chat_state_path = self.marker_path.parent / "daemon_chat_jobs.json"
         self._recover_chat_jobs()
+        self.rest_cycle_controller: RestCycleController | None = None
+        self._rest_cycle_init_error: str | None = None
+        if bool(getattr(config, "rest_cycle_enabled", True)):
+            try:
+                self.rest_cycle_controller = RestCycleController(
+                    config,
+                    runtime_busy=self._rest_runtime_busy,
+                )
+            except Exception as exc:
+                # Rest is deliberately fail-soft for the primary chat daemon.
+                self._rest_cycle_init_error = f"{type(exc).__name__}: {exc}"
+
+    def _rest_runtime_busy(self) -> bool:
+        if self.shutdown_requested.is_set():
+            return True
+        with self._sessions_lock:
+            if self._active_session_ids:
+                return True
+        with self._chat_jobs_lock:
+            return any(job.status in {"queued", "running"} for job in self.chat_jobs.values())
+
+    def rest_cycle_status(self) -> dict[str, Any]:
+        controller = self.rest_cycle_controller
+        if controller is None:
+            return {
+                "schema_version": schema_version("rest_cycle_controller"),
+                "enabled": bool(getattr(self.config, "rest_cycle_enabled", True)),
+                "state": "unavailable" if self._rest_cycle_init_error else "disabled",
+                "init_error": self._rest_cycle_init_error,
+                "ordinary_dialogue_allowed": True,
+                "automatic_l3_allowed": False,
+                "truth_boundary": "Rest-cycle failure or disablement does not block the primary dialogue daemon.",
+            }
+        return controller.status_payload()
 
     def process_request(
         self,
@@ -1380,6 +1415,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self.state.chat_job_pending_count += 1
             self.state.last_chat_job_id = normalized_id
 
+        if self.rest_cycle_controller is not None:
+            try:
+                self.rest_cycle_controller.note_user_activity()
+            except Exception as exc:
+                self._rest_cycle_init_error = f"user_activity:{type(exc).__name__}: {exc}"
         self.start_chat_watchdog()
         self.start_chat_worker()
         return job, True, None
@@ -1723,6 +1763,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "daemon_session_idle_ttl_seconds": self.session_idle_ttl_seconds,
             "daemon_max_http_workers": self.max_http_workers,
             "daemon_chat_jobs": chat_jobs,
+            "rest_cycle_status": self.rest_cycle_status(),
             "daemon_chat_async_supported": True,
             "daemon_chat_submit_endpoint": "/chat-submit",
             "daemon_chat_result_endpoint_template": "/chat-result/{request_id}",
@@ -1827,6 +1868,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "daemon_session_idle_ttl_seconds": self.session_idle_ttl_seconds,
             "daemon_auth_required": True,
             "daemon_chat_jobs": chat_jobs,
+            "rest_cycle_status": self.rest_cycle_status(),
             "runtime_write_access_status": runtime_write,
             "runtime_write_ready": bool(runtime_write.get("ok")),
             "runtime_write_verification_mode": runtime_write.get("verification_mode"),
@@ -1885,6 +1927,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
 
     def close_sessions(self) -> None:
         self.shutdown_requested.set()
+        if self.rest_cycle_controller is not None:
+            try:
+                self.rest_cycle_controller.stop()
+            except Exception as exc:
+                self._rest_cycle_init_error = f"shutdown:{type(exc).__name__}: {exc}"
         try:
             self._chat_queue.put_nowait(None)
         except queue.Full:
@@ -2325,6 +2372,8 @@ def run_daemon(
     server.write_marker()
     _emit_visible_daemon_event("started", host=host, port=int(port), root=str(config.root), heartbeat_interval_seconds=float(heartbeat_interval))
     server.start_heartbeat()
+    if server.rest_cycle_controller is not None:
+        server.rest_cycle_controller.start()
     try:
         server.serve_forever(poll_interval=0.25)
     finally:

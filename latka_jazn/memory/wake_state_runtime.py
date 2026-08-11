@@ -11,6 +11,7 @@ import sqlite3
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tier_store import MemoryTierStore, WorkingMemoryBudget
+from latka_jazn.memory.rest_wake_report import RestWakeReportBuilder, load_latest_rest_wake_report
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
     MemoryTier,
@@ -44,6 +45,8 @@ class WakeStateRuntimeStatus:
     continuity_claim_allowed: bool = False
     ordinary_dialogue_allowed: bool = True
     degradation_policy: str = "continue_without_wake_context"
+    rest_continuity_status: str = "rest_none"
+    rest_report: dict[str, Any] | None = None
     truth_boundary: str = TRUTH_BOUNDARY
 
     @property
@@ -101,6 +104,18 @@ class WakeStateRuntimeBridge:
         self.config = config
         self.sidecar_path = config.normalization_sidecar_db_path
         self.tier_path = config.memory_tier_db_path
+        self.rest_cycle_path = config.rest_cycle_db_path
+
+    def _rest_report(self) -> dict[str, Any]:
+        return load_latest_rest_wake_report(self.rest_cycle_path)
+
+    def _attach_rest_report(self, status: WakeStateRuntimeStatus) -> WakeStateRuntimeStatus:
+        report = self._rest_report()
+        status.rest_continuity_status = str(report.get("rest_continuity_status") or "rest_none")
+        status.rest_report = RestWakeReportBuilder.bounded_context(report)
+        if status.context is not None and status.rest_continuity_status in {"rest_verified", "rest_partial"}:
+            status.context = {**status.context, "rest_summary": status.rest_report}
+        return status
 
     def load(self) -> WakeStateRuntimeStatus:
         if not self.sidecar_path.is_file():
@@ -181,7 +196,7 @@ class WakeStateRuntimeBridge:
                     errors=["wake snapshot coverage counts are inconsistent"],
                 )
             context = _bounded_snapshot(snapshot)
-            return WakeStateRuntimeStatus(
+            return self._attach_rest_report(WakeStateRuntimeStatus(
                 schema_version=SCHEMA_VERSION,
                 status="ready",
                 sidecar_db_path=str(self.sidecar_path),
@@ -196,7 +211,7 @@ class WakeStateRuntimeBridge:
                 continuity_claim_allowed=True,
                 ordinary_dialogue_allowed=True,
                 degradation_policy="use_verified_wake_context",
-            )
+            ))
         except (sqlite3.DatabaseError, OSError, UnicodeError, json.JSONDecodeError) as exc:
             return self._status("read_error", errors=[f"{type(exc).__name__}: {exc}"])
 
@@ -269,7 +284,7 @@ class WakeStateRuntimeBridge:
             return store.end_session(session_id)
 
     def _status(self, status: str, *, errors: list[str]) -> WakeStateRuntimeStatus:
-        return WakeStateRuntimeStatus(
+        return self._attach_rest_report(WakeStateRuntimeStatus(
             schema_version=SCHEMA_VERSION,
             status=status,
             sidecar_db_path=str(self.sidecar_path),
@@ -284,4 +299,4 @@ class WakeStateRuntimeBridge:
             continuity_claim_allowed=False,
             ordinary_dialogue_allowed=True,
             degradation_policy="continue_without_wake_context",
-        )
+        ))

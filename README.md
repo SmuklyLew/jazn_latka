@@ -95,6 +95,16 @@ Stan sesji jest zapisywany atomowo do checkpointu per-session oraz do wskaźnika
 
 `--no-carryover` tworzy izolowaną sesję i nie zastępuje wskaźnika ostatniej zwykłej sesji.
 
+## Audytowalny czas pomiędzy rozmowami — rest / replay / dream continuity
+
+Bieżąca linia rozwoju dodaje osobny, audytowalny proces odpoczynku działający wewnątrz istniejącego daemona — bez nowego portu i bez zastępowania zwykłej rozmowy. Po osiągnięciu progu bezczynności `RestCycleController` może wykonywać ograniczone cykle: read-only memory replay → lokalna symulacja wewnętrzna → niezależna ewaluacja → consolidation gate → hash-verified wake report.
+
+Każdy „sen” ma status `simulated_internal`, `counterfactual`, `rehearsal` albo `associative` i **nigdy nie jest faktem ani wspomnieniem obserwowanego zdarzenia**. Sandbox nie ma narzędzi zewnętrznych, a autonomiczny rest nie może automatycznie promować L3. Domyślny `JAZN_REST_SHADOW_MODE=1` nie zapisuje nawet kandydatów L2; służy najpierw do zebrania audytowalnych dowodów działania.
+
+`WakeStateRuntimeBridge` może pokazać `rest_continuity_status` oraz ograniczone podsumowanie nocnego/idle raportu, ale sam raport rest nie daje prawa do `continuity_claim_allowed=true`: pełna ciągłość pamięci nadal wymaga istniejącego zweryfikowanego wake-state. Brak lub awaria warstwy rest nie blokuje ordinary dialogue.
+
+Szczegółowy plan faz 0–6: `docs/plans/JAZN_V15_4_2_0_REST_REPLAY_DREAM_CONTINUITY.md`. Podstawa badawcza: `docs/reports/JAZN_V15_4_2_0_RESEARCH_SOURCES.md`.
+
 ## Start i diagnostyka
 
 ```powershell
