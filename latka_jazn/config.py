@@ -119,6 +119,24 @@ class JaznConfig:
     raw_chat_html_auto_import_limit: int | None = None
     idle_reflection_thresholds: tuple[int, ...] = (300, 600, 21600)
 
+    # v15.4.2 auditable rest/replay/dream continuity. Shadow mode is the safe default:
+    # cycles may read memory and persist their own audit ledger, but do not materialize L2.
+    rest_cycle_db_name: str = field(default_factory=lambda: os.environ.get(
+        "JAZN_REST_CYCLE_DB", "memory/sqlite/runtime_write_v1/rest_cycle.sqlite3"
+    ).strip())
+    rest_cycle_enabled: bool = field(default_factory=lambda: _env_bool("JAZN_REST_CYCLE_ENABLED", True))
+    rest_shadow_mode: bool = field(default_factory=lambda: _env_bool("JAZN_REST_SHADOW_MODE", True))
+    rest_idle_start_seconds: float = field(default_factory=lambda: _env_float("JAZN_REST_IDLE_START_SECONDS", 900.0))
+    rest_cycle_interval_seconds: float = field(default_factory=lambda: _env_float("JAZN_REST_CYCLE_INTERVAL_SECONDS", 1800.0))
+    rest_poll_seconds: float = field(default_factory=lambda: _env_float("JAZN_REST_POLL_SECONDS", 5.0))
+    rest_max_cycles_per_episode: int = field(default_factory=lambda: _env_int("JAZN_REST_MAX_CYCLES", 16))
+    rest_replay_limit: int = field(default_factory=lambda: _env_int("JAZN_REST_REPLAY_LIMIT", 6))
+    rest_replay_anti_loop_cycles: int = field(default_factory=lambda: _env_int("JAZN_REST_REPLAY_ANTI_LOOP_CYCLES", 4))
+    rest_cycle_max_seconds: float = field(default_factory=lambda: _env_float("JAZN_REST_CYCLE_MAX_SECONDS", 45.0))
+    rest_local_model_enabled: bool = field(default_factory=lambda: _env_bool("JAZN_REST_LOCAL_MODEL_ENABLED", True))
+    rest_dream_max_chars: int = field(default_factory=lambda: _env_int("JAZN_REST_DREAM_MAX_CHARS", 2400))
+    rest_dream_max_output_tokens: int = field(default_factory=lambda: _env_int("JAZN_REST_DREAM_MAX_OUTPUT_TOKENS", 360))
+
     allow_network: bool = field(default_factory=lambda: _env_bool("JAZN_ALLOW_NETWORK", True))
     network_default_timeout_connect_seconds: float = field(default_factory=lambda: _env_float("JAZN_NETWORK_TIMEOUT_CONNECT", 3.0))
     network_default_timeout_read_seconds: float = field(default_factory=lambda: _env_float("JAZN_NETWORK_TIMEOUT_READ", 6.0))
@@ -271,6 +289,10 @@ class JaznConfig:
     @property
     def memory_tier_db_path(self) -> Path:
         return self._path_under_runtime_root(self.memory_tier_db_name)
+
+    @property
+    def rest_cycle_db_path(self) -> Path:
+        return self._path_under_runtime_root(self.rest_cycle_db_name)
 
     @property
     def normalization_source_db_path(self) -> Path:

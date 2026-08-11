@@ -17,6 +17,13 @@ from latka_jazn.core.turn_timeout import (
 )
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.memory.continuity_readiness import evaluate_memory_continuity_readiness
+from latka_jazn.memory.rest_contracts import (
+    DreamScene,
+    RestConsolidationDecision,
+    RestConsolidationDisposition,
+    SimulationTruthStatus,
+    sha256_text,
+)
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("cognitive_architecture_audit")
@@ -32,6 +39,14 @@ REQUIRED_FILES = (
     "latka_jazn/memory/continuity_readiness.py",
     "latka_jazn/memory/normalization_sidecar.py",
     "latka_jazn/memory/wake_state_runtime.py",
+    "latka_jazn/memory/rest_contracts.py",
+    "latka_jazn/memory/rest_cycle_store.py",
+    "latka_jazn/memory/rest_replay.py",
+    "latka_jazn/memory/dream_sandbox.py",
+    "latka_jazn/memory/rest_reflection.py",
+    "latka_jazn/memory/rest_consolidation.py",
+    "latka_jazn/memory/rest_wake_report.py",
+    "latka_jazn/core/rest_cycle_controller.py",
     "latka_jazn/memory/store.py",
     "latka_jazn/nlp/lexical_intelligence.py",
     "latka_jazn/resources/cognition/v154_architecture.json",
@@ -43,6 +58,15 @@ REQUIRED_FILES = (
     "tests/test_knowledge_fabric_v154.py",
     "tests/test_lexical_intelligence_v154.py",
     "tests/test_memory_continuity_readiness_v1541.py",
+    "tests/test_rest_contracts_v1542.py",
+    "tests/test_rest_cycle_store_v1542.py",
+    "tests/test_rest_replay_v1542.py",
+    "tests/test_dream_sandbox_v1542.py",
+    "tests/test_rest_reflection_consolidation_v1542.py",
+    "tests/test_rest_wake_report_v1542.py",
+    "tests/test_rest_cycle_controller_v1542.py",
+    "tests/test_runtime_stability_rest_cycle_v1542.py",
+    "tests/test_wake_rest_continuity_v1542.py",
 )
 
 
@@ -148,6 +172,31 @@ def run_audit(root: Path) -> dict[str, Any]:
         wake_state_status={"status": "ready", "active_snapshot_present": True},
         conversation_archive_status={"status": "ready", "ready_for_search": True},
     )
+    dream_text = "Audytowalna wewnętrzna symulacja."
+    dream_probe = DreamScene(
+        scene_id="audit-scene",
+        cycle_id="audit-cycle",
+        simulation_kind=SimulationTruthStatus.SIMULATED_INTERNAL,
+        content=dream_text,
+        content_sha256=sha256_text(dream_text),
+        source_memory_ids=("audit-source",),
+        generator_provider="audit",
+        generator_model="audit",
+        generator_status="completed",
+        created_at_utc="2026-08-11T00:00:00+00:00",
+    )
+    auto_l3_rejected = False
+    try:
+        RestConsolidationDecision(
+            decision_id="audit-decision", scene_id="audit-scene",
+            disposition=RestConsolidationDisposition.REFLECTION_CANDIDATE,
+            target_tier="long_term", automatic_l3_allowed=True,
+            real_source_anchor_count=1, materialized_memory_id=None, reasons=(),
+            decided_at_utc="2026-08-11T00:00:00+00:00",
+        )
+    except ValueError:
+        auto_l3_rejected = True
+
     dispatcher = RouteHandlerDispatcher()
     route_dispatch_missing = []
     for intent in RouteRegistry.HANDLERS:
@@ -195,6 +244,10 @@ def run_audit(root: Path) -> dict[str, Any]:
             and verified_continuity.continuity_claim_allowed
             and verified_continuity.normalization_coverage.get("coverage_complete") is True
         ),
+        "rest_dream_never_factual_by_contract": dream_probe.factual_claim_allowed is False,
+        "rest_automatic_l3_forbidden_by_contract": auto_l3_rejected,
+        "rest_daemon_scheduler_present": (root / "latka_jazn/core/rest_cycle_controller.py").is_file(),
+        "rest_wake_report_present": (root / "latka_jazn/memory/rest_wake_report.py").is_file(),
     }
     return {
         "schema_version": SCHEMA_VERSION,
