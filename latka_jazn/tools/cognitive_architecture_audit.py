@@ -16,6 +16,7 @@ from latka_jazn.core.turn_timeout import (
     DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,
 )
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
+from latka_jazn.memory.continuity_readiness import evaluate_memory_continuity_readiness
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("cognitive_architecture_audit")
@@ -28,6 +29,9 @@ REQUIRED_FILES = (
     "latka_jazn/core/runtime_daemon.py",
     "latka_jazn/core/turn_timeout.py",
     "latka_jazn/memory/conversation_archive.py",
+    "latka_jazn/memory/continuity_readiness.py",
+    "latka_jazn/memory/normalization_sidecar.py",
+    "latka_jazn/memory/wake_state_runtime.py",
     "latka_jazn/memory/store.py",
     "latka_jazn/nlp/lexical_intelligence.py",
     "latka_jazn/resources/cognition/v154_architecture.json",
@@ -38,6 +42,7 @@ REQUIRED_FILES = (
     "tests/test_reasoning_orchestrator_v154.py",
     "tests/test_knowledge_fabric_v154.py",
     "tests/test_lexical_intelligence_v154.py",
+    "tests/test_memory_continuity_readiness_v1541.py",
 )
 
 
@@ -110,6 +115,39 @@ def run_audit(root: Path) -> dict[str, Any]:
     negated_report = DialogueIntentClassifier().classify(
         "@Wyszukiwanie w sieci Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić."
     )
+    retrieval_only = evaluate_memory_continuity_readiness(
+        normalization_status={"status": "sidecar_missing", "last_run": None},
+        wake_state_status={"status": "sidecar_missing", "active_snapshot_present": False},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
+    partial_continuity = evaluate_memory_continuity_readiness(
+        normalization_status={
+            "status": "normalization_partial",
+            "last_run": {
+                "expected_item_count": 100,
+                "normalized_item_count": 12,
+                "coverage_complete": False,
+                "coverage_ratio": 0.12,
+                "requested_limit": 12,
+            },
+        },
+        wake_state_status={"status": "normalization_partial", "active_snapshot_present": False},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
+    verified_continuity = evaluate_memory_continuity_readiness(
+        normalization_status={
+            "status": "ready",
+            "last_run": {
+                "expected_item_count": 100,
+                "normalized_item_count": 100,
+                "coverage_complete": True,
+                "coverage_ratio": 1.0,
+                "requested_limit": None,
+            },
+        },
+        wake_state_status={"status": "ready", "active_snapshot_present": True},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
     dispatcher = RouteHandlerDispatcher()
     route_dispatch_missing = []
     for intent in RouteRegistry.HANDLERS:
@@ -140,6 +178,23 @@ def run_audit(root: Path) -> dict[str, Any]:
             < DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
             <= DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
         ),
+        "memory_retrieval_survives_missing_wake": (
+            retrieval_only.status == "retrieval_only"
+            and retrieval_only.memory_recall_allowed
+            and retrieval_only.ordinary_dialogue_allowed
+            and not retrieval_only.continuity_claim_allowed
+        ),
+        "partial_memory_blocks_continuity_claim_only": (
+            partial_continuity.status == "partial_unverified"
+            and partial_continuity.memory_recall_allowed
+            and partial_continuity.ordinary_dialogue_allowed
+            and not partial_continuity.continuity_claim_allowed
+        ),
+        "verified_memory_requires_full_coverage_and_wake": (
+            verified_continuity.ok
+            and verified_continuity.continuity_claim_allowed
+            and verified_continuity.normalization_coverage.get("coverage_complete") is True
+        ),
     }
     return {
         "schema_version": SCHEMA_VERSION,
@@ -153,6 +208,11 @@ def run_audit(root: Path) -> dict[str, Any]:
             "mixed_web_execution_secondary": mixed_report.secondary_intents,
             "negated_write_primary": negated_report.primary_intent,
             "route_dispatch_missing": route_dispatch_missing,
+        },
+        "memory_continuity_contract": {
+            "retrieval_only": retrieval_only.to_dict(),
+            "partial_unverified": partial_continuity.to_dict(),
+            "verified": verified_continuity.to_dict(),
         },
         "deadline_contract": {
             "runtime_turn_seconds": DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,

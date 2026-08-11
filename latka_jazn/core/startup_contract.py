@@ -17,6 +17,7 @@ from latka_jazn.core.project_index import build_project_startup_index, project_s
 from latka_jazn.core.voice_source_contract import VoiceSourceContract
 from latka_jazn.memory.conversation_archive import build_conversation_archive_status
 from latka_jazn.memory.normalization_sidecar import build_memory_normalization_status, build_wake_state_status
+from latka_jazn.memory.continuity_readiness import evaluate_memory_continuity_readiness
 from latka_jazn.memory.raw_chat_importer import RawChatImporter
 from latka_jazn.model_adapters.factory import build_model_adapter_status
 from latka_jazn.core.runtime_environment import detect_runtime_environment
@@ -60,6 +61,7 @@ class StartupStatus:
     conversation_archive_status: dict[str, Any]
     memory_normalization_status: dict[str, Any]
     wake_state_status: dict[str, Any]
+    memory_continuity_status: dict[str, Any]
     project_startup_index_status: dict[str, Any]
     update_history_status: dict[str, Any]
     network_policy_status: dict[str, Any]
@@ -366,6 +368,14 @@ def build_startup_status(
     voice_source_contract = VoiceSourceContract.build(runtime_active=runtime_active_for_voice, runtime_mode='one_shot', language_channel=str(language_channel)).to_dict()
     active_runtime_write_database = runtime_write_status.get("active_runtime_write_database") or "unavailable:runtime_write_v1_missing_or_not_initialized"
     daemon_ready = False if mode == "metadata" else _daemon_ready_from_active_marker(root, cache_status)
+    conversation_archive_status = build_conversation_archive_status(root, health_mode=sqlite_health_mode).to_dict()
+    memory_normalization_status = build_memory_normalization_status(cfg).to_dict()
+    wake_state_status = build_wake_state_status(cfg).to_dict()
+    memory_continuity_status = evaluate_memory_continuity_readiness(
+        normalization_status=memory_normalization_status,
+        wake_state_status=wake_state_status,
+        conversation_archive_status=conversation_archive_status,
+    ).to_dict()
     return StartupStatus(
         schema_version=SCHEMA_VERSION,
         runtime_version=cfg.version,
@@ -380,9 +390,10 @@ def build_startup_status(
         storage_layout=str(cache_status.get("storage_layout") or "conversation_archive_v1+fts_v1+staging_v1+runtime_write_v1"),
         active_cache_status=cache_status,
         raw_memory_status=raw_memory_status(root),
-        conversation_archive_status=build_conversation_archive_status(root, health_mode=sqlite_health_mode).to_dict(),
-        memory_normalization_status=build_memory_normalization_status(cfg).to_dict(),
-        wake_state_status=build_wake_state_status(cfg).to_dict(),
+        conversation_archive_status=conversation_archive_status,
+        memory_normalization_status=memory_normalization_status,
+        wake_state_status=wake_state_status,
+        memory_continuity_status=memory_continuity_status,
         project_startup_index_status=project_startup_index_status(root),
         update_history_status=update_history_status(root),
         network_policy_status=network_policy_status(cfg),
@@ -413,6 +424,7 @@ def build_startup_status(
             'latka_jazn/memory/raw_chat_importer.py',
             'latka_jazn/memory/conversation_archive.py',
             'latka_jazn/memory/normalization_sidecar.py',
+            'latka_jazn/memory/continuity_readiness.py',
             'latka_jazn/model_adapters/base.py',
             'latka_jazn/voice/voice_truth_boundary.py',
         ],

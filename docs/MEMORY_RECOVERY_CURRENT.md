@@ -1,4 +1,4 @@
-# Bezpieczne odzyskiwanie pamięci v15.1.0.3.96
+# Bezpieczne odzyskiwanie pamięci — bieżąca linia
 
 ## Cel
 
@@ -19,9 +19,13 @@ inspekcjonowana i nigdy nie jest naprawiana ani nadpisywana w miejscu.
 7. **L3**: tylko rekordy z dokładnego manifestu zatwierdzonego jego SHA-256;
    każda promocja zapisuje request, decision i promotion ledger.
 
-Pełne rozmowy pozostają przeszukiwalne w L0. Sidecar celowo normalizuje najpierw
-procedury, fakty, audyty prawdy, refleksje i dziennik, a następnie ograniczony
-zestaw najnowszych wiadomości. Nie kopiuje bez potrzeby całego archiwum do L1/L2/L3.
+Pełne rozmowy pozostają przeszukiwalne w L0. Sidecar normalizuje najpierw procedury,
+fakty, audyty prawdy, refleksje i dziennik, a następnie wiadomości rozmów. Pełny
+recovery nie ma ukrytego limitu rekordów: wake-state wolno zbudować dopiero po
+`coverage_complete=true`. Jawny limit operatora jest dozwolony wyłącznie jako
+częściowy przebieg (`partial`) i nie może udawać pełnej ciągłości. Normalizacja
+pełnego źródła nadal nie oznacza kopiowania całego archiwum do L1/L2/L3: wake L1
+jest ograniczonym snapshotem, a promocje L2/L3 pozostają selektywne.
 
 ## Polecenia
 
@@ -57,6 +61,19 @@ TTL istniejącej pamięci L2. Każdy etap używa stabilnych identyfikatorów źr
 a publikacja końcowej SQLite następuje dopiero po checkpoint, zamknięciu połączeń
 i ponownym `integrity_check`. Przerwana normalizacja może zostać wznowiona bez
 uznania częściowego pliku roboczego za aktywną pamięć.
+
+
+### Continuity readiness i kontrolowana degradacja
+
+`memory_continuity_status` rozdziela możliwość wyszukiwania archiwum od gotowości
+wake-state. Jeżeli L0/conversation archive jest dostępne, ale sidecar lub wake wymaga
+odbudowy, runtime może działać w trybie `retrieval_only`: zwykła rozmowa i
+źródłowy recall pozostają dozwolone, natomiast `continuity_claim_allowed=false`.
+
+Częściowe coverage ma stan `partial_unverified`. Błąd integralności daje
+`degraded_integrity`. Te stany nie mogą hydratować L1 ani przejąć ciągłości sesji.
+Ich polityką jest kontrolowana degradacja do przeszukiwalnego L0 (jeśli dostępne),
+a nie ogólny fallback całej Jaźni.
 
 ## Wake state podczas sesji i po restarcie
 

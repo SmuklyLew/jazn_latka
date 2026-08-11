@@ -40,6 +40,10 @@ class WakeStateRuntimeStatus:
     context: dict[str, Any] | None
     l1_memory_id: str | None
     errors: list[str]
+    continuity_mode: str = "wake_unavailable"
+    continuity_claim_allowed: bool = False
+    ordinary_dialogue_allowed: bool = True
+    degradation_policy: str = "continue_without_wake_context"
     truth_boundary: str = TRUTH_BOUNDARY
 
     @property
@@ -85,6 +89,7 @@ def _bounded_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
         "recent_events": recent[:8],
         "open_threads": [str(item)[:320] for item in threads[:8]],
         "source_counts": json_object(snapshot.get("source_counts")),
+        "normalization_coverage": json_object(snapshot.get("normalization_coverage")),
         "source_run_id": snapshot.get("source_run_id"),
         "validation_status": snapshot.get("validation_status"),
         "truth_boundary": TRUTH_BOUNDARY,
@@ -108,10 +113,19 @@ class WakeStateRuntimeBridge:
                     str(row[0])
                     for row in con.execute("SELECT name FROM sqlite_schema WHERE type='table'")
                 }
-                if "wake_state_snapshots" not in tables:
+                required_tables = {"wake_state_snapshots", "normalization_runs"}
+                missing_tables = sorted(required_tables - tables)
+                if missing_tables:
                     return self._status(
                         "sidecar_schema_missing",
-                        errors=["missing table: wake_state_snapshots"],
+                        errors=[f"missing table: {name}" for name in missing_tables],
+                    )
+                run_columns = {str(row[1]) for row in con.execute("PRAGMA table_info(normalization_runs)")}
+                coverage_columns = {"expected_item_count", "normalized_item_count", "coverage_complete"}
+                if not coverage_columns.issubset(run_columns):
+                    return self._status(
+                        "normalization_coverage_unverified",
+                        errors=["normalization run does not expose complete coverage metadata"],
                     )
                 integrity = str(con.execute("PRAGMA quick_check").fetchone()[0])
                 fk_count = len(con.execute("PRAGMA foreign_key_check").fetchall())
@@ -132,6 +146,40 @@ class WakeStateRuntimeBridge:
             snapshot = json.loads(raw)
             if not isinstance(snapshot, dict) or str(row["validation_status"]) != "valid":
                 return self._status("snapshot_not_valid", errors=[f"validation_status={row['validation_status']}"])
+            source_run_id = str(row["source_run_id"] or "")
+            if not source_run_id:
+                return self._status("source_run_invalid", errors=["wake snapshot has no source_run_id"])
+            run = None
+            check = sqlite3.connect(f"file:{self.sidecar_path.resolve().as_posix()}?mode=ro", uri=True)
+            check.row_factory = sqlite3.Row
+            try:
+                run = check.execute(
+                    "SELECT status,ended_at_utc,dry_run,expected_item_count,normalized_item_count,coverage_complete "
+                    "FROM normalization_runs WHERE run_id=?",
+                    (source_run_id,),
+                ).fetchone()
+            finally:
+                check.close()
+            if run is None or str(run["status"]) != "ok" or not run["ended_at_utc"] or int(run["dry_run"]):
+                return self._status("source_run_invalid", errors=["wake snapshot source normalization run is invalid"])
+            expected = int(run["expected_item_count"] or 0)
+            normalized = int(run["normalized_item_count"] or 0)
+            if not bool(run["coverage_complete"]) or normalized < expected:
+                return self._status(
+                    "normalization_partial",
+                    errors=[f"normalization coverage incomplete: {normalized}/{expected}"],
+                )
+            coverage = json_object(snapshot.get("normalization_coverage"))
+            if not coverage or coverage.get("coverage_complete") is not True:
+                return self._status(
+                    "snapshot_coverage_unverified",
+                    errors=["wake snapshot does not carry verified normalization coverage"],
+                )
+            if int(coverage.get("normalized_item_count") or 0) < int(coverage.get("expected_item_count") or 0):
+                return self._status(
+                    "snapshot_coverage_unverified",
+                    errors=["wake snapshot coverage counts are inconsistent"],
+                )
             context = _bounded_snapshot(snapshot)
             return WakeStateRuntimeStatus(
                 schema_version=SCHEMA_VERSION,
@@ -144,6 +192,10 @@ class WakeStateRuntimeBridge:
                 context=context,
                 l1_memory_id=None,
                 errors=[],
+                continuity_mode="verified_wake",
+                continuity_claim_allowed=True,
+                ordinary_dialogue_allowed=True,
+                degradation_policy="use_verified_wake_context",
             )
         except (sqlite3.DatabaseError, OSError, UnicodeError, json.JSONDecodeError) as exc:
             return self._status("read_error", errors=[f"{type(exc).__name__}: {exc}"])
@@ -201,6 +253,9 @@ class WakeStateRuntimeBridge:
                 store.save_record(record, working_budget=WorkingMemoryBudget())
             status.status = "hydrated"
             status.l1_memory_id = memory_id
+            status.continuity_mode = "verified_wake_hydrated"
+            status.continuity_claim_allowed = True
+            status.degradation_policy = "use_verified_wake_context"
             return status
         except Exception as exc:
             status.status = "l1_hydration_failed"
@@ -225,4 +280,8 @@ class WakeStateRuntimeBridge:
             context=None,
             l1_memory_id=None,
             errors=errors,
+            continuity_mode="wake_unavailable",
+            continuity_claim_allowed=False,
+            ordinary_dialogue_allowed=True,
+            degradation_policy="continue_without_wake_context",
         )

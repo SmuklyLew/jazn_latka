@@ -83,7 +83,11 @@ Pamięć jest systemem źródeł i rekordów, a nie biologicznym wspomnieniem:
 
 Sama obecność SQLite nie oznacza zaufanej pamięci. Wymagana jest znana ścieżka, czytelna struktura, `integrity_check` lub `quick_check`, osobny `foreign_key_check`, zgodność sidecarów oraz rzeczywiste rekordy.
 
-### Wake-state i restart continuity
+### Wake-state, continuity readiness i restart continuity
+
+Runtime rozdziela teraz **przeszukiwalność L0**, **kompletność normalizacji**, **gotowość wake-state** i **prawo do twierdzenia o ciągłości**. Brak sidecara lub wake-state nie oznacza automatycznie braku pamięci: jeśli conversation archive jest zdrowe i przeszukiwalne, system może działać w trybie `retrieval_only`, zachowując źródłowy recall i zwykłą rozmowę, ale z `continuity_claim_allowed=false`. Częściowa normalizacja (`partial_unverified`) nie może hydratować L1 ani udawać pełnego przebudzenia.
+
+Pełny recovery nie ma ukrytego limitu liczby normalizowanych rekordów. Każdy run zapisuje `expected_item_count`, `normalized_item_count`, `coverage_complete` i `coverage_ratio`; wake-state wolno zbudować dopiero przy pełnym coverage. Jawny limit pozostaje narzędziem diagnostycznym i daje stan częściowy.
 
 Runtime ładuje jeden zweryfikowany snapshot wake-state, sprawdza jego SHA i integralność sidecara, a następnie hydruje ograniczony pakiet L1.
 
@@ -154,6 +158,8 @@ Polecenie działa read-only, wykrywa bazy z konfiguracji i manifestów shardów,
 Zielony raport nie dowodzi kompletności wszystkich archiwów, jakości recallu ani autoryzacji L3. Praktyczna walidacja prywatnych danych jest śledzona w GitHub Issues i odbywa się lokalnie bez commitowania `memory/`, SQLite ani eksportów.
 
 ## Recovery pamięci
+
+Recovery jest projektowany jako bezpieczna konsolidacja warstwowa, nie automatyczne trenowanie wag modelu na prywatnej historii. Pełne źródła pozostają w L0, wake tworzy ograniczony L1, L2 jest selektywne, a L3 wymaga jawnego zatwierdzenia. Taki podział jest zgodny z kierunkiem współczesnych architektur agentowych i retrieval-augmented generation: trwała wiedza pozostaje jawna, aktualizowalna i możliwa do przypisania do źródła zamiast być ukrytym efektem niekontrolowanego fine-tuningu. Szczegóły i źródła badawcze: `docs/reports/JAZN_V15_4_1_0_MEMORY_CONTINUITY_NEURO_HARDENING.md`.
 
 ```powershell
 python -X utf8 run.py memory-recover --root . `

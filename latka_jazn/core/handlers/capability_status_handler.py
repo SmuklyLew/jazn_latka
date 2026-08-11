@@ -95,6 +95,13 @@ class CapabilityStatusHandler:
             },
             "raw_memory_status": memory_status,
             "wake_state_status": wake_state_status,
+            "memory_continuity_status": {
+                "status": "not_evaluated_fast_path",
+                "ordinary_dialogue_allowed": True,
+                "continuity_claim_allowed": False,
+                "fallback_policy": "continue_without_unverified_wake_context",
+                "truth_boundary": "Fast health path does not infer restored continuity without archive/coverage evaluation.",
+            },
             "conversation_archive_status": {
                 "status": "not_scanned_in_health_fast_path",
                 "ready_for_search": None,
@@ -118,6 +125,7 @@ class CapabilityStatusHandler:
         raw_memory = json_object(status.get("raw_memory_status"))
         archive_memory = json_object(status.get("conversation_archive_status"))
         wake_state = json_object(status.get("wake_state_status"))
+        memory_continuity = json_object(status.get("memory_continuity_status"))
         wake_snapshot = json_object(wake_state.get("active_snapshot"))
         wake_freshness = json_object(wake_state.get("freshness"))
         if cfg and not raw_memory.get("status"):
@@ -174,6 +182,9 @@ class CapabilityStatusHandler:
                 f"active_database={status.get('active_database')}, active_runtime_write_database={status.get('active_runtime_write_database')}, "
                 f"process_lifecycle={status.get('process_lifecycle')}, pid={status.get('pid')}, endpoint={status.get('endpoint')}, heartbeat={status.get('heartbeat')}, "
                 f"wake_state_status={wake_state.get('status') or 'status_not_available'}, "
+                f"memory_continuity_status={memory_continuity.get('status') or 'status_not_available'}, "
+                f"continuity_claim_allowed={memory_continuity.get('continuity_claim_allowed')}, "
+                f"memory_fallback_policy={memory_continuity.get('fallback_policy')}, "
                 f"wake_state_snapshot_id={wake_snapshot.get('snapshot_id')}, "
                 f"wake_state_snapshot_sha256={wake_snapshot.get('snapshot_sha256')}, "
                 f"wake_state_validation_status={wake_snapshot.get('validation_status')}, "
@@ -198,7 +209,7 @@ class CapabilityStatusHandler:
             satisfied = [
                 "runtime_status", "version", "active_database", "cache_reuse",
                 "memory_status", "wake_state_status", "wake_state_snapshot",
-                "wake_state_freshness", "source_origin", "truth_boundary",
+                "wake_state_freshness", "memory_continuity_status", "source_origin", "truth_boundary",
             ]
             route = "runtime_health_check_after_update" if intent == "runtime_health_check_after_update" else "runtime_health_check"
         else:
