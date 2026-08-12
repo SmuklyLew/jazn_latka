@@ -31,31 +31,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          declare -A expected=(
-            [00]=000a95247541ea4d72d2a8e783ae50e636117e106212c46bef63bc584aec85c0
-            [01]=eb2296ea451679b264e3f63e02c06f180a59c21d8db133f9bceb51f730c85b48
-            [02]=8a1f4579418fdb9fd5cbc196e9dd1eb87453c69cb2df5e36778740f51db6fea2
-            [03]=8f9886d9e174403d5696fa92ec3e9a054f5c60f67280a051bf884489bcdb71d6
-            [04]=8f732844ba399360185e469e080ac2b6cf7cc938d02a710eee88db5cbcbe33da
-            [05]=0825f93d7f7ee837c24d3a3c686cfc0c196f8e15d341a66db97bfdf0f2abc157
-            [06]=6f9369ce9668ab1f35af59dbf0dd956609cbb7919092f5a63196b026e4c62975
-            [07]=1d6a877a6da058a2fe8aa00c33f306512b263ea84a783340f8ff0dcc572b7111
-            [08]=7b815b627d65d67d7f3a96fcace946c4e7147d6df3922e3cc268d78476e05b7e
-            [09]=7644fea97b944ee4a70d6eed56f71b9bd1099cc925f55fe0668a1c588113f619
-            [10]=d503656249838c218c7fb1a4af5d6dfe8f554c8c5fa2b7d165aa177f37eaaebc
-            [11]=9d95705073faf70524f3167a815ffb4025013ad6befa3d3989dfd52db1f50d69
-            [12]=f850c50c9940b895820e363746800ba160a2b0ad3ab61168ddb30885b18c63a6
-            [13]=05f5d2323ffc0402fc6db498f6b12552c71b72139e05952539c74bbcfc5a7199
-            [14]=917a9fbba2fb0903332c978f4021597dfc1fb7b51281c4a4cef1d2086fd7ff4d
-          )
-          : > /tmp/v15421.patch.gz.b64
-          for i in $(seq -w 0 14); do
-            f=".jazn_transport/v15421.c${i}"
-            test -f "$f"
-            actual="$(sha256sum "$f" | awk '{print $1}')"
-            test "$actual" = "${expected[$i]}"
-            cat "$f" >> /tmp/v15421.patch.gz.b64
-          done
+          check() { test "$(sha256sum "$1" | awk '{print $1}')" = "$2"; }
+          check .jazn_transport/v15421.c00 000a95247541ea4d72d2a8e783ae50e636117e106212c46bef63bc584aec85c0
+          check .jazn_transport/v15421.c01 eb2296ea451679b264e3f63e02c06f180a59c21d8db133f9bceb51f730c85b48
+          check .jazn_transport/v15421.c02 8a1f4579418fdb9fd5cbc196e9dd1eb87453c69cb2df5e36778740f51db6fea2
+          check .jazn_transport/v15421.c03 8f9886d9e174403d5696fa92ec3e9a054f5c60f67280a051bf884489bcdb71d6
+          check .jazn_transport/v15421.c04 8f732844ba399360185e469e080ac2b6cf7cc938d02a710eee88db5cbcbe33da
+          check .jazn_transport/v15421.c05 0825f93d7f7ee837c24d3a3c686cfc0c196f8e15d341a66db97bfdf0f2abc157
+          check .jazn_transport/v15421.c06 6f9369ce9668ab1f35af59dbf0dd956609cbb7919092f5a63196b026e4c62975
+          check .jazn_transport/v15421.c07 1d6a877a6da058a2fe8aa00c33f306512b263ea84a783340f8ff0dcc572b7111
+          check .jazn_transport/v15421.c08 7b815b627d65d67d7f3a96fcace946c4e7147d6df3922e3cc268d78476e05b7e
+          check .jazn_transport/v15421.c09 7644fea97b944ee4a70d6eed56f71b9bd1099cc925f55fe0668a1c588113f619
+          check .jazn_transport/v15421.c10 d503656249838c218c7fb1a4af5d6dfe8f554c8c5fa2b7d165aa177f37eaaebc
+          check .jazn_transport/v15421.c11 9d95705073faf70524f3167a815ffb4025013ad6befa3d3989dfd52db1f50d69
+          check .jazn_transport/v15421.c12 f850c50c9940b895820e363746800ba160a2b0ad3ab61168ddb30885b18c63a6
+          check .jazn_transport/v15421.c13a 7411a20e1a8faccc63946bacac25e4edb2889256c581f847b42e72c9607c1486
+          check .jazn_transport/v15421.c13b c5dfc222105bbc1ee65f29ea6543b2e6d78cfb9426cbf343ff07e249025d7394
+          check .jazn_transport/v15421.c14 917a9fbba2fb0903332c978f4021597dfc1fb7b51281c4a4cef1d2086fd7ff4d
+          cat .jazn_transport/v15421.c00 .jazn_transport/v15421.c01 .jazn_transport/v15421.c02 .jazn_transport/v15421.c03 .jazn_transport/v15421.c04 .jazn_transport/v15421.c05 .jazn_transport/v15421.c06 .jazn_transport/v15421.c07 .jazn_transport/v15421.c08 .jazn_transport/v15421.c09 .jazn_transport/v15421.c10 .jazn_transport/v15421.c11 .jazn_transport/v15421.c12 .jazn_transport/v15421.c13a .jazn_transport/v15421.c13b .jazn_transport/v15421.c14 > /tmp/v15421.patch.gz.b64
           test "$(wc -c < /tmp/v15421.patch.gz.b64)" -eq 36360
           test "$(sha256sum /tmp/v15421.patch.gz.b64 | awk '{print $1}')" = "cc55f326e1776531b1314a20fe86cd02da97911e985da666d31c51d3f9b789ac"
           base64 -d /tmp/v15421.patch.gz.b64 > /tmp/v15421.patch.gz
