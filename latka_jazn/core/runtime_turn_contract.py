@@ -101,8 +101,10 @@ class RuntimeTurnContract:
                 "source_origin_detail": self.source_origin_detail,
             }
         )
-        cognitive_plan = context.get("cognitive_runtime_plan") if isinstance(context.get("cognitive_runtime_plan"), dict) else {}
-        control_effects = cognitive_plan.get("control_effects") if isinstance(cognitive_plan.get("control_effects"), dict) else {}
+        raw_cognitive_plan = context.get("cognitive_runtime_plan")
+        cognitive_plan: dict[str, Any] = raw_cognitive_plan if isinstance(raw_cognitive_plan, dict) else {}
+        raw_control_effects = cognitive_plan.get("control_effects")
+        control_effects: dict[str, Any] = raw_control_effects if isinstance(raw_control_effects, dict) else {}
         raw_limit = control_effects.get("generation_limit")
         try:
             max_output_tokens = int(raw_limit) if raw_limit is not None else None
