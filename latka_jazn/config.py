@@ -295,16 +295,8 @@ class JaznConfig:
         return self._path_under_runtime_root(self.rest_cycle_db_name)
 
     @property
-    def normalization_source_db_path(self) -> Path:
-        """Prefer the verified recovery database without mutating legacy storage."""
-        recovered = self.recovered_memory_db_path
-        return recovered if recovered.is_file() else self.memory_db_path_readonly
-
-    @property
-    def memory_db_path(self) -> Path:
-        recovered = self.recovered_memory_db_path
-        if recovered.is_file():
-            return recovered
+    def runtime_write_db_path(self) -> Path:
+        """Mutable runtime-write database. Never aliases the immutable recovery snapshot."""
         return self._active_shard_path(
             self.conversation_shard_manifest_name,
             "chat_context",
@@ -313,16 +305,30 @@ class JaznConfig:
         )
 
     @property
-    def memory_db_path_readonly(self) -> Path:
-        recovered = self.recovered_memory_db_path
-        if recovered.is_file():
-            return recovered
+    def runtime_write_db_path_readonly(self) -> Path:
+        """Read-only resolver for the mutable runtime-write database."""
         return self._active_shard_path_readonly(
             self.conversation_shard_manifest_name,
             self.memory_db_name,
             logical_database="chat_context",
             role="canonical_runtime_conversation_memory",
         )
+
+    @property
+    def normalization_source_db_path(self) -> Path:
+        """Immutable source for normalization when recovery exists; otherwise current runtime memory."""
+        recovered = self.recovered_memory_db_path
+        return recovered if recovered.is_file() else self.runtime_write_db_path_readonly
+
+    @property
+    def memory_db_path(self) -> Path:
+        """Backward-compatible mutable memory path used by writers."""
+        return self.runtime_write_db_path
+
+    @property
+    def memory_db_path_readonly(self) -> Path:
+        """Backward-compatible read-only view of the mutable runtime-write database."""
+        return self.runtime_write_db_path_readonly
 
     @property
     def audit_db_path(self) -> Path:

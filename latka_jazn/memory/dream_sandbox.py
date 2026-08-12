@@ -54,6 +54,49 @@ class DreamSandbox:
             f"ZWERYFIKOWANE_LUB_OZNACZONE_ŹRÓDŁA_REPLAY:\n{source_text}"
         )
 
+    def readiness(self) -> dict[str, Any]:
+        """Report whether the autonomous dream generator is actually executable now."""
+        if self.generator is not None:
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "rest_dream_ready": True,
+                "status": "ready",
+                "provider": "injected_test_generator",
+                "local_model_required": False,
+            }
+        if not bool(getattr(self.config, "rest_local_model_enabled", True)):
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "rest_dream_ready": False,
+                "status": "disabled",
+                "reason": "rest_local_model_disabled",
+                "local_model_required": True,
+            }
+        adapter, status = self._local_adapter()
+        provider = str(status.get("provider") or status.get("adapter_contract", {}).get("provider") or "")
+        endpoint = str(status.get("endpoint") or status.get("adapter_contract", {}).get("endpoint") or "")
+        model = str(status.get("model") or status.get("adapter_contract", {}).get("model") or "")
+        if adapter is None:
+            return {
+                "schema_version": SCHEMA_VERSION,
+                "rest_dream_ready": False,
+                "status": "model_unavailable",
+                "reason": str(status.get("rest_rejection") or status.get("probe_state") or status.get("status") or "local_model_unavailable"),
+                "provider": provider,
+                "model": model,
+                "endpoint": endpoint,
+                "local_model_required": True,
+            }
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "rest_dream_ready": True,
+            "status": "ready",
+            "provider": provider,
+            "model": model,
+            "endpoint": endpoint,
+            "local_model_required": True,
+        }
+
     def _local_adapter(self) -> tuple[Any | None, dict[str, Any]]:
         rest_timeout = max(1.0, float(getattr(self.config, "rest_cycle_max_seconds", 45.0)))
         adapter_config = replace(

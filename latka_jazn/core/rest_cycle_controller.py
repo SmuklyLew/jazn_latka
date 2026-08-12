@@ -345,6 +345,16 @@ class RestCycleController:
         data["store_path"] = str(self.store.path)
         data["store_verification_mode"] = "deep" if deep_verify else "metadata"
         try:
+            data["dream_readiness"] = self.dream.readiness()
+            data["rest_scheduler_ready"] = bool(self.status.enabled and self.status.state != "degraded")
+            data["rest_scheduler_running"] = bool(self._thread is not None and self._thread.is_alive())
+            data["rest_dream_ready"] = bool(data["dream_readiness"].get("rest_dream_ready"))
+        except Exception as exc:
+            data["dream_readiness"] = {"rest_dream_ready": False, "status": "readiness_error", "error": f"{type(exc).__name__}: {exc}"}
+            data["rest_scheduler_ready"] = bool(self.status.enabled and self.status.state != "degraded")
+            data["rest_scheduler_running"] = bool(self._thread is not None and self._thread.is_alive())
+            data["rest_dream_ready"] = False
+        try:
             if deep_verify:
                 data["store_validation"] = self.store.validate()
             else:

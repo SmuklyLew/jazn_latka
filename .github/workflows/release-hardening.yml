@@ -231,6 +231,7 @@ jobs:
           tests/test_rest_cycle_controller_v1542.py
           tests/test_rest_cycle_store_v1542.py
           tests/test_wake_rest_continuity_v1542.py
+          tests/test_cognitive_truth_memory_integration_v15421.py
           tests/test_turn_atomicity.py
           tests/test_startup_stability.py
           tests/test_runtime_stability_package_smoke.py

@@ -99,6 +99,19 @@ def status_payload(
     runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     transactional_memory_ready = bool(transactional_memory.get("ready"))
     fully_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
+    conversation_memory = startup.get("conversation_archive_status") or {}
+    continuity = startup.get("memory_continuity_status") or {}
+    rest_status = daemon.get("rest_cycle_status") or {}
+    capability_readiness = {
+        "runtime_ready": bool(process_ok and runtime_write_ready and transactional_memory_ready),
+        "memory_search_ready": bool(conversation_memory.get("ready_for_search")),
+        "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
+        "rest_scheduler_ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
+        "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),
+        "cognitive_integration_ready": None,
+        "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
+        "truth_boundary": "Process readiness does not imply memory, continuity, dream generation, or cognitive integration readiness.",
+    }
     if not process_ok:
         operational_state = "inactive_or_untrusted"
     elif fully_ready and active_state == "active_trusted":
@@ -126,6 +139,7 @@ def status_payload(
         ],
         "runtime_write_ready": runtime_write_ready,
         "runtime_write_ready_source": runtime_write_ready_source,
+        "capability_readiness": capability_readiness,
         "endpoint_probe_requested": bool(probe_endpoint),
         "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
         "activation_truth_gate_eligible": bool(probe_endpoint),
