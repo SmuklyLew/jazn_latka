@@ -57,8 +57,12 @@ class KnowledgeFabric:
         "wszystkie rozmowy", "calosc", "na przestrzeni", "jak zmienial",
     )
 
-    def __init__(self, retriever: HybridRetriever | Path | str) -> None:
-        self.retriever = retriever if isinstance(retriever, HybridRetriever) else HybridRetriever(retriever)
+    def __init__(self, retriever: HybridRetriever | Path | str | None = None) -> None:
+        self.retriever = (
+            retriever if isinstance(retriever, HybridRetriever)
+            else HybridRetriever(retriever) if retriever is not None
+            else None
+        )
         self._relations: dict[str, set[str]] = {}
 
     @staticmethod
@@ -126,6 +130,8 @@ class KnowledgeFabric:
         if not plan.retrieval_required:
             return plan, []
         search_query = self._retrieval_query(query)
+        if self.retriever is None:
+            return plan, []
         hits = self.retriever.search(search_query, limit=plan.limit, current_turn_text=current_turn_text)
         evidence: list[KnowledgeEvidence] = []
         seen_sources: set[tuple[str, str]] = set()
@@ -137,3 +143,58 @@ class KnowledgeFabric:
             seen_sources.add(key)
             evidence.append(item)
         return plan, evidence
+
+    @staticmethod
+    def evidence_from_memory_context(memory_context: Mapping[str, Any] | None, *, limit: int = 6) -> list[KnowledgeEvidence]:
+        """Project bounded evidence from the already-authorized runtime recall path.
+
+        This is the turn-path integration mode: KnowledgeFabric does not create a
+        competing memory database. It wraps evidence already retrieved and truth-gated
+        by the canonical memory pipeline, preserving source locators and confidence.
+        """
+        context = dict(memory_context or {})
+        pools = (
+            ("conversation_archive_hits", "conversation_archive"),
+            ("living_memory_hits", "living_memory"),
+            ("source_file_hits", "source_file"),
+            ("legacy_messages", "legacy_memory"),
+            ("episodes", "episodic_memory"),
+        )
+        out: list[KnowledgeEvidence] = []
+        seen: set[tuple[str, str]] = set()
+        for key, mode in pools:
+            for raw in context.get(key) or []:
+                if not isinstance(raw, Mapping):
+                    continue
+                text = str(raw.get("excerpt") or raw.get("text") or raw.get("scene") or "").strip()
+                if not text:
+                    continue
+                locator = str(
+                    raw.get("source_locator") or raw.get("source") or raw.get("source_name")
+                    or raw.get("message_uid") or raw.get("conversation_id") or key
+                )
+                dedupe = (locator, text[:160])
+                if dedupe in seen:
+                    continue
+                seen.add(dedupe)
+                confidence_raw = raw.get("confidence")
+                try:
+                    confidence = float(confidence_raw) if confidence_raw is not None else 0.65
+                except (TypeError, ValueError):
+                    confidence = 0.65
+                out.append(KnowledgeEvidence(
+                    evidence_id=str(raw.get("message_uid") or raw.get("episode_id") or raw.get("item_id") or f"{mode}:{len(out)+1}"),
+                    text=text[:1200],
+                    source_locator=locator,
+                    score=max(0.0, min(1.0, confidence)),
+                    mode=mode,
+                    provenance={
+                        "runtime_memory_gate": True,
+                        "grounding": raw.get("grounding"),
+                        "content_hash": raw.get("content_hash"),
+                        "search_pass": raw.get("search_pass"),
+                    },
+                ))
+                if len(out) >= max(0, int(limit)):
+                    return out
+        return out

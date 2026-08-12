@@ -8,6 +8,12 @@ from typing import Any
 from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
 from latka_jazn.core.operational_learning_memory import OperationalLearningMemory
 from latka_jazn.core.reasoning_orchestrator import ReasoningOrchestrator
+from latka_jazn.core.cognitive_runtime_coordinator import CognitiveRuntimeCoordinator
+from latka_jazn.core.homeostasis import HomeostasisInput
+from latka_jazn.core.knowledge_fabric import KnowledgeFabric
+from latka_jazn.nlp.lexical_intelligence import LexicalIntelligenceEngine
+from latka_jazn.config import JaznConfig
+from latka_jazn.memory.dream_sandbox import DreamSandbox
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.route_handler_dispatcher import RouteHandlerDispatcher
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
@@ -116,6 +122,46 @@ def _conversation_regressions(root: Path) -> list[dict[str, Any]]:
     return results
 
 
+
+def _source_integration_checks(root: Path) -> dict[str, bool]:
+    """Verify runtime reachability markers, not merely file presence."""
+    try:
+        engine = (root / "latka_jazn/core/engine.py").read_text(encoding="utf-8")
+        replay = (root / "latka_jazn/memory/rest_replay.py").read_text(encoding="utf-8")
+        config = (root / "latka_jazn/config.py").read_text(encoding="utf-8")
+        turn_contract = (root / "latka_jazn/core/runtime_turn_contract.py").read_text(encoding="utf-8")
+    except OSError:
+        return {
+            "knowledge_fabric_reachable_from_turn": False,
+            "lexical_intelligence_reachable_from_turn": False,
+            "rest_replay_reads_normalized_sources": False,
+            "runtime_write_split_from_recovery": False,
+            "homeostasis_generation_limit_enforced": False,
+        }
+    return {
+        "knowledge_fabric_reachable_from_turn": (
+            "self.knowledge_fabric = KnowledgeFabric()" in engine
+            and '"knowledge_fabric": {' in engine
+            and "evidence_from_memory_context" in engine
+        ),
+        "lexical_intelligence_reachable_from_turn": (
+            "self.lexical_intelligence = LexicalIntelligenceEngine(" in engine
+            and '"lexical_intelligence": {' in engine
+            and "self.lexical_intelligence.analyse" in engine
+        ),
+        "rest_replay_reads_normalized_sources": (
+            "normalized_memory_items" in replay and "normalization_runs" in replay and "_normalized_candidates" in replay
+        ),
+        "runtime_write_split_from_recovery": (
+            "def runtime_write_db_path" in config
+            and "return self.runtime_write_db_path" in config
+            and "recovered if recovered.is_file() else self.runtime_write_db_path_readonly" in config
+        ),
+        "homeostasis_generation_limit_enforced": (
+            "control_effects" in turn_contract and "max_output_tokens=max_output_tokens" in turn_contract
+        ),
+    }
+
 def run_audit(root: Path) -> dict[str, Any]:
     root = Path(root).resolve()
     missing = [path for path in REQUIRED_FILES if not (root / path).is_file()]
@@ -204,6 +250,24 @@ def run_audit(root: Path) -> dict[str, Any]:
         if entry.handler_name not in dispatcher.handlers_by_name and entry.route not in dispatcher.handlers_by_route:
             route_dispatch_missing.append(intent)
 
+    integration = _source_integration_checks(root)
+    control_probe = CognitiveRuntimeCoordinator().plan_turn(
+        user_text="Zweryfikuj konfliktujące źródła przed odpowiedzią.",
+        explicit_intent="system_update_execution_request",
+        homeostasis_input=HomeostasisInput(source_conflict=0.9, uncertainty=0.8, truth_need=1.0),
+        classifier_confidence=0.6,
+        source_available=True,
+        tool_available=True,
+    )
+    knowledge_probe = KnowledgeFabric.evidence_from_memory_context({
+        "conversation_archive_hits": [{
+            "message_uid": "audit-msg", "excerpt": "Zweryfikowane źródło audytowe.",
+            "source_locator": "audit:conversation", "grounding": "conversation_archive_v1", "confidence": 0.9,
+        }]
+    }, limit=2)
+    lexical_probe = LexicalIntelligenceEngine(root=root, enable_morfeusz=False).analyse("jaźń", context="system Jaźni")
+    dream_probe_status = DreamSandbox(JaznConfig(root=root), generator=lambda *_: "symulacja").readiness()
+
     checks = {
         "required_files": not missing,
         "contextual_continuation_route_safe": route_ok,
@@ -248,6 +312,17 @@ def run_audit(root: Path) -> dict[str, Any]:
         "rest_automatic_l3_forbidden_by_contract": auto_l3_rejected,
         "rest_daemon_scheduler_present": (root / "latka_jazn/core/rest_cycle_controller.py").is_file(),
         "rest_wake_report_present": (root / "latka_jazn/memory/rest_wake_report.py").is_file(),
+        "knowledge_fabric_runtime_reachable": integration["knowledge_fabric_reachable_from_turn"] and bool(knowledge_probe),
+        "lexical_intelligence_runtime_reachable": integration["lexical_intelligence_reachable_from_turn"] and bool(lexical_probe.evidence),
+        "rest_replay_runtime_source_grounded": integration["rest_replay_reads_normalized_sources"],
+        "runtime_write_recovery_snapshot_separated": integration["runtime_write_split_from_recovery"],
+        "homeostasis_has_enforced_control_effect": (
+            integration["homeostasis_generation_limit_enforced"]
+            and isinstance(control_probe.get("control_effects"), dict)
+            and control_probe["control_effects"].get("generation_limit") is not None
+            and control_probe["control_effects"].get("requires_verification") is True
+        ),
+        "dream_readiness_is_explicit": dream_probe_status.get("rest_dream_ready") is True,
     }
     return {
         "schema_version": SCHEMA_VERSION,
@@ -273,11 +348,14 @@ def run_audit(root: Path) -> dict[str, Any]:
             "deep_recall_seconds": DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS,
         },
         "reasoning_probe": reasoning.to_dict(),
+        "integration_evidence": integration,
+        "cognitive_control_probe": control_probe,
+        "dream_readiness_probe": dream_probe_status,
         "operational_learning": {
             "lesson_count": lesson_payload.get("lesson_count"),
             "verified_count": lesson_payload.get("verified_count"),
         },
-        "truth_boundary": "Audit validates source contracts and deterministic regression probes; it does not prove general intelligence or consciousness.",
+        "truth_boundary": "Audit requires runtime reachability/effect probes in addition to source contracts; it does not prove general intelligence or consciousness.",
     }
 
 

@@ -101,6 +101,15 @@ class RuntimeTurnContract:
                 "source_origin_detail": self.source_origin_detail,
             }
         )
+        cognitive_plan = context.get("cognitive_runtime_plan") if isinstance(context.get("cognitive_runtime_plan"), dict) else {}
+        control_effects = cognitive_plan.get("control_effects") if isinstance(cognitive_plan.get("control_effects"), dict) else {}
+        raw_limit = control_effects.get("generation_limit")
+        try:
+            max_output_tokens = int(raw_limit) if raw_limit is not None else None
+        except (TypeError, ValueError):
+            max_output_tokens = None
+        if max_output_tokens is not None:
+            max_output_tokens = max(64, min(4096, max_output_tokens))
         return ModelAdapterRequest(
             prompt=str(user_text if user_text is not None else context.get("user_message") or ""),
             session_id=str(context.get("session_id") or self.turn_id),
@@ -112,5 +121,8 @@ class RuntimeTurnContract:
                 "full_canon_required": True,
                 "full_canon_sha256": str(full_canon.get("immutable_canon_sha256") or ""),
                 "full_canon_schema_version": str(full_canon.get("schema_version") or ""),
+                "cognitive_control_enforced": max_output_tokens is not None,
+                "cognitive_generation_limit_enforced": max_output_tokens is not None,
             },
+            max_output_tokens=max_output_tokens,
         )

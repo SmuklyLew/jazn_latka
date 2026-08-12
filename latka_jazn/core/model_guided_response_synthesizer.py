@@ -224,6 +224,9 @@ class ModelGuidedResponseSynthesizer:
                     "reply_guidance": (packets.get("reply_guidance") or [])[:8],
                 },
                 "polish_reasoning": cognitive_frame.get("polish_reasoning") or {},
+                "knowledge_fabric": cognitive_frame.get("knowledge_fabric") or {},
+                "lexical_intelligence": cognitive_frame.get("lexical_intelligence") or {},
+                "cognitive_runtime_plan": cognitive_frame.get("cognitive_runtime_plan") or {},
                 "dialogue_context": cognitive_frame.get("dialogue_context") or {},
             }
         )

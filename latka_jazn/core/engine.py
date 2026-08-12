@@ -98,6 +98,8 @@ from latka_jazn.core.external_research_contract import ExternalResearchContract
 from latka_jazn.core.tool_use_policy import ToolUsePolicy
 from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.core.cognitive_runtime_coordinator import CognitiveRuntimeCoordinator
+from latka_jazn.core.knowledge_fabric import KnowledgeFabric
+from latka_jazn.nlp.lexical_intelligence import LexicalIntelligenceEngine
 from latka_jazn.core.homeostasis import HomeostasisInput
 from latka_jazn.core.untrusted_source_guard import UntrustedSourceGuard
 from latka_jazn.memory.memory_recall_contract import MemoryRecallContractBuilder
@@ -381,6 +383,11 @@ class JaznEngine:
         self.tool_use_policy = ToolUsePolicy()
         self.tool_execution_controller = ToolExecutionController()
         self.cognitive_runtime_coordinator = CognitiveRuntimeCoordinator()
+        self.knowledge_fabric = KnowledgeFabric()
+        self.lexical_intelligence = LexicalIntelligenceEngine(
+            root=self.config.root,
+            cache_path=self.config.runtime_workspace_dir / "lexical_intelligence.sqlite3",
+        )
         self.untrusted_source_guard = UntrustedSourceGuard()
         self.model_adapter = build_model_adapter(self.config)
         self.model_guided_speech_status = None
@@ -1740,6 +1747,50 @@ class JaznEngine:
             tool_available=bool(tool_use_decision.get("allowed")),
         )
 
+    def _build_integrated_knowledge_and_lexical_context(
+        self,
+        text: str,
+        *,
+        memory_context: dict[str, Any],
+        memory_recall_contract: dict[str, Any],
+    ) -> dict[str, Any]:
+        knowledge_plan = self.knowledge_fabric.plan_query(
+            text, explicit_retrieval=bool(memory_recall_contract.get("items"))
+        )
+        knowledge_evidence = (
+            self.knowledge_fabric.evidence_from_memory_context(memory_context, limit=knowledge_plan.limit)
+            if knowledge_plan.retrieval_required else []
+        )
+        search_focus = list((memory_context.get("memory_search_plan") or {}).get("focus_terms") or [])
+        lexical_terms: list[str] = []
+        seen_terms: set[str] = set()
+        for raw_term in [*search_focus, *self._keyword_candidates(text)]:
+            term = str(raw_term or "").strip()
+            folded = term.casefold()
+            if len(term) < 3 or folded in seen_terms:
+                continue
+            seen_terms.add(folded)
+            lexical_terms.append(term)
+            if len(lexical_terms) >= 3:
+                break
+        lexical_intelligence = [
+            self.lexical_intelligence.analyse(term, context=text).to_dict() for term in lexical_terms
+        ]
+        return {
+            "knowledge_fabric": {
+                "plan": knowledge_plan.to_dict(),
+                "evidence": [item.to_dict() for item in knowledge_evidence],
+                "runtime_integrated": True,
+                "truth_boundary": "KnowledgeFabric wraps already authorized evidence and never creates autobiographical truth.",
+            },
+            "lexical_intelligence": {
+                "terms": lexical_terms,
+                "analyses": lexical_intelligence,
+                "runtime_integrated": True,
+                "truth_boundary": "Lexical providers supply bounded linguistic evidence; they do not override explicit user intent.",
+            },
+        }
+
     def build_cognitive_frame(
         self,
         text: str,
@@ -1869,6 +1920,9 @@ class JaznEngine:
             client_context=client_context,
             tool_use_decision=tool_use_decision,
             untrusted_source_assessment=untrusted_source_assessment,
+        )
+        cognitive_integration = self._build_integrated_knowledge_and_lexical_context(
+            text, memory_context=memory_context, memory_recall_contract=memory_recall_contract
         )
         polish_report = self.polish_understanding.analyse(text)
         nlp_report = self.polish_lemmatizer.analyse(text)
@@ -2085,6 +2139,7 @@ class JaznEngine:
             "tool_execution_plan": tool_execution_plan,
             "untrusted_source_assessment": untrusted_source_assessment,
             "cognitive_runtime_plan": cognitive_runtime_plan,
+            **cognitive_integration,
             "intent_tags": intent_tags,
             "substantive_turn": self._is_substantive_runtime_turn(text),
             "quiet_context": quiet_context,

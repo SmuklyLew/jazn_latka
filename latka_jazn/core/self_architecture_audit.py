@@ -114,7 +114,7 @@ class SelfArchitectureAuditor:
             adapter_status=adapter,
             memory_status=memory,
         ).to_dict()
-        partial = [item.key for item in checks if item.status != "ok"]
+        partial = [item.key for item in checks if item.status != "behavior_verified"]
         if reality.get("failed"):
             partial.append("capability_reality_check")
         if not operational_eval.get("ok"):
@@ -162,7 +162,7 @@ class SelfArchitectureAuditor:
             memory_status=memory,
             privacy_status=privacy,
             source_provenance=provenance,
-            working_capabilities=[item.key for item in checks if item.status == "ok"],
+            working_capabilities=[item.key for item in checks if item.status == "behavior_verified"],
             partial_capabilities=partial,
             repair_priorities=repair,
             v1501_complete_backlog=backlog,
@@ -192,12 +192,18 @@ class SelfArchitectureAuditor:
                 evidence.append(f"exists:{rel}")
             else:
                 missing.append(rel)
-        status = "ok" if not missing else "partial"
+        status = "present_unverified" if not missing else "partial"
         return CapabilityCheck(
             key=key,
             status=status,
             evidence=evidence + [f"missing:{rel}" for rel in missing],
             intended_role=role,
-            risk_or_gap="requires behavioral regression tests" if not missing else "required implementation file missing",
-            next_action="keep regression tests green" if not missing else "restore missing files: " + ", ".join(missing),
+            risk_or_gap=(
+                "source files are present, but presence alone is not behavioral evidence"
+                if not missing else "required implementation file missing"
+            ),
+            next_action=(
+                "require reachability + observed-effect regression or live smoke before reporting behavior_verified"
+                if not missing else "restore missing files: " + ", ".join(missing)
+            ),
         )

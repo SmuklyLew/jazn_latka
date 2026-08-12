@@ -9,7 +9,12 @@
       "root_cause": "Over-broad archive/status lexical patterns lacked conversational-source context.",
       "repair_rule": "Prefer conversation-archive evidence over package archive markers unless an explicit package/ZIP/manifest object is present.",
       "regression_test_id": "tests/test_conversation_archive_routing_guard.py",
-      "applicability_terms": ["archiwum rozmów", "pamiętnik", "rozmowy źródłowe", "co wtedy działo się"],
+      "applicability_terms": [
+        "archiwum rozmów",
+        "pamiętnik",
+        "rozmowy źródłowe",
+        "co wtedy działo się"
+      ],
       "confidence": 1.0,
       "verified": true
     },
@@ -20,7 +25,32 @@
       "root_cause": "A bare connective marker dominated classification while the router had no safe contextual-continuation mapping and no structured task state.",
       "repair_rule": "Resolve active task/referent before loose ellipsis classification; unresolved continuation must use ordinary dialogue, not an unsafe fallback action.",
       "regression_test_id": "tests/test_dialogue_task_state_v154.py",
-      "applicability_terms": ["zrób to", "zacznij teraz", "kontynuuj", "zgadzam się"],
+      "applicability_terms": [
+        "zrób to",
+        "zacznij teraz",
+        "kontynuuj",
+        "zgadzam się"
+      ],
+      "confidence": 1.0,
+      "verified": true
+    },
+    {
+      "trigger_signature": "capability green because implementation file exists",
+      "expected_behavior": "Report file presence separately from runtime integration; require reachability and observed-effect evidence before calling a capability working.",
+      "observed_failure": "Architecture audits could be fully green while KnowledgeFabric/Lexical Intelligence were not on the ordinary turn path and Dream generation had no eligible local model.",
+      "root_cause": "Presence-based audit checks and isolated probes were treated as sufficient evidence of end-to-end capability.",
+      "repair_rule": "Use evidence levels present -> constructible -> callable -> reachable_from_turn -> effect_observed -> persistence_verified -> live_verified; presence alone is present_unverified.",
+      "regression_test_id": "tests/test_cognitive_truth_memory_integration_v15421.py",
+      "applicability_terms": [
+        "capability",
+        "audit",
+        "działa",
+        "working",
+        "integration",
+        "reachability",
+        "effect",
+        "live verified"
+      ],
       "confidence": 1.0,
       "verified": true
     }

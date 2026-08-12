@@ -42,10 +42,19 @@ class CognitiveRuntimeCoordinator:
             source_available=source_available,
             tool_available=tool_available,
         )
+        control_effects = {
+            "max_tool_calls": int(regulation.max_tool_calls),
+            "generation_limit": regulation.generation_limit,
+            "requires_verification": bool(regulation.requires_verification or reasoning_plan.requires_verification),
+            "requires_user_confirmation": bool(regulation.requires_user_confirmation),
+            "action": regulation.action,
+            "prediction_is_advisory_only": True,
+        }
         return {
             "schema_version": SCHEMA_VERSION,
             "predictions": [item.to_dict() for item in predictions],
             "regulation": regulation.to_dict(),
+            "control_effects": control_effects,
             "temporal_graph": graph,
             "explicit_intent": explicit_intent,
             "reasoning_plan": reasoning_plan.to_dict(),

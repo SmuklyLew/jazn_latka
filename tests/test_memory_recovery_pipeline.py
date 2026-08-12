@@ -183,11 +183,13 @@ def test_pipeline_builds_sidecar_wake_l1_l2_and_exact_l3_ledger(tmp_path: Path) 
     assert bridge.end_session("session-test") == 1
 
 
-def test_memory_prepare_prefers_recovered_database(tmp_path: Path) -> None:
+def test_runtime_writes_do_not_alias_recovered_database(tmp_path: Path) -> None:
     root = _root(tmp_path)
     LegacyMemoryRecovery(root).rebuild()
     cfg = JaznConfig(root=root)
-    assert cfg.memory_db_path == cfg.recovered_memory_db_path
+    assert cfg.normalization_source_db_path == cfg.recovered_memory_db_path
+    assert cfg.memory_db_path == cfg.runtime_write_db_path
+    assert cfg.memory_db_path != cfg.recovered_memory_db_path
     sidecar = MemoryNormalizationSidecar(root)
     assert sidecar.source_db_path == cfg.recovered_memory_db_path
 

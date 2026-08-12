@@ -105,6 +105,14 @@ Każdy „sen” ma status `simulated_internal`, `counterfactual`, `rehearsal` a
 
 Szczegółowy plan faz 0–6: `docs/plans/JAZN_V15_4_2_0_REST_REPLAY_DREAM_CONTINUITY.md`. Podstawa badawcza: `docs/reports/JAZN_V15_4_2_0_RESEARCH_SOURCES.md`.
 
+### Cognitive truth & memory integration hardening (current integration-hardening line)
+
+Bieżąca linia integration-hardening wzmacnia kryterium „działa”: obecność pliku lub zielony unit test nie wystarcza do oznaczenia capability jako working. Audyty rozróżniają obecność od integracji behawioralnej, a diagnostyka rozdziela gotowość procesu, przeszukiwalność pamięci, continuity, scheduler rest i gotowość DreamSandbox.
+
+Recovery source jest rozdzielony od mutowalnego runtime-write, kanoniczne archive+FTS+staging są bramką przed pełnym wake, RestReplay potrafi czytać indywidualne rekordy z pełnego sidecara, a KnowledgeFabric i Polish Lexical Intelligence są wpięte w rzeczywistą ścieżkę cognitive frame/model context. Homeostaza ma co najmniej jeden jawny downstream control effect: bounded `generation_limit` steruje `ModelAdapterRequest.max_output_tokens`. Prediction pozostaje advisory.
+
+`rest_scheduler_ready=true` nie oznacza `rest_dream_ready=true`: autonomiczne sceny wymagają faktycznie dostępnego, dozwolonego lokalnego modelu. Szczegółowy projekt: `docs/plans/JAZN_V15_4_2_1_COGNITIVE_TRUTH_MEMORY_INTEGRATION_HARDENING.md`; raport źródeł: `docs/reports/JAZN_V15_4_2_1_RESEARCH_SOURCES.md`.
+
 ## Start i diagnostyka
 
 ```powershell

@@ -10,6 +10,7 @@ import sqlite3
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.legacy_memory_recovery import LegacyMemoryRecovery
+from latka_jazn.memory.conversation_archive import ConversationArchiveStore
 from latka_jazn.memory.memory_promotion import LongTermPromotionPolicy, new_promotion_request
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.memory_tiers import (
@@ -119,6 +120,27 @@ class MemoryRecoveryPipeline:
         recovery_report = self.recovery.rebuild(force=force_recovery, progress=progress)
         if not recovery_report.ok:
             return self._report("recovery_failed", recovery=recovery_report.to_dict(), errors=recovery_report.errors)
+
+        archive_store = ConversationArchiveStore(self.root)
+        canonical_archive_contract = False
+        if archive_store.manifest_path.is_file():
+            try:
+                uri = f"file:{archive_store.manifest_path.as_posix()}?mode=ro&immutable=1"
+                with sqlite3.connect(uri, uri=True) as manifest_con:
+                    tables = {str(row[0]) for row in manifest_con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                canonical_archive_contract = {"manifest_meta", "shard_files"}.issubset(tables)
+            except sqlite3.Error:
+                canonical_archive_contract = True
+        archive_status = archive_store.status(health_mode="deep")
+        # A canonical published conversation archive is part of the verified restore contract.
+        # If its v1 manifest is present, FTS and staging must both be healthy before wake.
+        # Legacy/synthetic fixtures without manifest_meta remain supported for compatibility.
+        if canonical_archive_contract and not archive_status.ready_for_search:
+            archive_errors = ["conversation_archive_not_searchable", *list(archive_status.issues or [])]
+            return self._report(
+                "archive_not_searchable", recovery=recovery_report.to_dict(), errors=archive_errors,
+            )
+
         normalization = self.sidecar.normalize(limit=normalize_limit)
         if normalization.status != "ok":
             pipeline_status = "normalization_incomplete" if normalization.status == "partial" else "normalization_failed"
