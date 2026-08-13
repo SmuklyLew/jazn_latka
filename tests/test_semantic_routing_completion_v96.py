@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import itertools
 import json
 from pathlib import Path
@@ -92,3 +93,36 @@ def test_every_registered_route_resolves_to_a_concrete_dispatcher_handler() -> N
         if entry.handler_name not in dispatcher.handlers_by_name and entry.route not in dispatcher.handlers_by_route:
             missing.append((intent, entry.route, entry.handler_name))
     assert missing == []
+
+def test_every_registered_route_has_explicit_priority() -> None:
+    registry = RouteRegistry()
+    assert set(registry.HANDLERS) - set(registry.PRIORITIES) == set()
+
+
+def test_classifier_literal_intents_do_not_fall_through_to_fallback() -> None:
+    root = Path(__file__).resolve().parents[1]
+    classifier_path = root / "latka_jazn" / "nlp" / "dialogue_intent_classifier.py"
+    tree = ast.parse(classifier_path.read_text(encoding="utf-8"))
+    literal_intents: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if not isinstance(node.func, ast.Name) or node.func.id != "report":
+            continue
+        if len(node.args) < 3:
+            continue
+        intent_node = node.args[2]
+        if isinstance(intent_node, ast.Constant) and isinstance(intent_node.value, str):
+            literal_intents.add(intent_node.value)
+
+    missing = sorted(literal_intents - set(RouteRegistry.HANDLERS))
+    assert missing == []
+
+
+def test_negative_feedback_without_update_request_routes_to_ordinary_dialogue() -> None:
+    report = DialogueIntentClassifier().classify("To jest źle.")
+    assert report.primary_intent == "negative_feedback_without_update_request"
+    entry = RouteRegistry().resolve(report.primary_intent)
+    assert entry.route == "ordinary_dialogue"
+    assert entry.handler_name == "OrdinaryDialogueHandler"
+    assert entry.priority == 86
