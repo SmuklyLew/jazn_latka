@@ -8,7 +8,7 @@ from latka_jazn.version import generation_mode, schema_version
 class OrdinaryDialogueHandler:
     name = "OrdinaryDialogueHandler"
     route = "ordinary_dialogue"
-    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','positive_feedback_current_turn','current_time_question','memory_experience_question','substantive_question_about_last_year')
+    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','negative_feedback_without_update_request','positive_feedback_current_turn','current_time_question','memory_experience_question','substantive_question_about_last_year')
 
     META_SIGNATURES = (
         'jaźń jako warstwa', 'jazn jako warstwa', 'warstwa pamięci', 'warstwa pamieci',
@@ -55,7 +55,7 @@ class OrdinaryDialogueHandler:
 
     def _is_bad_passthrough(self, body: str, intent: str) -> bool:
         low=(body or '').lower()
-        return intent in {'ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement'} and any(x in low for x in self.META_SIGNATURES)
+        return intent in {'ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','negative_feedback_without_update_request'} and any(x in low for x in self.META_SIGNATURES)
 
     @staticmethod
     def _clock_body(ctx: dict[str, Any]) -> str:
@@ -83,7 +83,7 @@ class OrdinaryDialogueHandler:
             return self._memory_body(text, ctx)
         if intent in {'standalone_greeting', 'casual_greeting'}:
             return FreeDialogueSynthesizer().synthesize_ordinary_reply(user_text=text, intent=intent).body
-        if intent in {'negative_feedback_current_turn', 'casual_feedback'}:
+        if intent in {'negative_feedback_current_turn', 'negative_feedback_without_update_request', 'casual_feedback'}:
             return 'Masz rację — to była kiepska odpowiedź. Nie będę jej powtarzać. Cofam ten szablon i odpowiadam krócej, konkretniej i do Twojego aktualnego zdania.'
         if intent == 'expressive_reaction':
             return 'Ojoj — widzę, że coś tu zgrzytnęło. Nie będę udawać, że ten szablon był trafny; poprawiam kierunek i zostaję przy bieżącej rozmowie.'

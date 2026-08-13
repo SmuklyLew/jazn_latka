@@ -167,3 +167,43 @@ def test_forbidden_host_voice_gets_one_retry_then_fails_closed(tmp_path: Path, m
     assert second["structuredContent"]["action"] == "host_diagnostic"
     assert second["isError"] is True
     assert any("host_regeneration_budget_exhausted" in item for item in second["structuredContent"].get("violations", []))
+
+
+def test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _patch_engine(monkeypatch)
+    runtime = _runtime_payload()
+    bridge = runtime["chatgpt_host_bridge"]
+    persist_pending_host_request(tmp_path, bridge)
+    token = issue_continuation_token(
+        tmp_path,
+        turn_id=bridge["turn_id"],
+        request_contract_hash=bridge["host_request_contract_hash"],
+    )["continuation_token"]
+
+    malformed = f"{HEADER}\n🛠️ Host ChatGPT\n\nTreść odpowiedzi."
+    first = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token=token,
+        final_text=malformed,
+        final_text_sha256=sha256_host_visible_text(malformed),
+    )
+
+    assert first["structuredContent"]["action"] == "generate_then_finalize"
+    assert first["structuredContent"]["regeneration_attempt"] == 1
+    assert first["isError"] is False
+
+    body = "Treść odpowiedzi po bezpiecznej regeneracji."
+    second = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token=first["structuredContent"]["continuation_token"],
+        final_text=body,
+        final_text_sha256=sha256_host_visible_text(body),
+    )
+
+    assert second["structuredContent"]["action"] == "display_exact"
+    assert second["isError"] is False
+    assert second["structuredContent"]["final_visible_text"].startswith(
+        f"{HEADER}\n🛠️ Łatka\n\n"
+    )

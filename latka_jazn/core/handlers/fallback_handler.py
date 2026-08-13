@@ -5,7 +5,7 @@ from latka_jazn.core.route_handler_base import RouteHandlerResult
 class FallbackHandler:
     name = "FallbackHandler"
     route = "fallback"
-    handled_intents = ('unclear_or_ambiguous_request','negative_feedback_without_update_request')
+    handled_intents = ('unclear_or_ambiguous_request',)
     STALE_BODY_SIGNATURES = (
         'ta aktualizacja ma trzy rdzenie',
         'timestamp potrafił istnieć',
