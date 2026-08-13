@@ -21,7 +21,7 @@ class RouteRegistry:
     PRIORITIES = {
         "post_update_coverage_audit_request": 102, "self_architecture_audit_request": 101, "jazn_development_plan_request": 100, "runtime_behavior_diagnostic_request": 100, "voice_perspective_diagnostic_request": 100, "runtime_exact_quote_request": 99,
         "runtime_source_question": 98, "canon_source_question": 98, "package_runtime_status_question": 97, "runtime_activation_status_question": 97, "runtime_chat_mode_request": 97, "system_repair_plan_request": 96, "logic_reasoning_audit_request": 96, "memory_grounding_status_question": 96, "system_diagnostic_question": 96,
-        "system_update_execution_request": 95, "system_update_manifest_request": 94,
+        "system_update_execution_request": 95, "system_update_manifest_request": 94, "update_manifest_request": 94,
         "creative_text_formatting": 92, "creative_text_analysis": 90,
         "creative_source_preservation_request": 89, "identity_boundary_question": 88, "identity_direct_question": 88,
         "affective_self_state_reality_check": 89, "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
@@ -35,8 +35,8 @@ class RouteRegistry:
         "self_memory_recall_request": 91,
         "direct_latka_voice_request": 97,
         "identity_memory_existence_compound_question": 94,
-        "self_expression_request": 86, "negative_feedback_current_turn": 86, "positive_feedback_current_turn": 65,
-        "casual_feedback": 87, "casual_greeting": 62, "expressive_reaction": 61, "short_free_dialogue": 59,
+        "self_expression_request": 86, "negative_feedback_current_turn": 86, "negative_feedback_without_update_request": 86, "positive_feedback_current_turn": 65,
+        "casual_feedback": 87, "casual_greeting": 62, "expressive_reaction": 61, "contextual_continuation_question": 60, "short_free_dialogue": 59,
         "standalone_greeting": 60,
         "ordinary_conversation": 10,
     }
@@ -79,6 +79,7 @@ class RouteRegistry:
         "time_awareness_question": ("time_awareness", "TimeAwarenessHandler"),
         "self_expression_request": ("self_expression", "SelfStateHandler"),
         "negative_feedback_current_turn": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
+        "negative_feedback_without_update_request": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "positive_feedback_current_turn": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "casual_feedback": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "casual_greeting": ("greeting", "OrdinaryDialogueHandler"),
