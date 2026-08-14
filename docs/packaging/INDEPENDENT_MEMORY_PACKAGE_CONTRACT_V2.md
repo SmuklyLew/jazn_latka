@@ -1,80 +1,65 @@
-# Independent Memory Package Contract v2
+# Independent memory package contract v2
 
-## Status
+## Cel
 
-Feature contract for `feat/independent-memory-package-contract-v2`.
+System Jaźni i prywatna pamięć mają niezależne cykle życia. Paczka `system` identyfikuje konkretny kod/runtime i nadal podlega ścisłemu kontraktowi wersji, integralności oraz proweniencji. Paczka `memory` jest transportem danych i nigdy nie jest kandydatem `active_root`.
 
-This contract separates the lifecycle of the Jaźń system package from the lifecycle of Łatka memory packages. A memory package is data and can never become an `active_root` by itself.
+`jazn_memory_package_manifest/v2` usuwa błędne założenie, że pamięć może być użyta tylko przez runtime o identycznym numerze wersji jak runtime, który ją spakował.
 
-## System vs memory
+## Osie wersjonowania
 
-The system package remains strict and release-bound. Its `latka_jazn/version.py`, `PACKAGE_INTEGRITY_MANIFEST.json`, `SOURCE_PROVENANCE.json`, start file and package sidecar must describe the same runtime.
+- system: `latka_jazn/version.py` + `PACKAGE_INTEGRITY_MANIFEST.json` + `SOURCE_PROVENANCE.json`;
+- memory transport: `memory_format_version` i `compatibility.contract`;
+- `created_with_runtime`: wyłącznie proweniencja snapshotu;
+- SQLite: aktualne bazy mogą dodatkowo deklarować `jazn_database_identity`; starsze bazy pozostają źródłami recovery i nie są automatycznie uznawane za bezpośrednio zgodny store.
 
-A standalone memory package uses `memory/MEMORY_PACKAGE_MANIFEST.json` with:
+## Manifest v2
+
+`memory/MEMORY_PACKAGE_MANIFEST.json` zawiera co najmniej:
 
 - `schema_version = jazn_memory_package_manifest/v2`;
 - `memory_format_version = 2`;
-- a UUID `snapshot_id`;
-- a timezone-aware `created_at_utc`;
-- `created_with_runtime` as provenance only;
+- `snapshot_id` UUID;
+- `created_at_utc`;
+- `created_with_runtime`;
 - `compatibility.contract = jazn_memory_runtime/v1`;
 - `compatibility.runtime_version_is_provenance_only = true`;
-- SHA-256 and size for every packaged memory file;
-- verified metadata for every SQLite database snapshot.
+- pełną listę `files` z SHA-256 i rozmiarem;
+- `databases` dla SQLite wraz z metodą snapshotu, integralnością, PRAGMA i — gdy istnieje — `jazn_database_identity`.
 
-A difference between `created_with_runtime` and the current runtime is therefore an advisory provenance signal, not a package rejection reason. Rejection is based on unsupported memory contract/schema, unsafe paths, missing or extra files, SHA/size mismatch, invalid SQLite, or inconsistent database metadata.
+## SQLite
 
-## SQLite snapshot rule
-
-Standalone memory packaging must not copy a live SQLite database file while ignoring its WAL. The generator creates a point-in-time database through the SQLite Online Backup API, validates the snapshot with `PRAGMA integrity_check` and `PRAGMA foreign_key_check`, then hashes and archives the snapshot. `-wal` and `-shm` files are never packaged.
-
-For each SQLite database the v2 manifest records at least:
-
-- path and logical role;
-- `snapshot_method = sqlite_online_backup_api`;
-- `PRAGMA user_version`;
-- `PRAGMA application_id`;
-- SHA-256 of the canonical SQLite schema;
-- table count;
-- file size and SHA-256;
-- integrity and foreign-key validation result.
+Generator nie kopiuje żywej bazy SQLite bajt po bajcie. Dla rozpoznanych plików SQLite tworzy spójny snapshot przez SQLite Backup API i waliduje go przed umieszczeniem w paczce. `-wal` i `-shm` pozostają plikami przejściowymi i nie są osobnymi elementami paczki.
 
 ## Legacy v1
 
-`jazn_memory_package_manifest/v1` remains readable as a migration/compatibility format. A differing `runtime_version` becomes an advisory warning. File hashes and SQLite structural integrity remain mandatory. Because v1 did not prove how SQLite was snapshotted, the loader reports that historical WAL completeness is unverifiable when a legacy package contains SQLite.
+`jazn_memory_package_manifest/v1` pozostaje obsługiwany dla istniejących paczek. Przy samodzielnym dołączaniu memory różnica `runtime_version` jest ostrzeżeniem o proweniencji, a nie automatycznym odrzuceniem. Dla profilu `combined` stara reguła ścisłego dopasowania v1 pozostaje zachowana, ponieważ pamięć i system są deklarowane jako jeden historyczny artefakt.
 
-## Combined package compatibility
+Legacy SQLite bez współczesnej `jazn_database_identity` może zostać zweryfikowane strukturalnie i zachowane jako recovery source. Sam transport nie promuje takiej bazy do bieżącego store runtime ani do L2/L3.
 
-`combined` is intentionally not the independent transport path. To preserve the existing strict `runtime-bootstrap` contract, the generator keeps an embedded v1 memory manifest bound to the system carried in the same combined archive. The SQLite bytes are still produced through the safe Online Backup snapshot path.
+## `memory-attach`
 
-Standalone `memory` and the memory half of `dual` always use v2.
+Kanoniczne dołączenie osobnej paczki:
 
-## Attachment workflow
-
-Canonical standalone attachment is:
-
-```text
-python -X utf8 run.py memory-attach \
-  --root <VERIFIED_SYSTEM_ROOT> \
-  --parts-dir <MEMORY_PACKAGE_DIR> \
-  [--zip-name <MEMORY_ZIP_NAME>]
+```powershell
+python -X utf8 run.py memory-attach --root <VERIFIED_SYSTEM_ROOT> --parts-dir <LOCAL_PACKAGE_DIR> --json
 ```
 
-The operation is fail-closed:
+Gdy katalog zawiera zarówno system.zip, jak i memory.zip, loader wybiera sidecar o `profile=memory`. Przy więcej niż jednej paczce memory wymagane jest `--zip-name`.
 
-1. verify the installed system independently;
-2. refuse attachment while the runtime daemon is active;
-3. require a current package sidecar whose profile is exactly `memory`;
-4. verify part hashes and ZIP CRC;
-5. extract to staging with existing traversal/symlink/duplicate protections;
-6. require a memory-only extracted tree;
-7. verify the v1/v2 memory manifest and all SQLite databases;
-8. materialize a candidate under `workspace_runtime/memory_attach/`;
-9. atomically swap `memory/` with rollback on post-install verification failure;
-10. write `workspace_runtime/MEMORY_ATTACH_CURRENT.json` only after success.
+Operacja:
 
-`memory-attach` does not start the daemon and does not promote L2/L3 records. The runtime should be started only after attachment and normal memory/wake-state validation.
+1. wymaga zweryfikowanego systemowego runtime root;
+2. wymaga zatrzymanego daemona;
+3. weryfikuje sidecar, części, SHA, CRC i bezpieczne ścieżki ZIP;
+4. wymaga drzewa zawierającego wyłącznie `memory/`;
+5. weryfikuje manifest v1/v2 i bazy SQLite;
+6. zachowuje wcześniejsze `memory/` w `workspace_runtime/memory_attach_backups/`;
+7. publikuje nową pamięć transakcyjnie;
+8. inicjalizuje bieżący transactional runtime store v2 przez istniejący `runtime_memory_install`;
+9. zapisuje `workspace_runtime/MEMORY_PACKAGE_CURRENT.json`;
+10. nie uruchamia automatycznie daemona i nie ogłasza odzyskanej ciągłości bez dalszej walidacji/recovery.
 
-## Truth boundary
+## Granica prawdy
 
-Packaging and attachment verify transport integrity and SQLite structural health. They do not turn raw conversations into semantic facts, approve identity claims, or promote L2/L3 memory. Those remain responsibilities of the existing memory normalization, truth and promotion contracts.
+Paczka memory potwierdza integralność transportu i strukturę danych. Nie jest dowodem aktywności Jaźni, nie zastępuje systemu, nie ustanawia tożsamości i nie promuje danych do L2/L3. Wake-state, normalizacja, recovery i memory truth gates pozostają osobnymi etapami runtime v15.4.
