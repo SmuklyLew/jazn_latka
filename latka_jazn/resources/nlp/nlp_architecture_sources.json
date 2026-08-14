@@ -62,7 +62,7 @@
       "source_id": "morfeusz2_official",
       "title": "Morfeusz 2 — analyser and generator of Polish inflection",
       "publisher": "Institute of Computer Science, Polish Academy of Sciences",
-      "url": "http://morfeusz.sgjp.pl/",
+      "url": "https://pypi.org/project/morfeusz2/",
       "source_type": "official_project_documentation",
       "supports": [
         "Polish morphological analysis",

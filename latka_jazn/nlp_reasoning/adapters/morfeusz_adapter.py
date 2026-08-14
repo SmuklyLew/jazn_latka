@@ -26,7 +26,7 @@ class MorfeuszReasoningAdapter:
             mode="offline_optional",
             reason="morfeusz2 package not imported yet",
             license="Morfeusz/SGJP local installation license; verify in source registry",
-            source_url="https://morfeusz.sgjp.pl/",
+            source_url="https://pypi.org/project/morfeusz2/",
             dictionary=dict_name,
         )
         if engine is not None:
@@ -38,7 +38,7 @@ class MorfeuszReasoningAdapter:
                 reason=None,
                 version="injected-engine",
                 license="test/injected engine; production must verify Morfeusz/SGJP license",
-                source_url="https://morfeusz.sgjp.pl/",
+                source_url="https://pypi.org/project/morfeusz2/",
                 dictionary=dict_name,
             )
             return
@@ -57,7 +57,7 @@ class MorfeuszReasoningAdapter:
                 reason=None,
                 version=str(version) if version else None,
                 license="Morfeusz/SGJP local installation license; see registry",
-                source_url="https://morfeusz.sgjp.pl/",
+                source_url="https://pypi.org/project/morfeusz2/",
                 dictionary=dict_name,
             )
         except Exception as exc:  # pragma: no cover - depends on local optional provider
