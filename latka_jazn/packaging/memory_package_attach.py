@@ -24,7 +24,7 @@ from latka_jazn.packaging.split_zip_package import (
 from latka_jazn.tools.active_extraction_cache import write_active_runtime_marker
 from .memory_package_manifest import verify_memory_package_manifest
 from .memory_package_types import (
-    MEMORY_ATTACH_MARKER_PATH, MEMORY_MANIFEST_SCHEMA_V1, MemoryAttachResult, TRUTH_BOUNDARY,
+    MEMORY_ATTACH_MARKER_PATH, MEMORY_ATTACH_SCHEMA_VERSION, MEMORY_MANIFEST_SCHEMA_V1, MemoryAttachResult, TRUTH_BOUNDARY,
     read_json, write_json_atomic,
 )
 
@@ -123,12 +123,19 @@ def attach_memory_package(
             transactional = initialize_transactional_memory_store(runtime_root); report["transactional_memory_initialization"] = transactional
             if transactional.get("ok") is not True: raise RuntimeError("transactional_memory_initialization_failed")
         except Exception:
-            if installed_new and target_memory.exists():
-                failed = workspace / "memory_attach_failed" / transaction_id; failed.parent.mkdir(parents=True, exist_ok=True); os.replace(target_memory, failed); report["failed_memory_preserved_at"] = str(failed)
-            if had_previous and backup_memory.exists(): os.replace(backup_memory, target_memory)
+            if target_memory.exists():
+                if installed_new:
+                    failed = workspace / "memory_attach_failed" / transaction_id
+                    failed.parent.mkdir(parents=True, exist_ok=True)
+                    os.replace(target_memory, failed)
+                    report["failed_memory_preserved_at"] = str(failed)
+                else:
+                    shutil.rmtree(target_memory, ignore_errors=True)
+            if had_previous and backup_memory.exists():
+                os.replace(backup_memory, target_memory)
             raise
         marker = {
-            "schema_version": MemoryAttachResult.__dataclass_fields__["schema_version"].default,
+            "schema_version": MEMORY_ATTACH_SCHEMA_VERSION,
             "attached_at_utc": datetime.now(timezone.utc).isoformat(), "runtime_root": str(runtime_root),
             "runtime_version": preflight.version, "package_name": zip_name, "package_profile": "memory",
             "memory_manifest_schema": manifest.get("manifest_schema"), "memory_format_version": manifest.get("memory_format_version"),
