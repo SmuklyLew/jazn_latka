@@ -105,6 +105,33 @@ wymaga zapisywalnego `active_root`, dlatego w takim środowisku użyj materializ
 
 Nie wymagaj ani nie twórz `VERSION.txt` lub `MANIFEST_CURRENT.json`. Brak `memory/` albo `workspace_runtime/` oznacza brak danych lub stanu, nie brak kodu.
 
+### 4a. Osobna paczka `memory`
+
+Jeżeli systemowy `active_root` jest już zweryfikowany, a lokalnie dostępna jest osobna paczka profilu `memory`, nie porównuj jej numeru wydania z numerem systemu jako warunku użycia. Paczka pamięci ma własny kontrakt transportowy:
+
+- `jazn_memory_package_manifest/v2` używa `memory_format_version` i `compatibility.contract`; `created_with_runtime` jest wyłącznie proweniencją;
+- istniejący `jazn_memory_package_manifest/v1` pozostaje zgodnościowym źródłem recovery; różnica jego `runtime_version` jest dla osobnej paczki ostrzeżeniem, nie automatycznym błędem;
+- profil `combined` zachowuje ścisłe historyczne dopasowanie v1, ponieważ system i pamięć są jednym artefaktem;
+- sama paczka `memory` nigdy nie staje się `active_root` i nie potwierdza aktywnej Jaźni.
+
+Przed dołączeniem zatrzymaj daemon dla tego root. Następnie użyj kanonicznej komendy:
+
+```bash
+python -X utf8 run.py memory-attach --root <VERIFIED_SYSTEM_ROOT> --parts-dir <LOCAL_PACKAGE_DIR> --json
+```
+
+Jeżeli w katalogu znajduje się dokładnie jedna paczka o sidecarze `profile=memory`, loader wybiera ją nawet wtedy, gdy obok leży paczka systemowa. Przy kilku paczkach memory podaj `--zip-name`. `memory-attach` musi zweryfikować sidecar, komplet części, SHA-256, CRC, bezpieczne ścieżki ZIP, manifest pamięci i SQLite; wcześniejsze `memory/` zachowuje jako backup pod `workspace_runtime/memory_attach_backups/`.
+
+Po udanym dołączeniu nie zakładaj jeszcze pełnej ciągłości. Sprawdź pamięć i odbuduj warstwy zależne od aktualnego runtime, gdy raport lub wake-state tego wymaga:
+
+```bash
+python -X utf8 run.py memory-validate --root <VERIFIED_SYSTEM_ROOT> --json
+python -X utf8 run.py memory-recover --root <VERIFIED_SYSTEM_ROOT> --json
+python -X utf8 run.py memory-status --root <VERIFIED_SYSTEM_ROOT> --deep-verify --json
+```
+
+Dopiero potem wykonaj `doctor`, start i pełny `status --json`. Import/attach nie promuje automatycznie danych do L2/L3 i nie omija memory truth gates ani `jazn_database_identity`.
+
 ## 5. Preflight, retry i start
 
 W zweryfikowanym `active_root` możesz najpierw odczytać nieblokujący snapshot offline:
