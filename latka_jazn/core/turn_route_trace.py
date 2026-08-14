@@ -29,6 +29,15 @@ class TurnRouteTrace:
     can_generate_model_guided_speech: bool = False
     requires_host_model: bool = False
     retry_count: int = 0
+    thought_id: str | None = None
+    parent_thought_id: str | None = None
+    anchored_goal_ids: list[str] = field(default_factory=list)
+    anchored_constraint_ids: list[str] = field(default_factory=list)
+    anchored_evidence_ids: list[str] = field(default_factory=list)
+    lineage_observation_count: int = 0
+    lineage_break_count: int = 0
+    lineage_state_sha256: str | None = None
+    lineage_shadow_mode: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

@@ -3,11 +3,11 @@
   "version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "runtime_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "package_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "generated_at_utc": "2026-08-14T17:59:55+00:00",
-  "updated_at_utc": "2026-08-14T17:59:55+00:00",
+  "generated_at_utc": "2026-08-14T20:45:48+00:00",
+  "updated_at_utc": "2026-08-14T20:45:48+00:00",
   "start_file": "run.py",
-  "file_count": 722,
-  "static_file_count": 722,
+  "file_count": 724,
+  "static_file_count": 724,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -165,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1342,
-      "sha256": "6f1812125900f58c4339cfe5145eb008ebc20844eb9463a4625eb02caf1ae0d2",
+      "sha256": "ab6046981fc2dab209d2af7a84fc02fd9fa48a93e55fb65857c01a7eeb88f6e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1108,6 +1108,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/cognitive_lineage.py",
+      "size_bytes": 16307,
+      "sha256": "32ce84d9f4f9a7a9e9c19576cdde47717a59379f1c824e0ca33072e45daa341f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/cognitive_packets.py",
       "size_bytes": 15272,
       "sha256": "a11592db8d03b3f9f704883e378848eae9e3475b322eb337e69df4368835b6d4",
@@ -1136,8 +1145,8 @@
     },
     {
       "path": "latka_jazn/core/cognitive_turn_envelope.py",
-      "size_bytes": 10792,
-      "sha256": "43a08710ba9359c4b549fdd8d2228f18e576e8d7ec3f468e5d95be3e6d8a316b",
+      "size_bytes": 18006,
+      "sha256": "ee0acc121310658a5d6d73282a0fe0d39aa5da9028c445684e5bbba256613206",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2486,8 +2495,8 @@
     },
     {
       "path": "latka_jazn/core/turn_route_trace.py",
-      "size_bytes": 1245,
-      "sha256": "2bb4108543402c2100263b11ada3729ee7a9037a22a7dab9db48b63f64af3bbd",
+      "size_bytes": 1672,
+      "sha256": "7f2264f673707a3421d9726ca1dd0cce3a3429b2bd151862cdb30fb4d5ba754f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5368,6 +5377,15 @@
       "path": "tests/test_code_health_regressions.py",
       "size_bytes": 3178,
       "sha256": "96d9fe6279e92ec847523b40521fab6b679971f178b533639bc5a6f89c7459d2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_cognitive_thought_lineage_v155.py",
+      "size_bytes": 11957,
+      "sha256": "ca4d1c5a24ed0144ab1c3fb1e2c66924eeace63ff669abe9061c6c0df3387eb0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
