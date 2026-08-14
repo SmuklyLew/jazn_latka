@@ -1,0 +1,30 @@
+     @contextmanager
+@@ -261,41 +277,46 @@ class MemoryStore:
+         return keys
+ 
+     def add_episodic_memory(self, rec: dict) -> None:
+-        self.con.execute("""INSERT OR REPLACE INTO episodic_memories VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (
+-            rec["episode_id"], rec["created_at_utc"], rec.get("local_time_label"), rec["scene"],
+-            json.dumps(rec.get("participants") or [], ensure_ascii=False), rec.get("emotional_anchor"),
+-            rec.get("source") or "runtime", rec.get("grounding") or "unknown", float(rec.get("confidence") or 0.0),
+-            rec.get("raw_excerpt"), json.dumps(rec.get("tags") or [], ensure_ascii=False)
+-        ))
+-        self.con.commit()
++        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
++            self.con.execute("""INSERT OR REPLACE INTO episodic_memories VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (
++                rec["episode_id"], rec["created_at_utc"], rec.get("local_time_label"), rec["scene"],
++                json.dumps(rec.get("participants") or [], ensure_ascii=False), rec.get("emotional_anchor"),
++                rec.get("source") or "runtime", rec.get("grounding") or "unknown", float(rec.get("confidence") or 0.0),
++                rec.get("raw_excerpt"), json.dumps(rec.get("tags") or [], ensure_ascii=False)
++            ))
++            self.con.commit()
+ 
+     def add_semantic_fact(self, rec: dict) -> None:
+-        self.con.execute("""INSERT OR REPLACE INTO semantic_facts VALUES(?,?,?,?,?,?,?,?)""", (
+-            rec["fact_id"], rec["created_at_utc"], rec["subject"], rec["predicate"], rec["value"],
+-            rec.get("source") or "runtime", float(rec.get("confidence") or 0.0), json.dumps(rec.get("tags") or [], ensure_ascii=False)
+-        ))
+-        self.con.commit()
++        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
++            self.con.execute("""INSERT OR REPLACE INTO semantic_facts VALUES(?,?,?,?,?,?,?,?)""", (
++                rec["fact_id"], rec["created_at_utc"], rec["subject"], rec["predicate"], rec["value"],
