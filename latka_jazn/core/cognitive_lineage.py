@@ -150,10 +150,14 @@ def evidence_references_from_memory_contract(
     for index, raw in enumerate(contract.get("items") or []):
         if not isinstance(raw, dict):
             continue
-        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+        item: dict[str, Any] = dict(raw)
+        metadata_value = item.get("metadata")
+        metadata: dict[str, Any] = (
+            dict(metadata_value) if isinstance(metadata_value, dict) else {}
+        )
         durable_parts: list[str] = []
         for key in identity_keys:
-            value = raw.get(key)
+            value = item.get(key)
             if value in (None, ""):
                 value = metadata.get(key)
             if value not in (None, ""):
@@ -161,9 +165,9 @@ def evidence_references_from_memory_contract(
         if durable_parts:
             refs.append("|".join(durable_parts))
             continue
-        source = str(raw.get("source") or raw.get("memory_type") or "runtime_memory")
-        memory_type = str(raw.get("memory_type") or "unknown")
-        timestamp = str(raw.get("timestamp") or "")
+        source = str(item.get("source") or item.get("memory_type") or "runtime_memory")
+        memory_type = str(item.get("memory_type") or "unknown")
+        timestamp = str(item.get("timestamp") or "")
         refs.append(f"fallback:{index}:{source}:{memory_type}:{timestamp}")
     return _normalize_refs(refs)
 
