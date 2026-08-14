@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.conversation_archive import build_conversation_archive_status
 from latka_jazn.memory.event_ledger import (
     DEFAULT_JSONL_SHARD_MAX_BYTES,
@@ -61,8 +62,7 @@ def _sqlite_stats_readonly(db_path: Path) -> tuple[dict[str, int], str]:
     if not db_path.exists():
         return stats, "missing_sqlite"
     try:
-        uri = f"file:{db_path.resolve()}?mode=ro"
-        con = sqlite3.connect(uri, uri=True)
+        con = connect_runtime_readonly(db_path, timeout_ms=10_000)
         try:
             for table in STAT_TABLES:
                 try:
@@ -80,8 +80,7 @@ def _sqlite_meta_readonly(db_path: Path, key: str) -> str | None:
     if not db_path.exists():
         return None
     try:
-        uri = f"file:{db_path.resolve()}?mode=ro"
-        con = sqlite3.connect(uri, uri=True)
+        con = connect_runtime_readonly(db_path, timeout_ms=10_000)
         try:
             row = con.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
             return row[0] if row else None

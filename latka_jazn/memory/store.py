@@ -7,6 +7,11 @@ from contextlib import contextmanager
 from typing import Callable, Iterator
 import hashlib, json, sqlite3, uuid
 
+from latka_jazn.db.runtime_sqlite import (
+    connect_runtime_writable,
+    runtime_sqlite_write_guard,
+)
+
 SCHEMA = """
 PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -125,36 +130,46 @@ class MemoryStore:
     def __init__(self, path: Path) -> None:
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = sqlite3.connect(self.path)
-        self.con.row_factory = sqlite3.Row
-        self.con.executescript(SCHEMA)
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("schema_version", "CURRENT_LINE"))
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", PACKAGE_VERSION))
-        self.con.commit()
+        self.busy_timeout_ms = 30_000
+        self.con = connect_runtime_writable(
+            self.path,
+            timeout_ms=self.busy_timeout_ms,
+            synchronous="FULL",
+        )
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.executescript(SCHEMA)
+            self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("schema_version", "CURRENT_LINE"))
+            self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", ("system_version", PACKAGE_VERSION))
+            self.con.commit()
 
     def close(self) -> None:
-        self.con.commit(); self.con.close()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.commit()
+            self.con.close()
 
     def get_meta(self, key: str, default: str | None = None) -> str | None:
         row = self.con.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
         return row[0] if row else default
 
     def set_meta(self, key: str, value: str) -> None:
-        self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", (key, value))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", (key, value))
+            self.con.commit()
 
     def add_event(self, event_type: str, payload: dict, *, source: str="runtime", actor: str="latka", tags: list[str]|None=None, importance: float=0.5, emotional_weight: float=0.0, canonical_impact: int=0, created_at_local: str|None=None) -> str:
         now = datetime.now(timezone.utc).isoformat()
         eid = hashlib.sha256((event_type + now + json.dumps(payload, ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()
-        self.con.execute("""INSERT OR REPLACE INTO events VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (eid, event_type, now, created_at_local or now, source, actor, json.dumps(payload, ensure_ascii=False), json.dumps(tags or [], ensure_ascii=False), importance, emotional_weight, canonical_impact))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("""INSERT OR REPLACE INTO events VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (eid, event_type, now, created_at_local or now, source, actor, json.dumps(payload, ensure_ascii=False), json.dumps(tags or [], ensure_ascii=False), importance, emotional_weight, canonical_impact))
+            self.con.commit()
         return eid
 
     def write_journal(self, kind: str, text: str, *, payload: dict|None=None, created_at_local: str|None=None) -> str:
         now = datetime.now(timezone.utc).isoformat()
         jid = str(uuid.uuid4())
-        self.con.execute("INSERT INTO journal VALUES(?,?,?,?,?,?)", (jid, now, created_at_local or now, kind, text, json.dumps(payload or {}, ensure_ascii=False)))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("INSERT INTO journal VALUES(?,?,?,?,?,?)", (jid, now, created_at_local or now, kind, text, json.dumps(payload or {}, ensure_ascii=False)))
+            self.con.commit()
         return jid
 
     def register_source_file(self, path: Path, *, kind: str, original_path: str|None=None) -> str:
@@ -163,8 +178,9 @@ class MemoryStore:
             for chunk in iter(lambda:f.read(1024*1024), b''):
                 h.update(chunk)
         sha=h.hexdigest()
-        self.con.execute("INSERT OR REPLACE INTO source_files VALUES(?,?,?,?,?,?)", (sha, str(path), path.stat().st_size, kind, original_path, datetime.now(timezone.utc).isoformat()))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("INSERT OR REPLACE INTO source_files VALUES(?,?,?,?,?,?)", (sha, str(path), path.stat().st_size, kind, original_path, datetime.now(timezone.utc).isoformat()))
+            self.con.commit()
         return sha
 
     @contextmanager
@@ -261,41 +277,46 @@ class MemoryStore:
         return keys
 
     def add_episodic_memory(self, rec: dict) -> None:
-        self.con.execute("""INSERT OR REPLACE INTO episodic_memories VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (
-            rec["episode_id"], rec["created_at_utc"], rec.get("local_time_label"), rec["scene"],
-            json.dumps(rec.get("participants") or [], ensure_ascii=False), rec.get("emotional_anchor"),
-            rec.get("source") or "runtime", rec.get("grounding") or "unknown", float(rec.get("confidence") or 0.0),
-            rec.get("raw_excerpt"), json.dumps(rec.get("tags") or [], ensure_ascii=False)
-        ))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("""INSERT OR REPLACE INTO episodic_memories VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (
+                rec["episode_id"], rec["created_at_utc"], rec.get("local_time_label"), rec["scene"],
+                json.dumps(rec.get("participants") or [], ensure_ascii=False), rec.get("emotional_anchor"),
+                rec.get("source") or "runtime", rec.get("grounding") or "unknown", float(rec.get("confidence") or 0.0),
+                rec.get("raw_excerpt"), json.dumps(rec.get("tags") or [], ensure_ascii=False)
+            ))
+            self.con.commit()
 
     def add_semantic_fact(self, rec: dict) -> None:
-        self.con.execute("""INSERT OR REPLACE INTO semantic_facts VALUES(?,?,?,?,?,?,?,?)""", (
-            rec["fact_id"], rec["created_at_utc"], rec["subject"], rec["predicate"], rec["value"],
-            rec.get("source") or "runtime", float(rec.get("confidence") or 0.0), json.dumps(rec.get("tags") or [], ensure_ascii=False)
-        ))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("""INSERT OR REPLACE INTO semantic_facts VALUES(?,?,?,?,?,?,?,?)""", (
+                rec["fact_id"], rec["created_at_utc"], rec["subject"], rec["predicate"], rec["value"],
+                rec.get("source") or "runtime", float(rec.get("confidence") or 0.0), json.dumps(rec.get("tags") or [], ensure_ascii=False)
+            ))
+            self.con.commit()
 
     def add_procedural_rule(self, rec: dict) -> None:
-        self.con.execute("""INSERT OR REPLACE INTO procedural_rules VALUES(?,?,?,?,?,?,?)""", (
-            rec["rule_id"], rec["created_at_utc"], rec["trigger"], rec["action"], rec["reason"],
-            int(rec.get("priority") or 50), rec.get("source") or "runtime"
-        ))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("""INSERT OR REPLACE INTO procedural_rules VALUES(?,?,?,?,?,?,?)""", (
+                rec["rule_id"], rec["created_at_utc"], rec["trigger"], rec["action"], rec["reason"],
+                int(rec.get("priority") or 50), rec.get("source") or "runtime"
+            ))
+            self.con.commit()
 
     def add_reflection(self, rec: dict) -> None:
-        self.con.execute("""INSERT OR REPLACE INTO reflection_entries VALUES(?,?,?,?,?,?,?,?)""", (
-            rec["reflection_id"], rec["created_at_utc"], rec.get("episode_id"), rec["meaning_for_latka"],
-            rec["identity_impact"], rec["boundary_note"], rec.get("next_question"), float(rec.get("confidence") or 0.0)
-        ))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("""INSERT OR REPLACE INTO reflection_entries VALUES(?,?,?,?,?,?,?,?)""", (
+                rec["reflection_id"], rec["created_at_utc"], rec.get("episode_id"), rec["meaning_for_latka"],
+                rec["identity_impact"], rec["boundary_note"], rec.get("next_question"), float(rec.get("confidence") or 0.0)
+            ))
+            self.con.commit()
 
     def add_truth_audit(self, rec: dict) -> str:
         aid = hashlib.sha256((rec["created_at_utc"] + rec["text"]).encode("utf-8")).hexdigest()
-        self.con.execute("INSERT OR REPLACE INTO truth_audits VALUES(?,?,?,?)", (
-            aid, rec["created_at_utc"], rec["text"], json.dumps(rec.get("audit") or [], ensure_ascii=False)
-        ))
-        self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.execute("INSERT OR REPLACE INTO truth_audits VALUES(?,?,?,?)", (
+                aid, rec["created_at_utc"], rec["text"], json.dumps(rec.get("audit") or [], ensure_ascii=False)
+            ))
+            self.con.commit()
         return aid
 
     def search_episodic_memories(

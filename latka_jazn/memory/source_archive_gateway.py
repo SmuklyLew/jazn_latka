@@ -10,6 +10,7 @@ import zlib
 
 from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tiers import SourceEvidence
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("source_archive_gateway")
@@ -112,11 +113,7 @@ class SourceArchiveGateway:
         if not self.path.is_file():
             raise FileNotFoundError(self.path)
         self._should_continue = should_continue
-        uri = f"file:{self.path.as_posix()}?mode=ro"
-        self.con = sqlite3.connect(uri, uri=True, timeout=max(1.0, busy_timeout_ms / 1000))
-        self.con.row_factory = sqlite3.Row
-        self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
-        self.con.execute("PRAGMA query_only=ON")
+        self.con = connect_runtime_readonly(self.path, timeout_ms=max(1000, int(busy_timeout_ms)))
         if should_continue is not None:
             def _progress() -> int:
                 try:

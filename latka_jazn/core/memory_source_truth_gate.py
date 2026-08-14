@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 from typing import Any
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
 from latka_jazn.memory.database_identity import (
     DatabaseIdentity,
     initialize_database_identity,
@@ -129,13 +130,16 @@ class MemorySourceTruthGate:
         record_count = 0
         if checks["database_exists"]:
             try:
-                connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=rw", uri=True, timeout=30.0)
-                connection.execute("PRAGMA foreign_keys=ON")
+                connection = (
+                    connect_runtime_writable(db_path, timeout_ms=30_000, synchronous="FULL")
+                    if initialize_identity
+                    else connect_runtime_readonly(db_path, timeout_ms=30_000)
+                )
                 integrity_rows = [str(row[0]) for row in connection.execute("PRAGMA integrity_check").fetchall()]
                 foreign_rows = [list(row) for row in connection.execute("PRAGMA foreign_key_check").fetchall()]
                 identity = read_database_identity(connection)
                 if identity is None and initialize_identity and expected_schema_identity:
-                    with connection:
+                    with runtime_sqlite_write_guard(db_path, timeout_ms=30_000), connection:
                         identity = initialize_database_identity(
                             connection,
                             schema_identity=expected_schema_identity,

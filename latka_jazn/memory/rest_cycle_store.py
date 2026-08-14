@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any, Iterator
 import json
 import sqlite3
+
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable, runtime_sqlite_write_guard
 import threading
 import uuid
 
@@ -134,26 +136,26 @@ class RestCycleStore:
         self.path = Path(path).expanduser().resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
-        self.con = sqlite3.connect(self.path, timeout=max(1.0, busy_timeout_ms / 1000), isolation_level=None, check_same_thread=False)
-        self.con.row_factory = sqlite3.Row
-        self.con.execute("PRAGMA foreign_keys=ON")
-        self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
-        self.con.execute("PRAGMA journal_mode=WAL")
-        selected_sync = str(synchronous).upper()
-        if selected_sync not in {"FULL", "NORMAL"}:
-            raise ValueError("synchronous must be FULL or NORMAL")
-        self.con.execute(f"PRAGMA synchronous={selected_sync}")
-        self.con.executescript(SCHEMA_SQL)
-        self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
-        self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('runtime_version',?)", (PACKAGE_VERSION_FULL,))
-        self.con.execute(
-            "INSERT OR REPLACE INTO rest_meta(key,value) VALUES('truth_boundary',?)",
-            ("Synthetic rest content is isolated from factual memory and cannot auto-promote to L3.",),
+        self.busy_timeout_ms = max(1000, int(busy_timeout_ms))
+        self.con = connect_runtime_writable(
+            self.path,
+            timeout_ms=self.busy_timeout_ms,
+            synchronous=synchronous,
+            isolation_level=None,
+            check_same_thread=False,
         )
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.executescript(SCHEMA_SQL)
+            self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
+            self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('runtime_version',?)", (PACKAGE_VERSION_FULL,))
+            self.con.execute(
+                "INSERT OR REPLACE INTO rest_meta(key,value) VALUES('truth_boundary',?)",
+                ("Synthetic rest content is isolated from factual memory and cannot auto-promote to L3.",),
+            )
 
     @contextmanager
     def transaction(self) -> Iterator[None]:
-        with self._lock:
+        with self._lock, runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
             if self.con.in_transaction:
                 raise RuntimeError("nested rest-cycle transactions are forbidden")
             self.con.execute("BEGIN IMMEDIATE")
@@ -166,7 +168,8 @@ class RestCycleStore:
                 self.con.commit()
 
     def close(self) -> None:
-        self.con.close()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.close()
 
     def __enter__(self) -> "RestCycleStore":
         return self

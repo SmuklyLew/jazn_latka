@@ -7,7 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, ensure_runtime_audit_schema
+from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
+from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, connect_runtime_audit_readonly, ensure_runtime_audit_schema
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("mcp_tool_audit")
@@ -60,7 +61,7 @@ class McpToolAuditStore:
         connection = connect_runtime_audit(self.path)
         try:
             ensure_runtime_audit_schema(connection)
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 connection.execute(
                     """
                     INSERT INTO mcp_tool_audit(
@@ -82,12 +83,17 @@ class McpToolAuditStore:
                 )
             return event.audit_id
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def list_for_key(self, idempotency_key: str) -> list[dict[str, Any]]:
-        connection = connect_runtime_audit(self.path)
+        if not self.path.is_file():
+            return []
+        connection = connect_runtime_audit_readonly(self.path)
         try:
-            ensure_runtime_audit_schema(connection)
+            tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
+            if "mcp_tool_audit" not in tables:
+                return []
             rows = connection.execute(
                 "SELECT * FROM mcp_tool_audit WHERE idempotency_key=? ORDER BY created_at_utc,audit_id",
                 (idempotency_key,),

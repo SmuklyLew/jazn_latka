@@ -7,6 +7,7 @@ from pathlib import Path
 import sqlite3
 from typing import Any, Iterable
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
 from latka_jazn.memory.embedding_provider import EmbeddingProvider
 from latka_jazn.version import schema_version
 
@@ -43,30 +44,32 @@ class VectorIndex:
         self.path = Path(path)
         self.provider = provider
 
-    def _connect(self) -> sqlite3.Connection:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(self.path)
-        connection.row_factory = sqlite3.Row
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS vector_documents(
-              document_id TEXT PRIMARY KEY,
-              source_locator TEXT NOT NULL,
-              text_hash TEXT NOT NULL,
-              vector_json TEXT NOT NULL,
-              metadata_json TEXT NOT NULL
+    def _connect_writable(self) -> sqlite3.Connection:
+        connection = connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
+        with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS vector_documents(
+                  document_id TEXT PRIMARY KEY,
+                  source_locator TEXT NOT NULL,
+                  text_hash TEXT NOT NULL,
+                  vector_json TEXT NOT NULL,
+                  metadata_json TEXT NOT NULL
+                )
+                """
             )
-            """
-        )
         return connection
+
+    def _connect_readonly(self) -> sqlite3.Connection:
+        return connect_runtime_readonly(self.path, timeout_ms=10_000)
 
     def rebuild(self, documents: Iterable[dict[str, Any]]) -> int:
         rows = list(documents)
         texts = [str(row.get("text") or "") for row in rows]
         vectors = self.provider.embed(texts) if rows else []
-        connection = self._connect()
+        connection = self._connect_writable()
         try:
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 connection.execute("DELETE FROM vector_documents")
                 for row, vector in zip(rows, vectors):
                     connection.execute(
@@ -84,11 +87,12 @@ class VectorIndex:
                     )
             return len(rows)
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def search(self, query: str, *, limit: int = 8, exclude_text_hash: str | None = None) -> list[VectorHit]:
         query_vector = self.provider.embed([query])[0]
-        connection = self._connect()
+        connection = self._connect_readonly()
         try:
             hits: list[VectorHit] = []
             for row in connection.execute("SELECT * FROM vector_documents").fetchall():
