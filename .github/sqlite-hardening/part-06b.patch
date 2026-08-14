@@ -1,0 +1,31 @@
++        return connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
++
++    def _connect_readonly(self):
++        return connect_runtime_readonly(self.path, timeout_ms=10_000)
+ 
+     def close(self) -> None:
+         """Compatibility hook for engine shutdown.
+@@ -29,7 +33,7 @@ class NetworkDictionaryCache:
+         return None
+ 
+     def _init(self):
+-        with closing(self._connect()) as con:
++        with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), closing(self._connect_writable()) as con:
+             con.execute('CREATE TABLE IF NOT EXISTS dictionary_entries (term TEXT, lang TEXT, source TEXT, raw_result_json TEXT, normalized_result_json TEXT, retrieved_at_utc TEXT, expires_at_utc TEXT, license_note TEXT, confidence REAL, sha256 TEXT, PRIMARY KEY(term, lang, source))')
+             con.execute('CREATE TABLE IF NOT EXISTS lookup_events (id INTEGER PRIMARY KEY AUTOINCREMENT, term TEXT, lang TEXT, source TEXT, status TEXT, created_at_utc TEXT)')
+             con.execute('CREATE TABLE IF NOT EXISTS source_license_notes (source TEXT PRIMARY KEY, license_note TEXT)')
+@@ -40,7 +44,7 @@ class NetworkDictionaryCache:
+     def _now(self): return datetime.now(timezone.utc).isoformat()
+ 
+     def get(self, term:str, lang:str, source:str)->dict[str,Any]|None:
+-        with closing(self._connect()) as con:
++        with closing(self._connect_readonly()) as con:
+             row=con.execute('SELECT normalized_result_json, expires_at_utc FROM dictionary_entries WHERE term=? AND lang=? AND source=?',(term,lang,source)).fetchone()
+         if not row: return None
+         expires=row[1]
+@@ -54,7 +58,7 @@ class NetworkDictionaryCache:
+ 
+     def get_any(self, term:str, lang:str, preferred_sources: list[str] | tuple[str,...] | None = None)->dict[str,Any]|None:
+         order=list(preferred_sources or [])
+-        with closing(self._connect()) as con:
++        with closing(self._connect_readonly()) as con:
