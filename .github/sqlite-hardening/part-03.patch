@@ -1,0 +1,161 @@
+-        self.con.execute(f"PRAGMA synchronous={selected_sync}")
+-        self.con.executescript(SCHEMA_SQL)
+-        self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
+-        self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('runtime_version',?)", (PACKAGE_VERSION_FULL,))
+-        self.con.execute(
+-            "INSERT OR REPLACE INTO rest_meta(key,value) VALUES('truth_boundary',?)",
+-            ("Synthetic rest content is isolated from factual memory and cannot auto-promote to L3.",),
++        self.busy_timeout_ms = max(1000, int(busy_timeout_ms))
++        self.con = connect_runtime_writable(
++            self.path,
++            timeout_ms=self.busy_timeout_ms,
++            synchronous=synchronous,
++            isolation_level=None,
++            check_same_thread=False,
+         )
++        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
++            self.con.executescript(SCHEMA_SQL)
++            self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
++            self.con.execute("INSERT OR REPLACE INTO rest_meta(key,value) VALUES('runtime_version',?)", (PACKAGE_VERSION_FULL,))
++            self.con.execute(
++                "INSERT OR REPLACE INTO rest_meta(key,value) VALUES('truth_boundary',?)",
++                ("Synthetic rest content is isolated from factual memory and cannot auto-promote to L3.",),
++            )
+ 
+     @contextmanager
+     def transaction(self) -> Iterator[None]:
+-        with self._lock:
++        with self._lock, runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+             if self.con.in_transaction:
+                 raise RuntimeError("nested rest-cycle transactions are forbidden")
+             self.con.execute("BEGIN IMMEDIATE")
+@@ -166,7 +168,8 @@ class RestCycleStore:
+                 self.con.commit()
+ 
+     def close(self) -> None:
+-        self.con.close()
++        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
++            self.con.close()
+ 
+     def __enter__(self) -> "RestCycleStore":
+         return self
+diff --git a/latka_jazn/memory/runtime_write_access_contract.py b/latka_jazn/memory/runtime_write_access_contract.py
+index 1f6e8fa..1cf98c6 100644
+--- a/latka_jazn/memory/runtime_write_access_contract.py
++++ b/latka_jazn/memory/runtime_write_access_contract.py
+@@ -7,6 +7,7 @@ import sqlite3
+ 
+ from latka_jazn.audit.audit_context_store import AuditContextStore
+ from latka_jazn.config import JaznConfig
++from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, runtime_sqlite_capabilities
+ from latka_jazn.db.shard_manifest import ensure_manifest
+ from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
+ from latka_jazn.memory.store import MemoryStore
+@@ -40,6 +41,11 @@ class RuntimeWriteAccessStatus:
+     memory_record_count: int = 0
+     audit_record_count: int = 0
+     verification_mode: str = "deep"
++    sqlite_version: str | None = None
++    sqlite_threadsafety: int | None = None
++    wal_reset_fix_available: bool | None = None
++    runtime_writer_serialization: str | None = None
++    wal_reset_mitigation_required: bool | None = None
+     weak_points_repaired: list[str] = field(default_factory=lambda: [
+         "niepewny_czas_bez_trusted_timestamp",
+         "brak_biezacego_runtime_write_v1_po_odchudzeniu_paczki",
+@@ -79,10 +85,8 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
+     if not path.exists():
+         return result
+     try:
+-        con = sqlite3.connect(
+-            f"file:{path.resolve().as_posix()}?mode=ro",
+-            uri=True,
+-            timeout=10.0 if deep_verify else 0.25,
++        con = connect_runtime_readonly(
++            path, timeout_ms=10_000 if deep_verify else 250
+         )
+         try:
+             con.execute("SELECT 1").fetchone()
+@@ -220,6 +224,7 @@ def build_runtime_write_access_status(
+             or memory["foreign_key_violations"] or audit["foreign_key_violations"]
+         ) else "partial_missing"
+ 
++    sqlite_caps = runtime_sqlite_capabilities()
+     return RuntimeWriteAccessStatus(
+         schema_version=SCHEMA_VERSION,
+         status=status,
+@@ -244,4 +249,9 @@ def build_runtime_write_access_status(
+         memory_record_count=int(memory["record_count"]),
+         audit_record_count=int(audit["record_count"]),
+         verification_mode="deep" if deep_verify else "metadata_only",
++        sqlite_version=str(sqlite_caps.get("sqlite_version") or "") or None,
++        sqlite_threadsafety=int(sqlite_caps.get("sqlite_threadsafety") or 0),
++        wal_reset_fix_available=bool(sqlite_caps.get("wal_reset_fix_available")),
++        runtime_writer_serialization=str(sqlite_caps.get("runtime_writer_serialization") or "") or None,
++        wal_reset_mitigation_required=bool(sqlite_caps.get("wal_reset_mitigation_required")),
+     )
+diff --git a/latka_jazn/memory/source_archive_gateway.py b/latka_jazn/memory/source_archive_gateway.py
+index 82f012f..ec29e57 100644
+--- a/latka_jazn/memory/source_archive_gateway.py
++++ b/latka_jazn/memory/source_archive_gateway.py
+@@ -10,6 +10,7 @@ import zlib
+ 
+ from latka_jazn.core.json_types import json_object
+ from latka_jazn.memory.memory_tiers import SourceEvidence
++from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+ from latka_jazn.version import schema_version
+ 
+ SCHEMA_VERSION = schema_version("source_archive_gateway")
+@@ -112,11 +113,7 @@ class SourceArchiveGateway:
+         if not self.path.is_file():
+             raise FileNotFoundError(self.path)
+         self._should_continue = should_continue
+-        uri = f"file:{self.path.as_posix()}?mode=ro"
+-        self.con = sqlite3.connect(uri, uri=True, timeout=max(1.0, busy_timeout_ms / 1000))
+-        self.con.row_factory = sqlite3.Row
+-        self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
+-        self.con.execute("PRAGMA query_only=ON")
++        self.con = connect_runtime_readonly(self.path, timeout_ms=max(1000, int(busy_timeout_ms)))
+         if should_continue is not None:
+             def _progress() -> int:
+                 try:
+diff --git a/latka_jazn/memory/sqlite/runtime_audit_schema.py b/latka_jazn/memory/sqlite/runtime_audit_schema.py
+index a888e14..c38f59b 100644
+--- a/latka_jazn/memory/sqlite/runtime_audit_schema.py
++++ b/latka_jazn/memory/sqlite/runtime_audit_schema.py
+@@ -1,6 +1,8 @@
+ from __future__ import annotations
+ 
+ import sqlite3
++
++from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
+ from pathlib import Path
+ from typing import Iterable
+ 
+@@ -90,11 +92,7 @@ DDL: tuple[str, ...] = (
+ def connect_runtime_audit(path: Path | str) -> sqlite3.Connection:
+     db_path = Path(path)
+     db_path.parent.mkdir(parents=True, exist_ok=True)
+-    connection = sqlite3.connect(db_path, timeout=30.0)
+-    connection.row_factory = sqlite3.Row
+-    connection.execute("PRAGMA foreign_keys=ON")
+-    connection.execute("PRAGMA journal_mode=WAL")
+-    return connection
++    return connect_runtime_writable(db_path, timeout_ms=30_000, synchronous="FULL")
+ 
+ 
+ 
+@@ -102,13 +100,13 @@ def connect_runtime_audit_readonly(path: Path | str) -> sqlite3.Connection:
+     db_path = Path(path).resolve()
+     if not db_path.is_file():
+         raise FileNotFoundError(db_path)
+-    connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True, timeout=10.0)
+-    connection.row_factory = sqlite3.Row
+-    connection.execute("PRAGMA query_only=ON")
+-    return connection
++    return connect_runtime_readonly(db_path, timeout_ms=10_000)
+ 
+-def ensure_runtime_audit_schema(connection: sqlite3.Connection) -> None:
+-    with connection:
++def ensure_runtime_audit_schema(connection: sqlite3.Connection, *, path: Path | str | None = None) -> None:
++    if path is None:
