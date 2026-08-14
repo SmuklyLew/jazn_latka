@@ -127,21 +127,3 @@ index c5c9515..8333944 100644
 +                session_id=session_key,
 +                sqlite_errorcode=diagnostics.get("sqlite_errorcode"),
 +                sqlite_errorname=diagnostics.get("sqlite_errorname"),
-+                sqlite_version=diagnostics.get("sqlite_version"),
-+                error=error,
-+            )
-+            with self._chat_jobs_lock:
-+                if not job.terminal():
-+                    job.error = error
-+                    job.result = {
-+                        "ok": False,
-+                        "error_code": "runtime_sqlite_error",
-+                        "error": error,
-+                        "request_id": job.request_id,
-+                        "sqlite": diagnostics,
-+                        "recovery_disposition": "session_retired_no_automatic_database_recovery",
-+                        "schema_version": DAEMON_SCHEMA_VERSION,
-+                    }
-+                    job.status = "failed"
-+                    job.recovery_disposition = "session_retired_no_automatic_database_recovery"
-+                    self.state.chat_job_failed_count += 1
