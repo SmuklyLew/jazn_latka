@@ -3,13 +3,13 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 from latka_jazn import _cli_core as _core
 from latka_jazn._cli_core import *  # noqa: F403
 
 
-def _subparsers(parser: argparse.ArgumentParser) -> argparse._SubParsersAction:
+def _subparsers(parser: argparse.ArgumentParser) -> Any:
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
             return action
