@@ -1,0 +1,41 @@
+             return None
+@@ -106,10 +111,12 @@ class LexicalCache:
+ 
+     def put(self, key: str, *, term: str, context: str, payload: dict[str, Any], source_versions: dict[str, str]) -> None:
+         context_hash = hashlib.sha256(_norm(context).encode("utf-8")).hexdigest()
+-        with sqlite3.connect(self.path) as connection:
++        with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), closing(
++            connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
++        ) as connection, connection:
+             connection.execute(
+-                """
+-                INSERT INTO lexical_cache(cache_key,term,context_hash,payload_json,source_versions_json,created_at_utc)
++                    """
++                    INSERT INTO lexical_cache(cache_key,term,context_hash,payload_json,source_versions_json,created_at_utc)
+                 VALUES(?,?,?,?,?,?)
+                 ON CONFLICT(cache_key) DO UPDATE SET
+                   payload_json=excluded.payload_json,
+diff --git a/latka_jazn/nlp/network_dictionary_cache.py b/latka_jazn/nlp/network_dictionary_cache.py
+index 44dd357..46d4911 100644
+--- a/latka_jazn/nlp/network_dictionary_cache.py
++++ b/latka_jazn/nlp/network_dictionary_cache.py
+@@ -2,10 +2,11 @@ from __future__ import annotations
+ from pathlib import Path
+ from typing import Any
+ from contextlib import closing
+-import sqlite3, json, hashlib, time
++import json, hashlib, time
+ from datetime import datetime, timezone
+ 
+ from latka_jazn.core.runtime_root import workspace_runtime_path
++from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
+ 
+ SCHEMA_VERSION="network_dictionary_cache/v1"
+ 
+@@ -16,8 +17,11 @@ class NetworkDictionaryCache:
+         self.path.parent.mkdir(parents=True, exist_ok=True)
+         self._init()
+ 
+-    def _connect(self):
+-        return sqlite3.connect(self.path)
++    def _connect_writable(self):
