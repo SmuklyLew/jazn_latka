@@ -9,7 +9,7 @@ Zmiana opiera się na źródłach pierwotnych i oficjalnej dokumentacji:
 - Ollama `GET /api/tags`: lista dostępnych modeli — https://docs.ollama.com/api/tags
 - fastText language identification i publikacje referencyjne — https://fasttext.cc/docs/en/language-identification.html
 - Jauhiainen et al., *Automatic Language Identification in Texts: A Survey* — https://arxiv.org/abs/1804.08186
-- Morfeusz 2 / SGJP: analiza fleksyjna języka polskiego — https://morfeusz.sgjp.pl/doc/about/
+- Morfeusz 2 / SGJP: analiza fleksyjna języka polskiego — https://pypi.org/project/morfeusz2/
 
 ## Granica implementacji
 

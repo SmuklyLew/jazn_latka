@@ -707,7 +707,7 @@ class DialogueIntentClassifier:
                 return report(norm,folded,'identity_boundary_question',['pytanie o granicę Jaźń/ChatGPT/tożsamość rozmówcy'],0.85,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
             return report(norm,folded,'identity_direct_question',['bezpośrednie pytanie kim jest Łatka'],0.84,ident=True,speech_act=speech.speech_act,question_object=qobj.object_type)
         if (not component_report.negated_actions) and component_report.explicit_execution and has_update and has_system and any(x in folded for x in ('nlp','sjp','wsjp','slp','słownik','slownik')):
-            evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupiem słownikowym')
+            evidence.append('aktualizacja systemu z warstwą NLP/SJP ma pierwszeństwo przed pojedynczym lookupem słownikowym')
             if 'plan' in folded or 'dokladny plan' in folded or 'dokładny plan' in norm:
                 return report(norm,folded,'system_update_execution_request',evidence,0.91,['requires_explicit_update_plan'],update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
             return report(norm,folded,'system_update_execution_request',evidence,0.90,update=True,diag=has_diag,speech_act=speech.speech_act,question_object='system_update')
@@ -715,6 +715,17 @@ class DialogueIntentClassifier:
             return report(norm,folded,'external_tool_assistance_request',[
                 'samodzielny marker connectora/narzędzia bez osobnej intencji domenowej'
             ],0.90,speech_act=speech.speech_act,question_object='external_tool')
+        if has_research and has_creative:
+            evidence.extend([
+                'zadanie łączy materiał twórczy z prośbą o research',
+                *creative_report.evidence,
+            ])
+            return report(
+                norm,folded,'creative_text_analysis',evidence,0.91,
+                ['external_research_request'],creative=True,
+                preserve=not preservation.revision_allowed,
+                speech_act=speech.speech_act,question_object='creative_text',
+            )
         if has_research:
             reason = 'aktualna prognoza pogody wymaga zewnętrznych źródeł' if has_weather_research else 'jawna prośba o internet/research/źródła'
             return report(norm,folded,'external_research_request',[reason],0.88 if has_weather_research else 0.86,speech_act=speech.speech_act,question_object='weather_forecast' if has_weather_research else qobj.object_type)

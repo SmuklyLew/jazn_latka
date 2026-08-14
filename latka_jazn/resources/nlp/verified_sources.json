@@ -53,7 +53,7 @@
       "redistribution": "install_from_upstream_or_local_package_outside_repo",
       "role": "Analiza i generowanie fleksyjne języka polskiego, gdy pakiet morfeusz2 jest lokalnie zainstalowany.",
       "source_id": "morfeusz2-sgjp",
-      "source_url": "https://morfeusz.sgjp.pl/"
+      "source_url": "https://pypi.org/project/morfeusz2/"
     },
     "nkjp": {
       "kind": "reference_corpus",

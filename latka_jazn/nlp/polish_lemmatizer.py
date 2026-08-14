@@ -10,6 +10,7 @@ from .providers.base import ProviderLemmaCandidate
 from .providers.builtin_provider import BuiltinPolishLemmaProvider
 from .providers.optional_stanza_provider import OptionalStanzaPolishProvider
 from .providers.optional_morfeusz_provider import OptionalMorfeuszPolishProvider
+from .local_resource_paths import optional_polish_providers_installed, stanza_model_dir
 
 @dataclass(slots=True)
 class LemmaCandidate:
@@ -77,11 +78,13 @@ class PolishLemmatizationEngine:
         config = self._load_registry()
         if enable_optional is None:
             enable_optional = bool(config.get("enable_optional_providers_by_default", False))
+            if not enable_optional and bool(config.get("enable_optional_providers_if_installed", True)):
+                enable_optional = optional_polish_providers_installed(self.root)
         self.providers = [BuiltinPolishLemmaProvider(self.root)]
         # opcjonalne providery są rejestrowane, ale domyślnie nie startują ciężkich modeli
         self.optional_providers = [
             OptionalMorfeuszPolishProvider(enabled=enable_optional),
-            OptionalStanzaPolishProvider(enabled=enable_optional),
+            OptionalStanzaPolishProvider(enabled=enable_optional, model_dir=stanza_model_dir(self.root)),
         ]
         self.providers.extend([p for p in self.optional_providers if getattr(p, "available", False)])
 

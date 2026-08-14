@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any
+
+from latka_jazn.nlp.local_resource_paths import stanza_model_dir
 
 from .base import ProviderLemmaCandidate
 
@@ -43,7 +46,8 @@ class StanzaTextAnalysis:
     error: str | None = None
     truth_boundary: str = (
         "Wynik istnieje tylko, gdy lokalnie zainstalowano Stanza i polskie modele. "
-        "Provider nie pobiera modeli automatycznie i nie udaje analizy przy braku zasobów."
+        "Provider korzysta z latka_jazn/local_resources/nlp, nie pobiera modeli "
+        "podczas tury i nie udaje analizy przy braku zasobów."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -56,24 +60,39 @@ class StanzaTextAnalysis:
 class OptionalStanzaPolishProvider:
     """Opcjonalny adapter Stanza dla lematu oraz pełnego tekstu.
 
-    Nie pobiera modeli i nie instaluje zależności samodzielnie. Podstawowy
-    pipeline lematyzacyjny zachowuje zgodność z istniejącym kontraktem.
-    Pełna analiza tekstu (zdania, POS/UFeats, dependencies i opcjonalne NER)
-    jest budowana leniwie, dopiero po jawnym wywołaniu ``analyse_text``.
+    Modele są ładowane wyłącznie z jawnego lokalnego katalogu. Provider nigdy
+    nie uruchamia pobierania; instalacja należy do osobnego bootstrapu.
     """
 
     name = "optional_stanza_pl"
 
-    def __init__(self, *, enabled: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        enabled: bool = False,
+        model_dir: str | Path | None = None,
+        pipeline: Any | None = None,
+    ) -> None:
         self.enabled = enabled
-        self._pipeline = None
+        self.model_dir = Path(model_dir).expanduser().resolve() if model_dir is not None else stanza_model_dir()
+        self._pipeline = pipeline
         self._text_pipelines: dict[bool, Any] = {}
-        self.available = False
+        self.available = pipeline is not None
         self.last_error: str | None = None
+        if pipeline is not None:
+            return
         if enabled:
             self._try_init()
 
+    def _resources_ready(self) -> bool:
+        return (self.model_dir / "resources.json").is_file() and (self.model_dir / "pl").is_dir()
+
     def _try_init(self) -> None:
+        if not self._resources_ready():
+            self._pipeline = None
+            self.available = False
+            self.last_error = f"stanza_pl_resources_missing:{self.model_dir}"
+            return
         try:
             import stanza  # type: ignore
 
@@ -81,6 +100,7 @@ class OptionalStanzaPolishProvider:
                 lang="pl",
                 processors="tokenize,pos,lemma",
                 tokenize_no_ssplit=True,
+                dir=str(self.model_dir),
                 verbose=False,
                 download_method=None,
             )
@@ -107,6 +127,9 @@ class OptionalStanzaPolishProvider:
             return None
         if include_ner in self._text_pipelines:
             return self._text_pipelines[include_ner]
+        if not self._resources_ready():
+            self.last_error = f"stanza_pl_resources_missing:{self.model_dir}"
+            return None
         try:
             import stanza  # type: ignore
 
@@ -114,6 +137,7 @@ class OptionalStanzaPolishProvider:
             pipeline = stanza.Pipeline(
                 lang="pl",
                 processors=processors,
+                dir=str(self.model_dir),
                 verbose=False,
                 download_method=None,
             )
@@ -140,7 +164,7 @@ class OptionalStanzaPolishProvider:
                             provider=self.name,
                             pos=getattr(word, "upos", None),
                             morph=self._parse_feats(getattr(word, "feats", None)),
-                            explanation="wynik opcjonalnego pipeline Stanza dla PL",
+                            explanation="wynik opcjonalnego lokalnego pipeline Stanza dla PL",
                         )
                     ]
         except Exception as exc:
@@ -153,7 +177,12 @@ class OptionalStanzaPolishProvider:
             return StanzaTextAnalysis(self.name, self.available, processors=processors)
         pipeline = self._text_pipeline(include_ner=include_ner)
         if pipeline is None:
-            return StanzaTextAnalysis(self.name, False, processors=processors, error=self.last_error or "stanza_pipeline_unavailable")
+            return StanzaTextAnalysis(
+                self.name,
+                False,
+                processors=processors,
+                error=self.last_error or "stanza_pipeline_unavailable",
+            )
         try:
             doc = pipeline(text)
             sentences: list[list[StanzaTokenAnnotation]] = []
