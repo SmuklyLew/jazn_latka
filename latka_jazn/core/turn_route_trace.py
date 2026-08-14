@@ -38,6 +38,12 @@ class TurnRouteTrace:
     lineage_break_count: int = 0
     lineage_state_sha256: str | None = None
     lineage_shadow_mode: bool = True
+    state_graph_node_count: int = 0
+    state_graph_edge_count: int = 0
+    state_graph_transition_count: int = 0
+    state_graph_break_count: int = 0
+    state_graph_state_sha256: str | None = None
+    state_graph_shadow_mode: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
