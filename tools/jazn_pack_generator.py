@@ -29,6 +29,17 @@ for _name, _value in vars(_impl).items():
 __doc__ = _impl.__doc__
 
 
+def __getattr__(name: str) -> Any:
+    """Preserve the complete historical module API, including private helpers."""
+
+    if hasattr(_impl, name):
+        return getattr(_impl, name)
+    core = getattr(_impl, "_core", None)
+    if core is not None and hasattr(core, name):
+        return getattr(core, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 class _GeneratorPublicModule(types.ModuleType):
     """Forward test/runtime monkeypatches through both implementation layers."""
 
