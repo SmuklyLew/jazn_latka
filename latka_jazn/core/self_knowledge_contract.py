@@ -4,9 +4,9 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 import json
-import sqlite3
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.core.capability_reality_checker import CapabilityRealityChecker
 from latka_jazn.core.operational_self_model import OperationalSelfModel
 from latka_jazn.core.operational_work_loop import OperationalWorkLoop
@@ -90,7 +90,7 @@ def _sqlite_status(path: Path) -> dict[str, Any]:
     if not path.is_file():
         return {"path": rel, "exists": True, "status": "not_file"}
     try:
-        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        con = connect_runtime_readonly(path, timeout_ms=10_000)
         try:
             integrity = con.execute("PRAGMA integrity_check").fetchone()[0]
             fk_rows = con.execute("PRAGMA foreign_key_check").fetchall()

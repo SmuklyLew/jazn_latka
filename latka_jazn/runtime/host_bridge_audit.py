@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, connect_runtime_audit_readonly, ensure_runtime_audit_schema
 from latka_jazn.version import schema_version
 
@@ -72,7 +73,7 @@ class HostBridgeAuditStore:
         connection = connect_runtime_audit(self.path)
         try:
             ensure_runtime_audit_schema(connection)
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 connection.execute(
                     """
                     INSERT INTO host_bridge_audit(
@@ -95,7 +96,8 @@ class HostBridgeAuditStore:
                 )
             return event.audit_id
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def list_for_turn(self, turn_id: str, trace_id: str | None = None) -> list[dict[str, Any]]:
         connection = connect_runtime_audit_readonly(self.path)

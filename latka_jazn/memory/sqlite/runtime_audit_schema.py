@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sqlite3
+
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
 from pathlib import Path
 from typing import Iterable
 
@@ -90,11 +92,7 @@ DDL: tuple[str, ...] = (
 def connect_runtime_audit(path: Path | str) -> sqlite3.Connection:
     db_path = Path(path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(db_path, timeout=30.0)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys=ON")
-    connection.execute("PRAGMA journal_mode=WAL")
-    return connection
+    return connect_runtime_writable(db_path, timeout_ms=30_000, synchronous="FULL")
 
 
 
@@ -102,13 +100,13 @@ def connect_runtime_audit_readonly(path: Path | str) -> sqlite3.Connection:
     db_path = Path(path).resolve()
     if not db_path.is_file():
         raise FileNotFoundError(db_path)
-    connection = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True, timeout=10.0)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA query_only=ON")
-    return connection
+    return connect_runtime_readonly(db_path, timeout_ms=10_000)
 
-def ensure_runtime_audit_schema(connection: sqlite3.Connection) -> None:
-    with connection:
+def ensure_runtime_audit_schema(connection: sqlite3.Connection, *, path: Path | str | None = None) -> None:
+    if path is None:
+        row = connection.execute("PRAGMA database_list").fetchone()
+        path = str(row[2]) if row is not None and len(row) > 2 else ":memory:"
+    with runtime_sqlite_write_guard(path, timeout_ms=30_000), connection:
         for statement in DDL:
             connection.execute(statement)
         connection.execute(
@@ -128,4 +126,5 @@ def initialize_runtime_audit(path: Path | str) -> None:
     try:
         ensure_runtime_audit_schema(connection)
     finally:
-        connection.close()
+        with runtime_sqlite_write_guard(path, timeout_ms=30_000):
+            connection.close()

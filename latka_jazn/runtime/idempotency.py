@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 from latka_jazn.memory.sqlite.runtime_audit_schema import connect_runtime_audit, connect_runtime_audit_readonly, ensure_runtime_audit_schema
 from latka_jazn.version import schema_version
 
@@ -80,44 +81,47 @@ class IdempotencyStore:
         connection = connect_runtime_audit(self.path)
         try:
             ensure_runtime_audit_schema(connection)
-            connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                "SELECT payload_hash, state, result_json FROM idempotency_records WHERE idempotency_key=?",
-                (idempotency_key,),
-            ).fetchone()
-            if row is not None:
-                connection.commit()
-                if row["payload_hash"] != payload_hash_value:
-                    return IdempotencyDecision("conflict", idempotency_key, payload_hash_value)
-                parsed = json.loads(row["result_json"]) if row["result_json"] else None
-                return IdempotencyDecision("replay", idempotency_key, payload_hash_value, parsed)
-            connection.execute(
-                """
-                INSERT INTO idempotency_records(
-                    idempotency_key, operation, turn_id, trace_id, contract_hash,
-                    payload_hash, state, result_json, created_at_utc, updated_at_utc
-                ) VALUES(?,?,?,?,?,?,?,?,?,?)
-                """,
-                (
-                    idempotency_key,
-                    operation,
-                    turn_id,
-                    trace_id,
-                    contract_hash,
-                    payload_hash_value,
-                    "claimed",
-                    None,
-                    now,
-                    now,
-                ),
-            )
-            connection.commit()
-            return IdempotencyDecision("new", idempotency_key, payload_hash_value)
-        except Exception:
-            connection.rollback()
-            raise
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.execute("BEGIN IMMEDIATE")
+                try:
+                    row = connection.execute(
+                        "SELECT payload_hash, state, result_json FROM idempotency_records WHERE idempotency_key=?",
+                        (idempotency_key,),
+                    ).fetchone()
+                    if row is not None:
+                        connection.commit()
+                        if row["payload_hash"] != payload_hash_value:
+                            return IdempotencyDecision("conflict", idempotency_key, payload_hash_value)
+                        parsed = json.loads(row["result_json"]) if row["result_json"] else None
+                        return IdempotencyDecision("replay", idempotency_key, payload_hash_value, parsed)
+                    connection.execute(
+                        """
+                        INSERT INTO idempotency_records(
+                            idempotency_key, operation, turn_id, trace_id, contract_hash,
+                            payload_hash, state, result_json, created_at_utc, updated_at_utc
+                        ) VALUES(?,?,?,?,?,?,?,?,?,?)
+                        """,
+                        (
+                            idempotency_key,
+                            operation,
+                            turn_id,
+                            trace_id,
+                            contract_hash,
+                            payload_hash_value,
+                            "claimed",
+                            None,
+                            now,
+                            now,
+                        ),
+                    )
+                    connection.commit()
+                    return IdempotencyDecision("new", idempotency_key, payload_hash_value)
+                except Exception:
+                    connection.rollback()
+                    raise
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def finalize(self, idempotency_key: str, result: Mapping[str, Any], *, state: str = "completed") -> None:
         serialized = json.dumps(dict(result), ensure_ascii=False, sort_keys=True)
@@ -125,7 +129,7 @@ class IdempotencyStore:
         connection = connect_runtime_audit(self.path)
         try:
             ensure_runtime_audit_schema(connection)
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 cursor = connection.execute(
                     """
                     UPDATE idempotency_records
@@ -137,7 +141,8 @@ class IdempotencyStore:
                 if cursor.rowcount != 1:
                     raise KeyError(f"unknown idempotency key: {idempotency_key}")
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def get(self, idempotency_key: str) -> dict[str, Any] | None:
         connection = connect_runtime_audit_readonly(self.path)

@@ -11,6 +11,7 @@ import sqlite3
 import uuid
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable, runtime_sqlite_write_guard
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("memory_normalization_sidecar")
@@ -668,12 +669,7 @@ def _connect_readonly(path: Path, *, immutable: bool = False) -> sqlite3.Connect
 
 
 def _connect_write(path: Path) -> sqlite3.Connection:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    uri = path.resolve().as_uri() + "?mode=rwc"
-    con = sqlite3.connect(uri, uri=True)
-    con.row_factory = sqlite3.Row
-    con.execute("PRAGMA foreign_keys=ON")
-    return con
+    return connect_runtime_writable(path, timeout_ms=30_000, synchronous="FULL")
 
 
 def _table_exists(con: sqlite3.Connection, table: str) -> bool:
@@ -820,7 +816,7 @@ class MemoryNormalizationSidecar:
 
     def ensure_schema(self) -> None:
         target_preexisting = self.sidecar_db_path.is_file()
-        with closing(_connect_write(self.sidecar_db_path)) as con:
+        with runtime_sqlite_write_guard(self.sidecar_db_path, timeout_ms=30_000), closing(_connect_write(self.sidecar_db_path)) as con:
             con.executescript(SIDE_SCHEMA)
             if (
                 not target_preexisting
@@ -1158,7 +1154,7 @@ class MemoryNormalizationSidecar:
         }
         normalized_item_count = 0
         with closing(_connect_readonly(self.source_db_path)) as source:
-            with closing(_connect_write(self.sidecar_db_path)) as side:
+            with runtime_sqlite_write_guard(self.sidecar_db_path, timeout_ms=30_000), closing(_connect_write(self.sidecar_db_path)) as side:
                 side.execute(
                     """INSERT INTO normalization_runs
                        (run_id,schema_version,runtime_version,started_at_utc,mode,source_db_path,
@@ -1434,7 +1430,7 @@ class MemoryNormalizationSidecar:
             )
         self.ensure_schema()
         snapshot_id = str(uuid.uuid4())
-        with closing(_connect_write(self.sidecar_db_path)) as con:
+        with runtime_sqlite_write_guard(self.sidecar_db_path, timeout_ms=30_000), closing(_connect_write(self.sidecar_db_path)) as con:
             con.execute("BEGIN IMMEDIATE")
             con.execute("UPDATE wake_state_snapshots SET active=0 WHERE active=1")
             con.execute(
@@ -1648,7 +1644,7 @@ class MemoryNormalizationSidecar:
             "deletion_policy": "no source rows are deleted",
             "representative_policy": "highest importance, then confidence, then earliest timestamp, then item_id",
         }
-        with closing(_connect_write(self.sidecar_db_path)) as con:
+        with runtime_sqlite_write_guard(self.sidecar_db_path, timeout_ms=30_000), closing(_connect_write(self.sidecar_db_path)) as con:
             con.execute(
                 """INSERT INTO layered_dedupe_runs
                    (run_id,schema_version,runtime_version,started_at_utc,mode,source_db_path,sidecar_db_path,

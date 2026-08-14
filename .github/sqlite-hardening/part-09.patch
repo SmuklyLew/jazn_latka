@@ -1,8 +1,0 @@
-+        assert succeeded.done_event.wait(1.0)
-+        assert succeeded.status == "completed"
-+        assert succeeded.result is not None
-+        assert succeeded.result["instance_id"] >= 2
-+        assert server.chat_job_summary()["worker_state"] == "alive"
-+    finally:
-+        server.close_sessions()
-+        server.server_close()

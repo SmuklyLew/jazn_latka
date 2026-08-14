@@ -7,6 +7,7 @@ import sqlite3
 
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.config import JaznConfig
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, runtime_sqlite_capabilities
 from latka_jazn.db.shard_manifest import ensure_manifest
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.memory.store import MemoryStore
@@ -40,6 +41,11 @@ class RuntimeWriteAccessStatus:
     memory_record_count: int = 0
     audit_record_count: int = 0
     verification_mode: str = "deep"
+    sqlite_version: str | None = None
+    sqlite_threadsafety: int | None = None
+    wal_reset_fix_available: bool | None = None
+    runtime_writer_serialization: str | None = None
+    wal_reset_mitigation_required: bool | None = None
     weak_points_repaired: list[str] = field(default_factory=lambda: [
         "niepewny_czas_bez_trusted_timestamp",
         "brak_biezacego_runtime_write_v1_po_odchudzeniu_paczki",
@@ -79,10 +85,8 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
     if not path.exists():
         return result
     try:
-        con = sqlite3.connect(
-            f"file:{path.resolve().as_posix()}?mode=ro",
-            uri=True,
-            timeout=10.0 if deep_verify else 0.25,
+        con = connect_runtime_readonly(
+            path, timeout_ms=10_000 if deep_verify else 250
         )
         try:
             con.execute("SELECT 1").fetchone()
@@ -220,6 +224,7 @@ def build_runtime_write_access_status(
             or memory["foreign_key_violations"] or audit["foreign_key_violations"]
         ) else "partial_missing"
 
+    sqlite_caps = runtime_sqlite_capabilities()
     return RuntimeWriteAccessStatus(
         schema_version=SCHEMA_VERSION,
         status=status,
@@ -244,4 +249,9 @@ def build_runtime_write_access_status(
         memory_record_count=int(memory["record_count"]),
         audit_record_count=int(audit["record_count"]),
         verification_mode="deep" if deep_verify else "metadata_only",
+        sqlite_version=str(sqlite_caps.get("sqlite_version") or "") or None,
+        sqlite_threadsafety=int(sqlite_caps.get("sqlite_threadsafety") or 0),
+        wal_reset_fix_available=bool(sqlite_caps.get("wal_reset_fix_available")),
+        runtime_writer_serialization=str(sqlite_caps.get("runtime_writer_serialization") or "") or None,
+        wal_reset_mitigation_required=bool(sqlite_caps.get("wal_reset_mitigation_required")),
     )

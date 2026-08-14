@@ -14,6 +14,7 @@ import queue
 import re
 import secrets
 import signal
+import sqlite3
 import socket
 import subprocess
 import sys
@@ -48,6 +49,7 @@ from latka_jazn.core.turn_timeout import (
 )
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.runtime_truth_gate import daemon_active_state, time_trust_state
+from latka_jazn.db.runtime_sqlite import sqlite_error_diagnostics
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
 from latka_jazn.tools.active_extraction_cache import (
     build_active_runtime_status,
@@ -1282,7 +1284,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                                 break
                             try:
                                 self._process_chat_job(job, worker_generation=generation)
-                            except (RuntimeError, OSError, ValueError, TypeError) as exc:
+                            except (sqlite3.Error, RuntimeError, OSError, ValueError, TypeError) as exc:
                                 error = f"{type(exc).__name__}: {exc}"
                                 with self._chat_jobs_lock:
                                     if not job.terminal():
@@ -1559,6 +1561,36 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     }
                     job.status = "execution_timeout"
                     self.state.chat_job_execution_timeout_count += 1
+        except sqlite3.Error as exc:
+            if session is not None:
+                self._retire_session_worker(session)
+            diagnostics = sqlite_error_diagnostics(exc, operation="daemon_chat_turn")
+            error = f"{type(exc).__name__}: {exc}"
+            append_daemon_process_event(
+                self.config.root,
+                "chat_job_sqlite_error",
+                request_id=job.request_id,
+                session_id=session_key,
+                sqlite_errorcode=diagnostics.get("sqlite_errorcode"),
+                sqlite_errorname=diagnostics.get("sqlite_errorname"),
+                sqlite_version=diagnostics.get("sqlite_version"),
+                error=error,
+            )
+            with self._chat_jobs_lock:
+                if not job.terminal():
+                    job.error = error
+                    job.result = {
+                        "ok": False,
+                        "error_code": "runtime_sqlite_error",
+                        "error": error,
+                        "request_id": job.request_id,
+                        "sqlite": diagnostics,
+                        "recovery_disposition": "session_retired_no_automatic_database_recovery",
+                        "schema_version": DAEMON_SCHEMA_VERSION,
+                    }
+                    job.status = "failed"
+                    job.recovery_disposition = "session_retired_no_automatic_database_recovery"
+                    self.state.chat_job_failed_count += 1
         except RuntimeError as exc:
             error_code = str(exc) if str(exc).startswith("daemon_session_") else "runtime_turn_failed"
             error = f"{type(exc).__name__}: {exc}"

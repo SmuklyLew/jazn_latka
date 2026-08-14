@@ -724,3 +724,79 @@ def test_daemon_start_command_propagates_execution_timeout(tmp_path: Path) -> No
     )
     idx = cmd.index("--daemon-chat-timeout")
     assert cmd[idx + 1] == "321.0"
+
+class _SqliteFailureThenSuccessSession:
+    attempts = 0
+    instance_count = 0
+
+    def __init__(self, _config, **kwargs) -> None:
+        import sqlite3
+
+        type(self).instance_count += 1
+        self.instance_id = type(self).instance_count
+        self._sqlite3 = sqlite3
+        self.state = SimpleNamespace(session_id=kwargs.get("session_id"))
+
+    def process_user_text(self, user_text: str, **_kwargs) -> dict:
+        type(self).attempts += 1
+        if type(self).attempts == 1:
+            raise self._sqlite3.DatabaseError("database disk image is malformed")
+        return {
+            "ok": True,
+            "final_visible_text": user_text,
+            "instance_id": self.instance_id,
+        }
+
+    def close(self) -> None:
+        return
+
+
+def test_sqlite_database_error_fails_only_one_job_and_worker_recovers(tmp_path: Path) -> None:
+    _SqliteFailureThenSuccessSession.attempts = 0
+    _SqliteFailureThenSuccessSession.instance_count = 0
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_SqliteFailureThenSuccessSession,
+        execution_timeout_seconds=1.0,
+    )
+    server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
+    try:
+        failed, created, error = server.submit_chat_job(
+            user_text="first",
+            input_field="test",
+            session_id="sqlite-session",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="sqlite-failure",
+        )
+        assert created is True and error is None and failed is not None
+        assert failed.done_event.wait(1.0)
+        assert failed.status == "failed"
+        assert failed.result is not None
+        assert failed.result["error_code"] == "runtime_sqlite_error"
+        assert failed.result["recovery_disposition"] == "session_retired_no_automatic_database_recovery"
+        assert failed.result["sqlite"]["exception_type"] == "DatabaseError"
+        assert server.chat_job_summary()["worker_state"] == "alive"
+
+        succeeded, created, error = server.submit_chat_job(
+            user_text="second",
+            input_field="test",
+            session_id="sqlite-session",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="sqlite-recovery",
+        )
+        assert created is True and error is None and succeeded is not None
+        assert succeeded.done_event.wait(1.0)
+        assert succeeded.status == "completed"
+        assert succeeded.result is not None
+        assert succeeded.result["instance_id"] >= 2
+        assert server.chat_job_summary()["worker_state"] == "alive"
+    finally:
+        server.close_sessions()
+        server.server_close()

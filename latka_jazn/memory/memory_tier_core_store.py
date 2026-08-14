@@ -7,6 +7,8 @@ from typing import Any, Iterator
 import json
 import sqlite3
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable, runtime_sqlite_write_guard
+
 from latka_jazn.memory.memory_tier_schema import SCHEMA_SQL
 from latka_jazn.memory.memory_tier_support import (
     WorkingMemoryBudget,
@@ -31,39 +33,40 @@ class MemoryTierCoreStore:
     def __init__(self, path: str | Path, *, busy_timeout_ms: int = 30_000, synchronous: str = "FULL") -> None:
         self.path = Path(path).expanduser().resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = sqlite3.connect(self.path, timeout=max(1.0, busy_timeout_ms / 1000), isolation_level=None)
-        self.con.row_factory = sqlite3.Row
-        self.con.execute("PRAGMA foreign_keys=ON")
-        self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
-        self.con.execute("PRAGMA journal_mode=WAL")
-        selected_sync = synchronous.upper()
-        if selected_sync not in {"FULL", "NORMAL"}:
-            raise ValueError("synchronous must be FULL or NORMAL")
-        self.con.execute(f"PRAGMA synchronous={selected_sync}")
-        self.con.execute("PRAGMA temp_store=FILE")
-        self.con.execute("PRAGMA cache_size=-16384")
-        self.con.executescript(SCHEMA_SQL)
-        self.con.execute("INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
-        self.con.execute(
-            "INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('truth_boundary',?)",
-            ("L1/L2/L3 są rozdzielone. L2 nie jest promocją L3, a outbox nie dowodzi wykonania efektu.",),
+        self.busy_timeout_ms = max(1000, int(busy_timeout_ms))
+        self.con = connect_runtime_writable(
+            self.path,
+            timeout_ms=self.busy_timeout_ms,
+            synchronous=synchronous,
+            isolation_level=None,
+            temp_store="FILE",
+            cache_size=-16384,
         )
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.executescript(SCHEMA_SQL)
+            self.con.execute("INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
+            self.con.execute(
+                "INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('truth_boundary',?)",
+                ("L1/L2/L3 są rozdzielone. L2 nie jest promocją L3, a outbox nie dowodzi wykonania efektu.",),
+            )
 
     @contextmanager
     def transaction(self) -> Iterator[None]:
-        if self.con.in_transaction:
-            raise RuntimeError("nested memory transactions are forbidden")
-        self.con.execute("BEGIN IMMEDIATE")
-        try:
-            yield
-        except BaseException:
-            self.con.rollback()
-            raise
-        else:
-            self.con.commit()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            if self.con.in_transaction:
+                raise RuntimeError("nested memory transactions are forbidden")
+            self.con.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+            except BaseException:
+                self.con.rollback()
+                raise
+            else:
+                self.con.commit()
 
     def close(self) -> None:
-        self.con.close()
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.close()
 
     def __enter__(self):
         return self

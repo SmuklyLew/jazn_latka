@@ -7,6 +7,7 @@ from pathlib import Path
 import sqlite3
 from typing import Any, Iterable
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
 from latka_jazn.memory.embedding_provider import DisabledEmbeddingProvider, EmbeddingProvider
 from latka_jazn.memory.vector_index import VectorIndex
 from latka_jazn.version import schema_version
@@ -47,16 +48,16 @@ class HybridRetriever:
         self.vector_index = VectorIndex(self.path.with_suffix(".vectors.sqlite3"), self.embedding_provider)
         self._ensure_schema()
 
-    def _connect(self) -> sqlite3.Connection:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(self.path)
-        connection.row_factory = sqlite3.Row
-        return connection
+    def _connect_writable(self) -> sqlite3.Connection:
+        return connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
+
+    def _connect_readonly(self) -> sqlite3.Connection:
+        return connect_runtime_readonly(self.path, timeout_ms=10_000)
 
     def _ensure_schema(self) -> None:
-        connection = self._connect()
+        connection = self._connect_writable()
         try:
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 connection.execute(
                     """
                     CREATE TABLE IF NOT EXISTS hybrid_documents(
@@ -77,7 +78,8 @@ class HybridRetriever:
                         "CREATE TABLE IF NOT EXISTS hybrid_documents_fts(document_id TEXT PRIMARY KEY,text TEXT NOT NULL)"
                     )
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
 
     def rebuild(self, documents: Iterable[dict[str, Any]], *, rebuild_vectors: bool = True) -> dict[str, Any]:
         rows = []
@@ -93,9 +95,9 @@ class HybridRetriever:
                 }
             )
         rows.sort(key=lambda row: row["document_id"])
-        connection = self._connect()
+        connection = self._connect_writable()
         try:
-            with connection:
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), connection:
                 connection.execute("DELETE FROM hybrid_documents")
                 connection.execute("DELETE FROM hybrid_documents_fts")
                 for row in rows:
@@ -114,14 +116,15 @@ class HybridRetriever:
                         (row["document_id"], row["text"]),
                     )
         finally:
-            connection.close()
+            with runtime_sqlite_write_guard(self.path, timeout_ms=30_000):
+                connection.close()
         vector_count = 0
         if rebuild_vectors and getattr(self.embedding_provider, "name", "disabled") != "disabled":
             vector_count = self.vector_index.rebuild(rows)
         return {"document_count": len(rows), "vector_count": vector_count, "deterministic_order": True}
 
     def _fts_hits(self, query: str, *, limit: int, exclude_text_hash: str | None) -> list[RetrievalHit]:
-        connection = self._connect()
+        connection = self._connect_readonly()
         try:
             try:
                 rows = connection.execute(
@@ -170,7 +173,7 @@ class HybridRetriever:
         }
         if getattr(self.embedding_provider, "name", "disabled") != "disabled":
             vector_hits = self.vector_index.search(query, limit=max(limit * 2, 8), exclude_text_hash=exclude_hash)
-            connection = self._connect()
+            connection = self._connect_readonly()
             try:
                 for vector_hit in vector_hits:
                     row = connection.execute(

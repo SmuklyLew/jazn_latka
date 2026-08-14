@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
-import sqlite3
 from typing import Any
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard
 from latka_jazn.nlp.polish_lexical_sources import MINI_LEXICON
 from latka_jazn.nlp.providers.optional_morfeusz_provider import OptionalMorfeuszProvider
 from latka_jazn.nlp.providers.plwordnet_optional_provider import PlWordNetOptionalProvider
@@ -69,10 +70,12 @@ class LexicalCache:
     def __init__(self, path: Path | str) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.path) as connection:
+        with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), closing(
+            connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
+        ) as connection, connection:
             connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS lexical_cache(
+                    """
+                    CREATE TABLE IF NOT EXISTS lexical_cache(
                   cache_key TEXT PRIMARY KEY,
                   term TEXT NOT NULL,
                   context_hash TEXT NOT NULL,
@@ -94,7 +97,9 @@ class LexicalCache:
         return hashlib.sha256(material).hexdigest()
 
     def get(self, key: str) -> dict[str, Any] | None:
-        with sqlite3.connect(self.path) as connection:
+        if not self.path.is_file():
+            return None
+        with connect_runtime_readonly(self.path, timeout_ms=10_000) as connection:
             row = connection.execute("SELECT payload_json FROM lexical_cache WHERE cache_key=?", (key,)).fetchone()
         if not row:
             return None
@@ -106,10 +111,12 @@ class LexicalCache:
 
     def put(self, key: str, *, term: str, context: str, payload: dict[str, Any], source_versions: dict[str, str]) -> None:
         context_hash = hashlib.sha256(_norm(context).encode("utf-8")).hexdigest()
-        with sqlite3.connect(self.path) as connection:
+        with runtime_sqlite_write_guard(self.path, timeout_ms=30_000), closing(
+            connect_runtime_writable(self.path, timeout_ms=30_000, synchronous="FULL")
+        ) as connection, connection:
             connection.execute(
-                """
-                INSERT INTO lexical_cache(cache_key,term,context_hash,payload_json,source_versions_json,created_at_utc)
+                    """
+                    INSERT INTO lexical_cache(cache_key,term,context_hash,payload_json,source_versions_json,created_at_utc)
                 VALUES(?,?,?,?,?,?)
                 ON CONFLICT(cache_key) DO UPDATE SET
                   payload_json=excluded.payload_json,
