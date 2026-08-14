@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, Literal
 from urllib.parse import quote
 import os
 import sqlite3
@@ -216,7 +216,7 @@ def connect_runtime_writable(
     *,
     timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
     synchronous: str = DEFAULT_SYNCHRONOUS,
-    isolation_level: str | None = "DEFERRED",
+    isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
     check_same_thread: bool = True,
     temp_store: str | None = None,
     cache_size: int | None = None,
