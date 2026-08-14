@@ -14,6 +14,7 @@ from latka_jazn.core.cognitive_lineage import (
     evidence_references_from_selected_sources,
     resolve_parent_thought_id,
 )
+from latka_jazn.core.cognitive_state_graph import CognitiveStateGraph
 from latka_jazn.core.full_canon_model_context import (
     build_full_canon_model_context,
     build_host_generation_contract,
@@ -55,6 +56,7 @@ class CognitiveTurnEnvelope:
     user_text: str
     cognitive_frame: dict[str, Any]
     cognitive_lineage: CognitiveLineage
+    cognitive_state_graph: CognitiveStateGraph
     client_context: dict[str, Any] = field(default_factory=dict)
     affect_mix: dict[str, Any] = field(default_factory=dict)
     dialogue_state: dict[str, Any] = field(default_factory=dict)
@@ -99,19 +101,22 @@ class CognitiveTurnEnvelope:
             trace_id=trace_id,
             parent_thought_id=resolve_parent_thought_id(client_context),
         )
+        state_graph = CognitiveStateGraph.create(lineage)
         memory_contract = copied.get("memory_recall_contract")
         evidence_refs = evidence_references_from_memory_contract(
             memory_contract if isinstance(memory_contract, dict) else {}
         )
         if evidence_refs:
-            lineage.observe(
+            evidence_observation = lineage.observe(
                 stage="memory_recall_contract",
                 event="evidence_available",
                 source="cognitive_turn_envelope",
                 evidence_refs=evidence_refs,
                 anchor_categories=("evidence",),
             )
+            state_graph.observe_lineage_observation(evidence_observation)
         copied["cognitive_lineage"] = lineage.to_dict()
+        copied["cognitive_state_graph"] = state_graph.to_dict()
         full_canon = build_full_canon_model_context(copied)
         copied["full_canon_model_context"] = full_canon
         copied["host_generation_contract"] = build_host_generation_contract(full_canon)
@@ -122,6 +127,7 @@ class CognitiveTurnEnvelope:
             user_text=user_text,
             cognitive_frame=copied,
             cognitive_lineage=lineage,
+            cognitive_state_graph=state_graph,
             client_context=client_context,
         )
 
@@ -248,6 +254,7 @@ class CognitiveTurnEnvelope:
             return
         route_trace = dict(route_trace)
         route_trace.update(self.cognitive_lineage.summary())
+        route_trace.update(self.cognitive_state_graph.summary())
         decision["turn_route_trace"] = route_trace
         self.cognitive_frame["turn_route_trace"] = dict(route_trace)
 
@@ -285,7 +292,9 @@ class CognitiveTurnEnvelope:
             anchor_categories=anchor_categories,
             expect_categories=expect_categories,
         )
+        self.cognitive_state_graph.observe_lineage_observation(observation)
         self.cognitive_frame["cognitive_lineage"] = self.cognitive_lineage.to_dict()
+        self.cognitive_frame["cognitive_state_graph"] = self.cognitive_state_graph.to_dict()
         return observation.to_dict()
 
     def refresh_finalization_timestamp(
@@ -390,6 +399,7 @@ class CognitiveTurnEnvelope:
             "user_text": self.user_text,
             "client_context": self.client_context,
             "cognitive_lineage": self.cognitive_lineage.to_dict(),
+            "cognitive_state_graph": self.cognitive_state_graph.to_dict(),
             "affect_mix": self.affect_mix,
             "dialogue_state": self.dialogue_state,
             "conversation_decision": self.conversation_decision,
