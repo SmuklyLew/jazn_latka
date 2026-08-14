@@ -3,11 +3,11 @@
   "version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "runtime_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "package_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "generated_at_utc": "2026-08-14T12:41:45+00:00",
-  "updated_at_utc": "2026-08-14T12:41:45+00:00",
+  "generated_at_utc": "2026-08-14T17:59:55+00:00",
+  "updated_at_utc": "2026-08-14T17:59:55+00:00",
   "start_file": "run.py",
-  "file_count": 714,
-  "static_file_count": 714,
+  "file_count": 722,
+  "static_file_count": 722,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 14052,
-      "sha256": "81c2af5c43e8b47f43a4a7192b421403ddc96c3c4e57cb01d2416669ee1179ff",
+      "size_bytes": 16117,
+      "sha256": "9cf2fea5d6d9e06b397495e3fd22e4771bc8bbac947b33ca52fb7764f09999c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -165,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1342,
-      "sha256": "ffc53f5087c671e40624d0b8d0c7ffadf2ab9d1ac3ae28415b968cede29ba511",
+      "sha256": "6f1812125900f58c4339cfe5145eb008ebc20844eb9463a4625eb02caf1ae0d2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -193,6 +193,15 @@
       "path": "docs/archive/chatgpt_host_legacy/chatgpt_startup_loader.txt",
       "size_bytes": 716,
       "sha256": "8c90d3cd5109b32ee8e83aca22e29a3997fe06ded05efb5524693211f5750fa1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/packaging/INDEPENDENT_MEMORY_PACKAGE_CONTRACT_V2.md",
+      "size_bytes": 3688,
+      "sha256": "0af9006084476cfbc83be8096d7cd7ad34a72819d05a1678de15173193816520",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -758,8 +767,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 22330,
-      "sha256": "4def38a6f2e7105267bdde1a1530222a42bcd90a6d0ff045b75217abe581031b",
+      "size_bytes": 23449,
+      "sha256": "89d6f87c30d855977904c111467e901d8a65b0cdc1891b642096e83d4746b51a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3943,6 +3952,42 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/packaging/memory_package_attach.py",
+      "size_bytes": 11386,
+      "sha256": "b902cb5123f22cba24d9928d11081e5c49c093071dc83baea0e543c38fa80336",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/packaging/memory_package_contract.py",
+      "size_bytes": 845,
+      "sha256": "2738ca061e148454f3a18f678a60a61fc43673131b0a17da3e2d299831daf04d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/packaging/memory_package_manifest.py",
+      "size_bytes": 11105,
+      "sha256": "782aca340a413c742de1f2ad54c01d81c1216f1ea05b94f269435706c9929d08",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/packaging/memory_package_types.py",
+      "size_bytes": 4316,
+      "sha256": "848d7b5d51e4ddca39cff2eee434c2d16c271b52e4087caa09565f5cbbcfa8e6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/packaging/package_profiles.py",
       "size_bytes": 5095,
       "sha256": "4ec162e6f3c42fae950ee2b545734b501201d2cd88a646f0670caf718f9f88f8",
@@ -5464,6 +5509,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_independent_memory_package_contract_v2.py",
+      "size_bytes": 12282,
+      "sha256": "e32fd216ed3e7b2989130ed8e2df8391958e42c5279b2601cdf601ab22d1045e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_pack_generator_v82_contract.py",
       "size_bytes": 790,
       "sha256": "c85c9bcc78b5802e2ef4b064e5fd07402bd8a0dd73be90bee5cd295133438591",
@@ -6337,6 +6391,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/_jazn_pack_generator_core.py",
+      "size_bytes": 315886,
+      "sha256": "46600d8212b84b39c3f3937b01669e14da3780914c137f99023f0f7522e33524",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/_jazn_pack_generator_memory_v2.py",
+      "size_bytes": 19469,
+      "sha256": "da66b35c14da5a51c9a17600413c24c20f5f23c54f346e7fa8a48231c5eea4e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/bootstrap_polish_reasoning_resources.py",
       "size_bytes": 6235,
       "sha256": "ca2598c49414cefa57d04a41249f46099be44a6cef2ba48fe0e9a09ba38095bf",
@@ -6347,8 +6419,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 315886,
-      "sha256": "46600d8212b84b39c3f3937b01669e14da3780914c137f99023f0f7522e33524",
+      "size_bytes": 2588,
+      "sha256": "e740a584b43bebe22b3b4c8437559770b513a350e88310c28d52be74787a8f16",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

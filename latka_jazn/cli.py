@@ -80,6 +80,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     child.add_argument("--no-start-daemon", action="store_true")
 
+    child = sub.add_parser("memory-attach", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--parts-dir", type=Path, required=True)
+    child.add_argument("--zip-name")
+    child.add_argument("--work-dir", type=Path)
+    child.add_argument("--time-budget-seconds", type=float, default=25.0)
+    child.add_argument("--no-crc", action="store_true")
+    child.add_argument(
+        "--force-reextract",
+        action="store_true",
+        help="Wyczyść staging dołączania pamięci; nigdy nie omija weryfikacji systemu ani manifestu memory.",
+    )
+
     for name in ("memory-prepare", "memory-status"):
         child = sub.add_parser(name, allow_abbrev=False)
         _add_common(child)
@@ -233,7 +246,7 @@ def main(argv: list[str] | None = None) -> int:
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
-        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
+        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
         return _legacy_main(_legacy_args_with_canonical_root(args))
@@ -259,6 +272,21 @@ def main(argv: list[str] | None = None) -> int:
             run_crc=not ns.no_crc,
             force_reextract=bool(ns.force_reextract),
             start_runtime_daemon=not ns.no_start_daemon,
+        )
+        _emit(result.to_dict(), as_json=True)
+        return int(result.exit_code)
+
+    if ns.command == "memory-attach":
+        from latka_jazn.packaging.memory_package_contract import attach_memory_package
+
+        result = attach_memory_package(
+            root,
+            parts_dir=ns.parts_dir,
+            base_zip_name=ns.zip_name,
+            work_dir=ns.work_dir,
+            time_budget_seconds=ns.time_budget_seconds,
+            run_crc=not ns.no_crc,
+            force_reextract=bool(ns.force_reextract),
         )
         _emit(result.to_dict(), as_json=True)
         return int(result.exit_code)
