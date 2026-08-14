@@ -105,12 +105,8 @@ def extract_intent_control_text(text: str) -> IntentControlText:
         count += substitutions
     control = re.sub(r"[ \t\r\f\v]+", " ", masked)
     control = re.sub(r"\n{3,}", "\n\n", control).strip()
-    # Host/tool marker jest równoważny jawnej prośbie o research. Normalizujemy
-    # wyłącznie tekst sterujący klasyfikacją, nigdy oryginalną wiadomość.
-    control = _EXTERNAL_RESEARCH_MARKER_RE.sub("sprawdź w internecie", control)
-    # Jeżeli cała wiadomość jest cytatem, kodem lub materiałem twórczym, nie
-    # przywracaj jej jako tekstu sterującego. Oryginał nadal trafia do detektora
-    # materiału i do odpowiedzi, ale jego słowa nie mogą przejąć routingu.
+    replacement = "research" if creative_spans else "sprawdź w internecie"
+    control = _EXTERNAL_RESEARCH_MARKER_RE.sub(replacement, control)
     if not control and not count:
         control = original.strip()
     return IntentControlText(
