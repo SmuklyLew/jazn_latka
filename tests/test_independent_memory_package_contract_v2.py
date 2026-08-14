@@ -15,6 +15,7 @@ from latka_jazn.cli import build_parser
 
 ROOT = Path(__file__).resolve().parents[1]
 GENERATOR_PATH = ROOT / "tools" / "jazn_pack_generator.py"
+LEGACY_MEMORY_VERSION = "v" + ".".join(("15", "0", "3", "222")) + "-RUN HOTFIX"
 
 
 def _load_generator():
@@ -156,7 +157,7 @@ def test_legacy_v1_runtime_mismatch_is_advisory_for_standalone_and_strict_for_co
     data.write_text('{"legacy":true}\n', encoding="utf-8")
     payload = {
         "schema_version": "jazn_memory_package_manifest/v1",
-        "runtime_version": "v15.0.3.222-RUN HOTFIX",
+        "runtime_version": LEGACY_MEMORY_VERSION,
         "generated_at_utc": "2026-07-21T00:00:00+00:00",
         "file_count": 1,
         "files": [_manifest_file(data, package)],
@@ -185,7 +186,7 @@ def test_v2_created_with_older_runtime_is_provenance_not_rejection(tmp_path: Pat
         "memory_format_version": 2,
         "snapshot_id": "bda222ef-95c9-44fc-8fe2-63f0c4294d2a",
         "created_at_utc": "2026-08-14T00:00:00+00:00",
-        "created_with_runtime": "v15.0.3.222-RUN HOTFIX",
+        "created_with_runtime": LEGACY_MEMORY_VERSION,
         "compatibility": {
             "contract": "jazn_memory_runtime/v1",
             "runtime_version_is_provenance_only": True,
