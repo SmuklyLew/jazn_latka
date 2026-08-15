@@ -37,11 +37,17 @@ jobs:
             printf 'TRANSPORT %s size=%s sha256=%s\n' "$(basename "$f")" "$(wc -c < "$f")" "$(sha256sum "$f" | cut -d' ' -f1)"
           done
           cat .jazn_upgrade_transport/local-first-memory-v155/chunk-* > "$RUNNER_TEMP/upgrade.b64"
-          printf 'TRANSPORT combined_size=%s combined_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.b64")" "$(sha256sum "$RUNNER_TEMP/upgrade.b64" | cut -d' ' -f1)" "$EXPECTED_BASE64_SHA256"
+          ACTUAL_B64=$(sha256sum "$RUNNER_TEMP/upgrade.b64" | cut -d' ' -f1)
+          printf 'TRANSPORT combined_size=%s combined_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.b64")" "$ACTUAL_B64" "$EXPECTED_BASE64_SHA256"
           echo "${EXPECTED_BASE64_SHA256}  $RUNNER_TEMP/upgrade.b64" | sha256sum --check --strict
           base64 --decode "$RUNNER_TEMP/upgrade.b64" > "$RUNNER_TEMP/upgrade.patch.gz"
-          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
+          ACTUAL_GZIP=$(sha256sum "$RUNNER_TEMP/upgrade.patch.gz" | cut -d' ' -f1)
+          printf 'TRANSPORT gzip_size=%s gzip_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.patch.gz")" "$ACTUAL_GZIP" "$EXPECTED_GZIP_SHA256"
+          gzip -t "$RUNNER_TEMP/upgrade.patch.gz"
           gzip --decompress --stdout "$RUNNER_TEMP/upgrade.patch.gz" > "$RUNNER_TEMP/upgrade.patch"
+          ACTUAL_PATCH=$(sha256sum "$RUNNER_TEMP/upgrade.patch" | cut -d' ' -f1)
+          printf 'TRANSPORT patch_size=%s patch_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.patch")" "$ACTUAL_PATCH" "$EXPECTED_PATCH_SHA256"
+          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
           echo "${EXPECTED_PATCH_SHA256}  $RUNNER_TEMP/upgrade.patch" | sha256sum --check --strict
           git apply --check "$RUNNER_TEMP/upgrade.patch"
 
