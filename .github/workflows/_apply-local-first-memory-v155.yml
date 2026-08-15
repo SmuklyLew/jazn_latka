@@ -1,0 +1,68 @@
+name: apply-local-first-memory-v155
+
+on:
+  push:
+    branches:
+      - upgrade/local-first-memory-cloud-v155
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-local-first-memory-v155
+  cancel-in-progress: false
+
+jobs:
+  apply_verified_upgrade:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      EXPECTED_BASE64_SHA256: c973c0cd88a2ae71821cacfb43ed95e5f604c613475e3772425fd472f5eb2c6a
+      EXPECTED_GZIP_SHA256: 6a135ceb63991025612edc4a94eb1e92cf78558d34b474a4015758974960480d
+      EXPECTED_PATCH_SHA256: 803b4fc6bcdb3cda4ca35a0418cf711b4dbb666d1ada8326ae40047883a3c511
+    steps:
+      - name: Checkout transport branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: upgrade/local-first-memory-cloud-v155
+
+      - name: Reconstruct and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .jazn_upgrade_transport/local-first-memory-v155/chunk-* > "$RUNNER_TEMP/upgrade.b64"
+          echo "${EXPECTED_BASE64_SHA256}  $RUNNER_TEMP/upgrade.b64" | sha256sum --check --strict
+          base64 --decode "$RUNNER_TEMP/upgrade.b64" > "$RUNNER_TEMP/upgrade.patch.gz"
+          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
+          gzip --decompress --stdout "$RUNNER_TEMP/upgrade.patch.gz" > "$RUNNER_TEMP/upgrade.patch"
+          echo "${EXPECTED_PATCH_SHA256}  $RUNNER_TEMP/upgrade.patch" | sha256sum --check --strict
+          git apply --check "$RUNNER_TEMP/upgrade.patch"
+
+      - name: Apply upgrade and remove transport scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply "$RUNNER_TEMP/upgrade.patch"
+          rm -rf .jazn_upgrade_transport
+          rm -f .github/workflows/_apply-local-first-memory-v155.yml
+
+      - name: Fast structural gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          git diff --check
+          test -z "$(git status --porcelain --untracked-files=no | grep '^?? .jazn_upgrade_transport' || true)"
+
+      - name: Commit verified functional tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(memory): add local-first encrypted cloud durability"
+          git push origin HEAD:upgrade/local-first-memory-cloud-v155
