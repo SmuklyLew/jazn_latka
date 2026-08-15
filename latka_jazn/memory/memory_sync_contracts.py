@@ -403,10 +403,12 @@ class MemorySnapshotManifest:
         for item in raw_chunks:
             if not isinstance(item, Mapping):
                 raise MemorySyncContractError("snapshot manifest chunk must be an object")
+            raw_chunk_index = item.get("chunk_index")
+            chunk_index = -1 if raw_chunk_index is None else int(raw_chunk_index)
             chunks.append(MemorySnapshotChunk(
                 object_id=str(item.get("object_id") or ""),
                 logical_path=str(item.get("logical_path") or ""),
-                chunk_index=int(item.get("chunk_index") if item.get("chunk_index") is not None else -1),
+                chunk_index=chunk_index,
                 ciphertext_sha256=str(item.get("ciphertext_sha256") or ""),
                 plaintext_sha256=str(item.get("plaintext_sha256") or ""),
                 compressed_size=int(item.get("compressed_size") or 0),

@@ -76,6 +76,12 @@ class MemorySyncWorkerResult:
         }
 
 
+def _cursor_remote_seq(store: MemoryTierStore, *, fallback: int) -> int:
+    """Read one coherent sync-cursor snapshot without repeated Optional dereferences."""
+    cursor = store.sync_cursor()
+    return cursor.remote_seq if cursor is not None else int(fallback)
+
+
 class CloudMemorySyncWorker:
     """Bounded local-first replication worker.
 
@@ -265,7 +271,7 @@ class CloudMemorySyncWorker:
                         "pull_received": received + 1,
                         "pull_conflicts": prior.pull_conflicts + 1,
                         "cursor_before": before,
-                        "cursor_after": store.sync_cursor().remote_seq if store.sync_cursor() else before,
+                        "cursor_after": _cursor_remote_seq(store, fallback=before),
                         "error": "remote_event_identity_conflict",
                     }
                 )
@@ -274,7 +280,7 @@ class CloudMemorySyncWorker:
         applied = conflicts = 0
         materializer = MemorySyncEventMaterializer(store)
         for remote_seq, event in store.pending_inbox(limit=self.config.pull_batch_size):
-            cursor_now = store.sync_cursor().remote_seq if store.sync_cursor() else 0
+            cursor_now = _cursor_remote_seq(store, fallback=0)
             if remote_seq != cursor_now + 1:
                 break
             try:
@@ -291,7 +297,7 @@ class CloudMemorySyncWorker:
                     details={"error_type": type(exc).__name__, "error": str(exc)[:1000]},
                 )
                 break
-        after = store.sync_cursor().remote_seq if store.sync_cursor() else before
+        after = _cursor_remote_seq(store, fallback=before)
         return MemorySyncWorkerResult(
             push_claimed=prior.push_claimed,
             push_accepted=prior.push_accepted,
