@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "0de882fa202c0ae0211b3bc424bcab643b51d2ef",
-  "base_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "commit_date": "2026-08-15T14:43:45+02:00",
+  "base_merge_commit": "eb4992ffc3b3c8a9efe0e398498a4ad8ab1da5d1",
+  "base_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
+  "commit_date": "2026-08-15T19:34:08+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-15T12:43:45+00:00",
+  "generated_at_utc": "2026-08-15T17:34:08+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "01f2019d88e7cb6097190c38984dac5a76966abd",
+  "git_tree_sha": "aad27e4e849d724d730492830c6af02c28d7ff65",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "schema_version": "source_provenance/v15.4.2.1",
+  "runtime_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
+  "schema_version": "source_provenance/v15.4.2.1.1",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
+  "update_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
   "version_source": "latka_jazn/version.py"
 }
