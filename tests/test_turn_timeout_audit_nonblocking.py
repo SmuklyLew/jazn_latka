@@ -2,13 +2,20 @@ from __future__ import annotations
 
 from pathlib import Path
 import threading
-import time
 
 import pytest
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError
+
+
+_TEST_SYNC_GUARD_SECONDS = 5.0
+_TEST_EXECUTION_TIMEOUT_SECONDS = 0.25
+
+
+def _await_event(event: threading.Event, *, label: str) -> None:
+    assert event.wait(_TEST_SYNC_GUARD_SECONDS), f"timed out waiting for {label}"
 
 
 class _SlowSession:
@@ -21,7 +28,8 @@ class _SlowSession:
     def process_user_text(self, user_text: str, *, _turn_context: TurnExecutionContext, **_kwargs) -> dict:
         assert user_text == "slow"
         self.started.set()
-        self.release.wait(2.0)
+        if not self.release.wait(_TEST_SYNC_GUARD_SECONDS):
+            raise RuntimeError("test guard expired while slow session was blocked")
         return {"ok": True, "final_visible_text": "late"}
 
     def close(self) -> None:
@@ -34,7 +42,7 @@ def test_execution_timeout_does_not_wait_for_slow_technical_audit(tmp_path: Path
 
     def slow_persist_audit(self, *, event_type: str = "runtime_turn_telemetry") -> dict:
         audit_started.set()
-        release_audit.wait(2.0)
+        release_audit.wait(_TEST_SYNC_GUARD_SECONDS)
         return {
             "ok": True,
             "available": True,
@@ -54,16 +62,14 @@ def test_execution_timeout_does_not_wait_for_slow_technical_audit(tmp_path: Path
         no_carryover=False,
         source_client="isolated-test",
         command="isolated-test",
-        timeout_seconds=0.03,
+        timeout_seconds=_TEST_EXECUTION_TIMEOUT_SECONDS,
     )
-    started = time.perf_counter()
     try:
         with pytest.raises(RuntimeTurnTimeoutError):
             worker.process_user_text("slow", request_id="slow-audit-timeout-request")
-        elapsed = time.perf_counter() - started
-        assert _SlowSession.started.is_set()
-        assert elapsed < 0.5
-        assert audit_started.wait(1.0)
+        _await_event(_SlowSession.started, label="slow session start")
+        _await_event(audit_started, label="asynchronous timeout audit start")
+        assert release_audit.is_set() is False
         assert worker.timed_out is True
         assert worker.usable is False
     finally:

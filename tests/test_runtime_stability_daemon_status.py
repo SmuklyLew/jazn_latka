@@ -5,11 +5,27 @@ from pathlib import Path
 from types import SimpleNamespace
 import os
 import threading
-import time
 import pytest
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon
+
+
+_TEST_SYNC_GUARD_SECONDS = 5.0
+_TEST_EXECUTION_TIMEOUT_SECONDS = 0.25
+_TEST_CLIENT_WAIT_TIMEOUT_SECONDS = 0.10
+_TEST_CLIENT_POLL_INTERVAL_SECONDS = 0.02
+
+
+def _await_event(event: threading.Event, *, label: str) -> None:
+    """Wait on state, not scheduler timing; timeout is only a deadlock guard."""
+
+    assert event.wait(_TEST_SYNC_GUARD_SECONDS), f"timed out waiting for {label}"
+
+
+def _join_thread(thread: threading.Thread, *, label: str) -> None:
+    thread.join(timeout=_TEST_SYNC_GUARD_SECONDS)
+    assert not thread.is_alive(), f"{label} did not terminate"
 
 
 @pytest.fixture(autouse=True)
@@ -28,6 +44,14 @@ def _verified_source_provenance(monkeypatch: pytest.MonkeyPatch) -> None:
 
 class _FakeSession:
     execution_count = 0
+    slow_started = threading.Event()
+    release_slow = threading.Event()
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.execution_count = 0
+        cls.slow_started = threading.Event()
+        cls.release_slow = threading.Event()
 
     def __init__(self, _config, **_kwargs) -> None:
         self.state = SimpleNamespace(session_id=_kwargs.get("session_id"))
@@ -35,7 +59,9 @@ class _FakeSession:
     def process_user_text(self, user_text: str, **_kwargs) -> dict:
         type(self).execution_count += 1
         if user_text == "slow":
-            time.sleep(0.15)
+            type(self).slow_started.set()
+            if not type(self).release_slow.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while fake slow session was blocked")
         return {"ok": True, "final_visible_text": user_text, "execution_ordinal": type(self).execution_count}
 
     def close(self) -> None:
@@ -75,7 +101,8 @@ class _BlockingSession:
                 commit=lambda: self.writes.append("late-write"),
             )
             self.slow_started.set()
-            self.release_slow.wait(2.0)
+            if not self.release_slow.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while blocking session was held")
             _turn_context.commit_if_allowed(result, job_status="completed")
             self.slow_finished.set()
         return result
@@ -281,7 +308,7 @@ def test_lazy_worker_state_is_explicit_before_first_job(tmp_path: Path) -> None:
 
 
 def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_path: Path) -> None:
-    _FakeSession.execution_count = 0
+    _FakeSession.reset()
     server = _test_server(tmp_path)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -294,13 +321,14 @@ def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_p
             host="127.0.0.1",
             port=port,
             request_id=request_id,
-            timeout=0.02,
-            poll_interval=0.005,
+            timeout=_TEST_CLIENT_WAIT_TIMEOUT_SECONDS,
+            poll_interval=_TEST_CLIENT_POLL_INTERVAL_SECONDS,
         )
         assert pending["error_code"] == "daemon_chat_pending"
         assert pending["client_wait_status"] == "client_wait_timeout"
         assert pending["execution_failed"] is False
         assert pending["request_id"] == request_id
+        _await_event(_FakeSession.slow_started, label="slow daemon request start")
 
         replay = runtime_daemon.chat_daemon_submit(
             server.config,
@@ -312,15 +340,13 @@ def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_p
         assert replay["request_id"] == request_id
         assert replay["idempotent_replay"] is True
 
-        deadline = time.monotonic() + 2.0
-        completed: dict = {}
-        while time.monotonic() < deadline:
-            completed = runtime_daemon.chat_daemon_result(
-                server.config, request_id, host="127.0.0.1", port=port
-            )
-            if completed.get("done") is True:
-                break
-            time.sleep(0.01)
+        _FakeSession.release_slow.set()
+        job = server.get_chat_job(request_id)
+        assert job is not None
+        _await_event(job.done_event, label="slow daemon request completion")
+        completed = runtime_daemon.chat_daemon_result(
+            server.config, request_id, host="127.0.0.1", port=port
+        )
         assert completed["done"] is True
         assert completed["job_status"] == "completed"
         assert completed["request_id"] == request_id
@@ -329,22 +355,24 @@ def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_p
         assert summary["completed"] == 1
         assert summary["failed"] == 0
     finally:
+        _FakeSession.release_slow.set()
         server.shutdown()
         server.close_sessions()
         server.server_close()
-        thread.join(timeout=2.0)
+        _join_thread(thread, label="daemon HTTP server thread")
 
 
 def test_execution_timeout_is_terminal_and_worker_accepts_next_job(tmp_path: Path) -> None:
-    _FakeSession.execution_count = 0
-    server = _test_server(tmp_path, execution_timeout=0.04)
+    _FakeSession.reset()
+    server = _test_server(tmp_path, execution_timeout=_TEST_EXECUTION_TIMEOUT_SECONDS)
     try:
         slow, created, error = server.submit_chat_job(
             user_text="slow", input_field="test", session_id="slow-session",
             no_carryover=False, client="isolated-test", request_id="execution-timeout",
         )
         assert created is True and error is None and slow is not None
-        assert slow.done_event.wait(1.0)
+        _await_event(_FakeSession.slow_started, label="timed-out session start")
+        _await_event(slow.done_event, label="execution timeout terminal state")
         assert slow.status == "execution_timeout"
         assert slow.result is not None
         assert slow.result["error_code"] == "execution_timeout"
@@ -354,10 +382,11 @@ def test_execution_timeout_is_terminal_and_worker_accepts_next_job(tmp_path: Pat
             no_carryover=False, client="isolated-test", request_id="after-timeout",
         )
         assert created is True and error is None and fast is not None
-        assert fast.done_event.wait(1.0)
+        _await_event(fast.done_event, label="post-timeout fast job completion")
         assert fast.status == "completed"
         assert server.chat_job_summary()["worker_state"] == "alive"
     finally:
+        _FakeSession.release_slow.set()
         server.close_sessions()
         server.server_close()
 
@@ -376,7 +405,7 @@ def test_execution_timeout_replaces_poisoned_session_worker_for_same_session(tmp
         config=JaznConfig(root=root),
         marker_path=marker,
         session_factory=_BlockingSession,
-        execution_timeout_seconds=0.04,
+        execution_timeout_seconds=_TEST_EXECUTION_TIMEOUT_SECONDS,
     )
     server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
     try:
@@ -385,8 +414,8 @@ def test_execution_timeout_replaces_poisoned_session_worker_for_same_session(tmp
             no_carryover=False, client="isolated-test", request_id="replace-timeout",
         )
         assert created is True and error is None and slow is not None
-        assert _BlockingSession.slow_started.wait(1.0)
-        assert slow.done_event.wait(1.0)
+        _await_event(_BlockingSession.slow_started, label="blocking session start")
+        _await_event(slow.done_event, label="blocking session timeout")
         assert slow.status == "execution_timeout"
 
         fast, created, error = server.submit_chat_job(
@@ -394,13 +423,13 @@ def test_execution_timeout_replaces_poisoned_session_worker_for_same_session(tmp
             no_carryover=False, client="isolated-test", request_id="replace-next",
         )
         assert created is True and error is None and fast is not None
-        assert fast.done_event.wait(1.0)
+        _await_event(fast.done_event, label="replacement session completion")
         assert fast.status == "completed"
         assert fast.result is not None
         assert fast.result["instance_id"] >= 2
 
         _BlockingSession.release_slow.set()
-        assert _BlockingSession.slow_finished.wait(1.0)
+        _await_event(_BlockingSession.slow_finished, label="retired blocking session completion")
         assert _BlockingSession.writes == []
         summary = server.chat_job_summary()
         assert summary["execution_timeout"] == 1
@@ -637,16 +666,19 @@ def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp
     allow a fresh queue worker to process later requests.
     """
 
-    _FakeSession.execution_count = 0
-    server = _test_server(tmp_path, execution_timeout=0.04)
+    _FakeSession.reset()
+    server = _test_server(tmp_path, execution_timeout=_TEST_EXECUTION_TIMEOUT_SECONDS)
     original_get_session = server.get_session
     stalled = threading.Event()
     release = threading.Event()
+    stalled_finished = threading.Event()
 
     def blocking_get_session(session_id, *, no_carryover=False, client="daemon_http"):
         if session_id == "orchestration-stall":
             stalled.set()
-            release.wait(2.0)
+            if not release.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while orchestration was stalled")
+            stalled_finished.set()
         return original_get_session(session_id, no_carryover=no_carryover, client=client)
 
     server.get_session = blocking_get_session  # type: ignore[method-assign]
@@ -660,8 +692,8 @@ def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp
             request_id="orchestration-stall-request",
         )
         assert created is True and error is None and slow is not None
-        assert stalled.wait(1.0)
-        assert slow.done_event.wait(1.0)
+        _await_event(stalled, label="orchestration stall start")
+        _await_event(slow.done_event, label="orchestration watchdog timeout")
         assert slow.status == "execution_timeout"
         assert slow.result is not None
         assert slow.result["error_code"] == "execution_timeout"
@@ -676,11 +708,11 @@ def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp
             request_id="after-orchestration-stall-request",
         )
         assert created is True and error is None and fast is not None
-        assert fast.done_event.wait(1.0)
+        _await_event(fast.done_event, label="post-watchdog fast job completion")
         assert fast.status == "completed"
 
         release.set()
-        time.sleep(0.05)
+        _await_event(stalled_finished, label="stalled orchestration release")
         assert slow.status == "execution_timeout"
         assert slow.result is not None
         assert slow.result["error_code"] == "execution_timeout"
@@ -775,7 +807,7 @@ def test_sqlite_database_error_fails_only_one_job_and_worker_recovers(tmp_path: 
             request_id="sqlite-failure",
         )
         assert created is True and error is None and failed is not None
-        assert failed.done_event.wait(1.0)
+        _await_event(failed.done_event, label="SQLite failure job completion")
         assert failed.status == "failed"
         assert failed.result is not None
         assert failed.result["error_code"] == "runtime_sqlite_error"
@@ -792,7 +824,7 @@ def test_sqlite_database_error_fails_only_one_job_and_worker_recovers(tmp_path: 
             request_id="sqlite-recovery",
         )
         assert created is True and error is None and succeeded is not None
-        assert succeeded.done_event.wait(1.0)
+        _await_event(succeeded.done_event, label="SQLite recovery job completion")
         assert succeeded.status == "completed"
         assert succeeded.result is not None
         assert succeeded.result["instance_id"] >= 2
