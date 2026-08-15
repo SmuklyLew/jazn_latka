@@ -349,7 +349,10 @@ class MemorySyncStoreMixin(MemoryTierStoreMixinHost):
             last_push_at_utc=parse_utc(str(state["last_push_at_utc"])) if state and state["last_push_at_utc"] else None,
             last_pull_at_utc=parse_utc(str(state["last_pull_at_utc"])) if state and state["last_pull_at_utc"] else None,
             last_error=str(state["last_error"]) if state and state["last_error"] else None,
-            **counts,
+            outbox_pending=counts["outbox_pending"],
+            outbox_failed=counts["outbox_failed"],
+            inbox_pending=counts["inbox_pending"],
+            conflict_count=counts["conflict_count"],
         )
 
     def _record_conflict_in_transaction(

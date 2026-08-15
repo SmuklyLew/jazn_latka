@@ -3,11 +3,11 @@
   "version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "runtime_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
   "package_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "generated_at_utc": "2026-08-14T22:07:23+00:00",
-  "updated_at_utc": "2026-08-14T22:07:23+00:00",
+  "generated_at_utc": "2026-08-15T12:38:45+00:00",
+  "updated_at_utc": "2026-08-15T12:38:45+00:00",
   "start_file": "run.py",
-  "file_count": 726,
-  "static_file_count": 726,
+  "file_count": 752,
+  "static_file_count": 752,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -165,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1342,
-      "sha256": "844fcfef57444841d8b12c81c923bb39adc4ff68b03c55128f7535847b4a60f6",
+      "sha256": "b01ca0d63d55b8e9508c89f9c2561cbdf99c77423220f9af3664a1182cc50171",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -202,6 +202,15 @@
       "path": "docs/packaging/INDEPENDENT_MEMORY_PACKAGE_CONTRACT_V2.md",
       "size_bytes": 3688,
       "sha256": "0af9006084476cfbc83be8096d7cd7ad34a72819d05a1678de15173193816520",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/packaging/INDEPENDENT_MEMORY_PACKAGE_CONTRACT_V3.md",
+      "size_bytes": 2560,
+      "sha256": "80bccd9ab7bc0036a5e6f23cc84537f3d7e17a631fda70ec9622157fc2248774",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -274,6 +283,15 @@
       "path": "docs/plans/JAZN_V15_4_2_1_COGNITIVE_TRUTH_MEMORY_INTEGRATION_HARDENING.md",
       "size_bytes": 17089,
       "sha256": "53322d3bc6d7acb51e28d93c09a9bef9562bccbfb8ffdbdf232cd799aa2cb5f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD.md",
+      "size_bytes": 11456,
+      "sha256": "2e6d81c92568d7d873237d56256c2ccb5637d8530bb867edff86da5c145c9524",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -400,6 +418,15 @@
       "path": "docs/reports/JAZN_V15_4_2_1_RESEARCH_SOURCES.md",
       "size_bytes": 4292,
       "sha256": "c9f86a7e7125c488a2e97bc5271b5ac54aba5bc14c01bac00e2833c340a65ee3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD_IMPLEMENTATION.md",
+      "size_bytes": 4543,
+      "sha256": "0d8d4c886a0a35ff71fad4a349bf8858d3f5f7ed0acd6ffde7a440406c5a1891",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -767,8 +794,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 23449,
-      "sha256": "89d6f87c30d855977904c111467e901d8a65b0cdc1891b642096e83d4746b51a",
+      "size_bytes": 28158,
+      "sha256": "eccd299db0cd66b9a96fcdcec8b3054d40b8cb6f0d778c29fded1f430966db08",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -794,8 +821,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/diagnostics.py",
-      "size_bytes": 17749,
-      "sha256": "d9c5e7d930797a6d44933f351c1182ecd6ee5ebe07dd41493b44c274a1731a5d",
+      "size_bytes": 18391,
+      "sha256": "867700f174428a9d47904bca01d1904bbd7089b733751995aaaf16ee8e8ffc18",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -830,8 +857,8 @@
     },
     {
       "path": "latka_jazn/config.py",
-      "size_bytes": 17650,
-      "sha256": "487f902127c1fd1c786af1dbe06019038d8473242457a56e5e33a4b9b1fc6f4a",
+      "size_bytes": 20448,
+      "sha256": "5fd36bd10e0c110f3af26fd178b4dfa1719c68eb9144a9d53c485089f065f8e1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2099,8 +2126,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 156989,
-      "sha256": "d38824a6665db9d76bc4745c04e3fa13df995cc172bf6e42871d370be1ece254",
+      "size_bytes": 159148,
+      "sha256": "cbbc6df699200452d6b41d7344f6b53a3fb70d0d2843e26aff71639b825d85a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2603,8 +2630,8 @@
     },
     {
       "path": "latka_jazn/db/shard_manifest.py",
-      "size_bytes": 10766,
-      "sha256": "83574d2b5da23e6678c2c03fc36e1cbf141d40eeaeb92ddbd4882d8afedd8d98",
+      "size_bytes": 10857,
+      "sha256": "e0e8f28fd2359b240757194145b277852138b38a946a3c139090071c15d5bf49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2747,8 +2774,8 @@
     },
     {
       "path": "latka_jazn/memory/conversation_archive.py",
-      "size_bytes": 21545,
-      "sha256": "9fb184a9ab82609c6b9c2e2ad02e558be198b8f1db920dcbf7d29b615228b389",
+      "size_bytes": 21633,
+      "sha256": "4013941e36c83086f05f756b7857879f8fb8d097f91f7682272dcc810fe4890c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2926,6 +2953,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/memory/memory_cloud_gateway.py",
+      "size_bytes": 44037,
+      "sha256": "b0c66432766635318a37338929a9226cce89a118b91e2ce7f9676bf4644a96a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_cloud_server.py",
+      "size_bytes": 5892,
+      "sha256": "44e938cf9bb9656ab941c5a4d2b15c93c5624ade050315e562fad2d2273b3413",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_cloud_snapshot_runtime.py",
+      "size_bytes": 8543,
+      "sha256": "86ba0508afdfd40413772a0e21d66611e311b4bdd3ed33dc0bb46ad1d8f81178",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/memory/memory_promotion.py",
       "size_bytes": 9644,
       "sha256": "443079c86c8a42e64ba9e001a589cbe3f8ad6282ea56234073b57f33b7d949bb",
@@ -2936,8 +2990,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_promotion_outbox_store.py",
-      "size_bytes": 6828,
-      "sha256": "b3686894d3ca2c2ae98ae474fc24321c3a67d3faefbd75692c4ad61b13bcdf00",
+      "size_bytes": 7645,
+      "sha256": "d9b6fb49ac31b6bdd0df71695edf28810d63c5f6c9ec7eebdc0d03e55cad917b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2962,9 +3016,90 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/memory/memory_snapshot_runtime.py",
+      "size_bytes": 17860,
+      "sha256": "ebf71d3c0c953da01acc1eada159ee6af6571fe3c47e7afcbf6e37d96e1f3349",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_backend.py",
+      "size_bytes": 20485,
+      "sha256": "495ba7ed23629f117cae08a52dab684be6b87e1d5dc0933f2bb0ce460efd622d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_contracts.py",
+      "size_bytes": 21148,
+      "sha256": "f6e6c2b50f351ddc7310f4fc77995882069afec329c07a910ebb03a957603593",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_controller.py",
+      "size_bytes": 8037,
+      "sha256": "7168d9dbdf39860b3a98e54a1398726d633c5d865d4c5cee6808f8a80c43dc0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_crypto.py",
+      "size_bytes": 15568,
+      "sha256": "f42378c4ea8dd6ed61c727e9e48dd18b5b6fa46fea24cd467a40ede1f6009a4f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_materializer.py",
+      "size_bytes": 6806,
+      "sha256": "46f11f7e790b9de9c5383abb8e4cd6b13fbc0a2a0b209b20ec03b84bbb315925",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_runtime.py",
+      "size_bytes": 15730,
+      "sha256": "18e30da57f93fdf8ac5dd0dc9139b2e5d900062996e665100a94b6e917744f00",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_store.py",
+      "size_bytes": 19900,
+      "sha256": "4b078621a616529727171bd463356faa1cc61fd6b0fb5a6b3bec39f2af68ae84",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/memory_sync_worker.py",
+      "size_bytes": 14733,
+      "sha256": "a84d9d72fb2482ecbd860672998324eafd3728cc50f3a1af1bf27812dfe07427",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/memory/memory_tier_core_store.py",
-      "size_bytes": 16800,
-      "sha256": "11250ee024d0f5c23c394fd7a3f861105ca0bb9a9d16bc868d8c71e27b547444",
+      "size_bytes": 16951,
+      "sha256": "8eb907cb8f7e867c3f89970d266db61c5378bcc5714491fa0eb82975dd80e93f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2972,8 +3107,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_tier_schema.py",
-      "size_bytes": 5326,
-      "sha256": "5d1ad42889933d69ed99446008a91063a370d6e0b6b0bc831cacb71375a580fc",
+      "size_bytes": 7599,
+      "sha256": "674d94e7d22cfe3be372de10f157ca06bf56ee76298e4a35a972258d0df55219",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2990,8 +3125,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_tier_store.py",
-      "size_bytes": 628,
-      "sha256": "a14ab51d2cc550ad71633e2798b294b93d21b951a7893c93591ae9b90b89c370",
+      "size_bytes": 719,
+      "sha256": "58e4ac0aecf84fc37d45251dc2bf5920c34bc7cb2b382d48cbc80e9267d72931",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3134,8 +3269,8 @@
     },
     {
       "path": "latka_jazn/memory/runtime_memory.py",
-      "size_bytes": 9985,
-      "sha256": "f01bdd7d0b49e56ba9ccca0f0a0684415062eb59e96e56e52b2cb58bd077cde1",
+      "size_bytes": 10108,
+      "sha256": "60c582fa914f9179679a2ed88fe87d0e1ba0d8557b14c147376ae7fc156afddc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3205,6 +3340,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/memory/storage_limits.py",
+      "size_bytes": 959,
+      "sha256": "0985642c7cbdadb2bc4eb6dac8a726c23bf531c97bfb0ff5bc5e2665c1f8c9cf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/memory/store.py",
       "size_bytes": 14327,
       "sha256": "5a379616b653e234b9a85f328ba2851eb2ed873db45d94cd2ccc42c715e9471a",
@@ -3242,8 +3386,8 @@
     },
     {
       "path": "latka_jazn/memory/wake_state_runtime.py",
-      "size_bytes": 14041,
-      "sha256": "2c8246f6522b74e7e180c7ad703260cf94cda83ec196c10879a345c51841e389",
+      "size_bytes": 15440,
+      "sha256": "f1000100259493e9635ae9205705b083e56a9c51813ca6bc5a1efbb5ff8cf4ab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3971,8 +4115,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_attach.py",
-      "size_bytes": 11386,
-      "sha256": "b902cb5123f22cba24d9928d11081e5c49c093071dc83baea0e543c38fa80336",
+      "size_bytes": 12977,
+      "sha256": "399e99c8e4c65bd64c1135b6f756307370d71d68d9d2d307ccefc49b40c9ba6b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3980,8 +4124,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_contract.py",
-      "size_bytes": 845,
-      "sha256": "2738ca061e148454f3a18f678a60a61fc43673131b0a17da3e2d299831daf04d",
+      "size_bytes": 905,
+      "sha256": "90d2546b76b5a0699d6b1a0dd60739ae137cd66d87d6c6a4e09c48f805ad1fd4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3989,8 +4133,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_manifest.py",
-      "size_bytes": 11105,
-      "sha256": "782aca340a413c742de1f2ad54c01d81c1216f1ea05b94f269435706c9929d08",
+      "size_bytes": 13803,
+      "sha256": "04e9cf3b3ac5467529393bf23c9e60fe9708ed2a340e43d3e8cdbd5a38e6e81c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3998,8 +4142,17 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_types.py",
-      "size_bytes": 4316,
-      "sha256": "848d7b5d51e4ddca39cff2eee434c2d16c271b52e4087caa09565f5cbbcfa8e6",
+      "size_bytes": 4459,
+      "sha256": "d3663fa13866e37abef2f0679add6445e2728f19c57cbff6624062a08c776a32",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/packaging/memory_raw_segmentation.py",
+      "size_bytes": 14728,
+      "sha256": "7d0b8cf47cf5c0076773b0a9dd6c9b9955f8dc036bddfe5b5df873f268eb221e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5051,8 +5204,8 @@
     },
     {
       "path": "latka_jazn/tools/verified_memory_restore.py",
-      "size_bytes": 74056,
-      "sha256": "cb0753bb7bb825b7adad8dec426c349e9d8ca91f333b54db7f77865afb9dd9f7",
+      "size_bytes": 74143,
+      "sha256": "01f88700da57bc4ffe237074530606397409dcfe52ae7ec3c763db7dcbadcece",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5186,8 +5339,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 1751,
-      "sha256": "234bdbc5cc96843c8b589f9dd51f0d76d0443cc0c0c9743cda327bb044597df7",
+      "size_bytes": 1885,
+      "sha256": "3d798918e387a7d02a5d4395af37c2df5951bfa7ce3c389e6e67b086dc61b68e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5547,7 +5700,7 @@
     {
       "path": "tests/test_independent_memory_package_contract_v2.py",
       "size_bytes": 12282,
-      "sha256": "e32fd216ed3e7b2989130ed8e2df8391958e42c5279b2601cdf601ab22d1045e",
+      "sha256": "819e14aae95478b4abab5e25295b91f775c4e3ec4e4dc65b7231b0ac9819efb9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5617,9 +5770,54 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_local_first_memory_boundary_v155.py",
+      "size_bytes": 2617,
+      "sha256": "49456597c576ffd275c20b9122a46c5b1a7cb0240b89dd66392381a907bed86f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_loopback_proxy_bypass.py",
       "size_bytes": 2872,
       "sha256": "afda094ac3d38d5914badde8b49aa2bde9e5f8a41ff70e36403bc6fb5fef27f2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_cloud_gateway_v155.py",
+      "size_bytes": 8420,
+      "sha256": "fc2088405616bae8fe9d87b977f5b9d8a7d809eb34479f185d12c9590430e882",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_cloud_server_v155.py",
+      "size_bytes": 2448,
+      "sha256": "ad6436edd071c23c74414bce75e279ac8e98360310a099b03e5b20f32b3bf53b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_cloud_snapshot_controller_v155.py",
+      "size_bytes": 3407,
+      "sha256": "645a76ff0f30e80d88fd8fc176f97a5db7f6232e078efd84edf511a5cb253d63",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_cloud_sync_v155.py",
+      "size_bytes": 12126,
+      "sha256": "d60d62fa29058a7aca7b1d2e0f3cd4f4157b96c0c4989f6f45ad78b92dc5597f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5638,6 +5836,15 @@
       "path": "tests/test_memory_large_validation.py",
       "size_bytes": 9405,
       "sha256": "b4d17054fed943f1f3ac0c17325cdc695272dcf3b07ea91b9f9c4c73b7c3849f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_raw_segmentation_v155.py",
+      "size_bytes": 6689,
+      "sha256": "2b5fcddef8f0319d7a9f582699599976d0e987724c2ec3bc47b67a1c0fae86a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5770,9 +5977,36 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_snapshot_runtime_v155.py",
+      "size_bytes": 7249,
+      "sha256": "004f1e83c57267358e0c648b7417199a19d0d75e48f616dd2e3a057eb249f9f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_sqlite_test04.py",
       "size_bytes": 31305,
       "sha256": "2ff22d48b725c698a4f39874b22de2137ada5a537850ad15d27af17b1372ad6e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_sync_controller_v155.py",
+      "size_bytes": 3847,
+      "sha256": "1f0b13d723b6dcaa5de0f3c9122de5ba5eb20ed21bcb0e9d4f12990048aa84f9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_sync_runtime_lease_v155.py",
+      "size_bytes": 5323,
+      "sha256": "fbaa7245dd4ed0d354ed23b31be1711684db01cbe2da93dea7b9ff2d4329cde6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6239,8 +6473,8 @@
     },
     {
       "path": "tests/test_runtime_stability_wake_state.py",
-      "size_bytes": 20370,
-      "sha256": "1857861d0999425dcdfed94e6e314f7f68f3a54be4d3435746bc3a1c14e79dca",
+      "size_bytes": 21780,
+      "sha256": "6c7cd19e1554b11248e72ae6f1000ec6393e6ecb36a8e5c1331ec4b5735e2ab1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6437,8 +6671,8 @@
     },
     {
       "path": "tools/_jazn_pack_generator_memory_v2.py",
-      "size_bytes": 19469,
-      "sha256": "da66b35c14da5a51c9a17600413c24c20f5f23c54f346e7fa8a48231c5eea4e8",
+      "size_bytes": 21593,
+      "sha256": "acc3eea7b0595f8857deb9d6a57dffe4128a185d81f60b1abf6302b525b13264",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

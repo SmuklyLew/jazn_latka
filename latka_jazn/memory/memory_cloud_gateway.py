@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol, Sequence
 import hashlib
+import importlib
 import json
 import secrets
 from urllib import parse as urlparse
@@ -141,7 +142,7 @@ class PostgresMemoryCloudRepository:
             con = self._factory()
         else:
             try:
-                import psycopg
+                psycopg: Any = importlib.import_module("psycopg")
             except Exception as exc:  # pragma: no cover - optional server dependency
                 raise MemoryCloudRepositoryError(
                     "psycopg is required for PostgreSQL memory gateway; install latka-jazn[memory-cloud-server]"
@@ -577,15 +578,18 @@ class S3CompatibleObjectStore:
             raise MemoryCloudRepositoryError("object-store bucket is required")
         self.bucket = bucket.strip()
         self.prefix = prefix.strip("/")
-        if client is None:
+        resolved_client: Any = client
+        if resolved_client is None:
             try:
-                import boto3
+                boto3: Any = importlib.import_module("boto3")
             except Exception as exc:  # pragma: no cover - optional server dependency
                 raise MemoryCloudRepositoryError(
                     "boto3 is required for S3-compatible memory objects; install latka-jazn[memory-cloud-server]"
                 ) from exc
-            client = boto3.client("s3", endpoint_url=endpoint_url, region_name=region_name)
-        self.client = client
+            resolved_client = boto3.client("s3", endpoint_url=endpoint_url, region_name=region_name)
+        if resolved_client is None:
+            raise MemoryCloudRepositoryError("S3-compatible client construction returned no client")
+        self.client: Any = resolved_client
 
     def put_immutable(self, *, object_id: str, data: bytes) -> None:
         digest = hashlib.sha256(data).hexdigest()

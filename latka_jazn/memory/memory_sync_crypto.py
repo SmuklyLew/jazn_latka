@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Mapping, Protocol
 import base64
 import hashlib
+import importlib
 import os
 
 from latka_jazn.memory.memory_sync_contracts import (
@@ -132,7 +133,7 @@ class PyNaClXChaCha20Poly1305Provider:
     @staticmethod
     def _bindings():
         try:
-            from nacl import bindings
+            bindings: Any = importlib.import_module("nacl.bindings")
         except Exception as exc:  # pragma: no cover - depends on optional package
             raise MemoryCryptoUnavailable(
                 "PyNaCl is required for encrypted memory sync; install latka-jazn[memory-cloud]"
@@ -315,7 +316,8 @@ class RecoveryKeyBundle:
         if len(recovery_passphrase) < 12:
             raise MemorySyncContractError("recovery passphrase must contain at least 12 characters")
         try:
-            from nacl import bindings, pwhash
+            bindings: Any = importlib.import_module("nacl.bindings")
+            pwhash: Any = importlib.import_module("nacl.pwhash")
         except Exception as exc:  # pragma: no cover - optional dependency
             raise MemoryCryptoUnavailable("PyNaCl is required to create a recovery bundle") from exc
         ops = int(opslimit or pwhash.argon2id.OPSLIMIT_MODERATE)
@@ -342,7 +344,8 @@ class RecoveryKeyBundle:
 
     def unwrap(self, *, recovery_passphrase: str) -> bytes:
         try:
-            from nacl import bindings, pwhash
+            bindings: Any = importlib.import_module("nacl.bindings")
+            pwhash: Any = importlib.import_module("nacl.pwhash")
         except Exception as exc:  # pragma: no cover
             raise MemoryCryptoUnavailable("PyNaCl is required to open a recovery bundle") from exc
         try:
