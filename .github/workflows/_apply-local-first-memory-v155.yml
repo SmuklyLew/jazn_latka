@@ -20,8 +20,8 @@ jobs:
     env:
       PYTHONUTF8: "1"
       EXPECTED_BASE64_SHA256: 0d3a9b02a253d3607f631ed6f8ab9ed9b8fd028334eb82b3ab32610c4e2a4e44
-      EXPECTED_GZIP_SHA256: 6a135ceb63991025612edc4a94eb1e92cf78558d34b474a4015758974960480d
-      EXPECTED_PATCH_SHA256: 803b4fc6bcdb3cda4ca35a0418cf711b4dbb666d1ada8326ae40047883a3c511
+      EXPECTED_GZIP_SHA256: b378dd67215c64c27236797be85c3142976036a6e85cba8e321d525fe5442ab5
+      EXPECTED_PATCH_SHA256: 4e5de5c2fe6c962fe9adf0d071351ba478270bcd2c6b76396fcdff596db4114b
     steps:
       - name: Checkout transport branch
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -44,10 +44,10 @@ jobs:
           ACTUAL_GZIP=$(sha256sum "$RUNNER_TEMP/upgrade.patch.gz" | cut -d' ' -f1)
           printf 'TRANSPORT gzip_size=%s gzip_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.patch.gz")" "$ACTUAL_GZIP" "$EXPECTED_GZIP_SHA256"
           gzip -t "$RUNNER_TEMP/upgrade.patch.gz"
+          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
           gzip --decompress --stdout "$RUNNER_TEMP/upgrade.patch.gz" > "$RUNNER_TEMP/upgrade.patch"
           ACTUAL_PATCH=$(sha256sum "$RUNNER_TEMP/upgrade.patch" | cut -d' ' -f1)
           printf 'TRANSPORT patch_size=%s patch_sha256=%s expected=%s\n' "$(wc -c < "$RUNNER_TEMP/upgrade.patch")" "$ACTUAL_PATCH" "$EXPECTED_PATCH_SHA256"
-          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
           echo "${EXPECTED_PATCH_SHA256}  $RUNNER_TEMP/upgrade.patch" | sha256sum --check --strict
           git apply --check "$RUNNER_TEMP/upgrade.patch"
 
