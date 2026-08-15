@@ -34,6 +34,7 @@ from latka_jazn.core.runtime_root import (
     workspace_runtime_path,
 )
 from latka_jazn.core.rest_cycle_controller import RestCycleController
+from latka_jazn.memory.memory_sync_controller import MemorySyncController
 from latka_jazn.core.clock import (
     TRUSTED_HOST_TIME_ISO_ENV_NAMES,
     TRUSTED_HOST_TIME_MAX_AGE_ENV_NAMES,
@@ -849,6 +850,18 @@ class JaznDaemonServer(ThreadingHTTPServer):
             except Exception as exc:
                 # Rest is deliberately fail-soft for the primary chat daemon.
                 self._rest_cycle_init_error = f"{type(exc).__name__}: {exc}"
+        self.memory_sync_controller: MemorySyncController | None = None
+        self._memory_sync_init_error: str | None = None
+        try:
+            # The controller is harmless in local-only mode: it reports disabled and
+            # starts no thread/network activity when JAZN_MEMORY_SYNC_MODE=off.
+            self.memory_sync_controller = MemorySyncController(
+                config,
+                runtime_busy=self._rest_runtime_busy,
+            )
+        except (OSError, RuntimeError, TypeError, ValueError) as exc:
+            # Cloud durability must never block construction of the dialogue daemon.
+            self._memory_sync_init_error = f"{type(exc).__name__}: {exc}"
 
     def _rest_runtime_busy(self) -> bool:
         if self.shutdown_requested.is_set():
@@ -872,6 +885,25 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "truth_boundary": "Rest-cycle failure or disablement does not block the primary dialogue daemon.",
             }
         return controller.status_payload()
+
+    def memory_sync_status(self) -> dict[str, Any]:
+        controller = self.memory_sync_controller
+        if controller is None:
+            return {
+                "schema_version": schema_version("memory_sync_controller"),
+                "enabled": False,
+                "state": "unavailable",
+                "init_error": self._memory_sync_init_error,
+                "ordinary_dialogue_allowed": True,
+                "local_memory_ready_independent_of_cloud": True,
+                "truth_boundary": (
+                    "Cloud memory synchronization is optional durability. Controller initialization failure "
+                    "does not block the primary dialogue daemon or local memory."
+                ),
+            }
+        payload = controller.status_payload()
+        payload["init_error"] = self._memory_sync_init_error
+        return payload
 
     def process_request(
         self,
@@ -1796,6 +1828,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "daemon_max_http_workers": self.max_http_workers,
             "daemon_chat_jobs": chat_jobs,
             "rest_cycle_status": self.rest_cycle_status(),
+            "memory_sync_status": self.memory_sync_status(),
             "daemon_chat_async_supported": True,
             "daemon_chat_submit_endpoint": "/chat-submit",
             "daemon_chat_result_endpoint_template": "/chat-result/{request_id}",
@@ -1901,6 +1934,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "daemon_auth_required": True,
             "daemon_chat_jobs": chat_jobs,
             "rest_cycle_status": self.rest_cycle_status(),
+            "memory_sync_status": self.memory_sync_status(),
             "runtime_write_access_status": runtime_write,
             "runtime_write_ready": bool(runtime_write.get("ok")),
             "runtime_write_verification_mode": runtime_write.get("verification_mode"),
@@ -1964,6 +1998,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 self.rest_cycle_controller.stop()
             except Exception as exc:
                 self._rest_cycle_init_error = f"shutdown:{type(exc).__name__}: {exc}"
+        if self.memory_sync_controller is not None:
+            try:
+                self.memory_sync_controller.stop(join_timeout_seconds=2.0)
+            except (OSError, RuntimeError, TypeError, ValueError) as exc:
+                self._memory_sync_init_error = f"shutdown:{type(exc).__name__}: {exc}"
         try:
             self._chat_queue.put_nowait(None)
         except queue.Full:
@@ -2406,6 +2445,8 @@ def run_daemon(
     server.start_heartbeat()
     if server.rest_cycle_controller is not None:
         server.rest_cycle_controller.start()
+    if server.memory_sync_controller is not None:
+        server.memory_sync_controller.start()
     try:
         server.serve_forever(poll_interval=0.25)
     finally:

@@ -102,6 +102,19 @@ def status_payload(
     conversation_memory = startup.get("conversation_archive_status") or {}
     continuity = startup.get("memory_continuity_status") or {}
     rest_status = daemon.get("rest_cycle_status") or {}
+    try:
+        from latka_jazn.memory.memory_sync_runtime import MemorySyncRuntime
+
+        memory_sync = MemorySyncRuntime(cfg).status(probe_remote=False)
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        memory_sync = {
+            "schema_version": "jazn_memory_sync_runtime_status/v1",
+            "configuration": {"enabled": False},
+            "cloud_sync_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "truth_boundary": "Cloud sync diagnostics are non-blocking for local runtime readiness.",
+        }
     capability_readiness = {
         "runtime_ready": bool(process_ok and runtime_write_ready and transactional_memory_ready),
         "memory_search_ready": bool(conversation_memory.get("ready_for_search")),
@@ -149,6 +162,7 @@ def status_payload(
         ),
         "startup": startup,
         "transactional_memory": transactional_memory,
+        "memory_sync": memory_sync,
         "daemon": daemon,
     }
 

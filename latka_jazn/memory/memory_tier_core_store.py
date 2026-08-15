@@ -285,9 +285,13 @@ class MemoryTierCoreStore:
         return [record_from_dict(json.loads(row["record_json"])) for row in rows]
 
     def stats(self) -> dict[str, int]:
-        tables = ("memory_records", "memory_evidence", "working_memory_index",
-                  "short_term_memory_index", "long_term_memory_index", "promotion_requests",
-                  "promotion_decisions", "promotion_ledger", "memory_outbox", "session_checkpoints")
+        tables = (
+            "memory_records", "memory_evidence", "working_memory_index",
+            "short_term_memory_index", "long_term_memory_index", "promotion_requests",
+            "promotion_decisions", "promotion_ledger", "memory_outbox", "session_checkpoints",
+            "memory_sync_state", "memory_sync_envelopes", "memory_sync_receipts",
+            "memory_sync_inbox", "memory_sync_conflicts",
+        )
         return {name: int(self.con.execute(f'SELECT COUNT(*) FROM "{name}"').fetchone()[0]) for name in tables}
 
     def validate(self, *, full: bool = True) -> dict[str, Any]:

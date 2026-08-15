@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Jaźń / Łatka — generator paczek v8.5 with independent memory contract v2.
+"""Jaźń / Łatka — generator paczek v8.5 with independent memory contract v3.
 
 The verified v8.5 UI/system packaging core remains byte-for-byte available in
 ``_jazn_pack_generator_core.py``. This facade layers only the independent
@@ -22,6 +22,11 @@ import uuid
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Sequence
 
+from latka_jazn.packaging.memory_raw_segmentation import (
+    RawJsonlSegmenter,
+    RawMemorySegmentationPolicy,
+)
+
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -37,8 +42,10 @@ except ImportError:
 
 GENERATOR_VERSION = "8.5"
 SETTINGS_SCHEMA = "jazn_pack_generator_settings/v8.5"
-MEMORY_MANIFEST_SCHEMA = "jazn_memory_package_manifest/v2"
-MEMORY_FORMAT_VERSION = 2
+MEMORY_MANIFEST_SCHEMA = "jazn_memory_package_manifest/v3"
+MEMORY_FORMAT_VERSION = 3
+MEMORY_RAW_SEGMENT_TARGET_BYTES = int(os.environ.get("JAZN_MEMORY_PACKAGE_RAW_SEGMENT_BYTES", str(256 * 1024 * 1024)))
+MEMORY_RAW_SEGMENT_MAX_BYTES = int(os.environ.get("JAZN_MEMORY_PACKAGE_RAW_MEMBER_MAX_BYTES", str(480 * 1024 * 1024)))
 MEMORY_RUNTIME_COMPATIBILITY_CONTRACT = "jazn_memory_runtime/v1"
 SQLITE_HEADER = b"SQLite format 3\x00"
 
@@ -115,7 +122,7 @@ def common_forbidden_reason(relative: str) -> str | None:
 
 
 def _new_memory_snapshot_root() -> Path:
-    path = Path(tempfile.mkdtemp(prefix="jazn-memory-package-v2-"))
+    path = Path(tempfile.mkdtemp(prefix="jazn-memory-package-v3-"))
     _register_temp(path)
     return path
 
@@ -241,6 +248,7 @@ def build_memory_plan(
     candidates = [path for path in candidates if path != _core.MEMORY_PACKAGE_MANIFEST]
     entries: list[Any] = []
     databases: list[dict[str, Any]] = []
+    raw_segments: list[dict[str, Any]] = []
     snapshot_root: Path | None = None
     snapshot_id = str(uuid.uuid4())
     created_at_utc = _core.utc_now()
@@ -254,6 +262,36 @@ def build_memory_plan(
                 entry, database = _snapshot_sqlite_entry(root, relative, snapshot_root)
                 entries.append(entry)
                 databases.append(database)
+            elif (
+                independent_contract
+                and relative.lower().endswith(".jsonl")
+                and source.stat().st_size > MEMORY_RAW_SEGMENT_TARGET_BYTES
+            ):
+                if snapshot_root is None:
+                    snapshot_root = _new_memory_snapshot_root()
+                segmenter = RawJsonlSegmenter(
+                    RawMemorySegmentationPolicy(
+                        target_segment_bytes=MEMORY_RAW_SEGMENT_TARGET_BYTES,
+                        max_segment_bytes=MEMORY_RAW_SEGMENT_MAX_BYTES,
+                    )
+                )
+                segmented = segmenter.segment(
+                    source, source_relative=relative, staging_root=snapshot_root
+                )
+                raw_segments.append(segmented.to_dict())
+                for segment in segmented.segments:
+                    segment_source = snapshot_root / Path(*PurePosixPath(segment.package_path).parts)
+                    stat_result = segment_source.stat()
+                    entries.append(
+                        _core.PlanEntry(
+                            relative=segment.package_path,
+                            source=segment_source,
+                            size_bytes=stat_result.st_size,
+                            sha256=segment.sha256,
+                            classification="memory_raw_segment",
+                            mtime_ns=stat_result.st_mtime_ns,
+                        )
+                    )
             else:
                 entries.append(_core.hash_source_entry(root, relative, "memory_file"))
             if index % 20 == 0 or index == total:
@@ -287,6 +325,10 @@ def build_memory_plan(
                 "databases": sorted(
                     databases, key=lambda item: str(item.get("path") or "")
                 ),
+                "raw_segments": sorted(
+                    raw_segments, key=lambda item: str(item.get("source_path") or "")
+                ),
+                "package_member_limit_bytes": MEMORY_RAW_SEGMENT_MAX_BYTES,
                 "excluded_files": [
                     path for path, _ in excluded if path.startswith("memory/")
                 ],
@@ -298,7 +340,7 @@ def build_memory_plan(
                     "excluded. L2/L3 truth status is not changed by packaging."
                 ),
             }
-            manifest_builder = "independent_memory_contract_v2+sqlite_online_backup"
+            manifest_builder = "independent_memory_contract_v3+sqlite_online_backup+raw_jsonl_segmentation"
         else:
             payload = {
                 "schema_version": "jazn_memory_package_manifest/v1",

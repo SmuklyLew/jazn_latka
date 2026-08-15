@@ -125,6 +125,29 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--l3-limit", type=int, default=25)
     child.add_argument("--backup-dir", type=Path, help="Katalog zweryfikowanych backupów SQLite przed importem.")
 
+    child = sub.add_parser("memory-sync-status", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument(
+        "--probe-remote",
+        action="store_true",
+        help="Wykonaj jawny probe skonfigurowanego backendu; domyślny status nie używa sieci.",
+    )
+
+    child = sub.add_parser("memory-sync-once", allow_abbrev=False)
+    _add_common(child)
+
+    child = sub.add_parser("memory-cloud-snapshot-plan", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--profile", choices=("core", "all-sqlite"), default="core")
+
+    child = sub.add_parser("memory-cloud-snapshot", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--profile", choices=("core", "all-sqlite"), default="core")
+
+    child = sub.add_parser("memory-cloud-restore", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--destination-parent", type=Path, required=True)
+
     child = sub.add_parser("memory-validate", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--full", action="store_true", help="Użyj PRAGMA integrity_check zamiast quick_check.")
@@ -246,7 +269,9 @@ def main(argv: list[str] | None = None) -> int:
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
-        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html", "memory-validate", "model-status",
+        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+        "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
+        "memory-cloud-restore", "memory-validate", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
         return _legacy_main(_legacy_args_with_canonical_root(args))
@@ -448,6 +473,85 @@ def main(argv: list[str] | None = None) -> int:
         progress.finish(bool(payload.get("ok")), "Import HTML i synchronizacja pamięci zakończone")
         _emit(payload, as_json=ns.as_json)
         return 0 if payload.get("ok") else 1
+    if ns.command in {"memory-sync-status", "memory-sync-once"}:
+        from latka_jazn.config import JaznConfig
+        from latka_jazn.memory.memory_sync_runtime import MemorySyncRuntime
+
+        runtime = MemorySyncRuntime(JaznConfig(root=root))
+        if ns.command == "memory-sync-status":
+            payload = runtime.status(probe_remote=bool(ns.probe_remote))
+            _emit(payload, as_json=ns.as_json)
+            return 0
+        try:
+            result = runtime.sync_once()
+        except Exception as exc:
+            payload = {
+                "schema_version": "jazn_memory_sync_once/v1",
+                "ok": False,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "truth_boundary": "Cloud sync failure does not invalidate an already committed local memory write.",
+            }
+            _emit(payload, as_json=True)
+            return 2
+        payload = {
+            "schema_version": "jazn_memory_sync_once/v1",
+            "ok": result.error is None,
+            "result": result.to_dict(),
+            "status": runtime.status(probe_remote=False),
+        }
+        _emit(payload, as_json=ns.as_json)
+        return 0 if result.error is None else 2
+
+    if ns.command in {"memory-cloud-snapshot-plan", "memory-cloud-snapshot", "memory-cloud-restore"}:
+        from latka_jazn.config import JaznConfig
+        from latka_jazn.memory.memory_cloud_snapshot_runtime import MemoryCloudSnapshotRuntime
+
+        controller = MemoryCloudSnapshotRuntime(JaznConfig(root=root))
+        try:
+            if ns.command == "memory-cloud-snapshot-plan":
+                plan = controller.plan(profile=ns.profile)
+                payload = {
+                    "schema_version": "jazn_memory_cloud_snapshot_plan/v1",
+                    "ok": True,
+                    "plan": plan.to_dict(),
+                    "truth_boundary": "Planning is local/read-only and performs no upload.",
+                }
+            elif ns.command == "memory-cloud-snapshot":
+                result = controller.create_snapshot(profile=ns.profile)
+                payload = {
+                    "schema_version": "jazn_memory_cloud_snapshot/v1",
+                    "ok": True,
+                    "snapshot_id": result.manifest.snapshot_id,
+                    "manifest_sha256": result.manifest_sha256,
+                    "object_count": result.object_count,
+                    "uploaded_bytes": result.uploaded_bytes,
+                    "manifest": result.manifest.to_dict(),
+                }
+            else:
+                result = controller.restore_latest(destination_parent=ns.destination_parent)
+                payload = {
+                    "schema_version": "jazn_memory_cloud_restore/v1",
+                    "ok": bool(result.verified),
+                    "snapshot_id": result.snapshot_id,
+                    "staging_root": str(result.staging_root),
+                    "restored_paths": [str(path) for path in result.restored_paths],
+                    "integrity": dict(result.integrity),
+                    "verified": result.verified,
+                    "truth_boundary": "Restore lands in fresh staging and is never promoted over active memory automatically.",
+                }
+        except Exception as exc:
+            payload = {
+                "schema_version": "jazn_memory_cloud_operator/v1",
+                "ok": False,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            _emit(payload, as_json=True)
+            return 2
+        _emit(payload, as_json=ns.as_json)
+        return 0 if payload.get("ok") else 2
+
     if ns.command == "memory-validate":
         from latka_jazn.tools.memory_validation import validate_large_memory
 

@@ -23,8 +23,9 @@ from latka_jazn.packaging.split_zip_package import (
 )
 from latka_jazn.tools.active_extraction_cache import write_active_runtime_marker
 from .memory_package_manifest import verify_memory_package_manifest
+from .memory_raw_segmentation import RawJsonlSegmenter
 from .memory_package_types import (
-    MEMORY_ATTACH_MARKER_PATH, MEMORY_ATTACH_SCHEMA_VERSION, MEMORY_MANIFEST_SCHEMA_V1, MemoryAttachResult, TRUTH_BOUNDARY,
+    MEMORY_ATTACH_MARKER_PATH, MEMORY_ATTACH_SCHEMA_VERSION, MEMORY_MANIFEST_SCHEMA_V1, MEMORY_MANIFEST_SCHEMA_V3, MemoryAttachResult, TRUTH_BOUNDARY,
     read_json, write_json_atomic,
 )
 
@@ -107,6 +108,33 @@ def attach_memory_package(
         if not only: return MemoryAttachResult(False, "memory_package_contains_non_memory_files", str(runtime_root), report, exit_code=14)
         manifest = verify_memory_package_manifest(staging, runtime_root=runtime_root, require_runtime_match=False); report["memory_manifest_verification"] = manifest
         if manifest.get("ok") is not True: return MemoryAttachResult(False, "memory_manifest_verification_failed", str(runtime_root), report, exit_code=15)
+        if manifest.get("manifest_schema") == MEMORY_MANIFEST_SCHEMA_V3:
+            manifest_payload = read_json(staging / "memory" / "MEMORY_PACKAGE_MANIFEST.json") or {}
+            raw_descriptors = manifest_payload.get("raw_segments")
+            materialized: list[dict[str, Any]] = []
+            if isinstance(raw_descriptors, list):
+                for descriptor in raw_descriptors:
+                    if not isinstance(descriptor, dict):
+                        continue
+                    target = RawJsonlSegmenter.materialize_descriptor(
+                        staging, descriptor, remove_segments=True
+                    )
+                    materialized.append({
+                        "source_path": descriptor.get("source_path"),
+                        "materialized_path": str(target),
+                        "source_size_bytes": descriptor.get("source_size_bytes"),
+                        "source_sha256": descriptor.get("source_sha256"),
+                        "segments_removed_after_verified_materialization": True,
+                    })
+            report["raw_segment_materialization"] = {
+                "ok": True,
+                "count": len(materialized),
+                "items": materialized,
+                "truth_boundary": (
+                    "Logical JSONL segmentation exists only in the verified sandbox transport. "
+                    "Attach reconstructs the original local memory file byte-for-byte before activation."
+                ),
+            }
         source_memory = staging / "memory"
         if not source_memory.is_dir(): return MemoryAttachResult(False, "memory_payload_missing", str(runtime_root), report, exit_code=15)
         transaction_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
