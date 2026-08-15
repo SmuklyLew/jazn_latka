@@ -51,13 +51,13 @@ jobs:
           echo "${EXPECTED_PATCH_SHA256}  $RUNNER_TEMP/upgrade.patch" | sha256sum --check --strict
           git apply --check "$RUNNER_TEMP/upgrade.patch"
 
-      - name: Apply upgrade and remove transport scaffolding
+      - name: Apply functional upgrade without workflow mutations
         shell: bash
         run: |
           set -euo pipefail
           git apply "$RUNNER_TEMP/upgrade.patch"
+          git checkout HEAD -- .github/workflows
           rm -rf .jazn_upgrade_transport
-          rm -f .github/workflows/_apply-local-first-memory-v155.yml
 
       - name: Fast structural gate
         shell: bash
