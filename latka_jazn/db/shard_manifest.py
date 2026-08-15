@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from latka_jazn.version_contract import normalize_component_schema
+from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any
@@ -10,7 +11,7 @@ import json
 import os
 
 SCHEMA_VERSION = "jazn_sqlite_shards/v1"
-DEFAULT_MAX_BYTES = 3_750_000_000
+DEFAULT_MAX_BYTES = DEFAULT_MAX_SQLITE_FILE_BYTES
 
 
 class ShardManifestError(RuntimeError):

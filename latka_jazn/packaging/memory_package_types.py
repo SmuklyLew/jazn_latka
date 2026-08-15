@@ -14,7 +14,10 @@ from latka_jazn.version import schema_version
 MEMORY_PACKAGE_MANIFEST_PATH = "memory/MEMORY_PACKAGE_MANIFEST.json"
 MEMORY_MANIFEST_SCHEMA_V1 = "jazn_memory_package_manifest/v1"
 MEMORY_MANIFEST_SCHEMA_V2 = "jazn_memory_package_manifest/v2"
-MEMORY_FORMAT_VERSION = 2
+MEMORY_MANIFEST_SCHEMA_V3 = "jazn_memory_package_manifest/v3"
+MEMORY_FORMAT_VERSION_V2 = 2
+MEMORY_FORMAT_VERSION_V3 = 3
+MEMORY_FORMAT_VERSION = MEMORY_FORMAT_VERSION_V3
 MEMORY_RUNTIME_COMPATIBILITY_CONTRACT = "jazn_memory_runtime/v1"
 MEMORY_ATTACH_SCHEMA_VERSION = schema_version("memory_package_attach")
 MEMORY_ATTACH_MARKER_PATH = "workspace_runtime/MEMORY_PACKAGE_CURRENT.json"

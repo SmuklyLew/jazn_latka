@@ -12,6 +12,7 @@ from latka_jazn.core.runtime_root import (
     workspace_runtime_path,
 )
 from latka_jazn.version import PACKAGE_VERSION, version_number
+from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES, DEFAULT_SYNC_BATCH_WIRE_BYTES
 from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_LOCAL_FALLBACK_ALLOWED_DEFAULT,
     TIMESTAMP_NETWORK_FIRST_DEFAULT,
@@ -19,7 +20,6 @@ from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_TIMEZONE,
 )
 
-DEFAULT_MAX_SQLITE_FILE_BYTES = 480 * 1024 * 1024
 
 
 def _default_runtime_root() -> Path:
@@ -103,6 +103,29 @@ class JaznConfig:
     conversation_shard_manifest_name: str = field(default_factory=lambda: os.environ.get("JAZN_CONVERSATION_SHARD_MANIFEST", "memory/sqlite/runtime_write_v1/runtime_memory_shards.json").strip())
     audit_shard_manifest_name: str = field(default_factory=lambda: os.environ.get("JAZN_AUDIT_SHARD_MANIFEST", "memory/sqlite/runtime_write_v1/runtime_audit_shards.json").strip())
     max_sqlite_file_bytes: int = field(default_factory=lambda: _env_int("JAZN_MAX_SQLITE_FILE_BYTES", DEFAULT_MAX_SQLITE_FILE_BYTES))
+
+    # v15.5 local-first memory replication. Cloud remains opt-in and must never
+    # become a prerequisite for local runtime/memory readiness.
+    memory_sync_mode: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_SYNC_MODE", "off").strip().lower())
+    memory_sync_endpoint: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_CLOUD_ENDPOINT", "").strip())
+    memory_sync_stream_id: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_STREAM_ID", "").strip())
+    memory_sync_device_id: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_DEVICE_ID", "").strip())
+    memory_sync_bearer_token_env: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_CLOUD_TOKEN_ENV", "JAZN_MEMORY_CLOUD_TOKEN").strip())
+    memory_sync_timeout_seconds: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_TIMEOUT_SECONDS", 15.0))
+    memory_sync_push_batch_size: int = field(default_factory=lambda: _env_int("JAZN_MEMORY_SYNC_PUSH_BATCH", 50))
+    memory_sync_pull_batch_size: int = field(default_factory=lambda: _env_int("JAZN_MEMORY_SYNC_PULL_BATCH", 100))
+    memory_sync_max_batch_wire_bytes: int = field(default_factory=lambda: _env_int("JAZN_MEMORY_SYNC_MAX_BATCH_BYTES", DEFAULT_SYNC_BATCH_WIRE_BYTES))
+    memory_sync_stale_claim_seconds: int = field(default_factory=lambda: _env_int("JAZN_MEMORY_SYNC_STALE_CLAIM_SECONDS", 300))
+    memory_sync_retry_base_seconds: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_RETRY_BASE_SECONDS", 2.0))
+    memory_sync_retry_max_seconds: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_RETRY_MAX_SECONDS", 300.0))
+    memory_sync_retry_jitter_fraction: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_RETRY_JITTER", 0.2))
+    memory_sync_allow_loopback_http: bool = field(default_factory=lambda: _env_bool("JAZN_MEMORY_SYNC_ALLOW_LOOPBACK_HTTP", False))
+    memory_sync_background_enabled: bool = field(default_factory=lambda: _env_bool("JAZN_MEMORY_SYNC_BACKGROUND_ENABLED", True))
+    memory_sync_interval_seconds: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_INTERVAL_SECONDS", 60.0))
+    memory_sync_busy_retry_seconds: float = field(default_factory=lambda: _env_float("JAZN_MEMORY_SYNC_BUSY_RETRY_SECONDS", 5.0))
+    memory_sync_writer_lease_enabled: bool = field(default_factory=lambda: _env_bool("JAZN_MEMORY_WRITER_LEASE_ENABLED", True))
+    memory_sync_writer_lease_token_env: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_WRITER_LEASE_TOKEN_ENV", "JAZN_MEMORY_WRITER_LEASE_TOKEN").strip())
+    memory_sync_writer_lease_ttl_seconds: int = field(default_factory=lambda: _env_int("JAZN_MEMORY_WRITER_LEASE_TTL_SECONDS", 120))
     canon_path: str = "latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json"
     private_canon_override_path: str = "memory/raw/LATKA_IDENTITY_CANON.json"
     bootstrap_path: str = "memory/raw/LATKA_BOOTSTRAP_SYSTEM.txt"

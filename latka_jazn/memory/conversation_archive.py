@@ -7,9 +7,11 @@ from typing import Any, Callable
 import re
 import sqlite3
 
+from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
+
 
 SCHEMA_VERSION = "conversation_archive_runtime/v1"
-DEFAULT_HARD_LIMIT_BYTES = 480 * 1024 * 1024
+DEFAULT_HARD_LIMIT_BYTES = DEFAULT_MAX_SQLITE_FILE_BYTES
 TRUTH_BOUNDARY = (
     "conversation_archive is source-backed local storage built from raw HTML; "
     "conversation_fts is a rebuildable search index; staging is not canonical memory "
