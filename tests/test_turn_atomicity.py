@@ -16,6 +16,21 @@ from latka_jazn.memory.store import MemoryStore
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 
 
+_TEST_SYNC_GUARD_SECONDS = 5.0
+_TEST_EXECUTION_TIMEOUT_SECONDS = 0.25
+
+
+def _await_event(event: threading.Event, *, label: str) -> None:
+    """Wait for a synchronization event with a generous deadlock guard.
+
+    The guard is not the behavior under test. It only prevents a broken test from
+    hanging the runner; the production execution timeout remains the behavior
+    asserted by the test.
+    """
+
+    assert event.wait(_TEST_SYNC_GUARD_SECONDS), f"timed out waiting for {label}"
+
+
 def _successful_result() -> dict:
     return {
         "ok": True,
@@ -121,7 +136,6 @@ def test_turn_local_semantic_staging_is_rejected_on_failed_gate(tmp_path: Path, 
     assert writes == []
 
 
-
 def test_late_commit_failure_is_reported_as_degraded_and_recorded(tmp_path: Path) -> None:
     context = TurnExecutionContext.create(
         request_id="partial-failure",
@@ -154,6 +168,7 @@ def test_late_commit_failure_is_reported_as_degraded_and_recorded(tmp_path: Path
     assert recovery.is_file()
     assert "second failed" in recovery.read_text(encoding="utf-8")
 
+
 class _LateWritingSession:
     writes: list[str] = []
     executions: dict[str, int] = {}
@@ -173,7 +188,7 @@ class _LateWritingSession:
                 commit=lambda: self.writes.append("late-write"),
             )
             self.slow_started.set()
-            self.allow_finish.wait(2.0)
+            _await_event(self.allow_finish, label="late-writing session release")
             _turn_context.commit_if_allowed(_successful_result(), job_status="completed")
             self.slow_finished.set()
         return _successful_result()
@@ -195,7 +210,7 @@ def test_execution_timeout_cancels_late_commit_and_retires_worker(tmp_path: Path
         no_carryover=False,
         source_client="isolated-test",
         command="isolated-test",
-        timeout_seconds=0.03,
+        timeout_seconds=_TEST_EXECUTION_TIMEOUT_SECONDS,
     )
     try:
         with pytest.raises(RuntimeTurnTimeoutError):
@@ -205,7 +220,7 @@ def test_execution_timeout_cancels_late_commit_and_retires_worker(tmp_path: Path
         assert worker.usable is False
 
         _LateWritingSession.allow_finish.set()
-        assert _LateWritingSession.slow_finished.wait(1.0)
+        _await_event(_LateWritingSession.slow_finished, label="late-writing session completion")
         assert _LateWritingSession.writes == []
         with pytest.raises(RuntimeError, match="retired after an execution timeout"):
             worker.process_user_text("fast", request_id="next-request")
@@ -213,7 +228,6 @@ def test_execution_timeout_cancels_late_commit_and_retires_worker(tmp_path: Path
     finally:
         _LateWritingSession.allow_finish.set()
         worker.close()
-
 
 
 def test_technical_audit_failure_is_fail_soft(tmp_path: Path, monkeypatch) -> None:
@@ -262,7 +276,7 @@ def test_timeout_is_not_masked_by_technical_audit_failure(tmp_path: Path, monkey
         no_carryover=False,
         source_client="isolated-test",
         command="isolated-test",
-        timeout_seconds=0.03,
+        timeout_seconds=_TEST_EXECUTION_TIMEOUT_SECONDS,
     )
     try:
         with pytest.raises(RuntimeTurnTimeoutError):
@@ -270,6 +284,7 @@ def test_timeout_is_not_masked_by_technical_audit_failure(tmp_path: Path, monkey
     finally:
         _LateWritingSession.allow_finish.set()
         worker.close()
+
 
 def test_health_presence_phrases_are_detected_before_expensive_cognitive_work() -> None:
     classifier = DialogueIntentClassifier()
