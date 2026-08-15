@@ -33,6 +33,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Transport chunks are immutable inputs; all three hashes must match before git apply.
           cat .jazn_upgrade_transport/local-first-memory-v155/chunk-* > "$RUNNER_TEMP/upgrade.b64"
           echo "${EXPECTED_BASE64_SHA256}  $RUNNER_TEMP/upgrade.b64" | sha256sum --check --strict
           base64 --decode "$RUNNER_TEMP/upgrade.b64" > "$RUNNER_TEMP/upgrade.patch.gz"
