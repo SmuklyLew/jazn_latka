@@ -169,6 +169,8 @@ class RuntimeMemoryCoordinator:
                     "session_id": write_context.session_id,
                     "turn_id": write_context.turn_id,
                     "automatic_l3": False,
+                    "record_payload_version": 1,
+                    "records": [working.to_dict(), short_term.to_dict()],
                 },
                 idempotency_key=f"runtime-turn:{fingerprint}:{write_context.session_id}:{write_context.turn_id or '-'}",
             )

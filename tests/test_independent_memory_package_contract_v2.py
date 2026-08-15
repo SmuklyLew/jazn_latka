@@ -62,12 +62,12 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def test_generator_keeps_v85_public_identity_and_uses_v2_memory_contract() -> None:
+def test_generator_keeps_v85_public_identity_and_uses_v3_memory_contract() -> None:
     generator = _load_generator()
     assert generator.GENERATOR_VERSION == "8.5"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"
-    assert generator.MEMORY_MANIFEST_SCHEMA == "jazn_memory_package_manifest/v2"
-    assert generator.MEMORY_FORMAT_VERSION == 2
+    assert generator.MEMORY_MANIFEST_SCHEMA == "jazn_memory_package_manifest/v3"
+    assert generator.MEMORY_FORMAT_VERSION == 3
 
 
 def test_memory_plan_snapshots_live_wal_sqlite_and_records_current_identity(tmp_path: Path) -> None:
@@ -104,8 +104,8 @@ def test_memory_plan_snapshots_live_wal_sqlite_and_records_current_identity(tmp_
         manifest_entry = next(item for item in plan.entries if item.relative == generator.MEMORY_PACKAGE_MANIFEST)
         assert manifest_entry.virtual_bytes is not None
         payload = json.loads(manifest_entry.virtual_bytes)
-        assert payload["schema_version"] == "jazn_memory_package_manifest/v2"
-        assert payload["memory_format_version"] == 2
+        assert payload["schema_version"] == "jazn_memory_package_manifest/v3"
+        assert payload["memory_format_version"] == 3
         assert payload["created_with_runtime"] == "v15.4.2.1-current"
         assert payload["compatibility"]["runtime_version_is_provenance_only"] is True
         database = payload["databases"][0]
@@ -141,7 +141,7 @@ def test_memory_sidecar_has_independent_version_axis(tmp_path: Path) -> None:
         None,
         {"ok": True},
     )
-    assert payload["package_version"] == "memory-format-v2"
+    assert payload["package_version"] == "memory-format-v3"
     assert payload["created_with_runtime"] == "v15.4.2.1-current"
     assert payload["runtime_version_is_provenance_only"] is True
     assert payload["memory_compatibility_contract"] == "jazn_memory_runtime/v1"

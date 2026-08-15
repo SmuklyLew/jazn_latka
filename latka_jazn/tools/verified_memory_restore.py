@@ -17,6 +17,7 @@ import uuid
 import zlib
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 
 SCHEMA_VERSION = "jazn_verified_memory_restore/v1"
 L2_DRAFT_SCHEMA = "jazn_verified_memory_restore_l2_draft/v1"
@@ -43,7 +44,7 @@ TEST04_REQUIRED_PASSES = (
     "recall",
     "multi_turn_review",
 )
-DEFAULT_HARD_LIMIT_BYTES = 480 * 1024 * 1024
+DEFAULT_HARD_LIMIT_BYTES = DEFAULT_MAX_SQLITE_FILE_BYTES
 
 
 class VerifiedMemoryRestoreError(RuntimeError):

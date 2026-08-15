@@ -145,4 +145,69 @@ CREATE TABLE IF NOT EXISTS session_checkpoints(
 );
 CREATE INDEX IF NOT EXISTS idx_checkpoint_session_time
   ON session_checkpoints(session_id,created_at_utc DESC);
+CREATE TABLE IF NOT EXISTS memory_sync_state(
+  state_id INTEGER PRIMARY KEY CHECK(state_id=1),
+  stream_id TEXT NOT NULL UNIQUE,
+  device_id TEXT NOT NULL,
+  next_device_seq INTEGER NOT NULL CHECK(next_device_seq>=1),
+  local_cursor INTEGER NOT NULL DEFAULT 0 CHECK(local_cursor>=0),
+  device_chain_head_sha256 TEXT,
+  last_push_at_utc TEXT,
+  last_pull_at_utc TEXT,
+  last_error TEXT,
+  latest_snapshot_id TEXT,
+  updated_at_utc TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS memory_sync_envelopes(
+  event_id TEXT PRIMARY KEY,
+  stream_id TEXT NOT NULL,
+  device_id TEXT NOT NULL,
+  device_seq INTEGER NOT NULL CHECK(device_seq>=1),
+  idempotency_key TEXT NOT NULL UNIQUE,
+  ciphertext_sha256 TEXT NOT NULL,
+  envelope_sha256 TEXT NOT NULL UNIQUE,
+  envelope_json TEXT NOT NULL,
+  created_at_utc TEXT NOT NULL,
+  UNIQUE(stream_id,device_id,device_seq)
+);
+CREATE INDEX IF NOT EXISTS idx_memory_sync_envelopes_seq
+  ON memory_sync_envelopes(stream_id,device_id,device_seq);
+CREATE TABLE IF NOT EXISTS memory_sync_receipts(
+  event_id TEXT PRIMARY KEY,
+  stream_id TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('accepted','already_exists','rejected')),
+  remote_seq INTEGER,
+  ciphertext_sha256 TEXT NOT NULL,
+  received_at_utc TEXT NOT NULL,
+  receipt_sha256 TEXT NOT NULL,
+  error_code TEXT,
+  receipt_json TEXT NOT NULL,
+  UNIQUE(stream_id,remote_seq)
+);
+CREATE TABLE IF NOT EXISTS memory_sync_inbox(
+  remote_seq INTEGER PRIMARY KEY CHECK(remote_seq>=1),
+  event_id TEXT NOT NULL UNIQUE,
+  stream_id TEXT NOT NULL,
+  ciphertext_sha256 TEXT NOT NULL,
+  event_json TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('pending','applied','conflict','rejected')),
+  received_at_utc TEXT NOT NULL,
+  applied_at_utc TEXT,
+  last_error TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_memory_sync_inbox_status
+  ON memory_sync_inbox(status,remote_seq);
+CREATE TABLE IF NOT EXISTS memory_sync_conflicts(
+  conflict_id TEXT PRIMARY KEY,
+  conflict_type TEXT NOT NULL,
+  event_id TEXT NOT NULL,
+  remote_seq INTEGER,
+  details_json TEXT NOT NULL,
+  created_at_utc TEXT NOT NULL,
+  resolved_at_utc TEXT,
+  resolution_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_memory_sync_conflicts_open
+  ON memory_sync_conflicts(resolved_at_utc,created_at_utc);
 """

@@ -454,3 +454,35 @@ def test_unbounded_normalization_exceeds_legacy_12000_ceiling(tmp_path: Path) ->
     wake = sidecar.build_wake_state()
     assert wake.status == "ready", wake.errors
     assert wake.item_count == 12037
+
+
+def test_runtime_bridge_rejects_snapshot_after_canonical_source_changes(tmp_path: Path) -> None:
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
+    from latka_jazn.memory.wake_state_runtime import WakeStateRuntimeBridge
+
+    root = tmp_path / "runtime-source-identity"
+    cfg = JaznConfig(root=root)
+    cfg.recovered_memory_db_path.parent.mkdir(parents=True, exist_ok=True)
+    _source(cfg.recovered_memory_db_path, count=1)
+    sidecar = MemoryNormalizationSidecar(
+        root,
+        source_db_path=cfg.recovered_memory_db_path,
+        sidecar_db_path=cfg.normalization_sidecar_db_path,
+        runtime_version=cfg.version,
+    )
+    assert sidecar.prepare().status == "ready"
+    assert WakeStateRuntimeBridge(cfg).load().status == "ready"
+
+    with sqlite3.connect(cfg.recovered_memory_db_path) as con:
+        con.execute(
+            "INSERT INTO messages VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("m-source-changed", "c1", "Test", "user", "2026-08-15T00:00:00+00:00", "new canonical memory", "h2", None, None, "[]", "x", "x"),
+        )
+        con.commit()
+
+    status = WakeStateRuntimeBridge(cfg).load()
+    assert status.status == "source_changed"
+    assert status.continuity_claim_allowed is False
+    assert status.context is None
+    assert any("source_freshness" in error for error in status.errors)

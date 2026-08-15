@@ -33,6 +33,14 @@ markers = [
 memory-rebuild-ui = [
   "prompt-toolkit>=3.0.52,<4",
 ]
+memory-cloud = [
+  "PyNaCl>=1.5,<2",
+]
+memory-cloud-server = [
+  "PyNaCl>=1.5,<2",
+  "psycopg[binary]>=3.2,<4",
+  "boto3>=1.35,<2",
+]
 polish-nlp = [
   "spacy>=3.7,<3.9",
   "morfeusz2>=1.99.15",

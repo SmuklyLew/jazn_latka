@@ -6,6 +6,7 @@ from .memory_package_types import (
     MEMORY_FORMAT_VERSION,
     MEMORY_MANIFEST_SCHEMA_V1,
     MEMORY_MANIFEST_SCHEMA_V2,
+    MEMORY_MANIFEST_SCHEMA_V3,
     MEMORY_PACKAGE_MANIFEST_PATH,
     MEMORY_RUNTIME_COMPATIBILITY_CONTRACT,
     MemoryAttachResult,
@@ -14,7 +15,7 @@ from .memory_package_types import (
 
 __all__ = [
     "MEMORY_ATTACH_MARKER_PATH", "MEMORY_FORMAT_VERSION", "MEMORY_MANIFEST_SCHEMA_V1",
-    "MEMORY_MANIFEST_SCHEMA_V2", "MEMORY_PACKAGE_MANIFEST_PATH",
+    "MEMORY_MANIFEST_SCHEMA_V2", "MEMORY_MANIFEST_SCHEMA_V3", "MEMORY_PACKAGE_MANIFEST_PATH",
     "MEMORY_RUNTIME_COMPATIBILITY_CONTRACT", "MemoryAttachResult", "attach_memory_package",
     "inspect_sqlite_memory_file", "verify_memory_package_manifest",
 ]

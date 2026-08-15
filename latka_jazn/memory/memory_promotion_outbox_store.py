@@ -19,6 +19,8 @@ class PromotionOutboxStoreMixin(MemoryTierStoreMixinHost):
         request: PromotionRequest,
         decision: PromotionDecision,
         long_term: LongTermMemoryRecord | None = None,
+        *,
+        emit_outbox: bool = True,
     ) -> WriteSummary:
         self._require_transaction()
         if source.memory_id != request.source_memory_id or source.memory_id != decision.source_memory_id:
@@ -66,6 +68,19 @@ class PromotionOutboxStoreMixin(MemoryTierStoreMixinHost):
             "decision_id": decision.decision_id,
             "outcome": decision.outcome.value,
             "long_term_memory_id": long_term.memory_id if long_term else None,
+            "record_payload_version": 1,
+            "source_record": source.to_dict(),
+            "request": {
+                "request_id": request.request_id,
+                "source_memory_id": request.source_memory_id,
+                "target_tier": request.target_tier.value,
+                "requested_by": request.requested_by,
+                "requested_at_utc": iso(request.requested_at_utc),
+                "explicit_user_approval": bool(request.explicit_user_approval),
+                "reason": request.reason,
+            },
+            "decision": decision.to_dict(),
+            "long_term_record": long_term.to_dict() if long_term else None,
         }
         self.con.execute(
             """INSERT OR IGNORE INTO promotion_ledger(
@@ -75,12 +90,15 @@ class PromotionOutboxStoreMixin(MemoryTierStoreMixinHost):
              long_term.memory_id if long_term else None, event_type,
              iso(decision.decided_at_utc), json_text(payload)),
         )
-        self.write_outbox(
-            event_type="memory.promotion", aggregate_id=source.memory_id, payload=payload,
-            idempotency_key=f"promotion:{decision.decision_id}:{event_type}",
-        )
+        outbox_written = 0
+        if emit_outbox:
+            self.write_outbox(
+                event_type="memory.promotion", aggregate_id=source.memory_id, payload=payload,
+                idempotency_key=f"promotion:{decision.decision_id}:{event_type}",
+            )
+            outbox_written = 1
         return WriteSummary(records_written=2 if long_term else 1,
-                            promotions_written=1, outbox_written=1)
+                            promotions_written=1, outbox_written=outbox_written)
 
     def write_outbox(
         self,

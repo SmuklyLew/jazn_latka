@@ -11,6 +11,7 @@ import sqlite3
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tier_store import MemoryTierStore, WorkingMemoryBudget
+from latka_jazn.memory.normalization_sidecar import build_wake_state_status
 from latka_jazn.memory.rest_wake_report import RestWakeReportBuilder, load_latest_rest_wake_report
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
@@ -120,6 +121,23 @@ class WakeStateRuntimeBridge:
     def load(self) -> WakeStateRuntimeStatus:
         if not self.sidecar_path.is_file():
             return self._status("sidecar_missing", errors=[f"missing sidecar: {self.sidecar_path}"])
+        # Use the canonical sidecar freshness gate before hydrating any context.
+        # This closes a historical split-brain risk where diagnostics knew that the
+        # normalization source had changed but the runtime bridge validated only the
+        # old run row and could still hydrate a stale snapshot.
+        freshness_gate = build_wake_state_status(self.config, deep_verify=False).to_dict()
+        freshness_status = str(freshness_gate.get("status") or "status_not_available")
+        # Only source-identity/freshness failures short-circuit here. Structural
+        # sidecar/run/snapshot failures continue through the detailed legacy-safe
+        # validator below so callers retain exact table/coverage/hash diagnostics.
+        if freshness_status in {"source_changed", "normalization_stale", "source_missing"}:
+            errors = [str(item) for item in (freshness_gate.get("errors") or []) if str(item)]
+            freshness = freshness_gate.get("freshness")
+            if isinstance(freshness, dict) and freshness.get("reason"):
+                errors.append(f"source_freshness:{freshness.get('reason')}")
+            if not errors:
+                errors.append(f"wake-state source identity gate rejected status={freshness_status}")
+            return self._status(freshness_status, errors=errors)
         try:
             con = sqlite3.connect(f"file:{self.sidecar_path.resolve().as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
