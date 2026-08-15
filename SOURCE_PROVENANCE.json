@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d82355b46c5cd19dcd330e6a4333d213a1e24c80",
+  "base_merge_commit": "54be5ce00d1e29d773e9a010609b18d13ebd2ecc",
   "base_version": "v15.4.2.1-cognitive-truth-memory-integration-hardening",
-  "commit_date": "2026-08-15T14:32:51+02:00",
+  "commit_date": "2026-08-15T14:38:45+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-15T12:32:51+00:00",
+  "generated_at_utc": "2026-08-15T12:38:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b97113dc3a9bb6403f33097401b2ffb5b03e3497",
+  "git_tree_sha": "630e5b967d7fdb4bbfd19c4cbdad0114b0433360",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
