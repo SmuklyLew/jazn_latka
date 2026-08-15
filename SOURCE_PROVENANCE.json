@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "245c8cd8fa335f40403e906a463ffe6d750e0792",
-  "base_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
-  "commit_date": "2026-08-15T21:11:42+02:00",
+  "base_merge_commit": "39325d3ca106ce57f0c7920d0107feebb02b87e6",
+  "base_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
+  "commit_date": "2026-08-15T21:27:29+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-15T19:11:42+00:00",
+  "generated_at_utc": "2026-08-15T19:27:29+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "25e753111bef40131783d3cc2adac6134c734dfe",
+  "git_tree_sha": "1c85bf21db673a8a17a5f371481b2c4e7944c9e5",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
+  "runtime_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
   "schema_version": "source_provenance/v15.4.2.1.1",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory",
+  "update_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
   "version_source": "latka_jazn/version.py"
 }
