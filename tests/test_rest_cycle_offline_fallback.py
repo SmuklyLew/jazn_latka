@@ -57,6 +57,7 @@ class _Store:
 class _Replay:
     def select(self, **_kwargs):
         content = "Źródłowy zapis do replay."
+        content_hash = sha256_text(content)
         return [
             RestReplayItem(
                 source_memory_id="memory-1",
@@ -64,12 +65,16 @@ class _Replay:
                 kind="episodic",
                 truth_status="source_recorded",
                 content=content,
-                content_sha256=sha256_text(content),
+                content_sha256=content_hash,
                 domain="conversation",
                 confidence=0.9,
                 importance=0.8,
                 score=0.8,
-                provenance={"source_table": "messages", "source_row_id": "1"},
+                provenance={
+                    "source_table": "messages",
+                    "source_row_id": "1",
+                    "memory_record_content_sha256": content_hash,
+                },
             )
         ]
 
@@ -112,6 +117,8 @@ def test_rest_cycle_completes_offline_work_when_dream_model_is_unavailable() -> 
     assert result["dream_generated"] is False
     assert result["offline_consolidation_completed"] is True
     assert result["offline_consolidation"]["status"] == "completed"
+    assert result["offline_consolidation"]["provenance_complete_count"] == 1
+    assert result["offline_consolidation"]["provenance_missing_ids"] == ()
     assert store.finished is not None
     assert store.finished["status"] == "completed"
     assert store.finished["model_status"] == "not_configured"
