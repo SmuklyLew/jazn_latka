@@ -2,12 +2,14 @@
 
 ## Scope
 
-This change hardens two failure classes that directly affect runtime truthfulness:
+This branch is an architectural hardening update, not a decorative feature patch. It hardens four runtime boundaries:
 
-1. strong self-claims such as "I dreamed" or "I worked in the background" must not be emitted without structured runtime evidence;
-2. useful idle/rest work must not collapse merely because a local generative model is unavailable.
+1. strong autobiographical self-claims must be evidence-backed and fail closed;
+2. evidence must be collected from machine-observable runtime artifacts rather than inferred from generated prose;
+3. every epistemic decision concerning a strong self-claim must be auditable without storing private model chain-of-thought;
+4. idle/rest work must continue deterministically without a dream model, while synthetic dream output remains separated from factual memory.
 
-The implementation is intentionally narrower than a generic LLM fact checker. It adds deterministic invariants that the runtime can actually verify.
+The implementation deliberately does **not** add a generic LLM `TruthChecker`. Arbitrary semantic fact checking by another unconstrained language-model call would move the hallucination problem rather than solve it.
 
 ## Research basis
 
@@ -15,131 +17,284 @@ The implementation is intentionally narrower than a generic LLM fact checker. It
 
 Tadros et al., *Sleep-like unsupervised replay reduces catastrophic forgetting in artificial neural networks*, Nature Communications 13, 7742 (2022), DOI: 10.1038/s41467-022-34938-7.
 
-The paper demonstrates a sleep-like offline replay phase that reactivates previously learned representations and reduces catastrophic forgetting. The important engineering implication for Jaźń is that replay/consolidation is a distinct operation from natural-language dream generation.
+The paper demonstrates that an offline replay phase can perform useful consolidation independently of ordinary online task input. Engineering implication: replay/consolidation must remain a real operation even when natural-language dream generation is unavailable.
 
 Primary source: https://www.nature.com/articles/s41467-022-34938-7
 
-### Generative replay
+### Brain-inspired and generative replay
+
+Van de Ven et al., *Brain-inspired replay for continual learning with artificial neural networks*, Nature Communications 11, 4069 (2020), DOI: 10.1038/s41467-020-17866-2.
 
 Shin et al., *Continual Learning with Deep Generative Replay* (2017), arXiv:1705.08690.
 
-Generative replay interleaves generated samples representing older tasks with new-task learning. Generated samples are a mechanism for replay; they are not evidence that a real-world event occurred.
+Replay can use stored or generated representations to protect earlier knowledge. Generated replay material is a learning/consolidation mechanism; it is not evidence that a real-world or autobiographical event occurred.
 
-Primary source: https://arxiv.org/abs/1705.08690
+### Stability/plasticity
 
-### Stability/plasticity and protection of previous knowledge
+Kirkpatrick et al., *Overcoming catastrophic forgetting in neural networks*, PNAS 2017 / arXiv:1612.00796.
 
-Kirkpatrick et al., *Overcoming catastrophic forgetting in neural networks* (2016/2017), arXiv:1612.00796.
-
-Elastic Weight Consolidation shows that continual learning needs explicit protection for previously acquired knowledge. This supports treating consolidation as a controlled mechanism rather than unrestricted self-modification.
-
-Primary source: https://arxiv.org/abs/1612.00796
+Continual learning requires explicit constraints protecting earlier knowledge. Jaźń therefore routes memory promotion through a deterministic gate rather than allowing generated rest content to silently become canonical memory.
 
 ### Imagination/world-model simulation
 
 Hafner et al., *Mastering Diverse Domains through World Models* (DreamerV3), arXiv:2301.04104.
 
-DreamerV3 improves behavior through imagined future trajectories inside a learned world model. For Jaźń this is an analogy for a sandboxed generative phase, not a basis for representing generated scenes as observed facts.
+Imagined trajectories can be useful internal simulation. They remain simulations. Jaźń preserves the existing `DreamScene.factual_claim_allowed == False` boundary and treats dream output as synthetic provenance, never as self-authenticating evidence.
 
-Primary source: https://arxiv.org/abs/2301.04104
-
-### Retrieval, factuality and provenance
+### Retrieval, evidence and provenance
 
 Lewis et al., *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, arXiv:2005.11401.
 
-The paper motivates combining parametric generation with explicit non-parametric memory, including provenance and updatable knowledge. Retrieval improves factuality but does not itself prove every generated claim.
+Petroni et al., *KILT: a Benchmark for Knowledge Intensive Language Tasks*, arXiv:2009.02252.
 
-Primary source: https://arxiv.org/abs/2005.11401
+Explicit non-parametric memory and provenance improve grounding and make knowledge updatable, but retrieval alone does not prove every generated statement. Jaźń therefore stores source class and source identifiers separately from visible prose.
 
-### Model self-evaluation is useful but insufficient as a truth gate
+### Calibration is not a truth oracle
 
 Kadavath et al., *Language Models (Mostly) Know What They Know*, arXiv:2207.05221.
 
-Language models can exhibit useful calibration and self-evaluation, but calibration does not generalize perfectly across tasks. Therefore Jaźń must not use model confidence as the sole authority for runtime truth.
+Huang et al., *Uncertainty in Language Models: Assessment through Rank-Calibration*, arXiv:2404.03163.
 
-Primary source: https://arxiv.org/abs/2207.05221
+Model uncertainty is useful evidence about model behavior, but confidence is not equivalent to correctness. Structured claims originating from `model_inference` remain `inferred` even when confidence is high.
 
-### Truthfulness cannot be assumed from scale or fluent generation
+## Runtime architecture
 
-Lin, Hilton, Evans, *TruthfulQA: Measuring How Models Mimic Human Falsehoods*, arXiv:2109.07958.
+### 1. `EpistemicEvidenceCollector`
 
-The benchmark demonstrates that fluent language models can reproduce common falsehoods. Runtime truthfulness therefore needs external constraints and evidence, not only prompting.
+`latka_jazn/core/epistemic_evidence.py`
 
-Primary source: https://arxiv.org/abs/2109.07958
+This component performs bounded evidence collection without model inference.
 
-## Implemented invariants
+Current inputs:
 
-### EPI-1: dream claims are fail-closed
+- latest hash-verified rest wake report;
+- explicitly supplied daemon/background event metadata;
+- explicitly supplied memory source identifiers;
+- explicitly supplied external/tool source identifiers.
 
-A positive visible statement equivalent to "I dreamed" requires structured evidence:
+Important properties:
 
-- `rest_cycle_count > 0`, and
-- `dream_scene_count > 0` or a non-empty `dream_scene_ids` collection.
+- a missing rest database yields zero dream/rest evidence;
+- an integrity-failed rest report yields zero positive rest evidence;
+- counts cannot manufacture identifiers;
+- external and memory evidence are never inferred from response wording.
 
-Without those fields the visible reply capture raises `EpistemicClaimViolation`.
+### 2. `EpistemicClaimGuard`
 
-A negative statement such as "I did not dream" does not require positive evidence.
+`latka_jazn/core/epistemic_claim_guard.py`
 
-### EPI-2: background-work claims are fail-closed
+The guard has two deliberately separate APIs.
 
-A positive visible statement equivalent to "I worked in the background" requires:
+#### Raw visible-self-claim enforcement
 
-- `daemon_verified == true`, and
-- `background_event_count > 0`.
+Regex detection is used only for narrow claims that the runtime can verify deterministically:
 
-A running daemon by itself is not evidence that work occurred.
+- dream activity;
+- autonomous background activity.
 
-### EPI-3: evidence is structured, not inferred from prose
+A positive dream claim requires all of:
 
-The guard does not accept phrases such as `cycle_count=1` embedded in model-generated prose as proof. Evidence must be passed separately to the final capture API.
+- `rest_continuity_status == rest_verified`;
+- `rest_cycle_count > 0`;
+- at least one persisted dream scene identifier/hash;
+- a hash-verified wake report SHA.
 
-### REST-1: replay/consolidation does not require DreamSandbox
+A positive background-work claim requires all of:
 
-Every eligible rest cycle now performs deterministic offline consolidation before attempting dream generation.
+- verified live daemon evidence supplied by the runtime;
+- one or more recorded background events;
+- concrete event identifiers.
 
-The offline pass checks:
+Daemon presence by itself is insufficient.
 
-- replay item count;
-- real source anchor count;
-- inferred/symbolic item count;
-- content hash integrity;
-- basic provenance presence;
-- exact duplicate content groups;
+#### Structured epistemic claims
+
+Broader claims are represented using explicit source classes:
+
+- current user message;
+- user-confirmed memory;
+- source-recorded memory;
+- canonical memory;
+- tool/web source;
+- runtime event;
+- verified rest report;
+- model inference;
+- hypothesis;
+- synthetic dream;
+- fiction;
+- unknown.
+
+Structured claim outcomes include:
+
+- `supported`;
+- `inferred`;
+- `hypothetical`;
+- `synthetic`;
+- `unsupported`;
+- `contradicted`.
+
+A high-confidence model inference remains `inferred`; it cannot become `supported` merely through confidence.
+
+### 3. `EpistemicDecisionLedger`
+
+`latka_jazn/core/epistemic_decision_ledger.py`
+
+Strong visible-self-claim assessments are persisted to an append-only SQLite ledger in `workspace_runtime/epistemic_decisions.sqlite3`.
+
+The ledger stores:
+
+- turn/trace identifiers;
+- claim kind/status;
+- hash of matched visible text rather than private reasoning;
+- required evidence names;
+- bounded evidence snapshot;
+- reason code;
+- previous-entry hash;
+- current entry hash.
+
+`validate_chain()` checks both SQLite integrity and the hash chain. This provides an auditable decision trail without persisting private chain-of-thought.
+
+### 4. Final visible reply integration
+
+`latka_jazn/core/final_visible_reply_capture.py`
+
+Epistemic enforcement is integrated at the final visible capture boundary, after generation but before the visible reply is accepted/persisted.
+
+When explicit epistemic evidence is absent, final capture automatically invokes `EpistemicEvidenceCollector` using the active `JaznConfig`. Therefore a real persisted wake report can satisfy dream evidence without the host manually inventing fields.
+
+If a strong claim is detected:
+
+1. evidence is collected;
+2. the claim is assessed fail-closed;
+3. unsupported/contradicted claims raise `EpistemicClaimViolation`;
+4. accepted/negated assessments are written to the epistemic ledger;
+5. the ledger hash chain is validated;
+6. only then may final capture complete.
+
+### 5. Model-free rest consolidation
+
+`latka_jazn/memory/offline_rest_consolidation.py`
+
+Every eligible rest cycle performs deterministic consolidation before dream generation.
+
+The pass checks:
+
+- replay count;
+- real-source anchor count;
+- inferred/symbolic count;
+- replay content hashes;
+- bounded provenance completeness;
+- exact duplicate content;
+- unique source identities;
+- cases where the same source identity points at multiple content hashes;
 - truth-status distribution.
 
-It does not invent semantic relations or facts.
+A source-identity collision is reported as a review candidate. The deterministic pass deliberately does not claim to detect semantic contradiction from arbitrary prose.
 
-### REST-2: absence of a dream model no longer makes the whole cycle `skipped`
+### 6. Rest-cycle separation
 
-If the offline pass succeeds and `DreamSandbox.generate()` returns no scene, the cycle is completed with:
+`latka_jazn/core/rest_cycle_controller.py`
+
+Rest is now explicitly split into:
+
+`replay -> offline consolidation -> optional dream -> evaluation -> promotion decision`
+
+If the dream model is unavailable but offline consolidation succeeds, the cycle completes as:
 
 - `rest_mode = offline_consolidation_only`;
 - `dream_generated = false`;
-- the dream diagnostic reason preserved;
 - `automatic_l3_allowed = false`.
 
-This means the system can truthfully report that rest/consolidation work happened while separately reporting that no dream scene was generated.
+Therefore the runtime can truthfully report model-free rest work without falsely claiming a dream.
 
-### REST-3: synthetic scenes remain non-factual
+### 7. `MemoryPromotionGate`
 
-Existing `DreamScene.factual_claim_allowed == False` and the prohibition on automatic L3 promotion remain unchanged.
+`latka_jazn/memory/memory_promotion_gate.py`
 
-## Non-goals
+Synthetic/reflection materialization is no longer controlled solely by a dream evaluator.
 
-This change does **not** claim to solve arbitrary hallucinations. It deliberately avoids a misleading generic `TruthChecker` that would itself depend on unverified model judgment.
+The promotion gate checks:
 
-It also does not train or fine-tune the base LLM during rest. Offline consolidation currently operates on persistent memory records and audit metadata only.
+- target tier;
+- presence of real source anchors;
+- distinct source identity;
+- source identity/content-hash conflicts;
+- whether the candidate is synthetic.
 
-## Regression requirements
+Invariants:
 
-Tests must prove that:
+- automatic long-term/L3 promotion is denied;
+- no-source synthetic output is denied;
+- conflicting source identity requires review;
+- source-anchored synthetic output may become at most an inferred L2 candidate;
+- the existing rest shadow mode can still prevent all materialization.
 
-- unsupported dream claims fail closed;
-- supported dream claims require event evidence;
-- negative dream statements remain allowed;
-- unsupported background-work claims fail closed;
-- daemon presence without recorded events is insufficient;
-- offline rest works with no dream generation;
-- exact duplicate detection is deterministic;
-- inferred-only replay cannot be reported as source-anchored;
-- empty replay is a completed housekeeping pass, not fabricated cognition.
+`RestConsolidationGate` invokes this gate before `_materialize_l2()`.
+
+## Truth invariants
+
+### EPI-1 — no self-authenticating dream claim
+
+Generated prose cannot prove that dream computation occurred.
+
+### EPI-2 — no daemon-equals-work shortcut
+
+A running process is not evidence of background work. Recorded event identifiers are required.
+
+### EPI-3 — confidence never upgrades inference to fact
+
+Model confidence is metadata, not provenance.
+
+### EPI-4 — synthetic content never becomes factual evidence for itself
+
+Dream scene hashes may identify a synthetic artifact, but cannot serve as factual support for the scene's own assertions.
+
+### EPI-5 — evidence decisions are auditable
+
+Strong self-claim decisions must leave a hash-chained audit record, not private chain-of-thought.
+
+### REST-1 — consolidation does not require a generative model
+
+Deterministic rest remains useful and testable when DreamSandbox is unavailable.
+
+### REST-2 — dream and rest are separate facts
+
+A completed offline rest cycle with zero scenes does not permit `I dreamed`.
+
+### MEM-1 — automatic L3 promotion from rest is impossible
+
+The contract, promotion gate and rest decision object all reject automatic long-term promotion.
+
+### MEM-2 — conflicts do not self-resolve
+
+A source identity that points at multiple content hashes is flagged for review rather than automatically selecting a winner.
+
+## Regression coverage
+
+The branch contains unit/integration regression tests covering:
+
+- unsupported positive dream claims;
+- counts without a verified wake report;
+- supported dream claims with verified report metadata;
+- truthful negative dream statements;
+- daemon-without-events rejection;
+- event-count-without-identifiers rejection;
+- structured inference remaining inference despite high confidence;
+- external factual claims requiring explicit source identifiers;
+- evidence collection with missing rest storage;
+- hash-chained epistemic ledger validation and tamper detection;
+- automatic L3 promotion denial;
+- source identity/content conflict review requirement;
+- deterministic duplicate detection;
+- inferred-only replay not being reported as source-anchored;
+- rest-cycle completion without a dream model.
+
+## Explicit non-goals
+
+This branch does not claim to eliminate arbitrary LLM hallucination. It establishes enforceable system-level invariants around claims for which Jaźń has machine-verifiable evidence and introduces a structured route for broader provenance-aware claims.
+
+It also does not update base-model weights during rest. Any future LoRA/fine-tuning subsystem would require its own training dataset provenance, evaluation suite, rollback checkpoint and catastrophic-forgetting tests before being allowed to modify a model.
+
+## Validation boundary
+
+The GitHub branch contains tests, but a green test run must only be claimed after real execution. If the current host cannot obtain a checkout or CI run, the branch remains `implemented, test execution pending` rather than being described as merge-ready.
