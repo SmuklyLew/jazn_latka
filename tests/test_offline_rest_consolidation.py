@@ -4,19 +4,29 @@ from latka_jazn.memory.offline_rest_consolidation import OfflineRestConsolidator
 from latka_jazn.memory.rest_contracts import RestReplayItem, sha256_text
 
 
-def _item(memory_id: str, content: str, *, truth: str = "source_recorded") -> RestReplayItem:
+def _item(
+    memory_id: str,
+    content: str,
+    *,
+    truth: str = "source_recorded",
+    complete_provenance: bool = True,
+) -> RestReplayItem:
+    content_hash = sha256_text(content)
+    provenance = {"source_table": "messages", "source_row_id": memory_id}
+    if complete_provenance:
+        provenance["memory_record_content_sha256"] = content_hash
     return RestReplayItem(
         source_memory_id=memory_id,
         source_tier="short_term",
         kind="episodic",
         truth_status=truth,
         content=content,
-        content_sha256=sha256_text(content),
+        content_sha256=content_hash,
         domain="conversation",
         confidence=0.9,
         importance=0.8,
         score=0.7,
-        provenance={"source_table": "messages", "source_row_id": memory_id},
+        provenance=provenance,
     )
 
 
@@ -29,8 +39,22 @@ def test_offline_rest_runs_without_dream_generation() -> None:
     assert report.status == "completed"
     assert report.replay_count == 2
     assert report.source_anchor_count == 2
+    assert report.provenance_complete_count == 2
+    assert report.provenance_missing_ids == ()
     assert report.dream_generation_required is False
     assert report.automatic_memory_promotion_allowed is False
+    assert report.content_hash_valid is True
+
+
+def test_offline_rest_marks_incomplete_source_provenance_without_inventing_evidence() -> None:
+    report = OfflineRestConsolidator().run([
+        _item("m1", "Źródłowy zapis bez hasha provenance.", complete_provenance=False),
+    ])
+
+    assert report.status == "completed_with_incomplete_provenance"
+    assert report.source_anchor_count == 1
+    assert report.provenance_complete_count == 0
+    assert report.provenance_missing_ids == ("m1",)
     assert report.content_hash_valid is True
 
 
