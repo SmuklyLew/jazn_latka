@@ -4,7 +4,10 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 import hashlib
 
+from latka_jazn.config import JaznConfig
 from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger
+from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
 from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
 from latka_jazn.version import schema_version
 
@@ -36,6 +39,8 @@ class FinalVisibleReplyCapture:
     was_rendered_from_body: bool
     final_visible_text: str
     epistemic_claims: list[dict[str, Any]] = field(default_factory=list)
+    epistemic_evidence: dict[str, Any] = field(default_factory=dict)
+    epistemic_ledger_entries: list[dict[str, Any]] = field(default_factory=list)
     schema_version: str = SCHEMA_VERSION
 
     @classmethod
@@ -56,14 +61,51 @@ class FinalVisibleReplyCapture:
         final_text: str,
         source: str = "chatgpt_visible_layer",
         epistemic_evidence: Mapping[str, Any] | None = None,
+        runtime_evidence: Mapping[str, Any] | None = None,
+        memory_evidence: Mapping[str, Any] | None = None,
+        external_evidence: Mapping[str, Any] | None = None,
+        config: JaznConfig | None = None,
+        persist_epistemic_ledger: bool = True,
     ) -> "FinalVisibleReplyCapture":
         if not turn_id or not trace_id:
             raise ValueError("turn_id and trace_id are required")
         original = normalize_newlines(final_text)
+
+        runtime_config = config or JaznConfig()
+        if epistemic_evidence is None:
+            evidence_snapshot = EpistemicEvidenceCollector(runtime_config).collect(
+                runtime_evidence=runtime_evidence,
+                memory_evidence=memory_evidence,
+                external_evidence=external_evidence,
+            ).to_dict()
+        else:
+            # Explicit evidence is accepted only as structured metadata; missing keys
+            # remain missing and are interpreted fail-closed by the claim guard.
+            evidence_snapshot = dict(epistemic_evidence)
+
         claim_assessments = EpistemicClaimGuard().enforce(
             original,
-            evidence=epistemic_evidence,
+            evidence=evidence_snapshot,
         )
+        claim_payloads = [item.to_dict() for item in claim_assessments]
+
+        ledger_payloads: list[dict[str, Any]] = []
+        if claim_payloads and persist_epistemic_ledger:
+            ledger_path = runtime_config.root / runtime_config.runtime_workspace_dir_name / "epistemic_decisions.sqlite3"
+            ledger = EpistemicDecisionLedger(ledger_path)
+            try:
+                entries = ledger.append_assessments(
+                    turn_id=turn_id,
+                    trace_id=trace_id,
+                    assessments=claim_payloads,
+                )
+                validation = ledger.validate_chain()
+                if not validation.get("ok"):
+                    raise RuntimeError(f"epistemic_decision_ledger_invalid:{validation.get('reason')}")
+                ledger_payloads = [entry.to_dict() for entry in entries]
+            finally:
+                ledger.close()
+
         envelope = MessageEnvelope.build(
             timestamp_header=timestamp_header,
             timezone=timezone,
@@ -118,7 +160,9 @@ class FinalVisibleReplyCapture:
             envelope_present_in_final=True,
             was_rendered_from_body=rendered,
             final_visible_text=final_visible_text,
-            epistemic_claims=[item.to_dict() for item in claim_assessments],
+            epistemic_claims=claim_payloads,
+            epistemic_evidence=evidence_snapshot,
+            epistemic_ledger_entries=ledger_payloads,
         )
 
     def to_dict(self) -> dict[str, Any]:
