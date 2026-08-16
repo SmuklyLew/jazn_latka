@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import uuid
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.memory.memory_promotion_gate import MemoryPromotionGate, PromotionDecision
 from latka_jazn.memory.memory_tier_core_store import MemoryTierCoreStore
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
@@ -26,11 +27,17 @@ SCHEMA_VERSION = schema_version("rest_consolidation_gate")
 
 
 class RestConsolidationGate:
-    """Fail-closed bridge from synthetic rest output to, at most, inferred L2."""
+    """Fail-closed bridge from synthetic rest output to, at most, inferred L2.
+
+    Memory materialization is not decided by a dream evaluator alone. Every candidate
+    also passes the deterministic MemoryPromotionGate, which checks real source anchors,
+    source identity conflicts and the target tier. Automatic L3 remains impossible.
+    """
 
     def __init__(self, config: JaznConfig, *, shadow_mode: bool | None = None) -> None:
         self.config = config
         self.shadow_mode = bool(getattr(config, "rest_shadow_mode", True) if shadow_mode is None else shadow_mode)
+        self.promotion_gate = MemoryPromotionGate()
 
     def decide(
         self,
@@ -47,9 +54,18 @@ class RestConsolidationGate:
         materialized_memory_id: str | None = None
 
         if disposition in {RestConsolidationDisposition.REFLECTION_CANDIDATE, RestConsolidationDisposition.PROCEDURE_CANDIDATE}:
-            if not anchors:
+            promotion = self.promotion_gate.assess_rest_candidate(
+                replay_items,
+                target_tier=MemoryTier.SHORT_TERM.value,
+                synthetic_source=True,
+            )
+            reasons.extend(f"promotion_gate:{reason}" for reason in promotion.reasons)
+            if promotion.decision is PromotionDecision.DENY:
                 disposition = RestConsolidationDisposition.REST_TRANSIENT
-                reasons.append("candidate_degraded_without_real_source_anchor")
+                reasons.append("candidate_degraded_by_memory_promotion_gate")
+            elif promotion.decision is PromotionDecision.REQUIRE_USER_REVIEW:
+                disposition = RestConsolidationDisposition.USER_REVIEW_REQUIRED
+                reasons.append("candidate_requires_user_review_before_materialization")
             elif self.shadow_mode:
                 reasons.append("shadow_mode_no_memory_materialization")
             else:
@@ -75,6 +91,8 @@ class RestConsolidationGate:
         evaluation: DreamEvaluation,
         anchors: list[RestReplayItem],
     ) -> str:
+        # Synthetic scene text remains an inference. The factual evidence consists
+        # only of replay anchors; the scene hash is provenance, not factual support.
         evidence = tuple(
             SourceEvidence(
                 source_type="rest_replay_anchor",
@@ -89,7 +107,11 @@ class RestConsolidationGate:
             )
             for item in anchors
         )
-        kind = MemoryKind.PROCEDURAL if evaluation.recommended_disposition is RestConsolidationDisposition.PROCEDURE_CANDIDATE else MemoryKind.REFLECTION
+        kind = (
+            MemoryKind.PROCEDURAL
+            if evaluation.recommended_disposition is RestConsolidationDisposition.PROCEDURE_CANDIDATE
+            else MemoryKind.REFLECTION
+        )
         record = ShortTermMemoryPolicy().create(
             kind=kind,
             content=scene.content,
