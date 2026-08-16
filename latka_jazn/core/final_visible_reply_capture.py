@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Any
+from dataclasses import asdict, dataclass, field
+from typing import Any, Mapping
 import hashlib
 
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
 from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
 from latka_jazn.version import schema_version
 
@@ -34,6 +35,7 @@ class FinalVisibleReplyCapture:
     envelope_present_in_final: bool
     was_rendered_from_body: bool
     final_visible_text: str
+    epistemic_claims: list[dict[str, Any]] = field(default_factory=list)
     schema_version: str = SCHEMA_VERSION
 
     @classmethod
@@ -53,10 +55,15 @@ class FinalVisibleReplyCapture:
         state_emoticon: str,
         final_text: str,
         source: str = "chatgpt_visible_layer",
+        epistemic_evidence: Mapping[str, Any] | None = None,
     ) -> "FinalVisibleReplyCapture":
         if not turn_id or not trace_id:
             raise ValueError("turn_id and trace_id are required")
         original = normalize_newlines(final_text)
+        claim_assessments = EpistemicClaimGuard().enforce(
+            original,
+            evidence=epistemic_evidence,
+        )
         envelope = MessageEnvelope.build(
             timestamp_header=timestamp_header,
             timezone=timezone,
@@ -111,6 +118,7 @@ class FinalVisibleReplyCapture:
             envelope_present_in_final=True,
             was_rendered_from_body=rendered,
             final_visible_text=final_visible_text,
+            epistemic_claims=[item.to_dict() for item in claim_assessments],
         )
 
     def to_dict(self) -> dict[str, Any]:
