@@ -11,7 +11,7 @@ import sqlite3
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tier_store import MemoryTierStore, WorkingMemoryBudget
-from latka_jazn.memory.normalization_sidecar import build_wake_state_status
+from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar, build_wake_state_status
 from latka_jazn.memory.rest_wake_report import RestWakeReportBuilder, load_latest_rest_wake_report
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
@@ -118,8 +118,31 @@ class WakeStateRuntimeBridge:
             status.context = {**status.context, "rest_summary": status.rest_report}
         return status
 
-    def load(self) -> WakeStateRuntimeStatus:
+    def load(self, *, repair_missing: bool = False) -> WakeStateRuntimeStatus:
         if not self.sidecar_path.is_file():
+            source_path = self.config.normalization_source_db_path
+            if repair_missing and source_path.is_file():
+                try:
+                    repair = MemoryNormalizationSidecar(
+                        self.config.root,
+                        source_db_path=source_path,
+                        sidecar_db_path=self.sidecar_path,
+                        runtime_version=self.config.version,
+                    ).prepare(dry_run=False, force=False, deep_verify=True)
+                except (sqlite3.DatabaseError, OSError, UnicodeError, ValueError) as exc:
+                    return self._status(
+                        "sidecar_repair_failed",
+                        errors=[f"{type(exc).__name__}: {exc}"],
+                    )
+                if repair.status == "ready":
+                    return self.load(repair_missing=False)
+                return self._status(
+                    "sidecar_repair_failed",
+                    errors=[
+                        f"memory_prepare_status={repair.status}",
+                        *[str(item) for item in repair.errors[:8]],
+                    ],
+                )
             return self._status("sidecar_missing", errors=[f"missing sidecar: {self.sidecar_path}"])
         # Use the canonical sidecar freshness gate before hydrating any context.
         # This closes a historical split-brain risk where diagnostics knew that the
@@ -234,7 +257,7 @@ class WakeStateRuntimeBridge:
             return self._status("read_error", errors=[f"{type(exc).__name__}: {exc}"])
 
     def hydrate_l1(self, *, session_id: str, active_goal: str = "verified_wake_state") -> WakeStateRuntimeStatus:
-        status = self.load()
+        status = self.load(repair_missing=True)
         if not status.ok or not status.context or not status.snapshot_id or not status.snapshot_sha256:
             return status
         content = _canonical_json(status.context)

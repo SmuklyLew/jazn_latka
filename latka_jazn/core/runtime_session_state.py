@@ -370,11 +370,11 @@ class RuntimeSessionStateStore:
         stored_sha = str(stored_wake.get("snapshot_sha256") or "")
         current_id = str(current_wake.get("snapshot_id") or "")
         current_sha = str(current_wake.get("snapshot_sha256") or "")
+        stored_wake_verified = bool(stored_wake.get("ok") is True and stored_id and stored_sha)
+        current_wake_verified = bool(current_wake.get("ok") is True and current_id and current_sha)
         wake_matches = bool(
-            stored_wake.get("ok") is True
-            and current_wake.get("ok") is True
-            and stored_id
-            and stored_sha
+            stored_wake_verified
+            and current_wake_verified
             and stored_id == current_id
             and stored_sha == current_sha
         )
@@ -382,6 +382,9 @@ class RuntimeSessionStateStore:
             status = {
                 "status": "verified",
                 "verified": True,
+                "session_checkpoint_verified": True,
+                "wake_binding_verified": True,
+                "memory_continuity_claim_allowed": True,
                 "carryover_allowed": True,
                 "checkpoint_present": True,
                 "generation": int(checkpoint.get("generation") or 0),
@@ -392,15 +395,56 @@ class RuntimeSessionStateStore:
             self.last_load_metadata.update(
                 restart_continuity_status="verified",
                 restart_continuity_verified=True,
+                session_checkpoint_integrity_verified=True,
+                wake_binding_verified=True,
                 continuity_checkpoint_sha256=checkpoint.get("checkpoint_sha256"),
                 continuity_generation=int(checkpoint.get("generation") or 0),
             )
             return status
 
+        # A hash-valid dialogue/task checkpoint and a wake-memory snapshot are
+        # distinct continuity claims. When wake memory is unavailable rather
+        # than contradicted, preserve the independently verified session state
+        # but explicitly forbid any claim of wake/memory continuity.
+        if not stored_wake_verified or not current_wake_verified:
+            status = {
+                "status": "checkpoint_verified_wake_unavailable",
+                "verified": False,
+                "session_checkpoint_verified": True,
+                "wake_binding_verified": False,
+                "memory_continuity_claim_allowed": False,
+                "carryover_allowed": True,
+                "checkpoint_present": True,
+                "generation": int(checkpoint.get("generation") or 0),
+                "checkpoint_sha256": checkpoint.get("checkpoint_sha256"),
+                "stored_wake_status": stored_wake.get("status"),
+                "current_wake_status": current_wake.get("status"),
+                "truth_boundary": (
+                    "The dialogue/task checkpoint passed its own hash and session-id checks, so its local "
+                    "conversation state may continue. Wake-state is unavailable, therefore no autobiographical "
+                    "memory-continuity claim is allowed until a verified wake snapshot is available."
+                ),
+            }
+            self.last_load_metadata.update(
+                restart_continuity_status=status["status"],
+                restart_continuity_verified=False,
+                session_checkpoint_integrity_verified=True,
+                wake_binding_verified=False,
+                session_carryover_blocked=False,
+                continuity_checkpoint_sha256=checkpoint.get("checkpoint_sha256"),
+                continuity_generation=int(checkpoint.get("generation") or 0),
+            )
+            return status
+
+        # Two independently verified wake snapshots that disagree are a real
+        # binding conflict. Keep the existing fail-closed behavior.
         state.clear_carryover()
         status = {
             "status": "wake_state_binding_mismatch",
             "verified": False,
+            "session_checkpoint_verified": True,
+            "wake_binding_verified": False,
+            "memory_continuity_claim_allowed": False,
             "carryover_allowed": False,
             "checkpoint_present": True,
             "stored_wake_snapshot_id": stored_id or None,
@@ -408,14 +452,16 @@ class RuntimeSessionStateStore:
             "stored_wake_snapshot_sha256": stored_sha or None,
             "current_wake_snapshot_sha256": current_sha or None,
             "truth_boundary": (
-                "The persisted conversation checkpoint is not bound to the currently verified wake-state. "
-                "Previous user text, route and intent were cleared instead of being replayed across restart."
+                "The persisted conversation checkpoint is bound to a different verified wake-state. "
+                "Previous user text, route, intent and task state were cleared instead of being replayed."
             ),
         }
         self.last_load_metadata.update(
             session_reused=False,
             restart_continuity_status=status["status"],
             restart_continuity_verified=False,
+            session_checkpoint_integrity_verified=True,
+            wake_binding_verified=False,
             session_carryover_blocked=True,
             continuity_blocked_reason="wake_state_binding_mismatch",
         )
@@ -439,6 +485,12 @@ class RuntimeSessionStateStore:
         state_payload = state.to_dict()
         previous = self._previous_checkpoint(self.path, state.session_id)
         generation = int((previous or {}).get("generation") or 0) + 1
+        wake_state = self._wake_context(continuity_context)
+        wake_binding_available = bool(
+            wake_state.get("ok") is True
+            and wake_state.get("snapshot_id")
+            and wake_state.get("snapshot_sha256")
+        )
         checkpoint: dict[str, Any] = {
             "schema_version": CONTINUITY_SCHEMA_VERSION,
             "session_id": state.session_id,
@@ -447,10 +499,13 @@ class RuntimeSessionStateStore:
             "turn_count": max(0, int(turn_count or 0)),
             "state_sha256": _sha256_json(state_payload),
             "previous_checkpoint_sha256": (previous or {}).get("checkpoint_sha256"),
-            "wake_state": self._wake_context(continuity_context),
+            "wake_state": wake_state,
+            "wake_binding_available": wake_binding_available,
             "truth_boundary": (
-                "This checkpoint proves file integrity and binding to a verified wake-state snapshot. "
-                "It does not prove that every historical memory was recovered or that a process remained alive."
+                "This checkpoint always proves the integrity of its hash-bound dialogue/task-state payload. "
+                "When wake_binding_available is true it is additionally bound to that verified wake snapshot. "
+                "When wake binding is unavailable it does not prove autobiographical memory continuity, complete "
+                "memory recovery, or that a process remained alive."
             ),
         }
         checkpoint["checkpoint_sha256"] = _sha256_json(self._checkpoint_hash_material(checkpoint))
