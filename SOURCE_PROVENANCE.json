@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "76a66e4922d376f4cc34b52a1dfc4dd3d6ee4682",
+  "base_merge_commit": "6eb434527654aa8a2ebce8771a3785775c58ffa6",
   "base_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
-  "commit_date": "2026-08-20T17:47:23Z",
+  "commit_date": "2026-08-20T19:51:23+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-20T17:47:23+00:00",
+  "generated_at_utc": "2026-08-20T17:51:23+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8cba7e97d37787fd510705eb2b903a468032f801",
+  "git_tree_sha": "93368c74052ba52d4f48e65f926867d696294bec",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
