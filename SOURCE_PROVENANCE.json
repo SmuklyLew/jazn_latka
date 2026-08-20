@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "60e7290e23d50ab90dbb8b84942fe2395216a2c5",
-  "base_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
-  "commit_date": "2026-08-20T19:51:38+02:00",
+  "base_merge_commit": "e08825d4b4cba15cdb92191df7a82ec8c5a26dfe",
+  "base_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
+  "commit_date": "2026-08-20T21:44:59+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-20T17:51:38+00:00",
+  "generated_at_utc": "2026-08-20T19:44:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a6b845933187a4b438cb2b4c60244287f30d8155",
+  "git_tree_sha": "fd930b88e1f6db2def9ee1dbf0649e9d823c23ae",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
-  "schema_version": "source_provenance/v15.4.2.1.1",
+  "runtime_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
+  "schema_version": "source_provenance/v15.4.2.1.2",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
+  "update_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
   "version_source": "latka_jazn/version.py"
 }
