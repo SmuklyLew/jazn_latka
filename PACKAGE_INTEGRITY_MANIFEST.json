@@ -3,11 +3,11 @@
   "version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
   "runtime_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
   "package_version": "v15.4.2.1.1-cognitive-truth-memory-integration-hardening-with-local-first-memory-plus-fix-two-issues",
-  "generated_at_utc": "2026-08-20T17:51:23+00:00",
-  "updated_at_utc": "2026-08-20T17:51:23+00:00",
+  "generated_at_utc": "2026-08-20T17:51:38+00:00",
+  "updated_at_utc": "2026-08-20T17:51:38+00:00",
   "start_file": "run.py",
-  "file_count": 756,
-  "static_file_count": 756,
+  "file_count": 757,
+  "static_file_count": 757,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -109,6 +109,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/refine-wake-session-continuity-fix.yml",
+      "size_bytes": 2364,
+      "sha256": "8bbef99d7d1a6c52e1d3a6838bc064befe2b3d67557c1b0cacc6db40710bc3d3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 11853,
       "sha256": "c831bd1e1b4c5bc536b595136305abb2dc4cd2f8bf7a25ec4ae6f6963f9b858d",
@@ -183,7 +192,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1482,
-      "sha256": "6c40b729003969721ffd0769a7af64c99fc390368c332b2389dc5b55f21e87b8",
+      "sha256": "f4801e55196a23a6924e4b12acb58c3d558b75e90f4e2cb9737ad4acb4c4c159",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
