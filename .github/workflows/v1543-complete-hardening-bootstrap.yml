@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/v1543-complete-hardening-stack
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: write
