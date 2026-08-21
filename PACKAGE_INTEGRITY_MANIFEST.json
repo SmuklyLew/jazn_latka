@@ -3,11 +3,11 @@
   "version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
   "runtime_version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
   "package_version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
-  "generated_at_utc": "2026-08-21T21:33:30+00:00",
-  "updated_at_utc": "2026-08-21T21:33:30+00:00",
+  "generated_at_utc": "2026-08-21T23:07:09+00:00",
+  "updated_at_utc": "2026-08-21T23:07:09+00:00",
   "start_file": "run.py",
-  "file_count": 758,
-  "static_file_count": 758,
+  "file_count": 782,
+  "static_file_count": 782,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -73,6 +73,213 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/.v1543-bootstrap/payload.00",
+      "size_bytes": 3000,
+      "sha256": "5635d8fb27ddefa7366d8339b862345278be7c952c4f01dfe1878ef3477116aa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.01",
+      "size_bytes": 3000,
+      "sha256": "aa6e76812d4be77d0a2450bdff01c99f7f4b2d140731dc08776bda69f0dbae6d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.02",
+      "size_bytes": 3000,
+      "sha256": "ea16c5c87eab84fde005c1fa898e9820273e7dd5c85488db005392ab7c7222e3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.03",
+      "size_bytes": 3000,
+      "sha256": "89655a19ebce84e92cb5d928c9d75529db321d056caef26de874a68209b525d2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.04",
+      "size_bytes": 3000,
+      "sha256": "0fb394b8c0d46607e957ef51d88c4f27a221f846fc93941ac466e103fc148efe",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.05",
+      "size_bytes": 3000,
+      "sha256": "67f6e4b09edc4656de8224752e45234904ecc9bae9aafba0625b467550b59577",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.06",
+      "size_bytes": 3000,
+      "sha256": "55894eadb44bec62dcc033dfed15a92a72c5e58c2850d9838c88feee707fa266",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.07",
+      "size_bytes": 3000,
+      "sha256": "dc87a50931a279ce9dad1dc5c6ba5d06cdd25a9edf66a4f4df9b82b8b4e27448",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.08",
+      "size_bytes": 3000,
+      "sha256": "4a6be9c636dc28b615f928bbf6f899967833a47f455205cf72cf19ce05aa8228",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.09",
+      "size_bytes": 3000,
+      "sha256": "05e23e18ba3b73e9c5c610dea6e20eefd01770453b2c00ec0981510516cd22a4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.10",
+      "size_bytes": 3000,
+      "sha256": "1617eadf059e3196ecc7183a6a9bf61a285f29247bb7977ca032789144fbea7b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.11",
+      "size_bytes": 3000,
+      "sha256": "834ac14a817586e0096b48581b040d6a1ce44dbb19edad107de95ae694969cb3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.12",
+      "size_bytes": 3000,
+      "sha256": "4019c462afa72e452a72d5a1aa8f9e7c8b07c8988490abc72d4b575c530da7f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.13",
+      "size_bytes": 3001,
+      "sha256": "14ba6d82c83eb50327dadb30e268a17ae6aecedd1b2092f2a5c044d1a2c3f0ba",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.14",
+      "size_bytes": 3000,
+      "sha256": "39ab4764d775c4c4990fb24e67fd8fb5c373881cf58f3c8b7ed4e5c49a18ba73",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.15",
+      "size_bytes": 3000,
+      "sha256": "66b61cfee8a0e15c7b0cb9571a092f195f638791ab6afa4d9cc33e1bccd71be0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.16",
+      "size_bytes": 3000,
+      "sha256": "6f1a332cf515ac92136f3f0e8ef8a10788f8b829bbc5c8d0cb73fe5583f7ed1d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.17",
+      "size_bytes": 3000,
+      "sha256": "683647b91dffe37e404e1a5e1acfdaf7379a75e19ac4c58256de73dea772ed84",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.18",
+      "size_bytes": 3000,
+      "sha256": "ccbbd09839699cd136c3dfb8b781cd7b78d64eb86381efeee6135445f8124405",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.19",
+      "size_bytes": 3000,
+      "sha256": "0984529172a6abfb5d7d1addc5dcf4b2e80221c4a0a6af01756e1fb0d21f4b22",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.20",
+      "size_bytes": 3000,
+      "sha256": "018e595921063034f57dfd5b7597f5a73bfc3caa30098f264a0abfe3c35bb951",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.21",
+      "size_bytes": 3000,
+      "sha256": "dcf77a8145721d8a60651d5a7efdd59cee8c8ef381e74d60b70a3134a23d08d5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1543-bootstrap/payload.22",
+      "size_bytes": 2445,
+      "sha256": "c7b28f2ab17838816f8efaa13c887e26c15081239d5f2992c4e0ac9479d6ff85",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/scripts/refine_wake_session_continuity_fix.py",
       "size_bytes": 2388,
       "sha256": "9d6cf3e7ef79b336d35e49a868df2554bd28af0f31679af79be4c21a4bd75411",
@@ -121,6 +328,15 @@
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 11853,
       "sha256": "c831bd1e1b4c5bc536b595136305abb2dc4cd2f8bf7a25ec4ae6f6963f9b858d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/v1543-complete-hardening-bootstrap.yml",
+      "size_bytes": 5798,
+      "sha256": "b21318e058670841e81d393442d94df51aa5191cc741ed70c66ca5c0f691a02b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -192,7 +408,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1320,
-      "sha256": "6f05076093fbec2bbf666505d742238264a87a47b8743b9984c4e3b296e4b29b",
+      "sha256": "ed268bece6148712b389cb2239de75e1d1c13bae518f4c2b844f34e2775ef74d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
