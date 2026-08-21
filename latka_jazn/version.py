@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 DISTRIBUTION_VERSION = "15.4.2.1"
-PACKAGE_VERSION = "v15.4.2.1.3"
+PACKAGE_VERSION = "v15.4.3"
 PACKAGE_RELEASE_NAME = "dual-dream-runtime-audit-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
