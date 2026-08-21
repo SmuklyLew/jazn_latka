@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e08825d4b4cba15cdb92191df7a82ec8c5a26dfe",
+  "base_merge_commit": "9f73545e1e3f6db0813222b5016343c828b3d044",
   "base_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
-  "commit_date": "2026-08-20T21:44:59+02:00",
+  "commit_date": "2026-08-21T23:23:20+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-20T19:44:59+00:00",
+  "generated_at_utc": "2026-08-21T21:23:20+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "fd930b88e1f6db2def9ee1dbf0649e9d823c23ae",
+  "git_tree_sha": "a859eb61344e8ceb7c4636dfa8d3799241393043",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"

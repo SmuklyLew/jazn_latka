@@ -13,7 +13,6 @@ from latka_jazn.db.runtime_sqlite import (
 )
 
 SCHEMA = """
-PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS events(
   event_id TEXT PRIMARY KEY,
