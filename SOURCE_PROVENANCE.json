@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "9f73545e1e3f6db0813222b5016343c828b3d044",
-  "base_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
-  "commit_date": "2026-08-21T23:23:20+02:00",
+  "base_merge_commit": "286e0ee60209aebdbcfecec8929893e74a922ff3",
+  "base_version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
+  "commit_date": "2026-08-21T23:33:30+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-21T21:23:20+00:00",
+  "generated_at_utc": "2026-08-21T21:33:30+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a859eb61344e8ceb7c4636dfa8d3799241393043",
+  "git_tree_sha": "8e083ea0939105bb9d7babe7884ed221c38eae66",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
-  "schema_version": "source_provenance/v15.4.2.1.2",
+  "runtime_version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
+  "schema_version": "source_provenance/v15.4.2.1.3",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "v15.4.2.1.2-wake-session-continuity-decoupling",
+  "update_version": "v15.4.2.1.3-dual-dream-runtime-audit-hardening",
   "version_source": "latka_jazn/version.py"
 }
