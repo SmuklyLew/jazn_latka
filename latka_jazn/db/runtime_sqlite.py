@@ -169,8 +169,20 @@ def sqlite_wal_reset_fix_available(version_info: tuple[int, ...] | None = None) 
     return minimum_patch is not None and version[2] >= minimum_patch
 
 
+def runtime_sqlite_journal_mode(version_info: tuple[int, ...] | None = None) -> str:
+    """Select WAL only when the loaded SQLite build contains the WAL-reset fix.
+
+    SQLite documents the WAL-reset corruption race as WAL-specific.  Runtime
+    stores therefore use the rollback journal on affected/unknown builds instead
+    of pretending that the Jaźń writer lock upgrades the SQLite library itself.
+    """
+
+    return "WAL" if sqlite_wal_reset_fix_available(version_info) else "DELETE"
+
+
 def runtime_sqlite_capabilities() -> dict[str, Any]:
     fixed = sqlite_wal_reset_fix_available()
+    selected_journal_mode = runtime_sqlite_journal_mode()
     return {
         "schema_version": SCHEMA_VERSION,
         "sqlite_version": sqlite3.sqlite_version,
@@ -178,11 +190,15 @@ def runtime_sqlite_capabilities() -> dict[str, Any]:
         "sqlite_threadsafety": int(sqlite3.threadsafety),
         "wal_reset_fix_available": fixed,
         "runtime_writer_serialization": "cross_process_file_lock+process_rlock",
+        "selected_journal_mode": selected_journal_mode,
+        "journal_mode_policy": "wal_on_fixed_sqlite_else_delete",
         "wal_reset_mitigation_required": not fixed,
+        "wal_reset_mitigation_active": not fixed and selected_journal_mode == "DELETE",
         "truth_boundary": (
             "The runtime reports the SQLite library actually loaded by Python. "
-            "Application-level writer serialization mitigates concurrent Jaźń writers; "
-            "it does not upgrade SQLite or protect against unrelated processes that bypass this policy."
+            "Fixed SQLite builds use WAL. Builds without a documented WAL-reset fix use DELETE rollback-journal mode, "
+            "so the runtime does not rely on application-level serialization as a substitute for the SQLite fix. "
+            "The cross-process/process-local writer guard remains defense in depth."
         ),
     }
 
@@ -241,10 +257,16 @@ def connect_runtime_writable(
             connection.row_factory = sqlite3.Row
             connection.execute(f"PRAGMA busy_timeout={timeout_value}")
             connection.execute("PRAGMA foreign_keys=ON")
-            mode_row = connection.execute("PRAGMA journal_mode=WAL").fetchone()
-            if mode_row is None or str(mode_row[0]).casefold() != "wal":
+            selected_journal_mode = runtime_sqlite_journal_mode()
+            current_mode_row = connection.execute("PRAGMA journal_mode").fetchone()
+            current_mode = "" if current_mode_row is None else str(current_mode_row[0]).upper()
+            if current_mode != selected_journal_mode:
+                mode_row = connection.execute(f"PRAGMA journal_mode={selected_journal_mode}").fetchone()
+                current_mode = "" if mode_row is None else str(mode_row[0]).upper()
+            if current_mode != selected_journal_mode:
                 raise sqlite3.OperationalError(
-                    f"runtime sqlite WAL activation failed for {db_path}: {mode_row!r}"
+                    f"runtime sqlite journal mode activation failed for {db_path}: "
+                    f"requested={selected_journal_mode}; returned={current_mode or current_mode_row!r}"
                 )
             connection.execute(f"PRAGMA synchronous={selected_sync}")
             if selected_temp is not None:

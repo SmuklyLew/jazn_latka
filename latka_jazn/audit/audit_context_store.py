@@ -19,7 +19,6 @@ def sqlite_readonly_uri(path: Path) -> str:
     return "file:" + quote(str(path.resolve()).replace("\\", "/"), safe="/:") + "?mode=ro"
 
 SCHEMA = """
-PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS audit_runtime_events(
   audit_event_id TEXT PRIMARY KEY,
   created_at_utc TEXT NOT NULL,
