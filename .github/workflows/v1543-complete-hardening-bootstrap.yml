@@ -1,0 +1,157 @@
+name: v1543-complete-hardening-bootstrap
+
+on:
+  push:
+    branches:
+      - fix/v1543-complete-hardening-stack
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v1543-complete-hardening-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: fix/v1543-complete-hardening-stack
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Reassemble and verify hardening stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/.v1543-bootstrap/payload.* | tr -d '\r\n' > /tmp/v1543-stack.b64
+          base64 --decode /tmp/v1543-stack.b64 > /tmp/v1543-stack.tar.xz
+          echo "91bfe385ad73305fbd9751880e989810e43cae4e6ac3220d57c9321a7964f7e4  /tmp/v1543-stack.tar.xz" | sha256sum -c -
+          mkdir -p /tmp/v1543-stack
+          tar -xJf /tmp/v1543-stack.tar.xz -C /tmp/v1543-stack
+          test -f /tmp/v1543-stack/01-v2.patch
+          test -f /tmp/v1543-stack/02-v3.patch
+          test -f /tmp/v1543-stack/03-v4.patch
+          test -f /tmp/v1543-stack/04-v5.patch
+          test -f /tmp/v1543-stack/05-v6.patch
+          test -f /tmp/v1543-stack/06-clock-semantic-port.diff
+
+      - name: Apply reviewed v2-v6 and clock/Pylance semantic port
+        shell: bash
+        run: |
+          set -euo pipefail
+          for patch in \
+            /tmp/v1543-stack/01-v2.patch \
+            /tmp/v1543-stack/02-v3.patch \
+            /tmp/v1543-stack/03-v4.patch \
+            /tmp/v1543-stack/04-v5.patch \
+            /tmp/v1543-stack/05-v6.patch \
+            /tmp/v1543-stack/06-clock-semantic-port.diff
+          do
+            echo "Applying ${patch}"
+            git apply --3way --whitespace=nowarn "${patch}"
+          done
+
+      - name: Set final v15.4.3 version contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("latka_jazn/version.py")
+          text = path.read_text(encoding="utf-8")
+          text, n_version = re.subn(
+              r'^PACKAGE_VERSION = ".*"$',
+              'PACKAGE_VERSION = "v15.4.3"',
+              text,
+              count=1,
+              flags=re.MULTILINE,
+          )
+          text, n_name = re.subn(
+              r'^PACKAGE_RELEASE_NAME = ".*"$',
+              'PACKAGE_RELEASE_NAME = "dual-dream-runtime-audit-hardening"',
+              text,
+              count=1,
+              flags=re.MULTILINE,
+          )
+          if n_version != 1 or n_name != 1:
+              raise SystemExit("version contract replacement failed")
+          path.write_text(text, encoding="utf-8")
+          PY
+          python -X utf8 -c "from latka_jazn.version import PACKAGE_VERSION_FULL; assert PACKAGE_VERSION_FULL == 'v15.4.3-dual-dream-runtime-audit-hardening', PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)"
+
+      - name: Remove one-shot bootstrap transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .github/.v1543-bootstrap
+          rm -f .github/workflows/v1543-complete-hardening-bootstrap.yml
+          git diff --check
+
+      - name: Verify expected hardening modules and exclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f latka_jazn/memory/dream_host_bridge.py
+          test -f latka_jazn/memory/runtime_write_repair.py
+          test -f latka_jazn/packaging/runtime_write_transport.py
+          test -f latka_jazn/core/runtime_storage_lifecycle.py
+          test -f latka_jazn/core/visible_message_format.py
+          test -f tests/test_dream_host_bridge_v154212.py
+          test -f tests/test_runtime_write_repair_and_transport_v154212.py
+          test -f tests/test_clock_fallback_and_visible_message_format.py
+          test ! -e .github/scripts/refine_wake_session_continuity_fix.py
+          test ! -e .github/workflows/refine-wake-session-continuity-fix.yml
+          grep -q 'path_is_forbidden' latka_jazn/tools/package_export.py
+          grep -q 'MANIFEST_NAME' latka_jazn/tools/package_export.py
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[memory-rebuild-ui]" pytest
+
+      - name: Compile active Python
+        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+
+      - name: Full deterministic non-live tests
+        run: python -X utf8 -m pytest -q -m "not live_model and not live_mcp"
+
+      - name: Final source guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          if git status --porcelain --untracked-files=all | grep -E '(^| )((memory|workspace_runtime)/|.*\.(sqlite3?|db)(-wal|-shm)?$|.*\.zip$)'; then
+            echo "Forbidden runtime/memory/package artifact detected in source change" >&2
+            exit 1
+          fi
+
+      - name: Commit integrated v15.4.3 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: complete v15.4.3 hardening stack"
+          git push origin HEAD:fix/v1543-complete-hardening-stack
