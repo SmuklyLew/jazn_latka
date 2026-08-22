@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -24,7 +25,7 @@ SAMPLE = datetime(2026, 8, 6, 14, 0, tzinfo=timezone.utc)
 HEADER = f"🕒 {SAMPLE.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
 
 
-def _runtime_payload() -> dict:
+def _runtime_payload() -> dict[str, Any]:
     payload = {
         "runtime_version": "v15.1.0.3.96-semantic-routing-completion",
         "trace": {"turn_id": "turn-e2e", "trace_id": "trace-e2e", "timestamp_header": HEADER, "timezone": "Europe/Warsaw"},
@@ -67,14 +68,14 @@ def _runtime_payload() -> dict:
 
 
 class FakeGateway:
-    def __init__(self, root: Path, response: dict) -> None:
+    def __init__(self, root: Path, response: dict[str, Any]) -> None:
         self.root = root
         self.response = response
 
-    def chat(self, message: str, session_id: str | None = None) -> dict:
+    def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
         return self.response
 
-    def issue_continuation(self, response: dict) -> dict:
+    def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
         bridge = response["chatgpt_host_bridge"]
         persist_pending_host_request(self.root, bridge)
         return issue_continuation_token(
