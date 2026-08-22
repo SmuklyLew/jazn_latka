@@ -15,6 +15,7 @@ from latka_jazn.bootstrap.chatgpt_recovery import (
     _zip_verification_cache_valid,
     recover_chatgpt_runtime,
 )
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.tools.package_integrity import write_package_integrity_manifest
 from latka_jazn.cli import build_parser, main as cli_main
 from latka_jazn.packaging.split_zip_package import (
@@ -410,7 +411,8 @@ def test_current_system_package_materializes_end_to_end_without_claiming_activat
     assert result.report["activation_ok"] is False
     assert result.report["sqlite"]["reason"] == "active_database_missing"
     assert (destination / "run.py").is_file()
-    assert (destination / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json").is_file()
+    assert (workspace_runtime_path(destination) / "JAZN_ACTIVE_RUNTIME.json").is_file()
+    assert not (destination / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json").exists()
 
 
 def test_combined_package_loads_verified_memory_but_no_start_stays_inactive(
