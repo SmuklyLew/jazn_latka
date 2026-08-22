@@ -1,0 +1,69 @@
+name: apply-v1602-runtime-turn-liveness
+
+on:
+  push:
+    branches:
+      - fix/v16.0.2-runtime-turn-liveness
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-v1602-runtime-turn-liveness
+  cancel-in-progress: false
+
+jobs:
+  apply_verified_patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      EXPECTED_BASE64_SHA256: 2dc20bad7d2b46b391247f5689f9f7d8047054ff8645438cd63a4ab04c245606
+      EXPECTED_GZIP_SHA256: 40d9c194e23a661aa424528dd9fc3ff28785c04e3e9bbd228cfbc2cde36e9ff5
+      EXPECTED_PATCH_SHA256: 23f89cf8adee86aece7db87c4211c24e29612a9c2314787f74d6876af3426f8c
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: fix/v16.0.2-runtime-turn-liveness
+
+      - name: Reconstruct and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .jazn_upgrade_transport/v1602-runtime-turn-liveness/chunk-* > "$RUNNER_TEMP/upgrade.b64"
+          echo "${EXPECTED_BASE64_SHA256}  $RUNNER_TEMP/upgrade.b64" | sha256sum --check --strict
+          base64 --decode "$RUNNER_TEMP/upgrade.b64" > "$RUNNER_TEMP/upgrade.patch.gz"
+          gzip -t "$RUNNER_TEMP/upgrade.patch.gz"
+          echo "${EXPECTED_GZIP_SHA256}  $RUNNER_TEMP/upgrade.patch.gz" | sha256sum --check --strict
+          gzip --decompress --stdout "$RUNNER_TEMP/upgrade.patch.gz" > "$RUNNER_TEMP/upgrade.patch"
+          echo "${EXPECTED_PATCH_SHA256}  $RUNNER_TEMP/upgrade.patch" | sha256sum --check --strict
+          git apply --check "$RUNNER_TEMP/upgrade.patch"
+
+      - name: Apply patch and remove transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply "$RUNNER_TEMP/upgrade.patch"
+          git rm -rf .jazn_upgrade_transport/v1602-runtime-turn-liveness
+          git rm -f .github/workflows/apply-v1602-runtime-turn-liveness.yml
+          git diff --check
+
+      - name: Validate runtime repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          pytest -q -m "not live_model and not live_mcp"
+
+      - name: Commit verified repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(runtime): harden turn liveness and memory recall"
+          git push origin HEAD:fix/v16.0.2-runtime-turn-liveness
