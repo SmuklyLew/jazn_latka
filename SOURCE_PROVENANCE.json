@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "94d717d236911963c04ce6142e0b975d037860e1",
+  "base_merge_commit": "c73361bb2230f1dcebb7e7e2b9be2716c10a7b9d",
   "base_version": "v15.4.3.1-dual-dream-runtime-audit-hardening",
-  "commit_date": "2026-08-22T01:15:59+02:00",
+  "commit_date": "2026-08-22T05:05:21+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-21T23:15:59+00:00",
+  "generated_at_utc": "2026-08-22T03:05:21+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "4f83683bab02460ddd98981f5bdabdc6db835add",
+  "git_tree_sha": "e947e2c16404098e7832d497e8897ae2bffe5cdd",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
