@@ -3,11 +3,11 @@
   "version": "16.0.1-single-canonical-runtime-workspace",
   "runtime_version": "16.0.1-single-canonical-runtime-workspace",
   "package_version": "16.0.1-single-canonical-runtime-workspace",
-  "generated_at_utc": "2026-08-22T23:20:50+00:00",
-  "updated_at_utc": "2026-08-22T23:20:50+00:00",
+  "generated_at_utc": "2026-08-22T23:26:55+00:00",
+  "updated_at_utc": "2026-08-22T23:26:55+00:00",
   "start_file": "run.py",
-  "file_count": 799,
-  "static_file_count": 799,
+  "file_count": 800,
+  "static_file_count": 800,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -388,6 +388,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".jazn_upgrade_transport/v1603-runtime-turn-liveness-ci-hardening/patch.gz.b64",
+      "size_bytes": 9916,
+      "sha256": "68fce6ed37a2938263dc5e519f62c04ffca36ff61af8adc167c05eaf12d07e27",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "AGENTS.chatgpt.md",
       "size_bytes": 18537,
       "sha256": "f6ba4d882e1c60dbffba32e831f1af03823963e4f48d8a6037b379b5689f2ac1",
@@ -444,7 +453,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1300,
-      "sha256": "5f9d661da47f78a2d981b1daabeb67739a1b2d7655030d78e218f848a7db841a",
+      "sha256": "13b2d81c8515e7e9e62287e3a7a2223fa854fdf1d247351052fbfbf65658787b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
