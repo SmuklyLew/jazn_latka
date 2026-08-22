@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import MethodType, SimpleNamespace
+from typing import Any, cast
 
+from latka_jazn.config import JaznConfig
 from latka_jazn.core.engine import JaznEngine
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.turn_execution import TurnExecutionContext
@@ -60,7 +62,7 @@ def test_true_first_memory_request_keeps_chronological_route(tmp_path: Path) -> 
 def test_archive_fts_hit_skips_redundant_legacy_message_scan(tmp_path: Path) -> None:
     engine = object.__new__(JaznEngine)
     engine.last_user_text = None
-    engine.config = SimpleNamespace(root=tmp_path)
+    engine.config = JaznConfig(root=tmp_path)
     engine.memory_search_planner = MemorySearchPlanner(tmp_path)
 
     class FakeLivingGateway:
@@ -99,10 +101,11 @@ def test_archive_fts_hit_skips_redundant_legacy_message_scan(tmp_path: Path) -> 
         def search_messages_any(self, phrases, limit, should_continue=None):
             raise AssertionError("legacy LIKE scan must be skipped after an archive FTS hit")
 
-    engine.living_memory_gateway = FakeLivingGateway()
-    engine.layered_memory = FakeLayeredMemory()
-    engine.store = FailingLegacyStore()
-    engine._conversation_archive_context_hits = MethodType(lambda self, phrases, limit, turn_context=None: ([], {
+    test_engine = cast(Any, engine)
+    test_engine.living_memory_gateway = FakeLivingGateway()
+    test_engine.layered_memory = FakeLayeredMemory()
+    test_engine.store = FailingLegacyStore()
+    test_engine._conversation_archive_context_hits = MethodType(lambda self, phrases, limit, turn_context=None: ([], {
         "status": "ready", "query": "", "fts_query": "", "searched_shards": 0,
         "issues": [], "truth_boundary": "source evidence only",
     }), engine)
@@ -125,7 +128,7 @@ def test_archive_fts_hit_skips_redundant_legacy_message_scan(tmp_path: Path) -> 
 
 def test_engine_propagates_turn_cancellation_to_conversation_archive(tmp_path: Path, monkeypatch) -> None:
     engine = object.__new__(JaznEngine)
-    engine.config = SimpleNamespace(root=tmp_path)
+    engine.config = JaznConfig(root=tmp_path)
     observed = {}
 
     class FakeStore:
