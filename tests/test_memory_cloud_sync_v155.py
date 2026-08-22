@@ -248,8 +248,9 @@ def test_push_pull_materializes_remote_records_through_domain_store_without_echo
         assert store.stats()["memory_records"] == 2
         assert store.stats()["memory_outbox"] == 0
         assert store.stats()["memory_sync_inbox"] == 1
-        assert store.sync_cursor() is not None
-        assert store.sync_cursor().remote_seq == 1
+        cursor = store.sync_cursor()
+        assert cursor is not None
+        assert cursor.remote_seq == 1
 
 
 def test_same_remote_sequence_with_different_event_is_explicit_conflict(tmp_path) -> None:
