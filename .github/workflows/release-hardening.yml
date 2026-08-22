@@ -160,6 +160,17 @@ jobs:
       - name: Static type audit
         run: pyright latka_jazn main.py run.py
 
+      - name: Static type audit for regression test and pack-generator contracts
+        run: >-
+          pyright
+          tests/test_chatgpt_mcp_end_to_end_v96.py
+          tests/test_dialogue_task_state_v154.py
+          tests/test_host_finalized_session_continuity_v154.py
+          tests/test_memory_cloud_sync_v155.py
+          tests/test_memory_recall_timeout_hardening.py
+          tools/_jazn_pack_generator_memory_v2.py
+          tools/jazn_pack_generator.py
+
       - name: Independent semantic route audit
         run: python -X utf8 -m latka_jazn.tools.semantic_route_audit --root . --json
 

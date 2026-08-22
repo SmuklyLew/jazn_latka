@@ -1,8 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
-from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError, SecureHostRuntimeGateway
+from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
+
+
+class HostRuntimeGateway(Protocol):
+    """Structural contract required by the visible-reply MCP tool.
+
+    Keeping the tool bound to the minimal behavior it actually uses allows
+    secure production gateways and deterministic test doubles to share the
+    same static contract without weakening the concrete gateway itself.
+    """
+
+    def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]: ...
+
+    def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]: ...
 
 
 def _object_or_none(value: Any) -> dict[str, Any] | None:
@@ -30,7 +43,7 @@ def _tool_error(reason: str, *, response: dict[str, Any] | None = None) -> dict[
 
 
 def run(
-    gateway: SecureHostRuntimeGateway,
+    gateway: HostRuntimeGateway,
     *,
     message: str,
     session_id: str | None = None,

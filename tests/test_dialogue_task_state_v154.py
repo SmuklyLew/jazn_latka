@@ -98,8 +98,10 @@ def test_runtime_session_state_roundtrips_task_state() -> None:
 def test_engine_current_turn_reasoning_binds_resolved_task_and_lessons() -> None:
     from pathlib import Path
     from types import SimpleNamespace
+    from typing import cast
 
     from latka_jazn.core.cognitive_runtime_coordinator import CognitiveRuntimeCoordinator
+    from latka_jazn.core.cognitive_turn_envelope import CognitiveTurnEnvelope
     from latka_jazn.core.engine import JaznEngine
     from latka_jazn.core.operational_learning_memory import OperationalLearningMemory
 
@@ -117,8 +119,11 @@ def test_engine_current_turn_reasoning_binds_resolved_task_and_lessons() -> None
         "memory_recall_contract": {"items": [{"source": "archive"}]},
         "tool_use_decision": {"allowed": False},
     }
-    envelope = SimpleNamespace(
-        cognitive_frame={"dialogue_intent_classifier": {"primary_intent": "self_memory_recall_request"}}
+    envelope = cast(
+        CognitiveTurnEnvelope,
+        SimpleNamespace(
+            cognitive_frame={"dialogue_intent_classifier": {"primary_intent": "self_memory_recall_request"}}
+        ),
     )
     decision: dict = {}
     intent_report = {"confidence": 0.95, "task_resolution": {"inherited": True}}
