@@ -8,6 +8,7 @@ import zipfile
 
 import pytest
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.tools.memory_restore import (
     DEVELOPER_CONFIRMATION,
     MemoryRestoreOrchestrator,
@@ -356,7 +357,7 @@ def test_plan_only_is_cumulative_exact_and_does_not_create_target(
     assert code == 0, summary
     assert not target.exists()
     run_dirs = list(
-        (repo / "workspace_runtime" / "memory_sqlite_test_04").iterdir()
+        (workspace_runtime_path(repo) / "memory_sqlite_test_04").iterdir()
     )
     assert len(run_dirs) == 1
     run_dir = run_dirs[0]
