@@ -212,7 +212,7 @@ def test_explicit_source_order_is_preserved_and_duplicates_are_removed(tmp_path:
     assert [Path(item["path"]) for item in plan.chats] == [newer.resolve(), older.resolve()]
 
 
-def test_operator_tool_reports_v240205_and_orders_dates_not_sizes(tmp_path: Path) -> None:
+def test_operator_tool_reports_stage4_and_preserves_v240205_ordering(tmp_path: Path) -> None:
     tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
     module_name = "memory_rebuild_v240205_test"
     spec = importlib.util.spec_from_file_location(module_name, tool_path)
@@ -224,7 +224,9 @@ def test_operator_tool_reports_v240205_and_orders_dates_not_sizes(tmp_path: Path
     older = RestoreSource(tmp_path / "chatGPT-export-2025.07.18.zip", 999_999, ".zip")
     newer = RestoreSource(tmp_path / "chatGPT-export-2025.07.19.zip", 1, ".zip")
 
-    assert module.TOOL_VERSION == "24.0.2.05"
+    assert module.TOOL_VERSION == "memory-rebuild-stage4/v1.0"
+    assert module._LEGACY_MODULE is not None
+    assert module._LEGACY_MODULE.TOOL_VERSION == "24.0.2.05"
     assert module._ordered_restore_sources([newer, older]) == [older, newer]
 
 
