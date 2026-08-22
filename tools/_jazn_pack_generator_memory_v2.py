@@ -60,6 +60,9 @@ _ORIG_BUILD_PLAN = _core.build_plan
 _ORIG_SIDECAR_PAYLOAD = _core.sidecar_payload
 _ORIG_RUN_PACK_WITH_PLANS = _core.run_pack_with_plans
 
+# Private compatibility helper used by the public entrypoint.
+_paint = _core._paint
+
 _COMBINED_BUILD: contextvars.ContextVar[bool] = contextvars.ContextVar(
     "jazn_pack_generator_memory_v2_combined_build", default=False
 )
@@ -102,7 +105,7 @@ def _plan_cleanup(self: Any) -> None:
     _cleanup_plan(self)
 
 
-_core.PackPlan.cleanup = _plan_cleanup
+setattr(_core.PackPlan, "cleanup", _plan_cleanup)
 
 
 def _cleanup_registered_temp_dirs() -> None:
@@ -548,7 +551,7 @@ _core.sidecar_payload = sidecar_payload
 _core.run_pack_with_plans = run_pack_with_plans
 _core.show_plan_interactive = show_plan_interactive
 _core.pack_from_interactive = pack_from_interactive
-_core.cleanup_plans = cleanup_plans
+setattr(_core, "cleanup_plans", cleanup_plans)
 
 globals().update(
     {
