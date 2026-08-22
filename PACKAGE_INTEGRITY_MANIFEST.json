@@ -3,11 +3,11 @@
   "version": "16.0.0-single-canonical-runtime-workspace",
   "runtime_version": "16.0.0-single-canonical-runtime-workspace",
   "package_version": "16.0.0-single-canonical-runtime-workspace",
-  "generated_at_utc": "2026-08-22T16:22:12+00:00",
-  "updated_at_utc": "2026-08-22T16:22:12+00:00",
+  "generated_at_utc": "2026-08-22T16:33:54+00:00",
+  "updated_at_utc": "2026-08-22T16:33:54+00:00",
   "start_file": "run.py",
-  "file_count": 791,
-  "static_file_count": 791,
+  "file_count": 790,
+  "static_file_count": 790,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -334,15 +334,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": ".github/workflows/v1543-complete-hardening-bootstrap.yml",
-      "size_bytes": 5798,
-      "sha256": "b21318e058670841e81d393442d94df51aa5191cc741ed70c66ca5c0f691a02b",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": ".gitignore",
       "size_bytes": 2187,
       "sha256": "8559356b875c912efb0d8d8907a3461131aea0e78177a50c995663d0a0603d18",
@@ -408,7 +399,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1300,
-      "sha256": "e1d35f2c53b7ae8455dcb18f3d241c7000ae6c78ae3ea818dd01671d63f45f61",
+      "sha256": "410ef5c9679353ade1dde853776f08e1bace35154c0c3d59d831e28b506a549b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
