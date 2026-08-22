@@ -1,0 +1,197 @@
+name: apply-pr151-v1604-pyright-final
+
+on:
+  push:
+    branches:
+      - repair/pr151-v1604-pyright-final
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-pr151-v1604-pyright-final
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: repair/pr151-v1604-pyright-final
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+
+      - name: Apply fail-closed Optional narrowing and v16.0.4 bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+
+          attach = Path("latka_jazn/packaging/memory_package_attach.py")
+          text = attach.read_text(encoding="utf-8")
+          old = '''        if not (preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok):
+              return MemoryAttachResult(
+                  False,
+                  "runtime_not_verified",
+                  str(runtime_root),
+                  report,
+                  exit_code=13,
+              )
+
+          daemon = status_daemon(JaznConfig(root=runtime_root))
+          '''
+          new = '''        if not (preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok):
+              return MemoryAttachResult(
+                  False,
+                  "runtime_not_verified",
+                  str(runtime_root),
+                  report,
+                  exit_code=13,
+              )
+          runtime_version = preflight.version
+          if runtime_version is None:
+              report["runtime_preflight_version_missing"] = True
+              return MemoryAttachResult(
+                  False,
+                  "runtime_not_verified",
+                  str(runtime_root),
+                  report,
+                  exit_code=13,
+              )
+
+          daemon = status_daemon(JaznConfig(root=runtime_root))
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f"unexpected preflight block count: {text.count(old)}")
+          text = text.replace(old, new, 1)
+          old_call = "            runtime_version=preflight.version,"
+          new_call = "            runtime_version=runtime_version,"
+          if text.count(old_call) != 1:
+              raise SystemExit(f"unexpected finalize call count: {text.count(old_call)}")
+          attach.write_text(text.replace(old_call, new_call, 1), encoding="utf-8")
+
+          version = Path("latka_jazn/version.py")
+          text = version.read_text(encoding="utf-8")
+          replacements = {
+              'DISTRIBUTION_VERSION = "16.0.3"': 'DISTRIBUTION_VERSION = "16.0.4"',
+              'PACKAGE_VERSION = "16.0.3"': 'PACKAGE_VERSION = "16.0.4"',
+          }
+          for before, after in replacements.items():
+              if text.count(before) != 1:
+                  raise SystemExit(f"version source mismatch for {before!r}")
+              text = text.replace(before, after, 1)
+          version.write_text(text, encoding="utf-8")
+
+          contract = Path("tests/test_v160_single_canonical_workspace_contract.py")
+          text = contract.read_text(encoding="utf-8")
+          if text.count("16.0.3") != 3 or text.count("test_v1603_release_identity") != 1:
+              raise SystemExit("unexpected v16.0.3 release contract shape")
+          text = text.replace("test_v1603_release_identity", "test_v1604_release_identity", 1)
+          text = text.replace("16.0.3", "16.0.4")
+          contract.write_text(text, encoding="utf-8")
+
+          Path("tests/test_v1604_memory_attach_preflight_version.py").write_text('''from __future__ import annotations
+
+          from types import SimpleNamespace
+
+          from latka_jazn.packaging import memory_package_attach as attach_module
+
+
+          def test_memory_attach_rejects_verified_preflight_without_runtime_version(tmp_path, monkeypatch) -> None:
+              preflight = SimpleNamespace(
+                  structure_ok=True,
+                  manifest_ok=True,
+                  provenance_ok=True,
+                  version=None,
+                  to_dict=lambda: {
+                      "structure_ok": True,
+                      "manifest_ok": True,
+                      "provenance_ok": True,
+                      "version": None,
+                  },
+              )
+              monkeypatch.setattr(attach_module, "runtime_preflight", lambda _root: preflight)
+
+              result = attach_module.attach_memory_package(tmp_path, parts_dir=tmp_path)
+
+              assert result.ok is False
+              assert result.state == "runtime_not_verified"
+              assert result.exit_code == 13
+              assert result.report["runtime_preflight_version_missing"] is True
+          ''', encoding="utf-8")
+
+          Path("docs/reports/JAZN_V16_0_4_RUNTIME_TURN_LIVENESS_CI_HARDENING.md").write_text('''# Jaźń v16.0.4 — Runtime Turn Liveness CI Hardening
+
+          ## Zakres
+
+          Ta poprawka domyka statyczny kontrakt typów po refaktorze `memory_package_attach.py` z v16.0.3.
+
+          ## Naprawa
+
+          `RuntimePreflightReport.version` jest formalnie typu `str | None`. Poprawny `manifest_ok=True` wymaga wersji, ale Pyright nie przenosi tej zależności między polami dataclass. Zamiast rzutowania lub `type: ignore`, `attach_memory_package()` jawnie zawęża `preflight.version`: brak wersji po pozytywnych bramkach struktury, manifestu i provenance kończy attach stanem `runtime_not_verified` i zapisuje `runtime_preflight_version_missing=true` w raporcie.
+
+          Dzięki temu `_finalize_memory_attach()` otrzymuje wyłącznie zweryfikowany `str`, a granica prawdy runtime pozostaje fail-closed.
+
+          ## Wersja
+
+          Zgodnie z zasadą projektu każda dodatkowa poprawka systemowa podnosi numer Jaźni. Wersja kanoniczna: `16.0.4-runtime-turn-liveness-ci-hardening`.
+          ''', encoding="utf-8")
+          PY
+
+      - name: Install validation dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[memory-rebuild-ui]" pytest
+          npm install --global pyright@1.1.411
+
+      - name: Compile and run Pyright
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+          pyright latka_jazn main.py run.py
+
+      - name: Run targeted regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          pytest -q \
+            tests/test_v1604_memory_attach_preflight_version.py \
+            tests/test_v160_single_canonical_workspace_contract.py \
+            tests/test_independent_memory_package_contract_v2.py \
+            tests/test_v1601_memory_transport_generator.py \
+            tests/test_v1602_runtime_turn_liveness.py
+          git diff --check
+
+      - name: Commit source-only repair and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f .github/workflows/apply-pr151-v1604-pyright-final.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(packaging): close v16.0.4 Pyright preflight version contract"
+          git fetch origin repair/pr151-v1604-pyright-final
+          git rebase origin/repair/pr151-v1604-pyright-final
+          git push origin HEAD:repair/pr151-v1604-pyright-final
