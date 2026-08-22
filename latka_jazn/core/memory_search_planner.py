@@ -112,6 +112,10 @@ class MemorySearchPlanner:
         "chodzi", "chodzić", "chodzic", "treść", "tresc", "dokładnie", "dokladnie",
         "spróbować", "sprobowac", "spróbuj", "sprobuj", "celniejsze", "celniej",
         "powinnaś", "powinnas", "można", "mozna", "odnośnie", "odnosnie",
+        # Rozmowne wypełniacze nie mogą stawać się hasłami recall. W przeciwnym
+        # razie pytanie „Hej, jak się masz? Co wspominasz najbardziej?” trafia
+        # do FTS po słowach o zerowej wartości autobiograficznej.
+        "hej", "się", "sie", "masz", "najbardziej",
     }
 
     def __init__(self, root: Path | str) -> None:

@@ -40,6 +40,15 @@ class TurnResponsePolicy:
                 forbidden_legacy_routes=["correction_acknowledged", "positive_continuation"],
                 max_meta_technicality="none",
             )
+        if intent in {"memory_experience_question", "substantive_question_about_last_year"}:
+            return cls(
+                intent=intent, route=route, answer_kind="grounded_memory_dialogue",
+                allow_memory_content=True, allow_architecture_explanation=False,
+                allow_previous_turn_carryover=False, source_boundary_required=True,
+                required_components=["memory_content", "source_or_index_status", "truth_boundary", "no_current_turn_echo"],
+                forbidden_topics=["random_memory_excerpt", "debug_report", "runtime_architecture_metareport"],
+                max_meta_technicality="low",
+            )
         if intent == "runtime_restart_request":
             return cls(
                 intent=intent, route=route, answer_kind="runtime_process_control",

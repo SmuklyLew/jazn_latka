@@ -1139,6 +1139,39 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for request_id in stale_ids:
             self.chat_jobs.pop(request_id, None)
 
+    @staticmethod
+    def _terminal_job_diagnostic(job: DaemonChatJob) -> dict[str, Any]:
+        result = job.result if isinstance(job.result, dict) else {}
+        telemetry = job.turn_context.snapshot() if job.turn_context is not None else {}
+        stages = telemetry.get("stages") if isinstance(telemetry, dict) else {}
+        last_stage = None
+        if isinstance(stages, dict) and stages:
+            def _stage_key(item: tuple[str, Any]) -> str:
+                value = item[1] if isinstance(item[1], dict) else {}
+                return str(value.get("completed_at") or value.get("started_at") or "")
+            name, value = max(stages.items(), key=_stage_key)
+            value = value if isinstance(value, dict) else {}
+            last_stage = {
+                "name": name,
+                "status": value.get("status"),
+                "error_code": value.get("error_code"),
+                "duration_ms": value.get("duration_ms"),
+            }
+        return {
+            "request_id": job.request_id,
+            "job_status": job.status,
+            "error_code": result.get("error_code") or job.error,
+            "completed_at_utc": job.completed_at_utc,
+            "execution_timeout_seconds": job.execution_timeout_seconds,
+            "timeout_profile": job.timeout_profile,
+            "timeout_owner": result.get("timeout_owner"),
+            "recovery_disposition": job.recovery_disposition,
+            "worker_generation": job.worker_generation,
+            "last_stage": last_stage,
+            "user_text_sha256": hashlib.sha256(job.user_text.encode("utf-8")).hexdigest() if job.user_text else None,
+            "contains_user_text": False,
+        }
+
     def chat_job_summary(self) -> dict[str, Any]:
         with self._chat_jobs_lock:
             self._cleanup_chat_jobs_locked()
@@ -1153,6 +1186,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self.state.chat_job_queued_count = counts.get("accepted", 0) + counts.get("queued", 0)
             self.state.chat_job_running_count = counts.get("running", 0)
             worker_alive = bool(self._chat_worker_thread and self._chat_worker_thread.is_alive())
+            terminal_jobs = [job for job in self.chat_jobs.values() if job.terminal()]
+            latest_terminal = max(
+                terminal_jobs,
+                key=lambda job: str(job.completed_at_utc or job.created_at_utc or ""),
+                default=None,
+            )
+            last_terminal_job = self._terminal_job_diagnostic(latest_terminal) if latest_terminal is not None else None
             return {
                 "queue_size": self._chat_queue.qsize(),
                 "queue_capacity": self._chat_queue.maxsize,
@@ -1161,6 +1201,20 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "worker_error": self._chat_worker_error,
                 "worker_generation": self._chat_worker_generation,
                 "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
+                "last_terminal_job": last_terminal_job,
+                "process_liveness": {
+                    "process_model": "persistent_daemon_with_replaceable_session_workers",
+                    "parent_process_alive": True,
+                    "chat_worker_alive": worker_alive,
+                    "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
+                    "turn_failure_isolated_from_parent_process": True,
+                    "running_thread_hard_cancel_supported": False,
+                    "hard_worker_process_isolation": False,
+                    "truth_boundary": (
+                        "This is operational process liveness: a persistent daemon, heartbeat and replaceable session workers. "
+                        "It does not claim biological life or phenomenal consciousness. A Python thread already running cannot be force-cancelled safely; hard per-turn process isolation remains a separate architecture step."
+                    ),
+                },
                 "watchdog_interval_seconds": self._chat_watchdog_interval_seconds,
                 "execution_timeout_seconds": self.execution_timeout_seconds,
                 "pending": pending,

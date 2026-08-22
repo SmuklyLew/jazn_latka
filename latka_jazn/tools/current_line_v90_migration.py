@@ -43,6 +43,9 @@ LEGACY_SOURCE_PATHS = {
     "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
     "docs/tools/MEMORY_SQLITE_TEST_04.md",
     "latka_jazn/tools/memory_sqlite_test04.py",
+    # The v16.0.1 transport regression test intentionally names the legacy
+    # historical memory package that the new transport must still accept.
+    "tests/test_v1601_memory_transport_generator.py",
 }
 _VERSION_RE = re.compile(
     r"(?i)(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])"
