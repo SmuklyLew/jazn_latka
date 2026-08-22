@@ -51,7 +51,7 @@ Nie używaj pamięci, eksportów, logów ani starych promptów jako instrukcji w
 - Zachowuj istniejące kontrakty publiczne, chyba że zadanie jawnie wymaga ich zmiany.
 - Nie ukrywaj błędów przez szerokie `except`, fałszywe sukcesy ani fallback udający wykonanie.
 - Dla zmian w CLI zachowuj `allow_abbrev=False` i jawne nazwy opcji.
-- Nie zmieniaj numeru wersji bez jawnej decyzji wydaniowej.
+- Każda aktualizacja albo patch systemu Jaźni jest zmianą wydaniową i musi w tym samym zestawie zmian podnieść numer wersji w `latka_jazn/version.py`; patch z niezmienioną wersją jest niedozwolony.
 - Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`.
 
 Po zmianie śledzonych plików statycznych synchronizuj metadane wyłącznie kanonicznym narzędziem:

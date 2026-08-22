@@ -65,6 +65,8 @@ Przed modyfikacją:
 3. utwórz bezpieczny punkt przywracania;
 4. nie nadpisuj działającego runtime ani danych użytkownika.
 
+Każda aktualizacja albo patch systemu Jaźni musi podnieść numer wersji w kanonicznym źródle `latka_jazn/version.py` w tej samej zmianie. Nie odkładaj bumpu wersji na osobny późniejszy commit i nie publikuj patcha systemowego pod niezmienioną wersją.
+
 Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych. Job `manifest_sync` w workflow `release-hardening` może synchronizować je na dozwolonych branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` po otwarciu PR do `master`.
 
 Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia.

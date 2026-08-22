@@ -168,13 +168,41 @@ def verify_memory_package_manifest(
                         "error": f"{type(exc).__name__}: {exc}",
                     })
             member_limit = int(payload.get("package_member_limit_bytes") or 0)
+            raw_member_limit = int(payload.get("raw_segment_member_limit_bytes") or member_limit)
+            sqlite_member_limit = int(payload.get("sqlite_snapshot_member_limit_bytes") or member_limit)
             if member_limit < 1024 * 1024:
                 errors.append({"code": "memory_package_member_limit_invalid", "actual": member_limit})
-            elif any(
+            if raw_member_limit < 1024 * 1024 or raw_member_limit > member_limit:
+                errors.append({
+                    "code": "memory_raw_segment_member_limit_invalid",
+                    "actual": raw_member_limit,
+                    "package_member_limit_bytes": member_limit,
+                })
+            if sqlite_member_limit < 1024 * 1024 or sqlite_member_limit > member_limit:
+                errors.append({
+                    "code": "memory_sqlite_snapshot_member_limit_invalid",
+                    "actual": sqlite_member_limit,
+                    "package_member_limit_bytes": member_limit,
+                })
+            if member_limit >= 1024 * 1024 and any(
                 isinstance(item, dict) and int(item.get("size_bytes") or 0) > member_limit
                 for item in files
             ):
                 errors.append({"code": "memory_package_member_limit_exceeded_by_manifest"})
+            if raw_member_limit >= 1024 * 1024 and any(
+                isinstance(item, dict)
+                and str(item.get("classification") or "") == "memory_raw_segment"
+                and int(item.get("size_bytes") or 0) > raw_member_limit
+                for item in files
+            ):
+                errors.append({"code": "memory_raw_segment_member_limit_exceeded_by_manifest"})
+            if sqlite_member_limit >= 1024 * 1024 and any(
+                isinstance(item, dict)
+                and str(item.get("classification") or "") == "memory_sqlite_snapshot"
+                and int(item.get("size_bytes") or 0) > sqlite_member_limit
+                for item in files
+            ):
+                errors.append({"code": "memory_sqlite_snapshot_member_limit_exceeded_by_manifest"})
     elif schema == MEMORY_MANIFEST_SCHEMA_V1:
         if sqlite_paths: warnings.append({"code": "legacy_memory_sqlite_snapshot_completeness_unverifiable", "policy": "quick_check_verified_but_original_wal_completeness_unknown"})
         for relative in sorted(sqlite_paths):

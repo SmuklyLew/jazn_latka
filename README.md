@@ -45,7 +45,7 @@ użytkownik
 → adapter modelu albo host bridge
 → truth gate i walidator odpowiedzi
 → final_visible_text
-→ commit trwałej ciągłości sesji po zaakceptowanej finalizacji
+→ commit trwałej ciągłości sesji po zaakceptowanej finalizacji widocznej odpowiedzi
 ```
 
 Każda warstwa jest osobno audytowana. Aktywacja runtime rozdziela folder, wersję, manifest, marker, PID, endpoint, heartbeat, czas, pamięć, model, narzędzia i voice.
@@ -158,6 +158,43 @@ zmaterializowany bezpośrednio pod `workspace_runtime`, jego rodzic jest tym wor
 wieloplikowa. Historyczny `<active_root>/workspace_runtime` jest przy starcie/bootstrapie migrowany poza
 wersjonowany kod bez nadpisywania istniejącego stanu kanonicznego. `workspace_runtime` nie jest częścią
 paczki systemowej ani memory; pamięć SQLite i `memory/` pozostają oddzielnym trwałym magazynem.
+
+### Paczki SYSTEM / SYSTEM + PAMIĘĆ / PAMIĘĆ
+
+`tools/jazn_pack_generator.py` pokazuje trzy kanoniczne tryby operatora:
+
+- `SYSTEM` — jedna paczka kodu/systemu bez `memory/` i bez `workspace_runtime/`;
+- `SYSTEM + PAMIĘĆ` — dwa niezależne zestawy transportowe: osobny `system.zip` i osobny `memory.zip`;
+- `PAMIĘĆ` — tylko niezależna paczka `profile=memory`.
+
+Historyczny profil CLI `combined` pozostaje wyłącznie dla zgodności wstecznej i nie jest głównym wyborem UI. Nowe paczki pamięci używają manifestu v3: duże JSONL-e są logicznie segmentowane przed ZIP-em, a SQLite jest pakowany jako spójny snapshot wykonany przez SQLite Online Backup API. Plik SQLite nigdy nie jest dzielony binarnie; jeżeli kompletny snapshot przekroczy limit transportowy, generator zatrzymuje pakowanie i wymaga shardowania/rollover bazy.
+
+Starszą paczkę pamięci, która ma wielki pojedynczy wpis i nie przechodzi obecnych limitów ZIP, można bezpiecznie przepakować do transportu v3 bez obniżania bram bezpieczeństwa:
+
+```powershell
+python -X utf8 run.py memory-repack-legacy `
+  --parts-dir D:\paczki\memory-legacy `
+  --output-dir D:\paczki\memory-v3 `
+  --json
+```
+
+Osobną paczkę pamięci można następnie dołączyć lokalnie:
+
+```powershell
+python -X utf8 run.py memory-attach --root . --parts-dir D:\paczki\memory-v3 --json
+```
+
+albo później z prywatnego Cloudflare R2:
+
+```powershell
+python -X utf8 run.py memory-attach --root . `
+  --r2-prefix snapshots/current `
+  --r2-bucket jazn-private-memory `
+  --r2-endpoint https://<ACCOUNT_ID>.r2.cloudflarestorage.com `
+  --json
+```
+
+R2 jest tylko magazynem/transportem. Pobrany sidecar i wszystkie zadeklarowane części są lokalnie weryfikowane pod względem rozmiaru i SHA-256, a następnie przechodzą ten sam CRC, ZIP safety, manifest memory, SQLite integrity, backup i truth gates co paczka podana przez `--parts-dir`. Zwykła praca runtime nie wymaga dostępności Cloudflare.
 
 ## Walidacja dużej pamięci
 

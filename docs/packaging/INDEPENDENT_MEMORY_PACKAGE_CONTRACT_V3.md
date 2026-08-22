@@ -10,8 +10,10 @@ Schema: `jazn_memory_package_manifest/v3`.
 
 - Memory packages are data transports and never become `active_root`.
 - Runtime version recorded in a standalone memory package is provenance, not a strict compatibility equality check.
-- Each SQLite shard in the package is a complete SQLite database. A binary fragment of a `.sqlite3` file is not a usable shard.
-- Each ZIP member is bounded by the configured package-member safety limit.
+- Each SQLite shard in the package is a complete point-in-time SQLite database produced through the SQLite Online Backup API. A binary fragment of a `.sqlite3` file is not a usable shard.
+- SQLite snapshots have a dedicated transport-member limit (default 1 GiB). Exceeding it fails closed and requires shard/rollover; it never enables binary splitting of the database.
+- Raw JSONL segments have their own bounded member limit (default 480 MiB), below the general ZIP safety ceiling.
+- Each ZIP member is still bounded by the global package-member safety limit.
 - Large raw JSONL streams are logically segmented before ZIP creation.
 - Binary `.001/.002/...` split parts may be created only after the logical ZIP is complete and are only upload transport fragments.
 - Attach verifies the manifest in staging and reconstructs segmented raw sources before activation.
@@ -31,7 +33,18 @@ Reconstruction concatenates segment bytes in order into a temporary file, verifi
 
 ## Backward compatibility
 
-The reader continues to recognize legacy v1/v2 manifests according to their historical truth boundaries. New memory exports use v3. Existing security limits are not relaxed to accept oversized legacy members; a legacy archive with an oversized raw member must be re-exported with logical segmentation.
+The reader continues to recognize legacy v1/v2 manifests according to their historical truth boundaries. New memory exports use v3. Existing security limits are not relaxed to accept oversized legacy members. Such a package must either be re-exported with logical segmentation or migrated with `run.py memory-repack-legacy`, which verifies the legacy package set before transforming raw JSONL and SQLite into v3-safe transport members.
+
+## Transport sources
+
+A standalone v3 memory package may enter `memory-attach` from either:
+
+1. a local directory containing the package sidecar and all declared ZIP parts; or
+2. a private Cloudflare R2 prefix exposed through the S3-compatible API.
+
+The R2 path is not a second activation mechanism. The client lists a flat package-set prefix, requires exactly one `profile=memory` sidecar, streams only the sidecar-declared objects into local staging, and checks declared object sizes and SHA-256 while downloading. The staged package then enters the same canonical local verification and activation path as `--parts-dir`: package-part SHA, ZIP CRC/resource/path checks, exact extracted tree, memory manifest, SQLite integrity, raw-segment reconstruction, previous-memory backup and transactional-memory initialization. Cloud availability therefore never becomes a precondition for an already installed local runtime.
+
+The memory sidecar advertises `cloud_attach_compatible=true`, `memory_transport_contract=jazn_memory_package_transport/v1`, and a flat `s3_compatible` object layout. Credentials are not stored in the package.
 
 ## ChatGPT transfer sequence
 

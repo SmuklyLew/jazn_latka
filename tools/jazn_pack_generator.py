@@ -17,6 +17,9 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from tools import _jazn_pack_generator_memory_v2 as _impl  # noqa: E402
+from tools._jazn_pack_generator_v1601_policy import apply as _apply_v1601_policy  # noqa: E402
+
+_apply_v1601_policy(_impl)
 
 # Functions defined in the implementation use its module globals. Make reports
 # keep the canonical public tool filename rather than the private module name.

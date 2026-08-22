@@ -111,10 +111,21 @@ Nie wymagaj ani nie twórz `VERSION.txt` lub `MANIFEST_CURRENT.json`. Brak `memo
 
 Jeżeli systemowy `active_root` jest już zweryfikowany, a lokalnie dostępna jest osobna paczka profilu `memory`, nie porównuj jej numeru wydania z numerem systemu jako warunku użycia. Paczka pamięci ma własny kontrakt transportowy:
 
-- `jazn_memory_package_manifest/v2` używa `memory_format_version` i `compatibility.contract`; `created_with_runtime` jest wyłącznie proweniencją;
+- `jazn_memory_package_manifest/v3` jest bieżącym kontraktem transportowym: używa `memory_format_version`, `compatibility.contract`, logicznego segmentowania dużych JSONL-i i kompletnych snapshotów SQLite; `created_with_runtime` jest wyłącznie proweniencją;
+- `jazn_memory_package_manifest/v2` pozostaje obsługiwanym kontraktem zgodnościowym;
 - istniejący `jazn_memory_package_manifest/v1` pozostaje zgodnościowym źródłem recovery; różnica jego `runtime_version` jest dla osobnej paczki ostrzeżeniem, nie automatycznym błędem;
 - profil `combined` zachowuje ścisłe historyczne dopasowanie v1, ponieważ system i pamięć są jednym artefaktem;
 - sama paczka `memory` nigdy nie staje się `active_root` i nie potwierdza aktywnej Jaźni.
+
+Jeżeli starsza paczka pamięci zawiera pojedynczy wpis przekraczający bieżące limity bezpieczeństwa (np. wielogigabajtowy JSONL), nie zwiększaj globalnego limitu ZIP i nie rozpakowuj jej ręcznie do aktywnego `memory/`. Najpierw wykonaj zweryfikowaną migrację transportu do v3:
+
+```bash
+python -X utf8 run.py memory-repack-legacy \
+  --parts-dir <LEGACY_MEMORY_PACKAGE_DIR> \
+  --output-dir <NEW_MEMORY_PACKAGE_DIR> --json
+```
+
+Migrator weryfikuje sidecar i SHA części źródłowych, segmentuje JSONL po pełnych liniach bez zmiany bajtów oraz tworzy kompletne snapshoty SQLite przez Online Backup API. Wynik nadal jest nieaktywną paczką `profile=memory`; dopiero `memory-attach` może ją promować do zweryfikowanego systemowego rootu.
 
 Przed dołączeniem zatrzymaj daemon dla tego root. Następnie użyj kanonicznej komendy:
 
@@ -122,7 +133,17 @@ Przed dołączeniem zatrzymaj daemon dla tego root. Następnie użyj kanonicznej
 python -X utf8 run.py memory-attach --root <VERIFIED_SYSTEM_ROOT> --parts-dir <LOCAL_PACKAGE_DIR> --json
 ```
 
-Jeżeli w katalogu znajduje się dokładnie jedna paczka o sidecarze `profile=memory`, loader wybiera ją nawet wtedy, gdy obok leży paczka systemowa. Przy kilku paczkach memory podaj `--zip-name`. `memory-attach` musi zweryfikować sidecar, komplet części, SHA-256, CRC, bezpieczne ścieżki ZIP, manifest pamięci i SQLite; wcześniejsze `memory/` zachowuje jako backup pod `workspace_runtime/memory_attach_backups/`.
+Alternatywnie paczka może być pobrana z prywatnego Cloudflare R2 przez zgodny interfejs S3. R2 jest wyłącznie źródłem transportowym: obiekty są najpierw materializowane do lokalnego stagingu i dopiero potem przechodzą dokładnie ten sam pipeline `memory-attach` co lokalny ZIP:
+
+```bash
+python -X utf8 run.py memory-attach --root <VERIFIED_SYSTEM_ROOT> \
+  --r2-prefix <PRIVATE_R2_PREFIX> --r2-bucket <BUCKET> \
+  --r2-endpoint https://<ACCOUNT_ID>.r2.cloudflarestorage.com --json
+```
+
+Endpoint można także podać przez `JAZN_MEMORY_CLOUD_S3_ENDPOINT` albo `JAZN_MEMORY_CLOUD_R2_ACCOUNT_ID`, a bucket przez `JAZN_MEMORY_CLOUD_S3_BUCKET`. Uwierzytelnienie pozostaje po stronie klienta S3; nie wolno traktować samego pobrania z R2 jako dowodu integralności ani aktywnej Jaźni.
+
+Jeżeli w katalogu znajduje się dokładnie jedna paczka o sidecarze `profile=memory`, loader wybiera ją nawet wtedy, gdy obok leży paczka systemowa. Przy kilku paczkach memory podaj `--zip-name`. `memory-attach` musi zweryfikować sidecar, komplet części, SHA-256, CRC, bezpieczne ścieżki ZIP, manifest pamięci i SQLite; wcześniejsze `memory/` zachowuje jako backup pod `workspace_runtime/memory_attach_backups/`. Duże surowe JSONL-e są rekonstruowane z logicznych segmentów dopiero po weryfikacji. SQLite w paczce musi pozostać kompletną bazą/snapshotem — nie wolno obchodzić limitów przez binarne cięcie pliku `.sqlite3`.
 
 Po udanym dołączeniu nie zakładaj jeszcze pełnej ciągłości. Sprawdź pamięć i odbuduj warstwy zależne od aktualnego runtime, gdy raport lub wake-state tego wymaga:
 

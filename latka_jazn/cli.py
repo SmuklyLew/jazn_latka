@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sqlite3
 from pathlib import Path
 import subprocess
 import sys
@@ -80,10 +81,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     child.add_argument("--no-start-daemon", action="store_true")
 
-    child = sub.add_parser("memory-attach", allow_abbrev=False)
+    child = sub.add_parser("memory-repack-legacy", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--parts-dir", type=Path, required=True)
+    child.add_argument("--output-dir", type=Path, required=True)
     child.add_argument("--zip-name")
+    child.add_argument("--output-name")
+    child.add_argument("--work-dir", type=Path)
+    child.add_argument("--raw-segment-target-mb", type=int, default=256)
+    child.add_argument("--raw-segment-max-mb", type=int, default=480)
+    child.add_argument("--sqlite-max-mb", type=int, default=1024)
+    child.add_argument("--compression-level", type=int, default=6)
+    child.add_argument("--dry-run", action="store_true")
+    child.add_argument("--force", action="store_true")
+
+    child = sub.add_parser("memory-attach", allow_abbrev=False)
+    _add_common(child)
+    source_group = child.add_mutually_exclusive_group(required=True)
+    source_group.add_argument("--parts-dir", type=Path, help="Folder lokalnej paczki profile=memory.")
+    source_group.add_argument("--r2-prefix", help="Prefiks obiektów paczki memory w prywatnym Cloudflare R2.")
+    child.add_argument("--zip-name")
+    child.add_argument("--r2-bucket", help="Nazwa bucketu R2; domyślnie JAZN_MEMORY_CLOUD_S3_BUCKET.")
+    child.add_argument("--r2-endpoint", help="Endpoint S3 R2; domyślnie JAZN_MEMORY_CLOUD_S3_ENDPOINT lub account id.")
+    child.add_argument("--r2-region", default="auto", help="Region S3-compatible; dla R2 używaj auto.")
     child.add_argument("--work-dir", type=Path)
     child.add_argument("--time-budget-seconds", type=float, default=25.0)
     child.add_argument("--no-crc", action="store_true")
@@ -269,7 +289,7 @@ def main(argv: list[str] | None = None) -> int:
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
-        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "model-status",
     }
@@ -301,6 +321,39 @@ def main(argv: list[str] | None = None) -> int:
         _emit(result.to_dict(), as_json=True)
         return int(result.exit_code)
 
+    if ns.command == "memory-repack-legacy":
+        from latka_jazn.packaging.memory_package_contract import (
+            LegacyMemoryRepackError, repack_legacy_memory_package,
+        )
+        import zipfile
+
+        try:
+            payload = repack_legacy_memory_package(
+                ns.parts_dir,
+                output_dir=ns.output_dir,
+                base_zip_name=ns.zip_name,
+                output_zip_name=ns.output_name,
+                work_dir=ns.work_dir,
+                raw_target_bytes=int(ns.raw_segment_target_mb) * 1024 * 1024,
+                raw_max_bytes=int(ns.raw_segment_max_mb) * 1024 * 1024,
+                sqlite_max_bytes=int(ns.sqlite_max_mb) * 1024 * 1024,
+                compression_level=int(ns.compression_level),
+                dry_run=bool(ns.dry_run),
+                force=bool(ns.force),
+            )
+            _emit(payload, as_json=True)
+            return 0
+        except (LegacyMemoryRepackError, FileNotFoundError, FileExistsError, PermissionError, OSError, sqlite3.Error, zipfile.BadZipFile, ValueError) as exc:
+            _emit(
+                {
+                    "ok": False,
+                    "state": "legacy_memory_repack_blocked",
+                    "error": {"type": type(exc).__name__, "detail": str(exc)},
+                },
+                as_json=True,
+            )
+            return 17
+
     if ns.command == "memory-attach":
         from latka_jazn.packaging.memory_package_contract import attach_memory_package
 
@@ -312,6 +365,10 @@ def main(argv: list[str] | None = None) -> int:
             time_budget_seconds=ns.time_budget_seconds,
             run_crc=not ns.no_crc,
             force_reextract=bool(ns.force_reextract),
+            r2_prefix=ns.r2_prefix,
+            r2_bucket=ns.r2_bucket,
+            r2_endpoint_url=ns.r2_endpoint,
+            r2_region_name=ns.r2_region,
         )
         _emit(result.to_dict(), as_json=True)
         return int(result.exit_code)
