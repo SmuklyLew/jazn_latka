@@ -9,7 +9,7 @@ import hashlib
 import json
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
-from latka_jazn.core.runtime_root import active_runtime_marker_path
+from latka_jazn.core.runtime_root import active_runtime_marker_path, migrate_legacy_runtime_workspace
 from latka_jazn.version import PACKAGE_VERSION
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 from latka_jazn.tools.active_extraction_cache import (
@@ -150,6 +150,12 @@ def normalize_runtime_contract_versions(
     root = Path(root).resolve()
     if progress is not None:
         progress(0, 100, "Wczytywanie aktywnej wersji runtime")
+    migration = None
+    if apply:
+        # A write-mode normalizer is also a migration boundary: consume the old
+        # per-version workspace first so normalization targets the one canonical
+        # host-level marker rather than silently leaving a legacy marker behind.
+        migration = migrate_legacy_runtime_workspace(root)
     package_version = read_package_version(root)
     results: list[NormalizationResult] = []
     total_files = max(1, len(TARGET_FILES))
@@ -190,10 +196,11 @@ def normalize_runtime_contract_versions(
         "active_cache_contract_version": active_cache_contract_version(package_version),
         "visible_runtime_preview_contract_version": visible_preview_contract_version(package_version=package_version),
         "applied": apply,
+        "runtime_workspace_migration": migration,
         "package_integrity_manifest_sha256": manifest_sha,
         "marker_manifest_sha256_update": marker_sha_update,
         "results": [item.to_dict() for item in results],
-        "truth_boundary": "Normalizator poprawia tylko aktywne markery/kontrakty bieżącego folderu. Nie zmienia historycznych backupów ani plików w wyłączonym archiwum repozytorium.",
+        "truth_boundary": "Normalizator poprawia tylko aktywne markery/kontrakty bieżącego runtime i migruje historyczny per-version workspace wyłącznie w trybie zapisu. Nie zmienia historycznych backupów ani plików w wyłączonym archiwum repozytorium.",
     }
 
 
