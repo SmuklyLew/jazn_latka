@@ -1,4 +1,4 @@
-# Single canonical runtime workspace — v16.0.0
+# Single canonical runtime workspace — v16.0.1
 
 ## Cel
 
@@ -15,7 +15,7 @@ stan procesu. `workspace_runtime` jest dlatego stanem **hosta**, a nie części�
 │   ├── turn_checkpoints/
 │   ├── chatgpt_host_bridge/
 │   └── ...
-├── jazn_latka_v16.0.0/
+├── jazn_latka_v16.0.1/
 └── jazn_latka_vNext/
 ```
 
@@ -36,9 +36,16 @@ Historyczny `<active_root>/workspace_runtime` jest jednokierunkowo przenoszony d
 
 ## Granica pakowania
 
-`workspace_runtime` nie jest częścią paczki `system`, `memory` ani `combined`. Paczka pamięci zawiera trwałe
+`workspace_runtime` nie jest częścią paczki `system`, `memory` ani historycznego `combined`. Paczka pamięci zawiera trwałe
 dane `memory/`, a host-level stan procesu pozostaje na hoście. Dzięki temu upgrade kodu nie kopiuje starych
-PID-ów, markerów, heartbeatów ani cache do kolejnej wersji.
+PID-ów, markerów, heartbeatów ani cache do kolejnej wersji. Kanoniczny generator udostępnia operatorowi trzy
+tryby: `system`, `dual` (SYSTEM + PAMIĘĆ jako dwa osobne zestawy ZIP) oraz `memory`; `combined` pozostaje tylko
+zgodnością CLI.
+
+Pamięć może zostać dołączona po bootstrapie systemu z lokalnego zestawu ZIP albo z prywatnego prefiksu
+Cloudflare R2. Chmura nie staje się `active_root` ani backendem wymaganym do rozmowy: paczka z R2 jest najpierw
+strumieniowo materializowana w `workspace_runtime/memory_attach_sources/`, weryfikowana i dopiero wtedy
+promowana przez ten sam `memory-attach`, który obsługuje lokalne pliki.
 
 ## Rozbudowa poznawcza / psychologiczna
 

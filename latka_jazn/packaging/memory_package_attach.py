@@ -23,6 +23,7 @@ from latka_jazn.packaging.split_zip_package import (
 )
 from latka_jazn.tools.active_extraction_cache import write_active_runtime_marker
 from .memory_package_manifest import verify_memory_package_manifest
+from .memory_package_source import MemoryPackageSourceError, materialize_r2_memory_package
 from .memory_raw_segmentation import RawJsonlSegmenter
 from .memory_package_types import (
     MEMORY_ATTACH_MARKER_PATH, MEMORY_ATTACH_SCHEMA_VERSION, MEMORY_MANIFEST_SCHEMA_V1, MEMORY_MANIFEST_SCHEMA_V3, MemoryAttachResult, TRUTH_BOUNDARY,
@@ -55,14 +56,23 @@ def _memory_only(root: Path) -> tuple[bool, list[str]]:
 
 
 def attach_memory_package(
-    runtime_root: Path, *, parts_dir: Path, base_zip_name: str | None = None,
+    runtime_root: Path, *, parts_dir: Path | None = None, base_zip_name: str | None = None,
     work_dir: Path | None = None, time_budget_seconds: float | None = 25.0,
     run_crc: bool = True, force_reextract: bool = False,
+    r2_prefix: str | None = None, r2_bucket: str | None = None,
+    r2_endpoint_url: str | None = None, r2_region_name: str = "auto",
+    r2_client: Any | None = None,
 ) -> MemoryAttachResult:
-    runtime_root = Path(runtime_root).expanduser().resolve(); parts_dir = Path(parts_dir).expanduser().resolve()
+    runtime_root = Path(runtime_root).expanduser().resolve()
     workspace = workspace_runtime_path(runtime_root)
     work_dir = Path(work_dir).expanduser().resolve() if work_dir else workspace / "memory_attach"
-    report: dict[str, Any] = {"runtime_root": str(runtime_root), "parts_dir": str(parts_dir), "work_dir": str(work_dir), "started_at_epoch": time.time()}
+    report: dict[str, Any] = {
+        "runtime_root": str(runtime_root),
+        "parts_dir": str(Path(parts_dir).expanduser().resolve()) if parts_dir is not None else None,
+        "r2_prefix": r2_prefix,
+        "work_dir": str(work_dir),
+        "started_at_epoch": time.time(),
+    }
     try:
         preflight = runtime_preflight(runtime_root); report["runtime_preflight"] = preflight.to_dict()
         if not (preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok):
@@ -70,6 +80,33 @@ def attach_memory_package(
         daemon = status_daemon(JaznConfig(root=runtime_root)); report["daemon_status_before"] = daemon
         if daemon.get("active_state") in {"active_trusted", "active_degraded"}:
             return MemoryAttachResult(False, "runtime_active_attach_blocked", str(runtime_root), report, exit_code=12)
+        local_requested = parts_dir is not None
+        cloud_requested = bool(str(r2_prefix or "").strip())
+        if local_requested == cloud_requested:
+            return MemoryAttachResult(False, "memory_source_invalid", str(runtime_root), report, exit_code=14)
+        if cloud_requested:
+            cloud_stage = workspace / "memory_attach_sources" / "r2" / "current"
+            _safe_remove_tree(cloud_stage)
+            materialized = materialize_r2_memory_package(
+                runtime_root,
+                key_prefix=str(r2_prefix),
+                bucket=r2_bucket,
+                endpoint_url=r2_endpoint_url,
+                region_name=r2_region_name,
+                work_dir=cloud_stage,
+                client=r2_client,
+            )
+            parts_dir = materialized.parts_dir
+            report["memory_package_source"] = materialized.report
+            report["parts_dir"] = str(parts_dir)
+        else:
+            assert parts_dir is not None
+            parts_dir = Path(parts_dir).expanduser().resolve()
+            report["memory_package_source"] = {
+                "source_kind": "local_directory",
+                "parts_dir": str(parts_dir),
+                "truth_boundary": "Local package bytes still require the complete memory attach verification pipeline.",
+            }
         zip_name = _infer_memory_base_zip_name(parts_dir, base_zip_name); report["base_zip_name"] = zip_name
         package_set = load_package_set_metadata(parts_dir, zip_name); report["package_set"] = package_set
         if package_set.get("source") != "package.json" or str(package_set.get("profile") or "").lower() != "memory":
@@ -175,6 +212,7 @@ def attach_memory_package(
         marker_path = runtime_root / MEMORY_ATTACH_MARKER_PATH; write_json_atomic(marker_path, marker)
         report.update({"memory_attach_marker": marker, "memory_attach_marker_path": str(marker_path), "active_runtime_marker": write_active_runtime_marker(runtime_root, action="chatgpt_memory_attach_verified")})
         return MemoryAttachResult(True, "memory_attached_inactive", str(runtime_root), report, exit_code=0)
+    except MemoryPackageSourceError as exc: code, etype, detail = "memory_source_materialization_failed", type(exc).__name__, str(exc)
     except PermissionError as exc: code, etype, detail = "memory_attach_path_unwritable", type(exc).__name__, str(exc)
     except FileNotFoundError as exc: code, etype, detail = "memory_package_source_missing", type(exc).__name__, str(exc)
     except ValueError as exc: code, etype, detail = "memory_package_contract_invalid", type(exc).__name__, str(exc)

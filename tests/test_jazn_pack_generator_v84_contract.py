@@ -103,7 +103,7 @@ def test_v83_menu_and_responsive_contract(tmp_path: Path) -> None:
 
     rows = generator.main_menu_rows(state)
     assert rows[:3] == [
-        "Profil: [SYSTEM + PAMIĘĆ (dual)]",
+        "Profil: [SYSTEM + PAMIĘĆ (2 OSOBNE ZIP-y)]",
         "Pakuj teraz",
         "Pokaż kanoniczny plan",
     ]
