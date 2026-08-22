@@ -82,6 +82,7 @@ def test_host_finalization_advances_durable_task_state(tmp_path: Path, monkeypat
     assert result["session_continuity_persistence"]["saved"] is True
     reloaded = RuntimeSessionStateStore(tmp_path).load_or_create(session_id="session-v154", source_client="test")
     assert reloaded.last_user_text == "Zgadzam się. Zacznij teraz."
+    assert reloaded.last_visible_text is not None
     assert reloaded.last_visible_text.startswith(HEADER)
     assert reloaded.last_intent == "self_memory_recall_request"
     assert reloaded.last_route == "self_memory_recall"
