@@ -94,8 +94,10 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
         database = Path(result["transactional_memory"]["install"]["database_path"])
         with MemoryTierStore(database) as store:
             stats = store.stats()
-            assert stats["memory_records"] == 2
-            assert stats["working_memory_index"] == 1
+            # Wake hydration contributes one source-grounded L1 working record before
+            # the turn creates its own working-memory and short-term records.
+            assert stats["memory_records"] == 3
+            assert stats["working_memory_index"] == 2
             assert stats["short_term_memory_index"] == 1
             assert stats["long_term_memory_index"] == 0
             assert stats["promotion_requests"] == 0

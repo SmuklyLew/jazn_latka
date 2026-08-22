@@ -13,7 +13,12 @@ from latka_jazn.core.module_responsibility_map import ModuleResponsibilityMap
 from latka_jazn.core.project_index import ProjectStartupIndexer
 from latka_jazn.core.runtime_daemon import daemon_auth_token_path, daemon_log_dir, daemon_pid_path
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
-from latka_jazn.core.runtime_root import runtime_state_path
+from latka_jazn.core.runtime_root import (
+    active_runtime_marker_path,
+    migrate_legacy_runtime_workspace,
+    runtime_state_path,
+    workspace_runtime_path,
+)
 from latka_jazn.core.turn_checkpoint_writer import TurnCheckpointWriter
 from latka_jazn.core.turn_trace_reader import TurnTraceReader
 from latka_jazn.model_adapters.openai_state_tracker import OpenAIStateTracker
@@ -95,3 +100,61 @@ def test_contract_normalizer_reads_and_writes_external_runtime_marker(
     assert '"version": "v1"' in normalized
     assert report["results"][1]["exists"] is True
     assert not (root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json").exists()
+
+
+def test_default_runtime_workspace_is_single_sibling_for_versioned_roots(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    root_a = tmp_path / "jazn_latka_v15.4.3.1"
+    root_b = tmp_path / "jazn_latka_v16.0.0"
+    root_a.mkdir()
+    root_b.mkdir()
+
+    expected = (tmp_path / "workspace_runtime").resolve()
+    assert workspace_runtime_path(root_a) == expected
+    assert workspace_runtime_path(root_b) == expected
+    assert active_runtime_marker_path(root_a) == expected / "JAZN_ACTIVE_RUNTIME.json"
+    assert active_runtime_marker_path(root_b) == expected / "JAZN_ACTIVE_RUNTIME.json"
+    assert not str(active_runtime_marker_path(root_a)).startswith(str(root_a.resolve()))
+    assert not str(active_runtime_marker_path(root_b)).startswith(str(root_b.resolve()))
+
+
+def test_runtime_root_materialized_inside_workspace_uses_parent_as_single_workspace(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    workspace = tmp_path / "workspace_runtime"
+    runtime = workspace / "jazn_latka_v16.0.0-live"
+    runtime.mkdir(parents=True)
+
+    assert workspace_runtime_path(runtime) == workspace.resolve()
+    assert active_runtime_marker_path(runtime) == workspace.resolve() / "JAZN_ACTIVE_RUNTIME.json"
+
+
+def test_legacy_per_version_workspace_is_migrated_without_overwriting_canonical_state(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    runtime = tmp_path / "jazn_latka_v15.4.3.1"
+    legacy = runtime / "workspace_runtime"
+    legacy.mkdir(parents=True)
+    (legacy / "runtime_session_state.json").write_text('{"legacy":true}\n', encoding="utf-8")
+    (legacy / "JAZN_ACTIVE_RUNTIME.json").write_text('{"active_root":"legacy"}\n', encoding="utf-8")
+    canonical = tmp_path / "workspace_runtime"
+    canonical.mkdir()
+    (canonical / "JAZN_ACTIVE_RUNTIME.json").write_text('{"active_root":"canonical"}\n', encoding="utf-8")
+
+    report = migrate_legacy_runtime_workspace(runtime)
+
+    assert report["ok"] is True
+    assert report["status"] == "migrated"
+    assert (canonical / "runtime_session_state.json").read_text(encoding="utf-8") == '{"legacy":true}\n'
+    assert (canonical / "JAZN_ACTIVE_RUNTIME.json").read_text(encoding="utf-8") == '{"active_root":"canonical"}\n'
+    archived = canonical / "legacy_workspace_imports" / runtime.name / "JAZN_ACTIVE_RUNTIME.json"
+    assert archived.is_file()
+    assert not legacy.exists()
+    assert (canonical / "runtime_workspace_migrations.jsonl").is_file()

@@ -11,7 +11,7 @@ V90_MIGRATION_TARGET_VERSION: Final[str] = "v" + ".".join(("15", "1", "0", "3", 
 V90_ARCHIVE_ROOT: Final[str] = ".archives/pre_v" + "_".join(("15", "1", "0", "3", "90"))
 LEGACY_MEMORY_SOURCE_VERSION: Final[str] = "v" + ".".join(("15", "0", "3", "222"))
 _VERSION_TOKEN_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?<![A-Za-z0-9])v?(?P<version>1[45](?:[._]\d+){2,6})(?![A-Za-z0-9])",
+    r"(?<![A-Za-z0-9])v?(?P<version>(?:1[4-9]|[2-9]\d)(?:[._]\d+){2,6})(?![A-Za-z0-9])",
     re.IGNORECASE,
 )
 

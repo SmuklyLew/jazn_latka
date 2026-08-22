@@ -150,9 +150,14 @@ wynik pozostaje `installed_inactive`; stan `active` wymaga osiągalnego procesu,
 endpointu, świeżego heartbeat oraz sprawnej pamięci. Brak zapisu, części paczki lub uprawnień daje
 ustrukturyzowany raport `bootstrap_blocked`, nigdy pozorny start.
 
-`JAZN_RUNTIME_WORKSPACE_DIR` przenosi stan techniczny (marker, PID, logi, checkpointy i cache)
-poza katalog kodu. Nie przenosi pamięci SQLite i `memory/`; pełna instalacja tylko do odczytu musi
-zostać najpierw zmaterializowana do zapisywalnego `active_root`.
+Stan techniczny runtime ma jeden kanoniczny katalog hosta `workspace_runtime`, wspólny dla kolejnych
+wersjonowanych `active_root`. Domyślnie jest to sibling katalogu runtime; jeżeli `active_root` został
+zmaterializowany bezpośrednio pod `workspace_runtime`, jego rodzic jest tym workspace. Zmienna
+`JAZN_RUNTIME_WORKSPACE_DIR` pozostaje jawnym override'em operatora. W tym katalogu znajduje się jeden
+`JAZN_ACTIVE_RUNTIME.json`, jeden bieżący PID i wskaźniki latest; historia checkpointów i audytu może być
+wieloplikowa. Historyczny `<active_root>/workspace_runtime` jest przy starcie/bootstrapie migrowany poza
+wersjonowany kod bez nadpisywania istniejącego stanu kanonicznego. `workspace_runtime` nie jest częścią
+paczki systemowej ani memory; pamięć SQLite i `memory/` pozostają oddzielnym trwałym magazynem.
 
 ## Walidacja dużej pamięci
 
