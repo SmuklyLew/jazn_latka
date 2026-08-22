@@ -1,0 +1,66 @@
+{
+  "schema_version": "memory_rebuild_stage4_validation/v1",
+  "script_sha256": "9b6585f66be94753f28d074bb31597803678229282a8c71742470ee0e7cae3b4",
+  "script_lines": 1085,
+  "checks": {
+    "py_compile": "passed",
+    "existing_memory_rebuild_regression_suite": {
+      "passed": 33,
+      "failed": 0,
+      "tests": [
+        "test_memory_rebuild_v24_cli.py",
+        "test_memory_rebuild_app_cli.py",
+        "test_memory_rebuild_v24_unified.py",
+        "test_memory_rebuild_app.py",
+        "test_memory_rebuild_tool.py",
+        "test_memory_rebuild_app_usability.py"
+      ]
+    },
+    "functional_stage4_smoke": {
+      "synthetic_chat_conversations": 2,
+      "synthetic_chat_nodes": 4,
+      "actual_uploaded_journal_raw_entries": 596,
+      "actual_uploaded_journal_canonical_entries": 533,
+      "actual_uploaded_music_analyses": 128,
+      "music_analyses_structured_rows": 128,
+      "journal_entries_after_journal_plus_music": 661,
+      "affective_observations_after_journal_plus_music": 649,
+      "test04_profile": "passed",
+      "full_unified_validation": "passed",
+      "stage4_extension_validation": "passed",
+      "import_conflicts": 0
+    },
+    "real_chatgpt_html": {
+      "source": "chatGPT-export-16.06.2025.html",
+      "pre_hardening_result": "RecursionError in chat_export_reader._structural_order",
+      "hardening": "iterative preorder traversal with explicit stack",
+      "post_hardening": {
+        "conversations": 21,
+        "nodes": 3829,
+        "fts_docs": 3270,
+        "test04_profile": "passed"
+      }
+    },
+    "idempotency_resume": {
+      "conversations_unchanged": true,
+      "music_analyses_unchanged": true,
+      "affective_observations_unchanged": true
+    },
+    "plan_no_write": {
+      "target_sha256_unchanged": true
+    },
+    "append_affect": {
+      "inserted": 1,
+      "journal_projection": "passed",
+      "post_write_validation": "passed"
+    },
+    "sync_runtime_smoke": {
+      "passed": true,
+      "source_types": [
+        "memory/raw/dziennik.json",
+        "memory/layered/*.jsonl"
+      ]
+    }
+  },
+  "truth_boundary": "Validation proves the tested launcher/workflow behavior on one real ChatGPT HTML export, synthetic chat input, and the uploaded journal/music-analysis files. It is not yet a full production import of every large HTML/JSON export."
+}
