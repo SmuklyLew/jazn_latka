@@ -13,6 +13,7 @@ from latka_jazn.core.package_integrity_manifest import (
     package_integrity_manifest_status,
     resolve_package_integrity_manifest,
 )
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.core.version_source import (
     read_runtime_version_from_version_py,
     read_version_metadata_from_version_py,
@@ -36,7 +37,6 @@ from latka_jazn.version import (
 def _runtime(tmp_path: Path, *, legacy_manifest: bool = False, legacy_version: bool = False) -> Path:
     root = tmp_path / "runtime"
     (root / "latka_jazn").mkdir(parents=True)
-    (root / "workspace_runtime").mkdir()
     (root / "latka_jazn/version.py").write_text(
         f"DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\n"
         f"PACKAGE_VERSION = {PACKAGE_VERSION!r}\n"
@@ -73,7 +73,8 @@ def _manifest_sha(root: Path) -> str:
 
 
 def _write_marker(root: Path, **extra: object) -> Path:
-    marker = root / "workspace_runtime/JAZN_ACTIVE_RUNTIME.json"
+    marker = active_runtime_marker_path(root)
+    marker.parent.mkdir(parents=True, exist_ok=True)
     payload = {"active_root": str(root.resolve()), "version": PACKAGE_VERSION_FULL, **extra}
     marker.write_text(json.dumps(payload), encoding="utf-8")
     return marker
