@@ -1,13 +1,13 @@
 {
-  "schema_version": "package_integrity_manifest/16.0.1",
-  "version": "16.0.1-single-canonical-runtime-workspace",
-  "runtime_version": "16.0.1-single-canonical-runtime-workspace",
-  "package_version": "16.0.1-single-canonical-runtime-workspace",
-  "generated_at_utc": "2026-08-22T20:25:09+00:00",
-  "updated_at_utc": "2026-08-22T20:25:09+00:00",
+  "schema_version": "package_integrity_manifest/16.0.2",
+  "version": "16.0.2-runtime-turn-liveness-hardening",
+  "runtime_version": "16.0.2-runtime-turn-liveness-hardening",
+  "package_version": "16.0.2-runtime-turn-liveness-hardening",
+  "generated_at_utc": "2026-08-22T21:58:44+00:00",
+  "updated_at_utc": "2026-08-22T21:58:44+00:00",
   "start_file": "run.py",
-  "file_count": 794,
-  "static_file_count": 794,
+  "file_count": 799,
+  "static_file_count": 799,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -298,6 +298,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/apply-v1602-runtime-turn-liveness.yml",
+      "size_bytes": 2660,
+      "sha256": "a15d70510f42af437b720efc603f5b04f195b82ad9893adf2cd62e4507a676d4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/cursor-windows-conpty.yml",
       "size_bytes": 1075,
       "sha256": "9351f1db87dc140c3d781a051699a7c4d5fc44945afa9faae50e9e5e2fb14729",
@@ -337,6 +346,42 @@
       "path": ".gitignore",
       "size_bytes": 2187,
       "sha256": "8559356b875c912efb0d8d8907a3461131aea0e78177a50c995663d0a0603d18",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".jazn_upgrade_transport/v1602-runtime-turn-liveness/TRIGGER",
+      "size_bytes": 21,
+      "sha256": "e44952aa1a6b673cbc0c2eaaa8705cdd8514d7d32177086191b09e967814cab7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".jazn_upgrade_transport/v1602-runtime-turn-liveness/chunk-00",
+      "size_bytes": 3000,
+      "sha256": "48c1fcf360cf09cfce2fe07648dd271d8997349d05fb53b11392123b20291ae9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".jazn_upgrade_transport/v1602-runtime-turn-liveness/chunk-01",
+      "size_bytes": 3000,
+      "sha256": "0624557b96aeb77dcf5ed11391c5f63074d241e7816593ceeb27330cd74e8c9d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".jazn_upgrade_transport/v1602-runtime-turn-liveness/chunk-02",
+      "size_bytes": 2496,
+      "sha256": "7571cf9fc64e3ec8a64bd7bb452386025dacf0e3a4b7d92ff5c9ab365e90f1ee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +443,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1300,
-      "sha256": "43280f4617132998fb7c1241fdb7682cd79e8ca834bf70487d043d6b2308f06d",
+      "size_bytes": 1291,
+      "sha256": "8c7e69a390d9c4999d4060ca8326a1dfaf81f96c93031cdc064266cf683b9378",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2792,8 +2837,8 @@
     },
     {
       "path": "latka_jazn/core/turn_response_policy.py",
-      "size_bytes": 6476,
-      "sha256": "2c4e5836ec10cbd40c1f647f484dd21129dd596f441c5754502c71e34288e8a4",
+      "size_bytes": 7136,
+      "sha256": "d0f33b2c542ec71015488d90a85b74602854d0e968a4b5607485478ef4c48b90",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5537,8 +5582,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 1105,
-      "sha256": "9e7012b2033a32a8b237bc92383ca1b81e43eaa51324cb95544ce096a9373611",
+      "size_bytes": 1102,
+      "sha256": "5ed887a8f298f5e6df6b519d96a8a7f8758614cb78d036e155570259af531346",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
