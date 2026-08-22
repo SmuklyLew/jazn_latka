@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from latka_jazn.core.clock import resolve_timezone
+from latka_jazn.core.runtime_root import workspace_runtime_path
 import hashlib
 import json
 import os
@@ -97,7 +98,7 @@ class SessionContinuityManager:
                 "exact_turns": "memory/raw/conversation_turns.jsonl zapisuje pełne tury rozmowy append-only",
                 "exact_events": "memory/raw/runtime_events.jsonl zapisuje pełne zdarzenia runtime append-only",
                 "selected_memory": "memory/layered/*.jsonl i dziennik zapisują wybrane/ważne warstwy pamięci",
-                "version_updates": "aktualizacje mają dołączać ten indeks oraz pliki memory/ i workspace_runtime/ w eksporcie full/memory",
+                "version_updates": "aktualizacje przenoszą memory/ jako dane trwałe; host-level workspace_runtime pozostaje poza paczką i zachowuje stan procesu między wersjami",
                 "no_summary_rule": "indeks nie streszcza treści rozmów; używa liczników i hashy jako dowodów ciągłości",
                 "fast_index_rule": "w normalnej turze duże JSONL/TXT/JSON nie są skanowane liniowo; pełny recount należy uruchamiać tylko jawnie w audycie deep",
             },
@@ -149,7 +150,11 @@ class SessionContinuityManager:
             os.fsync(f.fileno())
 
     def _file_state(self, rel: str) -> ContinuityFileState:
-        path = self.root / rel
+        parts = Path(rel).parts
+        if parts and parts[0].casefold() == "workspace_runtime":
+            path = workspace_runtime_path(self.root).joinpath(*parts[1:])
+        else:
+            path = self.root / rel
         if not path.exists() or not path.is_file():
             return ContinuityFileState(rel, False, 0, None, None, None, "missing", None)
         size = path.stat().st_size

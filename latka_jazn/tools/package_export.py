@@ -237,7 +237,7 @@ def _iter_files(root: Path, mode: str, output_zip: Path):
             continue
         if mode == "system" and rel.startswith(SYSTEM_EXCLUDE_PREFIXES):
             continue
-        if mode == "memory" and not (rel.startswith("memory/") or rel.startswith("workspace_runtime/")):
+        if mode == "memory" and not rel.startswith("memory/"):
             continue
         if mode == "nlp" and not (rel.startswith(NLP_INCLUDE_PREFIXES) or rel in NLP_INCLUDE_EXACT):
             continue
@@ -452,7 +452,7 @@ def export_package(root: Path, mode: str, output_zip: Path | None = None) -> Pac
     if mode in {"memory", "full"}:
         continuity_index = root / "memory" / "raw" / "session_continuity_index.json"
         if continuity_index.exists():
-            notes.append("Dołączono memory/raw/session_continuity_index.json oraz memory/layered/continuity.jsonl, jeśli istnieje.")
+            notes.append("Dołączono memory/raw/session_continuity_index.json oraz memory/layered/continuity.jsonl, jeśli istnieje; host-level workspace_runtime pozostaje poza paczką.")
         raw_chat = root / "memory" / "raw" / "chat.html"
         if raw_chat.exists():
             notes.append(f"Dołączono jawny memory/raw/chat.html ({raw_chat.stat().st_size} B).")

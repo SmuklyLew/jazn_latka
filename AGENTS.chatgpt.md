@@ -48,7 +48,7 @@ Pytania rozmowne o obecność, ciągłość lub tożsamość przekazuj do runtim
 
 ## 3. Odkrycie `active_root`
 
-1. Odszukaj `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` w dostępnych lokalizacjach roboczych.
+1. Odszukaj **jeden kanoniczny host-level** `workspace_runtime/JAZN_ACTIVE_RUNTIME.json`. Kolejne wersjonowane `active_root` nie mają własnych równoległych markerów.
 2. Jeżeli marker istnieje, sprawdź:
    - bezwzględny `active_root`;
    - `latka_jazn/version.py`;
@@ -74,7 +74,7 @@ Przed rozpakowaniem:
 - zweryfikuj SHA-256 i pełny CRC ZIP;
 - odrzuć path traversal, ścieżki bezwzględne, symlinki i duplikaty wpisów.
 
-Rozpakuj do nowego, wersjonowanego folderu. Nigdy nie nadpisuj działającego runtime. Po rozpakowaniu sprawdź:
+Rozpakuj kod do nowego, wersjonowanego folderu. Nigdy nie nadpisuj działającego runtime. Mutable state pozostaje w jednym wspólnym host-level `workspace_runtime`; jeżeli wykryty zostanie historyczny `<active_root>/workspace_runtime`, loader migruje go do kanonicznego workspace przed zapisaniem nowego markera. Po rozpakowaniu sprawdź:
 
 - wersję wyłącznie z `latka_jazn/version.py`;
 - `PACKAGE_INTEGRITY_MANIFEST.json` jako jedyny manifest paczki;
@@ -99,9 +99,11 @@ stan mutable (`workspace_runtime`, marker, cache aktywacji). Błąd I/O ma zwró
 `--no-start-daemon` nigdy nie oznacza aktywacji: także z poprawną pamięcią wynik ma pozostać
 `installed_inactive`. `active` wolno przyjąć dopiero po potwierdzeniu żywego endpointu Daemona i zdrowia SQLite.
 
-Jeżeli kod jest zamontowany tylko do odczytu, `JAZN_RUNTIME_WORKSPACE_DIR` może przenieść PID, marker, logi,
-checkpointy i cache do zapisywalnego katalogu. Nie przenosi jednak `memory/`. Pełny start z zapisem pamięci
-wymaga zapisywalnego `active_root`, dlatego w takim środowisku użyj materializacji do nowego katalogu.
+`workspace_runtime` jest host-level singletonem i nie należy do konkretnej wersji kodu. `JAZN_RUNTIME_WORKSPACE_DIR`
+może jawnie wskazać jego lokalizację, a bez override'u loader wybiera wspólny katalog poza wersjonowanym
+`active_root`. Przenoszone są tam PID, marker, logi, checkpointy, cache i wskaźniki latest. Nie przenosi to
+`memory/`: pełny start z zapisem pamięci nadal wymaga zapisywalnego `active_root` albo osobno zaprojektowanego
+trwałego magazynu pamięci.
 
 Nie wymagaj ani nie twórz `VERSION.txt` lub `MANIFEST_CURRENT.json`. Brak `memory/` albo `workspace_runtime/` oznacza brak danych lub stanu, nie brak kodu.
 
