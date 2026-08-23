@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any, BinaryIO, Iterable, Mapping
+from typing import Any, IO, Iterable, Mapping
 import hashlib
 import json
 import os
@@ -226,7 +226,7 @@ class _IndependentVolumeWriter:
         self.compression_level = compression_level
         self.outputs: list[dict[str, Any]] = []
 
-    def write_stream(self, relative: str, source: BinaryIO) -> tuple[dict[str, Any], dict[str, Any]]:
+    def write_stream(self, relative: str, source: IO[bytes]) -> tuple[dict[str, Any], dict[str, Any]]:
         part_no = len(self.outputs) + 1
         filename = _volume_name(self.base_zip_name, part_no)
         path = self.root / filename
@@ -277,7 +277,7 @@ class _IndependentVolumeWriter:
         entry["classification"] = classification
         return entry
 
-    def open_segment(self, relative: str) -> tuple[zipfile.ZipFile, BinaryIO, Path, int]:
+    def open_segment(self, relative: str) -> tuple[zipfile.ZipFile, IO[bytes], Path, int]:
         part_no = len(self.outputs) + 1
         filename = _volume_name(self.base_zip_name, part_no)
         path = self.root / filename
@@ -292,7 +292,7 @@ class _IndependentVolumeWriter:
         target = archive.open(_zip_member_info(relative), "w", force_zip64=True)
         return archive, target, path, part_no
 
-    def close_segment(self, archive: zipfile.ZipFile, target: BinaryIO, path: Path, part_no: int) -> dict[str, Any]:
+    def close_segment(self, archive: zipfile.ZipFile, target: IO[bytes], path: Path, part_no: int) -> dict[str, Any]:
         target.close()
         archive.close()
         output = {
@@ -307,7 +307,7 @@ class _IndependentVolumeWriter:
 
 
 def _segment_jsonl_member(
-    source: BinaryIO,
+    source: IO[bytes],
     *,
     relative: str,
     writer: _IndependentVolumeWriter,
@@ -319,7 +319,7 @@ def _segment_jsonl_member(
     source_lines = 0
     segment_rows: list[dict[str, Any]] = []
     current_archive: zipfile.ZipFile | None = None
-    current_target: BinaryIO | None = None
+    current_target: IO[bytes] | None = None
     current_path: Path | None = None
     current_part_no = 0
     current_hash = hashlib.sha256()

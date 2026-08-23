@@ -513,6 +513,53 @@ def _prepare_chatgpt_daemon_presentation(
         or ""
     )
     raw_result = outer.get("result")
+    daemon_job = _as_dict(outer.get("daemon_job"))
+    daemon_job_result = _as_dict(daemon_job.get("result"))
+    terminal_error_code = str(
+        outer.get("error_code")
+        or daemon_job_result.get("error_code")
+        or ""
+    ).strip()
+    terminal_job_status = str(
+        outer.get("job_status")
+        or daemon_job.get("job_status")
+        or ""
+    ).strip()
+    if terminal_error_code == "execution_timeout" or terminal_job_status == "execution_timeout":
+        bridge_meta = _as_dict(outer.get("chat_bridge"))
+        bridge_meta.update({
+            "command": "--chat-gpt",
+            "canonical_command": "--chat-gpt",
+            "daemon_poll_path": True,
+            "daemon_request_id": normalized_request_id,
+        })
+        outer["chat_bridge"] = bridge_meta
+        outer["chatgpt_bridge"] = bridge_meta
+        timeout_seconds = (
+            outer.get("execution_timeout_seconds")
+            or daemon_job_result.get("execution_timeout_seconds")
+            or daemon_job.get("execution_timeout_seconds")
+        )
+        timeout_owner = outer.get("timeout_owner") or daemon_job_result.get("timeout_owner")
+        outer["chatgpt_host_bridge"] = {
+            "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
+            "runtime_version": str(outer.get("runtime_version") or PACKAGE_VERSION_FULL),
+            "phase": "host_diagnostic_required",
+            "status": "daemon_turn_execution_timeout",
+            "host_must_poll_runtime": False,
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "daemon_request_id": normalized_request_id,
+            "diagnostic_reason": "execution_timeout",
+            "execution_timeout_seconds": timeout_seconds,
+            "timeout_owner": timeout_owner,
+            "turn_telemetry": daemon_job.get("turn_telemetry"),
+            "truth_boundary": (
+                "Żywy daemon pozostał aktywny, ale bieżąca tura przekroczyła limit wykonania. "
+                "Host ma pokazać dokładną diagnozę timeoutu i nie może zamieniać jej na ogólne runtime_final_not_displayable ani imitować Łatki."
+            ),
+        }
+        return outer
     if outer.get("done") is True and isinstance(raw_result, dict):
         result = dict(raw_result)
         result["daemon_job"] = outer

@@ -30,6 +30,7 @@ APPROVED_LEGACY_SOURCE_PATHS = {
     "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
     "docs/tools/MEMORY_SQLITE_TEST_04.md",
     "latka_jazn/tools/memory_sqlite_test04.py",
+    "tests/test_v1601_memory_transport_generator.py",
 }
 APPROVED_HISTORICAL_POINTER_PATHS = {
     "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
@@ -95,7 +96,6 @@ def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> b
             "legacy-memory-root", "starszej pamięci", "starszego źródła", "baseline",
         )
     )
-
 
 
 def _line_is_historical_archive_pointer(path: str, line: str, raw_version: str) -> bool:
@@ -259,21 +259,27 @@ def run_audit(root: str | Path) -> CurrentLineArchiveAudit:
     )
 
 
-def main(argv: Iterable[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(allow_abbrev=False)
+def _cmd_audit(args: argparse.Namespace) -> int:
+    report = run_audit(Path(args.root))
+    payload = report.to_dict()
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(f"ok={report.ok} old_refs={report.active_old_reference_count} archive_issues={len(report.archive_issues)}")
+    return 0 if report.ok else 1
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="python -m latka_jazn.tools.current_line_archive_audit")
     parser.add_argument("--root", default=".")
     parser.add_argument("--json", action="store_true")
-    args = parser.parse_args(list(argv) if argv is not None else None)
-    report = run_audit(args.root)
-    if args.json:
-        print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(
-            f"ok={report.ok} package={report.package_version} "
-            f"active_old_refs={report.active_old_reference_count} "
-            f"archive_files={report.archive_file_count} issues={len(report.archive_issues)}"
-        )
-    return 0 if report.ok else 1
+    parser.set_defaults(func=_cmd_audit)
+    return parser
+
+
+def main(argv: Iterable[str] | None = None) -> int:
+    args = build_parser().parse_args(list(argv) if argv is not None else None)
+    return int(args.func(args))
 
 
 if __name__ == "__main__":
