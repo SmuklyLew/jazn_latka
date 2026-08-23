@@ -2527,6 +2527,36 @@ class JaznEngine:
             "turn_response_policy": response_policy.to_dict(),
         }
 
+    def _apply_cognitive_control_policy(
+        self,
+        envelope: CognitiveTurnEnvelope,
+        frame: dict[str, Any],
+        task_state: dict[str, Any],
+        response_policy: TurnResponsePolicy,
+        decision: dict[str, Any],
+    ) -> None:
+        cognitive_control = envelope.apply_cognitive_control(
+            task_state=task_state,
+            response_policy=response_policy.to_dict(),
+        )
+        response_policy.apply_cognitive_control(cognitive_control)
+        serialized_policy = response_policy.to_dict()
+        for target in (frame, envelope.cognitive_frame):
+            target["turn_response_policy"] = serialized_policy
+            target["cognitive_control_policy"] = dict(cognitive_control)
+        decision["turn_response_policy"] = serialized_policy
+        decision["cognitive_control_policy"] = dict(cognitive_control)
+        update_memory_context = getattr(self.runtime_memory, "update_current_context", None)
+        if callable(update_memory_context):
+            update_memory_context(
+                active_goal=str(task_state.get("task_key") or "").strip() or None,
+                cognitive_anchor_ids=tuple(
+                    str(item)
+                    for item in cognitive_control.get("salience_selected_node_ids") or []
+                    if str(item).strip()
+                ),
+            )
+
     def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
         """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
         ctx = dict(client_context or {})
@@ -2665,26 +2695,8 @@ class JaznEngine:
                 client_context=ctx,
             )
         )
-        cognitive_control = envelope.apply_cognitive_control(
-            task_state=current_dialogue_task_state,
-            response_policy=turn_response_policy.to_dict(),
-        )
-        turn_response_policy.apply_cognitive_control(cognitive_control)
-        for target in (frame, envelope.cognitive_frame):
-            target["turn_response_policy"] = turn_response_policy.to_dict()
-            target["cognitive_control_policy"] = dict(cognitive_control)
-        decision_dict["turn_response_policy"] = turn_response_policy.to_dict()
-        decision_dict["cognitive_control_policy"] = dict(cognitive_control)
-        update_memory_context = getattr(self.runtime_memory, "update_current_context", None)
-        if callable(update_memory_context):
-            update_memory_context(
-                active_goal=str(current_dialogue_task_state.get("task_key") or "").strip() or None,
-                cognitive_anchor_ids=tuple(
-                    str(item)
-                    for item in cognitive_control.get("salience_selected_node_ids") or []
-                    if str(item).strip()
-                ),
-            )
+        self._apply_cognitive_control_policy(
+            envelope, frame, current_dialogue_task_state, turn_response_policy, decision_dict)
         handler_context = self._build_route_handler_context(
             decision=decision,
             detected_intent=detected_dialogue_intent,

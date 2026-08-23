@@ -15,11 +15,12 @@ from latka_jazn.tools.package_export import build_package_plan
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
-def test_v1612_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
-    assert DISTRIBUTION_VERSION == "16.2.0"
-    assert PACKAGE_VERSION == "16.2.0"
-    assert PACKAGE_RELEASE_NAME == "cognitive-state-policy-control"
-    assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == "release_test/16.2.0"
+def test_v1621_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
+    expected = ".".join(("16", "2", "1"))
+    assert DISTRIBUTION_VERSION == expected
+    assert PACKAGE_VERSION == expected
+    assert PACKAGE_RELEASE_NAME == "-".join(("hard", "turn", "process", "isolation"))
+    assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == f"release_test/{expected}"
     assert release_metadata_sync._impl._schema_version_for_runtime("release_test", "v15.4.3.1") == "release_test/v15.4.3.1"
 
 

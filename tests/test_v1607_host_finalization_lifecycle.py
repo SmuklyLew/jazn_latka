@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from typing import TypedDict
 
 import pytest
 
@@ -124,7 +125,14 @@ def _phase_one(server: runtime_daemon.JaznDaemonServer, request_id: str = "reque
     return job
 
 
-def _binding(job: runtime_daemon.DaemonChatJob) -> dict[str, str]:
+class _HostJobBinding(TypedDict):
+    request_id: str
+    turn_id: str
+    trace_id: str
+    request_contract_hash: str
+
+
+def _binding(job: runtime_daemon.DaemonChatJob) -> _HostJobBinding:
     return {
         "request_id": job.request_id,
         "turn_id": str(job.host_turn_id),
@@ -385,6 +393,7 @@ def test_mcp_phase_two_completes_the_same_daemon_job(
                     terminal=terminal,
                 )
                 assert error is None and target is job
+                assert target is not None
                 return target.snapshot(include_result=False)
 
         import latka_jazn.core.engine as engine_module

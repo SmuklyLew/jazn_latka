@@ -44,8 +44,10 @@ from latka_jazn.core.clock import (
 )
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.turn_timeout import (
+    HardIsolatedRuntimeSessionWorker,
     RuntimeSessionWorker,
     RuntimeTurnTimeoutError,
+    RuntimeWorkerProcessError,
     runtime_turn_timeout_for_text,
 )
 from latka_jazn.core.turn_execution import TurnExecutionContext
@@ -86,6 +88,8 @@ DEFAULT_DAEMON_TRUSTED_TIME_HOLD_SECONDS = 120.0
 DAEMON_MAX_BODY_BYTES = 1_000_000
 DEFAULT_DAEMON_MAX_SESSIONS = 32
 DEFAULT_DAEMON_SESSION_IDLE_TTL_SECONDS = 3600.0
+DEFAULT_WORKER_PROCESS_CANCEL_GRACE_SECONDS = 0.5
+DEFAULT_WORKER_PROCESS_STARTUP_TIMEOUT_SECONDS = 30.0
 DAEMON_AUTH_HEADER = "X-JAZN-Daemon-Token"
 DAEMON_SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 DAEMON_SCHEMA_VERSION = schema_version("persistent_daemon_runtime", version=PACKAGE_VERSION_FULL)
@@ -727,7 +731,7 @@ class DaemonChatJob:
     host_finalization_reason: str | None = None
     host_finalization_attempt_count: int = 0
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
-    active_session_worker: RuntimeSessionWorker | None = field(default=None, repr=False)
+    active_session_worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
 
     def terminal(self) -> bool:
@@ -828,12 +832,44 @@ class JaznDaemonServer(ThreadingHTTPServer):
         heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
         session_factory: Callable[..., Any] = JaznRuntimeSession,
         execution_timeout_seconds: float | None = None,
+        hard_worker_process_isolation: bool | None = None,
     ) -> None:
         super().__init__(server_address, RequestHandlerClass)
         self.config = config
         self.marker_path = Path(marker_path)
         self.heartbeat_interval = float(heartbeat_interval)
         self._session_factory = session_factory
+        configured_process_isolation = bool(
+            getattr(config, "hard_worker_process_isolation", True)
+        )
+        self.hard_worker_process_isolation = bool(
+            configured_process_isolation
+            and (
+                session_factory is JaznRuntimeSession
+                if hard_worker_process_isolation is None
+                else hard_worker_process_isolation
+            )
+        )
+        self.worker_process_cancel_grace_seconds = max(
+            0.05,
+            float(
+                getattr(
+                    config,
+                    "worker_process_cancel_grace_seconds",
+                    DEFAULT_WORKER_PROCESS_CANCEL_GRACE_SECONDS,
+                )
+            ),
+        )
+        self.worker_process_startup_timeout_seconds = max(
+            1.0,
+            float(
+                getattr(
+                    config,
+                    "worker_process_startup_timeout_seconds",
+                    DEFAULT_WORKER_PROCESS_STARTUP_TIMEOUT_SECONDS,
+                )
+            ),
+        )
         # Persistent daemon turns have a separate hard execution budget from
         # one-shot/runtime-session calls.  The public daemon CLI already exposes
         # a 180 s per-turn budget; using the generic 45 s runtime default here was
@@ -842,7 +878,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             execution_timeout_seconds
             or getattr(config, "daemon_chat_execution_timeout_seconds", DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS)
         )
-        self.sessions: dict[str, RuntimeSessionWorker] = {}
+        self.sessions: dict[str, RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker] = {}
         bound_host, bound_port = self.server_address[:2]
         self.state = DaemonRuntimeState(root=str(config.root), host=str(bound_host), port=int(bound_port))
         self.shutdown_requested = threading.Event()
@@ -988,7 +1024,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
         finally:
             self._http_worker_slots.release()
 
-    def _close_session_worker_async(self, worker: RuntimeSessionWorker) -> None:
+    def _close_session_worker_async(
+        self,
+        worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker,
+    ) -> None:
         def _close() -> None:
             try:
                 worker.close()
@@ -1001,7 +1040,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             daemon=True,
         ).start()
 
-    def _retire_session_worker(self, worker: RuntimeSessionWorker) -> None:
+    def _retire_session_worker(
+        self,
+        worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker,
+    ) -> None:
         with self._sessions_lock:
             retired_keys = [key for key, value in self.sessions.items() if value is worker]
             for key in retired_keys:
@@ -1012,7 +1054,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
 
     def _cleanup_idle_sessions_locked(self) -> None:
         now = time.monotonic()
-        stale: list[tuple[str, RuntimeSessionWorker]] = []
+        stale: list[tuple[str, RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker]] = []
         for key, worker in list(self.sessions.items()):
             if key in self._active_session_ids:
                 continue
@@ -1031,7 +1073,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         *,
         no_carryover: bool = False,
         client: str = "daemon_http",
-    ) -> tuple[RuntimeSessionWorker, str]:
+    ) -> tuple[RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker, str]:
         normalized = normalize_daemon_session_id(session_id)
         with self._sessions_lock:
             self._cleanup_idle_sessions_locked()
@@ -1046,15 +1088,23 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 if len(self.sessions) >= self.max_sessions:
                     self.state.session_limit_rejection_count += 1
                     raise RuntimeError("daemon_session_limit_reached")
-                existing = RuntimeSessionWorker(
-                    session_factory=self._session_factory,
-                    config=self.config,
-                    session_id=key,
-                    no_carryover=no_carryover,
-                    source_client=client,
-                    command="daemon-chat",
-                    timeout_seconds=self.execution_timeout_seconds,
-                )
+                worker_kwargs = {
+                    "session_factory": self._session_factory,
+                    "config": self.config,
+                    "session_id": key,
+                    "no_carryover": no_carryover,
+                    "source_client": client,
+                    "command": "daemon-chat",
+                    "timeout_seconds": self.execution_timeout_seconds,
+                }
+                if self.hard_worker_process_isolation:
+                    existing = HardIsolatedRuntimeSessionWorker(
+                        **worker_kwargs,
+                        cancel_grace_seconds=self.worker_process_cancel_grace_seconds,
+                        startup_timeout_seconds=self.worker_process_startup_timeout_seconds,
+                    )
+                else:
+                    existing = RuntimeSessionWorker(**worker_kwargs)
                 self.sessions[key] = existing
             self._session_last_used_monotonic[key] = time.monotonic()
             return existing, "payload" if normalized else "generated"
@@ -1298,6 +1348,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 default=None,
             )
             last_terminal_job = self._terminal_job_diagnostic(latest_terminal) if latest_terminal is not None else None
+            session_workers = list(self.sessions.values())
             return {
                 "queue_size": self._chat_queue.qsize(),
                 "queue_capacity": self._chat_queue.maxsize,
@@ -1308,16 +1359,37 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
                 "last_terminal_job": last_terminal_job,
                 "process_liveness": {
-                    "process_model": "persistent_daemon_with_replaceable_session_workers",
+                    "process_model": (
+                        "persistent_daemon_with_replaceable_spawned_session_processes"
+                        if self.hard_worker_process_isolation
+                        else "persistent_daemon_with_replaceable_session_threads"
+                    ),
                     "parent_process_alive": True,
                     "chat_worker_alive": worker_alive,
                     "watchdog_alive": bool(self._chat_watchdog_thread and self._chat_watchdog_thread.is_alive()),
                     "turn_failure_isolated_from_parent_process": True,
                     "running_thread_hard_cancel_supported": False,
-                    "hard_worker_process_isolation": False,
+                    "hard_worker_process_isolation": self.hard_worker_process_isolation,
+                    "worker_process_start_method": (
+                        "spawn" if self.hard_worker_process_isolation else None
+                    ),
+                    "worker_process_cancel_grace_seconds": (
+                        self.worker_process_cancel_grace_seconds
+                        if self.hard_worker_process_isolation
+                        else None
+                    ),
+                    "worker_process_pids": sorted(
+                        int(worker.worker_pid)
+                        for worker in session_workers
+                        if isinstance(worker, HardIsolatedRuntimeSessionWorker)
+                        and worker.usable
+                    ),
                     "truth_boundary": (
-                        "This is operational process liveness: a persistent daemon, heartbeat and replaceable session workers. "
-                        "It does not claim biological life or phenomenal consciousness. A Python thread already running cannot be force-cancelled safely; hard per-turn process isolation remains a separate architecture step."
+                        "This is operational process liveness: the persistent parent daemon stays alive while each production session executes turns in a replaceable spawned child process. "
+                        "A deadline requests cooperative cancellation before bounded terminate/kill. It does not claim biological life or phenomenal consciousness, and running Python threads are still not force-cancelled."
+                        if self.hard_worker_process_isolation
+                        else
+                        "This is operational process liveness in compatibility mode with replaceable session threads. It does not claim biological life or phenomenal consciousness, and running Python threads cannot be force-cancelled safely."
                     ),
                 },
                 "watchdog_interval_seconds": self._chat_watchdog_interval_seconds,
@@ -1353,7 +1425,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         job: DaemonChatJob,
         *,
         source: str,
-    ) -> RuntimeSessionWorker | None:
+    ) -> RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None:
         """Make an overdue non-terminal job terminal without waiting for its worker.
 
         The normal RuntimeSessionWorker timeout remains the first line of defence.
@@ -1405,7 +1477,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         return job.active_session_worker
 
     def _scan_overdue_chat_jobs(self) -> bool:
-        retired: list[RuntimeSessionWorker] = []
+        retired: list[RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker] = []
         replace_worker = False
         with self._chat_jobs_lock:
             now = time.monotonic()
@@ -1784,7 +1856,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         worker_generation: int | None = None,
     ) -> None:
         pickup_started = time.monotonic()
-        session: RuntimeSessionWorker | None = None
+        session: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None = None
         session_key: str | None = None
         with self._chat_jobs_lock:
             if job.terminal():
@@ -1931,6 +2003,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
             if session is not None:
                 self._retire_session_worker(session)
             error = f"{type(exc).__name__}: {exc}"
+            hard_termination = (
+                dict(session.last_termination)
+                if isinstance(session, HardIsolatedRuntimeSessionWorker)
+                and isinstance(session.last_termination, dict)
+                else None
+            )
             with self._chat_jobs_lock:
                 if not job.terminal():
                     job.error = error
@@ -1941,7 +2019,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         "request_id": job.request_id,
                         "execution_timeout_seconds": job.execution_timeout_seconds,
                         "timeout_profile": job.timeout_profile,
-                        "timeout_owner": "runtime_session_worker",
+                        "timeout_owner": (
+                            "hard_isolated_runtime_worker_process"
+                            if hard_termination is not None
+                            else "runtime_session_worker"
+                        ),
+                        "hard_worker_process_termination": hard_termination,
                         "schema_version": DAEMON_SCHEMA_VERSION,
                     }
                     job.status = "execution_timeout"
@@ -1975,6 +2058,25 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     }
                     job.status = "failed"
                     job.recovery_disposition = "session_retired_no_automatic_database_recovery"
+                    self.state.chat_job_failed_count += 1
+        except RuntimeWorkerProcessError as exc:
+            if session is not None:
+                self._retire_session_worker(session)
+            error = f"{type(exc).__name__}: {exc}"
+            with self._chat_jobs_lock:
+                if not job.terminal():
+                    job.error = error
+                    job.result = {
+                        "ok": False,
+                        "error_code": exc.error_code,
+                        "error": error,
+                        "remote_error_type": exc.remote_type,
+                        "request_id": job.request_id,
+                        "recovery_disposition": "worker_process_retired_without_replay",
+                        "schema_version": DAEMON_SCHEMA_VERSION,
+                    }
+                    job.status = "failed"
+                    job.recovery_disposition = "worker_process_retired_without_replay"
                     self.state.chat_job_failed_count += 1
         except RuntimeError as exc:
             error_code = str(exc) if str(exc).startswith("daemon_session_") else "runtime_turn_failed"

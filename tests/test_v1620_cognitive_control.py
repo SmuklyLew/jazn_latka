@@ -241,9 +241,15 @@ def test_graph_retrieval_shadow_preserves_fts_and_active_is_deterministic() -> N
     )
 
     assert [hit.record_id for hit in shadow.selected] == ["a", "b"]
+    assert shadow.telemetry is not None
     assert shadow.telemetry["selected_lane"] == "fts_baseline"
     assert [hit.record_id for hit in active.selected] == [hit.record_id for hit in repeated.selected]
-    assert {hit.metadata["conversation_id"] for hit in active.selected} == {"conv-a", "conv-b"}
+    conversation_ids: set[str] = set()
+    for hit in active.selected:
+        assert hit.metadata is not None
+        conversation_ids.add(str(hit.metadata["conversation_id"]))
+    assert conversation_ids == {"conv-a", "conv-b"}
+    assert active.telemetry is not None
     assert active.telemetry["fts_fallback_available"] is True
     assert active.telemetry["content_recorded_in_telemetry"] is False
 
@@ -260,7 +266,9 @@ def test_working_memory_preserves_each_active_goal_and_rolls_back_if_impossible(
         store.save_record(_working("new-a", goal="goal-a", minute=1, importance=0.9, anchors=("anchor-a",)), working_budget=budget)
         store.save_record(_working("only-b", goal="goal-b", minute=2, importance=0.5), working_budget=budget)
         records = store.list_records(session_id="session")
-        assert {(item.active_goal, item.content) for item in records} == {
+        working_records = [item for item in records if isinstance(item, WorkingMemoryRecord)]
+        assert len(working_records) == len(records)
+        assert {(item.active_goal, item.content) for item in working_records} == {
             ("goal-a", "new-a"),
             ("goal-b", "only-b"),
         }
@@ -275,7 +283,12 @@ def test_working_memory_preserves_each_active_goal_and_rolls_back_if_impossible(
                 _working("only-c", goal="goal-c", minute=3, importance=0.6),
                 working_budget=impossible,
             )
-        assert {item.active_goal for item in store.list_records(session_id="session")} == {
+        preserved = store.list_records(session_id="session")
+        preserved_working = [
+            item for item in preserved if isinstance(item, WorkingMemoryRecord)
+        ]
+        assert len(preserved_working) == len(preserved)
+        assert {item.active_goal for item in preserved_working} == {
             "goal-a", "goal-b"
         }
         assert store.validate()["ok"] is True

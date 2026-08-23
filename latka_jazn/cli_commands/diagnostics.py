@@ -98,7 +98,7 @@ def _probe_daemon_readiness(host: str, port: int) -> dict[str, Any]:
         )
         payload.setdefault("endpoint", "/ready")
         return payload
-    except Exception as exc:
+    except (OSError, TimeoutError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         return {
             "ok": False,
             "endpoint": "/ready",
