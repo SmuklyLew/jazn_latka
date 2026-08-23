@@ -285,10 +285,69 @@ def test_probe_retries_and_third_attempt_can_succeed(monkeypatch) -> None:
     monkeypatch.setattr(runtime_daemon.time, "sleep", lambda _seconds: None)
     payload, error, endpoint = runtime_daemon._probe_daemon_status("127.0.0.1", 8787)
     assert error is None
-    assert endpoint == "/ready"
+    assert endpoint == "/live"
     assert payload is not None
     assert payload["endpoint_probe_attempt"] == 3
     assert len(calls) == 3
+
+
+def test_chat_result_retries_same_request_id_without_resubmitting(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_http(method: str, url: str, **_kwargs) -> dict:
+        calls.append(f"{method} {url}")
+        if len(calls) < 3:
+            raise TimeoutError("temporary result read timeout")
+        return {"ok": True, "done": True, "request_id": "stable-request"}
+
+    monkeypatch.setattr(runtime_daemon, "http_json", fake_http)
+    monkeypatch.setattr(runtime_daemon.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(runtime_daemon, "read_daemon_auth_token", lambda _root: "token")
+
+    result = runtime_daemon.chat_daemon_result(
+        JaznConfig(root=tmp_path),
+        "stable-request",
+        host="127.0.0.1",
+        port=8787,
+    )
+
+    assert result["done"] is True
+    assert result["result_probe_attempt"] == 3
+    assert len(calls) == 3
+    assert all(call.startswith("GET ") for call in calls)
+    assert all("/chat-result/stable-request" in call for call in calls)
+
+
+def test_liveness_payload_does_not_touch_readiness_dependencies(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    server = _test_server(tmp_path)
+    try:
+        def readiness_dependency_called(*_args, **_kwargs):
+            raise AssertionError("liveness must not touch readiness dependencies")
+
+        monkeypatch.setattr(
+            runtime_daemon,
+            "build_runtime_write_access_status",
+            readiness_dependency_called,
+        )
+        monkeypatch.setattr(server, "chat_job_summary", readiness_dependency_called)
+        monkeypatch.setattr(server, "rest_cycle_status", readiness_dependency_called)
+        monkeypatch.setattr(server, "memory_sync_status", readiness_dependency_called)
+
+        payload = server.liveness_status_payload(endpoint="/live")
+
+        assert payload["ok"] is True
+        assert payload["liveness_ok"] is True
+        assert payload["runtime_process_active"] is True
+        assert "runtime_write_access_status" not in payload
+        assert "daemon_chat_jobs" not in payload
+    finally:
+        server.close_sessions()
 
 
 def test_windows_pid_probe_distinguishes_live_and_missing_process() -> None:
@@ -347,7 +406,12 @@ def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_p
         completed = runtime_daemon.chat_daemon_result(
             server.config, request_id, host="127.0.0.1", port=port
         )
-        assert completed["done"] is True
+        assert completed.get("done") is True, {
+            "completed": completed,
+            "server_thread_alive": thread.is_alive(),
+            "job_status": job.status,
+            "http_workers_available": getattr(server._http_worker_slots, "_value", None),
+        }
         assert completed["job_status"] == "completed"
         assert completed["request_id"] == request_id
         assert _FakeSession.execution_count == 1

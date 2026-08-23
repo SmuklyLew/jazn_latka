@@ -106,6 +106,11 @@ TOOL_DEFINITIONS = [
                 },
                 "final_text": {"type": "string", "minLength": 1, "maxLength": 2097152},
                 "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+                "used_memory_item_ids": {
+                    "type": "array",
+                    "items": {"type": "string", "minLength": 1, "maxLength": 256},
+                    "maxItems": 8,
+                },
                 "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
                 "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },
@@ -353,7 +358,7 @@ class JaznMcpServer:
                 session_id=args.get("session_id"),
             )
         if name == "jazn_finalize_reply":
-            return jazn_finalize_reply.run(root=self.root, **args)
+            return jazn_finalize_reply.run(root=self.root, lifecycle_gateway=self.gateway, **args)
         if name == "jazn_audit_lookup":
             return jazn_audit_lookup.run(
                 audit_database=self.audit_database,

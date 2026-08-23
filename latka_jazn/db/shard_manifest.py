@@ -9,9 +9,13 @@ import datetime
 import hashlib
 import json
 import os
+import threading
+import time
+import uuid
 
 SCHEMA_VERSION = "jazn_sqlite_shards/v1"
 DEFAULT_MAX_BYTES = DEFAULT_MAX_SQLITE_FILE_BYTES
+_SHARD_MANIFEST_WRITE_LOCK = threading.RLock()
 
 
 class ShardManifestError(RuntimeError):
@@ -213,12 +217,28 @@ class SQLiteShardManager:
             role=self.role,
         )
         self.manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.manifest_path.with_suffix(self.manifest_path.suffix + ".tmp")
-        tmp.write_text(
-            json.dumps(manifest.to_dict(), ensure_ascii=False, indent=2, sort_keys=True),
-            encoding="utf-8",
+        tmp = self.manifest_path.with_name(
+            f".{self.manifest_path.name}.{os.getpid()}.{threading.get_ident()}.{uuid.uuid4().hex}.tmp"
         )
-        os.replace(tmp, self.manifest_path)
+        try:
+            with _SHARD_MANIFEST_WRITE_LOCK:
+                tmp.write_text(
+                    json.dumps(manifest.to_dict(), ensure_ascii=False, indent=2, sort_keys=True),
+                    encoding="utf-8",
+                )
+                for attempt in range(6):
+                    try:
+                        os.replace(tmp, self.manifest_path)
+                        return
+                    except PermissionError:
+                        if attempt == 5:
+                            raise
+                        time.sleep(0.02 * (attempt + 1))
+        finally:
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     def active_path(self) -> Path:
         return self.load_or_create().active_path(self.root)

@@ -30,6 +30,11 @@ from latka_jazn.core.chatgpt_host_pending_store import (
 )
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
 from latka_jazn.core.host_regeneration_policy import decide_host_regeneration
+from latka_jazn.core.host_response_candidate_guard import (
+    build_host_generation_context_from_runtime,
+    evaluate_host_response_candidate,
+    validate_host_generation_context,
+)
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -367,6 +372,7 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
     """Extract a fail-closed ChatGPT-host visible reply JSONL payload."""
     trace = json_object(payload.get("trace"))
     final_text, final_text_field = _nonempty_text_from_fields(payload, CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS)
+    used_memory_value = payload.get("used_memory_item_ids")
     values: dict[str, Any] = {
         "final_text": final_text,
         "final_text_field": final_text_field,
@@ -383,6 +389,11 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         "state_emoticon": str(payload.get("state_emoticon") or payload.get("emoticon") or "").strip(),
         "final_text_sha256": str(payload.get("final_text_sha256") or "").strip().lower(),
         "host_request_contract_hash": str(payload.get("host_request_contract_hash") or "").strip().lower(),
+        "used_memory_item_ids": (
+            [str(item) for item in used_memory_value[:8]]
+            if isinstance(used_memory_value, list)
+            else []
+        ),
     }
     missing: list[str] = []
     if not final_text:
@@ -667,6 +678,16 @@ def build_chatgpt_host_bridge_turn_contract(
         or ""
     )
     runtime_route = str(decision.get("route") or runtime_turn.get("runtime_route") or runtime_turn.get("route") or "")
+    model_synthesis = json_object(decision.get("model_guided_synthesis"))
+    host_generation_context = json_object(model_synthesis.get("host_generation_context"))
+    if not validate_host_generation_context(host_generation_context):
+        host_generation_context = build_host_generation_context_from_runtime(
+            result,
+            user_text=user_text,
+            detected_intent=detected_intent,
+            route=runtime_route,
+        )
+    host_generation_context_valid = validate_host_generation_context(host_generation_context)
     ownership = build_runtime_ownership_contract(detected_intent=detected_intent, route=runtime_route)
     host_policy = json_object(ownership.get("host_visible_generation_contract"))
     host_policy_rules = [str(item) for item in host_policy.get("rules", []) if str(item).strip()]
@@ -683,6 +704,9 @@ def build_chatgpt_host_bridge_turn_contract(
     author_source = str(final_contract.get("author_source") or "")
     state_emoticon = str(final_contract.get("state_emoticon") or decision.get("state_emoticon") or "")
     runtime_version = str(final_contract.get("runtime_version") or result.get("runtime_version") or PACKAGE_VERSION_FULL)
+    daemon = json_object(result.get("daemon"))
+    daemon_job = json_object(result.get("daemon_job"))
+    daemon_request_id = str(daemon.get("request_id") or daemon_job.get("request_id") or "").strip()
     runtime_summary = {
         "route": runtime_route,
         "detected_intent": detected_intent,
@@ -710,6 +734,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
         "host_generation_policy": host_policy,
+        "host_generation_context": host_generation_context,
     }
     runtime_context_sha256 = hashlib.sha256(
         json.dumps(context_for_hash, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -747,9 +772,12 @@ def build_chatgpt_host_bridge_turn_contract(
         "runtime_context_sha256": runtime_context_sha256,
         "session_continuity_commit": session_continuity_commit,
         "session_continuity_commit_sha256": session_continuity_commit_sha256,
+        "daemon_request_id": daemon_request_id,
         "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
         "host_generation_policy": host_policy,
+        "host_generation_context": host_generation_context,
+        "host_generation_context_sha256": str(host_generation_context.get("context_sha256") or ""),
         "accepted_host_reply_text_fields": list(CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS),
         "chat_bridge": chat_bridge_meta,
         "display_exact_runtime_final": displayable_runtime_final,
@@ -791,6 +819,7 @@ def build_chatgpt_host_bridge_turn_contract(
                 "state_emoticon": state_emoticon,
                 "final_text": "<body albo kompletna widoczna koperta zgodna z runtime_ownership_contract>",
                 "final_text_sha256": "<sha256 kanonicznego UTF-8/LF pola final_text>",
+                "used_memory_item_ids": "<identyfikatory faktycznie użytych allowed_memory_items>",
             }
         except (TypeError, ValueError) as exc:
             bridge.update({
@@ -806,8 +835,17 @@ def build_chatgpt_host_bridge_turn_contract(
         "Nie twierdź, że lokalny Python wywołał ChatGPT jako funkcję.",
         "Nie zmieniaj turn_id, trace_id, timestampu, autora ani host_request_contract_hash.",
         "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
+        "Zadeklaruj każdy użyty identyfikator pamięci i nie używaj identyfikatorów spoza host_generation_context.allowed_memory_item_ids.",
         "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
     ]
+    if requires_host and not host_generation_context_valid:
+        bridge.update({
+            "phase": "host_diagnostic_required",
+            "status": "host_generation_context_missing_or_invalid",
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "diagnostic_reason": "host_generation_context_missing_or_invalid",
+        })
     return bridge
 
 
@@ -881,6 +919,49 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
     return packet
 
 
+def attach_chatgpt_host_contract(
+    result: dict[str, Any],
+    *,
+    config: JaznConfig,
+    user_text: str,
+    chat_bridge_meta: dict[str, Any],
+) -> dict[str, Any]:
+    """Attach and persist one idempotent ChatGPT host presentation contract."""
+
+    result["chat_bridge"] = dict(chat_bridge_meta)
+    result["chatgpt_bridge"] = dict(chat_bridge_meta)
+    bridge_value = result.get("chatgpt_host_bridge")
+    bridge = bridge_value if isinstance(bridge_value, dict) else {}
+    if not bridge:
+        bridge = build_chatgpt_host_bridge_turn_contract(
+            result,
+            user_text=user_text,
+            chat_bridge_meta=chat_bridge_meta,
+        )
+        result["chatgpt_host_bridge"] = bridge
+    if (
+        bridge.get("phase") == "host_visible_generation_requested"
+        and bridge.get("pending_request_persisted") is not True
+    ):
+        try:
+            ttl_seconds = continuation_ttl_for_bridge(bridge)
+            pending = persist_pending_host_request(config.root, bridge, ttl_seconds=ttl_seconds)
+            bridge["pending_request_persisted"] = True
+            bridge["pending_request_state"] = pending.get("state")
+            bridge["pending_request_ttl_seconds"] = ttl_seconds
+            bridge["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
+        except HostRequestStoreError as exc:
+            bridge.update({
+                "phase": "host_diagnostic_required",
+                "status": "pending_host_request_persistence_failed",
+                "host_must_generate_visible_reply": False,
+                "host_reply_finalization_required": False,
+                "diagnostic_reason": f"pending_host_request:{exc}",
+            })
+    result["chatgpt_host_presentation"] = build_chatgpt_host_presentation_packet(result)
+    return result
+
+
 def persist_chatgpt_host_visible_reply(
     *,
     config: JaznConfig,
@@ -913,6 +994,17 @@ def persist_chatgpt_host_visible_reply(
     if mismatches:
         release_claimed_host_request(config.root, turn_id=reply["turn_id"])
         return None, [f"host_request_binding_mismatch:{field}" for field in mismatches]
+    generation_context = json_object(pending.get("generation_context"))
+    host_generation_context = json_object(generation_context.get("host_generation_context"))
+    semantic_validation = evaluate_host_response_candidate(
+        final_text=reply["final_text"],
+        host_generation_context=host_generation_context,
+        used_memory_item_ids=list(reply.get("used_memory_item_ids") or []),
+    )
+    if semantic_validation.get("accepted") is not True:
+        release_claimed_host_request(config.root, turn_id=reply["turn_id"])
+        violations = [str(item) for item in semantic_validation.get("violations") or []]
+        return None, [f"host_candidate:{item}" for item in violations or ["rejected"]]
     finalization = finalize_host_visible_text(
         required_timestamp_header=str(binding["timestamp_header"]),
         timezone=str(binding["timezone"]),
@@ -1024,6 +1116,8 @@ def persist_chatgpt_host_visible_reply(
                     "final_text_field": reply["final_text_field"],
                     "host_request_contract_hash": reply["host_request_contract_hash"],
                     "generation_executor": "chatgpt_host",
+                    "used_memory_item_ids": list(reply.get("used_memory_item_ids") or []),
+                    "host_candidate_validation": semantic_validation,
                 },
             )
         finally:
@@ -1086,6 +1180,8 @@ def persist_chatgpt_host_visible_reply(
             "can_complete_model_guided_speech_via_host": True,
             "generation_executor": "chatgpt_host",
             "replay_protected": True,
+            "daemon_request_id": binding.get("daemon_request_id") or None,
+            "semantic_validation_accepted": True,
             "truth_boundary": "Odpowiedź hosta została związana z jednym niezużytym kontraktem phase-1, sfinalizowana i dopiero wtedy zapisana.",
         },
         "host_must_generate_visible_reply": False,
@@ -1093,6 +1189,7 @@ def persist_chatgpt_host_visible_reply(
         "final_visible_text": capture.get("final_visible_text"),
         "host_visible_finalization": finalization.to_dict(),
         "host_visible_reply_capture": capture,
+        "host_response_candidate_validation": semantic_validation,
         "host_request_consumption": consumed,
         "session_continuity_persistence": session_continuity,
     }
@@ -1382,28 +1479,12 @@ def run_jsonl_chat_bridge(
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
-                result["chatgpt_bridge"] = result["chat_bridge"]
-                result["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
+                attach_chatgpt_host_contract(
                     result,
+                    config=config,
                     user_text=user_text,
                     chat_bridge_meta=result["chat_bridge"],
                 )
-                if result["chatgpt_host_bridge"].get("phase") == "host_visible_generation_requested":
-                    try:
-                        ttl_seconds = continuation_ttl_for_bridge(result["chatgpt_host_bridge"])
-                        pending = persist_pending_host_request(config.root, result["chatgpt_host_bridge"], ttl_seconds=ttl_seconds)
-                        result["chatgpt_host_bridge"]["pending_request_persisted"] = True
-                        result["chatgpt_host_bridge"]["pending_request_state"] = pending.get("state")
-                        result["chatgpt_host_bridge"]["pending_request_ttl_seconds"] = ttl_seconds
-                        result["chatgpt_host_bridge"]["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
-                    except HostRequestStoreError as exc:
-                        result["chatgpt_host_bridge"].update({
-                            "phase": "host_diagnostic_required",
-                            "status": "pending_host_request_persistence_failed",
-                            "host_must_generate_visible_reply": False,
-                            "host_reply_finalization_required": False,
-                            "diagnostic_reason": f"pending_host_request:{exc}",
-                        })
             result["chat_command_contract"] = contract
             # poprzednia linia runtime: most nie może nadpisać blokady runtime truth gate przez ok=True.
             result["ok"] = bool(result.get("ok", True))
