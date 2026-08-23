@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
@@ -115,11 +115,24 @@ class LivingMemoryGateway:
     ) -> dict[str, Any]:
         mode = str(getattr(plan, "search_mode", None) or "semantic_query")
         terms = [str(value).strip() for value in (getattr(plan, "search_terms", None) or []) if str(value).strip()]
-        query = " ".join(terms).strip()
+        focus_terms = [
+            str(value).strip()
+            for value in (getattr(plan, "focus_terms", None) or [])
+            if str(value).strip()
+        ]
+        query = " ".join(focus_terms or terms).strip()
+        expanded_query = " ".join(terms).strip()
+        search_queries = [query]
+        if (
+            mode not in {"chronological_earliest", "chronological_latest"}
+            and expanded_query
+            and expanded_query != query
+        ):
+            search_queries.append(expanded_query)
         source_reports = self.discover()
         hits: list[LivingMemoryHit] = []
         issues: list[str] = []
-        per_layer = max(1, min(4, int(limit)))
+        per_layer = max(1, min(20, int(limit)))
 
         def can_continue() -> bool:
             if should_continue is None:
@@ -145,14 +158,27 @@ class LivingMemoryGateway:
                 if path is None or not path.is_file():
                     continue
                 try:
-                    if layer == "memory_jazn":
-                        layer_hits = self._search_memory(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
-                    elif layer == "experience":
-                        layer_hits = self._search_experience(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
-                    elif layer == "journal":
-                        layer_hits = self._search_journal(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
-                    else:
-                        layer_hits = self._search_archive(path, query, mode=mode, limit=per_layer, should_continue=can_continue)
+                    layer_hits = []
+                    for query_index, candidate_query in enumerate(search_queries):
+                        if layer == "memory_jazn":
+                            found = self._search_memory(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                        elif layer == "experience":
+                            found = self._search_experience(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                        elif layer == "journal":
+                            found = self._search_journal(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                        else:
+                            found = self._search_archive(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                        if query_index == 0:
+                            found = [
+                                replace(
+                                    hit,
+                                    relevance=min(0.99, hit.relevance + 0.14),
+                                    metadata={**(hit.metadata or {}), "query_pass": "focus"},
+                                )
+                                for hit in found
+                            ]
+                        layer_hits.extend(found)
+                    layer_hits = self._dedupe(layer_hits)
                 except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
                     issues.append(f"{layer}:{path}:{type(exc).__name__}:{exc}")
                     continue
@@ -170,7 +196,7 @@ class LivingMemoryGateway:
             hits.sort(key=lambda hit: (self._timestamp_key(hit.timestamp, latest=True), hit.relevance), reverse=True)
         else:
             layer_priority = {name: index for index, name in enumerate(self.SEARCH_ORDER)}
-            hits.sort(key=lambda hit: (layer_priority.get(hit.source_layer, 99), -hit.relevance, -(hit.importance or 0.0)))
+            hits.sort(key=lambda hit: (-hit.relevance, layer_priority.get(hit.source_layer, 99), -(hit.importance or 0.0)))
 
         layer_hit_counts: dict[str, int] = {}
         for hit in hits:
@@ -519,13 +545,13 @@ class LivingMemoryGateway:
     def _fts_candidates(cls, query: str) -> tuple[str, ...]:
         tokens = cls._tokens(query)
         candidates: list[str] = []
+        for value in fts_queries(query):
+            if value and value not in candidates:
+                candidates.append(value)
         if tokens:
             escaped = [token.replace('"', '""') for token in tokens]
             candidates.append(" OR ".join(f'"{token}"' for token in escaped))
             candidates.append(" OR ".join(f'"{token}"*' for token in escaped))
-        for value in fts_queries(query):
-            if value and value not in candidates:
-                candidates.append(value)
         return tuple(candidates)
 
     @staticmethod

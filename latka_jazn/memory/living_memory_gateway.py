@@ -10,6 +10,8 @@ runtime directory.
 
 import json
 import os
+import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +33,18 @@ from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES
 class LivingMemoryGateway(_LivingMemoryGateway):
     """Select exactly one native unified database, with legacy read-only fallback."""
 
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        busy_timeout_ms: int = 10_000,
+        discovery_cache_seconds: float = 60.0,
+    ) -> None:
+        super().__init__(root, busy_timeout_ms=busy_timeout_ms)
+        self.discovery_cache_seconds = max(0.0, float(discovery_cache_seconds))
+        self._discovery_cached_at = 0.0
+        self._discovery_cache: list[dict[str, Any]] | None = None
+
     @staticmethod
     def _candidate_sqlite_dir(path: Path) -> Path:
         if path.is_file():
@@ -44,6 +58,11 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         return cls._candidate_sqlite_dir(path) / CANONICAL_DATABASE_NAME
 
     def discover(self) -> list[dict[str, Any]]:
+        if (
+            self._discovery_cache is not None
+            and time.monotonic() - self._discovery_cached_at <= self.discovery_cache_seconds
+        ):
+            return deepcopy(self._discovery_cache)
         candidates: list[tuple[Path, str]] = [(self.root, "active_runtime_root")]
         env_value = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "")
         for raw in env_value.split(os.pathsep):
@@ -139,7 +158,13 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         else:
             for item in discovered:
                 item["selected_canonical"] = False
+        self._discovery_cache = deepcopy(discovered)
+        self._discovery_cached_at = time.monotonic()
         return discovered
+
+    def invalidate_discovery_cache(self) -> None:
+        self._discovery_cache = None
+        self._discovery_cached_at = 0.0
 
     def readiness(self) -> dict[str, Any]:
         sources = self.discover()
