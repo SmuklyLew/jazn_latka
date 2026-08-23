@@ -1,12 +1,12 @@
 {
   "base_branch": "origin/master",
-  "base_merge_commit": "00814e096b8311b20dd31f66e8959668bd1ba40c",
+  "base_merge_commit": "ef241bfa1fa11e5a3eef919aabe6f9df92c5ad2e",
   "base_version": "16.2.2-rest-cloud-performance-hygiene",
-  "commit_date": "2026-08-24T00:34:55+02:00",
+  "commit_date": "2026-08-24T00:39:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-23T22:34:55+00:00",
+  "generated_at_utc": "2026-08-23T22:39:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "84bb8755dc71dd7d0140287dbff4c6a0a1a040f1",
+  "git_tree_sha": "d48415945634b5c5b9e3a368c8ce9ccad044ec91",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"

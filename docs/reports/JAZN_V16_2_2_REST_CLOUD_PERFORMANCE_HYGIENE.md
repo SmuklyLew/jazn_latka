@@ -1,4 +1,4 @@
-# Jaźń v16.2.2 — rest, cloud, performance and project hygiene
+# Jaźń — rest, cloud, performance and project hygiene
 
 Release identity: derived exclusively from `latka_jazn/version.py`.
 
