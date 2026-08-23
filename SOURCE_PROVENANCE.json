@@ -1,23 +1,23 @@
 {
-  "base_branch": "master",
-  "base_merge_commit": "9839527fd41d69cc783a198cef0160b68c693001",
-  "base_version": "16.0.6-runtime-turn-liveness-ci-hardening",
-  "commit_date": "2026-08-23T18:32:45+02:00",
+  "base_branch": "origin/master",
+  "base_merge_commit": "00814e096b8311b20dd31f66e8959668bd1ba40c",
+  "base_version": "16.2.2-rest-cloud-performance-hygiene",
+  "commit_date": "2026-08-24T00:34:55+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-23T16:32:45+00:00",
+  "generated_at_utc": "2026-08-23T22:34:55+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "432b5e1132231837ce5d8d64bc16ae34853b1556",
+  "git_tree_sha": "84bb8755dc71dd7d0140287dbff4c6a0a1a040f1",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.0.6-runtime-turn-liveness-ci-hardening",
-  "schema_version": "source_provenance/16.0.6",
+  "runtime_version": "16.2.2-rest-cloud-performance-hygiene",
+  "schema_version": "source_provenance/16.2.2",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "16.0.6-runtime-turn-liveness-ci-hardening",
+  "update_version": "16.2.2-rest-cloud-performance-hygiene",
   "version_source": "latka_jazn/version.py"
 }
