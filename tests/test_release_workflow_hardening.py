@@ -19,15 +19,30 @@ def test_duplicate_and_one_shot_release_workflows_are_removed() -> None:
     assert not (ROOT / "tools" / "apply_master_release_metadata_auto_sync.py").exists()
 
 
-def test_release_workflow_uses_one_dynamic_metadata_writer() -> None:
+def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push() -> None:
     text = _read("release-hardening.yml")
     previous_release = "v" + ".".join(("15", "1", "0", "3", "89"))
     assert previous_release not in text
-    assert "master|update/*|tools/upgrade-*|hotfix/*|upgrade/*|fix/*" in text
     assert "PACKAGE_VERSION_FULL" in text
     assert "permissions:\n  contents: read" in text
     assert "permissions:\n      contents: write" in text
+    assert "Commit synchronized release metadata on master only" in text
+    assert "if: github.event_name != 'pull_request'" in text
+    assert 'if [ "$target_branch" != "master" ]; then' in text
+    assert "Automatic release-metadata commits are forbidden outside master." in text
     assert "[skip ci]" in text
+    assert "github.event.pull_request.head.sha || github.head_ref || github.ref_name" in text
+    assert "git push origin \"HEAD:${target_branch}\"" in text
+    assert "master|update/*|tools/upgrade-*|hotfix/*|upgrade/*|fix/*" not in text
+
+
+def test_pr_release_metadata_is_materialized_without_moving_exact_head() -> None:
+    text = _read("release-hardening.yml")
+    assert "Upload synchronized PR metadata" in text
+    assert "synchronized-release-metadata-${{ github.event.pull_request.head.sha }}" in text
+    assert text.count("Materialize canonical PR metadata locally") == 2
+    assert "echo \"sha=${{ github.event.pull_request.head.sha }}\" >> \"$GITHUB_OUTPUT\"" in text
+    assert "git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json" in text
 
 
 def test_release_workflow_concurrency_is_scoped_to_the_workflow() -> None:
@@ -72,13 +87,15 @@ def test_release_package_smoke_runs_once_and_only_after_pr_validation() -> None:
     assert "needs: [manifest_sync, verify_ubuntu, verify_windows]" in text
 
 
-def test_upload_artifact_is_pinned_and_failure_only() -> None:
+def test_upload_artifact_is_pinned_with_explicit_pr_metadata_exception() -> None:
     text = _read("release-hardening.yml")
     refs = re.findall(r"uses:\s*actions/upload-artifact@([^\s#]+)", text)
-    assert refs == [UPLOAD_ARTIFACT_V701_SHA] * 4
+    assert refs == [UPLOAD_ARTIFACT_V701_SHA] * 5
     assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in refs)
     assert text.count("if: failure()") == 4
-    assert text.count("retention-days: 3") == 4
+    assert text.count("if: github.event_name == 'pull_request'") == 4
+    assert text.count("retention-days: 3") == 5
+    assert "synchronized-release-metadata-${{ github.event.pull_request.head.sha }}" in text
 
 
 def test_cursor_conpty_workflow_is_pr_scoped_and_manually_runnable() -> None:
