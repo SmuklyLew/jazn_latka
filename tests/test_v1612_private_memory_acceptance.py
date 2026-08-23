@@ -85,13 +85,16 @@ def test_private_acceptance_persists_no_private_query_or_content(tmp_path: Path)
         encoding="utf-8",
     )
 
-    report = run_acceptance(database, cases)
+    report = run_acceptance(database, cases, run_graph_retrieval_ab=True)
     serialized = json.dumps(report, ensure_ascii=False)
 
     assert report["ok"] is True
     assert report["recall"]["evidence_recall_at_k"]["10"] == 1.0
     assert report["recall"]["abstention"]["ok"] is True
     assert report["private_content_persisted"] is False
+    assert report["graph_retrieval_ab"]["status"] == "measured"
+    assert report["graph_retrieval_ab"]["approved_for_activation"] is False
+    assert report["graph_retrieval_ab"]["fts_fallback_available"] is True
     assert "Przypomnij alphaunikalna" not in serialized
     assert "sekretnytermatesty" not in serialized
 

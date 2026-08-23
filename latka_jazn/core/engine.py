@@ -1622,6 +1622,14 @@ class JaznEngine:
         ]
         envelope.cognitive_frame["epistemic_evidence"] = evidence
         envelope.cognitive_frame["epistemic_claims"] = assessments
+        projections = [
+            envelope.cognitive_state_graph.append_epistemic_assessment(item)
+            for item in assessments
+        ]
+        envelope.cognitive_frame["epistemic_claim_graph_projection"] = projections
+        envelope.cognitive_frame["cognitive_state_graph"] = (
+            envelope.cognitive_state_graph.to_dict()
+        )
         if not assessments:
             return
 
@@ -2657,6 +2665,26 @@ class JaznEngine:
                 client_context=ctx,
             )
         )
+        cognitive_control = envelope.apply_cognitive_control(
+            task_state=current_dialogue_task_state,
+            response_policy=turn_response_policy.to_dict(),
+        )
+        turn_response_policy.apply_cognitive_control(cognitive_control)
+        for target in (frame, envelope.cognitive_frame):
+            target["turn_response_policy"] = turn_response_policy.to_dict()
+            target["cognitive_control_policy"] = dict(cognitive_control)
+        decision_dict["turn_response_policy"] = turn_response_policy.to_dict()
+        decision_dict["cognitive_control_policy"] = dict(cognitive_control)
+        update_memory_context = getattr(self.runtime_memory, "update_current_context", None)
+        if callable(update_memory_context):
+            update_memory_context(
+                active_goal=str(current_dialogue_task_state.get("task_key") or "").strip() or None,
+                cognitive_anchor_ids=tuple(
+                    str(item)
+                    for item in cognitive_control.get("salience_selected_node_ids") or []
+                    if str(item).strip()
+                ),
+            )
         handler_context = self._build_route_handler_context(
             decision=decision,
             detected_intent=detected_dialogue_intent,

@@ -248,4 +248,17 @@ def _output_instructions(plan: dict[str, Any], policy: dict[str, Any]) -> list[s
         instructions.append("Jeżeli allowed_memory_items jest puste, powiedz uczciwie, że brak ugruntowanego payloadu pamięci.")
     if policy.get("exact_runtime_required") is True:
         instructions.append("Nie parafrazuj dokładnego cytatu runtime.")
+    cognitive = _as_dict(policy.get("cognitive_control"))
+    if cognitive.get("truth_gate_precedence") is True:
+        hint_instructions = {
+            "do_not_emit_private_reasoning": "Nie ujawniaj prywatnego toku rozumowania ani danych grafu sterującego.",
+            "preserve_active_goal": "Zachowaj jawny aktywny cel bieżącej tury, o ile nie koliduje z pytaniem użytkownika lub truth gate.",
+            "preserve_active_constraints": "Przestrzegaj jawnych ograniczeń polityki odpowiedzi; nie rozszerzaj ich samodzielnie.",
+            "ground_claims_in_selected_evidence": "Twierdzenia faktyczne opieraj wyłącznie na dozwolonych, jawnie wybranych źródłach.",
+            "surface_explicit_conflict_without_inventing_resolution": "Jeśli źródła jawnie się wykluczają, pokaż konflikt bez wymyślania rozstrzygnięcia.",
+        }
+        for hint in cognitive.get("generation_hints") or []:
+            instruction = hint_instructions.get(str(hint))
+            if instruction:
+                instructions.append(instruction)
     return _dedupe(instructions)

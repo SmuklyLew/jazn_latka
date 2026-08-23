@@ -11,6 +11,7 @@ import re
 import sqlite3
 
 from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
+from latka_jazn.memory.graph_aware_retrieval import GraphAwareRetrievalController
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, fts_queries
 from latka_jazn.version import schema_version
@@ -50,9 +51,19 @@ class LivingMemoryGateway:
 
     SEARCH_ORDER = ("memory_jazn", "experience", "journal", "archive_chats")
 
-    def __init__(self, root: str | Path, *, busy_timeout_ms: int = 10_000) -> None:
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        busy_timeout_ms: int = 10_000,
+        graph_retrieval_mode: str = "shadow",
+    ) -> None:
         self.root = Path(root).expanduser().resolve()
         self.busy_timeout_ms = max(1_000, int(busy_timeout_ms))
+        self.graph_retrieval_mode = str(graph_retrieval_mode or "shadow").strip().lower()
+        if self.graph_retrieval_mode not in {"shadow", "ab", "active"}:
+            raise ValueError("graph_retrieval_mode must be shadow, ab or active")
+        self.graph_retrieval = GraphAwareRetrievalController()
 
     def discover(self) -> list[dict[str, Any]]:
         candidates: list[tuple[Path, str]] = [(self.root, "active_runtime_root")]
@@ -201,7 +212,28 @@ class LivingMemoryGateway:
         layer_hit_counts: dict[str, int] = {}
         for hit in hits:
             layer_hit_counts[hit.source_layer] = layer_hit_counts.get(hit.source_layer, 0) + 1
-        selected = hits[: max(1, int(limit))]
+        if mode in {"chronological_earliest", "chronological_latest"}:
+            selected = hits[: max(1, int(limit))]
+            graph_retrieval = {
+                "schema_version": schema_version("graph_aware_retrieval"),
+                "status": "bypassed_chronological_contract",
+                "mode": self.graph_retrieval_mode,
+                "selected_lane": "fts_baseline",
+                "fts_fallback_available": True,
+                "content_recorded_in_telemetry": False,
+                "fact_creation_allowed": False,
+                "memory_promotion_allowed": False,
+            }
+        else:
+            graph_decision = self.graph_retrieval.select(
+                hits,
+                query=query,
+                focus_terms=focus_terms,
+                limit=limit,
+                mode=self.graph_retrieval_mode,
+            )
+            selected = list(graph_decision.selected)
+            graph_retrieval = graph_decision.telemetry
         native_ready = any(bool(report.get("memory_search_ready")) for report in source_reports)
         legacy_ready = any(bool(report.get("legacy_search_ready")) for report in source_reports)
         if native_ready:
@@ -228,6 +260,7 @@ class LivingMemoryGateway:
             },
             "sources": source_reports,
             "issues": issues,
+            "graph_retrieval": graph_retrieval,
             "search_order": (
                 ["memory_jazn.sqlite3:" + key for key in self.SEARCH_ORDER]
                 if native_ready

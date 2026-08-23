@@ -87,8 +87,12 @@ def _latency_summary(values: Sequence[float]) -> dict[str, Any]:
 
 
 class MeasuredLivingMemoryGateway(LivingMemoryGateway):
-    def __init__(self, root: str | Path) -> None:
-        super().__init__(root, discovery_cache_seconds=3_600.0)
+    def __init__(self, root: str | Path, *, graph_retrieval_mode: str = "shadow") -> None:
+        super().__init__(
+            root,
+            discovery_cache_seconds=3_600.0,
+            graph_retrieval_mode=graph_retrieval_mode,
+        )
         self.layer_latency_ms: dict[str, list[float]] = {
             layer: [] for layer in self.SEARCH_ORDER
         }
@@ -150,8 +154,16 @@ def _case_at_k(case: dict[str, Any], hits: list[dict[str, Any]], k: int) -> bool
     return any_ok and all_ok and forbidden_ok and len(hits[:k]) >= minimum
 
 
-def _evaluate_recall(database: Path, payload: dict[str, Any]) -> dict[str, Any]:
-    gateway = MeasuredLivingMemoryGateway(database)
+def _evaluate_recall(
+    database: Path,
+    payload: dict[str, Any],
+    *,
+    graph_retrieval_mode: str = "shadow",
+) -> dict[str, Any]:
+    gateway = MeasuredLivingMemoryGateway(
+        database,
+        graph_retrieval_mode=graph_retrieval_mode,
+    )
     planner = MemorySearchPlanner(database.parent)
     cases: list[dict[str, Any]] = payload["recall_cases"]
     ks = (1, 3, 5, 10, 20)
@@ -163,6 +175,8 @@ def _evaluate_recall(database: Path, payload: dict[str, Any]) -> dict[str, Any]:
     wrong_archive_candidates = 0
     archive_candidates = 0
     superseded_returned = 0
+    graph_changed_positions = 0
+    graph_selected_lanes: dict[str, int] = {}
 
     for case in cases:
         query = str(case["query"])
@@ -172,6 +186,13 @@ def _evaluate_recall(database: Path, payload: dict[str, Any]) -> dict[str, Any]:
         result = gateway.search(plan, limit=limit)
         total_latency.append((perf_counter() - started) * 1000)
         hits = [item for item in result.get("hits") or [] if isinstance(item, dict)]
+        graph_telemetry = result.get("graph_retrieval")
+        if isinstance(graph_telemetry, dict):
+            graph_changed_positions += max(
+                0, int(graph_telemetry.get("changed_position_count") or 0)
+            )
+            lane = str(graph_telemetry.get("selected_lane") or "unknown")
+            graph_selected_lanes[lane] = graph_selected_lanes.get(lane, 0) + 1
         returned_rows += len(hits)
         returned_tokens += sum(len(re.findall(r"\w+", str(hit.get("content_excerpt") or ""))) for hit in hits)
         expected = [_normalize(item) for item in _terms(case, "expected_any") + _terms(case, "expected_all")]
@@ -252,6 +273,13 @@ def _evaluate_recall(database: Path, payload: dict[str, Any]) -> dict[str, Any]:
     case_count = len(cases)
     return {
         "ok": all(item["passed_at_limit"] and item["expected_source_match"] for item in case_reports),
+        "graph_retrieval": {
+            "mode": graph_retrieval_mode,
+            "selected_lane_counts": graph_selected_lanes,
+            "changed_position_count": graph_changed_positions,
+            "fts_fallback_available": True,
+            "private_content_persisted": False,
+        },
         "case_count": case_count,
         "passed_count": sum(1 for item in case_reports if item["passed_at_limit"]),
         "evidence_eligible_case_count": len(eligible_case_reports),
@@ -306,6 +334,67 @@ def _evaluate_recall(database: Path, payload: dict[str, Any]) -> dict[str, Any]:
         "cases": case_reports,
         "expected_evidence_presence": evidence_presence,
         "private_content_persisted": False,
+    }
+
+
+def _graph_retrieval_ab_report(
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+) -> dict[str, Any]:
+    baseline_recall = float(baseline["evidence_recall_at_k"].get("20") or 0.0)
+    candidate_recall = float(candidate["evidence_recall_at_k"].get("20") or 0.0)
+    baseline_wrong = float(baseline["wrong_conversation_proxy"].get("rate") or 0.0)
+    candidate_wrong = float(candidate["wrong_conversation_proxy"].get("rate") or 0.0)
+    baseline_eligible = baseline.get("evidence_eligible_recall_at_limit")
+    candidate_eligible = candidate.get("evidence_eligible_recall_at_limit")
+    eligible_non_regression = (
+        baseline_eligible is None
+        or (
+            candidate_eligible is not None
+            and float(candidate_eligible) >= float(baseline_eligible)
+        )
+    )
+    quality_gate_passed = bool(
+        candidate.get("ok")
+        and candidate_recall >= baseline_recall
+        and candidate_wrong <= baseline_wrong
+        and eligible_non_regression
+    )
+    return {
+        "status": "measured",
+        "baseline_mode": "shadow",
+        "candidate_mode": "active_test_lane",
+        "baseline": {
+            "ok": bool(baseline.get("ok")),
+            "recall_at_20": baseline_recall,
+            "evidence_eligible_recall_at_limit": baseline_eligible,
+            "wrong_conversation_proxy_rate": baseline_wrong,
+            "latency": baseline.get("latency"),
+        },
+        "candidate": {
+            "ok": bool(candidate.get("ok")),
+            "recall_at_20": candidate_recall,
+            "evidence_eligible_recall_at_limit": candidate_eligible,
+            "wrong_conversation_proxy_rate": candidate_wrong,
+            "latency": candidate.get("latency"),
+            "changed_position_count": (
+                candidate.get("graph_retrieval") or {}
+            ).get("changed_position_count", 0),
+        },
+        "delta": {
+            "recall_at_20": round(candidate_recall - baseline_recall, 6),
+            "wrong_conversation_proxy_rate": round(candidate_wrong - baseline_wrong, 6),
+        },
+        "quality_gate_passed": quality_gate_passed,
+        "approved_for_activation": False,
+        "automatic_activation_performed": False,
+        "manual_activation_required": True,
+        "fts_fallback_available": True,
+        "private_content_persisted": False,
+        "truth_boundary": (
+            "A/B measurement can reject a candidate but never activates it. "
+            "Activation requires a separate explicit decision after review."
+        ),
     }
 
 
@@ -715,6 +804,7 @@ def run_acceptance(
     candidate_limit: int = 250,
     source_runtime_root: Path | None = None,
     isolated_restart_root: Path | None = None,
+    run_graph_retrieval_ab: bool = False,
 ) -> dict[str, Any]:
     database = database.expanduser().resolve()
     cases_path = recall_cases.expanduser().resolve()
@@ -725,6 +815,21 @@ def run_acceptance(
     metrics = _database_metrics(database)
     inventory = _source_inventory(source_manifest.expanduser().resolve() if source_manifest else None, database)
     recall = _evaluate_recall(database, cases)
+    graph_retrieval_ab = {
+        "status": "not_run",
+        "approved_for_activation": False,
+        "automatic_activation_performed": False,
+        "manual_activation_required": True,
+        "fts_fallback_available": True,
+        "private_content_persisted": False,
+    }
+    if run_graph_retrieval_ab:
+        candidate_recall = _evaluate_recall(
+            database,
+            cases,
+            graph_retrieval_mode="active",
+        )
+        graph_retrieval_ab = _graph_retrieval_ab_report(recall, candidate_recall)
     review = {
         "status": "not_generated",
         "review_ready_only": True,
@@ -780,6 +885,7 @@ def run_acceptance(
         "data": metrics,
         "source_inventory": inventory,
         "recall": recall,
+        "graph_retrieval_ab": graph_retrieval_ab,
         "l2_l3_review": review,
         "daemon_restart_continuity": daemon_continuity,
         "system_activation_performed": False,
@@ -813,6 +919,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--candidate-limit", type=int, default=250)
     parser.add_argument("--source-runtime-root", type=Path)
     parser.add_argument("--isolated-restart-root", type=Path)
+    parser.add_argument("--run-graph-retrieval-ab", action="store_true")
     return parser
 
 
@@ -828,6 +935,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         candidate_limit=args.candidate_limit,
         source_runtime_root=args.source_runtime_root,
         isolated_restart_root=args.isolated_restart_root,
+        run_graph_retrieval_ab=args.run_graph_retrieval_ab,
     )
     if args.output:
         _write_json(args.output.expanduser().resolve(), report)

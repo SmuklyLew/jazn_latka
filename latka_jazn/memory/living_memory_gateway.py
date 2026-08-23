@@ -39,8 +39,18 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         *,
         busy_timeout_ms: int = 10_000,
         discovery_cache_seconds: float = 60.0,
+        graph_retrieval_mode: str | None = None,
     ) -> None:
-        super().__init__(root, busy_timeout_ms=busy_timeout_ms)
+        resolved_graph_mode = str(
+            graph_retrieval_mode
+            if graph_retrieval_mode is not None
+            else os.environ.get("JAZN_GRAPH_RETRIEVAL_MODE", "shadow")
+        ).strip().lower()
+        super().__init__(
+            root,
+            busy_timeout_ms=busy_timeout_ms,
+            graph_retrieval_mode=resolved_graph_mode,
+        )
         self.discovery_cache_seconds = max(0.0, float(discovery_cache_seconds))
         self._discovery_cached_at = 0.0
         self._discovery_cache: list[dict[str, Any]] | None = None

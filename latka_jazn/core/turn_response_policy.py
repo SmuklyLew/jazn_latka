@@ -6,6 +6,14 @@ from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("turn_response_policy")
 
+_COGNITIVE_GENERATION_HINTS = frozenset({
+    "do_not_emit_private_reasoning",
+    "preserve_active_goal",
+    "preserve_active_constraints",
+    "ground_claims_in_selected_evidence",
+    "surface_explicit_conflict_without_inventing_resolution",
+})
+
 @dataclass(slots=True)
 class TurnResponsePolicy:
     intent: str
@@ -21,11 +29,43 @@ class TurnResponsePolicy:
     source_boundary_required: bool = False
     exact_runtime_required: bool = False
     max_meta_technicality: Literal["none", "low", "medium", "high"] = "low"
+    cognitive_control: dict[str, Any] = field(default_factory=dict)
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = "Polityka odpowiedzi jest kontraktem przed syntezą: ogranicza pamięć, technikalia, carryover i wymagane komponenty odpowiedzi."
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    def apply_cognitive_control(self, control: dict[str, Any] | None) -> None:
+        """Attach allowlisted generation hints without changing policy authority."""
+
+        source = dict(control or {})
+        if source.get("truth_gate_precedence") is not True:
+            raise ValueError("cognitive control requires truth-gate precedence")
+        forbidden_authority = {
+            "route_override_allowed": False,
+            "fact_creation_allowed": False,
+            "memory_promotion_allowed": False,
+            "private_reasoning_recorded": False,
+        }
+        if any(source.get(key) is not expected for key, expected in forbidden_authority.items()):
+            raise ValueError("cognitive control attempted to cross an authority boundary")
+        hints = [
+            str(item)
+            for item in source.get("generation_hints") or []
+            if str(item) in _COGNITIVE_GENERATION_HINTS
+        ]
+        self.cognitive_control = {
+            "schema_version": str(source.get("schema_version") or ""),
+            "status": str(source.get("status") or "blocked_missing_status"),
+            "generation_hints": list(dict.fromkeys(hints)),
+            "truth_gate_precedence": True,
+            **forbidden_authority,
+            "truth_boundary": (
+                "Cognitive control can prioritize explicit generation constraints only; "
+                "the response route, memory gate, facts, promotions and truth gates are unchanged."
+            ),
+        }
 
     @classmethod
     def build(cls, *, intent: str, route: str, context: dict[str, Any] | None = None) -> "TurnResponsePolicy":

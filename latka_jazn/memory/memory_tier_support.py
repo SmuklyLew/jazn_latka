@@ -36,10 +36,18 @@ class WorkingMemoryBudget:
     max_records_per_session: int = 32
     max_total_chars_per_session: int = 32_000
     max_record_chars: int = 8_000
+    pinned_memory_ids: tuple[str, ...] = ()
+    preserve_one_per_active_goal: bool = True
 
     def __post_init__(self) -> None:
         if min(self.max_records_per_session, self.max_total_chars_per_session, self.max_record_chars) < 1:
             raise ValueError("working-memory budget values must be positive")
+        pins = tuple(dict.fromkeys(
+            str(item).strip() for item in self.pinned_memory_ids if str(item).strip()
+        ))
+        if len(pins) > 64:
+            raise ValueError("working-memory budget supports at most 64 pinned records")
+        object.__setattr__(self, "pinned_memory_ids", pins)
 
 
 @dataclass(slots=True, frozen=True)
@@ -109,6 +117,8 @@ def record_from_dict(data: dict[str, Any]) -> MemoryRecord:
             session_id=str(data["session_id"]),
             turn_id=data.get("turn_id"),
             active_goal=data.get("active_goal"),
+            active_goal_ids=tuple(data.get("active_goal_ids") or ()),
+            cognitive_anchor_ids=tuple(data.get("cognitive_anchor_ids") or ()),
             expires_on_session_end=bool(data.get("expires_on_session_end", True)),
             checkpoint_allowed=bool(data.get("checkpoint_allowed", True)),
         )

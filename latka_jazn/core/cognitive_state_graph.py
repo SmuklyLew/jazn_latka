@@ -6,11 +6,12 @@ import json
 from typing import Any, Iterable
 
 from latka_jazn.core.cognitive_lineage import CognitiveLineage, CognitiveLineageObservation
+from latka_jazn.version import schema_version
 
-SCHEMA_VERSION = "cognitive_state_graph/v1"
-NODE_SCHEMA_VERSION = "cognitive_state_node/v1"
-EDGE_SCHEMA_VERSION = "cognitive_state_edge/v1"
-TRANSITION_SCHEMA_VERSION = "cognitive_state_transition/v1"
+SCHEMA_VERSION = schema_version("cognitive_state_graph")
+NODE_SCHEMA_VERSION = schema_version("cognitive_state_node")
+EDGE_SCHEMA_VERSION = schema_version("cognitive_state_edge")
+TRANSITION_SCHEMA_VERSION = schema_version("cognitive_state_transition")
 
 _NODE_KINDS = frozenset(
     {
@@ -139,12 +140,13 @@ class CognitiveStateTransition:
 
 @dataclass(slots=True)
 class CognitiveStateGraph:
-    """Append-only, shadow-only operational graph for one runtime turn.
+    """Append-only operational graph for one runtime turn.
 
     The graph records explicit runtime artefacts and hand-off relations using
     opaque identifiers already produced by cognitive lineage. It does not store
     user text, recalled memory content or private chain-of-thought, and it does
-    not steer routing or generation in this version.
+    not store free-form reasoning. A separate bounded controller may consume
+    observable graph features, but truth gates and explicit user intent prevail.
     """
 
     thought_id: str
@@ -155,13 +157,15 @@ class CognitiveStateGraph:
     edges: list[CognitiveStateEdge] = field(default_factory=list)
     transitions: list[CognitiveStateTransition] = field(default_factory=list)
     graph_break_count: int = 0
-    shadow_mode: bool = True
+    shadow_mode: bool = False
+    control_mode: str = "policy_bounded"
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
         "Cognitive State Graph is an operational, append-only correlation graph. "
         "It is not private chain-of-thought, biological cognition, a truth proof, "
-        "or an autonomous controller. Nodes contain opaque runtime identifiers; "
-        "shadow mode cannot alter routing, memory selection or visible generation."
+        "or an autonomous controller. Nodes contain opaque runtime identifiers. "
+        "Only a bounded policy controller may rank explicit nodes, and it cannot "
+        "create facts, promote memory or override truth gates or user intent."
     )
 
     @classmethod
@@ -191,7 +195,8 @@ class CognitiveStateGraph:
             trace_id=str(data.get("trace_id") or "").strip(),
             parent_thought_id=(str(data.get("parent_thought_id")).strip() if data.get("parent_thought_id") else None),
             graph_break_count=max(0, int(data.get("graph_break_count") or 0)),
-            shadow_mode=bool(data.get("shadow_mode", True)),
+            shadow_mode=bool(data.get("shadow_mode", False)),
+            control_mode=_clean_token(data.get("control_mode"), fallback="policy_bounded"),
         )
         if not graph.thought_id or not graph.turn_id or not graph.trace_id:
             raise ValueError("thought_id, turn_id and trace_id are required for cognitive state graph")
@@ -537,6 +542,83 @@ class CognitiveStateGraph:
         )
         return edge
 
+    def append_epistemic_assessment(
+        self,
+        assessment: dict[str, Any],
+        *,
+        source: str = "epistemic_claim_guard",
+    ) -> dict[str, Any]:
+        """Project one explicit assessment without persisting claim text.
+
+        ``supports`` and ``contradicts`` edges are emitted only when the assessment
+        carries explicit source identifiers. Unsupported/inferred classifications
+        remain observable claim nodes but never gain a factual support edge.
+        """
+
+        payload = dict(assessment or {})
+        kind = _clean_token(payload.get("kind"), fallback="unknown_claim")
+        status = _clean_token(payload.get("status"), fallback="unsupported")
+        matched_text = str(payload.get("matched_text") or "")
+        claim_id = "claim:" + _sha256_json({
+            "kind": kind,
+            "matched_text_sha256": hashlib.sha256(matched_text.encode("utf-8")).hexdigest(),
+            "reason": str(payload.get("reason") or "")[:160],
+        })
+        raw_source_ids = payload.get("source_ids")
+        source_ids = _normalize_ids(
+            raw_source_ids if isinstance(raw_source_ids, (list, tuple, set)) else ()
+        )
+        sequence = len(self.transitions) + 1
+        self._ensure_node(claim_id, kind="claim", source=source, sequence=sequence)
+        evidence_ids: list[str] = []
+        for raw_id in source_ids[:32]:
+            evidence_id = "evidence:" + hashlib.sha256(raw_id.encode("utf-8")).hexdigest()
+            self._ensure_node(evidence_id, kind="evidence", source=source, sequence=sequence)
+            evidence_ids.append(evidence_id)
+        relation = None
+        if evidence_ids and status == "supported":
+            relation = "supports"
+        elif evidence_ids and status == "contradicted":
+            relation = "contradicts"
+        if relation:
+            for evidence_id in evidence_ids:
+                self._ensure_edge(
+                    evidence_id,
+                    claim_id,
+                    relation=relation,
+                    source=source,
+                    sequence=sequence,
+                    reason_code="explicit_epistemic_evidence",
+                )
+        observed = _normalize_ids((claim_id, *evidence_ids))
+        self._link_part_of_thought(observed, source=source, sequence=sequence)
+        transition_payload = {
+            "thought_id": self.thought_id,
+            "sequence": sequence,
+            "claim_id": claim_id,
+            "status": status,
+            "explicit_evidence_count": len(evidence_ids),
+            "relation": relation,
+            "nodes": [self.nodes[key].to_dict() for key in sorted(self.nodes)],
+            "edges": [edge.to_dict() for edge in self.edges],
+        }
+        self.transitions.append(CognitiveStateTransition(
+            sequence=sequence,
+            stage="epistemic_boundary",
+            event="claim_assessment_observed",
+            source=_clean_token(source, fallback="epistemic_claim_guard"),
+            observed_node_ids=observed,
+            continuity_ok=True,
+            state_sha256=_sha256_json(transition_payload),
+        ))
+        return {
+            "claim_id": claim_id,
+            "evidence_ids": evidence_ids,
+            "relation": relation,
+            "explicit_evidence_required": True,
+            "private_claim_text_recorded": False,
+        }
+
     @property
     def latest_state_sha256(self) -> str | None:
         return self.transitions[-1].state_sha256 if self.transitions else None
@@ -557,6 +639,7 @@ class CognitiveStateGraph:
             "state_graph_break_count": self.graph_break_count,
             "state_graph_state_sha256": self.latest_state_sha256,
             "state_graph_shadow_mode": self.shadow_mode,
+            "state_graph_control_mode": self.control_mode,
         }
 
     def to_dict(self) -> dict[str, Any]:
@@ -575,5 +658,6 @@ class CognitiveStateGraph:
             "graph_break_count": self.graph_break_count,
             "latest_state_sha256": self.latest_state_sha256,
             "shadow_mode": self.shadow_mode,
+            "control_mode": self.control_mode,
             "truth_boundary": self.truth_boundary,
         }
