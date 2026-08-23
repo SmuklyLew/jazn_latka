@@ -195,3 +195,5 @@ jobs:
           git fetch origin repair/pr151-v1604-pyright-final
           git rebase origin/repair/pr151-v1604-pyright-final
           git push origin HEAD:repair/pr151-v1604-pyright-final
+
+# retrigger 2026-08-23T18:20+02:00
