@@ -15,11 +15,11 @@ from latka_jazn.tools.package_export import build_package_plan
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
-def test_v1621_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
-    expected = ".".join(("16", "2", "1"))
+def test_v1622_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
+    expected = ".".join(("16", "2", "2"))
     assert DISTRIBUTION_VERSION == expected
     assert PACKAGE_VERSION == expected
-    assert PACKAGE_RELEASE_NAME == "-".join(("hard", "turn", "process", "isolation"))
+    assert PACKAGE_RELEASE_NAME == "-".join(("rest", "cloud", "performance", "hygiene"))
     assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == f"release_test/{expected}"
     assert release_metadata_sync._impl._schema_version_for_runtime("release_test", "v15.4.3.1") == "release_test/v15.4.3.1"
 

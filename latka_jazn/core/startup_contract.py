@@ -264,14 +264,21 @@ def raw_memory_status(root: Path) -> dict[str, Any]:
 def update_history_status(root: Path) -> dict[str, Any]:
     index = root / 'docs' / 'update_history' / 'INDEX.json'
     manifests = root / 'docs' / 'update_history' / 'manifests'
+    archived_manifests = root / 'docs' / 'archive' / 'manifest_history'
+    indexed = index.is_file()
     return {
         'schema_version': schema_version('update_history_status'),
-        'index_present': index.exists(),
-        'manifest_history_dir_present': manifests.exists(),
-        'historical_manifest_count': len(list(manifests.glob('MANIFEST*.json'))) if manifests.exists() else 0,
+        'status': 'indexed' if indexed else 'optional_not_configured',
+        'required': False,
+        'warning': False,
+        'missing_is_error': False,
+        'index_present': indexed,
+        'manifest_history_dir_present': manifests.is_dir(),
+        'archived_manifest_history_dir_present': archived_manifests.is_dir(),
+        'historical_manifest_count': len(list(manifests.glob('MANIFEST*.json'))) if manifests.is_dir() else 0,
         'root_historical_manifest_count': len([p for p in root.glob('MANIFEST*.json') if p.name not in {'MANIFEST_CURRENT.json', 'PACKAGE_INTEGRITY_MANIFEST.json'}]),
         'package_integrity_manifest': package_integrity_manifest_status(root).to_dict(),
-        'truth_boundary': 'Historyczne manifesty są materiałem audytowym. PACKAGE_INTEGRITY_MANIFEST.json służy kontroli paczki i wydania; jego brak nie blokuje uruchomienia runtime.',
+        'truth_boundary': 'Indeks docs/update_history i archiwum manifestów są opcjonalnym materiałem audytowym, więc ich brak nie jest ostrzeżeniem ani błędem runtime. PACKAGE_INTEGRITY_MANIFEST.json służy kontroli paczki i wydania; jego brak nie blokuje uruchomienia runtime.',
     }
 
 def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:

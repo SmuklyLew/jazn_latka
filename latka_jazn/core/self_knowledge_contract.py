@@ -175,8 +175,6 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         _source_status(root, "latka_jazn/model_adapters/openai_responses_adapter.py", "openai_adapter"),
         _source_status(root, "latka_jazn/model_adapters/local_llm_adapter.py", "ollama_adapter"),
         _source_status(root, "latka_jazn/model_adapters/chatgpt_runtime_adapter.py", "chatgpt_host_adapter"),
-        _source_status(root, "docs/update_history", "procedural_update_history"),
-        _source_status(root, "docs/archive/manifest_history", "archived_manifest_history"),
     ]
     blocking: list[str] = []
     if contract_error:
@@ -202,9 +200,19 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         "contract": contract.get("learned_procedures") or {},
         "docs_update_history_present": (root / "docs" / "update_history").exists(),
         "archived_manifest_history_present": (root / "docs" / "archive" / "manifest_history").exists(),
+        "docs_update_history_status": (
+            "indexed" if (root / "docs" / "update_history" / "INDEX.json").is_file()
+            else "optional_not_configured"
+        ),
+        "archived_manifest_history_status": (
+            "available" if (root / "docs" / "archive" / "manifest_history").is_dir()
+            else "optional_not_configured"
+        ),
+        "optional_history_required": False,
+        "optional_history_warning": False,
         "tests_present": (root / "tests").exists(),
         "git_present": (root / ".git").exists(),
-        "truth_boundary": "Procedury po aktualizacji są wiedzą operacyjną: wymagają testów/statusów, nie są wspomnieniem emocjonalnym ani dowodem tożsamości.",
+        "truth_boundary": "Procedury po aktualizacji są wiedzą operacyjną: wymagają testów/statusów, nie są wspomnieniem emocjonalnym ani dowodem tożsamości. Opcjonalne indeksy historii nie są wymaganiem gotowości runtime.",
     }
     ready = contract_error is None and identity_error is None
     warnings = [capability_warning] if capability_warning else []

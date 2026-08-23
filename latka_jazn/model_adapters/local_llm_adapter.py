@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 from time import perf_counter
 from typing import Any
@@ -9,128 +10,46 @@ from urllib.request import Request, urlopen
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
+from latka_jazn.core.local_model_context_compiler import (
+    DEFAULT_CONTEXT_MAX_CHARS,
+    compile_local_model_context,
+)
 from latka_jazn.nlp.response_language_guard import assess_response_language, user_explicitly_requested_non_polish
 
 
-
-MODEL_CONTEXT_MAX_CHARS_DEFAULT = 24000
+MODEL_CONTEXT_MAX_CHARS_DEFAULT = DEFAULT_CONTEXT_MAX_CHARS
+LOCAL_MODEL_USER_PROMPT_MAX_CHARS_DEFAULT = 8_000
+LOCAL_MODEL_REQUEST_MAX_BYTES_DEFAULT = 65_536
+LOCAL_MODEL_TELEMETRY_MAX_SAMPLES = 256
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
 
-def _clip_context_value(value: Any, *, depth: int = 0) -> Any:
-    if depth >= 4:
-        return str(value)[:1200]
-    if isinstance(value, str):
-        return value[:2000]
-    if isinstance(value, (int, float, bool)) or value is None:
-        return value
-    if isinstance(value, list):
-        return [_clip_context_value(item, depth=depth + 1) for item in value[:8]]
-    if isinstance(value, dict):
-        return {str(key): _clip_context_value(item, depth=depth + 1) for key, item in list(value.items())[:40]}
-    return str(value)[:1200]
-
-
-def _compact_model_context(value: Any) -> tuple[dict[str, Any], dict[str, Any]]:
-    raw = _as_dict(value)
-    selected_keys = (
-        "schema_version", "user_message", "detected_intent", "route", "nlg_plan",
-        "operational_thought_frame", "voice_source_contract", "allowed_memory_items",
-        "forbidden_claims", "required_truth_boundaries", "output_instructions",
-        "token_budget_hint", "dialogue_context", "self_state_runtime", "turn_response_policy",
-    )
-    compact = {
-        key: _clip_context_value(raw.get(key))
-        for key in selected_keys
-        if raw.get(key) not in (None, "", [], {})
-    }
-    full_canon = _as_dict(raw.get("full_canon_model_context"))
-    if full_canon:
-        immutable = _as_dict(full_canon.get("immutable_canon"))
-        compact["full_canon_model_context"] = {
-            "schema_version": full_canon.get("schema_version"),
-            "read_only": full_canon.get("read_only"),
-            "immutable_canon_sha256": full_canon.get("immutable_canon_sha256"),
-            "voice_source_contract": _clip_context_value(full_canon.get("voice_source_contract")),
-            "canon_presence": _clip_context_value(full_canon.get("canon_presence")),
-            "immutable_canon": {
-                key: _clip_context_value(immutable.get(key))
-                for key in ("identity_core", "character_profile", "relation_canon", "memory_truth_boundary", "symbolic_world")
-                if immutable.get(key) not in (None, "", [], {})
-            },
-        }
+def _compact_model_context(
+    value: Any,
+    *,
+    user_text: str = "",
+) -> tuple[dict[str, Any], dict[str, Any]]:
     try:
         max_chars = max(8000, int(os.environ.get("JAZN_MODEL_CONTEXT_MAX_CHARS", MODEL_CONTEXT_MAX_CHARS_DEFAULT)))
     except (TypeError, ValueError):
         max_chars = MODEL_CONTEXT_MAX_CHARS_DEFAULT
-    original_chars = len(json.dumps(raw, ensure_ascii=False, default=str))
+    result = compile_local_model_context(
+        value,
+        user_text=user_text,
+        max_chars=max_chars,
+    )
+    return result.context, result.diagnostics
 
-    def encoded() -> str:
-        return json.dumps(compact, ensure_ascii=False, default=str)
 
-    serialized = encoded()
-    for removable in ("operational_thought_frame", "self_state_runtime", "forbidden_claims", "required_truth_boundaries"):
-        if len(serialized) <= max_chars:
-            break
-        compact.pop(removable, None)
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        compact["allowed_memory_items"] = list(compact.get("allowed_memory_items") or [])[:3]
-        compact["context_budget_notice"] = "model context reduced to fit JAZN_MODEL_CONTEXT_MAX_CHARS"
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        compact = {
-            key: compact.get(key)
-            for key in ("user_message", "detected_intent", "route", "nlg_plan", "dialogue_context", "output_instructions", "full_canon_model_context")
-            if compact.get(key) not in (None, "", [], {})
-        }
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        canon = _as_dict(compact.get("full_canon_model_context"))
-        compact["full_canon_model_context"] = {
-            key: canon.get(key)
-            for key in ("schema_version", "read_only", "immutable_canon_sha256", "voice_source_contract", "canon_presence")
-            if canon.get(key) not in (None, "", [], {})
-        }
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        compact = {
-            "user_message": str(compact.get("user_message") or "")[:2000],
-            "detected_intent": compact.get("detected_intent"),
-            "route": compact.get("route"),
-            "dialogue_context": _clip_context_value(compact.get("dialogue_context") or {}),
-            "output_instructions": list(compact.get("output_instructions") or [])[:8],
-            "full_canon_model_context": {
-                "immutable_canon_sha256": _as_dict(compact.get("full_canon_model_context")).get("immutable_canon_sha256"),
-                "canon_presence": _as_dict(compact.get("full_canon_model_context")).get("canon_presence"),
-            },
-            "context_budget_notice": "hard-reduced to fit JAZN_MODEL_CONTEXT_MAX_CHARS",
-        }
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        compact["dialogue_context"] = {}
-        compact["output_instructions"] = []
-        serialized = encoded()
-    if len(serialized) > max_chars:
-        compact = {
-            "user_message": str(compact.get("user_message") or "")[:1000],
-            "detected_intent": str(compact.get("detected_intent") or "")[:120],
-            "route": str(compact.get("route") or "")[:120],
-            "full_canon_model_context": {
-                "immutable_canon_sha256": _as_dict(compact.get("full_canon_model_context")).get("immutable_canon_sha256"),
-            },
-            "context_budget_notice": "minimal context after hard budget enforcement",
-        }
-        serialized = encoded()
-    return compact, {
-        "original_context_chars": original_chars,
-        "compacted_context_chars": len(serialized),
-        "context_max_chars": max_chars,
-        "context_compacted": original_chars > len(serialized),
-    }
+def _percentile(values: list[float], quantile: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(float(value) for value in values)
+    index = max(0, min(len(ordered) - 1, math.ceil(quantile * len(ordered)) - 1))
+    return round(ordered[index], 3)
 
 
 class LocalLlmAdapter:
@@ -154,6 +73,43 @@ class LocalLlmAdapter:
         self._last_probe_error: str | None = None
         self._last_generation_succeeded = False
         self._last_generation: dict[str, Any] = {}
+        self._performance_samples: list[dict[str, float]] = []
+
+    def _performance_summary(self) -> dict[str, Any]:
+        request_bytes = [item["request_bytes"] for item in self._performance_samples]
+        prompt_tokens = [item["prompt_tokens"] for item in self._performance_samples]
+        latency_ms = [item["latency_ms"] for item in self._performance_samples]
+        return {
+            "sample_count": len(self._performance_samples),
+            "window_max_samples": LOCAL_MODEL_TELEMETRY_MAX_SAMPLES,
+            "request_bytes_p50": _percentile(request_bytes, 0.50),
+            "request_bytes_p95": _percentile(request_bytes, 0.95),
+            "prompt_tokens_p50": _percentile(prompt_tokens, 0.50),
+            "prompt_tokens_p95": _percentile(prompt_tokens, 0.95),
+            "latency_ms_p50": _percentile(latency_ms, 0.50),
+            "latency_ms_p95": _percentile(latency_ms, 0.95),
+            "raw_payload_recorded": False,
+            "content_recorded": False,
+        }
+
+    def _record_performance_sample(self, metadata: dict[str, Any]) -> None:
+        try:
+            observed_tokens = float(
+                metadata.get("prompt_eval_count")
+                or metadata.get("estimated_prompt_tokens")
+                or 0.0
+            )
+            sample = {
+                "request_bytes": float(metadata.get("request_bytes") or 0.0),
+                "prompt_tokens": observed_tokens,
+                "latency_ms": float(metadata.get("wall_clock_duration_ms") or 0.0),
+            }
+        except (TypeError, ValueError):
+            return
+        self._performance_samples.append(sample)
+        if len(self._performance_samples) > LOCAL_MODEL_TELEMETRY_MAX_SAMPLES:
+            del self._performance_samples[:-LOCAL_MODEL_TELEMETRY_MAX_SAMPLES]
+        metadata["rolling_performance"] = self._performance_summary()
 
     def describe(self) -> dict:
         configured = bool(self.model)
@@ -184,6 +140,7 @@ class LocalLlmAdapter:
                 "model": self.model or "not_configured",
                 "api_base": self.api_base,
                 "last_generation": dict(self._last_generation),
+                "local_request_performance": self._performance_summary(),
             },
         )
 
@@ -263,9 +220,23 @@ class LocalLlmAdapter:
         *,
         strict_retry: bool,
     ) -> tuple[str, dict[str, Any], BaseException | None]:
-        model_context, context_diagnostics = _compact_model_context(request.system_context or {})
-        system_text = self._system_text(request, strict_retry=strict_retry, model_context=model_context)
+        request_started = perf_counter()
+        model_context, context_diagnostics = _compact_model_context(
+            request.system_context or {},
+            user_text=request.prompt,
+        )
+        context_compile_duration_ms = round(
+            max(0.0, perf_counter() - request_started) * 1000.0,
+            3,
+        )
         dialogue_context = _as_dict(model_context.get("dialogue_context"))
+        system_context = dict(model_context)
+        system_context.pop("dialogue_context", None)
+        system_text = self._system_text(
+            request,
+            strict_retry=strict_retry,
+            model_context=system_context,
+        )
         messages = [{"role": "system", "content": system_text}]
         previous_user = str(dialogue_context.get("previous_user_text") or "").strip()
         previous_assistant = str(dialogue_context.get("previous_assistant_text") or "").strip()
@@ -278,6 +249,26 @@ class LocalLlmAdapter:
             num_ctx = max(4096, int(os.environ.get("JAZN_OLLAMA_NUM_CTX", "8192")))
         except (TypeError, ValueError):
             num_ctx = 8192
+        try:
+            user_prompt_max_chars = max(
+                1_000,
+                int(os.environ.get(
+                    "JAZN_LOCAL_MODEL_USER_PROMPT_MAX_CHARS",
+                    LOCAL_MODEL_USER_PROMPT_MAX_CHARS_DEFAULT,
+                )),
+            )
+        except (TypeError, ValueError):
+            user_prompt_max_chars = LOCAL_MODEL_USER_PROMPT_MAX_CHARS_DEFAULT
+        try:
+            request_max_bytes = max(
+                16_384,
+                int(os.environ.get(
+                    "JAZN_LOCAL_MODEL_REQUEST_MAX_BYTES",
+                    LOCAL_MODEL_REQUEST_MAX_BYTES_DEFAULT,
+                )),
+            )
+        except (TypeError, ValueError):
+            request_max_bytes = LOCAL_MODEL_REQUEST_MAX_BYTES_DEFAULT
         payload = {
             "model": self.model,
             "stream": False,
@@ -286,6 +277,11 @@ class LocalLlmAdapter:
             "options": {"num_predict": self.max_output_tokens, "num_ctx": num_ctx},
         }
         encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        estimated_prompt_tokens = int(math.ceil(sum(
+            len(str(message.get("content") or ""))
+            for message in messages
+        ) / 4.0))
+        available_prompt_tokens = max(512, num_ctx - self.max_output_tokens - 512)
         metadata: dict[str, Any] = {
             "requested_model": self.model,
             "strict_retry": strict_retry,
@@ -295,15 +291,48 @@ class LocalLlmAdapter:
             "message_count": len(messages),
             "ollama_num_ctx": num_ctx,
             "request_bytes": len(encoded),
+            "request_max_bytes": request_max_bytes,
+            "estimated_prompt_tokens": estimated_prompt_tokens,
+            "available_prompt_tokens": available_prompt_tokens,
+            "user_prompt_max_chars": user_prompt_max_chars,
+            "context_compile_duration_ms": context_compile_duration_ms,
             **context_diagnostics,
         }
+        budget_error_code = None
+        if context_diagnostics.get("ok") is not True:
+            budget_error_code = str(
+                context_diagnostics.get("error_code")
+                or "local_context_compilation_rejected"
+            )
+        elif len(request.prompt) > user_prompt_max_chars:
+            budget_error_code = "local_model_user_prompt_budget_exceeded"
+        elif len(encoded) > request_max_bytes:
+            budget_error_code = "local_model_request_byte_budget_exceeded"
+        elif estimated_prompt_tokens > available_prompt_tokens:
+            budget_error_code = "local_model_prompt_token_budget_exceeded"
+        if budget_error_code is not None:
+            error = ValueError(budget_error_code)
+            metadata.update({
+                "status": "context_rejected",
+                "error_code": budget_error_code,
+                "error_type": type(error).__name__,
+                "error": budget_error_code,
+                "timed_out": False,
+                "fallback_required": True,
+                "wall_clock_duration_ms": round(
+                    max(0.0, perf_counter() - request_started) * 1000.0,
+                    3,
+                ),
+            })
+            self._record_performance_sample(metadata)
+            return "", metadata, error
         req = Request(
             f"{self.api_base}/api/chat",
             data=encoded,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        started = perf_counter()
+        transport_started = perf_counter()
         try:
             with urlopen(req, timeout=self.timeout_seconds) as response:
                 data = json.loads(response.read().decode("utf-8"))
@@ -357,10 +386,15 @@ class LocalLlmAdapter:
             )
             return "", metadata, exc
         finally:
-            metadata["wall_clock_duration_ms"] = round(
-                max(0.0, perf_counter() - started) * 1000.0,
+            metadata["request_transport_duration_ms"] = round(
+                max(0.0, perf_counter() - transport_started) * 1000.0,
                 3,
             )
+            metadata["wall_clock_duration_ms"] = round(
+                max(0.0, perf_counter() - request_started) * 1000.0,
+                3,
+            )
+            self._record_performance_sample(metadata)
 
     def _failure_response(
         self,
@@ -369,7 +403,13 @@ class LocalLlmAdapter:
         attempts: list[dict[str, Any]],
     ) -> ModelAdapterResponse:
         last = attempts[-1] if attempts else {}
-        if isinstance(error, HTTPError):
+        context_rejected = str(last.get("status") or "") == "context_rejected"
+        if context_rejected:
+            status = "context_rejected"
+            self._last_probe_error = str(
+                last.get("error_code") or "local_context_compilation_rejected"
+            )
+        elif isinstance(error, HTTPError):
             status = f"http_error_{error.code}"
             self._last_probe_error = status
         else:
@@ -377,8 +417,9 @@ class LocalLlmAdapter:
             self._last_probe_error = str(
                 last.get("error_code") or "local_provider_unavailable"
             )
-        self._endpoint_reachable = False
-        self._probe_state = "probed_fail"
+        if not context_rejected:
+            self._endpoint_reachable = False
+            self._probe_state = "probed_fail"
         self._last_generation_succeeded = False
         self._last_generation = {
             "status": status,
@@ -504,5 +545,8 @@ class LocalLlmAdapter:
             last_probe_error=self._last_probe_error,
             can_attempt_model_guided_speech=configured,
             can_generate_model_guided_speech=bool(configured and self._last_generation_succeeded),
-            capabilities={"last_generation": dict(self._last_generation)},
+            capabilities={
+                "last_generation": dict(self._last_generation),
+                "local_request_performance": self._performance_summary(),
+            },
         )

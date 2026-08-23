@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "16.2.1"
-PACKAGE_VERSION = "16.2.1"
-PACKAGE_RELEASE_NAME = "hard-turn-process-isolation"
+DISTRIBUTION_VERSION = "16.2.2"
+PACKAGE_VERSION = "16.2.2"
+PACKAGE_RELEASE_NAME = "rest-cloud-performance-hygiene"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

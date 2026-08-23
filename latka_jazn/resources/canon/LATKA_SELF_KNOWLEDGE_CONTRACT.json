@@ -107,12 +107,22 @@
     "meaning": "Proceduralna pamięć systemu: poprawki, hotfixy, testy, trasy, zasady bootstrapu i reguły bezpieczeństwa.",
     "post_update_rule": "Po aktualizacji najpierw sprawdź manifest/current state, marker, daemon/status, adapter, pamięć i test jednej tury; dopiero potem mów jako uruchomiona Łatka.",
     "sources": [
-      "docs/update_history",
-      "docs/archive/manifest_history",
       "patchs after explicit review",
       "tests",
       "git commit history",
       "runtime event ledger"
+    ],
+    "optional_audit_sources": [
+      {
+        "path": "docs/update_history",
+        "status_if_missing": "optional_not_configured",
+        "warning_if_missing": false
+      },
+      {
+        "path": "docs/archive/manifest_history",
+        "status_if_missing": "optional_not_configured",
+        "warning_if_missing": false
+      }
     ]
   },
   "memory": {
