@@ -3,18 +3,20 @@ from __future__ import annotations
 """v16 canonical-workspace adapter for LivingMemory.
 
 The full read-only recall implementation is kept in ``_living_memory_gateway_impl``.
-This adapter changes only source-registry discovery so mutable host state is read
-from the single canonical ``workspace_runtime`` rather than from a per-version
-runtime directory.
+This adapter changes source-registry discovery so mutable host state is read from the
+single canonical ``workspace_runtime`` and applies the v16.2.3 referential-focus
+contract before the shared search implementation runs.
 """
 
+from copy import copy, deepcopy
+from dataclasses import replace
 import json
 import os
 import time
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory._living_memory_gateway_impl import (
     REGISTRY_FILENAME,
@@ -66,6 +68,47 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         if path.is_file():
             return path
         return cls._candidate_sqlite_dir(path) / CANONICAL_DATABASE_NAME
+
+    def _referential_plan(self, plan: Any) -> Any:
+        mode = str(getattr(plan, "search_mode", None) or "")
+        context_query = str(getattr(plan, "context_query", None) or "").strip()
+        if mode != "referential_followup" or not context_query:
+            return plan
+        context_plan = MemorySearchPlanner(self.root).plan(context_query)
+        focus = list(context_plan.focus_terms or [])
+        if not focus:
+            return plan
+        try:
+            return replace(plan, focus_terms=focus)
+        except TypeError:
+            clone = copy(plan)
+            try:
+                setattr(clone, "focus_terms", focus)
+            except (AttributeError, TypeError):
+                return plan
+            return clone
+
+    def search(
+        self,
+        plan: Any,
+        *,
+        limit: int = 6,
+        should_continue: Any | None = None,
+    ) -> dict[str, Any]:
+        effective_plan = self._referential_plan(plan)
+        result = super().search(
+            effective_plan,
+            limit=limit,
+            should_continue=should_continue,
+        )
+        if effective_plan is not plan:
+            result["referential_focus"] = {
+                "status": "previous_query_focus_selected",
+                "control_instruction_used_as_fts_term": False,
+                "focus_term_count": len(getattr(effective_plan, "focus_terms", None) or []),
+                "private_content_recorded_in_telemetry": False,
+            }
+        return result
 
     def discover(self) -> list[dict[str, Any]]:
         if (
