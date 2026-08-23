@@ -422,6 +422,16 @@ def attach_memory_package(
                 report,
                 exit_code=13,
             )
+        runtime_version = preflight.version
+        if runtime_version is None:
+            report["runtime_preflight_version_missing"] = True
+            return MemoryAttachResult(
+                False,
+                "runtime_not_verified",
+                str(runtime_root),
+                report,
+                exit_code=13,
+            )
 
         daemon = status_daemon(JaznConfig(root=runtime_root))
         report["daemon_status_before"] = daemon
@@ -481,7 +491,7 @@ def attach_memory_package(
         )
         return _finalize_memory_attach(
             runtime_root,
-            runtime_version=preflight.version,
+            runtime_version=runtime_version,
             zip_name=verified.zip_name,
             manifest=verified.manifest,
             backup_memory=backup_memory,
