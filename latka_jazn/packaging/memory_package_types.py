@@ -4,11 +4,13 @@ import json
 import os
 import sqlite3
 import uuid
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 from latka_jazn.core.package_integrity_manifest import sha256_file
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.version import schema_version
 
 MEMORY_PACKAGE_MANIFEST_PATH = "memory/MEMORY_PACKAGE_MANIFEST.json"
@@ -92,7 +94,7 @@ def _database_identity(connection: sqlite3.Connection) -> dict[str, Any] | None:
 
 def inspect_sqlite_memory_file(path: Path, *, legacy: bool = False) -> dict[str, Any]:
     path = Path(path).resolve()
-    with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=30.0) as connection:
+    with closing(connect_runtime_readonly(path, timeout_ms=30_000)) as connection:
         connection.execute("PRAGMA query_only=ON")
         connection.execute("PRAGMA busy_timeout=30000")
         quick = str(connection.execute("PRAGMA quick_check(1)").fetchone()[0])

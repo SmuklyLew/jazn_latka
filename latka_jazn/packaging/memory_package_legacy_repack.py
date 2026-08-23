@@ -14,6 +14,7 @@ import uuid
 import zipfile
 
 from latka_jazn.core.package_integrity_manifest import sha256_file
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.storage_limits import (
     DEFAULT_RAW_SEGMENT_MAX_BYTES,
     DEFAULT_RAW_SEGMENT_TARGET_BYTES,
@@ -435,7 +436,7 @@ def _extract_verified_member(
 
 
 def _sqlite_online_backup(source: Path, destination: Path) -> dict[str, Any]:
-    source_connection = sqlite3.connect(source.as_uri() + "?mode=ro", uri=True, timeout=30.0)
+    source_connection = connect_runtime_readonly(source, timeout_ms=30_000)
     target_connection = sqlite3.connect(destination, timeout=30.0)
     try:
         source_connection.execute("PRAGMA busy_timeout=30000")

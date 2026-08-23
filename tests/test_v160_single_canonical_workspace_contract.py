@@ -16,10 +16,10 @@ from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_RELEASE_NAME, PACKA
 
 
 def test_v1610_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
-    assert DISTRIBUTION_VERSION == "16.1.0"
-    assert PACKAGE_VERSION == "16.1.0"
-    assert PACKAGE_RELEASE_NAME == "epistemic-offline-rest-consolidation"
-    assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == "release_test/16.1.0"
+    assert DISTRIBUTION_VERSION == "16.1.1"
+    assert PACKAGE_VERSION == "16.1.1"
+    assert PACKAGE_RELEASE_NAME == "single-unified-memory-runtime"
+    assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == "release_test/16.1.1"
     assert release_metadata_sync._impl._schema_version_for_runtime("release_test", "v15.4.3.1") == "release_test/v15.4.3.1"
 
 

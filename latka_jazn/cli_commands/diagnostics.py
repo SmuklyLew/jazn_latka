@@ -10,11 +10,18 @@ from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.chatgpt_host_pending_store import host_request_store_status
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 from latka_jazn.core.readiness import evaluate_runtime_readiness
-from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
+from latka_jazn.core.runtime_daemon import (
+    DEFAULT_DAEMON_HOST,
+    DEFAULT_DAEMON_PORT,
+    daemon_url,
+    http_json,
+    status_daemon,
+)
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.core.startup_contract import build_startup_status
 from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
+from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
@@ -67,6 +74,12 @@ def _daemon_runtime_write_ready(daemon: dict[str, Any]) -> tuple[bool, str]:
     if isinstance(nested, bool):
         return nested, "daemon.ping.runtime_write_ready"
 
+    readiness_value = daemon.get("readiness")
+    readiness: dict[str, Any] = readiness_value if isinstance(readiness_value, dict) else {}
+    nested = readiness.get("runtime_write_ready")
+    if isinstance(nested, bool):
+        return nested, "daemon.readiness.runtime_write_ready"
+
     for source, payload in (
         ("daemon.runtime_write_access_status.ok", daemon.get("runtime_write_access_status")),
         ("daemon.ping.runtime_write_access_status.ok", ping.get("runtime_write_access_status")),
@@ -74,6 +87,24 @@ def _daemon_runtime_write_ready(daemon: dict[str, Any]) -> tuple[bool, str]:
         if isinstance(payload, dict) and isinstance(payload.get("ok"), bool):
             return bool(payload["ok"]), source
     return False, "unavailable"
+
+
+def _probe_daemon_readiness(host: str, port: int) -> dict[str, Any]:
+    try:
+        payload = http_json(
+            "GET",
+            daemon_url(host, int(port), "/ready"),
+            timeout=10.0,
+        )
+        payload.setdefault("endpoint", "/ready")
+        return payload
+    except Exception as exc:
+        return {
+            "ok": False,
+            "endpoint": "/ready",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
 
 
 def status_payload(
@@ -94,12 +125,27 @@ def status_payload(
         marker_output=marker_output,
         probe_endpoint=probe_endpoint,
     )
+    daemon["readiness"] = (
+        _probe_daemon_readiness(daemon_host, daemon_port)
+        if probe_endpoint and daemon.get("endpoint_reachable") is True
+        else {"ok": False, "endpoint": "/ready", "probe_skipped": True}
+    )
     active_state = str(daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive")
     process_ok = active_state in {"active_trusted", "active_degraded"}
     runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     transactional_memory_ready = bool(transactional_memory.get("ready"))
     fully_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
     conversation_memory = startup.get("conversation_archive_status") or {}
+    try:
+        living_memory = LivingMemoryGateway(root).readiness()
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        living_memory = {
+            "status": "memory_readiness_probe_failed",
+            "memory_search_ready": False,
+            "legacy_search_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
     continuity = startup.get("memory_continuity_status") or {}
     rest_status = daemon.get("rest_cycle_status") or {}
     try:
@@ -117,7 +163,9 @@ def status_payload(
         }
     capability_readiness = {
         "runtime_ready": bool(process_ok and runtime_write_ready and transactional_memory_ready),
-        "memory_search_ready": bool(conversation_memory.get("ready_for_search")),
+        "memory_search_ready": bool(living_memory.get("memory_search_ready")),
+        "memory_search_status": living_memory.get("status"),
+        "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
         "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
         "rest_scheduler_ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
         "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),

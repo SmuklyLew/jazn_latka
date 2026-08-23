@@ -43,7 +43,16 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             store = store_type(self.path)
             store.close()
         with self.connect() as con:
+            previous = con.execute(
+                "SELECT value FROM unified_memory_meta WHERE key='schema_version'"
+            ).fetchone() if "unified_memory_meta" in {
+                str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            } else None
             con.executescript(EXTRA_SCHEMA)
+            indexed = int(con.execute("SELECT COUNT(*) FROM memory_records_fts").fetchone()[0])
+            records = int(con.execute("SELECT COUNT(*) FROM memory_records").fetchone()[0])
+            if previous is None or str(previous[0]) != UNIFIED_SCHEMA_VERSION or indexed != records:
+                con.execute("INSERT INTO memory_records_fts(memory_records_fts) VALUES('rebuild')")
             con.execute("INSERT OR REPLACE INTO unified_memory_meta(key,value) VALUES('schema_version',?)", (UNIFIED_SCHEMA_VERSION,))
             con.execute("INSERT OR REPLACE INTO unified_memory_meta(key,value) VALUES('layout','single_physical_database')")
             con.execute(

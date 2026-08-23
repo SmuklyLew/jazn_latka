@@ -7,7 +7,11 @@ import hashlib
 import json
 import sqlite3
 
-UNIFIED_SCHEMA_VERSION = "jazn_unified_memory/v2.4"
+UNIFIED_SCHEMA_VERSION = "jazn_unified_memory/v2.5"
+COMPATIBLE_UNIFIED_SCHEMA_VERSIONS = (
+    "jazn_unified_memory/v2.4",
+    UNIFIED_SCHEMA_VERSION,
+)
 CANONICAL_DATABASE_NAME = "memory_jazn.sqlite3"
 LEGACY_DATABASE_NAMES = (
     "archive_chats.sqlite3",
@@ -72,6 +76,29 @@ CREATE TABLE IF NOT EXISTS unified_export_runs(
   completed_at_utc TEXT,
   report_json TEXT NOT NULL DEFAULT '{}'
 );
+CREATE VIRTUAL TABLE IF NOT EXISTS memory_records_fts USING fts5(
+  memory_id UNINDEXED,
+  content,
+  domain,
+  kind,
+  content='memory_records',
+  content_rowid='rowid',
+  tokenize='unicode61 remove_diacritics 2'
+);
+CREATE TRIGGER IF NOT EXISTS memory_records_fts_insert AFTER INSERT ON memory_records BEGIN
+  INSERT INTO memory_records_fts(rowid,memory_id,content,domain,kind)
+  VALUES(new.rowid,new.memory_id,new.content,new.domain,new.kind);
+END;
+CREATE TRIGGER IF NOT EXISTS memory_records_fts_delete AFTER DELETE ON memory_records BEGIN
+  INSERT INTO memory_records_fts(memory_records_fts,rowid,memory_id,content,domain,kind)
+  VALUES('delete',old.rowid,old.memory_id,old.content,old.domain,old.kind);
+END;
+CREATE TRIGGER IF NOT EXISTS memory_records_fts_update AFTER UPDATE OF memory_id,content,domain,kind ON memory_records BEGIN
+  INSERT INTO memory_records_fts(memory_records_fts,rowid,memory_id,content,domain,kind)
+  VALUES('delete',old.rowid,old.memory_id,old.content,old.domain,old.kind);
+  INSERT INTO memory_records_fts(rowid,memory_id,content,domain,kind)
+  VALUES(new.rowid,new.memory_id,new.content,new.domain,new.kind);
+END;
 CREATE INDEX IF NOT EXISTS idx_candidates_review_order
   ON candidates(status,importance DESC,confidence DESC,created_at_utc);
 CREATE INDEX IF NOT EXISTS idx_candidate_revisions_candidate
@@ -140,7 +167,7 @@ class UnifiedImportResult:
 
 
 __all__ = [
-    "CANONICAL_DATABASE_NAME", "COPY_ORDER", "EDITABLE_CANDIDATE_FIELDS", "EXTRA_SCHEMA",
+    "CANONICAL_DATABASE_NAME", "COMPATIBLE_UNIFIED_SCHEMA_VERSIONS", "COPY_ORDER", "EDITABLE_CANDIDATE_FIELDS", "EXTRA_SCHEMA",
     "LEGACY_DATABASE_NAMES", "UNIFIED_SCHEMA_VERSION", "UnifiedImportResult",
     "candidate_snapshot", "json_text", "quote", "sha_text", "utc_now",
 ]

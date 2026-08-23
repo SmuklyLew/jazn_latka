@@ -11,6 +11,7 @@ import re
 import sqlite3
 
 from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, fts_queries
 from latka_jazn.version import schema_version
 
@@ -39,7 +40,7 @@ class LivingMemoryHit:
 
 
 class LivingMemoryGateway:
-    """Read-only recall across the five-database memory rebuild architecture.
+    """Read-only recall from one native unified database or legacy compatibility.
 
     The gateway deliberately exposes no write, promotion or migration methods.  It
     reads only explicitly discoverable roots: the active runtime root, roots listed
@@ -175,9 +176,19 @@ class LivingMemoryGateway:
         for hit in hits:
             layer_hit_counts[hit.source_layer] = layer_hit_counts.get(hit.source_layer, 0) + 1
         selected = hits[: max(1, int(limit))]
+        native_ready = any(bool(report.get("memory_search_ready")) for report in source_reports)
+        legacy_ready = any(bool(report.get("legacy_search_ready")) for report in source_reports)
+        if native_ready:
+            status = "ready_native_unified"
+        elif legacy_ready:
+            status = "ready_legacy_compatibility_only"
+        else:
+            status = "no_registered_living_memory"
         return {
             "schema_version": SCHEMA_VERSION,
-            "status": "ready" if source_reports and any(r.get("recall_ready") for r in source_reports) else "no_registered_living_memory",
+            "status": status,
+            "memory_search_ready": native_ready,
+            "legacy_search_ready": legacy_ready,
             "search_mode": mode,
             "query": query,
             "cancelled": cancelled,
@@ -191,7 +202,11 @@ class LivingMemoryGateway:
             },
             "sources": source_reports,
             "issues": issues,
-            "search_order": [DATABASE_FILENAMES[key] for key in self.SEARCH_ORDER],
+            "search_order": (
+                ["memory_jazn.sqlite3:" + key for key in self.SEARCH_ORDER]
+                if native_ready
+                else [DATABASE_FILENAMES[key] for key in self.SEARCH_ORDER]
+            ),
             "import_catalog_used_for_recall": False,
             "truth_boundary": (
                 "Źródła L0/L1/L2/L3 są czytane tylko do odczytu. Trafienie z archiwum, dziennika lub doświadczeń "
@@ -211,11 +226,7 @@ class LivingMemoryGateway:
         *,
         should_continue: Callable[[], bool] | None = None,
     ) -> sqlite3.Connection:
-        uri = f"file:{path.as_posix()}?mode=ro"
-        con = sqlite3.connect(uri, uri=True, timeout=self.busy_timeout_ms / 1000)
-        con.row_factory = sqlite3.Row
-        con.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
-        con.execute("PRAGMA query_only=ON")
+        con = connect_runtime_readonly(path, timeout_ms=self.busy_timeout_ms)
         if should_continue is not None:
             def _progress() -> int:
                 try:
@@ -234,16 +245,23 @@ class LivingMemoryGateway:
         should_continue: Callable[[], bool] | None = None,
     ) -> list[LivingMemoryHit]:
         with closing(self._connect(path, should_continue=should_continue)) as con:
-            if "memory_records" not in self._table_names(con):
+            tables = self._table_names(con)
+            if "memory_records" not in tables:
                 return []
             params: list[Any] = []
             where = "active=1"
+            fts_query = ""
             if mode not in {"chronological_earliest", "chronological_latest"}:
                 tokens = self._tokens(query)
                 if not tokens:
                     return []
-                where += " AND (" + " OR ".join("content LIKE ?" for _ in tokens) + ")"
-                params.extend(f"%{token}%" for token in tokens)
+                if "memory_records_fts" in tables:
+                    fts_query = " OR ".join(f'"{token.replace(chr(34), chr(34) * 2)}"*' for token in tokens)
+                    where += " AND memory_records.rowid IN (SELECT rowid FROM memory_records_fts WHERE memory_records_fts MATCH ?)"
+                    params.append(fts_query)
+                else:
+                    where += " AND (" + " OR ".join("content LIKE ?" for _ in tokens) + ")"
+                    params.extend(f"%{token}%" for token in tokens)
             direction = "ASC" if mode == "chronological_earliest" else "DESC"
             order = f"created_at_utc {direction}, importance DESC" if mode.startswith("chronological_") else "importance DESC, confidence DESC, updated_at_utc DESC"
             params.append(limit)
@@ -252,6 +270,20 @@ class LivingMemoryGateway:
                 f"FROM memory_records WHERE {where} ORDER BY {order} LIMIT ?",
                 params,
             ).fetchall()
+            evidence_by_memory: dict[str, list[dict[str, str]]] = {}
+            if rows and "memory_evidence" in tables:
+                placeholders = ",".join("?" for _ in rows)
+                evidence_rows = con.execute(
+                    "SELECT memory_id,evidence_key,source_type,source_id FROM memory_evidence "
+                    f"WHERE memory_id IN ({placeholders}) ORDER BY memory_id,evidence_key",
+                    [str(row["memory_id"]) for row in rows],
+                ).fetchall()
+                for evidence in evidence_rows:
+                    evidence_by_memory.setdefault(str(evidence["memory_id"]), []).append({
+                        "evidence_id": str(evidence["evidence_key"]),
+                        "source_type": str(evidence["source_type"]),
+                        "source_id": str(evidence["source_id"]),
+                    })
         return [LivingMemoryHit(
             source_layer="memory_jazn",
             source_database=str(path),
@@ -264,7 +296,13 @@ class LivingMemoryGateway:
             importance=self._float(row["importance"]),
             relevance=self._relevance(query, str(row["content"] or ""), base=0.86),
             title=str(row["kind"] or row["domain"] or "pamięć aktywna"),
-            metadata={"tier": row["tier"], "kind": row["kind"], "domain": row["domain"]},
+            metadata={
+                "tier": row["tier"],
+                "kind": row["kind"],
+                "domain": row["domain"],
+                "evidence": evidence_by_memory.get(str(row["memory_id"]), []),
+                "search_index": "memory_records_fts" if fts_query else "bounded_table_scan",
+            },
         ) for row in rows if str(row["content"] or "").strip()]
 
     def _search_experience(
@@ -291,6 +329,22 @@ class LivingMemoryGateway:
                 f"FROM experiences WHERE {where} ORDER BY {order} LIMIT ?",
                 params,
             ).fetchall()
+            sources_by_experience: dict[str, list[dict[str, str | None]]] = {}
+            if rows and "experience_sources" in self._table_names(con):
+                placeholders = ",".join("?" for _ in rows)
+                source_rows = con.execute(
+                    "SELECT experience_id,source_database,source_type,source_record_id,source_sha256 "
+                    f"FROM experience_sources WHERE experience_id IN ({placeholders}) "
+                    "ORDER BY experience_id,source_database,source_type,source_record_id",
+                    [str(row["experience_id"]) for row in rows],
+                ).fetchall()
+                for source in source_rows:
+                    sources_by_experience.setdefault(str(source["experience_id"]), []).append({
+                        "source_database": str(source["source_database"]),
+                        "source_type": str(source["source_type"]),
+                        "source_record_id": str(source["source_record_id"]),
+                        "source_sha256": str(source["source_sha256"]) if source["source_sha256"] else None,
+                    })
         return [LivingMemoryHit(
             source_layer="experience",
             source_database=str(path),
@@ -303,7 +357,10 @@ class LivingMemoryGateway:
             importance=self._float(row["importance"]),
             relevance=self._relevance(query, f"{row['title'] or ''} {row['summary'] or ''}", base=0.78),
             title=str(row["title"] or "doświadczenie"),
-            metadata={"status": row["status"]},
+            metadata={
+                "status": row["status"],
+                "evidence_sources": sources_by_experience.get(str(row["experience_id"]), []),
+            },
         ) for row in rows if str(row["summary"] or row["title"] or "").strip()]
 
     def _search_journal(
@@ -355,6 +412,23 @@ class LivingMemoryGateway:
                     "ORDER BY importance DESC,COALESCE(event_time_start,created_at_utc) DESC LIMIT ?",
                     params,
                 ).fetchall()
+            sources_by_entry: dict[str, list[dict[str, str]]] = {}
+            if rows and "journal_entry_sources" in tables:
+                materialized_rows = list(rows)
+                rows = materialized_rows
+                placeholders = ",".join("?" for _ in materialized_rows)
+                source_rows = con.execute(
+                    "SELECT entry_id,source_id,source_record_id,content_sha256 "
+                    f"FROM journal_entry_sources WHERE entry_id IN ({placeholders}) "
+                    "ORDER BY entry_id,source_id,source_record_id",
+                    [str(row["entry_id"]) for row in materialized_rows],
+                ).fetchall()
+                for source in source_rows:
+                    sources_by_entry.setdefault(str(source["entry_id"]), []).append({
+                        "source_id": str(source["source_id"]),
+                        "source_record_id": str(source["source_record_id"]),
+                        "content_sha256": str(source["content_sha256"]),
+                    })
         return [LivingMemoryHit(
             source_layer="journal",
             source_database=str(path),
@@ -367,7 +441,10 @@ class LivingMemoryGateway:
             importance=self._float(row["importance"]),
             relevance=self._relevance(query, f"{row['title'] or ''} {row['summary'] or ''} {row['content'] or ''}", base=0.72),
             title=str(row["title"] or "wpis dziennika"),
-            metadata={"status": row["status"]},
+            metadata={
+                "status": row["status"],
+                "evidence_sources": sources_by_entry.get(str(row["entry_id"]), []),
+            },
         ) for row in rows if str(row["summary"] or row["content"] or row["title"] or "").strip()]
 
     def _search_archive(
@@ -493,7 +570,7 @@ class LivingMemoryGateway:
         out: list[LivingMemoryHit] = []
         seen: set[tuple[str, str]] = set()
         for hit in hits:
-            key = (hit.source_database, hit.record_id)
+            key = (hit.source_database, f"{hit.source_layer}:{hit.record_id}")
             if key in seen:
                 continue
             seen.add(key)

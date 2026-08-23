@@ -133,7 +133,9 @@ def test_gateway_reads_rebuilt_memory_in_order_without_import_catalog(tmp_path: 
 
     result = LivingMemoryGateway(runtime_root).search(plan, limit=4)
 
-    assert result["status"] == "ready"
+    assert result["status"] == "ready_legacy_compatibility_only"
+    assert result["memory_search_ready"] is False
+    assert result["legacy_search_ready"] is True
     assert result["import_catalog_used_for_recall"] is False
     assert result["search_order"] == [
         "memory_jazn.sqlite3", "experience.sqlite3", "journal.sqlite3", "archive_chats.sqlite3"
