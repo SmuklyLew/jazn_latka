@@ -93,7 +93,7 @@ def test_upload_artifact_is_pinned_with_explicit_pr_metadata_exception() -> None
     assert refs == [UPLOAD_ARTIFACT_V701_SHA] * 5
     assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in refs)
     assert text.count("if: failure()") == 4
-    assert text.count("if: github.event_name == 'pull_request'") == 4
+    assert text.count("if: github.event_name == 'pull_request'") == 3
     assert text.count("retention-days: 3") == 5
     assert "synchronized-release-metadata-${{ github.event.pull_request.head.sha }}" in text
 
