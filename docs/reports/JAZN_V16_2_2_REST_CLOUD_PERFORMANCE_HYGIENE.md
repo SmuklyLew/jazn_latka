@@ -1,6 +1,6 @@
 # Jaźń v16.2.2 — rest, cloud, performance and project hygiene
 
-Version: `16.2.2-rest-cloud-performance-hygiene`
+Release identity: derived exclusively from `latka_jazn/version.py`.
 
 ## Scope and truth boundary
 
