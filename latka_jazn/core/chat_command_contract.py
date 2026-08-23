@@ -1119,6 +1119,9 @@ def persist_chatgpt_host_visible_reply(
                     "used_memory_item_ids": list(reply.get("used_memory_item_ids") or []),
                     "host_candidate_validation": semantic_validation,
                 },
+                memory_evidence={
+                    "memory_source_ids": list(reply.get("used_memory_item_ids") or []),
+                },
             )
         finally:
             engine.shutdown()

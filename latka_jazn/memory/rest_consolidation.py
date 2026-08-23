@@ -5,6 +5,7 @@ import uuid
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.memory_tier_core_store import MemoryTierCoreStore
+from latka_jazn.memory.memory_promotion_gate import MemoryPromotionGate, PromotionDecision
 from latka_jazn.memory.memory_tiers import (
     MemoryKind,
     MemoryTier,
@@ -19,7 +20,6 @@ from latka_jazn.memory.rest_contracts import (
     RestConsolidationDisposition,
     RestReplayItem,
 )
-from latka_jazn.memory.rest_replay import RestReplayEngine
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("rest_consolidation_gate")
@@ -31,6 +31,7 @@ class RestConsolidationGate:
     def __init__(self, config: JaznConfig, *, shadow_mode: bool | None = None) -> None:
         self.config = config
         self.shadow_mode = bool(getattr(config, "rest_shadow_mode", True) if shadow_mode is None else shadow_mode)
+        self.promotion_gate = MemoryPromotionGate()
 
     def decide(
         self,
@@ -41,15 +42,24 @@ class RestConsolidationGate:
         decided_at_utc: str | None = None,
     ) -> RestConsolidationDecision:
         disposition = evaluation.recommended_disposition
-        anchors = [item for item in replay_items if RestReplayEngine.is_real_source_anchor(item)]
+        promotion = self.promotion_gate.assess_rest_candidate(
+            replay_items,
+            target_tier=MemoryTier.SHORT_TERM.value,
+            synthetic_source=True,
+        )
+        anchors = [item for item in replay_items if self.promotion_gate.is_verified_source_anchor(item)]
         reasons = list(evaluation.reasons)
+        reasons.extend(promotion.reasons)
         target_tier: str | None = None
         materialized_memory_id: str | None = None
 
         if disposition in {RestConsolidationDisposition.REFLECTION_CANDIDATE, RestConsolidationDisposition.PROCEDURE_CANDIDATE}:
-            if not anchors:
+            if promotion.decision is PromotionDecision.DENY:
                 disposition = RestConsolidationDisposition.REST_TRANSIENT
-                reasons.append("candidate_degraded_without_real_source_anchor")
+                reasons.append("candidate_denied_by_memory_promotion_gate")
+            elif promotion.decision is PromotionDecision.REQUIRE_USER_REVIEW:
+                disposition = RestConsolidationDisposition.USER_REVIEW_REQUIRED
+                reasons.append("candidate_requires_user_review")
             elif self.shadow_mode:
                 reasons.append("shadow_mode_no_memory_materialization")
             else:

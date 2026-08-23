@@ -23,10 +23,20 @@ branches and does not make either old architecture canonical again.
 
 ## `fix/epistemic-rest-consolidation-hardening` -> v16.1.0
 
-The old branch is retained as an evidence source for the collector, claim guard,
-hash-chained decision ledger, memory-promotion gate and offline rest pipeline.
-Each invariant is re-evaluated against current v16 final-visible, memory and rest
-contracts before implementation. Whole commits are not cherry-picked.
+| Historical invariant | Current v16 location | Disposition |
+| --- | --- | --- |
+| observable evidence classes stay distinct | `core/epistemic_evidence.py` | forward-ported with identifier-backed counts and verified rest report binding |
+| strong self/runtime claims fail closed | `core/epistemic_claim_guard.py` | forward-ported and applied to direct and host-finalized visible replies |
+| confidence never turns inference into fact | structured claim guard | forward-ported with explicit inferred/hypothetical/synthetic states |
+| bounded decision audit without chain-of-thought | `core/epistemic_decision_ledger.py` | forward-ported to canonical runtime workspace with hash-chain validation |
+| automatic L3 forbidden | `memory/memory_promotion_gate.py` and `rest_consolidation.py` | forward-ported; real anchors now require both a source locator and a valid integrity hash |
+| conflict requires review | memory promotion gate | forward-ported by stable source identity and divergent content hashes |
+| useful rest is independent of Dream | `memory/offline_rest_consolidation.py` and `core/rest_cycle_controller.py` | forward-ported as replay -> offline consolidation -> optional dream -> evaluation -> gate |
+| old ledger path under version root | none | corrected; decision ledger lives only in the canonical external runtime workspace |
+
+No commit from the old branch was cherry-picked. The historical code was used
+only to recover semantics and was adapted to current v16 finalization, turn
+staging, memory-tier and single-workspace contracts.
 
 ## Mandatory exclusions
 

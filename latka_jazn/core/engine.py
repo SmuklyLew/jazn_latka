@@ -45,6 +45,9 @@ from latka_jazn.core.visible_integrity import evaluate_origin_truth
 from latka_jazn.core.startup_contract import build_startup_status, build_startup_summary, build_truth_boundary_check
 from latka_jazn.core.continuity_badge import ContinuityBadgePolicy
 from latka_jazn.core.final_visible_reply_capture import FinalVisibleReplyCapture
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
+from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
 from latka_jazn.core.affect_mixer import AffectMixer
 from latka_jazn.core.dialogue_state import DialogueStateTracker
 from latka_jazn.memory.importer import MemoryImporter
@@ -1579,6 +1582,66 @@ class JaznEngine:
             "data_type": data_type,
         }
 
+    def _apply_epistemic_visible_boundary(
+        self,
+        *,
+        envelope: CognitiveTurnEnvelope,
+        final_visible_text: str,
+        runtime_provenance: dict[str, Any],
+        turn_context: TurnExecutionContext | None,
+    ) -> None:
+        def source_ids(items: Any, keys: tuple[str, ...]) -> list[str]:
+            out: list[str] = []
+            if not isinstance(items, list):
+                return out
+            for source_item in items:
+                source_data = json_object(source_item)
+                source_id = next(
+                    (str(source_data.get(key) or "").strip() for key in keys if source_data.get(key)),
+                    "",
+                )
+                if source_id and source_id not in out:
+                    out.append(source_id[:160])
+            return out
+
+        memory_ids = source_ids(
+            runtime_provenance.get("memory_sources_used"),
+            ("memory_id", "source_id", "id"),
+        )
+        external_ids = source_ids(
+            runtime_provenance.get("external_web_sources_used"),
+            ("source_id", "url", "id"),
+        )
+        evidence = EpistemicEvidenceCollector(self.config).collect(
+            memory_evidence={"memory_source_ids": memory_ids},
+            external_evidence={"external_source_ids": external_ids},
+        ).to_dict()
+        assessments = [
+            item.to_dict()
+            for item in EpistemicClaimGuard().enforce(final_visible_text, evidence=evidence)
+        ]
+        envelope.cognitive_frame["epistemic_evidence"] = evidence
+        envelope.cognitive_frame["epistemic_claims"] = assessments
+        if not assessments:
+            return
+
+        def append_decisions() -> None:
+            with EpistemicDecisionLedger(
+                epistemic_ledger_path(workspace_runtime_path(self.config.root))
+            ) as epistemic_ledger:
+                epistemic_ledger.append_assessments(
+                    turn_id=envelope.trace.turn_id,
+                    trace_id=envelope.trace.trace_id,
+                    assessments=assessments,
+                )
+
+        self._stage_turn_write(
+            turn_context,
+            data_type="epistemic_decision_ledger",
+            stage="host_visible_finalization",
+            commit=append_decisions,
+        )
+
     def _build_health_check_frame(
         self,
         text: str,
@@ -3047,6 +3110,7 @@ class JaznEngine:
             contract = FinalResponseContract.build(
                 turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, runtime_version=self.config.version, timestamp_header=envelope.trace.timestamp_header, timezone=envelope.trace.timezone, state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(), body=body, conversation_decision=decision_dict, continuity_badge_policy=continuity_badge_report,
             )
+        self._apply_epistemic_visible_boundary(envelope=envelope, final_visible_text=contract.final_visible_text, runtime_provenance=runtime_provenance_visible, turn_context=turn_context)
         runtime_turn_contract = RuntimeTurnContract(
             turn_id=envelope.trace.turn_id,
             trace_id=envelope.trace.trace_id,
@@ -3184,6 +3248,10 @@ class JaznEngine:
         state_emoticon: str,
         source: str = "chatgpt_visible_layer",
         client_context: dict | None = None,
+        runtime_evidence: dict[str, Any] | None = None,
+        memory_evidence: dict[str, Any] | None = None,
+        external_evidence: dict[str, Any] | None = None,
+        generated_evidence: dict[str, Any] | None = None,
     ) -> dict:
         """Persist an externally rendered final only with the verified turn envelope."""
         capture = FinalVisibleReplyCapture.build(
@@ -3200,6 +3268,11 @@ class JaznEngine:
             state_emoticon=state_emoticon,
             final_text=final_text,
             source=source,
+            config=self.config,
+            runtime_evidence=runtime_evidence,
+            memory_evidence=memory_evidence,
+            external_evidence=external_evidence,
+            generated_evidence=generated_evidence,
         )
         envelope_stub = {
             "schema_version": "external_final_visible_reply_envelope/v2",
@@ -3242,10 +3315,24 @@ class JaznEngine:
         if ledger_result is None:
             raise RuntimeError("final_visible_reply_ledger_write_failed")
         capture_payload = capture.to_dict()
+        epistemic_ledger_append: list[dict[str, Any]] = []
+        if capture.epistemic_claims:
+            with EpistemicDecisionLedger(
+                epistemic_ledger_path(workspace_runtime_path(self.config.root))
+            ) as epistemic_ledger:
+                epistemic_ledger_append = [
+                    item.to_dict()
+                    for item in epistemic_ledger.append_assessments(
+                        turn_id=turn_id,
+                        trace_id=trace_id,
+                        assessments=capture.epistemic_claims,
+                    )
+                ]
         return {
             **capture_payload,
             "final_visible_reply_capture": dict(capture_payload),
             "ledger_append": asdict(ledger_result),
+            "epistemic_ledger_append": epistemic_ledger_append,
         }
 
     def _is_status_request(self, low_text: str) -> bool:
