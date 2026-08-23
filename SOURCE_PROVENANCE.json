@@ -1,5 +1,5 @@
 {
-  "base_branch": "origin/master",
+  "base_branch": "master",
   "base_merge_commit": "734e121332b3d7d652f54810bc4c53429c0c58d9",
   "base_version": "16.2.2-rest-cloud-performance-hygiene",
   "commit_date": "2026-08-24T00:40:55+02:00",
