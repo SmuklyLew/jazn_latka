@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "1dc480c1d20ac08653f98c3c40ce18ac0c100aef",
+  "base_merge_commit": "21a450170ca1dd7b47c14f58869cee09682fafe4",
   "base_version": "16.2.3-provenance-retrieval-ci-closure",
-  "commit_date": "2026-08-24T01:13:44+02:00",
+  "commit_date": "2026-08-24T01:15:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-23T23:13:44+00:00",
+  "generated_at_utc": "2026-08-23T23:15:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b6695e4a4c5dcef738ca412a71c0cbcd488cc4ec",
+  "git_tree_sha": "e261c152bcf7f3abc9a018aeeb098ba4496ef88a",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
