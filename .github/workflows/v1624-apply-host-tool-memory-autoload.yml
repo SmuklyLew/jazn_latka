@@ -39,6 +39,10 @@ jobs:
           git apply /tmp/v16_2_4.patch
           git diff --check
 
+      - name: Install project test environment
+        shell: bash
+        run: python -m pip install -e . pytest
+
       - name: Run targeted regression tests
         shell: bash
         run: |
