@@ -118,7 +118,7 @@ TOOL_DEFINITIONS = [
                         "type": "object",
                         "additionalProperties": False,
                         "properties": {
-                            "tool": {"type": "string", "enum": ["web.run"]},
+                            "tool": {"type": "string", "enum": ["GitHub", "web.run"]},
                             "operation": {"type": "string", "minLength": 1, "maxLength": 64},
                             "source_refs": {
                                 "type": "array",

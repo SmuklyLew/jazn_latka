@@ -40,7 +40,7 @@ _MEMORY_ITEM_KEYS = (
 )
 _EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS = 8
 _EXTERNAL_TOOL_SOURCE_MAX_ITEMS = 16
-_EXTERNAL_TOOL_ALLOWED = {"web.run"}
+_EXTERNAL_TOOL_ALLOWED = {"web.run", "GitHub"}
 _EXTERNAL_TOOL_REF_RE = re.compile(r"^turn\d+[A-Za-z][A-Za-z0-9_]*\d+$")
 _EXTERNAL_TOOL_OPERATION_RE = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
 
@@ -109,6 +109,7 @@ def build_host_generation_context(
             "return_only_candidate_reply": True,
             "external_tool_evidence_required": external_web_required,
             "required_external_tool": "web.run" if external_web_required else None,
+            "accepted_host_tool_attestations": sorted(_EXTERNAL_TOOL_ALLOWED),
             "external_tool_evidence_is_host_attested": True,
             "runtime_does_not_independently_execute_host_web_tool": True,
         },
@@ -197,10 +198,14 @@ def evaluate_host_response_candidate(
     nlg_plan_value = model_context.get("nlg_plan")
     nlg_plan = nlg_plan_value if isinstance(nlg_plan_value, dict) else {}
     external_web_required = str(nlg_plan.get("source_policy") or "") == "requires_external_web"
-    if external_web_required and evidence_validation["ok"] is not True:
+    web_evidence_accepted = bool(
+        evidence_validation["ok"] is True
+        and any(item.get("tool") == "web.run" for item in evidence_validation["evidence"])
+    )
+    if external_web_required and not web_evidence_accepted:
         violations.append(
             "external_web_evidence_missing"
-            if not evidence_validation["evidence"]
+            if evidence_validation["ok"] is True or not evidence_validation["evidence"]
             else "external_web_evidence_invalid"
         )
     if not validate_host_generation_context(contract):
@@ -233,7 +238,7 @@ def evaluate_host_response_candidate(
         response_policy={
             "exact_runtime_required": False,
             "external_web_evidence_accepted": bool(
-                external_web_required and evidence_validation["ok"] is True
+                external_web_required and web_evidence_accepted
             ),
         },
     )
@@ -267,6 +272,8 @@ def evaluate_host_response_candidate(
             "errors": evidence_validation["errors"],
             "host_attested": True,
             "runtime_independently_verified_execution": False,
+            "accepted_tools": sorted(_EXTERNAL_TOOL_ALLOWED),
+            "web_evidence_accepted": web_evidence_accepted,
         },
         "violations": violations,
         "template_origin": template_origin,

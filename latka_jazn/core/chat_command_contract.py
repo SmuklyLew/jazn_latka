@@ -843,7 +843,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "Nie zmieniaj turn_id, trace_id, timestampu, autora ani host_request_contract_hash.",
         "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
         "Zadeklaruj każdy użyty identyfikator pamięci i nie używaj identyfikatorów spoza host_generation_context.allowed_memory_item_ids.",
-        "Jeżeli host rzeczywiście wykonał web.run, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
+        "Jeżeli host rzeczywiście wykonał web.run lub GitHub, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
         "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
     ]
     if requires_host and not host_generation_context_valid:
@@ -1126,7 +1126,7 @@ def persist_chatgpt_host_visible_reply(
                     "host_request_contract_hash": reply["host_request_contract_hash"],
                     "generation_executor": "chatgpt_host",
                     "used_memory_item_ids": list(reply.get("used_memory_item_ids") or []),
-                "external_tool_evidence": list(semantic_validation.get("external_tool_evidence") or []),
+                    "external_tool_evidence": list(semantic_validation.get("external_tool_evidence") or []),
                     "host_candidate_validation": semantic_validation,
                 },
                 memory_evidence={
