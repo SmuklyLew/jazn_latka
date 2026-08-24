@@ -373,6 +373,7 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
     trace = json_object(payload.get("trace"))
     final_text, final_text_field = _nonempty_text_from_fields(payload, CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS)
     used_memory_value = payload.get("used_memory_item_ids")
+    external_tool_evidence_value = payload.get("external_tool_evidence")
     values: dict[str, Any] = {
         "final_text": final_text,
         "final_text_field": final_text_field,
@@ -392,6 +393,11 @@ def extract_chatgpt_host_visible_reply_payload(payload: dict[str, Any]) -> tuple
         "used_memory_item_ids": (
             [str(item) for item in used_memory_value[:8]]
             if isinstance(used_memory_value, list)
+            else []
+        ),
+        "external_tool_evidence": (
+            list(external_tool_evidence_value[:8])
+            if isinstance(external_tool_evidence_value, list)
             else []
         ),
     }
@@ -820,6 +826,7 @@ def build_chatgpt_host_bridge_turn_contract(
                 "final_text": "<body albo kompletna widoczna koperta zgodna z runtime_ownership_contract>",
                 "final_text_sha256": "<sha256 kanonicznego UTF-8/LF pola final_text>",
                 "used_memory_item_ids": "<identyfikatory faktycznie użytych allowed_memory_items>",
+                "external_tool_evidence": "<bounded host-attested evidence only for tools actually executed outside runtime>",
             }
         except (TypeError, ValueError) as exc:
             bridge.update({
@@ -836,6 +843,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "Nie zmieniaj turn_id, trace_id, timestampu, autora ani host_request_contract_hash.",
         "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
         "Zadeklaruj każdy użyty identyfikator pamięci i nie używaj identyfikatorów spoza host_generation_context.allowed_memory_item_ids.",
+        "Jeżeli host rzeczywiście wykonał web.run, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
         "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
     ]
     if requires_host and not host_generation_context_valid:
@@ -1000,6 +1008,7 @@ def persist_chatgpt_host_visible_reply(
         final_text=reply["final_text"],
         host_generation_context=host_generation_context,
         used_memory_item_ids=list(reply.get("used_memory_item_ids") or []),
+        external_tool_evidence=list(reply.get("external_tool_evidence") or []),
     )
     if semantic_validation.get("accepted") is not True:
         release_claimed_host_request(config.root, turn_id=reply["turn_id"])
@@ -1117,6 +1126,7 @@ def persist_chatgpt_host_visible_reply(
                     "host_request_contract_hash": reply["host_request_contract_hash"],
                     "generation_executor": "chatgpt_host",
                     "used_memory_item_ids": list(reply.get("used_memory_item_ids") or []),
+                "external_tool_evidence": list(semantic_validation.get("external_tool_evidence") or []),
                     "host_candidate_validation": semantic_validation,
                 },
                 memory_evidence={

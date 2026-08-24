@@ -111,6 +111,29 @@ TOOL_DEFINITIONS = [
                     "items": {"type": "string", "minLength": 1, "maxLength": 256},
                     "maxItems": 8,
                 },
+                "external_tool_evidence": {
+                    "type": "array",
+                    "maxItems": 8,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "tool": {"type": "string", "enum": ["web.run"]},
+                            "operation": {"type": "string", "minLength": 1, "maxLength": 64},
+                            "source_refs": {
+                                "type": "array",
+                                "items": {"type": "string", "minLength": 1, "maxLength": 128},
+                                "maxItems": 16,
+                            },
+                            "source_urls": {
+                                "type": "array",
+                                "items": {"type": "string", "minLength": 8, "maxLength": 2048},
+                                "maxItems": 16,
+                            },
+                        },
+                        "required": ["tool", "operation"],
+                    },
+                },
                 "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
                 "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
             },

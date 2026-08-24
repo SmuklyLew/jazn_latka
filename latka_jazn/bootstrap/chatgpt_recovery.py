@@ -412,6 +412,205 @@ def _sqlite_health(root: Path) -> dict[str, Any]:
         return {"ok": False, "database": str(db_path), "reason": f"{type(exc).__name__}: {exc}"}
 
 
+
+def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = None) -> dict[str, Any]:
+    """Discover exactly one sidecar-declared memory package beside the system package."""
+
+    directory = Path(parts_dir).expanduser().resolve()
+    candidates: list[dict[str, Any]] = []
+    for sidecar_path in sorted(directory.glob("*.package.json")):
+        payload = _read_json(sidecar_path)
+        if not isinstance(payload, dict):
+            continue
+        if str(payload.get("profile") or "").strip().lower() != "memory":
+            continue
+        package_name = str(payload.get("package_name") or "").strip()
+        if package_name:
+            candidates.append(
+                {
+                    "package_name": package_name,
+                    "sidecar_path": str(sidecar_path),
+                    "sidecar": payload,
+                }
+            )
+    if explicit_zip_name:
+        wanted = str(explicit_zip_name).strip()
+        matches = [item for item in candidates if item["package_name"] == wanted]
+        if len(matches) != 1:
+            return {
+                "ok": False,
+                "state": "explicit_memory_package_not_found",
+                "requested": wanted,
+                "candidate_names": [item["package_name"] for item in candidates],
+            }
+        return {"ok": True, "state": "memory_package_discovered", **matches[0]}
+    if not candidates:
+        return {"ok": True, "state": "memory_package_not_present", "package_name": None}
+    if len(candidates) > 1:
+        return {
+            "ok": False,
+            "state": "memory_package_ambiguous",
+            "candidate_names": [item["package_name"] for item in candidates],
+        }
+    return {"ok": True, "state": "memory_package_discovered", **candidates[0]}
+
+
+def _memory_package_requires_v3_repack(sidecar: dict[str, Any]) -> dict[str, Any]:
+    """Decide whether legacy transport must be segmented before safe extraction."""
+
+    from latka_jazn.packaging.zip_resource_limits import ZipResourceLimits
+
+    if str(sidecar.get("memory_manifest_schema") or "").strip() == "jazn_memory_package_manifest/v3":
+        return {"required": False, "reason": "memory_transport_v3"}
+    limits = ZipResourceLimits.from_env()
+    entries = [item for item in sidecar.get("entries") or [] if isinstance(item, dict)]
+    total = sum(max(0, int(item.get("size_bytes") or 0)) for item in entries)
+    oversized = [
+        str(item.get("path") or "")
+        for item in entries
+        if int(item.get("size_bytes") or 0) > limits.max_member_uncompressed_bytes
+    ]
+    archive_format = str(sidecar.get("archive_format") or "").strip().lower()
+    required = bool(
+        oversized
+        or (archive_format == "binary" and total > limits.max_total_uncompressed_bytes)
+    )
+    return {
+        "required": required,
+        "reason": "legacy_transport_exceeds_safe_zip_limits" if required else "legacy_transport_within_safe_zip_limits",
+        "archive_format": archive_format,
+        "declared_total_uncompressed_bytes": total,
+        "oversized_members": oversized[:16],
+        "limits": limits.to_dict(),
+    }
+
+
+def _auto_attach_memory_before_daemon(
+    *,
+    destination: Path,
+    parts_dir: Path,
+    work_dir: Path,
+    memory_zip_name: str | None,
+    time_budget_seconds: float | None,
+    run_crc: bool,
+    force_reextract: bool,
+) -> dict[str, Any]:
+    """Attach and make memory wake-ready while the runtime daemon is stopped."""
+
+    existing_health = _sqlite_health(destination)
+    discovery = _discover_memory_package(parts_dir, memory_zip_name)
+    report: dict[str, Any] = {
+        "enabled": True,
+        "sqlite_before": existing_health,
+        "discovery": {key: value for key, value in discovery.items() if key != "sidecar"},
+    }
+    if discovery.get("ok") is not True:
+        report.update({"ok": False, "state": str(discovery.get("state") or "memory_discovery_failed")})
+        return report
+    if discovery.get("state") == "memory_package_not_present":
+        report.update({
+            "ok": existing_health.get("ok") is True,
+            "state": "existing_memory_kept" if existing_health.get("ok") is True else "memory_package_not_present",
+        })
+        return report
+    from latka_jazn.packaging.memory_package_contract import (
+        LegacyMemoryRepackError,
+        attach_memory_package,
+        repack_legacy_memory_package,
+    )
+    from latka_jazn.tools.memory_validation import validate_large_memory
+    from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
+
+    if existing_health.get("ok") is True and memory_zip_name is None:
+        existing_validation = validate_large_memory(destination, full=False)
+        report["existing_memory_validation"] = existing_validation
+        if existing_validation.get("ok") is True:
+            report.update({"ok": True, "state": "existing_memory_kept", "package_attach_skipped": True})
+            return report
+
+    source_dir = Path(parts_dir).expanduser().resolve()
+    source_name = str(discovery.get("package_name") or "")
+    sidecar = discovery.get("sidecar") if isinstance(discovery.get("sidecar"), dict) else {}
+    repack_decision = _memory_package_requires_v3_repack(sidecar)
+    report["repack_decision"] = repack_decision
+    if repack_decision.get("required") is True:
+        repack_dir = work_dir / "auto_memory_v3"
+        repack_work = work_dir / "auto_memory_v3_work"
+        existing_repack = _discover_memory_package(repack_dir) if repack_dir.is_dir() else {"ok": True, "state": "memory_package_not_present"}
+        existing_sidecar = (
+            existing_repack.get("sidecar")
+            if isinstance(existing_repack.get("sidecar"), dict)
+            else {}
+        )
+        if (
+            existing_repack.get("ok") is True
+            and existing_repack.get("state") == "memory_package_discovered"
+            and str(existing_sidecar.get("memory_manifest_schema") or "").strip()
+            == "jazn_memory_package_manifest/v3"
+        ):
+            report["repack"] = {
+                "ok": True,
+                "state": "legacy_memory_repack_reused",
+                "output_package_name": existing_repack.get("package_name"),
+                "output_dir": str(repack_dir),
+            }
+            source_dir = repack_dir
+            source_name = str(existing_repack.get("package_name") or "")
+        else:
+            try:
+                repack = repack_legacy_memory_package(
+                    source_dir,
+                    output_dir=repack_dir,
+                    base_zip_name=source_name,
+                    work_dir=repack_work,
+                    force=force_reextract,
+                )
+            except (LegacyMemoryRepackError, FileExistsError) as exc:
+                report.update({"ok": False, "state": "memory_legacy_repack_failed", "error": str(exc)})
+                return report
+            report["repack"] = repack
+            if repack.get("ok") is not True:
+                report.update({"ok": False, "state": "memory_legacy_repack_failed"})
+                return report
+            source_dir = repack_dir
+            source_name = str(repack.get("output_package_name") or "")
+
+    attach = attach_memory_package(
+        destination,
+        parts_dir=source_dir,
+        base_zip_name=source_name or None,
+        work_dir=work_dir / "auto_memory_attach",
+        time_budget_seconds=time_budget_seconds,
+        run_crc=run_crc,
+        force_reextract=force_reextract,
+    )
+    report["attach"] = attach.to_dict()
+    if attach.pending:
+        report.update({"ok": False, "pending": True, "state": attach.state})
+        return report
+    if not attach.ok:
+        report.update({"ok": False, "state": attach.state})
+        return report
+
+    validation = validate_large_memory(destination, full=False)
+    report["validation_before_recovery"] = validation
+    if validation.get("ok") is not True:
+        recovery = MemoryRecoveryPipeline(destination).run(
+            force_recovery=False,
+            prepare_l2=False,
+            build_l3_manifest=False,
+        )
+        report["recovery"] = recovery.to_dict()
+        if recovery.status not in {"ready", "ready_with_l2", "ready_with_l3", "completed_with_warnings"}:
+            report.update({"ok": False, "state": "memory_recovery_not_ready"})
+            return report
+        validation = validate_large_memory(destination, full=False)
+    report["validation_after_recovery"] = validation
+    report["sqlite_after"] = _sqlite_health(destination)
+    report["ok"] = bool(validation.get("ok") is True and report["sqlite_after"].get("ok") is True)
+    report["state"] = "memory_attached_ready" if report["ok"] else "memory_attached_not_ready"
+    return report
+
 def _verify_memory_package_manifest(root: Path) -> dict[str, Any]:
     root = Path(root).resolve()
     manifest_path = root / MEMORY_PACKAGE_MANIFEST_PATH
@@ -537,6 +736,8 @@ def _recover_chatgpt_runtime_impl(
     run_crc: bool = True,
     force_reextract: bool = False,
     start_runtime_daemon: bool = True,
+    auto_attach_memory: bool = True,
+    memory_zip_name: str | None = None,
     daemon_host: str = DEFAULT_DAEMON_HOST,
     daemon_port: int = DEFAULT_DAEMON_PORT,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
@@ -554,11 +755,32 @@ def _recover_chatgpt_runtime_impl(
         "destination": str(destination),
         "work_dir": str(work_dir),
         "started_at_epoch": time.time(),
+        "auto_attach_memory": bool(auto_attach_memory),
+        "memory_zip_name": memory_zip_name,
     }
 
     preflight = runtime_preflight(destination)
     report["preflight_before"] = preflight.to_dict()
     if preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok and not force_reextract:
+        if auto_attach_memory:
+            report["auto_memory"] = _auto_attach_memory_before_daemon(
+                destination=destination,
+                parts_dir=parts_dir,
+                work_dir=work_dir,
+                memory_zip_name=memory_zip_name,
+                time_budget_seconds=time_budget_seconds,
+                run_crc=run_crc,
+                force_reextract=force_reextract,
+            )
+            if report["auto_memory"].get("pending") is True:
+                return RecoveryResult(
+                    ok=False, pending=True, state="auto_memory_pending",
+                    active_root=str(destination), report=report, exit_code=75,
+                )
+            if report["auto_memory"].get("state") not in {"memory_package_not_present", "existing_memory_kept"} and report["auto_memory"].get("ok") is not True:
+                return RecoveryResult(
+                    ok=False, state="auto_memory_failed", active_root=str(destination), report=report, exit_code=11
+                )
         marker = write_active_runtime_marker(destination, action="chatgpt_recovery_reuse_verified_folder")
         report["marker"] = marker
         config = JaznConfig(root=destination)
@@ -861,6 +1083,25 @@ def _recover_chatgpt_runtime_impl(
         )
 
     report["activation"] = _atomic_activate(staging, destination, work_dir=work_dir)
+    if auto_attach_memory and profile == "system":
+        report["auto_memory"] = _auto_attach_memory_before_daemon(
+            destination=destination,
+            parts_dir=parts_dir,
+            work_dir=work_dir,
+            memory_zip_name=memory_zip_name,
+            time_budget_seconds=time_budget_seconds,
+            run_crc=run_crc,
+            force_reextract=force_reextract,
+        )
+        if report["auto_memory"].get("pending") is True:
+            return RecoveryResult(
+                ok=False, pending=True, state="auto_memory_pending",
+                active_root=str(destination), report=report, exit_code=75,
+            )
+        if report["auto_memory"].get("state") not in {"memory_package_not_present", "existing_memory_kept"} and report["auto_memory"].get("ok") is not True:
+            return RecoveryResult(
+                ok=False, state="auto_memory_failed", active_root=str(destination), report=report, exit_code=11
+            )
     marker = write_active_runtime_marker(
         destination,
         source_zip=zip_out,
@@ -918,6 +1159,8 @@ def recover_chatgpt_runtime(
     run_crc: bool = True,
     force_reextract: bool = False,
     start_runtime_daemon: bool = True,
+    auto_attach_memory: bool = True,
+    memory_zip_name: str | None = None,
     daemon_host: str = DEFAULT_DAEMON_HOST,
     daemon_port: int = DEFAULT_DAEMON_PORT,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
@@ -938,6 +1181,8 @@ def recover_chatgpt_runtime(
             run_crc=run_crc,
             force_reextract=force_reextract,
             start_runtime_daemon=start_runtime_daemon,
+            auto_attach_memory=auto_attach_memory,
+            memory_zip_name=memory_zip_name,
             daemon_host=daemon_host,
             daemon_port=daemon_port,
             heartbeat_interval=heartbeat_interval,

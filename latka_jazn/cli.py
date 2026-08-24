@@ -71,6 +71,8 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--parts-dir", type=Path, required=True)
     child.add_argument("--destination", type=Path, required=True)
     child.add_argument("--zip-name")
+    child.add_argument("--memory-zip-name", help="Jawna paczka profile=memory, gdy w parts-dir jest ich więcej niż jedna.")
+    child.add_argument("--no-auto-memory", action="store_true", help="Nie wyszukuj i nie dołączaj automatycznie paczki pamięci po instalacji systemu.")
     child.add_argument("--work-dir", type=Path)
     child.add_argument("--time-budget-seconds", type=float, default=25.0)
     child.add_argument("--no-crc", action="store_true")
@@ -317,6 +319,8 @@ def main(argv: list[str] | None = None) -> int:
             run_crc=not ns.no_crc,
             force_reextract=bool(ns.force_reextract),
             start_runtime_daemon=not ns.no_start_daemon,
+            auto_attach_memory=not ns.no_auto_memory,
+            memory_zip_name=ns.memory_zip_name,
         )
         _emit(result.to_dict(), as_json=True)
         return int(result.exit_code)

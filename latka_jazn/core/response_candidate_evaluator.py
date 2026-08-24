@@ -74,8 +74,18 @@ def evaluate_response_candidate(
     for violation in grounding_evaluation.violations:
         if violation not in violations:
             violations.append(violation)
-    if str(plan.get("source_policy") or "") == "requires_external_web" and candidate.source == "model_adapter":
+    if (
+        str(plan.get("source_policy") or "") == "requires_external_web"
+        and candidate.source == "model_adapter"
+        and policy.get("external_web_evidence_accepted") is not True
+    ):
         violations.append("model_candidate_cannot_fake_external_web_sources")
+    elif (
+        str(plan.get("source_policy") or "") == "requires_external_web"
+        and candidate.source == "model_adapter"
+        and policy.get("external_web_evidence_accepted") is True
+    ):
+        reasons.append("host_external_web_evidence_accepted")
     if policy.get("exact_runtime_required") is True and candidate.source != "runtime_fallback":
         violations.append("exact_runtime_required_blocks_model_candidate")
 
