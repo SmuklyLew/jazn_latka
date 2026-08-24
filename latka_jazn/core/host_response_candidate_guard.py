@@ -38,6 +38,12 @@ _MEMORY_ITEM_KEYS = (
     "confidence",
     "relevance_reason",
 )
+_EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS = 8
+_EXTERNAL_TOOL_SOURCE_MAX_ITEMS = 16
+_EXTERNAL_TOOL_ALLOWED = {"web.run", "GitHub"}
+_EXTERNAL_TOOL_REF_RE = re.compile(r"^turn\d+[A-Za-z][A-Za-z0-9_]*\d+$")
+_EXTERNAL_TOOL_OPERATION_RE = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
+
 _BLOCKED_KEY_MARKERS = (
     "secret",
     "token",
@@ -81,6 +87,9 @@ def build_host_generation_context(
         for item in safe_context.get("allowed_memory_items") or []
         if isinstance(item, dict) and str(item.get("item_id") or "").strip()
     ]
+    nlg_plan_value = safe_context.get("nlg_plan")
+    nlg_plan = nlg_plan_value if isinstance(nlg_plan_value, dict) else {}
+    external_web_required = str(nlg_plan.get("source_policy") or "") == "requires_external_web"
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "current_turn": {
@@ -98,6 +107,11 @@ def build_host_generation_context(
             "do_not_copy_runtime_fallback_or_template": True,
             "do_not_add_visible_timestamp": True,
             "return_only_candidate_reply": True,
+            "external_tool_evidence_required": external_web_required,
+            "required_external_tool": "web.run" if external_web_required else None,
+            "accepted_host_tool_attestations": sorted(_EXTERNAL_TOOL_ALLOWED),
+            "external_tool_evidence_is_host_attested": True,
+            "runtime_does_not_independently_execute_host_web_tool": True,
         },
     }
     payload["context_sha256"] = _sha256(payload)
@@ -161,6 +175,7 @@ def evaluate_host_response_candidate(
     final_text: str,
     host_generation_context: dict[str, Any],
     used_memory_item_ids: list[str] | None,
+    external_tool_evidence: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Treat host wording as an untrusted candidate before persistence."""
 
@@ -179,6 +194,20 @@ def evaluate_host_response_candidate(
         if str(item_id).strip()
     }
     violations: list[str] = []
+    evidence_validation = validate_external_tool_evidence(external_tool_evidence)
+    nlg_plan_value = model_context.get("nlg_plan")
+    nlg_plan = nlg_plan_value if isinstance(nlg_plan_value, dict) else {}
+    external_web_required = str(nlg_plan.get("source_policy") or "") == "requires_external_web"
+    web_evidence_accepted = bool(
+        evidence_validation["ok"] is True
+        and any(item.get("tool") == "web.run" for item in evidence_validation["evidence"])
+    )
+    if external_web_required and not web_evidence_accepted:
+        violations.append(
+            "external_web_evidence_missing"
+            if evidence_validation["ok"] is True or not evidence_validation["evidence"]
+            else "external_web_evidence_invalid"
+        )
     if not validate_host_generation_context(contract):
         violations.append("host_generation_context_sha256_mismatch")
     if any(item_id not in allowed_ids for item_id in declared_ids):
@@ -204,9 +233,14 @@ def evaluate_host_response_candidate(
     )
     candidate_evaluation = evaluate_response_candidate(
         candidate=candidate,
-        nlg_plan=model_context.get("nlg_plan") or {},
+        nlg_plan=nlg_plan,
         model_context=model_context,
-        response_policy={"exact_runtime_required": False},
+        response_policy={
+            "exact_runtime_required": False,
+            "external_web_evidence_accepted": bool(
+                external_web_required and web_evidence_accepted
+            ),
+        },
     )
     for violation in candidate_evaluation.violations:
         if violation not in violations:
@@ -232,6 +266,15 @@ def evaluate_host_response_candidate(
         "requires_repair": not accepted,
         "final_text": text,
         "used_memory_item_ids": declared_ids,
+        "external_tool_evidence": evidence_validation["evidence"],
+        "external_tool_evidence_validation": {
+            "ok": evidence_validation["ok"],
+            "errors": evidence_validation["errors"],
+            "host_attested": True,
+            "runtime_independently_verified_execution": False,
+            "accepted_tools": sorted(_EXTERNAL_TOOL_ALLOWED),
+            "web_evidence_accepted": web_evidence_accepted,
+        },
         "violations": violations,
         "template_origin": template_origin,
         "candidate_evaluation": candidate_evaluation.to_dict(),
@@ -242,6 +285,71 @@ def evaluate_host_response_candidate(
         "source_origin": "chatgpt_host_finalizer",
     }
 
+
+
+def validate_external_tool_evidence(value: Any) -> dict[str, Any]:
+    """Validate bounded host-attested evidence for tools executed outside runtime.
+
+    This proves only what the authenticated host declared during phase 2. It does
+    not make the local runtime claim that it independently executed or verified
+    the external tool.
+    """
+
+    if value is None:
+        return {"ok": False, "evidence": [], "errors": ["evidence_missing"]}
+    if not isinstance(value, list):
+        return {"ok": False, "evidence": [], "errors": ["evidence_not_list"]}
+    errors: list[str] = []
+    evidence: list[dict[str, Any]] = []
+    if len(value) > _EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS:
+        errors.append("evidence_item_limit_exceeded")
+    for index, raw in enumerate(value[:_EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS]):
+        if not isinstance(raw, dict):
+            errors.append(f"evidence_item_not_object:{index}")
+            continue
+        tool = _bounded_text(raw.get("tool"), 64)
+        operation = _bounded_text(raw.get("operation"), 64).lower()
+        refs_raw = raw.get("source_refs")
+        urls_raw = raw.get("source_urls")
+        refs = []
+        urls = []
+        if refs_raw is not None and not isinstance(refs_raw, list):
+            errors.append(f"source_refs_not_list:{index}")
+        if urls_raw is not None and not isinstance(urls_raw, list):
+            errors.append(f"source_urls_not_list:{index}")
+        for ref in refs_raw if isinstance(refs_raw, list) else []:
+            item = _bounded_text(ref, 128)
+            if not _EXTERNAL_TOOL_REF_RE.fullmatch(item):
+                errors.append(f"source_ref_invalid:{index}")
+                continue
+            if item not in refs:
+                refs.append(item)
+            if len(refs) >= _EXTERNAL_TOOL_SOURCE_MAX_ITEMS:
+                break
+        for url in urls_raw if isinstance(urls_raw, list) else []:
+            item = _bounded_text(url, 2048)
+            if not re.fullmatch(r"https?://[^\s]+", item, flags=re.IGNORECASE):
+                errors.append(f"source_url_invalid:{index}")
+                continue
+            if item not in urls:
+                urls.append(item)
+            if len(urls) >= _EXTERNAL_TOOL_SOURCE_MAX_ITEMS:
+                break
+        if tool not in _EXTERNAL_TOOL_ALLOWED:
+            errors.append(f"tool_not_allowed:{index}")
+        if not _EXTERNAL_TOOL_OPERATION_RE.fullmatch(operation):
+            errors.append(f"operation_invalid:{index}")
+        if not refs and not urls:
+            errors.append(f"source_locator_missing:{index}")
+        evidence.append(
+            {
+                "tool": tool,
+                "operation": operation,
+                "source_refs": refs,
+                "source_urls": urls,
+            }
+        )
+    return {"ok": bool(evidence) and not errors, "evidence": evidence, "errors": errors}
 
 def _sanitize_memory_items(value: Any) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []

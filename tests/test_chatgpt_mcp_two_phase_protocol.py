@@ -286,3 +286,68 @@ def test_complete_host_contract_is_valid_intermediate_runtime_state() -> None:
     pending, missing = _host_finalization_pending(result, can_continue=True)
     assert pending is True
     assert missing == []
+
+
+def test_mcp_finalizer_schema_accepts_bounded_external_tool_evidence() -> None:
+    definition = next(item for item in TOOL_DEFINITIONS if item["name"] == "jazn_finalize_reply")
+    schema = definition["inputSchema"]
+    evidence = schema["properties"]["external_tool_evidence"]
+    assert evidence["type"] == "array"
+    assert evidence["maxItems"] == 8
+    item = evidence["items"]
+    assert item["additionalProperties"] is False
+    assert item["properties"]["tool"]["enum"] == ["GitHub", "web.run"]
+    assert item["properties"]["source_refs"]["maxItems"] == 16
+    assert item["properties"]["source_urls"]["maxItems"] == 16
+
+
+def test_finalizer_forwards_external_tool_evidence_without_host_identity_fields(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bridge = _bridge("turn-tool-evidence")
+    captured: dict[str, Any] = {}
+    monkeypatch.setattr(
+        jazn_finalize_reply,
+        "resolve_continuation_token",
+        lambda _root, _token: {
+            "state": "pending",
+            "request_contract_hash": bridge["host_request_contract_hash"],
+            "binding": bridge,
+        },
+    )
+    final_visible = f'{bridge["timestamp_header"]}\n🌿 Łatka\n\nTreść po akceptacji.'
+
+    def _persist(**kwargs):
+        captured.update(kwargs)
+        return (
+            {
+                "final_visible_text": final_visible,
+                "chatgpt_host_presentation": {
+                    "action": "display_exact",
+                    "final_visible_text": final_visible,
+                },
+            },
+            [],
+        )
+
+    monkeypatch.setattr(jazn_finalize_reply, "persist_chatgpt_host_visible_reply", _persist)
+    body = "Treść po akceptacji."
+    evidence = [
+        {
+            "tool": "web.run",
+            "operation": "search",
+            "source_refs": ["turn12search3"],
+            "source_urls": ["https://example.org/source"],
+        }
+    ]
+    result = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token="jct1.opaque-token",
+        final_text=body,
+        final_text_sha256=sha256_host_visible_text(body),
+        external_tool_evidence=evidence,
+    )
+    assert result["isError"] is False
+    assert captured["payload"]["external_tool_evidence"] == evidence
+    assert "author_label" not in evidence[0]

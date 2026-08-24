@@ -73,6 +73,7 @@ def run(
     final_text: str,
     final_text_sha256: str,
     used_memory_item_ids: list[str] | None = None,
+    external_tool_evidence: list[dict[str, Any]] | None = None,
     lifecycle_gateway: HostFinalizationLifecycleGateway | None = None,
 ) -> dict[str, Any]:
     runtime_root = Path(root).expanduser().resolve()
@@ -163,6 +164,7 @@ def run(
         "final_text": str(final_text),
         "final_text_sha256": supplied_hash,
         "used_memory_item_ids": list(used_memory_item_ids or []),
+        "external_tool_evidence": list(external_tool_evidence or []),
     }
     persisted, errors = persist_chatgpt_host_visible_reply(
         config=JaznConfig(root=runtime_root),

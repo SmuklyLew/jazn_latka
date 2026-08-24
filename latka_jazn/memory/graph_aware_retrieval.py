@@ -169,21 +169,28 @@ class GraphAwareRetrievalController:
             if object_id in seen_objects:
                 continue
             key = _conversation_key(hit)
-            # Conversation diversity is now only a tie-break among equally grounded
-            # promotable hits. It may never substitute a lower-coverage hit.
+            # Conversation diversity is a bounded tie-break among equally or
+            # better focus-grounded hits. Defer a repeated conversation only when
+            # the remaining positive-focus pool can still fill every output slot;
+            # diversity must never force a zero-focus row into the result.
             if coverage > 0.0 and per_conversation.get(key, 0) >= self.max_per_conversation:
+                remaining_slots = bounded_limit - len(candidate_list)
+                positive_remaining = [
+                    later
+                    for later in range(index + 1, len(ordered))
+                    if id(ordered[later][4]) not in seen_objects
+                    and ordered[later][1] > 0.0
+                ]
                 alternative_index = next(
                     (
                         later
-                        for later in range(index + 1, len(ordered))
-                        if id(ordered[later][4]) not in seen_objects
-                        and ordered[later][1] >= coverage
+                        for later in positive_remaining
+                        if ordered[later][1] >= coverage
                         and _conversation_key(ordered[later][4]) != key
-                        and ordered[later][0] >= item[0] - 0.015
                     ),
                     None,
                 )
-                if alternative_index is not None:
+                if alternative_index is not None and len(positive_remaining) >= remaining_slots:
                     diversity_deferred += 1
                     continue
             candidate_list.append(hit)
