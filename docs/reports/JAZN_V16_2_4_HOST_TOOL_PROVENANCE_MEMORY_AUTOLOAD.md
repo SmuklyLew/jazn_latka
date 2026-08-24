@@ -9,9 +9,9 @@ This patch fixes two failures found while running the v16.2.3 ChatGPT host lifec
 
 ## Fix A — authenticated host tool provenance
 
-The two-phase finalizer now accepts a bounded `external_tool_evidence` list. The only currently accepted tool is `web.run`. Each item carries an operation plus returned source refs and/or HTTP(S) source URLs. The runtime validates size, shape and allowed tool names before the generic candidate guard receives an `external_web_evidence_accepted` policy bit.
+The two-phase finalizer now accepts a bounded `external_tool_evidence` list. The currently accepted host tool attestations are `web.run` and `GitHub`. Each item carries an operation plus returned source refs and/or HTTP(S) source URLs. The runtime validates size, shape and allowed tool names before the generic candidate guard evaluates the evidence.
 
-The generic evaluator remains fail-closed: a normal model candidate with `requires_external_web` and no accepted host evidence is still rejected. The evidence is explicitly recorded as host-attested provenance; the local runtime does not claim that it independently executed or verified the web request.
+The generic evaluator remains fail-closed: `source_policy=requires_external_web` is satisfied only by accepted host-attested `web.run` evidence. GitHub evidence is preserved as bounded host provenance but cannot satisfy an external-web requirement by itself. A normal model candidate with `requires_external_web` and no accepted `web.run` evidence is still rejected. The evidence is explicitly recorded as host-attested provenance; the local runtime does not claim that it independently executed or verified either host tool.
 
 ## Fix B — memory autoload before daemon start
 
@@ -31,7 +31,7 @@ The generic evaluator remains fail-closed: a normal model candidate with `requir
 
 The patch follows the existing fail-closed ZIP model. Python's `zipfile` documentation warns callers to inspect untrusted archives and validate extraction paths. OWASP file-upload/input-validation guidance recommends archive-path validation and limits on decompressed size/compression behavior to prevent traversal and ZIP-bomb style resource exhaustion. Therefore v16.2.4 reuses the v3 logical segmentation/repack pipeline instead of enlarging the 8 GiB total / 2 GiB member defaults.
 
-For tool provenance, the design follows the general provenance distinction between an entity/result, the activity that produced it, and the agent that performed the activity: the host attests that `web.run` occurred and supplies bounded source locators, while runtime truth boundaries continue to distinguish that claim from local execution.
+For tool provenance, the design follows the general provenance distinction between an entity/result, the activity that produced it, and the agent that performed the activity: the host may attest that `web.run` or GitHub occurred and supplies bounded source locators, while runtime truth boundaries continue to distinguish those attestations from local execution. Only `web.run` evidence is eligible to satisfy `requires_external_web`.
 
 ## Regression coverage
 
@@ -39,6 +39,7 @@ Added coverage verifies that:
 
 - model candidates still cannot fake required external-web sourcing;
 - valid host-attested `web.run` evidence removes only that specific provenance violation;
+- bounded GitHub evidence is accepted as host provenance but does not satisfy `requires_external_web`;
 - malformed/unknown tool evidence fails closed;
 - MCP finalization exposes only bounded evidence and still does not accept mutable identity fields;
 - one standalone memory package is auto-discovered, multiple packages are ambiguous without explicit selection;
