@@ -1,4 +1,4 @@
-# Jaźń v16.3.0 — raport implementacji pełnej konwergencji rozmowy i pamięci
+# Jaźń — raport implementacji bieżącego wydania: pełna konwergencja rozmowy i pamięci
 
 ## Status dokumentu
 
@@ -16,13 +16,13 @@ Dokument nie jest dowodem aktywnego runtime i nie zastępuje markerów, żywego 
 | --- | --- | --- |
 | Repozytorium | `SmuklyLew/jazn_latka` | zweryfikowane |
 | Bazowy `origin/master` | `cc1cb1575ea02a6f6cd4ee0d79bae9a83f785a88` | zweryfikowane |
-| Branch roboczy | `upgrade/v16.3.0-full-jazn-convergence` | zweryfikowane |
-| Wersja dystrybucji i pakietu | `16.3.0` | zweryfikowane w `latka_jazn/version.py` |
-| Nazwa wydania | `full-jazn-conversation-memory-convergence` | zweryfikowane w `latka_jazn/version.py` |
+| Branch roboczy | bieżący branch zadania | zweryfikowane przez Git; jego nazwa nie jest duplikowana jako aktywny literał wersji |
+| Wersja dystrybucji i pakietu | wartość kanoniczna | zweryfikowane w `latka_jazn/version.py` |
+| Nazwa wydania | wartość kanoniczna | zweryfikowane w `latka_jazn/version.py` |
 | Docelowy branch PR | `master` | oczekujące na zamknięcie |
 | Merge do `master` | zabroniony bez osobnej zgody operatora | nie wykonano |
 
-Prace rozpoczęto ze świeżego `origin/master`, a nie ze stagingowego brancha v16.2.5. Przed zmianami utworzono lokalny ref bezpieczeństwa `backup/pre-v16.3.0-full-convergence-20260824-230136`.
+Prace rozpoczęto ze świeżego `origin/master`, a nie ze stagingowego brancha v16.2.5. Przed zmianami utworzono lokalny, timestampowany ref bezpieczeństwa wskazujący dokładny punkt startowy.
 
 ## Diagnoza zastanego stanu
 
@@ -128,7 +128,7 @@ W `latka_jazn/bootstrap/chatgpt_recovery.py` surowe dane sidecar są najpierw zw
 
 Usunięto jednorazowe payloady i workflow v16.2.5, wcześniejszy bootstrap payload v15.4.3, self-removing triggery/workflow, skrypt naprawczy oraz repozytoryjny `sitecustomize.py`. Końcowy kod nie wymaga workflow, aby funkcjonalność Jaźni pojawiła się w źródłach.
 
-Kanoniczna wersja aktywnego kontraktu została ustawiona na `16.3.0-full-jazn-conversation-memory-convergence`. Historycznych raportów i historycznych numerów wersji nie przepisywano.
+Kanoniczna wersja i nazwa aktywnego kontraktu zostały ustawione wyłącznie w `latka_jazn/version.py`. Historycznych raportów i historycznych numerów wersji nie przepisywano.
 
 ## Zachowane granice prawdy
 
@@ -157,7 +157,7 @@ Poniższe liczby są wynikami faktycznie uruchomionych zestawów. Zestawy częś
 | Fail-closed memory provenance/candidates | `4 passed`; szerszy zestaw `20 passed` | zweryfikowane |
 | Recall timeout compatibility | `6 passed` | zweryfikowane |
 | Host contract | `25 passed`; szerszy zestaw `21 passed`; krytyczny zestaw `5 passed`; finalny probe `1 passed` | zweryfikowane |
-| Łączny targeted closure suite v16.3.0 | `116 passed` | zweryfikowane |
+| Łączny targeted closure suite bieżącego wydania | `116 passed` | zweryfikowane |
 | Focused packaging/autoload regressions | `84 passed, 2 skipped` | zweryfikowane; dwa testy symlink pominięte na bieżącym Windows |
 | Pyright kodu produkcyjnego | `0 errors, 0 warnings` | zweryfikowane |
 | Dedykowany Pyright testów/generatora | `0 errors, 0 warnings` | zweryfikowane |
@@ -168,11 +168,11 @@ Poniższe liczby są wynikami faktycznie uruchomionych zestawów. Zestawy częś
 | Izolowany restart continuity | `19 passed` | zweryfikowane |
 | Packaging/autoload/legacy contract suite | `67 passed` | zweryfikowane; wyłącznie syntetyczne fixture, bez prywatnej pamięci |
 
-Read-only probe `run.py memory-plan --root . --json "powspominaj 2025 rok"` zwrócił wersję `16.3.0`, pusty leksykalny focus dla temporal-only query i strukturalny zakres roku. Brak manifestu prywatnego archiwum został zgłoszony jako `archive_not_ready`; nie przedstawiono go jako udanego recall.
+Read-only probe `run.py memory-plan --root . --json "powspominaj 2025 rok"` zwrócił bieżącą wersję z `latka_jazn/version.py`, pusty leksykalny focus dla temporal-only query i strukturalny zakres roku. Brak manifestu prywatnego archiwum został zgłoszony jako `archive_not_ready`; nie przedstawiono go jako udanego recall.
 
 ## Prywatny benchmark pamięci
 
-Prywatny acceptance benchmark **nie został uruchomiony w tej turze**. W związku z tym nie ma podstaw do twierdzenia, że v16.3.0 poprawiła rzeczywisty private recall.
+Prywatny acceptance benchmark **nie został uruchomiony w tej turze**. W związku z tym nie ma podstaw do twierdzenia, że bieżące wydanie poprawiło rzeczywisty private recall.
 
 Bezpieczne dane historyczne służą wyłącznie jako punkt odniesienia:
 
@@ -183,7 +183,7 @@ Bezpieczne dane historyczne służą wyłącznie jako punkt odniesienia:
 
 ## Stan obszaru chronionego w chwili sporządzenia
 
-Bieżący status drzewa nie wykazuje zmian pod `memory/` ani `workspace_runtime/`. Raport nie zawiera SQLite, WAL/SHM, ZIP, sekretów, tokenów, prywatnych eksportów ani surowych danych benchmarku. Jest to snapshot przed końcowym closure audit; ostateczna kontrola musi zostać powtórzona po metadanych, commitach i package smoke.
+Bieżący status drzewa nie wykazuje zmian pod `memory/` ani `workspace_runtime/`. Raport nie zawiera SQLite, WAL/SHM, ZIP, sekretów, tokenów, prywatnych eksportów ani surowych danych benchmarku. Kontrolę powtórzono po commitach implementacji, pierwszym kanonicznym metadata sync i finalnym clean-tree package smoke.
 
 ## Końcowe bramki lokalne i zdalne
 
@@ -191,18 +191,18 @@ Poniższa tabela zapisuje wyłącznie wyniki rzeczywiście uzyskane. Pozycje zda
 
 | Bramka końcowa | Wynik | Stan |
 | --- | --- | --- |
-| `git diff --check` na drzewie po implementacji | exit `0` | zweryfikowane; do powtórzenia po metadanych |
+| `git diff --check` na drzewie po implementacji i metadanych | exit `0` | zweryfikowane; końcowy guard powtarza tę kontrolę |
 | Pełny `compileall` | exit `0` | zweryfikowane |
 | Pełny deterministic pytest | `973 passed, 5 skipped in 101.93s` | zweryfikowane |
 | Windows regression suite | `82 passed, 2 skipped in 2.85s`; atomicity/timeout `41 passed in 3.99s` | zweryfikowane |
 | Izolowany runtime smoke input → finalization → checkpoint | package smoke: wszystkie 14 wymaganych kontroli zaliczone; 1 opcjonalna kontrola manifestu źródłowego niezaliczona przed metadata sync | zweryfikowane z jawnym ograniczeniem |
 | Izolowany restart continuity (task/wake/temporal/source/checkpoint) | `19 passed in 3.55s` | zweryfikowane w syntetycznym, odseparowanym środowisku |
 | Live local model/Ollama | probe `ok`; `gemma3:latest` zainstalowany; generacja `completed`, `generated=true`, 0 tool calls, 54 znaki | zweryfikowane dla bezpośredniego adaptera z syntetycznym kontekstem; walidator/finalizacja sprawdzone osobno |
-| System-only package smoke | `ok=true`, 14 wymaganych kontroli zaliczonych, paczka 824 plików; 1 opcjonalna kontrola niezaliczona przez niesynchronizowany jeszcze manifest źródłowy | zweryfikowane przed metadata sync; finalny clean-tree smoke pozostaje oczekujący |
+| System-only i finalny release package smoke | przejściowy system smoke: 14 wymaganych kontroli zaliczonych; po metadata sync clean-tree profil `release`: `15/15`, `failed=0`, `optional_failed=0` | zweryfikowane |
 | System + osobna pamięć i independent memory contract | w zestawie packaging/autoload `67 passed` | zweryfikowane na syntetycznych fixture |
 | Legacy memory v3 repack smoke | w zestawie packaging/autoload `67 passed` | zweryfikowane: segmentacja JSONL, SQLite online backup, v3 i odtworzenie integralności |
-| Kanoniczny metadata sync i kontrola idempotencji | do uzupełnienia | oczekujące na zamknięcie |
-| Clean-checkout guard i finalny protected-path audit | do uzupełnienia | oczekujące na zamknięcie |
+| Kanoniczny metadata sync i kontrola idempotencji | `ok=true`; wersja i source commit zgodne; `static_file_count=822`; `mutable_runtime_file_count=0`; drugi czysty przebieg pozostawił oba SHA-256 bez zmian | zweryfikowane |
+| Clean-checkout guard i finalny protected-path audit | workflow guard: `dirty_count=0`; 0 taskowych artefaktów; 0 zmian chronionych rootów lub binarnych danych; 0 staging payload/workflow | zweryfikowane |
 | Ponowny fetch i closure audit świeżych branchy | fetch `2026-08-24T23:01:30.2009361Z`; `origin/master=cc1cb157…`; 0 nowych/zmienionych rzeczywistych tipów; `unreviewed=0` | zweryfikowane |
 | Push brancha i PR do `master` | do uzupełnienia numerem/URL | oczekujące na zamknięcie |
 | Wymagane GitHub Actions | do uzupełnienia nazwami runów i wynikami | oczekujące na zamknięcie |
@@ -211,9 +211,9 @@ Poniższa tabela zapisuje wyłącznie wyniki rzeczywiście uzyskane. Pozycje zda
 
 - Zmiany oraz focused regressions dowodzą spójności kontraktów, lecz bez bieżącego prywatnego benchmarku nie dowodzą poprawy recall na produkcyjnej pamięci.
 - Izolowane regresje dowodzą zapisu, ponownego wczytania i ciągłości po restarcie store/daemona/workera, lecz nie są testem na prywatnym produkcyjnym runtime ani jego danych.
-- Focused packaging/autoload suite i przejściowy system package smoke nie zastępują finalnego smoke paczki wygenerowanej z czystego, metadanymi zsynchronizowanego tree.
+- Finalny clean-tree release smoke został wykonany po kanonicznym metadata sync, ale nadal używa wyłącznie syntetycznych/izolowanych danych i nie zastępuje prywatnego acceptance benchmarku.
 - Lokalny model wykonał rzeczywistą generację przez bezpośredni adapter. Pole walidacji adaptera nie jest dowodem hostowej finalizacji; tę część sprawdza osobny izolowany package smoke i regresje finalizacji.
 - Runtime nie został uznany za aktywny ani zdrowy wyłącznie na podstawie kodu, statusu lub obecności markera.
 - PR nie może zostać scalony do `master` bez odrębnej, wyraźnej zgody operatora.
 
-Na obecnym etapie dowiedziono integracji architektonicznej v16.3.0 oraz zielonych lokalnych bramek statycznych, deterministycznych, restartowych, packagingowych i modelowych wymienionych powyżej. Ostateczne stwierdzenie „release-ready” nadal wymaga kanonicznych metadanych, clean-tree package smoke, publikacji PR i zielonego CI.
+Na obecnym etapie dowiedziono integracji architektonicznej bieżącego wydania oraz zielonych lokalnych bramek statycznych, deterministycznych, restartowych, packagingowych, metadanych i modelowych wymienionych powyżej. Ostateczne stwierdzenie „release-ready” nadal wymaga publikacji PR i zielonego CI.

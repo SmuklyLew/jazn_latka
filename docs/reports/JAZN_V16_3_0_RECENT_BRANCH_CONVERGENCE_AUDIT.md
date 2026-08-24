@@ -1,14 +1,14 @@
-# Jaźń v16.3.0 — audyt konwergencji świeżych branchy
+# Jaźń — audyt konwergencji świeżych branchy dla bieżącego wydania
 
 ## 1. Status i granica audytu
 
-Ten dokument zapisuje audyt początkowy oraz końcowy closure brancha v16.3.0. Ostatni `git fetch --all --prune` wykonano po implementacji, a sekcja 11 porównuje ponownie wszystkie tipy objęte początkowym oknem.
+Ten dokument zapisuje audyt początkowy oraz końcowy closure brancha bieżącego wydania. Ostatni `git fetch --all --prune` wykonano po implementacji, a sekcja 11 porównuje ponownie wszystkie tipy objęte początkowym oknem.
 
 Punkt odniesienia audytu:
 
 - początek okna: `2026-08-23T14:39:00Z` (włącznie);
 - `origin/master` przy rozpoczęciu: `cc1cb1575ea02a6f6cd4ee0d79bae9a83f785a88`;
-- ten sam SHA zapisano lokalnie jako bezpieczny ref `backup/pre-v16.3.0-full-convergence-20260824-230136`;
+- ten sam SHA zapisano lokalnie jako bezpieczny, timestampowany ref przed pełną konwergencją;
 - bazą implementacji jest nowy branch utworzony bezpośrednio z tego `origin/master`;
 - w oknie znalazło się 13 branchy zdalnych poza `master`; dodatkowo skontrolowano sam `origin/master`;
 - `B/A` oznacza odpowiednio liczbę commitów tylko po stronie `origin/master` (behind) i tylko po stronie badanego brancha (ahead), wyliczoną przez `git rev-list --left-right --count origin/master...<branch>`;
@@ -80,7 +80,7 @@ Jedenaście badanych branchy ma `ahead=0`; ich merge-base jest równy tipowi. Ni
 - `repair/pr151-v1604-pyright-final` oraz `fix/v16.0.2-runtime-turn-liveness` — bieżące tipy są w ancestry mastera; realny fix `453195a` jest na masterze;
 - `origin/master` — sam punkt odniesienia.
 
-Status `already_integrated` nie oznacza, że zachowano transportowe workflow jako pożądaną funkcjonalność. Oznacza tylko, że branch nie posiada nieprzejrzanego zakresu ahead. Jednorazowe transporty zostały sklasyfikowane osobno jako `staging_only` i są usuwane z drzewa v16.3.0.
+Status `already_integrated` nie oznacza, że zachowano transportowe workflow jako pożądaną funkcjonalność. Oznacza tylko, że branch nie posiada nieprzejrzanego zakresu ahead. Jednorazowe transporty zostały sklasyfikowane osobno jako `staging_only` i są usuwane z drzewa bieżącego wydania.
 
 ## 6. Dwa rozbieżne zakresy ahead
 
@@ -143,15 +143,15 @@ Po korektach `git apply --check` względem początkowego `origin/master` zakońc
 
 ### 7.2. Ledger wszystkich 63 hunków
 
-| Plik patcha | Hunki | Decyzja z początkowego audytu | Dyspozycja v16.3.0 |
+| Plik patcha | Hunki | Decyzja z początkowego audytu | Dyspozycja docelowa |
 |---|---:|---|---|
-| `docs/reports/JAZN_V16_2_5_MEMORY_RECALL_NEUROLOGY_HARDENING.md` | 1 | `metadata_only` | zastąpiony pełnym raportem v16.3.0 |
+| `docs/reports/JAZN_V16_2_5_MEMORY_RECALL_NEUROLOGY_HARDENING.md` | 1 | `metadata_only` | zastąpiony pełnym raportem bieżącego wydania |
 | `latka_jazn/bootstrap/chatgpt_recovery.py` | 2 | `missing_and_required` | ręcznie przeniesione właściwe narrowing/kontrakty, z dostosowaniem do mastera |
 | `latka_jazn/cli.py` | 3 | `missing_and_required` | ręczna integracja kanonicznego memory plan |
 | `latka_jazn/core/engine.py` | 7 | `missing_and_required` | ręczna integracja pełnego przepływu temporal/retrieval/handler/context |
 | `latka_jazn/core/handlers/memory_experience_recall_handler.py` | 1 | `missing_and_required` | handler włączony jako osobna ścieżka fail-closed |
 | `latka_jazn/core/handlers/ordinary_dialogue_handler.py` | 1 | `missing_and_required` | recall usunięty ze zwykłego dialogu |
-| `latka_jazn/core/memory_intent_contract.py` | 1 | `missing_and_required` | przeniesione semantycznie i rozszerzone jako kanoniczny kontrakt v16.3.0 |
+| `latka_jazn/core/memory_intent_contract.py` | 1 | `missing_and_required` | przeniesione semantycznie i rozszerzone jako kanoniczny kontrakt bieżącego wydania |
 | `latka_jazn/core/memory_search_planner.py` | 10 | `missing_and_required` | ręczna integracja, rozszerzona o typowany temporal scope i queryless temporal recall |
 | `latka_jazn/core/memory_use_gate.py` | 3 | `missing_and_required` | gate spięty z kanonicznym kontraktem |
 | `latka_jazn/core/nlg_planner.py` | 5 | `missing_and_required` | duplikaty intencji zastąpione wspólnym kontraktem |
@@ -161,14 +161,14 @@ Po korektach `git apply --check` względem początkowego `origin/master` zakońc
 | `latka_jazn/memory/conversation_archive.py` | 8 | `missing_and_required` | temporal-only archive search i bounded sampling zintegrowane ręcznie |
 | `latka_jazn/memory/living_memory_gateway.py` | 4 | `missing_and_required` | temporal scope przepuszczony przez living/unified memory z kontrolą źródła |
 | `latka_jazn/nlp/dialogue_intent_classifier.py` | 4 | `missing_and_required` | classifier używa wspólnego kontraktu zamiast osobnej listy exact-match |
-| `latka_jazn/version.py` | 1 | `superseded_by_newer_code` | nie ustawiono 16.2.5; docelowy kontrakt to 16.3.0 |
+| `latka_jazn/version.py` | 1 | `superseded_by_newer_code` | nie ustawiono 16.2.5; docelowy kontrakt wynika wyłącznie z tego kanonicznego źródła |
 | `main.py` | 1 | `missing_and_required` | kanoniczne wejście memory plan zintegrowane |
-| `tests/test_v1625_memory_recall_neurology_hardening.py` | 1 | `superseded_by_newer_code` | zakres rozłożony na dokładniejsze regresje v16.3.0 |
+| `tests/test_v1625_memory_recall_neurology_hardening.py` | 1 | `superseded_by_newer_code` | zakres rozłożony na dokładniejsze regresje bieżącego wydania |
 | `.github/.v1625-type-audit-repair-trigger` | 1 | `staging_only` | usunięty |
 | `.github/workflows/v1625-type-audit-repair.yml` | 1 | `staging_only` | usunięty |
 | `sitecustomize.py` | 1 | `staging_only` | usunięty |
 
-Suma: 22 pliki, 63 hunki, 63 decyzje, **zero `unreviewed`**. Patch nie został zastosowany mechanicznie. Każdy nadal potrzebny zakres został przeniesiony semantycznie na nowszy master, a kontrakty temporalne, źródłowe i wieloturowe zostały rozszerzone w v16.3.0. Ostateczny dowód poprawności tych implementacji i testów należy do raportu implementacji v16.3.0, nie do niniejszego audytu historycznego.
+Suma: 22 pliki, 63 hunki, 63 decyzje, **zero `unreviewed`**. Patch nie został zastosowany mechanicznie. Każdy nadal potrzebny zakres został przeniesiony semantycznie na nowszy master, a kontrakty temporalne, źródłowe i wieloturowe zostały rozszerzone w bieżącym wydaniu. Ostateczny dowód poprawności tych implementacji i testów należy do raportu implementacji bieżącego wydania, nie do niniejszego audytu historycznego.
 
 ## 8. Istotne hunki historyczne poza payloadem
 
@@ -178,17 +178,17 @@ Właściwy zakres (już w masterze) obejmował m.in. `memory_search_planner.py`,
 
 ### PR #153 / pełna konwergencja v16
 
-86 plików objęło host finalization, epistemic ledger/guard, cognitive state graph, unified memory runtime, rest/offline consolidation, procesową izolację tur, runtime SQLite, MCP, provenance importu archiwum i release hardening. Tip jest czystym przodkiem mastera, więc nie ma zakresu do ponownego portowania. Branch służył wyłącznie jako semantyczna archeologia przy sprawdzaniu regresji v16.3.0.
+86 plików objęło host finalization, epistemic ledger/guard, cognitive state graph, unified memory runtime, rest/offline consolidation, procesową izolację tur, runtime SQLite, MCP, provenance importu archiwum i release hardening. Tip jest czystym przodkiem mastera, więc nie ma zakresu do ponownego portowania. Branch służył wyłącznie jako semantyczna archeologia przy sprawdzaniu regresji bieżącego wydania.
 
 ### PR #156 / kanoniczna v16.2.4
 
-Najważniejsze hunki zachowują bounded external-tool evidence, dwufazową finalizację, odrębne provenance GitHub i `web.run`, graph-aware retrieval ordering, standalone memory auto-attach i legacy repack. To jest kanoniczna baza, nad którą v16.3.0 dodaje pamięć temporalną; nie wolno jej zastępować starszą linią `f48966f`.
+Najważniejsze hunki zachowują bounded external-tool evidence, dwufazową finalizację, odrębne provenance GitHub i `web.run`, graph-aware retrieval ordering, standalone memory auto-attach i legacy repack. To jest kanoniczna baza, nad którą bieżące wydanie dodaje pamięć temporalną; nie wolno jej zastępować starszą linią `f48966f`.
 
 ### PR #157 i #158 / transport
 
 Końcowy diff #157 to trigger, self-removing workflow i `sitecustomize.py`; końcowy diff #158 to siedem części payloadu i workflow. Te hunki nie są funkcjonalnością Jaźni. Ich właściwa semantyka została odzyskana z payloadu, a transport nie może pozostać wymaganiem aktywnego systemu.
 
-## 9. Audyt artefaktów stagingowych w drzewie v16.3.0
+## 9. Audyt artefaktów stagingowych w drzewie bieżącego wydania
 
 W implementacji jako `staging_only` oznaczono i usunięto 37 śledzonych pozostałości:
 
@@ -199,7 +199,7 @@ W implementacji jako `staging_only` oznaczono i usunięto 37 śledzonych pozosta
 - historyczny jednorazowy workflow local-first-memory;
 - workflow i skrypt tymczasowej korekty wake/session continuity.
 
-Usunięcie jest zatwierdzone w commicie `fd0b06230b526a0db5ff6bcbe1e44714b2ce926d`. W commicie funkcjonalnym `63ba7d09a11a840ac8da07ee95649ddaf843f51f` obecne są właściwy kod źródłowy v16.3.0, wersja i regresje.
+Usunięcie jest zatwierdzone w commicie `fd0b06230b526a0db5ff6bcbe1e44714b2ce926d`. W commicie funkcjonalnym `63ba7d09a11a840ac8da07ee95649ddaf843f51f` obecne są właściwy kod źródłowy bieżącego wydania, wersja i regresje.
 
 ## 10. Macierz końcowych decyzji początkowego okna
 
@@ -207,7 +207,7 @@ Usunięcie jest zatwierdzone w commicie `fd0b06230b526a0db5ff6bcbe1e44714b2ce926
 |---|---|
 | `already_integrated` | wszystkie funkcjonalne ancestry #151, #153, #156 i wcześniejszej strony #157; 11 tipów z `ahead=0` nie ma unikalnych hunków do portowania |
 | `superseded_by_newer_code` | funkcjonalne hunki `31eeac9`/`f48966f`; docelowa wersja 16.2.5 z payloadu; monolityczny test/raport v16.2.5 |
-| `missing_and_required` | 57 funkcjonalnych hunków odzyskanego payloadu (po wyłączeniu raportu, wersji, starego testu i trzech cleanupów), ręcznie integrowanych/adaptowanych w v16.3.0 |
+| `missing_and_required` | 57 funkcjonalnych hunków odzyskanego payloadu (po wyłączeniu raportu, wersji, starego testu i trzech cleanupów), ręcznie integrowanych/adaptowanych w bieżącym wydaniu |
 | `staging_only` | commity `e87c79f`, `cdea5d8`, `3511f5d`, `45ac649`, `a7e48f6`, commit #158 jako kontener, triggery/workflow/payloady/`sitecustomize.py` |
 | `metadata_only` | tip początkowego mastera, backup przed v16.2.5, backup pre-PR153 i historyczny raport payloadu |
 | `regression_do_not_port` | brak osobnego poprawnego hunka tej klasy; uszkodzenia transportowe nie były kodem do portowania |
