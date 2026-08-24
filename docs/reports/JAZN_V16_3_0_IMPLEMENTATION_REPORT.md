@@ -19,7 +19,7 @@ Dokument nie jest dowodem aktywnego runtime i nie zastępuje markerów, żywego 
 | Branch roboczy | bieżący branch zadania | zweryfikowane przez Git; jego nazwa nie jest duplikowana jako aktywny literał wersji |
 | Wersja dystrybucji i pakietu | wartość kanoniczna | zweryfikowane w `latka_jazn/version.py` |
 | Nazwa wydania | wartość kanoniczna | zweryfikowane w `latka_jazn/version.py` |
-| Docelowy branch PR | `master` | oczekujące na zamknięcie |
+| Docelowy branch PR | `master` | PR [#159](https://github.com/SmuklyLew/jazn_latka/pull/159) utworzony i otwarty |
 | Merge do `master` | zabroniony bez osobnej zgody operatora | nie wykonano |
 
 Prace rozpoczęto ze świeżego `origin/master`, a nie ze stagingowego brancha v16.2.5. Przed zmianami utworzono lokalny, timestampowany ref bezpieczeństwa wskazujący dokładny punkt startowy.
@@ -204,8 +204,8 @@ Poniższa tabela zapisuje wyłącznie wyniki rzeczywiście uzyskane. Pozycje zda
 | Kanoniczny metadata sync i kontrola idempotencji | `ok=true`; wersja i source commit zgodne; `static_file_count=822`; `mutable_runtime_file_count=0`; drugi czysty przebieg pozostawił oba SHA-256 bez zmian | zweryfikowane |
 | Clean-checkout guard i finalny protected-path audit | workflow guard: `dirty_count=0`; 0 taskowych artefaktów; 0 zmian chronionych rootów lub binarnych danych; 0 staging payload/workflow | zweryfikowane |
 | Ponowny fetch i closure audit świeżych branchy | fetch `2026-08-24T23:01:30.2009361Z`; `origin/master=cc1cb157…`; 0 nowych/zmienionych rzeczywistych tipów; `unreviewed=0` | zweryfikowane |
-| Push brancha i PR do `master` | do uzupełnienia numerem/URL | oczekujące na zamknięcie |
-| Wymagane GitHub Actions | do uzupełnienia nazwami runów i wynikami | oczekujące na zamknięcie |
+| Push brancha i PR do `master` | branch wypchnięty bez force-pusha; PR [#159](https://github.com/SmuklyLew/jazn_latka/pull/159), stan `OPEN`, merge nie wykonany | zweryfikowane |
+| Wymagane GitHub Actions | finalne kontrole są monitorowane na live head PR [#159](https://github.com/SmuklyLew/jazn_latka/pull/159); ich późniejszy wynik nie jest utrwalany w source snapshot, aby nie tworzyć samoodnoszącego cyklu commit → CI → raport → commit | zewnętrzna bramka live |
 
 ## Znane ograniczenia i uczciwe wnioski
 
