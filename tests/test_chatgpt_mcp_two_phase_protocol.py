@@ -296,7 +296,7 @@ def test_mcp_finalizer_schema_accepts_bounded_external_tool_evidence() -> None:
     assert evidence["maxItems"] == 8
     item = evidence["items"]
     assert item["additionalProperties"] is False
-    assert item["properties"]["tool"]["enum"] == ["web.run"]
+    assert item["properties"]["tool"]["enum"] == ["GitHub", "web.run"]
     assert item["properties"]["source_refs"]["maxItems"] == 16
     assert item["properties"]["source_urls"]["maxItems"] == 16
 
