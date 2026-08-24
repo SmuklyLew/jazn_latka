@@ -1,0 +1,9 @@
++        nlg_plan=plan,
++        model_context=context,
++        response_policy={
++            "exact_runtime_required": False,
++            "external_web_evidence_accepted": True,
++        },
++    )
++    assert "model_candidate_cannot_fake_external_web_sources" not in attested.violations
++    assert "host_external_web_evidence_accepted" in attested.reasons
