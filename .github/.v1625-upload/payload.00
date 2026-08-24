@@ -1,0 +1,171 @@
+--- /dev/null
++++ b/docs/reports/JAZN_V16_2_5_MEMORY_RECALL_NEUROLOGY_HARDENING.md
+@@ -0,0 +1,22 @@
++# Jaźń v16.2.5 — memory recall neurology hardening
++
++## Problem
++
++Po poprawnym auto-attach pamięci v16.2.4 wake-state zawierał dziesiątki tysięcy rekordów, ale prośba `powspominaj wszystko co możesz z 2025 roku` była klasyfikowana jako pytanie o możliwości. Planer nie rozpoznawał formy `powspominaj`, traktował `2025` jako token FTS zamiast zakres czasu, a NLG miało osobny, niepełny zbiór intencji pamięciowych. Skutkiem mógł być pusty `allowed_memory_items` mimo dostępnego archive/FTS.
++
++## Zmiana
++
++- jeden `memory_intent_contract.py` dla classifier/gate/NLG/host-generation,
++- morfologiczne wykrywanie polskich form pamięciowych,
++- zakres roku jako filtr czasowy `conversation_archive`, także bez tekstowego tokenu,
++- bounded temporal sampling dla szerokiego przypominania okresu,
++- `conversation_archive/FTS` jawnie raportowany jako read-only fallback,
++- osobny `MemoryExperienceRecallHandler`,
++- repair synthesizer dostaje faktyczny `memory_context`, nie pusty `{}`,
++- kanoniczny subcommand `memory-plan`,
++- usunięcie tymczasowego workflow/trigger/sitecustomize,
++- poprawa Pyright narrowing w `chatgpt_recovery.py`.
++
++## Granica prawdy
++
++Termin „neurologia” jest tu nazwą warstwy architektonicznej. Inspiracją są mechanizmy pamięci roboczej, kontroli wydobycia i reinstatement/pattern completion, ale implementacja jest systemem programowym i nie stanowi dowodu biologicznej świadomości. Retrieval pozostaje source-backed i fail-closed.
+--- a/latka_jazn/bootstrap/chatgpt_recovery.py
++++ b/latka_jazn/bootstrap/chatgpt_recovery.py
+@@ -7,7 +7,7 @@
+ import time
+ from dataclasses import asdict, dataclass, field
+ from pathlib import Path
+-from typing import Any
++from typing import Any, cast
+ 
+ from latka_jazn.config import JaznConfig
+ from latka_jazn.core.runtime_daemon import (
+@@ -530,16 +530,18 @@
+ 
+     source_dir = Path(parts_dir).expanduser().resolve()
+     source_name = str(discovery.get("package_name") or "")
+-    sidecar = discovery.get("sidecar") if isinstance(discovery.get("sidecar"), dict) else {}
++    raw_sidecar = discovery.get("sidecar")
++    sidecar = cast(dict[str, Any], raw_sidecar) if isinstance(raw_sidecar, dict) else {}
+     repack_decision = _memory_package_requires_v3_repack(sidecar)
+     report["repack_decision"] = repack_decision
+     if repack_decision.get("required") is True:
+         repack_dir = work_dir / "auto_memory_v3"
+         repack_work = work_dir / "auto_memory_v3_work"
+         existing_repack = _discover_memory_package(repack_dir) if repack_dir.is_dir() else {"ok": True, "state": "memory_package_not_present"}
++        raw_existing_sidecar = existing_repack.get("sidecar")
+         existing_sidecar = (
+-            existing_repack.get("sidecar")
+-            if isinstance(existing_repack.get("sidecar"), dict)
++            cast(dict[str, Any], raw_existing_sidecar)
++            if isinstance(raw_existing_sidecar, dict)
+             else {}
+         )
+         if (
+--- a/latka_jazn/cli.py
++++ b/latka_jazn/cli.py
+@@ -183,6 +183,10 @@
+     _add_common(child)
+     child.add_argument("--probe", action="store_true")
+ 
++    child = sub.add_parser("memory-plan", allow_abbrev=False)
++    _add_common(child)
++    child.add_argument("remainder", nargs=argparse.REMAINDER, help="Treść zapytania pamięciowego.")
++
+     for name in ("start", "stop", "restart"):
+         child = sub.add_parser(name, allow_abbrev=False)
+         _add_common(child)
+@@ -293,7 +297,7 @@
+         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
+         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
+-        "memory-cloud-restore", "memory-validate", "model-status",
++        "memory-cloud-restore", "memory-validate", "model-status", "memory-plan",
+     }
+     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
+         return _legacy_main(_legacy_args_with_canonical_root(args))
+@@ -405,6 +409,8 @@
+         payload = diagnostics.bridge_payload(root)
+         _emit(payload, as_json=ns.as_json)
+         return 0
++    if ns.command == "memory-plan":
++        return _legacy_main(["--root", str(root), "--memory-plan", *list(ns.remainder)])
+     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
+         return _legacy_main(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
+     if ns.command == "restart":
+--- a/latka_jazn/core/engine.py
++++ b/latka_jazn/core/engine.py
+@@ -1220,6 +1220,7 @@
+         *,
+         limit: int = 5,
+         turn_context: TurnExecutionContext | None = None,
++        temporal_scope: dict[str, Any] | None = None,
+     ) -> tuple[list[dict], dict]:
+         """Pobiera treściowe trafienia z conversation_archive/FTS jako normalną warstwę pamięci.
+ 
+@@ -1229,16 +1230,20 @@
+         baza jest niepełna, niezaimportowana albo środowisko ma tylko częściową paczkę.
+         """
+         query = " ".join(str(x).strip() for x in (phrases or []) if str(x).strip())
+-        if not query:
++        scope = temporal_scope if isinstance(temporal_scope, dict) else {}
++        if not query and not scope:
+             return [], {"status": "empty_query", "issues": ["empty_query"]}
+         try:
+             store = ConversationArchiveStore(self.config.root)
+-            search_result = store.search(
+-                query,
+-                limit=max(1, limit),
+-                include_snippets=True,
+-                should_continue=turn_context.can_continue if turn_context is not None else None,
+-            ).to_dict()
++            search_kwargs: dict[str, Any] = {
++                "limit": max(1, limit),
++                "include_snippets": True,
++                "should_continue": turn_context.can_continue if turn_context is not None else None,
++            }
++            if scope:
++                search_kwargs["start_time_utc"] = str(scope.get("start_utc") or "") or None
++                search_kwargs["end_time_utc"] = str(scope.get("end_utc") or "") or None
++            search_result = store.search(query, **search_kwargs).to_dict()
+         except Exception as exc:
+             return [], {
+                 "status": "error",
+@@ -1426,8 +1431,9 @@
+         if turn_context is not None:
+             turn_context.start_stage("memory_conversation_archive_recall")
+         if turn_context is None or turn_context.can_continue():
++            archive_kwargs = {"temporal_scope": search_plan.temporal_scope} if search_plan.temporal_scope else {}
+             conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(
+-                phrases, limit=limit, turn_context=turn_context
++                phrases, limit=limit, turn_context=turn_context, **archive_kwargs
+             )
+         else:
+             conversation_archive_hits, conversation_archive_search = [], {
+@@ -1486,6 +1492,8 @@
+                 "searched_shards": conversation_archive_search.get("searched_shards"),
+                 "issues": conversation_archive_search.get("issues") or [],
+                 "truth_boundary": conversation_archive_search.get("truth_boundary"),
++                "temporal_start_utc": conversation_archive_search.get("temporal_start_utc"),
++                "temporal_end_utc": conversation_archive_search.get("temporal_end_utc"),
+             },
+             "raw_chat_fallback": raw_fallback[:3],
+             "counts": {
+@@ -2726,7 +2734,7 @@
+         decision_dict["handler_missing_components"] = handler_result.missing_components
+         if handler_result.source_origin_detail:
+             decision_dict["source_origin_detail"] = handler_result.source_origin_detail
+-        dedicated_preserve_handlers = {"CapabilityStatusHandler", "SelfMemoryRecallHandler", "DirectLatkaVoiceHandler", "IdentityMemoryExistenceHandler", "CanonSourceHandler", "SelfArchitectureAuditHandler"}
++        dedicated_preserve_handlers = {"CapabilityStatusHandler", "SelfMemoryRecallHandler", "MemoryExperienceRecallHandler", "DirectLatkaVoiceHandler", "IdentityMemoryExistenceHandler", "CanonSourceHandler", "SelfArchitectureAuditHandler"}
+         handler_required = list(handler_result.required_components or route_entry.required_components or [])
+         handler_satisfied = set(handler_result.satisfied_components or [])
+         handler_missing = list(handler_result.missing_components or [])
+@@ -2892,7 +2900,7 @@
+         else:
+             synthesis = self.runtime_response_synthesizer.synthesize(
+                 user_text=text, detected_intent=str(detected_dialogue_intent), original_body=body, route=str(decision_dict.get("route") or ""),
+-                template_origin=template_origin if template_origin.get("template_id") else None, validation=first_validation.to_dict(),
++                template_origin=template_origin if template_origin.get("template_id") else None, validation=first_validation.to_dict(), memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
+             )
+             if synthesis.should_override and not preserve_handler_body:
+                 body = self.guard.enforce(synthesis.body.strip())
+@@ -2990,7 +2998,7 @@
+                 original_body=body,
+                 route=str(decision_dict.get("route") or ""),
+                 template_origin=template_origin if template_origin.get("template_id") else None,
+-                validation={"must_regenerate": True, "mismatch_reason": reasoning_decision.reason},
++                validation={"must_regenerate": True, "mismatch_reason": reasoning_decision.reason}, memory_context=frame.get("memory_context") if is

@@ -1,0 +1,165 @@
+     routing_notes=routing_notes or ["brak pewnego tematu; używam oczyszczonych słów użytkownika"],
++            temporal_scope=temporal_scope,
+         )
+ 
+     def search_source_files(self, plan: MemorySearchPlan, *, limit: int = 6, per_file: int = 2) -> list[SourceFileHit]:
+@@ -464,7 +482,9 @@
+         return sorted(scores, key=lambda item: item[1], reverse=True)
+ 
+     def _is_recall_request(self, normalized_query: str) -> bool:
+-        return any(marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS})
++        return has_explicit_memory_recall(normalized_query) or any(
++            marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS}
++        )
+ 
+     def _is_referential(self, normalized_query: str) -> bool:
+         return any(self._norm(marker) in normalized_query for marker in self.REFERENTIAL_MARKERS)
+--- a/latka_jazn/core/memory_use_gate.py
++++ b/latka_jazn/core/memory_use_gate.py
+@@ -5,6 +5,7 @@
+ from typing import Any
+ 
+ from latka_jazn.core.self_question_memory_gate import SelfQuestionMemoryGate
++from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS, has_explicit_memory_recall
+ 
+ SCHEMA_VERSION = "memory_use_gate/v1"
+ _DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
+@@ -20,12 +21,7 @@
+     "internet_access_question",
+ }
+ 
+-MEMORY_REQUIRED_INTENTS = {
+-    "self_memory_recall_request",
+-    "memory_experience_question",
+-    "user_memory_question",
+-    "identity_memory_question",
+-    "continuity_question",
++MEMORY_REQUIRED_INTENTS = set(MEMORY_CONTENT_INTENTS) | {
+     "self_architecture_audit_request",
+     "jazn_development_plan_request",
+ }
+@@ -63,9 +59,9 @@
+             return MemoryUseDecision(False, "self_state_or_closure_uses_current_turn_not_memory_excerpt", "affective_context_only", "high_if_memory_excerpt_injected")
+         if intent in MEMORY_REQUIRED_INTENTS:
+             return MemoryUseDecision(True, "memory_required_intent", "content_source", "low")
+-        explicit = any(marker in low for marker in (
+-            "pamietasz", "pamiętasz", "wspomn", "przypomnij", "co mowilem", "co mówiłem",
+-            "nasza poprzednia rozmowa", "ten watek", "ten wątek", "wroc do", "wróć do",
++        explicit = has_explicit_memory_recall(user_text) or any(marker in low for marker in (
++            "co mowilem", "co mówiłem", "nasza poprzednia rozmowa",
++            "ten watek", "ten wątek", "wroc do", "wróć do",
+         ))
+         if explicit:
+             return MemoryUseDecision(True, "explicit_memory_request", "content_source", "low")
+--- a/latka_jazn/core/nlg_planner.py
++++ b/latka_jazn/core/nlg_planner.py
+@@ -4,6 +4,7 @@
+ from typing import Any
+ 
+ from latka_jazn.core.nlg_plan import NlgPlan, SCHEMA_VERSION, default_truth_boundary
++from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS
+ 
+ ORDINARY_INTENTS = {
+     "ordinary_conversation",
+@@ -30,14 +31,7 @@
+     "system_repair_plan_request",
+     "file_operation_request",
+ }
+-MEMORY_INTENTS = {
+-    "memory_recall_request",
+-    "self_memory_recall_request",
+-    "identity_memory_existence_compound_question",
+-    "identity_memory_question",
+-    "question_about_memory",
+-    "question_about_time_memory_and_experience",
+-}
++MEMORY_INTENTS = set(MEMORY_CONTENT_INTENTS)
+ EXACT_RUNTIME_INTENTS = {
+     "runtime_exact_quote_request",
+ }
+@@ -137,7 +131,7 @@
+     return "natural_dialogue"
+ 
+ 
+-def infer_memory_policy(cognitive_frame: dict[str, Any], response_policy: dict[str, Any] | None) -> str:
++def infer_memory_policy(cognitive_frame: dict[str, Any], response_policy: dict[str, Any] | None, detected_intent: str | None = None) -> str:
+     frame = _as_dict(cognitive_frame)
+     semantic = _semantic_frame(frame)
+     policy = _combined_policy(frame, response_policy)
+@@ -146,6 +140,9 @@
+         return explicit
+     if _boolish(policy.get("exact_runtime_required")):
+         return "forbidden"
++    intent = str(detected_intent or _semantic_frame(frame).get("primary_intent") or "")
++    if intent in MEMORY_INTENTS:
++        return "required_grounded_payload"
+     memory_gate = str(frame.get("memory_gate") or frame.get("memory_use_gate") or "").strip().lower()
+     if memory_gate in {"not_needed", "not-needed", "not needed"}:
+         return "not_needed"
+@@ -302,7 +299,7 @@
+     combined_policy = _combined_policy(frame, response_policy)
+     intent = str(detected_intent or semantic.get("primary_intent") or "ordinary_conversation")
+     speech_act = str(semantic.get("speech_act") or "statement")
+-    memory_policy = infer_memory_policy(frame, combined_policy)
++    memory_policy = infer_memory_policy(frame, combined_policy, intent)
+     answer_kind = infer_answer_kind(intent, combined_policy)
+     if memory_policy == "required_grounded_payload" and answer_kind == "natural_dialogue":
+         answer_kind = "memory_grounded_answer"
+--- a/latka_jazn/core/route_handler_dispatcher.py
++++ b/latka_jazn/core/route_handler_dispatcher.py
+@@ -27,6 +27,7 @@
+ from latka_jazn.core.handlers.system_repair_plan_handler import SystemRepairPlanHandler
+ from latka_jazn.core.handlers.capability_status_handler import CapabilityStatusHandler
+ from latka_jazn.core.handlers.self_memory_recall_handler import SelfMemoryRecallHandler
++from latka_jazn.core.handlers.memory_experience_recall_handler import MemoryExperienceRecallHandler
+ from latka_jazn.core.handlers.user_memory_recall_handler import UserMemoryRecallHandler
+ from latka_jazn.core.handlers.direct_latka_voice_handler import DirectLatkaVoiceHandler
+ from latka_jazn.core.handlers.identity_memory_existence_handler import IdentityMemoryExistenceHandler
+@@ -52,7 +53,7 @@
+     def __init__(self) -> None:
+         handlers=[
+             PostUpdateCoverageAuditHandler(), SelfArchitectureAuditHandler(), DictionaryLookupHandler(), ExternalToolAssistanceHandler(), ExternalResearchHandler(), OrdinaryDialogueHandler(), RuntimeDiagnosticHandler(), PackageRuntimeStatusHandler(), RuntimeSourceHandler(), CanonSourceHandler(), MemoryAuditHandler(), SystemUpdateHandler(),
+-            CreativeTextHandler(), FileOperationHandler(), IdentityBoundaryHandler(), IdentityRuntimeTruthHandler(), PracticalAdviceHandler(), SelfStateHandler(), PresenceStatusHandler(), TimeAwarenessHandler(), RuntimeActivationStatusHandler(), RuntimeChatModeHandler(), SystemRepairPlanHandler(), CapabilityStatusHandler(), UserMemoryRecallHandler(), SelfMemoryRecallHandler(), DirectLatkaVoiceHandler(), IdentityMemoryExistenceHandler(), FallbackHandler(),
++            CreativeTextHandler(), FileOperationHandler(), IdentityBoundaryHandler(), IdentityRuntimeTruthHandler(), PracticalAdviceHandler(), SelfStateHandler(), PresenceStatusHandler(), TimeAwarenessHandler(), RuntimeActivationStatusHandler(), RuntimeChatModeHandler(), SystemRepairPlanHandler(), CapabilityStatusHandler(), UserMemoryRecallHandler(), SelfMemoryRecallHandler(), MemoryExperienceRecallHandler(), DirectLatkaVoiceHandler(), IdentityMemoryExistenceHandler(), FallbackHandler(),
+         ]
+         self.handlers_by_name={h.name:h for h in handlers}
+         self.handlers_by_route={h.route:h for h in handlers}
+--- a/latka_jazn/core/route_registry.py
++++ b/latka_jazn/core/route_registry.py
+@@ -88,9 +88,9 @@
+         "contextual_continuation_question": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
+         "sleep_closure_statement": ("sleep_closure", "OrdinaryDialogueHandler"),
+         "current_time_question": ("current_time", "OrdinaryDialogueHandler"),
+-        "substantive_question_about_last_year": ("last_year_reflection", "OrdinaryDialogueHandler"),
++        "substantive_question_about_last_year": ("memory_experience_recall", "MemoryExperienceRecallHandler"),
+         "current_hotfix_for_stale_nlp_route": ("legacy_diagnostic_only", "RuntimeDiagnosticHandler"),
+-        "memory_experience_question": ("free_memory_dialogue_no_source", "OrdinaryDialogueHandler"),
++        "memory_experience_question": ("memory_experience_recall", "MemoryExperienceRecallHandler"),
+         "ordinary_workday_report": ("ordinary_workday_dialogue", "OrdinaryDialogueHandler"),
+         "legacy_behavioral_runtime_dialogue_update_reference": ("legacy_diagnostic_only", "RuntimeDiagnosticHandler"),
+         "memory_audit_request": ("memory_audit", "MemoryAuditHandler"),
+@@ -191,7 +191,7 @@
+             return ["current_time", "timezone", "source_or_fallback", "truth_boundary"]
+         if intent == "current_time_question":
+             return ["current_time", "timezone", "source_or_fallback", "truth_boundary"]
+-        if intent == "memory_experience_question":
++        if intent in {"memory_experience_question", "substantive_question_about_last_year"}:
+             return ["memory_content", "source_or_index_status", "truth_boundary", "no_current_turn_echo"]
+         return []
+ 
+--- a/latka_jazn/core/runtime_response_synthesizer.py
++++ b/latka_jazn/core/runtime_response_synthesizer.py
+@@ -24,7 +24,7 @@
+     def __init__(self) -> None:
+         self.registry = RouteRegistry()
+ 
+-    def synthesize(self, *, user_text: str, detected_intent: str, original_body: str, route: str, template_origin: dict[str, Any] | None = None, validation: dict[str, Any] | None = None) -> RuntimeSynthesis:
++    def synthesize(self, *, user_text: str, detected_intent: str, original_body: str, route: str, template_origin: dict[str, Any] | None = None, validation: dict[str, Any] | None = None, memory_context: dict[str, Any] | None = None) -> RuntimeSynthesis:
+         entry = self.registry.resolve(detected_intent)
+         template = template_origin or {}
+         template_id = template.get('template_id')
+@@ -41,10 +41,10 @@
+         }
+         if not must:
+             return RuntimeSynthesis(False, original_body, route or entry.route, entry.handler_name, 'runtime_dynamic', 'original_body_accepted', entry.required_components)
+-        body = self._body_for(user_text, detected_intent, origin
