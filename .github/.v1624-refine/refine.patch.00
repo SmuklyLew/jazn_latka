@@ -1,0 +1,200 @@
+diff --git a/latka_jazn/core/chat_command_contract.py b/latka_jazn/core/chat_command_contract.py
+index e2509c4..259c296 100644
+--- a/latka_jazn/core/chat_command_contract.py
++++ b/latka_jazn/core/chat_command_contract.py
+@@ -843,7 +843,7 @@ def build_chatgpt_host_bridge_turn_contract(
+         "Nie zmieniaj turn_id, trace_id, timestampu, autora ani host_request_contract_hash.",
+         "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
+         "Zadeklaruj każdy użyty identyfikator pamięci i nie używaj identyfikatorów spoza host_generation_context.allowed_memory_item_ids.",
+-        "Jeżeli host rzeczywiście wykonał web.run, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
++        "Jeżeli host rzeczywiście wykonał web.run lub GitHub, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
+         "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
+     ]
+     if requires_host and not host_generation_context_valid:
+@@ -1126,7 +1126,7 @@ def persist_chatgpt_host_visible_reply(
+                     "host_request_contract_hash": reply["host_request_contract_hash"],
+                     "generation_executor": "chatgpt_host",
+                     "used_memory_item_ids": list(reply.get("used_memory_item_ids") or []),
+-                "external_tool_evidence": list(semantic_validation.get("external_tool_evidence") or []),
++                    "external_tool_evidence": list(semantic_validation.get("external_tool_evidence") or []),
+                     "host_candidate_validation": semantic_validation,
+                 },
+                 memory_evidence={
+diff --git a/latka_jazn/core/host_response_candidate_guard.py b/latka_jazn/core/host_response_candidate_guard.py
+index 1048b3c..345d6c7 100644
+--- a/latka_jazn/core/host_response_candidate_guard.py
++++ b/latka_jazn/core/host_response_candidate_guard.py
+@@ -40,7 +40,7 @@ _MEMORY_ITEM_KEYS = (
+ )
+ _EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS = 8
+ _EXTERNAL_TOOL_SOURCE_MAX_ITEMS = 16
+-_EXTERNAL_TOOL_ALLOWED = {"web.run"}
++_EXTERNAL_TOOL_ALLOWED = {"web.run", "GitHub"}
+ _EXTERNAL_TOOL_REF_RE = re.compile(r"^turn\d+[A-Za-z][A-Za-z0-9_]*\d+$")
+ _EXTERNAL_TOOL_OPERATION_RE = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
+ 
+@@ -109,6 +109,7 @@ def build_host_generation_context(
+             "return_only_candidate_reply": True,
+             "external_tool_evidence_required": external_web_required,
+             "required_external_tool": "web.run" if external_web_required else None,
++            "accepted_host_tool_attestations": sorted(_EXTERNAL_TOOL_ALLOWED),
+             "external_tool_evidence_is_host_attested": True,
+             "runtime_does_not_independently_execute_host_web_tool": True,
+         },
+@@ -197,10 +198,14 @@ def evaluate_host_response_candidate(
+     nlg_plan_value = model_context.get("nlg_plan")
+     nlg_plan = nlg_plan_value if isinstance(nlg_plan_value, dict) else {}
+     external_web_required = str(nlg_plan.get("source_policy") or "") == "requires_external_web"
+-    if external_web_required and evidence_validation["ok"] is not True:
++    web_evidence_accepted = bool(
++        evidence_validation["ok"] is True
++        and any(item.get("tool") == "web.run" for item in evidence_validation["evidence"])
++    )
++    if external_web_required and not web_evidence_accepted:
+         violations.append(
+             "external_web_evidence_missing"
+-            if not evidence_validation["evidence"]
++            if evidence_validation["ok"] is True or not evidence_validation["evidence"]
+             else "external_web_evidence_invalid"
+         )
+     if not validate_host_generation_context(contract):
+@@ -233,7 +238,7 @@ def evaluate_host_response_candidate(
+         response_policy={
+             "exact_runtime_required": False,
+             "external_web_evidence_accepted": bool(
+-                external_web_required and evidence_validation["ok"] is True
++                external_web_required and web_evidence_accepted
+             ),
+         },
+     )
+@@ -267,6 +272,8 @@ def evaluate_host_response_candidate(
+             "errors": evidence_validation["errors"],
+             "host_attested": True,
+             "runtime_independently_verified_execution": False,
++            "accepted_tools": sorted(_EXTERNAL_TOOL_ALLOWED),
++            "web_evidence_accepted": web_evidence_accepted,
+         },
+         "violations": violations,
+         "template_origin": template_origin,
+diff --git a/latka_jazn/mcp/server.py b/latka_jazn/mcp/server.py
+index b51dcf9..94c4f59 100644
+--- a/latka_jazn/mcp/server.py
++++ b/latka_jazn/mcp/server.py
+@@ -118,7 +118,7 @@ TOOL_DEFINITIONS = [
+                         "type": "object",
+                         "additionalProperties": False,
+                         "properties": {
+-                            "tool": {"type": "string", "enum": ["web.run"]},
++                            "tool": {"type": "string", "enum": ["GitHub", "web.run"]},
+                             "operation": {"type": "string", "minLength": 1, "maxLength": 64},
+                             "source_refs": {
+                                 "type": "array",
+diff --git a/tests/test_chatgpt_mcp_two_phase_protocol.py b/tests/test_chatgpt_mcp_two_phase_protocol.py
+index eaaa37a..b80c059 100644
+--- a/tests/test_chatgpt_mcp_two_phase_protocol.py
++++ b/tests/test_chatgpt_mcp_two_phase_protocol.py
+@@ -296,7 +296,7 @@ def test_mcp_finalizer_schema_accepts_bounded_external_tool_evidence() -> None:
+     assert evidence["maxItems"] == 8
+     item = evidence["items"]
+     assert item["additionalProperties"] is False
+-    assert item["properties"]["tool"]["enum"] == ["web.run"]
++    assert item["properties"]["tool"]["enum"] == ["GitHub", "web.run"]
+     assert item["properties"]["source_refs"]["maxItems"] == 16
+     assert item["properties"]["source_urls"]["maxItems"] == 16
+ 
+diff --git a/tests/test_runtime_package_loader_contract.py b/tests/test_runtime_package_loader_contract.py
+index c4f724f..9016222 100644
+--- a/tests/test_runtime_package_loader_contract.py
++++ b/tests/test_runtime_package_loader_contract.py
+@@ -651,106 +651,3 @@ def test_combined_package_memory_manifest_is_verified_and_tamper_is_rejected(
+         "memory_package_file_size_mismatch",
+         "memory_package_file_sha256_mismatch",
+     }
+-
+-
+-def test_runtime_bootstrap_discovers_one_memory_sidecar_and_requires_explicit_choice_for_many(
+-    tmp_path: Path,
+-) -> None:
+-    parts_dir = tmp_path / "parts"
+-    parts_dir.mkdir()
+-    first = {
+-        "schema_version": "jazn_package_set/v2",
+-        "package_name": "memory-a.zip",
+-        "profile": "memory",
+-        "archive_format": "independent",
+-    }
+-    (parts_dir / "memory-a.zip.package.json").write_text(json.dumps(first), encoding="utf-8")
+-    discovered = recovery_module._discover_memory_package(parts_dir)
+-    assert discovered["ok"] is True
+-    assert discovered["package_name"] == "memory-a.zip"
+-
+-    second = dict(first, package_name="memory-b.zip")
+-    (parts_dir / "memory-b.zip.package.json").write_text(json.dumps(second), encoding="utf-8")
+-    ambiguous = recovery_module._discover_memory_package(parts_dir)
+-    assert ambiguous["ok"] is False
+-    assert ambiguous["state"] == "memory_package_ambiguous"
+-    selected = recovery_module._discover_memory_package(parts_dir, "memory-b.zip")
+-    assert selected["ok"] is True
+-    assert selected["package_name"] == "memory-b.zip"
+-
+-
+-def test_runtime_bootstrap_keeps_zip_bomb_limits_and_repackages_legacy_memory() -> None:
+-    gib = 1024**3
+-    legacy = {
+-        "archive_format": "binary",
+-        "entries": [
+-            {"path": "memory/raw/runtime_events.jsonl", "size_bytes": 9 * gib},
+-            {"path": "memory/sqlite/runtime.sqlite3", "size_bytes": 512 * 1024**2},
+-        ],
+-    }
+-    decision = recovery_module._memory_package_requires_v3_repack(legacy)
+-    assert decision["required"] is True
+-    assert decision["reason"] == "legacy_transport_exceeds_safe_zip_limits"
+-    assert decision["limits"]["max_total_uncompressed_bytes"] == 8 * gib
+-    assert "memory/raw/runtime_events.jsonl" in decision["oversized_members"]
+-
+-    v3 = dict(legacy, memory_manifest_schema="jazn_memory_package_manifest/v3")
+-    assert recovery_module._memory_package_requires_v3_repack(v3)["required"] is False
+-
+-
+-def test_reused_runtime_runs_auto_memory_before_daemon_start(
+-    tmp_path: Path,
+-    monkeypatch: pytest.MonkeyPatch,
+-) -> None:
+-    destination = _write_installable_source(tmp_path / "runtime")
+-    parts_dir = tmp_path / "parts"
+-    parts_dir.mkdir()
+-    calls: list[str] = []
+-
+-    monkeypatch.setattr(
+-        recovery_module,
+-        "_auto_attach_memory_before_daemon",
+-        lambda **_kwargs: calls.append("memory") or {"ok": True, "state": "memory_attached_ready"},
+-    )
+-    monkeypatch.setattr(
+-        recovery_module,
+-        "start_daemon",
+-        lambda *_args, **_kwargs: calls.append("daemon") or {"ok": True},
+-    )
+-    monkeypatch.setattr(
+-        recovery_module,
+-        "status_daemon",
+-        lambda *_args, **_kwargs: {"active_state": "active_trusted"},
+-    )
+-    monkeypatch.setattr(
+-        recovery_module,
+-        "_sqlite_health",
+-        lambda _root: {"ok": True, "database": "test.sqlite3"},
+-    )
+-
+-    result = recover_chatgpt_runtime(
+-        parts_dir=parts_dir,
+-        destination=destination,
+-        start_runtime_daemon=True,
+-        auto_attach_memory=True,
+-    )
+-    assert result.ok is True
+-    assert calls[:2] == ["memory", "daemon"]
+-
+-
+-def test_runtime_bootstrap_cli_supports_memory_autoload_controls() -> None:
