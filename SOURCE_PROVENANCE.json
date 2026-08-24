@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "91673b7d7b896128644e082eed1b2e2ded53be1d",
+  "base_merge_commit": "171af9aa4f9b074fd98611e7455163a767701962",
   "base_version": "16.3.0-full-jazn-conversation-memory-convergence",
-  "commit_date": "2026-08-25T01:13:29+02:00",
+  "commit_date": "2026-08-25T01:18:01+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-24T23:13:29+00:00",
+  "generated_at_utc": "2026-08-24T23:18:01+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1387f43594e35fbcb9c1da73caf831e5993a8d33",
+  "git_tree_sha": "31da4a1dca2a7e18513bdcfc004a4a9a88ff77ee",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
