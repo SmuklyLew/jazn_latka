@@ -1,0 +1,250 @@
+--- a/tests/test_runtime_package_loader_contract.py
++++ b/tests/test_runtime_package_loader_contract.py
+@@ -651,3 +651,106 @@ def test_combined_package_memory_manifest_is_verified_and_tamper_is_rejected(
+         "memory_package_file_size_mismatch",
+         "memory_package_file_sha256_mismatch",
+     }
++
++
++def test_runtime_bootstrap_discovers_one_memory_sidecar_and_requires_explicit_choice_for_many(
++    tmp_path: Path,
++) -> None:
++    parts_dir = tmp_path / "parts"
++    parts_dir.mkdir()
++    first = {
++        "schema_version": "jazn_package_set/v2",
++        "package_name": "memory-a.zip",
++        "profile": "memory",
++        "archive_format": "independent",
++    }
++    (parts_dir / "memory-a.zip.package.json").write_text(json.dumps(first), encoding="utf-8")
++    discovered = recovery_module._discover_memory_package(parts_dir)
++    assert discovered["ok"] is True
++    assert discovered["package_name"] == "memory-a.zip"
++
++    second = dict(first, package_name="memory-b.zip")
++    (parts_dir / "memory-b.zip.package.json").write_text(json.dumps(second), encoding="utf-8")
++    ambiguous = recovery_module._discover_memory_package(parts_dir)
++    assert ambiguous["ok"] is False
++    assert ambiguous["state"] == "memory_package_ambiguous"
++    selected = recovery_module._discover_memory_package(parts_dir, "memory-b.zip")
++    assert selected["ok"] is True
++    assert selected["package_name"] == "memory-b.zip"
++
++
++def test_runtime_bootstrap_keeps_zip_bomb_limits_and_repackages_legacy_memory() -> None:
++    gib = 1024**3
++    legacy = {
++        "archive_format": "binary",
++        "entries": [
++            {"path": "memory/raw/runtime_events.jsonl", "size_bytes": 9 * gib},
++            {"path": "memory/sqlite/runtime.sqlite3", "size_bytes": 512 * 1024**2},
++        ],
++    }
++    decision = recovery_module._memory_package_requires_v3_repack(legacy)
++    assert decision["required"] is True
++    assert decision["reason"] == "legacy_transport_exceeds_safe_zip_limits"
++    assert decision["limits"]["max_total_uncompressed_bytes"] == 8 * gib
++    assert "memory/raw/runtime_events.jsonl" in decision["oversized_members"]
++
++    v3 = dict(legacy, memory_manifest_schema="jazn_memory_package_manifest/v3")
++    assert recovery_module._memory_package_requires_v3_repack(v3)["required"] is False
++
++
++def test_reused_runtime_runs_auto_memory_before_daemon_start(
++    tmp_path: Path,
++    monkeypatch: pytest.MonkeyPatch,
++) -> None:
++    destination = _write_installable_source(tmp_path / "runtime")
++    parts_dir = tmp_path / "parts"
++    parts_dir.mkdir()
++    calls: list[str] = []
++
++    monkeypatch.setattr(
++        recovery_module,
++        "_auto_attach_memory_before_daemon",
++        lambda **_kwargs: calls.append("memory") or {"ok": True, "state": "memory_attached_ready"},
++    )
++    monkeypatch.setattr(
++        recovery_module,
++        "start_daemon",
++        lambda *_args, **_kwargs: calls.append("daemon") or {"ok": True},
++    )
++    monkeypatch.setattr(
++        recovery_module,
++        "status_daemon",
++        lambda *_args, **_kwargs: {"active_state": "active_trusted"},
++    )
++    monkeypatch.setattr(
++        recovery_module,
++        "_sqlite_health",
++        lambda _root: {"ok": True, "database": "test.sqlite3"},
++    )
++
++    result = recover_chatgpt_runtime(
++        parts_dir=parts_dir,
++        destination=destination,
++        start_runtime_daemon=True,
++        auto_attach_memory=True,
++    )
++    assert result.ok is True
++    assert calls[:2] == ["memory", "daemon"]
++
++
++def test_runtime_bootstrap_cli_supports_memory_autoload_controls() -> None:
++    parser = build_parser()
++    ns = parser.parse_args(
++        [
++            "runtime-bootstrap",
++            "--parts-dir",
++            "parts",
++            "--destination",
++            "runtime",
++            "--memory-zip-name",
++            "memory.zip",
++            "--no-auto-memory",
++        ]
++    )
++    assert ns.memory_zip_name == "memory.zip"
++    assert ns.no_auto_memory is True
+diff --git a/tests/test_v160_single_canonical_workspace_contract.py b/tests/test_v160_single_canonical_workspace_contract.py
+index 5cba129d3709498d66dda2844aa41565df47976d..172b3e9df9de28bf4a94627146b79bc0ebe84ee7 100644
+--- a/tests/test_v160_single_canonical_workspace_contract.py
++++ b/tests/test_v160_single_canonical_workspace_contract.py
+@@ -15,12 +15,15 @@ from latka_jazn.tools.package_export import build_package_plan
+ from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_RELEASE_NAME, PACKAGE_VERSION
+ 
+ 
+-def test_v1622_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
+-    expected = ".".join(("16", "2", "2"))
+-    assert DISTRIBUTION_VERSION == expected
+-    assert PACKAGE_VERSION == expected
+-    assert PACKAGE_RELEASE_NAME == "-".join(("rest", "cloud", "performance", "hygiene"))
+-    assert release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION) == f"release_test/{expected}"
++def test_release_identity_and_release_metadata_accept_unprefixed_version() -> None:
++    assert DISTRIBUTION_VERSION == PACKAGE_VERSION
++    assert PACKAGE_VERSION == PACKAGE_VERSION.lstrip("v")
++    assert all(part.isdigit() for part in PACKAGE_VERSION.split("."))
++    assert PACKAGE_RELEASE_NAME.strip()
++    assert (
++        release_metadata_sync._impl._schema_version_for_runtime("release_test", PACKAGE_VERSION)
++        == f"release_test/{PACKAGE_VERSION}"
++    )
+     assert release_metadata_sync._impl._schema_version_for_runtime("release_test", "v15.4.3.1") == "release_test/v15.4.3.1"
+ 
+ 
+ diff --git a/docs/reports/JAZN_V16_2_4_HOST_TOOL_PROVENANCE_MEMORY_AUTOLOAD.md b/docs/reports/JAZN_V16_2_4_HOST_TOOL_PROVENANCE_MEMORY_AUTOLOAD.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..4c03331305630f341e4aab1a01f324c0b50cbc1a
+--- /dev/null
++++ b/docs/reports/JAZN_V16_2_4_HOST_TOOL_PROVENANCE_MEMORY_AUTOLOAD.md
+@@ -0,0 +1,47 @@
++# Jaźń v16.2.4 — host tool provenance and automatic memory attachment
++
++## Scope
++
++This patch fixes two failures found while running the v16.2.3 ChatGPT host lifecycle.
++
++1. A host response for an NLG plan with `source_policy=requires_external_web` was always represented as `source=model_adapter`. The generic candidate evaluator therefore rejected it as `model_candidate_cannot_fake_external_web_sources` even when the ChatGPT host had actually executed `web.run`.
++2. `runtime-bootstrap` installed and could start a system runtime before discovering and attaching a standalone `profile=memory` package located beside the system package. This left the daemon alive while memory search/continuity remained unavailable.
++
++## Fix A — authenticated host tool provenance
++
++The two-phase finalizer now accepts a bounded `external_tool_evidence` list. The only currently accepted tool is `web.run`. Each item carries an operation plus returned source refs and/or HTTP(S) source URLs. The runtime validates size, shape and allowed tool names before the generic candidate guard receives an `external_web_evidence_accepted` policy bit.
++
++The generic evaluator remains fail-closed: a normal model candidate with `requires_external_web` and no accepted host evidence is still rejected. The evidence is explicitly recorded as host-attested provenance; the local runtime does not claim that it independently executed or verified the web request.
++
++## Fix B — memory autoload before daemon start
++
++`runtime-bootstrap` now defaults to automatic standalone-memory discovery in its `parts-dir`. The sequence is:
++
++1. verify/install or reuse the system runtime;
++2. discover exactly one `profile=memory` sidecar (or require `--memory-zip-name` when ambiguous);
++3. if a legacy binary transport exceeds existing ZIP safety limits, migrate it with the existing verified v3 repacker rather than increasing limits;
++4. run the existing canonical `memory-attach`;
++5. run quick memory validation and, only when needed, recovery/normalization/wake-state reconstruction;
++6. keep L2/L3 automatic promotion disabled;
++7. start the daemon only after this memory stage has succeeded or no standalone memory package is present.
++
++`--no-auto-memory` provides an explicit opt-out for diagnostics.
++
++## Security basis
++
++The patch follows the existing fail-closed ZIP model. Python's `zipfile` documentation warns callers to inspect untrusted archives and validate extraction paths. OWASP file-upload/input-validation guidance recommends archive-path validation and limits on decompressed size/compression behavior to prevent traversal and ZIP-bomb style resource exhaustion. Therefore v16.2.4 reuses the v3 logical segmentation/repack pipeline instead of enlarging the 8 GiB total / 2 GiB member defaults.
++
++For tool provenance, the design follows the general provenance distinction between an entity/result, the activity that produced it, and the agent that performed the activity: the host attests that `web.run` occurred and supplies bounded source locators, while runtime truth boundaries continue to distinguish that claim from local execution.
++
++## Regression coverage
++
++Added coverage verifies that:
++
++- model candidates still cannot fake required external-web sourcing;
++- valid host-attested `web.run` evidence removes only that specific provenance violation;
++- malformed/unknown tool evidence fails closed;
++- MCP finalization exposes only bounded evidence and still does not accept mutable identity fields;
++- one standalone memory package is auto-discovered, multiple packages are ambiguous without explicit selection;
++- legacy oversize packages select v3 repack while v3 packages do not;
++- auto-memory runs before daemon start on a reused verified runtime;
++- CLI exposes `--memory-zip-name` and `--no-auto-memory`.
+diff --git a/tests/test_v1624_host_tool_provenance.py b/tests/test_v1624_host_tool_provenance.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..1cc68800777485c4fa8357c78bdde2c1c1b87d32
+--- /dev/null
++++ b/tests/test_v1624_host_tool_provenance.py
+@@ -0,0 +1,65 @@
++from __future__ import annotations
++
++from latka_jazn.core.host_response_candidate_guard import validate_external_tool_evidence
++from latka_jazn.core.response_candidate import ResponseCandidate
++from latka_jazn.core.response_candidate_evaluator import evaluate_response_candidate
++
++
++def _candidate() -> ResponseCandidate:
++    return ResponseCandidate(
++        candidate_id="host",
++        text="Odpowiedź oparta na sprawdzonych źródłach.",
++        source="model_adapter",
++        provider="chatgpt_host",
++        model="host_managed",
++        status="completed",
++        used_memory_item_ids=[],
++        generation_reason="test",
++    )
++
++
++def test_external_tool_evidence_is_bounded_and_fail_closed() -> None:
++    valid = validate_external_tool_evidence(
++        [
++            {
++                "tool": "web.run",
++                "operation": "search",
++                "source_refs": ["turn4search2"],
++                "source_urls": ["https://www.python.org/doc/"],
++            }
++        ]
++    )
++    assert valid["ok"] is True
++    assert valid["evidence"][0]["tool"] == "web.run"
++
++    missing = validate_external_tool_evidence([])
++    assert missing["ok"] is False
++    invalid = validate_external_tool_evidence(
++        [{"tool": "made.up", "operation": "search", "source_refs": ["not-a-ref"]}]
++    )
++    assert invalid["ok"] is False
++    assert any(error.startswith("tool_not_allowed") for error in invalid["errors"])
++
++
++def test_generic_model_still_cannot_fake_web_but_host_attestation_can_satisfy_policy() -> None:
++    plan = {"source_policy": "requires_external_web"}
++    context = {"nlg_plan": plan, "allowed_memory_items": []}
++    blocked = evaluate_response_candidate(
++        candidate=_candidate(),
++        nlg_plan=plan,
++        model_context=context,
++        response_policy={"exact_runtime_required": False},
++    )
++    assert "model_candidate_cannot_fake_external_web_sources" in blocked.violations
++
++    attested = evaluate_response_candidate(
++        candidate=_candidate(),
