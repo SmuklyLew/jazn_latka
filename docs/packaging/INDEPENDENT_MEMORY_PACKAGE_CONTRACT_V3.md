@@ -46,6 +46,12 @@ The R2 path is not a second activation mechanism. The client lists a flat packag
 
 The memory sidecar advertises `cloud_attach_compatible=true`, `memory_transport_contract=jazn_memory_package_transport/v1`, and a flat `s3_compatible` object layout. Credentials are not stored in the package.
 
+## Automatic system-bootstrap attachment
+
+`runtime-bootstrap` is the orchestration entry point when a system package and a standalone memory package arrive together. By default it discovers exactly one sidecar-declared `profile=memory` package in the same `parts-dir`, keeps the runtime daemon stopped, migrates an oversized legacy transport to v3 when required by the existing ZIP resource limits, runs the canonical `memory-attach` pipeline, performs quick validation and recovery/wake-state reconstruction when needed, and starts the daemon only after memory readiness is established.
+
+The automation does not relax ZIP member/total/compression-ratio limits and does not auto-promote L2/L3. Multiple memory packages fail closed unless `--memory-zip-name` selects one explicitly. `--no-auto-memory` disables only this orchestration; it does not change the memory package contract.
+
 ## ChatGPT transfer sequence
 
 1. build a verified memory snapshot/export locally;
