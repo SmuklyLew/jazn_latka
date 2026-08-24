@@ -203,9 +203,20 @@ def runtime_sqlite_capabilities() -> dict[str, Any]:
     }
 
 
-def _readonly_uri(path: str | Path) -> str:
+def readonly_sqlite_uri(path: str | Path) -> str:
+    """Return a percent-encoded SQLite read-only URI that also works on Windows."""
     resolved = str(Path(path).expanduser().resolve()).replace("\\", "/")
     return "file:" + quote(resolved, safe="/:" ) + "?mode=ro"
+
+
+def writable_sqlite_uri(path: str | Path) -> str:
+    """Return an encoded create-or-open URI and enable URI-aware ATTACH calls."""
+    resolved = str(Path(path).expanduser().resolve()).replace("\\", "/")
+    return "file:" + quote(resolved, safe="/:") + "?mode=rwc"
+
+
+def _readonly_uri(path: str | Path) -> str:
+    return readonly_sqlite_uri(path)
 
 
 def connect_runtime_readonly(
@@ -248,7 +259,8 @@ def connect_runtime_writable(
     timeout_value = max(1, int(timeout_ms))
     with runtime_sqlite_write_guard(db_path, timeout_ms=timeout_value):
         connection = sqlite3.connect(
-            db_path,
+            writable_sqlite_uri(db_path),
+            uri=True,
             timeout=max(0.001, timeout_value / 1000),
             isolation_level=isolation_level,
             check_same_thread=check_same_thread,

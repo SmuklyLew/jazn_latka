@@ -11,7 +11,11 @@ import sqlite3
 import uuid
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.db.runtime_sqlite import connect_runtime_writable, runtime_sqlite_write_guard
+from latka_jazn.db.runtime_sqlite import (
+    connect_runtime_writable,
+    readonly_sqlite_uri,
+    runtime_sqlite_write_guard,
+)
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("memory_normalization_sidecar")
@@ -47,7 +51,7 @@ def _copy_legacy_sidecar_tables(
     """
     if not legacy_path.is_file():
         return {}
-    source_uri = legacy_path.resolve().as_uri() + "?mode=ro"
+    source_uri = readonly_sqlite_uri(legacy_path)
     connection.execute("ATTACH DATABASE ? AS legacy_sidecar", (source_uri,))
     copied: dict[str, int] = {}
     try:

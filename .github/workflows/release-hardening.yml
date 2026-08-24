@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ github.event.pull_request.head.sha || github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -67,7 +67,8 @@ jobs:
           --write
           --json
 
-      - name: Commit synchronized release metadata
+      - name: Commit synchronized release metadata on master only
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           if git diff --quiet -- \
@@ -77,7 +78,7 @@ jobs:
             exit 0
           fi
 
-          target_branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          target_branch="${GITHUB_REF#refs/heads/}"
           runtime_version="${{ steps.version.outputs.full }}"
 
           if [ "$JAZN_HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
@@ -85,27 +86,19 @@ jobs:
             exit 2
           fi
 
-          case "$target_branch" in
-            master|update/*|tools/upgrade-*|hotfix/*|upgrade/*|fix/*)
-              git config user.name "github-actions[bot]"
-              git config user.email \
-                "41898282+github-actions[bot]@users.noreply.github.com"
-              git add \
-                SOURCE_PROVENANCE.json \
-                PACKAGE_INTEGRITY_MANIFEST.json
-              if [ "$target_branch" = "master" ]; then
-                commit_message="release: synchronize canonical metadata for ${runtime_version} [skip ci]"
-              else
-                commit_message="release: synchronize canonical metadata for ${runtime_version}"
-              fi
-              git commit -m "$commit_message"
-              git push origin "HEAD:${target_branch}"
-              ;;
-            *)
-              echo "Release metadata drift detected outside an allowed synchronization branch: ${target_branch}." >&2
-              exit 2
-              ;;
-          esac
+          if [ "$target_branch" != "master" ]; then
+            echo "Automatic release-metadata commits are forbidden outside master." >&2
+            exit 2
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            SOURCE_PROVENANCE.json \
+            PACKAGE_INTEGRITY_MANIFEST.json
+          git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
+          git push origin "HEAD:${target_branch}"
 
       - name: Verify synchronization is idempotent
         run: >-
@@ -115,9 +108,26 @@ jobs:
           --check
           --json
 
+      - name: Upload synchronized PR metadata
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: synchronized-release-metadata-${{ github.event.pull_request.head.sha }}
+          path: |
+            SOURCE_PROVENANCE.json
+            PACKAGE_INTEGRITY_MANIFEST.json
+          if-no-files-found: error
+          retention-days: 3
+
       - name: Resolve synchronized HEAD
         id: head
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
 
   verify_ubuntu:
     name: verify (ubuntu-latest)
@@ -153,6 +163,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[memory-rebuild-ui]" pytest
           npm install --global pyright@1.1.411
+
+      - name: Materialize canonical PR metadata locally
+        if: github.event_name == 'pull_request'
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --write
+          --json
 
       - name: Compile all active Python
         run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
@@ -195,7 +214,11 @@ jobs:
 
       - name: Clean checkout guard
         if: always()
+        shell: bash
         run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+          fi
           git diff --check
           git diff --exit-code
           test -z "$(git status --porcelain --untracked-files=all)"
@@ -229,6 +252,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
+
+      - name: Materialize canonical PR metadata locally
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --write
+          --json
 
       - name: Targeted Windows runtime and path tests
         shell: pwsh
@@ -287,6 +320,9 @@ jobs:
         if: always()
         shell: pwsh
         run: |
+          if ("${{ github.event_name }}" -eq "pull_request") {
+            git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+          }
           git diff --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git diff --exit-code

@@ -173,3 +173,36 @@ class SecureHostRuntimeGateway:
             if isinstance(exc, GatewayError):
                 raise
             raise GatewayError(f"continuation_issue_failed:{type(exc).__name__}:{exc}") from exc
+
+    def note_host_finalization(
+        self,
+        pending: dict[str, Any],
+        *,
+        outcome: str,
+        reason: str,
+        terminal: bool = False,
+    ) -> dict[str, Any]:
+        binding_value = pending.get("binding")
+        binding = binding_value if isinstance(binding_value, dict) else {}
+        generation_value = pending.get("generation_context")
+        generation = generation_value if isinstance(generation_value, dict) else {}
+        request_id = str(
+            binding.get("daemon_request_id")
+            or generation.get("daemon_request_id")
+            or ""
+        ).strip()
+        if not request_id:
+            return {"ok": True, "not_applicable": True, "reason": "one_shot_without_daemon_job"}
+        return self._http_json(
+            "POST",
+            "/chat-finalization",
+            {
+                "request_id": request_id,
+                "turn_id": str(binding.get("turn_id") or ""),
+                "trace_id": str(binding.get("trace_id") or ""),
+                "request_contract_hash": str(pending.get("request_contract_hash") or ""),
+                "outcome": str(outcome),
+                "reason": str(reason),
+                "terminal": bool(terminal),
+            },
+        )

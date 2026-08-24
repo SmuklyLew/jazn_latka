@@ -97,6 +97,25 @@ def test_chat_requires_capability_token(tmp_path: Path) -> None:
         thread.join(timeout=2.0)
 
 
+def test_repeated_unauthenticated_posts_return_http_401_without_connection_reset(
+    tmp_path: Path,
+) -> None:
+    server = _server(tmp_path)
+    thread = _start(server)
+    try:
+        for _attempt in range(12):
+            with pytest.raises(urllib.error.HTTPError) as caught:
+                _request(server, "/chat-submit", token=None)
+            assert caught.value.code == 401
+            body = json.loads(caught.value.read().decode("utf-8"))
+            assert body["error_code"] == "daemon_auth_required"
+    finally:
+        server.shutdown()
+        server.close_sessions()
+        server.server_close()
+        thread.join(timeout=2.0)
+
+
 def test_mutating_browser_origin_is_rejected(tmp_path: Path) -> None:
     server = _server(tmp_path)
     thread = _start(server)

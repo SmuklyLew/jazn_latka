@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextvars import ContextVar, Token
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol
@@ -40,6 +40,7 @@ class RuntimeMemoryWriteContext:
     turn_id: str | None = None
     actor: str = "user"
     active_goal: str | None = None
+    cognitive_anchor_ids: tuple[str, ...] = ()
     domain: str = "unclassified"
     mode: str = "runtime_turn"
     timestamp_status: str = "runtime_recorded"
@@ -49,6 +50,12 @@ class RuntimeMemoryWriteContext:
             raise ValueError("session_id is required")
         if not self.actor.strip():
             raise ValueError("actor is required")
+        anchors = tuple(dict.fromkeys(
+            str(item).strip() for item in self.cognitive_anchor_ids if str(item).strip()
+        ))
+        if len(anchors) > 64:
+            raise ValueError("runtime memory context supports at most 64 cognitive anchors")
+        object.__setattr__(self, "cognitive_anchor_ids", anchors)
 
 
 class RuntimeMemoryCoordinator:
@@ -83,6 +90,25 @@ class RuntimeMemoryCoordinator:
 
     def current_context(self) -> RuntimeMemoryWriteContext | None:
         return self._write_context.get()
+
+    def update_current_context(
+        self,
+        *,
+        active_goal: str | None,
+        cognitive_anchor_ids: tuple[str, ...],
+    ) -> RuntimeMemoryWriteContext | None:
+        """Refine the bound turn context without escaping its ContextVar scope."""
+
+        current = self.current_context()
+        if current is None:
+            return None
+        updated = replace(
+            current,
+            active_goal=str(active_goal or "").strip() or current.active_goal,
+            cognitive_anchor_ids=tuple(cognitive_anchor_ids),
+        )
+        self._write_context.set(updated)
+        return updated
 
     def build_candidate_from_runtime_turn(self, **kwargs) -> RuntimeMemoryCandidate:
         return self.classifier.build_candidate_from_runtime_turn(**kwargs)
@@ -140,6 +166,8 @@ class RuntimeMemoryCoordinator:
             session_id=write_context.session_id,
             turn_id=write_context.turn_id,
             active_goal=write_context.active_goal,
+            active_goal_ids=(write_context.active_goal,) if write_context.active_goal else (),
+            cognitive_anchor_ids=write_context.cognitive_anchor_ids,
         )
         short_term = self.short_term_policy.create(
             kind=memory_kind,

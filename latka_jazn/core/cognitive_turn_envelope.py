@@ -15,6 +15,10 @@ from latka_jazn.core.cognitive_lineage import (
     resolve_parent_thought_id,
 )
 from latka_jazn.core.cognitive_state_graph import CognitiveStateGraph
+from latka_jazn.core.cognitive_salience import (
+    GlobalSalienceController,
+    build_cognitive_control_policy,
+)
 from latka_jazn.core.full_canon_model_context import (
     build_full_canon_model_context,
     build_host_generation_contract,
@@ -272,13 +276,7 @@ class CognitiveTurnEnvelope:
         anchor_categories: list[str] | tuple[str, ...] | None = None,
         expect_categories: list[str] | tuple[str, ...] | None = None,
     ) -> dict[str, Any]:
-        """Append one shadow-only semantic hand-off observation.
-
-        The observation is deliberately excluded from control decisions. It is
-        copied into the envelope only after runtime modules have produced their
-        own outputs, so lineage can diagnose hand-off loss without steering the
-        same turn it measures.
-        """
+        """Append one content-free semantic hand-off observation."""
 
         observation = self.cognitive_lineage.observe(
             stage=stage,
@@ -296,6 +294,49 @@ class CognitiveTurnEnvelope:
         self.cognitive_frame["cognitive_lineage"] = self.cognitive_lineage.to_dict()
         self.cognitive_frame["cognitive_state_graph"] = self.cognitive_state_graph.to_dict()
         return observation.to_dict()
+
+    def apply_cognitive_control(
+        self,
+        *,
+        task_state: dict[str, Any] | None,
+        response_policy: dict[str, Any] | None,
+        controller: GlobalSalienceController | None = None,
+    ) -> dict[str, Any]:
+        """Build a bounded policy from explicit, opaque turn-state anchors.
+
+        The controller ranks already-observed nodes only. It cannot change the
+        classified intent, route, memory gate, truth gate or promotion state.
+        """
+
+        task = dict(task_state or {})
+        policy = dict(response_policy or {})
+        goal = str(task.get("active_goal") or "").strip()
+        constraints = constraint_references_from_policy(policy)
+        if goal or constraints:
+            self.observe_cognitive_lineage(
+                stage="cognitive_policy_control",
+                event="explicit_control_anchors_observed",
+                source="cognitive_turn_envelope",
+                goal_refs=(goal,) if goal else (),
+                constraint_refs=constraints,
+                anchor_categories=tuple(
+                    category
+                    for category, present in (
+                        ("goal", bool(goal)),
+                        ("constraint", bool(constraints)),
+                    )
+                    if present
+                    and not getattr(self.cognitive_lineage, f"anchored_{category}_ids")
+                ),
+            )
+        decision = (controller or GlobalSalienceController()).evaluate(
+            self.cognitive_state_graph
+        )
+        control_policy = build_cognitive_control_policy(decision)
+        self.cognitive_frame["cognitive_salience"] = decision.to_dict()
+        self.cognitive_frame["cognitive_control_policy"] = control_policy
+        self.cognitive_frame["cognitive_state_graph"] = self.cognitive_state_graph.to_dict()
+        return control_policy
 
     def refresh_finalization_timestamp(
         self,

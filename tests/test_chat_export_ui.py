@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from io import StringIO
+import pytest
 
 from latka_jazn.tools.chat_export_ui import CursorMenu, ScriptedKeySource, TerminalKeySource, explicit_confirmation
 
@@ -51,8 +52,8 @@ def test_write_confirmation_requires_exact_nonempty_token() -> None:
 
 
 def test_terminal_key_source_uses_concrete_posix_file_descriptor(monkeypatch) -> None:
-    import termios
-    import tty
+    termios = pytest.importorskip("termios")
+    tty = pytest.importorskip("tty")
 
     calls: list[tuple[str, int]] = []
 

@@ -55,7 +55,8 @@ def test_state_graph_projects_lineage_into_typed_operational_nodes() -> None:
 
     graph = CognitiveStateGraph.create(lineage)
 
-    assert graph.shadow_mode is True
+    assert graph.shadow_mode is False
+    assert graph.control_mode == "policy_bounded"
     assert graph.nodes[graph.thought_id].kind == "thought"
     assert {graph.nodes[node_id].kind for node_id in observation.goal_ids} == {"goal"}
     assert {graph.nodes[node_id].kind for node_id in observation.constraint_ids} == {"constraint"}
@@ -233,7 +234,8 @@ def test_envelope_exposes_state_graph_and_syncs_summary_into_route_trace() -> No
     assert route_trace["state_graph_edge_count"] == graph_payload["edge_count"]
     assert route_trace["state_graph_transition_count"] == graph_payload["transition_count"]
     assert route_trace["state_graph_break_count"] == 0
-    assert route_trace["state_graph_shadow_mode"] is True
+    assert route_trace["state_graph_shadow_mode"] is False
+    assert route_trace["state_graph_control_mode"] == "policy_bounded"
     assert "private memory content" not in json.dumps(graph_payload, ensure_ascii=False)
 
 

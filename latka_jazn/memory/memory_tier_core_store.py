@@ -103,6 +103,14 @@ class MemoryTierCoreStore:
                 session_id=incoming.session_id,
                 turn_id=incoming.turn_id or merged.turn_id,
                 active_goal=incoming.active_goal or merged.active_goal,
+                active_goal_ids=tuple(dict.fromkeys((
+                    *merged.active_goal_ids,
+                    *incoming.active_goal_ids,
+                )))[:32],
+                cognitive_anchor_ids=tuple(dict.fromkeys((
+                    *merged.cognitive_anchor_ids,
+                    *incoming.cognitive_anchor_ids,
+                )))[:64],
                 expires_on_session_end=bool(merged.expires_on_session_end and incoming.expires_on_session_end),
                 checkpoint_allowed=bool(merged.checkpoint_allowed or incoming.checkpoint_allowed),
             )
@@ -231,21 +239,83 @@ class MemoryTierCoreStore:
         if oversized:
             raise ValueError("working-memory record exceeds max_record_chars")
         rows = self.con.execute(
-            """SELECT r.memory_id,length(r.content) AS chars,r.importance,r.updated_at_utc
+            """SELECT r.memory_id,length(r.content) AS chars,r.importance,r.updated_at_utc,
+                      w.active_goal,r.record_json
                FROM memory_records r JOIN working_memory_index w ON w.memory_id=r.memory_id
                WHERE w.session_id=? AND r.active=1
-               ORDER BY r.importance ASC,r.updated_at_utc ASC,r.memory_id ASC""",
+               ORDER BY r.memory_id ASC""",
             (session_id,),
         ).fetchall()
         count = len(rows)
         total_chars = sum(int(row["chars"]) for row in rows)
-        evict: list[str] = []
+        pinned_ids = set(budget.pinned_memory_ids)
+        anchor_counts: dict[str, int] = {}
+        record_goals: dict[str, tuple[str, ...]] = {}
         for row in rows:
+            try:
+                record_payload = json.loads(str(row["record_json"]))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                record_payload = {}
+            anchors = record_payload.get("cognitive_anchor_ids")
+            anchor_counts[str(row["memory_id"])] = (
+                len(anchors) if isinstance(anchors, list) else 0
+            )
+            serialized_goals = record_payload.get("active_goal_ids")
+            goals = (
+                tuple(str(item).strip() for item in serialized_goals if str(item).strip())
+                if isinstance(serialized_goals, list)
+                else ()
+            )
+            indexed_goal = str(row["active_goal"] or "").strip()
+            record_goals[str(row["memory_id"])] = tuple(dict.fromkeys((
+                *((indexed_goal,) if indexed_goal else ()),
+                *goals,
+            )))
+        if budget.preserve_one_per_active_goal:
+            representatives: dict[str, sqlite3.Row] = {}
+            for row in rows:
+                for goal in record_goals[str(row["memory_id"])]:
+                    previous = representatives.get(goal)
+                    rank = (
+                        float(row["importance"] or 0.0),
+                        anchor_counts[str(row["memory_id"])],
+                        str(row["updated_at_utc"] or ""),
+                        str(row["memory_id"]),
+                    )
+                    if previous is None:
+                        representatives[goal] = row
+                        continue
+                    previous_rank = (
+                        float(previous["importance"] or 0.0),
+                        anchor_counts[str(previous["memory_id"])],
+                        str(previous["updated_at_utc"] or ""),
+                        str(previous["memory_id"]),
+                    )
+                    if rank > previous_rank:
+                        representatives[goal] = row
+            pinned_ids.update(str(row["memory_id"]) for row in representatives.values())
+        ordered = sorted(
+            rows,
+            key=lambda row: (
+                float(row["importance"] or 0.0),
+                anchor_counts[str(row["memory_id"])],
+                str(row["updated_at_utc"] or ""),
+                str(row["memory_id"]),
+            ),
+        )
+        evict: list[str] = []
+        for row in ordered:
             if count <= budget.max_records_per_session and total_chars <= budget.max_total_chars_per_session:
                 break
+            if str(row["memory_id"]) in pinned_ids:
+                continue
             evict.append(str(row["memory_id"]))
             count -= 1
             total_chars -= int(row["chars"])
+        if count > budget.max_records_per_session or total_chars > budget.max_total_chars_per_session:
+            raise ValueError(
+                "working-memory budget cannot preserve active goals and explicit graph anchors"
+            )
         if evict:
             placeholders = ",".join("?" for _ in evict)
             self.con.execute(f"DELETE FROM memory_records WHERE memory_id IN ({placeholders})", evict)

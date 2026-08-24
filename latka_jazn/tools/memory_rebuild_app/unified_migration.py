@@ -10,6 +10,8 @@ from latka_jazn.tools.chat_export_reader import build_conversation_graph
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 from latka_jazn.tools.memory_rebuild_journal import JournalStore
+from latka_jazn.tools.sqlite_archive_snapshot import create_sqlite_snapshot
+from latka_jazn.tools.chat_export_reader import sha256_file
 
 from .unified_contracts import UnifiedMixinHost
 from .unified_schema import CANONICAL_DATABASE_NAME, COPY_ORDER, LEGACY_DATABASE_NAMES, quote
@@ -52,7 +54,62 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
                 payload["database"] = str(self.path)
                 payload["preview_database"] = "temporary_deleted_after_plan"
                 return payload
-        return self._migrate_databases_impl(paths)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(
+            prefix=".jazn-unified-migration-",
+            dir=self.path.parent,
+        ) as temporary_root:
+            temporary = Path(temporary_root)
+            staged_path = temporary / CANONICAL_DATABASE_NAME
+            target_snapshot: dict[str, Any] | None = None
+            if self.path.exists():
+                target_snapshot = create_sqlite_snapshot(
+                    self.path,
+                    staged_path,
+                    full_integrity_check=True,
+                ).to_dict()
+            else:
+                type(self)(staged_path).initialize()
+
+            source_snapshots: list[dict[str, Any]] = []
+            snapshot_paths: list[Path] = []
+            for index, source in enumerate(paths):
+                snapshot = temporary / "legacy-snapshots" / f"{index:04d}-{source.name}"
+                report = create_sqlite_snapshot(
+                    source,
+                    snapshot,
+                    full_integrity_check=True,
+                )
+                source_snapshots.append({
+                    "source": str(source),
+                    "source_sha256": sha256_file(source),
+                    "snapshot_sha256": report.snapshot_sha256,
+                    "snapshot_size_bytes": report.snapshot_size_bytes,
+                    "integrity_check": report.integrity_check,
+                    "foreign_key_error_count": report.foreign_key_error_count,
+                })
+                snapshot_paths.append(snapshot)
+
+            staged = type(self)(staged_path)
+            payload = staged._migrate_databases_impl(snapshot_paths)
+            validation = staged.validate(full=True)
+            if not validation.get("ok"):
+                raise sqlite3.DatabaseError("staged unified memory validation failed")
+            staged.checkpoint()
+            os.replace(staged_path, self.path)
+            payload.update({
+                "database": str(self.path),
+                "legacy_databases": [str(item) for item in paths],
+                "source_snapshots": source_snapshots,
+                "target_snapshot": target_snapshot,
+                "atomic_replace": True,
+                "source_databases_modified": False,
+                "validation": validation,
+            })
+            for item in payload.get("plan", []):
+                if isinstance(item, dict) and "database" in item:
+                    item["database"] = "validated_sqlite_backup_snapshot"
+            return payload
 
     def _migrate_databases_impl(self, paths: list[Path]) -> dict[str, Any]:
         self.initialize()

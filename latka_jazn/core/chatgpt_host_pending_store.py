@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import time
 from typing import Any, Mapping
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
@@ -24,6 +25,10 @@ _TOKEN_PREFIX = "jct1"
 
 class HostRequestStoreError(RuntimeError):
     """Raised when the two-phase ChatGPT host contract cannot be trusted."""
+
+    def __init__(self, message: str, *, record: Mapping[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.record = dict(record or {})
 
 
 def _utc_now() -> datetime:
@@ -147,7 +152,7 @@ def continuation_ttl_for_bridge(bridge: Mapping[str, Any]) -> int:
 
 def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
     """Return the immutable phase-1 fields that a phase-2 reply must match."""
-    return {
+    binding = {
         "schema_version": SCHEMA_VERSION,
         "runtime_version": str(bridge.get("runtime_version") or PACKAGE_VERSION_FULL),
         "phase": str(bridge.get("phase") or ""),
@@ -171,6 +176,17 @@ def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
             bridge.get("session_continuity_commit_sha256") or ""
         ),
     }
+    daemon_request_id = str(bridge.get("daemon_request_id") or "").strip()
+    host_generation_context_sha256 = str(
+        bridge.get("host_generation_context_sha256") or ""
+    ).strip()
+    if host_generation_context_sha256:
+        binding["host_generation_context_sha256"] = host_generation_context_sha256
+    if daemon_request_id:
+        # Omit the field for legacy/one-shot contracts so their pre-v16.0.7 hash
+        # remains valid. Daemon turns bind both phases to one logical job.
+        binding["daemon_request_id"] = daemon_request_id
+    return binding
 
 
 def calculate_host_request_contract_hash(bridge: Mapping[str, Any]) -> str:
@@ -207,7 +223,30 @@ def _atomic_write(path: Path, payload: Mapping[str, Any]) -> None:
         json.dumps(dict(payload), ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
-    os.replace(temporary, path)
+    try:
+        _replace_path(temporary, path)
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _replace_path(source: Path, destination: Path) -> None:
+    """Retry transient Windows sharing violations without weakening atomicity."""
+
+    last_error: PermissionError | None = None
+    for attempt in range(6):
+        try:
+            os.replace(source, destination)
+            return
+        except PermissionError as exc:
+            last_error = exc
+            if attempt == 5:
+                raise
+            time.sleep(0.02 * (attempt + 1))
+    if last_error is not None:
+        raise last_error
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -237,7 +276,7 @@ def _expire_record(root: Path, source: Path, record: dict[str, Any], *, reason: 
     destination = _path(root, "expired", turn_id)
     _atomic_write(source, record)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(source, destination)
+    _replace_path(source, destination)
     return record
 
 
@@ -318,6 +357,8 @@ def persist_pending_host_request(
             'required_visible_prefix': bridge.get('required_visible_prefix'),
             'runtime_summary': dict(bridge.get('runtime_summary') or {}),
             'session_continuity_commit': dict(bridge.get('session_continuity_commit') or {}),
+            'host_generation_context': dict(bridge.get('host_generation_context') or {}),
+            'daemon_request_id': str(bridge.get('daemon_request_id') or ''),
         },
     ).to_dict()
     _atomic_write(pending_path, record)
@@ -392,15 +433,15 @@ def resolve_continuation_token(root: Path, token: str) -> dict[str, Any]:
             if not hmac.compare_digest(expected_token, candidate):
                 raise HostRequestStoreError("continuation_token_invalid")
             if state == "consumed":
-                raise HostRequestStoreError("host_request_replay_detected")
+                raise HostRequestStoreError("host_request_replay_detected", record=record)
             if state == "expired" or _is_expired(record):
                 if state != "expired":
                     _expire_record(root, path, record, reason="token_resolve_after_expiry")
-                raise HostRequestStoreError("host_request_expired")
+                raise HostRequestStoreError("host_request_expired", record=record)
             if state == "claimed":
                 if str(record.get("state") or "") == "indeterminate":
-                    raise HostRequestStoreError("host_request_persistence_indeterminate")
-                raise HostRequestStoreError("host_request_in_progress")
+                    raise HostRequestStoreError("host_request_persistence_indeterminate", record=record)
+                raise HostRequestStoreError("host_request_in_progress", record=record)
             return record
     raise HostRequestStoreError("continuation_token_not_found")
 
@@ -431,7 +472,7 @@ def claim_pending_host_request(root: Path, *, turn_id: str, request_contract_has
     record["claimed_at_utc"] = _utc_now().isoformat()
     claimed_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        os.replace(pending_path, claimed_path)
+        _replace_path(pending_path, claimed_path)
     except FileNotFoundError as exc:
         if consumed_path.exists():
             raise HostRequestStoreError("host_request_replay_detected") from exc
@@ -453,7 +494,7 @@ def release_claimed_host_request(root: Path, *, turn_id: str) -> None:
     pending_path = _path(root, "pending", turn_id)
     _atomic_write(claimed_path, record)
     pending_path.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(claimed_path, pending_path)
+    _replace_path(claimed_path, pending_path)
 
 
 def request_host_regeneration(root: Path, *, turn_id: str, reason: str) -> dict[str, Any]:
@@ -472,7 +513,7 @@ def request_host_regeneration(root: Path, *, turn_id: str, reason: str) -> dict[
     pending_path = _path(root, 'pending', turn_id)
     _atomic_write(claimed_path, record)
     pending_path.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(claimed_path, pending_path)
+    _replace_path(claimed_path, pending_path)
     return record
 
 
@@ -497,7 +538,7 @@ def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_h
     consumed_path = _path(root, "consumed", turn_id)
     _atomic_write(claimed_path, record)
     consumed_path.parent.mkdir(parents=True, exist_ok=True)
-    os.replace(claimed_path, consumed_path)
+    _replace_path(claimed_path, consumed_path)
     return record
 
 
@@ -517,3 +558,27 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
         "max_host_regeneration_attempts": 1,
         "plaintext_tokens_persisted": False,
     }
+
+
+def host_request_lifecycle_state(root: Path, *, turn_id: str) -> dict[str, Any]:
+    """Read one host request's durable state without exposing its token."""
+
+    cleanup_expired_host_requests(root)
+    for state in ("consumed", "expired", "claimed", "pending"):
+        path = _path(root, state, turn_id)
+        if not path.is_file():
+            continue
+        record = _read(path)
+        return {
+            "found": True,
+            "state": str(record.get("state") or state),
+            "request_contract_hash": str(record.get("request_contract_hash") or ""),
+            "binding": dict(record.get("binding") or {}),
+            "created_at_utc": record.get("created_at_utc"),
+            "expires_at_utc": record.get("expires_at_utc"),
+            "claimed_at_utc": record.get("claimed_at_utc"),
+            "consumed_at_utc": record.get("consumed_at_utc"),
+            "expired_at_utc": record.get("expired_at_utc"),
+            "expiration_reason": record.get("expiration_reason"),
+        }
+    return {"found": False, "state": "missing", "binding": {}}

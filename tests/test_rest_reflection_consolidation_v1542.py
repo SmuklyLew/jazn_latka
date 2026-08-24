@@ -23,7 +23,11 @@ def _item() -> RestReplayItem:
         source_memory_id="source-1", source_tier="short_term", kind="reflection",
         truth_status="user_confirmed", content=text, content_sha256=sha256_text(text),
         domain="project", confidence=0.95, importance=0.9, score=0.91,
-        provenance={"memory_record_content_sha256": sha256_text(text)},
+        provenance={
+            "source_table": "verified_test_sources",
+            "source_row_id": "source-1",
+            "memory_record_content_sha256": sha256_text(text),
+        },
     )
 
 

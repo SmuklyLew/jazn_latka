@@ -311,13 +311,16 @@ def _structural_order(mapping: dict[str, Any]) -> tuple[str, ...]:
     seen: set[str] = set()
 
     def visit(node_id: str) -> None:
-        if node_id in seen or node_id not in mapping:
-            return
-        seen.add(node_id)
-        order.append(node_id)
-        node = json_object(mapping.get(node_id))
-        for child in node.get("children") or []:
-            visit(str(child))
+        stack = [node_id]
+        while stack:
+            current = stack.pop()
+            if current in seen or current not in mapping:
+                continue
+            seen.add(current)
+            order.append(current)
+            node = json_object(mapping.get(current))
+            children = [str(child) for child in (node.get("children") or [])]
+            stack.extend(reversed(children))
 
     for root in roots:
         visit(str(root))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +28,7 @@ from latka_jazn.memory.memory_sync_crypto import (
     MemorySnapshotChunkCrypto,
     PyNaClMemorySnapshotChunkCrypto,
 )
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 
 
 @dataclass(slots=True, frozen=True)
@@ -271,13 +273,14 @@ class SQLiteMemorySnapshotManager:
 
     @staticmethod
     def _online_backup(source: Path, destination: Path) -> None:
-        source_uri = f"file:{source.as_posix()}?mode=ro"
-        with sqlite3.connect(source_uri, uri=True, timeout=30.0) as src, sqlite3.connect(destination) as dst:
+        with closing(connect_runtime_readonly(source, timeout_ms=30_000)) as src, closing(
+            sqlite3.connect(destination)
+        ) as dst:
             src.backup(dst, pages=1024, sleep=0.01)
             dst.commit()
 
     def _verify_sqlite_file(self, path: Path) -> dict[str, Any]:
-        with sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True, timeout=30.0) as con:
+        with closing(connect_runtime_readonly(path, timeout_ms=30_000)) as con:
             quick = str(con.execute("PRAGMA quick_check").fetchone()[0])
             integrity = str(con.execute("PRAGMA integrity_check").fetchone()[0]) if self.policy.integrity_check else quick
             foreign_keys = list(con.execute("PRAGMA foreign_key_check"))

@@ -163,6 +163,8 @@ class WorkingMemoryRecord(MemoryRecord):
     session_id: str = "runtime-session"
     turn_id: str | None = None
     active_goal: str | None = None
+    active_goal_ids: tuple[str, ...] = ()
+    cognitive_anchor_ids: tuple[str, ...] = ()
     expires_on_session_end: bool = True
     checkpoint_allowed: bool = True
 
@@ -172,6 +174,20 @@ class WorkingMemoryRecord(MemoryRecord):
             raise ValueError("WorkingMemoryRecord requires tier=working")
         if not self.session_id:
             raise ValueError("session_id is required")
+        goals = tuple(sorted(dict.fromkeys(
+            str(item).strip()
+            for item in (self.active_goal, *self.active_goal_ids)
+            if str(item or "").strip()
+        )))
+        if len(goals) > 32:
+            raise ValueError("working memory supports at most 32 active goals")
+        object.__setattr__(self, "active_goal_ids", goals)
+        anchors = tuple(dict.fromkeys(
+            str(item).strip() for item in self.cognitive_anchor_ids if str(item).strip()
+        ))
+        if len(anchors) > 64:
+            raise ValueError("working memory supports at most 64 cognitive anchors")
+        object.__setattr__(self, "cognitive_anchor_ids", anchors)
 
 
 @dataclass(slots=True, frozen=True)

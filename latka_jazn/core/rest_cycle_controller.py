@@ -9,6 +9,7 @@ import time
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.continuity_readiness import build_memory_continuity_readiness
 from latka_jazn.memory.dream_sandbox import DreamSandbox
+from latka_jazn.memory.offline_rest_consolidation import OfflineRestConsolidator
 from latka_jazn.memory.rest_consolidation import RestConsolidationGate
 from latka_jazn.memory.rest_cycle_store import RestCycleStore
 from latka_jazn.memory.rest_reflection import RestReflectionEvaluator
@@ -40,6 +41,7 @@ class RestControllerStatus:
     local_model_required_for_dream_generation: bool = True
     external_tool_authority: bool = False
     automatic_l3_allowed: bool = False
+    offline_rest_ready: bool = True
     truth_boundary: str = (
         "Rest cycles are auditable internal computation. Scheduler activity does not prove biological sleep or consciousness; "
         "synthetic scenes have no external tool authority and cannot auto-promote to L3."
@@ -50,7 +52,7 @@ class RestControllerStatus:
 
 
 class RestCycleController:
-    """Bounded, daemon-owned idle scheduler for replay -> dream -> reflection -> consolidation."""
+    """Bounded scheduler for replay -> offline consolidation -> optional dream -> evaluation."""
 
     def __init__(
         self,
@@ -62,6 +64,7 @@ class RestCycleController:
         dream: DreamSandbox | None = None,
         evaluator: RestReflectionEvaluator | None = None,
         consolidation: RestConsolidationGate | None = None,
+        offline_consolidator: OfflineRestConsolidator | None = None,
         monotonic_ns: Callable[[], int] = time.monotonic_ns,
         utc_now: Callable[[], str] = utc_now_iso,
     ) -> None:
@@ -74,6 +77,7 @@ class RestCycleController:
         self.dream = dream or DreamSandbox(config)
         self.evaluator = evaluator or RestReflectionEvaluator()
         self.consolidation = consolidation or RestConsolidationGate(config)
+        self.offline_consolidator = offline_consolidator or OfflineRestConsolidator()
         self.wake_reports = RestWakeReportBuilder(self.store)
         self.shutdown_requested = threading.Event()
         self._thread: threading.Thread | None = None
@@ -241,6 +245,12 @@ class RestCycleController:
             phase = 2
             self.store.update_cycle_phase(cycle_id, phase)
             payload["replay_count"] = len(replay_items)
+            offline_report = self.offline_consolidator.run(replay_items)
+            payload["offline_consolidation"] = offline_report.to_dict()
+            payload["offline_rest_ready"] = True
+            payload["flow"] = ["replay", "offline_consolidation"]
+            if offline_report.status == "integrity_failed":
+                raise RuntimeError("offline_rest_consolidation_integrity_failed")
             if self._last_user_activity_ns > now_ns:
                 payload["reason"] = "user_activity_interrupted_rest_cycle"
                 self.store.finish_cycle(
@@ -271,9 +281,10 @@ class RestCycleController:
                 return {**payload, "status": "skipped"}
             if scene is None:
                 phase = 3
+                payload["flow"].append("dream_unavailable")
                 self.store.finish_cycle(
                     cycle_id,
-                    status="skipped",
+                    status="completed",
                     ended_at_utc=self._utc_now(),
                     ended_monotonic_ns=self._monotonic_ns(),
                     phase_reached=phase,
@@ -281,15 +292,23 @@ class RestCycleController:
                     error=None,
                     payload=payload,
                 )
-                self._mark_cycle(cycle_id, "skipped")
-                return {**payload, "status": "skipped", "reason": model_status}
+                self._mark_cycle(cycle_id, "completed")
+                return {
+                    **payload,
+                    "status": "completed",
+                    "completion_mode": "offline_consolidation_only",
+                    "reason": model_status,
+                }
             self.store.add_scene(scene, replay_items)
+            payload["flow"].append("dream")
             phase = 3
             self.store.update_cycle_phase(cycle_id, phase, model_status=model_status)
             evaluation = self.evaluator.evaluate(scene, replay_items, created_at_utc=self._utc_now())
+            payload["flow"].append("evaluation")
             self.store.add_evaluation(evaluation)
             phase = 4
             decision = self.consolidation.decide(scene, evaluation, replay_items, decided_at_utc=self._utc_now())
+            payload["flow"].append("promotion_gate")
             self.store.add_consolidation_decision(decision)
             phase = 5
             payload.update({
@@ -349,11 +368,13 @@ class RestCycleController:
             data["rest_scheduler_ready"] = bool(self.status.enabled and self.status.state != "degraded")
             data["rest_scheduler_running"] = bool(self._thread is not None and self._thread.is_alive())
             data["rest_dream_ready"] = bool(data["dream_readiness"].get("rest_dream_ready"))
+            data["offline_rest_ready"] = True
         except Exception as exc:
             data["dream_readiness"] = {"rest_dream_ready": False, "status": "readiness_error", "error": f"{type(exc).__name__}: {exc}"}
             data["rest_scheduler_ready"] = bool(self.status.enabled and self.status.state != "degraded")
             data["rest_scheduler_running"] = bool(self._thread is not None and self._thread.is_alive())
             data["rest_dream_ready"] = False
+            data["offline_rest_ready"] = True
         try:
             if deep_verify:
                 data["store_validation"] = self.store.validate()

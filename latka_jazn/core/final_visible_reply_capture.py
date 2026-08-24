@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Mapping
 import hashlib
 
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
+from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
 from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("final_visible_reply_capture")
@@ -33,6 +38,8 @@ class FinalVisibleReplyCapture:
     envelope_present_in_original: bool
     envelope_present_in_final: bool
     was_rendered_from_body: bool
+    epistemic_evidence: dict[str, Any]
+    epistemic_claims: tuple[dict[str, Any], ...]
     final_visible_text: str
     schema_version: str = SCHEMA_VERSION
 
@@ -53,6 +60,13 @@ class FinalVisibleReplyCapture:
         state_emoticon: str,
         final_text: str,
         source: str = "chatgpt_visible_layer",
+        config: JaznConfig | None = None,
+        epistemic_evidence: Mapping[str, Any] | None = None,
+        runtime_evidence: Mapping[str, Any] | None = None,
+        memory_evidence: Mapping[str, Any] | None = None,
+        external_evidence: Mapping[str, Any] | None = None,
+        generated_evidence: Mapping[str, Any] | None = None,
+        persist_epistemic_ledger: bool = False,
     ) -> "FinalVisibleReplyCapture":
         if not turn_id or not trace_id:
             raise ValueError("turn_id and trace_id are required")
@@ -92,6 +106,25 @@ class FinalVisibleReplyCapture:
             rendered = True
         if not envelope.timestamp_matches_sample():
             raise ValueError("timestamp header does not match timestamp sample")
+        evidence = dict(epistemic_evidence or {})
+        if config is not None and epistemic_evidence is None and hasattr(config, "rest_cycle_db_path"):
+            evidence = EpistemicEvidenceCollector(config).collect(
+                runtime_evidence=runtime_evidence,
+                memory_evidence=memory_evidence,
+                external_evidence=external_evidence,
+                generated_evidence=generated_evidence,
+            ).to_dict()
+        assessments = EpistemicClaimGuard().enforce(final_visible_text, evidence=evidence)
+        assessment_payloads = tuple(item.to_dict() for item in assessments)
+        if persist_epistemic_ledger:
+            if config is None:
+                raise ValueError("config is required to persist the epistemic ledger")
+            with EpistemicDecisionLedger(epistemic_ledger_path(workspace_runtime_path(config.root))) as ledger:
+                ledger.append_assessments(
+                    turn_id=turn_id,
+                    trace_id=trace_id,
+                    assessments=assessment_payloads,
+                )
         return cls(
             turn_id=turn_id,
             trace_id=trace_id,
@@ -110,6 +143,8 @@ class FinalVisibleReplyCapture:
             envelope_present_in_original=original_has_envelope,
             envelope_present_in_final=True,
             was_rendered_from_body=rendered,
+            epistemic_evidence=evidence,
+            epistemic_claims=assessment_payloads,
             final_visible_text=final_visible_text,
         )
 
