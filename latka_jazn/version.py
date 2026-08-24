@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "16.2.3"
-PACKAGE_VERSION = "16.2.3"
-PACKAGE_RELEASE_NAME = "provenance-retrieval-ci-closure"
+DISTRIBUTION_VERSION = "16.2.4"
+PACKAGE_VERSION = "16.2.4"
+PACKAGE_RELEASE_NAME = "host-tool-provenance-memory-autoload"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
