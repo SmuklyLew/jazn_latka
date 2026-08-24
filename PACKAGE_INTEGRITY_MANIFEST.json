@@ -3,11 +3,11 @@
   "version": "16.2.4-host-tool-provenance-memory-autoload",
   "runtime_version": "16.2.4-host-tool-provenance-memory-autoload",
   "package_version": "16.2.4-host-tool-provenance-memory-autoload",
-  "generated_at_utc": "2026-08-24T17:23:26+00:00",
-  "updated_at_utc": "2026-08-24T17:23:26+00:00",
+  "generated_at_utc": "2026-08-24T20:27:05+00:00",
+  "updated_at_utc": "2026-08-24T20:27:05+00:00",
   "start_file": "run.py",
-  "file_count": 838,
-  "static_file_count": 838,
+  "file_count": 846,
+  "static_file_count": 846,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -289,6 +289,69 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/.v1625-upload/payload.00",
+      "size_bytes": 10000,
+      "sha256": "4711202ff11c01a4b4764e7ea306f4f68f88bc7539d06cc83ed53b0d75d55d2a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.01",
+      "size_bytes": 10000,
+      "sha256": "5011a7cdb7df98c657e90c281d140c9d0bedf3098c0fae460894199afc3b7a6e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.02",
+      "size_bytes": 10000,
+      "sha256": "a7fa1bcf4bcba3e1e14397924923ea5c9719f4e1f2c6495cc6aae52b9f711f21",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.03",
+      "size_bytes": 10000,
+      "sha256": "8a22e9f464bdecebda7da62982da427c27e7c448cd995d910d795a47ee941f4c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.04",
+      "size_bytes": 10018,
+      "sha256": "75795306f5bd8c26aa8ac19e691089d1ae766d14d23c64f38d9ef00070ded8a9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.05",
+      "size_bytes": 10000,
+      "sha256": "9b9a7572f66a52dd5618b21fb4c976db55bc7f0b6186597c64547f89ef622155",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/.v1625-upload/payload.06",
+      "size_bytes": 4881,
+      "sha256": "29cf9046b023b90029b65da24f7fd4d10ee91472303297a25032bf304effbdf0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/scripts/refine_wake_session_continuity_fix.py",
       "size_bytes": 2388,
       "sha256": "9d6cf3e7ef79b336d35e49a868df2554bd28af0f31679af79be4c21a4bd75411",
@@ -337,6 +400,15 @@
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 13559,
       "sha256": "d3e3e94cf010a5227e36a31ba11f0ccacdfc1f9a08f3774f8bc9d47a729eb918",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/v1625-memory-recall-neurology-upload.yml",
+      "size_bytes": 3224,
+      "sha256": "af7428d6ade48383183036c1471de650458c066fe2cdf7986f75ae326d4b6c19",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -417,7 +489,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1306,
-      "sha256": "7d622320a4917e7c2829526d7de6c52e2585ddbd19066da00c366bbe0cee97f3",
+      "sha256": "843027ba07a3f75df663d5f99039741a538bbdc8e7b7f7275920d7f4e2e7a7e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
