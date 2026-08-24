@@ -229,8 +229,15 @@ def run(
                 'host_request_contract_hash': request_contract_hash,
                 'regeneration_attempt': bridge.get('regeneration_attempt'),
                 'max_regeneration_attempts': bridge.get('max_regeneration_attempts'),
+                'required_visible_prefix': bridge.get('required_visible_prefix'),
                 'host_generation_policy': bridge.get('host_generation_policy') or {},
+                'host_generation_context': bridge.get('host_generation_context') or {},
+                'host_generation_context_sha256': bridge.get(
+                    'host_generation_context_sha256'
+                ),
                 'host_generation_rules': list(bridge.get('host_generation_rules') or []),
+                'runtime_context_sha256': bridge.get('runtime_context_sha256'),
+                'daemon_request_id': bridge.get('daemon_request_id'),
                 'must_not_display_intermediate': True,
                 'daemon_job_lifecycle': lifecycle,
             },

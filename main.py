@@ -1019,6 +1019,27 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     )
 
 
+def _build_memory_plan_payload(cfg: JaznConfig, text: str) -> dict[str, Any]:
+    planner = MemorySearchPlanner(cfg.root)
+    plan = planner.plan(text)
+    archive_store = ConversationArchiveStore(cfg.root)
+    archive_query = " ".join((plan.search_terms or plan.focus_terms or [])[:8])
+    if not archive_query and not plan.temporal_scope:
+        archive_query = text
+    archive_options: dict[str, Any] = {"limit": 8, "include_snippets": False}
+    if plan.temporal_scope:
+        archive_options["temporal_scope"] = plan.temporal_scope
+    return {
+        "schema_version": schema_version("memory_plan_cli"),
+        "runtime_version": cfg.version,
+        "memory_search_plan": plan.to_dict(),
+        "source_file_hits": [hit.to_dict() for hit in planner.search_source_files(plan, limit=8)],
+        "conversation_archive_status": archive_store.status(check_integrity=False).to_dict(),
+        "conversation_archive_hits": archive_store.search(archive_query, **archive_options).to_dict(),
+        "truth_boundary": "To jest plan, kanoniczne trafienia plików i metadane trafień conversation_archive/FTS, nie pełna rozmowna odpowiedź ani dowód pełnego odczytu całej pamięci.",
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     _configure_stdio_utf8()
     argv = list(sys.argv[1:] if argv is None else argv)
@@ -1469,20 +1490,7 @@ def main(argv: list[str] | None = None) -> int:
     if ns.memory_plan:
         cfg = config or JaznConfig()
         text = _message_from_remainder(ns.message)
-        planner = MemorySearchPlanner(cfg.root)
-        plan = planner.plan(text)
-        archive_store = ConversationArchiveStore(cfg.root)
-        archive_query = " ".join((plan.search_terms or plan.focus_terms or [])[:8]) or text
-        payload = {
-            "schema_version": schema_version("memory_plan_cli"),
-            "runtime_version": cfg.version,
-            "memory_search_plan": plan.to_dict(),
-            "source_file_hits": [hit.to_dict() for hit in planner.search_source_files(plan, limit=8)],
-            "conversation_archive_status": archive_store.status(check_integrity=False).to_dict(),
-            "conversation_archive_hits": archive_store.search(archive_query, limit=8, include_snippets=False).to_dict(),
-            "truth_boundary": "To jest plan, kanoniczne trafienia plików i metadane trafień conversation_archive/FTS, nie pełna rozmowna odpowiedź ani dowód pełnego odczytu całej pamięci.",
-        }
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        print(json.dumps(_build_memory_plan_payload(cfg, text), ensure_ascii=False, indent=2, sort_keys=True))
         return 0
 
     if ns.canon_extraction_preview or ns.canon_extraction_write_private:

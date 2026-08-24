@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 import json
 import math
 import re
 import unicodedata
+
+from latka_jazn.core.memory_intent_contract import (
+    analyze_memory_intent,
+    has_explicit_memory_recall,
+    strip_temporal_language,
+)
 
 
 @dataclass(slots=True)
@@ -40,6 +47,8 @@ class MemorySearchPlan:
     search_passes: list[dict[str, Any]]
     confidence: float
     routing_notes: list[str]
+    temporal_scope: dict[str, Any]
+    memory_intent_contract: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -69,7 +78,7 @@ class MemorySearchPlanner:
     rozszerzanie zapytania, ważone przejścia wyszukiwania i źródła kanoniczne.
     """
 
-    SCHEMA_VERSION = "memory_search_planner/v1"
+    SCHEMA_VERSION = "memory_search_planner/v2"
     RESOURCE_NAME = "memory_search_topics.json"
     RESOURCE_SCHEMA_VERSION = "memory_search_topics/v1"
 
@@ -105,7 +114,7 @@ class MemorySearchPlanner:
         "swoja", "swoją", "swoje", "swojej", "swoim", "swoich", "twoja", "twoją", "twoje", "twojej", "twoim", "twoich",
         "są", "sa", "tak", "takie", "tam", "te", "tego", "tej", "ten", "teraz", "to", "tobie", "trochę",
         "troche", "tu", "twoje", "u", "umiesz", "w", "we", "więc", "wiec", "więcej", "wiecej",
-        "wszystko", "z", "za", "żeby", "zeby", "że", "ze", "źe",
+        "wszystko", "z", "za", "żeby", "zeby", "że", "ze", "źe", "tylko",
         "pamięci", "pamieci", "pamiętasz", "pamietasz", "przypomnij", "przypomniec", "przypomnieć",
         "wspominasz", "wspomina", "wspomnienie", "wspomnienia", "dzisiaj", "dziś", "dzis",
         "temat", "temacie", "rozmawialiśmy", "rozmawialismy",
@@ -116,6 +125,9 @@ class MemorySearchPlanner:
         # razie pytanie „Hej, jak się masz? Co wspominasz najbardziej?” trafia
         # do FTS po słowach o zerowej wartości autobiograficznej.
         "hej", "się", "sie", "masz", "najbardziej",
+        "rok", "roku", "powspominaj", "wspominaj", "wspominać", "wspominac",
+        "pamiętałaś", "pamietalas", "przypominasz", "przypomnij",
+        "rozmowa", "rozmowy", "rozmów", "rozmow", "archiwum",
     }
 
     def __init__(self, root: Path | str) -> None:
@@ -129,16 +141,40 @@ class MemorySearchPlanner:
         *,
         fallback_terms: list[str] | None = None,
         previous_query: str | None = None,
+        now: datetime | None = None,
     ) -> MemorySearchPlan:
         original = text or ""
+        memory_semantics = analyze_memory_intent(
+            original,
+            previous_text=previous_query,
+            now=now,
+        )
+        temporal_scope_value = memory_semantics.temporal_scope
+        temporal_scope = temporal_scope_value.to_dict() if temporal_scope_value is not None else {}
+        lexical_query = strip_temporal_language(original, temporal_scope_value)
         normalized_query = self._norm(original)
         normalized_previous = self._norm(previous_query or "")
         search_mode = self._search_mode(normalized_query, normalized_previous)
-        recall_requested = self._is_recall_request(normalized_query) or search_mode != "semantic_query"
-        context_query = previous_query if search_mode in {"referential_followup", "chronological_earliest", "chronological_latest"} and self._is_referential(normalized_query) else None
-        raw_tokens = self._raw_tokens(original)
+        if (
+            search_mode == "semantic_query"
+            and previous_query
+            and (memory_semantics.referential_followup or memory_semantics.correction)
+        ):
+            search_mode = "referential_followup"
+        recall_requested = memory_semantics.content_requested or search_mode != "semantic_query"
+        context_query = (
+            previous_query
+            if (
+                previous_query
+                and memory_semantics.content_requested
+                and (memory_semantics.referential_followup or memory_semantics.correction)
+            )
+            else None
+        )
+        raw_tokens = self._raw_tokens(lexical_query)
         if context_query:
-            raw_tokens.extend(self._raw_tokens(context_query))
+            context_lexical = strip_temporal_language(context_query, temporal_scope_value)
+            raw_tokens.extend(self._raw_tokens(context_lexical))
         rejected: list[str] = []
         focus: list[str] = []
 
@@ -154,7 +190,18 @@ class MemorySearchPlanner:
                 focus.append(cleaned)
 
         if not focus and fallback_terms:
-            focus = [x for x in fallback_terms if self._norm(x) not in self.STOPWORDS][:8]
+            fallback_text = strip_temporal_language(" ".join(fallback_terms), temporal_scope_value)
+            for token in self._raw_tokens(fallback_text):
+                cleaned = self._clean_token(token)
+                low = self._norm(cleaned)
+                if not cleaned or low in self.STOPWORDS or len(low) < 3:
+                    continue
+                self._append_unique(focus, cleaned)
+                if len(focus) >= 8:
+                    break
+
+        if temporal_scope and search_mode == "semantic_query":
+            search_mode = "temporal_semantic_query" if focus else "temporal_period"
 
         topic_scores = self._score_topics(normalized_query, focus)
         topic_keys = [key for key, score in topic_scores if score > 0]
@@ -166,6 +213,13 @@ class MemorySearchPlanner:
         ]
         if context_query:
             routing_notes.append("referential_context=previous_user_query")
+        if temporal_scope:
+            routing_notes.append(
+                "temporal_scope="
+                + str(temporal_scope.get("precision") or "unknown")
+                + ":"
+                + str(temporal_scope.get("source_expression") or "")
+            )
         for key, score in topic_scores:
             if score <= 0:
                 continue
@@ -199,6 +253,14 @@ class MemorySearchPlanner:
         confidence = max(0.0, min(0.96, confidence))
 
         passes = [
+            {
+                "name": "temporal_conversation_archive",
+                "terms": search_terms[:10],
+                "weight": 1.0,
+                "layers": ["conversation_archive"],
+                "enabled": bool(temporal_scope),
+                "purpose": "użyć czasu jako filtra archive/FTS zamiast wymagać literalnego roku lub miesiąca w treści",
+            },
             {
                 "name": "chronological_recall",
                 "terms": [],
@@ -260,6 +322,8 @@ class MemorySearchPlanner:
             search_passes=passes,
             confidence=confidence,
             routing_notes=routing_notes or ["brak pewnego tematu; używam oczyszczonych słów użytkownika"],
+            temporal_scope=temporal_scope,
+            memory_intent_contract=memory_semantics.to_dict(),
         )
 
     def search_source_files(self, plan: MemorySearchPlan, *, limit: int = 6, per_file: int = 2) -> list[SourceFileHit]:
@@ -464,7 +528,9 @@ class MemorySearchPlanner:
         return sorted(scores, key=lambda item: item[1], reverse=True)
 
     def _is_recall_request(self, normalized_query: str) -> bool:
-        return any(marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS})
+        return has_explicit_memory_recall(normalized_query) or any(
+            marker in normalized_query for marker in {self._norm(m) for m in self.RECALL_MARKERS}
+        )
 
     def _is_referential(self, normalized_query: str) -> bool:
         return any(self._norm(marker) in normalized_query for marker in self.REFERENTIAL_MARKERS)

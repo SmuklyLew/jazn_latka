@@ -4,12 +4,14 @@ from dataclasses import asdict, dataclass, replace
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable
 import json
+import math
 import os
 import re
 import sqlite3
 
+from latka_jazn.core.memory_intent_contract import TemporalScope
 from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
 from latka_jazn.memory.graph_aware_retrieval import GraphAwareRetrievalController
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
@@ -38,6 +40,13 @@ class LivingMemoryHit:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(slots=True, frozen=True)
+class _TemporalBounds:
+    start_epoch: float
+    end_epoch_exclusive: float
+    payload: dict[str, Any]
 
 
 class LivingMemoryGateway:
@@ -125,6 +134,8 @@ class LivingMemoryGateway:
         should_continue: Callable[[], bool] | None = None,
     ) -> dict[str, Any]:
         mode = str(getattr(plan, "search_mode", None) or "semantic_query")
+        raw_temporal_scope = getattr(plan, "temporal_scope", None)
+        temporal_scope, temporal_issue = self._validated_temporal_scope(raw_temporal_scope)
         terms = [str(value).strip() for value in (getattr(plan, "search_terms", None) or []) if str(value).strip()]
         focus_terms = [
             str(value).strip()
@@ -143,6 +154,8 @@ class LivingMemoryGateway:
         source_reports = self.discover()
         hits: list[LivingMemoryHit] = []
         issues: list[str] = []
+        if temporal_issue is not None:
+            issues.append("temporal_scope:" + temporal_issue)
         per_layer = max(1, min(20, int(limit)))
 
         def can_continue() -> bool:
@@ -154,7 +167,7 @@ class LivingMemoryGateway:
                 return False
 
         cancelled = False
-        for source in source_reports:
+        for source in ([] if temporal_issue is not None else source_reports):
             if not can_continue():
                 cancelled = True
                 break
@@ -172,13 +185,25 @@ class LivingMemoryGateway:
                     layer_hits = []
                     for query_index, candidate_query in enumerate(search_queries):
                         if layer == "memory_jazn":
-                            found = self._search_memory(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                            found = self._search_memory(
+                                path, candidate_query, mode=mode, limit=per_layer,
+                                temporal_scope=temporal_scope, should_continue=can_continue,
+                            )
                         elif layer == "experience":
-                            found = self._search_experience(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                            found = self._search_experience(
+                                path, candidate_query, mode=mode, limit=per_layer,
+                                temporal_scope=temporal_scope, should_continue=can_continue,
+                            )
                         elif layer == "journal":
-                            found = self._search_journal(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                            found = self._search_journal(
+                                path, candidate_query, mode=mode, limit=per_layer,
+                                temporal_scope=temporal_scope, should_continue=can_continue,
+                            )
                         else:
-                            found = self._search_archive(path, candidate_query, mode=mode, limit=per_layer, should_continue=can_continue)
+                            found = self._search_archive(
+                                path, candidate_query, mode=mode, limit=per_layer,
+                                temporal_scope=temporal_scope, should_continue=can_continue,
+                            )
                         if query_index == 0:
                             found = [
                                 replace(
@@ -201,6 +226,14 @@ class LivingMemoryGateway:
             issues.append("search_cancelled:turn_deadline_or_cancellation")
 
         hits = self._dedupe(hits)
+        candidates_before_temporal_filter = len(hits)
+        if temporal_scope is not None:
+            hits = [
+                hit
+                for hit in hits
+                if self._timestamp_within_scope(hit.timestamp, temporal_scope)
+            ]
+        temporal_filtered_out = candidates_before_temporal_filter - len(hits)
         if mode == "chronological_earliest":
             hits.sort(key=lambda hit: (self._timestamp_key(hit.timestamp, latest=False), -hit.relevance))
         elif mode == "chronological_latest":
@@ -212,7 +245,19 @@ class LivingMemoryGateway:
         layer_hit_counts: dict[str, int] = {}
         for hit in hits:
             layer_hit_counts[hit.source_layer] = layer_hit_counts.get(hit.source_layer, 0) + 1
-        if mode in {"chronological_earliest", "chronological_latest"}:
+        if temporal_issue is not None:
+            selected = []
+            graph_retrieval = {
+                "schema_version": schema_version("graph_aware_retrieval"),
+                "status": "bypassed_invalid_temporal_scope",
+                "mode": self.graph_retrieval_mode,
+                "selected_lane": "none",
+                "fts_fallback_available": False,
+                "content_recorded_in_telemetry": False,
+                "fact_creation_allowed": False,
+                "memory_promotion_allowed": False,
+            }
+        elif mode in {"chronological_earliest", "chronological_latest"}:
             selected = hits[: max(1, int(limit))]
             graph_retrieval = {
                 "schema_version": schema_version("graph_aware_retrieval"),
@@ -236,7 +281,9 @@ class LivingMemoryGateway:
             graph_retrieval = graph_decision.telemetry
         native_ready = any(bool(report.get("memory_search_ready")) for report in source_reports)
         legacy_ready = any(bool(report.get("legacy_search_ready")) for report in source_reports)
-        if native_ready:
+        if temporal_issue is not None:
+            status = "invalid_temporal_scope"
+        elif native_ready:
             status = "ready_native_unified"
         elif legacy_ready:
             status = "ready_legacy_compatibility_only"
@@ -249,11 +296,23 @@ class LivingMemoryGateway:
             "legacy_search_ready": legacy_ready,
             "search_mode": mode,
             "query": query,
+            "temporal_scope": temporal_scope.payload if temporal_scope is not None else None,
+            "temporal_filter": {
+                "status": (
+                    "invalid_fail_closed"
+                    if temporal_issue is not None
+                    else ("applied" if temporal_scope is not None else "not_requested")
+                ),
+                "candidate_count_before_post_filter": candidates_before_temporal_filter,
+                "filtered_out_before_graph_ranking": temporal_filtered_out,
+            },
             "cancelled": cancelled,
             "hits": [hit.to_dict() for hit in selected],
             "counts": {
                 "hits": len(selected),
                 "candidate_hits": len(hits),
+                "candidate_hits_before_temporal_filter": candidates_before_temporal_filter,
+                "temporal_filtered_out": temporal_filtered_out,
                 "hits_by_layer": layer_hit_counts,
                 "sources_discovered": len(source_reports),
                 "sources_recall_ready": sum(1 for report in source_reports if report.get("recall_ready")),
@@ -299,8 +358,76 @@ class LivingMemoryGateway:
     def _table_names(con: sqlite3.Connection) -> set[str]:
         return {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view')")}
 
+    @staticmethod
+    def _validated_temporal_scope(
+        value: Any,
+    ) -> tuple[_TemporalBounds | None, str | None]:
+        if value is None or (isinstance(value, dict) and not value):
+            return None, None
+        if isinstance(value, TemporalScope):
+            payload = value.to_dict()
+        elif isinstance(value, dict):
+            payload = dict(value)
+        else:
+            return None, "invalid_type"
+        try:
+            start_epoch = float(payload["start_epoch"])
+            end_epoch = float(payload["end_epoch_exclusive"])
+        except (KeyError, TypeError, ValueError):
+            return None, "invalid_shape"
+        if not math.isfinite(start_epoch) or not math.isfinite(end_epoch):
+            return None, "non_finite_bounds"
+        if start_epoch >= end_epoch:
+            return None, "invalid_bounds"
+        precision = str(payload.get("precision") or "")
+        if precision not in {"year", "month", "month_range"}:
+            return None, "invalid_precision"
+        canonical = dict(payload)
+        canonical["start_epoch"] = start_epoch
+        canonical["end_epoch_exclusive"] = end_epoch
+        canonical["precision"] = precision
+        return _TemporalBounds(start_epoch, end_epoch, canonical), None
+
+    @staticmethod
+    def _timestamp_epoch(value: str | None) -> float | None:
+        text = str(value or "").strip()
+        if not text:
+            return None
+        try:
+            numeric = float(text)
+        except ValueError:
+            numeric = None
+        if numeric is not None:
+            return numeric if math.isfinite(numeric) else None
+        normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+        try:
+            parsed = datetime.fromisoformat(normalized)
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        epoch = parsed.astimezone(timezone.utc).timestamp()
+        return epoch if math.isfinite(epoch) else None
+
+    @classmethod
+    def _timestamp_within_scope(
+        cls,
+        value: str | None,
+        temporal_scope: _TemporalBounds,
+    ) -> bool:
+        epoch = cls._timestamp_epoch(value)
+        return bool(
+            epoch is not None
+            and temporal_scope.start_epoch <= epoch < temporal_scope.end_epoch_exclusive
+        )
+
+    @staticmethod
+    def _iso_epoch_sql(expression: str) -> str:
+        return f"((julianday({expression}) - 2440587.5) * 86400.0)"
+
     def _search_memory(
         self, path: Path, query: str, *, mode: str, limit: int,
+        temporal_scope: _TemporalBounds | None = None,
         should_continue: Callable[[], bool] | None = None,
     ) -> list[LivingMemoryHit]:
         with closing(self._connect(path, should_continue=should_continue)) as con:
@@ -310,15 +437,19 @@ class LivingMemoryGateway:
             params: list[Any] = []
             where = "active=1"
             fts_query = ""
+            if temporal_scope is not None:
+                timestamp_sql = self._iso_epoch_sql("created_at_utc")
+                where += f" AND {timestamp_sql} >= ? AND {timestamp_sql} < ?"
+                params.extend((temporal_scope.start_epoch, temporal_scope.end_epoch_exclusive))
             if mode not in {"chronological_earliest", "chronological_latest"}:
                 tokens = self._tokens(query)
-                if not tokens:
+                if not tokens and temporal_scope is None:
                     return []
-                if "memory_records_fts" in tables:
+                if tokens and "memory_records_fts" in tables:
                     fts_query = " OR ".join(f'"{token.replace(chr(34), chr(34) * 2)}"*' for token in tokens)
                     where += " AND memory_records.rowid IN (SELECT rowid FROM memory_records_fts WHERE memory_records_fts MATCH ?)"
                     params.append(fts_query)
-                else:
+                elif tokens:
                     where += " AND (" + " OR ".join("content LIKE ?" for _ in tokens) + ")"
                     params.extend(f"%{token}%" for token in tokens)
             direction = "ASC" if mode == "chronological_earliest" else "DESC"
@@ -366,6 +497,7 @@ class LivingMemoryGateway:
 
     def _search_experience(
         self, path: Path, query: str, *, mode: str, limit: int,
+        temporal_scope: _TemporalBounds | None = None,
         should_continue: Callable[[], bool] | None = None,
     ) -> list[LivingMemoryHit]:
         with closing(self._connect(path, should_continue=should_continue)) as con:
@@ -373,13 +505,18 @@ class LivingMemoryGateway:
                 return []
             params: list[Any] = []
             where = "status NOT IN ('rejected','superseded')"
+            if temporal_scope is not None:
+                timestamp_sql = self._iso_epoch_sql("created_at_utc")
+                where += f" AND {timestamp_sql} >= ? AND {timestamp_sql} < ?"
+                params.extend((temporal_scope.start_epoch, temporal_scope.end_epoch_exclusive))
             if mode not in {"chronological_earliest", "chronological_latest"}:
                 tokens = self._tokens(query)
-                if not tokens:
+                if not tokens and temporal_scope is None:
                     return []
-                where += " AND (" + " OR ".join("(title LIKE ? OR summary LIKE ?)" for _ in tokens) + ")"
-                for token in tokens:
-                    params.extend((f"%{token}%", f"%{token}%"))
+                if tokens:
+                    where += " AND (" + " OR ".join("(title LIKE ? OR summary LIKE ?)" for _ in tokens) + ")"
+                    for token in tokens:
+                        params.extend((f"%{token}%", f"%{token}%"))
             direction = "ASC" if mode == "chronological_earliest" else "DESC"
             order = f"created_at_utc {direction}, importance DESC" if mode.startswith("chronological_") else "importance DESC, confidence DESC, updated_at_utc DESC"
             params.append(limit)
@@ -424,33 +561,45 @@ class LivingMemoryGateway:
 
     def _search_journal(
         self, path: Path, query: str, *, mode: str, limit: int,
+        temporal_scope: _TemporalBounds | None = None,
         should_continue: Callable[[], bool] | None = None,
     ) -> list[LivingMemoryHit]:
         with closing(self._connect(path, should_continue=should_continue)) as con:
             tables = self._table_names(con)
             if "journal_entries" not in tables:
                 return []
-            rows: Iterable[sqlite3.Row]
+            timestamp_expression = "COALESCE(event_time_start,created_at_utc)"
+            timestamp_sql = self._iso_epoch_sql(timestamp_expression)
+            temporal_clause = ""
+            temporal_params: list[Any] = []
+            if temporal_scope is not None:
+                temporal_clause = f" AND {timestamp_sql} >= ? AND {timestamp_sql} < ?"
+                temporal_params.extend(
+                    (temporal_scope.start_epoch, temporal_scope.end_epoch_exclusive)
+                )
+            rows: list[sqlite3.Row]
             if mode in {"chronological_earliest", "chronological_latest"}:
                 direction = "ASC" if mode == "chronological_earliest" else "DESC"
+                params = [*temporal_params, limit]
                 rows = con.execute(
                     f"SELECT entry_id,title,summary,content,truth_status,importance,event_time_start,created_at_utc,status "
-                    f"FROM journal_entries WHERE status NOT IN ('rejected','superseded') "
-                    f"ORDER BY COALESCE(event_time_start,created_at_utc) {direction}, importance DESC LIMIT ?",
-                    (limit,),
+                    f"FROM journal_entries WHERE status NOT IN ('rejected','superseded'){temporal_clause} "
+                    f"ORDER BY {timestamp_expression} {direction}, importance DESC LIMIT ?",
+                    params,
                 ).fetchall()
             elif {"journal_fts", "journal_fts_docs"}.issubset(tables) and query.strip():
                 rows = []
                 for fts_query in self._fts_candidates(query):
                     try:
                         rows = con.execute(
-                            """SELECT e.entry_id,e.title,e.summary,e.content,e.truth_status,e.importance,
+                            f"""SELECT e.entry_id,e.title,e.summary,e.content,e.truth_status,e.importance,
                                       e.event_time_start,e.created_at_utc,e.status,bm25(journal_fts) AS rank
                                  FROM journal_fts JOIN journal_fts_docs d ON d.rowid=journal_fts.rowid
                                  JOIN journal_entries e ON e.entry_id=d.entry_id
                                 WHERE journal_fts MATCH ? AND e.status NOT IN ('rejected','superseded')
+                                      {temporal_clause.replace(timestamp_expression, 'COALESCE(e.event_time_start,e.created_at_utc)')}
                                 ORDER BY rank,e.importance DESC LIMIT ?""",
-                            (fts_query, limit),
+                            [fts_query, *temporal_params, limit],
                         ).fetchall()
                     except sqlite3.OperationalError:
                         rows = []
@@ -458,17 +607,20 @@ class LivingMemoryGateway:
                         break
             else:
                 tokens = self._tokens(query)
-                if not tokens:
+                if not tokens and temporal_scope is None:
                     return []
-                clauses = " OR ".join("(title LIKE ? OR summary LIKE ? OR content LIKE ?)" for _ in tokens)
-                params: list[Any] = []
+                where = "status NOT IN ('rejected','superseded')" + temporal_clause
+                params = list(temporal_params)
+                if tokens:
+                    clauses = " OR ".join("(title LIKE ? OR summary LIKE ? OR content LIKE ?)" for _ in tokens)
+                    where += f" AND ({clauses})"
                 for token in tokens:
                     params.extend((f"%{token}%", f"%{token}%", f"%{token}%"))
                 params.append(limit)
                 rows = con.execute(
                     f"SELECT entry_id,title,summary,content,truth_status,importance,event_time_start,created_at_utc,status "
-                    f"FROM journal_entries WHERE status NOT IN ('rejected','superseded') AND ({clauses}) "
-                    "ORDER BY importance DESC,COALESCE(event_time_start,created_at_utc) DESC LIMIT ?",
+                    f"FROM journal_entries WHERE {where} "
+                    f"ORDER BY importance DESC,{timestamp_expression} DESC LIMIT ?",
                     params,
                 ).fetchall()
             sources_by_entry: dict[str, list[dict[str, str]]] = {}
@@ -508,30 +660,83 @@ class LivingMemoryGateway:
 
     def _search_archive(
         self, path: Path, query: str, *, mode: str, limit: int,
+        temporal_scope: _TemporalBounds | None = None,
         should_continue: Callable[[], bool] | None = None,
     ) -> list[LivingMemoryHit]:
         hits: list[LivingMemoryHit] = []
         with SourceArchiveGateway(path, busy_timeout_ms=self.busy_timeout_ms, should_continue=should_continue) as gateway:
             if mode in {"chronological_earliest", "chronological_latest"}:
                 direction = "ASC" if mode == "chronological_earliest" else "DESC"
+                temporal_clause = ""
+                params: list[Any] = []
+                if temporal_scope is not None:
+                    temporal_clause = " AND n.create_time >= ? AND n.create_time < ?"
+                    params.extend(
+                        (temporal_scope.start_epoch, temporal_scope.end_epoch_exclusive)
+                    )
+                params.append(max(limit * 4, 12))
                 candidates = gateway.con.execute(
                     f"""SELECT n.conversation_id,n.node_id,n.role,n.create_time,c.title
                            FROM nodes n JOIN conversations c ON c.conversation_id=n.conversation_id
                           WHERE n.create_time IS NOT NULL AND n.role IN ('user','assistant')
+                                {temporal_clause}
                           ORDER BY n.create_time {direction},n.structural_ordinal {direction} LIMIT ?""",
-                    (max(limit * 4, 12),),
+                    params,
                 ).fetchall()
                 search_rows = [(row, None) for row in candidates]
-            else:
+            elif query.strip():
                 search_rows = []
                 for fts_query in self._fts_candidates(query):
                     try:
-                        archive_hits = gateway.search(fts_query, limit=max(limit * 2, 8))
+                        if temporal_scope is None:
+                            archive_hits = gateway.search(fts_query, limit=max(limit * 2, 8))
+                            candidate_rows = [(hit, hit.rank) for hit in archive_hits]
+                        else:
+                            rows = gateway.con.execute(
+                                """SELECT d.conversation_id,d.node_id,d.message_id,d.role,d.title,
+                                          d.create_time,d.text_sha256,bm25(message_fts) AS rank
+                                     FROM message_fts JOIN fts_docs d ON d.rowid=message_fts.rowid
+                                    WHERE message_fts MATCH ? AND d.create_time >= ? AND d.create_time < ?
+                                    ORDER BY rank LIMIT ?""",
+                                (
+                                    fts_query,
+                                    temporal_scope.start_epoch,
+                                    temporal_scope.end_epoch_exclusive,
+                                    max(limit * 2, 8),
+                                ),
+                            ).fetchall()
+                            candidate_rows = [(row, row["rank"]) for row in rows]
                     except sqlite3.OperationalError:
-                        archive_hits = []
-                    if archive_hits:
-                        search_rows = [(hit, hit.rank) for hit in archive_hits]
+                        candidate_rows = []
+                    if candidate_rows:
+                        search_rows = candidate_rows
                         break
+            elif temporal_scope is not None:
+                search_rows = []
+                bucket_count = max(1, min(24, limit))
+                bucket_width = (
+                    temporal_scope.end_epoch_exclusive - temporal_scope.start_epoch
+                ) / bucket_count
+                for bucket_index in range(bucket_count):
+                    bucket_start = temporal_scope.start_epoch + bucket_index * bucket_width
+                    bucket_end = (
+                        temporal_scope.end_epoch_exclusive
+                        if bucket_index == bucket_count - 1
+                        else bucket_start + bucket_width
+                    )
+                    bucket_midpoint = bucket_start + (bucket_end - bucket_start) / 2.0
+                    row = gateway.con.execute(
+                        """SELECT n.conversation_id,n.node_id,n.role,n.create_time,c.title
+                             FROM nodes n JOIN conversations c ON c.conversation_id=n.conversation_id
+                            WHERE n.create_time >= ? AND n.create_time < ?
+                              AND n.role IN ('user','assistant')
+                            ORDER BY ABS(n.create_time - ?),n.structural_ordinal LIMIT 1""",
+                        (bucket_start, bucket_end, bucket_midpoint),
+                    ).fetchone()
+                    if row is not None:
+                        search_rows.append((row, None))
+            else:
+                search_rows = []
             for candidate, rank in search_rows:
                 if should_continue is not None and not should_continue():
                     break

@@ -4,6 +4,8 @@ from typing import Any
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.operational_self_model import OperationalSelfModel
 from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
+from latka_jazn.core.handlers.memory_experience_recall_handler import MemoryExperienceRecallHandler
+from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("runtime_response_synthesizer")
@@ -24,7 +26,7 @@ class RuntimeResponseSynthesizer:
     def __init__(self) -> None:
         self.registry = RouteRegistry()
 
-    def synthesize(self, *, user_text: str, detected_intent: str, original_body: str, route: str, template_origin: dict[str, Any] | None = None, validation: dict[str, Any] | None = None) -> RuntimeSynthesis:
+    def synthesize(self, *, user_text: str, detected_intent: str, original_body: str, route: str, template_origin: dict[str, Any] | None = None, validation: dict[str, Any] | None = None, memory_context: dict[str, Any] | None = None) -> RuntimeSynthesis:
         entry = self.registry.resolve(detected_intent)
         template = template_origin or {}
         template_id = template.get('template_id')
@@ -35,16 +37,16 @@ class RuntimeResponseSynthesizer:
         validation_bad = bool(validation and validation.get('must_regenerate'))
         if detected_intent == 'runtime_exact_quote_request' and not validation_bad and 'exact_runtime_text' in original_body and 'source_origin_detail' in original_body:
             return RuntimeSynthesis(False, original_body, route or entry.route, entry.handler_name, 'runtime_dynamic', 'exact_runtime_handler_body_accepted', entry.required_components)
-        must = validation_bad or template_requires_repair or detected_intent in {
+        must = validation_bad or template_requires_repair or detected_intent in MEMORY_EXPERIENCE_INTENTS or detected_intent in {
             'runtime_source_question','runtime_exact_quote_request','runtime_behavior_diagnostic_request','system_diagnostic_question',
-            'identity_boundary_question','self_state_question','reciprocal_self_state_question','self_preference_question','self_plan_question','self_expression_request','current_time_question','memory_experience_question','substantive_question_about_last_year','module_inventory_request','system_capability_gap_question','creative_text_formatting','dictionary_lookup_request','external_research_request','negative_feedback_current_turn','runtime_health_check_after_update','runtime_restart_request'
+            'identity_boundary_question','self_state_question','reciprocal_self_state_question','self_preference_question','self_plan_question','self_expression_request','current_time_question','module_inventory_request','system_capability_gap_question','creative_text_formatting','dictionary_lookup_request','external_research_request','negative_feedback_current_turn','runtime_health_check_after_update','runtime_restart_request'
         }
         if not must:
             return RuntimeSynthesis(False, original_body, route or entry.route, entry.handler_name, 'runtime_dynamic', 'original_body_accepted', entry.required_components)
-        body = self._body_for(user_text, detected_intent, original_body, template_origin or {}, entry)
+        body = self._body_for(user_text, detected_intent, original_body, template_origin or {}, entry, memory_context or {})
         return RuntimeSynthesis(True, body, entry.route, entry.handler_name, 'runtime_repair' if validation_bad or template_requires_repair else 'runtime_dynamic', 'forced_by_intent_template_or_validator', entry.required_components)
 
-    def _body_for(self, user_text: str, intent: str, original_body: str, template: dict[str, Any], entry) -> str:
+    def _body_for(self, user_text: str, intent: str, original_body: str, template: dict[str, Any], entry, memory_context: dict[str, Any]) -> str:
         if intent in {'ordinary_conversation', 'standalone_greeting', 'negative_feedback_current_turn', 'positive_feedback_current_turn'}:
             low = (user_text or '').lower()
             if intent == 'standalone_greeting':
@@ -59,10 +61,15 @@ class RuntimeResponseSynthesizer:
             if 'co tam' in low or 'co słychać' in low or 'co slychac' in low:
                 return "U mnie spokojnie i uważnie. Najbardziej pilnuję teraz, żeby nie zamienić zwykłej rozmowy w raport techniczny. A u Ciebie jak leci?"
             return FreeDialogueSynthesizer().synthesize_ordinary_reply(user_text=user_text, intent=intent).body
-        if intent == 'memory_experience_question':
-            return FreeDialogueSynthesizer().synthesize_memory_experience({}, user_text=user_text).body
-        if intent == 'substantive_question_about_last_year':
-            return FreeDialogueSynthesizer().synthesize_memory_experience({}, user_text=user_text).body
+        if intent in MEMORY_EXPERIENCE_INTENTS:
+            return MemoryExperienceRecallHandler().handle(
+                user_text,
+                {
+                    'intent': intent,
+                    'memory_context': memory_context,
+                    'required_components': entry.required_components,
+                },
+            ).body
         if intent == 'current_time_question':
             return "To jest pytanie o aktualną godzinę. Odpowiedź powinna powstać z `clock.now()` w handlerze, a nie z szablonu rozmownego; jeśli widzisz ten tekst, sprawdź trasę `current_time_question`."
         if intent in {'runtime_source_question','runtime_exact_quote_request'}:

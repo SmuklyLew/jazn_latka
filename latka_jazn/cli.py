@@ -29,7 +29,7 @@ def _add_common(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = StableArgumentParser(prog="run.py", description="Canonical Jaźń v15 operator CLI", allow_abbrev=False)
+    parser = StableArgumentParser(prog="run.py", description="Canonical Jaźń operator CLI", allow_abbrev=False)
     parser.add_argument("--version", action="version", version=PACKAGE_VERSION_FULL)
     sub = parser.add_subparsers(dest="command")
 
@@ -179,6 +179,10 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--hash-files", action="store_true", help="Policz pełne SHA-256 plików SQLite.")
     child.add_argument("--output", type=Path, help="Zapisz raport JSON pod runtime root.")
 
+    child = sub.add_parser("memory-plan", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("message", nargs="+", help="Polska prośba o recall; rok i miesiąc są zakresem czasu, nie tokenem FTS.")
+
     child = sub.add_parser("model-status", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--probe", action="store_true")
@@ -293,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
-        "memory-cloud-restore", "memory-validate", "model-status",
+        "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
         return _legacy_main(_legacy_args_with_canonical_root(args))
@@ -306,6 +310,14 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
     root = Path(ns.root).resolve()
+
+    if ns.command == "memory-plan":
+        return _legacy_main([
+            "--root",
+            str(root),
+            "--memory-plan",
+            *list(ns.message),
+        ])
 
     if ns.command == "runtime-bootstrap":
         from latka_jazn.bootstrap.chatgpt_recovery import recover_chatgpt_runtime

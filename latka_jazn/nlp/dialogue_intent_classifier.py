@@ -18,6 +18,7 @@ from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -55,6 +56,7 @@ class DialogueIntentReport:
     masked_span_count: int = 0
     external_tool_context: dict[str, Any] = field(default_factory=dict)
     task_resolution: dict[str, Any] = field(default_factory=dict)
+    memory_intent_contract: dict[str, Any] = field(default_factory=dict)
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -317,7 +319,7 @@ class DialogueIntentClassifier:
         if len(text) > 900 and ("[" in text and "]" in text): return True
         line_count = len([x for x in text.splitlines() if x.strip()])
         return line_count >= 10 and len(text) > 500
-    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None, tool_context=None, task_resolution=None):
+    def _report(self, norm, folded, intent, evidence, base, secondary=None, preserve=False, creative=False, update=False, diag=False, src=False, ident=False, speech_act='unknown', question_object='unknown', control_report=None, tool_context=None, task_resolution=None, memory_semantics=None):
         conf=self.calibrator.calibrate(intent, base, len(evidence))
         frame=self.feature_engine.analyse(norm, speech_act=speech_act)
         component_report = analyse_utterance(norm)
@@ -346,6 +348,7 @@ class DialogueIntentClassifier:
             masked_span_count=int(control_report.masked_span_count if control_report is not None else 0),
             external_tool_context=dict(tool_context or {}),
             task_resolution=dict(task_resolution or {}),
+            memory_intent_contract=dict(memory_semantics or {}),
         )
     def classify(
         self,
@@ -361,8 +364,10 @@ class DialogueIntentClassifier:
         control_report=extract_intent_control_text(text)
         control_text=control_report.control_text
         tool_context=self.external_tools.parse(text)
+        memory_semantics=analyze_memory_intent(control_text, previous_text=previous_text)
         def report(*args, **kwargs):
             kwargs.setdefault('tool_context', tool_context.to_dict())
+            kwargs.setdefault('memory_semantics', memory_semantics.to_dict())
             return self._report(*args, **kwargs, control_report=control_report)
         norm=self.normalize(control_text); folded=self.fold(norm); evidence=[]; secondary=[]
         if control_report.quoted_material_masked:
@@ -424,6 +429,67 @@ class DialogueIntentClassifier:
             return report(norm,folded,'post_update_coverage_audit_request',[
                 'jawne pytanie o kompletność i pominięcia zakończonego patcha/aktualizacji'
             ],0.97,diag=True,speech_act=speech.speech_act,question_object='post_update_coverage')
+        task_has_memory_anchor = bool(
+            isinstance(previous_task_state, dict)
+            and (
+                previous_task_state.get('memory_query')
+                or previous_task_state.get('memory_anchor_goal')
+                or previous_task_state.get('memory_temporal_scope')
+            )
+        )
+        canonical_memory_followup = bool(
+            task_has_memory_anchor
+            and (memory_semantics.referential_followup or memory_semantics.correction)
+        )
+        memory_compound_execution_target = any(
+            marker in folded for marker in (
+                'jazn', 'jaźń', 'runtime', 'routing', 'trasa', 'handler', 'klasyfikator',
+                'kod', 'system', 'modul', 'moduł', 'finalizac', 'host', 'master', 'branch',
+            )
+        )
+        memory_compound_execution = (
+            (memory_semantics.content_requested or memory_semantics.negated_recall)
+            and not component_report.negated_actions
+            and not component_report.diagnostic_only
+            and component_report.explicit_execution
+            and self._has_any(norm, folded, self.UPDATE_EXECUTION_VERBS)
+            and memory_compound_execution_target
+        )
+        if memory_compound_execution:
+            secondary_intents: list[str] = []
+            execution_evidence = [
+                'jawne wykonanie na systemie ma pierwszeństwo przed składową pamięciową'
+            ]
+            if memory_semantics.content_requested:
+                secondary_intents.append('memory_experience_question')
+                execution_evidence.append('canonical_memory_contract:recall_preserved_as_secondary')
+            elif memory_semantics.negated_recall:
+                execution_evidence.append('canonical_memory_contract:recall_negation_preserved')
+            if has_research:
+                secondary_intents.append('external_research_request')
+            return report(
+                norm, folded, 'system_update_execution_request', execution_evidence,
+                0.97, secondary_intents, update=True, diag=has_diag,
+                speech_act=speech.speech_act, question_object='system_update',
+            )
+        if memory_semantics.negated_recall:
+            return report(
+                norm,folded,'ordinary_conversation',
+                ['canonical_memory_contract:recall_negated'],0.94,
+                speech_act=speech.speech_act,question_object='memory_recall_cancelled',
+            )
+        if memory_semantics.capability_only:
+            return report(
+                norm,folded,'capability_status_question',
+                ['canonical_memory_contract:capability_only'],0.94,
+                speech_act=speech.speech_act,question_object='memory_capability',
+            )
+        if memory_semantics.content_requested or canonical_memory_followup:
+            return report(
+                norm,folded,'memory_experience_question',
+                ['canonical_memory_contract:source_backed_recall', *memory_semantics.evidence],0.96,
+                speech_act=speech.speech_act,question_object='memory_experience',
+            )
         if (
             decision_frame.top_intent == 'self_memory_recall_request'
             and decision_frame.top_score >= 0.68

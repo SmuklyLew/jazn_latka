@@ -64,6 +64,7 @@ from latka_jazn.core.runtime_status import build_runtime_status
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
+from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS, analyze_memory_intent
 from latka_jazn.core.memory_use_gate import MemoryUseGate
 from latka_jazn.core.signal_matching import NeurologicalSignalRouter, any_marker_present
 from latka_jazn.core.project_index import ProjectStartupIndexer
@@ -987,10 +988,7 @@ class JaznEngine:
         return out[:8] or ["Łatka"]
 
     def _is_memory_query(self, text: str) -> bool:
-        low = text.lower()
-        if any(w in low for w in ["pamiętasz", "pamietasz", "szukaj w pamięci", "szukaj w pamieci", "przypomnij", "wspomnienie", "wspominasz", "historia", "historie", "scena", "przeżyłaś", "przezylas", "doświadczenie", "doswiadczenie"]):
-            return True
-        return any(w in low for w in ["lumiel", "katedr", "görlitz", "gorlitz", "olsztyn", "ogrodzieniec", "jezior", "taras", "ogród", "ogrod", "pokój", "pokoj"])
+        return analyze_memory_intent(text).content_requested
 
     def _memory_search_reply(self, text: str) -> str:
         memory_context = self._memory_context_for_chatgpt(text, limit=7)
@@ -1111,13 +1109,20 @@ class JaznEngine:
         "internet_access_question",
     }
 
-    MEMORY_RETRIEVAL_INTENTS = {
+    MEMORY_RETRIEVAL_INTENTS = set(MEMORY_CONTENT_INTENTS) | {
         "self_memory_recall_request",
-        "memory_experience_question",
-        "user_memory_question",
         "identity_memory_question",
         "continuity_question",
     }
+    DEDICATED_PRESERVE_HANDLERS = frozenset({
+        "CapabilityStatusHandler",
+        "SelfMemoryRecallHandler",
+        "MemoryExperienceRecallHandler",
+        "DirectLatkaVoiceHandler",
+        "IdentityMemoryExistenceHandler",
+        "CanonSourceHandler",
+        "SelfArchitectureAuditHandler",
+    })
 
     def _gated_memory_context_for_chatgpt(
         self,
@@ -1127,6 +1132,7 @@ class JaznEngine:
         intent_report: Any | None = None,
         intent_tags: list[str] | None = None,
         turn_context: TurnExecutionContext | None = None,
+        previous_query: str | None = None,
     ) -> dict:
         """Buduje pamięć tylko wtedy, gdy intencja tego naprawdę wymaga.
 
@@ -1138,7 +1144,33 @@ class JaznEngine:
         decision = self.memory_use_gate.decide(text, detected_intent=primary_intent)
         if primary_intent in self.NON_MEMORY_RETRIEVAL_INTENTS or not decision.allow_memory_content:
             return self._empty_memory_context_for_chatgpt(text, primary_intent=primary_intent, memory_gate=decision.to_dict())
-        return self._memory_context_for_chatgpt(text, limit=limit, turn_context=turn_context)
+        return self._memory_context_for_chatgpt(
+            text,
+            limit=limit,
+            turn_context=turn_context,
+            previous_query=previous_query,
+        )
+
+    def _turn_memory_context(
+        self,
+        text: str,
+        intent_report: Any,
+        turn_context: TurnExecutionContext | None,
+        client_context: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        raw_previous_state = (client_context or {}).get("previous_task_state")
+        previous_state = dict(raw_previous_state) if isinstance(raw_previous_state, dict) else {}
+        previous_query = "" if (client_context or {}).get("no_carryover") else str(
+            previous_state.get("memory_query")
+            or previous_state.get("memory_anchor_goal")
+            or ""
+        ).strip() or None
+        return self._gated_memory_context_for_chatgpt(
+            text,
+            intent_report=intent_report,
+            turn_context=turn_context,
+            previous_query=previous_query,
+        )
 
     def _primary_intent_for_memory_gate(self, intent_report: Any | None, intent_tags: list[str] | None = None) -> str:
         if isinstance(intent_report, dict):
@@ -1175,6 +1207,8 @@ class JaznEngine:
                 "routing_notes": [
                     f"memory retrieval skipped for non-memory intent: {primary_intent}",
                 ],
+                "temporal_scope": {},
+                "memory_intent_contract": {},
             },
             "episodes": [],
             "legacy_messages": [],
@@ -1220,6 +1254,7 @@ class JaznEngine:
         *,
         limit: int = 5,
         turn_context: TurnExecutionContext | None = None,
+        temporal_scope: dict[str, Any] | None = None,
     ) -> tuple[list[dict], dict]:
         """Pobiera treściowe trafienia z conversation_archive/FTS jako normalną warstwę pamięci.
 
@@ -1229,16 +1264,18 @@ class JaznEngine:
         baza jest niepełna, niezaimportowana albo środowisko ma tylko częściową paczkę.
         """
         query = " ".join(str(x).strip() for x in (phrases or []) if str(x).strip())
-        if not query:
+        if not query and not temporal_scope:
             return [], {"status": "empty_query", "issues": ["empty_query"]}
         try:
             store = ConversationArchiveStore(self.config.root)
-            search_result = store.search(
-                query,
-                limit=max(1, limit),
-                include_snippets=True,
-                should_continue=turn_context.can_continue if turn_context is not None else None,
-            ).to_dict()
+            search_options: dict[str, Any] = {
+                "limit": max(1, limit),
+                "include_snippets": True,
+                "should_continue": turn_context.can_continue if turn_context is not None else None,
+            }
+            if temporal_scope:
+                search_options["temporal_scope"] = temporal_scope
+            search_result = store.search(query, **search_options).to_dict()
         except Exception as exc:
             return [], {
                 "status": "error",
@@ -1249,11 +1286,20 @@ class JaznEngine:
         for hit in search_result.get("hits") or []:
             if not isinstance(hit, dict):
                 continue
+            review_status = str(hit.get("review_status") or "").strip().casefold()
+            if review_status in {"rejected", "quarantined", "invalid", "superseded"}:
+                continue
+            identity_confidence = hit.get("identity_confidence")
+            try:
+                if identity_confidence is not None and float(identity_confidence) < 0.5:
+                    continue
+            except (TypeError, ValueError):
+                continue
             excerpt = str(hit.get("excerpt") or "").strip()
             if not excerpt:
                 continue
             hits.append({
-                "phrase": query,
+                "phrase": query or "temporal_scope_only",
                 "search_pass": "conversation_archive_fts",
                 "text": excerpt,
                 "excerpt": excerpt,
@@ -1279,6 +1325,7 @@ class JaznEngine:
         limit: int = 5,
         *,
         turn_context: TurnExecutionContext | None = None,
+        previous_query: str | None = None,
     ) -> dict:
         """Buduje kontekst pamięci przez planer wyszukiwania, nie przez gołe tokeny.
 
@@ -1293,11 +1340,13 @@ class JaznEngine:
         search_plan = self.memory_search_planner.plan(
             text,
             fallback_terms=legacy_candidates,
-            previous_query=self.last_user_text,
+            previous_query=previous_query if previous_query is not None else self.last_user_text,
         )
         if turn_context is not None:
             turn_context.complete_stage("memory_search_plan")
-        phrases = search_plan.search_terms or legacy_candidates
+        phrases = search_plan.search_terms
+        if not phrases and not search_plan.temporal_scope:
+            phrases = legacy_candidates
 
         if turn_context is not None:
             turn_context.start_stage("memory_living_recall")
@@ -1308,7 +1357,17 @@ class JaznEngine:
         )
         living_memory_hits = [
             dict(hit) for hit in (living_memory_search.get("hits") or []) if isinstance(hit, dict)
-        ][:limit]
+        ]
+        living_memory_hits = MemoryRecallPresenter.filter_temporal_candidates(
+            living_memory_hits,
+            temporal_scope=search_plan.temporal_scope,
+            timestamp_fields=("timestamp",),
+        )
+        living_memory_hits = self._filter_memory_context_candidates(
+            living_memory_hits,
+            user_text=text,
+            kind="living_memory",
+        )[:limit]
         if turn_context is not None:
             turn_context.complete_stage(
                 "memory_living_recall",
@@ -1360,6 +1419,7 @@ class JaznEngine:
                             "phrase": phrase,
                             "search_pass": search_pass.get("name"),
                             "local_time_label": ep.get("local_time_label") or ep.get("created_at_utc"),
+                            "created_at_utc": ep.get("created_at_utc"),
                             "grounding": ep.get("grounding"),
                             "confidence": ep.get("confidence"),
                             "scene": str(ep.get("scene") or "")[:700],
@@ -1383,6 +1443,7 @@ class JaznEngine:
                             "search_pass": search_pass.get("name"),
                             "conversation_title": d.get("conversation_title"),
                             "author_role": d.get("author_role"),
+                            "create_time": d.get("create_time"),
                             "create_time_warsaw": d.get("create_time_warsaw"),
                             "text": str(d.get("text") or "")[:700],
                         })
@@ -1393,8 +1454,18 @@ class JaznEngine:
             if len(episodes) >= collection_limit and len(legacy) >= collection_limit:
                 break
 
-        episodes = self._filter_memory_context_candidates(episodes, user_text=text, kind="episode")[:limit]
-        legacy = self._filter_memory_context_candidates(legacy, user_text=text, kind="legacy_message")[:limit]
+        episodes = self._filter_memory_context_candidates(episodes, user_text=text, kind="episode")
+        legacy = self._filter_memory_context_candidates(legacy, user_text=text, kind="legacy_message")
+        episodes = MemoryRecallPresenter.filter_temporal_candidates(
+            episodes,
+            temporal_scope=search_plan.temporal_scope,
+            timestamp_fields=("created_at_utc", "local_time_label"),
+        )[:limit]
+        legacy = MemoryRecallPresenter.filter_temporal_candidates(
+            legacy,
+            temporal_scope=search_plan.temporal_scope,
+            timestamp_fields=("create_time", "create_time_warsaw"),
+        )[:limit]
         if turn_context is not None:
             if archive_fts_hit and turn_context.can_continue():
                 turn_context.record_technical_event(
@@ -1414,8 +1485,13 @@ class JaznEngine:
         if turn_context is not None:
             turn_context.start_stage("memory_source_file_scan")
         source_file_hits = []
-        if turn_context is None or turn_context.can_continue():
+        if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope:
             source_file_hits = [hit.to_dict() for hit in self.memory_search_planner.search_source_files(search_plan, limit=limit)]
+        source_file_hits = self._filter_memory_context_candidates(
+            source_file_hits,
+            user_text=text,
+            kind="source_file",
+        )[:limit]
         if turn_context is not None:
             turn_context.complete_stage(
                 "memory_source_file_scan",
@@ -1426,13 +1502,25 @@ class JaznEngine:
         if turn_context is not None:
             turn_context.start_stage("memory_conversation_archive_recall")
         if turn_context is None or turn_context.can_continue():
+            archive_options: dict[str, Any] = {
+                "limit": limit,
+                "turn_context": turn_context,
+            }
+            if search_plan.temporal_scope:
+                archive_options["temporal_scope"] = search_plan.temporal_scope
             conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(
-                phrases, limit=limit, turn_context=turn_context
+                phrases,
+                **archive_options,
             )
         else:
             conversation_archive_hits, conversation_archive_search = [], {
                 "status": "cancelled", "issues": ["turn_cancelled_before_conversation_archive"]
             }
+        conversation_archive_hits = self._filter_memory_context_candidates(
+            conversation_archive_hits,
+            user_text=text,
+            kind="conversation_archive",
+        )[:limit]
         if turn_context is not None:
             turn_context.complete_stage(
                 "memory_conversation_archive_recall",
@@ -1446,8 +1534,13 @@ class JaznEngine:
             turn_context.start_stage("memory_raw_fallback")
         # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
         # conversation_archive i pliki kanoniczne nie zwróciły treści.
-        if (turn_context is None or turn_context.can_continue()) and not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
+        if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope and phrases and not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
             raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
+        raw_fallback = self._filter_memory_context_candidates(
+            raw_fallback,
+            user_text=text,
+            kind="raw_chat",
+        )[:3]
         if turn_context is not None:
             turn_context.complete_stage(
                 "memory_raw_fallback",
@@ -1484,6 +1577,9 @@ class JaznEngine:
                 "query": conversation_archive_search.get("query"),
                 "fts_query": conversation_archive_search.get("fts_query"),
                 "searched_shards": conversation_archive_search.get("searched_shards"),
+                "temporal_scope": conversation_archive_search.get("temporal_scope"),
+                "sampling_strategy": conversation_archive_search.get("sampling_strategy"),
+                "candidate_count": conversation_archive_search.get("candidate_count"),
                 "issues": conversation_archive_search.get("issues") or [],
                 "truth_boundary": conversation_archive_search.get("truth_boundary"),
             },
@@ -1521,12 +1617,35 @@ class JaznEngine:
         technical_terms = ("manifest", "pytest", "sqlite", "traceback", "update_report", "def ", "class ", "client_secret", "runtime_preview")
         out: list[dict] = []
         for item in items:
-            content = item.get("scene") if kind == "episode" else item.get("text")
+            content = (
+                item.get("scene")
+                if kind == "episode"
+                else item.get("text")
+                or item.get("content_excerpt")
+                or item.get("excerpt")
+            )
             content_norm = norm(content)
             source_norm = norm(item.get("source") or item.get("conversation_title") or "")
             if not content_norm:
                 continue
-            is_echo = bool(user_norm and (content_norm == user_norm or user_norm in content_norm or content_norm in user_norm))
+            truth_status = norm(item.get("truth_status") or item.get("review_status") or "")
+            if truth_status in {"rejected", "quarantined", "invalid", "superseded", "untrusted"}:
+                continue
+            comparable_containment = bool(
+                min(len(content_norm), len(user_norm)) >= 40
+                and max(len(content_norm), len(user_norm))
+                <= int(min(len(content_norm), len(user_norm)) * 1.35)
+            )
+            is_echo = bool(
+                user_norm
+                and (
+                    content_norm == user_norm
+                    or (
+                        comparable_containment
+                        and (user_norm in content_norm or content_norm in user_norm)
+                    )
+                )
+            )
             is_recent_runtime_echo = str(item.get("source") or "") in technical_sources and is_echo
             is_technical_noise = any(term in content_norm for term in technical_terms)
             if is_echo or is_recent_runtime_echo or (is_technical_noise and "runtime" not in norm(user_text)):
@@ -1962,7 +2081,7 @@ class JaznEngine:
         )
         if turn_context is not None:
             turn_context.start_stage("memory_use_gate")
-        memory_context = self._gated_memory_context_for_chatgpt(text, intent_report=memory_gate_intent_report, turn_context=turn_context)
+        memory_context = self._turn_memory_context(text, memory_gate_intent_report, turn_context, client_context)
         if turn_context is not None:
             turn_context.complete_stage("memory_use_gate")
             memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
@@ -2419,13 +2538,25 @@ class JaznEngine:
             if isinstance((dialogue_intent_report or {}).get("task_resolution"), dict)
             else {}
         )
-        task_state = self.dialogue_task_state_resolver.derive_state(
+        task_state_model = self.dialogue_task_state_resolver.derive_state(
             user_text=text,
             intent=detected_intent,
             route=str(route_entry.route or ""),
             previous_state=previous_task_state,
             inherited=bool(task_resolution.get("inherited")),
             confidence=confidence,
+        )
+        raw_memory_context = frame.get("memory_context")
+        memory_context: dict[str, Any] = (
+            dict(raw_memory_context) if isinstance(raw_memory_context, dict) else {}
+        )
+        raw_memory_payload = memory_context.get("memory_recall_payload")
+        memory_payload: dict[str, Any] | None = (
+            dict(raw_memory_payload) if isinstance(raw_memory_payload, dict) else None
+        )
+        task_state = self.dialogue_task_state_resolver.bind_memory_evidence(
+            task_state_model,
+            memory_payload,
         ).to_dict()
         reasoning_plan = self.cognitive_runtime_coordinator.reasoning.plan(
             user_text=text,
@@ -2557,6 +2688,33 @@ class JaznEngine:
                 ),
             )
 
+    def _previous_task_state_for_turn(
+        self,
+        client_context: dict[str, Any],
+        *,
+        carryover_allowed: bool,
+    ) -> dict[str, Any]:
+        if not carryover_allowed:
+            client_context.pop("previous_task_state", None)
+            return {}
+        raw_state = client_context.get("previous_task_state") or self.last_dialogue_task_state or {}
+        state = dict(raw_state) if isinstance(raw_state, dict) else {}
+        if state:
+            client_context["previous_task_state"] = state
+        return state
+
+    def _initial_task_state_for_process_turn(
+        self,
+        client_context: dict[str, Any],
+        *,
+        no_carryover: bool,
+    ) -> dict[str, Any]:
+        if no_carryover:
+            client_context.pop("previous_task_state", None)
+            return {}
+        raw_state = client_context.get("previous_task_state") or self.last_dialogue_task_state or {}
+        return dict(raw_state) if isinstance(raw_state, dict) else {}
+
     def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
         """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
         ctx = dict(client_context or {})
@@ -2564,10 +2722,11 @@ class JaznEngine:
         if not isinstance(turn_context, TurnExecutionContext):
             turn_context = None
         ctx.setdefault("client", "process_turn")
-        self._audit_process_turn_started(text, ctx)
         ctx.setdefault("lifecycle", "one_shot")
-        prior_turn_at = self.last_turn_at
         no_carryover = bool(ctx.get("no_carryover"))
+        initial_task_state = self._initial_task_state_for_process_turn(ctx, no_carryover=no_carryover)
+        self._audit_process_turn_started(text, ctx)
+        prior_turn_at = self.last_turn_at
         prior_user_text = None if no_carryover else (ctx.get("previous_user_text") or self.last_user_text)
         prior_visible_text = None if no_carryover else ctx.get("previous_visible_text")
         prior_detected_intent = ctx.get("previous_detected_intent") or self.last_detected_intent
@@ -2583,11 +2742,7 @@ class JaznEngine:
             no_carryover=no_carryover,
             time_gap_seconds=prior_context_age_seconds,
             explicit_previous_user_text=bool(ctx.get("previous_user_text")),
-            previous_task_state=(
-                dict(ctx.get("previous_task_state") or self.last_dialogue_task_state or {})
-                if isinstance(ctx.get("previous_task_state") or self.last_dialogue_task_state or {}, dict)
-                else {}
-            ),
+            previous_task_state=initial_task_state,
         )
         carryover_allowed = bool(turn_context_resolution.carryover_allowed)
         if carryover_allowed:
@@ -2601,11 +2756,7 @@ class JaznEngine:
             ctx.setdefault("previous_context_age_seconds", prior_context_age_seconds)
         if turn_context is not None:
             turn_context.start_stage("route_classification")
-        previous_task_state = (
-            dict(ctx.get("previous_task_state") or self.last_dialogue_task_state or {})
-            if isinstance(ctx.get("previous_task_state") or self.last_dialogue_task_state or {}, dict)
-            else {}
-        )
+        previous_task_state = {} if no_carryover else self._previous_task_state_for_turn(ctx, carryover_allowed=carryover_allowed)
         dialogue_intent_result = self.dialogue_intent_classifier.classify(
             text,
             previous_text=str(prior_user_text or "") if carryover_allowed else None,
@@ -2726,12 +2877,11 @@ class JaznEngine:
         decision_dict["handler_missing_components"] = handler_result.missing_components
         if handler_result.source_origin_detail:
             decision_dict["source_origin_detail"] = handler_result.source_origin_detail
-        dedicated_preserve_handlers = {"CapabilityStatusHandler", "SelfMemoryRecallHandler", "DirectLatkaVoiceHandler", "IdentityMemoryExistenceHandler", "CanonSourceHandler", "SelfArchitectureAuditHandler"}
         handler_required = list(handler_result.required_components or route_entry.required_components or [])
         handler_satisfied = set(handler_result.satisfied_components or [])
         handler_missing = list(handler_result.missing_components or [])
         preserve_handler_body = (
-            handler_result.handler_name in dedicated_preserve_handlers
+            handler_result.handler_name in self.DEDICATED_PRESERVE_HANDLERS
             and handler_result.generation_mode == "handler_generated"
             and bool(handler_result.body)
             and not handler_missing
@@ -2893,6 +3043,7 @@ class JaznEngine:
             synthesis = self.runtime_response_synthesizer.synthesize(
                 user_text=text, detected_intent=str(detected_dialogue_intent), original_body=body, route=str(decision_dict.get("route") or ""),
                 template_origin=template_origin if template_origin.get("template_id") else None, validation=first_validation.to_dict(),
+                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
             )
             if synthesis.should_override and not preserve_handler_body:
                 body = self.guard.enforce(synthesis.body.strip())
@@ -2991,6 +3142,7 @@ class JaznEngine:
                 route=str(decision_dict.get("route") or ""),
                 template_origin=template_origin if template_origin.get("template_id") else None,
                 validation={"must_regenerate": True, "mismatch_reason": reasoning_decision.reason},
+                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
             )
             if synthesis.should_override:
                 body = self.guard.enforce(synthesis.body.strip())

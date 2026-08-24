@@ -5,6 +5,7 @@ from typing import Any
 import re
 
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent
 from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
 from latka_jazn.nlp.topic_mismatch_guard import TopicMismatchGuard
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
@@ -1033,19 +1034,10 @@ class ConversationResponder:
 
     @staticmethod
     def _is_memory_recall_question(low: str, effective_low: str) -> bool:
-        text = f"{low} {effective_low}"
-        recall_markers = (
-            "jakie tropy pamięci", "jakie tropy pamieci", "jakie wspomnienia",
-            "co pamiętasz", "co pamietasz", "co sobie przypominasz",
-            "przypomnij", "wspomnienia", "treść wspomnień", "tresc wspomnien",
-            "czy te wspomnienia", "znalazłaś w pamięci", "znalazlas w pamieci",
+        return (
+            analyze_memory_intent(effective_low).content_requested
+            or analyze_memory_intent(low).content_requested
         )
-        if not any(marker in text for marker in recall_markers):
-            return False
-        update_markers = ("przygotuj", "aktualizac", "hotfix", "patch", "paczka", "zip", "do pobrania")
-        if any(marker in text for marker in update_markers) and not any(marker in text for marker in ("treść", "tresc", "jakie tropy", "co pamiętasz", "co pamietasz")):
-            return False
-        return True
 
     @staticmethod
     def _counts_note(counts: dict[str, int]) -> str:

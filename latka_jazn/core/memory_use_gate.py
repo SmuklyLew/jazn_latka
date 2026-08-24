@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import re
 from typing import Any
 
+from latka_jazn.core.memory_intent_contract import (
+    MEMORY_CONTENT_INTENTS,
+    analyze_memory_intent,
+)
 from latka_jazn.core.self_question_memory_gate import SelfQuestionMemoryGate
 
 SCHEMA_VERSION = "memory_use_gate/v1"
-_DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
 
 NON_MEMORY_INTENTS = {
     "runtime_health_check",
@@ -20,10 +22,8 @@ NON_MEMORY_INTENTS = {
     "internet_access_question",
 }
 
-MEMORY_REQUIRED_INTENTS = {
+MEMORY_REQUIRED_INTENTS = MEMORY_CONTENT_INTENTS | {
     "self_memory_recall_request",
-    "memory_experience_question",
-    "user_memory_question",
     "identity_memory_question",
     "continuity_question",
     "self_architecture_audit_request",
@@ -52,25 +52,21 @@ class MemoryUseGate:
     """
 
     def decide(self, user_text: str, *, detected_intent: str | None = None) -> MemoryUseDecision:
-        low = self._norm(user_text)
         intent = detected_intent or "unknown"
+        semantics = analyze_memory_intent(user_text)
         self_gate = SelfQuestionMemoryGate().decide(user_text, detected_intent=intent)
         if self_gate.force_memory_content:
             return MemoryUseDecision(True, "self_question_memory_gate:" + self_gate.reason, "self_architecture_or_self_memory_content", "low")
         if intent in NON_MEMORY_INTENTS:
             return MemoryUseDecision(False, "non_memory_specialized_intent_blocks_retrieval", "disabled_for_turn", "low_after_gate")
+        if semantics.capability_only:
+            return MemoryUseDecision(False, "canonical_memory_contract:capability_only", "disabled_for_turn", "low_after_gate")
+        if semantics.operation in {"store_directive", "forget_directive"} or semantics.negated_recall:
+            return MemoryUseDecision(False, "canonical_memory_contract:non_retrieval_operation", "disabled_for_turn", "low_after_gate")
         if intent in {"self_state_question", "reciprocal_self_state_question", "self_preference_question", "self_plan_question", "sleep_closure_statement"}:
             return MemoryUseDecision(False, "self_state_or_closure_uses_current_turn_not_memory_excerpt", "affective_context_only", "high_if_memory_excerpt_injected")
         if intent in MEMORY_REQUIRED_INTENTS:
             return MemoryUseDecision(True, "memory_required_intent", "content_source", "low")
-        explicit = any(marker in low for marker in (
-            "pamietasz", "pamiętasz", "wspomn", "przypomnij", "co mowilem", "co mówiłem",
-            "nasza poprzednia rozmowa", "ten watek", "ten wątek", "wroc do", "wróć do",
-        ))
-        if explicit:
-            return MemoryUseDecision(True, "explicit_memory_request", "content_source", "low")
+        if semantics.content_requested:
+            return MemoryUseDecision(True, "canonical_memory_contract:content_requested", "content_source", "low")
         return MemoryUseDecision(False, "no_explicit_memory_request", "continuity_guard_only", "medium")
-
-    @staticmethod
-    def _norm(text: str) -> str:
-        return re.sub(r"\s+", " ", (text or "").strip().lower()).translate(_DIACRITIC_MAP)

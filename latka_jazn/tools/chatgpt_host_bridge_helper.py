@@ -112,6 +112,28 @@ def load_chatgpt_host_request(path: Path | str, *, max_bytes: int = MAX_HOST_BRI
     return load_chatgpt_host_request_from_text(read_limited_text(path, max_bytes=max_bytes))
 
 
+def load_external_tool_evidence(path: Path | str) -> list[dict[str, Any]]:
+    """Load one bounded JSON array of host-attested external-tool evidence."""
+
+    value = json.loads(read_limited_text(path))
+    if not isinstance(value, list):
+        raise ChatgptHostBridgeHelperError(
+            "Plik external_tool_evidence musi zawierać tablicę JSON."
+        )
+    if len(value) > 8:
+        raise ChatgptHostBridgeHelperError(
+            "external_tool_evidence przekracza limit 8 wpisów."
+        )
+    evidence: list[dict[str, Any]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise ChatgptHostBridgeHelperError(
+                f"external_tool_evidence[{index}] nie jest obiektem JSON."
+            )
+        evidence.append(dict(item))
+    return evidence
+
+
 def _host_bridge_from_runtime_packet(runtime_payload: dict[str, Any]) -> dict[str, Any]:
     bridge = runtime_payload.get("chatgpt_host_bridge")
     if is_json_object(bridge):
@@ -134,6 +156,8 @@ def build_chatgpt_host_visible_reply_payload(
     *,
     final_text: str,
     state_emoticon: str | None = None,
+    used_memory_item_ids: Iterable[str] | None = None,
+    external_tool_evidence: Iterable[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """Build phase-2 JSONL from the verified phase-1 turn envelope."""
     bridge = _host_bridge_from_runtime_packet(runtime_payload)
@@ -159,6 +183,8 @@ def build_chatgpt_host_visible_reply_payload(
         "host_request_contract_hash": _safe_text(bridge.get("host_request_contract_hash") or shape.get("host_request_contract_hash")),
     }
     text = normalize_newlines(final_text)
+    memory_item_ids = [_safe_text(item) for item in (used_memory_item_ids or [])]
+    tool_evidence_items = list(external_tool_evidence or [])
     missing: list[str] = []
     phase = _safe_text(bridge.get("phase"))
     if phase != "host_visible_generation_requested" or bridge.get("host_must_generate_visible_reply") is not True:
@@ -174,6 +200,16 @@ def build_chatgpt_host_visible_reply_payload(
         missing.append("final_text")
     if state_emoticon is not None and _safe_text(state_emoticon) != values["state_emoticon"]:
         missing.append("state_emoticon_mismatch")
+    if len(memory_item_ids) > 8:
+        missing.append("used_memory_item_ids_limit_exceeded")
+    for index, item_id in enumerate(memory_item_ids):
+        if not item_id:
+            missing.append(f"used_memory_item_ids_empty:{index}")
+    if len(tool_evidence_items) > 8:
+        missing.append("external_tool_evidence_limit_exceeded")
+    for index, item in enumerate(tool_evidence_items):
+        if not isinstance(item, dict):
+            missing.append(f"external_tool_evidence_not_object:{index}")
     if missing:
         return None, missing
 
@@ -204,6 +240,8 @@ def build_chatgpt_host_visible_reply_payload(
         **values,
         "final_text": finalization.final_visible_text,
         "final_text_sha256": sha256_host_visible_text(finalization.final_visible_text),
+        "used_memory_item_ids": memory_item_ids,
+        "external_tool_evidence": [dict(item) for item in tool_evidence_items],
         "finalization_result": finalization.to_dict(),
         "builder": {
             "schema_version": schema_version("chatgpt_host_visible_reply_builder"),
@@ -244,11 +282,15 @@ def record_chatgpt_host_visible_reply_from_runtime_packet(
     runtime_payload: dict[str, Any],
     final_text: str,
     state_emoticon: str | None = None,
+    used_memory_item_ids: Iterable[str] | None = None,
+    external_tool_evidence: Iterable[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any] | None, list[str]]:
     reply_payload, missing = build_chatgpt_host_visible_reply_payload(
         runtime_payload,
         final_text=final_text,
         state_emoticon=state_emoticon,
+        used_memory_item_ids=used_memory_item_ids,
+        external_tool_evidence=external_tool_evidence,
     )
     if missing:
         return None, missing
@@ -292,6 +334,18 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--final-text", default=None, help="Widoczna odpowiedź hosta ChatGPT do zapisania w runtime.")
     parser.add_argument("--final-text-file", type=Path, default=None, help="Plik UTF-8 z widoczną odpowiedzią hosta ChatGPT.")
     parser.add_argument("--state-emoticon", default=None, help="Opcjonalna ikona stanu zapisywana przy final_visible_reply.")
+    parser.add_argument(
+        "--used-memory-item-id",
+        action="append",
+        default=[],
+        help="Identyfikator źródła pamięci faktycznie użytego przez hosta; maksymalnie 8.",
+    )
+    parser.add_argument(
+        "--external-tool-evidence-json",
+        type=Path,
+        default=None,
+        help="Plik JSON z maksymalnie 8 wpisami host-attested evidence dla GitHub/web.run.",
+    )
     parser.add_argument("--build-only", action="store_true", help="Tylko zbuduj JSONL host_visible_reply; nie zapisuj do runtime.")
     parser.add_argument("--pretty", action="store_true", help="Wypisz JSON z wcięciami zamiast jednej linii JSONL.")
     parser.add_argument("message", nargs=argparse.REMAINDER, help="Alternatywnie: tekst hosta po --, bez ręcznego składania JSON.")
@@ -313,10 +367,17 @@ def main(argv: list[str] | None = None, *, stdin: TextIO | None = None, stdout: 
                 raise ChatgptHostBridgeHelperError("stdin jest niedostępny dla pakietu host bridge.")
             runtime_payload = load_chatgpt_host_request_from_text(_read_stdin_limited(stdin))
         final_text = _resolve_final_text(args)
+        external_tool_evidence = (
+            load_external_tool_evidence(args.external_tool_evidence_json)
+            if args.external_tool_evidence_json is not None
+            else []
+        )
         reply_payload, missing = build_chatgpt_host_visible_reply_payload(
             runtime_payload,
             final_text=final_text,
             state_emoticon=args.state_emoticon,
+            used_memory_item_ids=args.used_memory_item_id,
+            external_tool_evidence=external_tool_evidence,
         )
         if missing:
             payload = {

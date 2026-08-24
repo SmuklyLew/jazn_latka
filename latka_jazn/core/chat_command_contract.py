@@ -1004,6 +1004,19 @@ def persist_chatgpt_host_visible_reply(
         return None, [f"host_request_binding_mismatch:{field}" for field in mismatches]
     generation_context = json_object(pending.get("generation_context"))
     host_generation_context = json_object(generation_context.get("host_generation_context"))
+    bound_host_generation_context_sha256 = str(
+        binding.get("host_generation_context_sha256") or ""
+    ).strip()
+    actual_host_generation_context_sha256 = str(
+        host_generation_context.get("context_sha256") or ""
+    ).strip()
+    if (
+        bound_host_generation_context_sha256
+        and actual_host_generation_context_sha256
+        != bound_host_generation_context_sha256
+    ):
+        release_claimed_host_request(config.root, turn_id=reply["turn_id"])
+        return None, ["host_candidate:host_generation_context_binding_mismatch"]
     semantic_validation = evaluate_host_response_candidate(
         final_text=reply["final_text"],
         host_generation_context=host_generation_context,
@@ -1047,11 +1060,15 @@ def persist_chatgpt_host_visible_reply(
                 return None, [f'host_regeneration:{exc}', *[f'finalization:{code}' for code in violation_codes]]
             binding_retry = json_object(retry_record.get('binding'))
             generation_context = json_object(retry_record.get('generation_context'))
+            retry_host_generation_context = json_object(
+                generation_context.get('host_generation_context')
+            )
             retry_bridge = {
                 'schema_version': schema_version('chatgpt_host_bridge_turn'),
                 'phase': 'host_visible_generation_requested',
                 'status': 'host_regeneration_requested',
                 'host_must_generate_visible_reply': True,
+                'host_reply_finalization_required': True,
                 'pending_request_persisted': True,
                 'turn_id': binding_retry.get('turn_id'),
                 'trace_id': binding_retry.get('trace_id'),
@@ -1066,10 +1083,25 @@ def persist_chatgpt_host_visible_reply(
                 'author_source': binding_retry.get('author_source'),
                 'state_emoticon': binding_retry.get('state_emoticon'),
                 'host_request_contract_hash': retry_record.get('request_contract_hash'),
+                'user_text_sha256': binding_retry.get('user_text_sha256'),
+                'finalization_contract_hash': binding_retry.get('finalization_contract_hash'),
+                'runtime_context_sha256': binding_retry.get('runtime_context_sha256'),
+                'session_continuity_commit_sha256': binding_retry.get(
+                    'session_continuity_commit_sha256'
+                ),
+                'host_generation_context_sha256': binding_retry.get(
+                    'host_generation_context_sha256'
+                ),
+                'daemon_request_id': binding_retry.get('daemon_request_id')
+                or generation_context.get('daemon_request_id'),
                 'required_visible_prefix': generation_context.get('required_visible_prefix'),
                 'host_generation_policy': generation_context.get('host_generation_policy') or {},
                 'host_generation_rules': generation_context.get('host_generation_rules') or [],
+                'host_generation_context': retry_host_generation_context,
                 'runtime_summary': generation_context.get('runtime_summary') or {},
+                'session_continuity_commit': generation_context.get(
+                    'session_continuity_commit'
+                ) or {},
                 'regeneration_attempt': retry_record.get('regeneration_attempts'),
                 'max_regeneration_attempts': retry_record.get('max_regeneration_attempts'),
                 'regeneration_reason': regeneration.reason,

@@ -26,6 +26,7 @@ from latka_jazn.core.handlers.runtime_activation_status_handler import RuntimeAc
 from latka_jazn.core.handlers.runtime_chat_mode_handler import RuntimeChatModeHandler
 from latka_jazn.core.handlers.system_repair_plan_handler import SystemRepairPlanHandler
 from latka_jazn.core.handlers.capability_status_handler import CapabilityStatusHandler
+from latka_jazn.core.handlers.memory_experience_recall_handler import MemoryExperienceRecallHandler
 from latka_jazn.core.handlers.self_memory_recall_handler import SelfMemoryRecallHandler
 from latka_jazn.core.handlers.user_memory_recall_handler import UserMemoryRecallHandler
 from latka_jazn.core.handlers.direct_latka_voice_handler import DirectLatkaVoiceHandler
@@ -51,7 +52,7 @@ class RouteDispatchReport:
 class RouteHandlerDispatcher:
     def __init__(self) -> None:
         handlers=[
-            PostUpdateCoverageAuditHandler(), SelfArchitectureAuditHandler(), DictionaryLookupHandler(), ExternalToolAssistanceHandler(), ExternalResearchHandler(), OrdinaryDialogueHandler(), RuntimeDiagnosticHandler(), PackageRuntimeStatusHandler(), RuntimeSourceHandler(), CanonSourceHandler(), MemoryAuditHandler(), SystemUpdateHandler(),
+            PostUpdateCoverageAuditHandler(), SelfArchitectureAuditHandler(), DictionaryLookupHandler(), ExternalToolAssistanceHandler(), ExternalResearchHandler(), MemoryExperienceRecallHandler(), OrdinaryDialogueHandler(), RuntimeDiagnosticHandler(), PackageRuntimeStatusHandler(), RuntimeSourceHandler(), CanonSourceHandler(), MemoryAuditHandler(), SystemUpdateHandler(),
             CreativeTextHandler(), FileOperationHandler(), IdentityBoundaryHandler(), IdentityRuntimeTruthHandler(), PracticalAdviceHandler(), SelfStateHandler(), PresenceStatusHandler(), TimeAwarenessHandler(), RuntimeActivationStatusHandler(), RuntimeChatModeHandler(), SystemRepairPlanHandler(), CapabilityStatusHandler(), UserMemoryRecallHandler(), SelfMemoryRecallHandler(), DirectLatkaVoiceHandler(), IdentityMemoryExistenceHandler(), FallbackHandler(),
         ]
         self.handlers_by_name={h.name:h for h in handlers}

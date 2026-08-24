@@ -7,7 +7,7 @@ import sqlite3
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon import (
@@ -530,16 +530,18 @@ def _auto_attach_memory_before_daemon(
 
     source_dir = Path(parts_dir).expanduser().resolve()
     source_name = str(discovery.get("package_name") or "")
-    sidecar = discovery.get("sidecar") if isinstance(discovery.get("sidecar"), dict) else {}
+    raw_sidecar = discovery.get("sidecar")
+    sidecar = cast(dict[str, Any], raw_sidecar) if isinstance(raw_sidecar, dict) else {}
     repack_decision = _memory_package_requires_v3_repack(sidecar)
     report["repack_decision"] = repack_decision
     if repack_decision.get("required") is True:
         repack_dir = work_dir / "auto_memory_v3"
         repack_work = work_dir / "auto_memory_v3_work"
         existing_repack = _discover_memory_package(repack_dir) if repack_dir.is_dir() else {"ok": True, "state": "memory_package_not_present"}
+        raw_existing_sidecar = existing_repack.get("sidecar")
         existing_sidecar = (
-            existing_repack.get("sidecar")
-            if isinstance(existing_repack.get("sidecar"), dict)
+            cast(dict[str, Any], raw_existing_sidecar)
+            if isinstance(raw_existing_sidecar, dict)
             else {}
         )
         if (
