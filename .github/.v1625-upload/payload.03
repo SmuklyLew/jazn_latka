@@ -1,0 +1,189 @@
+al_body, template_origin or {}, entry)
++        body = self._body_for(user_text, detected_intent, original_body, template_origin or {}, entry, memory_context or {})
+         return RuntimeSynthesis(True, body, entry.route, entry.handler_name, 'runtime_repair' if validation_bad or template_requires_repair else 'runtime_dynamic', 'forced_by_intent_template_or_validator', entry.required_components)
+ 
+-    def _body_for(self, user_text: str, intent: str, original_body: str, template: dict[str, Any], entry) -> str:
++    def _body_for(self, user_text: str, intent: str, original_body: str, template: dict[str, Any], entry, memory_context: dict[str, Any]) -> str:
+         if intent in {'ordinary_conversation', 'standalone_greeting', 'negative_feedback_current_turn', 'positive_feedback_current_turn'}:
+             low = (user_text or '').lower()
+             if intent == 'standalone_greeting':
+@@ -60,9 +60,9 @@
+                 return "U mnie spokojnie i uważnie. Najbardziej pilnuję teraz, żeby nie zamienić zwykłej rozmowy w raport techniczny. A u Ciebie jak leci?"
+             return FreeDialogueSynthesizer().synthesize_ordinary_reply(user_text=user_text, intent=intent).body
+         if intent == 'memory_experience_question':
+-            return FreeDialogueSynthesizer().synthesize_memory_experience({}, user_text=user_text).body
++            return FreeDialogueSynthesizer().synthesize_memory_experience(memory_context, user_text=user_text).body
+         if intent == 'substantive_question_about_last_year':
+-            return FreeDialogueSynthesizer().synthesize_memory_experience({}, user_text=user_text).body
++            return FreeDialogueSynthesizer().synthesize_memory_experience(memory_context, user_text=user_text).body
+         if intent == 'current_time_question':
+             return "To jest pytanie o aktualną godzinę. Odpowiedź powinna powstać z `clock.now()` w handlerze, a nie z szablonu rozmownego; jeśli widzisz ten tekst, sprawdź trasę `current_time_question`."
+         if intent in {'runtime_source_question','runtime_exact_quote_request'}:
+--- a/latka_jazn/memory/conversation_archive.py
++++ b/latka_jazn/memory/conversation_archive.py
+@@ -4,6 +4,7 @@
+ from contextlib import closing
+ from pathlib import Path
+ from typing import Any, Callable
++from datetime import datetime
+ import re
+ import sqlite3
+ 
+@@ -46,6 +47,29 @@
+     return dict(row) if row is not None else None
+ 
+ 
++def _timestamp_epoch(value: Any) -> float | None:
++    text = str(value or "").strip()
++    if not text:
++        return None
++    try:
++        return float(text)
++    except (TypeError, ValueError):
++        pass
++    try:
++        return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
++    except (TypeError, ValueError):
++        return None
++
++
++def _sqlite_time_expr(column: str = "d.create_time") -> str:
++    # Historical archive builds stored Unix epoch as TEXT, while newer restore
++    # builds may store ISO-8601. Normalize both without mutating source DBs.
++    return (
++        f"CASE WHEN {column} NOT GLOB '*[^0-9.]*' "
++        f"THEN CAST({column} AS REAL) ELSE CAST(strftime('%s', {column}) AS REAL) END"
++    )
++
++
+ def _mojibake_score(text: str) -> int:
+     return sum(1 for char in text if char in MOJIBAKE_MARKERS)
+ 
+@@ -150,6 +174,8 @@
+     issues: list[str]
+     truth_boundary: str = TRUTH_BOUNDARY
+     input_query: str | None = None
++    temporal_start_utc: str | None = None
++    temporal_end_utc: str | None = None
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return asdict(self)
+@@ -287,6 +313,8 @@
+         limit: int = 8,
+         include_snippets: bool = False,
+         should_continue: Callable[[], bool] | None = None,
++        start_time_utc: str | None = None,
++        end_time_utc: str | None = None,
+     ) -> ConversationArchiveSearchResult:
+         def can_continue() -> bool:
+             if should_continue is None:
+@@ -301,9 +329,12 @@
+         terms = self._query_terms(query)
+         fts_query = self._fts_query(terms)
+         issues: list[str] = []
+-        if not query:
++        has_temporal_scope = bool(start_time_utc or end_time_utc)
++        start_epoch = _timestamp_epoch(start_time_utc)
++        end_epoch = _timestamp_epoch(end_time_utc)
++        if not query and not has_temporal_scope:
+             return ConversationArchiveSearchResult(SCHEMA_VERSION, "empty_query", query, None, [], 0, ["empty_query"])
+-        if not fts_query:
++        if not fts_query and not has_temporal_scope:
+             return ConversationArchiveSearchResult(SCHEMA_VERSION, "no_search_terms", query, None, [], 0, ["no_search_terms"])
+         if not can_continue():
+             return ConversationArchiveSearchResult(
+@@ -342,17 +373,55 @@
+                             return 0 if can_continue() else 1
+                         con.set_progress_handler(_progress, 2_000)
+                     searched += 1
+-                    for row in con.execute(
+-                        """
+-                        SELECT d.*, bm25(message_fts) AS rank
+-                          FROM message_fts
+-                          JOIN fts_docs d ON d.rowid = message_fts.rowid
+-                         WHERE message_fts MATCH ?
+-                         ORDER BY rank
+-                         LIMIT ?
+-                        """,
+-                        (fts_query, max(1, limit * 2)),
+-                    ):
++                    if fts_query:
++                        where = ["message_fts MATCH ?"]
++                        params: list[Any] = [fts_query]
++                        if start_epoch is not None:
++                            where.append(_sqlite_time_expr() + " >= ?")
++                            params.append(start_epoch)
++                        if end_epoch is not None:
++                            where.append(_sqlite_time_expr() + " < ?")
++                            params.append(end_epoch)
++                        params.append(max(1, limit * (8 if has_temporal_scope else 2)))
++                        sql = (
++                            "SELECT d.*, bm25(message_fts) AS rank "
++                            "FROM message_fts JOIN fts_docs d ON d.rowid = message_fts.rowid "
++                            f"WHERE {' AND '.join(where)} ORDER BY rank LIMIT ?"
++                        )
++                        rows = con.execute(sql, tuple(params))
++                    else:
++                        where = []
++                        params: list[Any] = []
++                        if start_epoch is not None:
++                            where.append(_sqlite_time_expr() + " >= ?")
++                            params.append(start_epoch)
++                        if end_epoch is not None:
++                            where.append(_sqlite_time_expr() + " < ?")
++                            params.append(end_epoch)
++                        where_sql = f"WHERE {' AND '.join(where)} " if where else ""
++                        count_sql = "SELECT COUNT(*) FROM fts_docs d " + where_sql
++                        matching_count = int(con.execute(count_sql, tuple(params)).fetchone()[0])
++                        sample_count = max(1, min(matching_count, limit * 3))
++                        if matching_count <= 0:
++                            rows = []
++                        else:
++                            offsets = (
++                                [matching_count // 2]
++                                if sample_count == 1
++                                else [round(i * (matching_count - 1) / (sample_count - 1)) for i in range(sample_count)]
++                            )
++                            sample_sql = (
++                                "SELECT d.*, 0.0 AS rank FROM fts_docs d "
++                                + where_sql
++                                + f"ORDER BY {_sqlite_time_expr()} ASC LIMIT 1 OFFSET ?"
++                            )
++                            sampled_rows = []
++                            for offset in offsets:
++                                row = con.execute(sample_sql, tuple([*params, int(offset)])).fetchone()
++                                if row is not None:
++                                    sampled_rows.append(row)
++                            rows = sampled_rows
++                    for row in rows:
+                         rank = float(row["rank"] if row["rank"] is not None else 0.0)
+                         raw_hits.append((rank, dict(row)))
+             except sqlite3.OperationalError as exc:
+@@ -366,9 +435,20 @@
+         if cancelled:
+             issues.append("search_cancelled:turn_deadline_or_cancellation")
+ 
+-        raw_hits.sort(key=lambda item: item[0])
++        raw_hits.sort(key=lambda item: (item[0], _timestamp_epoch(item[1].get("create_time")) or float("inf")))
++        if has_temporal_scope and not fts_query and len(raw_hits) > max(1, limit):
++            # Broad autobiographical requests should reinstate a bounded sample
++            # across the period instead of returning only the first few days.
++            ordered = sorted(raw_hits, key=lambda item: _timestamp_epoch(item[1].get("create_time")) or float("inf"))
++            count = max(1, min(limit, len(ordered)))
++            if count == 1:
++                selected_raw = [ordered[len(ordered) // 2]]
++            else:
++                selected_raw = [ordered[round(i * (len(ordered) - 1) / (count - 1))] for i in range(count)]
++        else:
++            selected_raw = raw_hits[: max(1, limit)]
+         hits: list[dict[str, Any]] = []
+-        for rank, row in raw_hits[: max(1, limit)]:
++        for rank, row in selected_raw:
+             hit = self._hydrate_hit(row, rank=rank, terms=terms, include_snippets=include_snippets)
+             if hit is not None:
+                 hits.append(hit.to_dict())
+@@ -382,6 +462,8 @@
+             searched_shards=searched,
+             issues=issues,
+             input_query=input_query if input_query != query else None,
++            temporal_start_utc=start_tim
