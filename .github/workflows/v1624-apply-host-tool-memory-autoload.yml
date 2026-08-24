@@ -1,27 +1,26 @@
 name: Apply v16.2.4 host tool provenance and memory autoload
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/v16.2.4-host-tool-provenance-memory-autoload
-    paths:
-      - '.github/.v1624-autoload/**'
-      - '.github/workflows/v1624-apply-host-tool-memory-autoload.yml'
+      - master
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
 
 jobs:
   apply-and-test:
+    if: github.head_ref == 'fix/v16.2.4-host-tool-provenance-memory-autoload'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout staging branch
         uses: actions/checkout@v4
         with:
           ref: fix/v16.2.4-host-tool-provenance-memory-autoload
           fetch-depth: 0
 
-      - name: Reassemble and verify patch
+      - name: Reassemble and verify patch payload
         shell: bash
         run: |
           cat .github/.v1624-autoload/v16_2_4.patch.00 \
@@ -29,14 +28,16 @@ jobs:
               .github/.v1624-autoload/v16_2_4.patch.02 \
               .github/.v1624-autoload/v16_2_4.patch.03 \
               .github/.v1624-autoload/v16_2_4.patch.04 > /tmp/v16_2_4.patch
-          # Normalize the single staging-only leading space introduced at a part boundary.
           sed -i 's/^ diff --git /diff --git /' /tmp/v16_2_4.patch
           echo 'e20f07fc9c2f5292cdd8a07f247460f83eeb61c8eb9948ecc1941a3b3e0c3a31  /tmp/v16_2_4.patch' | sha256sum -c -
-          git apply --check /tmp/v16_2_4.patch
 
-      - name: Apply patch
+      - name: Apply only to exact verified master base
         shell: bash
-        run: git apply /tmp/v16_2_4.patch
+        run: |
+          git checkout --detach 2a9010e80e94842887d41227357594eddb1a6b97
+          git apply --check /tmp/v16_2_4.patch
+          git apply /tmp/v16_2_4.patch
+          git diff --check
 
       - name: Run targeted regression tests
         shell: bash
@@ -47,7 +48,7 @@ jobs:
             tests/test_runtime_package_loader_contract.py \
             tests/test_v160_single_canonical_workspace_contract.py
 
-      - name: Commit full update
+      - name: Commit clean full update and replace staging branch
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
@@ -62,10 +63,11 @@ jobs:
                   latka_jazn/mcp/server.py \
                   latka_jazn/mcp/tools/jazn_finalize_reply.py \
                   latka_jazn/memory/graph_aware_retrieval.py \
+                  latka_jazn/version.py \
                   tests/test_chatgpt_mcp_two_phase_protocol.py \
                   tests/test_runtime_package_loader_contract.py \
                   tests/test_v160_single_canonical_workspace_contract.py \
                   tests/test_v1624_host_tool_provenance.py
           git diff --cached --check
           git commit -m 'fix: host tool provenance and memory autoload for 16.2.4'
-          git push origin HEAD:fix/v16.2.4-host-tool-provenance-memory-autoload
+          git push --force origin HEAD:fix/v16.2.4-host-tool-provenance-memory-autoload
