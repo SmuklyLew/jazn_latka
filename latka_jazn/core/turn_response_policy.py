@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
+from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("turn_response_policy")
@@ -80,7 +81,7 @@ class TurnResponsePolicy:
                 forbidden_legacy_routes=["correction_acknowledged", "positive_continuation"],
                 max_meta_technicality="none",
             )
-        if intent in {"memory_experience_question", "substantive_question_about_last_year"}:
+        if intent in MEMORY_EXPERIENCE_INTENTS:
             return cls(
                 intent=intent, route=route, answer_kind="grounded_memory_dialogue",
                 allow_memory_content=True, allow_architecture_explanation=False,

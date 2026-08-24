@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import Any
+import hashlib
 
 SCHEMA_VERSION="memory_recall_content_contract/v1"
 
@@ -13,6 +14,7 @@ class MemoryRecallItem:
     timestamp: str | None = None
     confidence: float = 0.0
     relevance: float = 0.0
+    item_id: str = ""
     truth_boundary: str = "recalled_or_indexed_memory_not_biological_experience"
     metadata: dict[str, Any] = field(default_factory=dict)
     schema_version: str = SCHEMA_VERSION
@@ -31,6 +33,44 @@ class MemoryRecallContract:
 class MemoryRecallContractBuilder:
     def build(self, memory_context: dict[str, Any], *, user_text: str) -> MemoryRecallContract:
         ctx=memory_context or {}; items=[]
+        frozen_payload = ctx.get("memory_recall_payload")
+        if isinstance(frozen_payload, dict) and isinstance(frozen_payload.get("items"), list):
+            for raw in frozen_payload.get("items") or []:
+                if not isinstance(raw, dict):
+                    continue
+                content = str(raw.get("content_excerpt") or raw.get("content") or "").strip()
+                source = str(raw.get("source") or "").strip()
+                memory_type = str(raw.get("item_type") or raw.get("memory_type") or "memory_item").strip()
+                if not content or not source:
+                    continue
+                item_id = str(raw.get("item_id") or "").strip() or self._stable_item_id(
+                    memory_type=memory_type,
+                    source=source,
+                    timestamp=raw.get("timestamp"),
+                    content=content,
+                )
+                items.append(MemoryRecallItem(
+                    content=content[:1800],
+                    source=source,
+                    memory_type=memory_type,
+                    timestamp=str(raw.get("timestamp") or "").strip() or None,
+                    confidence=self._float(raw.get("confidence")),
+                    relevance=self._float(raw.get("relevance_score") or raw.get("relevance")),
+                    item_id=item_id,
+                    truth_boundary="frozen_memory_recall_payload_item",
+                    metadata={
+                        "query_term": raw.get("query_term"),
+                        "grounding": raw.get("grounding"),
+                        "relevance_label": raw.get("relevance_label"),
+                        "meaning_assessment": raw.get("meaning_assessment"),
+                    },
+                ).to_dict())
+            return MemoryRecallContract(
+                query=user_text,
+                items=items,
+                counts=dict(ctx.get("counts") or {}),
+                raw_memory_status=str((ctx.get("living_memory_search") or {}).get("status") or "unknown"),
+            )
         for hit in ctx.get('living_memory_hits') or []:
             content=str(hit.get('content_excerpt') or hit.get('content') or '')
             if content:
@@ -58,7 +98,7 @@ class MemoryRecallContractBuilder:
             if content:
                 items.append(MemoryRecallItem(content=content[:1800], source=str(msg.get('conversation_title') or msg.get('source') or 'legacy_messages'), memory_type='legacy_message', timestamp=msg.get('created_at_local') or msg.get('created_at_utc'), confidence=float(msg.get('confidence') or 0.62), relevance=float(msg.get('relevance') or 0.55), metadata={k:v for k,v in msg.items() if k not in {'text','content'}}).to_dict())
         for hit in ctx.get('source_file_hits') or []:
-            content=str(hit.get('snippet') or hit.get('text') or hit.get('path') or '')
+            content=str(hit.get('content_excerpt') or hit.get('snippet') or hit.get('text') or '')
             if content:
                 items.append(MemoryRecallItem(content=content[:1800], source=str(hit.get('path') or 'source_file'), memory_type='source_file_hit', timestamp=hit.get('modified_at'), confidence=float(hit.get('confidence') or 0.55), relevance=float(hit.get('score') or hit.get('relevance') or 0.50), metadata=hit).to_dict())
         for hit in ctx.get('conversation_archive_hits') or []:
@@ -70,4 +110,25 @@ class MemoryRecallContractBuilder:
             content=str(raw.get('snippet') or raw.get('text') or '')
             if content:
                 items.append(MemoryRecallItem(content=content[:1800], source='memory/raw/chat.html', memory_type='raw_chat_fallback', timestamp=raw.get('timestamp'), confidence=0.45, relevance=float(raw.get('score') or 0.45), metadata=raw).to_dict())
+        for item in items:
+            item["item_id"] = str(item.get("item_id") or "").strip() or self._stable_item_id(
+                memory_type=str(item.get("memory_type") or "memory_item"),
+                source=str(item.get("source") or "unknown"),
+                timestamp=item.get("timestamp"),
+                content=str(item.get("content") or ""),
+            )
         return MemoryRecallContract(query=user_text, items=items, counts=dict(ctx.get('counts') or {}), raw_memory_status=str((ctx.get('living_memory_search') or {}).get('status') or 'unknown'))
+
+    @staticmethod
+    def _stable_item_id(*, memory_type: str, source: str, timestamp: Any, content: str) -> str:
+        material = "\n".join(
+            (str(memory_type), str(source), str(timestamp or ""), str(content))
+        ).encode("utf-8")
+        return "memory_" + hashlib.sha256(material).hexdigest()[:24]
+
+    @staticmethod
+    def _float(value: Any) -> float:
+        try:
+            return max(0.0, min(1.0, float(value or 0.0)))
+        except (TypeError, ValueError):
+            return 0.0

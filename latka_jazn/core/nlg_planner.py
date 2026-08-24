@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
+from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS
 from latka_jazn.core.nlg_plan import NlgPlan, SCHEMA_VERSION, default_truth_boundary
 
 ORDINARY_INTENTS = {
@@ -30,14 +31,7 @@ FULL_DIAGNOSTIC_INTENTS = {
     "system_repair_plan_request",
     "file_operation_request",
 }
-MEMORY_INTENTS = {
-    "memory_recall_request",
-    "self_memory_recall_request",
-    "identity_memory_existence_compound_question",
-    "identity_memory_question",
-    "question_about_memory",
-    "question_about_time_memory_and_experience",
-}
+MEMORY_INTENTS = set(MEMORY_CONTENT_INTENTS)
 EXACT_RUNTIME_INTENTS = {
     "runtime_exact_quote_request",
 }

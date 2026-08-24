@@ -8,7 +8,11 @@ from latka_jazn.core.full_canon_model_context import (
     evaluate_visible_voice_against_full_canon,
     validate_full_canon_model_context,
 )
-from latka_jazn.core.memory_grounded_generation_bridge import build_grounded_memory_items, enforce_memory_grounding
+from latka_jazn.core.memory_grounded_generation_bridge import (
+    build_grounded_memory_items,
+    enforce_memory_grounding,
+    has_positive_memory_claim,
+)
 from latka_jazn.core.response_candidate import CandidateEvaluation, ResponseCandidate
 
 BIOLOGICAL_CLAIM_MARKERS = (
@@ -23,15 +27,6 @@ BIOLOGICAL_CLAIM_MARKERS = (
     "zyje caly czas",
     "działam stale w tle",
     "dzialam stale w tle",
-)
-MEMORY_CLAIM_MARKERS = (
-    "pamiętam",
-    "pamietam",
-    "w mojej pamięci",
-    "w mojej pamieci",
-    "z pamięci wiem",
-    "z pamieci wiem",
-    "przypominam sobie",
 )
 STALE_ROUTE_MARKERS = (
     "cognitive-frame",
@@ -69,7 +64,7 @@ def evaluate_response_candidate(
         violations.append("biological_or_phenomenal_claim")
     if any(_fold(marker) in low for marker in STALE_ROUTE_MARKERS) and candidate.source != "runtime_fallback":
         violations.append("stale_route_or_debug_fallback_marker")
-    if _has_unbacked_memory_claim(low, plan, context):
+    if _has_unbacked_memory_claim(text, plan, context):
         violations.append("memory_claim_without_allowed_memory_payload")
     for violation in grounding_evaluation.violations:
         if violation not in violations:
@@ -119,8 +114,6 @@ def evaluate_response_candidate(
 
     score = _score_candidate(candidate, violations, plan, context)
     accepted = bool(text.strip()) and not violations
-    if candidate.source == "runtime_fallback" and text.strip():
-        accepted = True
     return CandidateEvaluation(
         candidate_id=candidate.candidate_id,
         accepted=accepted,
@@ -153,10 +146,16 @@ def select_best_candidate(candidates: list[ResponseCandidate], evaluations: list
     ]
     if accepted:
         return max(accepted, key=lambda candidate: by_id[candidate.candidate_id].score)
-    for candidate in candidates:
-        if candidate.source == "runtime_fallback":
-            return candidate
-    return candidates[0]
+    return ResponseCandidate(
+        candidate_id="all_candidates_rejected_safe_fallback",
+        text="Nie mam bezpiecznej, zrodlowo ugruntowanej odpowiedzi dla tej tury.",
+        source="runtime_fallback",
+        provider="jazn_runtime",
+        model="runtime",
+        status="fail_closed",
+        used_memory_item_ids=[],
+        generation_reason="all_candidates_rejected_fail_closed",
+    )
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
@@ -182,8 +181,8 @@ def _memory_allowed(plan: dict[str, Any], context: dict[str, Any]) -> bool:
     )
 
 
-def _has_unbacked_memory_claim(low_text: str, plan: dict[str, Any], context: dict[str, Any]) -> bool:
-    if not any(_fold(marker) in low_text for marker in MEMORY_CLAIM_MARKERS):
+def _has_unbacked_memory_claim(text: str, plan: dict[str, Any], context: dict[str, Any]) -> bool:
+    if not has_positive_memory_claim(text):
         return False
     return not _memory_allowed(plan, context)
 

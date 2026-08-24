@@ -36,7 +36,7 @@ def generate_response_candidates(
             provider="jazn_runtime",
             model="runtime",
             status="available",
-            used_memory_item_ids=_memory_item_ids(context),
+            used_memory_item_ids=[],
             generation_reason="fallback_runtime_always_available",
         )
     ]
@@ -84,7 +84,7 @@ def generate_response_candidates(
                 provider=str(getattr(response, "provider", status.get("name") or "unknown")),
                 model=str(getattr(response, "model", status.get("model") or "unknown")),
                 status=str(getattr(response, "status", "completed")),
-                used_memory_item_ids=_memory_item_ids(context),
+                used_memory_item_ids=_declared_memory_item_ids(response, response_payload),
                 generation_reason="adapter_completed",
                 source_origin=str(getattr(response, "source_origin", "model_adapter")),
                 endpoint_used=getattr(response, "endpoint_used", None),
@@ -136,14 +136,24 @@ def _adapter_diagnostics_payload(value: Any) -> dict[str, Any]:
     return payload
 
 
-def _memory_item_ids(context: dict[str, Any]) -> list[str]:
+def _declared_memory_item_ids(response: Any, payload: dict[str, Any]) -> list[str]:
+    structured = payload.get("structured_output")
+    metadata = payload.get("metadata")
+    candidates = (
+        getattr(response, "used_memory_item_ids", None),
+        payload.get("used_memory_item_ids"),
+        structured.get("used_memory_item_ids") if isinstance(structured, dict) else None,
+        metadata.get("used_memory_item_ids") if isinstance(metadata, dict) else None,
+    )
+    raw = next((value for value in candidates if isinstance(value, (list, tuple))), [])
     ids: list[str] = []
-    for item in context.get("allowed_memory_items") or []:
-        if not isinstance(item, dict):
+    for value in raw:
+        item_id = str(value or "").strip()
+        if not item_id or len(item_id) > 160 or item_id in ids:
             continue
-        item_id = str(item.get("item_id") or item.get("id") or "").strip()
-        if item_id and item_id not in ids:
-            ids.append(item_id)
+        ids.append(item_id)
+        if len(ids) >= 8:
+            break
     return ids
 
 

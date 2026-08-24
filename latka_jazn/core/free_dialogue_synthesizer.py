@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 import re
 
+from latka_jazn.core.memory_intent_contract import has_explicit_memory_recall
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.memory_use_gate import MemoryUseGate
 from latka_jazn.core.operational_self_model import OperationalSelfModel
@@ -33,12 +34,6 @@ class FreeDialogueSynthesizer:
     i nadal wnosi konkretną odpowiedź operacyjną zamiast instrukcji dla siebie.
     """
 
-    MEMORY_EXPERIENCE_MARKERS = (
-        "pamietasz", "pamiętasz", "wspominasz", "wspomnienie", "wspomnienia",
-        "historia", "historie", "scena", "sceny", "przezylas", "przeżyłaś", "przezycia", "przeżycia",
-        "doswiadczenie", "doświadczenie", "mocne wspomnienie", "ważne wspomnienie", "wazne wspomnienie", "wypad", "jezior", "taras", "ogrod", "ogród",
-        "pokoj", "pokój", "olsztyn", "ogrodzieniec", "spacer", "katedr", "lumiel",
-    )
     TECHNICAL_DIAGNOSIS_MARKERS = (
         "na sztywno", "w kolko", "w kółko", "to samo", "szablon", "gotow", "route",
         "router", "kod", "fallback", "debug", "conversation.py", "process_turn", "runtime odpowiada",
@@ -53,25 +48,7 @@ class FreeDialogueSynthesizer:
     )
 
     def memory_experience_requested(self, text: str) -> bool:
-        low = self._norm(text)
-        if not any(self._marker_as_word_or_phrase(low, marker) for marker in self.MEMORY_EXPERIENCE_MARKERS):
-            return False
-        # Pytanie o aktualizację/paczkę może zawierać słowo „pamięć”, ale nie jest
-        # zaproszeniem do wspominania sceny.
-        if any(x in low for x in ("przygotuj", "aktualizac", "patch", "zip", "do pobrania")):
-            return False
-        return True
-
-    @staticmethod
-    def _marker_as_word_or_phrase(low: str, marker: str) -> bool:
-        marker_norm = re.sub(r"\s+", " ", (marker or "").strip().lower()).translate(_DIACRITIC_MAP)
-        if not marker_norm:
-            return False
-        if " " in marker_norm:
-            return marker_norm in low
-        # Prefix słowa, nie dowolny środek słowa: `pokoj` ma pasować do
-        # `pokój/pokoju`, ale nie do `spokojnie`.
-        return re.search(r"(?<![a-z])" + re.escape(marker_norm) + r"[a-z]*", low) is not None
+        return has_explicit_memory_recall(text)
 
     def technical_diagnosis_requested(self, text: str) -> bool:
         low = self._norm(text)

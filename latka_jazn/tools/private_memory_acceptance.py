@@ -675,6 +675,15 @@ def run_isolated_daemon_continuity(
 ) -> dict[str, Any]:
     """Restart an isolated daemon twice and retain only anonymized continuity evidence."""
 
+    validated_database = database.expanduser().resolve()
+    database_probe = probe_unified_memory_database(
+        validated_database,
+        full_integrity=True,
+    )
+    if database_probe.get("memory_search_ready") is not True:
+        raise RuntimeError(
+            "isolated continuity database failed the native readiness gate"
+        )
     run_root = work_root.expanduser().resolve() / f"run-{uuid.uuid4().hex}"
     runtime_root = run_root / "runtime"
     workspace = run_root / "workspace_runtime"
@@ -682,7 +691,13 @@ def run_isolated_daemon_continuity(
     workspace.mkdir(parents=True, exist_ok=True)
     _write_json(workspace / "memory_source_registry.json", {
         "schema_version": "jazn_memory_source_registry/v1",
-        "sources": [{"path": str(database), "enabled": True, "read_only": True}],
+        "sources": [{
+            "path": str(validated_database),
+            "enabled": True,
+            "read_only": True,
+            "trusted": True,
+            "trust_basis": "isolated_private_acceptance_native_readiness_gate",
+        }],
     })
     prior_workspace = os.environ.get("JAZN_RUNTIME_WORKSPACE_DIR")
     prior_sources = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS")

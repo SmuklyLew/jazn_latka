@@ -8,16 +8,19 @@ from latka_jazn.core.response_candidate import CandidateEvaluation, ResponseCand
 
 SCHEMA_VERSION = "memory_grounded_generation_bridge/v1"
 GROUNDING_EVALUATION_REASON = "memory_grounding_bridge_checked"
-MEMORY_CLAIM_MARKERS = (
-    "pamiętam",
-    "pamietam",
-    "w mojej pamięci",
-    "w mojej pamieci",
-    "z pamięci wiem",
-    "z pamieci wiem",
-    "przypominam sobie",
-    "wspomnienie",
-    "wspominam",
+POSITIVE_MEMORY_CLAIM_PATTERNS = (
+    r"\bpamietam\b",
+    r"\bw mojej pamieci\b",
+    r"\bz pamieci wiem\b",
+    r"\bprzypominam sobie\b",
+    r"\bwspominam\b",
+    r"\bmam(?:\s+\w+){0,2}\s+wspomnieni\w*\b",
+)
+NEGATED_MEMORY_CLAIM_PATTERNS = (
+    r"\bnie\s+(?:(?:bardzo|wcale)\s+)?(?:pamietam|wspominam)\b",
+    r"\bnie\s+przypominam\s+sobie\b",
+    r"\bnie\s+(?:moge|potrafie)\s+sobie\s+przypomniec\b",
+    r"\bnie\s+mam(?:\s+\w+){0,4}\s+(?:w\s+mojej\s+pamieci|wspomnieni\w*)\b",
 )
 
 
@@ -93,7 +96,7 @@ def enforce_memory_grounding(candidate: ResponseCandidate, grounded_items: list[
     grounded_by_id = {item.item_id: item for item in grounded_items}
     used_ids = {str(item_id) for item_id in candidate.used_memory_item_ids or []}
     text = candidate.text or ""
-    has_memory_claim = _has_memory_claim(text)
+    has_memory_claim = has_positive_memory_claim(text)
     violations: list[str] = []
     reasons: list[str] = [GROUNDING_EVALUATION_REASON]
 
@@ -118,9 +121,6 @@ def enforce_memory_grounding(candidate: ResponseCandidate, grounded_items: list[
     score = 0.8 if accepted else 0.25
     if grounded_by_id and used_ids and not unknown_ids:
         score += 0.1
-    if candidate.source == "runtime_fallback" and candidate.text.strip():
-        accepted = True
-        score = max(score, 0.55)
     return CandidateEvaluation(
         candidate_id=candidate.candidate_id,
         accepted=accepted,
@@ -168,9 +168,13 @@ def _as_dict(value: Any) -> dict[str, Any]:
     return {}
 
 
-def _has_memory_claim(text: str) -> bool:
+def has_positive_memory_claim(text: str) -> bool:
+    """Detect affirmative source-memory claims without punishing honest denial."""
+
     folded = _fold(text)
-    return any(_fold(marker) in folded for marker in MEMORY_CLAIM_MARKERS)
+    for pattern in NEGATED_MEMORY_CLAIM_PATTERNS:
+        folded = re.sub(pattern, " ", folded)
+    return any(re.search(pattern, folded) for pattern in POSITIVE_MEMORY_CLAIM_PATTERNS)
 
 
 def _clean_text(value: Any, *, fallback: str) -> str:

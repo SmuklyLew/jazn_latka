@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 from latka_jazn.version import schema_version
 from latka_jazn.core.legacy_route_policy import legacy_forbidden_routes_for
+from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
 
 SCHEMA_VERSION = schema_version("route_registry")
 
@@ -88,9 +89,9 @@ class RouteRegistry:
         "contextual_continuation_question": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "sleep_closure_statement": ("sleep_closure", "OrdinaryDialogueHandler"),
         "current_time_question": ("current_time", "OrdinaryDialogueHandler"),
-        "substantive_question_about_last_year": ("last_year_reflection", "OrdinaryDialogueHandler"),
+        "substantive_question_about_last_year": ("memory_experience_recall", "MemoryExperienceRecallHandler"),
         "current_hotfix_for_stale_nlp_route": ("legacy_diagnostic_only", "RuntimeDiagnosticHandler"),
-        "memory_experience_question": ("free_memory_dialogue_no_source", "OrdinaryDialogueHandler"),
+        "memory_experience_question": ("memory_experience_recall", "MemoryExperienceRecallHandler"),
         "ordinary_workday_report": ("ordinary_workday_dialogue", "OrdinaryDialogueHandler"),
         "legacy_behavioral_runtime_dialogue_update_reference": ("legacy_diagnostic_only", "RuntimeDiagnosticHandler"),
         "memory_audit_request": ("memory_audit", "MemoryAuditHandler"),
@@ -191,7 +192,7 @@ class RouteRegistry:
             return ["current_time", "timezone", "source_or_fallback", "truth_boundary"]
         if intent == "current_time_question":
             return ["current_time", "timezone", "source_or_fallback", "truth_boundary"]
-        if intent == "memory_experience_question":
+        if intent in MEMORY_EXPERIENCE_INTENTS:
             return ["memory_content", "source_or_index_status", "truth_boundary", "no_current_turn_echo"]
         return []
 

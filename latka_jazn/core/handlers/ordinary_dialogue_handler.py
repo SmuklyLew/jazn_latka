@@ -8,7 +8,7 @@ from latka_jazn.version import generation_mode, schema_version
 class OrdinaryDialogueHandler:
     name = "OrdinaryDialogueHandler"
     route = "ordinary_dialogue"
-    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','negative_feedback_without_update_request','positive_feedback_current_turn','current_time_question','memory_experience_question','substantive_question_about_last_year')
+    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','negative_feedback_without_update_request','positive_feedback_current_turn','current_time_question')
 
     META_SIGNATURES = (
         'jaźń jako warstwa', 'jazn jako warstwa', 'warstwa pamięci', 'warstwa pamieci',
@@ -67,10 +67,6 @@ class OrdinaryDialogueHandler:
         trust = 'źródło sieciowe' if trusted else 'lokalny zegar/fallback runtime'
         return f"Teraz według Europe/Warsaw jest: {header}. Źródło czasu: {trust} ({source})."
 
-    def _memory_body(self, text: str, ctx: dict[str, Any]) -> str:
-        memory_context = ctx.get('memory_context') if isinstance(ctx.get('memory_context'), dict) else {}
-        return FreeDialogueSynthesizer().synthesize_memory_experience(memory_context, user_text=text).body
-
     def _natural_body(self, text: str, intent: str, ctx: dict[str, Any] | None = None) -> str:
         ctx = ctx or {}
         low=(text or '').lower().strip()
@@ -79,8 +75,6 @@ class OrdinaryDialogueHandler:
             return 'Cześć — jestem tutaj. Zwykła rozmowa działa w tej turze: odpowiadam naturalnie, bez raportu diagnostycznego i bez zmiany tematu. Możemy spokojnie iść dalej.'
         if intent == 'current_time_question':
             return self._clock_body(ctx)
-        if intent in {'memory_experience_question', 'substantive_question_about_last_year'}:
-            return self._memory_body(text, ctx)
         if intent in {'standalone_greeting', 'casual_greeting'}:
             return FreeDialogueSynthesizer().synthesize_ordinary_reply(user_text=text, intent=intent).body
         if intent in {'negative_feedback_current_turn', 'negative_feedback_without_update_request', 'casual_feedback'}:
@@ -125,7 +119,7 @@ class OrdinaryDialogueHandler:
         ctx=context or {}
         intent=ctx.get('intent','ordinary_conversation')
         body=(ctx.get('body') or '').strip()
-        if intent in {'current_time_question', 'memory_experience_question', 'substantive_question_about_last_year', 'positive_feedback_current_turn'}:
+        if intent in {'current_time_question', 'positive_feedback_current_turn'}:
             body=self._natural_body(text, intent, ctx)
         elif not body or self._is_bad_passthrough(body, intent):
             body=self._natural_body(text, intent, ctx)

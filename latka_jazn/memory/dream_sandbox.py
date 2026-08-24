@@ -102,6 +102,10 @@ class DreamSandbox:
         adapter_config = replace(
             self.config,
             model_timeout_seconds=min(float(getattr(self.config, "model_timeout_seconds", rest_timeout)), rest_timeout),
+            # Background rest must not inherit the automatic speech route. A
+            # local dream generator requires an explicitly configured local
+            # adapter (or an explicit environment override).
+            llm_route_mode="none",
         )
         adapter = build_model_adapter(adapter_config)
         status = adapter.describe() if hasattr(adapter, "describe") else {}

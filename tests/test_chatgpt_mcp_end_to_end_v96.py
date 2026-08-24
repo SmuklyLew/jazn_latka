@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,10 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     persist_pending_host_request,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+from latka_jazn.core.host_response_candidate_guard import (
+    build_host_generation_context,
+    evaluate_host_response_candidate,
+)
 from latka_jazn.mcp.tools import jazn_finalize_reply, jazn_generate_visible_reply
 
 
@@ -85,13 +90,19 @@ class FakeGateway:
         )
 
 
-def _patch_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+def _patch_engine(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    captured: dict[str, Any] | None = None,
+) -> None:
     class FakeEngine:
         def __init__(self, config: JaznConfig) -> None:
             self.config = config
         def shutdown(self) -> None:
             pass
         def persist_final_visible_reply(self, **kwargs):
+            if captured is not None:
+                captured.update(kwargs)
             return {
                 "final_visible_text": kwargs["final_text"],
                 "turn_id": kwargs["turn_id"],
@@ -208,3 +219,108 @@ def test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds(
     assert second["structuredContent"]["final_visible_text"].startswith(
         f"{HEADER}\n🛠️ Łatka\n\n"
     )
+
+
+def test_retry_preserves_memory_context_and_web_run_provenance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+    _patch_engine(monkeypatch, captured=captured)
+    runtime = _runtime_payload()
+    initial_bridge = runtime["chatgpt_host_bridge"]
+    model_context = deepcopy(initial_bridge["host_generation_context"]["model_context"])
+    model_context["nlg_plan"]["source_policy"] = "requires_external_web"
+    model_context["allowed_memory_items"] = [
+        {
+            "item_id": "memory-2025-1",
+            "excerpt": "Źródłowy fragment rozmowy z 2025 roku.",
+            "source": "conversation_archive",
+            "timestamp": "2025-06-12T10:00:00+00:00",
+            "confidence": 0.96,
+            "relevance_reason": "temporal_scope:2025",
+        }
+    ]
+    context = build_host_generation_context(
+        model_context,
+        detected_intent="post_update_coverage_audit_request",
+        route="post_update_coverage_audit",
+    )
+    runtime["conversation_decision"]["model_guided_synthesis"] = {
+        "host_generation_context": context,
+    }
+    bridge = build_chatgpt_host_bridge_turn_contract(
+        runtime,
+        user_text="@GitHub sprawdź aktualne źródła i odnieś je do rozmowy z 2025.",
+        chat_bridge_meta={},
+    )
+    runtime["chatgpt_host_bridge"] = bridge
+    persist_pending_host_request(tmp_path, bridge)
+    token = issue_continuation_token(
+        tmp_path,
+        turn_id=bridge["turn_id"],
+        request_contract_hash=bridge["host_request_contract_hash"],
+    )["continuation_token"]
+    web_evidence = [
+        {
+            "tool": "web.run",
+            "operation": "search",
+            "source_refs": ["turn12search3"],
+            "source_urls": ["https://example.org/source"],
+        }
+    ]
+    bad = "**Host ChatGPT:** Sprawdziłam źródła i zestawiłam je z rozmową."
+    first = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token=token,
+        final_text=bad,
+        final_text_sha256=sha256_host_visible_text(bad),
+        used_memory_item_ids=["memory-2025-1"],
+        external_tool_evidence=web_evidence,
+    )
+
+    retry = first["structuredContent"]
+    assert retry["action"] == "generate_then_finalize"
+    assert retry["host_generation_context"] == context
+    assert retry["host_generation_context_sha256"] == context["context_sha256"]
+    assert retry["host_generation_context"]["allowed_memory_item_ids"] == [
+        "memory-2025-1"
+    ]
+    assert retry["host_generation_context"]["generation_contract"][
+        "required_external_tool"
+    ] == "web.run"
+    assert retry["runtime_context_sha256"] == bridge["runtime_context_sha256"]
+
+    github_only = evaluate_host_response_candidate(
+        final_text="Sprawdziłam źródła i zestawiłam je z rozmową.",
+        host_generation_context=retry["host_generation_context"],
+        used_memory_item_ids=["memory-2025-1"],
+        external_tool_evidence=[
+            {
+                "tool": "GitHub",
+                "operation": "fetch_file",
+                "source_refs": ["turn27file0"],
+                "source_urls": ["https://github.com/SmuklyLew/jazn_latka"],
+            }
+        ],
+    )
+    assert github_only["accepted"] is False
+    assert "external_web_evidence_missing" in github_only["violations"]
+
+    body = "Sprawdziłam aktualne źródła i zestawiłam je z przywołanym fragmentem rozmowy."
+    second = jazn_finalize_reply.run(
+        root=tmp_path,
+        continuation_token=retry["continuation_token"],
+        final_text=body,
+        final_text_sha256=sha256_host_visible_text(body),
+        used_memory_item_ids=["memory-2025-1"],
+        external_tool_evidence=web_evidence,
+    )
+
+    assert second["structuredContent"]["action"] == "display_exact"
+    assert captured["memory_evidence"]["memory_source_ids"] == ["memory-2025-1"]
+    assert captured["client_context"]["used_memory_item_ids"] == ["memory-2025-1"]
+    assert captured["client_context"]["external_tool_evidence"] == web_evidence
+    assert captured["client_context"]["host_candidate_validation"][
+        "context_sha256"
+    ] == context["context_sha256"]

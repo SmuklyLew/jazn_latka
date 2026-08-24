@@ -3,10 +3,12 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, cast
+import math
 import re
 import sqlite3
 
+from latka_jazn.core.memory_intent_contract import TemporalPrecision, TemporalScope
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 
 
@@ -150,6 +152,9 @@ class ConversationArchiveSearchResult:
     issues: list[str]
     truth_boundary: str = TRUTH_BOUNDARY
     input_query: str | None = None
+    temporal_scope: dict[str, Any] | None = None
+    sampling_strategy: str = "fts_rank"
+    candidate_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -287,6 +292,7 @@ class ConversationArchiveStore:
         limit: int = 8,
         include_snippets: bool = False,
         should_continue: Callable[[], bool] | None = None,
+        temporal_scope: TemporalScope | dict[str, Any] | None = None,
     ) -> ConversationArchiveSearchResult:
         def can_continue() -> bool:
             if should_continue is None:
@@ -301,30 +307,51 @@ class ConversationArchiveStore:
         terms = self._query_terms(query)
         fts_query = self._fts_query(terms)
         issues: list[str] = []
-        if not query:
+        scope, scope_issue = self._validated_temporal_scope(temporal_scope)
+        if temporal_scope is not None and scope is None:
+            return ConversationArchiveSearchResult(
+                SCHEMA_VERSION,
+                "invalid_temporal_scope",
+                query,
+                fts_query,
+                [],
+                0,
+                [scope_issue or "invalid_temporal_scope"],
+            )
+        if not query and scope is None:
             return ConversationArchiveSearchResult(SCHEMA_VERSION, "empty_query", query, None, [], 0, ["empty_query"])
-        if not fts_query:
+        if not fts_query and scope is None:
             return ConversationArchiveSearchResult(SCHEMA_VERSION, "no_search_terms", query, None, [], 0, ["no_search_terms"])
         if not can_continue():
             return ConversationArchiveSearchResult(
-                SCHEMA_VERSION, "cancelled", query, fts_query, [], 0,
-                ["search_cancelled:turn_deadline_or_cancellation"],
+                schema_version=SCHEMA_VERSION,
+                status="cancelled",
+                query=query,
+                fts_query=fts_query,
+                hits=[],
+                searched_shards=0,
+                issues=["search_cancelled:turn_deadline_or_cancellation"],
+                temporal_scope=scope.to_dict() if scope is not None else None,
+                sampling_strategy="temporal_buckets_even_spread" if scope is not None and not fts_query else "fts_rank",
             )
 
         status = self.status(health_mode="metadata")
         if not status.ready_for_search:
             return ConversationArchiveSearchResult(
-                SCHEMA_VERSION,
-                "archive_not_ready",
-                query,
-                fts_query,
-                [],
-                0,
-                status.issues,
+                schema_version=SCHEMA_VERSION,
+                status="archive_not_ready",
+                query=query,
+                fts_query=fts_query,
+                hits=[],
+                searched_shards=0,
+                issues=status.issues,
+                temporal_scope=scope.to_dict() if scope is not None else None,
+                sampling_strategy="temporal_buckets_even_spread" if scope is not None and not fts_query else "fts_rank",
             )
 
         shard_rows = self._manifest_rows("SELECT * FROM shard_files WHERE family='fts' ORDER BY ordinal")
         raw_hits: list[tuple[float, dict[str, Any]]] = []
+        candidate_count = 0
         searched = 0
         cancelled = False
         for shard in shard_rows:
@@ -342,19 +369,50 @@ class ConversationArchiveStore:
                             return 0 if can_continue() else 1
                         con.set_progress_handler(_progress, 2_000)
                     searched += 1
-                    for row in con.execute(
+                    if fts_query:
+                        where_time = ""
+                        params: list[Any] = [fts_query]
+                        if scope is not None:
+                            where_time = f" AND {self._timestamp_epoch_sql('d.create_time')} >= ? AND {self._timestamp_epoch_sql('d.create_time')} < ?"
+                            params.extend((scope.start_epoch, scope.end_epoch_exclusive))
+                        params.append(max(1, min(128, limit * 3)))
+                        sql = f"""
+                            SELECT d.*, bm25(message_fts) AS rank
+                              FROM message_fts
+                              JOIN fts_docs d ON d.rowid = message_fts.rowid
+                             WHERE message_fts MATCH ?{where_time}
+                             ORDER BY rank
+                             LIMIT ?
                         """
-                        SELECT d.*, bm25(message_fts) AS rank
-                          FROM message_fts
-                          JOIN fts_docs d ON d.rowid = message_fts.rowid
-                         WHERE message_fts MATCH ?
-                         ORDER BY rank
-                         LIMIT ?
-                        """,
-                        (fts_query, max(1, limit * 2)),
-                    ):
-                        rank = float(row["rank"] if row["rank"] is not None else 0.0)
-                        raw_hits.append((rank, dict(row)))
+                        for row in con.execute(sql, tuple(params)):
+                            rank = float(row["rank"] if row["rank"] is not None else 0.0)
+                            raw_hits.append((rank, dict(row)))
+                            candidate_count += 1
+                    elif scope is not None:
+                        epoch_sql = self._timestamp_epoch_sql("d.create_time")
+                        count_row = con.execute(
+                            f"SELECT COUNT(*) FROM fts_docs d WHERE {epoch_sql} >= ? AND {epoch_sql} < ?",
+                            (scope.start_epoch, scope.end_epoch_exclusive),
+                        ).fetchone()
+                        shard_count = int(count_row[0] if count_row is not None else 0)
+                        candidate_count += shard_count
+                        bucket_count = min(max(1, limit * 2), 24)
+                        width = (scope.end_epoch_exclusive - scope.start_epoch) / bucket_count
+                        for bucket in range(bucket_count):
+                            bucket_start = scope.start_epoch + (bucket * width)
+                            bucket_end = scope.end_epoch_exclusive if bucket == bucket_count - 1 else bucket_start + width
+                            row = con.execute(
+                                f"""
+                                SELECT d.*, {epoch_sql} AS temporal_epoch, 0.0 AS rank
+                                  FROM fts_docs d
+                                 WHERE {epoch_sql} >= ? AND {epoch_sql} < ?
+                                 ORDER BY {epoch_sql}, d.conversation_uid, d.fts_doc_uid
+                                 LIMIT 1
+                                """,
+                                (bucket_start, bucket_end),
+                            ).fetchone()
+                            if row is not None:
+                                raw_hits.append((float(bucket), dict(row)))
             except sqlite3.OperationalError as exc:
                 if not can_continue() or "interrupt" in str(exc).casefold():
                     cancelled = True
@@ -366,9 +424,29 @@ class ConversationArchiveStore:
         if cancelled:
             issues.append("search_cancelled:turn_deadline_or_cancellation")
 
-        raw_hits.sort(key=lambda item: item[0])
+        deduplicated: list[tuple[float, dict[str, Any]]] = []
+        seen_docs: set[str] = set()
+        for ranked in raw_hits:
+            uid = str(ranked[1].get("fts_doc_uid") or "")
+            if uid and uid in seen_docs:
+                continue
+            if uid:
+                seen_docs.add(uid)
+            deduplicated.append(ranked)
+        if fts_query:
+            deduplicated.sort(key=lambda item: item[0])
+            selected = deduplicated[: max(1, limit)]
+        else:
+            deduplicated.sort(
+                key=lambda item: (
+                    float(item[1].get("temporal_epoch") or 0.0),
+                    str(item[1].get("conversation_uid") or ""),
+                    str(item[1].get("fts_doc_uid") or ""),
+                )
+            )
+            selected = self._evenly_spaced(deduplicated, max(1, limit))
         hits: list[dict[str, Any]] = []
-        for rank, row in raw_hits[: max(1, limit)]:
+        for rank, row in selected:
             hit = self._hydrate_hit(row, rank=rank, terms=terms, include_snippets=include_snippets)
             if hit is not None:
                 hits.append(hit.to_dict())
@@ -382,7 +460,77 @@ class ConversationArchiveStore:
             searched_shards=searched,
             issues=issues,
             input_query=input_query if input_query != query else None,
+            temporal_scope=scope.to_dict() if scope is not None else None,
+            sampling_strategy="fts_rank_with_temporal_filter" if fts_query and scope is not None else (
+                "temporal_buckets_even_spread" if scope is not None else "fts_rank"
+            ),
+            candidate_count=candidate_count,
         )
+
+    @staticmethod
+    def _timestamp_epoch_sql(column: str) -> str:
+        text = f"trim(CAST({column} AS TEXT))"
+        return (
+            f"(CASE WHEN typeof({column}) IN ('integer','real') THEN CAST({column} AS REAL) "
+            f"WHEN {text} GLOB '[0-9]*' AND {text} NOT GLOB '*[^0-9.]*' "
+            f"THEN CAST({column} AS REAL) ELSE CAST(strftime('%s', {column}) AS REAL) END)"
+        )
+
+    @staticmethod
+    def _validated_temporal_scope(
+        value: TemporalScope | dict[str, Any] | None,
+    ) -> tuple[TemporalScope | None, str | None]:
+        if value is None:
+            return None, None
+        try:
+            if isinstance(value, TemporalScope):
+                scope = value
+            elif isinstance(value, dict):
+                precision_value = str(value.get("precision") or "year")
+                if precision_value not in {"year", "month", "month_range"}:
+                    return None, "invalid_temporal_scope_precision"
+                raw_start_epoch = value.get("start_epoch")
+                raw_end_epoch = value.get("end_epoch_exclusive", value.get("end_epoch"))
+                if (
+                    isinstance(raw_start_epoch, bool)
+                    or not isinstance(raw_start_epoch, (str, int, float))
+                    or isinstance(raw_end_epoch, bool)
+                    or not isinstance(raw_end_epoch, (str, int, float))
+                ):
+                    return None, "invalid_temporal_scope_shape"
+                scope = TemporalScope(
+                    start_utc=str(value.get("start_utc") or ""),
+                    end_utc_exclusive=str(value.get("end_utc_exclusive") or value.get("end_utc") or ""),
+                    start_epoch=float(raw_start_epoch),
+                    end_epoch_exclusive=float(raw_end_epoch),
+                    precision=cast(TemporalPrecision, precision_value),
+                    source_expression=str(value.get("source_expression") or value.get("source") or ""),
+                    timezone_name=str(value.get("timezone_name") or value.get("timezone") or "Europe/Warsaw"),
+                )
+            else:
+                return None, "invalid_temporal_scope_type"
+        except (KeyError, TypeError, ValueError):
+            return None, "invalid_temporal_scope_shape"
+        if not math.isfinite(scope.start_epoch) or not math.isfinite(scope.end_epoch_exclusive):
+            return None, "invalid_temporal_scope_non_finite"
+        if scope.start_epoch >= scope.end_epoch_exclusive:
+            return None, "invalid_temporal_scope_bounds"
+        return scope, None
+
+    @staticmethod
+    def _evenly_spaced(
+        values: list[tuple[float, dict[str, Any]]],
+        limit: int,
+    ) -> list[tuple[float, dict[str, Any]]]:
+        if len(values) <= limit:
+            return values
+        if limit <= 1:
+            return [values[len(values) // 2]]
+        indexes = {
+            round(index * (len(values) - 1) / (limit - 1))
+            for index in range(limit)
+        }
+        return [values[index] for index in sorted(indexes)]
 
     def _health(
         self,
@@ -551,5 +699,11 @@ def search_conversation_archive(
     *,
     limit: int = 8,
     include_snippets: bool = False,
+    temporal_scope: TemporalScope | dict[str, Any] | None = None,
 ) -> ConversationArchiveSearchResult:
-    return ConversationArchiveStore(root).search(query, limit=limit, include_snippets=include_snippets)
+    return ConversationArchiveStore(root).search(
+        query,
+        limit=limit,
+        include_snippets=include_snippets,
+        temporal_scope=temporal_scope,
+    )

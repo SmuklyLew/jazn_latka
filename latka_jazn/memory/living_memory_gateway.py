@@ -116,11 +116,20 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             and time.monotonic() - self._discovery_cached_at <= self.discovery_cache_seconds
         ):
             return deepcopy(self._discovery_cache)
-        candidates: list[tuple[Path, str]] = [(self.root, "active_runtime_root")]
+        candidates: list[tuple[Path, str, bool, str | None]] = [
+            (self.root, "active_runtime_root", True, "active_runtime_root_boundary")
+        ]
         env_value = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "")
         for raw in env_value.split(os.pathsep):
             if raw.strip():
-                candidates.append((Path(raw).expanduser(), "environment_registry"))
+                candidates.append(
+                    (
+                        Path(raw).expanduser(),
+                        "environment_registry",
+                        True,
+                        "operator_environment_override",
+                    )
+                )
 
         registry = workspace_runtime_path(self.root) / REGISTRY_FILENAME
         if registry.is_file():
@@ -137,19 +146,46 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                         continue
                     raw_path = str(entry.get("path") or "").strip()
                     if raw_path:
-                        candidates.append((Path(raw_path).expanduser(), "workspace_registry"))
+                        declared_trust_basis = str(entry.get("trust_basis") or "").strip()
+                        source_trusted = bool(
+                            entry.get("trusted") is True and declared_trust_basis
+                        )
+                        candidates.append(
+                            (
+                                Path(raw_path).expanduser(),
+                                "workspace_registry",
+                                source_trusted,
+                                declared_trust_basis if source_trusted else None,
+                            )
+                        )
 
         discovered: list[dict[str, Any]] = []
-        seen: set[Path] = set()
-        for candidate, origin in candidates:
+        normalized: list[tuple[Path, Path, str, bool, str | None]] = []
+        normalized_index: dict[Path, int] = {}
+        for candidate, origin, source_trusted, trust_basis in candidates:
             try:
                 resolved = candidate.resolve()
             except OSError:
                 continue
             sqlite_dir = self._candidate_sqlite_dir(resolved)
-            if sqlite_dir in seen:
+            existing_index = normalized_index.get(sqlite_dir)
+            if existing_index is not None:
+                existing = normalized[existing_index]
+                if source_trusted and not existing[3]:
+                    normalized[existing_index] = (
+                        resolved,
+                        sqlite_dir,
+                        origin,
+                        source_trusted,
+                        trust_basis,
+                    )
                 continue
-            seen.add(sqlite_dir)
+            normalized_index[sqlite_dir] = len(normalized)
+            normalized.append(
+                (resolved, sqlite_dir, origin, source_trusted, trust_basis)
+            )
+
+        for resolved, sqlite_dir, origin, source_trusted, trust_basis in normalized:
             databases = {key: sqlite_dir / filename for key, filename in DATABASE_FILENAMES.items()}
             available = {key: path.is_file() for key, path in databases.items()}
             native_database = self._candidate_native_database(resolved)
@@ -173,11 +209,12 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             if native_ready:
                 database_paths = {key: str(native_database) for key in self.SEARCH_ORDER}
                 source_kind = "native_unified"
-                recall_ready = True
+                structural_recall_ready = True
             else:
                 database_paths = {key: str(path) for key, path in databases.items()}
                 source_kind = "legacy_five_database_compatibility"
-                recall_ready = bool(legacy_probe.get("legacy_search_ready"))
+                structural_recall_ready = bool(legacy_probe.get("legacy_search_ready"))
+            recall_ready = bool(source_trusted and structural_recall_ready)
             discovered.append(
                 {
                     "root": str(resolved),
@@ -187,13 +224,27 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                     "database_paths": database_paths,
                     "canonical_database": str(native_database) if native_ready else None,
                     "source_kind": source_kind,
-                    "memory_search_ready": native_ready,
-                    "legacy_search_ready": bool(legacy_probe.get("legacy_search_ready")),
+                    "source_trusted": source_trusted,
+                    "trust_basis": trust_basis,
+                    "trust_issue": (
+                        None
+                        if source_trusted
+                        else "workspace_registry_explicit_trust_required"
+                    ),
+                    "native_structurally_ready": native_ready,
+                    "legacy_structurally_ready": bool(
+                        legacy_probe.get("legacy_search_ready")
+                    ),
+                    "memory_search_ready": bool(source_trusted and native_ready),
+                    "legacy_search_ready": bool(
+                        source_trusted and legacy_probe.get("legacy_search_ready")
+                    ),
                     "recall_ready": recall_ready,
                     "native_probe": native_probe,
                     "legacy_probe": legacy_probe,
                     "import_catalog_used_for_recall": False,
                     "read_only": True,
+                    "ignored_reason": None if source_trusted else "source_not_trusted",
                 }
             )
 
@@ -207,7 +258,8 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                 item["selected_canonical"] = selected
                 if not selected:
                     item["recall_ready"] = False
-                    item["ignored_reason"] = "another_native_unified_database_selected"
+                    if item.get("source_trusted") is True:
+                        item["ignored_reason"] = "another_native_unified_database_selected"
         else:
             for item in discovered:
                 item["selected_canonical"] = False
@@ -239,8 +291,9 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             "source_count": len(sources),
             "sources": sources,
             "truth_boundary": (
-                "memory_search_ready wymaga jednej natywnej bazy unified z poprawną tożsamością "
-                "schematu, integralnością, FTS i działającą próbą odczytu. Układ pięciu baz jest "
+                "memory_search_ready wymaga jawnie zaufanego źródła oraz jednej natywnej bazy unified "
+                "z poprawną tożsamością schematu, integralnością, FTS i działającą próbą odczytu. "
+                "Sama poprawność strukturalna nie ustanawia zaufania. Układ pięciu baz jest "
                 "wyłącznie zgodnością read-only i nie jest drugim kanonicznym runtime."
             ),
         }

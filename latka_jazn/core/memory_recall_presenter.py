@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, asdict
+from datetime import datetime
+import math
 from typing import Any
 import re
 
@@ -54,12 +57,20 @@ class MemoryRecallPresenter:
             return []
         terms = [str(x) for x in (memory_context.get("query_terms") or []) if str(x).strip()]
         items: list[MemoryRecallItem] = []
+        temporal_scope = self._temporal_scope_from_context(memory_context)
 
-        for hit in memory_context.get("living_memory_hits") or []:
+        living_hits = self.filter_temporal_candidates(
+            memory_context.get("living_memory_hits") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=("timestamp",),
+        )
+        for hit in living_hits:
             if not isinstance(hit, dict):
                 continue
             content = self._clean(hit.get("content_excerpt") or hit.get("content"))
             if not content:
+                continue
+            if not self._source_item_allowed(hit, content=content, user_text=user_text):
                 continue
             confidence = self._float_or_none(hit.get("confidence"))
             base_score, label, assessment = self._assess(content, terms, user_text, confidence=confidence)
@@ -92,11 +103,18 @@ class MemoryRecallPresenter:
                 content_excerpt=self._excerpt(content, max_len=520),
             ))
 
-        for ep in memory_context.get("episodes") or []:
+        episodes = self.filter_temporal_candidates(
+            memory_context.get("episodes") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=("created_at_utc", "local_time_label", "timestamp"),
+        )
+        for ep in episodes:
             if not isinstance(ep, dict):
                 continue
             content = self._clean(ep.get("scene"))
             if not content:
+                continue
+            if not self._source_item_allowed(ep, content=content, user_text=user_text):
                 continue
             confidence = self._float_or_none(ep.get("confidence"))
             score, label, assessment = self._assess(content, terms, user_text, confidence=confidence)
@@ -113,11 +131,23 @@ class MemoryRecallPresenter:
                 content_excerpt=self._excerpt(content),
             ))
 
-        for row in memory_context.get("legacy_messages") or []:
+        legacy_messages = self.filter_temporal_candidates(
+            memory_context.get("legacy_messages") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=(
+                "create_time",
+                "create_time_warsaw",
+                "created_at_utc",
+                "created_at_local",
+            ),
+        )
+        for row in legacy_messages:
             if not isinstance(row, dict):
                 continue
             content = self._clean(row.get("text"))
             if not content:
+                continue
+            if not self._source_item_allowed(row, content=content, user_text=user_text):
                 continue
             score, label, assessment = self._assess(content, terms, user_text, confidence=None)
             title = self._clean(row.get("conversation_title"))
@@ -139,11 +169,18 @@ class MemoryRecallPresenter:
             ))
 
 
-        for hit in memory_context.get("source_file_hits") or []:
+        source_file_hits = self.filter_temporal_candidates(
+            memory_context.get("source_file_hits") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=("event_timestamp", "timestamp", "created_at_utc"),
+        )
+        for hit in source_file_hits:
             if not isinstance(hit, dict):
                 continue
             content = self._clean(hit.get("content_excerpt"))
             if not content:
+                continue
+            if not self._source_item_allowed(hit, content=content, user_text=user_text):
                 continue
             base_score, label, assessment = self._assess(content, terms, user_text, confidence=None)
             planner_score = self._float_or_none(hit.get("score"))
@@ -159,7 +196,11 @@ class MemoryRecallPresenter:
             items.append(MemoryRecallItem(
                 item_type="source_file",
                 query_term=self._clean(hit.get("term")) or self._first_matching_term(content, terms),
-                timestamp=None,
+                timestamp=self._clean(
+                    hit.get("event_timestamp")
+                    or hit.get("timestamp")
+                    or hit.get("created_at_utc")
+                ),
                 source=self._clean(hit.get("path")) or "canonical_source_file",
                 confidence=None,
                 grounding=self._clean(hit.get("source_label")) or "memory_search_planner",
@@ -169,11 +210,18 @@ class MemoryRecallPresenter:
                 content_excerpt=self._excerpt(content, max_len=420),
             ))
 
-        for archive_hit in memory_context.get("conversation_archive_hits") or []:
+        archive_hits = self.filter_temporal_candidates(
+            memory_context.get("conversation_archive_hits") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=("create_time", "create_time_warsaw", "timestamp"),
+        )
+        for archive_hit in archive_hits:
             if not isinstance(archive_hit, dict):
                 continue
             content = self._clean(archive_hit.get("excerpt") or archive_hit.get("text"))
             if not content:
+                continue
+            if not self._source_item_allowed(archive_hit, content=content, user_text=user_text):
                 continue
             confidence = self._float_or_none(archive_hit.get("identity_confidence"))
             score, label, assessment = self._assess(content, terms, user_text, confidence=confidence)
@@ -200,11 +248,18 @@ class MemoryRecallPresenter:
                 content_excerpt=self._excerpt(content, max_len=460),
             ))
 
-        for raw in memory_context.get("raw_chat_fallback") or []:
+        raw_chat_hits = self.filter_temporal_candidates(
+            memory_context.get("raw_chat_fallback") or [],
+            temporal_scope=temporal_scope,
+            timestamp_fields=("timestamp", "create_time"),
+        )
+        for raw in raw_chat_hits:
             if not isinstance(raw, dict):
                 continue
             content = self._clean(raw.get("snippet"))
             if not content:
+                continue
+            if not self._source_item_allowed(raw, content=content, user_text=user_text):
                 continue
             score, label, assessment = self._assess(content, terms, user_text, confidence=None, raw=True)
             items.append(MemoryRecallItem(
@@ -235,6 +290,91 @@ class MemoryRecallPresenter:
         }
         items.sort(key=lambda x: (x.relevance_score + type_bonus.get(x.item_type, 0.0)), reverse=True)
         return items[:limit]
+
+    @staticmethod
+    def _temporal_scope_from_context(memory_context: Mapping[str, Any]) -> Any:
+        plan = memory_context.get("memory_search_plan")
+        if not isinstance(plan, Mapping):
+            return None
+        return plan.get("temporal_scope")
+
+    @classmethod
+    def filter_temporal_candidates(
+        cls,
+        candidates: Any,
+        *,
+        temporal_scope: Any,
+        timestamp_fields: Sequence[str],
+    ) -> list[dict[str, Any]]:
+        """Apply one half-open temporal boundary before memory reaches NLG.
+
+        A requested scope is fail-closed: a candidate needs one timezone-aware
+        ISO timestamp (or a finite Unix epoch) and it must satisfy
+        ``start <= timestamp < end``. Timeless source files and malformed
+        legacy rows therefore cannot become a dated autobiographical recall.
+        """
+
+        values = [dict(item) for item in candidates if isinstance(item, Mapping)]
+        if not temporal_scope:
+            return values
+        bounds = cls._validated_temporal_bounds(temporal_scope)
+        if bounds is None:
+            return []
+        start_epoch, end_epoch_exclusive = bounds
+        filtered: list[dict[str, Any]] = []
+        for item in values:
+            timestamp_value: Any = None
+            for field in timestamp_fields:
+                candidate = item.get(field)
+                if candidate is not None and str(candidate).strip():
+                    timestamp_value = candidate
+                    break
+            timestamp_epoch = cls._verified_timestamp_epoch(timestamp_value)
+            if (
+                timestamp_epoch is not None
+                and start_epoch <= timestamp_epoch < end_epoch_exclusive
+            ):
+                filtered.append(item)
+        return filtered
+
+    @classmethod
+    def _validated_temporal_bounds(cls, temporal_scope: Any) -> tuple[float, float] | None:
+        if not isinstance(temporal_scope, Mapping):
+            return None
+        start = cls._finite_epoch(temporal_scope.get("start_epoch"))
+        end = cls._finite_epoch(temporal_scope.get("end_epoch_exclusive"))
+        if start is None or end is None or start >= end:
+            return None
+        return start, end
+
+    @classmethod
+    def _verified_timestamp_epoch(cls, value: Any) -> float | None:
+        numeric = cls._finite_epoch(value)
+        if numeric is not None:
+            return numeric
+        text = str(value or "").strip()
+        if not text:
+            return None
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except (TypeError, ValueError, OverflowError):
+            return None
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            return None
+        try:
+            epoch = parsed.timestamp()
+        except (OSError, OverflowError, ValueError):
+            return None
+        return epoch if math.isfinite(epoch) else None
+
+    @staticmethod
+    def _finite_epoch(value: Any) -> float | None:
+        if isinstance(value, bool) or value is None:
+            return None
+        if not isinstance(value, (int, float)):
+            return None
+        epoch = float(value)
+        return epoch if math.isfinite(epoch) else None
 
     def build_payload(self, memory_context: dict[str, Any] | None, *, user_text: str = "", limit: int = 6) -> dict[str, Any]:
         counts = (memory_context or {}).get("counts") if isinstance(memory_context, dict) else {}
@@ -353,6 +493,39 @@ class MemoryRecallPresenter:
         a = re.sub(r"\s+", " ", content.strip().lower())[:120]
         b = re.sub(r"\s+", " ", user_text.strip().lower())[:120]
         return bool(a and b and (a.startswith(b[:40]) or b.startswith(a[:40])))
+
+    @classmethod
+    def _source_item_allowed(
+        cls,
+        item: dict[str, Any],
+        *,
+        content: str,
+        user_text: str,
+    ) -> bool:
+        truth_status = cls._norm_text(
+            str(item.get("truth_status") or item.get("review_status") or "")
+        )
+        if truth_status in {"rejected", "quarantined", "invalid", "superseded", "untrusted"}:
+            return False
+        if item.get("identity_confidence") is not None:
+            confidence = cls._float_or_none(item.get("identity_confidence"))
+            if confidence is None or confidence < 0.5:
+                return False
+        content_norm = cls._norm_text(content)
+        user_norm = cls._norm_text(user_text)
+        if not content_norm or not user_norm:
+            return True
+        if content_norm == user_norm:
+            return False
+        shorter = min(len(content_norm), len(user_norm))
+        longer = max(len(content_norm), len(user_norm))
+        if (
+            shorter >= 40
+            and longer <= int(shorter * 1.35)
+            and (content_norm in user_norm or user_norm in content_norm)
+        ):
+            return False
+        return True
 
     @staticmethod
     def _first_matching_term(content: str, terms: list[str]) -> str | None:

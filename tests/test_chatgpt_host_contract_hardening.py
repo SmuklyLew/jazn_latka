@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timezone
 import io
 import json
@@ -18,7 +19,11 @@ from latka_jazn.core.chat_command_contract import (
     persist_chatgpt_host_visible_reply,
     write_chat_bridge_payload,
 )
-from latka_jazn.core.chatgpt_host_pending_store import persist_pending_host_request
+from latka_jazn.core.chatgpt_host_pending_store import (
+    canonical_host_request_binding,
+    persist_pending_host_request,
+)
+from latka_jazn.core.host_response_candidate_guard import build_host_generation_context
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.tools.chatgpt_host_bridge_helper import (
     ChatgptHostBridgeHelperError,
@@ -160,6 +165,63 @@ def test_tampered_phase_two_envelope_is_rejected(tmp_path) -> None:
     )
     assert result is None
     assert errors == ["host_request_binding_mismatch:author_label"]
+
+
+def test_self_consistent_context_substitution_is_rejected_by_phase_one_binding(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = _host_generation_payload()
+    bridge = build_chatgpt_host_bridge_turn_contract(
+        runtime,
+        user_text="Witaj",
+        chat_bridge_meta={},
+    )
+    runtime["chatgpt_host_bridge"] = bridge
+    reply, missing = build_chatgpt_host_visible_reply_payload(
+        runtime,
+        final_text="Witaj.",
+    )
+    assert missing == [] and reply is not None
+
+    original_context = bridge["host_generation_context"]
+    replacement_model_context = deepcopy(original_context["model_context"])
+    replacement_model_context["user_text"] = "Podmieniony tekst innej tury"
+    replacement_context = build_host_generation_context(
+        replacement_model_context,
+        detected_intent="ordinary_conversation",
+        route="ordinary_dialogue",
+        context_origin="tampered_pending_record",
+    )
+    assert replacement_context["context_sha256"] != bridge[
+        "host_generation_context_sha256"
+    ]
+    pending = {
+        "binding": canonical_host_request_binding(bridge),
+        "generation_context": {"host_generation_context": replacement_context},
+    }
+    released: dict[str, str] = {}
+    monkeypatch.setattr(
+        chat_command_contract,
+        "claim_pending_host_request",
+        lambda *_args, **_kwargs: pending,
+    )
+    monkeypatch.setattr(
+        chat_command_contract,
+        "release_claimed_host_request",
+        lambda _root, *, turn_id: released.update(turn_id=turn_id),
+    )
+
+    result, errors = persist_chatgpt_host_visible_reply(
+        config=JaznConfig(root=tmp_path),
+        payload=reply,
+        chat_bridge_meta={},
+        contract={},
+    )
+
+    assert result is None
+    assert errors == ["host_candidate:host_generation_context_binding_mismatch"]
+    assert released == {"turn_id": bridge["turn_id"]}
 
 
 def test_helper_rejects_non_request_and_ambiguous_multiple_requests() -> None:
