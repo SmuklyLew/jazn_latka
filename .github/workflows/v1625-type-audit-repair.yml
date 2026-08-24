@@ -1,0 +1,118 @@
+name: v16.2.5 type audit repair
+
+on:
+  push:
+    branches:
+      - 'backup/v16.2.4-pre-full-apply-20260824'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: backup/v16.2.4-pre-full-apply-20260824
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Apply minimal type repair and version bump
+        shell: bash
+        run: |
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+
+          recovery = Path('latka_jazn/bootstrap/chatgpt_recovery.py')
+          text = recovery.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  'from typing import Any\n',
+                  'from typing import Any, cast\n',
+              ),
+              (
+                  '    sidecar = discovery.get("sidecar") if isinstance(discovery.get("sidecar"), dict) else {}\n',
+                  '    raw_sidecar = discovery.get("sidecar")\n'
+                  '    sidecar = cast(dict[str, Any], raw_sidecar) if isinstance(raw_sidecar, dict) else {}\n',
+              ),
+              (
+                  '        existing_sidecar = (\n'
+                  '            existing_repack.get("sidecar")\n'
+                  '            if isinstance(existing_repack.get("sidecar"), dict)\n'
+                  '            else {}\n'
+                  '        )\n',
+                  '        raw_existing_sidecar = existing_repack.get("sidecar")\n'
+                  '        existing_sidecar = (\n'
+                  '            cast(dict[str, Any], raw_existing_sidecar)\n'
+                  '            if isinstance(raw_existing_sidecar, dict)\n'
+                  '            else {}\n'
+                  '        )\n',
+              ),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected exactly one recovery replacement, got {count}: {old!r}')
+              text = text.replace(old, new, 1)
+          recovery.write_text(text, encoding='utf-8')
+
+          version = Path('latka_jazn/version.py')
+          vtext = version.read_text(encoding='utf-8')
+          version_replacements = [
+              ('DISTRIBUTION_VERSION = "16.2.4"', 'DISTRIBUTION_VERSION = "16.2.5"'),
+              ('PACKAGE_VERSION = "16.2.4"', 'PACKAGE_VERSION = "16.2.5"'),
+              ('PACKAGE_RELEASE_NAME = "host-tool-provenance-memory-autoload"', 'PACKAGE_RELEASE_NAME = "static-type-audit-repair"'),
+          ]
+          for old, new in version_replacements:
+              count = vtext.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected exactly one version replacement, got {count}: {old!r}')
+              vtext = vtext.replace(old, new, 1)
+          version.write_text(vtext, encoding='utf-8')
+          PY
+
+      - name: Install audit dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[memory-rebuild-ui]' pytest
+          npm install --global pyright@1.1.411
+
+      - name: Verify repaired static type audit
+        run: pyright latka_jazn main.py run.py
+
+      - name: Compile active Python
+        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+
+      - name: Synchronize release metadata canonically
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --write
+          --json
+
+      - name: Remove temporary repair workflow and commit
+        shell: bash
+        run: |
+          rm -f .github/workflows/v1625-type-audit-repair.yml
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: repair v16.2.5 static type audit'
+          git push origin HEAD:backup/v16.2.4-pre-full-apply-20260824
