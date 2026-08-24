@@ -109,7 +109,7 @@ jobs:
       - name: Remove temporary repair workflow and commit
         shell: bash
         run: |
-          rm -f .github/workflows/v1625-type-audit-repair.yml
+          rm -f .github/workflows/v1625-type-audit-repair.yml .github/.v1625-type-audit-repair-trigger
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
