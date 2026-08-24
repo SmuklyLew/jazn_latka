@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "b825518e3cf4d17d87b83b89890b336c04e19555",
+  "base_merge_commit": "852158b9b85fc09ff1c8eb2844b684b809ee1aff",
   "base_version": "16.2.4-host-tool-provenance-memory-autoload",
-  "commit_date": "2026-08-24T18:44:29+02:00",
+  "commit_date": "2026-08-24T19:23:26+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-24T16:44:29+00:00",
+  "generated_at_utc": "2026-08-24T17:23:26+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "76188e5470fbd86f3f14946f1832cd7c1b6d1fbf",
+  "git_tree_sha": "5fc4d6751e85fc73794667246d0c3cd724aeac5e",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"

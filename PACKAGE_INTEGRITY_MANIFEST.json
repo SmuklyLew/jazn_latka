@@ -3,11 +3,11 @@
   "version": "16.2.4-host-tool-provenance-memory-autoload",
   "runtime_version": "16.2.4-host-tool-provenance-memory-autoload",
   "package_version": "16.2.4-host-tool-provenance-memory-autoload",
-  "generated_at_utc": "2026-08-24T16:44:29+00:00",
-  "updated_at_utc": "2026-08-24T16:44:29+00:00",
+  "generated_at_utc": "2026-08-24T17:23:26+00:00",
+  "updated_at_utc": "2026-08-24T17:23:26+00:00",
   "start_file": "run.py",
-  "file_count": 835,
-  "static_file_count": 835,
+  "file_count": 838,
+  "static_file_count": 838,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -280,6 +280,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/.v1625-type-audit-repair-trigger",
+      "size_bytes": 35,
+      "sha256": "679e6398c24ac50efa6446aa406707deef10c294a193a982b39f34058d337571",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/scripts/refine_wake_session_continuity_fix.py",
       "size_bytes": 2388,
       "sha256": "9d6cf3e7ef79b336d35e49a868df2554bd28af0f31679af79be4c21a4bd75411",
@@ -328,6 +337,15 @@
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 13559,
       "sha256": "d3e3e94cf010a5227e36a31ba11f0ccacdfc1f9a08f3774f8bc9d47a729eb918",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/v1625-type-audit-repair.yml",
+      "size_bytes": 4497,
+      "sha256": "4877bb6b8ef178dbdb43134bc97aa8c65d4ee5971b126102e77e1a2893cf9ef8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -399,7 +417,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1306,
-      "sha256": "885d10a9855036a4dddbd5a07dfc09ce661b282f0a13a7e0808de84df18c5434",
+      "sha256": "7d622320a4917e7c2829526d7de6c52e2585ddbd19066da00c366bbe0cee97f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5917,6 +5935,15 @@
       "path": "run.py",
       "size_bytes": 177,
       "sha256": "88db8ed0b79423cda1357b9ccb2e54e6686903444e252988ce7a4f48b3b148ae",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "sitecustomize.py",
+      "size_bytes": 4050,
+      "sha256": "8d48855d8a99ec34e1230111db4b18ddef27ac9d24b17344a1bc0bf09608aaa1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
