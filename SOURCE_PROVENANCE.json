@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3fc298f754e41f5b7022240b88f4ec0048901597",
+  "base_merge_commit": "6c55601036860dc5891df83867861889dfd61e25",
   "base_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
-  "commit_date": "2026-08-25T15:00:35+02:00",
+  "commit_date": "2026-08-25T15:07:59+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-25T13:00:35+00:00",
+  "generated_at_utc": "2026-08-25T13:07:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "64450ea54e649adb833d81c1bd6a7e56d94cab68",
+  "git_tree_sha": "82ff8d039f1ac8031879170bd1d07a284eac14f4",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
