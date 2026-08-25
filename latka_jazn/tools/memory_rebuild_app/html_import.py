@@ -149,6 +149,37 @@ def _read_html_source(path: Path) -> tuple[str, str]:
     return path.read_text(encoding="utf-8-sig", errors="strict"), path.name
 
 
+def read_html_conversations(
+    source: str | Path,
+) -> tuple[list[dict[str, Any]], str, str, tuple[str, ...]]:
+    """Parse HTML into canonical conversation dictionaries without writing a database."""
+
+    path = Path(source).expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    source_hash = sha256_file(path)
+    html, member = _read_html_source(path)
+    warnings: list[str] = []
+    records: list[dict[str, Any]] = []
+    mode = "embedded_json"
+    try:
+        records = _conversation_records(_decode_assignment(html))
+    except (json.JSONDecodeError, ValueError) as exc:
+        warnings.append(f"embedded_json_parse_failed:{type(exc).__name__}:{exc}")
+    if not records:
+        parser = _RenderedConversationParser()
+        parser.feed(html)
+        records = [
+            _synthetic_conversation(title, messages, source_key=source_hash, ordinal=index)
+            for index, (title, messages) in enumerate(parser.conversations, start=1)
+        ]
+        mode = "rendered_html_fallback"
+        warnings.append("HTML nie zawierał użytecznego jsonData; użyto widocznych div.conversation/pre.message.")
+    if not records:
+        raise ValueError("HTML nie zawiera rozmów możliwych do odtworzenia.")
+    return records, member, mode, tuple(warnings)
+
+
 @dataclass(slots=True, frozen=True)
 class HtmlImportResult:
     source_path: str
@@ -185,25 +216,8 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
     if not path.is_file():
         raise FileNotFoundError(path)
     source_hash = sha256_file(path)
-    html, member = _read_html_source(path)
-    warnings: list[str] = []
-    records: list[dict[str, Any]] = []
-    mode = "embedded_json"
-    try:
-        records = _conversation_records(_decode_assignment(html))
-    except (json.JSONDecodeError, ValueError) as exc:
-        warnings.append(f"embedded_json_parse_failed:{type(exc).__name__}:{exc}")
-    if not records:
-        parser = _RenderedConversationParser()
-        parser.feed(html)
-        records = [
-            _synthetic_conversation(title, messages, source_key=source_hash, ordinal=index)
-            for index, (title, messages) in enumerate(parser.conversations, start=1)
-        ]
-        mode = "rendered_html_fallback"
-        warnings.append("HTML nie zawierał użytecznego jsonData; użyto widocznych div.conversation/pre.message.")
-    if not records:
-        raise ValueError("HTML nie zawiera rozmów możliwych do odtworzenia.")
+    records, member, mode, warnings_tuple = read_html_conversations(path)
+    warnings = list(warnings_tuple)
 
     counters = {"conversations_inserted": 0, "conversations_updated": 0, "nodes_inserted": 0, "conflicts": 0}
     with ChatExportArchiveStore(database) as store:
@@ -257,4 +271,4 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
     )
 
 
-__all__ = ["HtmlImportResult", "import_chat_html"]
+__all__ = ["HtmlImportResult", "import_chat_html", "read_html_conversations"]

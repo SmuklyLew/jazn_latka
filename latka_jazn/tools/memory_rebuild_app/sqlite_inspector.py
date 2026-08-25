@@ -6,6 +6,8 @@ from typing import Any, Iterable
 import hashlib
 import sqlite3
 
+from .sqlite_utils import ClosingSQLiteConnection
+
 DATABASE_FILENAMES: dict[str, str] = {
     "archive_chats": "archive_chats.sqlite3",
     "journal": "journal.sqlite3",
@@ -76,7 +78,7 @@ def _quote_identifier(value: str) -> str:
 
 def _readonly_connection(path: Path) -> sqlite3.Connection:
     uri = path.resolve().as_uri() + "?mode=ro"
-    connection = sqlite3.connect(uri, uri=True, timeout=10.0)
+    connection = sqlite3.connect(uri, uri=True, timeout=10.0, factory=ClosingSQLiteConnection)
     connection.row_factory = sqlite3.Row
     return connection
 

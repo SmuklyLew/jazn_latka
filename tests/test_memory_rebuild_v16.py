@@ -4,6 +4,8 @@ from pathlib import Path
 import hashlib
 import json
 import sqlite3
+import subprocess
+import sys
 import zipfile
 
 import pytest
@@ -92,12 +94,32 @@ def _acceptance_report(path: Path, *, restart: str = "not_run") -> Path:
 
 
 def test_v16_launcher_is_thin_and_has_no_runtime_monkeypatch() -> None:
-    launcher = Path("tools/memory_rebuild.py")
-    text = launcher.read_text(encoding="utf-8")
-    assert 'TOOL_VERSION = "memory-rebuild/v16.0"' in text
-    assert len(text.splitlines()) < 250
-    assert "_install_chat_export_reader_hardening" not in text
-    assert "memory_sqlite_test04" in text
+    canonical = Path("tools/rebuild_memory.py").read_text(encoding="utf-8")
+    compatibility = Path("tools/memory_rebuild.py").read_text(encoding="utf-8")
+    config = Path("latka_jazn/tools/memory_rebuild_app/config.py").read_text(encoding="utf-8")
+    assert 'TOOL_VERSION = "memory-rebuild/v16.1"' in config
+    assert len(canonical.splitlines()) < 20
+    assert len(compatibility.splitlines()) < 20
+    assert "_install_chat_export_reader_hardening" not in canonical + compatibility
+    assert "memory_rebuild_app.entrypoint import main" in canonical
+
+
+@pytest.mark.parametrize("name", ("rebuild_memory.py", "memory_rebuild.py"))
+def test_v16_launchers_bootstrap_repo_from_foreign_cwd(tmp_path: Path, name: str) -> None:
+    launcher = Path(__file__).resolve().parents[1] / "tools" / name
+    completed = subprocess.run(
+        [sys.executable, "-X", "utf8", str(launcher), "--version"],
+        cwd=tmp_path,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "memory-rebuild/v16.1"
 
 
 def test_read_only_validation_does_not_create_or_modify_database(tmp_path: Path) -> None:

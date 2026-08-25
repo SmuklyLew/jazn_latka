@@ -10,9 +10,14 @@ import sqlite3
 import tempfile
 import zlib
 
-from .unified_schema import COMPATIBLE_UNIFIED_SCHEMA_VERSIONS, CANONICAL_DATABASE_NAME, quote
+from .unified_schema import (
+    COMPATIBLE_UNIFIED_SCHEMA_VERSIONS, CANONICAL_DATABASE_NAME, UNIFIED_SCHEMA_VERSION, quote,
+)
 
-FTS_TABLES = ("message_fts", "journal_fts", "experience_fts", "memory_records_fts", "runtime_memory_records_l0_fts")
+FTS_TABLES = (
+    "message_fts", "journal_fts", "experience_fts", "memory_records_fts",
+    "memory_l0_fts", "runtime_memory_records_l0_fts",
+)
 COUNT_TABLES = (
     "import_sources", "conversations", "nodes", "fts_docs", "assets", "import_conflicts",
     "journal_sources", "journal_entries", "journal_revisions", "candidates", "experiences",
@@ -20,6 +25,7 @@ COUNT_TABLES = (
     "promotion_requests", "promotion_decisions", "promotion_ledger", "sources", "operations",
     "stage4_sources", "music_analyses", "affective_observations", "runtime_memory_sources",
     "runtime_memory_records_l0", "runtime_memory_import_conflicts", "unified_migration_conflicts",
+    "memory_l0_sources", "memory_l0_records", "memory_l0_occurrences", "memory_l0_embeddings",
 )
 
 
@@ -67,8 +73,13 @@ def _snapshot_for_fts_validation(source: Path) -> Path:
     os.close(fd)
     target = Path(raw)
     try:
-        with sqlite3.connect(f"file:{source.as_posix()}?mode=ro", uri=True, timeout=30) as src, sqlite3.connect(target) as dst:
+        src = sqlite3.connect(f"file:{source.as_posix()}?mode=ro", uri=True, timeout=30)
+        dst = sqlite3.connect(target)
+        try:
             src.backup(dst, pages=512, sleep=0.01)
+        finally:
+            dst.close()
+            src.close()
         return target
     except BaseException:
         target.unlink(missing_ok=True)
@@ -116,6 +127,10 @@ def _fts_source_sample(con: sqlite3.Connection, table: str) -> str | None:
         "runtime_memory_records_l0_fts": (
             "SELECT content FROM runtime_memory_records_l0 WHERE active=1 AND length(trim(content))>0 ORDER BY rowid LIMIT 1"
         ),
+        "memory_l0_fts": (
+            "SELECT content FROM memory_l0_records WHERE is_current_revision=1 "
+            "AND length(trim(content))>0 ORDER BY rowid LIMIT 1"
+        ),
     }
     query = queries.get(table)
     if not query:
@@ -157,6 +172,8 @@ def validate_fts(path: str | Path) -> dict[str, Any]:
     with open_read_only(database) as con:
         names = _table_names(con)
         required = {"message_fts", "journal_fts", "experience_fts", "memory_records_fts"}
+        if "memory_l0_records" in names:
+            required.add("memory_l0_fts")
         if "runtime_memory_records_l0" in names:
             required.add("runtime_memory_records_l0_fts")
         missing_required = sorted(required - names)
@@ -164,7 +181,8 @@ def validate_fts(path: str | Path) -> dict[str, Any]:
     snapshot = _snapshot_for_fts_validation(database)
     integrity: dict[str, dict[str, Any]] = {}
     try:
-        with sqlite3.connect(snapshot, timeout=30) as con:
+        con = sqlite3.connect(snapshot, timeout=30)
+        try:
             names = _table_names(con)
             for table in sorted(required & names):
                 try:
@@ -174,6 +192,8 @@ def validate_fts(path: str | Path) -> dict[str, Any]:
                     integrity[table] = {"ok": True, "status": "passed"}
                 except sqlite3.DatabaseError as exc:
                     integrity[table] = {"ok": False, "status": "failed", "error": str(exc)}
+        finally:
+            con.close()
     finally:
         snapshot.unlink(missing_ok=True)
     ok = (
@@ -211,6 +231,19 @@ def validate_existing_database(path: str | Path, *, full: bool = True, include_f
                 meta = {str(row[0]): str(row[1]) for row in con.execute("SELECT key,value FROM unified_memory_meta")}
             else:
                 meta = {}
+            required_common = {
+                "memory_l0_sources", "memory_l0_records", "memory_l0_occurrences",
+                "memory_l0_fts", "memory_activation_guard",
+            } if meta.get("schema_version") == UNIFIED_SCHEMA_VERSION else set()
+            missing_common = sorted(required_common - names)
+            guard = None
+            if "memory_activation_guard" in names:
+                row = con.execute(
+                    """SELECT automatic_l2,automatic_l3,automatic_activation,
+                              private_replacement_allowed,benchmark_report_sha256
+                       FROM memory_activation_guard WHERE guard_id=1"""
+                ).fetchone()
+                guard = dict(row) if row is not None else None
             stats = {}
             for table in COUNT_TABLES:
                 stats[table] = int(con.execute(f"SELECT COUNT(*) FROM {quote(table)}").fetchone()[0]) if table in names else 0
@@ -225,6 +258,16 @@ def validate_existing_database(path: str | Path, *, full: bool = True, include_f
         }
     schema = meta.get("schema_version")
     layout = meta.get("layout")
+    guard_ok = schema != UNIFIED_SCHEMA_VERSION or (
+        bool(guard)
+        and int(guard["automatic_l2"]) == 0
+        and int(guard["automatic_l3"]) == 0
+        and int(guard["automatic_activation"]) == 0
+        and (
+            int(guard["private_replacement_allowed"]) == 0
+            or bool(guard["benchmark_report_sha256"])
+        )
+    )
     fts = validate_fts(database) if include_fts else {"ok": True, "status": "skipped", "target_modified": False}
     sibling_databases = []
     for candidate in database.parent.glob("*.sqlite3"):
@@ -239,6 +282,8 @@ def validate_existing_database(path: str | Path, *, full: bool = True, include_f
         and layout == "single_physical_database"
         and not sibling_databases
         and bool(fts.get("ok"))
+        and not missing_common
+        and guard_ok
     )
     return {
         "ok": ok,
@@ -255,6 +300,8 @@ def validate_existing_database(path: str | Path, *, full: bool = True, include_f
         "sha256": sha256_file(database),
         "stats": stats,
         "fts": fts,
+        "missing_common_model_tables": missing_common,
+        "activation_guard": guard,
         "target_modified": False,
     }
 

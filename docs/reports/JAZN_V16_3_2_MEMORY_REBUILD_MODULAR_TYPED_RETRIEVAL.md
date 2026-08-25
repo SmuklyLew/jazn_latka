@@ -1,0 +1,45 @@
+# Jaźń v16.3.2 — modularny Memory Rebuild i typowany retrieval
+
+## Wynik implementacji
+
+- Dodano kanoniczny, cienki launcher `tools/rebuild_memory.py`; poprzedni
+  `tools/memory_rebuild.py` zachowuje zgodność.
+- Oddzielono composition root, konfigurację, ustawienia i motyw UI.
+- Wszystkie wymagane formaty przechodzą przez `PreparedSource` oraz
+  `IntermediateRecord` do jednego wersjonowanego L0.
+- HTML, ChatGPT JSON, dziennik, analizy utworów i legacy SQLite zachowują osobne
+  adaptery.
+- Jedna baza zawiera L0, zgodnościowe projekcje i oddzielną pamięć aktywną.
+- Rewizje są dopisywane; poprzedni stan nie jest nadpisywany.
+- FTS5 jest obowiązkowe, embeddingi są opcjonalne i domyślnie wyłączone.
+- Dodano `TypedMemoryAPI` z filtrem temporalnym, proweniencją oraz wynikiem
+  `UNKNOWN` przy braku wystarczającego dowodu.
+- L2, L3, aktywacja i zastąpienie prywatnej pamięci pozostają fail-closed.
+
+## Naprawiona regresja
+
+Walidacja FTS, wykrywanie gotowego schematu, inspekcja SQLite i kopiowanie
+stagingowe używały miejscami zwykłego context managera `sqlite3.Connection`,
+który zatwierdza transakcję, ale nie gwarantuje zamknięcia uchwytu. Na Windows
+powodowało to `WinError 32` przy usuwaniu tymczasowych baz po dry-run. Połączenia
+są teraz deterministycznie zamykane przez wspólny `ClosingSQLiteConnection`.
+
+## Granica akceptacji
+
+Testy syntetyczne i walidacje strukturalne nie są rzeczywistym benchmarkiem
+prywatnego recall. Ta zmiana nie importuje prywatnych eksportów, nie zastępuje
+aktywnej bazy i nie włącza L3 ani aktywacji.
+
+## Walidacja
+
+- pełny zestaw bez integracji live: `1001 passed, 5 skipped`;
+- obszar Memory Rebuild/Test04: `92 passed`;
+- kompilacja `latka_jazn`, testów i punktów wejścia: zaliczona;
+- oba launchery uruchomione z obcego katalogu: zaliczone;
+- `git diff --check`: zaliczone;
+- chronione ścieżki, SQLite, eksporty prywatne i sekrety w zmianie: `0`.
+
+Issue #59 pozostaje otwarte, ponieważ rzeczywisty benchmark prywatnego recall,
+proweniencji i ciągłości po restarcie nie został wykonany.
+
+Szczegóły architektury i komendy: `docs/tools/MEMORY_REBUILD_V16_ARCHITECTURE.md`.

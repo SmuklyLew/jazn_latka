@@ -7,9 +7,10 @@ import hashlib
 import json
 import sqlite3
 
-UNIFIED_SCHEMA_VERSION = "jazn_unified_memory/v2.5"
+UNIFIED_SCHEMA_VERSION = "jazn_unified_memory/v3.0"
 COMPATIBLE_UNIFIED_SCHEMA_VERSIONS = (
     "jazn_unified_memory/v2.4",
+    "jazn_unified_memory/v2.5",
     UNIFIED_SCHEMA_VERSION,
 )
 CANONICAL_DATABASE_NAME = "memory_jazn.sqlite3"

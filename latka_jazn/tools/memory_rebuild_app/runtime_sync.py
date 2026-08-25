@@ -12,6 +12,7 @@ import uuid
 
 from .read_only_validation import sha256_file, validate_existing_database
 from .source_detection import probe_source, iter_jsonl_objects
+from .sqlite_utils import ClosingSQLiteConnection
 from .unified_memory import UnifiedMemoryDatabase
 
 RUNTIME_L0_SCHEMA_VERSION = "memory_rebuild_runtime_l0/v16.0"
@@ -321,7 +322,11 @@ def _copy_sqlite_snapshot(source: Path, target: Path) -> None:
     if target.exists():
         target.unlink()
     uri = f"file:{source.as_posix()}?mode=ro"
-    with sqlite3.connect(uri, uri=True, timeout=30) as src, sqlite3.connect(target, timeout=30) as dst:
+    with sqlite3.connect(
+        uri, uri=True, timeout=30, factory=ClosingSQLiteConnection,
+    ) as src, sqlite3.connect(
+        target, timeout=30, factory=ClosingSQLiteConnection,
+    ) as dst:
         src.backup(dst, pages=256, sleep=0.02)
 
 

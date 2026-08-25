@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable, Literal
+from typing import Any, Iterable
 import os
 import sqlite3
 import tempfile
@@ -14,26 +14,20 @@ from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
 from latka_jazn.tools.memory_rebuild_journal import JournalReader, JournalStore
 
+from .adapters import default_adapter_registry
 from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
+from .intermediate import PreparedSource
+from .l0_store import UnifiedL0Store
 from .unified_contracts import UnifiedMixinHost
 from .read_only_validation import read_only_stats, validate_existing_database
-from .source_detection import probe_source
+from .source_detection import SourceProbe, probe_source
+from .sqlite_utils import ClosingSQLiteConnection
 from .unified_schema import (
     CANONICAL_DATABASE_NAME, EXTRA_SCHEMA, UNIFIED_SCHEMA_VERSION, UnifiedImportResult, quote, utc_now,
 )
 
 install_attachment_metadata_support()
-
-
-class _ClosingSQLiteConnection(sqlite3.Connection):
-    """Commit or roll back like sqlite3.Connection, then always release the file handle."""
-
-    def __exit__(self, exc_type, exc, tb) -> Literal[False]:
-        try:
-            return super().__exit__(exc_type, exc, tb)
-        finally:
-            self.close()
 
 
 class UnifiedCoreMixin(UnifiedMixinHost):
@@ -43,11 +37,16 @@ class UnifiedCoreMixin(UnifiedMixinHost):
         if not self.path.is_file():
             return False
         try:
-            with sqlite3.connect(f"file:{self.path.as_posix()}?mode=ro", uri=True, timeout=5) as con:
+            with sqlite3.connect(
+                f"file:{self.path.as_posix()}?mode=ro",
+                uri=True,
+                timeout=5,
+                factory=ClosingSQLiteConnection,
+            ) as con:
                 row = con.execute(
                     "SELECT value FROM unified_memory_meta WHERE key='schema_version'"
                 ).fetchone()
-                return bool(row and str(row[0]) in {"jazn_unified_memory/v2.4", UNIFIED_SCHEMA_VERSION})
+                return bool(row and str(row[0]) == UNIFIED_SCHEMA_VERSION)
         except sqlite3.DatabaseError:
             return False
 
@@ -68,6 +67,7 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
             } else None
             con.executescript(EXTRA_SCHEMA)
+            UnifiedL0Store(self.path).ensure_schema(con)
             indexed = int(con.execute("SELECT COUNT(*) FROM memory_records_fts").fetchone()[0])
             records = int(con.execute("SELECT COUNT(*) FROM memory_records").fetchone()[0])
             if previous is None or str(previous[0]) != UNIFIED_SCHEMA_VERSION or indexed != records:
@@ -88,10 +88,10 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 f"file:{self.path.as_posix()}?mode=ro",
                 uri=True,
                 timeout=30,
-                factory=_ClosingSQLiteConnection,
+                factory=ClosingSQLiteConnection,
             )
         else:
-            con = sqlite3.connect(self.path, timeout=30, factory=_ClosingSQLiteConnection)
+            con = sqlite3.connect(self.path, timeout=30, factory=ClosingSQLiteConnection)
         con.row_factory = sqlite3.Row
         con.execute("PRAGMA foreign_keys=ON")
         con.execute("PRAGMA busy_timeout=30000")
@@ -115,62 +115,84 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             temporary.unlink()
         with self.connect(read_only=True) as source, sqlite3.connect(
             temporary,
-            factory=_ClosingSQLiteConnection,
+            factory=ClosingSQLiteConnection,
         ) as destination:
             source.backup(destination)
         os.replace(temporary, target)
         return target
+
+    def _native_projection(
+        self,
+        prepared: PreparedSource,
+        path: Path,
+        *,
+        dry_run: bool,
+        full_validation: bool,
+    ) -> dict[str, Any]:
+        projection = prepared.native_projection
+        if projection == "chatgpt":
+            return ChatExportImporter().import_one(
+                path, self.path, dry_run=dry_run, full_validation=full_validation,
+            ).to_dict()
+        if projection == "html":
+            return import_chat_html(path, self.path, dry_run=dry_run).to_dict()
+        if projection == "journal":
+            reader = JournalReader(path)
+            with JournalStore(self.path) as store:
+                return store.import_reader(reader, dry_run=dry_run)
+        if projection == "legacy_sqlite":
+            return self.migrate_databases([path], dry_run=dry_run)
+        if projection == "l0_only":
+            return {
+                "ok": True,
+                "status": "common_l0_is_canonical_projection",
+                "automatic_l2": False,
+                "automatic_l3": False,
+            }
+        raise ValueError(f"Nieznana projekcja adaptera: {projection}")
 
     def import_source(self, source: str | Path, *, dry_run: bool = False, full_validation: bool = True) -> UnifiedImportResult:
         self.ensure_initialized()
         path = Path(source).expanduser().resolve()
         if not path.exists():
             raise FileNotFoundError(path)
-        if path.is_dir():
-            payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
-            return UnifiedImportResult(str(path), "chatgpt_export_directory", str(payload.get("status")), payload)
-
-        probe = probe_source(path)
-        kind = probe.kind
-        suffix = path.suffix.lower()
-        if kind == "chat":
-            if suffix in {".html", ".htm"}:
-                payload = import_chat_html(path, self.path, dry_run=dry_run).to_dict()
-                return UnifiedImportResult(str(path), "chatgpt_html", str(payload.get("mode")), {**payload, "source_probe": probe.to_dict()})
-            if suffix == ".zip":
-                try:
-                    payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
-                    return UnifiedImportResult(str(path), "chatgpt_export_zip", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
-                except ValueError as exc:
-                    if "conversation JSON" not in str(exc) and "canonical conversations" not in str(exc):
-                        raise
-                    payload = import_chat_html(path, self.path, dry_run=dry_run).to_dict()
-                    return UnifiedImportResult(str(path), "chatgpt_html_zip", str(payload.get("mode")), {**payload, "source_probe": probe.to_dict()})
-            payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
-            return UnifiedImportResult(str(path), "chatgpt_conversation_json", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
-        if kind == "journal":
-            reader = JournalReader(path)
-            with JournalStore(self.path) as store:
-                payload = store.import_reader(reader, dry_run=dry_run)
-            return UnifiedImportResult(str(path), "journal", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
-        if kind == "legacy_sqlite":
-            payload = self.migrate_databases([path], dry_run=dry_run)
-            return UnifiedImportResult(str(path), "legacy_sqlite", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
-        return UnifiedImportResult(str(path), kind, "not_imported", {
-            "ok": True,
-            "status": "reference_only",
-            "detected_kind": kind,
+        probe = (
+            SourceProbe(str(path), "chat", 0.99, ("directory_chat_export",))
+            if path.is_dir()
+            else probe_source(path)
+        )
+        registry = getattr(self, "adapter_registry", default_adapter_registry())
+        settings = self.settings
+        adapter = registry.select(path, probe)
+        prepared = adapter.prepare(path, probe, settings)
+        native = self._native_projection(
+            prepared, path, dry_run=dry_run, full_validation=full_validation,
+        )
+        common = UnifiedL0Store(self.path).ingest(prepared, dry_run=dry_run)
+        ok = bool(native.get("ok", True)) and bool(common.get("ok"))
+        status = "planned" if dry_run else "imported"
+        payload = {
+            "ok": ok,
+            "status": status,
+            "adapter_id": prepared.adapter_id,
+            "source_kind": prepared.source_kind,
             "source_probe": probe.to_dict(),
-            "reason": (
-                "Źródło zostało sklasyfikowane schematowo, ale wymaga dedykowanego importera Stage4/sync-runtime; "
-                "nie jest automatycznie traktowane jako dziennik ani eksport ChatGPT."
-            ),
-        })
+            "intermediate_model": common,
+            "native_projection": native,
+            "automatic_l2": False,
+            "automatic_l3": False,
+            "automatic_activation": False,
+        }
+        return UnifiedImportResult(str(path), prepared.source_kind, status, payload)
 
     def _preview_import_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="jazn-memory-plan-") as temporary_root:
             preview_path = Path(temporary_root) / CANONICAL_DATABASE_NAME
-            preview = type(self)(preview_path)
+            preview = type(self)(
+                preview_path,
+                settings=self.settings,
+                adapter_registry=self.adapter_registry,
+            )
             if self.path.exists():
                 self.backup(preview_path)
             else:

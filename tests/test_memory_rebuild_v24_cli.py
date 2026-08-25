@@ -13,7 +13,7 @@ def test_parser_exposes_v24_commands() -> None:
     assert parsed.command == "unified-init"
     parsed = parser.parse_args(["test-profile", "--database", "memory_jazn.sqlite3", "--profile", "final"])
     assert parsed.profile == "final"
-    assert APP_VERSION == "2.4.0"
+    assert APP_VERSION == "3.0.0"
 
 
 def test_cli_initializes_and_validates_single_database(tmp_path: Path, capsys) -> None:

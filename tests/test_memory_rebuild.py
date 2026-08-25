@@ -212,26 +212,33 @@ def test_explicit_source_order_is_preserved_and_duplicates_are_removed(tmp_path:
     assert [Path(item["path"]) for item in plan.chats] == [newer.resolve(), older.resolve()]
 
 
-def test_operator_tool_reports_stage4_and_preserves_v240205_ordering(tmp_path: Path) -> None:
-    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
-    module_name = "memory_rebuild_v240205_test"
+def test_operator_tool_reports_v16_and_preserves_v240205_ordering(tmp_path: Path) -> None:
+    tool_path = Path(__file__).resolve().parents[1] / "tools" / "rebuild_memory.py"
+    module_name = "rebuild_memory_v161_test"
     spec = importlib.util.spec_from_file_location(module_name, tool_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
 
+    legacy_path = tool_path.with_name("memory_rebuild_legacy_v24.py")
+    legacy_name = "memory_rebuild_v240205_test"
+    legacy_spec = importlib.util.spec_from_file_location(legacy_name, legacy_path)
+    assert legacy_spec is not None and legacy_spec.loader is not None
+    legacy = importlib.util.module_from_spec(legacy_spec)
+    sys.modules[legacy_name] = legacy
+    legacy_spec.loader.exec_module(legacy)
+
     older = RestoreSource(tmp_path / "chatGPT-export-2025.07.18.zip", 999_999, ".zip")
     newer = RestoreSource(tmp_path / "chatGPT-export-2025.07.19.zip", 1, ".zip")
 
-    assert module.TOOL_VERSION == "memory-rebuild-stage4/v1.0"
-    assert module._LEGACY_MODULE is not None
-    assert module._LEGACY_MODULE.TOOL_VERSION == "24.0.2.05"
-    assert module._ordered_restore_sources([newer, older]) == [older, newer]
+    assert module.TOOL_VERSION == "memory-rebuild/v16.1"
+    assert legacy.TOOL_VERSION == "24.0.2.05"
+    assert legacy._ordered_restore_sources([newer, older]) == [older, newer]
 
 
 def test_operator_settings_show_effective_memory_boundaries(tmp_path: Path) -> None:
-    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
+    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild_legacy_v24.py"
     module_name = "memory_rebuild_v240205_boundaries_test"
     spec = importlib.util.spec_from_file_location(module_name, tool_path)
     assert spec is not None and spec.loader is not None
@@ -256,8 +263,8 @@ def test_operator_settings_show_effective_memory_boundaries(tmp_path: Path) -> N
     assert enabled_rows[1:] == rows[1:]
 
 
-def test_operator_self_test_accepts_v240205(tmp_path: Path) -> None:
-    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild.py"
+def test_legacy_operator_self_test_reports_noncanonical_filename(tmp_path: Path) -> None:
+    tool_path = Path(__file__).resolve().parents[1] / "tools" / "memory_rebuild_legacy_v24.py"
     module_name = "memory_rebuild_v240205_self_test"
     spec = importlib.util.spec_from_file_location(module_name, tool_path)
     assert spec is not None and spec.loader is not None
@@ -281,4 +288,10 @@ def test_operator_self_test_accepts_v240205(tmp_path: Path) -> None:
         "ok": True,
         "value": "24.0.2.05",
     }
-    assert report["ok"] is True
+    filename_check = next(item for item in report["checks"] if item["name"] == "canonical_filename")
+    assert filename_check == {
+        "name": "canonical_filename",
+        "ok": False,
+        "value": "memory_rebuild_legacy_v24.py",
+    }
+    assert report["ok"] is False
