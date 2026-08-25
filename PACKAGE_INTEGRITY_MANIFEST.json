@@ -1,10 +1,10 @@
 {
-  "schema_version": "package_integrity_manifest/16.3.2",
-  "version": "16.3.2-memory-rebuild-modular-typed-retrieval",
-  "runtime_version": "16.3.2-memory-rebuild-modular-typed-retrieval",
-  "package_version": "16.3.2-memory-rebuild-modular-typed-retrieval",
-  "generated_at_utc": "2026-08-25T12:11:56+00:00",
-  "updated_at_utc": "2026-08-25T12:11:56+00:00",
+  "schema_version": "package_integrity_manifest/16.3.3",
+  "version": "16.3.3-memory-rebuild-modular-typed-retrieval",
+  "runtime_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
+  "package_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
+  "generated_at_utc": "2026-08-25T13:00:35+00:00",
+  "updated_at_utc": "2026-08-25T13:00:35+00:00",
   "start_file": "run.py",
   "file_count": 851,
   "static_file_count": 851,
@@ -165,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1312,
-      "sha256": "98cdb7ab7069ddf2cba98a95aac9f6fc8782b69d9427d889d5dfa98159082434",
+      "sha256": "cb2ccffab1242dc0dabc8d5cf3571e309266515dd56c96b6ff7c5a30c1c66b7b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -577,9 +577,9 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_3_2_MEMORY_REBUILD_MODULAR_TYPED_RETRIEVAL.md",
-      "size_bytes": 2168,
-      "sha256": "a87f1562f8038c570e56d5b70ee00eebef3b48d97f998c0dfa557dccbcdb3352",
+      "path": "docs/reports/JAZN_V16_3_3_MEMORY_REBUILD_MODULAR_TYPED_RETRIEVAL.md",
+      "size_bytes": 3173,
+      "sha256": "9365616a38fa7d8ec6f0104ce47a0d51559fdd09880841cd63d638c35eaae157",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -804,7 +804,7 @@
     {
       "path": "docs/tools/MEMORY_REBUILD_V16_ARCHITECTURE.md",
       "size_bytes": 6911,
-      "sha256": "9c5e8c7515adf1a638a2288b7482a79f322d7917b57db4fa4b42f95b1e43fdb1",
+      "sha256": "faf37ecbd2d1ad5fb7263dd934cb04131ba30a2acfc6920d5838cc62bc4d3847",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5330,8 +5330,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_detection.py",
-      "size_bytes": 7379,
-      "sha256": "921ad01da1e6b08ea47522e275544596fd42e6eb374a8ec78090dda0ed44f0f6",
+      "size_bytes": 7404,
+      "sha256": "91d1ba24e8f262db812a4dd09e332816e53105140ccb95123c201ac55b5099b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5465,8 +5465,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/unified_contracts.py",
-      "size_bytes": 1022,
-      "sha256": "78b33fd894f4a85b540510ce1526a15103315a6d51bcc5c67e2e261c3c111a56",
+      "size_bytes": 1436,
+      "sha256": "09ff251508ae10785c421cfdca27623207e64e4b9b0cdacc8cfc72790971b7f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5817,7 +5817,7 @@
     {
       "path": "latka_jazn/version.py",
       "size_bytes": 1109,
-      "sha256": "996f37853dcae7779bd1dcce15cd2a55ff5d2b797a9fef1e733ec7e8a051a1e3",
+      "sha256": "38aedc4c2aa97813c1dbe44f790b1290650b817c8de85504875b30ad8b69222e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

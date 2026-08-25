@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "87f438ba6142d6e003fc7d2df184e73c51f32a44",
-  "base_version": "16.3.2-memory-rebuild-modular-typed-retrieval",
-  "commit_date": "2026-08-25T14:11:56+02:00",
+  "base_merge_commit": "3fc298f754e41f5b7022240b88f4ec0048901597",
+  "base_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
+  "commit_date": "2026-08-25T15:00:35+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-25T12:11:56+00:00",
+  "generated_at_utc": "2026-08-25T13:00:35+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f5d6d48d9a1dc98d2d2a7c36920894fb0fbaa154",
+  "git_tree_sha": "64450ea54e649adb833d81c1bd6a7e56d94cab68",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.2-memory-rebuild-modular-typed-retrieval",
-  "schema_version": "source_provenance/16.3.2",
+  "runtime_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
+  "schema_version": "source_provenance/16.3.3",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "16.3.2-memory-rebuild-modular-typed-retrieval",
+  "update_version": "16.3.3-memory-rebuild-modular-typed-retrieval",
   "version_source": "latka_jazn/version.py"
 }
