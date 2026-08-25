@@ -1,4 +1,4 @@
-# Jaźń v16.3.3 — modularny Memory Rebuild i typowany retrieval
+# Jaźń — modularny Memory Rebuild i typowany retrieval
 
 ## Wynik implementacji
 
