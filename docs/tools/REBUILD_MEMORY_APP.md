@@ -1,6 +1,12 @@
-# Jaźń Memory Rebuild v2.4
+# Jaźń Memory Rebuild v16+ / aplikacja 3.0
 
-`tools/memory_rebuild.py` jest głównym programem operatorskim do przygotowania, importowania, przeglądania i eksportowania pamięci Jaźni.
+`tools/rebuild_memory.py` jest głównym programem operatorskim do przygotowania,
+importowania, przeglądania i eksportowania pamięci Jaźni. Poprzedni
+`tools/memory_rebuild.py` pozostaje cienkim aliasem zgodnościowym.
+
+Modularny podział kodu, wspólny model L0, adaptery formatów, typowany recall i
+bramka prywatnej pamięci są opisane w
+[`MEMORY_REBUILD_V16_ARCHITECTURE.md`](MEMORY_REBUILD_V16_ARCHITECTURE.md).
 
 ## Najważniejsza zmiana v2.4
 

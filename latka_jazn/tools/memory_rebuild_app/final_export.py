@@ -11,6 +11,7 @@ import uuid
 
 from latka_jazn.tools.chat_export_reader import sha256_file
 
+from .report_sanitizer import sanitize_report
 from .test_profiles import run_test_profile
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
@@ -47,9 +48,14 @@ def export_final_memory(
     baselines: Iterable[str | Path] = (),
     sources: Iterable[str | Path] = (),
     overwrite: bool = False,
+    acceptance_report: str | Path | None = None,
+    system_acceptance: bool = False,
 ) -> dict[str, Any]:
     store = UnifiedMemoryDatabase(database)
-    test_report = run_test_profile(store.path, "final", baselines=baselines, full_validation=True)
+    test_report = run_test_profile(
+        store.path, "final", baselines=baselines, full_validation=True,
+        acceptance_report=acceptance_report, system_acceptance=system_acceptance,
+    )
     if not test_report["ok"]:
         return {"ok": False, "status": "blocked_by_final_profile", "test_report": test_report}
 
@@ -87,8 +93,10 @@ def export_final_memory(
             "sha256": sha256_file(database_target),
             "validation": staged_validation,
         }
-        _json_write(staging / "source-manifest.json", source_manifest)
-        _json_write(staging / "test-profile-final.json", test_report)
+        _json_write(staging / "source-manifest.private.json", source_manifest)
+        _json_write(staging / "source-manifest.sanitized.json", sanitize_report(source_manifest))
+        _json_write(staging / "test-profile-final.private.json", test_report)
+        _json_write(staging / "test-profile-final.sanitized.json", sanitize_report(test_report))
         _json_write(staging / "candidate-review-ledger.json", {
             "schema_version": "jazn_candidate_review_ledger/v2.4",
             "candidates": candidate_ledger,
@@ -99,6 +107,7 @@ def export_final_memory(
             "entries": promotion_ledger,
         })
         _json_write(staging / "database-manifest.json", database_manifest)
+        promotion_validation = test_report.get("promotion_ledger_validation") or {}
         summary = {
             "schema_version": EXPORT_SCHEMA,
             "ok": True,
@@ -107,8 +116,9 @@ def export_final_memory(
             "completed_at_utc": _utc_now(),
             "source_manifest_sha256": source_manifest_sha,
             "database_manifest": database_manifest,
-            "automatic_l2": False,
-            "automatic_l3": False,
+            "automatic_l2": promotion_validation.get("automatic_l2"),
+            "automatic_l3": promotion_validation.get("automatic_l3"),
+            "promotion_ledger_verified": bool(promotion_validation.get("ok")),
             "runtime_activated": False,
         }
         _json_write(staging / "final-export-summary.json", summary)

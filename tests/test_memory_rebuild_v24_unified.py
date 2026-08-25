@@ -70,6 +70,23 @@ def _write_journal(path: Path) -> None:
     path.write_text(json.dumps(entry, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def _write_test04_acceptance(path: Path) -> Path:
+    path.write_text(json.dumps({
+        "final": {
+            "structural_integrity": "passed",
+            "source_completeness": "passed",
+            "same_target_idempotence": "passed",
+            "fresh_rebuild_reproducibility": "passed",
+            "test03_reconciliation": "passed",
+            "recall": "passed",
+            "html_import_dry_run": "not_applicable",
+            "multi_turn_review": "passed",
+            "restart_continuity": "not_run",
+        }
+    }), encoding="utf-8")
+    return path
+
+
 def test_unified_database_imports_new_threads_and_dry_run_is_non_mutating(tmp_path: Path) -> None:
     database = tmp_path / CANONICAL_DATABASE_NAME
     first = tmp_path / "conversations-1.json"
@@ -237,15 +254,31 @@ def test_profiles_and_final_export_build_verified_staging_copy(tmp_path: Path) -
     store = UnifiedMemoryDatabase(database)
     assert store.import_sources([source, journal])["ok"]
 
-    for profile in ("test01", "test02", "test03", "test04", "final"):
+    for profile in ("test01", "test02", "test03"):
         report = run_test_profile(database, profile)
         assert report["ok"], report
 
+    # v16.0 contract: Test04/final cannot pass without an immutable baseline and
+    # evidence from the canonical full Test04 acceptance protocol.
+    assert not run_test_profile(database, "test04")["ok"]
+    baseline = tmp_path / "baseline.sqlite3"
+    store.backup(baseline)
+    acceptance = _write_test04_acceptance(tmp_path / "summary.sanitized.json")
+    for profile in ("test04", "final"):
+        report = run_test_profile(database, profile, baselines=[baseline], acceptance_report=acceptance)
+        assert report["ok"], report
+
     output = tmp_path / "final-export"
-    result = export_final_memory(database, output, sources=[source, journal])
+    result = export_final_memory(
+        database, output, baselines=[baseline], sources=[source, journal],
+        acceptance_report=acceptance,
+    )
     assert result["ok"]
     assert (output / CANONICAL_DATABASE_NAME).is_file()
-    assert (output / "source-manifest.json").is_file()
+    assert (output / "source-manifest.private.json").is_file()
+    assert (output / "source-manifest.sanitized.json").is_file()
+    assert (output / "test-profile-final.private.json").is_file()
+    assert (output / "test-profile-final.sanitized.json").is_file()
     assert (output / "candidate-review-ledger.json").is_file()
     assert (output / "database-manifest.json").is_file()
     assert (output / "final-export-summary.json").is_file()

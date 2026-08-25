@@ -214,24 +214,11 @@ class JournalReader:
         self.format = self.path.suffix.lower().lstrip(".") or "json"
         self.meta: dict[str, Any] = {}
         self.invalid = 0
-        self.rows = self._load()
+        self._json_rows: list[dict[str, Any]] | None = None
+        if self.path.suffix.lower() not in {".jsonl", ".ndjson"}:
+            self._json_rows = self._load_json_document()
 
-    def _load(self) -> list[dict[str, Any]]:
-        if self.path.suffix.lower() in {".jsonl", ".ndjson"}:
-            result = []
-            for line in self.path.read_text(encoding="utf-8-sig").splitlines():
-                if not line.strip():
-                    continue
-                try:
-                    value = json.loads(line)
-                except json.JSONDecodeError:
-                    self.invalid += 1
-                    continue
-                if isinstance(value, dict):
-                    result.append(value)
-                else:
-                    self.invalid += 1
-            return result
+    def _load_json_document(self) -> list[dict[str, Any]]:
         value = json.loads(self.path.read_text(encoding="utf-8-sig"))
         if isinstance(value, dict) and isinstance(value.get("entries"), list):
             self.meta = dict(value.get("meta") or {}) if isinstance(value.get("meta"), dict) else {}
@@ -240,75 +227,111 @@ class JournalReader:
             source = value
         else:
             raise ValueError("journal must be {meta,entries}, a JSON list, or JSONL")
-        result = []
+        result: list[dict[str, Any]] = []
+        invalid = 0
         for item in source:
             if isinstance(item, dict):
                 result.append(item)
             else:
-                self.invalid += 1
+                invalid += 1
+        self.invalid = invalid
         return result
+
+    def iter_raw(self):
+        """Yield raw journal records; JSONL/NDJSON is never loaded wholly into RAM."""
+        if self._json_rows is not None:
+            self.invalid = 0
+            for item in self._json_rows:
+                yield item
+            return
+        self.invalid = 0
+        with self.path.open("r", encoding="utf-8-sig", newline="") as stream:
+            for line_no, line in enumerate(stream, 1):
+                if not line.strip():
+                    continue
+                try:
+                    value = json.loads(line)
+                except json.JSONDecodeError:
+                    self.invalid += 1
+                    continue
+                if isinstance(value, dict):
+                    yield value
+                else:
+                    self.invalid += 1
+
+    @staticmethod
+    def _item_from_raw(raw: dict[str, Any]) -> JournalItem:
+        lines = [f"{key}: {norm(raw.get(key))}" for key in CONTENT_FIELDS if norm(raw.get(key))]
+        content = "\n".join(lines) or canonical_json(raw)
+        content_hash = sha_text(content)
+        explicit = norm(raw.get("id") or raw.get("entry_id") or raw.get("uuid"))
+        record_id = explicit or sha_text(canonical_json(raw))
+        identity = f"id:{explicit}" if explicit else f"content:{content_hash}"
+        summary = norm(
+            raw.get("wpis") or raw.get("treść") or raw.get("tresc")
+            or raw.get("content") or raw.get("opis")
+        ) or norm(content)[:2000]
+        title = norm(raw.get("tytuł") or raw.get("tytul") or raw.get("title")) or summary[:120]
+        start = norm(
+            raw.get("event_time_start") or raw.get("timestamp")
+            or raw.get("datetime") or raw.get("data")
+        ) or None
+        classification = classify_journal_raw(raw)
+        return JournalItem(
+            record_id, identity, title, summary, content, content_hash, dict(raw),
+            classification.truth_status,
+            bounded(raw.get("importance", raw.get("ważność", raw.get("waznosc"))), 0.6),
+            start, norm(raw.get("event_time_end")) or None,
+            "source_recorded" if start else "missing",
+            sum(1 for key in FANOUT_FIELDS if norm(raw.get(key))) >= 2,
+            classification.profile,
+            classification.evidence,
+            classification.review_reasons,
+        )
+
+    def iter_items(self):
+        for raw in self.iter_raw():
+            yield self._item_from_raw(raw)
 
     def items(self) -> list[JournalItem]:
-        result = []
-        for raw in self.rows:
-            lines = [f"{key}: {norm(raw.get(key))}" for key in CONTENT_FIELDS if norm(raw.get(key))]
-            content = "\n".join(lines) or canonical_json(raw)
-            content_hash = sha_text(content)
-            explicit = norm(raw.get("id") or raw.get("entry_id") or raw.get("uuid"))
-            record_id = explicit or sha_text(canonical_json(raw))
-            identity = f"id:{explicit}" if explicit else f"content:{content_hash}"
-            summary = norm(
-                raw.get("wpis") or raw.get("treść") or raw.get("tresc")
-                or raw.get("content") or raw.get("opis")
-            ) or norm(content)[:2000]
-            title = norm(raw.get("tytuł") or raw.get("tytul") or raw.get("title")) or summary[:120]
-            start = norm(
-                raw.get("event_time_start") or raw.get("timestamp")
-                or raw.get("datetime") or raw.get("data")
-            ) or None
-            classification = classify_journal_raw(raw)
-            result.append(JournalItem(
-                record_id, identity, title, summary, content, content_hash, dict(raw),
-                classification.truth_status,
-                bounded(raw.get("importance", raw.get("ważność", raw.get("waznosc"))), 0.6),
-                start, norm(raw.get("event_time_end")) or None,
-                "source_recorded" if start else "missing",
-                sum(1 for key in FANOUT_FIELDS if norm(raw.get(key))) >= 2,
-                classification.profile,
-                classification.evidence,
-                classification.review_reasons,
-            ))
-        return result
+        """Compatibility API. New import paths should prefer iter_items()."""
+        return list(self.iter_items())
 
     def inspect(self) -> dict[str, Any]:
-        items = self.items()
-        truth_counts = Counter(item.truth for item in items)
-        profile_counts = Counter(item.profile for item in items)
-        timestamp_counts = Counter(item.timestamp_status for item in items)
-        review_items = [item for item in items if item.classification_review]
+        truth_counts: Counter[str] = Counter()
+        profile_counts: Counter[str] = Counter()
+        timestamp_counts: Counter[str] = Counter()
         label_counts: Counter[str] = Counter()
-        for item in items:
+        review_samples: list[dict[str, Any]] = []
+        valid_entries = 0
+        suspected_fanout = 0
+        for item in self.iter_items():
+            valid_entries += 1
+            truth_counts[item.truth] += 1
+            profile_counts[item.profile] += 1
+            timestamp_counts[item.timestamp_status] += 1
+            suspected_fanout += int(item.fanout)
             label_counts.update(label_values(item.raw))
-        return {
-            "ok": True, "path": str(self.path), "sha256": self.sha256, "format": self.format,
-            "valid_entries": len(items), "invalid_entries": self.invalid,
-            "suspected_fanout": sum(1 for item in items if item.fanout),
-            "truth_status_counts": dict(sorted(truth_counts.items())),
-            "profile_counts": dict(sorted(profile_counts.items())),
-            "timestamp_status_counts": dict(sorted(timestamp_counts.items())),
-            "classification_schema_version": CLASSIFICATION_SCHEMA_VERSION,
-            "classification_review_count": len(review_items),
-            "classification_review_samples": [
-                {
+            if item.classification_review and len(review_samples) < 25:
+                review_samples.append({
                     "source_record_id": item.record_id,
                     "title": item.title,
                     "truth_status": item.truth,
                     "profile": item.profile,
                     "review_reasons": list(item.classification_review),
                     "evidence": list(item.classification_evidence),
-                }
-                for item in review_items[:25]
-            ],
+                })
+        return {
+            "ok": True, "path": str(self.path), "sha256": self.sha256, "format": self.format,
+            "valid_entries": valid_entries, "invalid_entries": self.invalid,
+            "suspected_fanout": suspected_fanout,
+            "truth_status_counts": dict(sorted(truth_counts.items())),
+            "profile_counts": dict(sorted(profile_counts.items())),
+            "timestamp_status_counts": dict(sorted(timestamp_counts.items())),
+            "classification_schema_version": CLASSIFICATION_SCHEMA_VERSION,
+            "classification_review_count": sum(1 for _ in review_samples),
+            "classification_review_samples": review_samples,
             "source_label_counts": dict(label_counts.most_common(100)),
             "automatic_l2": False, "automatic_l3": False,
+            "streaming_jsonl": self.path.suffix.lower() in {".jsonl", ".ndjson"},
         }

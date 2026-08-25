@@ -6,6 +6,8 @@ import argparse
 
 from .final_export import export_final_memory
 from .test_profiles import PROFILE_NAMES, run_test_profile
+from .settings import MemoryRebuildSettings
+from .typed_api import MemoryLayer, RecallQuery, TypedMemoryAPI
 from .unified_memory import UnifiedMemoryDatabase
 
 UNIFIED_COMMANDS = {
@@ -24,6 +26,7 @@ UNIFIED_COMMANDS = {
     "split-candidate",
     "test-profile",
     "final-export",
+    "recall",
 }
 
 
@@ -122,6 +125,8 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     profile.add_argument("--profile", required=True, choices=PROFILE_NAMES)
     profile.add_argument("--baseline", action="append", type=Path, default=[])
     profile.add_argument("--quick", action="store_true")
+    profile.add_argument("--acceptance-report", type=Path)
+    profile.add_argument("--system-acceptance", action="store_true")
 
     final = sub.add_parser("final-export", help="Zbuduj stagingowy, zweryfikowany eksport finalny.")
     _add_database(final)
@@ -129,11 +134,31 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     final.add_argument("--baseline", action="append", type=Path, default=[])
     final.add_argument("--source", action="append", type=Path, default=[])
     final.add_argument("--overwrite", action="store_true")
+    final.add_argument("--acceptance-report", type=Path, required=True)
+    final.add_argument("--system-acceptance", action="store_true")
+
+    recall = sub.add_parser("recall", help="Typowane, temporalne wyszukiwanie z proweniencją; bez dowolnego SQL.")
+    _add_database(recall)
+    recall.add_argument("query")
+    recall.add_argument("--from", dest="temporal_start")
+    recall.add_argument("--to", dest="temporal_end")
+    recall.add_argument(
+        "--limit",
+        type=int,
+        help="Maksymalna liczba trafień; domyślnie retrieval_limit z ustawień.",
+    )
+    recall.add_argument("--include-active", action="store_true", help="Jawnie dołącz pamięć aktywną do domyślnego L0.")
+    recall.add_argument("--allow-missing-provenance", action="store_true")
 
 
-def run_unified_command(args: argparse.Namespace) -> dict[str, Any]:
+def run_unified_command(
+    args: argparse.Namespace,
+    *,
+    settings: MemoryRebuildSettings | None = None,
+) -> dict[str, Any]:
     command = args.command
-    store = UnifiedMemoryDatabase(args.database)
+    resolved_settings = settings or MemoryRebuildSettings()
+    store = UnifiedMemoryDatabase(args.database, settings=resolved_settings)
     if command == "unified-init":
         return store.initialize()
     if command == "unified-import":
@@ -184,9 +209,29 @@ def run_unified_command(args: argparse.Namespace) -> dict[str, Any]:
     if command == "split-candidate":
         return {"ok": True, "candidate": store.split_candidate(args.candidate_id, title=args.title, summary=args.summary, edited_by=args.edited_by, reason=args.reason)}
     if command == "test-profile":
-        return run_test_profile(store.path, args.profile, baselines=args.baseline, full_validation=not args.quick)
+        return run_test_profile(
+            store.path, args.profile, baselines=args.baseline, full_validation=not args.quick,
+            acceptance_report=args.acceptance_report, system_acceptance=args.system_acceptance,
+        )
     if command == "final-export":
-        return export_final_memory(store.path, args.output, baselines=args.baseline, sources=args.source, overwrite=args.overwrite)
+        return export_final_memory(
+            store.path, args.output, baselines=args.baseline, sources=args.source,
+            overwrite=args.overwrite, acceptance_report=args.acceptance_report,
+            system_acceptance=args.system_acceptance,
+        )
+    if command == "recall":
+        layers = (MemoryLayer.L0, MemoryLayer.ACTIVE) if args.include_active else (MemoryLayer.L0,)
+        response = TypedMemoryAPI(store.path, settings=resolved_settings).recall(RecallQuery(
+            text=args.query,
+            layers=layers,
+            temporal_start=args.temporal_start,
+            temporal_end=args.temporal_end,
+            limit=args.limit if args.limit is not None else resolved_settings.retrieval_limit,
+            require_provenance=(
+                resolved_settings.require_provenance and not args.allow_missing_provenance
+            ),
+        ))
+        return {"ok": True, **response.to_dict()}
     raise AssertionError(command)
 
 

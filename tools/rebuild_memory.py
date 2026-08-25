@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""Compatibility launcher; prefer ``tools/rebuild_memory.py``."""
+"""Canonical, deliberately thin launcher for Jaźń Memory Rebuild v16+."""
 
 from pathlib import Path
 import sys

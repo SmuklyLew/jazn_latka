@@ -9,20 +9,19 @@ from latka_jazn.tools.memory_restore import confirmation_token
 
 from .baseline_registry import discover_baseline_roots
 from .cli_unified import UNIFIED_COMMANDS, add_unified_subcommands, run_unified_command
+from .config import APP_VERSION
 from .controller import MemoryRebuildAppController
 from .models import RebuildProject
 from .project_store import ProjectStore
+from .settings import load_settings
 from .source_inventory import inspect_source
 from .tui_v24 import run_studio_v24
 
-APP_VERSION = "2.4.0"
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="rebuild_memory_app",
+        prog="rebuild_memory",
         description=(
-            "Jaźń Memory Rebuild v2.4: projekty źródeł, jedna baza memory_jazn.sqlite3, "
+            "Jaźń Memory Rebuild v16.0: projekty źródeł, jedna baza memory_jazn.sqlite3, "
             "import nowych wątków, kandydaci, Testy 01–04 i finalny eksport."
         ),
         allow_abbrev=False,
@@ -30,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"%(prog)s {APP_VERSION}")
     parser.add_argument("--project-root", type=Path, help="Katalog prywatnych konfiguracji projektów.")
     parser.add_argument("--project", help="ID, nazwa lub ścieżka projektu.")
+    parser.add_argument("--settings", type=Path, help="Plik JSON ustawień Memory Rebuild.")
     parser.add_argument("--text-ui", action="store_true", help="Wymuś interfejs tekstowy.")
     parser.add_argument("--json", action="store_true", help="Wypisz wynik jako JSON.")
     sub = parser.add_subparsers(dest="command")
@@ -109,7 +109,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
 
         if command in UNIFIED_COMMANDS:
-            payload = run_unified_command(args)
+            payload = run_unified_command(args, settings=load_settings(args.settings))
             _emit(payload, json_mode=True)
             return 0 if payload.get("ok") else 2
 

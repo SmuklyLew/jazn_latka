@@ -1,21 +1,10 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
-"""Jaźń Memory Rebuild launcher + Test04/Stage4 orchestrator.
+"""Stage4/runtime synchronization for memory_rebuild.py v16.0.
 
-Drop this file into ``tools/memory_rebuild.py`` in the Jaźń repository.
-
-The normal v2.4 application and legacy compatibility stay available.  A new
-``stage4`` command family adds a staging-first rebuild workflow for:
-
-* full ChatGPT conversation exports (HTML/JSON/ZIP) -> canonical L0 archive,
-* journal JSON/JSONL -> journal L0,
-* structured music analyses -> journal L0 + structured music table,
-* affective/emotional observations -> append-only source-grounded L0 table,
-* Test04 validation, baselines, provenance manifests and SQLite backups.
-
-Stage4 never auto-promotes L2/L3.  Affective records are operational/modelled
-records with provenance; they are not claims of biological experience.
+This module owns mutating rebuild/sync operations. Read-only Test 01-03 validation
+lives in ``memory_rebuild_app.test_profiles`` and full Test 04 acceptance delegates
+to ``latka_jazn.tools.memory_sqlite_test04``.
 """
 
 from dataclasses import dataclass, asdict
@@ -25,7 +14,6 @@ from typing import Any, Iterable, Sequence
 import argparse
 import contextlib
 import hashlib
-import importlib.util
 import json
 import os
 import shutil
@@ -34,127 +22,14 @@ import sys
 import tempfile
 import uuid
 
-TOOL_VERSION = "memory-rebuild-stage4/v1.0"
-STAGE4_SCHEMA_VERSION = "jazn_memory_rebuild_stage4/v1"
+from latka_jazn.tools.memory_rebuild_app.report_sanitizer import write_report_pair
+from latka_jazn.tools.memory_rebuild_app.read_only_validation import promotion_ledger_validation
+from latka_jazn.tools.memory_rebuild_app.source_detection import probe_source
+from latka_jazn.tools.memory_rebuild_app.runtime_sync import sync_runtime
+
+TOOL_VERSION = "memory-rebuild/v16.0"
+STAGE4_SCHEMA_VERSION = "jazn_memory_rebuild_stage4/v16"
 _STAGE4_COMMAND = "stage4"
-_LEGACY_FLAGS = {
-    "--legacy-five-db",
-    "--config",
-    "--write-example-config",
-    "--no-ui",
-    "--plan-only",
-    "--all-discovered",
-    "--source",
-    "--self-test",
-    "--confirm",
-}
-
-
-def _candidate_repo_roots() -> list[Path]:
-    result: list[Path] = []
-    env = os.environ.get("JAZN_ROOT", "").strip()
-    if env:
-        result.append(Path(env).expanduser())
-    here = Path(__file__).resolve()
-    result.extend([here.parent, here.parent.parent, Path.cwd(), Path.cwd().parent])
-    seen: set[str] = set()
-    unique: list[Path] = []
-    for raw in result:
-        try:
-            path = raw.resolve()
-        except OSError:
-            path = raw.absolute()
-        key = os.path.normcase(str(path))
-        if key not in seen:
-            seen.add(key)
-            unique.append(path)
-    return unique
-
-
-def _ensure_repo_root() -> Path:
-    for root in _candidate_repo_roots():
-        if (root / "latka_jazn" / "__init__.py").is_file():
-            if str(root) not in sys.path:
-                sys.path.insert(0, str(root))
-            return root
-    raise RuntimeError(
-        "Nie znaleziono repozytorium Jaźni (latka_jazn/__init__.py). "
-        "Uruchom narzędzie z katalogu repo, umieść je w tools/ albo ustaw JAZN_ROOT."
-    )
-
-
-ROOT = _ensure_repo_root()
-
-
-def _legacy_path() -> Path:
-    candidates = [Path(__file__).with_name("memory_rebuild_legacy_v24.py"), ROOT / "tools" / "memory_rebuild_legacy_v24.py"]
-    for path in candidates:
-        if path.is_file():
-            return path
-    return candidates[0]
-
-
-def _load_legacy_module():
-    module_name = "_jazn_memory_rebuild_legacy_v24_compat"
-    existing = sys.modules.get(module_name)
-    if existing is not None:
-        return existing
-    path = _legacy_path()
-    if not path.is_file():
-        raise FileNotFoundError(f"Brak zgodnościowego narzędzia: {path}")
-    spec = importlib.util.spec_from_file_location(module_name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Nie można wczytać zgodnościowego narzędzia: {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-try:
-    _LEGACY_MODULE = _load_legacy_module()
-except (FileNotFoundError, ImportError):
-    _LEGACY_MODULE = None
-
-if _LEGACY_MODULE is not None:
-    for _name in dir(_LEGACY_MODULE):
-        if _name.startswith("__") or _name in {"main", "ROOT", "self_test"}:
-            continue
-        globals().setdefault(_name, getattr(_LEGACY_MODULE, _name))
-
-
-def self_test(state):
-    if _LEGACY_MODULE is None:
-        raise FileNotFoundError(_legacy_path())
-    report = _LEGACY_MODULE.self_test(state)
-    for check in report.get("checks", []):
-        if check.get("name") == "canonical_filename":
-            check["ok"] = Path(__file__).name == "memory_rebuild.py"
-            check["value"] = Path(__file__).name
-            break
-    report["ok"] = all(bool(item.get("ok")) for item in report.get("checks", []))
-    return report
-
-
-def _legacy_requested(args: list[str]) -> bool:
-    if args and args[0] == "legacy":
-        return True
-    return any(item in _LEGACY_FLAGS for item in args)
-
-
-def _run_legacy(args: list[str]) -> int:
-    if _LEGACY_MODULE is None:
-        raise FileNotFoundError(_legacy_path())
-    cleaned = [item for item in args if item != "--legacy-five-db"]
-    if cleaned and cleaned[0] == "legacy":
-        cleaned = cleaned[1:]
-    if "--self-test" in cleaned:
-        parsed_args = _LEGACY_MODULE.build_parser().parse_args(cleaned)
-        state = _LEGACY_MODULE._settings_from_args(parsed_args, _LEGACY_MODULE.load_state(parsed_args.config))
-        state.ui_mode = "text"
-        return 0 if self_test(state).get("ok") else 2
-    return int(_LEGACY_MODULE.main(cleaned))
-
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -213,85 +88,8 @@ def _read_json_small(path: Path, max_bytes: int = 32 * 1024 * 1024) -> Any | Non
         return None
 
 
-def _install_chat_export_reader_hardening() -> None:
-    """Replace recursive structural traversal with an iterative preorder walk.
-
-    Some historical ChatGPT exports contain branches deeper than Python's recursion
-    limit.  The traversal is structural, so an explicit stack preserves the same
-    parent-before-children ordering without recursion.
-    """
-    import latka_jazn.tools.chat_export_reader as reader
-
-    if getattr(reader._structural_order, "_jazn_stage4_iterative", False):
-        return
-
-    def iterative_structural_order(mapping: dict[str, Any]) -> tuple[str, ...]:
-        roots = [
-            node_id
-            for node_id, node in mapping.items()
-            if not isinstance(node, dict) or not node.get("parent") or str(node.get("parent")) not in mapping
-        ]
-        order: list[str] = []
-        seen: set[str] = set()
-
-        def walk(start: str) -> None:
-            stack = [str(start)]
-            while stack:
-                node_id = stack.pop()
-                if node_id in seen or node_id not in mapping:
-                    continue
-                seen.add(node_id)
-                order.append(node_id)
-                raw = mapping.get(node_id)
-                node = raw if isinstance(raw, dict) else {}
-                children = [str(child) for child in (node.get("children") or [])]
-                stack.extend(reversed(children))
-
-        for root in roots:
-            walk(str(root))
-        for node_id in mapping:
-            walk(str(node_id))
-        return tuple(order)
-
-    setattr(iterative_structural_order, "_jazn_stage4_iterative", True)
-    reader._structural_order = iterative_structural_order
-
-
 def _probe_source_kind(path: Path) -> str:
-    from latka_jazn.tools.chat_export_reader import probe_json_source_kind
-
-    suffix = path.suffix.lower()
-    name = path.name.casefold()
-    if suffix in {".html", ".htm"}:
-        return "chat"
-    if suffix == ".zip":
-        return "chat"
-    if suffix in {".jsonl", ".ndjson"}:
-        return "journal"
-    if suffix in {".sqlite", ".sqlite3", ".db"}:
-        return "legacy_sqlite"
-    if suffix != ".json":
-        return "reference"
-    if "analizy_utwor" in name or "analizy-utwor" in name or "music_anal" in name:
-        return "music"
-    if name.startswith("dziennik") or "journal" in name:
-        return "journal"
-    try:
-        if probe_json_source_kind(path) == "conversation":
-            return "chat"
-    except Exception:
-        pass
-    payload = _read_json_small(path)
-    if isinstance(payload, dict) and isinstance(payload.get("analizy"), list):
-        return "music"
-    if isinstance(payload, dict) and isinstance(payload.get("entries"), list):
-        return "journal"
-    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
-        keys = {str(key).casefold() for key in payload[0]}
-        if {"mapping", "current_node"}.intersection(keys):
-            return "chat"
-        return "journal"
-    return "reference"
+    return probe_source(path).kind
 
 
 @dataclass(slots=True)
@@ -612,8 +410,17 @@ class Stage4Extension:
             con = sqlite3.connect(self.database, timeout=30)
             con.execute("PRAGMA foreign_keys=ON")
         try:
-            cursor = con.execute(
-                """INSERT OR IGNORE INTO affective_observations(
+            existing = con.execute(
+                "SELECT content_sha256 FROM affective_observations WHERE affect_id=?", (affect_id,)
+            ).fetchone()
+            if existing is not None:
+                if str(existing[0]) != content_sha:
+                    raise ValueError("affective observation key collision with different content")
+                if owns:
+                    con.commit()
+                return False
+            con.execute(
+                """INSERT INTO affective_observations(
                      affect_id,source_type,source_id,source_sha256,event_time,emotions_json,feelings_json,
                      impressions_json,reflection,context,truth_status,confidence,importance,truth_boundary,
                      raw_json,content_sha256,created_at_utc,status)
@@ -627,7 +434,7 @@ class Stage4Extension:
             )
             if owns:
                 con.commit()
-            return bool(cursor.rowcount)
+            return True
         finally:
             if owns:
                 con.close()
@@ -701,8 +508,13 @@ class Stage4Extension:
         return {"ok": True, "inserted": inserted, "journal_projection": journal_result}
 
     def stats(self) -> dict[str, int]:
-        self.initialize()
-        with self.connect() as con:
+        if not self.database.is_file():
+            return {"stage4_sources": 0, "music_analyses": 0, "affective_observations": 0, "stage4_runs": 0}
+        with sqlite3.connect(f"file:{self.database.as_posix()}?mode=ro", uri=True, timeout=30) as con:
+            con.row_factory = sqlite3.Row
+            names = {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            if "stage4_sources" not in names:
+                return {"stage4_sources": 0, "music_analyses": 0, "affective_observations": 0, "stage4_runs": 0}
             return {
                 "stage4_sources": int(con.execute("SELECT COUNT(*) FROM stage4_sources").fetchone()[0]),
                 "music_analyses": int(con.execute("SELECT COUNT(*) FROM music_analyses").fetchone()[0]),
@@ -711,8 +523,15 @@ class Stage4Extension:
             }
 
     def validate(self) -> dict[str, Any]:
-        self.initialize()
-        with self.connect() as con:
+        if not self.database.is_file():
+            return {"ok": False, "reason": "database_missing", "schema_version": STAGE4_SCHEMA_VERSION}
+        with sqlite3.connect(f"file:{self.database.as_posix()}?mode=ro", uri=True, timeout=30) as con:
+            con.row_factory = sqlite3.Row
+            con.execute("PRAGMA query_only=ON")
+            names = {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            required = {"music_analyses", "affective_observations", "stage4_sources", "stage4_runs"}
+            if not required.issubset(names):
+                return {"ok": False, "reason": "stage4_schema_missing", "missing_tables": sorted(required - names), "schema_version": STAGE4_SCHEMA_VERSION}
             bad_music_hashes = 0
             for row in con.execute("SELECT raw_json,content_sha256 FROM music_analyses"):
                 try:
@@ -788,7 +607,6 @@ def _copy_sqlite_snapshot(source: Path, target: Path) -> None:
 
 
 def _run_import_pipeline(database: Path, options: Stage4Options) -> dict[str, Any]:
-    _install_chat_export_reader_hardening()
     from latka_jazn.tools.memory_rebuild_app.unified_memory import UnifiedMemoryDatabase
 
     store = UnifiedMemoryDatabase(database)
@@ -824,13 +642,16 @@ def _run_import_pipeline(database: Path, options: Stage4Options) -> dict[str, An
     validation = store.validate(full=options.full_validation) if not errors else {"ok": False, "reason": "import_error"}
     extension_validation = extension.validate() if not errors else {"ok": False, "reason": "import_error"}
     from latka_jazn.tools.memory_rebuild_app.test_profiles import run_test_profile
-    test04 = run_test_profile(database, "test04", baselines=options.baselines, full_validation=options.full_validation) if not errors else {"ok": False, "reason": "import_error"}
+    test03 = run_test_profile(database, "test03", baselines=options.baselines, full_validation=options.full_validation) if not errors else {"ok": False, "reason": "import_error"}
+    promotion_validation = promotion_ledger_validation(database) if not errors else {"ok": False, "reason": "import_error"}
     return {
-        "ok": not errors and bool(validation.get("ok")) and bool(extension_validation.get("ok")) and bool(test04.get("ok")),
+        "ok": not errors and bool(validation.get("ok")) and bool(extension_validation.get("ok")) and bool(test03.get("ok")),
         "database": str(database), "results": results, "errors": errors,
         "affective_projection": affect_result, "candidate_generation": candidate_result,
-        "validation": validation, "stage4_validation": extension_validation, "test04": test04,
-        "automatic_l2": False, "automatic_l3": False,
+        "validation": validation, "stage4_validation": extension_validation, "test03_preflight": test03,
+        "promotion_ledger_validation": promotion_validation,
+        "automatic_l2": promotion_validation.get("automatic_l2"),
+        "automatic_l3": promotion_validation.get("automatic_l3"),
     }
 
 
@@ -845,10 +666,12 @@ def _stage4_plan(options: Stage4Options) -> dict[str, Any]:
         "ok": bool(result.get("ok")), "status": "plan_only", "target_database": str(options.database),
         "source_manifest_sha256": _manifest_hash(options.manifest),
         "sources": [item.to_dict() for item in options.manifest], "preview_result": result,
-        "target_modified": False, "automatic_l2": False, "automatic_l3": False,
+        "target_modified": False,
+        "automatic_l2": (result.get("promotion_ledger_validation") or {}).get("automatic_l2"),
+        "automatic_l3": (result.get("promotion_ledger_validation") or {}).get("automatic_l3"),
     }
-    _json_write(options.report_dir / "stage4-plan.json", payload)
-    _json_write(options.report_dir / "stage4-source-manifest.json", {"schema_version": STAGE4_SCHEMA_VERSION, "sources": [item.to_dict() for item in options.manifest]})
+    payload["reports"] = write_report_pair(options.report_dir, "stage4-plan", payload)
+    write_report_pair(options.report_dir, "stage4-source-manifest", {"schema_version": STAGE4_SCHEMA_VERSION, "sources": [item.to_dict() for item in options.manifest]})
     return payload
 
 
@@ -897,7 +720,9 @@ def _stage4_build(options: Stage4Options, *, resume: bool, overwrite: bool) -> d
             "backup": str(backup_path) if backup_path else None,
             "source_manifest_sha256": manifest_sha, "sources": [item.to_dict() for item in options.manifest],
             "pipeline": result, "final_validation": final_validation, "stage4_stats": extension.stats(),
-            "automatic_l2": False, "automatic_l3": False,
+            "promotion_ledger_validation": result.get("promotion_ledger_validation"),
+            "automatic_l2": (result.get("promotion_ledger_validation") or {}).get("automatic_l2"),
+            "automatic_l3": (result.get("promotion_ledger_validation") or {}).get("automatic_l3"),
         }
         with extension.connect() as con:
             con.execute(
@@ -911,9 +736,9 @@ def _stage4_build(options: Stage4Options, *, resume: bool, overwrite: bool) -> d
         report["status"] = "published"
         report["database_sha256"] = _sha256_file(target)
         report["database_size_bytes"] = target.stat().st_size
-        _json_write(options.report_dir / f"stage4-build-{run_id}.json", report)
-        _json_write(options.report_dir / "stage4-last-build.json", report)
-        _json_write(options.report_dir / "stage4-source-manifest.json", {"schema_version": STAGE4_SCHEMA_VERSION, "source_manifest_sha256": manifest_sha, "sources": [item.to_dict() for item in options.manifest]})
+        report["reports"] = write_report_pair(options.report_dir, f"stage4-build-{run_id}", report)
+        write_report_pair(options.report_dir, "stage4-last-build", report)
+        write_report_pair(options.report_dir, "stage4-source-manifest", {"schema_version": STAGE4_SCHEMA_VERSION, "source_manifest_sha256": manifest_sha, "sources": [item.to_dict() for item in options.manifest]})
         return report
     except BaseException:
         with contextlib.suppress(OSError):
@@ -928,12 +753,13 @@ def _stage4_validate(database: Path, baselines: list[Path], full: bool = True) -
     store = UnifiedMemoryDatabase(database)
     validation = store.validate(full=full)
     extension = Stage4Extension(database)
-    extension.initialize()
     ext_validation = extension.validate()
-    test04 = run_test_profile(database, "test04", baselines=baselines, full_validation=full)
+    test03 = run_test_profile(database, "test03", baselines=baselines, full_validation=full)
     return {
-        "ok": bool(validation.get("ok")) and bool(ext_validation.get("ok")) and bool(test04.get("ok")),
-        "database": str(database), "validation": validation, "stage4_validation": ext_validation, "test04": test04,
+        "ok": bool(validation.get("ok")) and bool(ext_validation.get("ok")) and bool(test03.get("ok")),
+        "database": str(database), "validation": validation, "stage4_validation": ext_validation,
+        "test03_preflight": test03,
+        "full_test04": "run `memory_rebuild.py test04 ...` for the canonical acceptance protocol",
     }
 
 
@@ -966,7 +792,7 @@ def _stage4_parser() -> argparse.ArgumentParser:
     group.add_argument("--resume", action="store_true", help="Zacznij od spójnego snapshotu istniejącej bazy.")
     group.add_argument("--overwrite", action="store_true", help="Zbuduj od zera; istniejąca baza zostanie najpierw zbackupowana.")
 
-    validate = sub.add_parser("validate", help="Pełna walidacja unified DB + Stage4 + profil Test04.")
+    validate = sub.add_parser("validate", help="Read-only walidacja unified DB + Stage4 + profil Test03; pełny Test04 uruchamiaj osobno.")
     validate.add_argument("--database", required=True, type=Path)
     validate.add_argument("--baseline", action="append", type=Path, default=[])
     validate.add_argument("--quick", action="store_true")
@@ -1016,29 +842,9 @@ def _run_stage4(args: list[str]) -> int:
         elif ns.stage4_command == "sync-runtime":
             runtime_root = Path(ns.runtime_root).expanduser().resolve()
             database = Path(ns.database).expanduser().resolve()
-            if not database.is_file():
-                raise FileNotFoundError(f"sync-runtime wymaga istniejącej unified DB: {database}")
-            journal_paths: list[Path] = []
-            raw_journal = runtime_root / "memory" / "raw" / "dziennik.json"
-            if raw_journal.is_file():
-                journal_paths.append(raw_journal)
-            layered = runtime_root / "memory" / "layered"
-            if layered.is_dir():
-                journal_paths.extend(sorted(layered.glob("*.jsonl"), key=lambda item: item.name.casefold()))
-            if not journal_paths:
-                raise FileNotFoundError(f"Brak memory/raw/dziennik.json i memory/layered/*.jsonl pod {runtime_root}")
-            sources = [(path.resolve(), "journal") for path in journal_paths]
-            manifest = _source_manifest(sources)
+            payload = sync_runtime(database, runtime_root, full_validation=not ns.quick_validation)
             report_dir = Path(ns.report_dir or (database.parent / "memory_rebuild_reports")).expanduser().resolve()
-            options = Stage4Options(
-                database=database, sources=sources, manifest=manifest,
-                baselines=[Path(item).expanduser().resolve() for item in ns.baseline],
-                report_dir=report_dir, full_validation=not ns.quick_validation,
-                generate_candidates=bool(ns.generate_candidates),
-                candidate_limit=(None if int(ns.candidate_limit or 0) <= 0 else int(ns.candidate_limit)),
-            )
-            payload = _stage4_build(options, resume=True, overwrite=False)
-            payload["runtime_sync"] = {"runtime_root": str(runtime_root), "source_count": len(sources)}
+            payload["reports"] = write_report_pair(report_dir, "runtime-sync", payload)
         elif ns.stage4_command == "append-affect":
             database = Path(ns.database).expanduser().resolve()
             from latka_jazn.tools.memory_rebuild_app.unified_memory import UnifiedMemoryDatabase
@@ -1071,15 +877,9 @@ def _run_stage4(args: list[str]) -> int:
         return 1
 
 
+
 def main(argv: Sequence[str] | None = None) -> int:
-    args = list(sys.argv[1:] if argv is None else argv)
-    if args and args[0] == _STAGE4_COMMAND:
-        return _run_stage4(args)
-    if _legacy_requested(args):
-        return _run_legacy(args)
-    from latka_jazn.tools.memory_rebuild_app.cli import main as app_main
-    return int(app_main(args))
+    return _run_stage4(list(sys.argv[1:] if argv is None else argv))
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+__all__ = ["TOOL_VERSION", "STAGE4_SCHEMA_VERSION", "Stage4Extension", "main"]
