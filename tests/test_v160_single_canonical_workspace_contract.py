@@ -57,6 +57,14 @@ def test_daemon_security_paths_are_singletons_across_versioned_runtime_roots(tmp
     assert daemon_auth_token_path(root_a) == daemon_auth_token_path(root_b) == tmp_path / "workspace_runtime" / "daemon" / "capability.token"
 
 
+
+def test_runtime_roots_container_resolves_workspace_at_host_level(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    runtime = tmp_path / "runtime_roots" / "jazn_latka_v16.3.1"
+    runtime.mkdir(parents=True)
+    assert workspace_runtime_path(runtime) == (tmp_path / "workspace_runtime").resolve()
+
+
 def test_restart_continuity_reads_runtime_state_from_host_workspace(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
     root = tmp_path / "jazn_latka_v16.0.0"

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import unicodedata
 from .base import ProviderLemmaCandidate
+from ..polish_normalizer import PolishTextNormalizer
 
 class BuiltinPolishLemmaProvider:
     name = "builtin_safe_polish_current_line"
@@ -21,18 +23,31 @@ class BuiltinPolishLemmaProvider:
         self.overrides = self._load_overrides()
 
     def _load_overrides(self) -> dict[str, str]:
-        candidates = []
+        package_resource = Path(__file__).resolve().parents[2] / "resources" / "polish_lemma_overrides.json"
+        candidates: list[Path] = [package_resource]
         if self.root:
-            candidates.append(self.root / "latka_jazn" / "resources" / "polish_lemma_overrides.json")
+            rooted_resource = self.root / "latka_jazn" / "resources" / "polish_lemma_overrides.json"
+            if rooted_resource.resolve() != package_resource.resolve():
+                candidates.append(rooted_resource)
             candidates.append(self.root / "memory" / "raw" / "polish_lemma_overrides.json")
+        merged: dict[str, str] = {}
+        normalizer = PolishTextNormalizer()
         for path in candidates:
-            if path.exists():
-                try:
-                    data = json.loads(path.read_text(encoding="utf-8"))
-                    return {str(k): str(v) for k, v in (data.get("overrides") or data).items()} if isinstance(data, dict) else {}
-                except Exception:
-                    pass
-        return {}
+            if not path.exists():
+                continue
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                raw = (data.get("overrides") or data) if isinstance(data, dict) else {}
+                if not isinstance(raw, dict):
+                    continue
+                for key, value in raw.items():
+                    normalized_key = normalizer.ascii_fold(str(key).strip()).casefold()
+                    normalized_value = unicodedata.normalize("NFC", str(value).strip()).casefold()
+                    if normalized_key and normalized_value:
+                        merged[normalized_key] = normalized_value
+            except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
+                continue
+        return merged
 
     def analyse_token(self, token: str, *, folded: str, context: str = "") -> list[ProviderLemmaCandidate]:
         if not token:

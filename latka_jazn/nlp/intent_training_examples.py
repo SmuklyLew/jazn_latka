@@ -6,7 +6,11 @@ INTENT_TRAINING_EXAMPLES = {
     "system_update_execution_request": [
         "Przygotuj pełną aktualizację systemu Jaźni.",
         "Przygotuj plan aktualizacji i patch do naprawy routera.",
-        "Zrób patch poprzednia linia runtime.B dla routing bug.",
+        "Zrób patch na nowym branchu dla błędu routingu.",
+        "Przygotuj patch, napraw finalizację i rozbuduj NLP systemu Jaźni.",
+        "Napraw każdy błąd znaleziony po drodze i dodaj regresje.",
+        "Rozbuduj słownik, lematyzację i morfologię bez osłabiania truth gate.",
+        "Popraw provenance narzędzi i wiązanie host finalization.",
     ],
     "runtime_health_check_after_update": [
         "Cześć Łatko, sprawdź jedną krótką turę po aktualizacji.",

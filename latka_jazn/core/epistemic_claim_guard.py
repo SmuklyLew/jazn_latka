@@ -121,6 +121,26 @@ class EpistemicClaimGuard:
         re.compile(r"\bwykonałam\s+(?:test|komendę|polecenie|audyt)\b", re.IGNORECASE),
     )
 
+
+    @staticmethod
+    def _host_tool_actions_support_claim(claim_text: str, actions: tuple[str, ...]) -> bool:
+        """Require operation-level provenance instead of any arbitrary tool attestation."""
+
+        if not actions:
+            return False
+        normalized = tuple(item.casefold() for item in actions)
+        if "wykonałam audyt" in claim_text:
+            return any(item.startswith(("github:", "web.run:")) for item in normalized)
+        if claim_text.startswith(("wdrożyłam", "zaktualizowałam", "zapisałam", "zmieniłam")):
+            write_prefixes = (
+                "github:create_", "github:update_", "github:delete_", "github:merge_",
+                "github:add_", "github:remove_", "github:resolve_", "github:enable_",
+            )
+            return any(item.startswith(write_prefixes) for item in normalized)
+        # Starting a runtime or claiming a local test/command requires runtime-side
+        # event evidence. A GitHub/web read cannot prove local execution.
+        return False
+
     @staticmethod
     def _first_match(patterns: tuple[re.Pattern[str], ...], text: str) -> str | None:
         for pattern in patterns:
@@ -202,16 +222,38 @@ class EpistemicClaimGuard:
         runtime_action = self._first_match(self._RUNTIME_ACTION_POSITIVE, body)
         if runtime_action and not background_positive:
             event_ids = self._ids(supplied, "runtime_action_event_ids")
-            supported = bool(event_ids)
+            tool_action_ids = self._ids(supplied, "external_tool_action_ids")
+            tool_actions = self._ids(supplied, "external_tool_actions")
+            normalized_action = runtime_action.casefold()
+            tool_supported = self._host_tool_actions_support_claim(normalized_action, tool_actions)
+            if event_ids:
+                supported = True
+                source_kind = EpistemicSourceKind.RUNTIME_EVENT
+                source_ids = event_ids
+                reason = "verified_runtime_action_events"
+            elif tool_action_ids and tool_supported:
+                supported = True
+                source_kind = EpistemicSourceKind.TOOL_OR_WEB_SOURCE
+                source_ids = tool_action_ids
+                reason = "host_attested_external_tool_action"
+            else:
+                supported = False
+                source_kind = EpistemicSourceKind.UNKNOWN
+                source_ids = ()
+                reason = "missing_semantically_matching_action_evidence"
             assessments.append(EpistemicClaimAssessment(
                 EpistemicClaimKind.RUNTIME_ACTION,
                 EpistemicClaimStatus.SUPPORTED if supported else EpistemicClaimStatus.UNSUPPORTED,
                 runtime_action,
-                ("runtime_action_event_ids",),
-                {"runtime_action_event_ids": list(event_ids)},
-                "verified_runtime_action_events" if supported else "missing_runtime_action_events",
-                EpistemicSourceKind.RUNTIME_EVENT if supported else EpistemicSourceKind.UNKNOWN,
-                event_ids,
+                ("runtime_action_event_ids", "external_tool_action_ids+matching_operation"),
+                {
+                    "runtime_action_event_ids": list(event_ids),
+                    "external_tool_action_ids": list(tool_action_ids),
+                    "external_tool_actions": list(tool_actions),
+                },
+                reason,
+                source_kind,
+                source_ids,
             ))
         return assessments
 

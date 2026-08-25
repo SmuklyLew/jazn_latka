@@ -116,6 +116,9 @@ class IntentFeatureEngine:
         r"\bzaimplementuj\w*\b",
         r"\butworz\w* branch\b",
         r"\bnapisz\w* patch\b",
+        r"\bprzygotuj\w* (?:patch|poprawk\w*|hotfix)\b",
+        r"\brozbuduj\w* (?:slownik\w*|nlp|system\w*|runtime\w*)\b",
+        r"\bnaprawiaj\w* (?:blad\w*|usterk\w*)\b",
         r"\bpelny patch\b",
     )
     STATUS_PATTERNS = (
@@ -252,7 +255,7 @@ class IntentFeatureEngine:
         if update_action_hits:
             update_score += 0.52
             update_positive.append("explicit_execution_action")
-        if explicit_package_context or any(token in tokens for token in ("nlp", "kod", "runtime", "system", "jazn")):
+        if explicit_package_context or any(token in tokens for token in ("nlp", "kod", "runtime", "system", "jazn", "provenance", "finalizacja", "slownik", "morfologia", "lematyzacja")):
             update_score += 0.20
             update_positive.append("system_or_package_target")
         if any(token in tokens for token in ("patch", "branch", "testy", "test")):

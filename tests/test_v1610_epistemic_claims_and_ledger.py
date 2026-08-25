@@ -16,7 +16,10 @@ from latka_jazn.core.epistemic_claim_guard import (
     StructuredEpistemicClaim,
 )
 from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
-from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
+from latka_jazn.core.epistemic_evidence import (
+    EpistemicEvidenceCollector,
+    host_tool_attestations_to_external_evidence,
+)
 from latka_jazn.core.final_visible_reply_capture import FinalVisibleReplyCapture
 from latka_jazn.core.runtime_root import workspace_runtime_path
 
@@ -80,6 +83,57 @@ def test_daemon_presence_and_event_count_without_ids_do_not_prove_background_wor
     )[0]
     assert assessment.status is EpistemicClaimStatus.SUPPORTED
 
+
+
+def test_host_attested_tool_provenance_supports_audit_but_not_unrelated_runtime_execution() -> None:
+    evidence = host_tool_attestations_to_external_evidence([
+        {
+            "tool": "GitHub",
+            "operation": "compare_commits",
+            "source_refs": ["turn12file0"],
+            "source_urls": [],
+        }
+    ])
+    assessment = EpistemicClaimGuard().enforce(
+        "Wykonałam audyt repozytorium.",
+        evidence=evidence,
+    )[0]
+    assert assessment.status is EpistemicClaimStatus.SUPPORTED
+    assert assessment.source_kind is EpistemicSourceKind.TOOL_OR_WEB_SOURCE
+    assert assessment.reason == "host_attested_external_tool_action"
+
+    with pytest.raises(EpistemicClaimViolation):
+        EpistemicClaimGuard().enforce("Uruchomiłam runtime.", evidence=evidence)
+    with pytest.raises(EpistemicClaimViolation):
+        EpistemicClaimGuard().enforce("Wykonałam test Pyright.", evidence=evidence)
+
+
+def test_host_attested_github_write_can_support_write_claim_but_web_search_cannot() -> None:
+    github_write = host_tool_attestations_to_external_evidence([
+        {
+            "tool": "GitHub",
+            "operation": "update_file",
+            "source_refs": ["turn13file0"],
+            "source_urls": [],
+        }
+    ])
+    supported = EpistemicClaimGuard().enforce(
+        "Zaktualizowałam kod.",
+        evidence=github_write,
+    )[0]
+    assert supported.status is EpistemicClaimStatus.SUPPORTED
+    assert supported.source_kind is EpistemicSourceKind.TOOL_OR_WEB_SOURCE
+
+    web_read = host_tool_attestations_to_external_evidence([
+        {
+            "tool": "web.run",
+            "operation": "search",
+            "source_refs": ["turn14search0"],
+            "source_urls": [],
+        }
+    ])
+    with pytest.raises(EpistemicClaimViolation):
+        EpistemicClaimGuard().enforce("Zaktualizowałam kod.", evidence=web_read)
 
 def test_confidence_never_promotes_model_inference_to_supported_fact() -> None:
     assessment = EpistemicClaimGuard().assess_structured([

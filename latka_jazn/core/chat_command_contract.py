@@ -30,6 +30,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
 )
 from latka_jazn.core.runtime_ownership_contract import build_runtime_ownership_contract
 from latka_jazn.core.host_regeneration_policy import decide_host_regeneration
+from latka_jazn.core.epistemic_evidence import host_tool_attestations_to_external_evidence
 from latka_jazn.core.host_response_candidate_guard import (
     build_host_generation_context_from_runtime,
     evaluate_host_response_candidate,
@@ -1164,6 +1165,9 @@ def persist_chatgpt_host_visible_reply(
                 memory_evidence={
                     "memory_source_ids": list(reply.get("used_memory_item_ids") or []),
                 },
+                external_evidence=host_tool_attestations_to_external_evidence(
+                    semantic_validation.get("external_tool_evidence") or []
+                ),
             )
         finally:
             engine.shutdown()
