@@ -155,6 +155,24 @@ class RouteContractMatrix:
             and not explicit_update
         )
         matched = self._matched_intents(normalized, folded)
+        if "system_capability_gap_question" in matched:
+            technical_gap_object = any(
+                marker in folded
+                for marker in (
+                    "system", "runtime", "modul", "module", "kod", "implementac",
+                    "funkcj", "handler", "router", "routing", "api", "cli", "adapter",
+                    "plik", "repo", "branch", "test", "pyright", "kompil",
+                )
+            )
+            evidence_gap_context = any(
+                marker in folded
+                for marker in (
+                    "pamiec", "pamię", "wspomn", "dowod", "dowód", "potwierdz",
+                    "zrod", "źród", "archiw", "rozmow", "rozmów",
+                )
+            )
+            if not technical_gap_object or evidence_gap_context:
+                matched.pop("system_capability_gap_question", None)
         broad_hits = [marker for marker in self.BROAD_AUDIT_MARKERS if self._phrase_match(normalized, folded, marker)]
         broad_audit = len(broad_hits) >= 2 and any(
             token in folded for token in ("jazn", "runtime", "system", "kod", "modul", "adapter", "narzedz")
@@ -198,6 +216,7 @@ class RouteContractMatrix:
             "ordinary_dialogue": "ordinary_dialogue",
             "self_architecture_audit_request": "self_architecture_audit",
             "system_capability_gap_question": "capability_gap",
+            "compound_dialogue_question": "compound_dialogue",
         }.get(primary or "", "unknown")
         return RouteContractHint(
             schema_version=SCHEMA_VERSION,

@@ -24,6 +24,8 @@ from latka_jazn.memory._living_memory_gateway_impl import (
     LivingMemoryGateway as _LivingMemoryGateway,
     LivingMemoryHit,
 )
+from latka_jazn.memory.memory_tier_reader import probe_memory_tier_database_readonly
+from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
 from latka_jazn.memory.unified_memory_runtime import (
     probe_legacy_memory_layout,
     probe_unified_memory_database,
@@ -248,12 +250,60 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                 }
             )
 
+        # runtime_write_v2 is the canonical transactional write path for L1/L2/L3.
+        # It is also a read source through this same gateway so writes are not
+        # stranded in a second, invisible memory world. The probe is strictly
+        # read-only and does not create the database when it is absent.
+        tier_database = resolve_memory_tier_database_path(self.root)
+        tier_probe = probe_memory_tier_database_readonly(
+            tier_database,
+            busy_timeout_ms=self.busy_timeout_ms,
+        )
+        tier_ready = bool(tier_probe.get("memory_search_ready"))
+        if tier_database.is_file():
+            discovered.append(
+                {
+                    "root": str(self.root),
+                    "sqlite_dir": str(tier_database.parent),
+                    "origin": "active_runtime_write_v2",
+                    "available": {"memory_jazn": True},
+                    "database_paths": {"memory_jazn": str(tier_database)},
+                    "canonical_database": str(tier_database),
+                    "source_kind": "transactional_tier_memory",
+                    "source_trusted": True,
+                    "trust_basis": "active_runtime_root_boundary",
+                    "trust_issue": None,
+                    "native_structurally_ready": False,
+                    "legacy_structurally_ready": False,
+                    "transactional_tier_structurally_ready": tier_ready,
+                    "memory_search_ready": tier_ready,
+                    "legacy_search_ready": False,
+                    "recall_ready": tier_ready,
+                    "native_probe": {},
+                    "legacy_probe": {},
+                    "transactional_tier_probe": tier_probe,
+                    "import_catalog_used_for_recall": False,
+                    "read_only": True,
+                    "selected_canonical": False,
+                    "selected_transactional_tier": tier_ready,
+                    "ignored_reason": None if tier_ready else "transactional_tier_not_read_ready",
+                }
+            )
+
         selected_native = next(
-            (item for item in discovered if item.get("memory_search_ready")),
+            (
+                item
+                for item in discovered
+                if item.get("source_kind") == "native_unified"
+                and item.get("memory_search_ready")
+            ),
             None,
         )
         if selected_native is not None:
             for item in discovered:
+                if item.get("source_kind") == "transactional_tier_memory":
+                    item["selected_canonical"] = False
+                    continue
                 selected = item is selected_native
                 item["selected_canonical"] = selected
                 if not selected:
@@ -262,7 +312,7 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                         item["ignored_reason"] = "another_native_unified_database_selected"
         else:
             for item in discovered:
-                item["selected_canonical"] = False
+                item.setdefault("selected_canonical", False)
         self._discovery_cache = deepcopy(discovered)
         self._discovery_cached_at = time.monotonic()
         return discovered
@@ -274,27 +324,39 @@ class LivingMemoryGateway(_LivingMemoryGateway):
     def readiness(self) -> dict[str, Any]:
         sources = self.discover()
         selected = next((item for item in sources if item.get("selected_canonical")), None)
+        tier = next((item for item in sources if item.get("selected_transactional_tier")), None)
         legacy = [item for item in sources if item.get("legacy_search_ready")]
-        if selected is not None:
+        if selected is not None and tier is not None:
+            status = "ready_native_plus_transactional_tier"
+        elif selected is not None:
             status = "ready_native_unified"
+        elif tier is not None:
+            status = "ready_transactional_tier_only"
         elif legacy:
             status = "ready_legacy_compatibility_only"
         else:
             status = "no_ready_memory_source"
+        memory_ready = selected is not None or tier is not None
         return {
             "schema_version": SCHEMA_VERSION,
             "status": status,
-            "memory_search_ready": selected is not None,
+            "memory_search_ready": memory_ready,
+            "transactional_tier_search_ready": tier is not None,
             "legacy_search_ready": bool(legacy),
-            "canonical_database": selected.get("canonical_database") if selected else None,
-            "selected_source_count": 1 if selected else 0,
+            "canonical_database": (
+                selected.get("canonical_database")
+                if selected
+                else (tier.get("canonical_database") if tier else None)
+            ),
+            "selected_source_count": int(selected is not None) + int(tier is not None),
             "source_count": len(sources),
             "sources": sources,
             "truth_boundary": (
-                "memory_search_ready wymaga jawnie zaufanego źródła oraz jednej natywnej bazy unified "
-                "z poprawną tożsamością schematu, integralnością, FTS i działającą próbą odczytu. "
-                "Sama poprawność strukturalna nie ustanawia zaufania. Układ pięciu baz jest "
-                "wyłącznie zgodnością read-only i nie jest drugim kanonicznym runtime."
+                "memory_search_ready wymaga jawnie zaufanego źródła i poprawnej próby read-only. "
+                "Natywna baza unified pozostaje kanonicznym archiwum, a runtime_write_v2 jest "
+                "kanonicznym transactional L1/L2/L3 i jest odczytywany przez ten sam gateway. "
+                "Sama poprawność strukturalna nie ustanawia zaufania; układ pięciu baz pozostaje "
+                "wyłącznie zgodnością read-only."
             ),
         }
 

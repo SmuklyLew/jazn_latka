@@ -15,6 +15,7 @@ from latka_jazn.core.memory_intent_contract import TemporalScope
 from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
 from latka_jazn.memory.graph_aware_retrieval import GraphAwareRetrievalController
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.memory.memory_tier_reader import search_memory_tier_database_readonly
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, fts_queries
 from latka_jazn.version import schema_version
 
@@ -173,6 +174,24 @@ class LivingMemoryGateway:
                 break
             if not source.get("recall_ready"):
                 continue
+            if source.get("source_kind") == "transactional_tier_memory":
+                tier_path_raw = str(source.get("canonical_database") or "").strip()
+                if tier_path_raw:
+                    tier_path = Path(tier_path_raw)
+                    try:
+                        tier_hits = self._search_transactional_tier(
+                            tier_path,
+                            query or expanded_query,
+                            mode=mode,
+                            limit=per_layer,
+                            temporal_scope=temporal_scope,
+                            should_continue=can_continue,
+                        )
+                    except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
+                        issues.append(f"runtime_write_v2:{tier_path}:{type(exc).__name__}:{exc}")
+                    else:
+                        hits.extend(tier_hits)
+                continue
             paths = {key: Path(value) for key, value in (source.get("database_paths") or {}).items()}
             for layer in self.SEARCH_ORDER:
                 if not can_continue():
@@ -279,12 +298,25 @@ class LivingMemoryGateway:
             )
             selected = list(graph_decision.selected)
             graph_retrieval = graph_decision.telemetry
-        native_ready = any(bool(report.get("memory_search_ready")) for report in source_reports)
+        native_ready = any(
+            bool(report.get("memory_search_ready"))
+            and report.get("source_kind") == "native_unified"
+            for report in source_reports
+        )
+        tier_ready = any(
+            bool(report.get("memory_search_ready"))
+            and report.get("source_kind") == "transactional_tier_memory"
+            for report in source_reports
+        )
         legacy_ready = any(bool(report.get("legacy_search_ready")) for report in source_reports)
         if temporal_issue is not None:
             status = "invalid_temporal_scope"
+        elif native_ready and tier_ready:
+            status = "ready_native_plus_transactional_tier"
         elif native_ready:
             status = "ready_native_unified"
+        elif tier_ready:
+            status = "ready_transactional_tier_only"
         elif legacy_ready:
             status = "ready_legacy_compatibility_only"
         else:
@@ -292,7 +324,8 @@ class LivingMemoryGateway:
         return {
             "schema_version": SCHEMA_VERSION,
             "status": status,
-            "memory_search_ready": native_ready,
+            "memory_search_ready": native_ready or tier_ready,
+            "transactional_tier_search_ready": tier_ready,
             "legacy_search_ready": legacy_ready,
             "search_mode": mode,
             "query": query,
@@ -331,6 +364,69 @@ class LivingMemoryGateway:
                 "jest dowodem albo zapisem, a nie automatycznie zatwierdzonym wspomnieniem L3 ani biologicznym przeżyciem."
             ),
         }
+
+    def _search_transactional_tier(
+        self,
+        path: Path,
+        query: str,
+        *,
+        mode: str,
+        limit: int,
+        temporal_scope: _TemporalBounds | None,
+        should_continue: Callable[[], bool] | None = None,
+    ) -> list[LivingMemoryHit]:
+        if should_continue is not None and not should_continue():
+            return []
+        rows = search_memory_tier_database_readonly(
+            path,
+            query,
+            limit=max(1, int(limit)),
+            mode=mode,
+            busy_timeout_ms=self.busy_timeout_ms,
+        )
+        hits: list[LivingMemoryHit] = []
+        for row in rows:
+            if should_continue is not None and not should_continue():
+                break
+            timestamp = str(row.get("updated_at_utc") or row.get("created_at_utc") or "").strip() or None
+            if temporal_scope is not None and not self._timestamp_within_scope(timestamp, temporal_scope):
+                continue
+            tier = str(row.get("tier") or "unknown").strip()
+            memory_id = str(row.get("memory_id") or "").strip()
+            evidence_sources = [
+                dict(item)
+                for item in (row.get("evidence_sources") or [])
+                if isinstance(item, dict)
+            ]
+            hits.append(
+                LivingMemoryHit(
+                    source_layer=f"runtime_write_v2:{tier}",
+                    source_database=str(path),
+                    source_locator=f"memory_records:{memory_id}",
+                    record_id=memory_id,
+                    content_excerpt=str(row.get("content") or ""),
+                    timestamp=timestamp,
+                    truth_status=str(row.get("truth_status") or "unknown"),
+                    confidence=float(row.get("confidence")) if row.get("confidence") is not None else None,
+                    importance=float(row.get("importance")) if row.get("importance") is not None else None,
+                    relevance=float(row.get("relevance") or 0.0),
+                    title=str(row.get("kind") or "") or None,
+                    grounding="read_only_runtime_write_v2_gateway",
+                    metadata={
+                        "source_layer": "runtime_write_v2",
+                        "semantic_source_type": "active_memory",
+                        "tier": tier,
+                        "kind": row.get("kind"),
+                        "domain": row.get("domain"),
+                        "mode": row.get("mode"),
+                        "evidence_sources": evidence_sources,
+                        "created_at_utc": row.get("created_at_utc"),
+                        "updated_at_utc": row.get("updated_at_utc"),
+                        "read_only": True,
+                    },
+                )
+            )
+        return hits
 
     @staticmethod
     def _as_sqlite_dir(path: Path) -> Path:

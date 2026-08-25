@@ -196,6 +196,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lexical-frame", action="store_true", dest="lexical_frame", help="Pokaż raport leksykalny aktualnej Jaźni: polskie rozumienie + rozszerzona semantyka słów i fraz.")
     parser.add_argument("--nlp-frame", action="store_true", dest="nlp_frame", help="Pokaż raport NLP aktualnej Jaźni: tokeny, lemma_candidates, selected_lemma, confidence i provider.")
     parser.add_argument("--runtime-preview", action="store_true", dest="runtime_preview", help="Pokaż krótki, czytelny podgląd jednej tury runtime: final_visible_text + kluczowe pola diagnostyczne. Nie wypisuje pełnej koperty cognitive-frame do terminala.")
+    parser.add_argument("--preview-persist", action="store_true", dest="preview_persist", help="Jawnie zezwól --runtime-preview/--dev-preview na zapis zwykłej pamięci rozmownej. Domyślnie preview jest read-only dla pamięci użytkowej.")
     parser.add_argument("--dev-preview", action="store_true", dest="dev_preview", help="Tryb deweloperski: pokaż pełny payload runtime-preview/cognitive-frame na stdout albo zapisz go przez --runtime-preview-output.")
     parser.add_argument("--runtime-preview-output", type=Path, default=None, help="Opcjonalna ścieżka pliku JSON dla --runtime-preview/--dev-preview; pełny payload trafia do pliku, a stdout zwraca tylko krótki, czytelny wynik.")
     parser.add_argument("--active-cache-status", action="store_true", dest="active_cache_status", help="Pokaż status aktywnego rozpakowanego folderu i decyzję, czy trzeba ponownie rozpakować ZIP.")
@@ -1198,6 +1199,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if ns.runtime_preview_output and not (ns.runtime_preview or ns.dev_preview):
         parser.error("--runtime-preview-output wymaga --runtime-preview albo --dev-preview")
+    if ns.preview_persist and not (ns.runtime_preview or ns.dev_preview):
+        parser.error("--preview-persist wymaga --runtime-preview albo --dev-preview")
     if ns.chat_gpt_final_only:
         ns.chat_gpt = True
     if ns.final_only and not ns.chat_gpt:
@@ -1914,6 +1917,8 @@ def main(argv: list[str] | None = None) -> int:
                     "session_id": ns.session_id,
                     "no_carryover": ns.no_carryover,
                     "terminal_mode": "compact" if ns.runtime_preview else "full_dev_payload",
+                    "preview_persist": bool(ns.preview_persist),
+                    "memory_persistence": "persist" if ns.preview_persist else "read_only_preview",
                 },
             )
             envelope_dict, runtime_truth_gate = apply_runtime_truth_gate(envelope.to_dict())
@@ -1959,6 +1964,7 @@ def main(argv: list[str] | None = None) -> int:
                 "normal_response_blocked": envelope_dict.get("normal_response_blocked"),
                 "runtime_response_status": envelope_dict.get("runtime_response_status"),
                 "runtime_truth_gate": runtime_truth_gate,
+                "preview_memory_persistence": "persist" if ns.preview_persist else "read_only_preview",
                 "cognitive_turn_envelope": envelope_dict,
                 "cognitive_frame": cognitive_frame,
                 "visible_runtime_preview_contract": {
@@ -1987,13 +1993,14 @@ def main(argv: list[str] | None = None) -> int:
                 "fallback_classification": final_contract.get("fallback_classification"),
                 "runtime_answer_quality": final_contract.get("runtime_answer_quality"),
                 "runtime_truth_gate": runtime_truth_gate,
+                "preview_memory_persistence": "persist" if ns.preview_persist else "read_only_preview",
                 "timestamp_trusted": integrity.get("timestamp_trusted") if integrity else final_contract.get("timestamp_trusted"),
                 "final_visible_integrity_valid": integrity.get("valid") if integrity else None,
                 "normal_response_blocked": envelope_dict.get("normal_response_blocked"),
                 "runtime_response_status": envelope_dict.get("runtime_response_status"),
                 "full_payload_written_to": str(ns.runtime_preview_output) if ns.runtime_preview_output else None,
                 "dev_preview_command": "python main.py --dev-preview <tekst>",
-                "truth_boundary": "To jest krótki podgląd diagnostyczny jednej tury runtime. Nie traktuj samego --runtime-preview jako rozmowy z Łatką; do stałej rozmowy służy --chat, a pełny JSON techniczny jest w --dev-preview albo --runtime-preview-output.",
+                "truth_boundary": "To jest krótki podgląd diagnostyczny jednej tury runtime. Domyślnie preview nie zapisuje zwykłej pamięci rozmownej; zapis wymaga jawnego --preview-persist. Nie traktuj samego --runtime-preview jako rozmowy z Łatką; do stałej rozmowy służy --chat.",
             }
             payload_json = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
             if ns.runtime_preview_output:

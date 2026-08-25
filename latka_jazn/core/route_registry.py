@@ -22,7 +22,7 @@ class RouteRegistry:
     PRIORITIES = {
         "post_update_coverage_audit_request": 102, "self_architecture_audit_request": 101, "jazn_development_plan_request": 100, "runtime_behavior_diagnostic_request": 100, "voice_perspective_diagnostic_request": 100, "runtime_exact_quote_request": 99,
         "runtime_source_question": 98, "canon_source_question": 98, "package_runtime_status_question": 97, "runtime_activation_status_question": 97, "runtime_chat_mode_request": 97, "system_repair_plan_request": 96, "logic_reasoning_audit_request": 96, "memory_grounding_status_question": 96, "system_diagnostic_question": 96,
-        "system_update_execution_request": 95, "system_update_manifest_request": 94, "update_manifest_request": 94,
+        "system_update_execution_request": 95, "system_update_manifest_request": 94, "update_manifest_request": 94, "compound_dialogue_question": 93,
         "creative_text_formatting": 92, "creative_text_analysis": 90,
         "creative_source_preservation_request": 89, "identity_boundary_question": 88, "identity_direct_question": 88,
         "affective_self_state_reality_check": 89, "self_state_question": 87, "reciprocal_self_state_question": 86, "self_preference_question": 86, "self_plan_question": 85, "sleep_closure_statement": 85, "current_time_question": 85, "substantive_question_about_last_year": 84, "current_hotfix_for_stale_nlp_route": 83, "memory_experience_question": 82, "ordinary_workday_report": 81, "legacy_behavioral_runtime_dialogue_update_reference": 80,
@@ -43,6 +43,7 @@ class RouteRegistry:
     }
     HANDLERS = {
         "post_update_coverage_audit_request": ("post_update_coverage_audit", "PostUpdateCoverageAuditHandler"),
+        "compound_dialogue_question": ("compound_dialogue", "CompoundDialogueHandler"),
         "self_architecture_audit_request": ("self_architecture_audit", "SelfArchitectureAuditHandler"),
         "jazn_development_plan_request": ("self_architecture_audit", "SelfArchitectureAuditHandler"),
         "runtime_source_question": ("runtime_source", "RuntimeSourceHandler"),
@@ -126,6 +127,8 @@ class RouteRegistry:
     def required_components_for(self, intent: str) -> list[str]:
         if intent == "post_update_coverage_audit_request":
             return ["patch_scope", "covered_items", "omissions", "evidence", "tests", "release_boundary", "truth_boundary"]
+        if intent == "compound_dialogue_question":
+            return ["question_components", "component_intents", "component_source_plan", "memory_gate", "truth_boundary"]
         if intent == "external_tool_assistance_request":
             return ["tool_context", "primary_intent_preservation", "voice_continuity", "truth_boundary"]
         if intent in {"self_architecture_audit_request", "jazn_development_plan_request"}:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "16.3.3"
-PACKAGE_VERSION = "16.3.3"
-PACKAGE_RELEASE_NAME = "memory-rebuild-modular-typed-retrieval"
+DISTRIBUTION_VERSION = "16.3.4"
+PACKAGE_VERSION = "16.3.4"
+PACKAGE_RELEASE_NAME = "complex-dialogue-memory-routing-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

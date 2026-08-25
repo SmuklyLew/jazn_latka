@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 import math
 from typing import Any
 import re
 
+from latka_jazn.core.typed_memory_source_policy import (
+    build_typed_source_policy,
+    provenance_label_for_source_type,
+)
+from latka_jazn.nlp.utterance_components import analyse_utterance
 
 @dataclass(slots=True)
 class MemoryRecallItem:
@@ -29,6 +34,10 @@ class MemoryRecallItem:
     relevance_label: str
     meaning_assessment: str
     content_excerpt: str
+    semantic_source_type: str = "unknown"
+    truth_status: str = "unknown"
+    provenance_label: str = "brak dowodu"
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -101,6 +110,12 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content, max_len=520),
+                truth_status=truth_status,
+                metadata={
+                    **(hit.get("metadata") if isinstance(hit.get("metadata"), dict) else {}),
+                    "source_layer": layer,
+                    "source_database": self._clean(hit.get("source_database")),
+                },
             ))
 
         episodes = self.filter_temporal_candidates(
@@ -129,6 +144,11 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content),
+                truth_status=self._clean(ep.get("truth_status") or ep.get("review_status")) or "source_recorded",
+                metadata={
+                    "author_role": self._clean(ep.get("author_role")),
+                    "kind": self._clean(ep.get("kind")),
+                },
             ))
 
         legacy_messages = self.filter_temporal_candidates(
@@ -166,6 +186,8 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content),
+                truth_status=self._clean(row.get("truth_status") or row.get("review_status")) or "source_recorded",
+                metadata={"author_role": role, "conversation_title": title},
             ))
 
 
@@ -208,6 +230,10 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content, max_len=420),
+                truth_status=self._clean(hit.get("truth_status")) or "source_recorded",
+                semantic_source_type=self._clean(hit.get("semantic_source_type")) or "unknown",
+                provenance_label=self._clean(hit.get("provenance_label")) or "brak dowodu",
+                metadata={"topic_key": hit.get("topic_key"), "path": self._clean(hit.get("path"))},
             ))
 
         archive_hits = self.filter_temporal_candidates(
@@ -246,6 +272,12 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content, max_len=460),
+                truth_status=self._clean(archive_hit.get("truth_status")) or "source_recorded",
+                metadata={
+                    "author_role": role,
+                    "conversation_title": title,
+                    "source_locator": self._clean(archive_hit.get("source_locator")),
+                },
             ))
 
         raw_chat_hits = self.filter_temporal_candidates(
@@ -273,23 +305,41 @@ class MemoryRecallPresenter:
                 relevance_label=label,
                 meaning_assessment=assessment,
                 content_excerpt=self._excerpt(content, max_len=360),
+                truth_status=self._clean(raw.get("truth_status")) or "source_recorded",
+                metadata={"fallback": True},
             ))
 
-        # Kolejność: najpierw trafność znaczeniowa, potem epizody przed legacy,
-        # przy zachowaniu stabilnej kolejności dla równych wyników.
-        type_bonus = {
-            "living_memory:memory_jazn": 0.08,
-            "living_memory:experience": 0.07,
-            "living_memory:journal": 0.06,
-            "living_memory:archive_chats": 0.05,
-            "episode": 0.04,
-            "conversation_archive": 0.038,
-            "source_file": 0.035,
-            "legacy_message": 0.02,
-            "raw_chat_fallback": 0.0,
-        }
-        items.sort(key=lambda x: (x.relevance_score + type_bonus.get(x.item_type, 0.0)), reverse=True)
-        return items[:limit]
+        source_policy = build_typed_source_policy(user_text)
+        typed_items: list[MemoryRecallItem] = []
+        for item in items:
+            decision = source_policy.evaluate(
+                item_type=item.item_type,
+                source=item.source,
+                source_layer=str(item.metadata.get("source_layer") or ""),
+                grounding=item.grounding,
+                path=str(item.metadata.get("path") or item.source or ""),
+                metadata=item.metadata,
+            )
+            if not decision.allowed:
+                continue
+            item.semantic_source_type = decision.semantic_source_type
+            item.provenance_label = decision.provenance_label
+            if not item.truth_status:
+                item.truth_status = "unknown"
+            typed_items.append(item)
+
+        # Ranking jest najpierw zgodny z intencją i typem źródła, dopiero potem
+        # z czystą trafnością leksykalną. Dzięki temu kod/procedury nie wygrywają
+        # autobiograficznego recallu tylko dlatego, że zawierają te same słowa.
+        typed_items.sort(
+            key=lambda item: (
+                source_policy.priority_for(item.semantic_source_type),
+                item.relevance_score,
+                item.confidence or 0.0,
+            ),
+            reverse=True,
+        )
+        return typed_items[:limit]
 
     @staticmethod
     def _temporal_scope_from_context(memory_context: Mapping[str, Any]) -> Any:
@@ -379,15 +429,125 @@ class MemoryRecallPresenter:
     def build_payload(self, memory_context: dict[str, Any] | None, *, user_text: str = "", limit: int = 6) -> dict[str, Any]:
         counts = (memory_context or {}).get("counts") if isinstance(memory_context, dict) else {}
         items = self.build_items(memory_context, user_text=user_text, limit=limit)
+        source_policy = build_typed_source_policy(user_text)
+        slot_plan = self.build_slot_plan(items, user_text=user_text)
         return {
-            "schema_version": "memory_recall_content/v1",
+            "schema_version": "memory_recall_content/v2",
             "query_terms": (memory_context or {}).get("query_terms") if isinstance(memory_context, dict) else [],
             "memory_search_plan": (memory_context or {}).get("memory_search_plan") if isinstance(memory_context, dict) else None,
             "living_memory_search": (memory_context or {}).get("living_memory_search") if isinstance(memory_context, dict) else None,
             "counts": counts or {},
+            "source_policy": source_policy.to_dict(),
             "items": [i.to_dict() for i in items],
+            "slot_plan": slot_plan,
             "summary": self.summary(items, counts or {}),
-            "rule": "planer pamięci najpierw oczyszcza i rozszerza zapytanie; liczniki są diagnostyką; odpowiedź pamięciowa musi używać treści, źródła, czasu, typu, pewności i oceny trafności",
+            "rule": (
+                "typ źródła jest dobierany do intencji; każdy slot ma własne provenance/truth_status; "
+                "brak właściwego źródła pozostaje evidence gap zamiast halucynacji"
+            ),
+        }
+
+    def build_slot_plan(self, items: list[MemoryRecallItem], *, user_text: str) -> dict[str, Any]:
+        report = analyse_utterance(user_text)
+        requested = list(dict.fromkeys(report.response_slots))
+        slots: dict[str, dict[str, Any]] = {}
+
+        def role_of(item: MemoryRecallItem) -> str:
+            return self._norm_text(str(item.metadata.get("author_role") or ""))
+
+        def preference_status(item: MemoryRecallItem | None) -> str:
+            if item is None:
+                return "unknown"
+            if item.semantic_source_type in {"conversation_archive", "active_memory", "journal_reflection"}:
+                return "remembered_preference"
+            if item.semantic_source_type == "canon":
+                return "canonical_preference"
+            if item.semantic_source_type == "current_state":
+                return "current_preference"
+            if item.semantic_source_type == "inference":
+                return "inferred_preference"
+            return "unknown"
+
+        def origin_interpretation(item: MemoryRecallItem | None) -> str:
+            if item is None:
+                return "unknown"
+            if item.semantic_source_type in {"technical_runtime", "source_code", "documentation", "runtime_status"}:
+                return "technical_beginning"
+            if item.semantic_source_type == "canon":
+                return "canonical_origin"
+            if item.semantic_source_type in {"conversation_archive", "active_memory", "journal_reflection"}:
+                return "relational_narrative_origin"
+            if item.semantic_source_type == "inference":
+                return "metaphorical_or_inferred_origin"
+            return "unknown"
+
+        def choose(slot: str) -> MemoryRecallItem | None:
+            if slot == "user_utterance":
+                return next((item for item in items if role_of(item) in {"user", "human", "uzytkownik"}), None)
+            if slot == "latka_utterance":
+                return next((item for item in items if role_of(item) in {"assistant", "latka", "ai"}), None)
+            if slot in {"later_reflection", "reflection_content", "reflection_time", "reflection_provenance"}:
+                return next((item for item in items if item.semantic_source_type == "journal_reflection"), None)
+            if slot.startswith("continuity_canon") or slot in {"preference_value", "preference_reason", "preference_provenance", "origin_layer", "origin_time_or_boundary", "origin_provenance"}:
+                return items[0] if items else None
+            if slot in {"event_fact", "time_context", "source", "truth_status", "confidence", "evidence_gap"}:
+                return items[0] if items else None
+            return items[0] if items else None
+
+        for slot in requested:
+            selected = choose(slot)
+            if selected is None:
+                slots[slot] = {
+                    "status": "evidence_gap",
+                    "value": None,
+                    "source": None,
+                    "semantic_source_type": None,
+                    "truth_status": "unknown",
+                    "confidence": None,
+                    "provenance_label": "brak dowodu",
+                    "preference_status": "unknown" if slot.startswith("preference_") else None,
+                    "origin_interpretation": "unknown" if slot.startswith("origin_") else None,
+                    "biological_claim_allowed": False if slot.startswith("origin_") else None,
+                }
+                continue
+            if slot in {"time_context", "reflection_time", "origin_time_or_boundary"}:
+                value: Any = selected.timestamp
+            elif slot == "source":
+                value = selected.source
+            elif slot == "truth_status":
+                value = selected.truth_status
+            elif slot == "confidence":
+                value = selected.confidence
+            elif slot == "preference_provenance":
+                value = selected.provenance_label
+            elif slot == "origin_layer":
+                value = origin_interpretation(selected)
+            elif slot == "origin_provenance":
+                value = selected.provenance_label
+            elif slot == "evidence_gap":
+                value = None
+            else:
+                value = selected.content_excerpt
+            slots[slot] = {
+                "status": "supported" if value not in {None, ""} else "evidence_gap",
+                "value": value,
+                "source": selected.source,
+                "semantic_source_type": selected.semantic_source_type,
+                "truth_status": selected.truth_status,
+                "confidence": selected.confidence,
+                "provenance_label": selected.provenance_label,
+                "timestamp": selected.timestamp,
+                "preference_status": preference_status(selected) if slot.startswith("preference_") else None,
+                "origin_interpretation": origin_interpretation(selected) if slot.startswith("origin_") else None,
+                "biological_claim_allowed": False if slot.startswith("origin_") else None,
+            }
+
+        return {
+            "schema_version": "memory_recall_slot_plan/v1",
+            "requested_slots": requested,
+            "slots": slots,
+            "evidence_gap_count": sum(1 for value in slots.values() if value.get("status") == "evidence_gap"),
+            "truth_boundary": "slot bez źródła nie jest uzupełniany wnioskowaniem ani proceduralnym trafieniem",
         }
 
     def render(self, memory_context: dict[str, Any] | None, *, user_text: str = "", limit: int = 6) -> str:
@@ -422,9 +582,10 @@ class MemoryRecallPresenter:
             source = item.get("source") or "źródło nieustalone"
             term = item.get("query_term") or "bez osobnego hasła"
             lines.append(
-                f"{idx}. [{item['item_type']} / {term}] {timestamp} / {source}{conf} / "
-                f"trafność: {item['relevance_label']} ({item['relevance_score']:.2f}). "
-                f"Ocena: {item['meaning_assessment']}. Fragment: „{item['content_excerpt']}”"
+                f"{idx}. {item.get('provenance_label')}: {item['content_excerpt']} "
+                f"[typ={item.get('semantic_source_type')}, czas={timestamp}, źródło={source}, "
+                f"truth={item.get('truth_status')}{conf}, trafność={item['relevance_label']} "
+                f"({item['relevance_score']:.2f}), hasło={term}]"
             )
         lines.append("Wniosek: liczby zostają tylko diagnostyką; właściwe przypomnienie musi pokazać, co zostało znalezione i czy ma sens dla pytania.")
         return "\n".join(lines)
