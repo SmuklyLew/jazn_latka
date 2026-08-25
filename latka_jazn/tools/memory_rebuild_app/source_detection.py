@@ -98,7 +98,7 @@ def _classify_records(path: Path, samples: list[dict[str, Any]]) -> SourceProbe:
         scores[kind] += hits * 2
         if hits:
             reasons.append(f"schema_keys:{kind}:{hits}")
-    winner = max(scores, key=scores.get)
+    winner = max(scores, key=lambda candidate: scores[candidate])
     score = scores[winner]
     if score <= 0:
         winner = "reference"

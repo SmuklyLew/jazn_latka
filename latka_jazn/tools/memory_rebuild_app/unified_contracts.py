@@ -6,14 +6,28 @@ import sqlite3
 
 
 if TYPE_CHECKING:
+    from .adapters.registry import AdapterRegistry
+    from .settings import MemoryRebuildSettings
+
+
     class UnifiedMixinHost:
         """Static contract supplied by the composed UnifiedMemoryDatabase."""
 
         path: Path
+        settings: MemoryRebuildSettings
+        adapter_registry: AdapterRegistry
 
-        def __init__(self, path: str | Path) -> None: ...
+        def __init__(
+            self,
+            path: str | Path,
+            *,
+            settings: MemoryRebuildSettings | None = None,
+            adapter_registry: AdapterRegistry | None = None,
+        ) -> None: ...
 
         def initialize(self) -> dict[str, Any]: ...
+
+        def ensure_initialized(self) -> dict[str, Any]: ...
 
         def connect(self, *, read_only: bool = False) -> sqlite3.Connection: ...
 

@@ -13,7 +13,7 @@ Wersja tej architektury:
 - aplikacja: `3.0.0`;
 - zunifikowany schemat: `jazn_unified_memory/v3.0`;
 - wspólne L0: `memory_rebuild_l0/v16.1`;
-- pakiet Jaźni: `16.3.2-memory-rebuild-modular-typed-retrieval`.
+- pakiet Jaźni: `16.3.3-memory-rebuild-modular-typed-retrieval`.
 
 ## Podział kodu
 
