@@ -335,4 +335,3 @@ class JournalReader:
             "automatic_l2": False, "automatic_l3": False,
             "streaming_jsonl": self.path.suffix.lower() in {".jsonl", ".ndjson"},
         }
-
