@@ -76,6 +76,20 @@ CREATE TABLE IF NOT EXISTS unified_export_runs(
   completed_at_utc TEXT,
   report_json TEXT NOT NULL DEFAULT '{}'
 );
+CREATE TABLE IF NOT EXISTS unified_migration_conflicts(
+  conflict_id TEXT PRIMARY KEY,
+  source_database_name TEXT NOT NULL,
+  table_name TEXT NOT NULL,
+  key_json TEXT NOT NULL,
+  target_sha256 TEXT,
+  incoming_sha256 TEXT NOT NULL,
+  revision_relation TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('unresolved','resolved_target_canonical','resolved_duplicate')),
+  details_json TEXT NOT NULL DEFAULT '{}',
+  created_at_utc TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_unified_migration_conflicts_status
+  ON unified_migration_conflicts(status,table_name);
 CREATE VIRTUAL TABLE IF NOT EXISTS memory_records_fts USING fts5(
   memory_id UNINDEXED,
   content,
@@ -118,7 +132,7 @@ COPY_ORDER = (
     "promotion_ledger", "long_term_memory_index", "memory_outbox", "session_checkpoints",
     "catalog_meta", "sources", "source_occurrences", "operations", "links", "verifications",
     "unified_memory_meta", "candidate_revisions", "candidate_evidence", "candidate_links",
-    "unified_export_runs",
+    "unified_export_runs", "unified_migration_conflicts",
 )
 
 EDITABLE_CANDIDATE_FIELDS = {

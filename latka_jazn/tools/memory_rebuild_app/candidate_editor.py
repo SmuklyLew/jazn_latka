@@ -11,7 +11,7 @@ from .unified_schema import EDITABLE_CANDIDATE_FIELDS, candidate_snapshot, json_
 
 class CandidateEditorMixin(UnifiedMixinHost):
     def list_candidates(self, *, status: str | None = None, limit: int = 200, query: str | None = None) -> list[dict[str, Any]]:
-        self.initialize()
+        self.ensure_initialized()
         sql = "SELECT * FROM candidates"
         clauses: list[str] = []
         params: list[Any] = []
@@ -30,7 +30,7 @@ class CandidateEditorMixin(UnifiedMixinHost):
             return [candidate_snapshot(row) for row in con.execute(sql, params).fetchall()]
 
     def get_candidate(self, candidate_id: str) -> dict[str, Any]:
-        self.initialize()
+        self.ensure_initialized()
         with self.connect(read_only=True) as con:
             row = con.execute("SELECT * FROM candidates WHERE candidate_id=?", (candidate_id,)).fetchone()
             if row is None:

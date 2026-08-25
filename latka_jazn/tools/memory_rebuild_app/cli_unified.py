@@ -122,6 +122,8 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     profile.add_argument("--profile", required=True, choices=PROFILE_NAMES)
     profile.add_argument("--baseline", action="append", type=Path, default=[])
     profile.add_argument("--quick", action="store_true")
+    profile.add_argument("--acceptance-report", type=Path)
+    profile.add_argument("--system-acceptance", action="store_true")
 
     final = sub.add_parser("final-export", help="Zbuduj stagingowy, zweryfikowany eksport finalny.")
     _add_database(final)
@@ -129,6 +131,8 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     final.add_argument("--baseline", action="append", type=Path, default=[])
     final.add_argument("--source", action="append", type=Path, default=[])
     final.add_argument("--overwrite", action="store_true")
+    final.add_argument("--acceptance-report", type=Path, required=True)
+    final.add_argument("--system-acceptance", action="store_true")
 
 
 def run_unified_command(args: argparse.Namespace) -> dict[str, Any]:
@@ -184,9 +188,16 @@ def run_unified_command(args: argparse.Namespace) -> dict[str, Any]:
     if command == "split-candidate":
         return {"ok": True, "candidate": store.split_candidate(args.candidate_id, title=args.title, summary=args.summary, edited_by=args.edited_by, reason=args.reason)}
     if command == "test-profile":
-        return run_test_profile(store.path, args.profile, baselines=args.baseline, full_validation=not args.quick)
+        return run_test_profile(
+            store.path, args.profile, baselines=args.baseline, full_validation=not args.quick,
+            acceptance_report=args.acceptance_report, system_acceptance=args.system_acceptance,
+        )
     if command == "final-export":
-        return export_final_memory(store.path, args.output, baselines=args.baseline, sources=args.source, overwrite=args.overwrite)
+        return export_final_memory(
+            store.path, args.output, baselines=args.baseline, sources=args.source,
+            overwrite=args.overwrite, acceptance_report=args.acceptance_report,
+            system_acceptance=args.system_acceptance,
+        )
     raise AssertionError(command)
 
 

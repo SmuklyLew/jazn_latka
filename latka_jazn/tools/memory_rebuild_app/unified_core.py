@@ -17,6 +17,8 @@ from latka_jazn.tools.memory_rebuild_journal import JournalReader, JournalStore
 from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
 from .unified_contracts import UnifiedMixinHost
+from .read_only_validation import read_only_stats, validate_existing_database
+from .source_detection import probe_source
 from .unified_schema import (
     CANONICAL_DATABASE_NAME, EXTRA_SCHEMA, UNIFIED_SCHEMA_VERSION, UnifiedImportResult, quote, utc_now,
 )
@@ -36,6 +38,23 @@ class _ClosingSQLiteConnection(sqlite3.Connection):
 
 class UnifiedCoreMixin(UnifiedMixinHost):
     path: Path
+
+    def schema_ready(self) -> bool:
+        if not self.path.is_file():
+            return False
+        try:
+            with sqlite3.connect(f"file:{self.path.as_posix()}?mode=ro", uri=True, timeout=5) as con:
+                row = con.execute(
+                    "SELECT value FROM unified_memory_meta WHERE key='schema_version'"
+                ).fetchone()
+                return bool(row and str(row[0]) in {"jazn_unified_memory/v2.4", UNIFIED_SCHEMA_VERSION})
+        except sqlite3.DatabaseError:
+            return False
+
+    def ensure_initialized(self) -> dict[str, Any]:
+        if self.schema_ready():
+            return {"ok": True, "database": str(self.path), "schema_version": UNIFIED_SCHEMA_VERSION, "already_initialized": True}
+        return self.initialize()
 
     def initialize(self) -> dict[str, Any]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -85,7 +104,7 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             con.execute("PRAGMA wal_checkpoint(FULL)")
 
     def backup(self, output: str | Path) -> Path:
-        self.initialize()
+        self.ensure_initialized()
         self.checkpoint()
         target = Path(output).expanduser().resolve()
         if target.is_dir() or not target.suffix:
@@ -103,40 +122,49 @@ class UnifiedCoreMixin(UnifiedMixinHost):
         return target
 
     def import_source(self, source: str | Path, *, dry_run: bool = False, full_validation: bool = True) -> UnifiedImportResult:
-        self.initialize()
+        self.ensure_initialized()
         path = Path(source).expanduser().resolve()
         if not path.exists():
             raise FileNotFoundError(path)
-        suffix = path.suffix.lower()
         if path.is_dir():
             payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
             return UnifiedImportResult(str(path), "chatgpt_export_directory", str(payload.get("status")), payload)
-        if suffix in {".html", ".htm"}:
-            payload = import_chat_html(path, self.path, dry_run=dry_run).to_dict()
-            return UnifiedImportResult(str(path), "chatgpt_html", str(payload.get("mode")), payload)
-        if suffix == ".zip":
-            try:
-                payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
-                return UnifiedImportResult(str(path), "chatgpt_export_zip", str(payload.get("status")), payload)
-            except ValueError as exc:
-                if "conversation JSON" not in str(exc) and "canonical conversations" not in str(exc):
-                    raise
+
+        probe = probe_source(path)
+        kind = probe.kind
+        suffix = path.suffix.lower()
+        if kind == "chat":
+            if suffix in {".html", ".htm"}:
                 payload = import_chat_html(path, self.path, dry_run=dry_run).to_dict()
-                return UnifiedImportResult(str(path), "chatgpt_html_zip", str(payload.get("mode")), payload)
-        if suffix == ".json" and probe_json_source_kind(path) == "conversation":
+                return UnifiedImportResult(str(path), "chatgpt_html", str(payload.get("mode")), {**payload, "source_probe": probe.to_dict()})
+            if suffix == ".zip":
+                try:
+                    payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
+                    return UnifiedImportResult(str(path), "chatgpt_export_zip", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
+                except ValueError as exc:
+                    if "conversation JSON" not in str(exc) and "canonical conversations" not in str(exc):
+                        raise
+                    payload = import_chat_html(path, self.path, dry_run=dry_run).to_dict()
+                    return UnifiedImportResult(str(path), "chatgpt_html_zip", str(payload.get("mode")), {**payload, "source_probe": probe.to_dict()})
             payload = ChatExportImporter().import_one(path, self.path, dry_run=dry_run, full_validation=full_validation).to_dict()
-            return UnifiedImportResult(str(path), "chatgpt_conversation_json", str(payload.get("status")), payload)
-        if suffix in {".json", ".jsonl", ".ndjson"}:
+            return UnifiedImportResult(str(path), "chatgpt_conversation_json", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
+        if kind == "journal":
             reader = JournalReader(path)
             with JournalStore(self.path) as store:
                 payload = store.import_reader(reader, dry_run=dry_run)
-            return UnifiedImportResult(str(path), "journal", str(payload.get("status")), payload)
-        if suffix in {".sqlite", ".sqlite3", ".db"}:
+            return UnifiedImportResult(str(path), "journal", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
+        if kind == "legacy_sqlite":
             payload = self.migrate_databases([path], dry_run=dry_run)
-            return UnifiedImportResult(str(path), "legacy_sqlite", str(payload.get("status")), payload)
-        return UnifiedImportResult(str(path), "reference_only", "not_imported", {
-            "ok": True, "status": "reference_only",
-            "reason": "Typ pliku pozostaje źródłem referencyjnym; nie ma bezpiecznego importera do bazy pamięci.",
+            return UnifiedImportResult(str(path), "legacy_sqlite", str(payload.get("status")), {**payload, "source_probe": probe.to_dict()})
+        return UnifiedImportResult(str(path), kind, "not_imported", {
+            "ok": True,
+            "status": "reference_only",
+            "detected_kind": kind,
+            "source_probe": probe.to_dict(),
+            "reason": (
+                "Źródło zostało sklasyfikowane schematowo, ale wymaga dedykowanego importera Stage4/sync-runtime; "
+                "nie jest automatycznie traktowane jako dziennik ani eksport ChatGPT."
+            ),
         })
 
     def _preview_import_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
@@ -177,33 +205,19 @@ class UnifiedCoreMixin(UnifiedMixinHost):
         }
 
     def stats(self) -> dict[str, int]:
-        self.initialize()
-        tables = (
-            "import_sources", "conversations", "nodes", "fts_docs", "assets", "import_conflicts",
-            "journal_sources", "journal_entries", "journal_revisions", "candidates", "experiences",
-            "candidate_revisions", "candidate_evidence", "memory_records", "memory_evidence",
-            "promotion_requests", "promotion_decisions", "promotion_ledger", "sources", "operations",
-        )
-        with self.connect(read_only=True) as con:
-            result: dict[str, int] = {}
-            for table in tables:
-                exists = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
-                result[table] = int(con.execute(f"SELECT COUNT(*) FROM {quote(table)}").fetchone()[0]) if exists else 0
-            return result
+        """Return counts without creating, migrating, checkpointing or rebuilding the database."""
+        return read_only_stats(self.path)
 
     def validate(self, *, full: bool = True) -> dict[str, Any]:
+        """Strict read-only validation of an existing unified database.
+
+        Repair/init is intentionally separate.  FTS5 integrity-check runs on a
+        temporary SQLite backup snapshot, never on the database being assessed.
+        """
+        return validate_existing_database(self.path, full=full, include_fts=True)
+
+    def repair_and_validate(self, *, full: bool = True) -> dict[str, Any]:
+        """Explicit mutating maintenance path; never used by Test 01-04 profiles."""
         self.initialize()
         self.checkpoint()
-        with self.connect(read_only=True) as con:
-            pragma = "integrity_check" if full else "quick_check"
-            integrity_rows = [str(row[0]) for row in con.execute(f"PRAGMA {pragma}")]
-            foreign_keys = [tuple(row) for row in con.execute("PRAGMA foreign_key_check")]
-            meta = {str(row["key"]): str(row["value"]) for row in con.execute("SELECT key,value FROM unified_memory_meta")}
-        ok = integrity_rows == ["ok"] and not foreign_keys and meta.get("schema_version") == UNIFIED_SCHEMA_VERSION
-        return {
-            "ok": ok, "database": str(self.path), "single_physical_database": True,
-            "schema_version": meta.get("schema_version"), "validation_mode": pragma,
-            "integrity": integrity_rows, "foreign_key_error_count": len(foreign_keys),
-            "foreign_key_errors": foreign_keys[:100], "size_bytes": self.path.stat().st_size if self.path.exists() else 0,
-            "sha256": sha256_file(self.path) if self.path.exists() else None, "stats": self.stats(),
-        }
+        return validate_existing_database(self.path, full=full, include_fts=True)

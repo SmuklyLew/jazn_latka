@@ -22,7 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rebuild_memory_app",
         description=(
-            "Jaźń Memory Rebuild v2.4: projekty źródeł, jedna baza memory_jazn.sqlite3, "
+            "Jaźń Memory Rebuild v16.0: projekty źródeł, jedna baza memory_jazn.sqlite3, "
             "import nowych wątków, kandydaci, Testy 01–04 i finalny eksport."
         ),
         allow_abbrev=False,

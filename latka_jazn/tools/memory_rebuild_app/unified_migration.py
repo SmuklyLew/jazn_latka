@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Iterable
+import hashlib
+import json
 import os
 import sqlite3
 import tempfile
+import uuid
 
 from latka_jazn.tools.chat_export_reader import build_conversation_graph
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
@@ -92,6 +95,10 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
 
             staged = type(self)(staged_path)
             payload = staged._migrate_databases_impl(snapshot_paths)
+            if not payload.get("ok"):
+                raise sqlite3.IntegrityError(
+                    f"staged unified memory migration has {payload.get('unresolved_migration_conflicts', 0)} unresolved conflicts"
+                )
             validation = staged.validate(full=True)
             if not validation.get("ok"):
                 raise sqlite3.DatabaseError("staged unified memory validation failed")
@@ -111,11 +118,132 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
                     item["database"] = "validated_sqlite_backup_snapshot"
             return payload
 
+    @staticmethod
+    def _row_sha(columns: list[str], row: sqlite3.Row | tuple[Any, ...]) -> str:
+        values = list(row)
+        payload = json.dumps(dict(zip(columns, values)), ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _primary_key_columns(con: sqlite3.Connection, schema: str, table: str) -> list[str]:
+        rows = list(con.execute(f"PRAGMA {quote(schema)}.table_info({quote(table)})"))
+        return [str(row[1]) for row in sorted((row for row in rows if int(row[5]) > 0), key=lambda row: int(row[5]))]
+
+    @staticmethod
+    def _revision_relation(columns: list[str], target: sqlite3.Row | tuple[Any, ...], incoming: sqlite3.Row | tuple[Any, ...]) -> str:
+        if "revision" not in columns:
+            return "same_key_different_content"
+        idx = columns.index("revision")
+        try:
+            left, right = int(target[idx]), int(incoming[idx])
+        except (TypeError, ValueError):
+            return "revision_unparseable"
+        if right > left:
+            return "incoming_newer_revision"
+        if right < left:
+            return "incoming_older_revision"
+        return "same_revision_different_content"
+
+    def _record_migration_conflict(
+        self,
+        con: sqlite3.Connection,
+        *,
+        source_name: str,
+        table: str,
+        key: dict[str, Any],
+        target_sha: str | None,
+        incoming_sha: str,
+        relation: str,
+        status: str = "unresolved",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        con.execute(
+            """INSERT INTO unified_migration_conflicts(
+               conflict_id,source_database_name,table_name,key_json,target_sha256,incoming_sha256,
+               revision_relation,status,details_json,created_at_utc)
+               VALUES(?,?,?,?,?,?,?,?,?,datetime('now'))""",
+            (
+                str(uuid.uuid4()), source_name, table,
+                json.dumps(key, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str),
+                target_sha, incoming_sha, relation, status,
+                json.dumps(details or {}, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str),
+            ),
+        )
+
+    def _copy_table_reconciled(
+        self,
+        con: sqlite3.Connection,
+        *,
+        alias: str,
+        source_name: str,
+        table: str,
+        columns: list[str],
+    ) -> dict[str, int]:
+        selected = ",".join(quote(item) for item in columns)
+        pk = self._primary_key_columns(con, alias, table)
+        result = {"seen": 0, "inserted": 0, "identical_duplicates": 0, "resolved_metadata": 0, "conflicts": 0}
+        source_cursor = con.execute(f"SELECT {selected} FROM {quote(alias)}.{quote(table)}")
+        for incoming in source_cursor:
+            result["seen"] += 1
+            incoming_tuple = tuple(incoming)
+            incoming_sha = self._row_sha(columns, incoming_tuple)
+            existing = None
+            key: dict[str, Any] = {}
+            if pk and all(item in columns for item in pk):
+                key = {name: incoming_tuple[columns.index(name)] for name in pk}
+                where = " AND ".join(f"{quote(name)} IS ?" for name in pk)
+                existing = con.execute(
+                    f"SELECT {selected} FROM {quote(table)} WHERE {where}", tuple(key[name] for name in pk),
+                ).fetchone()
+            else:
+                where = " AND ".join(f"{quote(name)} IS ?" for name in columns)
+                existing = con.execute(f"SELECT {selected} FROM {quote(table)} WHERE {where} LIMIT 1", incoming_tuple).fetchone()
+                key = {"row_sha256": incoming_sha}
+            if existing is not None:
+                target_tuple = tuple(existing)
+                target_sha = self._row_sha(columns, target_tuple)
+                if target_sha == incoming_sha:
+                    result["identical_duplicates"] += 1
+                    continue
+                # Canonical target metadata wins explicitly; this is recorded, never silently ignored.
+                if table in {"unified_memory_meta", "archive_meta", "journal_meta", "experience_meta", "memory_store_meta", "catalog_meta"}:
+                    self._record_migration_conflict(
+                        con, source_name=source_name, table=table, key=key, target_sha=target_sha,
+                        incoming_sha=incoming_sha, relation="target_metadata_canonical",
+                        status="resolved_target_canonical",
+                    )
+                    result["resolved_metadata"] += 1
+                    continue
+                relation = self._revision_relation(columns, target_tuple, incoming_tuple)
+                self._record_migration_conflict(
+                    con, source_name=source_name, table=table, key=key, target_sha=target_sha,
+                    incoming_sha=incoming_sha, relation=relation,
+                )
+                result["conflicts"] += 1
+                continue
+            placeholders = ",".join("?" for _ in columns)
+            try:
+                con.execute(
+                    f"INSERT INTO {quote(table)}({selected}) VALUES({placeholders})",
+                    incoming_tuple,
+                )
+                result["inserted"] += 1
+            except sqlite3.IntegrityError as exc:
+                self._record_migration_conflict(
+                    con, source_name=source_name, table=table, key=key, target_sha=None,
+                    incoming_sha=incoming_sha, relation="unique_or_constraint_conflict",
+                    details={"sqlite_error": str(exc)},
+                )
+                result["conflicts"] += 1
+        return result
+
     def _migrate_databases_impl(self, paths: list[Path]) -> dict[str, Any]:
-        self.initialize()
+        self.ensure_initialized()
         plan: list[dict[str, Any]] = []
         copied: dict[str, int] = {}
+        reconciliation: dict[str, dict[str, int]] = {}
         with self.connect() as con:
+            con.row_factory = sqlite3.Row
             target_tables = {str(row[0]): str(row[1] or "") for row in con.execute("SELECT name,sql FROM sqlite_master WHERE type='table'")}
             for index, legacy in enumerate(paths):
                 alias = f"legacy_{index}"
@@ -126,7 +254,7 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
                     for table in COPY_ORDER:
                         if table not in source_tables or table not in target_tables:
                             continue
-                        if "VIRTUAL TABLE" in source_tables[table].upper() or table.startswith("sqlite_"):
+                        if "VIRTUAL TABLE" in source_tables[table].upper() or table.startswith("sqlite_") or table == "unified_migration_conflicts":
                             continue
                         source_columns = [str(row[1]) for row in con.execute(f"PRAGMA {quote(alias)}.table_info({quote(table)})")]
                         target_columns = [str(row[1]) for row in con.execute(f"PRAGMA table_info({quote(table)})")]
@@ -137,26 +265,47 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
                         plan.append({"database": str(legacy), "table": table, "rows_seen": count, "columns": columns})
                         if count == 0:
                             continue
-                        selected = ",".join(quote(item) for item in columns)
-                        before = con.total_changes
-                        con.execute(f"INSERT OR IGNORE INTO {quote(table)}({selected}) SELECT {selected} FROM {quote(alias)}.{quote(table)}")
-                        copied[table] = copied.get(table, 0) + max(0, con.total_changes - before)
+                        stats = self._copy_table_reconciled(
+                            con, alias=alias, source_name=legacy.name, table=table, columns=columns,
+                        )
+                        reconciliation[f"{legacy.name}:{table}"] = stats
+                        copied[table] = copied.get(table, 0) + stats["inserted"]
                     con.commit()
                 except BaseException:
                     con.rollback()
                     raise
                 finally:
                     con.execute(f"DETACH DATABASE {quote(alias)}")
+            unresolved = int(con.execute(
+                "SELECT COUNT(*) FROM unified_migration_conflicts WHERE status='unresolved'"
+            ).fetchone()[0])
+        if unresolved:
+            return {
+                "ok": False,
+                "status": "migration_conflicts_detected",
+                "database": str(self.path),
+                "legacy_databases": [str(item) for item in paths],
+                "plan": plan,
+                "rows_copied": copied,
+                "reconciliation": reconciliation,
+                "unresolved_migration_conflicts": unresolved,
+                "search_indexes": {},
+                "validation": self.validate(full=True),
+                "automatic_l2": False,
+                "automatic_l3": False,
+            }
         search_indexes = self.rebuild_search_indexes()
         return {
             "ok": True, "status": "migrated", "database": str(self.path),
             "legacy_databases": [str(item) for item in paths], "plan": plan, "rows_copied": copied,
+            "reconciliation": reconciliation,
+            "unresolved_migration_conflicts": 0,
             "search_indexes": search_indexes, "validation": self.validate(full=True),
             "automatic_l2": False, "automatic_l3": False,
         }
 
     def rebuild_search_indexes(self) -> dict[str, int]:
-        self.initialize()
+        self.ensure_initialized()
         counts = {"message_fts": 0, "journal_fts": 0, "experience_fts": 0}
         with ChatExportArchiveStore(self.path) as archive:
             try:
@@ -198,7 +347,7 @@ class UnifiedMigrationMixin(UnifiedMixinHost):
         return counts
 
     def generate_candidates(self, *, chats: bool = True, journal: bool = True, limit: int | None = None) -> dict[str, Any]:
-        self.initialize()
+        self.ensure_initialized()
         result: dict[str, Any] = {"ok": True, "automatic_experience": False, "automatic_l2": False, "automatic_l3": False}
         with ExperienceStore(self.path) as experience:
             if chats:
