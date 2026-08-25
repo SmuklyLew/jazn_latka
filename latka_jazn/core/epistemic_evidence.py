@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
+import hashlib
+import json
 import re
 
 from latka_jazn.config import JaznConfig
@@ -28,6 +30,9 @@ class EpistemicEvidenceSnapshot:
     memory_source_ids: tuple[str, ...] = ()
     external_source_count: int = 0
     external_source_ids: tuple[str, ...] = ()
+    external_tool_action_count: int = 0
+    external_tool_action_ids: tuple[str, ...] = ()
+    external_tool_actions: tuple[str, ...] = ()
     model_inference_ids: tuple[str, ...] = ()
     hypothesis_ids: tuple[str, ...] = ()
     synthetic_dream_ids: tuple[str, ...] = ()
@@ -35,8 +40,10 @@ class EpistemicEvidenceSnapshot:
     issues: tuple[str, ...] = ()
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
-        "Evidence snapshots contain only bounded machine-observable identifiers and verified report metadata. "
-        "Model output, confidence, daemon presence and synthetic dream text are never evidence for their own claims."
+        "Evidence snapshots contain only bounded machine-observable identifiers, verified report metadata, and "
+        "bounded host-attested external-tool action descriptors. Host attestations prove what the authenticated host "
+        "declared for the turn; they do not make the local runtime the executor of that tool. Model output, confidence, "
+        "daemon presence and synthetic dream text are never evidence for their own claims."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -114,6 +121,8 @@ class EpistemicEvidenceCollector:
             issues.append("memory_evidence_count_not_identifier_backed")
 
         external_ids = self._ids(external.get("external_source_ids") or external.get("source_ids"))
+        external_tool_action_ids = self._ids(external.get("external_tool_action_ids"))
+        external_tool_actions = self._ids(external.get("external_tool_actions"))
         reported_external_count = self._reported_count(external.get("external_source_count"))
         if reported_external_count and reported_external_count != len(external_ids):
             issues.append("external_source_count_not_identifier_backed")
@@ -132,12 +141,69 @@ class EpistemicEvidenceCollector:
             memory_source_ids=memory_ids,
             external_source_count=len(external_ids),
             external_source_ids=external_ids,
+            external_tool_action_count=len(external_tool_action_ids),
+            external_tool_action_ids=external_tool_action_ids,
+            external_tool_actions=external_tool_actions,
             model_inference_ids=self._ids(generated.get("model_inference_ids")),
             hypothesis_ids=self._ids(generated.get("hypothesis_ids")),
             synthetic_dream_ids=self._ids(generated.get("synthetic_dream_ids")),
             fiction_ids=self._ids(generated.get("fiction_ids")),
             issues=tuple(issues),
         )
+
+
+def host_tool_attestations_to_external_evidence(
+    attestations: Iterable[Mapping[str, Any]] | None,
+) -> dict[str, Any]:
+    """Project validated host tool attestations into bounded epistemic evidence.
+
+    The phase-2 candidate guard validates the allowlist, operation syntax, and source
+    locators first. This projection intentionally stores only action descriptors,
+    stable hashes, and bounded source identifiers. It does not claim that the local
+    runtime executed GitHub or web.run itself.
+    """
+
+    source_ids: list[str] = []
+    action_ids: list[str] = []
+    actions: list[str] = []
+    for raw in attestations or ():
+        if not isinstance(raw, Mapping):
+            continue
+        tool = str(raw.get("tool") or "").strip()[:64]
+        operation = str(raw.get("operation") or "").strip().lower()[:64]
+        if not tool or not operation:
+            continue
+        refs = [str(item).strip()[:128] for item in raw.get("source_refs") or [] if str(item).strip()]
+        urls = [str(item).strip()[:2048] for item in raw.get("source_urls") or [] if str(item).strip()]
+        descriptor = f"{tool}:{operation}"[:160]
+        if descriptor not in actions:
+            actions.append(descriptor)
+        canonical = json.dumps(
+            {"tool": tool, "operation": operation, "source_refs": refs[:16], "source_urls": urls[:16]},
+            ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        )
+        digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        action_id = f"host_tool_action:{digest}"
+        if action_id not in action_ids:
+            action_ids.append(action_id)
+        for ref in refs[:16]:
+            if ref not in source_ids:
+                source_ids.append(ref)
+        for url in urls[:16]:
+            url_id = f"url_sha256:{hashlib.sha256(url.encode('utf-8')).hexdigest()}"
+            if url_id not in source_ids:
+                source_ids.append(url_id)
+        if len(action_ids) >= 8:
+            break
+    return {
+        "external_source_count": len(source_ids[:32]),
+        "external_source_ids": source_ids[:32],
+        "external_tool_action_count": len(action_ids[:8]),
+        "external_tool_action_ids": action_ids[:8],
+        "external_tool_actions": actions[:8],
+        "host_attested": bool(action_ids),
+        "runtime_independently_verified_execution": False,
+    }
 
 
 def collect_epistemic_evidence(

@@ -86,6 +86,8 @@ def default_runtime_workspace_path(root: Path) -> Path:
     parent = runtime_root.parent
     if parent.name.casefold() == WORKSPACE_RUNTIME_DIR_NAME.casefold():
         return parent.resolve()
+    if parent.name.casefold() in {"runtime_roots", "runtime-roots"}:
+        return (parent.parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
     return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 
 

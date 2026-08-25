@@ -24,10 +24,10 @@ class PolishTextNormalizer:
 
     def normalize(self, text: str) -> NormalizedText:
         original = text or ""
-        normalized = unicodedata.normalize("NFC", original).strip().lower()
+        normalized = unicodedata.normalize("NFC", original).strip().casefold()
         normalized = _WHITESPACE_RE.sub(" ", normalized)
         return NormalizedText(original=original, normalized=normalized, folded=self.ascii_fold(normalized))
 
     @staticmethod
     def ascii_fold(text: str) -> str:
-        return unicodedata.normalize("NFC", text or "").translate(_POLISH_TRANSLATION).lower()
+        return unicodedata.normalize("NFC", text or "").translate(_POLISH_TRANSLATION).casefold()

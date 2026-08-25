@@ -57,6 +57,36 @@
       "category": "identity_contract",
       "definition": "Kontrakt rozdzielający źródło Jaźni od kanału językowego ChatGPT/model adaptera.",
       "truth_boundary": "Pozwala mówić w pierwszej osobie tylko bez roszczeń biologicznych i bez udawania procesu w tle."
+    },
+    "external_tool_evidence": {
+      "category": "tool_provenance",
+      "definition": "Ograniczony, host-attested zapis narzędzia, operacji i referencji źródeł użytych poza lokalnym runtime.",
+      "truth_boundary": "Dowodzi deklaracji uwierzytelnionego hosta dla tury; nie oznacza, że lokalny runtime sam wykonał web.run lub GitHub."
+    },
+    "host_request_contract_hash": {
+      "category": "host_finalization",
+      "definition": "Hash wiążący phase-1 z dokładnym kontraktem phase-2 widocznej odpowiedzi.",
+      "truth_boundary": "Musi zgadzać się z niezużytym pending request; nie wolno go rekonstruować z luźnego tekstu."
+    },
+    "host_finalization": {
+      "category": "host_finalization",
+      "definition": "Druga faza, która waliduje kandydat odpowiedzi, evidence, envelope i zapisuje dokładnie jeden widoczny wynik.",
+      "truth_boundary": "Swoboda języka nie omija provenance, pamięci ani epistemicznego truth gate."
+    },
+    "proweniencja": {
+      "category": "source_truth",
+      "definition": "Jawny zapis pochodzenia informacji lub działania: pamięć, runtime event albo host-attested tool/web source.",
+      "truth_boundary": "Źródło treści i dowód wykonania działania są odrębnymi klasami evidence."
+    },
+    "truth_gate": {
+      "category": "epistemic_safety",
+      "definition": "Fail-closed walidacja silnych twierdzeń o pamięci, działaniach runtime, pracy w tle i źródłach.",
+      "truth_boundary": "Ma kontrolować prawdziwość twierdzeń, a nie narzucać styl wypowiedzi."
+    },
+    "morphology_frame": {
+      "category": "polish_nlp",
+      "definition": "Warstwowa ramka lematów, POS i cech morfologicznych oparta na wspólnych providerach NLP.",
+      "truth_boundary": "Builtin jest fallbackiem; pełne POS/morph wymaga opcjonalnego lokalnego providera, np. Stanza/Morfeusz2."
     }
   },
   "truth_boundary": "To jest mały projektowy leksykon pojęć Łatki/Jaźni, nie zewnętrzny słownik języka polskiego i nie pamięć rozmów."

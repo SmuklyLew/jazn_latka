@@ -321,6 +321,9 @@ def test_retry_preserves_memory_context_and_web_run_provenance(
     assert captured["memory_evidence"]["memory_source_ids"] == ["memory-2025-1"]
     assert captured["client_context"]["used_memory_item_ids"] == ["memory-2025-1"]
     assert captured["client_context"]["external_tool_evidence"] == web_evidence
+    assert captured["external_evidence"]["host_attested"] is True
+    assert captured["external_evidence"]["external_tool_action_count"] == 1
+    assert captured["external_evidence"]["external_tool_actions"] == ["web.run:search"]
     assert captured["client_context"]["host_candidate_validation"][
         "context_sha256"
     ] == context["context_sha256"]

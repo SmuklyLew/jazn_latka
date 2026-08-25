@@ -65,7 +65,7 @@ class LemmatizationReport:
 class PolishLemmatizationEngine:
     """Warstwowa lematyzacja PL dla Jaźni.
 
-    poprzednia linia runtime wprowadza kontrakt NLP: tokeny, kandydaci lematów, wybrany lemat,
+    Kontrakt NLP udostępnia tokeny, kandydatów lematów, wybrany lemat,
     pewność, provider i jawne ograniczenia. Provider builtin jest ostrożny i
     zawsze dostępny; zewnętrzne providery są opcjonalne.
     """
@@ -154,7 +154,7 @@ class PolishLemmatizationEngine:
             limitations=[
                 "Builtin provider jest bezpiecznym fallbackiem, nie pełnym kontekstowym lematyzatorem języka polskiego.",
                 "Opcjonalne providery Stanza/Morfeusz2 są przygotowane, ale nie są wymagane i nie są uruchamiane bez lokalnej instalacji/modeli.",
-                "Pełny wybór sensu słowa w zdaniu powinien trafić do kolejnej warstwy poprzednia linia runtime.x jako contextual lemma selection.",
+                "Pełny wybór sensu słowa w zdaniu wymaga kontekstowej warstwy lematyzacji/POS; builtin pozostaje deterministycznym fallbackiem.",
             ],
         )
 

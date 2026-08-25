@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "16.3.0"
-PACKAGE_VERSION = "16.3.0"
-PACKAGE_RELEASE_NAME = "full-jazn-conversation-memory-convergence"
+DISTRIBUTION_VERSION = "16.3.1"
+PACKAGE_VERSION = "16.3.1"
+PACKAGE_RELEASE_NAME = "host-finalization-provenance-polish-nlp-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
