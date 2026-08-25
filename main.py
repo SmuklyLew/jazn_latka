@@ -426,7 +426,7 @@ def _try_chat_gpt_one_shot_via_daemon(
             port=port,
             session_id=daemon_session_id,
             no_carryover=no_carryover,
-            client="chatgpt_bridge_one_shot_daemon_fast_path",
+            client="chatgpt_daemon_bridge",
             request_id=request_id,
             timeout=min(float(timeout), float(wait_budget)) if wait_budget is not None else float(timeout),
             poll_interval=poll_interval,
