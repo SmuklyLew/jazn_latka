@@ -114,7 +114,8 @@ class MemoryCloudSnapshotRuntime:
         return manager.restore_snapshot(manifest, destination_parent=destination_parent)
 
     def _discover_sources(self, profile: str) -> tuple[SQLiteSnapshotSource, ...]:
-        sqlite_root = (self.cfg.root / "memory" / "sqlite").resolve()
+        memory_root = self.cfg.memory_root.resolve()
+        sqlite_root = (memory_root / "sqlite").resolve()
         candidates: set[Path] = set()
         if profile == self.PROFILE_ALL_SQLITE:
             if sqlite_root.is_dir():
@@ -141,10 +142,11 @@ class MemoryCloudSnapshotRuntime:
         result: list[SQLiteSnapshotSource] = []
         for path in sorted(candidates):
             try:
-                relative = path.relative_to(self.cfg.root.resolve()).as_posix()
+                relative = path.relative_to(memory_root).as_posix()
             except ValueError as exc:
-                raise MemorySyncContractError(f"snapshot database escapes runtime root: {path}") from exc
-            result.append(SQLiteSnapshotSource(logical_path=relative, path=path))
+                raise MemorySyncContractError(f"snapshot database escapes canonical memory root: {path}") from exc
+            logical_path = (Path("memory") / relative).as_posix()
+            result.append(SQLiteSnapshotSource(logical_path=logical_path, path=path))
         return tuple(result)
 
     @staticmethod
