@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# v16.3.7 adds read-only recovery of an existing host-finalization contract;
+# it must never replay the original user message or weaken one-shot finalization.
 DISTRIBUTION_VERSION = "16.3.7"
 PACKAGE_VERSION = "16.3.7"
 PACKAGE_RELEASE_NAME = "host-finalization-recovery-hardening"
