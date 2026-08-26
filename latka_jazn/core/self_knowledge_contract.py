@@ -112,21 +112,22 @@ def _sqlite_status(path: Path) -> dict[str, Any]:
 
 
 def _memory_status(cfg: JaznConfig) -> dict[str, Any]:
-    root = Path(cfg.root)
+    memory_root = cfg.memory_root
     paths = {
-        "runtime_write_memory": root / cfg.memory_db_name,
-        "runtime_audit": root / cfg.audit_db_name,
-        "conversation_archive": root / cfg.conversation_archive_manifest_name,
-        "conversation_fts": root / "memory/sqlite/conversation_fts_v1/conversation_fts_0001.sqlite3",
-        "staging": root / "memory/sqlite/staging_v1/staging_memory_0001.sqlite3",
+        "runtime_write_memory": cfg.memory_db_path_readonly,
+        "runtime_audit": cfg.audit_db_path_readonly,
+        "conversation_archive": cfg.conversation_archive_manifest_path,
+        "conversation_fts": cfg.conversation_fts_dir / "conversation_fts_0001.sqlite3",
+        "staging": cfg.conversation_staging_dir / "staging_memory_0001.sqlite3",
     }
     sqlite = {name: _sqlite_status(path) for name, path in paths.items()}
     ready = [name for name, status in sqlite.items() if status.get("status") == "ready"]
     issues = [f"{name}:{status.get('status')}" for name, status in sqlite.items() if status.get("exists") and status.get("status") != "ready"]
-    raw_manifest = root / "memory" / "RAW_MEMORY_MANIFEST.json"
-    raw_chat_manifest = root / "memory" / "raw" / "CHAT_HTML_IMPORT_MANIFEST.json"
+    raw_manifest = memory_root / "RAW_MEMORY_MANIFEST.json"
+    raw_chat_manifest = memory_root / "raw" / "CHAT_HTML_IMPORT_MANIFEST.json"
     return {
         "schema_version": schema_version("self_knowledge_memory_status"),
+        "memory_root": str(memory_root),
         "known_layers": list(paths.keys()),
         "ready_layers": ready,
         "sqlite": sqlite,
@@ -157,8 +158,9 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
     memory = _memory_status(cfg) if deep else {
         "schema_version": schema_version("self_knowledge_memory_status"),
         "status": "metadata_only",
-        "known_active_database": cfg.conversation_archive_manifest_name,
-        "runtime_write_database": cfg.memory_db_name,
+        "known_active_database": str(cfg.conversation_archive_manifest_path),
+        "runtime_write_database": str(cfg.memory_db_path_readonly),
+        "memory_root": str(cfg.memory_root),
         "truth_boundary": "Fast self-knowledge status nie wykonuje pełnego SQLite audit; deep=True albo --sqlite-integrity-audit daje dowód integralności.",
     }
     capability_report = CapabilityRealityChecker().run().to_dict()
