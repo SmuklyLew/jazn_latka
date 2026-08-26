@@ -14,18 +14,18 @@ from latka_jazn.core.chatgpt_host_pending_store import (
 )
 from latka_jazn.mcp.server import READ_ONLY_TOOLS, TOOL_DEFINITIONS
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
-from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
 REQUEST_ID = "request-v1637-recovery"
 TURN_ID = "turn-v1637-recovery"
 TRACE_ID = "trace-v1637-recovery"
 HEADER = "🕒 2026-08-26 17:00:00"
+V1637_RECOVERY_RUNTIME_VERSION = "16.3.7-host-finalization-recovery-hardening"
 
 
 def _bridge() -> dict[str, Any]:
     bridge: dict[str, Any] = {
-        "runtime_version": "16.3.7-host-finalization-recovery-hardening",
+        "runtime_version": V1637_RECOVERY_RUNTIME_VERSION,
         "phase": "host_visible_generation_requested",
         "turn_id": TURN_ID,
         "trace_id": TRACE_ID,
@@ -86,9 +86,11 @@ class _FakeRecoveryGateway:
         raise AssertionError("resume must never resubmit user text through chat()")
 
 
-def test_release_identity_is_v1637_host_finalization_recovery() -> None:
-    assert PACKAGE_VERSION == "16.3.7"
-    assert PACKAGE_RELEASE_NAME == "host-finalization-recovery-hardening"
+def test_v1637_recovery_fixture_keeps_historical_runtime_contract() -> None:
+    bridge = _bridge()
+    assert bridge["runtime_version"] == V1637_RECOVERY_RUNTIME_VERSION
+    assert bridge["phase"] == "host_visible_generation_requested"
+    assert bridge["author_source"] == "jazn_runtime"
 
 
 def test_resume_tool_is_private_read_only_and_has_no_message_input() -> None:

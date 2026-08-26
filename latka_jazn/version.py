@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-# v16.3.7 adds read-only recovery of an existing host-finalization contract;
-# it must never replay the original user message or weaken one-shot finalization.
-DISTRIBUTION_VERSION = "16.3.7"
-PACKAGE_VERSION = "16.3.7"
-PACKAGE_RELEASE_NAME = "host-finalization-recovery-hardening"
+# v16.3.8 adds fail-closed archive I/O for ZIP/ZIP64, 7z, AES-ZIP and binary
+# split package sets, plus generator-level packing/extraction configuration.
+DISTRIBUTION_VERSION = "16.3.8"
+PACKAGE_VERSION = "16.3.8"
+PACKAGE_RELEASE_NAME = "archive-io-generator-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
