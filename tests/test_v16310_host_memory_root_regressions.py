@@ -15,6 +15,7 @@ from latka_jazn.memory.importer import MemoryImporter
 from latka_jazn.memory.memory_root import default_memory_root
 from latka_jazn.memory.requirements_ledger import RequirementsLedger
 from latka_jazn.memory.runtime_persistence import RuntimeMemoryWriter, scan_runtime_duplicates
+from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 def _runtime_root(tmp_path: Path) -> Path:
@@ -27,6 +28,10 @@ def _canonical_memory(root: Path) -> Path:
     memory = default_memory_root(root)
     memory.mkdir(parents=True, exist_ok=True)
     return memory
+
+
+def test_release_version_is_v16310_host_memory_root_compat() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.10-host-memory-root-compat"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(
