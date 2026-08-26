@@ -5,7 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from latka_jazn.core.lexical_semantics import LexicalSemanticUnderstanding
+from latka_jazn.core.polish_understanding import PolishUnderstandingEngine
 from latka_jazn.db.shard_manifest import ShardManifestError, SQLiteShardManager
+from latka_jazn.memory.conversation_archive import ConversationArchiveStore
 from latka_jazn.memory.file_sync import MemoryFileSync
 from latka_jazn.memory.grounded_reflection_store import GroundedReflectionStore
 from latka_jazn.memory.importer import MemoryImporter
@@ -95,8 +98,8 @@ def test_runtime_memory_writer_keeps_all_file_layers_in_host_memory_root(
     writer = RuntimeMemoryWriter(root, version="16.3.10-host-memory-root-compat")
 
     assert writer.memory_root == memory.resolve()
-    assert writer.journal.path == (memory / "raw" / "dziennik.json").resolve()
-    assert {item.path.parent for item in writer.layers.values()} == {
+    assert writer.journal.path.resolve() == (memory / "raw" / "dziennik.json").resolve()
+    assert {item.path.parent.resolve() for item in writer.layers.values()} == {
         (memory / "layered").resolve()
     }
     assert not (root / "memory" / "layered").exists()
@@ -134,3 +137,53 @@ def test_supporting_memory_components_share_canonical_host_root(tmp_path: Path) 
     assert requirements.path == memory / "layered" / "requirements_ledger_current_line.jsonl"
     assert reflections.path == memory / "layered" / "grounded_reflections.jsonl"
     assert not (root / "memory").exists()
+
+
+def test_conversation_archive_uses_host_memory_sqlite_root(tmp_path: Path) -> None:
+    root = _runtime_root(tmp_path)
+    memory = _canonical_memory(root)
+
+    archive = ConversationArchiveStore(root)
+
+    assert archive.memory_root == memory.resolve()
+    assert archive.archive_dir == memory / "sqlite" / "conversation_archive_v1"
+    assert archive.fts_dir == memory / "sqlite" / "conversation_fts_v1"
+    assert archive.staging_dir == memory / "sqlite" / "staging_v1"
+    assert not (root / "memory" / "sqlite").exists()
+
+
+def test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory(
+    tmp_path: Path,
+) -> None:
+    root = _runtime_root(tmp_path)
+    memory = _canonical_memory(root)
+    raw = memory / "raw"
+    raw.mkdir(parents=True)
+    marker = {"marker": "private-current-line", "phrase_rules": [], "semantic_fields": {}}
+    (raw / "semantic_lexicon_current_line.json").write_text(
+        json.dumps(marker), encoding="utf-8"
+    )
+
+    engine = LexicalSemanticUnderstanding(root)
+
+    assert engine.lexicon.get("marker") == "private-current-line"
+
+
+def test_polish_understanding_reads_private_lexicon_from_host_memory(tmp_path: Path) -> None:
+    root = _runtime_root(tmp_path)
+    memory = _canonical_memory(root)
+    raw = memory / "raw"
+    raw.mkdir(parents=True)
+    marker = {
+        "marker": "private-polish",
+        "lemma_aliases": {},
+        "intent_rules": {},
+        "need_patterns": [],
+    }
+    (raw / "POLISH_UNDERSTANDING_LEXICON.json").write_text(
+        json.dumps(marker), encoding="utf-8"
+    )
+
+    engine = PolishUnderstandingEngine(root)
+
+    assert engine.lexicon.get("marker") == "private-polish"
