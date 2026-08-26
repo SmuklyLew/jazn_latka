@@ -6,11 +6,13 @@ import json
 from .store import MemoryStore
 from .file_sync import MemoryFileSync
 from .chat_html_importer import import_chat_html_to_store
+from .memory_root import resolve_memory_root
 
 class MemoryImporter:
     def __init__(self, store: MemoryStore, root: Path) -> None:
         self.store = store
-        self.root = root
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
 
     def register_packaged_sources(
         self,
@@ -24,7 +26,7 @@ class MemoryImporter:
         budowania paczki. Automatyczny import jest wykonywany wyłącznie z jawnego
         memory/raw/chat.html. Brak HTML nie uruchamia żadnego rozpakowywania.
         """
-        manifest_path = self.root / "memory" / "RAW_MEMORY_MANIFEST.json"
+        manifest_path = self.memory_root / "RAW_MEMORY_MANIFEST.json"
         counts = {
             "raw": 0,
             "versioned_sources": 0,
@@ -39,7 +41,15 @@ class MemoryImporter:
                 sha = row.get("sha256")
                 if not stored or not sha:
                     continue
-                path = self.root / stored
+                stored_path = Path(str(stored))
+                stored_parts = stored_path.parts
+                if stored_parts and stored_parts[0].casefold() == "memory":
+                    stored_path = Path(*stored_parts[1:])
+                path = (self.memory_root / stored_path).resolve()
+                try:
+                    path.relative_to(self.memory_root)
+                except ValueError:
+                    continue
                 if not path.exists():
                     continue
                 kind = row.get("kind", "raw_memory")
@@ -47,15 +57,15 @@ class MemoryImporter:
                     "INSERT OR REPLACE INTO source_files VALUES(?,?,?,?,?,?)",
                     (sha, str(path), int(row.get("size_bytes") or path.stat().st_size), kind, row.get("source") or row.get("source_relative_path"), now),
                 )
-                if str(stored).startswith("memory/raw"):
+                if str(stored).replace("\\", "/").startswith("memory/raw"):
                     counts["raw"] += 1
                 else:
                     counts["versioned_sources"] += 1
             self.store.con.commit()
             counts["manifest_mode"] = True
         else:
-            for folder, kind in [("memory/raw", "raw_memory"), ("memory/versioned_sources", "versioned_memory")]:
-                base = self.root / folder
+            for folder, kind in [("raw", "raw_memory"), ("versioned_sources", "versioned_memory")]:
+                base = self.memory_root / folder
                 if not base.exists():
                     continue
                 for p in base.rglob("*"):
@@ -75,7 +85,7 @@ class MemoryImporter:
 
         if auto_import_raw_chat_html:
             legacy_count = self.store.stats().get("legacy_messages", 0)
-            chat_path = self.root / "memory" / "raw" / "chat.html"
+            chat_path = self.memory_root / "raw" / "chat.html"
             if legacy_count == 0 and chat_path.exists():
                 try:
                     counts["chat_html_auto_import"] = self.import_raw_chat_html(
@@ -97,7 +107,7 @@ class MemoryImporter:
         return counts
 
     def import_raw_chat_html(self, *, force: bool = False, limit_conversations: int | None = None) -> dict:
-        path = self.root / "memory" / "raw" / "chat.html"
+        path = self.memory_root / "raw" / "chat.html"
         if not path.exists():
             result = {
                 "status": "missing_raw_chat_html",
