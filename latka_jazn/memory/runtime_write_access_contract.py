@@ -9,6 +9,7 @@ from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.config import JaznConfig
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, runtime_sqlite_capabilities
 from latka_jazn.db.shard_manifest import ensure_manifest
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.memory.store import MemoryStore
 from latka_jazn.version import schema_version
@@ -121,7 +122,7 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
 
 def ensure_runtime_write_v1(config: JaznConfig) -> RuntimeWriteAccessStatus:
     """Create a clean runtime_write_v1 store only when explicitly requested."""
-    root = Path(config.root).resolve()
+    root = resolve_memory_root(config.root)
     memory_path = Path(config.memory_db_path)
     audit_path = Path(config.audit_db_path)
 
@@ -183,7 +184,7 @@ def build_runtime_write_access_status(
     writes_enabled: bool | None = None,
     deep_verify: bool = True,
 ) -> RuntimeWriteAccessStatus:
-    root = Path(config.root).resolve()
+    root = resolve_memory_root(config.root)
     if initialize:
         return ensure_runtime_write_v1(config)
 

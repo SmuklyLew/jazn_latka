@@ -40,7 +40,23 @@ def _safe_relative_path(root: Path, raw: str) -> str:
     candidate = Path(str(raw))
     if candidate.is_absolute() or any(part in {"", ".", ".."} for part in candidate.parts):
         raise ShardManifestError(f"unsafe shard path: {raw!r}")
+
     resolved_root = root.resolve()
+    parts = candidate.parts
+    # v16.3.9 moved private memory from <active_root>/memory to the canonical
+    # host-level workspace_runtime/memory root. Historical manifests can still
+    # contain paths such as memory/sqlite/runtime_write_v1/runtime_memory.sqlite3.
+    # When the manager root is already that memory directory, strip exactly one
+    # legacy "memory" prefix so it cannot resolve as memory/memory/....
+    if (
+        resolved_root.name.casefold() == "memory"
+        and parts
+        and parts[0].casefold() == "memory"
+    ):
+        candidate = Path(*parts[1:])
+        if not candidate.parts:
+            raise ShardManifestError(f"unsafe shard path: {raw!r}")
+
     resolved = (resolved_root / candidate).resolve()
     try:
         resolved.relative_to(resolved_root)
@@ -159,7 +175,8 @@ class SQLiteShardManager:
         max_file_bytes: int = DEFAULT_MAX_BYTES,
     ) -> None:
         self.root = Path(root).resolve()
-        self.manifest_path = self.root / manifest_path
+        manifest_rel = _safe_relative_path(self.root, Path(manifest_path).as_posix())
+        self.manifest_path = self.root / manifest_rel
         self.logical_database = logical_database
         self.role = role
         self.default_db_path = _safe_relative_path(self.root, Path(default_db_path).as_posix())

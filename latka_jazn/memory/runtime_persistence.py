@@ -12,6 +12,7 @@ import unicodedata
 import uuid
 
 from latka_jazn.memory.dziennik import DziennikRawJournal
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.store import MemoryStore
 
 RUNTIME_MEMORY_SCHEMA_VERSION = "runtime_persistence/v1"
@@ -178,18 +179,19 @@ class RuntimeMemoryWriter:
     """
 
     def __init__(self, root: Path, *, version: str, store: MemoryStore | None = None, timezone_name: str = DEFAULT_TIMEZONE) -> None:
-        self.root = Path(root)
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
         self.version = version
         self.store = store
         self.timezone = resolve_timezone(timezone_name)
         self.journal = DziennikRawJournal(self.root, timezone=timezone_name)
         self.layers = {
-            "episodic": JsonlLayerAppender(self.root, "memory/layered/episodic.jsonl"),
-            "reflections": JsonlLayerAppender(self.root, "memory/layered/reflections.jsonl"),
-            "semantic": JsonlLayerAppender(self.root, "memory/layered/semantic.jsonl"),
-            "procedural": JsonlLayerAppender(self.root, "memory/layered/procedural.jsonl"),
-            "truth_audits": JsonlLayerAppender(self.root, "memory/layered/truth_audits.jsonl"),
-            "affective": JsonlLayerAppender(self.root, "memory/layered/affective.jsonl"),
+            "episodic": JsonlLayerAppender(self.memory_root, "layered/episodic.jsonl"),
+            "reflections": JsonlLayerAppender(self.memory_root, "layered/reflections.jsonl"),
+            "semantic": JsonlLayerAppender(self.memory_root, "layered/semantic.jsonl"),
+            "procedural": JsonlLayerAppender(self.memory_root, "layered/procedural.jsonl"),
+            "truth_audits": JsonlLayerAppender(self.memory_root, "layered/truth_audits.jsonl"),
+            "affective": JsonlLayerAppender(self.memory_root, "layered/affective.jsonl"),
         }
 
     def _now_local(self) -> datetime:
@@ -492,23 +494,25 @@ def scan_runtime_duplicates(root: Path) -> dict[str, Any]:
     Zwraca tylko raport; nie usuwa wpisów automatycznie.
     """
 
-    root = Path(root)
+    runtime_root = Path(root).expanduser().resolve()
+    memory_root = resolve_memory_root(runtime_root)
     targets = [
-        root / "memory/raw/dziennik.json",
-        root / "memory/layered/episodic.jsonl",
-        root / "memory/layered/reflections.jsonl",
-        root / "memory/layered/semantic.jsonl",
-        root / "memory/layered/procedural.jsonl",
-        root / "memory/layered/truth_audits.jsonl",
-        root / "memory/layered/affective.jsonl",
+        memory_root / "raw/dziennik.json",
+        memory_root / "layered/episodic.jsonl",
+        memory_root / "layered/reflections.jsonl",
+        memory_root / "layered/semantic.jsonl",
+        memory_root / "layered/procedural.jsonl",
+        memory_root / "layered/truth_audits.jsonl",
+        memory_root / "layered/affective.jsonl",
     ]
     report: dict[str, Any] = {"schema_version": RUNTIME_MEMORY_SCHEMA_VERSION, "files": {}, "duplicates": []}
     for path in targets:
         seen: dict[str, int] = {}
         duplicate_keys: dict[str, int] = {}
         total = 0
+        rel = str(path.relative_to(memory_root))
         if not path.exists():
-            report["files"][str(path.relative_to(root))] = {"exists": False, "total": 0, "duplicate_keys": {}}
+            report["files"][rel] = {"exists": False, "total": 0, "duplicate_keys": {}}
             continue
         if path.suffix == ".json":
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -533,7 +537,6 @@ def scan_runtime_duplicates(root: Path) -> dict[str, Any]:
             seen[key] = seen.get(key, 0) + 1
             if seen[key] > 1:
                 duplicate_keys[key] = seen[key]
-        rel = str(path.relative_to(root))
         report["files"][rel] = {"exists": True, "total": total, "duplicate_keys": duplicate_keys}
         for key, count in duplicate_keys.items():
             report["duplicates"].append({"file": rel, "fingerprint": key, "count": count})

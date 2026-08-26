@@ -5,6 +5,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, TypeVar
 
+from latka_jazn.memory.memory_root import resolve_memory_root
+
 from .canon_registry import load_python_canon_registry
 from .schema import IdentityCanon, RecognitionProtocol
 from .validator import validate_identity_canon_data
@@ -42,7 +44,7 @@ def _private_override_path_for(path: Path) -> Path | None:
     root = _infer_project_root(path.resolve())
     if root is None:
         return None
-    candidate = root / "memory" / "raw" / "LATKA_IDENTITY_CANON.json"
+    candidate = resolve_memory_root(root) / "raw" / "LATKA_IDENTITY_CANON.json"
     if candidate.resolve() == path.resolve():
         return None
     return candidate
