@@ -73,17 +73,7 @@ jobs:
           tests/test_conversation_archive_routing_guard.py
           tests/test_quoted_control_text_routing.py
 
-      - name: Normalize origin for deterministic provenance
-        if: steps.detect.outputs.run == 'true'
-        run: git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
-
-      - name: Synchronize canonical release metadata
-        if: steps.detect.outputs.run == 'true'
-        run: >-
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync
-          --root . --base-branch master --write --json
-
-      - name: Commit hardened code and canonical metadata
+      - name: Commit verified hardened code before metadata sync
         if: steps.detect.outputs.run == 'true'
         shell: bash
         run: |
@@ -92,6 +82,26 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "feat: complete complex dialogue memory routing hardening for 16.3.5"
+
+      - name: Normalize origin for deterministic provenance
+        if: steps.detect.outputs.run == 'true'
+        run: git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Synchronize canonical release metadata from clean tree
+        if: steps.detect.outputs.run == 'true'
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root . --base-branch master --write --json
+
+      - name: Commit canonical metadata and push verified stack
+        if: steps.detect.outputs.run == 'true'
+        shell: bash
+        run: |
+          git diff --check
+          git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+          if ! git diff --cached --quiet; then
+            git commit -m "release: synchronize canonical metadata for 16.3.5 [skip ci]"
+          fi
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Resolve hardened HEAD
@@ -310,17 +320,30 @@ jobs:
           python -X utf8 run.py doctor --json
           python -X utf8 run.py package-smoke --profile system --json
 
-      - name: Remove one-shot workflow and resynchronize canonical metadata
+      - name: Commit one-shot workflow removal
         shell: bash
         run: |
           rm .github/workflows/v1635-final-hardening.yml
-          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "release: finalize canonical metadata for 16.3.5 [skip ci]"
+          git commit -m "ci: remove v16.3.5 one-shot hardening workflow [skip ci]"
+
+      - name: Resynchronize canonical metadata from clean final tree
+        shell: bash
+        run: |
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
+
+      - name: Commit final metadata and push final tree
+        shell: bash
+        run: |
+          git diff --check
+          git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+          if ! git diff --cached --quiet; then
+            git commit -m "release: finalize canonical metadata for 16.3.5 [skip ci]"
+          fi
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Verify final metadata is idempotent
