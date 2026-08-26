@@ -198,7 +198,8 @@ def _raw_message(graph: ConversationGraph, node_id: str) -> dict[str, Any]:
 
 
 def _visibility(node: MessageNode, message: Mapping[str, Any]) -> tuple[str, bool]:
-    metadata = message.get("metadata") if isinstance(message.get("metadata"), dict) else {}
+    raw_metadata = message.get("metadata")
+    metadata: Mapping[str, Any] = raw_metadata if isinstance(raw_metadata, dict) else {}
     hidden = bool(metadata.get("is_visually_hidden_from_conversation"))
     role = str(node.role or "")
     channel = message.get("channel")
@@ -225,8 +226,10 @@ def _asset_rows(node: MessageNode, message: Mapping[str, Any]) -> list[dict[str,
             "availability_status": asset.availability_status,
             "file_sha256": None,
         }
-    metadata = message.get("metadata") if isinstance(message.get("metadata"), dict) else {}
-    attachments = metadata.get("attachments") if isinstance(metadata.get("attachments"), list) else []
+    raw_metadata = message.get("metadata")
+    metadata: Mapping[str, Any] = raw_metadata if isinstance(raw_metadata, dict) else {}
+    raw_attachments = metadata.get("attachments")
+    attachments = raw_attachments if isinstance(raw_attachments, list) else []
     for attachment in attachments:
         if not isinstance(attachment, dict):
             continue

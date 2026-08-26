@@ -6,8 +6,11 @@ from pathlib import Path
 import os
 import sys
 
-TOOL_VERSION = "memory-rebuild/v16.3.11"
-APP_VERSION = "3.1.0"
+# These identify the stable operator-tool/application contract. Feature hardening
+# is versioned separately (for example v16311_hardening / v16312_ci_hotfix) so
+# compatible releases do not break launchers, tests or project-format consumers.
+TOOL_VERSION = "memory-rebuild/v16.1"
+APP_VERSION = "3.0.0"
 
 STAGE4_COMMAND = "stage4"
 TEST04_COMMAND = "test04"
