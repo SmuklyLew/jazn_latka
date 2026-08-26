@@ -12,7 +12,7 @@ from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
-BRANCH_RELEASE = "complex-dialogue-memory-routing-final-hardening"
+BRANCH_RELEASE = "persistent-runtime-e2e-hardening"
 
 
 def _item(
@@ -45,8 +45,8 @@ def _item(
     )
 
 
-def test_release_identity_is_v1635_final_hardening() -> None:
-    assert PACKAGE_VERSION == "16.3.5"
+def test_release_identity_tracks_current_successor_hardening() -> None:
+    assert PACKAGE_VERSION == "16.3.6"
     assert PACKAGE_RELEASE_NAME == BRANCH_RELEASE
 
 
