@@ -107,10 +107,34 @@ def _query_terms(query: str) -> tuple[str, list[str]]:
 
 
 def _fts_query(terms: list[str]) -> str:
-    return " OR ".join(
-        f'"{term.replace(chr(34), chr(34) * 2)}"*'
-        for term in terms
-    )
+    """Build a bounded OR query tolerant of common Polish inflection endings.
+
+    FTS5 itself is a tokenizer/index, not a Polish lemmatizer.  Queries such as
+    ``czerwona włóczka`` therefore do not directly match indexed forms such as
+    ``czerwonej włóczce``.  For longer terms we add one- and two-character
+    prefix stems.  This preserves the direct FTS5/rank path while avoiding a
+    false negative for ordinary Polish case inflection.
+    """
+
+    variants: list[str] = []
+    seen: set[str] = set()
+    for raw in terms:
+        term = raw.strip()
+        if not term:
+            continue
+        candidates = [term]
+        if len(term) >= 5:
+            candidates.append(term[:-1])
+        if len(term) >= 7:
+            candidates.append(term[:-2])
+        for candidate in candidates:
+            folded = candidate.casefold()
+            if not folded or folded in seen:
+                continue
+            seen.add(folded)
+            escaped = candidate.replace('"', '""')
+            variants.append(f'"{escaped}"*')
+    return " OR ".join(variants)
 
 
 def _evidence_for(con: sqlite3.Connection, memory_id: str) -> list[dict[str, str]]:
@@ -185,7 +209,8 @@ def search_memory_tier_database_readonly(
                     raw_rank = float(row["fts_rank"] or 0.0)
                     relevance = 1.0 / (1.0 + abs(raw_rank))
                     selected.append((relevance, row, "memory_records_fts:rank"))
-            else:
+
+            if not use_fts or not selected:
                 rows = con.execute(
                     f"""SELECT memory_id,tier,kind,content,domain,mode,truth_status,confidence,importance,
                                created_at_utc,updated_at_utc,tags_json
