@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# v16.3.11 hardens full base-memory rebuilding and package-profile truth:
-# chat-by-chat lossless import, JSON/HTML control, divergent branch retention,
-# recall eligibility/attachment provenance, and strict combined/system/memory/dual packaging.
-DISTRIBUTION_VERSION = "16.3.11"
-PACKAGE_VERSION = "16.3.11"
-PACKAGE_RELEASE_NAME = "memory-rebuild-pack-profiles"
+# v16.3.12 is a CI/static-typing hotfix for the v16.3.11 memory rebuild release:
+# it restores the stable Memory Rebuild app contract and hardens metadata narrowing
+# so Pyright accepts the lossless import/attachment paths without disabling checks.
+DISTRIBUTION_VERSION = "16.3.12"
+PACKAGE_VERSION = "16.3.12"
+PACKAGE_RELEASE_NAME = "memory-rebuild-ci-hotfix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
