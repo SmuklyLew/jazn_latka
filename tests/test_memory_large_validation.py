@@ -118,9 +118,10 @@ def test_validation_reports_incomplete_wal_sidecars(tmp_path: Path) -> None:
     assert result.error == "incomplete_sqlite_wal_sidecars"
 
 
-def test_recursive_discovery_stays_under_runtime_root_and_deduplicates(tmp_path: Path) -> None:
+def test_recursive_discovery_stays_under_trusted_memory_root_and_deduplicates(tmp_path: Path) -> None:
     root = _prepared_root(tmp_path)
-    extra = root / "memory/sqlite/extra/extra.sqlite3"
+    cfg = JaznConfig(root=root)
+    extra = cfg.memory_root / "sqlite/extra/extra.sqlite3"
     extra.parent.mkdir(parents=True)
     with sqlite3.connect(extra) as con:
         con.execute("CREATE TABLE item(id INTEGER PRIMARY KEY)")
@@ -130,7 +131,11 @@ def test_recursive_discovery_stays_under_runtime_root_and_deduplicates(tmp_path:
 
     assert str(extra.resolve()) in paths
     assert len(paths) == len(set(paths))
-    assert all(Path(path).is_relative_to(root.resolve()) for path in paths)
+    assert all(
+        Path(path).is_relative_to(root.resolve())
+        or Path(path).is_relative_to(cfg.memory_root.resolve())
+        for path in paths
+    )
 
 
 def test_report_output_is_written_under_runtime_root(tmp_path: Path) -> None:
@@ -246,5 +251,5 @@ def test_explicit_normalization_sidecar_override_is_preserved(
     cfg = JaznConfig(root=tmp_path / "runtime")
 
     assert cfg.normalization_sidecar_db_path == (
-        cfg.root / "memory/sqlite/custom/normalization.sqlite3"
+        cfg.memory_root / "sqlite/custom/normalization.sqlite3"
     )

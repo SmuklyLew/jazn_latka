@@ -7,6 +7,7 @@ from typing import Callable
 import json, uuid
 from latka_jazn.core.truth_boundary import TruthBoundary
 from latka_jazn.core.uncertainty_model import UncertaintyModel
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.store import MemoryStore
 
 @dataclass(slots=True)
@@ -64,24 +65,25 @@ class LayeredMemory:
     def __init__(self, store: MemoryStore, root: Path) -> None:
         self.store = store
         self.root = root
+        self.memory_root = resolve_memory_root(root)
         self.truth = TruthBoundary()
         self.uncertainty = UncertaintyModel()
         self._ensure_jsonl_files()
 
     def _ensure_jsonl_files(self) -> None:
-        base = self.root / "memory" / "layered"
+        base = self.memory_root / "layered"
         base.mkdir(parents=True, exist_ok=True)
         for name in ["episodic.jsonl", "semantic.jsonl", "procedural.jsonl", "reflections.jsonl", "truth_audits.jsonl"]:
             (base / name).touch(exist_ok=True)
 
     def _append_jsonl(self, filename: str, data: dict) -> None:
-        path = self.root / "memory" / "layered" / filename
+        path = self.memory_root / "layered" / filename
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(data, ensure_ascii=False, sort_keys=True) + "\n")
 
     def _find_jsonl_record(self, filename: str, **fields) -> dict | None:
         """Znajduje istniejący rekord po stabilnych polach, aby bootstrapping nie dublował pamięci proceduralnej."""
-        path = self.root / "memory" / "layered" / filename
+        path = self.memory_root / "layered" / filename
         if not path.exists():
             return None
         with path.open("r", encoding="utf-8") as f:
@@ -196,8 +198,6 @@ class LayeredMemory:
         return self.store.search_episodic_memories(
             phrase, limit=limit, should_continue=should_continue
         )
-
-
 
     def consolidate_from_plan(self, *, text: str, plan, local_time_label: str = "", source: str = "runtime",
                               emotional_anchor: str = "", participants: list[str] | None = None,

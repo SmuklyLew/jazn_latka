@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from latka_jazn.core.clock import resolve_timezone
+from latka_jazn.memory.memory_root import resolve_memory_root
 import hashlib
 import json
 import os
@@ -87,7 +88,8 @@ class RuntimeEventLedger:
     - `memory/raw/runtime_events/runtime_event_errors_0001.jsonl` itd. — awaryjny
       log błędów zapisu, rotowany tak samo jak główny ledger.
 
-    Nie nadpisujemy wcześniejszych linii i nie streszczamy treści użytkownika ani
+    Aktywne `memory/*` jest rozwiązywane przez host-level memory root. Nie
+    nadpisujemy wcześniejszych linii i nie streszczamy treści użytkownika ani
     odpowiedzi. To jest rejestr źródłowy, nie pamięć wyselekcjonowana.
     """
 
@@ -99,12 +101,13 @@ class RuntimeEventLedger:
         timezone_name: str = DEFAULT_TIMEZONE,
         max_jsonl_shard_bytes: int = DEFAULT_JSONL_SHARD_MAX_BYTES,
     ) -> None:
-        self.root = Path(root)
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
         self.version = version
         self.timezone_name = timezone_name
         self.timezone = resolve_timezone(timezone_name)
         self.max_jsonl_shard_bytes = max_jsonl_shard_bytes
-        self.raw_dir = self.root / "memory" / "raw"
+        self.raw_dir = self.memory_root / "raw"
         self.runtime_events_dir = self.raw_dir / RUNTIME_EVENTS_DIRNAME
         self.runtime_events_path = jsonl_shard_path(self.runtime_events_dir, RUNTIME_EVENTS_PREFIX, 1)
         self.conversation_turns_path = self.raw_dir / "conversation_turns.jsonl"
@@ -183,7 +186,6 @@ class RuntimeEventLedger:
             }
             self._append_rotated_jsonl(RUNTIME_EVENT_ERRORS_PREFIX, record)
         except Exception:
-            # Ostatnia bariera: błąd logowania nie może przerwać odpowiedzi runtime.
             pass
 
     def append_final_visible_reply(
@@ -195,12 +197,6 @@ class RuntimeEventLedger:
         client_context: dict[str, Any] | None = None,
         local_time_label: str | None = None,
     ) -> LedgerAppendResult | None:
-        """Zapisuje finalną odpowiedź widoczną dla użytkownika w tej samej kopercie tury.
-
-        To jest brakujący ślad z poprzednia linia runtime: timestamp i afekt nie mogą istnieć
-        tylko w runtime_text albo tylko w cognitive-frame. Finalna odpowiedź ma
-        odwołanie do tego samego turn_id/trace_id.
-        """
         trace = dict(envelope.get("trace") or {})
         payload = {
             "turn_id": trace.get("turn_id"),

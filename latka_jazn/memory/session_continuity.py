@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 from latka_jazn.core.clock import resolve_timezone
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.memory_root import memory_path, resolve_memory_root
 import hashlib
 import json
 import os
@@ -39,13 +40,14 @@ class SessionContinuityManager:
     RuntimeEventLedger zapisuje pełne tury i zdarzenia. Ten manager nie
     streszcza treści; tworzy indeks plików, hash ostatnich linii i append-only
     ślad w `memory/layered/continuity.jsonl`, żeby aktualizacje mogły przenieść
-    ciągłość bez zgadywania.
+    ciągłość bez zgadywania. Aktywne ścieżki `memory/*` są rozwiązywane przez
+    wspólny host-level memory root, niezależny od wersjonowanego `active_root`.
     """
 
     TRACKED_FILES = [
         "memory/raw/conversation_turns.jsonl",
-        "memory/raw/runtime_events.jsonl",
-        "memory/raw/runtime_event_errors.jsonl",
+        "memory/raw/runtime_events/runtime_events_0001.jsonl",
+        "memory/raw/runtime_events/runtime_event_errors_0001.jsonl",
         "memory/raw/dziennik.json",
         "memory/layered/episodic.jsonl",
         "memory/layered/semantic.jsonl",
@@ -56,12 +58,13 @@ class SessionContinuityManager:
     ]
 
     def __init__(self, root: Path, *, version: str, timezone_name: str = DEFAULT_TIMEZONE) -> None:
-        self.root = Path(root)
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
         self.version = version
         self.timezone_name = timezone_name
         self.timezone = resolve_timezone(timezone_name)
-        self.index_path = self.root / "memory" / "raw" / "session_continuity_index.json"
-        self.layer_path = self.root / "memory" / "layered" / "continuity.jsonl"
+        self.index_path = self.memory_root / "raw" / "session_continuity_index.json"
+        self.layer_path = self.memory_root / "layered" / "continuity.jsonl"
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         self.layer_path.parent.mkdir(parents=True, exist_ok=True)
         self.layer_path.touch(exist_ok=True)
@@ -96,9 +99,9 @@ class SessionContinuityManager:
             "files": files,
             "continuity_contract": {
                 "exact_turns": "memory/raw/conversation_turns.jsonl zapisuje pełne tury rozmowy append-only",
-                "exact_events": "memory/raw/runtime_events.jsonl zapisuje pełne zdarzenia runtime append-only",
+                "exact_events": "memory/raw/runtime_events/runtime_events_*.jsonl zapisują pełne zdarzenia runtime append-only",
                 "selected_memory": "memory/layered/*.jsonl i dziennik zapisują wybrane/ważne warstwy pamięci",
-                "version_updates": "aktualizacje przenoszą memory/ jako dane trwałe; host-level workspace_runtime pozostaje poza paczką i zachowuje stan procesu między wersjami",
+                "version_updates": "aktualizacje kodu zachowują host-level memory root i workspace_runtime między wersjami; pamięć nie jest własnością konkretnego active_root",
                 "no_summary_rule": "indeks nie streszcza treści rozmów; używa liczników i hashy jako dowodów ciągłości",
                 "fast_index_rule": "w normalnej turze duże JSONL/TXT/JSON nie są skanowane liniowo; pełny recount należy uruchamiać tylko jawnie w audycie deep",
             },
@@ -153,6 +156,8 @@ class SessionContinuityManager:
         parts = Path(rel).parts
         if parts and parts[0].casefold() == "workspace_runtime":
             path = workspace_runtime_path(self.root).joinpath(*parts[1:])
+        elif parts and parts[0].casefold() == "memory":
+            path = memory_path(self.root, Path(*parts[1:]))
         else:
             path = self.root / rel
         if not path.exists() or not path.is_file():

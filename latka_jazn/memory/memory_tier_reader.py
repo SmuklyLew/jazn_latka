@@ -42,6 +42,7 @@ def probe_memory_tier_database_readonly(
         "integrity_check": None,
         "foreign_key_error_count": None,
         "store_schema_version": None,
+        "fts5_available": False,
         "read_only": True,
         "issues": [],
     }
@@ -53,6 +54,7 @@ def probe_memory_tier_database_readonly(
                 str(row["name"])
                 for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
             }
+            report["fts5_available"] = "memory_records_fts" in tables
             missing_tables = sorted(_REQUIRED_TABLES - tables)
             if missing_tables:
                 report["status"] = "invalid_schema"
@@ -94,6 +96,59 @@ def probe_memory_tier_database_readonly(
         return report
 
 
+def _query_terms(query: str) -> tuple[str, list[str]]:
+    normalized = " ".join(str(query or "").lower().split())
+    terms = [
+        token
+        for token in re.findall(r"[0-9a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ_-]{3,}", normalized)
+        if token not in {"jak", "czy", "jest", "oraz", "sie", "się", "twoja", "twoje", "pamięć", "pamiec"}
+    ]
+    return normalized, terms
+
+
+def _fts_query(terms: list[str]) -> str:
+    """Build a bounded OR query tolerant of common Polish inflection endings.
+
+    FTS5 itself is a tokenizer/index, not a Polish lemmatizer.  Queries such as
+    ``czerwona włóczka`` therefore do not directly match indexed forms such as
+    ``czerwonej włóczce``.  For longer terms we add one- and two-character
+    prefix stems.  This preserves the direct FTS5/rank path while avoiding a
+    false negative for ordinary Polish case inflection.
+    """
+
+    variants: list[str] = []
+    seen: set[str] = set()
+    for raw in terms:
+        term = raw.strip()
+        if not term:
+            continue
+        candidates = [term]
+        if len(term) >= 5:
+            candidates.append(term[:-1])
+        if len(term) >= 7:
+            candidates.append(term[:-2])
+        for candidate in candidates:
+            folded = candidate.casefold()
+            if not folded or folded in seen:
+                continue
+            seen.add(folded)
+            escaped = candidate.replace('"', '""')
+            variants.append(f'"{escaped}"*')
+    return " OR ".join(variants)
+
+
+def _evidence_for(con: sqlite3.Connection, memory_id: str) -> list[dict[str, str]]:
+    rows = con.execute(
+        """SELECT source_type,source_id FROM memory_evidence
+           WHERE memory_id=? ORDER BY evidence_key LIMIT 16""",
+        (memory_id,),
+    ).fetchall()
+    return [
+        {"source_type": str(row["source_type"]), "source_id": str(row["source_id"])}
+        for row in rows
+    ]
+
+
 def search_memory_tier_database_readonly(
     path: str | Path,
     query: str,
@@ -103,76 +158,101 @@ def search_memory_tier_database_readonly(
     mode: str = "semantic_query",
     busy_timeout_ms: int = 10_000,
 ) -> list[dict[str, Any]]:
-    """Return bounded, read-only candidates from runtime_write_v2.
+    """Return bounded, read-only candidates from transactional memory.
 
-    The transactional tier database intentionally has no content FTS index yet.
-    To avoid a full-table scan on every turn, semantic recall inspects only a
-    bounded recent candidate window and then ranks lexical coverage in memory.
-    Chronological modes use the indexed temporal ordering directly.
+    Native unified v3 databases expose ``memory_records_fts``. For semantic
+    recall this path delegates candidate selection and ordering directly to
+    FTS5 and ``ORDER BY rank``. SQLite documents the hidden ``rank`` column as
+    equivalent to the default BM25 auxiliary function and faster for sorted
+    queries that may terminate early with ``LIMIT``.
+
+    Historical transactional-tier databases without FTS5 remain supported by
+    the bounded recent-candidate fallback; they never trigger an unbounded full
+    table scan.
     """
     database_path = Path(path).expanduser().resolve()
     if not database_path.is_file():
         return []
     hard_limit = max(1, min(64, int(limit)))
     window = max(hard_limit, min(2048, int(candidate_limit)))
-    normalized_query = " ".join(str(query or "").lower().split())
-    terms = [
-        token
-        for token in re.findall(r"[0-9a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ_-]{3,}", normalized_query)
-        if token not in {"jak", "czy", "jest", "oraz", "sie", "się", "twoja", "twoje", "pamięć", "pamiec"}
-    ]
-    order = "ASC" if mode == "chronological_earliest" else "DESC"
+    normalized_query, terms = _query_terms(query)
+    chronological = mode in {"chronological_earliest", "chronological_latest"}
+    direction = "ASC" if mode == "chronological_earliest" else "DESC"
     try:
         with closing(connect_runtime_readonly(database_path, timeout_ms=busy_timeout_ms)) as con:
-            rows = con.execute(
-                f"""SELECT memory_id,tier,kind,content,domain,mode,truth_status,confidence,importance,
-                           created_at_utc,updated_at_utc,tags_json
-                    FROM memory_records
-                    WHERE active=1
-                    ORDER BY updated_at_utc {order}
-                    LIMIT ?""",
-                (window,),
-            ).fetchall()
-            ranked: list[tuple[float, sqlite3.Row]] = []
-            for row in rows:
-                content = str(row["content"] or "")
-                folded = content.lower()
-                if mode in {"chronological_earliest", "chronological_latest"}:
-                    score = 0.74
-                elif not terms:
-                    score = 0.5
-                else:
-                    matched = sum(1 for term in terms if term.lower() in folded)
-                    if matched == 0:
-                        continue
-                    coverage = matched / max(1, len(terms))
-                    phrase_bonus = 0.12 if normalized_query and normalized_query in folded else 0.0
-                    score = min(0.99, 0.48 + 0.42 * coverage + phrase_bonus)
-                ranked.append((score, row))
-            if mode not in {"chronological_earliest", "chronological_latest"}:
-                ranked.sort(
-                    key=lambda item: (
-                        item[0],
-                        float(item[1]["importance"] or 0.0),
-                        float(item[1]["confidence"] or 0.0),
-                        str(item[1]["updated_at_utc"] or ""),
-                    ),
-                    reverse=True,
-                )
-            selected = ranked[:hard_limit]
-            results: list[dict[str, Any]] = []
-            for score, row in selected:
-                evidence_rows = con.execute(
-                    """SELECT source_type,source_id FROM memory_evidence
-                       WHERE memory_id=? ORDER BY evidence_key LIMIT 16""",
-                    (str(row["memory_id"]),),
+            table_names = {
+                str(row["name"])
+                for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+            }
+            use_fts = bool(not chronological and terms and "memory_records_fts" in table_names)
+            selected: list[tuple[float, sqlite3.Row, str]] = []
+
+            if use_fts:
+                rows = con.execute(
+                    """SELECT memory_records.memory_id,memory_records.tier,memory_records.kind,
+                              memory_records.content,memory_records.domain,memory_records.mode,
+                              memory_records.truth_status,memory_records.confidence,
+                              memory_records.importance,memory_records.created_at_utc,
+                              memory_records.updated_at_utc,memory_records.tags_json,
+                              memory_records_fts.rank AS fts_rank
+                       FROM memory_records_fts
+                       JOIN memory_records ON memory_records.rowid=memory_records_fts.rowid
+                       WHERE memory_records_fts MATCH ? AND memory_records.active=1
+                       ORDER BY memory_records_fts.rank,
+                                memory_records.importance DESC,
+                                memory_records.confidence DESC,
+                                memory_records.updated_at_utc DESC
+                       LIMIT ?""",
+                    (_fts_query(terms), hard_limit),
                 ).fetchall()
-                evidence = [
-                    {"source_type": str(ev["source_type"]), "source_id": str(ev["source_id"])}
-                    for ev in evidence_rows
-                ]
+                for row in rows:
+                    raw_rank = float(row["fts_rank"] or 0.0)
+                    relevance = 1.0 / (1.0 + abs(raw_rank))
+                    selected.append((relevance, row, "memory_records_fts:rank"))
+
+            if not use_fts or not selected:
+                rows = con.execute(
+                    f"""SELECT memory_id,tier,kind,content,domain,mode,truth_status,confidence,importance,
+                               created_at_utc,updated_at_utc,tags_json
+                        FROM memory_records
+                        WHERE active=1
+                        ORDER BY updated_at_utc {direction}
+                        LIMIT ?""",
+                    (window,),
+                ).fetchall()
+                ranked: list[tuple[float, sqlite3.Row, str]] = []
+                for row in rows:
+                    content = str(row["content"] or "")
+                    folded = content.lower()
+                    if chronological:
+                        score = 0.74
+                    elif not terms:
+                        score = 0.5
+                    else:
+                        matched = sum(1 for term in terms if term.lower() in folded)
+                        if matched == 0:
+                            continue
+                        coverage = matched / max(1, len(terms))
+                        phrase_bonus = 0.12 if normalized_query and normalized_query in folded else 0.0
+                        score = min(0.99, 0.48 + 0.42 * coverage + phrase_bonus)
+                    ranked.append((score, row, "bounded_table_scan"))
+                if not chronological:
+                    ranked.sort(
+                        key=lambda item: (
+                            item[0],
+                            float(item[1]["importance"] or 0.0),
+                            float(item[1]["confidence"] or 0.0),
+                            str(item[1]["updated_at_utc"] or ""),
+                        ),
+                        reverse=True,
+                    )
+                selected = ranked[:hard_limit]
+
+            results: list[dict[str, Any]] = []
+            for score, row, search_index in selected:
+                memory_id = str(row["memory_id"])
                 results.append({
-                    "memory_id": str(row["memory_id"]),
+                    "memory_id": memory_id,
                     "tier": str(row["tier"]),
                     "kind": str(row["kind"]),
                     "content": str(row["content"]),
@@ -184,9 +264,10 @@ def search_memory_tier_database_readonly(
                     "created_at_utc": str(row["created_at_utc"]),
                     "updated_at_utc": str(row["updated_at_utc"]),
                     "tags_json": str(row["tags_json"] or "[]"),
-                    "evidence_sources": evidence,
+                    "evidence_sources": _evidence_for(con, memory_id),
                     "relevance": float(score),
                     "source_database": str(database_path),
+                    "search_index": search_index,
                     "read_only": True,
                 })
             return results

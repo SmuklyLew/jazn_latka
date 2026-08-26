@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-# v16.3.8 adds fail-closed archive I/O for ZIP/ZIP64, 7z, AES-ZIP and binary
-# split package sets, plus generator-level packing/extraction configuration.
-DISTRIBUTION_VERSION = "16.3.8"
-PACKAGE_VERSION = "16.3.8"
-PACKAGE_RELEASE_NAME = "archive-io-generator-hardening"
+# v16.3.9 separates versioned runtime code from persistent host-level private
+# memory, converges native unified recall with the transactional L1/L2/L3 path,
+# and hardens ChatGPT host/memory package boundaries without weakening truth gates.
+DISTRIBUTION_VERSION = "16.3.9"
+PACKAGE_VERSION = "16.3.9"
+PACKAGE_RELEASE_NAME = "host-memory-direct-sqlite"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
