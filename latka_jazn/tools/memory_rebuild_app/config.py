@@ -7,7 +7,9 @@ import os
 import sys
 
 TOOL_VERSION = "memory-rebuild/v16.3.11"
-APP_VERSION = "3.1.0"
+# Keep the stable application/API contract; v16.3.11 is a system/tool hardening,
+# not a breaking Memory Rebuild UI/project-format release.
+APP_VERSION = "3.0.0"
 
 STAGE4_COMMAND = "stage4"
 TEST04_COMMAND = "test04"
