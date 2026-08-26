@@ -203,6 +203,8 @@ Dostępność i integralność pamięci raportuj oddzielnie od aktywności proce
 
 Jeżeli prywatne narzędzia MCP Jaźni są dostępne, kanoniczną ścieżką jest `jazn_generate_visible_reply`. Przekaż w polu `message` dokładny tekst użytkownika, bez parafrazy, klasyfikacji ani dopisywania intencji. Nie wysyłaj tej samej wiadomości drugi raz, jeżeli narzędzie zwróci `poll_runtime` albo `generate_then_finalize`.
 
+Jeżeli poprzednia faza `generate_then_finalize` została przerwana zanim host uzyskał zaakceptowany `display_exact`, a znany jest jej `daemon_request_id`, najpierw wznoẃ **istniejącą** turę przez prywatne `jazn_resume_visible_reply`. Nie wywołuj ponownie `jazn_generate_visible_reply` z tą samą wiadomością. Resume może wyłącznie: zwrócić gotowy `display_exact`, podtrzymać `poll_runtime`, ponownie udostępnić ten sam nadal-pending kontrakt `generate_then_finalize` z tym samym HMAC-bound tokenem albo fail-closed zwrócić `host_diagnostic`. Claimed, consumed, expired, indeterminate, niezgodne i niejednoznaczne rekordy nie mogą dostać nowego lease ani nowego tokenu.
+
 Gdy MCP nie jest dostępne, użyj lokalnej ścieżki CLI:
 
 ```bash
@@ -225,7 +227,7 @@ Kanoniczna ścieżka zwraca jedną akcję. Nie wyprowadzaj jej samodzielnie z lu
 
 - `action=display_exact` — pokaż wyłącznie `final_visible_text` znak w znak;
 - `action=generate_then_finalize` — utwórz tekst z bieżącego kontraktu hosta i obowiązkowo wywołaj `jazn_finalize_reply`;
-- `action=poll_runtime` — nie wysyłaj ponownie wiadomości; pobierz istniejący wynik przez podane `request_id`/`poll_command`;
+- `action=poll_runtime` — nie wysyłaj ponownie wiadomości; przy dostępnym MCP wywołaj `jazn_resume_visible_reply` dla istniejącego `daemon_request_id`, a bez MCP pobierz istniejący wynik przez podane `request_id`/`poll_command`;
 - `action=host_diagnostic` — nie imituj Łatki, tylko pokaż krótką diagnozę hosta.
 
 Wynik pośredni, instrukcja narzędzia, token kontynuacji ani kontrakt generowania nie są odpowiedzią użytkownika i nie mogą zostać wyświetlone jako Łatka.
@@ -248,7 +250,9 @@ Jeżeli runtime jawnie wymaga zewnętrznej warstwy językowej:
 4. oblicz SHA-256 kanonicznego UTF-8/LF pola `final_text` bez BOM;
 5. wywołaj `jazn_finalize_reply` wyłącznie z `continuation_token`, `final_text` i `final_text_sha256`;
 6. pokaż dopiero `final_visible_text` zwrócony z `action=display_exact` przez finalizator;
-7. nie ujawniaj tokenu, nie zapisuj go w widocznym tekście i nie ponawiaj go — jest jednorazowy, wygasa i replay ma zostać odrzucony.
+7. nie ujawniaj tokenu, nie zapisuj go w widocznym tekście i nie ponawiaj go po rozpoczęciu finalizacji — jest jednorazowy, wygasa i replay ma zostać odrzucony.
+
+Jeżeli ścieżka hosta urwie się **przed** rozpoczęciem `jazn_finalize_reply`, zachowaj `daemon_request_id`, `turn_id`, `trace_id` i `host_request_contract_hash` i wznoẃ istniejący request przez `jazn_resume_visible_reply`. Jeżeli wywołanie finalizatora mogło dojść do serwera, ale jego odpowiedź transportowa zginęła, nie ponawiaj tokenu: najpierw poll/resume istniejącego `daemon_request_id`; zaakceptowany daemon zwróci `display_exact`, a stan claimed/indeterminate pozostanie fail-closed. Resume nie odświeża TTL i nie tworzy nowej tury.
 
 Jeżeli MCP nie jest dostępne, zgodnościowa ścieżka JSONL może nadal odesłać `type=host_visible_reply`, lecz musi korzystać z tego samego magazynu `pending`, hasha i bramy finalizacji. Nie przedstawiaj tej ścieżki jako lokalnego wywołania ChatGPT przez Python.
 
