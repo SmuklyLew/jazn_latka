@@ -9,6 +9,7 @@ import re
 import sqlite3
 
 from latka_jazn.core.memory_intent_contract import TemporalPrecision, TemporalScope
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 
 
@@ -162,8 +163,9 @@ class ConversationArchiveSearchResult:
 
 class ConversationArchiveStore:
     def __init__(self, root: Path | str) -> None:
-        self.root = Path(root)
-        base = self.root / "memory" / "sqlite"
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
+        base = self.memory_root / "sqlite"
         self.archive_dir = base / "conversation_archive_v1"
         self.fts_dir = base / "conversation_fts_v1"
         self.staging_dir = base / "staging_v1"
