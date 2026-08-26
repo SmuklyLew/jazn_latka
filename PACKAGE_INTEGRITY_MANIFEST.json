@@ -3,11 +3,11 @@
   "version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
   "runtime_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
   "package_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
-  "generated_at_utc": "2026-08-26T08:15:28+00:00",
-  "updated_at_utc": "2026-08-26T08:15:28+00:00",
+  "generated_at_utc": "2026-08-26T08:16:34+00:00",
+  "updated_at_utc": "2026-08-26T08:16:34+00:00",
   "start_file": "run.py",
-  "file_count": 859,
-  "static_file_count": 859,
+  "file_count": 860,
+  "static_file_count": 860,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -100,6 +100,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/v1635-final-verify.yml",
+      "size_bytes": 10639,
+      "sha256": "4293cd20d72e843bcd2dc063aaae3fa5d2ce379912a20435cafe5327e57e80f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".gitignore",
       "size_bytes": 2187,
       "sha256": "8559356b875c912efb0d8d8907a3461131aea0e78177a50c995663d0a0603d18",
@@ -164,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1334,
-      "sha256": "0bd20671504ae43d18a10604fda3168aa75203544ee8917eeff801bd2ecddcc6",
+      "size_bytes": 1339,
+      "sha256": "5a190beb911c9613307e41a47965b3cbbc4d91740b7d6200a9e6594bb41ba1a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

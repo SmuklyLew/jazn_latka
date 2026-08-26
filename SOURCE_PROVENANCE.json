@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "bdee39ab249d62350f8ade9dba5fcd0de47e9517",
+  "base_merge_commit": "6269d034df6075b2fabf0a016684af50dd08346c",
   "base_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
-  "commit_date": "2026-08-26T08:15:28Z",
+  "commit_date": "2026-08-26T10:16:34+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-26T08:15:28+00:00",
+  "generated_at_utc": "2026-08-26T08:16:34+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "821364aa22538d9a96e432f5db60c160f34c95cb",
+  "git_tree_sha": "a2519dd74c177072ffe0ec8eebf67bfee426d3f9",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
