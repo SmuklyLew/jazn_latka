@@ -118,49 +118,60 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         return result
 
     def discover(self) -> list[dict[str, Any]]:
-        active_memory_root = resolve_memory_root(self.root)
-        candidates: list[tuple[Path, str, bool, str | None]] = [
-            (active_memory_root, "active_memory_root", True, "active_memory_root_boundary")
-        ]
-        env_value = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "")
-        for raw in env_value.split(os.pathsep):
-            if raw.strip():
-                candidates.append(
-                    (
-                        Path(raw).expanduser(),
-                        "environment_registry",
-                        True,
-                        "operator_environment_override",
+        direct_database = (
+            self.root
+            if self.root.is_file() and self.root.suffix.casefold() in {".sqlite3", ".sqlite", ".db"}
+            else None
+        )
+        if direct_database is not None:
+            active_memory_root = direct_database.parent
+            candidates: list[tuple[Path, str, bool, str | None]] = [
+                (direct_database, "direct_database", True, "direct_database_argument")
+            ]
+        else:
+            active_memory_root = resolve_memory_root(self.root)
+            candidates = [
+                (active_memory_root, "active_memory_root", True, "active_memory_root_boundary")
+            ]
+            env_value = os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "")
+            for raw in env_value.split(os.pathsep):
+                if raw.strip():
+                    candidates.append(
+                        (
+                            Path(raw).expanduser(),
+                            "environment_registry",
+                            True,
+                            "operator_environment_override",
+                        )
                     )
-                )
 
-        registry = workspace_runtime_path(self.root) / REGISTRY_FILENAME
-        if registry.is_file():
-            try:
-                payload = json.loads(registry.read_text(encoding="utf-8"))
-            except (OSError, UnicodeError, json.JSONDecodeError):
-                payload = {}
-            entries = payload.get("sources") if isinstance(payload, dict) else []
-            if isinstance(entries, list):
-                for entry in entries:
-                    if not isinstance(entry, dict):
-                        continue
-                    if entry.get("enabled", True) is not True or entry.get("read_only", True) is not True:
-                        continue
-                    raw_path = str(entry.get("path") or "").strip()
-                    if raw_path:
-                        declared_trust_basis = str(entry.get("trust_basis") or "").strip()
-                        source_trusted = bool(
-                            entry.get("trusted") is True and declared_trust_basis
-                        )
-                        candidates.append(
-                            (
-                                Path(raw_path).expanduser(),
-                                "workspace_registry",
-                                source_trusted,
-                                declared_trust_basis if source_trusted else None,
+            registry = workspace_runtime_path(self.root) / REGISTRY_FILENAME
+            if registry.is_file():
+                try:
+                    payload = json.loads(registry.read_text(encoding="utf-8"))
+                except (OSError, UnicodeError, json.JSONDecodeError):
+                    payload = {}
+                entries = payload.get("sources") if isinstance(payload, dict) else []
+                if isinstance(entries, list):
+                    for entry in entries:
+                        if not isinstance(entry, dict):
+                            continue
+                        if entry.get("enabled", True) is not True or entry.get("read_only", True) is not True:
+                            continue
+                        raw_path = str(entry.get("path") or "").strip()
+                        if raw_path:
+                            declared_trust_basis = str(entry.get("trust_basis") or "").strip()
+                            source_trusted = bool(
+                                entry.get("trusted") is True and declared_trust_basis
                             )
-                        )
+                            candidates.append(
+                                (
+                                    Path(raw_path).expanduser(),
+                                    "workspace_registry",
+                                    source_trusted,
+                                    declared_trust_basis if source_trusted else None,
+                                )
+                            )
 
         discovered: list[dict[str, Any]] = []
         normalized: list[tuple[Path, Path, str, bool, str | None]] = []
@@ -251,7 +262,11 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                 }
             )
 
-        tier_database = resolve_memory_tier_database_path(self.root)
+        tier_database = (
+            direct_database
+            if direct_database is not None
+            else resolve_memory_tier_database_path(self.root)
+        )
         tier_probe = probe_memory_tier_database_readonly(
             tier_database,
             busy_timeout_ms=self.busy_timeout_ms,
