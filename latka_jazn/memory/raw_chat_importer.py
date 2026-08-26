@@ -7,6 +7,7 @@ import hashlib
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.memory_root import resolve_memory_root
 
 SCHEMA_VERSION = "raw_chat_importer/v2"
 
@@ -39,12 +40,13 @@ class RawChatStatus:
 
 class RawChatImporter:
     def __init__(self, root: Path) -> None:
-        self.root = Path(root)
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
 
     def inspect(self) -> RawChatStatus:
-        raw = self.root / "memory" / "raw" / "chat.html"
+        raw = self.memory_root / "raw" / "chat.html"
         runtime = workspace_runtime_path(self.root)
-        sqlite_dir = self.root / "memory" / "sqlite"
+        sqlite_dir = self.memory_root / "sqlite"
         config = JaznConfig(root=self.root)
         dbs = [
             path
