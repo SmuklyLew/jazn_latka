@@ -90,8 +90,8 @@ def _sqlite_meta_readonly(db_path: Path, key: str) -> str | None:
         return None
 
 
-def layer_counts(root: Path) -> dict[str, int | str]:
-    layered = root / "memory" / "layered"
+def layer_counts(memory_root: Path) -> dict[str, int | str]:
+    layered = memory_root / "layered"
     counts: dict[str, int | str] = {}
     for name in LAYER_FILES:
         path = layered / name
@@ -176,9 +176,10 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
     """
     cfg = config or JaznConfig()
     root = Path(cfg.root).resolve()
-    raw = root / "memory" / "raw"
+    memory_root = cfg.memory_root
+    raw = memory_root / "raw"
     chat = raw / "chat.html"
-    counts = layer_counts(root)
+    counts = layer_counts(memory_root)
     event_ledger_counts = build_event_ledger_status(root, raw)
 
     previous_sqlite = []
@@ -187,7 +188,9 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
         for db in sorted(previous_dir.glob("*.sqlite3")):
             previous_sqlite.append({"path": display_path(root, db), "size_bytes": db.stat().st_size})
 
-    audit_status = AuditContextStore.readonly_status(cfg.audit_db_path)
+    memory_db = cfg.memory_db_path_readonly
+    audit_db = cfg.audit_db_path_readonly
+    audit_status = AuditContextStore.readonly_status(audit_db)
     contract_status = BootstrapContractRepository(root).status()
     conversation_archive_status = build_conversation_archive_status(root).to_dict()
 
@@ -196,8 +199,8 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
         imported_sha = store.get_meta("chat_html_import_sha256")
         sqlite_mode = "live_store_no_diagnostic_write"
     else:
-        stats, sqlite_mode = _sqlite_stats_readonly(cfg.memory_db_path)
-        imported_sha = _sqlite_meta_readonly(cfg.memory_db_path, "chat_html_import_sha256")
+        stats, sqlite_mode = _sqlite_stats_readonly(memory_db)
+        imported_sha = _sqlite_meta_readonly(memory_db, "chat_html_import_sha256")
 
     issues: list[str] = []
     raw_memory_note = ""
@@ -222,11 +225,12 @@ def build_runtime_status(config: JaznConfig | None = None, store: Any | None = N
         f"Diagnoza runtime {cfg.version}:\n"
         f"- aktywny root: {root_note}\n"
         f"- tryb diagnostyki: {'read-only' if readonly else sqlite_mode}\n"
-        f"- SQLite pamięci rozmownej/runtime: {display_path(root, cfg.memory_db_path)}\n"
+        f"- memory root: {display_path(root, memory_root)}\n"
+        f"- SQLite pamięci rozmownej/runtime: {display_path(root, memory_db)}\n"
         f"- conversation_archive/FTS/staging: status={conversation_archive_status.get('status')}, ready_for_search={conversation_archive_status.get('ready_for_search')}, counts={json.dumps(conversation_archive_status.get('counts') or {}, ensure_ascii=False)}\n"
-        f"- SQLite audytu: {display_path(root, cfg.audit_db_path)}; status={json.dumps(audit_status, ensure_ascii=False)}\n"
-        f"- shard manifest rozmowny: {display_path(root, root / cfg.conversation_shard_manifest_name)}\n"
-        f"- shard manifest audytu: {display_path(root, root / cfg.audit_shard_manifest_name)}\n"
+        f"- SQLite audytu: {display_path(root, audit_db)}; status={json.dumps(audit_status, ensure_ascii=False)}\n"
+        f"- shard manifest rozmowny: {display_path(root, cfg.resolve(cfg.conversation_shard_manifest_name))}\n"
+        f"- shard manifest audytu: {display_path(root, cfg.resolve(cfg.audit_shard_manifest_name))}\n"
         f"- embedded bootstrap/README/AGENTS/contracts: {json.dumps(contract_status, ensure_ascii=False)}\n"
         f"- chat.html: {'jest' if chat.exists() else 'brak'}" + (f", ścieżka={display_path(root, chat)}, rozmiar={chat.stat().st_size} B" if chat.exists() else "") + "\n"
         f"- import surowy: tylko jawny memory/raw/chat.html albo istniejący indeks SQLite\n"
