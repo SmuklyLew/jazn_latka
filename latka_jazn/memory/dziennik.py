@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 from latka_jazn.core.clock import resolve_timezone
+from latka_jazn.memory.memory_root import memory_path
 import copy
 import json
 import uuid
@@ -30,6 +31,7 @@ class DziennikRawJournal:
     `memory/raw/dziennik.json` jest starszym, kanonicznym nośnikiem ciągłości.
     Nowe warstwy pamięci zapisują epizody/refleksje/procedury w JSONL i SQLite,
     ale przy zmianie wersji systemu Jaźni ten plik również musi otrzymać wpis.
+    Aktywna ścieżka jest rozwiązywana przez wspólny host-level memory root.
 
     Adapter zachowuje istniejący schemat:
     {
@@ -41,8 +43,8 @@ class DziennikRawJournal:
     """
 
     def __init__(self, root: Path, *, rel_path: str = "memory/raw/dziennik.json", timezone: str = "Europe/Warsaw") -> None:
-        self.root = Path(root)
-        self.path = self.root / rel_path
+        self.root = Path(root).expanduser().resolve()
+        self.path = memory_path(self.root, rel_path)
         self.timezone = resolve_timezone(timezone)
 
     def _now(self) -> datetime:
