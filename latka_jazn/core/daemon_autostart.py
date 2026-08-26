@@ -24,6 +24,18 @@ ACTIVE_STATES = {"active_trusted", "active_degraded"}
 ACTIVE_TRUSTED = "active_trusted"
 ACTIVE_DEGRADED = "active_degraded"
 
+# `active_degraded` is not a single liveness state. Some degradations concern
+# trusted time only while others explicitly mean that endpoint/heartbeat
+# liveness is not confirmed. Conversation autostart must therefore fail closed
+# unless the degraded state came from a fully confirmed endpoint identity.
+DEGRADED_TURN_SAFE_REASONS = {
+    "endpoint_runtime_identity_confirmed",
+}
+DEGRADED_TURN_BLOCKING_REASONS = {
+    "endpoint_identity_confirmed_heartbeat_stale",
+    "fresh_marker_and_live_pid_endpoint_unreachable",
+}
+
 RUNTIME_TURN_COMMANDS = {
     "--chat",
     "--chat-gpt",
@@ -92,7 +104,7 @@ class DaemonEnsureResult:
     schema_version: str = schema_version("daemon_ensure_result")
     truth_boundary: str = (
         "ensure_daemon_for_runtime_turn może uruchomić daemon tylko dla trasy rozmowy albo jawnego --ensure-daemon. "
-        "Sukces oznacza aktywny trusted/degraded runtime potwierdzony przez marker, PID/endpoint/heartbeat według status_daemon."
+        "Sukces oznacza aktywny trusted runtime albo bezpiecznie zdegradowany runtime z potwierdzonym markerem, PID-em, endpointem i świeżym heartbeat według status_daemon."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -123,13 +135,26 @@ def _status_active_state(status: Mapping[str, Any] | None) -> str:
     return str(status.get("active_state") or status.get("runtime_active_state") or "inactive")
 
 
+def _status_active_reason(status: Mapping[str, Any] | None) -> str:
+    if not isinstance(status, Mapping):
+        return ""
+    return str(status.get("active_state_reason") or "").strip()
+
+
 def status_allows_runtime_turn(status: Mapping[str, Any] | None, *, allow_degraded: bool = True) -> bool:
     active_state = _status_active_state(status)
     if active_state == ACTIVE_TRUSTED:
         return True
-    if allow_degraded and active_state == ACTIVE_DEGRADED:
-        return True
-    return False
+    if active_state != ACTIVE_DEGRADED or not allow_degraded:
+        return False
+
+    reason = _status_active_reason(status)
+    if reason in DEGRADED_TURN_BLOCKING_REASONS:
+        return False
+    # Fail closed for unknown/missing degraded reasons. The only currently safe
+    # degraded state is one where endpoint identity and heartbeat are confirmed
+    # and the degradation comes from the timestamp trust path.
+    return reason in DEGRADED_TURN_SAFE_REASONS
 
 
 def daemon_autostart_decision(
@@ -304,5 +329,10 @@ def daemon_autostart_policy_status(env: Mapping[str, str] | None = None) -> dict
         "runtime_turn_commands": sorted(RUNTIME_TURN_COMMANDS),
         "observational_commands": sorted(OBSERVATIONAL_COMMANDS),
         "never_autostart_commands": sorted(NEVER_AUTOSTART_COMMANDS),
-        "truth_boundary": "Autostart jest kontraktem liveness dla tras rozmowy, nie dowodem świadomości ani zgodą na start przy komendach status/stop.",
+        "degraded_turn_safe_reasons": sorted(DEGRADED_TURN_SAFE_REASONS),
+        "degraded_turn_blocking_reasons": sorted(DEGRADED_TURN_BLOCKING_REASONS),
+        "truth_boundary": (
+            "Autostart jest kontraktem liveness dla tras rozmowy, nie dowodem świadomości ani zgodą na start przy komendach status/stop. "
+            "active_degraded dopuszcza turę tylko wtedy, gdy status_daemon jawnie potwierdza zgodność endpointu i świeży heartbeat; nieznane degradacje są fail-closed."
+        ),
     }
