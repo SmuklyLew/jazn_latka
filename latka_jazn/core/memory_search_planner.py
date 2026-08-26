@@ -14,6 +14,10 @@ from latka_jazn.core.memory_intent_contract import (
     has_explicit_memory_recall,
     strip_temporal_language,
 )
+from latka_jazn.core.typed_memory_source_policy import (
+    TypedMemorySourcePolicy,
+    build_typed_source_policy,
+)
 
 
 @dataclass(slots=True)
@@ -49,6 +53,7 @@ class MemorySearchPlan:
     routing_notes: list[str]
     temporal_scope: dict[str, Any]
     memory_intent_contract: dict[str, Any]
+    source_policy: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -62,6 +67,8 @@ class SourceFileHit:
     score: float
     source_label: str
     content_excerpt: str
+    semantic_source_type: str = "unknown"
+    provenance_label: str = "brak dowodu"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -207,6 +214,7 @@ class MemorySearchPlanner:
         topic_keys = [key for key, score in topic_scores if score > 0]
         expanded: list[str] = []
         source_hints: list[str] = []
+        source_policy = build_typed_source_policy(original)
         routing_notes: list[str] = [
             "topic_resource=" + str(self.resource_status.get("status") or "unknown"),
             f"search_mode={search_mode}",
@@ -229,6 +237,22 @@ class MemorySearchPlanner:
                 self._append_unique(expanded, alias)
             for path in topic.canonical_files:
                 self._append_unique(source_hints, path)
+
+        filtered_source_hints: list[str] = []
+        for rel in source_hints:
+            decision = source_policy.evaluate(
+                item_type="source_file",
+                source="canonical_source_file",
+                path=rel,
+            )
+            if decision.allowed:
+                filtered_source_hints.append(rel)
+            else:
+                routing_notes.append(
+                    f"source_suppressed={rel}:{decision.semantic_source_type}:{decision.suppression_reason}"
+                )
+        source_hints = filtered_source_hints
+        routing_notes.append(f"source_policy={source_policy.intent_family}")
 
         # Morfologiczne i ortograficzne warianty bez ciężkiego NLP.
         term_pool: list[str] = []
@@ -296,7 +320,9 @@ class MemorySearchPlanner:
                 "weight": 0.88,
                 "layers": ["memory/raw", "memory/layered", "docs"],
                 "source_hints": source_hints,
-                "purpose": "sprawdzić pliki kanoniczne, kiedy temat ma własny magazyn treści",
+                "enabled": bool(source_hints),
+                "source_policy": source_policy.to_dict(),
+                "purpose": "sprawdzić tylko semantycznie dozwolone pliki źródłowe dla bieżącej intencji",
             },
             {
                 "name": "raw_chat_fallback",
@@ -324,14 +350,23 @@ class MemorySearchPlanner:
             routing_notes=routing_notes or ["brak pewnego tematu; używam oczyszczonych słów użytkownika"],
             temporal_scope=temporal_scope,
             memory_intent_contract=memory_semantics.to_dict(),
+            source_policy=source_policy.to_dict(),
         )
 
     def search_source_files(self, plan: MemorySearchPlan, *, limit: int = 6, per_file: int = 2) -> list[SourceFileHit]:
         if not isinstance(plan, MemorySearchPlan) or not plan.source_hints:
             return []
         terms = plan.search_terms or plan.focus_terms
+        source_policy = build_typed_source_policy(plan.original_query)
         hits: list[SourceFileHit] = []
         for rel in plan.source_hints:
+            source_decision = source_policy.evaluate(
+                item_type="source_file",
+                source="canonical_source_file",
+                path=rel,
+            )
+            if not source_decision.allowed:
+                continue
             path = (self.root / rel).resolve()
             try:
                 path.relative_to(self.root.resolve())
@@ -363,6 +398,8 @@ class MemorySearchPlanner:
                     score=score,
                     source_label="canonical_source_file",
                     content_excerpt=excerpt,
+                    semantic_source_type=source_decision.semantic_source_type,
+                    provenance_label=source_decision.provenance_label,
                 ))
         hits.sort(key=lambda h: h.score, reverse=True)
         return hits[:limit]

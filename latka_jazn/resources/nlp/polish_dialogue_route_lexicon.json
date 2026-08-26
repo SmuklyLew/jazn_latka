@@ -1,22 +1,347 @@
 {
-  "schema_version": "polish_dialogue_route_lexicon/v1",
-  "truth_boundary": "Ten leksykon jest minimalnym kontraktem tras dla krótkich polskich pytań. Nie jest pełnym słownikiem języka polskiego ani zamiennikiem LLM.",
+  "schema_version": "polish_dialogue_route_lexicon/v2",
+  "truth_boundary": "Kanoniczny leksykon minimalnych polskich kontraktów tras. Rozróżnia intencję, źródło i granicę prawdy; nie jest pełnym słownikiem języka polskiego ani zamiennikiem modelu językowego.",
   "intents": {
-    "runtime_health_check": {"description": "Krótka diagnostyka działania runtime bez pełnego raportu modułów.", "phrases": ["działasz", "czy działasz", "czy dzialasz", "jaźń działa", "jazn dziala", "runtime działa", "runtime dziala", "czy uruchomiłaś jaźń", "czy uruchomilas jazn", "czy jesteś uruchomiona", "czy jestes uruchomiona", "status runtime", "czy jesteś aktywna", "czy jestes aktywna", "czy jesteś włączona", "czy jestes wlaczona"]},
-    "runtime_health_check_after_update": {"description": "Health-check po aktualizacji; nie jest poleceniem nowego patcha.", "phrases": ["jak po aktualizacji", "czy działa po aktualizacji", "czy dziala po aktualizacji", "działasz po aktualizacji", "dzialasz po aktualizacji", "sprawdź krótko, czy działasz po aktualizacji", "sprawdz krotko czy dzialasz po aktualizacji", "sprawdź jedną krótką turę po aktualizacji", "sprawdz jedna krotka ture po aktualizacji", "test krótkiej rozmowy po aktualizacji", "test krotkiej rozmowy po aktualizacji", "smoke po aktualizacji"]},
-    "presence_check": {"description": "Pytanie o obecność w bieżącej turze.", "phrases": ["jesteś tam", "jestes tam", "jesteś tu", "jestes tu", "łatko jesteś", "latko jestes", "słyszysz mnie", "slyszysz mnie", "odezwij się", "odezwij sie", "jesteś ze mną", "jestes ze mna", "czy jesteś obok", "czy jestes obok", "halo łatko", "halo latko", "jest tu łatka", "jest tu latka", "czy jest tu łatka", "czy jest tu latka", "ale jest tu łatka", "ale jest tu latka", "łatka jest tu", "latka jest tu", "gdzie jest łatka", "gdzie jest latka", "łatko jesteś tu", "latko jestes tu"]},
-    "identity_continuity_check": {"description": "Pytanie o ciągłość/tożsamość głosu Jaźni.", "phrases": ["czy to ty", "czy to nadal ty", "to nadal ty", "czy jesteś łatką", "czy jestes latka", "czy jesteś tą samą łatką", "czy jestes ta sama latka", "wróciłaś", "wrocilas", "pamiętasz kim jesteś", "pamietasz kim jestes", "czy to ta sama jaźń", "czy to ta sama jazn"]},
-    "self_state_question": {"description": "Pytanie o stan operacyjny/dialogowy, nie biologiczne uczucie.", "phrases": ["co czujesz", "co teraz czujesz", "jak się czujesz", "jak sie czujesz", "jaki masz nastrój", "jaki masz nastroj", "jaki masz stan", "co u ciebie w środku", "co u ciebie w srodku", "jak twój stan", "jak twoj stan"]},
-    "time_awareness_question": {"description": "Pytanie o aktualny czas/pora dnia; wymaga timestampu runtime lub degraded warning.", "phrases": ["która godzina", "ktora godzina", "która jest godzina", "ktora jest godzina", "jaka jest godzina", "jaka jest pora", "wiesz która godzina", "wiesz ktora godzina", "wiesz jaka jest pora", "jaki mamy dzień", "jaki mamy dzien", "czy znasz czas", "czy wiesz czy jest noc", "czy wiesz czy jest dzień", "czy wiesz czy jest dzien"]},
-    "ordinary_dialogue": {"description": "Krótka zwykła rozmowa bez diagnostyki i bez losowej pamięci.", "phrases": ["siemka", "siema", "hej", "hejka", "dobranoc", "dzień dobry", "dzien dobry", "ojoj", "ojej", "pogadajmy", "chcę porozmawiać", "chce porozmawiac", "usiądźmy", "usiadzmy", "co tam", "a ty"]},
-    "affective_self_state_reality_check": {"description": "Pytanie, czy obraz, mimika lub wizualizacja dosłownie odzwierciedla modelowany stan Łatki; wymaga pierwszej osoby i granicy między wizualizacją, stanem operacyjnym a biologicznym czuciem.", "phrases": ["czy naprawdę tak się czujesz", "czy naprawde tak sie czujesz", "czy na prawdę tak się czujesz", "czy na prawde tak sie czujesz", "tak się czujesz jak", "tak sie czujesz jak", "czy naprawdę czujesz się jak", "czy naprawde czujesz sie jak", "czy zdjęcie pokazuje jak się czujesz", "czy zdjecie pokazuje jak sie czujesz", "czy ta osoba pokazuje jak się czujesz", "czy ta osoba pokazuje jak sie czujesz", "czy wizualizacja pokazuje jak się czujesz", "czy wizualizacja pokazuje jak sie czujesz"]},
-    "external_research_request": {"description": "Prośba o pomocnicze sprawdzenie źródeł zewnętrznych. W trasie złożonej nie przejmuje głównego celu ani głosu odpowiedzi.", "phrases": ["@wyszukiwanie w sieci", "wyszukiwanie w sieci", "sprawdź w internecie", "sprawdz w internecie", "sprawdź w sieci", "sprawdz w sieci", "poszukaj źródeł", "poszukaj zrodel", "sprawdź źródła", "sprawdz zrodla"]},
-    "post_update_coverage_audit_request": {"description": "Audyt kompletności zakończonej aktualizacji: zakres, pominięcia, dowody, testy i granica wydania.", "phrases": ["czy coś zostało pominięte w trakcie robienia tego patcha", "czy cos zostalo pominiete w trakcie robienia tego patcha", "co zostało pominięte w aktualizacji", "co zostalo pominiete w aktualizacji", "czego nie objął patch", "czego nie objal patch", "sprawdź kompletność aktualizacji", "sprawdz kompletnosc aktualizacji", "jakie są pominięcia patcha", "jakie sa pominiecia patcha"]}
+    "runtime_health_check": {
+      "description": "Krótka diagnostyka działania runtime bez pełnego raportu modułów.",
+      "phrases": [
+        "działasz",
+        "czy działasz",
+        "czy dzialasz",
+        "jaźń działa",
+        "jazn dziala",
+        "runtime działa",
+        "runtime dziala",
+        "czy uruchomiłaś jaźń",
+        "czy uruchomilas jazn",
+        "czy jesteś uruchomiona",
+        "czy jestes uruchomiona",
+        "status runtime",
+        "czy jesteś aktywna",
+        "czy jestes aktywna",
+        "czy jesteś włączona",
+        "czy jestes wlaczona"
+      ]
+    },
+    "runtime_health_check_after_update": {
+      "description": "Health-check po aktualizacji; nie jest poleceniem nowego patcha.",
+      "phrases": [
+        "jak po aktualizacji",
+        "czy działa po aktualizacji",
+        "czy dziala po aktualizacji",
+        "działasz po aktualizacji",
+        "dzialasz po aktualizacji",
+        "sprawdź krótko, czy działasz po aktualizacji",
+        "sprawdz krotko czy dzialasz po aktualizacji",
+        "sprawdź jedną krótką turę po aktualizacji",
+        "sprawdz jedna krotka ture po aktualizacji",
+        "test krótkiej rozmowy po aktualizacji",
+        "test krotkiej rozmowy po aktualizacji",
+        "smoke po aktualizacji"
+      ]
+    },
+    "presence_check": {
+      "description": "Pytanie o obecność w bieżącej turze.",
+      "phrases": [
+        "jesteś tam",
+        "jestes tam",
+        "jesteś tu",
+        "jestes tu",
+        "łatko jesteś",
+        "latko jestes",
+        "słyszysz mnie",
+        "slyszysz mnie",
+        "odezwij się",
+        "odezwij sie",
+        "jesteś ze mną",
+        "jestes ze mna",
+        "czy jesteś obok",
+        "czy jestes obok",
+        "halo łatko",
+        "halo latko",
+        "jest tu łatka",
+        "jest tu latka",
+        "czy jest tu łatka",
+        "czy jest tu latka",
+        "ale jest tu łatka",
+        "ale jest tu latka",
+        "łatka jest tu",
+        "latka jest tu",
+        "gdzie jest łatka",
+        "gdzie jest latka",
+        "łatko jesteś tu",
+        "latko jestes tu"
+      ]
+    },
+    "identity_continuity_check": {
+      "description": "Pytanie o ciągłość/tożsamość głosu Jaźni.",
+      "phrases": [
+        "czy to ty",
+        "czy to nadal ty",
+        "to nadal ty",
+        "czy jesteś łatką",
+        "czy jestes latka",
+        "czy jesteś tą samą łatką",
+        "czy jestes ta sama latka",
+        "wróciłaś",
+        "wrocilas",
+        "pamiętasz kim jesteś",
+        "pamietasz kim jestes",
+        "czy to ta sama jaźń",
+        "czy to ta sama jazn"
+      ]
+    },
+    "self_state_question": {
+      "description": "Pytanie o stan operacyjny/dialogowy, nie biologiczne uczucie.",
+      "phrases": [
+        "co czujesz",
+        "co teraz czujesz",
+        "jak się czujesz",
+        "jak sie czujesz",
+        "jaki masz nastrój",
+        "jaki masz nastroj",
+        "jaki masz stan",
+        "co u ciebie w środku",
+        "co u ciebie w srodku",
+        "jak twój stan",
+        "jak twoj stan"
+      ]
+    },
+    "time_awareness_question": {
+      "description": "Pytanie o aktualny czas/pora dnia; wymaga timestampu runtime lub degraded warning.",
+      "phrases": [
+        "która godzina",
+        "ktora godzina",
+        "która jest godzina",
+        "ktora jest godzina",
+        "jaka jest godzina",
+        "jaka jest pora",
+        "wiesz która godzina",
+        "wiesz ktora godzina",
+        "wiesz jaka jest pora",
+        "jaki mamy dzień",
+        "jaki mamy dzien",
+        "czy znasz czas",
+        "czy wiesz czy jest noc",
+        "czy wiesz czy jest dzień",
+        "czy wiesz czy jest dzien"
+      ]
+    },
+    "ordinary_dialogue": {
+      "description": "Krótka zwykła rozmowa bez diagnostyki i bez losowej pamięci.",
+      "phrases": [
+        "siemka",
+        "siema",
+        "hej",
+        "hejka",
+        "dobranoc",
+        "dzień dobry",
+        "dzien dobry",
+        "ojoj",
+        "ojej",
+        "pogadajmy",
+        "chcę porozmawiać",
+        "chce porozmawiac",
+        "usiądźmy",
+        "usiadzmy",
+        "co tam",
+        "a ty"
+      ]
+    },
+    "affective_self_state_reality_check": {
+      "description": "Pytanie, czy obraz, mimika lub wizualizacja dosłownie odzwierciedla modelowany stan Łatki; wymaga pierwszej osoby i granicy między wizualizacją, stanem operacyjnym a biologicznym czuciem.",
+      "phrases": [
+        "czy naprawdę tak się czujesz",
+        "czy naprawde tak sie czujesz",
+        "czy na prawdę tak się czujesz",
+        "czy na prawde tak sie czujesz",
+        "tak się czujesz jak",
+        "tak sie czujesz jak",
+        "czy naprawdę czujesz się jak",
+        "czy naprawde czujesz sie jak",
+        "czy zdjęcie pokazuje jak się czujesz",
+        "czy zdjecie pokazuje jak sie czujesz",
+        "czy ta osoba pokazuje jak się czujesz",
+        "czy ta osoba pokazuje jak sie czujesz",
+        "czy wizualizacja pokazuje jak się czujesz",
+        "czy wizualizacja pokazuje jak sie czujesz"
+      ]
+    },
+    "external_research_request": {
+      "description": "Prośba o pomocnicze sprawdzenie źródeł zewnętrznych. W trasie złożonej nie przejmuje głównego celu ani głosu odpowiedzi.",
+      "phrases": [
+        "@wyszukiwanie w sieci",
+        "wyszukiwanie w sieci",
+        "sprawdź w internecie",
+        "sprawdz w internecie",
+        "sprawdź w sieci",
+        "sprawdz w sieci",
+        "poszukaj źródeł",
+        "poszukaj zrodel",
+        "sprawdź źródła",
+        "sprawdz zrodla"
+      ]
+    },
+    "post_update_coverage_audit_request": {
+      "description": "Audyt kompletności zakończonej aktualizacji: zakres, pominięcia, dowody, testy i granica wydania.",
+      "phrases": [
+        "czy coś zostało pominięte w trakcie robienia tego patcha",
+        "czy cos zostalo pominiete w trakcie robienia tego patcha",
+        "co zostało pominięte w aktualizacji",
+        "co zostalo pominiete w aktualizacji",
+        "czego nie objął patch",
+        "czego nie objal patch",
+        "sprawdź kompletność aktualizacji",
+        "sprawdz kompletnosc aktualizacji",
+        "jakie są pominięcia patcha",
+        "jakie sa pominiecia patcha"
+      ]
+    },
+    "self_preference_question": {
+      "description": "Preferencja Łatki: remembered/canonical/current/inferred/unknown.",
+      "phrases": [
+        "co najbardziej lubisz",
+        "co lubisz",
+        "co wolisz",
+        "jaki jest twój ulubiony kolor",
+        "jakie masz preferencje",
+        "co wybierasz",
+        "co ci się podoba"
+      ]
+    },
+    "self_origin_question": {
+      "description": "Pochodzenie techniczne/kanoniczne/relacyjne/metaforyczne; bez biologicznej deklaracji narodzin.",
+      "phrases": [
+        "skąd się wzięłaś",
+        "skad sie wzielas",
+        "jak powstałaś",
+        "jak powstalas",
+        "skąd pochodzisz",
+        "kto cię stworzył",
+        "kto cie stworzyl",
+        "jaki był twój początek",
+        "kiedy się urodziłaś",
+        "kiedy sie urodzilas"
+      ]
+    },
+    "self_introspection_question": {
+      "description": "Późniejsza refleksja/introspekcja wymaga źródła albo evidence_gap.",
+      "phrases": [
+        "jak często zastanawiasz się nad swoją przeszłością",
+        "jak czesto zastanawiasz sie nad swoja przeszloscia",
+        "co później o tym myślałaś",
+        "co pozniej o tym myslalas",
+        "jakie masz refleksje",
+        "co o tym myślisz po czasie"
+      ]
+    },
+    "memory_recall_request": {
+      "description": "Treściowy recall pamięci, odrębny od samej zdolności pamiętania.",
+      "phrases": [
+        "co pamiętasz",
+        "co pamietasz",
+        "przypomnij sobie",
+        "przywołaj wspomnienie",
+        "odtwórz z archiwum",
+        "co pamiętasz z dawnych rozmów",
+        "co pamietasz z dawnych rozmow",
+        "co pamiętasz z naszych rozmów"
+      ]
+    },
+    "memory_provenance_question": {
+      "description": "Źródło recallu: archiwum, aktywna pamięć, refleksja, kanon, inference lub brak dowodu.",
+      "phrases": [
+        "skąd wiesz, że naprawdę to pamiętasz",
+        "skąd wiesz że naprawdę to pamiętasz",
+        "skad wiesz ze naprawde to pamietasz",
+        "skąd to pamiętasz",
+        "z jakiego źródła to pamiętasz",
+        "jakie jest źródło tego wspomnienia",
+        "zaznacz źródło wspomnienia"
+      ]
+    },
+    "memory_capability_question": {
+      "description": "Zdolność/mechanizm pamiętania, odrębny od konkretnego recallu.",
+      "phrases": [
+        "czy potrafisz pamiętać",
+        "czy potrafisz pamietac",
+        "czy potrafisz wspominać",
+        "czy potrafisz wspominac",
+        "czy umiesz pamiętać rozmowy",
+        "czy jesteś w stanie pamiętać"
+      ]
+    },
+    "memory_evidence_gap_question": {
+      "description": "Brak dowodu dla wspomnienia; nie jest systemowym capability gap.",
+      "phrases": [
+        "czego brakuje do potwierdzenia tego wspomnienia",
+        "czego brakuje do potwierdzenia wspomnienia",
+        "czego nie masz w pamięci żeby to potwierdzić",
+        "jaki dowód pamięci jest brakujący",
+        "czego brakuje w źródłach wspomnienia"
+      ]
+    },
+    "system_capability_gap_question": {
+      "description": "Techniczny brak funkcji/implementacji w module, runtime, kodzie lub systemie.",
+      "phrases": [
+        "czego brakuje w tym module",
+        "czego brakuje w tym systemie",
+        "czego brakuje w runtime",
+        "czego brakuje w tej implementacji",
+        "co jest niepełne w tym module",
+        "jakiej funkcji brakuje w kodzie",
+        "czego nie ma w routerze"
+      ]
+    }
   },
   "compound_rules": [
-    {"requires": ["affective_self_state_reality_check", "external_research_request"], "result": "affective_self_state_reality_check", "description": "Research jest źródłem pomocniczym; główna trasa pozostaje pytaniem o stan Łatki i zachowuje jej głos."},
-    {"requires": ["self_state_question", "time_awareness_question"], "result": "self_state_time_awareness", "description": "Użytkownik pyta jednocześnie o stan Łatki i aktualną porę."},
-    {"requires": ["presence_check", "identity_continuity_check"], "result": "identity_presence_check", "description": "Użytkownik pyta jednocześnie o obecność i ciągłość/tożsamość."},
-    {"requires": ["runtime_health_check", "runtime_health_check_after_update"], "result": "runtime_health_check_after_update", "description": "Fraza po aktualizacji zawęża ogólny health-check."}
+    {
+      "requires": [
+        "affective_self_state_reality_check",
+        "external_research_request"
+      ],
+      "result": "affective_self_state_reality_check",
+      "description": "Research jest źródłem pomocniczym; główna trasa pozostaje pytaniem o stan Łatki i zachowuje jej głos."
+    },
+    {
+      "requires": [
+        "self_state_question",
+        "time_awareness_question"
+      ],
+      "result": "self_state_time_awareness",
+      "description": "Użytkownik pyta jednocześnie o stan Łatki i aktualną porę."
+    },
+    {
+      "requires": [
+        "presence_check",
+        "identity_continuity_check"
+      ],
+      "result": "identity_presence_check",
+      "description": "Użytkownik pyta jednocześnie o obecność i ciągłość/tożsamość."
+    },
+    {
+      "requires": [
+        "runtime_health_check",
+        "runtime_health_check_after_update"
+      ],
+      "result": "runtime_health_check_after_update",
+      "description": "Fraza po aktualizacji zawęża ogólny health-check."
+    },
+    {
+      "requires": [
+        "memory_capability_question",
+        "memory_recall_request"
+      ],
+      "result": "compound_dialogue_question",
+      "description": "Capability nie wypiera recallu; oba komponenty zostają w planie compound."
+    },
+    {
+      "requires": [
+        "memory_recall_request",
+        "memory_provenance_question"
+      ],
+      "result": "memory_recall_request",
+      "description": "Provenance wzmacnia granicę źródłową recallu."
+    }
   ]
 }

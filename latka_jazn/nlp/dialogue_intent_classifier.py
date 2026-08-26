@@ -57,6 +57,9 @@ class DialogueIntentReport:
     external_tool_context: dict[str, Any] = field(default_factory=dict)
     task_resolution: dict[str, Any] = field(default_factory=dict)
     memory_intent_contract: dict[str, Any] = field(default_factory=dict)
+    component_analysis: list[dict[str, Any]] = field(default_factory=list)
+    required_source_types: list[str] = field(default_factory=list)
+    response_plan: dict[str, Any] = field(default_factory=dict)
     def to_dict(self) -> dict[str, Any]: return asdict(self)
 
 class DialogueIntentClassifier:
@@ -99,6 +102,9 @@ class DialogueIntentClassifier:
         "na co miałaś ochotę", "na co mialas ochote", "na co masz ochotę", "na co masz ochote",
         "co masz ochotę", "co masz ochote", "czujesz i na co", "co chciałabyś", "co chcialabys",
         "czego chciałabyś", "czego chcialabys", "na co ostatnio miałaś", "na co ostatnio mialas",
+        "ulubiony", "ulubiona", "ulubione", "najbardziej lubisz", "co lubisz", "lubisz",
+        "co wybierasz", "wybierasz", "co wolisz", "wolisz", "co ci się podoba", "co ci sie podoba",
+        "preferencja", "preferencję", "preferencje",
     )
     SLEEP_CLOSE_TERMS = (
         "muszę iść spać", "musze isc spac", "idę spać", "ide spac", "już muszę iść spać",
@@ -349,6 +355,28 @@ class DialogueIntentClassifier:
             external_tool_context=dict(tool_context or {}),
             task_resolution=dict(task_resolution or {}),
             memory_intent_contract=dict(memory_semantics or {}),
+            component_analysis=[component.to_dict() for component in component_report.question_components],
+            required_source_types=list(component_report.required_source_types),
+            response_plan={
+                "schema_version": "compound_response_plan/v1",
+                "component_ids": [component.component_id for component in component_report.question_components],
+                "semantic_intents": list(component_report.semantic_intents),
+                "required_source_types": list(component_report.required_source_types),
+                "requested_slots": list(component_report.response_slots),
+                "memory_required": any(component.memory_required for component in component_report.question_components),
+                "capability_only": component_report.capability_only,
+                "system_capability_gap": component_report.system_capability_gap,
+                "preference_epistemic_labels": [
+                    "remembered_preference", "canonical_preference", "current_preference",
+                    "inferred_preference", "unknown",
+                ] if "self_preference" in component_report.semantic_intents else [],
+                "origin_layers": [
+                    "technical_beginning", "canonical_origin", "relational_narrative_origin",
+                    "metaphorical_or_inferred_origin", "unknown",
+                ] if "self_origin" in component_report.semantic_intents else [],
+                "biological_birth_claim_allowed": False if "self_origin" in component_report.semantic_intents else None,
+                "truth_boundary": "Każdy komponent zachowuje własny obiekt, politykę pamięci i wymagane źródła; brak dowodu nie może zostać wypełniony przez inny typ źródła.",
+            },
         )
     def classify(
         self,
@@ -472,6 +500,35 @@ class DialogueIntentClassifier:
                 0.97, secondary_intents, update=True, diag=has_diag,
                 speech_act=speech.speech_act, question_object='system_update',
             )
+        # Multi-intent planning must run before single-purpose memory/capability
+        # routes. Otherwise a content-recall marker in the later sentence can
+        # swallow an earlier capability, architecture, origin or preference
+        # question and the dedicated recall handler would preserve only one part.
+        semantic_intents_early = set(component_report.semantic_intents)
+        compound_core_early = semantic_intents_early - {"provenance", "evidence_gap"}
+        if component_report.compound and compound_core_early and not component_report.explicit_execution:
+            secondary_map_early = {
+                "memory_capability": "capability_status_question",
+                "memory_architecture": "capability_status_question",
+                "memory_recall": "memory_experience_question",
+                "self_preference": "self_preference_question",
+                "self_origin": "identity_memory_existence_compound_question",
+                "self_introspection": "self_memory_recall_request",
+                "identity_continuity": "identity_continuity_check",
+                "provenance": "runtime_source_question",
+                "evidence_gap": "memory_grounding_status_question",
+            }
+            compound_secondary_early = [
+                secondary_map_early[name]
+                for name in component_report.semantic_intents
+                if name in secondary_map_early
+            ]
+            return report(
+                norm, folded, "compound_dialogue_question",
+                ["wieloskładnikowa wypowiedź zachowuje osobne akty/obiekty pytań przed trasą jednofunkcyjną"],
+                0.95, secondary=compound_secondary_early,
+                speech_act=speech.speech_act, question_object="compound_dialogue",
+            )
         if memory_semantics.negated_recall:
             return report(
                 norm,folded,'ordinary_conversation',
@@ -482,12 +539,14 @@ class DialogueIntentClassifier:
             return report(
                 norm,folded,'capability_status_question',
                 ['canonical_memory_contract:capability_only'],0.94,
+                secondary=['memory_capability_question'],
                 speech_act=speech.speech_act,question_object='memory_capability',
             )
         if memory_semantics.content_requested or canonical_memory_followup:
             return report(
                 norm,folded,'memory_experience_question',
                 ['canonical_memory_contract:source_backed_recall', *memory_semantics.evidence],0.96,
+                secondary=['memory_recall_request'],
                 speech_act=speech.speech_act,question_object='memory_experience',
             )
         if (
@@ -688,9 +747,35 @@ class DialogueIntentClassifier:
             return report(norm,folded,'identity_memory_existence_compound_question',['złożone pytanie o tożsamość, pamięć, wiedzę/niewiedzę, powstanie i granicę istoty'],0.93,ident=True,speech_act=speech.speech_act,question_object='identity_memory_existence')
         if speech.speech_act == 'question' and any(marker in folded for marker in ('jaki model', 'jaki masz model', 'dostepny model', 'dostępny model', 'aktywny model', 'silnik ollama', 'jaki adapter', 'ktory model', 'który model')):
             return report(norm,folded,'model_adapter_status_question',['bezpośrednie pytanie o faktycznie używany model/provider/adapter'],0.96,diag=True,speech_act=speech.speech_act,question_object='model_adapter_status')
+        # v16.3.4: one turn may contain several independent conversational goals.
+        # A compound planner wins before single-purpose capability/recall routes,
+        # but only after hard operational/runtime routes above have been resolved.
+        semantic_intents = set(component_report.semantic_intents)
+        compound_core = semantic_intents - {'provenance', 'evidence_gap'}
+        if component_report.compound and len(compound_core) >= 1 and not component_report.explicit_execution:
+            secondary_map = {
+                'memory_capability': 'capability_status_question',
+                'memory_architecture': 'capability_status_question',
+                'memory_recall': 'memory_experience_question',
+                'self_preference': 'self_preference_question',
+                'self_origin': 'identity_memory_existence_compound_question',
+                'self_introspection': 'self_memory_recall_request',
+                'identity_continuity': 'identity_continuity_check',
+                'provenance': 'runtime_source_question',
+                'evidence_gap': 'memory_grounding_status_question',
+            }
+            compound_secondary = [secondary_map[name] for name in component_report.semantic_intents if name in secondary_map]
+            return report(
+                norm, folded, 'compound_dialogue_question',
+                ['wieloskładnikowa wypowiedź zachowuje osobne akty/obiekty pytań zamiast jednej globalnej etykiety'],
+                0.94, secondary=compound_secondary,
+                speech_act=speech.speech_act, question_object='compound_dialogue',
+            )
         if has_internet_access:
             return report(norm,folded,'internet_access_question',['bezpośrednie pytanie o dostęp runtime do internetu/sieci'],0.92,diag=False,speech_act=speech.speech_act,question_object='internet_access')
-        if has_direct_capability and not has_update:
+        if has_direct_capability and not has_update and component_report.capability_only:
+            return report(norm,folded,'capability_status_question',['bezpośrednie pytanie wyłącznie o możliwość pamiętania; brak prośby o treściowy recall'],0.91,speech_act=speech.speech_act,question_object='capabilities')
+        if has_direct_capability and not has_update and not memory_semantics.content_requested:
             return report(norm,folded,'capability_status_question',['bezpośrednie pytanie o możliwości Jaźni/runtime; nie ordinary fallback'],0.91,speech_act=speech.speech_act,question_object='capabilities')
         if has_user_memory_recall:
             return report(norm,folded,'user_memory_recall_request',['pytanie o pamięć dotyczącą użytkownika/Krzysztofa; nie mieszać z self_memory Łatki'],0.91,speech_act=speech.speech_act,question_object='user_memory')
@@ -712,8 +797,8 @@ class DialogueIntentClassifier:
             return report(norm,folded,'runtime_behavior_diagnostic_request',['użytkownik zgłasza powtarzanie/zapętlenie odpowiedzi w bieżącej rozmowie'],0.91,diag=True,speech_act=speech.speech_act,question_object='runtime_repetition_bug')
         if has_module_inventory:
             return report(norm,folded,'module_inventory_request',['pytanie o moduły runtime wymaga listy warstw i źródeł, nie ordinary dialogue'],0.90,diag=True,speech_act=speech.speech_act,question_object='module_inventory')
-        if has_capability_gap and (has_system or speech.speech_act == 'question'):
-            return report(norm,folded,'system_capability_gap_question',['pytanie o to, co runtime ma i czego mu brakuje'],0.88,diag=True,speech_act=speech.speech_act,question_object='capability_gap')
+        if has_capability_gap and component_report.system_capability_gap:
+            return report(norm,folded,'system_capability_gap_question',['kontekstowy brak dotyczy jawnego obiektu technicznego systemu/kodu, nie luki dowodowej pamięci'],0.90,diag=True,speech_act=speech.speech_act,question_object='capability_gap')
         if has_self_expression:
             return report(norm,folded,'self_expression_request',['prośba o wypowiedź od siebie: rozmowna odpowiedź Jaźni z granicą prawdy'],0.84,speech_act=speech.speech_act,question_object='self_expression')
         task_resolution = self.task_state_resolver.resolve(

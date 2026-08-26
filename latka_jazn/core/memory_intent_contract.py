@@ -314,7 +314,7 @@ def analyze_memory_intent(
         )
 
     imperative_recall = bool(
-        re.search(r"\b(?:powspomin\w*|przypomnij(?: sobie)?|wroc(?:my)? do (?:tamtego|tego) wspomnienia)\b", normalized)
+        re.search(r"\b(?:powspomin\w*|przypomnij(?: sobie)?|przywolaj\w*|wroc(?:my)? do (?:tamtego|tego) wspomnienia)\b", normalized)
     )
     polite_recall = bool(
         re.search(

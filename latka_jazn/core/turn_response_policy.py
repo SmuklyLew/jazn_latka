@@ -72,6 +72,35 @@ class TurnResponsePolicy:
     def build(cls, *, intent: str, route: str, context: dict[str, Any] | None = None) -> "TurnResponsePolicy":
         intent = intent or "ordinary_conversation"
         route = route or "ordinary_dialogue"
+        if intent == "compound_dialogue_question":
+            ctx = dict(context or {})
+            report_value = ctx.get("dialogue_intent_report")
+            report = dict(report_value) if isinstance(report_value, dict) else {}
+            plan_value = report.get("response_plan")
+            plan = dict(plan_value) if isinstance(plan_value, dict) else {}
+            semantic_intents = {str(item) for item in plan.get("semantic_intents") or []}
+            memory_required = bool(plan.get("memory_required"))
+            architecture_requested = bool(
+                semantic_intents & {"memory_architecture", "memory_capability"}
+            )
+            return cls(
+                intent=intent,
+                route=route,
+                answer_kind="memory_grounded_answer" if memory_required else "natural_dialogue",
+                allow_memory_content=memory_required,
+                allow_architecture_explanation=architecture_requested,
+                allow_previous_turn_carryover=False,
+                required_components=[
+                    "question_components",
+                    "component_intents",
+                    "component_source_plan",
+                    "memory_gate",
+                    "truth_boundary",
+                ],
+                forbidden_topics=["random_memory_excerpt", "debug_report"],
+                source_boundary_required=memory_required,
+                max_meta_technicality="medium" if architecture_requested else "low",
+            )
         if intent in {"ordinary_conversation", "standalone_greeting", "ordinary_workday_report", "sleep_closure_statement", "positive_feedback_current_turn"}:
             return cls(
                 intent=intent, route=route, answer_kind="natural_dialogue",

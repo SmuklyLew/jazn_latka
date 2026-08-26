@@ -1473,11 +1473,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self.state.chat_job_execution_timeout_count += 1
         self.state.chat_job_pending_count = max(0, self.state.chat_job_pending_count - 1)
         self._persist_chat_jobs_locked(stage="watchdog_terminal")
-        job.done_event.set()
         return job.active_session_worker
 
     def _scan_overdue_chat_jobs(self) -> bool:
         retired: list[RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker] = []
+        terminalized_jobs: list[DaemonChatJob] = []
         replace_worker = False
         with self._chat_jobs_lock:
             now = time.monotonic()
@@ -1492,11 +1492,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 )
                 if session is not None:
                     retired.append(session)
+                terminalized_jobs.append(job)
                 replace_worker = replace_worker or was_running
         for session in {id(worker): worker for worker in retired}.values():
             self._retire_session_worker(session)
         if replace_worker and not self.shutdown_requested.is_set():
             self.start_chat_worker(force_new=True)
+        for job in terminalized_jobs:
+            job.done_event.set()
         return bool(retired or replace_worker)
 
     def start_chat_watchdog(self) -> None:

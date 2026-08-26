@@ -570,22 +570,23 @@ class JaznEngine:
 
     def shutdown(self) -> None:
         try:
-            self._save_runtime_state()
-            self.store.add_event(
-                "engine_shutdown",
-                {"version": self.config.version},
-                source="JaznEngine",
-                actor="system",
-                tags=["lifecycle", self.config.version],
-            )
-            self.event_ledger.append_event(
-                "engine_shutdown",
-                actor="system",
-                source="JaznEngine",
-                payload={"version": self.config.version},
-                tags=["lifecycle", "event_ledger", self.config.version],
-            )
-            self.session_continuity.update_index(reason="engine_shutdown", source="JaznEngine.shutdown")
+            if not getattr(self, "_preview_read_only_active", False):
+                self._save_runtime_state()
+                self.store.add_event(
+                    "engine_shutdown",
+                    {"version": self.config.version},
+                    source="JaznEngine",
+                    actor="system",
+                    tags=["lifecycle", self.config.version],
+                )
+                self.event_ledger.append_event(
+                    "engine_shutdown",
+                    actor="system",
+                    source="JaznEngine",
+                    payload={"version": self.config.version},
+                    tags=["lifecycle", "event_ledger", self.config.version],
+                )
+                self.session_continuity.update_index(reason="engine_shutdown", source="JaznEngine.shutdown")
         finally:
             for attr_name in ("external_dictionary_adapter",):
                 obj = getattr(self, attr_name, None)
@@ -601,6 +602,7 @@ class JaznEngine:
             except Exception:
                 pass
             self.store.close()
+            self._preview_read_only_active = False
 
     def handle_user_message(self, text: str, *, client_context: dict | None = None) -> str:
         sample = self.clock.now(self.config.network_time_first and self.config.network_time_allowed_in_normal_turn, allow_fallback=self.config.local_time_fallback)
@@ -1680,14 +1682,22 @@ class JaznEngine:
             ),
         }
 
-    @staticmethod
     def _stage_turn_write(
+        self,
         turn_context: TurnExecutionContext | None,
         *,
         data_type: str,
         stage: str,
         commit,
     ) -> Any:
+        if getattr(self, "_preview_read_only_active", False) and data_type != "process_turn_completed_audit":
+            return {
+                "status": "skipped_preview_read_only",
+                "write_id": None,
+                "data_type": data_type,
+                "stage": stage,
+                "truth_boundary": "preview diagnostic trace is kept outside normal conversational memory",
+            }
         if turn_context is None:
             return commit()
         write_id = turn_context.stage_semantic_write(
@@ -1981,6 +1991,26 @@ class JaznEngine:
             },
         }
 
+    @staticmethod
+    def _read_only_preview_requested(client_context: dict[str, Any] | None) -> bool:
+        context = dict(client_context or {})
+        client = str(context.get("client") or "").strip()
+        if client not in {"chatgpt_runtime_preview", "chatgpt_dev_preview"}:
+            return False
+        return context.get("preview_persist") is not True
+
+    def _preview_candidate_persistence_policy(
+        self, accepted: bool, reason: str, client_context: dict[str, Any] | None
+    ) -> tuple[bool, str, bool]:
+        read_only = self._read_only_preview_requested(client_context)
+        return (False, "preview_read_only_memory_policy", True) if read_only else (accepted, reason, False)
+
+    def _configure_preview_turn_context(self, context: dict[str, Any]) -> bool:
+        read_only = self._read_only_preview_requested(context)
+        self._preview_read_only_active = read_only
+        context["memory_persistence"] = "read_only_preview" if read_only else str(context.get("memory_persistence") or "normal")
+        return read_only
+
     def build_cognitive_frame(
         self,
         text: str,
@@ -2217,6 +2247,7 @@ class JaznEngine:
         )
         accepted, persistence_reason = self.runtime_memory.should_persist(runtime_candidate)
         candidate_fingerprint = self.runtime_memory.candidate_fingerprint(runtime_candidate)
+        accepted, persistence_reason, read_only_preview = self._preview_candidate_persistence_policy(accepted, persistence_reason, client_context)
         if accepted and turn_context is not None:
             turn_context.start_stage("candidate_persistence_staging")
             write_id = turn_context.stage_semantic_write(
@@ -2240,7 +2271,7 @@ class JaznEngine:
             persistence = self.runtime_memory.persist_candidate(runtime_candidate)
         else:
             if turn_context is not None:
-                turn_context.mark_stage("candidate_persistence_staging", status="skipped_below_threshold")
+                turn_context.mark_stage("candidate_persistence_staging", status="skipped_preview_read_only" if read_only_preview else "skipped_below_threshold")
             persistence = RuntimePersistenceResult(False, candidate_fingerprint, runtime_candidate.kind, persistence_reason, [])
 
         cognitive_packets = self.cognitive_packets.build(
@@ -2723,6 +2754,7 @@ class JaznEngine:
             turn_context = None
         ctx.setdefault("client", "process_turn")
         ctx.setdefault("lifecycle", "one_shot")
+        read_only_preview = self._configure_preview_turn_context(ctx)
         no_carryover = bool(ctx.get("no_carryover"))
         initial_task_state = self._initial_task_state_for_process_turn(ctx, no_carryover=no_carryover)
         self._audit_process_turn_started(text, ctx)
@@ -3421,6 +3453,10 @@ class JaznEngine:
             stage="host_visible_finalization",
             commit=_commit_engine_turn_state,
         )
+        # Keep shutdown read-only for preview too; shutdown clears the flag only
+        # after closing stores. Normal process_turn clears immediately.
+        if not read_only_preview:
+            self._preview_read_only_active = False
         return envelope
 
     def persist_final_visible_reply(

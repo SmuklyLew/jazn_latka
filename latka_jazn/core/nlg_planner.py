@@ -141,8 +141,14 @@ def infer_memory_policy(cognitive_frame: dict[str, Any], response_policy: dict[s
     if _boolish(policy.get("exact_runtime_required")):
         return "forbidden"
     memory_gate = str(frame.get("memory_gate") or frame.get("memory_use_gate") or "").strip().lower()
+    memory_context = _as_dict(frame.get("memory_context"))
+    nested_gate = _as_dict(memory_context.get("memory_gate"))
+    if nested_gate.get("allow_memory_content") is True or nested_gate.get("memory_required") is True:
+        return "required_grounded_payload"
     if memory_gate in {"not_needed", "not-needed", "not needed"}:
         return "not_needed"
+    if _boolish(policy.get("allow_memory_content")):
+        return "required_grounded_payload"
     if _boolish(semantic.get("requires_memory")) or _boolish(policy.get("source_grounding_required")):
         return "required_grounded_payload"
     memory_contract = _as_dict(frame.get("memory_recall_contract"))

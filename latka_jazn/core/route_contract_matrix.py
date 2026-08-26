@@ -40,8 +40,15 @@ class RouteContractMatrix:
     RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "nlp" / "polish_dialogue_route_lexicon.json"
     SPECIAL_PRIORITY = (
         "post_update_coverage_audit_request",
-        "self_architecture_audit_request",
+        "memory_evidence_gap_question",
         "system_capability_gap_question",
+        "self_preference_question",
+        "self_origin_question",
+        "self_introspection_question",
+        "memory_recall_request",
+        "memory_provenance_question",
+        "memory_capability_question",
+        "self_architecture_audit_request",
         "runtime_health_check_after_update",
         "runtime_health_check",
         "identity_presence_check",
@@ -96,7 +103,10 @@ class RouteContractMatrix:
             return False
         if phrase_folded.isalpha():
             return re.search(rf"(?<!\w){re.escape(phrase_folded)}(?!\w)", folded) is not None
-        pattern = re.escape(phrase_folded).replace(r"\ ", r"\s+")
+        parts = [re.escape(part) for part in re.split(r"[\s,;:!?…\-—–]+", phrase_folded) if part]
+        if not parts:
+            return False
+        pattern = r"[\s,;:!?…\-—–]+".join(parts)
         return re.search(rf"(?<!\w){pattern}(?!\w)", folded) is not None
 
     @staticmethod
@@ -155,6 +165,24 @@ class RouteContractMatrix:
             and not explicit_update
         )
         matched = self._matched_intents(normalized, folded)
+        if "system_capability_gap_question" in matched:
+            technical_gap_object = any(
+                marker in folded
+                for marker in (
+                    "system", "runtime", "modul", "module", "kod", "implementac",
+                    "funkcj", "handler", "router", "routing", "api", "cli", "adapter",
+                    "plik", "repo", "branch", "test", "pyright", "kompil",
+                )
+            )
+            evidence_gap_context = (
+                any(marker in folded for marker in ("wspomn", "dowod", "potwierdz"))
+                or (
+                    ("pamiec" in folded or "pamię" in folded)
+                    and any(marker in folded for marker in ("dowod", "potwierdz", "wspomn", "nie zgaduj"))
+                )
+            )
+            if not technical_gap_object or evidence_gap_context:
+                matched.pop("system_capability_gap_question", None)
         broad_hits = [marker for marker in self.BROAD_AUDIT_MARKERS if self._phrase_match(normalized, folded, marker)]
         broad_audit = len(broad_hits) >= 2 and any(
             token in folded for token in ("jazn", "runtime", "system", "kod", "modul", "adapter", "narzedz")
@@ -198,6 +226,7 @@ class RouteContractMatrix:
             "ordinary_dialogue": "ordinary_dialogue",
             "self_architecture_audit_request": "self_architecture_audit",
             "system_capability_gap_question": "capability_gap",
+            "compound_dialogue_question": "compound_dialogue",
         }.get(primary or "", "unknown")
         return RouteContractHint(
             schema_version=SCHEMA_VERSION,
