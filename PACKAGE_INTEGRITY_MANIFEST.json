@@ -3,11 +3,11 @@
   "version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
   "runtime_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
   "package_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
-  "generated_at_utc": "2026-08-26T08:11:36+00:00",
-  "updated_at_utc": "2026-08-26T08:11:36+00:00",
+  "generated_at_utc": "2026-08-26T08:15:28+00:00",
+  "updated_at_utc": "2026-08-26T08:15:28+00:00",
   "start_file": "run.py",
-  "file_count": 860,
-  "static_file_count": 860,
+  "file_count": 859,
+  "static_file_count": 859,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -100,15 +100,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": ".github/workflows/v1635-final-hardening.yml",
-      "size_bytes": 12826,
-      "sha256": "7af6538bd3e755596a85db4dbfe703c8835a62eb06233c790afd5f9efabe4a07",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": ".gitignore",
       "size_bytes": 2187,
       "sha256": "8559356b875c912efb0d8d8907a3461131aea0e78177a50c995663d0a0603d18",
@@ -174,7 +165,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 1334,
-      "sha256": "0416a24dc26a8076e24171fab0aaca29a8b8ae69817476dc24a49764ef619d11",
+      "sha256": "0bd20671504ae43d18a10604fda3168aa75203544ee8917eeff801bd2ecddcc6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2036,8 +2027,8 @@
     },
     {
       "path": "latka_jazn/core/memory_recall_presenter.py",
-      "size_bytes": 30505,
-      "sha256": "209ccdc1ad7713022dc9530b7599886420635ea99c0aab36223a6a107d2cf613",
+      "size_bytes": 30588,
+      "sha256": "9af06e819917ca71de0a410d31128b71e4a23222ac7b9dc7c8cf285e94cc33bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3071,8 +3062,8 @@
     },
     {
       "path": "latka_jazn/memory/_living_memory_gateway_impl.py",
-      "size_bytes": 45544,
-      "sha256": "e29adb8f678b5b9f5bcda38c6c1233034a3bc10988bae8c2bd46a33236356ebe",
+      "size_bytes": 45656,
+      "sha256": "b238bb06f1220d09075f696795aab7023e0e40e9e928316f0ecc22e4c0b9e6ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
