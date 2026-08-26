@@ -6,6 +6,7 @@ import hashlib, sqlite3
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.memory_root import resolve_memory_root
 
 SCHEMA_VERSION = "raw_memory_status/v1"
 
@@ -38,6 +39,7 @@ class RawMemoryStatus:
 class RawMemoryInspector:
     def __init__(self, root: Path, sqlite_path: Path | None = None) -> None:
         self.root=Path(root)
+        self.memory_root=resolve_memory_root(self.root)
         self.sqlite_path=Path(sqlite_path) if sqlite_path else None
 
     def _table_count(self, con: sqlite3.Connection, table: str) -> int:
@@ -91,9 +93,9 @@ class RawMemoryInspector:
             return 0, 0, 0, False, "sqlite_read_error"
 
     def inspect(self) -> RawMemoryStatus:
-        raw_dir = self.root / "memory" / "raw"
+        raw_dir = self.memory_root / "raw"
         html = raw_dir / "chat.html"
-        db = self.sqlite_path or self.root / "memory" / "sqlite" / "chat_context.sqlite3"
+        db = self.sqlite_path or self.memory_root / "sqlite" / "chat_context.sqlite3"
         if not db.exists():
             config = JaznConfig(root=self.root)
             candidates = [
