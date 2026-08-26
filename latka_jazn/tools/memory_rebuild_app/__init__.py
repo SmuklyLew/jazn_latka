@@ -36,6 +36,18 @@ from .typed_api import (
     RecallStatus,
     TypedMemoryAPI,
 )
+from .v16311_hardening import (
+    EXTENDED_L0_SCHEMA_VERSION,
+    HARDENING_VERSION,
+    compare_chat_sources,
+    list_chat_conversations,
+)
+from .v16311_hardening import apply as _apply_v16311_hardening
+
+# Install the versioned migrations only after the base modular components are
+# imported.  The operation is idempotent and does not touch user data until a
+# store is explicitly initialized/imported.
+_apply_v16311_hardening()
 
 __all__ = [
     "BaselineSpec",
@@ -43,6 +55,8 @@ __all__ = [
     "APP_VERSION",
     "CANONICAL_DATABASE_NAME",
     "EXPORT_SCHEMA",
+    "EXTENDED_L0_SCHEMA_VERSION",
+    "HARDENING_VERSION",
     "HtmlImportResult",
     "LEGACY_DATABASE_NAMES",
     "MemoryRebuildAppController",
@@ -70,6 +84,7 @@ __all__ = [
     "UnifiedMemoryDatabase",
     "baseline_counts",
     "baseline_from_path",
+    "compare_chat_sources",
     "compare_database_summaries",
     "default_project_root",
     "default_adapter_registry",
@@ -79,6 +94,7 @@ __all__ = [
     "inspect_database_set",
     "inspect_source",
     "inspect_sources",
+    "list_chat_conversations",
     "load_settings",
     "refresh_baseline",
     "run_test_profile",

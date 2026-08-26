@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """Compatibility entrypoint for the Jaźń package generator.
 
-The public module keeps the historical v8.5 API while the independent memory
-package v2 implementation lives in ``_jazn_pack_generator_memory_v2``. The
-v16.3.8 archive-I/O policy adds opt-in 7z/AES-ZIP support without changing the
-default ZIP transport.
+The public module keeps the historical API while the independent memory
+transport lives in ``_jazn_pack_generator_memory_v2``.  v16.3.8 archive-I/O
+adds opt-in 7z/AES-ZIP support, and v16.3.11 makes the four packaging profiles
+strict product contracts instead of best-effort fallbacks.
 """
 from __future__ import annotations
 
@@ -21,9 +21,11 @@ if str(_REPO_ROOT) not in sys.path:
 from tools import _jazn_pack_generator_memory_v2 as _impl  # noqa: E402
 from tools._jazn_pack_generator_v1601_policy import apply as _apply_v1601_policy  # noqa: E402
 from tools._jazn_pack_generator_v1638_archive_io import apply as _apply_v1638_archive_io  # noqa: E402
+from tools._jazn_pack_generator_v16311_profiles import apply as _apply_v16311_profiles  # noqa: E402
 
 _apply_v1601_policy(_impl)
 _apply_v1638_archive_io(_impl)
+_apply_v16311_profiles(_impl)
 
 # Functions defined in the implementation use its module globals. Make reports
 # keep the canonical public tool filename rather than the private module name.

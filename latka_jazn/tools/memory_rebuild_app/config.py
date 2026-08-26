@@ -6,8 +6,8 @@ from pathlib import Path
 import os
 import sys
 
-TOOL_VERSION = "memory-rebuild/v16.1"
-APP_VERSION = "3.0.0"
+TOOL_VERSION = "memory-rebuild/v16.3.11"
+APP_VERSION = "3.1.0"
 
 STAGE4_COMMAND = "stage4"
 TEST04_COMMAND = "test04"

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# v16.3.10 closes host-level memory-root compatibility gaps left after v16.3.9:
-# live persistence, archive recall, diagnostics, private NLP/canon resources,
-# shard migration and cloud SQLite snapshots now converge on one memory root.
-DISTRIBUTION_VERSION = "16.3.10"
-PACKAGE_VERSION = "16.3.10"
-PACKAGE_RELEASE_NAME = "host-memory-root-compat"
+# v16.3.11 hardens full base-memory rebuilding and package-profile truth:
+# chat-by-chat lossless import, JSON/HTML control, divergent branch retention,
+# recall eligibility/attachment provenance, and strict combined/system/memory/dual packaging.
+DISTRIBUTION_VERSION = "16.3.11"
+PACKAGE_VERSION = "16.3.11"
+PACKAGE_RELEASE_NAME = "memory-rebuild-pack-profiles"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

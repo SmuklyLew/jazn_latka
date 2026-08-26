@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""Compatibility launcher; prefer ``tools/rebuild_memory.py``."""
+"""Compatibility launcher; Memory Rebuild v16.3.11 lives in memory_rebuild_app."""
 
 from pathlib import Path
 import sys
@@ -12,7 +12,6 @@ if str(ROOT) not in sys.path:
 
 from latka_jazn.tools.memory_rebuild_app.config import TOOL_VERSION
 from latka_jazn.tools.memory_rebuild_app.entrypoint import main
-
 
 if __name__ == "__main__":
     raise SystemExit(main(entrypoint=__file__))
