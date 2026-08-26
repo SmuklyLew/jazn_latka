@@ -9,6 +9,7 @@ import os
 import re
 import unicodedata
 from latka_jazn.core.signal_matching import marker_present
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.version import PACKAGE_VERSION, version_number
 
 POLISH_WORD_RE = re.compile(r"[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_\-]+", re.UNICODE)
@@ -120,7 +121,7 @@ class PolishUnderstandingEngine:
         candidates: list[Path] = []
         if self.root:
             candidates.extend([
-                self.root / "memory" / "raw" / "POLISH_UNDERSTANDING_LEXICON.json",
+                resolve_memory_root(self.root) / "raw" / "POLISH_UNDERSTANDING_LEXICON.json",
                 self.root / "latka_jazn" / "resources" / "polish_understanding_lexicon.json",
             ])
         for path in candidates:
