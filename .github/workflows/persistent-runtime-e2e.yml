@@ -8,8 +8,13 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
+      - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bridge/secure_host_runtime_gateway.py"
+      - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
+      - "tests/test_v1637_host_finalization_recovery.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
   push:
     branches:
@@ -22,8 +27,13 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
+      - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bridge/secure_host_runtime_gateway.py"
+      - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
+      - "tests/test_v1637_host_finalization_recovery.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
 
 permissions:
@@ -74,14 +84,20 @@ jobs:
           latka_jazn/core/runtime_daemon.py
           latka_jazn/core/daemon_autostart.py
           latka_jazn/core/epistemic_decision_ledger.py
+          latka_jazn/core/chatgpt_host_recovery.py
+          latka_jazn/bridge/secure_host_runtime_gateway.py
+          latka_jazn/mcp/server.py
+          latka_jazn/mcp/tools/jazn_resume_visible_reply.py
           latka_jazn/db/runtime_sqlite.py
           tests/test_v1636_persistent_runtime_e2e_hardening.py
+          tests/test_v1637_host_finalization_recovery.py
 
       - name: Persistent runtime E2E regression suite
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
           tests/test_v1636_persistent_runtime_e2e_hardening.py
+          tests/test_v1637_host_finalization_recovery.py
 
       - name: Clean checkout guard
         if: always()
