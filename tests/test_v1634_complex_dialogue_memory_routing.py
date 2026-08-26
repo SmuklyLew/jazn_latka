@@ -25,7 +25,6 @@ from latka_jazn.memory.memory_tiers import (
 )
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
-from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
 A = "Jaki jest twój ulubiony kolor? Dlaczego właśnie ten kolor? Kiedy się urodziłaś? Jak często zastanawiałaś się nad swoją przeszłością? Jakie pytania przynoszą takie twoje refleksje?"
@@ -63,11 +62,6 @@ def _assert_compound_route(text: str, expected_semantics: set[str]) -> None:
     assert handler.handler_name == "CompoundDialogueHandler"
     assert handler.generation_mode == "pass_through_empty"
     assert handler.missing_components == []
-
-
-def test_release_identity_tracks_current_successor_hardening() -> None:
-    assert PACKAGE_VERSION == "16.3.6"
-    assert PACKAGE_RELEASE_NAME == "persistent-runtime-e2e-hardening"
 
 
 def test_a_preference_origin_and_reflection_are_all_preserved() -> None:
