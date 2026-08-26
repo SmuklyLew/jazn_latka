@@ -77,6 +77,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(_impl._paint("\nPrzerwano przez użytkownika.", _impl.ANSI_YELLOW, stream=sys.stderr), file=sys.stderr)
         raise SystemExit(130)
-    except (_impl.PackError, ArchiveError if "ArchiveError" in globals() else _impl.PackError) as exc:
+    except _impl.PackError as exc:
         print(_impl._paint(f"BŁĄD: {exc}", _impl.ANSI_RED, _impl.ANSI_BOLD, stream=sys.stderr), file=sys.stderr)
         raise SystemExit(2)
