@@ -136,9 +136,13 @@ def apply(impl: Any) -> None:
         source = options.source.expanduser().resolve()
         out_dir = options.out_dir.expanduser().resolve()
         core.ensure_output_outside_source(source, out_dir)
+        # Resolve through the public implementation module at call time. This
+        # preserves the established monkeypatch/extension seam while still
+        # defaulting to the hardened build_plan installed below.
+        plan_builder = getattr(impl, "build_plan", build_plan)
         if options.profile == "dual":
             plans = [
-                build_plan(
+                plan_builder(
                     source,
                     "system",
                     options.custom_excludes,
@@ -146,7 +150,7 @@ def apply(impl: Any) -> None:
                     manual_excludes_enabled=options.manual_excludes_enabled,
                     synchronize_release_metadata=True,
                 ),
-                build_plan(
+                plan_builder(
                     source,
                     "memory",
                     options.custom_excludes,
@@ -157,7 +161,7 @@ def apply(impl: Any) -> None:
             ]
         else:
             plans = [
-                build_plan(
+                plan_builder(
                     source,
                     options.profile,
                     options.custom_excludes,

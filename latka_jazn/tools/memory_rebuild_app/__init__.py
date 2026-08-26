@@ -43,11 +43,14 @@ from .v16311_hardening import (
     list_chat_conversations,
 )
 from .v16311_hardening import apply as _apply_v16311_hardening
+from .v16312_ci_hotfix import HOTFIX_VERSION
+from .v16312_ci_hotfix import apply as _apply_v16312_ci_hotfix
 
 # Install the versioned migrations only after the base modular components are
-# imported.  The operation is idempotent and does not touch user data until a
+# imported. The operations are idempotent and do not touch user data until a
 # store is explicitly initialized/imported.
 _apply_v16311_hardening()
+_apply_v16312_ci_hotfix()
 
 __all__ = [
     "BaselineSpec",
@@ -57,6 +60,7 @@ __all__ = [
     "EXPORT_SCHEMA",
     "EXTENDED_L0_SCHEMA_VERSION",
     "HARDENING_VERSION",
+    "HOTFIX_VERSION",
     "HtmlImportResult",
     "LEGACY_DATABASE_NAMES",
     "MemoryRebuildAppController",
