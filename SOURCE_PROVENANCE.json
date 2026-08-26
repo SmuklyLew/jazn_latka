@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "75ee544844c161a78166664a703f9fa9a963d8fc",
-  "base_version": "16.3.9-host-memory-direct-sqlite",
-  "commit_date": "2026-08-26T22:51:30+02:00",
+  "base_merge_commit": "08c084eef20481f4eb11226015d710dc61e41c65",
+  "base_version": "16.3.10-host-memory-root-compat",
+  "commit_date": "2026-08-27T00:09:46+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-26T20:51:30+00:00",
+  "generated_at_utc": "2026-08-26T22:09:46+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ac99162d7900a2d0419bc0bb7efba115f45d4b36",
+  "git_tree_sha": "04664c46981aca381e066766f39382e9249048d0",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.9-host-memory-direct-sqlite",
-  "schema_version": "source_provenance/16.3.9",
+  "runtime_version": "16.3.10-host-memory-root-compat",
+  "schema_version": "source_provenance/16.3.10",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "16.3.9-host-memory-direct-sqlite",
+  "update_version": "16.3.10-host-memory-root-compat",
   "version_source": "latka_jazn/version.py"
 }
