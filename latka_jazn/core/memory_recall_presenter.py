@@ -14,6 +14,13 @@ from latka_jazn.core.typed_memory_source_policy import (
 from latka_jazn.nlp.utterance_components import analyse_utterance
 from latka_jazn.core.memory_slot_selector import MemorySlotSelector
 
+
+def _dict_copy(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return dict(value)
+    return {}
+
+
 @dataclass(slots=True)
 class MemoryRecallItem:
     """Treściowy trop pamięci przekazywany do warstwy odpowiedzi.
@@ -113,7 +120,7 @@ class MemoryRecallPresenter:
                 content_excerpt=self._excerpt(content, max_len=520),
                 truth_status=truth_status,
                 metadata={
-                    **(hit.get("metadata") if isinstance(hit.get("metadata"), dict) else {}),
+                    **_dict_copy(hit.get("metadata")),
                     "source_layer": layer,
                     "source_database": self._clean(hit.get("source_database")),
                 },

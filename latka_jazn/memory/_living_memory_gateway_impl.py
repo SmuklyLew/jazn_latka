@@ -23,6 +23,15 @@ SCHEMA_VERSION = schema_version("living_memory_gateway")
 REGISTRY_FILENAME = "memory_source_registry.json"
 
 
+def _optional_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 @dataclass(slots=True, frozen=True)
 class LivingMemoryHit:
     source_layer: str
@@ -407,8 +416,8 @@ class LivingMemoryGateway:
                     content_excerpt=str(row.get("content") or ""),
                     timestamp=timestamp,
                     truth_status=str(row.get("truth_status") or "unknown"),
-                    confidence=float(row.get("confidence")) if row.get("confidence") is not None else None,
-                    importance=float(row.get("importance")) if row.get("importance") is not None else None,
+                    confidence=_optional_float(row.get("confidence")),
+                    importance=_optional_float(row.get("importance")),
                     relevance=float(row.get("relevance") or 0.0),
                     title=str(row.get("kind") or "") or None,
                     grounding="read_only_runtime_write_v2_gateway",
