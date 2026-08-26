@@ -16,6 +16,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.package_integrity_manifest import sha256_file
 from latka_jazn.core.runtime_daemon import status_daemon
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.packaging.split_zip_package import (
     extract_independent_zip_set_resumable, extract_joined_zip_resumable, infer_base_zip_name,
@@ -305,13 +306,17 @@ def _install_memory_tree(
 ) -> tuple[Path, bool]:
     transaction_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
     backup_memory = workspace / "memory_attach_backups" / transaction_id / "memory"
-    target_memory = runtime_root / "memory"
-    had_previous = target_memory.exists()
+    target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
+    previous_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=True)
+    had_previous = previous_memory.exists()
     installed_new = False
+    report["memory_root"] = str(target_memory)
+    report["previous_memory_root"] = str(previous_memory) if had_previous else None
     try:
         if had_previous:
             backup_memory.parent.mkdir(parents=True, exist_ok=False)
-            os.replace(target_memory, backup_memory)
+            os.replace(previous_memory, backup_memory)
+        target_memory.parent.mkdir(parents=True, exist_ok=True)
         try:
             os.replace(source_memory, target_memory)
         except OSError as move_exc:
@@ -333,7 +338,8 @@ def _install_memory_tree(
             else:
                 shutil.rmtree(target_memory, ignore_errors=True)
         if had_previous and backup_memory.exists():
-            os.replace(backup_memory, target_memory)
+            previous_memory.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(backup_memory, previous_memory)
         raise
     return backup_memory, had_previous
 
@@ -348,11 +354,12 @@ def _finalize_memory_attach(
     had_previous: bool,
     report: dict[str, Any],
 ) -> MemoryAttachResult:
-    target_memory = runtime_root / "memory"
+    target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
     marker = {
         "schema_version": MEMORY_ATTACH_SCHEMA_VERSION,
         "attached_at_utc": datetime.now(timezone.utc).isoformat(),
         "runtime_root": str(runtime_root),
+        "memory_root": str(target_memory),
         "runtime_version": runtime_version,
         "package_name": zip_name,
         "package_profile": "memory",
@@ -406,6 +413,7 @@ def attach_memory_package(
     work_dir = Path(work_dir).expanduser().resolve() if work_dir else workspace / "memory_attach"
     report: dict[str, Any] = {
         "runtime_root": str(runtime_root),
+        "memory_root": str(resolve_memory_root(runtime_root, prefer_existing_legacy=False)),
         "parts_dir": str(Path(parts_dir).expanduser().resolve()) if parts_dir is not None else None,
         "r2_prefix": r2_prefix,
         "work_dir": str(work_dir),
