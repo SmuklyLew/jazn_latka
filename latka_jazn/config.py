@@ -12,6 +12,7 @@ from latka_jazn.core.runtime_root import (
     workspace_runtime_path,
 )
 from latka_jazn.version import PACKAGE_VERSION, version_number
+from latka_jazn.memory.memory_root import memory_path, resolve_memory_root
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES, DEFAULT_SYNC_BATCH_WIRE_BYTES
 from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_LOCAL_FALLBACK_ALLOWED_DEFAULT,
@@ -19,7 +20,6 @@ from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_NETWORK_IN_NORMAL_TURN_DEFAULT,
     TIMESTAMP_TIMEZONE,
 )
-
 
 
 def _default_runtime_root() -> Path:
@@ -70,11 +70,19 @@ def _env_int_first(*names: str, default: int) -> int:
 
 
 def _default_normalization_sidecar_db_name() -> str:
-    'Resolve one canonical sidecar path while preserving an explicit override.'
+    """Resolve one canonical sidecar path while preserving an explicit override."""
     explicit = os.environ.get("JAZN_MEMORY_NORMALIZATION_SIDECAR_DB")
     if explicit is not None and explicit.strip():
         return explicit.strip()
     return "memory/sqlite/runtime_write_v1/normalization_sidecar.sqlite3"
+
+
+def _strip_memory_prefix(value: str | Path) -> Path:
+    path = Path(value)
+    parts = path.parts
+    if parts and parts[0].casefold() == "memory":
+        return Path(*parts[1:])
+    return path
 
 
 @dataclass(slots=True)
@@ -187,7 +195,6 @@ class JaznConfig:
     lexical_resource_cache_ttl_seconds: int = field(default_factory=lambda: _env_int("JAZN_LEXICAL_RESOURCE_CACHE_TTL", 604800))
     lexical_resource_status_include_optional: bool = field(default_factory=lambda: _env_bool("JAZN_LEXICAL_STATUS_OPTIONAL", True))
 
-
     research_allow_network: bool = field(default_factory=lambda: _env_bool("JAZN_RESEARCH_ALLOW_NETWORK", True))
     research_requires_chatgpt_web_when_local_provider_missing: bool = True
     test_mode: bool = field(default_factory=lambda: _env_bool("JAZN_TEST_MODE", False))
@@ -226,6 +233,13 @@ class JaznConfig:
             raise ValueError(f"runtime path escapes runtime root: {path}") from exc
         return resolved
 
+    def _path_under_memory_root(self, relative: str | Path) -> Path:
+        return memory_path(self.root, relative)
+
+    @property
+    def memory_root(self) -> Path:
+        return resolve_memory_root(self.root)
+
     @property
     def runtime_workspace_dir(self) -> Path:
         return workspace_runtime_path(self.root, self.runtime_workspace_dir_name)
@@ -248,15 +262,15 @@ class JaznConfig:
 
     @property
     def conversation_archive_manifest_path(self) -> Path:
-        return self.root / self.conversation_archive_manifest_name
+        return self._path_under_memory_root(self.conversation_archive_manifest_name)
 
     @property
     def conversation_fts_dir(self) -> Path:
-        return self.root / self.conversation_fts_dir_name
+        return self._path_under_memory_root(self.conversation_fts_dir_name)
 
     @property
     def conversation_staging_dir(self) -> Path:
-        return self.root / self.conversation_staging_dir_name
+        return self._path_under_memory_root(self.conversation_staging_dir_name)
 
     @property
     def lexical_resource_cache_path(self) -> Path:
@@ -271,12 +285,13 @@ class JaznConfig:
     ) -> Path:
         from .db.shard_manifest import SQLiteShardManager
 
+        memory_root = self.memory_root
         return SQLiteShardManager(
-            self.root,
-            manifest_name,
+            memory_root,
+            _strip_memory_prefix(manifest_name),
             logical_database=logical_database,
             role=role,
-            default_db_path=default_db_name,
+            default_db_path=_strip_memory_prefix(default_db_name),
             max_file_bytes=self.max_sqlite_file_bytes,
         ).rotate_if_needed()
 
@@ -289,36 +304,38 @@ class JaznConfig:
         role: str | None = None,
     ) -> Path:
         """Resolve an active shard without mutating an existing manifest."""
-        manifest_path = self.root / manifest_name
+        memory_root = self.memory_root
+        manifest_relative = _strip_memory_prefix(manifest_name)
+        manifest_path = memory_root / manifest_relative
         if not manifest_path.exists():
-            return self._path_under_runtime_root(default_db_name)
+            return self._path_under_memory_root(default_db_name)
         from .db.shard_manifest import SQLiteShardManager
 
         manager = SQLiteShardManager(
-            self.root,
-            manifest_name,
+            memory_root,
+            manifest_relative,
             logical_database=logical_database or Path(default_db_name).stem,
             role=role or logical_database or Path(default_db_name).stem,
-            default_db_path=default_db_name,
+            default_db_path=_strip_memory_prefix(default_db_name),
             max_file_bytes=self.max_sqlite_file_bytes,
         )
-        return manager.load_existing().active_path(self.root)
+        return manager.load_existing().active_path(memory_root)
 
     @property
     def recovered_memory_db_path(self) -> Path:
-        return self._path_under_runtime_root(self.recovered_memory_db_name)
+        return self._path_under_memory_root(self.recovered_memory_db_name)
 
     @property
     def normalization_sidecar_db_path(self) -> Path:
-        return self._path_under_runtime_root(self.normalization_sidecar_db_name)
+        return self._path_under_memory_root(self.normalization_sidecar_db_name)
 
     @property
     def memory_tier_db_path(self) -> Path:
-        return self._path_under_runtime_root(self.memory_tier_db_name)
+        return self._path_under_memory_root(self.memory_tier_db_name)
 
     @property
     def rest_cycle_db_path(self) -> Path:
-        return self._path_under_runtime_root(self.rest_cycle_db_name)
+        return self._path_under_memory_root(self.rest_cycle_db_name)
 
     @property
     def runtime_write_db_path(self) -> Path:
@@ -379,4 +396,7 @@ class JaznConfig:
         return (self.network_default_timeout_connect_seconds, self.network_default_timeout_read_seconds)
 
     def resolve(self, rel: str) -> Path:
-        return self._path_under_runtime_root(rel)
+        path = Path(rel)
+        if path.parts and path.parts[0].casefold() == "memory":
+            return self._path_under_memory_root(path)
+        return self._path_under_runtime_root(path)
