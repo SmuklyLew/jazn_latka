@@ -1,13 +1,13 @@
 {
-  "schema_version": "package_integrity_manifest/16.3.4",
-  "version": "16.3.4-complex-dialogue-memory-routing-hardening",
-  "runtime_version": "16.3.4-complex-dialogue-memory-routing-hardening",
-  "package_version": "16.3.4-complex-dialogue-memory-routing-hardening",
-  "generated_at_utc": "2026-08-25T16:38:26+00:00",
-  "updated_at_utc": "2026-08-25T16:38:26+00:00",
+  "schema_version": "package_integrity_manifest/16.3.5",
+  "version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
+  "runtime_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
+  "package_version": "16.3.5-complex-dialogue-memory-routing-final-hardening",
+  "generated_at_utc": "2026-08-26T08:11:36+00:00",
+  "updated_at_utc": "2026-08-26T08:11:36+00:00",
   "start_file": "run.py",
-  "file_count": 856,
-  "static_file_count": 856,
+  "file_count": 860,
+  "static_file_count": 860,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -100,6 +100,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/v1635-final-hardening.yml",
+      "size_bytes": 12826,
+      "sha256": "7af6538bd3e755596a85db4dbfe703c8835a62eb06233c790afd5f9efabe4a07",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".gitignore",
       "size_bytes": 2187,
       "sha256": "8559356b875c912efb0d8d8907a3461131aea0e78177a50c995663d0a0603d18",
@@ -164,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1316,
-      "sha256": "b39c92f3ca265af67784597238114b14d3ab69b19471b06d5b885c65e62663ea",
+      "size_bytes": 1334,
+      "sha256": "0416a24dc26a8076e24171fab0aaca29a8b8ae69817476dc24a49764ef619d11",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1414,6 +1423,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/component_coverage_ledger.py",
+      "size_bytes": 7949,
+      "sha256": "7932186ffd9ce5486c63b912afca1ae809098435b1e274ac112648cb48f52ecd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/continuity_badge.py",
       "size_bytes": 5164,
       "sha256": "b4d37f0c246c2c52e1929b73a8d7bc220d1d5f45ad22885fd38dd0df068a2a86",
@@ -1595,8 +1613,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/compound_dialogue_handler.py",
-      "size_bytes": 3678,
-      "sha256": "675ed249776b8d8b4f114775dc3f7ce57204358205376de630b645acdf9ec167",
+      "size_bytes": 4088,
+      "sha256": "2a0a476c9955d3185f697c2673bf7c25b701b3997815841aff13484782ecd686",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2018,8 +2036,8 @@
     },
     {
       "path": "latka_jazn/core/memory_recall_presenter.py",
-      "size_bytes": 35667,
-      "sha256": "c9ee5c08841c9a1aaf71a297cf555ee937fc553de4a8dfa0f2c9342522855e90",
+      "size_bytes": 30505,
+      "sha256": "209ccdc1ad7713022dc9530b7599886420635ea99c0aab36223a6a107d2cf613",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2038,6 +2056,15 @@
       "path": "latka_jazn/core/memory_search_planner.py",
       "size_bytes": 34176,
       "sha256": "7292d8e44c6de744798f2512838143a18a831459aaf61e7023a3f239b1f94a8a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/memory_slot_selector.py",
+      "size_bytes": 18350,
+      "sha256": "964b056648de7af6456d8ce772737616f438ddbb2887b756f03b2481fabfc237",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2369,8 +2396,8 @@
     },
     {
       "path": "latka_jazn/core/route_contract_matrix.py",
-      "size_bytes": 11336,
-      "sha256": "ae53f43e5f49d7c19d9123ca1f106740ddc10ff5e7922402e4fbb23f485abc6d",
+      "size_bytes": 11789,
+      "sha256": "e820fbc39171657e7a1084387da2cdc43ef1ae904a941b16a4b5e666d11cfe86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2414,8 +2441,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_answer_validator.py",
-      "size_bytes": 56277,
-      "sha256": "876d03cdf2b6211a37dc88d0adae471a6a427f6ca56be34a9e9de82c489d76d2",
+      "size_bytes": 56845,
+      "sha256": "41c1835dd8801963c16879fcb8741d2e595bdd76077e053ba4e09fc02b7b8e28",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4700,8 +4727,8 @@
     },
     {
       "path": "latka_jazn/resources/nlp/polish_dialogue_route_lexicon.json",
-      "size_bytes": 6036,
-      "sha256": "4631ef89b3fc0a49c00f784800f1763bf727a1cf66f082a04b503f4e7a7f8b69",
+      "size_bytes": 11670,
+      "sha256": "06386ea5e417f585fd466d3f010d970e094c003f7bf17ded19e235516417cf11",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5852,8 +5879,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 1112,
-      "sha256": "af6de1ab789fc7685b40489a42fb4b811a336004b7df6d71bea96b2b35d76196",
+      "size_bytes": 1118,
+      "sha256": "d0f4e8cde39212c36d585fe7b8bb796d84ea338487f9e309cf037c5ad0bf4960",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7463,8 +7490,17 @@
     },
     {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
-      "size_bytes": 17951,
-      "sha256": "11551d6f8c64a922465d2fae09b5aaf9f125b2f5f6b9f2bcc84f3c2631fa9100",
+      "size_bytes": 17971,
+      "sha256": "574cd4841e2808c1f853b4bf2e58b35678df7236022f9f18426b6f0811152b4a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v1635_final_hardening.py",
+      "size_bytes": 10334,
+      "sha256": "c403cba5c6b65e3207bfbb300f83e955ef2f77dd03ee2fb1877eeabcce612e46",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
