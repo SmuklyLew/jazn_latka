@@ -5,6 +5,8 @@ from typing import Any, Callable
 import hashlib, json, re
 from datetime import datetime, timezone
 
+from latka_jazn.memory.memory_root import resolve_memory_root
+
 SCHEMA_VERSION = "turn_logic_auditor/v1"
 
 @dataclass(slots=True)
@@ -40,7 +42,7 @@ class TurnInvariant:
 
 class TurnLogicAuditor:
     def __init__(self, root: Path | None = None) -> None:
-        self.root = Path(root) if root else None
+        self.root = Path(root).expanduser().resolve() if root else None
 
     @staticmethod
     def _norm(text: str) -> str:
@@ -70,19 +72,14 @@ class TurnLogicAuditor:
             audit.logic_errors.append("direct_latka_voice_wrong_intent")
         if any(x in norm for x in ("za kogo się uważasz", "za kogo sie uwazasz", "czujesz się istotą", "czujesz sie istota")) and detected_intent != "identity_memory_existence_compound_question":
             audit.logic_errors.append("identity_memory_existence_wrong_intent")
-        # Pytania o status Jaźni/runtime nie mogą iść do ordinary/fallback.
         if any(x in norm for x in ("czy teraz rozmawiam z", "z kim rozmawiam", "jaźnią łatki", "jaznia latki", "chatgpt czy jaźń", "chatgpt czy jazn")) and detected_intent not in {"runtime_activation_status_question", "identity_boundary_question", "identity_direct_question"}:
             audit.logic_errors.append("runtime_status_question_wrong_intent")
-        # Pytania o --chat nie mogą być aktualizacją ani ordinary.
         if any(x in norm for x in ("runtime-preview", "--chat", "skrypt chat", "tryb chat", "stdin")) and detected_intent != "runtime_chat_mode_request":
             audit.logic_errors.append("chat_mode_question_wrong_intent")
-        # kod źródłowy nie jest source-origin.
         if any(x in norm for x in ("kod źródłowy", "kodzie źródłowym", "kod zrodlowy", "kodzie zrodlowym")) and detected_intent == "runtime_source_question":
             audit.logic_errors.append("source_code_false_runtime_source")
-        # ordinary conversation should not be metareport.
         if detected_intent in {"ordinary_conversation", "standalone_greeting"} and any(x in body for x in ("jaźń jako warstwa", "warstwa pamięci", "diagnostyk", "runtime jako")):
             audit.logic_errors.append("ordinary_dialogue_meta_report")
-        # stale fragments not grounded in user text.
         stale_terms = ["drzwi", "zlecen", "historyczna wersja", "starsze wydanie", "warszaw", "miodowa"]
         for term in stale_terms:
             if term in body and term not in norm and detected_intent in {"ordinary_conversation", "self_state_question", "reciprocal_self_state_question", "sleep_closure_statement"}:
@@ -102,7 +99,7 @@ class TurnLogicAuditor:
     def append(self, audit: TurnLogicAudit) -> Path | None:
         if not self.root:
             return None
-        path = self.root / "memory" / "layered" / "turn_logic_audit.jsonl"
+        path = resolve_memory_root(self.root) / "layered" / "turn_logic_audit.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = audit.to_dict() | {"written_at_utc": datetime.now(timezone.utc).isoformat(), "audit_sha256": hashlib.sha256(json.dumps(audit.to_dict(), ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()}
         with path.open("a", encoding="utf-8") as f:
