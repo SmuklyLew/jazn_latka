@@ -69,6 +69,18 @@ def _safe_under(root: Path, candidate: Path) -> Path | None:
     return resolved
 
 
+def _safe_under_any(roots: Iterable[Path], candidate: Path) -> Path | None:
+    resolved = candidate.expanduser().resolve()
+    for root in roots:
+        trusted = Path(root).expanduser().resolve()
+        try:
+            resolved.relative_to(trusted)
+        except ValueError:
+            continue
+        return resolved
+    return None
+
+
 @dataclass(slots=True, frozen=True)
 class MemoryValidationTarget:
     role: str
@@ -158,23 +170,25 @@ def discover_memory_validation_targets(
 ) -> list[MemoryValidationTarget]:
     runtime_root = Path(root).expanduser().resolve()
     config = JaznConfig(root=runtime_root)
+    memory_root = config.memory_root.resolve()
+    trusted_roots = (runtime_root, memory_root)
     targets = _known_targets(config)
     targets.extend(
         _manifest_targets(
-            runtime_root,
-            runtime_root / config.conversation_shard_manifest_name,
+            memory_root,
+            config.resolve(config.conversation_shard_manifest_name),
             "conversation",
         )
     )
     targets.extend(
         _manifest_targets(
-            runtime_root,
-            runtime_root / config.audit_shard_manifest_name,
+            memory_root,
+            config.resolve(config.audit_shard_manifest_name),
             "audit",
         )
     )
     if include_all_sqlite:
-        sqlite_root = runtime_root / "memory" / "sqlite"
+        sqlite_root = memory_root / "sqlite"
         if sqlite_root.is_dir():
             for path in sqlite_root.rglob("*"):
                 if not path.is_file() or path.suffix.lower() not in SQLITE_SUFFIXES:
@@ -185,14 +199,14 @@ def discover_memory_validation_targets(
                     MemoryValidationTarget(
                         role="discovered_sqlite",
                         path=str(path.resolve()),
-                        source="memory/sqlite recursive discovery",
+                        source="memory_root/sqlite recursive discovery",
                         required=False,
                     )
                 )
 
     merged: dict[str, MemoryValidationTarget] = {}
     for target in targets:
-        candidate = _safe_under(runtime_root, Path(target.path))
+        candidate = _safe_under_any(trusted_roots, Path(target.path))
         if candidate is None:
             continue
         key = str(candidate)
@@ -444,6 +458,7 @@ def validate_large_memory(
         "schema_version": SCHEMA_VERSION,
         "generated_at_utc": _now_utc(),
         "runtime_root": str(runtime_root),
+        "memory_root": str(config.memory_root),
         "runtime_version": config.version,
         "validation_mode": "full" if full else "quick",
         "sqlite_pragma": "integrity_check" if full else "quick_check",
