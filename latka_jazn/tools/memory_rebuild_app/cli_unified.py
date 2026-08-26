@@ -9,6 +9,7 @@ from .test_profiles import PROFILE_NAMES, run_test_profile
 from .settings import MemoryRebuildSettings
 from .typed_api import MemoryLayer, RecallQuery, TypedMemoryAPI
 from .unified_memory import UnifiedMemoryDatabase
+from .v16311_hardening import compare_chat_sources, list_chat_conversations
 
 UNIFIED_COMMANDS = {
     "unified-init",
@@ -16,6 +17,8 @@ UNIFIED_COMMANDS = {
     "unified-migrate",
     "unified-validate",
     "unified-backup",
+    "list-conversations",
+    "compare-chat-sources",
     "generate-candidates",
     "list-candidates",
     "show-candidate",
@@ -38,11 +41,42 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     init = sub.add_parser("unified-init", help="Utwórz jedną kanoniczną bazę memory_jazn.sqlite3.")
     _add_database(init)
 
-    import_cmd = sub.add_parser("unified-import", help="Importuj rozmowy, HTML, nowe wątki, dzienniki lub SQLite do jednej bazy.")
+    import_cmd = sub.add_parser(
+        "unified-import",
+        help="Importuj całe źródła albo wybrane rozmowy do jednej bazy.",
+    )
     _add_database(import_cmd)
     import_cmd.add_argument("sources", nargs="+", type=Path)
     import_cmd.add_argument("--dry-run", action="store_true")
     import_cmd.add_argument("--quick-validation", action="store_true")
+    import_cmd.add_argument(
+        "--conversation-id",
+        action="append",
+        default=[],
+        help="Importuj tylko wskazaną rozmowę; opcję można podać wielokrotnie.",
+    )
+    import_cmd.add_argument("--title", help="Filtr tytułu rozmowy (fragment, bez rozróżniania wielkości liter).")
+    import_cmd.add_argument("--from", dest="temporal_start", help="Najwcześniejsza data/epoch rozmowy.")
+    import_cmd.add_argument("--to", dest="temporal_end", help="Najpóźniejsza data/epoch rozmowy.")
+    import_cmd.add_argument(
+        "--html-control",
+        type=Path,
+        help="Porównaj wybrane rozmowy z chat.html; import jest blokowany przy rozbieżności.",
+    )
+
+    catalog = sub.add_parser(
+        "list-conversations",
+        help="Pokaż katalog rozmów i stabilne conversation_id bez zapisu do bazy.",
+    )
+    catalog.add_argument("source", type=Path)
+
+    compare = sub.add_parser(
+        "compare-chat-sources",
+        help="Porównaj semantyczne drzewa rozmów JSON/ZIP z kontrolnym HTML/JSON.",
+    )
+    compare.add_argument("primary", type=Path)
+    compare.add_argument("control", type=Path)
+    compare.add_argument("--conversation-id", action="append", default=[])
 
     migrate = sub.add_parser("unified-migrate", help="Połącz stare bazy Testów 01–04 z jedną bazą.")
     _add_database(migrate)
@@ -157,12 +191,51 @@ def run_unified_command(
     settings: MemoryRebuildSettings | None = None,
 ) -> dict[str, Any]:
     command = args.command
+    if command == "list-conversations":
+        return list_chat_conversations(args.source)
+    if command == "compare-chat-sources":
+        return compare_chat_sources(
+            args.primary,
+            args.control,
+            conversation_ids=args.conversation_id,
+        )
+
     resolved_settings = settings or MemoryRebuildSettings()
     store = UnifiedMemoryDatabase(args.database, settings=resolved_settings)
     if command == "unified-init":
         return store.initialize()
     if command == "unified-import":
-        return store.import_sources(args.sources, dry_run=args.dry_run, full_validation=not args.quick_validation)
+        selective = bool(
+            args.conversation_id
+            or args.title
+            or args.temporal_start
+            or args.temporal_end
+            or args.html_control
+        )
+        if selective:
+            if len(args.sources) != 1:
+                raise ValueError("Selektywny import wymaga dokładnie jednego źródła rozmów.")
+            importer = getattr(store, "import_source_selected", None)
+            if importer is None:
+                raise RuntimeError("selective_chat_import_hardening_not_loaded")
+            result = importer(
+                args.sources[0],
+                conversation_ids=args.conversation_id,
+                title=args.title,
+                temporal_start=args.temporal_start,
+                temporal_end=args.temporal_end,
+                html_control=args.html_control,
+                dry_run=args.dry_run,
+            )
+            if not args.dry_run and not args.quick_validation:
+                result["validation"] = store.validate(full=True)
+                result["ok"] = bool(result.get("ok")) and bool(result["validation"].get("ok"))
+            return result
+        return store.import_sources(
+            args.sources,
+            dry_run=args.dry_run,
+            full_validation=not args.quick_validation,
+        )
     if command == "unified-migrate":
         return store.migrate_legacy_root(args.legacy_root, dry_run=args.dry_run)
     if command == "unified-validate":
