@@ -7,6 +7,7 @@ from typing import Any, Iterable
 import hashlib
 import json
 
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.store import MemoryStore
 
 
@@ -75,7 +76,8 @@ class MemoryFileSync:
     """
 
     def __init__(self, root: Path, store: MemoryStore) -> None:
-        self.root = Path(root)
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
         self.store = store
         self.errors: list[str] = []
 
@@ -89,7 +91,7 @@ class MemoryFileSync:
             "raw_episodic_memory": 0,
             "raw_dziennik_entries": 0,
         }
-        base = self.root / "memory" / "layered"
+        base = self.memory_root / "layered"
 
         for rec in _iter_jsonl(base / "episodic.jsonl") or []:
             try:
@@ -176,7 +178,7 @@ class MemoryFileSync:
             except Exception as exc:
                 self.errors.append(f"truth_audits.jsonl:{rec.get('_source_line')}: {exc!r}")
 
-        for rec in _iter_jsonl(self.root / "memory" / "raw" / "episodic_memory.jsonl") or []:
+        for rec in _iter_jsonl(self.memory_root / "raw" / "episodic_memory.jsonl") or []:
             try:
                 episode = {
                     "episode_id": rec.get("id") or _stable_id("raw_episodic", rec.get("content"), rec.get("datetime")),
@@ -197,7 +199,7 @@ class MemoryFileSync:
             except Exception as exc:
                 self.errors.append(f"episodic_memory.jsonl:{rec.get('_source_line')}: {exc!r}")
 
-        dz = self.root / "memory" / "raw" / "dziennik.json"
+        dz = self.memory_root / "raw" / "dziennik.json"
         if dz.exists():
             try:
                 data = json.loads(dz.read_text(encoding="utf-8"))
@@ -225,7 +227,7 @@ class MemoryFileSync:
         return counts
 
     def export_sqlite_to_files(self) -> dict[str, int]:
-        out = self.root / "memory" / "exported_from_sqlite"
+        out = self.memory_root / "exported_from_sqlite"
         exported: dict[str, int] = {}
         table_files = {
             "episodic_memories": "episodic_from_sqlite.jsonl",
