@@ -9,6 +9,7 @@ import json
 import uuid
 
 from latka_jazn.core.reflection_grounding import GroundedReflection
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("grounded_reflection_store")
@@ -37,8 +38,9 @@ class GroundedReflectionStore:
     """
 
     def __init__(self, root: Path | str) -> None:
-        self.root = Path(root)
-        self.path = self.root / "memory" / "layered" / "grounded_reflections.jsonl"
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
+        self.path = self.memory_root / "layered" / "grounded_reflections.jsonl"
 
     def append_once(self, reflection: GroundedReflection, *, store: Any | None = None, source: str = "runtime") -> GroundedReflectionStoreResult:
         self.path.parent.mkdir(parents=True, exist_ok=True)
