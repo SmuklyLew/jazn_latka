@@ -12,6 +12,7 @@ from latka_jazn.core.typed_memory_source_policy import (
     provenance_label_for_source_type,
 )
 from latka_jazn.nlp.utterance_components import analyse_utterance
+from latka_jazn.core.memory_slot_selector import MemorySlotSelector
 
 @dataclass(slots=True)
 class MemoryRecallItem:
@@ -450,105 +451,7 @@ class MemoryRecallPresenter:
     def build_slot_plan(self, items: list[MemoryRecallItem], *, user_text: str) -> dict[str, Any]:
         report = analyse_utterance(user_text)
         requested = list(dict.fromkeys(report.response_slots))
-        slots: dict[str, dict[str, Any]] = {}
-
-        def role_of(item: MemoryRecallItem) -> str:
-            return self._norm_text(str(item.metadata.get("author_role") or ""))
-
-        def preference_status(item: MemoryRecallItem | None) -> str:
-            if item is None:
-                return "unknown"
-            if item.semantic_source_type in {"conversation_archive", "active_memory", "journal_reflection"}:
-                return "remembered_preference"
-            if item.semantic_source_type == "canon":
-                return "canonical_preference"
-            if item.semantic_source_type == "current_state":
-                return "current_preference"
-            if item.semantic_source_type == "inference":
-                return "inferred_preference"
-            return "unknown"
-
-        def origin_interpretation(item: MemoryRecallItem | None) -> str:
-            if item is None:
-                return "unknown"
-            if item.semantic_source_type in {"technical_runtime", "source_code", "documentation", "runtime_status"}:
-                return "technical_beginning"
-            if item.semantic_source_type == "canon":
-                return "canonical_origin"
-            if item.semantic_source_type in {"conversation_archive", "active_memory", "journal_reflection"}:
-                return "relational_narrative_origin"
-            if item.semantic_source_type == "inference":
-                return "metaphorical_or_inferred_origin"
-            return "unknown"
-
-        def choose(slot: str) -> MemoryRecallItem | None:
-            if slot == "user_utterance":
-                return next((item for item in items if role_of(item) in {"user", "human", "uzytkownik"}), None)
-            if slot == "latka_utterance":
-                return next((item for item in items if role_of(item) in {"assistant", "latka", "ai"}), None)
-            if slot in {"later_reflection", "reflection_content", "reflection_time", "reflection_provenance"}:
-                return next((item for item in items if item.semantic_source_type == "journal_reflection"), None)
-            if slot.startswith("continuity_canon") or slot in {"preference_value", "preference_reason", "preference_provenance", "origin_layer", "origin_time_or_boundary", "origin_provenance"}:
-                return items[0] if items else None
-            if slot in {"event_fact", "time_context", "source", "truth_status", "confidence", "evidence_gap"}:
-                return items[0] if items else None
-            return items[0] if items else None
-
-        for slot in requested:
-            selected = choose(slot)
-            if selected is None:
-                slots[slot] = {
-                    "status": "evidence_gap",
-                    "value": None,
-                    "source": None,
-                    "semantic_source_type": None,
-                    "truth_status": "unknown",
-                    "confidence": None,
-                    "provenance_label": "brak dowodu",
-                    "preference_status": "unknown" if slot.startswith("preference_") else None,
-                    "origin_interpretation": "unknown" if slot.startswith("origin_") else None,
-                    "biological_claim_allowed": False if slot.startswith("origin_") else None,
-                }
-                continue
-            if slot in {"time_context", "reflection_time", "origin_time_or_boundary"}:
-                value: Any = selected.timestamp
-            elif slot == "source":
-                value = selected.source
-            elif slot == "truth_status":
-                value = selected.truth_status
-            elif slot == "confidence":
-                value = selected.confidence
-            elif slot == "preference_provenance":
-                value = selected.provenance_label
-            elif slot == "origin_layer":
-                value = origin_interpretation(selected)
-            elif slot == "origin_provenance":
-                value = selected.provenance_label
-            elif slot == "evidence_gap":
-                value = None
-            else:
-                value = selected.content_excerpt
-            slots[slot] = {
-                "status": "supported" if value not in {None, ""} else "evidence_gap",
-                "value": value,
-                "source": selected.source,
-                "semantic_source_type": selected.semantic_source_type,
-                "truth_status": selected.truth_status,
-                "confidence": selected.confidence,
-                "provenance_label": selected.provenance_label,
-                "timestamp": selected.timestamp,
-                "preference_status": preference_status(selected) if slot.startswith("preference_") else None,
-                "origin_interpretation": origin_interpretation(selected) if slot.startswith("origin_") else None,
-                "biological_claim_allowed": False if slot.startswith("origin_") else None,
-            }
-
-        return {
-            "schema_version": "memory_recall_slot_plan/v1",
-            "requested_slots": requested,
-            "slots": slots,
-            "evidence_gap_count": sum(1 for value in slots.values() if value.get("status") == "evidence_gap"),
-            "truth_boundary": "slot bez źródła nie jest uzupełniany wnioskowaniem ani proceduralnym trafieniem",
-        }
+        return MemorySlotSelector().build_slot_plan(items, requested_slots=requested)
 
     def render(self, memory_context: dict[str, Any] | None, *, user_text: str = "", limit: int = 6) -> str:
         payload = self.build_payload(memory_context, user_text=user_text, limit=limit)

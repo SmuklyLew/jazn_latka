@@ -44,7 +44,7 @@ class MemorySlotSelector:
     MEMORY_TYPES = {"conversation_archive", "active_memory", "journal_reflection"}
     TECHNICAL_TYPES = {"technical_runtime", "source_code", "documentation", "runtime_status"}
 
-    PREFERENCE_MARKERS = ("preferenc", "ulubion", "lubi", "wolę", "wole", "wybier", "podoba")
+    PREFERENCE_MARKERS = ("preferenc", "ulubion", "lubi", "wolę", "wole", "wybier", "wybór", "wybor", "kolor", "podoba")
     PREFERENCE_REASON_MARKERS = ("ponieważ", "poniewaz", "dlatego", "bo ", "z powodu", "sprawia", "kojarzy")
     ORIGIN_MARKERS = ("powsta", "pochodz", "stworz", "począ", "pocza", "geneza", "źródło", "zrodlo")
     EVENT_MARKERS = ("byliśmy", "bylismy", "pojech", "wydarzy", "spotka", "pobyt", "wyjazd", "sytuac", "zdarzen")
@@ -115,6 +115,7 @@ class MemorySlotSelector:
             "time_context", "source", "truth_status", "confidence",
             "reflection_time", "reflection_provenance",
             "preference_provenance", "origin_time_or_boundary", "origin_provenance",
+            "evidence_gap",
         }
 
     def _select_semantic(

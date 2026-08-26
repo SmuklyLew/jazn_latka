@@ -6,7 +6,7 @@ from typing import Any
 import re
 
 from latka_jazn.core.route_registry import RouteRegistry
-from latka_jazn.nlp.utterance_components import analyse_utterance, missing_component_evidence
+from latka_jazn.core.component_coverage_ledger import build_component_coverage_ledger
 from latka_jazn.core.current_turn_grounding import assess_current_turn_grounding
 from latka_jazn.nlp.domain_context import (
     has_conversation_archive_context,
@@ -36,6 +36,7 @@ class RuntimeAnswerValidation:
     missing_required_components: list[str] = field(default_factory=list)
     truth_boundary: str = "Walidator nie udaje pełnego rozumienia. Wykrywa znane klasy nietrafień rozmownych i wymusza drugą próbę lub cannot_answer_directly."
     current_turn_grounding: dict[str, Any] = field(default_factory=dict)
+    component_coverage_ledger: dict[str, Any] = field(default_factory=dict)
 
     @property
     def accepted(self) -> bool:
@@ -44,6 +45,7 @@ class RuntimeAnswerValidation:
             and self.can_show_to_user
             and not self.must_regenerate
             and not self.missing_required_components
+            and not (self.component_coverage_ledger.get("coverage_required") is True and self.component_coverage_ledger.get("complete") is not True)
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -229,8 +231,8 @@ class RuntimeAnswerValidator:
         )
         result.checks.insert(0, "model_adapter_response_validated_by_runtime")
         return result
-    def _bad(self, reason: str, repair: str, body_text: str | None, detected_intent: str, route: str, checks: list[str], missing: list[str] | None = None, current_turn_grounding: dict[str, Any] | None = None) -> RuntimeAnswerValidation:
-        return RuntimeAnswerValidation(SCHEMA_VERSION, False, reason, repair, False, True, detected_intent, route, body_text, checks, missing or [], current_turn_grounding=current_turn_grounding or {})
+    def _bad(self, reason: str, repair: str, body_text: str | None, detected_intent: str, route: str, checks: list[str], missing: list[str] | None = None, current_turn_grounding: dict[str, Any] | None = None, component_coverage_ledger: dict[str, Any] | None = None) -> RuntimeAnswerValidation:
+        return RuntimeAnswerValidation(SCHEMA_VERSION, False, reason, repair, False, True, detected_intent, route, body_text, checks, missing or [], current_turn_grounding=current_turn_grounding or {}, component_coverage_ledger=component_coverage_ledger or {})
     def _looks_like_standalone_greeting(self, text: str) -> bool:
         import re
         low = (text or "").strip().lower()
@@ -361,6 +363,12 @@ class RuntimeAnswerValidator:
 
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
+        coverage_required = bool(detected_intent == "compound_dialogue_question" or "compound_dialogue" in route_low)
+        component_coverage_ledger = build_component_coverage_ledger(user_text=user_text, body=body, coverage_required=coverage_required)
+        if coverage_required and component_coverage_ledger.get("complete") is not True:
+            missing_ids = [str(value) for value in component_coverage_ledger.get("missing_component_ids") or [] if str(value).strip()]
+            checks.append("compound_component_coverage_incomplete")
+            return self._bad("compound_component_coverage_incomplete", "compound_dialogue_coverage_repair", "Odpowiedź nie pokrywa każdego component_id i nie deklaruje jawnego evidence_gap dla brakujących części.", detected_intent, route, checks, missing_ids, component_coverage_ledger=component_coverage_ledger)
         entry=self.registry.resolve(detected_intent)
         generic_hits=[x for x in self.GENERIC_BODIES if x in low_body]
         if generic_hits: checks.append('generic_body_signature_detected:'+','.join(generic_hits))
@@ -676,23 +684,9 @@ class RuntimeAnswerValidator:
         if detected_intent == "runtime_activation_status_question" and not any(x in low_body for x in ("chatgpt", "runtime", "aktywn", "folder", "proces")):
             checks.append('runtime_activation_status_missing_boundary')
             return self._bad('runtime_activation_status_missing_boundary', 'runtime_activation_status_repair', 'Trzeba odpowiedzieć wprost, czy runtime/aktywny folder działa, i oddzielić ChatGPT jako kanał od Jaźni jako źródła. Nie wolno udawać procesu w tle.', detected_intent, route, checks)
-        utterance_report = analyse_utterance(user_text)
-        if utterance_report.compound:
-            missing_questions = missing_component_evidence(body, utterance_report.components)
-            if missing_questions:
-                checks.append('missing_compound_question_components')
-                return self._bad(
-                    'missing_compound_question_components',
-                    entry.route + '_repair',
-                    'Odpowiedź nie pokrywa wszystkich niezależnych części pytania użytkownika.',
-                    detected_intent,
-                    route,
-                    checks,
-                    missing_questions,
-                )
         missing=self._missing_components(body, entry.required_components)
         if missing and detected_intent in self.SPECIFIC_INTENTS:
             checks.append('missing_required_components')
             return self._bad('missing_required_components_for_intent', entry.route + '_repair', 'Nie udało mi się teraz zbudować kompletnej i pewnej odpowiedzi. Nie będę zgadywać; szczegóły brakujących komponentów zostały zachowane w audycie tury.', detected_intent, route, checks, missing)
         checks.append('known_mismatch_patterns_not_triggered')
-        return RuntimeAnswerValidation(SCHEMA_VERSION, True, None, None, True, False, detected_intent, route, None, checks, [], current_turn_grounding=assess_current_turn_grounding(user_text=user_text, response_body=body, detected_intent=detected_intent, route=route, runtime_version=SCHEMA_VERSION.rsplit("/", 1)[-1]).to_dict())
+        return RuntimeAnswerValidation(SCHEMA_VERSION, True, None, None, True, False, detected_intent, route, None, checks, [], current_turn_grounding=assess_current_turn_grounding(user_text=user_text, response_body=body, detected_intent=detected_intent, route=route, runtime_version=SCHEMA_VERSION.rsplit("/", 1)[-1]).to_dict(), component_coverage_ledger=component_coverage_ledger)

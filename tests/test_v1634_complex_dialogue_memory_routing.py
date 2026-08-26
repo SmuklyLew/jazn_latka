@@ -65,9 +65,9 @@ def _assert_compound_route(text: str, expected_semantics: set[str]) -> None:
     assert handler.missing_components == []
 
 
-def test_release_identity_is_v1634_hardening() -> None:
-    assert PACKAGE_VERSION == "16.3.4"
-    assert PACKAGE_RELEASE_NAME == "complex-dialogue-memory-routing-hardening"
+def test_release_identity_tracks_v1635_successor_hardening() -> None:
+    assert PACKAGE_VERSION == "16.3.5"
+    assert PACKAGE_RELEASE_NAME == "complex-dialogue-memory-routing-final-hardening"
 
 
 def test_a_preference_origin_and_reflection_are_all_preserved() -> None:

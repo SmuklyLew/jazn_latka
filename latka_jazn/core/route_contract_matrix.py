@@ -40,8 +40,15 @@ class RouteContractMatrix:
     RESOURCE_PATH = Path(__file__).resolve().parents[1] / "resources" / "nlp" / "polish_dialogue_route_lexicon.json"
     SPECIAL_PRIORITY = (
         "post_update_coverage_audit_request",
-        "self_architecture_audit_request",
+        "memory_evidence_gap_question",
         "system_capability_gap_question",
+        "self_preference_question",
+        "self_origin_question",
+        "self_introspection_question",
+        "memory_recall_request",
+        "memory_provenance_question",
+        "memory_capability_question",
+        "self_architecture_audit_request",
         "runtime_health_check_after_update",
         "runtime_health_check",
         "identity_presence_check",
@@ -96,7 +103,10 @@ class RouteContractMatrix:
             return False
         if phrase_folded.isalpha():
             return re.search(rf"(?<!\w){re.escape(phrase_folded)}(?!\w)", folded) is not None
-        pattern = re.escape(phrase_folded).replace(r"\ ", r"\s+")
+        parts = [re.escape(part) for part in re.split(r"[\s,;:!?…\-—–]+", phrase_folded) if part]
+        if not parts:
+            return False
+        pattern = r"[\s,;:!?…\-—–]+".join(parts)
         return re.search(rf"(?<!\w){pattern}(?!\w)", folded) is not None
 
     @staticmethod
@@ -164,11 +174,11 @@ class RouteContractMatrix:
                     "plik", "repo", "branch", "test", "pyright", "kompil",
                 )
             )
-            evidence_gap_context = any(
-                marker in folded
-                for marker in (
-                    "pamiec", "pamię", "wspomn", "dowod", "dowód", "potwierdz",
-                    "zrod", "źród", "archiw", "rozmow", "rozmów",
+            evidence_gap_context = (
+                any(marker in folded for marker in ("wspomn", "dowod", "potwierdz"))
+                or (
+                    ("pamiec" in folded or "pamię" in folded)
+                    and any(marker in folded for marker in ("dowod", "potwierdz", "wspomn", "nie zgaduj"))
                 )
             )
             if not technical_gap_object or evidence_gap_context:
