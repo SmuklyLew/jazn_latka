@@ -12,10 +12,10 @@ SCHEMA_VERSION = schema_version("compound_dialogue_handler")
 class CompoundDialogueHandler:
     """Preserve a multi-intent plan for the normal synthesis/finalization path.
 
-    The handler deliberately does not invent a body.  Each component keeps its
+    The handler deliberately does not invent a body. Each component keeps its
     own object, source requirements and memory decision in the classifier
-    report; the response synthesizer receives that sealed plan in the cognitive
-    frame and must cover all requested components under the turn truth policy.
+    report. Final validation receives an explicit coverage contract: every
+    component id must be covered or end in a declared evidence gap.
     """
 
     name = "CompoundDialogueHandler"
@@ -36,21 +36,27 @@ class CompoundDialogueHandler:
         gate_value = memory_context.get("memory_gate")
         memory_gate = dict(gate_value) if isinstance(gate_value, dict) else {}
         required = list(ctx.get("required_components") or [])
+        component_ids = [
+            str(item.get("component_id") or "").strip()
+            for item in components
+            if str(item.get("component_id") or "").strip()
+        ]
         satisfied = [
             "question_components",
             "component_intents",
             "component_source_plan",
             "memory_gate",
             "truth_boundary",
+            "component_coverage_contract",
         ]
         missing: list[str] = []
-        if not components:
+        if not components or not component_ids:
             missing.append("question_components")
         if not response_plan.get("semantic_intents"):
             missing.append("component_intents")
         if not response_plan.get("required_source_types"):
             # Source-less components are allowed only when no component asks for
-            # provenance/memory.  Otherwise fail closed and expose the gap.
+            # provenance/memory. Otherwise fail closed and expose the gap.
             if response_plan.get("memory_required"):
                 missing.append("component_source_plan")
         return RouteHandlerResult(
@@ -62,7 +68,9 @@ class CompoundDialogueHandler:
                 "component_analysis": components,
                 "response_plan": response_plan,
                 "memory_gate": memory_gate,
-                "coverage_required": [str(item.get("component_id") or "") for item in components],
+                "coverage_required": True,
+                "required_component_ids": component_ids,
+                "coverage_policy": "each_component_answered_or_explicit_evidence_gap",
                 "status": "compound_plan_ready" if not missing else "compound_plan_incomplete",
             },
             generation_mode="pass_through_empty",
@@ -74,7 +82,8 @@ class CompoundDialogueHandler:
             source_origin_detail=SCHEMA_VERSION,
             truth_boundary=(
                 "Komponenty złożonej tury zachowują osobne intencje i typy źródeł. "
-                "Brak dowodu dla jednego komponentu nie może zostać wypełniony treścią z innego typu źródła."
+                "Każdy component_id musi zostać pokryty albo otrzymać jawny evidence_gap; "
+                "brak dowodu dla jednego komponentu nie może zostać wypełniony treścią z innego źródła."
             ),
         )
 
