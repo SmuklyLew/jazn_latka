@@ -8,6 +8,7 @@ import json
 import re
 
 from latka_jazn.core.polish_understanding import POLISH_WORD_RE, PolishUnderstandingEngine
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.nlp.polish_lemmatizer import PolishLemmatizationEngine
 
 
@@ -57,8 +58,9 @@ class LexicalSemanticUnderstanding:
     diagnostyki runtime i pracy z GitHub.
     """
 
-    RESOURCE_NAME = "semantic_lexicon_current_line.json"
+    PRIMARY_RESOURCE_NAME = "semantic_lexicon_current_line.json"
     RESOURCE_NAME = "semantic_lexicon.json"
+    RESOURCE_NAMES = (PRIMARY_RESOURCE_NAME, RESOURCE_NAME)
     FUNCTION_WORDS = {
         "a", "ale", "albo", "bo", "by", "czy", "do", "dla", "gdy", "i", "ja", "jak", "jest", "już", "juz",
         "mi", "mnie", "na", "nad", "nie", "o", "od", "po", "pod", "przy", "się", "sie", "tak", "te", "ten",
@@ -129,12 +131,9 @@ class LexicalSemanticUnderstanding:
     def _load_lexicon(self) -> dict[str, Any]:
         candidates: list[Path] = []
         if self.root:
-            candidates.extend([
-                self.root / "memory" / "raw" / self.RESOURCE_NAME,
-                self.root / "latka_jazn" / "resources" / self.RESOURCE_NAME,
-                self.root / "memory" / "raw" / self.RESOURCE_NAME,
-                self.root / "latka_jazn" / "resources" / self.RESOURCE_NAME,
-            ])
+            memory_root = resolve_memory_root(self.root)
+            candidates.extend(memory_root / "raw" / name for name in self.RESOURCE_NAMES)
+            candidates.extend(self.root / "latka_jazn" / "resources" / name for name in self.RESOURCE_NAMES)
         for path in candidates:
             if path.exists():
                 try:
@@ -143,12 +142,15 @@ class LexicalSemanticUnderstanding:
                         return data
                 except Exception:
                     pass
-        try:
-            with resources.files("latka_jazn.resources").joinpath(self.RESOURCE_NAME).open("r", encoding="utf-8") as f:
-                data = json.load(f)
-                return data if isinstance(data, dict) else {}
-        except Exception:
-            return {}
+        for name in self.RESOURCE_NAMES:
+            try:
+                with resources.files("latka_jazn.resources").joinpath(name).open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
+            except (FileNotFoundError, ModuleNotFoundError, OSError, json.JSONDecodeError):
+                continue
+        return {}
 
     def _lemmas_builtin(self, text: str) -> list[str]:
         return self._unique([self.polish._lemma_builtin(tok) for tok in POLISH_WORD_RE.findall(text or "")])
