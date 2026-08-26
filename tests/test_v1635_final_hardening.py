@@ -9,10 +9,6 @@ from latka_jazn.core.memory_slot_selector import MemorySlotSelector
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
-from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
-
-
-BRANCH_RELEASE = "persistent-runtime-e2e-hardening"
 
 
 def _item(
@@ -43,11 +39,6 @@ def _item(
         provenance_label=provenance,
         metadata={"author_role": role, "kind": kind},
     )
-
-
-def test_release_identity_tracks_current_successor_hardening() -> None:
-    assert PACKAGE_VERSION == "16.3.6"
-    assert PACKAGE_RELEASE_NAME == BRANCH_RELEASE
 
 
 def test_canonical_route_lexicon_covers_new_dialogue_families() -> None:

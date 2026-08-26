@@ -5,7 +5,7 @@ import ipaddress
 import json
 from pathlib import Path
 from typing import Any
-from urllib import error, request
+from urllib import error, parse, request
 
 from latka_jazn.bridge.auth_policy import AuthPolicy, SlidingWindowRateLimiter
 from latka_jazn.core.chatgpt_host_pending_store import issue_continuation_token
@@ -29,6 +29,7 @@ class GatewayConfig:
     daemon_token: str | None = None
     allowed_tools: tuple[str, ...] = (
         "jazn_generate_visible_reply",
+        "jazn_resume_visible_reply",
         "jazn_status",
         "jazn_finalize_reply",
         "jazn_audit_lookup",
@@ -147,6 +148,17 @@ class SecureHostRuntimeGateway:
         if session_id:
             payload["session_id"] = session_id
         return self._http_json("POST", "/chat", payload)
+
+    def result(self, request_id: str) -> dict[str, Any]:
+        """Poll one existing daemon job without replaying the user turn."""
+
+        normalized = str(request_id or "").strip()
+        if not normalized:
+            raise GatewayError("daemon_request_id_missing")
+        if len(normalized) > 256:
+            raise GatewayError("daemon_request_id_too_large")
+        query = parse.urlencode({"request_id": normalized})
+        return self._http_json("GET", f"/chat-result?{query}")
 
     def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
         presentation = response.get("chatgpt_host_presentation")

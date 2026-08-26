@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-DISTRIBUTION_VERSION = "16.3.6"
-PACKAGE_VERSION = "16.3.6"
-PACKAGE_RELEASE_NAME = "persistent-runtime-e2e-hardening"
+# v16.3.7 adds read-only recovery of an existing host-finalization contract;
+# it must never replay the original user message or weaken one-shot finalization.
+DISTRIBUTION_VERSION = "16.3.7"
+PACKAGE_VERSION = "16.3.7"
+PACKAGE_RELEASE_NAME = "host-finalization-recovery-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

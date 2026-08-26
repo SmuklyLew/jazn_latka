@@ -18,6 +18,7 @@ from latka_jazn.mcp.tools import (
     jazn_audit_lookup,
     jazn_finalize_reply,
     jazn_generate_visible_reply,
+    jazn_resume_visible_reply,
     jazn_status,
 )
 from latka_jazn.runtime.host_bridge_audit import HostBridgeAuditEvent, HostBridgeAuditStore
@@ -29,7 +30,7 @@ SCHEMA_VERSION = schema_version("jazn_mcp_server")
 # Generation is idempotent. Finalization is intentionally one-shot and is guarded
 # by the runtime pending-request store rather than by replaying a cached MCP result.
 IDEMPOTENT_SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply"}
-READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup"}
+READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup", "jazn_resume_visible_reply"}
 DENIED_APPROVAL_STATES = {"denied", "rejected", "not_approved"}
 
 
@@ -69,6 +70,35 @@ TOOL_DEFINITIONS = [
             "openWorldHint": False,
             "idempotentHint": True,
         },
+    },
+    {
+        "name": "jazn_resume_visible_reply",
+        "title": "Resume an existing Jaźń host-finalization turn",
+        "description": (
+            "Poll and resume one existing daemon request without resubmitting the user message. "
+            "If phase 1 is still pending, returns the same HMAC-bound continuation and the persisted "
+            "host generation contract; consumed, claimed, expired, mismatched, or ambiguous records fail closed."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "daemon_request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "turn_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "host_request_contract_hash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-fA-F]{64}$",
+                },
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            },
+            required=["daemon_request_id"],
+        ),
+        "annotations": {
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
     },
     {
         "name": "jazn_status",
@@ -271,6 +301,9 @@ class JaznMcpServer:
                 )
                 identity = hashlib.sha256(material.encode("utf-8")).hexdigest()
             return identity, identity, _tool_contract_hash(name)
+        if name == "jazn_resume_visible_reply":
+            identity = str(args["daemon_request_id"])
+            return identity, identity, _tool_contract_hash(name)
         if name == "jazn_audit_lookup":
             turn_id = str(args["turn_id"])
             trace_id = str(args.get("trace_id") or turn_id)
@@ -379,6 +412,14 @@ class JaznMcpServer:
                 self.gateway,
                 message=str(args["message"]),
                 session_id=args.get("session_id"),
+            )
+        if name == "jazn_resume_visible_reply":
+            return jazn_resume_visible_reply.run(
+                root=self.root,
+                gateway=self.gateway,
+                daemon_request_id=str(args["daemon_request_id"]),
+                turn_id=args.get("turn_id"),
+                host_request_contract_hash=args.get("host_request_contract_hash"),
             )
         if name == "jazn_finalize_reply":
             return jazn_finalize_reply.run(root=self.root, lifecycle_gateway=self.gateway, **args)
