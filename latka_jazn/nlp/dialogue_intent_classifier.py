@@ -539,12 +539,14 @@ class DialogueIntentClassifier:
             return report(
                 norm,folded,'capability_status_question',
                 ['canonical_memory_contract:capability_only'],0.94,
+                secondary=['memory_capability_question'],
                 speech_act=speech.speech_act,question_object='memory_capability',
             )
         if memory_semantics.content_requested or canonical_memory_followup:
             return report(
                 norm,folded,'memory_experience_question',
                 ['canonical_memory_contract:source_backed_recall', *memory_semantics.evidence],0.96,
+                secondary=['memory_recall_request'],
                 speech_act=speech.speech_act,question_object='memory_experience',
             )
         if (

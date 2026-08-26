@@ -7,6 +7,7 @@ import re
 
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.component_coverage_ledger import build_component_coverage_ledger
+from latka_jazn.nlp.utterance_components import analyse_utterance, missing_component_evidence
 from latka_jazn.core.current_turn_grounding import assess_current_turn_grounding
 from latka_jazn.nlp.domain_context import (
     has_conversation_archive_context,
@@ -363,8 +364,23 @@ class RuntimeAnswerValidator:
 
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
+        component_report = analyse_utterance(user_text)
         coverage_required = bool(detected_intent == "compound_dialogue_question" or "compound_dialogue" in route_low)
         component_coverage_ledger = build_component_coverage_ledger(user_text=user_text, body=body, coverage_required=coverage_required)
+        if component_report.compound and not coverage_required:
+            legacy_missing_components = missing_component_evidence(body, component_report.components)
+            if legacy_missing_components:
+                checks.append("missing_compound_question_components")
+                return self._bad(
+                    "missing_compound_question_components",
+                    "compound_question_repair",
+                    "Odpowiedź nie pokrywa wszystkich składników złożonego pytania.",
+                    detected_intent,
+                    route,
+                    checks,
+                    legacy_missing_components,
+                    component_coverage_ledger=component_coverage_ledger,
+                )
         if coverage_required and component_coverage_ledger.get("complete") is not True:
             missing_ids = [str(value) for value in component_coverage_ledger.get("missing_component_ids") or [] if str(value).strip()]
             checks.append("compound_component_coverage_incomplete")
