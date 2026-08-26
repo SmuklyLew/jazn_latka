@@ -12,6 +12,7 @@ from latka_jazn.memory.database_identity import (
     initialize_database_identity,
     read_database_identity,
 )
+from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("memory_source_truth_gate")
@@ -59,7 +60,9 @@ class MemorySourceTruthGate:
 
     Code root and data root are deliberately distinct. The data root may be a
     persistent location that survives replacing the active code directory, but
-    it must be explicitly trusted by the runtime marker/configuration.
+    it must be explicitly selected by the canonical memory-root resolver or an
+    explicit trusted override. A marker may attest either `trusted_memory_root`
+    or the newer `memory_root` field.
     """
 
     def __init__(
@@ -73,7 +76,7 @@ class MemorySourceTruthGate:
     ) -> None:
         self.active_root = Path(active_root).resolve()
         self.trusted_memory_root = Path(
-            trusted_memory_root or (self.active_root / "memory")
+            trusted_memory_root or resolve_memory_root(self.active_root)
         ).resolve()
         self.marker_path = Path(marker_path).resolve() if marker_path else None
         self.manifest_path = Path(manifest_path).resolve() if manifest_path else self.active_root / "PACKAGE_INTEGRITY_MANIFEST.json"
@@ -101,7 +104,7 @@ class MemorySourceTruthGate:
         if not checks["path_under_trusted_memory_root"]:
             violations.append("database_outside_trusted_memory_root")
 
-        marker_root_value = marker.get("active_root") or marker.get("active_folder")
+        marker_root_value = marker.get("active_root") or marker.get("active_folder") or marker.get("runtime_root")
         if self.marker_path is None:
             checks["marker_root_matches"] = True
         else:
@@ -109,7 +112,7 @@ class MemorySourceTruthGate:
             if not checks["marker_root_matches"]:
                 violations.append("active_runtime_marker_mismatch")
 
-        marker_memory_root = marker.get("trusted_memory_root")
+        marker_memory_root = marker.get("trusted_memory_root") or marker.get("memory_root")
         if marker_memory_root:
             checks["marker_memory_root_matches"] = Path(str(marker_memory_root)).resolve() == self.trusted_memory_root
             if not checks["marker_memory_root_matches"]:
