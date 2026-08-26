@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   repair:
-    if: ${{ hashFiles('.github/v1635_typefix.py') != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
