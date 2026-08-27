@@ -6,7 +6,7 @@ import json
 import sqlite3
 import zipfile
 
-from latka_jazn.tools.memory_rebuild_app.source_fidelity import run_test00_source_fidelity
+from latka_jazn.tools.memory_rebuild_app.source_fidelity import CHUNK_SIZE, run_test00_source_fidelity
 from latka_jazn.tools.memory_rebuild_app.test_spec import TEST_PROTOCOL_ORDER, TestOutcome, get_test_spec
 
 
@@ -47,9 +47,12 @@ def _conversation() -> dict:
 
 def _read_mirrored_blob(database: Path) -> bytes:
     with sqlite3.connect(database) as con:
-        row = con.execute("SELECT raw_bytes FROM source_mirror_sources ORDER BY source_pk LIMIT 1").fetchone()
-    assert row is not None
-    return bytes(row[0])
+        source_id = con.execute("SELECT source_id FROM source_mirror_sources ORDER BY source_pk LIMIT 1").fetchone()[0]
+        rows = con.execute(
+            "SELECT data FROM source_mirror_chunks WHERE source_id=? ORDER BY chunk_index",
+            (source_id,),
+        ).fetchall()
+    return b"".join(bytes(row[0]) for row in rows)
 
 
 def test_protocol_order_starts_with_test00_and_has_final() -> None:
@@ -76,6 +79,7 @@ def test_json_source_is_mirrored_byte_exact_and_preserves_all_observed_roles(tmp
         "user": 1,
     }
     assert item["content_type_counts"] == {"execution_output": 1, "text": 4}
+    assert item["raw_chunk_count"] == 1
     database = Path(result["database"])
     mirrored = _read_mirrored_blob(database)
     original = source.read_bytes()
@@ -88,6 +92,16 @@ def test_json_source_is_mirrored_byte_exact_and_preserves_all_observed_roles(tmp
             name in {"memory_records", "promotion_requests", "promotion_decisions", "promotion_ledger"}
             for (name,) in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
         )
+
+
+def test_chunked_mirror_reconstructs_source_larger_than_one_chunk(tmp_path: Path) -> None:
+    source = tmp_path / "large.json"
+    payload = b"[" + (b" " * (CHUNK_SIZE + 137)) + b"]"
+    source.write_bytes(payload)
+    result = run_test00_source_fidelity([source], output_root=tmp_path / "test00", run_id="chunks")
+    assert result["outcome"] == TestOutcome.PASSED.value
+    assert result["results"][0]["raw_chunk_count"] == 2
+    assert _read_mirrored_blob(Path(result["database"])) == payload
 
 
 def test_embedded_html_is_structural_pass_and_rendered_fallback_is_lossy(tmp_path: Path) -> None:
