@@ -114,5 +114,5 @@ def test_p0_layout_can_be_composed_without_running_terminal(tmp_path: Path) -> N
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16315_test00_recall_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.15-memory-rebuild-test00-recall-baseline"
+def test_release_version_tracks_v16316_settings_studio() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.16-memory-rebuild-settings-studio"

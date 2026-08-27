@@ -7,7 +7,8 @@ import os
 from latka_jazn.version import PACKAGE_VERSION
 
 from .project_store import ProjectStore
-from .studio_v16314 import run_studio_v16314
+from .settings import load_tool_settings, resolve_settings_path
+from .studio_v16316_settings import edit_tool_settings_text, run_studio_v16316
 from .tui import run_studio as run_project_studio
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
@@ -41,10 +42,18 @@ def _remember_database(project_root: str | Path | None, project: str | None, dat
         return
 
 
-def _text_menu(database: Path, *, project_root: str | Path | None, project: str | None, tool_root: Path) -> int:
+def _text_menu(
+    database: Path,
+    *,
+    project_root: str | Path | None,
+    project: str | None,
+    tool_root: Path,
+    settings_path: Path,
+) -> int:
     while True:
         print(f"\n=== Jaźń Memory Rebuild v{PACKAGE_VERSION} ===")
         print(f"Baza: {database}")
+        print(f"Ustawienia: {settings_path}")
         print("1. Projekty, źródła i baseline'y")
         print("2. Ustaw ścieżkę memory_jazn.sqlite3")
         print("3. Utwórz / sprawdź bazę")
@@ -53,7 +62,8 @@ def _text_menu(database: Path, *, project_root: str | Path | None, project: str 
         print("6. Kandydaci pamięci")
         print("7. Testy 00-04 i Final")
         print("8. Finalny eksport")
-        print("9. Zakończ")
+        print("9. Ustawienia narzędzia")
+        print("10. Zakończ")
         choice = input("> ").strip()
         if choice == "1":
             run_project_studio(project_root=project_root, project=project, tool_root=tool_root, text_ui=True)
@@ -99,6 +109,8 @@ def _text_menu(database: Path, *, project_root: str | Path | None, project: str 
                 from .final_export import export_final_memory
                 print(json.dumps(export_final_memory(database, raw), ensure_ascii=False, indent=2, default=str))
         elif choice == "9":
+            edit_tool_settings_text(settings_path, tool_root=tool_root)
+        elif choice == "10":
             return 0
 
 
@@ -112,20 +124,35 @@ def run_studio_v24(
 ) -> int:
     root = Path(tool_root or Path.cwd()).expanduser().resolve()
     database = _default_database(project_root, project)
+    resolved_settings = resolve_settings_path(settings_path, tool_root=root)
+    load_tool_settings(resolved_settings, tool_root=root, create=True)
+
     if text_ui:
-        return _text_menu(database, project_root=project_root, project=project, tool_root=root)
+        return _text_menu(
+            database,
+            project_root=project_root,
+            project=project,
+            tool_root=root,
+            settings_path=resolved_settings,
+        )
 
     try:
         import prompt_toolkit  # noqa: F401
     except Exception:
-        return _text_menu(database, project_root=project_root, project=project, tool_root=root)
+        return _text_menu(
+            database,
+            project_root=project_root,
+            project=project,
+            tool_root=root,
+            settings_path=resolved_settings,
+        )
 
-    return run_studio_v16314(
+    return run_studio_v16316(
         database=database,
         project_root=project_root,
         project=project,
         tool_root=root,
-        settings_path=settings_path,
+        settings_path=resolved_settings,
     )
 
 
