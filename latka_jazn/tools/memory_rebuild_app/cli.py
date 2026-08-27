@@ -14,6 +14,7 @@ from .controller import MemoryRebuildAppController
 from .models import RebuildProject
 from .project_store import ProjectStore
 from .settings import load_settings
+from .source_fidelity import default_test00_root, run_test00_source_fidelity
 from .source_inventory import inspect_source
 from .tui_v24 import run_studio_v24
 
@@ -22,8 +23,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rebuild_memory",
         description=(
-            "Jaźń Memory Rebuild v16.0: projekty źródeł, jedna baza memory_jazn.sqlite3, "
-            "import nowych wątków, kandydaci, Testy 01–04 i finalny eksport."
+            "Jaźń Memory Rebuild v16: Test00 Source Fidelity, projekty źródeł, jedna baza "
+            "memory_jazn.sqlite3, mierzalny Recall baseline, Testy 01–04 i finalny eksport."
         ),
         allow_abbrev=False,
     )
@@ -35,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true", help="Wypisz wynik jako JSON.")
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("studio", help="Uruchom pełną aplikację v2.4 / Studio P0.")
+    sub.add_parser("studio", help="Uruchom pełne Memory Rebuild Studio.")
     sub.add_parser("list-projects", help="Pokaż projekty.")
 
     create = sub.add_parser("create-project", help="Utwórz projekt.")
@@ -54,6 +55,17 @@ def build_parser() -> argparse.ArgumentParser:
     inspect.add_argument("path", type=Path)
     inspect.add_argument("--verify-zip-crc", action="store_true")
     inspect.add_argument("--no-sha256", action="store_true")
+
+    test00 = sub.add_parser("test00", help="Uruchom Source Fidelity i bezstratny source mirror.")
+    test00.add_argument("sources", nargs="*", type=Path, help="Źródła; gdy puste, użyj enabled sources projektu.")
+    test00.add_argument("--output-root", type=Path, help="Domyślnie ./memory/rebuild_tests/test_00.")
+    test00.add_argument("--run-id")
+
+    recall = sub.add_parser("recall-baseline", help="Uruchom mierzalny FTS5-only Recall benchmark bez treningu.")
+    recall.add_argument("--database", required=True, type=Path)
+    recall.add_argument("--benchmark", required=True, type=Path)
+    recall.add_argument("--output-root", type=Path, help="Domyślnie ./memory/rebuild_tests/recall.")
+    recall.add_argument("--run-id")
 
     add_baseline = sub.add_parser("add-baseline", help="Dodaj bazę testową do porównań.")
     add_baseline.add_argument("path", type=Path)
@@ -116,6 +128,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0 if payload.get("ok") else 2
 
         store = ProjectStore(args.project_root)
+        if command == "test00":
+            sources = list(args.sources)
+            if not sources:
+                project = _require_project(store, args.project)
+                sources = [Path(item.path) for item in project.enabled_sources()]
+            output_root = args.output_root or default_test00_root(Path.cwd())
+            payload = run_test00_source_fidelity(
+                sources,
+                output_root=output_root,
+                run_id=args.run_id,
+            )
+            _emit(payload, json_mode=True)
+            return 0 if payload.get("outcome") == "PASSED" else 2
+
+        if command == "recall-baseline":
+            from .recall import run_fts5_recall_benchmark
+
+            output_root = args.output_root or (Path.cwd() / "memory" / "rebuild_tests" / "recall")
+            payload = run_fts5_recall_benchmark(
+                args.database,
+                args.benchmark,
+                output_root=output_root,
+                run_id=args.run_id,
+            )
+            _emit(payload, json_mode=True)
+            # Baseline measurement completes successfully even when quality thresholds fail.
+            return 0 if payload.get("benchmark_completed") else 2
+
         if command == "list-projects":
             payload = [
                 {
