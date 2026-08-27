@@ -26,6 +26,20 @@ from latka_jazn.tools.memory_rebuild_app.themes import (
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
+RETIRED_UI_MODULES = (
+    "studio_p0.py",
+    "studio_v16314.py",
+    "studio_v16316_settings.py",
+    "tui.py",
+    "tui_candidates.py",
+    "tui_common.py",
+    "tui_export.py",
+    "tui_import.py",
+    "tui_paths.py",
+    "tui_tests.py",
+)
+
+
 def _text(fragments) -> str:
     return "".join(str(text) for _style, text in fragments)
 
@@ -89,6 +103,13 @@ def test_projecting_actions_do_not_import_or_launch_retired_ui_layers() -> None:
     assert "source_import_menu(" not in source
     assert "candidate_menu(" not in source
     assert "final_export_menu(" not in source
+
+
+def test_retired_ui_implementations_are_not_shipped() -> None:
+    package_dir = Path(studio.__file__).resolve().parent
+    present = [name for name in RETIRED_UI_MODULES if (package_dir / name).exists()]
+    assert present == []
+    assert (package_dir / "tui_v24.py").is_file()
 
 
 def test_studio_test_and_recall_surfaces_use_shared_protocol_specs(tmp_path: Path) -> None:
@@ -161,5 +182,5 @@ def test_canonical_layout_composes_without_running_terminal(tmp_path: Path) -> N
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16317_unified_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.17-memory-rebuild-unified-studio"
+def test_release_version_tracks_v16318_unified_studio_cleanup() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.18-memory-rebuild-unified-studio-cleanup"

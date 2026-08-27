@@ -183,5 +183,5 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
     assert reloaded.studio.theme_name == "latka-default"
 
 
-def test_release_version_tracks_v16317_unified_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.17-memory-rebuild-unified-studio"
+def test_release_version_tracks_v16318_unified_studio_cleanup() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.18-memory-rebuild-unified-studio-cleanup"

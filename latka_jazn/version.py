@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# v16.3.17 converges Memory Rebuild onto one canonical Studio. PROJEKTOWANIE,
-# TESTY and USTAWIENIA share one shell, one themed dialog backend and direct
-# engine workflows; retired nested TUI/version layers are no longer launched.
-DISTRIBUTION_VERSION = "16.3.17"
-PACKAGE_VERSION = "16.3.17"
-PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio"
+# v16.3.18 finalizes the single canonical Memory Rebuild Studio by removing
+# retired nested TUI/versioned Studio implementations from the shipped source
+# tree. tui_v24 remains only as a thin compatibility entrypoint to studio.py.
+DISTRIBUTION_VERSION = "16.3.18"
+PACKAGE_VERSION = "16.3.18"
+PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio-cleanup"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
