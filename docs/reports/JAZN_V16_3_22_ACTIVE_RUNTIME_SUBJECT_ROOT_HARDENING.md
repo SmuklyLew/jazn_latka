@@ -147,12 +147,21 @@ Finalny artefakt jest system-only, nie zawiera `memory/` ani `workspace_runtime/
 
 ## CI i publikacja
 
-Do uzupełnienia po pushu:
+PR: https://github.com/SmuklyLew/jazn_latka/pull/177
 
-- GitHub Actions Ubuntu;
-- GitHub Actions Windows;
-- release-hardening / manifest sync;
-- URL PR do `master`.
+Wyniki GitHub dla head `ccf569b2e3a485a605739c2d3e78e0b86d4bf3ef`:
+
+- push persistent-runtime E2E Ubuntu: PASS (`19s`);
+- push persistent-runtime E2E Windows: PASS (`43s`);
+- PR persistent-runtime E2E Ubuntu: PASS (`19s`);
+- PR persistent-runtime E2E Windows: PASS (`37s`);
+- release-hardening `manifest_sync`: PASS (`10s`), bez zmiany head SHA;
+- release-hardening verify Ubuntu: PASS (`1m49s`);
+- release-hardening verify Windows targeted: PASS (`1m22s`);
+- GitGuardian Security Checks: PASS;
+- release finalization: SKIPPED zgodnie z kontraktem otwartego, nie-mergowanego PR.
+
+Po checkach PR był `OPEN`, `MERGEABLE`, `mergeStateStatus=CLEAN`. PR nie został zmergowany.
 
 Lokalne kluczowe commity przed finalnym uzupełnieniem raportu:
 
