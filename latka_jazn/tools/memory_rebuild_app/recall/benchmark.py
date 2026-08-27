@@ -110,6 +110,7 @@ def _aggregate(suite: RecallBenchmarkSuite, reports: list[dict[str, Any]]) -> di
     provenance = _mean_defined(item["metrics"]["provenance_accuracy"] for item in reports)
     temporal = _mean_defined(item["metrics"]["temporal_accuracy"] for item in reports)
     latencies = [float(item["latency_ms"]) for item in reports]
+    p95_latency = _percentile(latencies, 0.95) if latencies else None
     category_stats: dict[str, dict[str, Any]] = {}
     for item in reports:
         category = str(item["case"]["category"])
@@ -137,7 +138,7 @@ def _aggregate(suite: RecallBenchmarkSuite, reports: list[dict[str, Any]]) -> di
         "category_stats": category_stats,
         "latency": {
             "p50_ms": round(median(latencies), 6) if latencies else None,
-            "p95_ms": round(_percentile(latencies, 0.95), 6) if latencies else None,
+            "p95_ms": round(p95_latency, 6) if p95_latency is not None else None,
             "max_ms": round(max(latencies), 6) if latencies else None,
         },
     }
