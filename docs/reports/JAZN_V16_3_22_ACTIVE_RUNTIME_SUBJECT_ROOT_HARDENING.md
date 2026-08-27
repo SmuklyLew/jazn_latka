@@ -80,15 +80,17 @@ Istniejące testy zachowują również same-root, snapshot/no-probe, endpoint ti
 
 Nie znaleziono nowego P0.
 
-Naprawiono dwa P1:
+Naprawiono trzy P1:
 
 1. Invalid JSON markera był odrzucany, ale błędnie raportowany jako brak markera. Status używa teraz `root_resolution.marker_found`, zachowując dokładny błąd resolvera.
 2. `scan_runtime_duplicates()` budował klucze raportu zależne od separatora systemu. Na Windows zwracał backslashe, a kontrakt i Linux używały slashy. Klucze są teraz tworzone przez `Path.as_posix()`.
+3. Pierwszy `release-build` ujawnił, że system ZIP obejmował śledzone historyczne `.archives/`, których manifest paczki celowo nie obejmuje. Build został prawidłowo odrzucony przez `unexpected_zip_member`. `.archives/` jest teraz wykluczone z iteratora paczki i jednocześnie klasyfikowane jako forbidden package prefix; test release chroni ten kontrakt.
 
 ## Zmienione obszary
 
 - `latka_jazn/core/runtime_daemon.py` — subject-root truth gate i diagnostyka;
 - `latka_jazn/memory/runtime_persistence.py` — platformowo stabilne klucze raportu duplikatów;
+- `latka_jazn/tools/package_export.py` — wykluczenie historycznych `.archives/` z release package;
 - `latka_jazn/version.py` — bump do 16.3.22;
 - `tests/test_v16322_active_runtime_subject_root.py` — nowa matryca A/B;
 - istniejące testy statusu i aktywne asercje wersji;
@@ -111,7 +113,9 @@ Naprawiono dwa P1:
 - focused suite: `43 passed in 2.90s`;
 - pierwszy pełny suite: `1121 passed, 5 skipped, 7 failed` — cztery stare asercje wersji, dwie brakujące lokalnie zależności `pyzipper` i jeden Windows path P1;
 - ukierunkowany rerun napraw: `14 passed in 1.51s`;
-- finalny deterministic suite: `1128 passed, 5 skipped, 1 warning in 279.61s`;
+- deterministic suite przed release-build: `1128 passed, 5 skipped, 1 warning in 279.61s`;
+- focused release suite po packaging P1: `42 passed in 8.32s`;
+- finalny deterministic suite po wszystkich P1: `1129 passed, 5 skipped, 1 warning in 279.87s`;
 - `compileall`: PASS;
 - `git diff --check`: PASS.
 
@@ -121,9 +125,18 @@ Jedynym ostrzeżeniem pytest jest istniejący `PytestCollectionWarning` dla enum
 
 ### Release metadata i smoke
 
-Przed synchronizacją metadata `doctor` potwierdził `installation_ok=true` i `ok=true`, ale prawidłowo raportował `release_metadata_current=false`. `package-smoke --profile system` nie jest uznany za zaliczony przed kanoniczną synchronizacją manifestu i provenance.
+Przed synchronizacją metadata `doctor` potwierdził `installation_ok=true` i `ok=true`, ale prawidłowo raportował `release_metadata_current=false`.
 
-Wyniki po synchronizacji metadata, idempotencji i czystym commicie zostaną dopisane przed publikacją.
+Po kanonicznej synchronizacji metadata i czystym commicie:
+
+- drugi przebieg `release_metadata_sync --write` nie pozostawił diffu: PASS / idempotentny;
+- `doctor`: exit 0, `ok=true`, `installation_ok=true`, `release_metadata_current=true`, `release_ready=true`;
+- `package-smoke --profile system`: exit 0, `15/15 passed`;
+- `package-smoke --profile release`: exit 0, `15/15 passed`;
+- pierwszy `release-build`: FAIL, poprawnie wykryte `unexpected_zip_member` z `.archives/`;
+- finalny `release-build` po P1 fix: exit 0, ZIP verification PASS, `checked_file_count=907`, `file_count=908`, SHA-256 `051da0aff530c3b7d7c51dd941adb8becdf5291877a1d5481f474da8abb4c0bb`.
+
+Finalny artefakt jest system-only, nie zawiera `memory/` ani `workspace_runtime/`, pozostaje lokalny w ignorowanym `exports/` i nie jest częścią PR.
 
 ## Ochrona danych i granica prawdy
 
@@ -136,11 +149,18 @@ Wyniki po synchronizacji metadata, idempotencji i czystym commicie zostaną dopi
 
 Do uzupełnienia po pushu:
 
-- SHA commitów;
 - GitHub Actions Ubuntu;
 - GitHub Actions Windows;
 - release-hardening / manifest sync;
 - URL PR do `master`.
+
+Lokalne kluczowe commity przed finalnym uzupełnieniem raportu:
+
+- `1cf0fc3` — subject-root identity, testy, CI i wersja;
+- `8aa094e` — raport techniczny;
+- `a8df387` — pierwsza synchronizacja metadata;
+- `3a798f1` — packaging P1 `.archives/`;
+- `a93e329` — ponowna synchronizacja metadata.
 
 PR pozostaje bez merge zgodnie z instrukcją operatora.
 
