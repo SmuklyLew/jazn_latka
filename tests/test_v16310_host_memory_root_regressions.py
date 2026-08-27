@@ -30,8 +30,8 @@ def _canonical_memory(root: Path) -> Path:
     return memory
 
 
-def test_release_version_tracks_v16321_chatgpt_runtime_fallback_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.21-chatgpt-runtime-fallback-hardening"
+def test_release_version_tracks_v16322_active_runtime_subject_root_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.22-active-runtime-subject-root-hardening"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(
