@@ -34,7 +34,7 @@ from .test_spec import TEST_SPECS, get_test_spec
 from .themes import THEMES, get_theme, prompt_toolkit_style
 
 
-STUDIO_VERSION = "memory-rebuild-studio/v16.3.17"
+STUDIO_VERSION = "memory-rebuild-studio/v16.3.20"
 PAGE_IDS = ("tests", "design", "settings")
 PAGE_LABELS = {
     "tests": "TESTY",
@@ -135,6 +135,17 @@ def _runtime_lines(settings: MemoryRebuildSettings) -> list[str]:
         f"automatic_l2: {_yes_no(settings.automatic_l2)}  [READ-ONLY / ZABLOKOWANE]",
         f"automatic_l3: {_yes_no(settings.automatic_l3)}  [READ-ONLY / ZABLOKOWANE]",
         f"automatic_activation: {_yes_no(settings.automatic_activation)}  [READ-ONLY / ZABLOKOWANE]",
+    ]
+
+
+def _recall_status_lines() -> list[str]:
+    return [
+        "[Recall benchmark]",
+        "baseline: fts5-bm25/v1  [READ-ONLY]",
+        "query_rewrite: NIEIMPLEMENTOWANE  [READ-ONLY]",
+        "dense_retrieval: NIEIMPLEMENTOWANE  [READ-ONLY]",
+        "reranker: NIEIMPLEMENTOWANE  [READ-ONLY]",
+        "model_training: NIE  [READ-ONLY / ZABLOKOWANE]",
     ]
 
 
@@ -387,14 +398,30 @@ class StudioState:
             "WYNIK",
             f"  {outcome}",
             "",
-            "WYJŚCIA",
-            *(f"  • {value}" for value in spec.outputs),
-            "",
-            "GRANICA PRAWDY",
-            *(f"  • {value}" for value in spec.truth_boundary),
-            "",
-            "R/Enter uruchamia protokół lub jego aktualny validator.",
+            "DOWODY",
         ]
+        if result:
+            for evidence_key in (
+                "run_id",
+                "database_sha256",
+                "baseline_id",
+                "sanitized_report",
+            ):
+                if result.get(evidence_key) is not None:
+                    lines.append(f"  {evidence_key}: {result.get(evidence_key)}")
+            if result.get("quality_gate_passed") is not None:
+                lines.append(
+                    f"  quality_gate_passed: {result.get('quality_gate_passed')}"
+                )
+            if lines[-1] == "DOWODY":
+                lines.append("  raport istnieje, ale nie zawiera skróconych pól dowodowych")
+        else:
+            lines.append("  brak — protokół nie był uruchamiany w tej sesji")
+        lines.extend(("", "WYJŚCIA"))
+        lines.extend(f"  • {value}" for value in spec.outputs)
+        lines.extend(("", "GRANICA PRAWDY"))
+        lines.extend(f"  • {value}" for value in spec.truth_boundary)
+        lines.extend(("", "R/Enter uruchamia protokół lub jego aktualny validator."))
         return lines
 
     def _design_detail(self, key: str) -> list[str]:
@@ -433,6 +460,9 @@ class StudioState:
                 "R4  Dense retrieval / rerank A/B — NIEIMPLEMENTOWANE",
                 "R5  Trening/wybór retrievera — ZABLOKOWANE do przewagi benchmarkowej",
                 "",
+                "Metryki: Recall@k, MRR, nDCG, abstention, provenance, temporal/update, false-memory i sensitive leakage.",
+                "Prywatne query/wyniki pozostają w private report; sanitized report przechowuje wyłącznie dozwolone metryki i dowody.",
+                "",
                 "Baseline nigdy nie używa embeddingów ani modelu treningowego.",
             ]
         return lines
@@ -454,12 +484,7 @@ class StudioState:
                 "",
                 *_runtime_lines(self.runtime_settings),
                 "",
-                "[Recall benchmark]",
-                "baseline: fts5-bm25/v1  [READ-ONLY]",
-                "query_rewrite: NIEIMPLEMENTOWANE  [READ-ONLY]",
-                "dense_retrieval: NIEIMPLEMENTOWANE  [READ-ONLY]",
-                "reranker: NIEIMPLEMENTOWANE  [READ-ONLY]",
-                "model_training: NIE  [READ-ONLY / ZABLOKOWANE]",
+                *_recall_status_lines(),
             ]
         if key == "safety":
             return [
@@ -505,6 +530,8 @@ class StudioState:
             "",
             "[narzędzie / retrieval]",
             *_runtime_lines(self.runtime_settings),
+            "",
+            *_recall_status_lines(),
             "",
             "[studio]",
             f"theme_name: {self.theme_name}  [EDYTOWALNE]",

@@ -40,7 +40,7 @@ def _state(tmp_path: Path) -> StudioState:
 def test_retired_p0_contract_is_owned_by_one_canonical_three_page_studio(tmp_path: Path) -> None:
     state = _state(tmp_path)
     assert PAGE_IDS == ("tests", "design", "settings")
-    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.17"
+    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.20"
     assert STUDIO_VERSION in _text(state.header_fragments())
 
 
@@ -80,11 +80,13 @@ def test_canonical_studio_uses_shared_test00_to_final_protocol_specs(tmp_path: P
     ):
         assert section in rendered
     assert "Source Fidelity" in rendered
+    assert "brak — protokół nie był uruchamiany" in rendered
 
     state.set_page("design")
     state.selected["design"] = len(state.items()) - 1
     recall = _text(state.content_fragments())
     assert "FTS5" in recall
+    assert "Recall@k" in recall
     assert "ZABLOKOWANE" in recall
 
 
@@ -97,7 +99,9 @@ def test_settings_page_exposes_all_project_and_runtime_settings(tmp_path: Path) 
         assert f"{key}:" in rendered
     for key in MemoryRebuildSettings.__dataclass_fields__:
         assert f"{key}:" in rendered
+    assert "baseline: fts5-bm25/v1" in rendered
     assert "model_training: NIE" in rendered
+    assert "READ-ONLY / ZABLOKOWANE" in rendered
 
 
 def test_terminal_theme_is_default_and_prompt_toolkit_style_is_valid() -> None:
@@ -118,5 +122,5 @@ def test_canonical_layout_can_be_composed_without_running_terminal(tmp_path: Pat
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16319_unified_studio_ci_fix() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.19-memory-rebuild-unified-studio-ci-fix"
+def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"

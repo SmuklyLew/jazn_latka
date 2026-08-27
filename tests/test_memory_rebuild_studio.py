@@ -66,7 +66,7 @@ def test_studio_has_one_canonical_three_page_shell(tmp_path: Path) -> None:
     )
 
     assert PAGE_IDS == ("tests", "design", "settings")
-    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.17"
+    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.20"
     assert STUDIO_VERSION in _text(state.header_fragments())
 
     state.set_page("tests")
@@ -129,6 +129,7 @@ def test_studio_test_and_recall_surfaces_use_shared_protocol_specs(tmp_path: Pat
         "FAZY",
         "KONTROLE",
         "WYNIK",
+        "DOWODY",
         "WYJŚCIA",
         "GRANICA PRAWDY",
     ):
@@ -139,6 +140,7 @@ def test_studio_test_and_recall_surfaces_use_shared_protocol_specs(tmp_path: Pat
     state.selected["design"] = len(state.items()) - 1
     recall = _text(state.content_fragments())
     assert "FTS5" in recall
+    assert "Recall@k" in recall
     assert "ZABLOKOWANE" in recall
 
 
@@ -157,6 +159,7 @@ def test_settings_page_exposes_project_and_runtime_settings(tmp_path: Path) -> N
         assert f"{key}:" in rendered
     for key in MemoryRebuildSettings.__dataclass_fields__:
         assert f"{key}:" in rendered
+    assert "baseline: fts5-bm25/v1" in rendered
     assert "model_training: NIE" in rendered
 
 
@@ -182,5 +185,5 @@ def test_canonical_layout_composes_without_running_terminal(tmp_path: Path) -> N
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16319_unified_studio_ci_fix() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.19-memory-rebuild-unified-studio-ci-fix"
+def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"

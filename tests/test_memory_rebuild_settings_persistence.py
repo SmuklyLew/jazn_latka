@@ -149,7 +149,7 @@ def test_canonical_studio_creates_settings_and_marks_editable_vs_read_only(tmp_p
         settings_path=settings_path,
     )
 
-    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.17"
+    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.20"
     assert STUDIO_VERSION in _text(state.header_fragments())
     assert settings_path.is_file()
     assert state.settings_file == settings_path.resolve()
@@ -159,6 +159,7 @@ def test_canonical_studio_creates_settings_and_marks_editable_vs_read_only(tmp_p
     assert "[EDYTOWALNE" in rendered
     assert "[READ-ONLY" in rendered
     assert str(settings_path.resolve()) in rendered
+    assert "model_training: NIE" in rendered
     for key in MemoryRebuildSettings.__dataclass_fields__:
         assert f"{key}:" in rendered
     for key in PROJECT_LOCKED_SETTINGS:
@@ -183,5 +184,5 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
     assert reloaded.studio.theme_name == "latka-default"
 
 
-def test_release_version_tracks_v16318_unified_studio_cleanup() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.18-memory-rebuild-unified-studio-cleanup"
+def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"
