@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from latka_jazn.tools.memory_rebuild_app.models import RebuildProject, SourceSpec
+from latka_jazn.tools.memory_rebuild_app.models import SourceSpec
 from latka_jazn.tools.memory_rebuild_app.presentation import (
     format_preflight,
     format_source,
@@ -12,7 +12,11 @@ from latka_jazn.tools.memory_rebuild_app.source_browser import (
     discover_source_files,
     format_discovered_files,
 )
-from latka_jazn.tools.memory_rebuild_app.tui import MemoryRebuildStudio
+from latka_jazn.tools.memory_rebuild_app.studio import StudioState
+
+
+def _text(fragments) -> str:
+    return "".join(str(text) for _style, text in fragments)
 
 
 def test_source_discovery_includes_dot_prefixed_old_folder(tmp_path: Path) -> None:
@@ -83,9 +87,18 @@ def test_source_list_and_preview_are_human_readable(tmp_path: Path) -> None:
     assert "source_recorded" not in preview
 
 
-def test_project_stage_starts_with_source_guidance(tmp_path: Path) -> None:
-    project = RebuildProject.create("Test", tmp_path / "target")
-    studio = MemoryRebuildStudio.__new__(MemoryRebuildStudio)
-    studio.project = project
+def test_canonical_studio_guides_operator_to_project_and_sources(tmp_path: Path) -> None:
+    state = StudioState(
+        database=tmp_path / "memory_jazn.sqlite3",
+        project_root=tmp_path / "projects",
+        project=None,
+        tool_root=tmp_path,
+        settings_path=tmp_path / "settings.json",
+    )
+    state.set_page("design")
+    state.selected["design"] = 0
 
-    assert "dodaj lub przeskanuj źródła" in studio.project_stage()
+    rendered = _text(state.content_fragments())
+
+    assert "Projekt i źródła" in rendered
+    assert "wybrać lub utworzyć projekt" in rendered
