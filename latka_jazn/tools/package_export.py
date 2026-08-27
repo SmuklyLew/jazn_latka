@@ -55,6 +55,7 @@ COMMON_EXCLUDE_PARTS = {
     ".mypy_cache",
     ".ruff_cache",
     ".git",
+    ".archives",
 }
 COMMON_EXCLUDE_SUFFIXES = (
     ".pyc",
@@ -68,6 +69,7 @@ COMMON_EXCLUDE_SUFFIXES = (
     "-shm",
 )
 FORBIDDEN_PACKAGE_PREFIXES = (
+    ".archives/",
     "workspace_runtime/",
     "backups/",
     "requests/",
@@ -79,6 +81,7 @@ FORBIDDEN_PACKAGE_PREFIXES = (
     ".pytest_cache/",
 )
 FORBIDDEN_PACKAGE_EXACT = {
+    ".archives",
     "workspace_runtime",
     "workspace_runtime/JAZN_ACTIVE_RUNTIME.json",
     "ACTIVE_RUNTIME_CACHE_CONTRACT.json",

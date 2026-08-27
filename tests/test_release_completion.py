@@ -13,6 +13,7 @@ import pytest
 from latka_jazn import cli
 from latka_jazn.cli_commands import diagnostics
 from latka_jazn.tools.release_bundle import build_release_bundle, verify_release_zip_manifest
+from latka_jazn.tools.package_export import build_package_plan, forbidden_package_reason
 from latka_jazn.tools.release_staging import create_release_staging, create_system_smoke_staging
 from latka_jazn.tools.source_provenance import SourceProvenanceError
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL
@@ -110,6 +111,19 @@ def test_release_zip_verifier_rejects_unexpected_members(tmp_path: Path) -> None
     dirty = verify_release_zip_manifest(dirty_zip)
     assert dirty["ok"] is False
     assert any(item["code"] == "unexpected_zip_member" for item in dirty["errors"])
+
+
+def test_system_package_plan_excludes_historical_archives(tmp_path: Path) -> None:
+    (tmp_path / "run.py").write_text("print('current')\n", encoding="utf-8")
+    archived = tmp_path / ".archives" / "old" / "tree" / "run.py"
+    archived.parent.mkdir(parents=True)
+    archived.write_text("print('historical')\n", encoding="utf-8")
+
+    rels = [rel for _path, rel in build_package_plan(tmp_path, "system")]
+
+    assert "run.py" in rels
+    assert all(not rel.startswith(".archives/") for rel in rels)
+    assert forbidden_package_reason(".archives/old/tree/run.py") is not None
 
 
 
