@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Test00: byte-faithful source mirror plus independent structural census.
 
-The source mirror is intentionally *not* a memory database.  It stores the exact
-input bytes and only descriptive parse metadata.  No row from this database can
-become L1/L2/L3 and no recall API reads it directly.
+The source mirror is intentionally *not* a memory database. It stores exact
+input bytes in bounded chunks plus descriptive parse metadata. No row from this
+database can become L1/L2/L3 and no recall API reads it directly.
 """
 
 from collections import Counter
@@ -13,9 +13,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterable
 import json
-import os
 import sqlite3
 import uuid
 import zipfile
@@ -31,7 +30,7 @@ from .html_import import read_html_conversations
 from .test_spec import TestOutcome
 
 
-SOURCE_MIRROR_SCHEMA = "jazn_memory_rebuild_source_mirror/v1"
+SOURCE_MIRROR_SCHEMA = "jazn_memory_rebuild_source_mirror/v2"
 TEST00_REPORT_SCHEMA = "jazn_memory_rebuild_test00/v1"
 CHUNK_SIZE = 8 * 1024 * 1024
 
@@ -47,6 +46,7 @@ class SourceFidelityResult:
     parse_mode: str
     outcome: str
     raw_roundtrip_sha256: str
+    raw_chunk_count: int
     conversation_count: int
     node_count: int
     message_count: int
@@ -97,7 +97,7 @@ def _initialize(con: sqlite3.Connection) -> None:
           source_kind TEXT NOT NULL,
           source_sha256 TEXT NOT NULL,
           size_bytes INTEGER NOT NULL,
-          raw_bytes BLOB NOT NULL,
+          raw_chunk_count INTEGER NOT NULL DEFAULT 0,
           raw_roundtrip_sha256 TEXT,
           parse_mode TEXT NOT NULL DEFAULT 'unparsed',
           fidelity_status TEXT NOT NULL DEFAULT 'NOT RUN',
@@ -107,6 +107,15 @@ def _initialize(con: sqlite3.Connection) -> None:
           branch_point_count INTEGER NOT NULL DEFAULT 0,
           details_json TEXT NOT NULL DEFAULT '{}',
           created_at_utc TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS source_mirror_chunks(
+          source_id TEXT NOT NULL,
+          chunk_index INTEGER NOT NULL,
+          chunk_sha256 TEXT NOT NULL,
+          chunk_size INTEGER NOT NULL,
+          data BLOB NOT NULL,
+          PRIMARY KEY(source_id,chunk_index),
+          FOREIGN KEY(source_id) REFERENCES source_mirror_sources(source_id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS source_mirror_roles(
           source_id TEXT NOT NULL,
@@ -139,6 +148,10 @@ def _initialize(con: sqlite3.Connection) -> None:
         (SOURCE_MIRROR_SCHEMA,),
     )
     con.execute(
+        "INSERT OR REPLACE INTO source_mirror_meta(key,value) VALUES('chunk_size_bytes',?)",
+        (str(CHUNK_SIZE),),
+    )
+    con.execute(
         "INSERT OR REPLACE INTO source_mirror_meta(key,value) VALUES('truth_boundary',?)",
         (
             "Source mirror proves byte/parse fidelity only; it is not L1/L2/L3, recall, truth, or activation.",
@@ -147,45 +160,81 @@ def _initialize(con: sqlite3.Connection) -> None:
     con.commit()
 
 
-def _stream_raw_into_blob(con: sqlite3.Connection, source: Path, source_id: str, source_kind: str) -> tuple[int, str, str]:
+def _stream_raw_into_chunks(
+    con: sqlite3.Connection,
+    source: Path,
+    source_id: str,
+    source_kind: str,
+) -> tuple[str, str, int]:
+    """Mirror a file with bounded BLOB rows and verify whole-file round-trip SHA.
+
+    A single SQLite BLOB has a configurable maximum length (commonly 1 GB), while
+    real ChatGPT exports can be larger. Test00 therefore stores fixed-size chunks
+    and reconstructs the whole-file digest from ordered chunk rows.
+    """
+
     size = source.stat().st_size
-    source_hash = sha256_file(source)
-    cur = con.execute(
-        """INSERT INTO source_mirror_sources(
-             source_id,source_name,source_path,source_kind,source_sha256,size_bytes,raw_bytes,created_at_utc
-           ) VALUES(?,?,?,?,?,?,zeroblob(?),?)""",
-        (source_id, source.name, str(source), source_kind, source_hash, size, size, _utc_now()),
-    )
-    rowid = int(cur.lastrowid or 0)
-    if rowid <= 0:
-        raise RuntimeError("could not allocate source mirror row")
-    if size:
-        digest = sha256()
-        with source.open("rb") as stream, con.blobopen("source_mirror_sources", "raw_bytes", rowid, readonly=False) as blob:
-            while True:
-                chunk = stream.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                digest.update(chunk)
-                blob.write(chunk)
-        if digest.hexdigest() != source_hash:
-            raise RuntimeError("source changed while Test00 was mirroring it")
-    con.commit()
-    roundtrip = sha256()
-    if size:
-        with con.blobopen("source_mirror_sources", "raw_bytes", rowid, readonly=True) as blob:
-            while True:
-                chunk = blob.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                roundtrip.update(chunk)
-    roundtrip_hash = roundtrip.hexdigest() if size else sha256(b"").hexdigest()
     con.execute(
-        "UPDATE source_mirror_sources SET raw_roundtrip_sha256=? WHERE source_pk=?",
-        (roundtrip_hash, rowid),
+        """INSERT INTO source_mirror_sources(
+             source_id,source_name,source_path,source_kind,source_sha256,size_bytes,created_at_utc
+           ) VALUES(?,?,?,?,?,?,?)""",
+        (source_id, source.name, str(source), source_kind, "pending", size, _utc_now()),
+    )
+    digest = sha256()
+    chunk_count = 0
+    total = 0
+    with source.open("rb") as stream:
+        while True:
+            chunk = stream.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            digest.update(chunk)
+            total += len(chunk)
+            con.execute(
+                """INSERT INTO source_mirror_chunks(
+                     source_id,chunk_index,chunk_sha256,chunk_size,data
+                   ) VALUES(?,?,?,?,?)""",
+                (source_id, chunk_count, sha256(chunk).hexdigest(), len(chunk), sqlite3.Binary(chunk)),
+            )
+            chunk_count += 1
+    if total != size:
+        raise RuntimeError(f"source size changed while mirroring: expected={size}, observed={total}")
+    source_hash = digest.hexdigest()
+    con.execute(
+        "UPDATE source_mirror_sources SET source_sha256=?,raw_chunk_count=? WHERE source_id=?",
+        (source_hash, chunk_count, source_id),
     )
     con.commit()
-    return rowid, source_hash, roundtrip_hash
+
+    roundtrip = sha256()
+    reconstructed_size = 0
+    rows = con.execute(
+        "SELECT chunk_index,chunk_sha256,chunk_size,data FROM source_mirror_chunks WHERE source_id=? ORDER BY chunk_index",
+        (source_id,),
+    )
+    expected_index = 0
+    for row in rows:
+        index = int(row[0])
+        if index != expected_index:
+            raise RuntimeError(f"source mirror chunk sequence gap: expected={expected_index}, observed={index}")
+        data = bytes(row[3])
+        declared_size = int(row[2])
+        if len(data) != declared_size:
+            raise RuntimeError(f"source mirror chunk size mismatch at index {index}")
+        if sha256(data).hexdigest() != str(row[1]):
+            raise RuntimeError(f"source mirror chunk SHA mismatch at index {index}")
+        roundtrip.update(data)
+        reconstructed_size += len(data)
+        expected_index += 1
+    if reconstructed_size != size or expected_index != chunk_count:
+        raise RuntimeError("source mirror reconstruction count/size mismatch")
+    roundtrip_hash = roundtrip.hexdigest()
+    con.execute(
+        "UPDATE source_mirror_sources SET raw_roundtrip_sha256=? WHERE source_id=?",
+        (roundtrip_hash, source_id),
+    )
+    con.commit()
+    return source_hash, roundtrip_hash, chunk_count
 
 
 def _raw_census(conversation: dict[str, Any]) -> tuple[int, int, int, Counter[str], Counter[str]]:
@@ -218,7 +267,7 @@ def _raw_census(conversation: dict[str, Any]) -> tuple[int, int, int, Counter[st
 
 
 def _iter_and_compare(conversations: Iterable[dict[str, Any]]) -> tuple[dict[str, Any], list[str]]:
-    counts = {
+    counts: dict[str, Any] = {
         "conversations": 0,
         "nodes": 0,
         "messages": 0,
@@ -250,24 +299,34 @@ def _iter_and_compare(conversations: Iterable[dict[str, Any]]) -> tuple[dict[str
             errors.append(f"role_inventory_mismatch:{graph.conversation_id}")
         if parsed_types != raw_types:
             errors.append(f"content_type_inventory_mismatch:{graph.conversation_id}")
-        counts["conversations"] += 1
-        counts["nodes"] += raw_nodes
-        counts["messages"] += raw_messages
-        counts["branch_points"] += raw_branches
-        counts["roles"].update(raw_roles)
-        counts["content_types"].update(raw_types)
+        counts["conversations"] = int(counts["conversations"]) + 1
+        counts["nodes"] = int(counts["nodes"]) + raw_nodes
+        counts["messages"] = int(counts["messages"]) + raw_messages
+        counts["branch_points"] = int(counts["branch_points"]) + raw_branches
+        roles_value = counts["roles"]
+        types_value = counts["content_types"]
+        if isinstance(roles_value, Counter):
+            roles_value.update(raw_roles)
+        if isinstance(types_value, Counter):
+            types_value.update(raw_types)
     return counts, errors
 
 
 def _read_generic_json(path: Path) -> dict[str, Any]:
-    """Read a non-conversation JSON source fully without persisting its private values in reports."""
+    """Read a non-conversation JSON source fully without persisting private values in reports."""
     with path.open("r", encoding="utf-8-sig", errors="strict") as stream:
         value = json.load(stream)
     if isinstance(value, list):
+        sample_keys = {
+            str(key)
+            for row in value[:32]
+            if isinstance(row, dict)
+            for key in row
+        }
         return {
             "json_top_level": "array",
             "record_count": len(value),
-            "sample_key_count": len({str(key) for row in value[:32] if isinstance(row, dict) for key in row}),
+            "sample_key_count": len(sample_keys),
         }
     if isinstance(value, dict):
         return {
@@ -303,7 +362,11 @@ def _hash_zip_members(path: Path, con: sqlite3.Connection, source_id: str) -> in
     return count
 
 
-def _parse_source(path: Path, con: sqlite3.Connection, source_id: str) -> tuple[str, str, dict[str, Any], list[str], list[str], int]:
+def _parse_source(
+    path: Path,
+    con: sqlite3.Connection,
+    source_id: str,
+) -> tuple[str, str, dict[str, Any], list[str], list[str], int]:
     suffix = path.suffix.casefold()
     warnings: list[str] = []
     errors: list[str] = []
@@ -395,11 +458,10 @@ def _json_safe_details(details: dict[str, Any]) -> dict[str, Any]:
 
 
 def _inspect_one(path: Path, con: sqlite3.Connection) -> SourceFidelityResult:
-    source_hash = sha256_file(path)
-    source_id = _sha_text(f"{source_hash}:{path.name}")
+    source_id = f"src-{uuid.uuid4().hex}"
     suffix = path.suffix.casefold()
     source_kind = {".json": "json", ".html": "html", ".htm": "html", ".zip": "zip"}.get(suffix, "unknown")
-    _, source_hash, roundtrip_hash = _stream_raw_into_blob(con, path, source_id, source_kind)
+    source_hash, roundtrip_hash, chunk_count = _stream_raw_into_chunks(con, path, source_id, source_kind)
     warnings: list[str] = []
     errors: list[str] = []
     details: dict[str, Any] = {}
@@ -452,6 +514,7 @@ def _inspect_one(path: Path, con: sqlite3.Connection) -> SourceFidelityResult:
         parse_mode=parse_mode,
         outcome=outcome,
         raw_roundtrip_sha256=roundtrip_hash,
+        raw_chunk_count=chunk_count,
         conversation_count=int(safe_details.get("conversations") or 0),
         node_count=int(safe_details.get("nodes") or 0),
         message_count=int(safe_details.get("messages") or 0),
@@ -486,6 +549,7 @@ def _sanitized_result(item: SourceFidelityResult) -> dict[str, Any]:
         "parse_mode": item.parse_mode,
         "outcome": item.outcome,
         "raw_roundtrip_sha256": item.raw_roundtrip_sha256,
+        "raw_chunk_count": item.raw_chunk_count,
         "conversation_count": item.conversation_count,
         "node_count": item.node_count,
         "message_count": item.message_count,
@@ -505,7 +569,15 @@ def run_test00_source_fidelity(
     output_root: str | Path,
     run_id: str | None = None,
 ) -> dict[str, Any]:
-    source_paths = [Path(item).expanduser().resolve() for item in sources]
+    source_paths: list[Path] = []
+    seen: set[str] = set()
+    for item in sources:
+        path = Path(item).expanduser().resolve()
+        key = str(path).casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        source_paths.append(path)
     if not source_paths:
         raise ValueError("Test00 requires at least one source")
     for path in source_paths:
@@ -532,6 +604,7 @@ def run_test00_source_fidelity(
         outcome = TestOutcome.FAILED.value
     private_report = {
         "schema_version": TEST00_REPORT_SCHEMA,
+        "source_mirror_schema": SOURCE_MIRROR_SCHEMA,
         "run_id": resolved_run_id,
         "outcome": outcome,
         "database": str(database),
@@ -575,6 +648,7 @@ def run_test00_source_fidelity(
 
 
 __all__ = [
+    "CHUNK_SIZE",
     "SOURCE_MIRROR_SCHEMA",
     "TEST00_REPORT_SCHEMA",
     "SourceFidelityResult",
