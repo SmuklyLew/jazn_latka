@@ -5,7 +5,7 @@ import json
 import os
 
 from .project_store import ProjectStore
-from .studio_p0 import run_studio_p0
+from .studio_v16314 import run_studio_v16314
 from .tui import run_studio as run_project_studio
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
@@ -41,7 +41,7 @@ def _remember_database(project_root: str | Path | None, project: str | None, dat
 
 def _text_menu(database: Path, *, project_root: str | Path | None, project: str | None, tool_root: Path) -> int:
     while True:
-        print("\n=== Jaźń Memory Rebuild v2.4 ===")
+        print("\n=== Jaźń Memory Rebuild v16.3.14 ===")
         print(f"Baza: {database}")
         print("1. Projekty, źródła i baseline'y")
         print("2. Ustaw ścieżkę memory_jazn.sqlite3")
@@ -49,7 +49,7 @@ def _text_menu(database: Path, *, project_root: str | Path | None, project: str 
         print("4. Importuj źródła")
         print("5. Migruj stare bazy Testów 01-04")
         print("6. Kandydaci pamięci")
-        print("7. Testy 01-04 i finalny")
+        print("7. Testy 00-04 i Final")
         print("8. Finalny eksport")
         print("9. Zakończ")
         choice = input("> ").strip()
@@ -76,9 +76,21 @@ def _text_menu(database: Path, *, project_root: str | Path | None, project: str 
         elif choice == "6":
             print(json.dumps({"candidates": UnifiedMemoryDatabase(database).list_candidates(status="all", limit=500)}, ensure_ascii=False, indent=2, default=str))
         elif choice == "7":
-            profile = input("Profil [test01/test02/test03/test04/final]: ").strip() or "final"
-            from .test_profiles import run_test_profile
-            print(json.dumps(run_test_profile(database, profile), ensure_ascii=False, indent=2, default=str))
+            profile = input("Profil [test00/test01/test02/test03/test04/final]: ").strip() or "final"
+            if profile == "test00":
+                raw = input("Źródła Test00 (ścieżki oddzielone średnikami): ").strip()
+                sources = [Path(item.strip()) for item in raw.split(";") if item.strip()]
+                if sources:
+                    from .source_fidelity import default_test00_root, run_test00_source_fidelity
+                    print(json.dumps(
+                        run_test00_source_fidelity(sources, output_root=default_test00_root(tool_root)),
+                        ensure_ascii=False,
+                        indent=2,
+                        default=str,
+                    ))
+            else:
+                from .test_profiles import run_test_profile
+                print(json.dumps(run_test_profile(database, profile), ensure_ascii=False, indent=2, default=str))
         elif choice == "8":
             raw = input("Nowy katalog finalnego eksportu: ").strip()
             if raw:
@@ -106,7 +118,7 @@ def run_studio_v24(
     except Exception:
         return _text_menu(database, project_root=project_root, project=project, tool_root=root)
 
-    return run_studio_p0(
+    return run_studio_v16314(
         database=database,
         project_root=project_root,
         project=project,
