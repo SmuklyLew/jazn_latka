@@ -1,23 +1,23 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "496e053523c89dd17ce8c42e929d27ea632581c3",
-  "base_version": "16.3.20-memory-rebuild-unified-studio-regression-fix",
-  "commit_date": "2026-08-27T07:06:27+02:00",
+  "base_merge_commit": "ea988fc12da63de343706d52626ff53bb273ca3b",
+  "base_version": "16.3.21-chatgpt-runtime-fallback-hardening",
+  "commit_date": "2026-08-27T07:56:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-27T05:06:27+00:00",
+  "generated_at_utc": "2026-08-27T05:56:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1f077f8f437580dbebee9f00dea54b0323540100",
+  "git_tree_sha": "f305de25e6bdc5dcaa6068cc13af96b2c84da850",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.20-memory-rebuild-unified-studio-regression-fix",
-  "schema_version": "source_provenance/16.3.20",
+  "runtime_version": "16.3.21-chatgpt-runtime-fallback-hardening",
+  "schema_version": "source_provenance/16.3.21",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid.",
-  "update_version": "16.3.20-memory-rebuild-unified-studio-regression-fix",
+  "update_version": "16.3.21-chatgpt-runtime-fallback-hardening",
   "version_source": "latka_jazn/version.py"
 }
