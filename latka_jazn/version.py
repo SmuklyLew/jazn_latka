@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-# v16.3.15 hardens the v16.3.14 Memory Rebuild Test00/Recall release after
-# deterministic CI exposed Studio slots/super and release-contract regressions.
-# Test00 remains source-fidelity-only; Recall remains benchmark-first/FTS5-first
-# with model training disabled.
-DISTRIBUTION_VERSION = "16.3.15"
-PACKAGE_VERSION = "16.3.15"
-PACKAGE_RELEASE_NAME = "memory-rebuild-test00-recall-baseline"
+# v16.3.16 makes Memory Rebuild Studio settings editable and persistent while
+# keeping safety invariants fail-closed. Tool-wide retrieval/Studio preferences
+# live in memory_rebuild_settings.json; project settings stay per project.
+DISTRIBUTION_VERSION = "16.3.16"
+PACKAGE_VERSION = "16.3.16"
+PACKAGE_RELEASE_NAME = "memory-rebuild-settings-studio"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
