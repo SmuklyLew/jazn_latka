@@ -3,13 +3,30 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+import threading
 from types import SimpleNamespace
+import urllib.error
+import urllib.request
 
 import pytest
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
+
+
+class _AuthMutationSentinelSession:
+    created = 0
+
+    def __init__(self, _config: object, **kwargs: object) -> None:
+        type(self).created += 1
+        self.state = SimpleNamespace(session_id=kwargs.get("session_id"))
+
+    def process_user_text(self, user_text: str, **_kwargs: object) -> dict[str, object]:
+        return {"ok": True, "final_visible_text": user_text}
+
+    def close(self) -> None:
+        return None
 
 
 def _runtime_root(path: Path) -> Path:
@@ -91,6 +108,54 @@ def _install_subject_runtime(
         lambda *_args, **_kwargs: (ping, None, "/ready"),
     )
     return requested_root, subject_root, integrity_calls, provenance_calls
+
+
+def test_wrong_non_empty_capability_token_is_fail_closed_before_mutation(tmp_path: Path) -> None:
+    _AuthMutationSentinelSession.created = 0
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_AuthMutationSentinelSession,
+        execution_timeout_seconds=0.25,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        data = json.dumps(
+            {"message": "hej", "request_id": "wrong-token-must-not-mutate"}
+        ).encode("utf-8")
+        request = urllib.request.Request(
+            runtime_daemon.daemon_url(
+                "127.0.0.1",
+                int(server.server_address[1]),
+                "/chat-submit",
+            ),
+            data=data,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                runtime_daemon.DAEMON_AUTH_HEADER: server.auth_token + "-wrong",
+            },
+        )
+
+        assert server.chat_jobs == {}
+        with pytest.raises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(request, timeout=2.0)
+        assert caught.value.code == 401
+        body = json.loads(caught.value.read().decode("utf-8"))
+        assert body["error_code"] == "daemon_auth_required"
+        assert server.state.auth_failure_count == 1
+        assert server.chat_jobs == {}
+        assert _AuthMutationSentinelSession.created == 0
+    finally:
+        server.shutdown()
+        server.close_sessions()
+        server.server_close()
+        thread.join(timeout=2.0)
 
 
 def test_status_trusts_resolved_subject_runtime_for_sibling_root_a_b_b(
