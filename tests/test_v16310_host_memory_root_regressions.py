@@ -30,8 +30,8 @@ def _canonical_memory(root: Path) -> Path:
     return memory
 
 
-def test_release_version_tracks_v16316_settings_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.16-memory-rebuild-settings-studio"
+def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(

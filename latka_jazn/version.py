@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-# v16.3.16 makes Memory Rebuild Studio settings editable and persistent while
-# keeping safety invariants fail-closed. Tool-wide retrieval/Studio preferences
-# live in memory_rebuild_settings.json; project settings stay per project.
-DISTRIBUTION_VERSION = "16.3.16"
-PACKAGE_VERSION = "16.3.16"
-PACKAGE_RELEASE_NAME = "memory-rebuild-settings-studio"
+# v16.3.20 hardens the single canonical Memory Rebuild Studio after the
+# v16.3.18 cleanup/v16.3.19 CI correction: it restores the operator evidence
+# section for Test00-Final, keeps Recall/model-training gates visible on the
+# complete settings page, and synchronizes the Studio release marker.
+DISTRIBUTION_VERSION = "16.3.20"
+PACKAGE_VERSION = "16.3.20"
+PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio-regression-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

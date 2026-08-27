@@ -16,10 +16,10 @@ from latka_jazn.tools.memory_rebuild_app.settings import (
     resolve_settings_path,
     save_tool_settings,
 )
-from latka_jazn.tools.memory_rebuild_app.studio_v16316_settings import (
+from latka_jazn.tools.memory_rebuild_app.studio import (
     PROJECT_LOCKED_SETTINGS,
     STUDIO_VERSION,
-    StudioV16316State,
+    StudioState,
 )
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -139,9 +139,9 @@ def test_unknown_structured_settings_fail_closed() -> None:
         MemoryRebuildToolSettings.from_mapping({"schema_version": SETTINGS_SCHEMA, "mystery": {}})
 
 
-def test_v16316_studio_creates_settings_and_marks_editable_vs_read_only(tmp_path: Path) -> None:
+def test_canonical_studio_creates_settings_and_marks_editable_vs_read_only(tmp_path: Path) -> None:
     settings_path = tmp_path / DEFAULT_SETTINGS_FILENAME
-    state = StudioV16316State(
+    state = StudioState(
         database=tmp_path / "memory_jazn.sqlite3",
         project_root=tmp_path / "projects",
         project=None,
@@ -149,7 +149,7 @@ def test_v16316_studio_creates_settings_and_marks_editable_vs_read_only(tmp_path
         settings_path=settings_path,
     )
 
-    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.16"
+    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.20"
     assert STUDIO_VERSION in _text(state.header_fragments())
     assert settings_path.is_file()
     assert state.settings_file == settings_path.resolve()
@@ -159,15 +159,16 @@ def test_v16316_studio_creates_settings_and_marks_editable_vs_read_only(tmp_path
     assert "[EDYTOWALNE" in rendered
     assert "[READ-ONLY" in rendered
     assert str(settings_path.resolve()) in rendered
+    assert "model_training: NIE" in rendered
     for key in MemoryRebuildSettings.__dataclass_fields__:
         assert f"{key}:" in rendered
     for key in PROJECT_LOCKED_SETTINGS:
         assert key in rendered
 
 
-def test_v16316_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> None:
+def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> None:
     settings_path = tmp_path / DEFAULT_SETTINGS_FILENAME
-    state = StudioV16316State(
+    state = StudioState(
         database=tmp_path / "memory_jazn.sqlite3",
         project_root=tmp_path / "projects",
         project=None,
@@ -183,5 +184,5 @@ def test_v16316_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> None
     assert reloaded.studio.theme_name == "latka-default"
 
 
-def test_release_version_tracks_v16316_settings_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.16-memory-rebuild-settings-studio"
+def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"
