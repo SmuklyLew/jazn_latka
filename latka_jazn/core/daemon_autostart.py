@@ -50,6 +50,16 @@ RUNTIME_TURN_COMMANDS = {
     "direct_message",
 }
 
+# ChatGPT has an explicit, verified one-shot runtime path in AGENTS.chatgpt.md.
+# The host should reuse a live daemon when one already exists, but inability to
+# create a background process must not block the canonical one-shot bridge.
+# Explicit --ensure-daemon / JAZN_ENSURE_DAEMON still override this default and
+# remain fail-closed through the normal policy order below.
+VERIFIED_ONE_SHOT_FALLBACK_COMMANDS = {
+    "--chat-gpt",
+    "--chat-gpt-final-only",
+}
+
 NEVER_AUTOSTART_COMMANDS = {
     "--daemon-status",
     "--daemon-stop",
@@ -240,6 +250,16 @@ def daemon_autostart_decision(
             command_known_runtime_turn=command_known_runtime_turn,
             command_observational=command_observational,
         )
+    if command_norm in VERIFIED_ONE_SHOT_FALLBACK_COMMANDS:
+        return DaemonAutostartDecision(
+            command=command_norm,
+            should_ensure=False,
+            reason="verified_one_shot_fallback_allowed",
+            env_autostart=env_autostart,
+            env_force=env_force,
+            command_known_runtime_turn=command_known_runtime_turn,
+            command_observational=command_observational,
+        )
     return DaemonAutostartDecision(
         command=command_norm,
         should_ensure=command_known_runtime_turn,
@@ -327,12 +347,14 @@ def daemon_autostart_policy_status(env: Mapping[str, str] | None = None) -> dict
         "autostart_env": env_map.get(AUTOSTART_ENV),
         "command_filter_env": env_map.get(AUTOSTART_COMMANDS_ENV),
         "runtime_turn_commands": sorted(RUNTIME_TURN_COMMANDS),
+        "verified_one_shot_fallback_commands": sorted(VERIFIED_ONE_SHOT_FALLBACK_COMMANDS),
         "observational_commands": sorted(OBSERVATIONAL_COMMANDS),
         "never_autostart_commands": sorted(NEVER_AUTOSTART_COMMANDS),
         "degraded_turn_safe_reasons": sorted(DEGRADED_TURN_SAFE_REASONS),
         "degraded_turn_blocking_reasons": sorted(DEGRADED_TURN_BLOCKING_REASONS),
         "truth_boundary": (
             "Autostart jest kontraktem liveness dla tras rozmowy, nie dowodem świadomości ani zgodą na start przy komendach status/stop. "
+            "Kanoniczny --chat-gpt może ponownie użyć zweryfikowanego żywego daemonu albo wykonać zweryfikowaną turę one-shot; jawne wymaganie daemonu pozostaje fail-closed. "
             "active_degraded dopuszcza turę tylko wtedy, gdy status_daemon jawnie potwierdza zgodność endpointu i świeży heartbeat; nieznane degradacje są fail-closed."
         ),
     }
