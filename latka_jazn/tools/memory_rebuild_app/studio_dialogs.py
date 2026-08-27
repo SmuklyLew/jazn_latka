@@ -11,7 +11,7 @@ from .themes import get_theme
 class DialogBackend(Protocol):
     def choice(self, title: str, text: str, values: Sequence[tuple[Any, str]], *, default: Any = None) -> Any: ...
     def checklist(self, title: str, text: str, values: Sequence[tuple[str, str]], *, default_values: Sequence[str] = ()) -> list[str] | None: ...
-    def input(self, title: str, text: str, default: str = "") -> str | None: ...
+    def input(self, title: str, text: str, default: str = "") -> str: ...
     def confirm(self, title: str, text: str) -> bool: ...
     def message(self, title: str, text: str) -> None: ...
 
@@ -54,9 +54,10 @@ class PromptToolkitDialogs:
             return None
         return [str(value) for value in selected]
 
-    def input(self, title: str, text: str, default: str = "") -> str | None:
+    def input(self, title: str, text: str, default: str = "") -> str:
         from prompt_toolkit.shortcuts import input_dialog
-        return input_dialog(title=title, text=text, default=default, style=self.style).run()
+        value = input_dialog(title=title, text=text, default=default, style=self.style).run()
+        return value if value is not None else ""
 
     def confirm(self, title: str, text: str) -> bool:
         from prompt_toolkit.shortcuts import yes_no_dialog
@@ -110,7 +111,7 @@ class TextDialogs:
                 selected.append(values[index][0])
         return selected
 
-    def input(self, title: str, text: str, default: str = "") -> str | None:
+    def input(self, title: str, text: str, default: str = "") -> str:
         print(f"\n=== {title} ===")
         raw = input(f"{text} [{default}]: ").strip()
         return raw or default
