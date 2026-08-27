@@ -17,6 +17,7 @@ from .settings import load_settings
 from .source_inventory import inspect_source
 from .tui_v24 import run_studio_v24
 
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rebuild_memory",
@@ -34,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true", help="Wypisz wynik jako JSON.")
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("studio", help="Uruchom pełną aplikację v2.4.")
+    sub.add_parser("studio", help="Uruchom pełną aplikację v2.4 / Studio P0.")
     sub.add_parser("list-projects", help="Pokaż projekty.")
 
     create = sub.add_parser("create-project", help="Utwórz projekt.")
@@ -106,6 +107,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 project=args.project,
                 tool_root=Path.cwd(),
                 text_ui=args.text_ui,
+                settings_path=args.settings,
             )
 
         if command in UNIFIED_COMMANDS:

@@ -4,26 +4,23 @@ from pathlib import Path
 import json
 import os
 
-from .path_picker import choose_directory, choose_files
 from .project_store import ProjectStore
+from .studio_p0 import run_studio_p0
 from .tui import run_studio as run_project_studio
-from .tui_candidates import candidate_menu
-from .tui_common import HAS_PROMPT_TOOLKIT, database_from_project, format_stats, message, run_dialog
-from .tui_export import final_export_menu
-from .tui_import import source_import_menu
-from .tui_paths import choose_database
-from .tui_tests import test_menu
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
-
-radiolist_dialog = None
-if HAS_PROMPT_TOOLKIT:  # pragma: no cover - terminal dependent
-    from prompt_toolkit.shortcuts import radiolist_dialog
 
 
 def _default_database(project_root: str | Path | None, project: str | None) -> Path:
-    configured = database_from_project(project_root, project)
-    if configured:
-        return configured
+    if project:
+        try:
+            loaded = ProjectStore(project_root).load(project)
+            configured = str(loaded.settings.get("unified_database_path") or "").strip()
+            if configured:
+                return Path(configured).expanduser().resolve()
+            if loaded.target_root:
+                return (Path(loaded.target_root).expanduser().resolve() / CANONICAL_DATABASE_NAME).resolve()
+        except Exception:
+            pass
     env = os.getenv("JAZN_MEMORY_DATABASE", "").strip()
     if env:
         return Path(env).expanduser().resolve()
@@ -97,55 +94,25 @@ def run_studio_v24(
     project: str | None = None,
     tool_root: str | Path | None = None,
     text_ui: bool = False,
+    settings_path: str | Path | None = None,
 ) -> int:
     root = Path(tool_root or Path.cwd()).expanduser().resolve()
     database = _default_database(project_root, project)
-    if text_ui or not HAS_PROMPT_TOOLKIT or radiolist_dialog is None:
+    if text_ui:
         return _text_menu(database, project_root=project_root, project=project, tool_root=root)
 
-    while True:
-        store = UnifiedMemoryDatabase(database)
-        exists = database.is_file()
-        choice = run_dialog(radiolist_dialog(
-            title="Jaźń Memory Rebuild v2.4",
-            text=(
-                f"Kanoniczna baza: {database}\n"
-                f"Stan: {'istnieje' if exists else 'jeszcze nie utworzona'}\n\n"
-                "Jedna fizyczna baza przechowuje rozmowy archiwalne i nowe, dziennik, kandydatów, "
-                "doświadczenia oraz kontrolowane warstwy L1/L2/L3."
-            ),
-            values=[
-                ("project", "1. Projekty, listy źródeł i baseline'y"),
-                ("database", "2. Wybierz lub utwórz memory_jazn.sqlite3"),
-                ("status", "3. Stan i integralność bazy"),
-                ("import", "4. Import rozmów, HTML, dzienników i nowych wątków"),
-                ("candidates", "5. Kandydaci pamięci: podgląd, edycja i decyzje"),
-                ("tests", "6. Profile Testów 01, 02, 03, 04 i finalny"),
-                ("export", "7. Finalny eksport stagingowy"),
-                ("exit", "8. Zakończ"),
-            ],
-        ))
-        if choice in {None, "exit"}:
-            return 0
-        if choice == "project":
-            run_project_studio(project_root=project_root, project=project, tool_root=root, text_ui=False)
-        elif choice == "database":
-            selected = choose_database(database)
-            if selected:
-                database = selected
-                _remember_database(project_root, project, database)
-        elif choice == "status":
-            result = store.initialize()
-            result = store.validate(full=True)
-            message("Stan zunifikowanej pamięci", format_stats(result))
-        elif choice == "import":
-            source_import_menu(database)
-        elif choice == "candidates":
-            candidate_menu(database)
-        elif choice == "tests":
-            test_menu(database)
-        elif choice == "export":
-            final_export_menu(database)
+    try:
+        import prompt_toolkit  # noqa: F401
+    except Exception:
+        return _text_menu(database, project_root=project_root, project=project, tool_root=root)
+
+    return run_studio_p0(
+        database=database,
+        project_root=project_root,
+        project=project,
+        tool_root=root,
+        settings_path=settings_path,
+    )
 
 
 __all__ = ["run_studio_v24"]

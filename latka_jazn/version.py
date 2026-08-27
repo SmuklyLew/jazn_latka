@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-# v16.3.12 is a CI/static-typing hotfix for the v16.3.11 memory rebuild release:
-# it restores the stable Memory Rebuild app contract and hardens metadata narrowing
-# so Pyright accepts the lossless import/attachment paths without disabling checks.
-DISTRIBUTION_VERSION = "16.3.12"
-PACKAGE_VERSION = "16.3.12"
-PACKAGE_RELEASE_NAME = "memory-rebuild-ci-hotfix"
+# v16.3.13 introduces the P0 full-screen Memory Rebuild Studio shell.
+# It reorganizes the existing v2.4 workflows into TESTY / PROJEKTOWANIE /
+# USTAWIENIA without replacing the proven import, validation, or promotion
+# engines and keeps automatic L2/L3/activation fail-closed.
+DISTRIBUTION_VERSION = "16.3.13"
+PACKAGE_VERSION = "16.3.13"
+PACKAGE_RELEASE_NAME = "memory-rebuild-p0-studio"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
