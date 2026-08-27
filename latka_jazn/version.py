@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# v16.3.16 makes Memory Rebuild Studio settings editable and persistent while
-# keeping safety invariants fail-closed. Tool-wide retrieval/Studio preferences
-# live in memory_rebuild_settings.json; project settings stay per project.
-DISTRIBUTION_VERSION = "16.3.16"
-PACKAGE_VERSION = "16.3.16"
-PACKAGE_RELEASE_NAME = "memory-rebuild-settings-studio"
+# v16.3.17 converges Memory Rebuild onto one canonical Studio. PROJEKTOWANIE,
+# TESTY and USTAWIENIA share one shell, one themed dialog backend and direct
+# engine workflows; retired nested TUI/version layers are no longer launched.
+DISTRIBUTION_VERSION = "16.3.17"
+PACKAGE_VERSION = "16.3.17"
+PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
