@@ -30,8 +30,8 @@ def _canonical_memory(root: Path) -> Path:
     return memory
 
 
-def test_release_version_tracks_v16313_p0_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.13-memory-rebuild-p0-studio"
+def test_release_version_tracks_v16315_test00_recall_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.15-memory-rebuild-test00-recall-baseline"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(

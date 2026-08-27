@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-# v16.3.13 introduces the P0 full-screen Memory Rebuild Studio shell.
-# It reorganizes the existing v2.4 workflows into TESTY / PROJEKTOWANIE /
-# USTAWIENIA without replacing the proven import, validation, or promotion
-# engines and keeps automatic L2/L3/activation fail-closed.
-DISTRIBUTION_VERSION = "16.3.13"
-PACKAGE_VERSION = "16.3.13"
-PACKAGE_RELEASE_NAME = "memory-rebuild-p0-studio"
+# v16.3.15 hardens the v16.3.14 Memory Rebuild Test00/Recall release after
+# deterministic CI exposed Studio slots/super and release-contract regressions.
+# Test00 remains source-fidelity-only; Recall remains benchmark-first/FTS5-first
+# with model training disabled.
+DISTRIBUTION_VERSION = "16.3.15"
+PACKAGE_VERSION = "16.3.15"
+PACKAGE_RELEASE_NAME = "memory-rebuild-test00-recall-baseline"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
