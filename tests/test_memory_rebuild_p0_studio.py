@@ -13,7 +13,12 @@ from latka_jazn.tools.memory_rebuild_app.studio_p0 import (
     StudioState,
     TEST_PRESENTATIONS,
 )
+from latka_jazn.tools.memory_rebuild_app.studio_v16314 import (
+    STUDIO_VERSION,
+    StudioV16314State,
+)
 from latka_jazn.tools.memory_rebuild_app.test_profiles import PROFILE_NAMES
+from latka_jazn.tools.memory_rebuild_app.test_spec import TEST_PROTOCOL_ORDER
 from latka_jazn.tools.memory_rebuild_app.themes import (
     DEFAULT_STUDIO_THEME_NAME,
     TERMINAL_STUDIO_THEME,
@@ -32,7 +37,7 @@ def test_p0_studio_has_three_operator_pages() -> None:
     assert STUDIO_P0_VERSION == "memory-rebuild-studio/v16.3.13"
 
 
-def test_p0_test_page_tracks_canonical_test_profiles() -> None:
+def test_p0_test_page_tracks_legacy_read_only_profiles() -> None:
     assert tuple(item.profile for item in TEST_PRESENTATIONS) == PROFILE_NAMES
     test04 = next(item for item in TEST_PRESENTATIONS if item.profile == "test04")
     assert any("reconciliation" in check for check in test04.checks)
@@ -42,8 +47,31 @@ def test_p0_test_page_tracks_canonical_test_profiles() -> None:
     assert any("L3" in check for check in final.checks)
 
 
+def test_v16314_studio_uses_shared_test00_to_final_protocol_specs(tmp_path: Path) -> None:
+    state = StudioV16314State(
+        database=tmp_path / "memory_jazn.sqlite3",
+        project_root=tmp_path / "projects",
+        project=None,
+        tool_root=tmp_path,
+    )
+    assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.14"
+    state.set_page("tests")
+    assert tuple(item.key for item in state.items()) == TEST_PROTOCOL_ORDER
+    rendered = _text(state.content_fragments())
+    for section in ("CEL", "WEJŚCIA", "GOTOWOŚĆ", "FAZY", "KONTROLE", "WYNIK", "DOWODY", "WYJŚCIA", "GRANICA PRAWDY"):
+        assert section in rendered
+    assert "Source Fidelity" in rendered
+
+    state.set_page("design")
+    assert state.items()[-1].key == "recall"
+    state.selected["design"] = len(state.items()) - 1
+    recall = _text(state.content_fragments())
+    assert "FTS5" in recall
+    assert "ZABLOKOWANE" in recall
+
+
 def test_settings_page_exposes_all_project_and_runtime_settings(tmp_path: Path) -> None:
-    state = StudioState(
+    state = StudioV16314State(
         database=tmp_path / "memory_jazn.sqlite3",
         project_root=tmp_path / "projects",
         project=None,
@@ -56,6 +84,7 @@ def test_settings_page_exposes_all_project_and_runtime_settings(tmp_path: Path) 
         assert f"{key}:" in rendered
     for key in MemoryRebuildSettings.__dataclass_fields__:
         assert f"{key}:" in rendered
+    assert "model_training: NIE" in rendered
 
 
 def test_terminal_theme_is_default_and_prompt_toolkit_style_is_valid() -> None:
@@ -72,7 +101,7 @@ def test_p0_layout_can_be_composed_without_running_terminal(tmp_path: Path) -> N
     pytest.importorskip("prompt_toolkit")
     from latka_jazn.tools.memory_rebuild_app.layout import build_studio_layout
 
-    state = StudioState(
+    state = StudioV16314State(
         database=tmp_path / "memory_jazn.sqlite3",
         project_root=None,
         project=None,
@@ -82,5 +111,5 @@ def test_p0_layout_can_be_composed_without_running_terminal(tmp_path: Path) -> N
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16313_p0_studio() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.13-memory-rebuild-p0-studio"
+def test_release_version_tracks_v16314_test00_recall_baseline() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.14-memory-rebuild-test00-recall-baseline"
