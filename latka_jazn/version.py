@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-# v16.3.20 hardens the single canonical Memory Rebuild Studio after the
-# v16.3.18 cleanup/v16.3.19 CI correction: it restores the operator evidence
-# section for Test00-Final, keeps Recall/model-training gates visible on the
-# complete settings page, and synchronizes the Studio release marker.
-DISTRIBUTION_VERSION = "16.3.20"
-PACKAGE_VERSION = "16.3.20"
-PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio-regression-fix"
+# v16.3.21 hardens the canonical ChatGPT runtime entry path. A live daemon is
+# still reused when verified, while the default --chat-gpt one-shot route may
+# fall back to the same local JaznRuntimeSession pipeline when daemon autostart
+# is unavailable. Explicit daemon requirements remain fail-closed.
+DISTRIBUTION_VERSION = "16.3.21"
+PACKAGE_VERSION = "16.3.21"
+PACKAGE_RELEASE_NAME = "chatgpt-runtime-fallback-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
