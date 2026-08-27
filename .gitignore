@@ -93,6 +93,9 @@ tools/__jazn_pack_generator_settings.json
 tools/_jazn_pack_generator.py
 tools/jazn_pack_generator_settings.json
 
+# Local Memory Rebuild operator settings (mutable, never release/source data)
+memory_rebuild_settings.json
+
 # Local runtime state / parent checkpoint safety
 /CHECKPOINTS/
 CHECKPOINTS/
