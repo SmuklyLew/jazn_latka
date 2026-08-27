@@ -480,8 +480,10 @@ def _inspect_one(path: Path, con: sqlite3.Connection) -> SourceFidelityResult:
 
     _persist_census(con, source_id, details)
     safe_details = _json_safe_details(details)
-    roles = safe_details.get("roles") if isinstance(safe_details.get("roles"), dict) else {}
-    content_types = safe_details.get("content_types") if isinstance(safe_details.get("content_types"), dict) else {}
+    roles_value = safe_details.get("roles")
+    roles = roles_value if isinstance(roles_value, dict) else {}
+    content_types_value = safe_details.get("content_types")
+    content_types = content_types_value if isinstance(content_types_value, dict) else {}
     con.execute(
         """UPDATE source_mirror_sources SET
              raw_roundtrip_sha256=?,parse_mode=?,fidelity_status=?,conversation_count=?,node_count=?,
