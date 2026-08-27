@@ -55,6 +55,7 @@ def test_v16314_studio_uses_shared_test00_to_final_protocol_specs(tmp_path: Path
         tool_root=tmp_path,
     )
     assert STUDIO_VERSION == "memory-rebuild-studio/v16.3.14"
+    assert STUDIO_VERSION in _text(state.header_fragments())
     state.set_page("tests")
     assert tuple(item.key for item in state.items()) == TEST_PROTOCOL_ORDER
     rendered = _text(state.content_fragments())
@@ -63,6 +64,8 @@ def test_v16314_studio_uses_shared_test00_to_final_protocol_specs(tmp_path: Path
     assert "Source Fidelity" in rendered
 
     state.set_page("design")
+    state.selected["design"] = 0
+    assert _text(state.content_fragments())
     assert state.items()[-1].key == "recall"
     state.selected["design"] = len(state.items()) - 1
     recall = _text(state.content_fragments())
@@ -111,5 +114,5 @@ def test_p0_layout_can_be_composed_without_running_terminal(tmp_path: Path) -> N
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16314_test00_recall_baseline() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.14-memory-rebuild-test00-recall-baseline"
+def test_release_version_tracks_v16315_test00_recall_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.15-memory-rebuild-test00-recall-baseline"

@@ -4,6 +4,8 @@ from pathlib import Path
 import json
 import os
 
+from latka_jazn.version import PACKAGE_VERSION
+
 from .project_store import ProjectStore
 from .studio_v16314 import run_studio_v16314
 from .tui import run_studio as run_project_studio
@@ -41,7 +43,7 @@ def _remember_database(project_root: str | Path | None, project: str | None, dat
 
 def _text_menu(database: Path, *, project_root: str | Path | None, project: str | None, tool_root: Path) -> int:
     while True:
-        print("\n=== Jaźń Memory Rebuild v16.3.14 ===")
+        print(f"\n=== Jaźń Memory Rebuild v{PACKAGE_VERSION} ===")
         print(f"Baza: {database}")
         print("1. Projekty, źródła i baseline'y")
         print("2. Ustaw ścieżkę memory_jazn.sqlite3")

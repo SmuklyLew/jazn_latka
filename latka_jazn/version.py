@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-# v16.3.14 adds Memory Rebuild Test00 Source Fidelity and a measured Recall
-# baseline subsystem. Test00 preserves exact source bytes outside active memory;
-# Recall remains benchmark-first/FTS5-first with model training disabled.
-DISTRIBUTION_VERSION = "16.3.14"
-PACKAGE_VERSION = "16.3.14"
+# v16.3.15 hardens the v16.3.14 Memory Rebuild Test00/Recall release after
+# deterministic CI exposed Studio slots/super and release-contract regressions.
+# Test00 remains source-fidelity-only; Recall remains benchmark-first/FTS5-first
+# with model training disabled.
+DISTRIBUTION_VERSION = "16.3.15"
+PACKAGE_VERSION = "16.3.15"
 PACKAGE_RELEASE_NAME = "memory-rebuild-test00-recall-baseline"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

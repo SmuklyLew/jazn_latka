@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""v16.3.14 Memory Rebuild Studio extension.
+"""v16.3.14 Memory Rebuild Studio extension, hardened in package v16.3.15.
 
 This module composes the existing P0 shell instead of duplicating its layout,
 theme, project editor or import engine.  It adds Test00 protocol execution,
@@ -50,7 +50,9 @@ class StudioV16314State(StudioState):
         return SETTINGS_ITEMS
 
     def header_fragments(self):
-        fragments = list(super().header_fragments())
+        # dataclass(slots=True) returns a replacement class; Python documents
+        # two-argument super() as the valid workaround for inherited methods.
+        fragments = list(super(StudioV16314State, self).header_fragments())
         if len(fragments) > 1:
             fragments[1] = ("class:header-version", f"{STUDIO_VERSION}   ")
         return fragments
@@ -102,7 +104,7 @@ class StudioV16314State(StudioState):
 
     def _design_detail(self, key: str) -> list[str]:
         if key != "recall":
-            return super()._design_detail(key)
+            return super(StudioV16314State, self)._design_detail(key)
         return [
             "Recall / benchmark",
             "",
@@ -122,7 +124,7 @@ class StudioV16314State(StudioState):
         ]
 
     def _settings_detail(self, key: str) -> list[str]:
-        lines = list(super()._settings_detail(key))
+        lines = list(super(StudioV16314State, self)._settings_detail(key))
         if key in {"retrieval", "all"}:
             lines.extend(
                 (

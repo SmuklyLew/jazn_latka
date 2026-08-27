@@ -78,7 +78,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
         ),
         truth_boundary=(
             "PASSED dowodzi wierności odczytu i przechowania źródła, nie prawdziwości jego treści.",
-            "Test00 nie oznacza wspomnienia, recall, aktywacji ani gotowości Jaźni.",
+            "Test00 jest artefaktem weryfikacyjnym, nie aktywną pamięcią; nie oznacza wspomnienia, Recall ani gotowości Jaźni.",
             "LOSSY oznacza, że źródło zachowano bajtowo, ale parser nie odtworzył pełnej struktury.",
         ),
         writes_test_artifacts=True,
