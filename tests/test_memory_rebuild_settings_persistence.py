@@ -184,5 +184,5 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
     assert reloaded.studio.theme_name == "latka-default"
 
 
-def test_release_version_tracks_v16320_unified_studio_regression_fix() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.20-memory-rebuild-unified-studio-regression-fix"
+def test_release_version_tracks_v16321_chatgpt_runtime_fallback_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.21-chatgpt-runtime-fallback-hardening"
