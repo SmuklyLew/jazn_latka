@@ -158,7 +158,13 @@ def _install(monkeypatch, root: Path, marker: dict, ping: dict | None, *, pid_al
     monkeypatch.setattr(
         runtime_daemon,
         "resolve_active_runtime_root",
-        lambda *_args, **_kwargs: SimpleNamespace(root=root.resolve(), marker_valid=True, source="marker", error=None),
+        lambda *_args, **_kwargs: SimpleNamespace(
+            root=root.resolve(),
+            marker_found=True,
+            marker_valid=True,
+            source="marker",
+            error=None,
+        ),
     )
     monkeypatch.setattr(runtime_daemon, "pid_is_alive", lambda _pid: pid_alive)
     monkeypatch.setattr(runtime_daemon, "_probe_daemon_status", lambda *_args, **_kwargs: (ping, None if ping else "timeout", "/ready" if ping else None))

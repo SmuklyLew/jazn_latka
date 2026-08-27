@@ -510,7 +510,7 @@ def scan_runtime_duplicates(root: Path) -> dict[str, Any]:
         seen: dict[str, int] = {}
         duplicate_keys: dict[str, int] = {}
         total = 0
-        rel = str(path.relative_to(memory_root))
+        rel = path.relative_to(memory_root).as_posix()
         if not path.exists():
             report["files"][rel] = {"exists": False, "total": 0, "duplicate_keys": {}}
             continue

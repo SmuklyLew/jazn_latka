@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-# v16.3.21 hardens the canonical ChatGPT runtime entry path. A live daemon is
-# still reused when verified, while the default --chat-gpt one-shot route may
-# fall back to the same local JaznRuntimeSession pipeline when daemon autostart
-# is unavailable. Explicit daemon requirements remain fail-closed.
-DISTRIBUTION_VERSION = "16.3.21"
-PACKAGE_VERSION = "16.3.21"
-PACKAGE_RELEASE_NAME = "chatgpt-runtime-fallback-hardening"
+# v16.3.22 distinguishes the observer/requested root from the resolved active
+# subject root. Daemon identity, package integrity and source provenance are
+# evaluated against that one subject while mismatched roots, PIDs, heartbeat,
+# integrity, provenance and invalid markers remain fail-closed.
+DISTRIBUTION_VERSION = "16.3.22"
+PACKAGE_VERSION = "16.3.22"
+PACKAGE_RELEASE_NAME = "active-runtime-subject-root-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

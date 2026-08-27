@@ -24,6 +24,7 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
+      - "tests/test_v16322_active_runtime_subject_root.py"
       - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
       - "tests/test_v1637_host_finalization_recovery.py"
@@ -55,6 +56,7 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
+      - "tests/test_v16322_active_runtime_subject_root.py"
       - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
       - "tests/test_v1637_host_finalization_recovery.py"
@@ -123,6 +125,7 @@ jobs:
           latka_jazn/mcp/server.py
           latka_jazn/mcp/tools/jazn_resume_visible_reply.py
           latka_jazn/db/runtime_sqlite.py
+          tests/test_v16322_active_runtime_subject_root.py
           tests/test_v16321_chatgpt_runtime_fallback_hardening.py
           tests/test_v1636_persistent_runtime_e2e_hardening.py
           tests/test_v1637_host_finalization_recovery.py
@@ -131,6 +134,7 @@ jobs:
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
+          tests/test_v16322_active_runtime_subject_root.py
           tests/test_v16321_chatgpt_runtime_fallback_hardening.py
           tests/test_v1636_persistent_runtime_e2e_hardening.py
           tests/test_v1637_host_finalization_recovery.py

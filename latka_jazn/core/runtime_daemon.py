@@ -3142,13 +3142,17 @@ def _endpoint_confirms_pid(pid: int | None, ping: dict[str, Any] | None) -> bool
     return bool(ping_pid and int(ping_pid) == int(pid) and ping.get("runtime_process_active") is True)
 
 
-def _endpoint_confirms_root(root: Path, ping: dict[str, Any] | None) -> bool:
+def _endpoint_reported_root(ping: dict[str, Any] | None) -> Any:
     if not isinstance(ping, dict):
-        return False
+        return None
     endpoint_root = ping.get("active_root") or ping.get("configured_runtime_root")
     if endpoint_root in (None, "") and isinstance(ping.get("marker"), dict):
         endpoint_root = ping["marker"].get("active_root")
-    return _same_runtime_path(root, endpoint_root)
+    return endpoint_root
+
+
+def _endpoint_confirms_root(root: Path, ping: dict[str, Any] | None) -> bool:
+    return _same_runtime_path(root, _endpoint_reported_root(ping))
 
 
 def _endpoint_confirms_runtime_identity(
@@ -3504,13 +3508,15 @@ def status_daemon(
     marker_output: Path | None = None,
     probe_endpoint: bool = True,
 ) -> dict[str, Any]:
-    marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
+    requested_root = Path(config.root).expanduser().resolve()
+    marker_path = resolve_active_runtime_marker_path(requested_root, marker_output)
     marker = read_json_file(marker_path)
-    root_resolution = resolve_active_runtime_root(config.root, marker_path=marker_path)
+    root_resolution = resolve_active_runtime_root(requested_root, marker_path=marker_path)
+    subject_root = root_resolution.root
     marker_root_valid = bool(marker is not None and root_resolution.marker_valid)
-    package_verification = verify_package_integrity_manifest(config.root)
+    package_verification = verify_package_integrity_manifest(subject_root)
     package_integrity_verified = package_verification.get("ok") is True
-    source_provenance = read_source_provenance(config.root, profile="system_smoke").to_dict()
+    source_provenance = read_source_provenance(subject_root, profile="system_smoke").to_dict()
     source_provenance_verified = source_provenance.get("status") in {
         "clean_checkout_verified",
         "development_dirty_verified",
@@ -3528,7 +3534,8 @@ def status_daemon(
 
     endpoint_reachable = isinstance(ping, dict)
     endpoint_pid_matches = _endpoint_confirms_pid(pid_int, ping)
-    endpoint_root_matches = _endpoint_confirms_root(config.root, ping)
+    endpoint_reported_root = _endpoint_reported_root(ping)
+    endpoint_root_matches = _endpoint_confirms_root(subject_root, ping)
     endpoint_identity_matches = bool(endpoint_pid_matches and endpoint_root_matches)
 
     marker_heartbeat_fresh, marker_heartbeat_age, marker_heartbeat_threshold = _heartbeat_fresh(marker)
@@ -3572,7 +3579,7 @@ def status_daemon(
         active_state_reason = "package_integrity_verification_failed"
     elif not source_provenance_verified:
         active_state_reason = "source_provenance_not_verified"
-    elif marker is not None and not marker_root_valid:
+    elif root_resolution.marker_found and not marker_root_valid:
         active_state_reason = root_resolution.error or "active_root_marker_invalid"
     elif not marker_root_valid:
         active_state_reason = "active_runtime_marker_missing"
@@ -3640,12 +3647,15 @@ def status_daemon(
         "timestamp_degraded": timestamp_trusted is not True,
         "timestamp_does_not_block_startup": True,
         "runtime_version": PACKAGE_VERSION_FULL,
-        "active_root": str(root_resolution.root),
-        "configured_runtime_root": str(Path(config.root).resolve()),
+        "active_root": str(subject_root),
+        "configured_runtime_root": str(requested_root),
+        "requested_runtime_root": str(requested_root),
+        "resolved_active_root": str(root_resolution.root),
+        "subject_runtime_root": str(subject_root),
         "active_root_source": root_resolution.source,
         "active_root_validation_error": root_resolution.error,
         "marker_path": str(marker_path),
-        "marker_found": marker is not None,
+        "marker_found": root_resolution.marker_found,
         "marker_valid": marker_root_valid,
         "package_integrity_verified": package_integrity_verified,
         "package_integrity_verification": package_verification,
@@ -3661,6 +3671,10 @@ def status_daemon(
         "endpoint_pid_matches": endpoint_pid_matches,
         "endpoint_root_matches": endpoint_root_matches,
         "endpoint_identity_matches": endpoint_identity_matches,
+        "endpoint_expected_active_root": str(subject_root),
+        "endpoint_reported_active_root": (
+            str(endpoint_reported_root) if endpoint_reported_root not in (None, "") else None
+        ),
         "endpoint_reachable": endpoint_reachable,
         "ping_endpoint": ping_endpoint,
         "ping": ping,
