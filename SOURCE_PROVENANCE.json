@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ea988fc12da63de343706d52626ff53bb273ca3b",
+  "base_merge_commit": "45530292a1f8858f0ace007c4fc7160c9d21f23e",
   "base_version": "16.3.21-chatgpt-runtime-fallback-hardening",
-  "commit_date": "2026-08-27T07:56:10+02:00",
+  "commit_date": "2026-08-27T10:37:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-27T05:56:10+00:00",
+  "generated_at_utc": "2026-08-27T08:37:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f305de25e6bdc5dcaa6068cc13af96b2c84da850",
+  "git_tree_sha": "915b7e2996624862c833b8088292733722f540a0",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
