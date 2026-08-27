@@ -97,6 +97,28 @@ def test_chat_requires_capability_token(tmp_path: Path) -> None:
         thread.join(timeout=2.0)
 
 
+def test_chat_rejects_wrong_non_empty_capability_token_without_mutation(tmp_path: Path) -> None:
+    _Session.created = 0
+    _Session.closed = 0
+    server = _server(tmp_path)
+    thread = _start(server)
+    try:
+        with pytest.raises(urllib.error.HTTPError) as caught:
+            _request(server, "/chat-submit", token="definitely-wrong-capability-token")
+
+        assert caught.value.code == 401
+        body = json.loads(caught.value.read().decode("utf-8"))
+        assert body["error_code"] == "daemon_auth_required"
+        assert server.state.auth_failure_count == 1
+        assert server.chat_job_summary()["submitted_total"] == 0
+        assert _Session.created == 0
+    finally:
+        server.shutdown()
+        server.close_sessions()
+        server.server_close()
+        thread.join(timeout=2.0)
+
+
 def test_repeated_unauthenticated_posts_return_http_401_without_connection_reset(
     tmp_path: Path,
 ) -> None:
