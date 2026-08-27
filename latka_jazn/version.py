@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-# v16.3.18 finalizes the single canonical Memory Rebuild Studio by removing
-# retired nested TUI/versioned Studio implementations from the shipped source
-# tree. tui_v24 remains only as a thin compatibility entrypoint to studio.py.
-DISTRIBUTION_VERSION = "16.3.18"
-PACKAGE_VERSION = "16.3.18"
-PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio-cleanup"
+# v16.3.19 completes the unified Memory Rebuild Studio CI correction: dialog
+# input cancellation is normalized to the public str contract and the retired
+# P0 Studio regression suite now validates the canonical Studio/test specs
+# instead of importing implementations removed by the v16.3.18 cleanup.
+DISTRIBUTION_VERSION = "16.3.19"
+PACKAGE_VERSION = "16.3.19"
+PACKAGE_RELEASE_NAME = "memory-rebuild-unified-studio-ci-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

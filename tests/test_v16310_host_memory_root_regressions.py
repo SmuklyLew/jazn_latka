@@ -30,8 +30,8 @@ def _canonical_memory(root: Path) -> Path:
     return memory
 
 
-def test_release_version_tracks_v16318_unified_studio_cleanup() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.18-memory-rebuild-unified-studio-cleanup"
+def test_release_version_tracks_v16319_unified_studio_ci_fix() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.19-memory-rebuild-unified-studio-ci-fix"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(
