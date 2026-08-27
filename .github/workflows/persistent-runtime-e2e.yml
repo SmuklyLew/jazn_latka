@@ -5,6 +5,16 @@ on:
     branches:
       - master
     paths:
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/adapters/chatgpt_adapter.py"
+      - "latka_jazn/core/runtime_environment.py"
+      - "latka_jazn/core/runtime_root.py"
+      - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/chat_command_contract.py"
+      - "latka_jazn/core/runtime_session.py"
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
@@ -14,6 +24,7 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
+      - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
       - "tests/test_v1637_host_finalization_recovery.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
@@ -25,6 +36,16 @@ on:
       - "hotfix/**"
       - "upgrade/**"
     paths:
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/adapters/chatgpt_adapter.py"
+      - "latka_jazn/core/runtime_environment.py"
+      - "latka_jazn/core/runtime_root.py"
+      - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/chat_command_contract.py"
+      - "latka_jazn/core/runtime_session.py"
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
@@ -34,6 +55,7 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
+      - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
       - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
       - "tests/test_v1637_host_finalization_recovery.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
@@ -83,6 +105,16 @@ jobs:
       - name: Compile persistent-runtime paths
         run: >-
           python -X utf8 -m compileall -q
+          main.py
+          run.py
+          latka_jazn/cli.py
+          latka_jazn/cli_commands/lifecycle.py
+          latka_jazn/adapters/chatgpt_adapter.py
+          latka_jazn/core/runtime_environment.py
+          latka_jazn/core/runtime_root.py
+          latka_jazn/core/startup_contract.py
+          latka_jazn/core/chat_command_contract.py
+          latka_jazn/core/runtime_session.py
           latka_jazn/core/runtime_daemon.py
           latka_jazn/core/daemon_autostart.py
           latka_jazn/core/epistemic_decision_ledger.py
@@ -91,6 +123,7 @@ jobs:
           latka_jazn/mcp/server.py
           latka_jazn/mcp/tools/jazn_resume_visible_reply.py
           latka_jazn/db/runtime_sqlite.py
+          tests/test_v16321_chatgpt_runtime_fallback_hardening.py
           tests/test_v1636_persistent_runtime_e2e_hardening.py
           tests/test_v1637_host_finalization_recovery.py
 
@@ -98,6 +131,7 @@ jobs:
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
+          tests/test_v16321_chatgpt_runtime_fallback_hardening.py
           tests/test_v1636_persistent_runtime_e2e_hardening.py
           tests/test_v1637_host_finalization_recovery.py
 
