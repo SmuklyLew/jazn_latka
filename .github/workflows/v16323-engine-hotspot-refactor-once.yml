@@ -1,0 +1,150 @@
+name: v16.3.23 one-shot engine hotspot refactor
+
+on:
+  push:
+    branches:
+      - upgrade/v16.3.23-persistent-runtime-lifecycle-observability
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v16323-engine-hotspot-refactor-once
+  cancel-in-progress: false
+
+jobs:
+  refactor:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply narrow cognitive-frame helper extraction
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import ast
+          from pathlib import Path
+
+          path = Path("latka_jazn/core/engine.py")
+          text = path.read_text(encoding="utf-8")
+          helper_name = "def _build_turn_memory_recall_evidence("
+          if helper_name in text:
+              raise SystemExit("helper already present; refusing duplicate refactor")
+
+          build_anchor = "    def build_cognitive_frame(\n"
+          build_pos = text.find(build_anchor)
+          if build_pos < 0:
+              raise SystemExit("build_cognitive_frame anchor not found")
+
+          helper = '''    def _build_turn_memory_recall_evidence(
+              self,
+              text: str,
+              memory_gate_intent_report: Any,
+              turn_context: TurnExecutionContext | None,
+              client_context: dict[str, Any] | None,
+              *,
+              turn_id: str,
+              trace_id: str,
+          ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+              if turn_context is not None:
+                  turn_context.start_stage("memory_use_gate")
+              memory_context = self._turn_memory_context(
+                  text,
+                  memory_gate_intent_report,
+                  turn_context,
+                  client_context,
+              )
+              if turn_context is not None:
+                  turn_context.complete_stage("memory_use_gate")
+                  memory_read_status = (
+                      "completed"
+                      if any((memory_context.get("counts") or {}).values())
+                      else "skipped_by_memory_gate"
+                  )
+                  turn_context.mark_stage("memory_reads", status=memory_read_status)
+              memory_recall_contract = self.memory_recall_contract_builder.build(
+                  memory_context,
+                  user_text=text,
+              ).to_dict()
+              memory_recall_observability = build_memory_recall_observability(
+                  memory_context,
+                  memory_recall_contract,
+                  runtime_turn_id=turn_id,
+                  trace_id=trace_id,
+              )
+              return memory_context, memory_recall_contract, memory_recall_observability
+
+'''
+          text = text[:build_pos] + helper + text[build_pos:]
+
+          old_block = '''        if turn_context is not None:
+              turn_context.start_stage("memory_use_gate")
+          memory_context = self._turn_memory_context(text, memory_gate_intent_report, turn_context, client_context)
+          if turn_context is not None:
+              turn_context.complete_stage("memory_use_gate")
+              memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
+              turn_context.mark_stage("memory_reads", status=memory_read_status)
+          memory_recall_contract = self.memory_recall_contract_builder.build(memory_context, user_text=text).to_dict()
+          memory_recall_observability = build_memory_recall_observability(
+              memory_context,
+              memory_recall_contract,
+              runtime_turn_id=turn_id,
+              trace_id=trace_id,
+          )
+'''
+          new_block = '''        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(
+              text,
+              memory_gate_intent_report,
+              turn_context,
+              client_context,
+              turn_id=turn_id,
+              trace_id=trace_id,
+          )
+'''
+          if text.count(old_block) != 1:
+              raise SystemExit(f"memory recall stage block count={text.count(old_block)}; expected 1")
+          text = text.replace(old_block, new_block, 1)
+          path.write_text(text, encoding="utf-8")
+
+          tree = ast.parse(text)
+          engine = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "JaznEngine")
+          build = next(
+              node for node in engine.body
+              if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == "build_cognitive_frame"
+          )
+          if build.end_lineno is None:
+              raise SystemExit("build_cognitive_frame.end_lineno missing")
+          build_lines = build.end_lineno - build.lineno + 1
+          print(f"build_cognitive_frame_lines={build_lines}")
+          if build_lines > 489:
+              raise SystemExit(f"engine hotspot still exceeds budget: {build_lines} > 489")
+          PY
+
+          python -m py_compile latka_jazn/core/engine.py
+          git diff --check
+          git diff -- latka_jazn/core/engine.py
+
+      - name: Focused regression checks
+        shell: bash
+        run: |
+          python -X utf8 -m pytest -q \
+            tests/test_code_health_regressions.py \
+            tests/test_v16323_active_memory_recall_e2e.py \
+            tests/test_v16323_host_pre_response_gate.py
+
+      - name: Commit narrow refactor
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add latka_jazn/core/engine.py
+          git diff --cached --check
+          git diff --cached --quiet && { echo "No engine.py change produced"; exit 1; }
+          git commit -m "refactor(v16.3.23): extract memory recall stage from engine hotspot"
+          git push origin HEAD:${GITHUB_REF_NAME}
