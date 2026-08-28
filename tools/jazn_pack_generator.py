@@ -39,7 +39,7 @@ _BUNDLED_MODULES = {
 }
 
 
-def _ensure_package(name: str) -> types.ModuleType:
+def _ensure_package(name: str) -> _bundle_types.ModuleType:
     existing = _bundle_sys.modules.get(name)
     if existing is not None:
         return existing
@@ -55,7 +55,7 @@ def _ensure_package(name: str) -> types.ModuleType:
     return module
 
 
-def _load_bundled_module(name: str, *, package: bool = False) -> types.ModuleType:
+def _load_bundled_module(name: str, *, package: bool = False) -> _bundle_types.ModuleType:
     raw = _BUNDLED_MODULES[name]
     source = _bundle_zlib.decompress(_bundle_base64.b85decode(raw.encode("ascii"))).decode("utf-8")
     if package:
@@ -96,10 +96,16 @@ _load_bundled_module("tools._jazn_pack_generator_v1601_policy")
 _load_bundled_module("tools._jazn_pack_generator_v1638_archive_io")
 _load_bundled_module("tools._jazn_pack_generator_v16311_profiles")
 
-from tools import _jazn_pack_generator_memory_v2 as _impl
-from tools._jazn_pack_generator_v1601_policy import apply as _apply_v1601_policy
-from tools._jazn_pack_generator_v1638_archive_io import apply as _apply_v1638_archive_io
-from tools._jazn_pack_generator_v16311_profiles import apply as _apply_v16311_profiles
+_impl: Any = _load_bundled_module("tools._jazn_pack_generator_memory_v2")
+_apply_v1601_policy: Any = getattr(
+    _load_bundled_module("tools._jazn_pack_generator_v1601_policy"), "apply"
+)
+_apply_v1638_archive_io: Any = getattr(
+    _load_bundled_module("tools._jazn_pack_generator_v1638_archive_io"), "apply"
+)
+_apply_v16311_profiles: Any = getattr(
+    _load_bundled_module("tools._jazn_pack_generator_v16311_profiles"), "apply"
+)
 
 _apply_v1601_policy(_impl)
 _apply_v1638_archive_io(_impl)
