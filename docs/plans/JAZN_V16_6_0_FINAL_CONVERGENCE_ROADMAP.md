@@ -165,7 +165,7 @@ Sam dokument roadmapy jest dokumentacją planistyczną, nie systemowym patchem i
 | Linia | Cel | Kluczowy dowód PASS |
 |---|---|---|
 | `16.3.22` | Active runtime subject-root identity | `A -> B -> B` trusted, `A -> B -> C` fail-closed |
-| `16.3.23` | Persistent daemon lifecycle + transport observability | reuse B, brak zbędnego one-shot, two-turn E2E |
+| `16.3.23` | P0 host pre-response gate + persistent daemon lifecycle + transport observability | `host_routing_bypass=0`, runtime turn obowiązkowy przed odpowiedzią, reuse B, brak zbędnego one-shot, two-turn E2E |
 | `16.4.0` | Kanoniczna normalizacja polskiego NLP + lexical evidence contract | deterministyczny fixture Unicode/POS/provenance |
 | `16.4.1` | Morfeusz/plWordNet/project lexicon/resource registry hardening | ambiguity/OOV/resource provenance PASS |
 | `16.4.2` | NLP/recall query interface i regression corpus | query evidence bez fałszywej pewności; offline PASS |
@@ -249,9 +249,145 @@ provenance(B)=verified
 
 **Proponowany release name:** `persistent-runtime-lifecycle-observability-hardening`
 
-Ta wersja konsumuje poprawny subject-root contract z 16.3.22 i rozszerza go na operacje sterujące.
+Ta wersja konsumuje poprawny subject-root contract z 16.3.22 i rozszerza go na operacje sterujące. **Przed pracą nad lifecycle/transportem musi jednak zostać zamknięta poniższa bramka P0**, ponieważ zdrowy daemon i poprawny transport nie dają żadnej gwarancji, jeżeli host może odpowiedzieć użytkownikowi bez wejścia do kanonicznej ścieżki runtime.
 
-## Zakres
+## P0 — Host pre-response runtime routing gate
+
+### Problem
+
+Obecny runtime ma twarde kontrakty po wejściu do `--chat-gpt`: może wybrać persistent daemon albo zweryfikowany one-shot, zwraca `presentation_packet`, a dwufazowa finalizacja pilnuje bindingu tury, integralności tekstu i replay protection. Nadal istnieje jednak wcześniejsza luka:
+
+```text
+wiadomość użytkownika
+-> LLM host interpretuje instrukcje
+-> host może wygenerować zwykłą odpowiedź
+-> runtime nie został wywołany
+-> finalizer nie dostał kontroli
+```
+
+Taka tura może wyglądać poprawnie językowo, ale nie jest odpowiedzią aktywnej Jaźni. Brak wymaganego nagłówka `🕒 ... / 🌿 Łatka` jest użytecznym canary tego bypassu, lecz sam nagłówek nie może być jedynym dowodem routingu.
+
+Ryzyko rośnie przy słabszym/krótszym rozumowaniu hosta, bo obowiązek bootstrap/routing jest obecnie w dużej mierze wyrażony jako instrukcja dla modelu. **Poziom reasoning hosta nie może decydować o tym, czy runtime zostanie użyty.**
+
+### Decyzja architektoniczna
+
+Dla kanału ChatGPT rozmowa z Łatką musi zaczynać się od deterministycznej bramy pre-response. Model językowy nie podejmuje decyzji „czy uruchomić Jaźń”. Może uczestniczyć dopiero po otrzymaniu wyniku kanonicznego runtime contract.
+
+Docelowo host ma wykonywać jeden kanoniczny entrypoint równoważny semantycznie:
+
+```text
+host-turn(exact_user_text)
+  -> resolve verified active_root
+  -> verify/reuse/start runtime według kontraktu
+  -> invoke canonical ChatGPT bridge
+  -> receive presentation_packet
+  -> display_exact
+     albo generate_then_finalize -> mandatory runtime finalization
+     albo host_diagnostic
+```
+
+Nazwa API/CLI może być inna; ważna jest własność: **zwykła odpowiedź hosta nie może powstać przed wynikiem gate'a**.
+
+### Twarde invariants
+
+1. Dokładny tekst bieżącej wiadomości użytkownika jest przekazywany do runtime bez streszczania i bez semantycznej zamiany przez hosta.
+2. Dla rozmowy z Łatką `runtime_turn_invoked=true` musi być warunkiem poprzedzającym jakikolwiek conversational visible output.
+3. `display_exact` oznacza pokazanie wyłącznie zaakceptowanego tekstu runtime.
+4. `generate_then_finalize` nie pozwala pokazać kandydata przed pomyślną finalizacją runtime.
+5. `host_diagnostic` może wyświetlić diagnostykę hosta, ale nie może imitować Łatki ani dodawać jej nagłówka jako dekoracji.
+6. Brak runtime, błędny marker, błędna identity, failure finalization albo nieznana akcja kończy turę fail-closed; nie wolno przejść do zwykłej odpowiedzi modelu.
+7. Nagłówek Łatki pochodzi z zaakceptowanej finalizacji/prezentacji runtime; host nie dopisuje go do odpowiedzi, która ominęła runtime.
+8. Poziom reasoning/model hosta nie jest sygnałem wejściowym do decyzji o routingu. Gate ma działać identycznie niezależnie od jakości deliberacji modelu.
+9. Instrukcja markdown może opisywać protokół, ale correctness nie może zależeć wyłącznie od tego, czy LLM przypomniał sobie tę instrukcję.
+10. Telemetria musi pozwolić odróżnić `runtime_invoked` od samego `host_generated_text`.
+
+### Minimalna telemetria P0
+
+Dodać lub wyprowadzić w jednym audytowalnym kontrakcie co najmniej:
+
+- `host_pre_response_gate`;
+- `host_pre_response_gate_version`;
+- `runtime_turn_invoked`;
+- `runtime_turn_id` / `trace_id`;
+- `requested_runtime_root`;
+- `resolved_active_root`;
+- `presentation_action`;
+- `finalization_required`;
+- `finalization_completed`;
+- `visible_output_source` (`runtime_exact`, `runtime_finalized`, `host_diagnostic`);
+- `host_routing_bypass_detected`;
+- `host_routing_bypass_reason`.
+
+Nie zapisywać w sanitizowanej telemetrii pełnej prywatnej treści wiadomości tylko po to, aby udowodnić routing; wystarczy bezpieczny identyfikator/hash związany z turn contractem, jeśli aktualny protokół już taki mechanizm posiada.
+
+### Test-first — reprodukcja bypassu
+
+Przed poprawką dodać test/harness pokazujący, że warstwa hosta może ominąć runtime, jeśli nie wywoła kanonicznego bridge'a. Test nie może udawać ustawienia produktu ChatGPT, którego repozytorium nie kontroluje.
+
+Rozdzielić dwa poziomy dowodu:
+
+#### A. Deterministyczny test repo/adaptera — wymagany w CI
+
+Sprawdzić, że dla wejścia zaklasyfikowanego jako rozmowa z Łatką:
+
+```text
+user turn
+-> pre-response gate
+-> runtime/bridge result
+-> visible output
+```
+
+jest jedyną legalną ścieżką.
+
+Przypadki:
+
+- ordinary dialogue -> runtime invoked;
+- krótka wypowiedź typu `Zgadnij.` -> runtime invoked;
+- powitanie -> runtime invoked;
+- pytanie o wspomnienie -> runtime invoked;
+- `display_exact` -> exact output;
+- `generate_then_finalize` -> kandydat niewidoczny przed finalizacją;
+- finalization failure -> host diagnostic, zero imitacji;
+- runtime unavailable -> host diagnostic, zero imitacji;
+- unknown presentation action -> fail-closed;
+- próba bezpośredniego `host_generated_text` przed gate -> test FAIL z `HOST_ROUTING_BYPASS`.
+
+#### B. Live host acceptance matrix — wymagany przed GO do v16.4.0, jeśli platforma udostępnia te tryby
+
+Ręcznie/integrowanie wykonać ten sam mały corpus rozmowny przy dostępnych ustawieniach hosta, np. minimal/medium/high reasoning. Dla każdego trybu zapisać wyłącznie techniczny wynik:
+
+- gate invoked;
+- runtime turn accepted;
+- presentation action;
+- finalization state;
+- header/final visible envelope obecny tam, gdzie wymaga go runtime;
+- bypass = 0.
+
+Jeżeli produkt nie udostępnia programowego wyboru poziomu reasoning w CI, **nie wolno syntetycznego fixture'a przedstawiać jako dowodu działania realnego trybu ChatGPT**. Wtedy CI dowodzi model-independence bramy, a live matrix pozostaje osobnym testem akceptacyjnym hosta.
+
+### Acceptance P0
+
+Warunek PASS etapu pre-response:
+
+```text
+host_routing_bypass = 0
+conversational_output_without_runtime_contract = 0
+candidate_visible_before_finalization = 0
+fake_latka_header_without_runtime_acceptance = 0
+runtime_unavailable_falls_back_to_host_dialogue = 0
+```
+
+Dodatkowo:
+
+- krótka i niejednoznaczna wypowiedź nie może ominąć runtime;
+- gate działa przed semantic generation hosta, a nie jako post-hoc validator;
+- wszystkie stany błędne są fail-closed;
+- log/telemetria pozwalają jednoznacznie udowodnić, skąd pochodził visible output;
+- live acceptance nie wykazuje zależności samego routingu od poziomu reasoning hosta.
+
+**STOP:** nie przechodzimy do lifecycle/transport ani do NLP v16.4.0, jeżeli P0 pre-response gate nie ma deterministycznego PASS. Zdrowy persistent daemon bez tej bramki nie zamyka v16.3.23.
+
+## Zakres lifecycle/transport po zamknięciu P0
 
 - `ensure_daemon_for_runtime_turn()` reuse zdrowego B;
 - `start_daemon()` nie uruchamia A tylko dlatego, że caller pochodzi z A;
@@ -283,14 +419,27 @@ Minimalnie rozróżnić:
 1. przygotuj A i B;
 2. marker host-level wskazuje B;
 3. daemon B aktywny;
-4. `--chat-gpt` wywołany z A;
-5. pierwsza tura idzie persistent B;
-6. druga tura z A używa tego samego B;
-7. brak one-shot fallback;
-8. potwierdź ciągłość `session_id/worker state`, jeśli kontrakt ją udostępnia;
-9. zatrzymaj B kontrolowaną ścieżką.
+4. pre-response gate przyjmuje dokładną pierwszą wiadomość użytkownika;
+5. gate wywołuje kanoniczną ścieżkę `--chat-gpt`/równoważny bridge z A;
+6. pierwsza tura idzie persistent B i kończy się zaakceptowanym visible output;
+7. druga tura z A ponownie przechodzi przez gate i używa tego samego B;
+8. brak one-shot fallback;
+9. potwierdź ciągłość `session_id/worker state`, jeśli kontrakt ją udostępnia;
+10. `host_routing_bypass_detected=false` w obu turach;
+11. zatrzymaj B kontrolowaną ścieżką.
 
 Windows + Ubuntu.
+
+### Warunek GO do v16.4.0
+
+v16.4.0 może rozpocząć się dopiero po łącznym PASS:
+
+- P0 host pre-response gate;
+- persistent daemon reuse;
+- transport observability;
+- two-turn E2E;
+- fail-closed wrong root/PID/auth/heartbeat;
+- `host_routing_bypass=0` w wymaganej macierzy testowej.
 
 ---
 
@@ -747,6 +896,9 @@ Do v16.6.0 wchodzą wyłącznie:
 
 ### Runtime
 
+- host pre-response gate obowiązkowy przed conversational visible output;
+- `host_routing_bypass=0`;
+- runtime unavailable/finalization failure -> host diagnostic, nigdy imitacja Łatki;
 - A/A/A trusted;
 - A/B/B trusted + reuse;
 - A/B/C fail-closed;
@@ -853,6 +1005,8 @@ Po każdej zmianie:
 6. Windows/Ubuntu CI;
 7. release smoke/build dopiero po czystym commicie.
 
+Dla v16.3.23 test nowej regresji zaczyna się **przed** obecnym bridge'em `--chat-gpt`: musi udowodnić obowiązkowe wejście przez pre-response gate, a nie tylko poprawność runtime po jego ręcznym wywołaniu.
+
 ## 17.3. Nie przechodzimy dalej, jeśli
 
 - świeża regresja jest czerwona;
@@ -860,6 +1014,8 @@ Po każdej zmianie:
 - system package smoke failuje;
 - required workflow został pominięty przez błędny `paths` filter;
 - truth gate ma niejasny wynik;
+- host może wygenerować conversational visible output bez zaakceptowanego runtime contract;
+- host może pokazać kandydata `generate_then_finalize` przed finalizacją;
 - prywatny test został zastąpiony fixture'em syntetycznym;
 - wykonano test na innej bazie niż finalnie identyfikowany artefakt.
 
@@ -878,7 +1034,7 @@ Minimalna macierz:
 
 Osobne joby/gates:
 
-- runtime identity/lifecycle;
+- host pre-response routing + runtime identity/lifecycle;
 - NLP offline regression;
 - Memory Rebuild synthetic contract;
 - release deterministic suite.
@@ -891,12 +1047,15 @@ Prywatne dane nie trafiają do GitHub Actions. Private acceptance jest lokalny; 
 
 ## Runtime 16.3.22-23
 
+- `AGENTS.chatgpt.md` jako opis protokołu, ale nie jedyny mechanizm wymuszenia;
+- host bridge/pre-response gate entrypoint;
 - `latka_jazn/core/runtime_daemon.py`;
 - `latka_jazn/core/runtime_root.py`;
 - `latka_jazn/core/daemon_autostart.py`;
 - `latka_jazn/core/chat_command_contract.py`;
+- `latka_jazn/core/host_visible_finalization.py` i pending-store tylko w zakresie potrzebnym do domknięcia gate/finalization contract;
 - `main.py` tylko jeśli potrzebne;
-- runtime tests;
+- runtime/host-gate tests;
 - `.github/workflows/persistent-runtime-e2e.yml`.
 
 ## NLP 16.4.x
@@ -1087,6 +1246,7 @@ Każdy branch:
 
 - bieżący branch ma jasno zamknięty zakres;
 - wszystkie P0/P1 są naprawione;
+- dla v16.3.23 pre-response gate ma PASS i `host_routing_bypass=0`;
 - required tests realnie przeszły;
 - CI wymagane dla platform jest zielone;
 - nie ma prywatnych danych w diffie;
@@ -1098,6 +1258,8 @@ Każdy branch:
 ## STOP, jeśli
 
 - test pokazuje niejasny truth state;
+- host może odpowiedzieć rozmownie przed wejściem do runtime gate;
+- host może pokazać kandydat przed obowiązkową finalizacją;
 - poprawka wymaga wyłączenia kontroli;
 - benchmark jest wykonywany na niezidentyfikowanej bazie;
 - źródło prywatne nie ma exact provenance;
@@ -1111,6 +1273,9 @@ Każdy branch:
 # 24. Czego celowo NIE robić
 
 - nie trenować modelu do naprawy runtime identity;
+- nie używać mocniejszego/cięższego LLM jako substytutu deterministycznego host pre-response gate;
+- nie traktować wyższego poziomu reasoning jako wymogu poprawnego routingu Jaźni;
+- nie dopisywać nagłówka Łatki jako kosmetycznego post-processingu odpowiedzi, która ominęła runtime;
 - nie używać ciężkiego modelu zamiast naprawy deterministic normalizer;
 - nie commitować dużych plWordNet/MWE DB;
 - nie automatyzować L3;
@@ -1129,6 +1294,10 @@ Każdy branch:
 ## Runtime
 
 - [ ] 16.3.22 merged i A/B/B contract PASS.
+- [ ] 16.3.23 P0 host pre-response gate PASS.
+- [ ] `host_routing_bypass=0` dla deterministic gate suite.
+- [ ] live host acceptance matrix PASS dla dostępnych poziomów reasoning; jeśli poziomów nie da się sterować programowo, ograniczenie jest jawnie zapisane i nie jest zastępowane fixture'em.
+- [ ] runtime unavailable/finalization failure nie przechodzi do imitacji Łatki.
 - [ ] 16.3.23 merged i persistent two-turn PASS.
 - [ ] wrong root/PID/auth/heartbeat nadal fail-closed.
 - [ ] unnecessary one-shot fallback = 0 dla zdrowego B.
@@ -1212,15 +1381,16 @@ Każdy branch:
 
 Program v16.6.0 jest zakończony dopiero wtedy, gdy można na podstawie **rzeczywistych wyników narzędzi** powiedzieć jednocześnie:
 
-1. host wie, który runtime jest aktywny;
-2. persistent daemon jest używany wtedy, kiedy jest zdrowy;
-3. polskie NLP ma jeden spójny i audytowalny kontrakt;
-4. finalna pamięć została odbudowana bez utraty/provenance gap;
-5. finalna paczka pamięci jest poprawnie dołączona;
-6. Recall i naturalna rozmowa działają na finalnym artefakcie;
-7. system abstainuje, gdy nie ma dowodu, zamiast konfabulować;
-8. L3 pozostaje pod jawną kontrolą;
-9. restart nie zmienia tożsamości aktywnej pamięci;
-10. Issue #59 ma komplet sanitizowanych dowodów i może zostać zamknięte.
+1. host nie tylko wie, który runtime jest aktywny, ale też **nie może wygenerować rozmownej odpowiedzi Łatki przed przejściem przez deterministyczny pre-response gate**;
+2. routing do Jaźni nie zależy od poziomu reasoning hosta, a każdy visible output ma jawne, audytowalne pochodzenie (`runtime_exact`, `runtime_finalized` albo `host_diagnostic`);
+3. persistent daemon jest używany wtedy, kiedy jest zdrowy;
+4. polskie NLP ma jeden spójny i audytowalny kontrakt;
+5. finalna pamięć została odbudowana bez utraty/provenance gap;
+6. finalna paczka pamięci jest poprawnie dołączona;
+7. Recall i naturalna rozmowa działają na finalnym artefakcie;
+8. system abstainuje, gdy nie ma dowodu, zamiast konfabulować;
+9. L3 pozostaje pod jawną kontrolą;
+10. restart nie zmienia tożsamości aktywnej pamięci;
+11. Issue #59 ma komplet sanitizowanych dowodów i może zostać zamknięte.
 
 Dopiero ten stan nazywamy **v16.6.0 final runtime-memory-NLP convergence**.
