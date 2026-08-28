@@ -36,15 +36,16 @@ jobs:
           if "def _handle_failed_daemon_turn_transport(" in text:
               raise SystemExit("helper already present; refusing duplicate refactor")
 
-          insertion_anchor = '''    except (OSError, RuntimeError, ValueError):
-              return config
-          def _run_chat_command_one_shot(
-          '''
-          helper = '''    except (OSError, RuntimeError, ValueError):
-              return config
+          runtime_helper_start = text.find("def _runtime_config_for_transport(")
+          next_helper = text.find("def _run_chat_command_one_shot(", runtime_helper_start)
+          if runtime_helper_start < 0 or next_helper < 0:
+              raise SystemExit("runtime helper boundaries not found")
+          between = text[runtime_helper_start:next_helper]
+          required_tail = "except (OSError, RuntimeError, ValueError):\n        return config"
+          if required_tail not in between:
+              raise SystemExit("runtime config helper tail not recognized")
 
-
-          def _handle_failed_daemon_turn_transport(
+          helper = '''def _handle_failed_daemon_turn_transport(
               daemon_ensure: DaemonEnsureResult,
               transport_observability: dict[str, Any],
           ) -> int | None:
@@ -67,29 +68,26 @@ jobs:
               return None
 
 
-          def _run_chat_command_one_shot(
           '''
-          if text.count(insertion_anchor) != 1:
-              raise SystemExit(f"insertion anchor count={text.count(insertion_anchor)}; expected 1")
-          text = text.replace(insertion_anchor, helper, 1)
+          text = text[:next_helper] + helper + text[next_helper:]
 
-          old_block = '''            decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}
-                      if decision.get("explicit_ensure") or decision.get("env_force"):
-                          print(json.dumps({
-                              "ok": False,
-                              "error_code": "daemon_turn_transport_failed_after_explicit_ensure",
-                              "transport_observability": transport_observability,
-                              "truth_boundary": "Jawne wymaganie persistent daemonu nie może po cichu przejść do one-shot po błędzie transportu tury.",
-                          }, ensure_ascii=False, indent=2, sort_keys=True))
-                          return 1
-                      if transport_observability.get("selected_transport") == "persistent_daemon":
-                          transport_observability.update({
-                              "selected_transport": "verified_one_shot_fallback",
-                              "fallback_reason": "daemon_turn_transport_unavailable",
-                              "one_shot_allowed": True,
-                              "one_shot_verified": False,
-                          })
-          '''
+          chat_start = text.find("    if ns.chat_gpt:")
+          block_start = text.find(
+              "            decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}",
+              chat_start,
+          )
+          block_end = text.find("        bridge_stdin = io.StringIO", block_start)
+          if chat_start < 0 or block_start < 0 or block_end < 0:
+              raise SystemExit("chat-gpt fallback block boundaries not found")
+          old_block = text[block_start:block_end]
+          for required in (
+              "daemon_turn_transport_failed_after_explicit_ensure",
+              "daemon_turn_transport_unavailable",
+              '"one_shot_verified": False',
+          ):
+              if required not in old_block:
+                  raise SystemExit(f"fallback block missing expected marker: {required}")
+
           new_block = '''            transport_exit = _handle_failed_daemon_turn_transport(
                           daemon_ensure,
                           transport_observability,
@@ -97,9 +95,7 @@ jobs:
                       if transport_exit is not None:
                           return transport_exit
           '''
-          if text.count(old_block) != 1:
-              raise SystemExit(f"fallback block count={text.count(old_block)}; expected 1")
-          text = text.replace(old_block, new_block, 1)
+          text = text[:block_start] + new_block + text[block_end:]
           path.write_text(text, encoding="utf-8")
 
           tree = ast.parse(text)
