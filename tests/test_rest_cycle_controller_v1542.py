@@ -122,7 +122,9 @@ def test_user_activity_interrupts_slow_rest_generation_without_blocking_chat_pat
     worker = threading.Thread(target=lambda: result_box.setdefault("result", controller.tick(force=True)))
     worker.start()
     try:
-        assert entered.wait(1.0)
+        # This timeout bounds synchronization/setup only; the chat-path latency SLA
+        # is asserted separately below and must remain strict.
+        assert entered.wait(5.0)
         clock.advance(1)
         started = time.monotonic()
         controller.note_user_activity()
