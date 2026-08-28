@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -149,6 +149,25 @@ def _status_active_reason(status: Mapping[str, Any] | None) -> str:
     if not isinstance(status, Mapping):
         return ""
     return str(status.get("active_state_reason") or "").strip()
+
+
+def _resolved_subject_config(
+    config: JaznConfig,
+    status: Mapping[str, Any],
+) -> JaznConfig | None:
+    if status.get("marker_found") is True and status.get("marker_valid") is not True:
+        return None
+    raw_root = status.get("resolved_active_root") or status.get("subject_runtime_root")
+    if raw_root in (None, ""):
+        raw_root = config.root
+    try:
+        candidate = Path(str(raw_root)).expanduser()
+        if not candidate.is_absolute():
+            return None
+        subject_root = candidate.resolve()
+    except (OSError, RuntimeError, ValueError):
+        return None
+    return replace(config, root=subject_root)
 
 
 def status_allows_runtime_turn(status: Mapping[str, Any] | None, *, allow_degraded: bool = True) -> bool:
@@ -314,8 +333,19 @@ def ensure_daemon_for_runtime_turn(
             status_before=status_before,
             status_after=status_before,
         )
+    subject_config = _resolved_subject_config(config, status_before)
+    if subject_config is None:
+        return DaemonEnsureResult(
+            ok=False,
+            ensured=False,
+            active_state=before_state,
+            reason="ambiguous_subject_root",
+            decision=decision.to_dict(),
+            status_before=status_before,
+            status_after=status_before,
+        )
     startup = start_daemon(
-        config,
+        subject_config,
         host=host,
         port=port,
         marker_output=marker_output,

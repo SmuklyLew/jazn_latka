@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -106,7 +106,6 @@ DAEMON_CHAT_JOB_TERMINAL_STATES = {
     "host_finalization_rejected",
 }
 DAEMON_CHAT_JOB_HOST_PENDING_STATE = "awaiting_host_finalization"
-
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -3164,6 +3163,37 @@ def _endpoint_confirms_runtime_identity(
     return bool(_endpoint_confirms_pid(pid, ping) and _endpoint_confirms_root(root, ping))
 
 
+def _confirmed_daemon_subject_root(
+    config: JaznConfig,
+    status: dict[str, Any],
+) -> Path | None:
+    """Return subject B only after the live endpoint identity gate accepted it."""
+
+    if status.get("endpoint_identity_matches") is not True:
+        return None
+    raw_subject = status.get("resolved_active_root") or status.get("subject_runtime_root")
+    raw_endpoint = status.get("endpoint_reported_active_root")
+    if raw_subject in (None, "") or raw_endpoint in (None, ""):
+        return None
+    try:
+        subject_path = Path(str(raw_subject)).expanduser()
+        endpoint_path = Path(str(raw_endpoint)).expanduser()
+        if not subject_path.is_absolute() or not endpoint_path.is_absolute():
+            return None
+        subject_root = subject_path.resolve()
+        endpoint_root = endpoint_path.resolve()
+        requested_root = Path(config.root).expanduser().resolve()
+    except (OSError, RuntimeError, ValueError):
+        return None
+    reported_requested = status.get("requested_runtime_root")
+    if reported_requested not in (None, "") and not _same_runtime_path(
+        requested_root,
+        reported_requested,
+    ):
+        return None
+    return subject_root if subject_root == endpoint_root else None
+
+
 def _probe_daemon_status(host: str, port: int, *, timeout: float = DEFAULT_LITE_STATUS_HTTP_TIMEOUT_SECONDS) -> tuple[dict[str, Any] | None, str | None, str | None]:
     errors: list[str] = []
     # Three bounded attempts cover a transient timeout. Prefer the strict
@@ -3229,8 +3259,35 @@ def start_daemon(
     startup_timeout: float = DEFAULT_START_TIMEOUT_SECONDS,
     execution_timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
-    marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
-    package_verification = verify_package_integrity_manifest(config.root)
+    requested_root = Path(config.root).expanduser().resolve()
+    marker_path = resolve_active_runtime_marker_path(requested_root, marker_output)
+    subject_resolution = resolve_active_runtime_root(
+        requested_root,
+        marker_path=marker_path,
+    )
+    subject_context = {
+        "requested_runtime_root": str(requested_root),
+        "resolved_active_root": str(subject_resolution.root),
+        "subject_runtime_root": str(subject_resolution.root),
+        "active_root_source": subject_resolution.source,
+        "active_root_validation_error": subject_resolution.error,
+    }
+    if subject_resolution.marker_found and not subject_resolution.marker_valid:
+        return {
+            "ok": False,
+            "started": False,
+            "error_code": "active_runtime_subject_unresolved",
+            "fallback_reason": "ambiguous_subject_root",
+            "marker_path": str(marker_path),
+            **subject_context,
+            "truth_boundary": (
+                "Daemon nie może wystartować dla requested root A, gdy istniejący marker nie rozwiązuje "
+                "jednoznacznie zweryfikowanego subject root B."
+            ),
+        }
+    subject_root = subject_resolution.root
+    subject_config = replace(config, root=subject_root)
+    package_verification = verify_package_integrity_manifest(subject_root)
     if package_verification.get("ok") is not True:
         return {
             "ok": False,
@@ -3238,12 +3295,13 @@ def start_daemon(
             "error_code": "package_integrity_verification_failed",
             "package_integrity_verification": package_verification,
             "marker_path": str(marker_path),
+            **subject_context,
             "truth_boundary": (
                 "Daemon nie może wystartować ani zapisać aktywnego markera, dopóki rozmiary i SHA-256 "
                 "wszystkich plików chronionych manifestem nie są zgodne."
             ),
         }
-    source_provenance = read_source_provenance(config.root, profile="system_smoke").to_dict()
+    source_provenance = read_source_provenance(subject_root, profile="system_smoke").to_dict()
     source_provenance_verified = source_provenance.get("status") in {
         "clean_checkout_verified",
         "development_dirty_verified",
@@ -3256,6 +3314,7 @@ def start_daemon(
             "error_code": "source_provenance_not_verified",
             "source_provenance": source_provenance,
             "marker_path": str(marker_path),
+            **subject_context,
             "truth_boundary": (
                 "Daemon nie może wystartować tylko dlatego, że pliki pasują do lokalnego manifestu. "
                 "SOURCE_PROVENANCE.json musi dodatkowo wiarygodnie wiązać paczkę z wersją i źródłem."
@@ -3265,7 +3324,7 @@ def start_daemon(
         existing, existing_error, existing_endpoint = _probe_daemon_status(host, int(port))
         if isinstance(existing, dict):
             existing_pid = _daemon_pid_from_status(existing)
-            root_matches = _endpoint_confirms_root(config.root, existing)
+            root_matches = _endpoint_confirms_root(subject_root, existing)
             if existing.get("active_state") in {"active_trusted", "active_degraded"} and root_matches:
                 return {
                     "ok": True,
@@ -3276,6 +3335,7 @@ def start_daemon(
                     "pid": existing_pid,
                     "status": existing,
                     "marker_path": str(marker_path),
+                    **subject_context,
                 }
             if not root_matches:
                 return {
@@ -3292,12 +3352,13 @@ def start_daemon(
                     "existing_pid": existing_pid,
                     "existing_status": existing,
                     "marker_path": str(marker_path),
+                    **subject_context,
                 }
         elif existing_error:
             pass
     except Exception:
         pass
-    log_dir = daemon_log_dir(config.root)
+    log_dir = daemon_log_dir(subject_root)
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
@@ -3306,8 +3367,9 @@ def start_daemon(
             "started": False,
             "error_code": "runtime_workspace_unwritable",
             "error": f"{type(exc).__name__}: {exc}",
-            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "runtime_workspace_dir": str(workspace_runtime_path(subject_root)),
             "marker_path": str(marker_path),
+            **subject_context,
             "recovery_hint": (
                 "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
                 "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
@@ -3334,10 +3396,11 @@ def start_daemon(
             "started": False,
             "error_code": "runtime_workspace_unwritable",
             "error": f"{type(exc).__name__}: {exc}",
-            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "runtime_workspace_dir": str(workspace_runtime_path(subject_root)),
             "stdout_log": str(stdout_path),
             "stderr_log": str(stderr_path),
             "marker_path": str(marker_path),
+            **subject_context,
             "recovery_hint": (
                 "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
                 "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
@@ -3345,7 +3408,7 @@ def start_daemon(
         }
     try:
         runtime_write_status = build_runtime_write_access_status(
-            config,
+            subject_config,
             initialize=True,
             writes_enabled=True,
         ).to_dict()
@@ -3364,9 +3427,10 @@ def start_daemon(
                 else "runtime_memory_initialization_failed"
             ),
             "error": f"{type(exc).__name__}: {exc}",
-            "memory_write_root": str(Path(config.root).resolve() / "memory"),
-            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "memory_write_root": str(subject_root / "memory"),
+            "runtime_workspace_dir": str(workspace_runtime_path(subject_root)),
             "marker_path": str(marker_path),
+            **subject_context,
             "recovery_hint": (
                 "Uruchom `python -X utf8 run.py runtime-bootstrap` z nowym, zapisywalnym, "
                 "wersjonowanym destination. Sam zewnętrzny workspace nie przenosi pamięci."
@@ -3378,13 +3442,14 @@ def start_daemon(
             "started": False,
             "error_code": "runtime_memory_initialization_failed",
             "runtime_write_access_status": runtime_write_status,
-            "memory_write_root": str(Path(config.root).resolve() / "memory"),
-            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "memory_write_root": str(subject_root / "memory"),
+            "runtime_workspace_dir": str(workspace_runtime_path(subject_root)),
             "marker_path": str(marker_path),
+            **subject_context,
         }
-    event_path = daemon_process_event_path(config.root)
+    event_path = daemon_process_event_path(subject_root)
     cmd = build_daemon_start_command(
-        config.root,
+        subject_root,
         host=host,
         port=port,
         marker_output=marker_path,
@@ -3398,11 +3463,11 @@ def start_daemon(
     else:
         popen_kwargs["start_new_session"] = True
     append_daemon_process_event(
-        config.root,
+        subject_root,
         "spawn_attempt",
         console_mode=console_mode,
         command=cmd,
-        cwd=str(config.root),
+        cwd=str(subject_root),
         creationflags=creationflags,
         stdout_log=str(stdout_path),
         stderr_log=str(stderr_path),
@@ -3411,7 +3476,7 @@ def start_daemon(
         if os.name == "nt" and console_mode == DAEMON_CONSOLE_VISIBLE:
             proc = subprocess.Popen(
                 cmd,
-                cwd=str(config.root),
+                cwd=str(subject_root),
                 stdin=subprocess.DEVNULL,
                 creationflags=creationflags,
                 **popen_kwargs,
@@ -3420,7 +3485,7 @@ def start_daemon(
             with stdout_path.open("ab") as out, stderr_path.open("ab") as err:
                 proc = subprocess.Popen(
                     cmd,
-                    cwd=str(config.root),
+                    cwd=str(subject_root),
                     stdout=out,
                     stderr=err,
                     stdin=subprocess.DEVNULL,
@@ -3438,10 +3503,11 @@ def start_daemon(
                 else "daemon_process_spawn_failed"
             ),
             "error": f"{type(exc).__name__}: {exc}",
-            "runtime_workspace_dir": str(workspace_runtime_path(config.root)),
+            "runtime_workspace_dir": str(workspace_runtime_path(subject_root)),
             "stdout_log": str(stdout_path),
             "stderr_log": str(stderr_path),
             "marker_path": str(marker_path),
+            **subject_context,
             "recovery_hint": (
                 "Ustaw JAZN_RUNTIME_WORKSPACE_DIR na bezwzględny zapisywalny katalog hosta "
                 "albo uruchom runtime z zapisywalnej, zweryfikowanej instalacji."
@@ -3450,7 +3516,7 @@ def start_daemon(
             ),
         }
     append_daemon_process_event(
-        config.root,
+        subject_root,
         "spawned",
         console_mode=console_mode,
         daemon_pid=proc.pid,
@@ -3467,7 +3533,7 @@ def start_daemon(
             status, status_error, status_endpoint = _probe_daemon_status(host, int(port))
             if isinstance(status, dict) and status.get("active_state") in {"active_trusted", "active_degraded"}:
                 status_pid = _daemon_pid_from_status(status)
-                root_matches = _endpoint_confirms_root(config.root, status)
+                root_matches = _endpoint_confirms_root(subject_root, status)
                 process_matches = bool(status_pid and int(status_pid) == int(proc.pid))
                 if root_matches and process_matches:
                     status.setdefault("endpoint", status_endpoint or status.get("endpoint"))
@@ -3484,10 +3550,11 @@ def start_daemon(
                         "process_event_log": str(event_path),
                         "daemon_console_mode": console_mode,
                         "command": cmd,
+                        **subject_context,
                     }
                 last_error = (
                     "daemon endpoint identity mismatch after spawn: "
-                    f"expected_root={Path(config.root).resolve()}, endpoint_root="
+                    f"expected_root={subject_root}, endpoint_root="
                     f"{status.get('active_root') or status.get('configured_runtime_root')}, "
                     f"spawned_pid={proc.pid}, endpoint_pid={status_pid}"
                 )
@@ -3496,8 +3563,8 @@ def start_daemon(
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
         time.sleep(0.2)
-    append_daemon_process_event(config.root, "startup_failed", daemon_pid=proc.pid, console_mode=console_mode, error=last_error or "daemon did not answer before timeout")
-    return {"ok": False, "started": False, "pid": proc.pid, "error": last_error or "daemon did not answer before timeout", "marker_path": str(marker_path), "stdout_log": str(stdout_path), "stderr_log": str(stderr_path), "process_event_log": str(event_path), "daemon_console_mode": console_mode, "command": cmd}
+    append_daemon_process_event(subject_root, "startup_failed", daemon_pid=proc.pid, console_mode=console_mode, error=last_error or "daemon did not answer before timeout")
+    return {"ok": False, "started": False, "pid": proc.pid, "error": last_error or "daemon did not answer before timeout", "marker_path": str(marker_path), "stdout_log": str(stdout_path), "stderr_log": str(stderr_path), "process_event_log": str(event_path), "daemon_console_mode": console_mode, "command": cmd, **subject_context}
 
 
 def status_daemon(
@@ -3717,6 +3784,17 @@ def refresh_daemon_time(
     port: int = DEFAULT_DAEMON_PORT,
     timeout: float = DEFAULT_HTTP_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
+    before = status_daemon(config, host=host, port=port)
+    subject_root = _confirmed_daemon_subject_root(config, before)
+    if subject_root is None:
+        return {
+            "schema_version": DAEMON_SCHEMA_VERSION,
+            "ok": False,
+            "error_code": "daemon_identity_not_confirmed",
+            "refresh_response": None,
+            "refresh_error": "daemon identity/root confirmation failed before refresh-time",
+            "status": before,
+        }
     response: dict[str, Any] | None = None
     error: str | None = None
     try:
@@ -3725,7 +3803,7 @@ def refresh_daemon_time(
             daemon_url(host, int(port), "/refresh-time"),
             {},
             timeout=timeout,
-            token=read_daemon_auth_token(config.root),
+            token=read_daemon_auth_token(subject_root),
         )
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
@@ -3755,6 +3833,18 @@ def inject_daemon_trusted_time(
     }
     if max_age_seconds is not None:
         payload["max_age_seconds"] = int(max_age_seconds)
+    before = status_daemon(config, host=host, port=port)
+    subject_root = _confirmed_daemon_subject_root(config, before)
+    if subject_root is None:
+        return {
+            "schema_version": DAEMON_SCHEMA_VERSION,
+            "ok": False,
+            "error_code": "daemon_identity_not_confirmed",
+            "inject_response": None,
+            "inject_error": "daemon identity/root confirmation failed before trusted-time injection",
+            "status": before,
+            "truth_boundary": "Trusted time injection is refused until endpoint PID and subject root identity are confirmed.",
+        }
     response: dict[str, Any] | None = None
     error: str | None = None
     try:
@@ -3763,7 +3853,7 @@ def inject_daemon_trusted_time(
             daemon_url(host, int(port), "/trusted-time"),
             payload,
             timeout=timeout,
-            token=read_daemon_auth_token(config.root),
+            token=read_daemon_auth_token(subject_root),
         )
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
@@ -3797,6 +3887,17 @@ def init_runtime_write_v1_daemon(
     port: int = DEFAULT_DAEMON_PORT,
     timeout: float = DEFAULT_HTTP_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
+    before = status_daemon(config, host=host, port=port)
+    subject_root = _confirmed_daemon_subject_root(config, before)
+    if subject_root is None:
+        return {
+            "schema_version": DAEMON_SCHEMA_VERSION,
+            "ok": False,
+            "error_code": "daemon_identity_not_confirmed",
+            "init_response": None,
+            "init_error": "daemon identity/root confirmation failed before runtime-write-init",
+            "status": before,
+        }
     response: dict[str, Any] | None = None
     error: str | None = None
     try:
@@ -3805,7 +3906,7 @@ def init_runtime_write_v1_daemon(
             daemon_url(host, int(port), "/runtime-write-init"),
             {},
             timeout=timeout,
-            token=read_daemon_auth_token(config.root),
+            token=read_daemon_auth_token(subject_root),
         )
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
@@ -4075,7 +4176,8 @@ def stop_daemon(
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
     before = status_daemon(config, host=host, port=port, marker_output=marker_path)
 
-    if not bool(before.get("endpoint_identity_matches")):
+    subject_root = _confirmed_daemon_subject_root(config, before)
+    if subject_root is None:
         return {
             "schema_version": DAEMON_SCHEMA_VERSION,
             "ok": False,
@@ -4099,7 +4201,7 @@ def stop_daemon(
             daemon_url(host, int(port), "/shutdown"),
             {},
             timeout=2.0,
-            token=read_daemon_auth_token(config.root),
+            token=read_daemon_auth_token(subject_root),
         )
     except Exception as exc:
         shutdown_error = f"{type(exc).__name__}: {exc}"
