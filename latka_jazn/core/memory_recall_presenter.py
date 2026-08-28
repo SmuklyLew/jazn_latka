@@ -123,6 +123,7 @@ class MemoryRecallPresenter:
                     **_dict_copy(hit.get("metadata")),
                     "source_layer": layer,
                     "source_database": self._clean(hit.get("source_database")),
+                    "source_locator": self._clean(hit.get("source_locator")),
                 },
             ))
 

@@ -242,6 +242,12 @@ def classify_semantic_source_type(
         return "current_state"
     if _has(blob, _INFERENCE_MARKERS):
         return "inference"
+    # Transactional memory sources intentionally contain the word ``runtime``
+    # (for example ``runtime_write_v2:working``).  Their specific active-memory
+    # identity must win over the generic technical-runtime marker or every valid
+    # L1/L2 hit is suppressed from autobiographical recall.
+    if _has(blob, _ACTIVE_MEMORY_MARKERS):
+        return "active_memory"
     if _has(blob, _RUNTIME_MARKERS):
         return "technical_runtime"
     if _has(blob, _PROCEDURAL_MARKERS):
@@ -250,8 +256,6 @@ def classify_semantic_source_type(
         return "documentation"
     if _has(blob, _CODE_MARKERS):
         return "source_code"
-    if _has(blob, _ACTIVE_MEMORY_MARKERS):
-        return "active_memory"
     # A source file extension is stronger evidence than an untyped generic label.
     if path:
         suffix = Path(str(path)).suffix.lower()

@@ -49,6 +49,8 @@ class MemoryRecallContractBuilder:
                     timestamp=raw.get("timestamp"),
                     content=content,
                 )
+                raw_metadata_value = raw.get("metadata")
+                raw_metadata: dict[str, Any] = raw_metadata_value if isinstance(raw_metadata_value, dict) else {}
                 items.append(MemoryRecallItem(
                     content=content[:1800],
                     source=source,
@@ -63,6 +65,13 @@ class MemoryRecallContractBuilder:
                         "grounding": raw.get("grounding"),
                         "relevance_label": raw.get("relevance_label"),
                         "meaning_assessment": raw.get("meaning_assessment"),
+                        "semantic_source_type": raw.get("semantic_source_type"),
+                        "provenance_label": raw.get("provenance_label"),
+                        "truth_status": raw.get("truth_status"),
+                        "source_layer": raw_metadata.get("source_layer"),
+                        "source_database": raw_metadata.get("source_database"),
+                        "source_locator": raw_metadata.get("source_locator"),
+                        "evidence_sources": raw_metadata.get("evidence_sources") or [],
                     },
                 ).to_dict())
             return MemoryRecallContract(

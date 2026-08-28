@@ -129,6 +129,19 @@ def build_host_generation_context_from_runtime(
 
     frame_value = result.get("cognitive_frame")
     frame = frame_value if isinstance(frame_value, dict) else {}
+    if not frame:
+        recall_contract = result.get("memory_recall_contract")
+        recall_observability = result.get("memory_recall_observability")
+        frame = {
+            "memory_recall_contract": (
+                dict(recall_contract) if isinstance(recall_contract, dict) else {}
+            ),
+            "memory_recall_observability": (
+                dict(recall_observability)
+                if isinstance(recall_observability, dict)
+                else {}
+            ),
+        }
     decision_value = result.get("conversation_decision")
     decision = decision_value if isinstance(decision_value, dict) else {}
     policy_value = frame.get("turn_response_policy") or decision.get("turn_response_policy")

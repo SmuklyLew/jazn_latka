@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-# v16.3.22 distinguishes the observer/requested root from the resolved active
-# subject root. Daemon identity, package integrity and source provenance are
-# evaluated against that one subject while mismatched roots, PIDs, heartbeat,
-# integrity, provenance and invalid markers remain fail-closed.
-DISTRIBUTION_VERSION = "16.3.22"
-PACKAGE_VERSION = "16.3.22"
-PACKAGE_RELEASE_NAME = "active-runtime-subject-root-hardening"
+# v16.3.23 makes the host pre-response gate mandatory before conversational
+# output and converges persistent daemon lifecycle/transport observability on
+# the resolved active subject root.
+DISTRIBUTION_VERSION = "16.3.23"
+PACKAGE_VERSION = "16.3.23"
+PACKAGE_RELEASE_NAME = "persistent-runtime-lifecycle-observability-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

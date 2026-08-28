@@ -36,6 +36,13 @@ from latka_jazn.core.host_response_candidate_guard import (
     evaluate_host_response_candidate,
     validate_host_generation_context,
 )
+from latka_jazn.core.chatgpt_host_pre_response_gate import (
+    build_host_pre_response_gate_telemetry,
+)
+from latka_jazn.core.memory_recall_observability import (
+    correlate_memory_recall_transport,
+    memory_recall_truth_boundary_violation,
+)
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -881,6 +888,24 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         action = "poll_runtime"
     else:
         action = "host_diagnostic"
+    transport_observability = json_object(payload.get("transport_observability"))
+    if not transport_observability:
+        transport_observability = json_object(
+            json_object(payload.get("chat_bridge")).get("transport_observability")
+        )
+    memory_recall_observability = correlate_memory_recall_transport(
+        json_object(payload.get("memory_recall_observability")),
+        transport_observability,
+    )
+    memory_violation = memory_recall_truth_boundary_violation(
+        memory_recall_observability,
+        recall_required=memory_recall_observability.get("memory_recall_requested") is True,
+        expected_turn_id=str(bridge.get("turn_id") or "") or None,
+        expected_trace_id=str(bridge.get("trace_id") or "") or None,
+    )
+    if memory_violation is not None:
+        action = "host_diagnostic"
+        phase = "host_diagnostic_required"
     final_text = extract_final_visible_text_from_result(payload) if action == "display_exact" else ""
     validation = _runtime_validation(payload)
     integrity = _runtime_integrity(payload)
@@ -907,6 +932,7 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "chatgpt_host_bridge": bridge,
         "daemon_request_id": bridge.get("daemon_request_id"),
         "poll_command": bridge.get("poll_command"),
+        "diagnostic_reason": memory_violation,
         "runtime_checks": {
             "validation_accepted": validation.get("accepted"),
             "final_visible_integrity_valid": integrity.get("valid"),
@@ -925,6 +951,27 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
             "host_diagnostic": "Nie imituj Łatki; pokaż krótką diagnozę jako Host ChatGPT.",
         }[action],
     }
+    if transport_observability:
+        packet["transport_observability"] = transport_observability
+    if memory_recall_observability:
+        packet["memory_recall_observability"] = memory_recall_observability
+    gate_context = json_object(payload.get("host_pre_response_gate_context"))
+    runtime_turn_invoked = bool(
+        gate_context.get("runtime_turn_invoked") is True
+        or bridge
+    )
+    gate_telemetry = build_host_pre_response_gate_telemetry(
+        presentation=packet,
+        response=payload,
+        user_text_sha256=str(bridge.get("user_text_sha256") or ""),
+        requested_runtime_root=(
+            gate_context.get("requested_runtime_root")
+            or transport_observability.get("requested_runtime_root")
+        ),
+        runtime_turn_invoked=runtime_turn_invoked,
+    )
+    packet["host_pre_response_gate"] = gate_telemetry
+    packet["visible_output_source"] = gate_telemetry.get("visible_output_source")
     return packet
 
 
@@ -1220,6 +1267,7 @@ def persist_chatgpt_host_visible_reply(
             "turn_id": binding["turn_id"],
             "trace_id": binding["trace_id"],
             "host_request_contract_hash": reply["host_request_contract_hash"],
+            "user_text_sha256": binding.get("user_text_sha256"),
             "timestamp_header": binding["timestamp_header"],
             "timestamp_required": True,
             "timestamp_enforced": True,
@@ -1283,6 +1331,23 @@ def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output
     stdout.flush()
 
 
+def _mark_verified_one_shot_transport(turn_transport: dict[str, Any]) -> None:
+    previous_transport = str(turn_transport.get("selected_transport") or "")
+    previous_reason = str(turn_transport.get("fallback_reason") or "")
+    turn_transport.update({
+        "selected_transport": "verified_one_shot_fallback",
+        "one_shot_allowed": True,
+        "one_shot_verified": True,
+    })
+    if (
+        previous_transport == "persistent_daemon"
+        and previous_reason in {"daemon_reused", "daemon_started"}
+    ):
+        turn_transport["fallback_reason"] = "jsonl_bridge_uses_verified_one_shot"
+    elif not previous_reason or previous_reason == "transport_not_classified":
+        turn_transport["fallback_reason"] = "verified_one_shot_fallback_allowed"
+
+
 def run_jsonl_chat_bridge(
     *,
     config: JaznConfig,
@@ -1294,6 +1359,7 @@ def run_jsonl_chat_bridge(
     require_openai_api_key: bool = False,
     output_mode: BridgeOutputMode = "jsonl",
     one_shot_degraded: bool = False,
+    transport_observability: dict[str, Any] | None = None,
 ) -> int:
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
@@ -1316,6 +1382,7 @@ def run_jsonl_chat_bridge(
     protocol_version = CHATGPT_BRIDGE_PROTOCOL
     default_client = "chatgpt_bridge"
     default_lifecycle = "chatgpt_bridge_jsonl"
+    turn_transport = dict(transport_observability or {})
     if command == "--chat-open-ai":
         protocol_version = CHAT_OPENAI_PROTOCOL
         default_client = "openai_api_bridge"
@@ -1371,6 +1438,8 @@ def run_jsonl_chat_bridge(
             meta["input_field"] = input_field
         if line_index is not None:
             meta["line_index"] = line_index
+        if turn_transport:
+            meta["transport_observability"] = dict(turn_transport)
         return meta
 
     def error_payload(
@@ -1381,11 +1450,19 @@ def run_jsonl_chat_bridge(
         input_kind: str | None = None,
         input_field: str | None = None,
         line_index: int | None = None,
+        runtime_turn_invoked: bool = False,
     ) -> dict[str, Any]:
         return {
             "schema_version": schema_version("chat_bridge_error"),
             "chat_bridge": bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index),
             "chat_command_contract": contract,
+            "host_pre_response_gate_context": {
+                "runtime_turn_invoked": runtime_turn_invoked,
+                "requested_runtime_root": str(
+                    turn_transport.get("requested_runtime_root")
+                    or config.root
+                ),
+            },
             "ok": False,
             "error_code": error_code,
             "error": error,
@@ -1502,6 +1579,7 @@ def run_jsonl_chat_bridge(
                     input_kind=input_kind,
                     input_field=input_field,
                     line_index=line_index,
+                    runtime_turn_invoked=True,
                 ), output_mode=output_mode)
                 continue
             except Exception as exc:
@@ -1512,10 +1590,12 @@ def run_jsonl_chat_bridge(
                     input_kind=input_kind,
                     input_field=input_field,
                     line_index=line_index,
+                    runtime_turn_invoked=True,
                 ), output_mode=output_mode)
                 continue
             attach_cli_flag_warning(result, input_warning)
             if one_shot_degraded:
+                _mark_verified_one_shot_transport(turn_transport)
                 result["one_shot_degraded"] = True
                 result["process_lifecycle"] = "one_shot"
                 result["daemon_confirmed"] = False
@@ -1525,7 +1605,16 @@ def run_jsonl_chat_bridge(
                     "message": "Daemon nie został potwierdzony; wykonano zweryfikowaną turę jednorazową.",
                     "must_not_modify_final_visible_text": True,
                 }
+            if turn_transport:
+                result["transport_observability"] = dict(turn_transport)
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
+            result["host_pre_response_gate_context"] = {
+                "runtime_turn_invoked": True,
+                "requested_runtime_root": str(
+                    turn_transport.get("requested_runtime_root")
+                    or config.root
+                ),
+            }
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
                 attach_chatgpt_host_contract(
