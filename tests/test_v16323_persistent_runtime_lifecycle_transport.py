@@ -95,6 +95,15 @@ def test_ensure_starts_resolved_subject_b_never_requested_a(
     assert result.ok is True
     assert start_roots == [subject_root]
     assert requested_root not in start_roots
+    assert result.selected_transport == "persistent_daemon"
+    assert result.fallback_reason == "daemon_started"
+    assert result.requested_runtime_root == str(requested_root)
+    assert result.resolved_active_root == str(subject_root)
+    assert result.daemon_endpoint_root == str(subject_root)
+    assert result.daemon_identity_verified is True
+    assert result.daemon_reused is False
+    assert result.daemon_started is True
+    assert result.one_shot_allowed is False
 
 
 def test_start_daemon_integrity_gate_targets_resolved_subject_b(
@@ -387,6 +396,48 @@ def test_explicit_ensure_failure_reports_no_one_shot_transport(
     assert result.selected_transport == "host_diagnostic"
     assert result.fallback_reason == "daemon_start_required_failed"
     assert result.one_shot_allowed is False
+
+
+def test_invalid_active_marker_is_ambiguous_and_never_allows_one_shot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requested_root = _runtime_root(tmp_path / "runtime_A")
+    subject_root = _runtime_root(tmp_path / "runtime_B")
+    invalid = _status(
+        requested_root,
+        subject_root,
+        state="inactive",
+        identity_matches=False,
+    )
+    invalid.update(
+        {
+            "active_state_reason": "active_marker_invalid",
+            "marker_found": True,
+            "marker_valid": False,
+        }
+    )
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: invalid)
+    monkeypatch.setattr(
+        daemon_autostart,
+        "start_daemon",
+        lambda *_args, **_kwargs: pytest.fail("ambiguous marker must block daemon start"),
+    )
+
+    result = daemon_autostart.ensure_daemon_for_runtime_turn(
+        JaznConfig(root=requested_root),
+        command="--chat-gpt",
+        env={},
+    )
+
+    assert result.ok is False
+    assert result.selected_transport == "host_diagnostic"
+    assert result.fallback_reason == "ambiguous_subject_root"
+    assert result.requested_runtime_root == str(requested_root)
+    assert result.resolved_active_root == str(subject_root)
+    assert result.daemon_identity_verified is False
+    assert result.one_shot_allowed is False
+    assert result.one_shot_verified is False
 
 
 def test_chatgpt_main_binds_persistent_turn_to_resolved_subject_b(
