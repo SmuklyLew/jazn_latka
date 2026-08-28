@@ -18,6 +18,13 @@ from .models import (
 from .project_store import ProjectStore, default_project_root
 from .source_inventory import SourceInspection, inspect_source, inspect_sources
 from .settings import MemoryRebuildSettings, load_settings
+from .source_union import (
+    SOURCE_UNION_SCHEMA,
+    TOOL_RELEASE_LABEL,
+    TOOL_REVISION,
+    build_source_union_manifest,
+    run_source_union_analysis,
+)
 from .sqlite_inspector import compare_database_summaries, inspect_database_set
 from .test_profiles import PROFILE_NAMES, baseline_counts, run_test_profile
 from .unified_memory import (
@@ -45,12 +52,15 @@ from .v16311_hardening import (
 from .v16311_hardening import apply as _apply_v16311_hardening
 from .v16312_ci_hotfix import HOTFIX_VERSION
 from .v16312_ci_hotfix import apply as _apply_v16312_ci_hotfix
+from .v16325_hardening import HARDENING_VERSION as SOURCE_UNION_HARDENING_VERSION
+from .v16325_hardening import apply as _apply_v16325_hardening
 
-# Install the versioned migrations only after the base modular components are
-# imported. The operations are idempotent and do not touch user data until a
-# store is explicitly initialized/imported.
+# Install versioned migrations only after the base modular components are
+# imported. Operations are idempotent and do not touch user data until a store
+# is explicitly initialized/imported.
 _apply_v16311_hardening()
 _apply_v16312_ci_hotfix()
+_apply_v16325_hardening()
 
 __all__ = [
     "BaselineSpec",
@@ -78,8 +88,12 @@ __all__ = [
     "RecallResponse",
     "RecallStatus",
     "SOURCE_ROLES",
+    "SOURCE_UNION_HARDENING_VERSION",
+    "SOURCE_UNION_SCHEMA",
     "SourceInspection",
     "SourceSpec",
+    "TOOL_RELEASE_LABEL",
+    "TOOL_REVISION",
     "TRUTH_DOMAINS",
     "TOOL_VERSION",
     "TypedMemoryAPI",
@@ -88,6 +102,7 @@ __all__ = [
     "UnifiedMemoryDatabase",
     "baseline_counts",
     "baseline_from_path",
+    "build_source_union_manifest",
     "compare_chat_sources",
     "compare_database_summaries",
     "default_project_root",
@@ -101,5 +116,6 @@ __all__ = [
     "list_chat_conversations",
     "load_settings",
     "refresh_baseline",
+    "run_source_union_analysis",
     "run_test_profile",
 ]
