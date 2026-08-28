@@ -850,6 +850,29 @@ def _runtime_config_for_transport(
         return replace(config, root=subject.resolve())
     except (OSError, RuntimeError, ValueError):
         return config
+def _handle_failed_daemon_turn_transport(
+    daemon_ensure: DaemonEnsureResult,
+    transport_observability: dict[str, Any],
+) -> int | None:
+    decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}
+    if decision.get("explicit_ensure") or decision.get("env_force"):
+        print(json.dumps({
+            "ok": False,
+            "error_code": "daemon_turn_transport_failed_after_explicit_ensure",
+            "transport_observability": transport_observability,
+            "truth_boundary": "Jawne wymaganie persistent daemonu nie może po cichu przejść do one-shot po błędzie transportu tury.",
+        }, ensure_ascii=False, indent=2, sort_keys=True))
+        return 1
+    if transport_observability.get("selected_transport") == "persistent_daemon":
+        transport_observability.update({
+            "selected_transport": "verified_one_shot_fallback",
+            "fallback_reason": "daemon_turn_transport_unavailable",
+            "one_shot_allowed": True,
+            "one_shot_verified": False,
+        })
+    return None
+
+
 def _run_chat_command_one_shot(
     *,
     cfg: JaznConfig,
@@ -2090,22 +2113,12 @@ def main(argv: list[str] | None = None) -> int:
             )
             if delegated is not None:
                 return delegated
-            decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}
-            if decision.get("explicit_ensure") or decision.get("env_force"):
-                print(json.dumps({
-                    "ok": False,
-                    "error_code": "daemon_turn_transport_failed_after_explicit_ensure",
-                    "transport_observability": transport_observability,
-                    "truth_boundary": "Jawne wymaganie persistent daemonu nie może po cichu przejść do one-shot po błędzie transportu tury.",
-                }, ensure_ascii=False, indent=2, sort_keys=True))
-                return 1
-            if transport_observability.get("selected_transport") == "persistent_daemon":
-                transport_observability.update({
-                    "selected_transport": "verified_one_shot_fallback",
-                    "fallback_reason": "daemon_turn_transport_unavailable",
-                    "one_shot_allowed": True,
-                    "one_shot_verified": False,
-                })
+            transport_exit = _handle_failed_daemon_turn_transport(
+                daemon_ensure,
+                transport_observability,
+            )
+            if transport_exit is not None:
+                return transport_exit
         bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
         if bridge_stdin is None and ns.final_only and not ns.chat_gpt_final_only and sys.stdin.isatty():
             print(
