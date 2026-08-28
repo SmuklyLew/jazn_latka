@@ -80,7 +80,7 @@ jobs:
               )
               return memory_context, memory_recall_contract, memory_recall_observability
 
-'''
+          '''
           text = text[:build_pos] + helper + text[build_pos:]
 
           old_block = '''        if turn_context is not None:
@@ -97,7 +97,7 @@ jobs:
               runtime_turn_id=turn_id,
               trace_id=trace_id,
           )
-'''
+          '''
           new_block = '''        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(
               text,
               memory_gate_intent_report,
@@ -106,7 +106,7 @@ jobs:
               turn_id=turn_id,
               trace_id=trace_id,
           )
-'''
+          '''
           if text.count(old_block) != 1:
               raise SystemExit(f"memory recall stage block count={text.count(old_block)}; expected 1")
           text = text.replace(old_block, new_block, 1)
