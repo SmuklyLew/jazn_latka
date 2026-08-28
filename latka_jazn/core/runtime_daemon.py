@@ -1481,7 +1481,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
         with self._chat_jobs_lock:
             now = time.monotonic()
             for job in self.chat_jobs.values():
-                if job.terminal() or job.status == DAEMON_CHAT_JOB_HOST_PENDING_STATE or job.turn_context is None:
+                # execution_timeout owns active execution only. A queued job has
+                # not started its execution budget yet; queue latency is tracked
+                # separately by the queue_wait stage.
+                if job.terminal() or job.status != "running" or job.turn_context is None:
                     continue
                 if now < job.turn_context.deadline_monotonic:
                     continue
@@ -1863,6 +1866,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
         with self._chat_jobs_lock:
             if job.terminal():
                 return
+            # Queue latency is telemetry, not part of the per-turn execution
+            # budget. Arm a fresh watchdog window when a queue worker actually
+            # picks the job up; this window still covers orchestration stalls
+            # such as a blocked get_session() call.
+            if job.turn_context is not None:
+                job.turn_context.deadline_monotonic = (
+                    pickup_started + job.turn_context.timeout_seconds
+                )
             job.status = "running"
             job.worker_generation = worker_generation
             job.started_at_utc = utc_now_iso()
@@ -1885,6 +1896,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 terminalized_while_initializing = job.terminal()
                 if not terminalized_while_initializing:
                     job.active_session_worker = session
+                    # Session acquisition has its own orchestration watchdog
+                    # window. Once it succeeds, the runtime turn receives the
+                    # full advertised execution budget instead of inheriting
+                    # scheduler/session-startup latency.
+                    if job.turn_context is not None:
+                        job.turn_context.deadline_monotonic = (
+                            time.monotonic() + job.turn_context.timeout_seconds
+                        )
             if terminalized_while_initializing:
                 self._retire_session_worker(session)
                 return
