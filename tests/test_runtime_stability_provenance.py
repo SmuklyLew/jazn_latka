@@ -8,6 +8,7 @@ import subprocess
 import pytest
 
 from latka_jazn.core.source_provenance import read_source_provenance
+from latka_jazn.bootstrap.chatgpt_recovery import runtime_preflight
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest, write_package_integrity_manifest
 from latka_jazn.tools.release_staging import create_release_staging
 from latka_jazn.tools.source_provenance import (
@@ -186,5 +187,102 @@ def test_export_profile_rejects_source_provenance_removed_from_manifest(tmp_path
     manifest["files"] = [item for item in manifest["files"] if item["path"] != "SOURCE_PROVENANCE.json"]
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     status = read_source_provenance(staging, profile="export_without_git")
+    assert status.status == "invalid"
+    assert status.manifest_protected is False
+
+
+def _filesystem_snapshot_root(tmp_path: Path) -> Path:
+    root = tmp_path / "filesystem-snapshot"
+    (root / "latka_jazn").mkdir(parents=True)
+    runtime_version = f"{PACKAGE_VERSION}-package-provenance-bootstrap-hardening"
+    (root / "latka_jazn" / "version.py").write_text(
+        f'DISTRIBUTION_VERSION = {PACKAGE_VERSION!r}\n'
+        f'PACKAGE_VERSION = {PACKAGE_VERSION!r}\n'
+        'PACKAGE_RELEASE_NAME = "package-provenance-bootstrap-hardening"\n',
+        encoding="utf-8",
+    )
+    (root / "run.py").write_text("print('run')\n", encoding="utf-8")
+    (root / "main.py").write_text("print('main')\n", encoding="utf-8")
+    payload = {
+        "schema_version": f"source_provenance/{PACKAGE_VERSION}",
+        "repository": None,
+        "remote_url": None,
+        "base_branch": None,
+        "base_merge_commit": None,
+        "base_pull_request": None,
+        "git_tree_sha": None,
+        "dirty": None,
+        "tag": None,
+        "commit_date": None,
+        "base_version": runtime_version,
+        "runtime_version": runtime_version,
+        "update_version": runtime_version,
+        "version_source": "latka_jazn/version.py",
+        "generation_mode": "filesystem_snapshot",
+        "source_commit_policy": "not_applicable_git_integration_disabled",
+        "truth_boundary": (
+            "Git/GitHub integration was disabled. Provenance identifies the exact filesystem snapshot only."
+        ),
+    }
+    (root / "SOURCE_PROVENANCE.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    write_package_integrity_manifest(root)
+    return root
+
+
+def test_filesystem_snapshot_is_runtime_trusted_only_when_manifest_protected(tmp_path: Path) -> None:
+    root = _filesystem_snapshot_root(tmp_path)
+    status = read_source_provenance(root, profile="system_smoke")
+    assert status.status == "verified_export_without_git_history"
+    assert status.manifest_protected is True
+    assert status.base_merge_commit is None
+    assert status.git_tree_sha is None
+    assert status.dirty is None
+    assert any("intentionally not asserted" in item for item in status.limitations)
+
+    marker_path = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    marker = build_active_runtime_status(root, marker_output=marker_path)
+    assert marker["source_provenance_status"] == "verified_export_without_git_history"
+    assert marker["source_base_commit"] is None
+    assert marker["source_provenance_verified"] is True
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+
+    preflight = runtime_preflight(root, marker_path=marker_path)
+    assert preflight.manifest_ok is True
+    assert preflight.provenance_ok is True
+    assert preflight.marker_ok is True
+    assert preflight.ok is True
+
+
+def test_filesystem_snapshot_does_not_satisfy_git_or_release_profiles(tmp_path: Path) -> None:
+    root = _filesystem_snapshot_root(tmp_path)
+    for profile in ("development", "release", "export_without_git"):
+        status = read_source_provenance(root, profile=profile)
+        assert status.status == "invalid"
+        assert any("rejects filesystem_snapshot" in item for item in status.limitations)
+
+
+def test_filesystem_snapshot_rejects_fabricated_git_identity(tmp_path: Path) -> None:
+    root = _filesystem_snapshot_root(tmp_path)
+    provenance_path = root / "SOURCE_PROVENANCE.json"
+    payload = json.loads(provenance_path.read_text(encoding="utf-8"))
+    payload["base_merge_commit"] = "a" * 40
+    provenance_path.write_text(json.dumps(payload), encoding="utf-8")
+    write_package_integrity_manifest(root)
+    status = read_source_provenance(root, profile="system_smoke")
+    assert status.status == "invalid"
+    assert any("must not assert Git/GitHub identity" in item for item in status.limitations)
+
+
+def test_filesystem_snapshot_rejects_unprotected_provenance(tmp_path: Path) -> None:
+    root = _filesystem_snapshot_root(tmp_path)
+    manifest_path = root / "PACKAGE_INTEGRITY_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"] = [item for item in manifest["files"] if item["path"] != "SOURCE_PROVENANCE.json"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    status = read_source_provenance(root, profile="system_smoke")
     assert status.status == "invalid"
     assert status.manifest_protected is False

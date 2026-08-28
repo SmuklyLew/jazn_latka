@@ -23,8 +23,8 @@ def _load_generator():
 
 def test_v16311_exposes_exact_four_user_profiles_in_requested_order() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "8.5"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"
+    assert generator.GENERATOR_VERSION == "8.6"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"
     # Historical constants stay source-compatible; this is the new canonical UI order.
     assert generator.USER_PROFILE_CHOICES == ("combined", "system", "memory", "dual")
     assert generator.PROFILE_DISPLAY["combined"] == "SYSTEM + PAMIĘĆ (1 ZIP)"

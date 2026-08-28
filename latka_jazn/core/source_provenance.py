@@ -15,6 +15,8 @@ SCHEMA_VERSION = schema_version("source_provenance_status")
 PROVENANCE_FILENAME = "SOURCE_PROVENANCE.json"
 PROVENANCE_PROFILES = frozenset({"development", "system_smoke", "release", "export_without_git"})
 _RELEASE_METADATA_MODE = "release_metadata"
+_FILESYSTEM_SNAPSHOT_MODE = "filesystem_snapshot"
+_FILESYSTEM_SNAPSHOT_POLICY = "not_applicable_git_integration_disabled"
 _METADATA_ONLY_PATHS = frozenset({PROVENANCE_FILENAME, "PACKAGE_INTEGRITY_MANIFEST.json"})
 
 
@@ -167,22 +169,71 @@ def read_source_provenance(
     git_present = (root / ".git").exists()
     manifest_protected = _manifest_protects_provenance(root, path)
 
-    if not version_matches:
-        limitations.append(
-            f"provenance runtime_version={runtime_version!r} differs from runtime root "
-            f"{expected_runtime_version!r}"
-        )
-    if not commit_valid:
-        limitations.append("base_merge_commit is not a 40-character Git SHA")
-    if not tree_shape_valid:
-        limitations.append("git_tree_sha is not a 40-character Git SHA")
-
     status = "invalid"
     head_sha: str | None = None
     commit_matches_head: bool | None = None
     tree_matches_commit: bool | None = None
+    filesystem_snapshot_mode = generation_mode == _FILESYSTEM_SNAPSHOT_MODE
 
-    if version_matches and commit_valid and tree_shape_valid and git_present:
+    if filesystem_snapshot_mode:
+        if not version_matches:
+            limitations.append(
+                f"provenance runtime_version={runtime_version!r} differs from runtime root "
+                f"{expected_runtime_version!r}"
+            )
+        if profile != "system_smoke":
+            limitations.append(
+                f"{profile} profile rejects filesystem_snapshot provenance; "
+                "Git-backed release provenance is required"
+            )
+        if not manifest_protected:
+            limitations.append(
+                "PACKAGE_INTEGRITY_MANIFEST.json does not protect SOURCE_PROVENANCE.json"
+            )
+        if str(payload.get("source_commit_policy") or "") != _FILESYSTEM_SNAPSHOT_POLICY:
+            limitations.append(
+                "filesystem_snapshot requires source_commit_policy=not_applicable_git_integration_disabled"
+            )
+        base_version = str(payload.get("base_version") or "") or None
+        if base_version != runtime_version:
+            limitations.append("filesystem_snapshot base_version must equal runtime_version")
+
+        git_assertion_fields = (
+            "repository",
+            "remote_url",
+            "base_branch",
+            "base_merge_commit",
+            "base_pull_request",
+            "git_tree_sha",
+            "dirty",
+            "tag",
+            "commit_date",
+        )
+        asserted = [name for name in git_assertion_fields if payload.get(name) is not None]
+        if asserted:
+            limitations.append(
+                "filesystem_snapshot must not assert Git/GitHub identity fields: "
+                + ", ".join(asserted)
+            )
+        if not limitations:
+            status = "verified_export_without_git_history"
+            limitations.append(
+                "Git/GitHub repository, revision, branch and dirty state are intentionally not asserted; "
+                "runtime trust is limited to the manifest-protected filesystem snapshot."
+            )
+
+    else:
+        if not version_matches:
+            limitations.append(
+                f"provenance runtime_version={runtime_version!r} differs from runtime root "
+                f"{expected_runtime_version!r}"
+            )
+        if not commit_valid:
+            limitations.append("base_merge_commit is not a 40-character Git SHA")
+        if not tree_shape_valid:
+            limitations.append("git_tree_sha is not a 40-character Git SHA")
+
+    if not filesystem_snapshot_mode and version_matches and commit_valid and tree_shape_valid and git_present:
         assert merge_commit is not None
         commit_rc, _, commit_error = _git(root, "cat-file", "-e", f"{merge_commit}^{{commit}}")
         _, current_tree, _ = _git(root, "rev-parse", f"{merge_commit}^{{tree}}")
@@ -219,7 +270,7 @@ def read_source_provenance(
         if not limitations:
             status = "development_dirty_verified" if actual_dirty else "clean_checkout_verified"
 
-    elif version_matches and commit_valid and tree_shape_valid and not git_present:
+    elif not filesystem_snapshot_mode and version_matches and commit_valid and tree_shape_valid and not git_present:
         limitations.append(".git is not included; local branch, tag and dirty state cannot be independently verified")
         strict_export_ok = bool(
             profile == "export_without_git"

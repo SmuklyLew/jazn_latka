@@ -75,9 +75,15 @@ def evaluate_runtime_readiness(
         and daemon.get("endpoint_reachable")
         and daemon.get("heartbeat_fresh")
     )
+
+    # A manifest-bound filesystem snapshot is sufficient for activation/runtime
+    # trust, but it intentionally makes no Git/GitHub revision claims. Keep that
+    # weaker provenance class out of release-readiness even though the transport
+    # status remains backward-compatible with verified_export_without_git_history.
     release_metadata_current = bool(
         package_integrity_checks.get("verification_ok")
         and provenance.get("version_matches_runtime")
+        and provenance.get("generation_mode") != "filesystem_snapshot"
         and provenance.get("status")
         in {"clean_checkout_verified", "verified_export_without_git_history"}
     )
