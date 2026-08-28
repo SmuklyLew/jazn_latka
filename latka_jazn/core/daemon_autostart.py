@@ -111,6 +111,16 @@ class DaemonEnsureResult:
     status_before: dict[str, Any] | None = None
     startup: dict[str, Any] | None = None
     status_after: dict[str, Any] | None = None
+    selected_transport: str = "host_diagnostic"
+    fallback_reason: str = "transport_not_classified"
+    requested_runtime_root: str | None = None
+    resolved_active_root: str | None = None
+    daemon_endpoint_root: str | None = None
+    daemon_identity_verified: bool = False
+    daemon_reused: bool = False
+    daemon_started: bool = False
+    one_shot_allowed: bool = False
+    one_shot_verified: bool = False
     schema_version: str = schema_version("daemon_ensure_result")
     truth_boundary: str = (
         "ensure_daemon_for_runtime_turn może uruchomić daemon tylko dla trasy rozmowy albo jawnego --ensure-daemon. "
@@ -119,6 +129,20 @@ class DaemonEnsureResult:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    def transport_observability(self) -> dict[str, Any]:
+        return {
+            "selected_transport": self.selected_transport,
+            "fallback_reason": self.fallback_reason,
+            "requested_runtime_root": self.requested_runtime_root,
+            "resolved_active_root": self.resolved_active_root,
+            "daemon_endpoint_root": self.daemon_endpoint_root,
+            "daemon_identity_verified": self.daemon_identity_verified,
+            "daemon_reused": self.daemon_reused,
+            "daemon_started": self.daemon_started,
+            "one_shot_allowed": self.one_shot_allowed,
+            "one_shot_verified": self.one_shot_verified,
+        }
 
 
 def _truthy(value: str | None, *, default: bool = False) -> bool:
@@ -168,6 +192,43 @@ def _resolved_subject_config(
     except (OSError, RuntimeError, ValueError):
         return None
     return replace(config, root=subject_root)
+
+
+def _transport_roots(
+    config: JaznConfig,
+    status: Mapping[str, Any],
+) -> tuple[str, str, str | None]:
+    requested = str(status.get("requested_runtime_root") or Path(config.root).resolve())
+    resolved = str(
+        status.get("resolved_active_root")
+        or status.get("subject_runtime_root")
+        or Path(config.root).resolve()
+    )
+    endpoint = status.get("endpoint_reported_active_root")
+    return requested, resolved, str(endpoint) if endpoint not in (None, "") else None
+
+
+def _fallback_truth_boundary_failure(status: Mapping[str, Any]) -> str | None:
+    reason = _status_active_reason(status)
+    if status.get("marker_found") is True and status.get("marker_valid") is not True:
+        return "ambiguous_subject_root"
+    if reason.startswith("active_marker_") or reason.startswith("marker_"):
+        return "ambiguous_subject_root"
+    if reason == "endpoint_runtime_root_mismatch":
+        return "daemon_identity_root_mismatch"
+    if reason == "endpoint_pid_mismatch":
+        return "daemon_identity_pid_mismatch"
+    if reason == "package_integrity_verification_failed":
+        return "runtime_integrity_failure"
+    if reason == "source_provenance_not_verified":
+        return "runtime_provenance_failure"
+    if reason in DEGRADED_TURN_BLOCKING_REASONS:
+        return (
+            "daemon_heartbeat_stale"
+            if reason == "endpoint_identity_confirmed_heartbeat_stale"
+            else "daemon_endpoint_unreachable_with_live_process"
+        )
+    return None
 
 
 def status_allows_runtime_turn(status: Mapping[str, Any] | None, *, allow_degraded: bool = True) -> bool:
@@ -313,6 +374,7 @@ def ensure_daemon_for_runtime_turn(
     )
     status_before = status_daemon(config, host=host, port=port, marker_output=marker_output)
     before_state = _status_active_state(status_before)
+    requested_root, resolved_root, endpoint_root = _transport_roots(config, status_before)
     if status_allows_runtime_turn(status_before, allow_degraded=allow_degraded):
         return DaemonEnsureResult(
             ok=True,
@@ -322,16 +384,39 @@ def ensure_daemon_for_runtime_turn(
             decision=decision.to_dict(),
             status_before=status_before,
             status_after=status_before,
+            selected_transport="persistent_daemon",
+            fallback_reason="daemon_reused",
+            requested_runtime_root=requested_root,
+            resolved_active_root=resolved_root,
+            daemon_endpoint_root=endpoint_root,
+            daemon_identity_verified=bool(status_before.get("endpoint_identity_matches")),
+            daemon_reused=True,
         )
     if not decision.should_ensure:
+        boundary_failure = _fallback_truth_boundary_failure(status_before)
+        one_shot_allowed = bool(
+            decision.command in VERIFIED_ONE_SHOT_FALLBACK_COMMANDS
+            and boundary_failure is None
+        )
         return DaemonEnsureResult(
             ok=False,
             ensured=False,
             active_state=before_state,
-            reason=decision.reason,
+            reason=boundary_failure or decision.reason,
             decision=decision.to_dict(),
             status_before=status_before,
             status_after=status_before,
+            selected_transport=(
+                "verified_one_shot_fallback"
+                if one_shot_allowed
+                else "host_diagnostic"
+            ),
+            fallback_reason=(boundary_failure or decision.reason),
+            requested_runtime_root=requested_root,
+            resolved_active_root=resolved_root,
+            daemon_endpoint_root=endpoint_root,
+            daemon_identity_verified=False,
+            one_shot_allowed=one_shot_allowed,
         )
     subject_config = _resolved_subject_config(config, status_before)
     if subject_config is None:
@@ -343,6 +428,11 @@ def ensure_daemon_for_runtime_turn(
             decision=decision.to_dict(),
             status_before=status_before,
             status_after=status_before,
+            selected_transport="host_diagnostic",
+            fallback_reason="ambiguous_subject_root",
+            requested_runtime_root=requested_root,
+            resolved_active_root=resolved_root,
+            daemon_endpoint_root=endpoint_root,
         )
     startup = start_daemon(
         subject_config,
@@ -355,6 +445,8 @@ def ensure_daemon_for_runtime_turn(
     status_after = status_daemon(config, host=host, port=port, marker_output=marker_output)
     after_state = _status_active_state(status_after)
     ok = status_allows_runtime_turn(status_after, allow_degraded=allow_degraded)
+    after_requested, after_resolved, after_endpoint = _transport_roots(config, status_after)
+    startup_reused = bool(startup.get("already_running"))
     return DaemonEnsureResult(
         ok=ok,
         ensured=ok,
@@ -364,6 +456,22 @@ def ensure_daemon_for_runtime_turn(
         status_before=status_before,
         startup=startup,
         status_after=status_after,
+        selected_transport="persistent_daemon" if ok else "host_diagnostic",
+        fallback_reason=(
+            "daemon_reused"
+            if ok and startup_reused
+            else "daemon_started"
+            if ok
+            else "daemon_start_required_failed"
+        ),
+        requested_runtime_root=after_requested,
+        resolved_active_root=after_resolved,
+        daemon_endpoint_root=after_endpoint,
+        daemon_identity_verified=bool(
+            ok and status_after.get("endpoint_identity_matches")
+        ),
+        daemon_reused=bool(ok and startup_reused),
+        daemon_started=bool(ok and not startup_reused),
     )
 
 

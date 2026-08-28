@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import hashlib
 import io
 import json
@@ -383,6 +384,7 @@ def _try_chat_gpt_one_shot_via_daemon(
     trusted_time_source: str | None = None,
     trusted_time_max_age_seconds: int | None = None,
     trusted_time_required: bool = False,
+    transport_observability: dict[str, Any] | None = None,
 ) -> int | None:
     """Prefer a live daemon for `--chat-gpt -- <text>` without exposing a second public flag.
 
@@ -437,9 +439,14 @@ def _try_chat_gpt_one_shot_via_daemon(
             print(f"[daemon_chat_failed_fallback] {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
     attach_cli_flag_warning(result, input_warning)
+    if transport_observability is not None:
+        result["transport_observability"] = dict(transport_observability)
     result["host_pre_response_gate_context"] = {
         "runtime_turn_invoked": True,
-        "requested_runtime_root": str(cfg.root),
+        "requested_runtime_root": str(
+            (transport_observability or {}).get("requested_runtime_root")
+            or cfg.root
+        ),
     }
     result.setdefault("chat_bridge", {})
     if isinstance(result["chat_bridge"], dict):
@@ -452,6 +459,7 @@ def _try_chat_gpt_one_shot_via_daemon(
             "daemon_session_id": daemon_session_id,
             "fallback_if_unavailable": "local_jsonl_runtime_session",
             "trusted_time_sync": trusted_time_sync,
+            "transport_observability": dict(transport_observability or {}),
             "truth_boundary": "--chat-gpt używa daemon fast path tylko gdy marker i lokalny endpoint potwierdzają żywy runtime; jawnie dostarczony czas hosta jest najpierw synchronizowany do procesu daemonu, a przy odrzuceniu most wraca do lokalnego JSONL bridge.",
         })
     result["chatgpt_bridge"] = result.get("chat_bridge")
@@ -813,7 +821,10 @@ def _ensure_daemon_or_error(
 ) -> tuple[DaemonEnsureResult, int | None]:
     result = _ensure_daemon_for_cli_turn(ns, cfg, command, explicit=explicit)
     decision = result.decision if isinstance(result.decision, dict) else {}
-    if result.ok or not decision.get("should_ensure"):
+    if result.ok or (
+        result.selected_transport == "verified_one_shot_fallback"
+        and result.one_shot_allowed
+    ):
         return result, None
     print(json.dumps({
         "ok": False,
@@ -823,6 +834,22 @@ def _ensure_daemon_or_error(
         "truth_boundary": "Trasa rozmowy wymaga działającego daemonu; ponieważ ensure nie potwierdził active_trusted/active_degraded, runtime nie udaje rozmowy z aktywną Jaźnią.",
     }, ensure_ascii=False, indent=2, sort_keys=True))
     return result, 1
+
+
+def _runtime_config_for_transport(
+    config: JaznConfig,
+    transport: dict[str, Any],
+) -> JaznConfig:
+    raw_root = transport.get("resolved_active_root")
+    if raw_root in (None, ""):
+        return config
+    try:
+        subject = Path(str(raw_root)).expanduser()
+        if not subject.is_absolute():
+            return config
+        return replace(config, root=subject.resolve())
+    except (OSError, RuntimeError, ValueError):
+        return config
 def _run_chat_command_one_shot(
     *,
     cfg: JaznConfig,
@@ -2036,10 +2063,11 @@ def main(argv: list[str] | None = None) -> int:
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-gpt")
         if daemon_exit is not None:
             return daemon_exit
+        transport_observability = daemon_ensure.transport_observability()
+        runtime_cfg = _runtime_config_for_transport(cfg, transport_observability)
         if bridge_text:
-            daemon_first = _env_flag_enabled("JAZN_CHATGPT_PREFER_DAEMON", default=True)
             delegated = _try_chat_gpt_one_shot_via_daemon(
-                cfg=cfg,
+                cfg=runtime_cfg,
                 text=bridge_text,
                 session_id=ns.session_id,
                 no_carryover=ns.no_carryover,
@@ -2058,11 +2086,26 @@ def main(argv: list[str] | None = None) -> int:
                     else _optional_positive_env_int("JAZN_TRUSTED_TIME_MAX_AGE_SECONDS")
                 ),
                 trusted_time_required=trusted_time_required_for_turn,
+                transport_observability=transport_observability,
             )
             if delegated is not None:
                 return delegated
-        else:
-            daemon_first = False
+            decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}
+            if decision.get("explicit_ensure") or decision.get("env_force"):
+                print(json.dumps({
+                    "ok": False,
+                    "error_code": "daemon_turn_transport_failed_after_explicit_ensure",
+                    "transport_observability": transport_observability,
+                    "truth_boundary": "Jawne wymaganie persistent daemonu nie może po cichu przejść do one-shot po błędzie transportu tury.",
+                }, ensure_ascii=False, indent=2, sort_keys=True))
+                return 1
+            if transport_observability.get("selected_transport") == "persistent_daemon":
+                transport_observability.update({
+                    "selected_transport": "verified_one_shot_fallback",
+                    "fallback_reason": "daemon_turn_transport_unavailable",
+                    "one_shot_allowed": True,
+                    "one_shot_verified": False,
+                })
         bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
         if bridge_stdin is None and ns.final_only and not ns.chat_gpt_final_only and sys.stdin.isatty():
             print(
@@ -2072,14 +2115,15 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 2
         return run_jsonl_chat_bridge(
-            config=cfg,
+            config=runtime_cfg,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
             command="--chat-gpt",
             stdin=bridge_stdin,
             require_openai_api_key=False,
             output_mode=output_mode,
-            one_shot_degraded=bool(bridge_text and daemon_first),
+            one_shot_degraded=True,
+            transport_observability=transport_observability,
         )
 
     if ns.local_llm:

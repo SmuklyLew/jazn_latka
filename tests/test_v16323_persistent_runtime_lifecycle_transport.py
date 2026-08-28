@@ -6,8 +6,10 @@ from typing import Any
 
 import pytest
 
+import main as main_module
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import daemon_autostart, runtime_daemon
+from latka_jazn.core.daemon_autostart import DaemonEnsureResult
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 
 
@@ -260,3 +262,229 @@ def test_control_operation_refuses_identity_mismatch_before_http_mutation(
     assert result["ok"] is False
     assert result["error_code"] == "daemon_identity_not_confirmed"
     assert result["init_response"] is None
+
+
+def test_healthy_subject_b_reports_persistent_daemon_reuse(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requested_root = _runtime_root(tmp_path / "runtime_A")
+    subject_root = _runtime_root(tmp_path / "runtime_B")
+    healthy = _status(
+        requested_root,
+        subject_root,
+        state="active_trusted",
+        identity_matches=True,
+    )
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: healthy)
+    monkeypatch.setattr(
+        daemon_autostart,
+        "start_daemon",
+        lambda *_args, **_kwargs: pytest.fail("healthy subject B must be reused"),
+    )
+
+    result = daemon_autostart.ensure_daemon_for_runtime_turn(
+        JaznConfig(root=requested_root),
+        command="--chat-gpt",
+        env={},
+    )
+    transport = result.transport_observability()
+
+    assert result.ok is True
+    assert transport == {
+        "selected_transport": "persistent_daemon",
+        "fallback_reason": "daemon_reused",
+        "requested_runtime_root": str(requested_root),
+        "resolved_active_root": str(subject_root),
+        "daemon_endpoint_root": str(subject_root),
+        "daemon_identity_verified": True,
+        "daemon_reused": True,
+        "daemon_started": False,
+        "one_shot_allowed": False,
+        "one_shot_verified": False,
+    }
+
+
+def test_inactive_chatgpt_reports_controlled_one_shot_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = _runtime_root(tmp_path / "runtime_A")
+    inactive = _status(root, root, state="inactive", identity_matches=False)
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: inactive)
+
+    result = daemon_autostart.ensure_daemon_for_runtime_turn(
+        JaznConfig(root=root),
+        command="--chat-gpt",
+        env={},
+    )
+
+    assert result.selected_transport == "verified_one_shot_fallback"
+    assert result.fallback_reason == "verified_one_shot_fallback_allowed"
+    assert result.one_shot_allowed is True
+    assert result.one_shot_verified is False
+
+
+@pytest.mark.parametrize(
+    ("active_reason", "fallback_reason"),
+    [
+        ("endpoint_runtime_root_mismatch", "daemon_identity_root_mismatch"),
+        ("endpoint_pid_mismatch", "daemon_identity_pid_mismatch"),
+        ("endpoint_identity_confirmed_heartbeat_stale", "daemon_heartbeat_stale"),
+        ("package_integrity_verification_failed", "runtime_integrity_failure"),
+        ("source_provenance_not_verified", "runtime_provenance_failure"),
+    ],
+)
+def test_truth_boundary_failure_never_downgrades_to_one_shot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    active_reason: str,
+    fallback_reason: str,
+) -> None:
+    requested_root = _runtime_root(tmp_path / "runtime_A")
+    subject_root = _runtime_root(tmp_path / "runtime_B")
+    failed = _status(
+        requested_root,
+        subject_root,
+        state="inactive",
+        identity_matches=False,
+    )
+    failed["active_state_reason"] = active_reason
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: failed)
+
+    result = daemon_autostart.ensure_daemon_for_runtime_turn(
+        JaznConfig(root=requested_root),
+        command="--chat-gpt",
+        env={},
+    )
+
+    assert result.selected_transport == "host_diagnostic"
+    assert result.fallback_reason == fallback_reason
+    assert result.one_shot_allowed is False
+
+
+def test_explicit_ensure_failure_reports_no_one_shot_transport(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = _runtime_root(tmp_path / "runtime_A")
+    inactive = _status(root, root, state="inactive", identity_matches=False)
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: inactive)
+    monkeypatch.setattr(
+        daemon_autostart,
+        "start_daemon",
+        lambda *_args, **_kwargs: {"ok": False, "started": False},
+    )
+
+    result = daemon_autostart.ensure_daemon_for_runtime_turn(
+        JaznConfig(root=root),
+        command="--chat-gpt",
+        explicit_ensure=True,
+        env={},
+    )
+
+    assert result.ok is False
+    assert result.selected_transport == "host_diagnostic"
+    assert result.fallback_reason == "daemon_start_required_failed"
+    assert result.one_shot_allowed is False
+
+
+def test_chatgpt_main_binds_persistent_turn_to_resolved_subject_b(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requested_root = _runtime_root(tmp_path / "runtime_A")
+    subject_root = _runtime_root(tmp_path / "runtime_B")
+    ensure = DaemonEnsureResult(
+        ok=True,
+        ensured=True,
+        active_state="active_trusted",
+        reason="already_active",
+        decision={"should_ensure": False},
+        selected_transport="persistent_daemon",
+        fallback_reason="daemon_reused",
+        requested_runtime_root=str(requested_root),
+        resolved_active_root=str(subject_root),
+        daemon_endpoint_root=str(subject_root),
+        daemon_identity_verified=True,
+        daemon_reused=True,
+    )
+    monkeypatch.setattr(
+        main_module,
+        "_ensure_daemon_for_cli_turn",
+        lambda *_args, **_kwargs: ensure,
+    )
+    delegated: list[dict[str, Any]] = []
+
+    def fake_daemon_turn(**kwargs: Any) -> int:
+        delegated.append(kwargs)
+        return 0
+
+    monkeypatch.setattr(main_module, "_try_chat_gpt_one_shot_via_daemon", fake_daemon_turn)
+    monkeypatch.setattr(
+        main_module,
+        "run_jsonl_chat_bridge",
+        lambda **_kwargs: pytest.fail("healthy persistent B must not run one-shot"),
+    )
+
+    exit_code = main_module.main(
+        [
+            "--root",
+            str(requested_root),
+            "--no-runtime-preflight",
+            "--chat-gpt",
+            "--",
+            "Zgadnij.",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(delegated) == 1
+    assert delegated[0]["cfg"].root == subject_root
+    assert delegated[0]["text"] == "Zgadnij."
+    assert delegated[0]["transport_observability"]["requested_runtime_root"] == str(requested_root)
+    assert delegated[0]["transport_observability"]["resolved_active_root"] == str(subject_root)
+    assert delegated[0]["transport_observability"]["selected_transport"] == "persistent_daemon"
+
+
+def test_chatgpt_main_explicit_ensure_failure_never_calls_one_shot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = _runtime_root(tmp_path / "runtime_A")
+    inactive = _status(root, root, state="inactive", identity_matches=False)
+    monkeypatch.setattr(daemon_autostart, "status_daemon", lambda *_args, **_kwargs: inactive)
+    monkeypatch.setattr(
+        daemon_autostart,
+        "start_daemon",
+        lambda *_args, **_kwargs: {"ok": False, "started": False},
+    )
+    monkeypatch.setattr(
+        main_module,
+        "_try_chat_gpt_one_shot_via_daemon",
+        lambda **_kwargs: pytest.fail("failed explicit ensure must stop before a daemon turn"),
+    )
+    monkeypatch.setattr(
+        main_module,
+        "run_jsonl_chat_bridge",
+        lambda **_kwargs: pytest.fail("failed explicit ensure must not run one-shot"),
+    )
+
+    exit_code = main_module.main(
+        [
+            "--root",
+            str(root),
+            "--no-runtime-preflight",
+            "--ensure-daemon",
+            "--chat-gpt",
+            "--",
+            "Hej.",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 1
+    assert '"error_code": "daemon_ensure_failed"' in output
+    assert '"selected_transport": "host_diagnostic"' in output
+    assert '"fallback_reason": "daemon_start_required_failed"' in output

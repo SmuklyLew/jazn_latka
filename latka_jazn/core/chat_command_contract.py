@@ -1322,6 +1322,7 @@ def run_jsonl_chat_bridge(
     require_openai_api_key: bool = False,
     output_mode: BridgeOutputMode = "jsonl",
     one_shot_degraded: bool = False,
+    transport_observability: dict[str, Any] | None = None,
 ) -> int:
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
@@ -1344,6 +1345,7 @@ def run_jsonl_chat_bridge(
     protocol_version = CHATGPT_BRIDGE_PROTOCOL
     default_client = "chatgpt_bridge"
     default_lifecycle = "chatgpt_bridge_jsonl"
+    turn_transport = dict(transport_observability or {})
     if command == "--chat-open-ai":
         protocol_version = CHAT_OPENAI_PROTOCOL
         default_client = "openai_api_bridge"
@@ -1399,6 +1401,8 @@ def run_jsonl_chat_bridge(
             meta["input_field"] = input_field
         if line_index is not None:
             meta["line_index"] = line_index
+        if turn_transport:
+            meta["transport_observability"] = dict(turn_transport)
         return meta
 
     def error_payload(
@@ -1417,7 +1421,10 @@ def run_jsonl_chat_bridge(
             "chat_command_contract": contract,
             "host_pre_response_gate_context": {
                 "runtime_turn_invoked": runtime_turn_invoked,
-                "requested_runtime_root": str(config.root),
+                "requested_runtime_root": str(
+                    turn_transport.get("requested_runtime_root")
+                    or config.root
+                ),
             },
             "ok": False,
             "error_code": error_code,
@@ -1551,6 +1558,12 @@ def run_jsonl_chat_bridge(
                 continue
             attach_cli_flag_warning(result, input_warning)
             if one_shot_degraded:
+                turn_transport.update({
+                    "selected_transport": "verified_one_shot_fallback",
+                    "one_shot_allowed": True,
+                    "one_shot_verified": True,
+                })
+                turn_transport.setdefault("fallback_reason", "verified_one_shot_fallback_allowed")
                 result["one_shot_degraded"] = True
                 result["process_lifecycle"] = "one_shot"
                 result["daemon_confirmed"] = False
@@ -1560,10 +1573,15 @@ def run_jsonl_chat_bridge(
                     "message": "Daemon nie został potwierdzony; wykonano zweryfikowaną turę jednorazową.",
                     "must_not_modify_final_visible_text": True,
                 }
+            if turn_transport:
+                result["transport_observability"] = dict(turn_transport)
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
             result["host_pre_response_gate_context"] = {
                 "runtime_turn_invoked": True,
-                "requested_runtime_root": str(config.root),
+                "requested_runtime_root": str(
+                    turn_transport.get("requested_runtime_root")
+                    or config.root
+                ),
             }
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
