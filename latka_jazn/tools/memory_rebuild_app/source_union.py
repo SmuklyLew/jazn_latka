@@ -109,6 +109,7 @@ def _variant(source: dict[str, Any], graph: Any) -> dict[str, Any]:
         "semantic_tree_sha256": graph.semantic_tree_sha256,
         "raw_tree_sha256": graph.raw_tree_sha256,
         "node_ids": frozenset(node.node_id for node in graph.nodes),
+        "message_node_ids": frozenset(node.node_id for node in graph.nodes if node.message_id),
         "message_hashes": {node.node_id: stable_node_hash(node) for node in graph.nodes},
         "parents": {node.node_id: node.parent_node_id for node in graph.nodes},
         "branch_points": frozenset(graph.branch_points),
@@ -134,7 +135,20 @@ def _relation(variants: list[dict[str, Any]]) -> tuple[str, list[str], list[str]
     return ("extension_family" if comparable else "branch_union"), [], []
 
 
-def _variant_cover(sources: list[dict[str, Any]], requirements: set[tuple[str, str]], by_source: dict[str, set[tuple[str, str]]]) -> list[str]:
+def _union_branch_points(variants: list[dict[str, Any]]) -> set[str]:
+    children_by_parent: dict[str, set[str]] = defaultdict(set)
+    for variant in variants:
+        for node_id, parent in variant["parents"].items():
+            if parent is not None:
+                children_by_parent[parent].add(node_id)
+    return {parent for parent, children in children_by_parent.items() if len(children) > 1}
+
+
+def _variant_cover(
+    sources: list[dict[str, Any]],
+    requirements: set[tuple[str, str]],
+    by_source: dict[str, set[tuple[str, str]]],
+) -> list[str]:
     uncovered = set(requirements)
     chosen: list[str] = []
     source_map = {item["sha256"]: item for item in sources}
@@ -193,8 +207,8 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         variants = [deduped[key] for key in sorted(deduped)]
         relation, changed_messages, changed_parents = _relation(variants)
         nodes = set().union(*(item["node_ids"] for item in variants))
-        message_nodes = set().union(*(set(item["message_hashes"]) for item in variants))
-        branches = set().union(*(item["branch_points"] for item in variants))
+        message_nodes = set().union(*(item["message_node_ids"] for item in variants))
+        branches = _union_branch_points(variants)
         for item in variants:
             requirements.add((conversation_id, item["semantic_tree_sha256"]))
         union_nodes += len(nodes)
@@ -229,6 +243,8 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
                 "relation": row["relation"],
                 "semantic_tree_sha256": row["semantic_tree_sha256"],
                 "union_node_count": row["union_node_count"],
+                "union_message_node_count": row["union_message_node_count"],
+                "union_branch_point_count": row["union_branch_point_count"],
                 "changed_message_node_ids": row["changed_message_node_ids"],
                 "changed_parent_node_ids": row["changed_parent_node_ids"],
             }
@@ -272,18 +288,27 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         "requires_projection_resolution": conflict_count > 0,
         "union_fingerprint_sha256": fingerprint,
         "deterministic_variant_cover_source_sha256": cover,
-        "redundant_lossless_source_sha256": sorted(item["sha256"] for item in lossless if item["sha256"] not in cover_set),
+        "redundant_lossless_source_sha256": sorted(
+            item["sha256"] for item in lossless if item["sha256"] not in cover_set
+        ),
         "sources": source_rows,
         "conversations": rows,
         "errors": errors,
-        "truth_boundary": "Source union preserves variants; it never chooses autobiographical truth from filename, file size, or import order.",
+        "truth_boundary": (
+            "Source union preserves variants; it never chooses autobiographical truth "
+            "from filename, file size, or import order."
+        ),
         "automatic_l2": False,
         "automatic_l3": False,
         "automatic_activation": False,
     }
 
 
-def run_source_union_analysis(sources: Iterable[str | Path], *, output_root: str | Path) -> dict[str, Any]:
+def run_source_union_analysis(
+    sources: Iterable[str | Path],
+    *,
+    output_root: str | Path,
+) -> dict[str, Any]:
     report = build_source_union_manifest(sources)
     root = Path(output_root).expanduser().resolve()
     private_path = _write_json(root / "source-union.private.json", report)
