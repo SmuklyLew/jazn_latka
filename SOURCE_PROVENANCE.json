@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "702501925308218fc34dde63c981b35786ed1cfa",
+  "base_merge_commit": "1744ab808a64a44af6bfbe42e28566703f5442b3",
   "base_version": "16.3.22-active-runtime-subject-root-hardening",
-  "commit_date": "2026-08-27T12:11:59+02:00",
+  "commit_date": "2026-08-28T09:48:40+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-27T10:11:59+00:00",
+  "generated_at_utc": "2026-08-28T07:48:40+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6f63881a1de480e7ba0ab4ed828294d7e8154805",
+  "git_tree_sha": "e775c0826be5071db51e6b5ac733cd01e5537ce6",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
