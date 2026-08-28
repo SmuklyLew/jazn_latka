@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply narrow cognitive-frame helper extraction
+      - name: Apply bounded cognitive-frame helper extraction
         shell: bash
         run: |
           python - <<'PY'
@@ -42,74 +42,84 @@ jobs:
           if build_pos < 0:
               raise SystemExit("build_cognitive_frame anchor not found")
 
-          helper = '''    def _build_turn_memory_recall_evidence(
-              self,
-              text: str,
-              memory_gate_intent_report: Any,
-              turn_context: TurnExecutionContext | None,
-              client_context: dict[str, Any] | None,
-              *,
-              turn_id: str,
-              trace_id: str,
-          ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-              if turn_context is not None:
-                  turn_context.start_stage("memory_use_gate")
-              memory_context = self._turn_memory_context(
-                  text,
-                  memory_gate_intent_report,
-                  turn_context,
-                  client_context,
-              )
-              if turn_context is not None:
-                  turn_context.complete_stage("memory_use_gate")
-                  memory_read_status = (
-                      "completed"
-                      if any((memory_context.get("counts") or {}).values())
-                      else "skipped_by_memory_gate"
-                  )
-                  turn_context.mark_stage("memory_reads", status=memory_read_status)
-              memory_recall_contract = self.memory_recall_contract_builder.build(
-                  memory_context,
-                  user_text=text,
-              ).to_dict()
-              memory_recall_observability = build_memory_recall_observability(
-                  memory_context,
-                  memory_recall_contract,
-                  runtime_turn_id=turn_id,
-                  trace_id=trace_id,
-              )
-              return memory_context, memory_recall_contract, memory_recall_observability
-
-          '''
+          helper_lines = [
+              "    def _build_turn_memory_recall_evidence(",
+              "        self,",
+              "        text: str,",
+              "        memory_gate_intent_report: Any,",
+              "        turn_context: TurnExecutionContext | None,",
+              "        client_context: dict[str, Any] | None,",
+              "        *,",
+              "        turn_id: str,",
+              "        trace_id: str,",
+              "    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:",
+              "        if turn_context is not None:",
+              "            turn_context.start_stage(\"memory_use_gate\")",
+              "        memory_context = self._turn_memory_context(",
+              "            text,",
+              "            memory_gate_intent_report,",
+              "            turn_context,",
+              "            client_context,",
+              "        )",
+              "        if turn_context is not None:",
+              "            turn_context.complete_stage(\"memory_use_gate\")",
+              "            memory_read_status = (",
+              "                \"completed\"",
+              "                if any((memory_context.get(\"counts\") or {}).values())",
+              "                else \"skipped_by_memory_gate\"",
+              "            )",
+              "            turn_context.mark_stage(\"memory_reads\", status=memory_read_status)",
+              "        memory_recall_contract = self.memory_recall_contract_builder.build(",
+              "            memory_context,",
+              "            user_text=text,",
+              "        ).to_dict()",
+              "        memory_recall_observability = build_memory_recall_observability(",
+              "            memory_context,",
+              "            memory_recall_contract,",
+              "            runtime_turn_id=turn_id,",
+              "            trace_id=trace_id,",
+              "        )",
+              "        return memory_context, memory_recall_contract, memory_recall_observability",
+              "",
+              "",
+          ]
+          helper = "\n".join(helper_lines)
           text = text[:build_pos] + helper + text[build_pos:]
+          build_pos += len(helper)
 
-          old_block = '''        if turn_context is not None:
-              turn_context.start_stage("memory_use_gate")
-          memory_context = self._turn_memory_context(text, memory_gate_intent_report, turn_context, client_context)
-          if turn_context is not None:
-              turn_context.complete_stage("memory_use_gate")
-              memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
-              turn_context.mark_stage("memory_reads", status=memory_read_status)
-          memory_recall_contract = self.memory_recall_contract_builder.build(memory_context, user_text=text).to_dict()
-          memory_recall_observability = build_memory_recall_observability(
-              memory_context,
-              memory_recall_contract,
-              runtime_turn_id=turn_id,
-              trace_id=trace_id,
+          stage_start_marker = (
+              "        if turn_context is not None:\n"
+              "            turn_context.start_stage(\"memory_use_gate\")\n"
           )
-          '''
-          new_block = '''        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(
-              text,
-              memory_gate_intent_report,
-              turn_context,
-              client_context,
-              turn_id=turn_id,
-              trace_id=trace_id,
-          )
-          '''
-          if text.count(old_block) != 1:
-              raise SystemExit(f"memory recall stage block count={text.count(old_block)}; expected 1")
-          text = text.replace(old_block, new_block, 1)
+          stage_start = text.find(stage_start_marker, build_pos)
+          stage_end_marker = "        raw_chat_status = self.raw_chat_importer.inspect().to_dict()\n"
+          stage_end = text.find(stage_end_marker, stage_start)
+          if stage_start < 0 or stage_end < 0:
+              raise SystemExit(
+                  f"memory recall stage boundaries not found: start={stage_start}, end={stage_end}"
+              )
+          old_stage = text[stage_start:stage_end]
+          for required in (
+              "self._turn_memory_context(",
+              "memory_recall_contract_builder.build(",
+              "build_memory_recall_observability(",
+              "turn_context.mark_stage(\"memory_reads\"",
+          ):
+              if required not in old_stage:
+                  raise SystemExit(f"memory recall stage missing expected marker: {required}")
+
+          new_stage = "\n".join([
+              "        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(",
+              "            text,",
+              "            memory_gate_intent_report,",
+              "            turn_context,",
+              "            client_context,",
+              "            turn_id=turn_id,",
+              "            trace_id=trace_id,",
+              "        )",
+              "",
+          ])
+          text = text[:stage_start] + new_stage + text[stage_end:]
           path.write_text(text, encoding="utf-8")
 
           tree = ast.parse(text)
