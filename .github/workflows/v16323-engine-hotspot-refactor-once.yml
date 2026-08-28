@@ -113,9 +113,7 @@ jobs:
               "            text,",
               "            memory_gate_intent_report,",
               "            turn_context,",
-              "            client_context,",
-              "            turn_id=turn_id,",
-              "            trace_id=trace_id,",
+              "            client_context, turn_id=turn_id, trace_id=trace_id,",
               "        )",
               "",
           ])
