@@ -51,12 +51,37 @@ jobs:
 
           for path in generator_tests:
               text = path.read_text(encoding='utf-8')
-              old = 'generator.GENERATOR_VERSION == "8.5"' if 'independent_memory' in path.name or 'v16311' in path.name or 'v84_contract' in path.name else 'module.GENERATOR_VERSION == "8.5"'
-              new = old.replace('"8.5"', '"8.6"')
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f'{path}: expected one generator-version assertion, got {count}')
-              path.write_text(text.replace(old, new, 1), encoding='utf-8', newline='\n')
+              version_old = (
+                  'generator.GENERATOR_VERSION == "8.5"'
+                  if 'independent_memory' in path.name or 'v16311' in path.name or 'v84_contract' in path.name
+                  else 'module.GENERATOR_VERSION == "8.5"'
+              )
+              version_new = version_old.replace('"8.5"', '"8.6"')
+              schema_old = (
+                  'generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"'
+                  if 'independent_memory' in path.name or 'v16311' in path.name or 'v84_contract' in path.name
+                  else 'module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.5"'
+              )
+              schema_new = schema_old.replace('/v8.5"', '/v8.6"')
+              version_count = text.count(version_old)
+              schema_count = text.count(schema_old)
+              if version_count != 1 or schema_count != 1:
+                  raise SystemExit(
+                      f'{path}: expected one stale generator version/schema; '
+                      f'got version={version_count}, schema={schema_count}'
+                  )
+              text = text.replace(version_old, version_new, 1)
+              text = text.replace(schema_old, schema_new, 1)
+
+              if path.name == 'test_independent_memory_package_contract_v2.py':
+                  name_old = 'test_generator_keeps_v85_public_identity_and_uses_v3_memory_contract'
+                  name_new = 'test_generator_keeps_v86_public_identity_and_uses_v3_memory_contract'
+                  name_count = text.count(name_old)
+                  if name_count != 1:
+                      raise SystemExit(f'{path}: expected one stale v85 test name, got {name_count}')
+                  text = text.replace(name_old, name_new, 1)
+
+              path.write_text(text, encoding='utf-8', newline='\n')
 
           old_version = '16.3.23-persistent-runtime-lifecycle-observability-hardening'
           new_version = '16.3.24-package-provenance-bootstrap-hardening'
@@ -68,7 +93,8 @@ jobs:
               name_count = text.count(old_name)
               if version_count != 1 or name_count != 1:
                   raise SystemExit(
-                      f'{path}: expected one stale version/name; got version={version_count}, name={name_count}'
+                      f'{path}: expected one stale release version/name; '
+                      f'got version={version_count}, name={name_count}'
                   )
               text = text.replace(old_version, new_version, 1)
               text = text.replace(old_name, new_name, 1)
