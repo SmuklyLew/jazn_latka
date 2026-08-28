@@ -37,15 +37,16 @@ class TestSpec:
 TEST_SPECS: tuple[TestSpec, ...] = (
     TestSpec(
         profile="test00",
-        label="Test 00 — Source Fidelity / bezstratny odczyt",
+        label="Test 00 — Source Fidelity + domknięcie snapshotów",
         goal=(
-            "Udowadnia, że wskazane źródła można odczytać w całości, zachować "
-            "bajtowo oraz zinwentaryzować bez gubienia obserwowanych ról, typów "
-            "treści i grafu rozmów."
+            "Udowadnia, że każde źródło można zachować/odczytać bezstratnie oraz że wszystkie "
+            "dostępne snapshoty rozmów tworzą jawny, niezależny od kolejności source union bez "
+            "założenia, że najnowszy lub największy eksport jest nadzbiorem wcześniejszych."
         ),
         inputs=(
             "HTML/HTM, JSON lub ZIP eksportu",
-            "opcjonalnie sidecary pełnego eksportu jako osobne źródła",
+            "opcjonalnie sidecary pełnego eksportu jako osobne źródła metadanych",
+            "wszystkie dostępne snapshoty eksportów, jeśli operator je posiada",
         ),
         readiness=(
             "źródło istnieje i jest zwykłym plikiem",
@@ -58,6 +59,8 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "inventory ról i content_type",
             "porównanie raw ↔ parsed",
             "round-trip SHA-256",
+            "source-set union po conversation_id + semantic_tree_sha256",
+            "deterministyczny variant cover",
             "integrity report",
         ),
         checks=(
@@ -68,17 +71,23 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "content_type są zinwentaryzowane bez allowlistowego odrzucania",
             "parent/children, current path i branch points pozostają policzalne",
             "każdy członek ZIP jest odczytany do końca i ma SHA-256/CRC metadata",
-            "rendered HTML fallback jest oznaczony LOSSY, nigdy PASSED",
+            "conversations.json i numerowane conversation JSON są źródłami kanonicznego grafu",
+            "embedded jsonData HTML może być kontrolą; rendered HTML fallback jest LOSSY",
+            "unikalne warianty rozmowy z wielu snapshotów są zachowane w unionie",
+            "nazwa pliku, rozmiar pliku i kolejność importu nie rozstrzygają prawdy",
+            "branch_union bez zmiany wspólnego node payload/parent jest zachowywalną divergence",
+            "ten sam node_id z inną treścią lub parent pozostaje konfliktem projekcji do decyzji",
             "Test00 nie tworzy L1/L2/L3 ani decyzji promocji",
         ),
         outputs=(
             "memory/rebuild_tests/test_00/<run-id>/source_mirror.sqlite3",
-            "summary.private.json",
-            "summary.sanitized.json",
+            "summary.private.json + summary.sanitized.json",
+            "source-union.private.json + source-union.sanitized.json",
         ),
         truth_boundary=(
-            "PASSED dowodzi wierności odczytu i przechowania źródła, nie prawdziwości jego treści.",
-            "Test00 jest artefaktem weryfikacyjnym, nie aktywną pamięcią; nie oznacza wspomnienia, Recall ani gotowości Jaźni.",
+            "PASSED dowodzi wierności odczytu i domknięcia zestawu źródeł, nie prawdziwości ich treści.",
+            "Source union zachowuje warianty; nie wybiera automatycznie autobiograficznej prawdy.",
+            "Test00 jest artefaktem weryfikacyjnym, nie aktywną pamięcią; nie oznacza Recall ani gotowości Jaźni.",
             "LOSSY oznacza, że źródło zachowano bajtowo, ale parser nie odtworzył pełnej struktury.",
         ),
         writes_test_artifacts=True,
@@ -86,14 +95,20 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test01",
-        label="Test 01 — Kanoniczne, bezstratne L0",
-        goal="Buduje izolowane, źródłowe L0 z materiałów zaakceptowanych przez Test00.",
-        inputs=("zatwierdzony zestaw źródeł Test00", "manifest źródeł i ich SHA-256"),
-        readiness=("Test00 bez FAILED/BLOCKED dla wymaganych źródeł", "jawna kolejność źródeł"),
+        label="Test 01 — Kanoniczne, bezstratne L0 z source union",
+        goal="Buduje izolowane, źródłowe L0 z pełnego zestawu wariantów zaakceptowanych przez Test00.",
+        inputs=("zatwierdzony source union Test00", "manifest źródeł i ich SHA-256"),
+        readiness=(
+            "Test00 bez FAILED/BLOCKED dla wymaganych źródeł",
+            "source-union status=ready",
+            "konflikty projekcji są jawnie wskazane przed wyborem aktywnej rewizji",
+        ),
         phases=("freeze inventory", "plan", "build L0", "verify provenance", "read-only validation"),
         checks=(
-            "pełne grafy rozmów, branche i raw payload",
+            "pełne grafy rozmów, branche, pełne warianty i raw payload pozostają dostępne jako L0",
             "rewizje, assets, sidecary/embedded documents i dziennik mają proweniencję",
+            "bezpiecznie zachowana branch divergence nie jest liczona jako nierozwiązany konflikt",
+            "zmieniony payload/parent tego samego node_id pozostaje fail-closed do decyzji projekcji",
             "FTS5 i foreign keys są spójne",
             "brak automatycznej akceptacji doświadczeń oraz L2/L3",
         ),
@@ -123,15 +138,29 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test03",
-        label="Test 03 — Pełny rebuild integracyjny",
-        goal="Wykonuje świeżą odbudowę jednej memory_jazn.sqlite3 i porównuje ją z wcześniejszymi etapami.",
-        inputs=("zatwierdzone źródła", "wyniki Test00/01/02 jako immutable baseline"),
+        label="Test 03 — Deterministyczny pełny rebuild integracyjny",
+        goal=(
+            "Wykonuje świeżą odbudowę jednej memory_jazn.sqlite3 oraz udowadnia, że source union i "
+            "stabilne klucze dają ten sam wynik semantyczny niezależnie od kolejności snapshotów."
+        ),
+        inputs=("zatwierdzony source union", "wyniki Test00/01/02 jako immutable baseline"),
         readiness=("plan bez zapisu jest poprawny", "wszystkie wymagane źródła mają SHA-256"),
-        phases=("dry-run", "fresh build", "dedupe/merge", "JSON↔HTML control", "reconciliation", "verify"),
+        phases=(
+            "dry-run",
+            "fresh build A",
+            "fresh build B z odwróconą kolejnością źródeł",
+            "dedupe/merge",
+            "JSON↔HTML control",
+            "source-union reconciliation",
+            "verify",
+        ),
         checks=(
             "identical/subset/extends/divergent są jawnie rozróżniane",
-            "divergent nie powoduje utraty historycznej gałęzi",
-            "manual HTML jest obsługiwany jako samodzielne źródło, gdy ma pełne jsonData",
+            "divergent nie powoduje utraty historycznej gałęzi ani pełnego wariantu",
+            "preserved_union nie blokuje testu jako nierozwiązany konflikt",
+            "changed payload/parent tego samego node_id pozostaje nierozwiązany do jawnej decyzji",
+            "manual HTML jest samodzielnym lossless źródłem tylko gdy ma pełne jsonData",
+            "A i B mają ten sam source-union fingerprint oraz te same stabilne rekordy L0",
             "porównanie używa stabilnych kluczy oraz hashy treści, nie samych liczników",
             "0 nierozwiązanych konfliktów wymagających decyzji operatora",
         ),
@@ -144,7 +173,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
         profile="test04",
         label="Test 04 — Prywatna akceptacja pełnej bazy",
         goal="Mierzy kompletność, reproducibility i Recall na rzeczywistych prywatnych danych.",
-        inputs=("wszystkie znane źródła", "latest-export attestation", "prywatny benchmark Recall", "baseline Test03"),
+        inputs=("zamrożony source union", "latest-export attestation", "prywatny benchmark Recall", "baseline Test03"),
         readiness=("zamrożony manifest źródeł", "przypadki Recall pozostają poza Git", "Test03 zaliczony"),
         phases=(
             "fresh build A",
@@ -154,7 +183,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "Test03 reconciliation",
             "Recall benchmark",
             "manual multi-turn",
-            "optional restart continuity",
+            "restart continuity dla system acceptance",
         ),
         checks=(
             "source completeness i exact provenance",
@@ -163,6 +192,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "abstention przy braku dowodu",
             "role/sensitive boundary bez wycieku credential/tool payload",
             "multi-turn używa właściwego źródła, nie zgaduje",
+            "system acceptance wymaga restart continuity; developer może raportować ją oddzielnie",
         ),
         outputs=("developer_test04_passed albo jawny zestaw blockerów", "sanitized metrics", "private evidence report"),
         truth_boundary=(
@@ -178,9 +208,12 @@ TEST_SPECS: tuple[TestSpec, ...] = (
         goal="Zamraża zweryfikowaną bazę i dowody jako wejście do osobnego Verified Memory Restore.",
         inputs=("zaliczony Test04", "raporty Test00-04", "review/promotion ledgers"),
         readiness=("wszystkie blocking checks Test04 PASSED", "brak niejawnych automatycznych promocji"),
-        phases=("SQLite Backup API snapshot", "full validation", "manifest sealing", "sanitized export"),
+        phases=("SQLite Backup API snapshot", "full validation", "FTS5 integrity", "manifest sealing", "sanitized export"),
         checks=(
-            "snapshot SQLite jest spójny",
+            "snapshot SQLite jest spójny i powstaje przez API SQLite, nie surowe kopiowanie aktywnego WAL DB",
+            "PRAGMA integrity_check oraz foreign_key_check są czyste",
+            "FTS5 przechodzi własny integrity-check",
+            "finalny katalog nie wymaga źródłowych -wal/-shm do odtworzenia zatwierdzonego snapshotu",
             "private + sanitized manifests zgadzają się po hashach",
             "source manifest i database manifest są kompletne",
             "promotion ledger pozostaje fail-closed bez jawnej decyzji",
