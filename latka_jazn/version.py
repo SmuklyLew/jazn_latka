@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-# v16.3.23 makes the host pre-response gate mandatory before conversational
-# output and converges persistent daemon lifecycle/transport observability on
-# the resolved active subject root.
-DISTRIBUTION_VERSION = "16.3.23"
-PACKAGE_VERSION = "16.3.23"
-PACKAGE_RELEASE_NAME = "persistent-runtime-lifecycle-observability-hardening"
+# v16.3.24 converges offline filesystem-snapshot package provenance with the
+# fail-closed runtime bootstrap contract without fabricating Git/GitHub identity.
+DISTRIBUTION_VERSION = "16.3.24"
+PACKAGE_VERSION = "16.3.24"
+PACKAGE_RELEASE_NAME = "package-provenance-bootstrap-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
