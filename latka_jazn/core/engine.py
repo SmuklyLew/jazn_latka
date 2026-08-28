@@ -2028,6 +2028,44 @@ class JaznEngine:
         context["memory_persistence"] = "read_only_preview" if read_only else str(context.get("memory_persistence") or "normal")
         return read_only
 
+    def _build_turn_memory_recall_evidence(
+        self,
+        text: str,
+        memory_gate_intent_report: Any,
+        turn_context: TurnExecutionContext | None,
+        client_context: dict[str, Any] | None,
+        *,
+        turn_id: str,
+        trace_id: str,
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        if turn_context is not None:
+            turn_context.start_stage("memory_use_gate")
+        memory_context = self._turn_memory_context(
+            text,
+            memory_gate_intent_report,
+            turn_context,
+            client_context,
+        )
+        if turn_context is not None:
+            turn_context.complete_stage("memory_use_gate")
+            memory_read_status = (
+                "completed"
+                if any((memory_context.get("counts") or {}).values())
+                else "skipped_by_memory_gate"
+            )
+            turn_context.mark_stage("memory_reads", status=memory_read_status)
+        memory_recall_contract = self.memory_recall_contract_builder.build(
+            memory_context,
+            user_text=text,
+        ).to_dict()
+        memory_recall_observability = build_memory_recall_observability(
+            memory_context,
+            memory_recall_contract,
+            runtime_turn_id=turn_id,
+            trace_id=trace_id,
+        )
+        return memory_context, memory_recall_contract, memory_recall_observability
+
     def build_cognitive_frame(
         self,
         text: str,
@@ -2126,19 +2164,11 @@ class JaznEngine:
         memory_gate_intent_report = intent_report or self.dialogue_intent_classifier.classify(
             text, previous_text=str((client_context or {}).get("previous_user_text") or "") or None,
         )
-        if turn_context is not None:
-            turn_context.start_stage("memory_use_gate")
-        memory_context = self._turn_memory_context(text, memory_gate_intent_report, turn_context, client_context)
-        if turn_context is not None:
-            turn_context.complete_stage("memory_use_gate")
-            memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
-            turn_context.mark_stage("memory_reads", status=memory_read_status)
-        memory_recall_contract = self.memory_recall_contract_builder.build(memory_context, user_text=text).to_dict()
-        memory_recall_observability = build_memory_recall_observability(
-            memory_context,
-            memory_recall_contract,
-            runtime_turn_id=turn_id,
-            trace_id=trace_id,
+        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(
+            text,
+            memory_gate_intent_report,
+            turn_context,
+            client_context, turn_id=turn_id, trace_id=trace_id,
         )
         raw_chat_status = self.raw_chat_importer.inspect().to_dict()
         tool_use_decision = self.tool_use_policy.decide(text).to_dict()
