@@ -437,6 +437,10 @@ def _try_chat_gpt_one_shot_via_daemon(
             print(f"[daemon_chat_failed_fallback] {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
     attach_cli_flag_warning(result, input_warning)
+    result["host_pre_response_gate_context"] = {
+        "runtime_turn_invoked": True,
+        "requested_runtime_root": str(cfg.root),
+    }
     result.setdefault("chat_bridge", {})
     if isinstance(result["chat_bridge"], dict):
         result["chat_bridge"].update({
@@ -507,6 +511,13 @@ def _prepare_chatgpt_daemon_presentation(
     the same presentation/finalization gate as the local JSONL bridge.
     """
     outer = dict(payload) if isinstance(payload, dict) else {}
+    outer.setdefault(
+        "host_pre_response_gate_context",
+        {
+            "runtime_turn_invoked": True,
+            "requested_runtime_root": str(cfg.root),
+        },
+    )
     normalized_request_id = str(
         outer.get("request_id")
         or request_id

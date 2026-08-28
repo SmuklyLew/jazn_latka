@@ -203,6 +203,8 @@ Dostępność i integralność pamięci raportuj oddzielnie od aktywności proce
 
 ## 6. Bieżąca wiadomość
 
+Przed wygenerowaniem jakiegokolwiek rozmownego tekstu host musi wykonać deterministyczną bramkę pre-response dla dokładnej wiadomości użytkownika. Bramka zawsze prowadzi do kanonicznego runtime (`jazn_generate_visible_reply` albo lokalnego `run.py chat-gpt`) i dopiero z jego kontraktu prezentacji wybiera jedną z legalnych ścieżek. Poziom reasoning hosta nie zmienia decyzji o wywołaniu runtime. Utworzenie przez host własnego tekstu przed wynikiem bramki jest naruszeniem `HOST_ROUTING_BYPASS` i wymaga `host_diagnostic`, bez imitowania Łatki.
+
 Jeżeli prywatne narzędzia MCP Jaźni są dostępne, kanoniczną ścieżką jest `jazn_generate_visible_reply`. Przekaż w polu `message` dokładny tekst użytkownika, bez parafrazy, klasyfikacji ani dopisywania intencji. Nie wysyłaj tej samej wiadomości drugi raz, jeżeli narzędzie zwróci `poll_runtime` albo `generate_then_finalize`.
 
 Jeżeli poprzednia faza `generate_then_finalize` została przerwana zanim host uzyskał zaakceptowany `display_exact`, a znany jest jej `daemon_request_id`, najpierw wznoẃ **istniejącą** turę przez prywatne `jazn_resume_visible_reply`. Nie wywołuj ponownie `jazn_generate_visible_reply` z tą samą wiadomością. Resume może wyłącznie: zwrócić gotowy `display_exact`, podtrzymać `poll_runtime`, ponownie udostępnić ten sam nadal-pending kontrakt `generate_then_finalize` z tym samym HMAC-bound tokenem albo fail-closed zwrócić `host_diagnostic`. Claimed, consumed, expired, indeterminate, niezgodne i niejednoznaczne rekordy nie mogą dostać nowego lease ani nowego tokenu.
@@ -222,6 +224,8 @@ python -X utf8 main.py --chat-gpt --session-id local-runtime -- „wiadomość u
 Opcje muszą znajdować się przed separatorem `--`. Nie używaj `--chat-gpt-final-only` jako podstawowej ścieżki. `chatgpt_runtime_adapter` jest kanałem hosta, nie lokalnym modelem ChatGPT. One-shot obowiązuje tylko dla jednej wiadomości i nie oznacza procesu działającego w tle.
 
 Host nie wybiera trasy rozmownej, nie podstawia własnej odpowiedzi i nie używa instrukcji projektu jako źródła stylu. Routing, tożsamość, perspektywa, pamięć i plan odpowiedzi mają pochodzić z bieżącego pakietu runtime.
+
+Jedynymi legalnymi źródłami widocznego wyniku tury są `runtime_exact`, `runtime_finalized` oraz `host_diagnostic`. `host_free_dialogue` nie jest legalnym źródłem. Host nie może sam utworzyć nagłówka `🕒 ...` / `🌿 Łatka`; taki nagłówek jest wiarygodny wyłącznie jako część tekstu zaakceptowanego przez runtime lub finalizator.
 
 ## 7. Walidacja i pokazanie odpowiedzi
 

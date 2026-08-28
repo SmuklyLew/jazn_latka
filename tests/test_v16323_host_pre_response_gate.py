@@ -5,10 +5,12 @@ from typing import Any
 
 import pytest
 
+from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.core.chatgpt_host_pre_response_gate import (
     HOST_ROUTING_BYPASS,
     run_host_pre_response_gate,
 )
+from latka_jazn.mcp.tools.jazn_generate_visible_reply import run as run_visible_reply
 
 
 HEADER = "🕒 2026-08-28 12:00:00"
@@ -294,3 +296,56 @@ def test_gate_telemetry_is_complete_and_does_not_store_full_user_text() -> None:
     assert telemetry["host_routing_bypass_detected"] is False
     assert telemetry["user_text_sha256"] != user_text
     assert user_text not in repr(telemetry)
+
+
+def test_canonical_mcp_entrypoint_emits_gate_telemetry_for_exact_runtime_output() -> None:
+    response = _display_exact_response()
+    response["runtime_truth_gate"] = {"ok": True, "normal_response_allowed": True}
+    response["final_visible_integrity"] = {"valid": True}
+
+    class Gateway:
+        runtime_root = "/runtime_A"
+
+        def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
+            assert message == "Hej."
+            assert session_id == "v16323"
+            return response
+
+        def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:
+            raise AssertionError("display_exact must not issue a continuation")
+
+    result = run_visible_reply(Gateway(), message="Hej.", session_id="v16323")
+    structured = result["structuredContent"]
+    telemetry = structured["host_pre_response_gate"]
+
+    assert result["isError"] is False
+    assert result["content"] == [{"type": "text", "text": RUNTIME_EXACT}]
+    assert structured["visible_output_source"] == "runtime_exact"
+    assert telemetry["runtime_turn_invoked"] is True
+    assert telemetry["user_text_sha256"] != "Hej."
+    assert "Hej." not in repr(telemetry)
+    assert telemetry["selected_transport"] == "persistent_daemon"
+    assert telemetry["fallback_reason"] == "daemon_reused"
+
+
+def test_canonical_mcp_entrypoint_returns_diagnostic_when_runtime_is_unavailable() -> None:
+    class Gateway:
+        runtime_root = "/runtime_A"
+
+        def chat(self, _message: str, *, session_id: str | None = None) -> dict[str, Any]:
+            raise GatewayError("daemon_unavailable")
+
+        def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:
+            raise AssertionError("unavailable runtime cannot issue a continuation")
+
+    result = run_visible_reply(Gateway(), message="Zgadnij.")
+    structured = result["structuredContent"]
+    telemetry = structured["host_pre_response_gate"]
+
+    assert result["isError"] is True
+    assert structured["action"] == "host_diagnostic"
+    assert structured["visible_output_source"] == "host_diagnostic"
+    assert telemetry["runtime_turn_invoked"] is True
+    assert telemetry["visible_output_source"] == "host_diagnostic"
+    assert telemetry["fallback_reason"].startswith("runtime_unavailable:")
+    assert "🌿 Łatka" not in result["content"][0]["text"]

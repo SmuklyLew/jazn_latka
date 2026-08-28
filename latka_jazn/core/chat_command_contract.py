@@ -36,6 +36,9 @@ from latka_jazn.core.host_response_candidate_guard import (
     evaluate_host_response_candidate,
     validate_host_generation_context,
 )
+from latka_jazn.core.chatgpt_host_pre_response_gate import (
+    build_host_pre_response_gate_telemetry,
+)
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -925,6 +928,30 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
             "host_diagnostic": "Nie imituj Łatki; pokaż krótką diagnozę jako Host ChatGPT.",
         }[action],
     }
+    transport_observability = json_object(payload.get("transport_observability"))
+    if not transport_observability:
+        transport_observability = json_object(
+            json_object(payload.get("chat_bridge")).get("transport_observability")
+        )
+    if transport_observability:
+        packet["transport_observability"] = transport_observability
+    gate_context = json_object(payload.get("host_pre_response_gate_context"))
+    runtime_turn_invoked = bool(
+        gate_context.get("runtime_turn_invoked") is True
+        or bridge
+    )
+    gate_telemetry = build_host_pre_response_gate_telemetry(
+        presentation=packet,
+        response=payload,
+        user_text_sha256=str(bridge.get("user_text_sha256") or ""),
+        requested_runtime_root=(
+            gate_context.get("requested_runtime_root")
+            or transport_observability.get("requested_runtime_root")
+        ),
+        runtime_turn_invoked=runtime_turn_invoked,
+    )
+    packet["host_pre_response_gate"] = gate_telemetry
+    packet["visible_output_source"] = gate_telemetry.get("visible_output_source")
     return packet
 
 
@@ -1220,6 +1247,7 @@ def persist_chatgpt_host_visible_reply(
             "turn_id": binding["turn_id"],
             "trace_id": binding["trace_id"],
             "host_request_contract_hash": reply["host_request_contract_hash"],
+            "user_text_sha256": binding.get("user_text_sha256"),
             "timestamp_header": binding["timestamp_header"],
             "timestamp_required": True,
             "timestamp_enforced": True,
@@ -1381,11 +1409,16 @@ def run_jsonl_chat_bridge(
         input_kind: str | None = None,
         input_field: str | None = None,
         line_index: int | None = None,
+        runtime_turn_invoked: bool = False,
     ) -> dict[str, Any]:
         return {
             "schema_version": schema_version("chat_bridge_error"),
             "chat_bridge": bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index),
             "chat_command_contract": contract,
+            "host_pre_response_gate_context": {
+                "runtime_turn_invoked": runtime_turn_invoked,
+                "requested_runtime_root": str(config.root),
+            },
             "ok": False,
             "error_code": error_code,
             "error": error,
@@ -1502,6 +1535,7 @@ def run_jsonl_chat_bridge(
                     input_kind=input_kind,
                     input_field=input_field,
                     line_index=line_index,
+                    runtime_turn_invoked=True,
                 ), output_mode=output_mode)
                 continue
             except Exception as exc:
@@ -1512,6 +1546,7 @@ def run_jsonl_chat_bridge(
                     input_kind=input_kind,
                     input_field=input_field,
                     line_index=line_index,
+                    runtime_turn_invoked=True,
                 ), output_mode=output_mode)
                 continue
             attach_cli_flag_warning(result, input_warning)
@@ -1526,6 +1561,10 @@ def run_jsonl_chat_bridge(
                     "must_not_modify_final_visible_text": True,
                 }
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
+            result["host_pre_response_gate_context"] = {
+                "runtime_turn_invoked": True,
+                "requested_runtime_root": str(config.root),
+            }
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
                 attach_chatgpt_host_contract(
