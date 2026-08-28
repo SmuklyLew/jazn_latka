@@ -30,8 +30,8 @@ def _canonical_memory(root: Path) -> Path:
     return memory
 
 
-def test_release_version_tracks_v16322_active_runtime_subject_root_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.23-persistent-runtime-lifecycle-observability-hardening"
+def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"
 
 
 def test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root(

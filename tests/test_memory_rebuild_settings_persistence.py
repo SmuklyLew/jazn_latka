@@ -184,5 +184,5 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
     assert reloaded.studio.theme_name == "latka-default"
 
 
-def test_release_version_tracks_v16322_active_runtime_subject_root_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.23-persistent-runtime-lifecycle-observability-hardening"
+def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"

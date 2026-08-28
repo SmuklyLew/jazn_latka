@@ -122,5 +122,5 @@ def test_canonical_layout_can_be_composed_without_running_terminal(tmp_path: Pat
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16322_active_runtime_subject_root_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.23-persistent-runtime-lifecycle-observability-hardening"
+def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
+    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"
