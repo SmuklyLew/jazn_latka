@@ -39,6 +39,10 @@ from latka_jazn.core.host_response_candidate_guard import (
 from latka_jazn.core.chatgpt_host_pre_response_gate import (
     build_host_pre_response_gate_telemetry,
 )
+from latka_jazn.core.memory_recall_observability import (
+    correlate_memory_recall_transport,
+    memory_recall_truth_boundary_violation,
+)
 from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -884,6 +888,24 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         action = "poll_runtime"
     else:
         action = "host_diagnostic"
+    transport_observability = json_object(payload.get("transport_observability"))
+    if not transport_observability:
+        transport_observability = json_object(
+            json_object(payload.get("chat_bridge")).get("transport_observability")
+        )
+    memory_recall_observability = correlate_memory_recall_transport(
+        json_object(payload.get("memory_recall_observability")),
+        transport_observability,
+    )
+    memory_violation = memory_recall_truth_boundary_violation(
+        memory_recall_observability,
+        recall_required=memory_recall_observability.get("memory_recall_requested") is True,
+        expected_turn_id=str(bridge.get("turn_id") or "") or None,
+        expected_trace_id=str(bridge.get("trace_id") or "") or None,
+    )
+    if memory_violation is not None:
+        action = "host_diagnostic"
+        phase = "host_diagnostic_required"
     final_text = extract_final_visible_text_from_result(payload) if action == "display_exact" else ""
     validation = _runtime_validation(payload)
     integrity = _runtime_integrity(payload)
@@ -910,6 +932,7 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "chatgpt_host_bridge": bridge,
         "daemon_request_id": bridge.get("daemon_request_id"),
         "poll_command": bridge.get("poll_command"),
+        "diagnostic_reason": memory_violation,
         "runtime_checks": {
             "validation_accepted": validation.get("accepted"),
             "final_visible_integrity_valid": integrity.get("valid"),
@@ -928,13 +951,10 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
             "host_diagnostic": "Nie imituj Łatki; pokaż krótką diagnozę jako Host ChatGPT.",
         }[action],
     }
-    transport_observability = json_object(payload.get("transport_observability"))
-    if not transport_observability:
-        transport_observability = json_object(
-            json_object(payload.get("chat_bridge")).get("transport_observability")
-        )
     if transport_observability:
         packet["transport_observability"] = transport_observability
+    if memory_recall_observability:
+        packet["memory_recall_observability"] = memory_recall_observability
     gate_context = json_object(payload.get("host_pre_response_gate_context"))
     runtime_turn_invoked = bool(
         gate_context.get("runtime_turn_invoked") is True

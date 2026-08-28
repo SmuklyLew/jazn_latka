@@ -82,7 +82,20 @@ def _runtime_invoker(
 ) -> Callable[[str], dict[str, Any]]:
     def invoke(text: str) -> dict[str, Any]:
         calls.append(text)
-        return response_factory()
+        response = response_factory()
+        if "pamiętasz" in text.casefold() or "wspomnienia" in text.casefold():
+            response["memory_recall_observability"] = {
+                "memory_recall_requested": True,
+                "memory_recall_executed": True,
+                "memory_search_ready": True,
+                "memory_recall_status": "recall_executed_zero_hits",
+                "memory_source_count": 0,
+                "memory_provenance_available": False,
+                "memory_source_types": [],
+                "runtime_turn_id": "turn-v16323",
+                "trace_id": "trace-v16323",
+            }
+        return response
 
     return invoke
 

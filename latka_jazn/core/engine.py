@@ -66,6 +66,7 @@ from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS, analyze_memory_intent
 from latka_jazn.core.memory_use_gate import MemoryUseGate
+from latka_jazn.core.memory_recall_observability import build_memory_recall_observability
 from latka_jazn.core.signal_matching import NeurologicalSignalRouter, any_marker_present
 from latka_jazn.core.project_index import ProjectStartupIndexer
 from latka_jazn.nlp.topic_mismatch_guard import TopicMismatchGuard
@@ -1218,6 +1219,7 @@ class JaznEngine:
             "living_memory_hits": [],
             "living_memory_search": {
                 "status": "skipped_by_memory_gate",
+                "memory_search_ready": False,
                 "search_mode": "skipped_by_memory_gate",
                 "counts": {"hits": 0, "sources_discovered": 0, "sources_recall_ready": 0},
                 "sources": [],
@@ -1225,6 +1227,12 @@ class JaznEngine:
                 "search_order": [],
                 "import_catalog_used_for_recall": False,
                 "truth_boundary": "Pięć baz żywej pamięci nie było odpytywanych, bo brama pamięci zablokowała recall dla tej intencji.",
+            },
+            "memory_recall_execution": {
+                "invoked": False,
+                "completed": False,
+                "cancelled": False,
+                "reason": "skipped_by_memory_gate",
             },
             "conversation_archive_hits": [],
             "conversation_archive_search": {
@@ -1564,6 +1572,9 @@ class JaznEngine:
             "living_memory_hits": living_memory_hits,
             "living_memory_search": {
                 "status": living_memory_search.get("status"),
+                "memory_search_ready": living_memory_search.get("memory_search_ready") is True,
+                "transactional_tier_search_ready": living_memory_search.get("transactional_tier_search_ready") is True,
+                "legacy_search_ready": living_memory_search.get("legacy_search_ready") is True,
                 "search_mode": living_memory_search.get("search_mode"),
                 "query": living_memory_search.get("query"),
                 "counts": living_memory_search.get("counts") or {},
@@ -1572,6 +1583,12 @@ class JaznEngine:
                 "search_order": living_memory_search.get("search_order") or [],
                 "import_catalog_used_for_recall": living_memory_search.get("import_catalog_used_for_recall"),
                 "truth_boundary": living_memory_search.get("truth_boundary"),
+            },
+            "memory_recall_execution": {
+                "invoked": True,
+                "completed": living_memory_search.get("cancelled") is not True,
+                "cancelled": living_memory_search.get("cancelled") is True,
+                "gateway_status": living_memory_search.get("status"),
             },
             "conversation_archive_hits": conversation_archive_hits[:limit],
             "conversation_archive_search": {
@@ -2117,6 +2134,12 @@ class JaznEngine:
             memory_read_status = "completed" if any((memory_context.get("counts") or {}).values()) else "skipped_by_memory_gate"
             turn_context.mark_stage("memory_reads", status=memory_read_status)
         memory_recall_contract = self.memory_recall_contract_builder.build(memory_context, user_text=text).to_dict()
+        memory_recall_observability = build_memory_recall_observability(
+            memory_context,
+            memory_recall_contract,
+            runtime_turn_id=turn_id,
+            trace_id=trace_id,
+        )
         raw_chat_status = self.raw_chat_importer.inspect().to_dict()
         tool_use_decision = self.tool_use_policy.decide(text).to_dict()
         untrusted_source_assessment = self.untrusted_source_guard.assess(text).to_dict()
@@ -2356,6 +2379,7 @@ class JaznEngine:
             "operational_work_plan": operational_work_plan.to_dict(),
             "raw_chat_import_status": raw_chat_status,
             "memory_recall_contract": memory_recall_contract,
+            "memory_recall_observability": memory_recall_observability,
             "tool_use_decision": tool_use_decision,
             "tool_execution_plan": tool_execution_plan,
             "untrusted_source_assessment": untrusted_source_assessment,

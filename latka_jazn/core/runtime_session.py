@@ -84,7 +84,19 @@ def _host_finalization_pending(result: dict[str, Any], *, can_continue: bool) ->
         )
         == "cannot_answer_directly"
     )
-    if not requires_host or str(result.get("final_visible_text") or "").strip():
+    if not requires_host:
+        return False, []
+    truth_gate = json_object(result.get("runtime_truth_gate"))
+    blocked_for_host_generation = bool(
+        truth_gate.get("normal_response_allowed") is False
+        and "model_guided_speech_required" in (truth_gate.get("errors") or [])
+    )
+    # A blocked runtime disclosure may still occupy final_visible_text while the
+    # canonical phase-1 contract requests host language generation. It is not a
+    # displayable answer and must not prevent the daemon job from entering
+    # awaiting_host_finalization. Any genuinely accepted runtime final remains
+    # terminal and bypasses phase 2.
+    if str(result.get("final_visible_text") or "").strip() and not blocked_for_host_generation:
         return False, []
 
     trace = json_object(result.get("trace"))
@@ -280,6 +292,14 @@ class JaznRuntimeSession:
                     "conversation_decision"
                 ) or {}
                 runtime_provenance = decision.get("runtime_provenance") or {}
+                memory_recall_observability = dict(
+                    (env.get("cognitive_frame") or {}).get("memory_recall_observability")
+                    or {}
+                )
+                memory_recall_contract = dict(
+                    (env.get("cognitive_frame") or {}).get("memory_recall_contract")
+                    or {}
+                )
                 result = {
                     "schema_version": SCHEMA_VERSION,
                     "session": self.state.to_dict(),
@@ -291,6 +311,8 @@ class JaznRuntimeSession:
                     "final_visible_text": env.get("final_visible_text"),
                     "runtime_provenance": runtime_provenance,
                     "exact_runtime_text": runtime_provenance.get("exact_runtime_text"),
+                    "memory_recall_observability": memory_recall_observability,
+                    "memory_recall_contract": memory_recall_contract,
                 }
 
             with turn_context.stage("integrity_validation"):

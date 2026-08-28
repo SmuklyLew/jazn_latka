@@ -6,6 +6,11 @@ from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.core.chatgpt_host_pre_response_gate import (
     build_host_pre_response_gate_telemetry,
 )
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent
+from latka_jazn.core.memory_recall_observability import (
+    correlate_memory_recall_transport,
+    memory_recall_truth_boundary_violation,
+)
 
 
 class HostRuntimeGateway(Protocol):
@@ -41,6 +46,7 @@ def _tool_error(
     *,
     response: dict[str, Any] | None = None,
     gate_telemetry: dict[str, Any] | None = None,
+    memory_recall_observability: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     structured: dict[str, Any] = {
         "ok": False,
@@ -50,6 +56,8 @@ def _tool_error(
     }
     if gate_telemetry is not None:
         structured["host_pre_response_gate"] = gate_telemetry
+    if memory_recall_observability:
+        structured["memory_recall_observability"] = memory_recall_observability
     return {
         "content": [{"type": "text", "text": f"Jaźń runtime did not produce a displayable result: {reason}."}],
         "structuredContent": structured,
@@ -84,6 +92,19 @@ def _diagnostic_gate_telemetry(
     return telemetry
 
 
+def _memory_recall_observability(
+    presentation: dict[str, Any],
+    response: dict[str, Any],
+    gate_telemetry: dict[str, Any],
+) -> dict[str, Any]:
+    bridge = _object_or_none(presentation.get("chatgpt_host_bridge")) or {}
+    for container in (presentation, response, bridge):
+        observability = _object_or_none(container.get("memory_recall_observability"))
+        if observability:
+            return correlate_memory_recall_transport(observability, gate_telemetry)
+    return {}
+
+
 def run(
     gateway: HostRuntimeGateway,
     *,
@@ -115,6 +136,35 @@ def run(
         requested_runtime_root=str(requested_runtime_root or ""),
         runtime_turn_invoked=True,
     )
+    memory_observability = _memory_recall_observability(
+        presentation,
+        response,
+        gate_telemetry,
+    )
+    bridge = (
+        _object_or_none(presentation.get("chatgpt_host_bridge"))
+        or _object_or_none(response.get("chatgpt_host_bridge"))
+        or {}
+    )
+    memory_violation = memory_recall_truth_boundary_violation(
+        memory_observability,
+        recall_required=analyze_memory_intent(message).content_requested,
+        expected_turn_id=str(turn_id or bridge.get("turn_id") or "") or None,
+        expected_trace_id=str(trace_id or bridge.get("trace_id") or "") or None,
+    )
+    if memory_violation is not None:
+        return _tool_error(
+            memory_violation,
+            response=response,
+            gate_telemetry=_diagnostic_gate_telemetry(
+                reason=memory_violation,
+                message=message,
+                requested_runtime_root=requested_runtime_root,
+                runtime_turn_invoked=True,
+                response=response,
+            ),
+            memory_recall_observability=memory_observability,
+        )
 
     if action == "display_exact":
         final_text = str(presentation.get("final_visible_text") or response.get("final_visible_text") or "")
@@ -153,6 +203,11 @@ def run(
                 "must_display_exactly": True,
                 "visible_output_source": gate_telemetry["visible_output_source"],
                 "host_pre_response_gate": gate_telemetry,
+                **(
+                    {"memory_recall_observability": memory_observability}
+                    if memory_observability
+                    else {}
+                ),
             },
             "_meta": {"transport": "secure_loopback_gateway", "phase": presentation.get("phase")},
             "isError": False,
@@ -174,11 +229,6 @@ def run(
                     response=response,
                 ),
             )
-        bridge = (
-            _object_or_none(presentation.get("chatgpt_host_bridge"))
-            or _object_or_none(response.get("chatgpt_host_bridge"))
-            or {}
-        )
         host_policy = _object_or_none(bridge.get("host_generation_policy")) or {}
         return {
             "content": [{
@@ -202,6 +252,11 @@ def run(
                 "must_not_display_intermediate": True,
                 "visible_output_source": None,
                 "host_pre_response_gate": gate_telemetry,
+                **(
+                    {"memory_recall_observability": memory_observability}
+                    if memory_observability
+                    else {}
+                ),
             },
             "_meta": {
                 "transport": "secure_loopback_gateway",
@@ -238,6 +293,11 @@ def run(
                 "trace_id": trace_id,
                 "visible_output_source": None,
                 "host_pre_response_gate": gate_telemetry,
+                **(
+                    {"memory_recall_observability": memory_observability}
+                    if memory_observability
+                    else {}
+                ),
             },
             "_meta": {"transport": "secure_loopback_gateway"},
             "isError": False,

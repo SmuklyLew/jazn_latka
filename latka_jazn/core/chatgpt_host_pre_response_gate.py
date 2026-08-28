@@ -6,6 +6,11 @@ from os import PathLike
 import re
 from typing import Any
 
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent
+from latka_jazn.core.memory_recall_observability import (
+    correlate_memory_recall_transport,
+    memory_recall_truth_boundary_violation,
+)
 from latka_jazn.version import schema_version
 
 
@@ -46,6 +51,22 @@ def _transport_from(
         transport = _mapping(container.get("transport_observability"))
         if transport:
             return transport
+    return {}
+
+
+def _memory_recall_from(
+    presentation: Mapping[str, Any],
+    response: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    response_map = dict(response or {})
+    bridge = _mapping(presentation.get("chatgpt_host_bridge"))
+    for container in (presentation, response_map, bridge):
+        observability = _mapping(container.get("memory_recall_observability"))
+        if observability:
+            return correlate_memory_recall_transport(
+                observability,
+                _transport_from(presentation, response_map),
+            )
     return {}
 
 
@@ -141,6 +162,7 @@ def _diagnostic_result(
     response: Mapping[str, Any] | None = None,
     bypass_detected: bool = False,
     bypass_reason: str | None = None,
+    memory_recall_observability: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     presentation = {
         "type": "chatgpt_host_presentation",
@@ -160,7 +182,7 @@ def _diagnostic_result(
     )
     if not telemetry.get("fallback_reason") or telemetry["fallback_reason"] == "runtime_transport_not_reported":
         telemetry["fallback_reason"] = diagnostic_reason
-    return {
+    result = {
         "ok": False,
         "action": "host_diagnostic",
         "error_code": error_code,
@@ -169,6 +191,9 @@ def _diagnostic_result(
         "visible_output_source": "host_diagnostic",
         "host_pre_response_gate": telemetry,
     }
+    if memory_recall_observability:
+        result["memory_recall_observability"] = dict(memory_recall_observability)
+    return result
 
 
 def run_host_pre_response_gate(
@@ -218,6 +243,34 @@ def run_host_pre_response_gate(
         )
     presentation = _presentation_from(runtime_response)
     action = str(presentation.get("action") or "")
+    memory_recall_observability = _memory_recall_from(presentation, runtime_response)
+    recall_required = analyze_memory_intent(exact_user_text).content_requested
+    memory_violation = memory_recall_truth_boundary_violation(
+        memory_recall_observability,
+        recall_required=recall_required,
+        expected_turn_id=str(
+            presentation.get("turn_id")
+            or _mapping(presentation.get("chatgpt_host_bridge")).get("turn_id")
+            or ""
+        )
+        or None,
+        expected_trace_id=str(
+            presentation.get("trace_id")
+            or _mapping(presentation.get("chatgpt_host_bridge")).get("trace_id")
+            or ""
+        )
+        or None,
+    )
+    if memory_violation is not None:
+        return _diagnostic_result(
+            user_text=exact_user_text,
+            requested_runtime_root=requested_runtime_root,
+            error_code="MEMORY_RECALL_TRUTH_BOUNDARY_FAILED",
+            diagnostic_reason=memory_violation,
+            runtime_turn_invoked=True,
+            response=runtime_response,
+            memory_recall_observability=memory_recall_observability,
+        )
 
     if action == "display_exact":
         final_text = str(
@@ -246,7 +299,7 @@ def run_host_pre_response_gate(
                 else "runtime_exact"
             ),
         )
-        return {
+        result = {
             "ok": True,
             "action": "display_exact",
             "visible_text": final_text,
@@ -255,6 +308,9 @@ def run_host_pre_response_gate(
             "runtime_presentation": presentation,
             "runtime_response": runtime_response,
         }
+        if memory_recall_observability:
+            result["memory_recall_observability"] = memory_recall_observability
+        return result
 
     if action == "generate_then_finalize":
         if generate_host_candidate is None or finalize_runtime_candidate is None:
@@ -267,7 +323,7 @@ def run_host_pre_response_gate(
                 visible_output_source=None,
                 finalization_completed=False,
             )
-            return {
+            result = {
                 "ok": True,
                 "action": "generate_then_finalize",
                 "visible_text": "",
@@ -276,6 +332,9 @@ def run_host_pre_response_gate(
                 "runtime_presentation": presentation,
                 "runtime_response": runtime_response,
             }
+            if memory_recall_observability:
+                result["memory_recall_observability"] = memory_recall_observability
+            return result
         try:
             candidate = str(generate_host_candidate(presentation))
             finalized_response = dict(finalize_runtime_candidate(candidate, presentation))
@@ -321,7 +380,7 @@ def run_host_pre_response_gate(
             visible_output_source="runtime_finalized",
             finalization_completed=True,
         )
-        return {
+        result = {
             "ok": True,
             "action": "display_exact",
             "visible_text": final_text,
@@ -330,6 +389,9 @@ def run_host_pre_response_gate(
             "runtime_presentation": finalized_presentation,
             "runtime_response": finalized_response,
         }
+        if memory_recall_observability:
+            result["memory_recall_observability"] = memory_recall_observability
+        return result
 
     if action == "poll_runtime":
         telemetry = build_host_pre_response_gate_telemetry(
@@ -340,7 +402,7 @@ def run_host_pre_response_gate(
             runtime_turn_invoked=True,
             visible_output_source=None,
         )
-        return {
+        result = {
             "ok": True,
             "action": "poll_runtime",
             "visible_text": "",
@@ -349,6 +411,9 @@ def run_host_pre_response_gate(
             "runtime_presentation": presentation,
             "runtime_response": runtime_response,
         }
+        if memory_recall_observability:
+            result["memory_recall_observability"] = memory_recall_observability
+        return result
 
     if action == "host_diagnostic":
         return _diagnostic_result(
