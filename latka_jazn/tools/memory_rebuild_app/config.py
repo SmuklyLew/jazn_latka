@@ -7,10 +7,13 @@ import os
 import sys
 
 # These identify the stable operator-tool/application contract. Feature hardening
-# is versioned separately (for example v16311_hardening / v16312_ci_hotfix) so
-# compatible releases do not break launchers, tests or project-format consumers.
+# is versioned separately so compatible releases do not break launchers, tests
+# or project-format consumers.
 TOOL_VERSION = "memory-rebuild/v16.1"
 APP_VERSION = "3.0.0"
+TOOL_REVISION = "15.3.23.01"
+TOOL_RELEASE_NAME = "Poprawione narzędzie odbudowy pamięci"
+TOOL_RELEASE_LABEL = f"{TOOL_REVISION} - {TOOL_RELEASE_NAME}"
 
 STAGE4_COMMAND = "stage4"
 TEST04_COMMAND = "test04"
@@ -57,6 +60,15 @@ def resolve_repo_root(entrypoint: str | Path) -> Path:
 
 
 __all__ = [
-    "APP_VERSION", "LEGACY_FLAGS", "PROFILE_ALIASES", "STAGE4_COMMAND",
-    "TEST04_COMMAND", "TOOL_VERSION", "candidate_repo_roots", "resolve_repo_root",
+    "APP_VERSION",
+    "LEGACY_FLAGS",
+    "PROFILE_ALIASES",
+    "STAGE4_COMMAND",
+    "TEST04_COMMAND",
+    "TOOL_RELEASE_LABEL",
+    "TOOL_RELEASE_NAME",
+    "TOOL_REVISION",
+    "TOOL_VERSION",
+    "candidate_repo_roots",
+    "resolve_repo_root",
 ]
