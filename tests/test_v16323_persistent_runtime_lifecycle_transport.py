@@ -8,7 +8,7 @@ import pytest
 
 import main as main_module
 from latka_jazn.config import JaznConfig
-from latka_jazn.core import daemon_autostart, runtime_daemon
+from latka_jazn.core import chat_command_contract, daemon_autostart, runtime_daemon
 from latka_jazn.core.daemon_autostart import DaemonEnsureResult
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 
@@ -438,6 +438,25 @@ def test_invalid_active_marker_is_ambiguous_and_never_allows_one_shot(
     assert result.daemon_identity_verified is False
     assert result.one_shot_allowed is False
     assert result.one_shot_verified is False
+
+
+@pytest.mark.parametrize("persistent_reason", ["daemon_reused", "daemon_started"])
+def test_verified_jsonl_one_shot_never_preserves_a_persistent_fallback_reason(
+    persistent_reason: str,
+) -> None:
+    transport = {
+        "selected_transport": "persistent_daemon",
+        "fallback_reason": persistent_reason,
+    }
+
+    chat_command_contract._mark_verified_one_shot_transport(transport)
+
+    assert transport == {
+        "selected_transport": "verified_one_shot_fallback",
+        "fallback_reason": "jsonl_bridge_uses_verified_one_shot",
+        "one_shot_allowed": True,
+        "one_shot_verified": True,
+    }
 
 
 def test_chatgpt_main_binds_persistent_turn_to_resolved_subject_b(

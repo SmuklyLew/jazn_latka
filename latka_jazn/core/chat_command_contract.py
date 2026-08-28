@@ -1311,6 +1311,23 @@ def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output
     stdout.flush()
 
 
+def _mark_verified_one_shot_transport(turn_transport: dict[str, Any]) -> None:
+    previous_transport = str(turn_transport.get("selected_transport") or "")
+    previous_reason = str(turn_transport.get("fallback_reason") or "")
+    turn_transport.update({
+        "selected_transport": "verified_one_shot_fallback",
+        "one_shot_allowed": True,
+        "one_shot_verified": True,
+    })
+    if (
+        previous_transport == "persistent_daemon"
+        and previous_reason in {"daemon_reused", "daemon_started"}
+    ):
+        turn_transport["fallback_reason"] = "jsonl_bridge_uses_verified_one_shot"
+    elif not previous_reason or previous_reason == "transport_not_classified":
+        turn_transport["fallback_reason"] = "verified_one_shot_fallback_allowed"
+
+
 def run_jsonl_chat_bridge(
     *,
     config: JaznConfig,
@@ -1558,12 +1575,7 @@ def run_jsonl_chat_bridge(
                 continue
             attach_cli_flag_warning(result, input_warning)
             if one_shot_degraded:
-                turn_transport.update({
-                    "selected_transport": "verified_one_shot_fallback",
-                    "one_shot_allowed": True,
-                    "one_shot_verified": True,
-                })
-                turn_transport.setdefault("fallback_reason", "verified_one_shot_fallback_allowed")
+                _mark_verified_one_shot_transport(turn_transport)
                 result["one_shot_degraded"] = True
                 result["process_lifecycle"] = "one_shot"
                 result["daemon_confirmed"] = False
