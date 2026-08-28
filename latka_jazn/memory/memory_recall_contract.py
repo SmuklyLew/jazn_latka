@@ -49,7 +49,8 @@ class MemoryRecallContractBuilder:
                     timestamp=raw.get("timestamp"),
                     content=content,
                 )
-                raw_metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+                raw_metadata_value = raw.get("metadata")
+                raw_metadata: dict[str, Any] = raw_metadata_value if isinstance(raw_metadata_value, dict) else {}
                 items.append(MemoryRecallItem(
                     content=content[:1800],
                     source=source,
