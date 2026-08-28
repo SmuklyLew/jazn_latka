@@ -187,7 +187,6 @@ jobs:
           tests/test_host_finalized_session_continuity_v154.py
           tests/test_memory_cloud_sync_v155.py
           tests/test_memory_recall_timeout_hardening.py
-          tools/_jazn_pack_generator_memory_v2.py
           tools/jazn_pack_generator.py
 
       - name: Independent semantic route audit
