@@ -21,7 +21,6 @@ from latka_jazn.tools.memory_rebuild_app.studio import (
     STUDIO_VERSION,
     StudioState,
 )
-from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 def _text(fragments) -> str:
@@ -182,7 +181,3 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
     reloaded = load_tool_settings(settings_path)
     assert reloaded.runtime.retrieval_limit == 41
     assert reloaded.studio.theme_name == "latka-default"
-
-
-def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"

@@ -263,14 +263,19 @@ class ChatExportImporter:
         full_validation: bool = True,
         worker_timeout_seconds: float = 300.0,
     ) -> list[ImportResult]:
-        """Import each large export in a fresh Python process."""
+        """Import each large export in caller-supplied order in a fresh process.
+
+        File size, filename and timestamp are transport metadata, not evidence
+        that one ChatGPT snapshot is semantically newer or more complete.  The
+        Memory Rebuild source-union protocol separately proves order-independent
+        closure across all supplied snapshots.
+        """
         import json
         import os
         import subprocess
         import sys
 
         paths = [Path(source).expanduser().resolve() for source in sources]
-        paths.sort(key=lambda path: path.stat().st_size if path.is_file() else 0, reverse=True)
         results: list[ImportResult] = []
         for path in paths:
             command = [

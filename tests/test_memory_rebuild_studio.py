@@ -23,7 +23,6 @@ from latka_jazn.tools.memory_rebuild_app.themes import (
     get_theme,
     prompt_toolkit_style,
 )
-from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 RETIRED_UI_MODULES = (
@@ -183,7 +182,3 @@ def test_canonical_layout_composes_without_running_terminal(tmp_path: Path) -> N
     )
     layout = build_studio_layout(state)
     assert layout.container is not None
-
-
-def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"

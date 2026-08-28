@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from latka_jazn.tools.memory_rebuild_app.config import TOOL_RELEASE_LABEL, TOOL_REVISION
 from latka_jazn.tools.memory_rebuild_app.models import DEFAULT_SETTINGS
 from latka_jazn.tools.memory_rebuild_app.settings import MemoryRebuildSettings
 from latka_jazn.tools.memory_rebuild_app.studio import (
@@ -44,21 +45,30 @@ def test_retired_p0_contract_is_owned_by_one_canonical_three_page_studio(tmp_pat
     assert STUDIO_VERSION in _text(state.header_fragments())
 
 
-def test_shared_protocol_preserves_legacy_validators_and_rebuild_acceptance_contracts() -> None:
+def test_shared_protocol_preserves_validators_and_source_union_acceptance_contracts() -> None:
     assert TEST_PROTOCOL_ORDER == ("test00", *PROFILE_NAMES)
+
+    test00 = get_test_spec("test00")
+    assert any("source-set union" in item.casefold() for item in test00.phases)
+    assert any("kolejność importu" in item.casefold() for item in test00.checks)
+    assert any("branch_union" in item.casefold() for item in test00.checks)
 
     test03 = get_test_spec("test03")
     assert any("reconciliation" in item.casefold() for item in test03.phases)
     assert any("html" in item.casefold() for item in test03.phases)
     assert any("manual html" in item.casefold() for item in test03.checks)
+    assert any("odwrócon" in item.casefold() for item in test03.phases)
 
     test04 = get_test_spec("test04")
     assert any("reconciliation" in item.casefold() for item in test04.phases)
     assert any("recall" in item.casefold() for item in test04.phases)
     assert any("credential" in item.casefold() for item in test04.checks)
+    assert any("abstention" in item.casefold() for item in test04.checks)
 
     final = get_test_spec("final")
     assert any("promotion ledger" in item.casefold() for item in final.checks)
+    assert any("backup api" in item.casefold() for item in final.phases)
+    assert any("wal" in item.casefold() for item in final.checks)
     assert any("nie aktyw" in item.casefold() for item in final.truth_boundary)
 
 
@@ -122,5 +132,7 @@ def test_canonical_layout_can_be_composed_without_running_terminal(tmp_path: Pat
     assert layout.container is not None
 
 
-def test_release_version_tracks_v16324_package_provenance_bootstrap_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.24-package-provenance-bootstrap-hardening"
+def test_memory_rebuild_revision_and_package_version_are_monotonic() -> None:
+    assert TOOL_REVISION == "15.3.23.01"
+    assert TOOL_RELEASE_LABEL == "15.3.23.01 - Poprawione narzędzie odbudowy pamięci"
+    assert PACKAGE_VERSION_FULL == "16.3.25-memory-rebuild-source-union-hardening"
