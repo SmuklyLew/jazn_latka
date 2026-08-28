@@ -185,4 +185,4 @@ def test_canonical_studio_runtime_changes_and_theme_persist(tmp_path: Path) -> N
 
 
 def test_release_version_tracks_v16322_active_runtime_subject_root_hardening() -> None:
-    assert PACKAGE_VERSION_FULL == "16.3.22-active-runtime-subject-root-hardening"
+    assert PACKAGE_VERSION_FULL == "16.3.23-persistent-runtime-lifecycle-observability-hardening"
