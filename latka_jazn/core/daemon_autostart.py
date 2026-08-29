@@ -117,6 +117,7 @@ class DaemonEnsureResult:
     resolved_active_root: str | None = None
     daemon_endpoint_root: str | None = None
     daemon_identity_verified: bool = False
+    daemon_pid: int | None = None
     daemon_reused: bool = False
     daemon_started: bool = False
     one_shot_allowed: bool = False
@@ -138,6 +139,7 @@ class DaemonEnsureResult:
             "resolved_active_root": self.resolved_active_root,
             "daemon_endpoint_root": self.daemon_endpoint_root,
             "daemon_identity_verified": self.daemon_identity_verified,
+            "daemon_pid": self.daemon_pid,
             "daemon_reused": self.daemon_reused,
             "daemon_started": self.daemon_started,
             "one_shot_allowed": self.one_shot_allowed,
@@ -390,6 +392,7 @@ def ensure_daemon_for_runtime_turn(
             resolved_active_root=resolved_root,
             daemon_endpoint_root=endpoint_root,
             daemon_identity_verified=bool(status_before.get("endpoint_identity_matches")),
+            daemon_pid=status_before.get("pid") or status_before.get("daemon_pid"),
             daemon_reused=True,
         )
     if not decision.should_ensure:
@@ -470,6 +473,7 @@ def ensure_daemon_for_runtime_turn(
         daemon_identity_verified=bool(
             ok and status_after.get("endpoint_identity_matches")
         ),
+        daemon_pid=status_after.get("pid") or status_after.get("daemon_pid"),
         daemon_reused=bool(ok and startup_reused),
         daemon_started=bool(ok and not startup_reused),
     )
