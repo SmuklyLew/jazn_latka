@@ -1,4 +1,10 @@
-# Single canonical runtime workspace — v16.0.1
+# Single canonical runtime workspace — fundament v16.0.0, bieżący invariant v16+
+
+## Status dokumentu
+
+Architektura jednego kanonicznego `workspace_runtime` została wprowadzona w release **v16.0.0 / single-canonical-runtime-workspace** i pozostaje obowiązującym invariantem kolejnych linii v16.x. Późniejsze release'y mogą rozszerzać zawartość workspace, ale nie mogą przywrócić per-version mutable workspace ani uzależniać truth state od katalogu konkretnego release'u.
+
+Aktualna linia rozwoju korzysta z tego kontraktu jako fundamentu dla host bridge, daemona, session/checkpoint state, memory attach oraz planowanego ingressu załączników `16.3.25.A.01+ -> 16.3.26`.
 
 ## Cel
 
@@ -14,8 +20,9 @@ stan procesu. `workspace_runtime` jest dlatego stanem **hosta**, a nie części�
 │   ├── daemon/
 │   ├── turn_checkpoints/
 │   ├── chatgpt_host_bridge/
+│   ├── attachment_ingress/          # opcjonalny transient staging/cache od v16.3.26
 │   └── ...
-├── jazn_latka_v16.0.1/
+├── jazn_latka_vCurrent/
 └── jazn_latka_vNext/
 ```
 
@@ -46,6 +53,20 @@ Pamięć może zostać dołączona po bootstrapie systemu z lokalnego zestawu ZI
 Cloudflare R2. Chmura nie staje się `active_root` ani backendem wymaganym do rozmowy: paczka z R2 jest najpierw
 strumieniowo materializowana w `workspace_runtime/memory_attach_sources/`, weryfikowana i dopiero wtedy
 promowana przez ten sam `memory-attach`, który obsługuje lokalne pliki.
+
+## Ingress załączników — invariant dla 16.3.25.A.01+ -> 16.3.26
+
+Planowany host attachment/multimodal ingress ma rozszerzać istniejący kontrakt v16.0.0, a nie tworzyć równoległy mutable root.
+
+- trwałe lub tymczasowe dane techniczne hosta związane z materializacją załącznika, jeśli są potrzebne, należą do host-level `workspace_runtime/attachment_ingress/` lub równoważnego namespace'u pod kanonicznym workspace;
+- nie wolno tworzyć `<active_root>/workspace_runtime/attachments` jako nowego per-release stanu;
+- sam fakt odebrania pliku nie oznacza promocji do `memory/`, L2 ani L3;
+- plik może wejść do trwałej pamięci dopiero przez istniejące truth/provenance/promotion gates;
+- `attachment-only`, `text+attachment` i multi-attachment są legalnymi typami wejścia tury i nie mogą wymagać sztucznego tekstu zastępczego;
+- staging/cache ma być bounded, identyfikowalny przez SHA/provenance i usuwalny bez naruszania trwałej pamięci;
+- model bez capability vision nie może raportować, że „widział” obraz; ścieżka ma fail-closed albo użyć jawnie dostępnego multimodalnego backendu/hosta.
+
+Numeracja `16.3.25.A.xx` jest numeracją etapów planistycznych/checkpointów, nie kanonicznym `PACKAGE_VERSION`. Finalny systemowy release tej pracy ma numer `16.3.26`.
 
 ## Rozbudowa poznawcza / psychologiczna
 
