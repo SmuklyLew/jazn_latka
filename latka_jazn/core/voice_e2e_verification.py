@@ -60,7 +60,7 @@ def _same_runtime_path(left: object, right: object) -> bool:
     return left_path == right_path
 
 
-def _positive_pid(value: object) -> int | None:
+def _positive_pid(value: Any) -> int | None:
     try:
         pid = int(value)
     except (TypeError, ValueError):
