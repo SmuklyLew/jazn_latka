@@ -77,6 +77,7 @@ DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS = 0.25
 DEFAULT_DAEMON_CHAT_JOB_TTL_SECONDS = 3600.0
 DEFAULT_DAEMON_CHAT_QUEUE_SIZE = 64
 DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS = 0.25
+DEFAULT_DAEMON_HOST_FINALIZATION_GATE_SECONDS = 8.0
 DEFAULT_HEARTBEAT_FRESH_MULTIPLIER = 3.0
 DAEMON_CONSOLE_ENV = "JAZN_DAEMON_CONSOLE"
 DAEMON_CONSOLE_HIDDEN = "hidden"
@@ -106,6 +107,7 @@ DAEMON_CHAT_JOB_TERMINAL_STATES = {
     "host_finalization_rejected",
 }
 DAEMON_CHAT_JOB_HOST_PENDING_STATE = "awaiting_host_finalization"
+DAEMON_CHAT_JOB_HOST_WAIT_STATE = "waiting_for_host_finalization"
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -642,6 +644,10 @@ class DaemonRuntimeState:
     chat_job_host_finalization_rejected_count: int = 0
     chat_job_host_finalization_replay_rejected_count: int = 0
     chat_job_host_finalization_hash_rejected_count: int = 0
+    chat_job_host_finalization_gate_wait_count: int = 0
+    chat_job_host_finalization_gate_released_count: int = 0
+    chat_job_host_finalization_gate_failed_count: int = 0
+    chat_job_host_finalization_gate_timeout_count: int = 0
     chat_job_pending_count: int = 0
     chat_job_queued_count: int = 0
     chat_job_running_count: int = 0
@@ -686,6 +692,10 @@ class DaemonRuntimeState:
             "host_finalization_rejected_total": self.chat_job_host_finalization_rejected_count,
             "host_finalization_replay_rejected_total": self.chat_job_host_finalization_replay_rejected_count,
             "host_finalization_hash_rejected_total": self.chat_job_host_finalization_hash_rejected_count,
+            "host_finalization_gate_wait_total": self.chat_job_host_finalization_gate_wait_count,
+            "host_finalization_gate_released_total": self.chat_job_host_finalization_gate_released_count,
+            "host_finalization_gate_failed_total": self.chat_job_host_finalization_gate_failed_count,
+            "host_finalization_gate_timeout_total": self.chat_job_host_finalization_gate_timeout_count,
             "terminal_failure_total": (
                 self.chat_job_failed_count
                 + self.chat_job_execution_timeout_count
@@ -729,6 +739,14 @@ class DaemonChatJob:
     host_request_expires_at_utc: str | None = None
     host_finalization_reason: str | None = None
     host_finalization_attempt_count: int = 0
+    previous_request_id: str | None = None
+    previous_runtime_turn_id: str | None = None
+    previous_trace_id: str | None = None
+    host_finalization_gate_state: str = "not_required"
+    host_finalization_gate_wait_started_at_utc: str | None = None
+    host_finalization_gate_settled_at_utc: str | None = None
+    host_finalization_gate_wait_seconds: float = 0.0
+    host_finalization_error_code: str | None = None
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
     active_session_worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
@@ -779,6 +797,23 @@ class DaemonChatJob:
             "host_request_expires_at_utc": self.host_request_expires_at_utc,
             "host_finalization_reason": self.host_finalization_reason,
             "host_finalization_attempt_count": self.host_finalization_attempt_count,
+            "previous_request_id": self.previous_request_id,
+            "previous_runtime_turn_id": self.previous_runtime_turn_id,
+            "previous_trace_id": self.previous_trace_id,
+            "host_finalization_gate_state": self.host_finalization_gate_state,
+            "host_finalization_gate_wait_started_at_utc": self.host_finalization_gate_wait_started_at_utc,
+            "host_finalization_gate_settled_at_utc": self.host_finalization_gate_settled_at_utc,
+            "host_finalization_gate_wait_seconds": self.host_finalization_gate_wait_seconds,
+            "host_finalization_error_code": self.host_finalization_error_code,
+            "next_turn_acceptance_state": (
+                "waiting_for_host_finalization"
+                if self.status == DAEMON_CHAT_JOB_HOST_WAIT_STATE
+                else "awaiting_host_finalization"
+                if self.status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                else "idle_accepting_turns"
+                if self.terminal()
+                else "turn_in_flight"
+            ),
             "result_endpoint": f"/chat-result/{urllib.parse.quote(self.request_id, safe='')}",
         }
         if self.turn_context is not None:
@@ -904,6 +939,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self._http_worker_slots = threading.BoundedSemaphore(self.max_http_workers)
         self.chat_jobs: dict[str, DaemonChatJob] = {}
         self._chat_jobs_lock = threading.RLock()
+        self._session_submission_locks_lock = threading.RLock()
+        self._session_submission_locks: dict[str, threading.Lock] = {}
         self._chat_queue: queue.Queue[DaemonChatJob | None] = queue.Queue(
             maxsize=max(1, _env_int_value("JAZN_DAEMON_CHAT_QUEUE_SIZE", DEFAULT_DAEMON_CHAT_QUEUE_SIZE))
         )
@@ -1133,6 +1170,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_request_expires_at_utc": job.host_request_expires_at_utc,
                 "host_finalization_reason": job.host_finalization_reason,
                 "host_finalization_attempt_count": job.host_finalization_attempt_count,
+                "previous_request_id": job.previous_request_id,
+                "previous_runtime_turn_id": job.previous_runtime_turn_id,
+                "previous_trace_id": job.previous_trace_id,
+                "host_finalization_gate_state": job.host_finalization_gate_state,
+                "host_finalization_gate_wait_started_at_utc": job.host_finalization_gate_wait_started_at_utc,
+                "host_finalization_gate_wait_seconds": job.host_finalization_gate_wait_seconds,
+                "host_finalization_error_code": job.host_finalization_error_code,
             })
         write_json_atomic(
             self._chat_state_path,
@@ -1193,6 +1237,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for raw in jobs:
             if not isinstance(raw, dict) or str(raw.get("status")) not in {
                 "accepted", "queued", "running", "starting", DAEMON_CHAT_JOB_HOST_PENDING_STATE,
+                DAEMON_CHAT_JOB_HOST_WAIT_STATE,
             }:
                 continue
             request_id = str(raw.get("request_id") or "").strip()
@@ -1257,6 +1302,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 host_request_expires_at_utc=str(raw.get("host_request_expires_at_utc") or "") or None,
                 host_finalization_reason=str(raw.get("host_finalization_reason") or "") or None,
                 host_finalization_attempt_count=int(raw.get("host_finalization_attempt_count") or 0),
+                previous_request_id=str(raw.get("previous_request_id") or "") or None,
+                previous_runtime_turn_id=str(raw.get("previous_runtime_turn_id") or "") or None,
+                previous_trace_id=str(raw.get("previous_trace_id") or "") or None,
+                host_finalization_gate_state=str(raw.get("host_finalization_gate_state") or "not_required"),
+                host_finalization_gate_wait_started_at_utc=str(raw.get("host_finalization_gate_wait_started_at_utc") or "") or None,
+                host_finalization_gate_wait_seconds=float(raw.get("host_finalization_gate_wait_seconds") or 0.0),
+                host_finalization_error_code=str(raw.get("host_finalization_error_code") or "") or None,
             )
             recovered.done_event.set()
             self.chat_jobs[request_id] = recovered
@@ -1320,12 +1372,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
             reconciled = False
             for job in self.chat_jobs.values():
                 reconciled = self._reconcile_host_finalization_job_locked(job) or reconciled
+            reconciled = self._advance_host_finalization_waiters_locked(source="summary") or reconciled
             if reconciled:
                 self._persist_chat_jobs_locked(stage="host_finalization_summary_reconciled")
             counts = {
                 "accepted": 0, "queued": 0, "running": 0, "completed": 0,
                 "failed": 0, "execution_timeout": 0, "cancelled": 0, "recovered_after_restart": 0,
                 "awaiting_host_finalization": 0,
+                "waiting_for_host_finalization": 0,
                 "host_finalization_expired": 0, "host_finalization_rejected": 0,
             }
             for job in self.chat_jobs.values():
@@ -1335,6 +1389,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 + counts.get("queued", 0)
                 + counts.get("running", 0)
                 + counts.get("awaiting_host_finalization", 0)
+                + counts.get("waiting_for_host_finalization", 0)
             )
             self.state.chat_job_pending_count = pending
             self.state.chat_job_queued_count = counts.get("accepted", 0) + counts.get("queued", 0)
@@ -1405,6 +1460,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_finalization_rejected_total": self.state.chat_job_host_finalization_rejected_count,
                 "host_finalization_replay_rejected_total": self.state.chat_job_host_finalization_replay_rejected_count,
                 "host_finalization_hash_rejected_total": self.state.chat_job_host_finalization_hash_rejected_count,
+                "host_finalization_gate_wait_total": self.state.chat_job_host_finalization_gate_wait_count,
+                "host_finalization_gate_released_total": self.state.chat_job_host_finalization_gate_released_count,
+                "host_finalization_gate_failed_total": self.state.chat_job_host_finalization_gate_failed_count,
+                "host_finalization_gate_timeout_total": self.state.chat_job_host_finalization_gate_timeout_count,
+                "host_finalization_gate_timeout_seconds": max(
+                    0.0,
+                    _env_float_value(
+                        "JAZN_DAEMON_HOST_FINALIZATION_GATE_SECONDS",
+                        DEFAULT_DAEMON_HOST_FINALIZATION_GATE_SECONDS,
+                    ),
+                ),
                 "terminal_failure_total": (
                     self.state.chat_job_failed_count
                     + self.state.chat_job_execution_timeout_count
@@ -1479,6 +1545,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         terminalized_jobs: list[DaemonChatJob] = []
         replace_worker = False
         with self._chat_jobs_lock:
+            self._advance_host_finalization_waiters_locked(source="watchdog")
             now = time.monotonic()
             for job in self.chat_jobs.values():
                 # execution_timeout owns active execution only. A queued job has
@@ -1601,6 +1668,214 @@ class JaznDaemonServer(ThreadingHTTPServer):
             )
             self._chat_worker_thread.start()
 
+    def _session_submission_lock(self, session_id: str | None) -> threading.Lock | None:
+        normalized = str(session_id or "").strip()
+        if not normalized:
+            return None
+        with self._session_submission_locks_lock:
+            lock = self._session_submission_locks.get(normalized)
+            if lock is None:
+                lock = threading.Lock()
+                self._session_submission_locks[normalized] = lock
+            return lock
+
+    def _latest_unsettled_session_job_locked(
+        self,
+        *,
+        session_id: str | None,
+        exclude_request_id: str,
+    ) -> DaemonChatJob | None:
+        normalized = str(session_id or "").strip()
+        if not normalized:
+            return None
+        candidates = [
+            job
+            for job in self.chat_jobs.values()
+            if job.session_id == normalized
+            and job.request_id != exclude_request_id
+            and not job.terminal()
+        ]
+        return max(
+            candidates,
+            key=lambda item: (str(item.created_at_utc or ""), item.request_id),
+            default=None,
+        )
+
+    def _begin_host_finalization_gate_locked(
+        self,
+        job: DaemonChatJob,
+        predecessor: DaemonChatJob,
+    ) -> None:
+        job.previous_request_id = predecessor.request_id
+        job.previous_runtime_turn_id = predecessor.host_turn_id
+        job.previous_trace_id = predecessor.host_trace_id
+        job.status = DAEMON_CHAT_JOB_HOST_WAIT_STATE
+        if predecessor.status == DAEMON_CHAT_JOB_HOST_PENDING_STATE:
+            job.host_finalization_gate_state = "awaiting_host_finalization"
+            job.host_finalization_gate_wait_started_at_utc = utc_now_iso()
+            self.state.chat_job_host_finalization_gate_wait_count += 1
+        else:
+            job.host_finalization_gate_state = "waiting_for_predecessor_turn"
+
+    def _fail_host_finalization_waiter_locked(
+        self,
+        job: DaemonChatJob,
+        *,
+        error_code: str,
+        reason: str,
+        predecessor: DaemonChatJob | None,
+    ) -> None:
+        now = utc_now_iso()
+        job.status = "failed"
+        job.completed_at_utc = now
+        job.host_finalization_gate_state = (
+            "timed_out" if error_code == "host_finalization_timed_out" else "failed"
+        )
+        job.host_finalization_gate_settled_at_utc = now
+        job.host_finalization_error_code = error_code
+        started = _parse_iso_utc(job.host_finalization_gate_wait_started_at_utc)
+        if started is not None:
+            job.host_finalization_gate_wait_seconds = max(
+                0.0,
+                (datetime.now(timezone.utc) - started).total_seconds(),
+            )
+        job.error = reason
+        job.result = {
+            "ok": False,
+            "accepted": True,
+            "error_code": error_code,
+            "error": reason,
+            "request_id": job.request_id,
+            "previous_request_id": job.previous_request_id,
+            "previous_runtime_turn_id": job.previous_runtime_turn_id,
+            "previous_trace_id": job.previous_trace_id,
+            "host_finalization_state": predecessor.status if predecessor is not None else None,
+            "host_finalization_wait_seconds": job.host_finalization_gate_wait_seconds,
+            "next_turn_acceptance_state": (
+                "blocked_finalization_timed_out"
+                if error_code == "host_finalization_timed_out"
+                else "blocked_finalization_failed"
+            ),
+            "retryable": True,
+            "schema_version": DAEMON_SCHEMA_VERSION,
+        }
+        job.done_event.set()
+        self.state.chat_job_pending_count = max(0, self.state.chat_job_pending_count - 1)
+        self.state.chat_job_failed_count += 1
+        if error_code == "host_finalization_timed_out":
+            self.state.chat_job_host_finalization_gate_timeout_count += 1
+        else:
+            self.state.chat_job_host_finalization_gate_failed_count += 1
+
+    def _promote_host_finalization_waiter_locked(
+        self,
+        job: DaemonChatJob,
+        *,
+        predecessor: DaemonChatJob,
+    ) -> None:
+        now = utc_now_iso()
+        started = _parse_iso_utc(job.host_finalization_gate_wait_started_at_utc)
+        if started is not None:
+            job.host_finalization_gate_wait_seconds = max(
+                0.0,
+                (datetime.now(timezone.utc) - started).total_seconds(),
+            )
+        job.host_finalization_gate_settled_at_utc = now
+        job.host_finalization_gate_state = "released"
+        job.previous_runtime_turn_id = job.previous_runtime_turn_id or predecessor.host_turn_id
+        job.previous_trace_id = job.previous_trace_id or predecessor.host_trace_id
+        job.status = "queued"
+        try:
+            self._chat_queue.put_nowait(job)
+        except queue.Full:
+            self._fail_host_finalization_waiter_locked(
+                job,
+                error_code="daemon_chat_queue_full_after_finalization_gate",
+                reason="chat queue became full while releasing the host-finalization gate",
+                predecessor=predecessor,
+            )
+            return
+        self.state.chat_job_host_finalization_gate_released_count += 1
+
+    def _advance_host_finalization_waiters_locked(self, *, source: str) -> bool:
+        changed = False
+        timeout_seconds = max(
+            0.0,
+            _env_float_value(
+                "JAZN_DAEMON_HOST_FINALIZATION_GATE_SECONDS",
+                DEFAULT_DAEMON_HOST_FINALIZATION_GATE_SECONDS,
+            ),
+        )
+        waiters = sorted(
+            (job for job in self.chat_jobs.values() if job.status == DAEMON_CHAT_JOB_HOST_WAIT_STATE),
+            key=lambda item: (str(item.created_at_utc or ""), item.request_id),
+        )
+        for job in waiters:
+            predecessor = self.chat_jobs.get(str(job.previous_request_id or ""))
+            if predecessor is None:
+                self._fail_host_finalization_waiter_locked(
+                    job,
+                    error_code="host_finalization_predecessor_missing",
+                    reason=f"predecessor job missing during {source}",
+                    predecessor=None,
+                )
+                changed = True
+                continue
+
+            if predecessor.status == DAEMON_CHAT_JOB_HOST_PENDING_STATE:
+                if self._reconcile_host_finalization_job_locked(predecessor):
+                    changed = True
+
+            if not predecessor.terminal():
+                if predecessor.status == DAEMON_CHAT_JOB_HOST_PENDING_STATE:
+                    if job.host_finalization_gate_wait_started_at_utc is None:
+                        job.host_finalization_gate_wait_started_at_utc = utc_now_iso()
+                        job.host_finalization_gate_state = "awaiting_host_finalization"
+                        job.previous_runtime_turn_id = predecessor.host_turn_id
+                        job.previous_trace_id = predecessor.host_trace_id
+                        self.state.chat_job_host_finalization_gate_wait_count += 1
+                        changed = True
+                    started = _parse_iso_utc(job.host_finalization_gate_wait_started_at_utc)
+                    elapsed = (
+                        max(0.0, (datetime.now(timezone.utc) - started).total_seconds())
+                        if started is not None
+                        else 0.0
+                    )
+                    job.host_finalization_gate_wait_seconds = elapsed
+                    if elapsed >= timeout_seconds:
+                        self._fail_host_finalization_waiter_locked(
+                            job,
+                            error_code="host_finalization_timed_out",
+                            reason=(
+                                "previous turn remained awaiting_host_finalization beyond "
+                                f"{timeout_seconds:.3g}s"
+                            ),
+                            predecessor=predecessor,
+                        )
+                        changed = True
+                continue
+
+            if predecessor.status in {"host_finalization_expired", "host_finalization_rejected"}:
+                self._fail_host_finalization_waiter_locked(
+                    job,
+                    error_code="host_finalization_failed",
+                    reason=(
+                        predecessor.host_finalization_reason
+                        or predecessor.error
+                        or predecessor.status
+                    ),
+                    predecessor=predecessor,
+                )
+                changed = True
+                continue
+
+            self._promote_host_finalization_waiter_locked(job, predecessor=predecessor)
+            changed = True
+
+        if changed:
+            self._persist_chat_jobs_locked(stage=f"host_finalization_gate:{source}")
+        return changed
+
     def submit_chat_job(
         self,
         *,
@@ -1616,7 +1891,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
         try:
             normalized_id = normalize_daemon_request_id(request_id)
         except ValueError as exc:
-            return None, False, {"ok": False, "error_code": str(exc), "request_id": str(request_id or "")}
+            return None, False, {
+                "ok": False,
+                "error_code": str(exc),
+                "request_id": str(request_id or ""),
+            }
         request_fingerprint = daemon_chat_request_fingerprint(
             user_text=user_text,
             session_id=session_id,
@@ -1629,67 +1908,102 @@ class JaznDaemonServer(ThreadingHTTPServer):
             base_timeout_seconds=self.execution_timeout_seconds,
         )
 
-        with self._chat_jobs_lock:
-            self._cleanup_chat_jobs_locked()
+        def existing_job_locked() -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
             existing = self.chat_jobs.get(normalized_id)
-            if existing is not None:
-                same_request = existing.request_fingerprint == request_fingerprint
-                if existing.request_fingerprint is None:
-                    same_request = (
-                        existing.user_text == user_text
-                        and existing.session_id == session_id
-                        and existing.no_carryover == bool(no_carryover)
-                        and existing.client == client
-                    )
-                if not same_request:
+            if existing is None:
+                return None, None
+            same_request = existing.request_fingerprint == request_fingerprint
+            if existing.request_fingerprint is None:
+                same_request = (
+                    existing.user_text == user_text
+                    and existing.session_id == session_id
+                    and existing.no_carryover == bool(no_carryover)
+                    and existing.client == client
+                )
+            if not same_request:
+                return None, {
+                    "ok": False,
+                    "error_code": "request_id_conflict",
+                    "request_id": normalized_id,
+                    "job_status": existing.status,
+                }
+            return existing, None
+
+        def create_job_serialized() -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
+            with self._chat_jobs_lock:
+                self._cleanup_chat_jobs_locked()
+                self._advance_host_finalization_waiters_locked(source="submit_preflight")
+                existing, existing_error = existing_job_locked()
+                if existing_error is not None:
+                    return None, False, existing_error
+                if existing is not None:
+                    return existing, False, None
+
+                pending_current = sum(1 for item in self.chat_jobs.values() if not item.terminal())
+                if pending_current >= self._chat_queue.maxsize:
                     return None, False, {
                         "ok": False,
-                        "error_code": "request_id_conflict",
-                        "request_id": normalized_id,
-                        "job_status": existing.status,
+                        "error_code": "daemon_chat_queue_full",
+                        "queue_capacity": self._chat_queue.maxsize,
+                        "pending_current": pending_current,
                     }
-                return existing, False, None
 
-            job = DaemonChatJob(
-                request_id=normalized_id,
-                user_text=user_text,
-                input_field=input_field,
-                session_id=session_id,
-                no_carryover=bool(no_carryover),
-                client=client,
-                request_fingerprint=request_fingerprint,
-                execution_timeout_seconds=job_timeout_seconds,
-                timeout_profile=timeout_profile,
-                turn_context=TurnExecutionContext.create(
+                predecessor = self._latest_unsettled_session_job_locked(
+                    session_id=session_id,
+                    exclude_request_id=normalized_id,
+                )
+                job = DaemonChatJob(
                     request_id=normalized_id,
-                    session_id=session_id or "daemon-generated-session",
-                    timeout_seconds=job_timeout_seconds,
-                    audit_db_path=self.config.audit_db_path,
-                ),
-            )
-            self.chat_jobs[normalized_id] = job
-            try:
-                self._persist_chat_jobs_locked()
-            except Exception as exc:
-                self.chat_jobs.pop(normalized_id, None)
-                return None, False, {
-                    "ok": False,
-                    "error_code": "daemon_chat_state_persist_failed",
-                    "error": f"{type(exc).__name__}: {exc}",
-                }
-            try:
-                self._chat_queue.put_nowait(job)
-            except queue.Full:
-                self.chat_jobs.pop(normalized_id, None)
-                self._persist_chat_jobs_locked()
-                return None, False, {
-                    "ok": False,
-                    "error_code": "daemon_chat_queue_full",
-                    "queue_capacity": self._chat_queue.maxsize,
-                }
-            self.state.chat_job_submitted_count += 1
-            self.state.chat_job_pending_count += 1
-            self.state.last_chat_job_id = normalized_id
+                    user_text=user_text,
+                    input_field=input_field,
+                    session_id=session_id,
+                    no_carryover=bool(no_carryover),
+                    client=client,
+                    request_fingerprint=request_fingerprint,
+                    execution_timeout_seconds=job_timeout_seconds,
+                    timeout_profile=timeout_profile,
+                    turn_context=TurnExecutionContext.create(
+                        request_id=normalized_id,
+                        session_id=session_id or "daemon-generated-session",
+                        timeout_seconds=job_timeout_seconds,
+                        audit_db_path=self.config.audit_db_path,
+                    ),
+                )
+                if predecessor is not None:
+                    self._begin_host_finalization_gate_locked(job, predecessor)
+                self.chat_jobs[normalized_id] = job
+                try:
+                    if predecessor is None:
+                        self._chat_queue.put_nowait(job)
+                    self._persist_chat_jobs_locked(stage="job_submitted")
+                except queue.Full:
+                    self.chat_jobs.pop(normalized_id, None)
+                    self._persist_chat_jobs_locked(stage="job_submit_queue_full")
+                    return None, False, {
+                        "ok": False,
+                        "error_code": "daemon_chat_queue_full",
+                        "queue_capacity": self._chat_queue.maxsize,
+                    }
+                except (OSError, TypeError, ValueError) as exc:
+                    self.chat_jobs.pop(normalized_id, None)
+                    return None, False, {
+                        "ok": False,
+                        "error_code": "daemon_chat_state_persist_failed",
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                self.state.chat_job_submitted_count += 1
+                self.state.chat_job_pending_count += 1
+                self.state.last_chat_job_id = normalized_id
+                return job, True, None
+
+        submission_lock = self._session_submission_lock(session_id)
+        if submission_lock is None:
+            job, created, error = create_job_serialized()
+        else:
+            with submission_lock:
+                job, created, error = create_job_serialized()
+        if error is not None or job is None:
+            return job, created, error
 
         if self.rest_cycle_controller is not None:
             try:
@@ -1698,13 +2012,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 self._rest_cycle_init_error = f"user_activity:{type(exc).__name__}: {exc}"
         self.start_chat_watchdog()
         self.start_chat_worker()
-        return job, True, None
+        return job, created, None
 
     def get_chat_job(self, request_id: str) -> DaemonChatJob | None:
         with self._chat_jobs_lock:
             self._cleanup_chat_jobs_locked()
             job = self.chat_jobs.get(str(request_id))
+            changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
+                changed = True
+            changed = self._advance_host_finalization_waiters_locked(source="chat_job_probe") or changed
+            if changed:
                 self._persist_chat_jobs_locked(stage="host_finalization_reconciled")
             return job
 
@@ -1818,6 +2136,18 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "request_id": request_id,
                 }
             normalized_outcome = str(outcome or "").strip().lower()
+            if job.terminal() and normalized_outcome == "accepted":
+                if job.status == "completed":
+                    # Exactly-once/idempotent ACK: the same bound acceptance may
+                    # be retried by the host without mutating counters/reason or
+                    # touching any newer turn.
+                    return job, None
+                return job, {
+                    "ok": False,
+                    "error_code": "host_finalization_already_settled",
+                    "request_id": request_id,
+                    "job_status": job.status,
+                }
             job.host_finalization_attempt_count += 1
             job.host_finalization_reason = str(reason or normalized_outcome or "host_finalization_attempt")
             if normalized_outcome == "accepted":
@@ -1851,6 +2181,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "error_code": "host_finalization_outcome_invalid",
                     "request_id": request_id,
                 }
+            self._advance_host_finalization_waiters_locked(source="host_finalization_notification")
             self._persist_chat_jobs_locked(stage="host_finalization_notification")
             return job, None
 
@@ -2150,6 +2481,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         )
                     )
                     job.done_event.set()
+                self._advance_host_finalization_waiters_locked(source="worker_finally")
             try:
                 self.write_marker()
             except (OSError, RuntimeError, ValueError, TypeError) as exc:
@@ -2934,7 +3266,11 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 )
                 if error.get("error_code") == "daemon_chat_queue_full":
                     status = HTTPStatus.SERVICE_UNAVAILABLE
-                if error.get("error_code") == "request_id_conflict":
+                if error.get("error_code") in {
+                    "request_id_conflict",
+                    "host_finalization_failed",
+                    "host_finalization_timed_out",
+                }:
                     status = HTTPStatus.CONFLICT
                 self._json_response(error, status=status)
                 return
