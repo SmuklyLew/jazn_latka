@@ -8,6 +8,8 @@ import pytest
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import startup_contract
 from latka_jazn.core.chatgpt_host_pre_response_gate import run_host_pre_response_gate
+from latka_jazn.core.readiness import evaluate_voice_live_readiness
+from latka_jazn.core.voice_source_contract import VoiceSourceContract
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +34,27 @@ def _dead_daemon_status(root: Path) -> dict[str, object]:
         "package_integrity_verified": True,
         "source_provenance_verified": True,
         "active_state_reason": "daemon_process_not_confirmed",
+    }
+
+
+def _trusted_daemon_status(root: Path) -> dict[str, object]:
+    return {
+        "active_state": "active_trusted",
+        "runtime_active_state": "active_trusted",
+        "pid": 4242,
+        "pid_alive": True,
+        "process_identity_confirmed": True,
+        "endpoint_probe_performed": True,
+        "endpoint_reachable": True,
+        "endpoint_pid_matches": True,
+        "endpoint_root_matches": True,
+        "endpoint_identity_matches": True,
+        "heartbeat_fresh": True,
+        "resolved_active_root": str(root.resolve()),
+        "subject_runtime_root": str(root.resolve()),
+        "package_integrity_verified": True,
+        "source_provenance_verified": True,
+        "active_state_reason": "endpoint_runtime_identity_confirmed",
     }
 
 
@@ -132,6 +155,62 @@ def test_stale_marker_and_dead_daemon_never_activate_latka_voice(
     voice = status["voice_source_contract_status"]
     assert voice["chatgpt_may_speak_as_voice"] is False
     assert voice["voice_live_ready"] is False
+    assert voice["active_source"] != "jazn_runtime"
+
+
+def test_complete_canonical_daemon_evidence_activates_live_voice() -> None:
+    evidence = evaluate_voice_live_readiness(
+        daemon=_trusted_daemon_status(ROOT),
+        expected_active_root=ROOT,
+    )
+
+    assert evidence.ready is True
+    assert evidence.blocking_reasons == ()
+
+
+@pytest.mark.parametrize(
+    ("overrides", "expected_reason"),
+    [
+        ({"heartbeat_fresh": False}, "heartbeat_stale_or_unknown"),
+        ({"endpoint_pid_matches": False}, "endpoint_pid_mismatch"),
+        ({"endpoint_root_matches": False}, "endpoint_root_mismatch"),
+        ({"endpoint_identity_matches": False}, "endpoint_identity_mismatch"),
+        ({"package_integrity_verified": False}, "package_integrity_not_verified"),
+        ({"source_provenance_verified": False}, "source_provenance_not_verified"),
+        (
+            {"resolved_active_root": str(ROOT / "stale-runtime-root")},
+            "resolved_active_root_mismatch",
+        ),
+        (
+            {
+                "active_state": "active_degraded",
+                "runtime_active_state": "active_degraded",
+            },
+            "active_state_not_active_trusted",
+        ),
+    ],
+)
+def test_incomplete_live_evidence_never_becomes_latka_voice(
+    overrides: dict[str, object],
+    expected_reason: str,
+) -> None:
+    daemon = _trusted_daemon_status(ROOT)
+    daemon.update(overrides)
+    evidence = evaluate_voice_live_readiness(
+        daemon=daemon,
+        expected_active_root=ROOT,
+    )
+    voice = VoiceSourceContract.build(
+        runtime_active=evidence.ready,
+        runtime_mode="persistent_chat_loop",
+        voice_configured=True,
+        voice_live_ready=evidence.ready,
+    ).to_dict()
+
+    assert evidence.ready is False
+    assert expected_reason in evidence.blocking_reasons
+    assert voice["voice_live_ready"] is False
+    assert voice["chatgpt_may_speak_as_voice"] is False
     assert voice["active_source"] != "jazn_runtime"
 
 
