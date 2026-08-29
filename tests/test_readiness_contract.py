@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from latka_jazn.core.readiness import evaluate_runtime_readiness
+from latka_jazn.core.readiness import (
+    evaluate_runtime_readiness,
+    evaluate_system_readiness_profile,
+)
 
 
 def _integrity_checks(*, verification_ok: bool = True) -> dict[str, bool]:
@@ -83,3 +86,78 @@ def test_integrity_failure_blocks_activation_and_release() -> None:
     assert readiness.activation_prerequisites_ready is False
     assert readiness.release_metadata_current is False
     assert readiness.release_ready is False
+
+
+def test_system_fully_ready_is_an_explicit_capability_profile() -> None:
+    profile = evaluate_system_readiness_profile(
+        profile="interactive_live_voice",
+        capabilities={
+            "runtime_core": {
+                "classification": "required",
+                "ready": True,
+                "status": "ready",
+            },
+            "live_voice": {
+                "classification": "required",
+                "ready": True,
+                "status": "ready",
+            },
+            "dictionary_lookup": {
+                "classification": "optional",
+                "ready": False,
+                "status": "offline",
+            },
+            "memory_search": {
+                "classification": "degraded_allowed",
+                "ready": False,
+                "status": "not_configured",
+            },
+            "rest_dream": {
+                "classification": "not_applicable",
+                "ready": None,
+                "status": "not_applicable",
+            },
+            "cognitive_integration": {
+                "classification": "unknown",
+                "ready": None,
+                "status": "not_probed",
+            },
+        },
+    )
+
+    assert profile["system_fully_ready"] is False
+    assert profile["blocking_capabilities"] == ["cognitive_integration"]
+    assert profile["optional_unavailable"] == ["dictionary_lookup"]
+    assert profile["degraded_capabilities"] == ["memory_search"]
+    assert profile["unknown_capabilities"] == ["cognitive_integration"]
+
+
+def test_optional_degraded_and_not_applicable_capabilities_do_not_block_profile() -> None:
+    profile = evaluate_system_readiness_profile(
+        profile="minimal_explicit",
+        capabilities={
+            "runtime_core": {
+                "classification": "required",
+                "ready": True,
+                "status": "ready",
+            },
+            "optional": {
+                "classification": "optional",
+                "ready": False,
+                "status": "unavailable",
+            },
+            "degraded": {
+                "classification": "degraded_allowed",
+                "ready": False,
+                "status": "degraded",
+            },
+            "irrelevant": {
+                "classification": "not_applicable",
+                "ready": None,
+                "status": "not_applicable",
+            },
+        },
+    )
+
+    assert profile["system_fully_ready"] is True
+    assert profile["blocking_capabilities"] == []

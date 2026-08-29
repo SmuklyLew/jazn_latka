@@ -138,6 +138,68 @@ def evaluate_voice_live_readiness(
     )
 
 
+CAPABILITY_READINESS_CLASSES = {
+    "required",
+    "optional",
+    "degraded_allowed",
+    "not_applicable",
+    "unknown",
+}
+
+
+def evaluate_system_readiness_profile(
+    *,
+    profile: str,
+    capabilities: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Evaluate an explicit capability profile without folding arbitrary booleans."""
+
+    normalized: dict[str, dict[str, Any]] = {}
+    blocking: list[str] = []
+    optional_unavailable: list[str] = []
+    degraded: list[str] = []
+    unknown: list[str] = []
+    for capability, raw in capabilities.items():
+        classification = str(raw.get("classification") or "unknown")
+        if classification not in CAPABILITY_READINESS_CLASSES:
+            classification = "unknown"
+        ready_value = raw.get("ready")
+        ready = ready_value if isinstance(ready_value, bool) else None
+        status = str(raw.get("status") or "unknown")
+        blocks_system_ready = bool(
+            classification == "unknown"
+            or (classification == "required" and ready is not True)
+        )
+        if blocks_system_ready:
+            blocking.append(capability)
+        if classification == "optional" and ready is not True:
+            optional_unavailable.append(capability)
+        if classification == "degraded_allowed" and ready is not True:
+            degraded.append(capability)
+        if classification == "unknown":
+            unknown.append(capability)
+        normalized[capability] = {
+            "classification": classification,
+            "ready": ready,
+            "status": status,
+            "blocks_system_fully_ready": blocks_system_ready,
+        }
+    return {
+        "profile": profile,
+        "system_fully_ready": not blocking,
+        "capabilities": normalized,
+        "blocking_capabilities": blocking,
+        "optional_unavailable": optional_unavailable,
+        "degraded_capabilities": degraded,
+        "unknown_capabilities": unknown,
+        "truth_boundary": (
+            "Only explicit required capabilities and unknown classifications block "
+            "system_fully_ready. Optional, degraded_allowed, and not_applicable "
+            "capabilities are reported without being coerced into required booleans."
+        ),
+    }
+
+
 def evaluate_runtime_readiness(
     *,
     required_checks: Mapping[str, Any],

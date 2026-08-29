@@ -352,6 +352,7 @@ def build_startup_status(
     mode: str = "fast",
     runtime_command: str | None = None,
     infer_host_environment: bool = False,
+    canonical_daemon_status: dict[str, Any] | None = None,
 ) -> StartupStatus:
     cfg = config or JaznConfig()
     mode = (mode or getattr(cfg, "startup_status_default_mode", "fast") or "fast").strip().lower()
@@ -402,11 +403,15 @@ def build_startup_status(
         and (root / "latka_jazn" / "core" / "voice_source_contract.py").is_file()
         and (root / "latka_jazn" / "voice" / "voice_truth_boundary.py").is_file()
     )
-    daemon_status = (
-        _inactive_daemon_status("metadata_mode_does_not_probe_daemon", root=root)
-        if mode == "metadata"
-        else _daemon_status_from_active_marker(cfg, cache_status)
-    )
+    if canonical_daemon_status is not None:
+        daemon_status = dict(canonical_daemon_status)
+    elif mode == "metadata":
+        daemon_status = _inactive_daemon_status(
+            "metadata_mode_does_not_probe_daemon",
+            root=root,
+        )
+    else:
+        daemon_status = _daemon_status_from_active_marker(cfg, cache_status)
     voice_live_readiness = evaluate_voice_live_readiness(
         daemon=daemon_status,
         expected_active_root=root,
