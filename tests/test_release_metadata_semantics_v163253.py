@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import shutil
 import subprocess
 
-from latka_jazn.tools.package_integrity import build_package_integrity_manifest
+from latka_jazn.core.source_provenance import read_source_provenance
+from latka_jazn.tools.package_integrity import (
+    build_package_integrity_manifest,
+    write_package_integrity_manifest,
+)
 from latka_jazn.tools.release_metadata_sync import (
     build_canonical_package_manifest,
     build_release_provenance_document,
@@ -89,6 +94,40 @@ def test_legacy_runtime_coupled_schema_has_explicit_migration_path() -> None:
     metadata = schema_contract_metadata("package_integrity_manifest")
     assert metadata["current_schema_version"] == "package_integrity_manifest/v2"
     assert metadata["legacy_runtime_coupled_schema"]["migration_target"] == "package_integrity_manifest/v2"
+
+
+def test_provenance_reader_accepts_legacy_schema_as_migration_and_rejects_foreign_schema(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    payload = build_source_provenance_document(root)
+    payload["schema_version"] = f"source_provenance/{PACKAGE_VERSION}"
+    (root / "SOURCE_PROVENANCE.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    write_package_integrity_manifest(root)
+    shutil.rmtree(root / ".git")
+
+    legacy = read_source_provenance(root, profile="system_smoke")
+    assert legacy.status == "verified_export_without_git_history"
+    assert legacy.schema_compatible is True
+    assert legacy.schema_migration_required is True
+    assert legacy.schema_compatibility_kind == "legacy_runtime_coupled_schema"
+
+    provenance_path = root / "SOURCE_PROVENANCE.json"
+    foreign_payload = json.loads(provenance_path.read_text(encoding="utf-8"))
+    foreign_payload["schema_version"] = "foreign_provenance/v1"
+    provenance_path.write_text(
+        json.dumps(foreign_payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    write_package_integrity_manifest(root)
+
+    foreign = read_source_provenance(root, profile="system_smoke")
+    assert foreign.status == "invalid"
+    assert foreign.schema_compatible is False
+    assert foreign.schema_migration_required is False
+    assert foreign.schema_compatibility_kind == "unsupported_schema"
+    assert any("unsupported source provenance schema" in item for item in foreign.limitations)
 
 
 def test_checkout_provenance_separates_schema_release_source_and_legacy_aliases(tmp_path: Path) -> None:
