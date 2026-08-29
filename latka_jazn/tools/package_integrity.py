@@ -18,7 +18,11 @@ from latka_jazn.tools.safe_paths import (
     resolve_safe_source,
     validate_safe_relative_path,
 )
-from latka_jazn.version import schema_version
+from latka_jazn.version import (
+    schema_contract_metadata,
+    schema_version,
+    schema_version_compatibility,
+)
 
 MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
 REQUIRED_STATIC_PATHS = {"SOURCE_PROVENANCE.json", "run.py", "main.py", "latka_jazn/version.py"}
@@ -429,9 +433,17 @@ def build_package_integrity_manifest(
     generated_at = str(generated_at_utc or datetime.now(timezone.utc).isoformat())
     return {
         "schema_version": schema_version("package_integrity_manifest"),
+        "schema_contract": schema_contract_metadata("package_integrity_manifest"),
         "version": runtime_version,
         "runtime_version": runtime_version,
         "package_version": runtime_version,
+        "release_version": runtime_version,
+        "artifact_identity": {
+            "runtime_version": runtime_version,
+            "package_version": runtime_version,
+            "release_version": runtime_version,
+        },
+        "legacy_aliases": {"version": "release_version"},
         "generated_at_utc": generated_at,
         "updated_at_utc": generated_at,
         "start_file": "run.py",
@@ -452,6 +464,7 @@ def build_package_integrity_manifest(
         },
         "truth_boundary": (
             "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. "
+            "Its contract schema is versioned independently from the runtime/release identity. "
             "It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, "
             "backups, generator state and temporary files."
         ),
@@ -506,6 +519,17 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     entries = _manifest_entries(payload) if isinstance(payload, dict) else None
     if entries is None:
         return {"ok": False, "configuration_error": True, "errors": [{"code": "manifest_files_missing"}]}
+
+    manifest_schema_compatibility = schema_version_compatibility(
+        "package_integrity_manifest",
+        str(payload.get("schema_version") or ""),
+    )
+    if not manifest_schema_compatibility.get("compatible"):
+        errors.append({
+            "code": "unsupported_manifest_schema",
+            "observed": manifest_schema_compatibility.get("observed_schema_version"),
+            "expected": manifest_schema_compatibility.get("current_schema_version"),
+        })
 
     git_head, worktree_state = _git_checkout_head_for_verification(root)
     verification_basis = "canonical_git_head_blobs" if git_head else "filesystem_bytes"
@@ -622,6 +646,7 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         "manifest_sha256": sha256_file(path),
         "checked_file_count": len(entries),
         "errors": errors,
+        "manifest_schema_compatibility": manifest_schema_compatibility,
         "verification_basis": verification_basis,
         "worktree_state": worktree_state,
         "git_head": git_head,
@@ -725,6 +750,17 @@ def verify_package_integrity_manifest_in_zips(
         if not isinstance(payload.get("files"), list):
             errors.append({"code": "manifest_files_missing"})
 
+    manifest_schema_compatibility = schema_version_compatibility(
+        "package_integrity_manifest",
+        str(payload.get("schema_version") or ""),
+    )
+    if payload and not manifest_schema_compatibility.get("compatible"):
+        errors.append({
+            "code": "unsupported_manifest_schema",
+            "observed": manifest_schema_compatibility.get("observed_schema_version"),
+            "expected": manifest_schema_compatibility.get("current_schema_version"),
+        })
+
     listed: set[str] = set()
     checked = 0
     for entry in entries:
@@ -785,6 +821,7 @@ def verify_package_integrity_manifest_in_zips(
         "zip_paths": [str(path) for path in paths],
         "manifest_runtime_version": manifest_version,
         "archive_runtime_version": archive_version,
+        "manifest_schema_compatibility": manifest_schema_compatibility,
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest() if manifest_bytes is not None else None,
         "checked_file_count": checked,
         "member_count": len(members),

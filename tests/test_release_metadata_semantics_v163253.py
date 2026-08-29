@@ -8,6 +8,7 @@ import subprocess
 from latka_jazn.core.source_provenance import read_source_provenance
 from latka_jazn.tools.package_integrity import (
     build_package_integrity_manifest,
+    verify_package_integrity_manifest,
     write_package_integrity_manifest,
 )
 from latka_jazn.tools.release_metadata_sync import (
@@ -130,6 +131,34 @@ def test_provenance_reader_accepts_legacy_schema_as_migration_and_rejects_foreig
     assert any("unsupported source provenance schema" in item for item in foreign.limitations)
 
 
+def test_manifest_verifier_accepts_legacy_schema_as_migration_and_rejects_foreign_schema(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    build_source_provenance_document(root, write=True)
+    manifest = write_package_integrity_manifest(root)
+    manifest_path = root / "PACKAGE_INTEGRITY_MANIFEST.json"
+
+    manifest["schema_version"] = f"package_integrity_manifest/{PACKAGE_VERSION}"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    legacy = verify_package_integrity_manifest(root)
+    assert legacy["ok"] is True
+    assert legacy["manifest_schema_compatibility"]["compatible"] is True
+    assert legacy["manifest_schema_compatibility"]["migration_required"] is True
+    assert legacy["manifest_schema_compatibility"]["kind"] == "legacy_runtime_coupled_schema"
+
+    manifest["schema_version"] = "foreign_package_manifest/v1"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    foreign = verify_package_integrity_manifest(root)
+    assert foreign["ok"] is False
+    assert foreign["manifest_schema_compatibility"]["compatible"] is False
+    assert "unsupported_manifest_schema" in {item["code"] for item in foreign["errors"]}
+
+
 def test_checkout_provenance_separates_schema_release_source_and_legacy_aliases(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     payload = build_source_provenance_document(root)
@@ -188,5 +217,7 @@ def test_generic_manifest_builder_uses_stable_contract_schema(tmp_path: Path) ->
 
     manifest = build_package_integrity_manifest(root)
     assert manifest["schema_version"] == "package_integrity_manifest/v2"
+    assert manifest["schema_contract"]["current_schema_version"] == "package_integrity_manifest/v2"
     assert manifest["runtime_version"] == PACKAGE_VERSION_FULL
+    assert manifest["release_version"] == PACKAGE_VERSION_FULL
     assert PACKAGE_VERSION not in manifest["schema_version"]
