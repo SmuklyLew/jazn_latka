@@ -135,4 +135,4 @@ def test_canonical_layout_can_be_composed_without_running_terminal(tmp_path: Pat
 def test_memory_rebuild_revision_and_package_version_are_monotonic() -> None:
     assert TOOL_REVISION == "15.3.23.01"
     assert TOOL_RELEASE_LABEL == "15.3.23.01 - Poprawione narzędzie odbudowy pamięci"
-    assert PACKAGE_VERSION_FULL == "16.3.25-memory-rebuild-source-union-hardening"
+    assert PACKAGE_VERSION_FULL == "16.3.25.1-host-finalization-gate-hotfix"

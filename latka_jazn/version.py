@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# v16.3.25 hardens Memory Rebuild around source-set closure: all lossless
-# ChatGPT snapshots are unioned without treating file size/order/name as truth,
-# while safely preserved branch divergence is separated from unresolved edits.
-DISTRIBUTION_VERSION = "16.3.25"
-PACKAGE_VERSION = "16.3.25"
-PACKAGE_RELEASE_NAME = "memory-rebuild-source-union-hardening"
+# v16.3.25.1 keeps the Memory Rebuild source-union baseline and hardens the
+# persistent-runtime turn boundary so a new turn cannot overtake an unsettled
+# host-visible finalization from the same logical session.
+DISTRIBUTION_VERSION = "16.3.25.1"
+PACKAGE_VERSION = "16.3.25.1"
+PACKAGE_RELEASE_NAME = "host-finalization-gate-hotfix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
