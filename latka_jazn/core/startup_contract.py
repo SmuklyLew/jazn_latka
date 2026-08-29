@@ -22,6 +22,7 @@ from latka_jazn.model_adapters.factory import build_model_adapter_status
 from latka_jazn.core.runtime_environment import detect_runtime_environment
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet, build_self_knowledge_summary
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
+from latka_jazn.nlp.dictionary_readiness import build_dictionary_readiness_status
 from latka_jazn.version import schema_version
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
 from latka_jazn.core.readiness import evaluate_voice_live_readiness
@@ -325,16 +326,7 @@ def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:
     }
 
 def dictionary_provider_status(cfg: JaznConfig) -> dict[str, Any]:
-    return {
-        'schema_version': schema_version('dictionary_provider_status'),
-        'allow_network': cfg.dictionary_allow_network,
-        'provider_order': list(cfg.dictionary_provider_order),
-        'cache_path': str(cfg.runtime_workspace_dir / 'dictionary_cache.sqlite3'),
-        'mediawiki_wiktionary_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'mediawiki_wiktionary_provider.py').exists(),
-        'sjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'sjp_reference_provider.py').exists(),
-        'wsjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'wsjp_reference_provider.py').exists(),
-        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w poprzednia linia runtime są linkami referencyjnymi bez masowego scrapingu definicji.',
-    }
+    return build_dictionary_readiness_status(cfg)
 
 def manifest_profile_status(root: Path) -> dict[str, Any]:
     p = root / 'latka_jazn' / 'resources' / 'package_manifest_profiles.json'
