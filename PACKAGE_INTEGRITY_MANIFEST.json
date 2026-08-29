@@ -1,13 +1,13 @@
 {
-  "schema_version": "package_integrity_manifest/16.3.25.2",
-  "version": "16.3.25.2-live-voice-readiness",
-  "runtime_version": "16.3.25.2-live-voice-readiness",
-  "package_version": "16.3.25.2-live-voice-readiness",
-  "generated_at_utc": "2026-08-29T20:08:10+00:00",
-  "updated_at_utc": "2026-08-29T20:08:10+00:00",
+  "schema_version": "package_integrity_manifest/v2",
+  "version": "16.3.25.3-release-metadata-semantics",
+  "runtime_version": "16.3.25.3-release-metadata-semantics",
+  "package_version": "16.3.25.3-release-metadata-semantics",
+  "generated_at_utc": "2026-08-29T21:03:07+00:00",
+  "updated_at_utc": "2026-08-29T21:03:07+00:00",
   "start_file": "run.py",
-  "file_count": 923,
-  "static_file_count": 923,
+  "file_count": 925,
+  "static_file_count": 925,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -173,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 1270,
-      "sha256": "f3db05ffa5f3b5ed3dfeccfd944a2ac93e008d0d71d3977b3f49048542a0bff5",
+      "size_bytes": 2848,
+      "sha256": "c4e5b7f41c211ea1412e91fa63d7b4d0b1e1785909d79326d62ff943fdc913a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -697,6 +697,15 @@
       "path": "docs/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md",
       "size_bytes": 4296,
       "sha256": "9cb7e4aefaf0f64d9a9205208859402f3e652bfec4dcca86bad1fdeba88da817",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md",
+      "size_bytes": 7856,
+      "sha256": "8043a445e924142197a32d2ecd568e02afa3e4d7bb461df726e9fc0e4307b3a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2927,8 +2936,8 @@
     },
     {
       "path": "latka_jazn/core/source_provenance.py",
-      "size_bytes": 13407,
-      "sha256": "c4abbd92cfa8afdb3507928c6af5b8ad215d96491a956f9dbbbf318f08cdfa94",
+      "size_bytes": 14738,
+      "sha256": "1cd097317a053a1980ee80b4939eff0a22d3fbf84dd0935ffb72eda81490158c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6095,8 +6104,8 @@
     },
     {
       "path": "latka_jazn/tools/package_integrity.py",
-      "size_bytes": 32594,
-      "sha256": "aff3b01b9dc97249a87f9636bc0a50c49f399cc2c73880f1021fd2c0e68f6f14",
+      "size_bytes": 34247,
+      "sha256": "e6f364422619a9d289628bfc27c8a178f523d68dc1a21db61cef97659903dc27",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6131,8 +6140,8 @@
     },
     {
       "path": "latka_jazn/tools/release_metadata_sync.py",
-      "size_bytes": 3909,
-      "sha256": "217391736c44342a30d201baf317949ab1d0e23de7b18f2c3f7d97694aa4db20",
+      "size_bytes": 11026,
+      "sha256": "2d19d6c0a46460be44e852c462f7a314d7f1679a68496580f762ccd79a051086",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6185,8 +6194,8 @@
     },
     {
       "path": "latka_jazn/tools/source_provenance.py",
-      "size_bytes": 5038,
-      "sha256": "bd2b3c6cf979f880e6f6f887aa66378f59aa860e96582cb1321af65a5dfe75cc",
+      "size_bytes": 6176,
+      "sha256": "43d5560d408b0b7823b2a90ba1c052914fe45542c7d1f6b1c2a9536cf25679e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6230,8 +6239,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 1248,
-      "sha256": "2ae1d4136a8b568a50d558724f2dfdbbf093f9341cf77eca42e787a7fbff7503",
+      "size_bytes": 6563,
+      "sha256": "9ed9f7c42c6a5dac687786e42927a5e857653aeaa7f5f86dab4f1b3003b180e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6959,8 +6968,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_p0_studio.py",
-      "size_bytes": 5353,
-      "sha256": "3462e204aed9cf617a43f02cb8faaa805323825939db4d12ca9d878cf7da6c85",
+      "size_bytes": 5359,
+      "sha256": "1407874d5b03d442cb3ba9bfa683a6d59cbaaaf75c731fab957364a8d2693f37",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7402,6 +7411,15 @@
       "path": "tests/test_release_metadata_generator_dirty_policy.py",
       "size_bytes": 2345,
       "sha256": "69119756fafd428de3c4c734db6049962d1a2ab87269e17a166adcf3ce681920",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_release_metadata_semantics_v163253.py",
+      "size_bytes": 10135,
+      "sha256": "870b73523fb071db1f4c405a4b5981cbf4434da85577a9894b17a4e341c0a590",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8719,5 +8737,32 @@
     ".archives/pre_v15_1_0_3_90/tree/tools/memory_migrate_legacy.py",
     "PACKAGE_INTEGRITY_MANIFEST.json"
   ],
-  "deferred_hash_files": []
+  "deferred_hash_files": [],
+  "schema_contract": {
+    "component": "package_integrity_manifest",
+    "current_schema_version": "package_integrity_manifest/v2",
+    "accepted_schema_versions": [
+      "package_integrity_manifest/v2"
+    ],
+    "compatibility_policy": "explicit_current_plus_bounded_legacy_migrations",
+    "legacy_runtime_coupled_schema": {
+      "accepted": true,
+      "pattern": "package_integrity_manifest/<runtime-version>",
+      "migration_target": "package_integrity_manifest/v2"
+    },
+    "legacy_unversioned_schema": {
+      "accepted": true,
+      "pattern": null,
+      "migration_target": "package_integrity_manifest/v2"
+    }
+  },
+  "release_version": "16.3.25.3-release-metadata-semantics",
+  "artifact_identity": {
+    "runtime_version": "16.3.25.3-release-metadata-semantics",
+    "package_version": "16.3.25.3-release-metadata-semantics",
+    "release_version": "16.3.25.3-release-metadata-semantics"
+  },
+  "legacy_aliases": {
+    "version": "release_version"
+  }
 }
