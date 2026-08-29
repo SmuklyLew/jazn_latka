@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "776a2846c286dff16784e1bc72f48a0a3c5e72e3",
+  "base_merge_commit": "a4fc180040ba8f15b7ab7a8df600c3c5e63b5e44",
   "base_version": "16.3.25-memory-rebuild-source-union-hardening",
-  "commit_date": "2026-08-29T01:34:18+02:00",
+  "commit_date": "2026-08-29T03:12:06+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-28T23:34:18+00:00",
+  "generated_at_utc": "2026-08-29T01:12:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "cf55c91d79245d0feae4880f742746530fc51151",
+  "git_tree_sha": "522f4451cd4dc14c70305ba2c1621e1983673f6a",
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
