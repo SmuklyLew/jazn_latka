@@ -120,12 +120,27 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
 def _unresolved_conflicts(path: Path) -> dict[str, int]:
     with open_read_only(path) as con:
         tables = {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        chat_conflicts = 0
+        preserved_chat_divergences = 0
+        if "import_conflicts" in tables:
+            columns = {str(row[1]) for row in con.execute("PRAGMA table_info(import_conflicts)")}
+            if "resolution_status" in columns:
+                chat_conflicts = int(con.execute(
+                    "SELECT COUNT(*) FROM import_conflicts "
+                    "WHERE COALESCE(resolution_status,'unresolved')='unresolved'"
+                ).fetchone()[0])
+                preserved_chat_divergences = int(con.execute(
+                    "SELECT COUNT(*) FROM import_conflicts WHERE resolution_status='preserved_union'"
+                ).fetchone()[0])
+            else:
+                chat_conflicts = int(con.execute("SELECT COUNT(*) FROM import_conflicts").fetchone()[0])
         result = {
-            "chat_import_conflicts": int(con.execute("SELECT COUNT(*) FROM import_conflicts").fetchone()[0]) if "import_conflicts" in tables else 0,
+            "chat_import_conflicts": chat_conflicts,
             "migration_conflicts": int(con.execute("SELECT COUNT(*) FROM unified_migration_conflicts WHERE status='unresolved'").fetchone()[0]) if "unified_migration_conflicts" in tables else 0,
             "runtime_sync_conflicts": int(con.execute("SELECT COUNT(*) FROM runtime_memory_import_conflicts WHERE status='unresolved'").fetchone()[0]) if "runtime_memory_import_conflicts" in tables else 0,
         }
         result["total"] = sum(result.values())
+        result["preserved_chat_divergences"] = preserved_chat_divergences
         return result
 
 

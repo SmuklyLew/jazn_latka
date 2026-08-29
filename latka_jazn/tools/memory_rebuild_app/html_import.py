@@ -14,6 +14,8 @@ from latka_jazn.tools.chat_export_dedupe import plan_conversation
 from latka_jazn.tools.chat_export_reader import build_conversation_graph, sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 
+from .html_semantics import HtmlEmbeddedJsonParser, HtmlParseMode
+
 _JSON_ASSIGNMENT_RE = re.compile(r"(?:var|let|const)\s+jsonData\s*=", re.IGNORECASE)
 
 
@@ -159,25 +161,11 @@ def read_html_conversations(
         raise FileNotFoundError(path)
     source_hash = sha256_file(path)
     html, member = _read_html_source(path)
-    warnings: list[str] = []
-    records: list[dict[str, Any]] = []
-    mode = "embedded_json"
-    try:
-        records = _conversation_records(_decode_assignment(html))
-    except (json.JSONDecodeError, ValueError) as exc:
-        warnings.append(f"embedded_json_parse_failed:{type(exc).__name__}:{exc}")
-    if not records:
-        parser = _RenderedConversationParser()
-        parser.feed(html)
-        records = [
-            _synthetic_conversation(title, messages, source_key=source_hash, ordinal=index)
-            for index, (title, messages) in enumerate(parser.conversations, start=1)
-        ]
-        mode = "rendered_html_fallback"
-        warnings.append("HTML nie zawierał użytecznego jsonData; użyto widocznych div.conversation/pre.message.")
-    if not records:
+    result = HtmlEmbeddedJsonParser().parse_text(html)
+    records = result.semantic_payload
+    if result.mode is HtmlParseMode.INVALID_HTML:
         raise ValueError("HTML nie zawiera rozmów możliwych do odtworzenia.")
-    return records, member, mode, tuple(warnings)
+    return records, member, result.mode.value, result.warnings
 
 
 @dataclass(slots=True, frozen=True)

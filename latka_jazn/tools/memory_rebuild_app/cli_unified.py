@@ -9,7 +9,7 @@ from .test_profiles import PROFILE_NAMES, run_test_profile
 from .settings import MemoryRebuildSettings
 from .typed_api import MemoryLayer, RecallQuery, TypedMemoryAPI
 from .unified_memory import UnifiedMemoryDatabase
-from .v16311_hardening import compare_chat_sources, list_chat_conversations
+from .chat_sources import compare_chat_sources, list_chat_conversations
 
 UNIFIED_COMMANDS = {
     "unified-init",

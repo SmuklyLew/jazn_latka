@@ -134,6 +134,7 @@ class TypedMemoryAPI:
                    JOIN memory_l0_records r ON r.rowid=memory_l0_fts.rowid
                    JOIN memory_l0_sources s ON s.source_id=r.source_id
                    WHERE memory_l0_fts MATCH ? AND r.is_current_revision=1
+                      AND r.memory_eligible=1
                      AND (? IS NULL OR COALESCE(r.event_time_end,r.event_time_start)>=?)
                      AND (? IS NULL OR COALESCE(r.event_time_start,r.event_time_end)<=?)
                    ORDER BY lexical_rank LIMIT ?""",

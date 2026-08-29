@@ -10,7 +10,8 @@ import sqlite3
 import uuid
 
 from .intermediate import PreparedSource, canonical_json
-from .schema_l0 import L0_SCHEMA_SQL, L0_SCHEMA_VERSION
+from .l0_evidence import persist_record_metadata
+from .schema_l0 import L0_SCHEMA_VERSION, ensure_l0_schema_extensions
 from .sqlite_utils import ClosingSQLiteConnection
 
 
@@ -33,7 +34,7 @@ class UnifiedL0Store:
         owns = con is None
         connection = con or self._connect()
         try:
-            connection.executescript(L0_SCHEMA_SQL)
+            ensure_l0_schema_extensions(connection)
             connection.execute("INSERT INTO memory_l0_fts(memory_l0_fts) VALUES('rebuild')")
             connection.execute(
                 "INSERT OR REPLACE INTO unified_memory_meta(key,value) VALUES('l0_schema_version',?)",
@@ -89,6 +90,7 @@ class UnifiedL0Store:
                 if current is not None and str(current["content_sha256"]) == record.content_sha256:
                     revision = int(current["revision"])
                     counters["linked_existing"] += 1
+                    record_id = str(current["record_id"])
                 else:
                     revision = int(current["revision"]) + 1 if current is not None else 1
                     if current is not None:
@@ -127,6 +129,13 @@ class UnifiedL0Store:
                             canonical_json(provenance), now,
                         ),
                     )
+                persist_record_metadata(
+                    con,
+                    record_id=record_id,
+                    source_id=source_id,
+                    raw=record.raw,
+                    observed_at_utc=now,
+                )
                 con.execute(
                     """INSERT OR IGNORE INTO memory_l0_occurrences(
                        logical_key,revision,source_id,source_record_id,seen_at_utc
@@ -146,6 +155,8 @@ class UnifiedL0Store:
             "source_sha256": prepared.source_sha256,
             "source_name": prepared.source_name,
             "schema_version": L0_SCHEMA_VERSION,
+            "visibility_classification": True,
+            "attachment_catalog": True,
             **counters,
             "automatic_l2": False,
             "automatic_l3": False,
