@@ -5,7 +5,7 @@ from typing import Any
 
 # v16.3.25.3 separates stable contract-schema identifiers from runtime/release
 # identifiers and adds explicit compatibility metadata for legacy runtime-coupled
-# schema markers used by earlier v16 releases.
+# and unversioned schema documents used by earlier releases.
 DISTRIBUTION_VERSION = "16.3.25.3"
 PACKAGE_VERSION = "16.3.25.3"
 PACKAGE_RELEASE_NAME = "release-metadata-semantics"
@@ -15,13 +15,20 @@ PACKAGE_VERSION_FULL = (
 RUNTIME_CONTRACT_VERSION = PACKAGE_VERSION
 RUNTIME_CONTRACT_VERSION_FULL = PACKAGE_VERSION_FULL
 
-# These are format/contract versions. They change only when the serialized
-# contract changes, never merely because PACKAGE_VERSION changes.
+# These are true serialized format/contract versions. They change only when the
+# corresponding contract changes, never merely because PACKAGE_VERSION changes.
 _SCHEMA_MAJOR_BY_COMPONENT: dict[str, int] = {
     "source_provenance": 2,
     "package_integrity_manifest": 2,
     "voice_source_contract": 2,
 }
+# These documents existed before an explicit schema_version field was required.
+# Missing schema identity is accepted only as a bounded migration path for these
+# known contracts; it is never treated as a current schema.
+_LEGACY_UNVERSIONED_SCHEMA_COMPONENTS = frozenset({
+    "source_provenance",
+    "package_integrity_manifest",
+})
 _LEGACY_RUNTIME_SCHEMA_SUFFIX_RE = re.compile(
     r"^v?\d+(?:\.\d+)+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?$"
 )
@@ -39,6 +46,7 @@ def contract_schema_version(component: str, *, major: int | None = None) -> str:
 
     Contract schema versions are intentionally independent from PACKAGE_VERSION.
     The default major is v1 unless a component has an explicit current version.
+    New true schema/contract consumers should call this function directly.
     """
 
     name = _component_name(component)
@@ -83,19 +91,25 @@ def schema_version(component: str, *, version: str | None = None) -> str:
 
 
 def schema_contract_metadata(component: str) -> dict[str, Any]:
-    """Describe the current schema and the supported legacy migration path."""
+    """Describe the current schema and supported explicit migration paths."""
 
     name = _component_name(component)
     current = contract_schema_version(name)
+    accepts_unversioned = name in _LEGACY_UNVERSIONED_SCHEMA_COMPONENTS
     return {
         "component": name,
         "current_schema_version": current,
         "accepted_schema_versions": [current],
-        "compatibility_policy": "explicit_current_plus_legacy_runtime_coupled_migration",
+        "compatibility_policy": "explicit_current_plus_bounded_legacy_migrations",
         "legacy_runtime_coupled_schema": {
             "accepted": True,
             "pattern": f"{name}/<runtime-version>",
             "migration_target": current,
+        },
+        "legacy_unversioned_schema": {
+            "accepted": accepts_unversioned,
+            "pattern": None,
+            "migration_target": current if accepts_unversioned else None,
         },
     }
 
@@ -113,6 +127,15 @@ def schema_version_compatibility(component: str, value: str | None) -> dict[str,
             "kind": "current_contract_schema",
             "current_schema_version": current,
             "observed_schema_version": candidate,
+        }
+
+    if not candidate and name in _LEGACY_UNVERSIONED_SCHEMA_COMPONENTS:
+        return {
+            "compatible": True,
+            "migration_required": True,
+            "kind": "legacy_unversioned_schema",
+            "current_schema_version": current,
+            "observed_schema_version": None,
         }
 
     prefix = f"{name}/"
