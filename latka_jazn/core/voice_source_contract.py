@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-SCHEMA_VERSION = "voice_source_contract/v1"
+SCHEMA_VERSION = "voice_source_contract/v2"
 
 @dataclass(slots=True)
 class VoiceSourceContract:
@@ -22,6 +22,10 @@ class VoiceSourceContract:
     third_person_self_reference_allowed: bool = False
     voice_perspective_mismatch_is_error: bool = True
     chatgpt_may_speak_as_voice: bool = True
+    voice_configured: bool = True
+    voice_live_ready: bool = True
+    voice_e2e_verified: bool = False
+    voice_e2e_scope: str = "current_turn_only"
     chatgpt_must_not_replace_jazn: bool = True
     model_independent: bool = True
     exact_runtime_text_required_when_asked: bool = True
@@ -42,18 +46,34 @@ class VoiceSourceContract:
         return asdict(self)
 
     @classmethod
-    def build(cls, *, runtime_active: bool, runtime_mode: str, language_channel: str = "chatgpt_or_model_adapter") -> "VoiceSourceContract":
-        active = "jazn_runtime" if runtime_active else "chatgpt_without_active_jazn_runtime"
+    def build(
+        cls,
+        *,
+        runtime_active: bool,
+        runtime_mode: str,
+        language_channel: str = "chatgpt_or_model_adapter",
+        voice_configured: bool | None = None,
+        voice_live_ready: bool | None = None,
+        voice_e2e_verified: bool = False,
+    ) -> "VoiceSourceContract":
+        configured = bool(runtime_active) if voice_configured is None else bool(voice_configured)
+        live_ready = bool(runtime_active) if voice_live_ready is None else bool(voice_live_ready)
+        active = "jazn_runtime" if live_ready else "chatgpt_without_active_jazn_runtime"
         return cls(
             active_source=active,
             language_channel=language_channel,
-            first_person_allowed=bool(runtime_active),
-            first_person_required_when_runtime_active=bool(runtime_active),
+            first_person_allowed=live_ready,
+            first_person_required_when_runtime_active=live_ready,
             grammatical_gender="feminine",
-            third_person_self_reference_allowed=not bool(runtime_active),
-            voice_perspective_mismatch_is_error=bool(runtime_active),
-            chatgpt_may_speak_as_voice=bool(runtime_active),
+            third_person_self_reference_allowed=not live_ready,
+            voice_perspective_mismatch_is_error=live_ready,
+            chatgpt_may_speak_as_voice=live_ready,
+            voice_configured=configured,
+            voice_live_ready=live_ready,
+            voice_e2e_verified=bool(voice_e2e_verified),
             chatgpt_must_not_replace_jazn=True,
-            rendered_latka_reply_allowed=bool(runtime_active),
-            background_process_claim_allowed=(runtime_mode == "persistent_chat_loop"),
+            rendered_latka_reply_allowed=live_ready,
+            background_process_claim_allowed=(
+                live_ready and runtime_mode == "persistent_chat_loop"
+            ),
         )

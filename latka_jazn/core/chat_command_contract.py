@@ -911,6 +911,7 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
     integrity = _runtime_integrity(payload)
     consensus = _runtime_integrity_consensus(payload)
     truth_gate = _runtime_truth_gate(payload)
+    final_contract = json_object(payload.get("final_response_contract"))
     host_policy = json_object(bridge.get("host_generation_policy"))
     voice_policy = json_object(host_policy.get("voice_continuity_policy"))
     packet: dict[str, Any] = {
@@ -920,6 +921,10 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "phase": phase,
         "turn_id": bridge.get("turn_id"),
         "trace_id": bridge.get("trace_id"),
+        "author_source": (
+            final_contract.get("author_source")
+            or bridge.get("author_source")
+        ),
         "must_display_exactly": action == "display_exact",
         "must_not_paraphrase": action == "display_exact",
         "must_not_claim_latka_voice": action in {"host_diagnostic", "poll_runtime"},

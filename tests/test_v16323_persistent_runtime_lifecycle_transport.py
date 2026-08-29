@@ -307,6 +307,7 @@ def test_healthy_subject_b_reports_persistent_daemon_reuse(
         "resolved_active_root": str(subject_root),
         "daemon_endpoint_root": str(subject_root),
         "daemon_identity_verified": True,
+        "daemon_pid": 4321,
         "daemon_reused": True,
         "daemon_started": False,
         "one_shot_allowed": False,

@@ -66,6 +66,10 @@ def test_status_and_doctor_expose_separate_transactional_memory_subsystem(tmp_pa
 
     status = diagnostics.status_payload(tmp_path, probe_endpoint=False)
     assert status["transactional_memory"]["ready"] is True
+    assert status["runtime_core_ready"] is False
+    assert status["fully_ready"] is status["runtime_core_ready"]
+    assert status["fully_ready_compatibility_alias_of"] == "runtime_core_ready"
+    assert status["system_fully_ready"] is False
 
     # Doctor uses the same status payload. Patch external release checks so this test
     # isolates memory reporting and does not turn package metadata into test fixtures.

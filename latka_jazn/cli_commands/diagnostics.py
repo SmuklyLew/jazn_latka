@@ -9,7 +9,10 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.chatgpt_host_pending_store import host_request_store_status
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
-from latka_jazn.core.readiness import evaluate_runtime_readiness
+from latka_jazn.core.readiness import (
+    evaluate_runtime_readiness,
+    evaluate_system_readiness_profile,
+)
 from latka_jazn.core.runtime_daemon import (
     DEFAULT_DAEMON_HOST,
     DEFAULT_DAEMON_PORT,
@@ -116,8 +119,6 @@ def status_payload(
     marker_output: Path | None = None,
 ) -> dict[str, Any]:
     cfg = JaznConfig(root=root)
-    startup = build_startup_status(cfg, mode="fast", infer_host_environment=True).to_dict()
-    transactional_memory = _transactional_memory_status(cfg)
     daemon = status_daemon(
         cfg,
         host=daemon_host,
@@ -125,6 +126,13 @@ def status_payload(
         marker_output=marker_output,
         probe_endpoint=probe_endpoint,
     )
+    startup = build_startup_status(
+        cfg,
+        mode="fast",
+        infer_host_environment=True,
+        canonical_daemon_status=daemon,
+    ).to_dict()
+    transactional_memory = _transactional_memory_status(cfg)
     daemon["readiness"] = (
         _probe_daemon_readiness(daemon_host, daemon_port)
         if probe_endpoint and daemon.get("endpoint_reachable") is True
@@ -134,7 +142,10 @@ def status_payload(
     process_ok = active_state in {"active_trusted", "active_degraded"}
     runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     transactional_memory_ready = bool(transactional_memory.get("ready"))
-    fully_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
+    runtime_core_ready = bool(
+        process_ok and runtime_write_ready and transactional_memory_ready
+    )
+    fully_ready = runtime_core_ready
     conversation_memory = startup.get("conversation_archive_status") or {}
     try:
         living_memory = LivingMemoryGateway(root).readiness()
@@ -161,8 +172,68 @@ def status_payload(
             "error": str(exc),
             "truth_boundary": "Cloud sync diagnostics are non-blocking for local runtime readiness.",
         }
+    system_readiness = evaluate_system_readiness_profile(
+        profile="interactive_live_voice",
+        capabilities={
+            "runtime_core": {
+                "classification": "required",
+                "ready": runtime_core_ready,
+                "status": "ready" if runtime_core_ready else "not_ready",
+            },
+            "live_voice": {
+                "classification": "required",
+                "ready": startup.get("voice_live_ready"),
+                "status": (
+                    "ready"
+                    if startup.get("voice_live_ready") is True
+                    else "not_ready"
+                ),
+            },
+            "dictionary_lookup": {
+                "classification": "optional",
+                "ready": (startup.get("dictionary_provider_status") or {}).get(
+                    "dictionary_lookup_ready"
+                ),
+                "status": "not_yet_capability_probed",
+            },
+            "nlp_enhanced": {
+                "classification": "optional",
+                "ready": startup.get("nlp_enhanced_ready"),
+                "status": "not_yet_capability_probed",
+            },
+            "memory_search": {
+                "classification": "degraded_allowed",
+                "ready": bool(living_memory.get("memory_search_ready")),
+                "status": str(living_memory.get("status") or "unknown"),
+            },
+            "continuity": {
+                "classification": "degraded_allowed",
+                "ready": bool(continuity.get("continuity_claim_allowed")),
+                "status": str(continuity.get("status") or "unknown"),
+            },
+            "rest_scheduler": {
+                "classification": "degraded_allowed",
+                "ready": bool(
+                    rest_status.get("rest_scheduler_ready")
+                    or rest_status.get("running")
+                ),
+                "status": str(rest_status.get("status") or "unknown"),
+            },
+            "rest_dream": {
+                "classification": "not_applicable",
+                "ready": None,
+                "status": "not_applicable_to_interactive_live_voice",
+            },
+            "cognitive_integration": {
+                "classification": "unknown",
+                "ready": None,
+                "status": "requires_cognitive_architecture_audit_or_live_effect_probe",
+            },
+        },
+    )
     capability_readiness = {
-        "runtime_ready": bool(process_ok and runtime_write_ready and transactional_memory_ready),
+        "runtime_core_ready": runtime_core_ready,
+        "runtime_ready": runtime_core_ready,
         "memory_search_ready": bool(living_memory.get("memory_search_ready")),
         "memory_search_status": living_memory.get("status"),
         "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
@@ -171,11 +242,13 @@ def status_payload(
         "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),
         "cognitive_integration_ready": None,
         "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
+        "system_fully_ready": system_readiness["system_fully_ready"],
+        "system_readiness_profile": system_readiness,
         "truth_boundary": "Process readiness does not imply memory, continuity, dream generation, or cognitive integration readiness.",
     }
     if not process_ok:
         operational_state = "inactive_or_untrusted"
-    elif fully_ready and active_state == "active_trusted":
+    elif runtime_core_ready and active_state == "active_trusted":
         operational_state = "active_ready"
     elif not runtime_write_ready or not transactional_memory_ready:
         operational_state = "active_memory_degraded"
@@ -187,7 +260,11 @@ def status_payload(
         "root": str(root),
         "ok": process_ok,
         "process_ok": process_ok,
+        "runtime_core_ready": runtime_core_ready,
         "fully_ready": fully_ready,
+        "fully_ready_compatibility_alias_of": "runtime_core_ready",
+        "system_fully_ready": system_readiness["system_fully_ready"],
+        "system_readiness_profile": system_readiness,
         "operational_state": operational_state,
         "operational_reasons": [
             reason
@@ -205,7 +282,9 @@ def status_payload(
         "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
         "activation_truth_gate_eligible": bool(probe_endpoint),
         "status_exit_contract": (
-            "zero_only_for_confirmed_active_process; fully_ready is reported separately; "
+            "zero_only_for_confirmed_active_process; runtime_core_ready is reported "
+            "separately; fully_ready is its compatibility alias; system_fully_ready "
+            "uses the explicit capability profile; "
             "offline_snapshot is never sufficient to prove a live runtime"
         ),
         "startup": startup,

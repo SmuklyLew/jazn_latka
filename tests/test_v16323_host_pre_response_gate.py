@@ -25,6 +25,7 @@ def _display_exact_response(text: str = RUNTIME_EXACT) -> dict[str, Any]:
         "phase": "runtime_final_available",
         "turn_id": "turn-v16323",
         "trace_id": "trace-v16323",
+        "author_source": "jazn_runtime",
         "final_visible_text": text,
         "chatgpt_host_bridge": {
             "turn_id": "turn-v16323",
@@ -39,6 +40,7 @@ def _display_exact_response(text: str = RUNTIME_EXACT) -> dict[str, Any]:
             "resolved_active_root": "/runtime_B",
             "daemon_endpoint_root": "/runtime_B",
             "daemon_identity_verified": True,
+            "daemon_pid": 4242,
             "daemon_reused": True,
             "daemon_started": False,
             "one_shot_verified": False,
@@ -69,6 +71,7 @@ def _generate_then_finalize_response() -> dict[str, Any]:
             "resolved_active_root": "/runtime_B",
             "daemon_endpoint_root": "/runtime_B",
             "daemon_identity_verified": True,
+            "daemon_pid": 4242,
             "daemon_reused": True,
             "daemon_started": False,
             "one_shot_verified": False,
@@ -143,6 +146,7 @@ def test_every_ordinary_host_turn_invokes_runtime_with_exact_text(user_text: str
     assert result["visible_text"] == RUNTIME_EXACT
     assert result["visible_output_source"] == "runtime_exact"
     assert result["host_pre_response_gate"]["runtime_turn_invoked"] is True
+    assert result["voice_e2e_verified"] is True
 
 
 def test_display_exact_exposes_only_exact_runtime_text() -> None:
@@ -155,6 +159,7 @@ def test_display_exact_exposes_only_exact_runtime_text() -> None:
     assert result["action"] == "display_exact"
     assert result["visible_text"] == RUNTIME_EXACT
     assert result["visible_output_source"] == "runtime_exact"
+    assert result["voice_e2e_verification"]["scope"] == "current_turn_only"
 
 
 def test_generate_then_finalize_never_exposes_candidate_before_acceptance() -> None:
@@ -185,6 +190,7 @@ def test_generate_then_finalize_never_exposes_candidate_before_acceptance() -> N
     assert candidate not in result["visible_text"]
     assert result["visible_text"] == RUNTIME_FINALIZED
     assert result["visible_output_source"] == "runtime_finalized"
+    assert result["voice_e2e_verified"] is True
     assert result["host_pre_response_gate"]["finalization_completed"] is True
 
 

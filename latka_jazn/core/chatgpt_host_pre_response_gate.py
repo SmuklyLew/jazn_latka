@@ -11,6 +11,9 @@ from latka_jazn.core.memory_recall_observability import (
     correlate_memory_recall_transport,
     memory_recall_truth_boundary_violation,
 )
+from latka_jazn.core.voice_e2e_verification import (
+    evaluate_voice_e2e_verification,
+)
 from latka_jazn.version import schema_version
 
 
@@ -68,6 +71,52 @@ def _memory_recall_from(
                 _transport_from(presentation, response_map),
             )
     return {}
+
+
+def _attach_voice_e2e_verification(
+    result: dict[str, Any],
+    *,
+    exact_user_text: str,
+) -> dict[str, Any]:
+    verification = evaluate_voice_e2e_verification(
+        exact_user_text=exact_user_text,
+        gate_result=result,
+    ).to_dict()
+    result["voice_e2e_verification"] = verification
+    result["voice_e2e_verified"] = verification["voice_e2e_verified"]
+    return result
+
+
+def _enforce_persistent_voice_e2e(
+    result: dict[str, Any],
+    *,
+    exact_user_text: str,
+    requested_runtime_root: str | PathLike[str] | None,
+) -> dict[str, Any]:
+    attached = _attach_voice_e2e_verification(
+        result,
+        exact_user_text=exact_user_text,
+    )
+    verification = _mapping(attached.get("voice_e2e_verification"))
+    if (
+        attached.get("action") == "display_exact"
+        and verification.get("persistent_runtime_used") is True
+        and verification.get("voice_e2e_verified") is not True
+    ):
+        failed = dict(verification)
+        diagnostic = _diagnostic_result(
+            user_text=exact_user_text,
+            requested_runtime_root=requested_runtime_root,
+            error_code="VOICE_E2E_NOT_VERIFIED",
+            diagnostic_reason=str(
+                (verification.get("blocking_reasons") or ["voice_e2e_not_verified"])[0]
+            ),
+            runtime_turn_invoked=True,
+            response=_mapping(attached.get("runtime_response")),
+        )
+        diagnostic["failed_voice_e2e_verification"] = failed
+        return diagnostic
+    return attached
 
 
 def build_host_pre_response_gate_telemetry(
@@ -193,7 +242,10 @@ def _diagnostic_result(
     }
     if memory_recall_observability:
         result["memory_recall_observability"] = dict(memory_recall_observability)
-    return result
+    return _attach_voice_e2e_verification(
+        result,
+        exact_user_text=user_text,
+    )
 
 
 def run_host_pre_response_gate(
@@ -310,7 +362,11 @@ def run_host_pre_response_gate(
         }
         if memory_recall_observability:
             result["memory_recall_observability"] = memory_recall_observability
-        return result
+        return _enforce_persistent_voice_e2e(
+            result,
+            exact_user_text=exact_user_text,
+            requested_runtime_root=requested_runtime_root,
+        )
 
     if action == "generate_then_finalize":
         if generate_host_candidate is None or finalize_runtime_candidate is None:
@@ -334,7 +390,10 @@ def run_host_pre_response_gate(
             }
             if memory_recall_observability:
                 result["memory_recall_observability"] = memory_recall_observability
-            return result
+            return _attach_voice_e2e_verification(
+                result,
+                exact_user_text=exact_user_text,
+            )
         try:
             candidate = str(generate_host_candidate(presentation))
             finalized_response = dict(finalize_runtime_candidate(candidate, presentation))
@@ -391,7 +450,11 @@ def run_host_pre_response_gate(
         }
         if memory_recall_observability:
             result["memory_recall_observability"] = memory_recall_observability
-        return result
+        return _enforce_persistent_voice_e2e(
+            result,
+            exact_user_text=exact_user_text,
+            requested_runtime_root=requested_runtime_root,
+        )
 
     if action == "poll_runtime":
         telemetry = build_host_pre_response_gate_telemetry(
@@ -413,7 +476,10 @@ def run_host_pre_response_gate(
         }
         if memory_recall_observability:
             result["memory_recall_observability"] = memory_recall_observability
-        return result
+        return _attach_voice_e2e_verification(
+            result,
+            exact_user_text=exact_user_text,
+        )
 
     if action == "host_diagnostic":
         return _diagnostic_result(

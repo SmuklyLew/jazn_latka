@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import os
+from pathlib import Path
 from typing import Any, Mapping
 
 
@@ -45,6 +47,157 @@ class RuntimeReadiness:
         payload["activation_ready"] = self.activation_ready
         payload["summary"] = self.summary()
         return payload
+
+
+@dataclass(frozen=True, slots=True)
+class VoiceLiveReadiness:
+    """Live Voice evidence projected from the canonical daemon status."""
+
+    active_state_trusted: bool
+    pid_alive: bool
+    daemon_identity_verified: bool
+    endpoint_probe_performed: bool
+    endpoint_reachable: bool
+    endpoint_pid_matches: bool
+    endpoint_root_matches: bool
+    endpoint_identity_matches: bool
+    heartbeat_fresh: bool
+    resolved_active_root_matches: bool
+    integrity_ok: bool
+    provenance_ok: bool
+    blocking_reasons: tuple[str, ...]
+
+    @property
+    def ready(self) -> bool:
+        return not self.blocking_reasons
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["voice_live_ready"] = self.ready
+        payload["required_evidence_class"] = "required"
+        payload["truth_boundary"] = (
+            "Voice live readiness is a projection of canonical status_daemon evidence. "
+            "A marker, PID, heartbeat, or endpoint response is insufficient on its own."
+        )
+        return payload
+
+
+def _same_runtime_path(left: Any, right: Any) -> bool:
+    if left in (None, "") or right in (None, ""):
+        return False
+    try:
+        left_path = os.path.normcase(str(Path(str(left)).expanduser().resolve()))
+        right_path = os.path.normcase(str(Path(str(right)).expanduser().resolve()))
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return left_path == right_path
+
+
+def evaluate_voice_live_readiness(
+    *,
+    daemon: Mapping[str, Any],
+    expected_active_root: Path | str,
+) -> VoiceLiveReadiness:
+    """Require the complete canonical daemon identity/readiness proof for Voice."""
+
+    resolved_root = daemon.get("resolved_active_root") or daemon.get("subject_runtime_root")
+    checks = {
+        "active_state_not_active_trusted": (
+            daemon.get("active_state") or daemon.get("runtime_active_state")
+        )
+        == "active_trusted",
+        "pid_not_alive": daemon.get("pid_alive") is True,
+        "daemon_identity_not_verified": daemon.get("process_identity_confirmed") is True,
+        "endpoint_not_probed": daemon.get("endpoint_probe_performed") is True,
+        "endpoint_unreachable": daemon.get("endpoint_reachable") is True,
+        "endpoint_pid_mismatch": daemon.get("endpoint_pid_matches") is True,
+        "endpoint_root_mismatch": daemon.get("endpoint_root_matches") is True,
+        "endpoint_identity_mismatch": daemon.get("endpoint_identity_matches") is True,
+        "heartbeat_stale_or_unknown": daemon.get("heartbeat_fresh") is True,
+        "resolved_active_root_mismatch": _same_runtime_path(
+            resolved_root,
+            expected_active_root,
+        ),
+        "package_integrity_not_verified": daemon.get("package_integrity_verified") is True,
+        "source_provenance_not_verified": daemon.get("source_provenance_verified") is True,
+    }
+    return VoiceLiveReadiness(
+        active_state_trusted=checks["active_state_not_active_trusted"],
+        pid_alive=checks["pid_not_alive"],
+        daemon_identity_verified=checks["daemon_identity_not_verified"],
+        endpoint_probe_performed=checks["endpoint_not_probed"],
+        endpoint_reachable=checks["endpoint_unreachable"],
+        endpoint_pid_matches=checks["endpoint_pid_mismatch"],
+        endpoint_root_matches=checks["endpoint_root_mismatch"],
+        endpoint_identity_matches=checks["endpoint_identity_mismatch"],
+        heartbeat_fresh=checks["heartbeat_stale_or_unknown"],
+        resolved_active_root_matches=checks["resolved_active_root_mismatch"],
+        integrity_ok=checks["package_integrity_not_verified"],
+        provenance_ok=checks["source_provenance_not_verified"],
+        blocking_reasons=tuple(reason for reason, passed in checks.items() if not passed),
+    )
+
+
+CAPABILITY_READINESS_CLASSES = {
+    "required",
+    "optional",
+    "degraded_allowed",
+    "not_applicable",
+    "unknown",
+}
+
+
+def evaluate_system_readiness_profile(
+    *,
+    profile: str,
+    capabilities: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Evaluate an explicit capability profile without folding arbitrary booleans."""
+
+    normalized: dict[str, dict[str, Any]] = {}
+    blocking: list[str] = []
+    optional_unavailable: list[str] = []
+    degraded: list[str] = []
+    unknown: list[str] = []
+    for capability, raw in capabilities.items():
+        classification = str(raw.get("classification") or "unknown")
+        if classification not in CAPABILITY_READINESS_CLASSES:
+            classification = "unknown"
+        ready_value = raw.get("ready")
+        ready = ready_value if isinstance(ready_value, bool) else None
+        status = str(raw.get("status") or "unknown")
+        blocks_system_ready = bool(
+            classification == "unknown"
+            or (classification == "required" and ready is not True)
+        )
+        if blocks_system_ready:
+            blocking.append(capability)
+        if classification == "optional" and ready is not True:
+            optional_unavailable.append(capability)
+        if classification == "degraded_allowed" and ready is not True:
+            degraded.append(capability)
+        if classification == "unknown":
+            unknown.append(capability)
+        normalized[capability] = {
+            "classification": classification,
+            "ready": ready,
+            "status": status,
+            "blocks_system_fully_ready": blocks_system_ready,
+        }
+    return {
+        "profile": profile,
+        "system_fully_ready": not blocking,
+        "capabilities": normalized,
+        "blocking_capabilities": blocking,
+        "optional_unavailable": optional_unavailable,
+        "degraded_capabilities": degraded,
+        "unknown_capabilities": unknown,
+        "truth_boundary": (
+            "Only explicit required capabilities and unknown classifications block "
+            "system_fully_ready. Optional, degraded_allowed, and not_applicable "
+            "capabilities are reported without being coerced into required booleans."
+        ),
+    }
 
 
 def evaluate_runtime_readiness(

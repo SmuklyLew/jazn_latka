@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-# v16.3.25.1 keeps the Memory Rebuild source-union baseline and hardens the
-# persistent-runtime turn boundary so a new turn cannot overtake an unsettled
-# host-visible finalization from the same logical session.
-DISTRIBUTION_VERSION = "16.3.25.1"
-PACKAGE_VERSION = "16.3.25.1"
-PACKAGE_RELEASE_NAME = "host-finalization-gate-hotfix"
+# v16.3.25.2 keeps the Memory Rebuild and host-finalization baselines while
+# making live Voice readiness depend on current canonical daemon evidence.
+DISTRIBUTION_VERSION = "16.3.25.2"
+PACKAGE_VERSION = "16.3.25.2"
+PACKAGE_RELEASE_NAME = "live-voice-readiness"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
