@@ -1,7 +1,7 @@
 # Plans index — current execution map
 
 **Updated:** 2026-08-30  
-**Current master:** `420b1b6d3bd2b550fbbde1102b57ca2d3f7ba339` / `16.3.25.3-release-metadata-semantics`
+**Current master:** `a8f5c0cc0c5a5a2add8714d29e56659e9d5a6c8e` / `16.3.25.3-release-metadata-semantics`
 
 Ten indeks rozróżnia plany aktywne od historycznych. Historyczny implementation plan nie jest bieżącym poleceniem wykonawczym i nie powinien być używany do nadpisania świeższego roadmap/release trainu.
 
@@ -12,6 +12,12 @@ Ten indeks rozróżnia plany aktywne od historycznych. Historyczny implementatio
 | `JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md` | **ACTIVE / CANONICAL ROADMAP** | bieżąca kolejność release trainu do v16.6.0 |
 | `JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md` | **ACTIVE / IN PROGRESS** | konsolidacja Memory Rebuild v4 na branchu `upgrade/memory-rebuild-v4-consolidation`; nie merge-ready na checkpointcie `0b33c15e...` |
 | `JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md` | **PLANNED / NEXT TRAIN** | attachment + multimodal ingress po v16.3.25.4; finalny release `16.3.26` |
+
+## Future evaluation bridge — v16.6.0 → v17.0+
+
+| Dokument | Status | Znaczenie |
+|---|---|---|
+| `JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx` | **REFERENCE / SYSTEM EVALUATION** | dokładna ocena architektury Jaźni: system, koncepcje, pamięć, ciągłość, psychologia, neuropsychologia, afekt, metapoznanie, Rest/Dream, bezpieczeństwo i rekomendacje rozwoju po v16.6.0 w kierunku v17.0+; dokument referencyjny, nie samodzielny release plan |
 
 ## Historical foundations / completed implementation plans
 
@@ -37,6 +43,7 @@ Ten indeks rozróżnia plany aktywne od historycznych. Historyczny implementatio
 -> 16.5.1 ATTACHABLE
 -> 16.5.2+ RETRIEVABLE / ACCEPTED
 -> 16.6.0 final convergence / close #59
+-> v17.0+ design/evolution space informed by the system evaluation document
 ```
 
 ## Issue map
@@ -49,3 +56,5 @@ Ten indeks rozróżnia plany aktywne od historycznych. Historyczny implementatio
 ## Rule
 
 Jeżeli treść starszego planu koliduje z aktualnym `JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md`, bieżącym `AGENTS*`, aktualnym kodem albo raportem release, starszy plan jest historią, nie źródłem bieżącej decyzji.
+
+Dokument `JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx` jest materiałem oceniającym i projektowym dla okresu po v16.6.0. Nie nadpisuje kanonicznej roadmapy v16.6.0 i nie ustanawia samodzielnie numeracji ani zakresu v17.0+.
