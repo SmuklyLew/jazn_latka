@@ -5,7 +5,12 @@ import json
 import pytest
 from pathlib import Path
 
-from latka_jazn.tools.current_line_archive_audit import ARCHIVE_ROOT, _is_old_package_version, run_audit
+from latka_jazn.tools.current_line_archive_audit import (
+    ARCHIVE_ROOT,
+    _is_active_path,
+    _is_old_package_version,
+    run_audit,
+)
 from latka_jazn.version import PACKAGE_VERSION
 from latka_jazn.version_contract import LEGACY_CURRENT_LINE_VERSION, V90_MIGRATION_TARGET_VERSION
 
@@ -17,6 +22,12 @@ def test_v90_archive_audit_uses_fixed_migration_boundary() -> None:
     assert _is_old_package_version(LEGACY_CURRENT_LINE_VERSION) is True
     assert _is_old_package_version(V90_MIGRATION_TARGET_VERSION) is False
     assert _is_old_package_version(post_v90_historical) is False
+
+
+def test_docs_archive_is_not_part_of_the_active_tree() -> None:
+    assert _is_active_path("docs/archive/reports/old-release.md") is False
+    assert _is_active_path("docs/archive/tools/memory-rebuild/legacy.md") is False
+    assert _is_active_path("docs/project/current-contract.md") is True
 
 
 def test_current_active_tree_has_no_old_package_version_references() -> None:

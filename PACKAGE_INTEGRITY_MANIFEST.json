@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3-release-metadata-semantics",
-  "runtime_version": "16.3.25.3-release-metadata-semantics",
-  "package_version": "16.3.25.3-release-metadata-semantics",
-  "generated_at_utc": "2026-08-29T21:03:07+00:00",
-  "updated_at_utc": "2026-08-29T21:03:07+00:00",
+  "version": "16.3.25.3.1-docs-taxonomy-contract",
+  "runtime_version": "16.3.25.3.1-docs-taxonomy-contract",
+  "package_version": "16.3.25.3.1-docs-taxonomy-contract",
+  "generated_at_utc": "2026-08-30T18:47:34+00:00",
+  "updated_at_utc": "2026-08-30T18:47:34+00:00",
   "start_file": "run.py",
-  "file_count": 925,
-  "static_file_count": 925,
+  "file_count": 952,
+  "static_file_count": 952,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -173,17 +173,26 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2848,
-      "sha256": "c4e5b7f41c211ea1412e91fa63d7b4d0b1e1785909d79326d62ff943fdc913a4",
+      "size_bytes": 2834,
+      "sha256": "c5d5b3e006e71f098f0d118b0f37273c7196323b2b318c043addca4518c4fc6b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/MEMORY_RECOVERY_CURRENT.md",
-      "size_bytes": 7818,
-      "sha256": "25550e6362f0f0bb36e7bf34a4ae790a817dd03788a23821985f05f8ea89b592",
+      "path": "docs/README.md",
+      "size_bytes": 2185,
+      "sha256": "53637372b126e300863e4946b144c088d68ddf04325839240ec92f071a456fe0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/README.md",
+      "size_bytes": 604,
+      "sha256": "aec57db0b5b0491d225b5a5f5faa56f301d065e2d432e3669fbc35616b0a27ef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -208,9 +217,783 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/archive/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_current_line_v92_consistency.patch",
+      "size_bytes": 21125,
+      "sha256": "ee9c3d4db42d7124f5ded03f51283eac8f48ed69e44354b8c29cba7212fb2629",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_current_line_v92_consistency.patch.sha256",
+      "size_bytes": 110,
+      "sha256": "10b6756d6d89a1703f107b01e277beaa281dc6d89fec61715edc32df69d38cc6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_living_memory_recall_continuity.patch",
+      "size_bytes": 73187,
+      "sha256": "d374b9bad869847207df9a429deb21faaf2c15c547c725d3a2196c30960e6af6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_living_memory_recall_pyright.patch",
+      "size_bytes": 2002,
+      "sha256": "43c2eeb960f2906aff850e02b60681e1db36f55ffa1f84f8641d74a7eede2f26",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/README.md",
+      "size_bytes": 2821,
+      "sha256": "ec9528ce20f01dc5a687aac1b3bee79bed5b70de1297487041fa9afe4ecbe78f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/JAZN_V15_4_0_0_COGNITIVE_ARCHITECTURE.md",
+      "size_bytes": 20349,
+      "sha256": "aeb79f4529944d408c55f7eccc6bc036c768ab126e92b354d08712024d9d9f24",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/JAZN_V15_4_2_0_REST_REPLAY_DREAM_CONTINUITY.md",
+      "size_bytes": 13529,
+      "sha256": "7d49120e2788719d4b914800534aee80df28939f0d6ec51772d89515cdaef290",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/JAZN_V15_4_2_1_COGNITIVE_TRUTH_MEMORY_INTEGRATION_HARDENING.md",
+      "size_bytes": 17089,
+      "sha256": "53322d3bc6d7acb51e28d93c09a9bef9562bccbfb8ffdbdf232cd799aa2cb5f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD.md",
+      "size_bytes": 11456,
+      "sha256": "2e6d81c92568d7d873237d56256c2ccb5637d8530bb867edff86da5c145c9524",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
+      "size_bytes": 2268,
+      "sha256": "3ad6c4a401b4687bc8163cd6e48a47ae3a3deb5f22052239b1775132cf1a84f3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v15/MEMORY_RECALL_HARDENING_PLAN.md",
+      "size_bytes": 7518,
+      "sha256": "ccf5b1d56029b2955086eae5c712c5a57d7233ea2b6c436158ff08b355735f41",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v16/JAZN_V16_3_14_MEMORY_REBUILD_TEST00_RECALL.md",
+      "size_bytes": 8282,
+      "sha256": "8b70970c533fd3febd6cd3dee7460a7f145a3a04ea25e93f4b726c545757017d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v16/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_IMPLEMENTATION_PLAN.md",
+      "size_bytes": 31047,
+      "sha256": "26a41895f8d9759a4a717fdaaed19d10ec3b29c9de96e8b3e7ef185fa51c069c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/plans/v16/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_IMPLEMENTATION_PLAN.md",
+      "size_bytes": 25135,
+      "sha256": "59901521ba97addb6e53ac5666c615fd2d1c8b2547cf74d61c3cfc55d73fee77",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_FIX.md",
+      "size_bytes": 2445,
+      "sha256": "52a38312dfdc482d793477d32440d34e104f164cd0490a04e8bbffb2e1bd3acc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/CLI_PROGRESS_AUDIT.md",
+      "size_bytes": 4671,
+      "sha256": "6f4532dd495a226ac91f5f3cccc1eb7fc4ae70da6c13e26b8b67b3ac83a86c46",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_0_0_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 5840,
+      "sha256": "e5a6bd2817fe7e53691b847f9b403a43e04ea9651daf47148483f9f6605a82de",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_0_0_RESEARCH_SOURCES.md",
+      "size_bytes": 6091,
+      "sha256": "87fdb448034a0abcb1d0149f4909e23bf55e596e2fc56083beb263a33c225a7c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_0_1_RUNTIME_RESILIENCE_HARDENING.md",
+      "size_bytes": 5985,
+      "sha256": "c6ef96c80bcb889159a10efb94b8d29c6e6e1a351a03a6a6d4541d11e2ed3e18",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_1_0_MEMORY_CONTINUITY_NEURO_HARDENING.md",
+      "size_bytes": 5886,
+      "sha256": "f4914a95cd1b9ed72b97be78ce4d0a7b933e0c7bf39f8d6674213edc86d9259b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_2_0_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 2740,
+      "sha256": "69bf7693ad70f87d648b5dc56d16884cb75f251c0747efbec30f9e9768859991",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_2_0_RESEARCH_SOURCES.md",
+      "size_bytes": 3981,
+      "sha256": "8d685a6dab2d5490e79daf7520b07cf2ee815d2eaec1676f9876c0e322e0ada7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_2_1_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 4997,
+      "sha256": "d0e30eaba3279f9b6168fc3d3ebf498cbe610220ef3715971d1e5fbf992cb73c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_4_2_1_RESEARCH_SOURCES.md",
+      "size_bytes": 4292,
+      "sha256": "c9f86a7e7125c488a2e97bc5271b5ac54aba5bc14c01bac00e2833c340a65ee3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD_IMPLEMENTATION.md",
+      "size_bytes": 4543,
+      "sha256": "0d8d4c886a0a35ff71fad4a349bf8858d3f5f7ed0acd6ffde7a440406c5a1891",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_2_RUNTIME_TURN_LIVENESS_HARDENING.md",
+      "size_bytes": 3617,
+      "sha256": "daf0a70c3b8bf8ac70d97ef46c7c379b0087585a9518f2bfb9c72f932c4bb19f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_3_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
+      "size_bytes": 1870,
+      "sha256": "540b8024739a5b8b0264941abdb0e10eba4166dfb9233701c9fc0581637310e2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_4_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
+      "size_bytes": 931,
+      "sha256": "78988e035656ff01c6f93e81b4f07837739d0a15f0e479f6f596bfde6ba0059d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_5_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
+      "size_bytes": 998,
+      "sha256": "422abcec4f416793073d5b2f7b9d092ead316c2da6a3ff0374159052ad85e408",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_6_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
+      "size_bytes": 544,
+      "sha256": "b5ec6e970df5fa963cb1a27e7054e453087f10c7cf839f725efc002106e5cadd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_0_7_HOST_FINALIZATION_LIFECYCLE.md",
+      "size_bytes": 2796,
+      "sha256": "1c4e85cae904266c14118937fd3b0687a05263974145c6f8cc2daabf98693918",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_1_0_EPISTEMIC_OFFLINE_REST.md",
+      "size_bytes": 3270,
+      "sha256": "c8b139c964d07567ff352cbee951dcdee8b0ab5654ddd198de0eda9ab4ca2122",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_1_1_SINGLE_UNIFIED_MEMORY_RUNTIME.md",
+      "size_bytes": 3955,
+      "sha256": "0ea02e5a893d0372b91905530bd479f77b52f7067ff70ddf96934baadad4c1de",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_1_2_PRIVATE_MEMORY_ACCEPTANCE.md",
+      "size_bytes": 4675,
+      "sha256": "e48369e947164768676deecc8b335711ddc911472941e1f6dc2a924c5837f4d9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_2_0_COGNITIVE_STATE_POLICY_CONTROL.md",
+      "size_bytes": 5532,
+      "sha256": "8da36fb82373fc930149f3813d4435167d9df6b0b6743ee13c4bd7f03a10c2e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_2_1_HARD_TURN_PROCESS_ISOLATION.md",
+      "size_bytes": 5124,
+      "sha256": "46cb166f02edd2635a928482e23830a4d1c78f6fc6b42c9391beeff27b2026c6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_2_2_REST_CLOUD_PERFORMANCE_HYGIENE.md",
+      "size_bytes": 5050,
+      "sha256": "5766169cf0fb9f368abb1600f7a1f0a806fcb868752a9006693a8a95071e4abb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_2_4_HOST_TOOL_PROVENANCE_MEMORY_AUTOLOAD.md",
+      "size_bytes": 4191,
+      "sha256": "6d283a8120f7d8484e2b149bfb88f8c3b0c3d9387a892b4fd8d31feccd93b06e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_0_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 19056,
+      "sha256": "e84b778b9c2c1d42f9b588bd08d4859909fcea294e65c0f0d5fd798053a6b085",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_0_RECENT_BRANCH_CONVERGENCE_AUDIT.md",
+      "size_bytes": 22426,
+      "sha256": "8438ba8ceec866a5c12ccc75e69e1082313039ba6a0b0e3e573980c64769ac82",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_10_HOST_MEMORY_ROOT_COMPATIBILITY.md",
+      "size_bytes": 4417,
+      "sha256": "93124ed10fef016820f68c066e9f9d6cd08d331ef294b347bd8f98bc5fd38a6c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_18_MEMORY_REBUILD_STUDIO_CLEANUP.md",
+      "size_bytes": 2318,
+      "sha256": "0b1fa36fd404ff46ed5b92f02eaa077f43afe4c56d4d419a0699aa0906289f67",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_1_HOST_FINALIZATION_PROVENANCE_POLISH_NLP.md",
+      "size_bytes": 6425,
+      "sha256": "e5d0c7651a48823b55d809c002ea0577a8bad0f7fed7bc38c49ef8bf5aff741d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_20_MEMORY_REBUILD_STUDIO_REGRESSION_FIX.md",
+      "size_bytes": 1521,
+      "sha256": "741d927972aa6dfa4dc954528569708eb1497f872871bafb33e4c2b5e74067d4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_21_CHATGPT_RUNTIME_FALLBACK_HARDENING.md",
+      "size_bytes": 4653,
+      "sha256": "0264bc4fb685ad1d709510c186489bb3c8e33cffb0bc1ef4b09bf1eb2ed14976",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_HARDENING.md",
+      "size_bytes": 8462,
+      "sha256": "d99e56cdb49460ce1ce9d657ad65ae848d09191fb53ef90acd23bf1d5b5cb793",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md",
+      "size_bytes": 8034,
+      "sha256": "62a8742de49a1773dabec9807b5b9e987f3ec07ae7471c3a90317284401ff20e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md",
+      "size_bytes": 4296,
+      "sha256": "9cb7e4aefaf0f64d9a9205208859402f3e652bfec4dcca86bad1fdeba88da817",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md",
+      "size_bytes": 7856,
+      "sha256": "8043a445e924142197a32d2ecd568e02afa3e4d7bb461df726e9fc0e4307b3a4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md",
+      "size_bytes": 5989,
+      "sha256": "4b998475c1da2468d654ac26ee144b83b1c1ece0b252997144371b4442b2e102",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_3_MEMORY_REBUILD_MODULAR_TYPED_RETRIEVAL.md",
+      "size_bytes": 3165,
+      "sha256": "d76d0295dccb58954eb7caaf1828959257e1cd1e14b5b7fac86327b1e7cf8926",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_8_ARCHIVE_IO_GENERATOR_HARDENING.md",
+      "size_bytes": 2751,
+      "sha256": "c39281894c1f8d0a167fa9a4a75e53902abdf1c055db0fd3724ebda3013f6c5e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_8_ARCHIVE_IO_RESEARCH_SOURCES.md",
+      "size_bytes": 1657,
+      "sha256": "2c4814c4b6f74bc2bf01afbde49760ed5992220c1c338641848e57b95d038f11",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_9_HOST_MEMORY_DIRECT_SQLITE.md",
+      "size_bytes": 5824,
+      "sha256": "56a3365e34bd31f71ad7ad09afab9b509ce26ddd8f371994e2fba88c2ddff4fb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_FULL_CONVERGENCE_BASELINE.md",
+      "size_bytes": 3758,
+      "sha256": "1f5b64f7e5251275e6d663ec8a7a9c599e04645ac8dbfd0a5e1baeb6984552a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_SEMANTIC_ARCHAEOLOGY.md",
+      "size_bytes": 3454,
+      "sha256": "c0bf142f5a82447eb9af1163d986fc2c457108af0445da5cf368f458c629788a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/LIVING_MEMORY_RECALL_RUNTIME_UPDATE.md",
+      "size_bytes": 6501,
+      "sha256": "7649017b222d9fafe6ba5251664e512fc4c5cc638249316c4c2e28a7780bba3d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/MEMORY_CONTINUITY_VALIDATION_SOURCES.md",
+      "size_bytes": 1909,
+      "sha256": "84dca5fdc9aba2cea16728502a360ade0659d1451fb4702ecccf357db0171490",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md",
+      "size_bytes": 4442,
+      "sha256": "016c7cacb19ae19047887c56b1ac037261fd92bab33871ea17e74b7319e2709e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/NEXT_RESUME_STEP_v16.3.25.2-live-voice-readiness.md",
+      "size_bytes": 3405,
+      "sha256": "4dca95b703f2fbfc9ac236a6b6fc99ed7892604c650031e151178deb029d216b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/RUNTIME_SQLITE_WAL_RESET_MITIGATION.md",
+      "size_bytes": 1968,
+      "sha256": "1cc82dd9b93dacf662bd599259c03f5c1de4ac3d80c2c451eb81bf5ef39fd22c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/SEMANTIC_ROUTING_COMPLETION_V96.md",
+      "size_bytes": 808,
+      "sha256": "f207d4b345d7f84f0940122bae2684d1bf40c8bc7ce435c0590435a269d836e2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/VOICE_CONTINUITY_NEURO_ROUTING_UPDATE.md",
+      "size_bytes": 5531,
+      "sha256": "0eb08f0d3613102059bbbfed7ef763f067b459bf0db8f8f76ec5636a3a504f05",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/WAKE_SESSION_CONTINUITY_HARDENING.md",
+      "size_bytes": 3315,
+      "sha256": "c6ce3410c76f29f061fca85a484664f7fc934af52bc7477b69d6db4575ccef31",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/WINDOWS_OLLAMA_NLP_STABILITY_SOURCES.md",
+      "size_bytes": 1584,
+      "sha256": "8e69382ca666b77002a64669ddd7de6db6bef40842b518a61913c716f3fadd37",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reviews/SEMANTIC_REVIEW_V96.md",
+      "size_bytes": 965,
+      "sha256": "bc7ff704c949aedf83569da104ac5ec6190b9544614aff7ec84e5405351e4a5d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/archive/roadmaps/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP_2026-08-27.md",
       "size_bytes": 44731,
       "sha256": "b73e2b62a22c2e975d0834f4c64cb33c29cd896618a7408b8b76ab56102cfd0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/tools/memory-rebuild/MEMORY_REBUILD_AUDIT.md",
+      "size_bytes": 2832,
+      "sha256": "477ba392edb103e7a09016c0226bb8ba0589b82b96f62e1e38ff279aeb552da8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/tools/memory-rebuild/MEMORY_REBUILD_CLASSIFIERS.md",
+      "size_bytes": 5580,
+      "sha256": "d3ffe5c8f9fa9051f321867beea15725f481dc1653bfad41e009e60dd5246d4c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/tools/memory-rebuild/MEMORY_REBUILD_DIALOGUE_CONTEXT.md",
+      "size_bytes": 4281,
+      "sha256": "9e0aa308174190627cd67593cfe3e6f4533e89b1e474db523561fcf13af8ec7f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/tools/memory-rebuild/MEMORY_REBUILD_STAGE4.md",
+      "size_bytes": 7897,
+      "sha256": "e3e65abaeeeacf9aa5dd2d7c3a18336de291a120c114b6359881e1247c61c0bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/tools/memory-rebuild/MEMORY_RESTORE_VALIDATION.md",
+      "size_bytes": 767,
+      "sha256": "6dc9e08f9c270b5268440963f91f262a89b0e3d890acd16bd2347e689f34337e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/CHATGPT_EXPORT_MEMORY_IMPORT.md",
+      "size_bytes": 5561,
+      "sha256": "dde82b8755bc1efada8431be86ca8110767b433b7cbf7a6f8f9b7d6d9fda28c5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/HTML_MEMORY_INGEST.md",
+      "size_bytes": 3823,
+      "sha256": "9a17dd54699c2693a1403737872eb2019e76f75fdd42fafcbe9bb476129fd9ab",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_REBUILD.md",
+      "size_bytes": 2690,
+      "sha256": "dcf77b7b97ef26306594519da955630e7836bf0398ac3ecbbb62912923bf5ba7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_REBUILD_SETTINGS.md",
+      "size_bytes": 3473,
+      "sha256": "b4523dcdc476b619fe9027baaaa83df2fc13019442dbfd796c4448e514704a5b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_REBUILD_TEST00_RECALL.md",
+      "size_bytes": 2657,
+      "sha256": "92d52bfe12cea0772469a11b6614306ef861999ac14b8c7701664a7ef7a1608a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_REBUILD_V16_ARCHITECTURE.md",
+      "size_bytes": 6912,
+      "sha256": "188993dfa3cc799599ad781db7fc8a8a47015a5839e7ba0ee1a3ab21a28d3d90",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_RECOVERY_CURRENT.md",
+      "size_bytes": 7818,
+      "sha256": "25550e6362f0f0bb36e7bf34a4ae790a817dd03788a23821985f05f8ea89b592",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_RECOVERY_WAKE_STATE.md",
+      "size_bytes": 2853,
+      "sha256": "8ca767f141ba1ac5cad20c1c1f3a139c7ffee56c26c5c72de43e4ff3ef5bf93d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_RESTORE.md",
+      "size_bytes": 633,
+      "sha256": "1b37c3724751de093cbc43c9899cd50acc8823fbb81e4078324d64b031ba9306",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/README.md",
+      "size_bytes": 1090,
+      "sha256": "28f17e627635f569f1e4fa3b4998a75d08414a6374f4dbb9f4d18c71b1aa1aa9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/REBUILD_MEMORY_APP.md",
+      "size_bytes": 7775,
+      "sha256": "672cd1ab00f3b054a145d22e85713379941b493e3fb2b23237c163a16fab42cb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/REBUILD_MEMORY_APP_UI.md",
+      "size_bytes": 6417,
+      "sha256": "421da17df3f88081fa8363a8cff147a6128c0c75703e37e2a0ea2a3f9affc155",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/VERIFIED_MEMORY_RESTORE.md",
+      "size_bytes": 4762,
+      "sha256": "8b65c686e4ac6883b83eebaaa079f09126bbaafbe11c0fee6d063b1e510753f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/nlp/POLISH_REASONING_RESOURCE_BOOTSTRAP.md",
+      "size_bytes": 1447,
+      "sha256": "c4b9206a10ed73470d5996b741d2d171824d5147b95cd5b3f7d3db17f71a043b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/nlp/README.md",
+      "size_bytes": 227,
+      "sha256": "60bd901fe21f6543d67dd01b3a8a62d3c73cbd15cc3971772c86500da00360ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -235,151 +1018,34 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_current_line_v92_consistency.patch",
-      "size_bytes": 21125,
-      "sha256": "ee9c3d4db42d7124f5ded03f51283eac8f48ed69e44354b8c29cba7212fb2629",
+      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
+      "size_bytes": 5169,
+      "sha256": "86ee02f1e1ee4e4bea1893fac3f8b0ac0402e513bd9f6a6ecb7b7041f1ca109a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_current_line_v92_consistency.patch.sha256",
-      "size_bytes": 110,
-      "sha256": "10b6756d6d89a1703f107b01e277beaa281dc6d89fec61715edc32df69d38cc6",
+      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/PLAN.md",
+      "size_bytes": 10811,
+      "sha256": "a9328b4fd3469276b1b3b5fcf89b49f08fd6d044df8356befc0f17f5e0fd1e50",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_living_memory_recall_continuity.patch",
-      "size_bytes": 73187,
-      "sha256": "d374b9bad869847207df9a429deb21faaf2c15c547c725d3a2196c30960e6af6",
+      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/STATUS.md",
+      "size_bytes": 827,
+      "sha256": "0c02ce690243b34ed3942cb36157384823e29d25b7951173c0fdfe13bbd6209f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/patches/JAZN_LIVING_MEMORY_RECALL_CONTINUITY/fix_jazn_living_memory_recall_pyright.patch",
-      "size_bytes": 2002,
-      "sha256": "43c2eeb960f2906aff850e02b60681e1db36f55ffa1f84f8641d74a7eede2f26",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md",
-      "size_bytes": 2163,
-      "sha256": "c25a7992b0a4d31e622cea354ed9cbfaca192f1265000247784486a33ef80b00",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V15_4_0_0_COGNITIVE_ARCHITECTURE.md",
-      "size_bytes": 20349,
-      "sha256": "aeb79f4529944d408c55f7eccc6bc036c768ab126e92b354d08712024d9d9f24",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V15_4_2_0_REST_REPLAY_DREAM_CONTINUITY.md",
-      "size_bytes": 13529,
-      "sha256": "7d49120e2788719d4b914800534aee80df28939f0d6ec51772d89515cdaef290",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V15_4_2_1_COGNITIVE_TRUTH_MEMORY_INTEGRATION_HARDENING.md",
-      "size_bytes": 17089,
-      "sha256": "53322d3bc6d7acb51e28d93c09a9bef9562bccbfb8ffdbdf232cd799aa2cb5f1",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD.md",
-      "size_bytes": 11456,
-      "sha256": "2e6d81c92568d7d873237d56256c2ccb5637d8530bb867edff86da5c145c9524",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V16_3_14_MEMORY_REBUILD_TEST00_RECALL.md",
-      "size_bytes": 8282,
-      "sha256": "8b70970c533fd3febd6cd3dee7460a7f145a3a04ea25e93f4b726c545757017d",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_IMPLEMENTATION_PLAN.md",
-      "size_bytes": 31047,
-      "sha256": "26a41895f8d9759a4a717fdaaed19d10ec3b29c9de96e8b3e7ef185fa51c069c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_IMPLEMENTATION_PLAN.md",
-      "size_bytes": 25135,
-      "sha256": "59901521ba97addb6e53ac5666c615fd2d1c8b2547cf74d61c3cfc55d73fee77",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md",
-      "size_bytes": 7666,
-      "sha256": "c3076f347b21307ec8d39acfc16ed7e5d2686ca6f8e5e749a9500bd7ce0856cd",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md",
-      "size_bytes": 19352,
-      "sha256": "71cafaf4ff651643ce50fd20991ec9f9bc46d5e8d314c76f3ff869706c4b8525",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
-      "size_bytes": 2268,
-      "sha256": "3ad6c4a401b4687bc8163cd6e48a47ae3a3deb5f22052239b1775132cf1a84f3",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/MEMORY_RECALL_HARDENING_PLAN.md",
-      "size_bytes": 7518,
-      "sha256": "ccf5b1d56029b2955086eae5c712c5a57d7233ea2b6c436158ff08b355735f41",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
+      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_deep_archive_search.json",
       "size_bytes": 396,
       "sha256": "e0cc9933d78f35fa2a19891929d263991cb51eb6df5316221daf2502be2d6815",
       "mutable_runtime": false,
@@ -388,7 +1054,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/memory_rebuild_plan/jazn_memory_tests_sqlite_audit.json",
+      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_sqlite_audit.json",
       "size_bytes": 69176,
       "sha256": "c27346e751d9e6d5d83a6a78353c49687f57903bfb03c196757372af4383f5cd",
       "mutable_runtime": false,
@@ -397,468 +1063,189 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/CHATGPT_HOST_FINALIZATION_PROTOCOL_FIX.md",
-      "size_bytes": 2445,
-      "sha256": "52a38312dfdc482d793477d32440d34e104f164cd0490a04e8bbffb2e1bd3acc",
+      "path": "docs/plans/16.3.26-attachment-ingress/PLAN.md",
+      "size_bytes": 8579,
+      "sha256": "61f288aaf913c8a984ffb1bf6076998ec6f14b51b0a804ac1313b4c58e670fe9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/CLI_PROGRESS_AUDIT.md",
-      "size_bytes": 4671,
-      "sha256": "6f4532dd495a226ac91f5f3cccc1eb7fc4ae70da6c13e26b8b67b3ac83a86c46",
+      "path": "docs/plans/16.3.26-attachment-ingress/STATUS.md",
+      "size_bytes": 386,
+      "sha256": "9114c5b79b4ded9c9f61d800db3606be63628ec3bd27843f4c012fdbf778b6f5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_0_0_IMPLEMENTATION_REPORT.md",
-      "size_bytes": 5840,
-      "sha256": "e5a6bd2817fe7e53691b847f9b403a43e04ea9651daf47148483f9f6605a82de",
+      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/PLAN.md",
+      "size_bytes": 16853,
+      "sha256": "c7ad9b0a9115baf956b385ebf8f3d84c69bc654bae3e983f1780daecc4c1ae38",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_0_0_RESEARCH_SOURCES.md",
-      "size_bytes": 6091,
-      "sha256": "87fdb448034a0abcb1d0149f4909e23bf55e596e2fc56083beb263a33c225a7c",
+      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/STATUS.md",
+      "size_bytes": 393,
+      "sha256": "5f1ad1dedb8fd111b5cc1ea579a27c279408ecaa534d0e0e2f04ec3afc977c5c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_0_1_RUNTIME_RESILIENCE_HARDENING.md",
-      "size_bytes": 5985,
-      "sha256": "c6ef96c80bcb889159a10efb94b8d29c6e6e1a351a03a6a6d4541d11e2ed3e18",
+      "path": "docs/plans/16.6.0-final-convergence/ROADMAP.md",
+      "size_bytes": 18439,
+      "sha256": "e0314101a398e83314479e6dd4d44baa1db0f960c0a80cd1f1f8e4307fb140e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_1_0_MEMORY_CONTINUITY_NEURO_HARDENING.md",
-      "size_bytes": 5886,
-      "sha256": "f4914a95cd1b9ed72b97be78ce4d0a7b933e0c7bf39f8d6674213edc86d9259b",
+      "path": "docs/plans/16.6.0-final-convergence/STATUS.md",
+      "size_bytes": 420,
+      "sha256": "b61f1d5593d48da976394d0b5c595f691a15284cb3bc743d900c3421a0b0dbef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_2_0_IMPLEMENTATION_REPORT.md",
-      "size_bytes": 2740,
-      "sha256": "69bf7693ad70f87d648b5dc56d16884cb75f251c0747efbec30f9e9768859991",
+      "path": "docs/plans/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
+      "size_bytes": 234,
+      "sha256": "32e6a85d15d6a8cc621875a8ff044ca25e8cc5d541d79a09e69d6ad164359cde",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_2_0_RESEARCH_SOURCES.md",
-      "size_bytes": 3981,
-      "sha256": "8d685a6dab2d5490e79daf7520b07cf2ee815d2eaec1676f9876c0e322e0ada7",
+      "path": "docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md",
+      "size_bytes": 172,
+      "sha256": "56fb092ececa5577e2bbdde03340ce7b2f69a62048f58518ce52e65b8452e62b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_2_1_IMPLEMENTATION_REPORT.md",
-      "size_bytes": 4997,
-      "sha256": "d0e30eaba3279f9b6168fc3d3ebf498cbe610220ef3715971d1e5fbf992cb73c",
+      "path": "docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md",
+      "size_bytes": 170,
+      "sha256": "e95aeee82dfe8d6e95354f897c9e3c6f24e98d6cfa4033f0f9dcc7a3346dc4c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_4_2_1_RESEARCH_SOURCES.md",
-      "size_bytes": 4292,
-      "sha256": "c9f86a7e7125c488a2e97bc5271b5ac54aba5bc14c01bac00e2833c340a65ee3",
+      "path": "docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md",
+      "size_bytes": 182,
+      "sha256": "9cb0bf7b70b1c9b5b3850804dc459b512743eb77699ccb96a4a8bb5faabe5a20",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD_IMPLEMENTATION.md",
-      "size_bytes": 4543,
-      "sha256": "0d8d4c886a0a35ff71fad4a349bf8858d3f5f7ed0acd6ffde7a440406c5a1891",
+      "path": "docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md",
+      "size_bytes": 172,
+      "sha256": "fad9ed103ea321ad1e4d0fc730fd862276fc2c1c58b000efba090c6198f27d18",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_2_RUNTIME_TURN_LIVENESS_HARDENING.md",
-      "size_bytes": 3617,
-      "sha256": "daf0a70c3b8bf8ac70d97ef46c7c379b0087585a9518f2bfb9c72f932c4bb19f",
+      "path": "docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+      "size_bytes": 261,
+      "sha256": "942ad748ac5bc644a0506141bb2fc4f1813e0b488e16cb852eb99828af59dee2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_3_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
-      "size_bytes": 1870,
-      "sha256": "540b8024739a5b8b0264941abdb0e10eba4166dfb9233701c9fc0581637310e2",
+      "path": "docs/plans/PLAN_COHERENCE_AUDIT_2026-08-30.md",
+      "size_bytes": 205,
+      "sha256": "6ad327a2955d11cd504432c7af5b324195089f9be39513e2276a90c4864b618d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_4_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
-      "size_bytes": 931,
-      "sha256": "78988e035656ff01c6f93e81b4f07837739d0a15f0e479f6f596bfde6ba0059d",
+      "path": "docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md",
+      "size_bytes": 233,
+      "sha256": "075401d27ef930e53ad66cbd6282950a4c2cf487b868ede9d8ac6b9420a51c81",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_5_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
-      "size_bytes": 998,
-      "sha256": "422abcec4f416793073d5b2f7b9d092ead316c2da6a3ff0374159052ad85e408",
+      "path": "docs/plans/README.md",
+      "size_bytes": 1045,
+      "sha256": "722ff1aaec107007fb148c0b994f158028b20e646ff312f754565b9909bd01c9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_6_RUNTIME_TURN_LIVENESS_CI_HARDENING.md",
-      "size_bytes": 544,
-      "sha256": "b5ec6e970df5fa963cb1a27e7054e453087f10c7cf839f725efc002106e5cadd",
+      "path": "docs/project/PLAN_COHERENCE_AUDIT_2026-08-30.md",
+      "size_bytes": 14008,
+      "sha256": "8db3dd2a3275f8b25be1315048eab934d3fa69e949df4a44652b7d899cfa2ef0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_0_7_HOST_FINALIZATION_LIFECYCLE.md",
-      "size_bytes": 2796,
-      "sha256": "1c4e85cae904266c14118937fd3b0687a05263974145c6f8cc2daabf98693918",
+      "path": "docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md",
+      "size_bytes": 17769,
+      "sha256": "88639728628b7c72dae66632a5c8e598b110fdc77aa201d8be19109bd0d7367c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_1_0_EPISTEMIC_OFFLINE_REST.md",
-      "size_bytes": 3270,
-      "sha256": "c8b139c964d07567ff352cbee951dcdee8b0ab5654ddd198de0eda9ab4ca2122",
+      "path": "docs/project/README.md",
+      "size_bytes": 867,
+      "sha256": "ed1b576059d51063ac659c9ee7fc773cce25a2e7f0492706c7fa53f59dc7c4f9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_1_1_SINGLE_UNIFIED_MEMORY_RUNTIME.md",
-      "size_bytes": 3955,
-      "sha256": "0ea02e5a893d0372b91905530bd479f77b52f7067ff70ddf96934baadad4c1de",
+      "path": "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx",
+      "size_bytes": 15009,
+      "sha256": "edde1c1153c3f460401f67c5930b9dec6bb48e1c24764dabbc0d8d0fed524ff1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_1_2_PRIVATE_MEMORY_ACCEPTANCE.md",
-      "size_bytes": 4675,
-      "sha256": "e48369e947164768676deecc8b335711ddc911472941e1f6dc2a924c5837f4d9",
+      "path": "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+      "size_bytes": 27747,
+      "sha256": "f01103857ff35e8cbb9a4a19515e665813edb325d4605dd61b72945f96f71c9a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/reports/JAZN_V16_2_0_COGNITIVE_STATE_POLICY_CONTROL.md",
-      "size_bytes": 5532,
-      "sha256": "8da36fb82373fc930149f3813d4435167d9df6b0b6743ee13c4bd7f03a10c2e8",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_2_1_HARD_TURN_PROCESS_ISOLATION.md",
-      "size_bytes": 5124,
-      "sha256": "46cb166f02edd2635a928482e23830a4d1c78f6fc6b42c9391beeff27b2026c6",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_2_2_REST_CLOUD_PERFORMANCE_HYGIENE.md",
-      "size_bytes": 5050,
-      "sha256": "5766169cf0fb9f368abb1600f7a1f0a806fcb868752a9006693a8a95071e4abb",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_2_4_HOST_TOOL_PROVENANCE_MEMORY_AUTOLOAD.md",
-      "size_bytes": 4191,
-      "sha256": "6d283a8120f7d8484e2b149bfb88f8c3b0c3d9387a892b4fd8d31feccd93b06e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_0_IMPLEMENTATION_REPORT.md",
-      "size_bytes": 19056,
-      "sha256": "e84b778b9c2c1d42f9b588bd08d4859909fcea294e65c0f0d5fd798053a6b085",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_0_RECENT_BRANCH_CONVERGENCE_AUDIT.md",
-      "size_bytes": 22426,
-      "sha256": "8438ba8ceec866a5c12ccc75e69e1082313039ba6a0b0e3e573980c64769ac82",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_10_HOST_MEMORY_ROOT_COMPATIBILITY.md",
-      "size_bytes": 4417,
-      "sha256": "93124ed10fef016820f68c066e9f9d6cd08d331ef294b347bd8f98bc5fd38a6c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_18_MEMORY_REBUILD_STUDIO_CLEANUP.md",
-      "size_bytes": 2318,
-      "sha256": "0b1fa36fd404ff46ed5b92f02eaa077f43afe4c56d4d419a0699aa0906289f67",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_1_HOST_FINALIZATION_PROVENANCE_POLISH_NLP.md",
-      "size_bytes": 6425,
-      "sha256": "e5d0c7651a48823b55d809c002ea0577a8bad0f7fed7bc38c49ef8bf5aff741d",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_20_MEMORY_REBUILD_STUDIO_REGRESSION_FIX.md",
-      "size_bytes": 1521,
-      "sha256": "741d927972aa6dfa4dc954528569708eb1497f872871bafb33e4c2b5e74067d4",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_21_CHATGPT_RUNTIME_FALLBACK_HARDENING.md",
-      "size_bytes": 4653,
-      "sha256": "0264bc4fb685ad1d709510c186489bb3c8e33cffb0bc1ef4b09bf1eb2ed14976",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_HARDENING.md",
-      "size_bytes": 8462,
-      "sha256": "d99e56cdb49460ce1ce9d657ad65ae848d09191fb53ef90acd23bf1d5b5cb793",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md",
-      "size_bytes": 8034,
-      "sha256": "62a8742de49a1773dabec9807b5b9e987f3ec07ae7471c3a90317284401ff20e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md",
-      "size_bytes": 4296,
-      "sha256": "9cb7e4aefaf0f64d9a9205208859402f3e652bfec4dcca86bad1fdeba88da817",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md",
-      "size_bytes": 7856,
-      "sha256": "8043a445e924142197a32d2ecd568e02afa3e4d7bb461df726e9fc0e4307b3a4",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md",
-      "size_bytes": 5989,
-      "sha256": "4b998475c1da2468d654ac26ee144b83b1c1ece0b252997144371b4442b2e102",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_3_MEMORY_REBUILD_MODULAR_TYPED_RETRIEVAL.md",
-      "size_bytes": 3165,
-      "sha256": "d76d0295dccb58954eb7caaf1828959257e1cd1e14b5b7fac86327b1e7cf8926",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_8_ARCHIVE_IO_GENERATOR_HARDENING.md",
-      "size_bytes": 2751,
-      "sha256": "c39281894c1f8d0a167fa9a4a75e53902abdf1c055db0fd3724ebda3013f6c5e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_8_ARCHIVE_IO_RESEARCH_SOURCES.md",
-      "size_bytes": 1657,
-      "sha256": "2c4814c4b6f74bc2bf01afbde49760ed5992220c1c338641848e57b95d038f11",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_3_9_HOST_MEMORY_DIRECT_SQLITE.md",
-      "size_bytes": 5824,
-      "sha256": "56a3365e34bd31f71ad7ad09afab9b509ce26ddd8f371994e2fba88c2ddff4fb",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_FULL_CONVERGENCE_BASELINE.md",
-      "size_bytes": 3758,
-      "sha256": "1f5b64f7e5251275e6d663ec8a7a9c599e04645ac8dbfd0a5e1baeb6984552a2",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/JAZN_V16_SEMANTIC_ARCHAEOLOGY.md",
-      "size_bytes": 3454,
-      "sha256": "c0bf142f5a82447eb9af1163d986fc2c457108af0445da5cf368f458c629788a",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/LIVING_MEMORY_RECALL_RUNTIME_UPDATE.md",
-      "size_bytes": 6501,
-      "sha256": "7649017b222d9fafe6ba5251664e512fc4c5cc638249316c4c2e28a7780bba3d",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/MEMORY_CONTINUITY_VALIDATION_SOURCES.md",
-      "size_bytes": 1909,
-      "sha256": "84dca5fdc9aba2cea16728502a360ade0659d1451fb4702ecccf357db0171490",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md",
-      "size_bytes": 4442,
-      "sha256": "016c7cacb19ae19047887c56b1ac037261fd92bab33871ea17e74b7319e2709e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/NEXT_RESUME_STEP_v16.3.25.2-live-voice-readiness.md",
-      "size_bytes": 3405,
-      "sha256": "4dca95b703f2fbfc9ac236a6b6fc99ed7892604c650031e151178deb029d216b",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/RUNTIME_SQLITE_WAL_RESET_MITIGATION.md",
-      "size_bytes": 1968,
-      "sha256": "1cc82dd9b93dacf662bd599259c03f5c1de4ac3d80c2c451eb81bf5ef39fd22c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/SEMANTIC_ROUTING_COMPLETION_V96.md",
-      "size_bytes": 808,
-      "sha256": "f207d4b345d7f84f0940122bae2684d1bf40c8bc7ce435c0590435a269d836e2",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/VOICE_CONTINUITY_NEURO_ROUTING_UPDATE.md",
-      "size_bytes": 5531,
-      "sha256": "0eb08f0d3613102059bbbfed7ef763f067b459bf0db8f8f76ec5636a3a504f05",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/WAKE_SESSION_CONTINUITY_HARDENING.md",
-      "size_bytes": 3315,
-      "sha256": "c6ce3410c76f29f061fca85a484664f7fc934af52bc7477b69d6db4575ccef31",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reports/WINDOWS_OLLAMA_NLP_STABILITY_SOURCES.md",
-      "size_bytes": 1584,
-      "sha256": "8e69382ca666b77002a64669ddd7de6db6bef40842b518a61913c716f3fadd37",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/reviews/SEMANTIC_REVIEW_V96.md",
-      "size_bytes": 965,
-      "sha256": "bc7ff704c949aedf83569da104ac5ec6190b9544614aff7ec84e5405351e4a5d",
+      "path": "docs/runtime/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md",
+      "size_bytes": 2163,
+      "sha256": "c25a7992b0a4d31e622cea354ed9cbfaca192f1265000247784486a33ef80b00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -919,135 +1306,9 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/tools/CHATGPT_EXPORT_MEMORY_IMPORT.md",
-      "size_bytes": 5561,
-      "sha256": "dde82b8755bc1efada8431be86ca8110767b433b7cbf7a6f8f9b7d6d9fda28c5",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/HTML_MEMORY_INGEST.md",
-      "size_bytes": 3823,
-      "sha256": "9a17dd54699c2693a1403737872eb2019e76f75fdd42fafcbe9bb476129fd9ab",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD.md",
-      "size_bytes": 2690,
-      "sha256": "dcf77b7b97ef26306594519da955630e7836bf0398ac3ecbbb62912923bf5ba7",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_AUDIT.md",
-      "size_bytes": 2832,
-      "sha256": "477ba392edb103e7a09016c0226bb8ba0589b82b96f62e1e38ff279aeb552da8",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_CLASSIFIERS.md",
-      "size_bytes": 5580,
-      "sha256": "d3ffe5c8f9fa9051f321867beea15725f481dc1653bfad41e009e60dd5246d4c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_DIALOGUE_CONTEXT.md",
-      "size_bytes": 4281,
-      "sha256": "9e0aa308174190627cd67593cfe3e6f4533e89b1e474db523561fcf13af8ec7f",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_SETTINGS.md",
-      "size_bytes": 3473,
-      "sha256": "b4523dcdc476b619fe9027baaaa83df2fc13019442dbfd796c4448e514704a5b",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_STAGE4.md",
-      "size_bytes": 7897,
-      "sha256": "e3e65abaeeeacf9aa5dd2d7c3a18336de291a120c114b6359881e1247c61c0bd",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_TEST00_RECALL.md",
-      "size_bytes": 2657,
-      "sha256": "92d52bfe12cea0772469a11b6614306ef861999ac14b8c7701664a7ef7a1608a",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_REBUILD_V16_ARCHITECTURE.md",
-      "size_bytes": 6912,
-      "sha256": "188993dfa3cc799599ad781db7fc8a8a47015a5839e7ba0ee1a3ab21a28d3d90",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_RECOVERY_WAKE_STATE.md",
-      "size_bytes": 2853,
-      "sha256": "8ca767f141ba1ac5cad20c1c1f3a139c7ffee56c26c5c72de43e4ff3ef5bf93d",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_RESTORE.md",
-      "size_bytes": 633,
-      "sha256": "1b37c3724751de093cbc43c9899cd50acc8823fbb81e4078324d64b031ba9306",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/MEMORY_RESTORE_VALIDATION.md",
-      "size_bytes": 767,
-      "sha256": "6dc9e08f9c270b5268440963f91f262a89b0e3d890acd16bd2347e689f34337e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "docs/tools/MEMORY_SQLITE_TEST_04.md",
       "size_bytes": 18930,
       "sha256": "394728aaa14970d61ddf578de1523c189e3c42c6d14551425bcf1ec4c35d8d7f",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/POLISH_REASONING_RESOURCE_BOOTSTRAP.md",
-      "size_bytes": 1447,
-      "sha256": "c4b9206a10ed73470d5996b741d2d171824d5147b95cd5b3f7d3db17f71a043b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1063,27 +1324,9 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/tools/REBUILD_MEMORY_APP.md",
-      "size_bytes": 7775,
-      "sha256": "672cd1ab00f3b054a145d22e85713379941b493e3fb2b23237c163a16fab42cb",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/REBUILD_MEMORY_APP_UI.md",
-      "size_bytes": 6417,
-      "sha256": "421da17df3f88081fa8363a8cff147a6128c0c75703e37e2a0ea2a3f9affc155",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/tools/VERIFIED_MEMORY_RESTORE.md",
-      "size_bytes": 4762,
-      "sha256": "8b65c686e4ac6883b83eebaaa079f09126bbaafbe11c0fee6d063b1e510753f1",
+      "path": "docs/tools/README.md",
+      "size_bytes": 778,
+      "sha256": "5d809915bb6af7aa13ec4dddc8d8bf8870b0bed3d925f6cdfabf1d180be28cfc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5114,8 +5357,8 @@
     },
     {
       "path": "latka_jazn/resources/update_coverage_contract.json",
-      "size_bytes": 2290,
-      "sha256": "371da338b1bc2941fba16386ab9571f403459a6d9a37e72cd92a9d6a1de0731c",
+      "size_bytes": 2298,
+      "sha256": "e521801f157fc369d3e0db954a9a021f8950c182ab946cb93fd732ae48f64f95",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5339,8 +5582,8 @@
     },
     {
       "path": "latka_jazn/tools/current_line_archive_audit.py",
-      "size_bytes": 11058,
-      "sha256": "ab3c1f53a67d5a89e2541a9d59e977383b36cd093533e87463af63bef9eb3e36",
+      "size_bytes": 12068,
+      "sha256": "f9376b44e20ba9a563744f45fa59d511b19a76538fab1cde968f187a96471f07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6239,8 +6482,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6563,
-      "sha256": "9ed9f7c42c6a5dac687786e42927a5e857653aeaa7f5f86dab4f1b3003b180e8",
+      "size_bytes": 6484,
+      "sha256": "1919998a61906f6da9ffe28c18a20dab9e53126a5e75ca8d4a0e4194ce1ad8eb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6635,8 +6878,8 @@
     },
     {
       "path": "tests/test_current_line_archive_audit.py",
-      "size_bytes": 2166,
-      "sha256": "7212aa02589f13f4fc87f481bb524a094b9d6ca2ad2217b22e4a1ac6ae439555",
+      "size_bytes": 2499,
+      "sha256": "d01806a186f1a427e205e1beed167e6de3a811aeeae41d024105da0f61c61e74",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6644,8 +6887,8 @@
     },
     {
       "path": "tests/test_current_line_v90_migration.py",
-      "size_bytes": 3524,
-      "sha256": "4f0b0e79bdc3db58a7a4430c8aee4dce9bb255cf8ed4bbaf663e32ef7dcd6856",
+      "size_bytes": 3613,
+      "sha256": "cd77d440ddf26b902027f71ce342592b34e092820f44d2a613ad70003c194695",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6968,8 +7211,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_p0_studio.py",
-      "size_bytes": 5359,
-      "sha256": "1407874d5b03d442cb3ba9bfa683a6d59cbaaaf75c731fab957364a8d2693f37",
+      "size_bytes": 5629,
+      "sha256": "f24759f5b6cd815e6835f0d14f59b0ef111622e10dfe87e77bc3183b617c7164",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8756,11 +8999,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3-release-metadata-semantics",
+  "release_version": "16.3.25.3.1-docs-taxonomy-contract",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3-release-metadata-semantics",
-    "package_version": "16.3.25.3-release-metadata-semantics",
-    "release_version": "16.3.25.3-release-metadata-semantics"
+    "runtime_version": "16.3.25.3.1-docs-taxonomy-contract",
+    "package_version": "16.3.25.3.1-docs-taxonomy-contract",
+    "release_version": "16.3.25.3.1-docs-taxonomy-contract"
   },
   "legacy_aliases": {
     "version": "release_version"

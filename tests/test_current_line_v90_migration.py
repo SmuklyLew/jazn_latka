@@ -5,6 +5,9 @@ import pytest
 import subprocess
 from pathlib import Path
 
+from latka_jazn.tools.current_line_archive_audit import (
+    scan_active_old_references as scan_current_active_old_references,
+)
 from latka_jazn.tools.current_line_v90_migration import (
     ARCHIVE_ROOT,
     scan_active_old_references,
@@ -44,9 +47,8 @@ def test_legacy_memory_source_version_remains_distinct_from_runtime_version() ->
 
 def test_current_tree_has_no_unapproved_old_references() -> None:
     root = Path(__file__).resolve().parents[1]
-    findings, approved_legacy = scan_active_old_references(root)
+    findings = scan_current_active_old_references(root)
     assert findings == []
-    assert approved_legacy >= 0
 
 
 def test_v90_scanner_does_not_treat_later_release_history_as_unfinished_migration(tmp_path: Path) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -36,6 +37,12 @@ def _state(tmp_path: Path) -> StudioState:
         tool_root=tmp_path,
         settings_path=tmp_path / "memory_rebuild_settings.json",
     )
+
+
+def _numeric_release_prefix(value: str) -> tuple[int, ...]:
+    match = re.match(r"^(\d+(?:\.\d+)*)", value)
+    assert match is not None, f"release version has no numeric prefix: {value!r}"
+    return tuple(int(part) for part in match.group(1).split("."))
 
 
 def test_retired_p0_contract_is_owned_by_one_canonical_three_page_studio(tmp_path: Path) -> None:
@@ -135,4 +142,4 @@ def test_canonical_layout_can_be_composed_without_running_terminal(tmp_path: Pat
 def test_memory_rebuild_revision_and_package_version_are_monotonic() -> None:
     assert TOOL_REVISION == "15.3.23.01"
     assert TOOL_RELEASE_LABEL == "15.3.23.01 - Poprawione narzędzie odbudowy pamięci"
-    assert PACKAGE_VERSION_FULL == "16.3.25.3-release-metadata-semantics"
+    assert _numeric_release_prefix(PACKAGE_VERSION_FULL) >= (16, 3, 25, 3)
