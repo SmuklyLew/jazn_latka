@@ -6,6 +6,7 @@ import sqlite3
 
 import pytest
 
+from latka_jazn.tools.memory_rebuild_app import build_source_union_manifest
 from latka_jazn.tools.memory_rebuild_app import studio
 from latka_jazn.tools.memory_rebuild_app.application import MemoryRebuildApplicationService
 from latka_jazn.tools.memory_rebuild_app.cli import build_parser, main as cli_main
@@ -106,11 +107,11 @@ def test_protocol_engine_runs_real_test00_test01_test02_and_test03(tmp_path: Pat
         ).fetchone()[0] == 0
         assert con.execute("SELECT COUNT(*) FROM memory_records").fetchone()[0] == 0
 
-    test02 = engine.run_test02(database)
+    test02 = engine.run_test02(database, test01_result=test01)
     assert test02["ok"] is True, test02
     assert test02["details"]["projection"]["raw_l0_unchanged"] is True
 
-    test03 = engine.run_test03([first, second], test00_result=test00)
+    test03 = engine.run_test03([first, second], test02_result=test02)
     assert test03["ok"] is True, test03
     assert test03["details"]["semantic_reconciliation"] is True
 
@@ -182,7 +183,7 @@ def test_dependency_graph_blocks_final_without_authentic_test04(tmp_path: Path) 
     )
 
     assert result["outcome"] == "BLOCKED"
-    assert "prerequisite_artifact_present" in result["blockers"]
+    assert "prerequisite_dependency_chain" in result["blockers"]
 
 
 def test_dependency_graph_blocks_cross_run_test00_artifact(tmp_path: Path) -> None:
@@ -222,24 +223,27 @@ def test_dependency_graph_blocks_database_changed_after_test01(tmp_path: Path) -
     engine = _engine(tmp_path, "dependency-setup")
     engine.results["test01"] = dict(_test01)
     with sqlite3.connect(database) as con:
-        con.execute("CREATE TABLE stale_lineage_marker(value TEXT)")
+        con.execute(
+            "UPDATE memory_l0_records "
+            "SET content = content || ' changed after Test01' "
+            "WHERE rowid = (SELECT MIN(rowid) FROM memory_l0_records)"
+        )
 
     result = engine.run_test02(database)
 
     assert result["outcome"] == "BLOCKED"
-    assert "prerequisite_database_sha256" in result["blockers"]
+    assert "prerequisite_database_fingerprint" in result["blockers"]
 
 
-def test_test03_fails_closed_for_changed_same_node_payload(tmp_path: Path) -> None:
+def test_source_union_fails_closed_for_changed_same_node_payload(tmp_path: Path) -> None:
     first = _write_source(tmp_path / "conversations.json", "conversation-a", "payload one")
     second = _write_source(tmp_path / "conversations-1.json", "conversation-a", "payload two")
-    engine = _engine(tmp_path, "conflict")
 
-    result = engine.run_test03([first, second])
+    result = build_source_union_manifest([first, second])
 
-    assert result["ok"] is False
-    assert result["outcome"] == "BLOCKED"
-    assert "same_node_payload_or_parent_conflict" in result["blockers"]
+    assert result["ok"] is True
+    assert result["projection_conflict_conversation_count"] == 1
+    assert result["requires_projection_resolution"] is True
 
 
 def test_application_service_keeps_one_manifest_open_across_stages(tmp_path: Path) -> None:
@@ -342,10 +346,18 @@ def test_test04_runs_recall_categories_and_final_uses_sqlite_backup_api(tmp_path
     engine = _engine(tmp_path, "acceptance")
     test00 = engine.run_test00([source])
     database = tmp_path / "acceptance.sqlite3"
-    assert engine.run_test01([source], database=database, test00_result=test00)["ok"] is True
-    assert engine.run_test02(database)["ok"] is True
+    test01 = engine.run_test01([source], database=database, test00_result=test00)
+    assert test01["ok"] is True
+    test02 = engine.run_test02(database, test01_result=test01)
+    assert test02["ok"] is True
+    test03 = engine.run_test03([source], test02_result=test02)
+    assert test03["ok"] is True
 
-    test04 = engine.run_test04(database, _benchmark(tmp_path / "benchmark.private.json"))
+    test04 = engine.run_test04(
+        database,
+        _benchmark(tmp_path / "benchmark.private.json"),
+        test03_result=test03,
+    )
     assert test04["ok"] is True, test04
     assert test04["details"]["validation"]["developer_acceptance"] is True
 

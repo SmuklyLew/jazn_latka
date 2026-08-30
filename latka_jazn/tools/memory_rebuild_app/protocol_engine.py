@@ -95,6 +95,27 @@ def _json_read(value: str | Path | Mapping[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _source_inventory_fingerprint(inventory: Sequence[Mapping[str, Any]]) -> str:
+    normalized = [
+        {
+            "relative_path": str(item.get("relative_path") or ""),
+            "role": str(item.get("role") or ""),
+            "sha256": str(item.get("sha256") or ""),
+            "size_bytes": int(item.get("size_bytes") or 0),
+        }
+        for item in inventory
+    ]
+    normalized.sort(
+        key=lambda item: (
+            item["relative_path"],
+            item["role"],
+            item["sha256"],
+            item["size_bytes"],
+        )
+    )
+    return _canonical_sha(normalized)
+
+
 def _protocol_outcome(ok: bool, *, blocked: bool = False, lossy: bool = False) -> str:
     if blocked:
         return TestOutcome.BLOCKED.value
@@ -150,6 +171,10 @@ def _semantic_database_snapshot(database: Path) -> dict[str, Any]:
         "memory_rebuild_projections",
     )
     return _database_snapshot(database, tables, semantic=True)
+
+
+def _database_lineage_fingerprint(database: Path) -> str:
+    return str(_semantic_database_snapshot(database)["fingerprint_sha256"])
 
 
 def _sensitivity(role: str, visibility: str, record_kind: str) -> str:
@@ -278,8 +303,10 @@ class ProtocolEngine:
         )
         self.run_root = self.output_root / self.run_id
         self.results: dict[str, dict[str, Any]] = {}
+        self._source_inventory_fingerprint: str | None = None
         self._source_union_fingerprint: str | None = None
         self._database_sha256: str | None = None
+        self._database_fingerprint: str | None = None
         self._manifest = RunManifest.begin(
             tool_version=tool_version,
             system_version=system_version,
@@ -293,6 +320,8 @@ class ProtocolEngine:
         return self.run_root
 
     def _record(self, artifact: ProtocolArtifact) -> dict[str, Any]:
+        if artifact.profile in self.results:
+            raise RuntimeError(f"protocol stage already recorded: {artifact.profile}")
         payload = artifact.to_dict()
         self.results[artifact.profile] = payload
         self._manifest = self._manifest.with_result(artifact.profile, payload)
@@ -300,6 +329,169 @@ class ProtocolEngine:
         payload["private_report"] = report_paths["private"]
         payload["sanitized_report"] = report_paths["sanitized"]
         return payload
+
+    def _blocked_prerequisite(
+        self,
+        profile: str,
+        checks: Sequence[Mapping[str, Any]],
+        *,
+        prerequisite_payload: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        blockers = tuple(
+            str(item.get("name"))
+            for item in checks
+            if not bool(item.get("passed"))
+        )
+        prerequisite_summary: dict[str, Any] = {}
+        if prerequisite_payload is not None:
+            prerequisite_summary = {
+                "profile": prerequisite_payload.get("profile"),
+                "run_id": prerequisite_payload.get("run_id"),
+                "outcome": prerequisite_payload.get("outcome"),
+            }
+        return self._record(
+            ProtocolArtifact(
+                profile=profile,
+                outcome=TestOutcome.BLOCKED.value,
+                ok=False,
+                run_id=self.run_id,
+                checks=tuple(dict(item) for item in checks),
+                artifacts={},
+                blockers=blockers,
+                details={"prerequisite": prerequisite_summary},
+            )
+        )
+
+    def _prerequisite_gate(
+        self,
+        profile: str,
+        expected_profile: str,
+        prerequisite: str | Path | Mapping[str, Any] | None,
+        *,
+        expected_database_sha256: str | None = None,
+        expected_database_fingerprint: str | None = None,
+        expected_source_inventory_fingerprint: str | None = None,
+        expected_source_union_fingerprint: str | None = None,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+        payload: dict[str, Any] | None = None
+        read_error: str | None = None
+        if prerequisite is not None:
+            try:
+                payload = _json_read(prerequisite)
+            except (OSError, TypeError, UnicodeError, ValueError) as exc:
+                read_error = f"{type(exc).__name__}: {exc}"
+
+        artifacts_value = payload.get("artifacts") if payload is not None else None
+        artifacts = dict(artifacts_value) if isinstance(artifacts_value, Mapping) else {}
+        expected_chain = list(
+            TEST_PROTOCOL_ORDER[: TEST_PROTOCOL_ORDER.index(expected_profile) + 1]
+        )
+        observed_chain_value = artifacts.get("dependency_chain")
+        observed_chain = (
+            [str(item) for item in observed_chain_value]
+            if isinstance(observed_chain_value, (list, tuple))
+            else []
+        )
+        observed_outcome = str(payload.get("outcome") or "") if payload is not None else ""
+        if expected_profile == "test00":
+            outcome_accepted = (
+                observed_outcome in {TestOutcome.PASSED.value, TestOutcome.LOSSY.value}
+                and bool(payload and payload.get("downstream_ready"))
+            )
+        else:
+            outcome_accepted = (
+                observed_outcome == TestOutcome.PASSED.value
+                and bool(payload and payload.get("ok"))
+            )
+
+        checks: list[dict[str, Any]] = [
+            {
+                "name": "prerequisite_artifact_present",
+                "passed": payload is not None,
+                "expected": expected_profile,
+                "error": read_error,
+            },
+            {
+                "name": "prerequisite_schema_version",
+                "passed": bool(payload) and payload.get("schema_version") == PROTOCOL_ENGINE_SCHEMA,
+                "expected": PROTOCOL_ENGINE_SCHEMA,
+                "actual": payload.get("schema_version") if payload else None,
+            },
+            {
+                "name": "prerequisite_profile",
+                "passed": bool(payload) and payload.get("profile") == expected_profile,
+                "expected": expected_profile,
+                "actual": payload.get("profile") if payload else None,
+            },
+            {
+                "name": "prerequisite_run_id",
+                "passed": bool(payload) and payload.get("run_id") == self.run_id,
+                "expected": self.run_id,
+                "actual": payload.get("run_id") if payload else None,
+            },
+            {
+                "name": "prerequisite_outcome",
+                "passed": outcome_accepted,
+                "expected": (
+                    "PASSED or LOSSY with downstream_ready"
+                    if expected_profile == "test00"
+                    else TestOutcome.PASSED.value
+                ),
+                "actual": observed_outcome or None,
+            },
+            {
+                "name": "prerequisite_dependency_chain",
+                "passed": observed_chain == expected_chain,
+                "expected": expected_chain,
+                "actual": observed_chain,
+            },
+        ]
+        optional_fingerprints = (
+            (
+                "prerequisite_database_sha256",
+                expected_database_sha256,
+                artifacts.get("database_sha256"),
+            ),
+            (
+                "prerequisite_database_fingerprint",
+                expected_database_fingerprint,
+                artifacts.get("database_fingerprint"),
+            ),
+            (
+                "prerequisite_source_inventory_fingerprint",
+                expected_source_inventory_fingerprint,
+                artifacts.get("source_inventory_fingerprint"),
+            ),
+            (
+                "prerequisite_source_union_fingerprint",
+                expected_source_union_fingerprint,
+                artifacts.get("source_union_fingerprint"),
+            ),
+        )
+        for name, expected, actual in optional_fingerprints:
+            if expected is not None:
+                checks.append(
+                    {
+                        "name": name,
+                        "passed": bool(payload) and actual == expected,
+                        "expected": expected,
+                        "actual": actual,
+                    }
+                )
+
+        if any(not bool(item.get("passed")) for item in checks):
+            return None, self._blocked_prerequisite(
+                profile,
+                checks,
+                prerequisite_payload=payload,
+            )
+
+        assert payload is not None
+        return {
+            "payload": payload,
+            "artifacts": artifacts,
+            "artifact_sha256": _canonical_sha(payload),
+        }, None
 
     def _sources(self, sources: Iterable[str | Path]) -> tuple[list[Path], list[dict[str, Any]]]:
         paths: list[Path] = []
@@ -344,6 +536,7 @@ class ProtocolEngine:
                 )
         if not paths:
             raise ValueError("protocol requires at least one source")
+        self._source_inventory_fingerprint = _source_inventory_fingerprint(inventory)
         self._manifest = self._manifest.with_sources(tuple(inventory))
         return paths, inventory
 
@@ -373,6 +566,9 @@ class ProtocolEngine:
                 "source_union_private": union.get("private_report"),
                 "source_union_sanitized": union.get("sanitized_report"),
                 "inventory": inventory,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "dependency_chain": ["test00"],
             },
             warnings=tuple(validation["warnings"]),
             blockers=tuple(validation["blockers"]),
@@ -433,20 +629,24 @@ class ProtocolEngine:
         test00_result: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         paths, _inventory = self._sources(sources)
-        prerequisite = test00_result or self.results.get("test00")
-        if prerequisite is None:
-            return self._record(ProtocolArtifact(
-                "test01", TestOutcome.BLOCKED.value, False, self.run_id, (), {}, (),
-                ("approved_test00_result_required",),
-            ))
-        prerequisite_payload = _json_read(prerequisite)
-        if not bool(prerequisite_payload.get("downstream_ready", prerequisite_payload.get("ok"))):
-            return self._record(ProtocolArtifact(
-                "test01", TestOutcome.BLOCKED.value, False, self.run_id, (), {}, (),
-                ("test00_not_passed",),
-            ))
-        target = Path(database).expanduser().resolve() if database else self.run_root / "test01" / CANONICAL_DATABASE_NAME
         source_union = build_source_union_manifest(paths)
+        self._source_union_fingerprint = (
+            str(source_union.get("union_fingerprint_sha256") or "") or None
+        )
+        prerequisite = (
+            test00_result if test00_result is not None else self.results.get("test00")
+        )
+        prerequisite_context, blocked = self._prerequisite_gate(
+            "test01",
+            "test00",
+            prerequisite,
+            expected_source_inventory_fingerprint=self._source_inventory_fingerprint,
+            expected_source_union_fingerprint=self._source_union_fingerprint,
+        )
+        if blocked is not None:
+            return blocked
+        assert prerequisite_context is not None
+        target = Path(database).expanduser().resolve() if database else self.run_root / "test01" / CANONICAL_DATABASE_NAME
         lossy_source_sha256 = {
             str(item["source_sha256"])
             for item in source_union["sources"]
@@ -457,13 +657,24 @@ class ProtocolEngine:
         build["excluded_lossy_source_count"] = len(paths) - len(import_paths)
         validation = build["validation"]
         self._database_sha256 = sha256_file(target) if target.is_file() else None
+        self._database_fingerprint = (
+            _database_lineage_fingerprint(target) if target.is_file() else None
+        )
         artifact = ProtocolArtifact(
             "test01",
             _protocol_outcome(bool(validation["ok"])),
             bool(validation["ok"]),
             self.run_id,
             tuple(validation["checks"]),
-            {"database": str(target), "database_sha256": self._database_sha256},
+            {
+                "database": str(target),
+                "database_sha256": self._database_sha256,
+                "database_fingerprint": self._database_fingerprint,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "dependency_chain": ["test00", "test01"],
+            },
             tuple(validation.get("warnings") or ()),
             tuple(validation.get("blockers") or ()),
             build,
@@ -506,14 +717,51 @@ class ProtocolEngine:
             "blockers": [item["name"] for item in checks if not item["passed"]],
         }
 
-    def run_test02(self, database: str | Path) -> dict[str, Any]:
+    def run_test02(
+        self,
+        database: str | Path,
+        *,
+        test01_result: str | Path | Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
         path = Path(database).expanduser().resolve()
+        current_database_sha256 = sha256_file(path)
+        current_database_fingerprint = _database_lineage_fingerprint(path)
+        prerequisite = (
+            test01_result if test01_result is not None else self.results.get("test01")
+        )
+        prerequisite_context, blocked = self._prerequisite_gate(
+            "test02",
+            "test01",
+            prerequisite,
+            expected_database_sha256=current_database_sha256,
+            expected_database_fingerprint=current_database_fingerprint,
+        )
+        if blocked is not None:
+            return blocked
+        assert prerequisite_context is not None
+        prerequisite_artifacts = dict(prerequisite_context["artifacts"])
+        self._source_inventory_fingerprint = (
+            str(prerequisite_artifacts.get("source_inventory_fingerprint") or "") or None
+        )
+        self._source_union_fingerprint = (
+            str(prerequisite_artifacts.get("source_union_fingerprint") or "") or None
+        )
         projection = _refresh_derived_projections(path)
         validation = self.validate_test02(path, expected_raw_snapshot=projection["raw_l0_before"])
         self._database_sha256 = sha256_file(path)
+        self._database_fingerprint = _database_lineage_fingerprint(path)
         artifact = ProtocolArtifact(
             "test02", _protocol_outcome(bool(validation["ok"])), bool(validation["ok"]), self.run_id,
-            tuple(validation["checks"]), {"database": str(path), "database_sha256": self._database_sha256},
+            tuple(validation["checks"]),
+            {
+                "database": str(path),
+                "database_sha256": self._database_sha256,
+                "database_fingerprint": self._database_fingerprint,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "dependency_chain": ["test00", "test01", "test02"],
+            },
             (), tuple(validation.get("blockers") or ()), {"projection": projection, "validation": validation},
         )
         return self._record(artifact)
@@ -544,26 +792,50 @@ class ProtocolEngine:
         self,
         sources: Iterable[str | Path],
         *,
+        test02_result: str | Path | Mapping[str, Any] | None = None,
         test00_result: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         paths, _inventory = self._sources(sources)
-        prerequisite = test00_result or self.results.get("test00")
-        prerequisite_payload = _json_read(prerequisite) if prerequisite is not None else None
-        if prerequisite_payload is not None and not bool(
-            prerequisite_payload.get("downstream_ready", prerequisite_payload.get("ok"))
-        ):
-            return self._record(ProtocolArtifact("test03", "BLOCKED", False, self.run_id, (), {}, (), ("test00_not_passed",)))
+        del test00_result
         union = build_source_union_manifest(paths)
         self._source_union_fingerprint = str(union.get("union_fingerprint_sha256") or "") or None
+        prerequisite = (
+            test02_result if test02_result is not None else self.results.get("test02")
+        )
+        prerequisite_context, blocked = self._prerequisite_gate(
+            "test03",
+            "test02",
+            prerequisite,
+            expected_source_inventory_fingerprint=self._source_inventory_fingerprint,
+            expected_source_union_fingerprint=self._source_union_fingerprint,
+        )
+        if blocked is not None:
+            return blocked
+        assert prerequisite_context is not None
+        prerequisite_artifacts = dict(prerequisite_context["artifacts"])
+        self._database_sha256 = (
+            str(prerequisite_artifacts.get("database_sha256") or "") or None
+        )
+        self._database_fingerprint = (
+            str(prerequisite_artifacts.get("database_fingerprint") or "") or None
+        )
         if not union.get("ok") or union.get("requires_projection_resolution"):
             blockers = ["source_union_not_ready"] if not union.get("ok") else ["same_node_payload_or_parent_conflict"]
             return self._record(ProtocolArtifact("test03", "BLOCKED", False, self.run_id, (), {}, (), tuple(blockers), {"source_union": union}))
+        lossy_source_sha256 = {
+            str(item["source_sha256"])
+            for item in union["sources"]
+            if item.get("ignored_reason") == "lossy_control_not_canonical"
+        }
+        build_paths = tuple(
+            path for path in paths if sha256_file(path) not in lossy_source_sha256
+        )
         root = self._ensure_root() / "test03"
         database_a = root / "build-a" / CANONICAL_DATABASE_NAME
         database_b = root / "build-b" / CANONICAL_DATABASE_NAME
-        build_a = self._build_fresh_database(paths, database_a)
+        build_a = self._build_fresh_database(build_paths, database_a)
         projection_a = _refresh_derived_projections(database_a)
-        build_b = self._build_fresh_database(list(reversed(paths)), database_b)
+        build_b = self._build_fresh_database(list(reversed(build_paths)), database_b)
         projection_b = _refresh_derived_projections(database_b)
         snapshot_a = _semantic_database_snapshot(database_a)
         snapshot_b = _semantic_database_snapshot(database_b)
@@ -580,12 +852,22 @@ class ProtocolEngine:
             "build_b": build_b,
             "projection_a": projection_a,
             "projection_b": projection_b,
+            "excluded_lossy_source_count": len(paths) - len(build_paths),
         }
         validation = self.validate_test03(report)
         artifact = ProtocolArtifact(
             "test03", _protocol_outcome(bool(validation["ok"])), bool(validation["ok"]), self.run_id,
             tuple(validation["checks"]),
-            {"database_a": str(database_a), "database_b": str(database_b), "source_union_fingerprint": self._source_union_fingerprint},
+            {
+                "database_a": str(database_a),
+                "database_b": str(database_b),
+                "database_sha256": self._database_sha256,
+                "database_fingerprint": self._database_fingerprint,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "dependency_chain": ["test00", "test01", "test02", "test03"],
+            },
             (), tuple(validation.get("blockers") or ()), report,
         )
         return self._record(artifact)
@@ -609,10 +891,36 @@ class ProtocolEngine:
         database: str | Path,
         benchmark: str | Path,
         *,
+        test03_result: str | Path | Mapping[str, Any] | None = None,
         system_acceptance: bool = False,
         restart_continuity_report: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         path = Path(database).expanduser().resolve()
+        current_database_sha256 = sha256_file(path)
+        current_database_fingerprint = _database_lineage_fingerprint(path)
+        prerequisite = (
+            test03_result if test03_result is not None else self.results.get("test03")
+        )
+        prerequisite_context, blocked = self._prerequisite_gate(
+            "test04",
+            "test03",
+            prerequisite,
+            expected_database_sha256=current_database_sha256,
+            expected_database_fingerprint=current_database_fingerprint,
+        )
+        if blocked is not None:
+            return blocked
+        assert prerequisite_context is not None
+        prerequisite_artifacts = dict(prerequisite_context["artifacts"])
+        self._source_inventory_fingerprint = (
+            str(prerequisite_artifacts.get("source_inventory_fingerprint") or "") or None
+        )
+        self._source_union_fingerprint = (
+            str(prerequisite_artifacts.get("source_union_fingerprint") or "") or None
+        )
+        self._database_fingerprint = (
+            str(prerequisite_artifacts.get("database_fingerprint") or "") or None
+        )
         result = run_fts5_recall_benchmark(
             path, benchmark, output_root=self._ensure_root() / "test04", run_id="recall"
         )
@@ -626,7 +934,23 @@ class ProtocolEngine:
         artifact = ProtocolArtifact(
             "test04", _protocol_outcome(bool(validation["ok"]), blocked=bool(validation["blockers"])), bool(validation["ok"]), self.run_id,
             tuple(validation["checks"]),
-            {"database": str(path), "database_sha256": self._database_sha256, "recall_private": result.get("private_report"), "recall_sanitized": result.get("sanitized_report")},
+            {
+                "database": str(path),
+                "database_sha256": self._database_sha256,
+                "database_fingerprint": self._database_fingerprint,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "recall_private": result.get("private_report"),
+                "recall_sanitized": result.get("sanitized_report"),
+                "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "dependency_chain": [
+                    "test00",
+                    "test01",
+                    "test02",
+                    "test03",
+                    "test04",
+                ],
+            },
             (), tuple(validation["blockers"]), {"recall": result, "validation": validation},
         )
         return self._record(artifact)
@@ -674,10 +998,30 @@ class ProtocolEngine:
         test04_result: str | Path | Mapping[str, Any],
         sources: Iterable[str | Path] = (),
     ) -> dict[str, Any]:
-        test04 = _json_read(test04_result)
-        if not test04.get("ok"):
-            return self._record(ProtocolArtifact("final", "BLOCKED", False, self.run_id, (), {}, (), ("test04_not_passed",)))
         source = Path(database).expanduser().resolve()
+        current_database_sha256 = sha256_file(source)
+        current_database_fingerprint = _database_lineage_fingerprint(source)
+        prerequisite_context, blocked = self._prerequisite_gate(
+            "final",
+            "test04",
+            test04_result,
+            expected_database_sha256=current_database_sha256,
+            expected_database_fingerprint=current_database_fingerprint,
+        )
+        if blocked is not None:
+            return blocked
+        assert prerequisite_context is not None
+        test04 = dict(prerequisite_context["payload"])
+        prerequisite_artifacts = dict(prerequisite_context["artifacts"])
+        self._source_inventory_fingerprint = (
+            str(prerequisite_artifacts.get("source_inventory_fingerprint") or "") or None
+        )
+        self._source_union_fingerprint = (
+            str(prerequisite_artifacts.get("source_union_fingerprint") or "") or None
+        )
+        self._database_fingerprint = (
+            str(prerequisite_artifacts.get("database_fingerprint") or "") or None
+        )
         target = Path(output).expanduser().resolve()
         if target.exists():
             raise FileExistsError(target)
@@ -719,7 +1063,16 @@ class ProtocolEngine:
         self._database_sha256 = str(validation.get("database_sha256") or "") or None
         artifact = ProtocolArtifact(
             "final", _protocol_outcome(bool(validation["ok"])), bool(validation["ok"]), self.run_id,
-            tuple(validation["checks"]), {"output": str(target), "database_sha256": self._database_sha256},
+            tuple(validation["checks"]),
+            {
+                "output": str(target),
+                "database_sha256": self._database_sha256,
+                "database_fingerprint": self._database_fingerprint,
+                "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                "source_union_fingerprint": self._source_union_fingerprint,
+                "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "dependency_chain": list(TEST_PROTOCOL_ORDER),
+            },
             (), tuple(validation.get("blockers") or ()), validation,
         )
         return self._record(artifact)
