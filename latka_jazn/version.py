@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3 separates stable contract-schema identifiers from runtime/release
-# identifiers and adds explicit compatibility metadata for legacy runtime-coupled
-# and unversioned schema documents used by earlier releases.
-DISTRIBUTION_VERSION = "16.3.25.3"
-PACKAGE_VERSION = "16.3.25.3"
-PACKAGE_RELEASE_NAME = "release-metadata-semantics"
+# v16.3.25.3.1 teaches current-line audits the documentation taxonomy contract
+# without consuming the v16.3.25.4 Memory Rebuild release slot.
+DISTRIBUTION_VERSION = "16.3.25.3.1"
+PACKAGE_VERSION = "16.3.25.3.1"
+PACKAGE_RELEASE_NAME = "docs-taxonomy-contract"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

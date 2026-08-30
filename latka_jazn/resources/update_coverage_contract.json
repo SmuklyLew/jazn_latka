@@ -56,7 +56,7 @@
       "evidence_paths": [
         ".github/workflows/release-hardening.yml",
         "latka_jazn/tools/semantic_route_audit.py",
-        "docs/reviews/SEMANTIC_REVIEW_V96.md"
+        "docs/archive/reviews/SEMANTIC_REVIEW_V96.md"
       ]
     }
   ]

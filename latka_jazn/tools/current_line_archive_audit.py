@@ -32,6 +32,9 @@ APPROVED_LEGACY_SOURCE_PATHS = {
     "latka_jazn/tools/memory_sqlite_test04.py",
     "tests/test_v1601_memory_transport_generator.py",
 }
+APPROVED_HISTORICAL_REFERENCE_PATHS = {
+    "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+}
 APPROVED_HISTORICAL_POINTER_PATHS = {
     "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
 }
@@ -68,7 +71,7 @@ def _is_old_package_version(raw: str) -> bool:
         return False
     if candidate[0] not in {14, 15}:
         return False
-    # This audit belongs to the one-time v90 current-line migration.  Later
+    # This audit belongs to the one-time v90 current-line migration. Later
     # releases may legitimately retain historical references to post-v90
     # versions (for example v96 reports/tests), so the boundary must not move
     # forward with PACKAGE_VERSION.
@@ -81,7 +84,9 @@ def _tracked_paths(root: Path) -> list[str]:
 
 def _is_active_path(path: str) -> bool:
     folded = path.replace("\\", "/")
-    return not folded.startswith(".archives/") and folded not in EXCLUDED_ACTIVE_PATHS
+    if folded.startswith(".archives/") or folded.startswith("docs/archive/"):
+        return False
+    return folded not in EXCLUDED_ACTIVE_PATHS
 
 
 def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> bool:
@@ -94,6 +99,23 @@ def _line_is_approved_legacy_source(path: str, line: str, raw_version: str) -> b
         for token in (
             "legacy", "legacymemoryroot", "legacy_memory_root",
             "legacy-memory-root", "starszej pamięci", "starszego źródła", "baseline",
+        )
+    )
+
+
+def _line_is_approved_historical_reference(path: str, line: str, raw_version: str) -> bool:
+    normalized = "v" + raw_version.replace("_", ".").lstrip("vV")
+    if normalized != LEGACY_MEMORY_SOURCE_VERSION or path not in APPROVED_HISTORICAL_REFERENCE_PATHS:
+        return False
+    folded = line.casefold()
+    return any(
+        token in folded
+        for token in (
+            "starszą paczkę pamięci",
+            "starszej paczki",
+            "starsza paczka pamięci",
+            "starszej pamięci",
+            "lokalna baza raw",
         )
     )
 
@@ -135,6 +157,8 @@ def scan_active_old_references(root: Path) -> list[dict[str, Any]]:
                 if _line_is_canonical_distribution(rel, line, raw):
                     continue
                 if _line_is_approved_legacy_source(rel, line, raw):
+                    continue
+                if _line_is_approved_historical_reference(rel, line, raw):
                     continue
                 if _line_is_historical_archive_pointer(rel, line, raw):
                     continue
@@ -254,6 +278,7 @@ def run_audit(root: str | Path) -> CurrentLineArchiveAudit:
         archive_issues=archive_issues,
         truth_boundary=(
             "Audyt sprawdza śledzone aktywne pliki tekstowe, jawnie oznaczone legacy source i integralność archiwum. "
+            "docs/archive jest nieaktywną dokumentacją historyczną; jawne project-wide odniesienia historyczne są dopuszczane wyłącznie kontekstowo. "
             "Nie interpretuje zawartości prywatnego embedded source; zachowuje wyłącznie jego metadane."
         ),
     )
