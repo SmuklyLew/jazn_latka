@@ -72,6 +72,20 @@ def _engine(tmp_path: Path, run_id: str) -> ProtocolEngine:
     )
 
 
+def _build_test01_database(tmp_path: Path) -> tuple[Path, Path, dict, dict]:
+    source = _write_source(
+        tmp_path / "dependency-conversations.json",
+        "dependency-conversation",
+        "Tayfa dependency graph fixture",
+    )
+    builder = _engine(tmp_path, "dependency-setup")
+    test00 = builder.run_test00([source])
+    database = tmp_path / "dependency-memory.sqlite3"
+    test01 = builder.run_test01([source], database=database, test00_result=test00)
+    assert test01["ok"] is True, test01
+    return source, database, test00, test01
+
+
 def test_protocol_engine_runs_real_test00_test01_test02_and_test03(tmp_path: Path) -> None:
     first = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa is important")
     second = _write_source(tmp_path / "conversations-1.json", "conversation-b", "Tayfa likes the window")
@@ -110,6 +124,112 @@ def test_protocol_engine_runs_real_test00_test01_test02_and_test03(tmp_path: Pat
         engine._manifest.complete().write_once(engine.run_root)
 
 
+def test_dependency_graph_blocks_test01_without_test00(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    engine = _engine(tmp_path, "missing-test00")
+
+    result = engine.run_test01([source], database=tmp_path / "blocked-test01.sqlite3")
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_artifact_present" in result["blockers"]
+
+
+def test_dependency_graph_blocks_test02_without_test01(tmp_path: Path) -> None:
+    _source, database, _test00, _test01 = _build_test01_database(tmp_path)
+    engine = _engine(tmp_path, "missing-test01")
+
+    result = engine.run_test02(database)
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_artifact_present" in result["blockers"]
+
+
+def test_dependency_graph_blocks_test03_without_test02(tmp_path: Path) -> None:
+    source, _database, _test00, _test01 = _build_test01_database(tmp_path)
+    engine = _engine(tmp_path, "missing-test02")
+
+    result = engine.run_test03([source])
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_artifact_present" in result["blockers"]
+
+
+def test_dependency_graph_blocks_test04_without_test03(tmp_path: Path) -> None:
+    _source, database, _test00, _test01 = _build_test01_database(tmp_path)
+    engine = _engine(tmp_path, "missing-test03")
+
+    result = engine.run_test04(database, _benchmark(tmp_path / "benchmark.private.json"))
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_artifact_present" in result["blockers"]
+
+
+def test_dependency_graph_blocks_final_without_authentic_test04(tmp_path: Path) -> None:
+    _source, database, _test00, _test01 = _build_test01_database(tmp_path)
+    engine = _engine(tmp_path, "missing-test04")
+    forged_test04 = {
+        "schema_version": "jazn_memory_rebuild_protocol_engine/v4",
+        "profile": "test04",
+        "outcome": "PASSED",
+        "ok": True,
+        "run_id": engine.run_id,
+    }
+
+    result = engine.run_final(
+        database,
+        tmp_path / "forged-final",
+        test04_result=forged_test04,
+    )
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_artifact_present" in result["blockers"]
+
+
+def test_dependency_graph_blocks_cross_run_test00_artifact(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    producer = _engine(tmp_path, "producer-run")
+    test00 = producer.run_test00([source])
+    consumer = _engine(tmp_path, "consumer-run")
+
+    result = consumer.run_test01(
+        [source],
+        database=tmp_path / "cross-run.sqlite3",
+        test00_result=test00,
+    )
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_run_id" in result["blockers"]
+
+
+def test_dependency_graph_blocks_source_changed_after_test00(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    engine = _engine(tmp_path, "stale-source")
+    test00 = engine.run_test00([source])
+    _write_source(source, "conversation-a", "Tayfa changed after Test00")
+
+    result = engine.run_test01(
+        [source],
+        database=tmp_path / "stale-source.sqlite3",
+        test00_result=test00,
+    )
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_source_inventory_fingerprint" in result["blockers"]
+
+
+def test_dependency_graph_blocks_database_changed_after_test01(tmp_path: Path) -> None:
+    _source, database, _test00, _test01 = _build_test01_database(tmp_path)
+    engine = _engine(tmp_path, "dependency-setup")
+    engine.results["test01"] = dict(_test01)
+    with sqlite3.connect(database) as con:
+        con.execute("CREATE TABLE stale_lineage_marker(value TEXT)")
+
+    result = engine.run_test02(database)
+
+    assert result["outcome"] == "BLOCKED"
+    assert "prerequisite_database_sha256" in result["blockers"]
+
+
 def test_test03_fails_closed_for_changed_same_node_payload(tmp_path: Path) -> None:
     first = _write_source(tmp_path / "conversations.json", "conversation-a", "payload one")
     second = _write_source(tmp_path / "conversations-1.json", "conversation-a", "payload two")
@@ -122,7 +242,7 @@ def test_test03_fails_closed_for_changed_same_node_payload(tmp_path: Path) -> No
     assert "same_node_payload_or_parent_conflict" in result["blockers"]
 
 
-def test_application_service_dispatches_the_same_protocol_engine(tmp_path: Path) -> None:
+def test_application_service_keeps_one_manifest_open_across_stages(tmp_path: Path) -> None:
     source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
     service = MemoryRebuildApplicationService(
         tmp_path / "service",
@@ -131,11 +251,27 @@ def test_application_service_dispatches_the_same_protocol_engine(tmp_path: Path)
         run_id="service-run",
     )
 
-    result = service.run_protocol("test00", sources=[source])
+    test00 = service.run_protocol("test00", sources=[source])
 
     assert isinstance(service.engine, ProtocolEngine)
-    assert result["ok"] is True
-    assert Path(result["run_manifest"]["private"]).is_file()
+    assert test00["ok"] is True
+    assert test00["run_manifest"]["sealed"] is False
+    assert test00["run_manifest"]["completed_profiles"] == ["test00"]
+    assert test00["run_manifest"]["private"] is None
+    assert test00["run_manifest"]["sanitized"] is None
+    assert service.engine._manifest.completed_at is None
+
+    test01 = service.run_protocol(
+        "test01",
+        sources=[source],
+        database=tmp_path / "service-memory.sqlite3",
+        test00_result=test00,
+    )
+
+    assert test01["ok"] is True
+    assert test01["run_manifest"]["sealed"] is False
+    assert test01["run_manifest"]["completed_profiles"] == ["test00", "test01"]
+    assert service.engine._manifest.completed_at is None
 
 
 def _benchmark(path: Path) -> Path:
