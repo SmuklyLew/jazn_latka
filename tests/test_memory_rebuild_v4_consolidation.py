@@ -50,7 +50,10 @@ def test_chatgpt_export_bundle_classifies_every_member_semantically(tmp_path: Pa
 
     (tmp_path / "conversations.json").write_text("[]", encoding="utf-8")
     (tmp_path / "conversations-1.json").write_text("[]", encoding="utf-8")
-    (tmp_path / "chat.html").write_text("<html></html>", encoding="utf-8")
+    (tmp_path / "chat.html").write_text(
+        "<script>var jsonData = " + json.dumps([_conversation("lossless")]) + ";</script>",
+        encoding="utf-8",
+    )
     (tmp_path / "message_feedback.json").write_text("[]", encoding="utf-8")
     (tmp_path / "shared_conversations.json").write_text("[]", encoding="utf-8")
     (tmp_path / "user.json").write_text("{}", encoding="utf-8")
@@ -74,6 +77,33 @@ def test_chatgpt_export_bundle_classifies_every_member_semantically(tmp_path: Pa
     assert bundle.canonical_chat_members == (
         "conversations.json",
         "conversations-1.json",
+    )
+
+
+def test_html_source_role_distinguishes_lossless_lossy_invalid_and_attachment(tmp_path: Path) -> None:
+    from latka_jazn.tools.memory_rebuild_app.source_bundle import (
+        SourceRole,
+        classify_source_path,
+    )
+
+    rendered = tmp_path / "rendered.html"
+    rendered.write_text(
+        '<div class="conversation"><h4>Tytuł</h4><pre class="message">Treść</pre></div>',
+        encoding="utf-8",
+    )
+    invalid = tmp_path / "invalid.html"
+    invalid.write_text("<html></html>", encoding="utf-8")
+    asset = tmp_path / "asset.html"
+    asset.write_text("<html></html>", encoding="utf-8")
+
+    assert (
+        classify_source_path(rendered, relative_path="chat.html")
+        is SourceRole.LOSSY_RENDERED_CONTROL
+    )
+    assert classify_source_path(invalid, relative_path="chat.html") is SourceRole.UNKNOWN_SIDECAR
+    assert (
+        classify_source_path(asset, relative_path="assets/chat.html")
+        is SourceRole.SOURCE_ATTACHMENT
     )
 
 

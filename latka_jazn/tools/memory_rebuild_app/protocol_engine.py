@@ -27,7 +27,7 @@ from .recall.models import RecallCaseCategory, load_recall_benchmark
 from .report_sanitizer import write_report_pair
 from .run_manifest import RunManifest
 from .settings import MemoryRebuildSettings
-from .source_bundle import ChatGPTExportBundle, SourceRole, classify_source_role
+from .source_bundle import ChatGPTExportBundle, SourceRole, classify_source_path
 from .source_fidelity import run_test00_source_fidelity
 from .source_union import build_source_union_manifest, run_source_union_analysis
 from .test_spec import TEST_PROTOCOL_ORDER, TestOutcome
@@ -235,9 +235,10 @@ class ProtocolArtifact:
     warnings: tuple[str, ...] = ()
     blockers: tuple[str, ...] = ()
     details: Mapping[str, Any] | None = None
+    downstream_ready: bool | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "schema_version": PROTOCOL_ENGINE_SCHEMA,
             "profile": self.profile,
             "outcome": self.outcome,
@@ -252,6 +253,9 @@ class ProtocolArtifact:
             "automatic_l3": False,
             "automatic_activation": False,
         }
+        if self.downstream_ready is not None:
+            payload["downstream_ready"] = self.downstream_ready
+        return payload
 
 
 class ProtocolEngine:
@@ -333,7 +337,7 @@ class ProtocolEngine:
                     {
                         "path": str(candidate),
                         "relative_path": candidate.name,
-                        "role": classify_source_role(candidate.name).value,
+                        "role": classify_source_path(candidate, relative_path=candidate.name).value,
                         "sha256": sha256_file(candidate),
                         "size_bytes": candidate.stat().st_size,
                     }
@@ -373,6 +377,7 @@ class ProtocolEngine:
             warnings=tuple(validation["warnings"]),
             blockers=tuple(validation["blockers"]),
             details={"fidelity": fidelity, "source_union": union},
+            downstream_ready=bool(validation["downstream_ready"]),
         )
         return self._record(artifact)
 
@@ -381,24 +386,32 @@ class ProtocolEngine:
         details = dict(payload.get("details") or {})
         fidelity = dict(payload.get("fidelity") or details.get("fidelity") or payload)
         union = dict(payload.get("source_union") or details.get("source_union") or {})
+        fidelity_outcome = fidelity.get("outcome")
+        fidelity_lossless = fidelity_outcome == TestOutcome.PASSED.value
         checks = [
-            {"name": "source_fidelity", "passed": fidelity.get("outcome") in {"PASSED", "LOSSY"}},
+            {"name": "source_fidelity_lossless", "passed": fidelity_lossless},
             {"name": "source_mirror_sha256", "passed": bool(fidelity.get("database_sha256"))},
             {"name": "source_union_ready", "passed": bool(union.get("ok"))},
             {"name": "source_union_fingerprint", "passed": bool(union.get("union_fingerprint_sha256"))},
             {"name": "source_union_conflicts_resolved", "passed": not bool(union.get("requires_projection_resolution"))},
         ]
         blockers: list[str] = []
-        if fidelity.get("outcome") in {"FAILED", "BLOCKED", None}:
+        if fidelity_outcome in {TestOutcome.FAILED.value, TestOutcome.BLOCKED.value, None}:
             blockers.append("source_fidelity_not_accepted")
         if not union.get("ok"):
             blockers.append("source_union_not_ready")
         if union.get("requires_projection_resolution"):
             blockers.append("same_node_payload_or_parent_conflict")
+        downstream_ready = (
+            fidelity_outcome in {TestOutcome.PASSED.value, TestOutcome.LOSSY.value}
+            and all(item["passed"] for item in checks[1:])
+            and not blockers
+        )
         return {
-            "ok": all(item["passed"] for item in checks),
+            "ok": downstream_ready and fidelity_lossless,
+            "downstream_ready": downstream_ready,
             "checks": checks,
-            "warnings": ["lossy_source_present"] if fidelity.get("outcome") == "LOSSY" else [],
+            "warnings": ["lossy_source_present"] if fidelity_outcome == TestOutcome.LOSSY.value else [],
             "blockers": blockers,
         }
 
@@ -426,13 +439,22 @@ class ProtocolEngine:
                 "test01", TestOutcome.BLOCKED.value, False, self.run_id, (), {}, (),
                 ("approved_test00_result_required",),
             ))
-        if not bool(_json_read(prerequisite).get("ok")):
+        prerequisite_payload = _json_read(prerequisite)
+        if not bool(prerequisite_payload.get("downstream_ready", prerequisite_payload.get("ok"))):
             return self._record(ProtocolArtifact(
                 "test01", TestOutcome.BLOCKED.value, False, self.run_id, (), {}, (),
                 ("test00_not_passed",),
             ))
         target = Path(database).expanduser().resolve() if database else self.run_root / "test01" / CANONICAL_DATABASE_NAME
-        build = self._build_fresh_database(paths, target)
+        source_union = build_source_union_manifest(paths)
+        lossy_source_sha256 = {
+            str(item["source_sha256"])
+            for item in source_union["sources"]
+            if item.get("ignored_reason") == "lossy_control_not_canonical"
+        }
+        import_paths = tuple(path for path in paths if sha256_file(path) not in lossy_source_sha256)
+        build = self._build_fresh_database(import_paths, target)
+        build["excluded_lossy_source_count"] = len(paths) - len(import_paths)
         validation = build["validation"]
         self._database_sha256 = sha256_file(target) if target.is_file() else None
         artifact = ProtocolArtifact(
@@ -526,7 +548,10 @@ class ProtocolEngine:
     ) -> dict[str, Any]:
         paths, _inventory = self._sources(sources)
         prerequisite = test00_result or self.results.get("test00")
-        if prerequisite is not None and not bool(_json_read(prerequisite).get("ok")):
+        prerequisite_payload = _json_read(prerequisite) if prerequisite is not None else None
+        if prerequisite_payload is not None and not bool(
+            prerequisite_payload.get("downstream_ready", prerequisite_payload.get("ok"))
+        ):
             return self._record(ProtocolArtifact("test03", "BLOCKED", False, self.run_id, (), {}, (), ("test00_not_passed",)))
         union = build_source_union_manifest(paths)
         self._source_union_fingerprint = str(union.get("union_fingerprint_sha256") or "") or None

@@ -301,3 +301,36 @@ def test_test00_accepts_classified_bundle_attachments_as_opaque_raw_evidence(tmp
     assert by_name["opaque.bin"]["source_sha256"] == by_name["opaque.bin"]["raw_roundtrip_sha256"]
     roles = {item["relative_path"]: item["role"] for item in result["artifacts"]["inventory"]}
     assert roles["assets/opaque.bin"] == "source_attachment"
+
+
+def test_mixed_lossless_and_rendered_html_is_lossy_but_safe_for_canonical_test01(tmp_path: Path) -> None:
+    canonical = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    rendered = tmp_path / "chat.html"
+    rendered.write_text(
+        '<div class="conversation"><h4>Rendered</h4><pre class="message">Niekanoniczne</pre></div>',
+        encoding="utf-8",
+    )
+    engine = _engine(tmp_path, "mixed-html")
+
+    test00 = engine.run_test00([canonical, rendered])
+
+    assert test00["outcome"] == "LOSSY"
+    assert test00["ok"] is False
+    assert test00["downstream_ready"] is True
+    union = test00["details"]["source_union"]
+    assert (union["lossless_chat_source_count"], union["lossy_chat_source_count"]) == (1, 1)
+    roles = {item["relative_path"]: item["role"] for item in test00["artifacts"]["inventory"]}
+    assert roles["chat.html"] == "lossy_rendered_control"
+
+    database = tmp_path / "mixed-html.sqlite3"
+    test01 = engine.run_test01([canonical, rendered], database=database, test00_result=test00)
+
+    assert test01["ok"] is True, test01
+    assert test01["details"]["excluded_lossy_source_count"] == 1
+    with sqlite3.connect(database) as con:
+        assert (
+            con.execute(
+                "SELECT COUNT(DISTINCT conversation_id) FROM memory_l0_records"
+            ).fetchone()[0]
+            == 1
+        )

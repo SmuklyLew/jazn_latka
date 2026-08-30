@@ -6,6 +6,8 @@ from pathlib import Path
 import hashlib
 import re
 
+from .html_semantics import HtmlEmbeddedJsonParser, HtmlParseMode
+
 
 class SourceRole(str, Enum):
     CANONICAL_CHAT_GRAPH = "canonical_chat_graph"
@@ -33,6 +35,8 @@ def classify_source_role(relative_path: str) -> SourceRole:
     normalized = relative_path.replace("\\", "/")
     name = Path(normalized).name.casefold()
     first = normalized.split("/", 1)[0].casefold()
+    if first in {"assets", "attachments"}:
+        return SourceRole.SOURCE_ATTACHMENT
     if _CONVERSATIONS_RE.fullmatch(name):
         return SourceRole.CANONICAL_CHAT_GRAPH
     if name in {"chat.html", "chat.htm"}:
@@ -43,8 +47,27 @@ def classify_source_role(relative_path: str) -> SourceRole:
         return SourceRole.SHARED_LINK_METADATA
     if name in {"user.json", "account.json"}:
         return SourceRole.PRIVATE_ACCOUNT_METADATA
-    if first in {"assets", "attachments"}:
-        return SourceRole.SOURCE_ATTACHMENT
+    return SourceRole.UNKNOWN_SIDECAR
+
+
+def classify_source_path(path: str | Path, *, relative_path: str | None = None) -> SourceRole:
+    """Classify HTML by parsed semantics while preserving path-only compatibility."""
+
+    source = Path(path)
+    role = classify_source_role(relative_path or source.name)
+    if role is not SourceRole.LOSSLESS_CONTROL_GRAPH:
+        return role
+    if source.suffix.casefold() not in {".html", ".htm"}:
+        return role
+    try:
+        raw_html = source.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return SourceRole.UNKNOWN_SIDECAR
+    parsed = HtmlEmbeddedJsonParser().parse_text(raw_html)
+    if parsed.mode is HtmlParseMode.EMBEDDED_JSON_LOSSLESS:
+        return SourceRole.LOSSLESS_CONTROL_GRAPH
+    if parsed.mode is HtmlParseMode.RENDERED_HTML_LOSSY:
+        return SourceRole.LOSSY_RENDERED_CONTROL
     return SourceRole.UNKNOWN_SIDECAR
 
 
@@ -74,7 +97,7 @@ class ChatGPTExportBundle:
         members = tuple(
             SourceBundleMember(
                 relative_path=path.relative_to(resolved).as_posix(),
-                role=classify_source_role(path.relative_to(resolved).as_posix()),
+                role=classify_source_path(path, relative_path=path.relative_to(resolved).as_posix()),
                 source_sha256=_sha256_file(path),
                 size_bytes=path.stat().st_size,
             )
@@ -111,5 +134,6 @@ __all__ = [
     "ChatGPTExportBundle",
     "SourceBundleMember",
     "SourceRole",
+    "classify_source_path",
     "classify_source_role",
 ]

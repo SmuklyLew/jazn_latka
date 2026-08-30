@@ -19,6 +19,7 @@ from latka_jazn.tools.chat_export_reader import (
 )
 
 from .html_import import read_html_conversations
+from .html_semantics import HtmlParseMode
 
 
 SOURCE_UNION_SCHEMA = "jazn_memory_rebuild_source_union/v1"
@@ -44,6 +45,24 @@ def _write_json(path: Path, payload: Any) -> Path:
     )
     os.replace(temporary, path)
     return path
+
+
+def _html_mode_value(mode: str) -> str:
+    return mode.rsplit(":", 1)[-1]
+
+
+def _is_lossless_html_mode(mode: str) -> bool:
+    return _html_mode_value(mode) in {
+        HtmlParseMode.EMBEDDED_JSON_LOSSLESS.value,
+        "embedded_json",
+    }
+
+
+def _is_lossy_html_mode(mode: str) -> bool:
+    return _html_mode_value(mode) in {
+        HtmlParseMode.RENDERED_HTML_LOSSY.value,
+        "rendered_html_fallback",
+    }
 
 
 def _read_source(path: Path) -> dict[str, Any]:
@@ -78,7 +97,7 @@ def _read_source(path: Path) -> dict[str, Any]:
         records, _member, html_mode, warnings = read_html_conversations(source)
         graphs = tuple(build_conversation_graph(item) for item in records)
         mode = html_mode
-        priority = 1 if html_mode == "embedded_json" else 2
+        priority = 1 if _is_lossless_html_mode(html_mode) else 2
     elif suffix == ".zip":
         with ChatExportReader(source, verify_crc=True) as reader:
             if reader.info.conversation_members:
@@ -90,7 +109,7 @@ def _read_source(path: Path) -> dict[str, Any]:
                 records, _member, html_mode, warnings = read_html_conversations(source)
                 graphs = tuple(build_conversation_graph(item) for item in records)
                 mode = f"html_in_zip:{html_mode}"
-                priority = 1 if html_mode == "embedded_json" else 2
+                priority = 1 if _is_lossless_html_mode(html_mode) else 2
     return {
         "path": source,
         "sha256": source_hash,
@@ -98,7 +117,11 @@ def _read_source(path: Path) -> dict[str, Any]:
         "priority": priority,
         "graphs": graphs,
         "warnings": warnings,
-        "ignored_reason": None if graphs else "no_lossless_conversation_graph",
+        "ignored_reason": (
+            "lossy_control_not_canonical"
+            if graphs and _is_lossy_html_mode(mode)
+            else None if graphs else "no_lossless_conversation_graph"
+        ),
     }
 
 
@@ -187,8 +210,13 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
             errors.append({"path": str(path), "error_type": type(exc).__name__, "error": str(exc)})
 
     chat_sources = [item for item in observations if item["graphs"]]
-    lossless = [item for item in chat_sources if "rendered_html_fallback" not in item["mode"]]
-    lossy = [item for item in chat_sources if item not in lossless]
+    lossless = [
+        item
+        for item in chat_sources
+        if item["mode"] in {"canonical_json", "canonical_json_in_zip"}
+        or _is_lossless_html_mode(item["mode"])
+    ]
+    lossy = [item for item in chat_sources if _is_lossy_html_mode(item["mode"])]
     conversations: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_source: dict[str, set[tuple[str, str]]] = defaultdict(set)
     for source in lossless:
@@ -274,7 +302,7 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         "source_count": len(observations),
         "lossless_chat_source_count": len(lossless),
         "lossy_chat_source_count": len(lossy),
-        "ignored_non_chat_source_count": sum(1 for item in observations if item["ignored_reason"]),
+        "ignored_non_chat_source_count": sum(1 for item in observations if not item["graphs"]),
         "unique_conversation_count": len(rows),
         "unique_conversation_variant_count": variants_total,
         "union_node_count": union_nodes,

@@ -232,3 +232,44 @@ def test_import_many_preserves_operator_order_instead_of_sorting_by_file_size(
     ChatExportImporter().import_many([small, large], tmp_path / "unused.sqlite3")
 
     assert seen_sources == [str(small.resolve()), str(large.resolve())]
+
+
+def _write_rendered_html(path: Path) -> Path:
+    path.write_text(
+        (
+            '<div class="conversation"><h4>Rendered only</h4>'
+            '<pre class="message">Pytanie</pre>'
+            '<pre class="message">Odpowiedź</pre>'
+            "</div>"
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_rendered_html_is_lossy_control_and_not_a_canonical_union_source(tmp_path: Path) -> None:
+    rendered = _write_rendered_html(tmp_path / "chat.html")
+
+    report = build_source_union_manifest([rendered])
+
+    assert report["ok"] is False
+    assert report["status"] == "no_lossless_chat_sources"
+    assert report["lossless_chat_source_count"] == 0
+    assert report["lossy_chat_source_count"] == 1
+    assert report["ignored_non_chat_source_count"] == 0
+    assert report["unique_conversation_count"] == 0
+    assert report["sources"][0]["ignored_reason"] == "lossy_control_not_canonical"
+
+
+def test_mixed_canonical_and_rendered_html_keeps_lossy_graph_out_of_union(tmp_path: Path) -> None:
+    canonical = _write_export(tmp_path / "conversations.json", _conversation("assistant-a", "A"))
+    rendered = _write_rendered_html(tmp_path / "chat.html")
+
+    report = build_source_union_manifest([canonical, rendered])
+
+    assert report["ok"] is True
+    assert report["status"] == "ready"
+    assert report["lossless_chat_source_count"] == 1
+    assert report["lossy_chat_source_count"] == 1
+    assert report["unique_conversation_count"] == 1
+    assert report["conversations"][0]["conversation_id"] == CONVERSATION_ID

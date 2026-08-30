@@ -735,7 +735,7 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
         kwargs: dict[str, Any] = {"sources": sources}
     elif profile == "test01":
         prerequisite = state.test_results.get("test00")
-        if not prerequisite or not prerequisite.get("ok"):
+        if not prerequisite or not prerequisite.get("downstream_ready", prerequisite.get("ok")):
             raise ValueError("Test01 wymaga zaliczonego Test00 w tej sesji Studio.")
         kwargs = {"sources": sources, "database": state.database, "test00_result": prerequisite}
     elif profile == "test02":
