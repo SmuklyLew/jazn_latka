@@ -124,7 +124,7 @@ def test_embedded_html_is_structural_pass_and_rendered_fallback_is_lossy(tmp_pat
     fallback_result = run_test00_source_fidelity([fallback], output_root=tmp_path / "test00", run_id="fallback")
     assert fallback_result["ok"] is False
     assert fallback_result["outcome"] == TestOutcome.LOSSY.value
-    assert fallback_result["results"][0]["parse_mode"] == "rendered_html_fallback"
+    assert fallback_result["results"][0]["parse_mode"] == "rendered_html_lossy"
     assert _read_mirrored_blob(Path(fallback_result["database"])) == fallback.read_bytes()
 
 

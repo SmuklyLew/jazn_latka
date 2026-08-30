@@ -397,7 +397,7 @@ def _parse_source(
                 counts, compare_errors = _iter_and_compare(records)
                 errors.extend(compare_errors)
                 details.update(counts)
-                if html_mode == "rendered_html_fallback":
+                if html_mode in {"rendered_html_fallback", "rendered_html_lossy"}:
                     outcome = TestOutcome.LOSSY.value
             else:
                 outcome = TestOutcome.BLOCKED.value
@@ -412,7 +412,7 @@ def _parse_source(
         counts, compare_errors = _iter_and_compare(records)
         errors.extend(compare_errors)
         details.update(counts)
-        if html_mode == "rendered_html_fallback":
+        if html_mode in {"rendered_html_fallback", "rendered_html_lossy"}:
             outcome = TestOutcome.LOSSY.value
         return parse_mode, outcome, details, warnings, errors, 0
 
