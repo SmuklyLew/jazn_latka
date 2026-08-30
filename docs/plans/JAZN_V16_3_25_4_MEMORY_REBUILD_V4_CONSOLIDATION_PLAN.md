@@ -4,87 +4,86 @@
 
 **Typ:** aktywny plan wykonawczy / release-prep  
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Baza planu:** `master @ a8f5c0cc0c5a5a2add8714d29e56659e9d5a6c8e`  
-**Wersja bazowa:** `16.3.25.3-release-metadata-semantics`  
+**Baza wykonawcza:** bieżące `master` / `origin/master`; dokładny SHA zweryfikować przed synchronizacją brancha  
+**Wersja bazowa linii przy audycie:** `16.3.25.3-release-metadata-semantics`  
 **Branch implementacyjny:** `upgrade/memory-rebuild-v4-consolidation`  
-**Ostatni zweryfikowany zdalny HEAD przy aktualizacji planu:** `0b33c15e1257e77c30d6ba321c10d250a1d1920d`  
+**Ostatni zweryfikowany zdalny HEAD przy audycie:** `0b33c15e1257e77c30d6ba321c10d250a1d1920d` — zawsze sprawdzić ponownie przed pracą  
 **Tracking issue:** `#189`  
-**Docelowy numer patch-release:** `16.3.25.4`  
+**Docelowy numer patch-release przy niezmienionej linii:** `16.3.25.4`  
 **Proponowany release name:** `memory-rebuild-v4-consolidation`  
+**Kanoniczne założenia:** `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
 **Roadmapa nadrzędna:** `docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md`  
-**Ocena architektury:** `docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`  
 **Issue finalnej pamięci:** `#59`  
 **Data aktualizacji:** 2026-08-30
 
-> Ten etap **nie jest** finalnym Memory Rebuild z v16.5.0 i nie oznacza stanu `VERIFIED` prywatnej pamięci. Jego celem jest skonsolidowanie aplikacji/narzędzia Memory Rebuild i protokołu Test00–Final tak, aby v16.5.0 budowało finalny artefakt na jednej natywnej, testowalnej architekturze.
+> Ten etap **nie jest** finalnym Memory Rebuild z v16.5.0 i nie oznacza stanu `VERIFIED` prywatnej pamięci. Konsoliduje narzędzie/protokół Test00–Final i przygotowuje source-lineage-ready RAW/L0 dla późniejszej finalnej odbudowy.
 
 ---
 
 ## 1. Pozycja w release train
 
 ```text
-16.3.25.3 release-metadata-semantics
+16.3.25.3 release line
 -> 16.3.25.4 Memory Rebuild v4 consolidation
--> 16.3.26 host attachment + multimodal ingress
+-> 16.3.26 attachment + multimodal ingress
 -> 16.4.x evidence-aware Polish NLP
 -> 16.5.0 final Memory Rebuild / VERIFIED + source monitoring
 -> 16.5.1 ATTACHABLE
 -> 16.5.2+ autobiographical RETRIEVABLE / ACCEPTED
--> 16.6.0 final convergence
+-> 16.6 final convergence
 ```
 
-`16.3.26` pozostaje zarezerwowane dla attachment/multimodal ingress. Memory Rebuild v4 consolidation nie może zużyć tego numeru.
+`16.3.26` pozostaje zarezerwowane dla attachment/multimodal ingress. Jeżeli master zużyje `16.3.25.4` przed finalizacją tego brancha, numer trzeba rozstrzygnąć na świeżo — nie wolno mechanicznie przejąć 16.3.26.
 
 ---
 
-## 2. Co już jest na branchu
+## 2. Co już jest na branchu — checkpoint, nie finalny PASS
 
-Branch `upgrade/memory-rebuild-v4-consolidation` zawiera już m.in.:
+Branch zawiera m.in.:
 
 - natywny `SourceBundle` / `ChatGPTExportBundle`;
-- `html_semantics.py` i jawne tryby `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
+- `html_semantics.py` i jawne `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
 - wspólną normalizację semantyczną JSON/HTML przy zachowaniu RAW;
 - `chat_sources.py`;
 - `l0_evidence.py` i rozszerzony L0;
 - natywny `chat_archive_policy.py`;
-- selektywny import bez aktywnej architektury monkey-patch;
+- selective import bez aktywnego monkey-patch stacku;
 - `ProtocolEngine`;
 - `MemoryRebuildApplicationService`;
 - `RunManifest`;
 - wspólną integrację CLI/Studio;
-- usunięcie aktywnych `v16311_hardening.py`, `v16312_ci_hotfix.py`, `v16325_hardening.py`;
-- testy `test_memory_rebuild_v4_consolidation.py` i `test_memory_rebuild_v4_protocol_engine.py`;
-- poprawiony kontrakt Test00 dla HTML LOSSY.
+- wycofanie aktywnych `v16311_hardening.py`, `v16312_ci_hotfix.py`, `v16325_hardening.py`;
+- testy v4 consolidation/protocol;
+- jawny HTML LOSSY boundary.
 
-To jest ważny checkpoint, ale **nie jest jeszcze merge-ready**.
+Samo istnienie tych artefaktów jest najwyżej `present/constructible/callable`. Merge gate wymaga właściwego poziomu z kanonicznej drabiny evidence, zwłaszcza `reachable_from_turn/effect_observed` dla engine paths i rzeczywistych wyników walidacji.
 
 ---
 
 ## 3. Twarda granica P0 / P1
 
-### P0 — konsolidacja źródeł i granicy RAW -> SEMANTIC -> MEMORY
+### P0 — RAW -> SEMANTIC -> MEMORY boundary
 
-P0 uznajemy za funkcjonalnie skonsolidowane, o ile kolejne testy nie wykażą regresji:
+P0 pozostaje zielone tylko jeśli regresje potwierdzają:
 
 - każdy członek eksportu ma rolę semantyczną;
-- RAW payload/provenance pozostają zachowane;
-- semantyka HTML jest normalizowana dopiero po parse;
-- rendered HTML jest jawnie LOSSY i nie może udawać lossless PASS;
+- RAW payload/provenance pozostaje zachowany;
+- semantyka HTML jest normalizowana po parse;
+- rendered HTML jest jawnie LOSSY i nie udaje lossless PASS;
 - technical/non-dialogue evidence nie jest tracone;
 - visibility i `memory_eligible` są projekcjami, nie destrukcyjnym filtrem;
-- warianty rozmów i branch union są zachowane deterministycznie;
-- nierozstrzygnięta zmiana payload/parent pozostaje fail-closed;
-- brak aktywnego `apply()/setattr()` hardening stacku.
+- warianty rozmów/branch union są deterministyczne;
+- nierozstrzygnięty payload/parent conflict jest fail-closed;
+- brak aktywnego `apply()/setattr()` hardening stacku;
+- source role nie jest utożsamiona z późniejszym source-trust/memory class.
 
-### P1 — wspólny protokół Test00–Final
-
-P1 musi zostać domknięte przed wersją, dokumentacją release i pełną walidacją.
+### P1 — jeden protokół Test00–Final
 
 ```text
 Test00 -> Test01 -> Test02 -> Test03 -> Test04 -> Final
 ```
 
-Każdy etap ma mieć osobne `run_*` i `validate_*`, a silnik ma egzekwować zależności zamiast pozwalać uruchamiać etap bez wymaganych poprzedników.
+Każdy etap ma osobne `run_*` i `validate_*`. Engine egzekwuje zależności zamiast pozwalać na legalny etap bez poprzedników.
 
 ---
 
@@ -98,83 +97,90 @@ Każdy etap ma mieć osobne `run_*` i `validate_*`, a silnik ma egzekwować zale
 - [ ] `run_test03()` + `validate_test03()`;
 - [ ] `run_test04()` + `validate_test04()`;
 - [ ] `run_final()` + `validate_final()`;
-- [ ] dependency graph wymusza pełny wcześniejszy łańcuch;
-- [ ] jeden engine dla CLI i Studio;
-- [ ] compatibility API deleguje, nie implementuje drugiego silnika.
+- [ ] dependency graph wymusza pełny łańcuch;
+- [ ] CLI i Studio używają jednego engine;
+- [ ] compatibility API wyłącznie deleguje.
 
-### 4.2 Test00
+### 4.2 Test00 — source fidelity
 
 - [ ] source inventory + exact source identity;
-- [ ] source mirror / fidelity;
+- [ ] source mirror/fidelity;
 - [ ] source-set closure;
 - [ ] jawne `PASSED / LOSSY / BLOCKED / FAILED`;
-- [ ] `rendered_html_lossy` zachowane jako evidence, ale nigdy jako lossless PASS;
+- [ ] `rendered_html_lossy` zachowane jako evidence, nigdy lossless PASS;
 - [ ] source-union bierze wyłącznie lossless graph sources;
-- [ ] source role jest odrębna od późniejszej memory/source-trust classification.
+- [ ] source role jest odrębna od memory/source-trust class.
 
-### 4.3 Test01
+### 4.3 Test01 — fresh canonical L0
 
-- [ ] fresh canonical L0 build;
+- [ ] fresh build;
 - [ ] provenance closure;
-- [ ] pełne rozmowy/branche/revisions/assets/sidecary;
+- [ ] pełne conversations/branches/revisions/assets/sidecars;
 - [ ] integrity/FK/FTS;
-- [ ] zero automatycznej L2/L3/activation;
-- [ ] schema/payload pozwala zachować primary-vs-derived source lineage bez destrukcyjnego spłaszczenia.
+- [ ] zero automatic L2/L3/activation;
+- [ ] payload/schema pozwala zachować primary-vs-derived lineage bez destrukcyjnego spłaszczenia.
 
-### 4.4 Test02
+### 4.4 Test02 — projections
 
-- [ ] projekcje visibility/role/sensitivity/eligibility/timestamp;
+- [ ] visibility/role/sensitivity/eligibility/timestamp;
 - [ ] raw <-> normalized reconciliation;
-- [ ] projekcje nie modyfikują źródłowego L0;
-- [ ] derived projections nie zmieniają epistemicznego priorytetu źródła.
+- [ ] projections nie modyfikują source L0;
+- [ ] derived projection nie zmienia source precedence.
 
-### 4.5 Test03
+### 4.5 Test03 — reproducibility
 
-- [ ] dwa świeże buildy A/B;
-- [ ] odwrócona kolejność wejść;
-- [ ] reproducibility / stable fingerprint;
+- [ ] fresh build A/B;
+- [ ] reversed input order;
+- [ ] stable fingerprint;
 - [ ] reconciliation z wcześniejszymi etapami;
-- [ ] preserved branch union odróżniony od unresolved conflict;
-- [ ] kolejność wejść ani liczba duplikatów derived evidence nie może zmieniać source precedence.
+- [ ] preserved branch union != unresolved conflict;
+- [ ] input order/derived duplicate count nie zmienia source precedence.
 
-### 4.6 Test04
+### 4.6 Test04 — real private Recall acceptance
 
-Test04 jest realnym acceptance runnerem, nie parserem wcześniej przygotowanego raportu.
+Test04 nie jest parserem gotowego raportu.
 
-- [ ] final source set / operator attestation;
-- [ ] real private Recall benchmark, gdy dane prywatne są lokalnie dostępne;
-- [ ] provenance, wrong-conversation, false-memory, abstention, temporal/update, sensitive leakage;
-- [ ] referential two-turn / natural multi-turn;
+- [ ] final source set/operator attestation;
+- [ ] real private benchmark, gdy dataset lokalnie dostępny;
+- [ ] provenance;
+- [ ] wrong-conversation / wrong-source;
+- [ ] false-memory;
+- [ ] abstention;
+- [ ] temporal/update/supersession;
+- [ ] sensitive leakage;
+- [ ] referential two-turn/natural multi-turn;
 - [ ] source discrimination: primary user/conversation vs reflection/runtime/system/dream;
-- [ ] derived-source trap: system nie może przypisać własnej późniejszej refleksji użytkownikowi;
+- [ ] derived-source trap: późniejsza refleksja systemu nie może zostać przypisana użytkownikowi;
 - [ ] brak prywatnej treści w repo/CI;
-- [ ] gdy private dataset nie jest dostępny: jawne `NOT RUN`, nigdy syntetyczny „PASS”.
+- [ ] brak datasetu = `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
 
 ### 4.7 Final
 
-- [ ] wymaga zaliczonego Test04 zgodnie z polityką finalnego artefaktu;
+- [ ] wymaga właściwie zaliczonego Test04 według policy;
 - [ ] SQLite Backup API do staging snapshot;
 - [ ] `PRAGMA integrity_check`;
 - [ ] `PRAGMA foreign_key_check`;
 - [ ] FTS5 integrity-check;
 - [ ] final source/provenance/database SHA;
-- [ ] publikacja dopiero po walidacji stagingu;
+- [ ] publikacja dopiero po walidacji staging;
 - [ ] zero automatycznej aktywacji runtime memory.
 
 ### 4.8 RunManifest
 
-- [ ] jeden manifest jednego przebiegu obejmuje kolejne Test00–Final;
-- [ ] write-once/immutable final state, ale nie zamyka się po pierwszym etapie;
+- [ ] jeden manifest obejmuje kolejne Test00–Final;
+- [ ] final seal jest write-once, ale run nie zamyka się po pierwszym etapie;
 - [ ] source inventory/provenance/fingerprint/database SHA;
-- [ ] source-class/lineage summary bez ujawniania prywatnej treści;
-- [ ] private manifest + sanitized manifest;
-- [ ] sanitized raport nie zawiera prywatnych ścieżek, treści ani PII.
+- [ ] source-class/lineage summary bez prywatnej treści;
+- [ ] private + sanitized manifest;
+- [ ] sanitized nie zawiera prywatnych paths/content/PII.
 
-### 4.9 Source monitoring / anti-self-amplification
+---
 
-Audyt architektury wskazał ryzyko, że derived runtime events/reflections mogą z czasem dominować nad primary conversation evidence. v16.3.25.4 nie musi jeszcze finalnie przypisać wszystkich prywatnych rekordów, ale **musi przygotować natywny kontrakt**, który v16.5.0 będzie mógł zastosować bez przebudowy L0.
+## 5. Source monitoring / anti-self-amplification
 
-Docelowe klasy semantyczne mogą zostać dopasowane do istniejącego modelu, ale muszą rozróżniać co najmniej:
+v16.3.25.4 nie musi przypisać wszystkich finalnych prywatnych rekordów, ale musi przygotować natywny kontrakt, który v16.5.0 zastosuje bez przebudowy L0.
+
+Minimalna semantyka:
 
 ```text
 PRIMARY_USER_SOURCE
@@ -190,20 +196,21 @@ SYSTEM_METADATA
 
 Twarde zasady:
 
-- [ ] derived record nie staje się primary przez dedup/merge;
-- [ ] wielokrotne kopie derived eventu nie zwiększają epistemicznego priorytetu;
+- [ ] derived record nie staje się primary przez dedupe/merge;
+- [ ] liczba kopii derived eventu nie zwiększa epistemicznego priorytetu;
 - [ ] conflict primary-vs-derived pozostaje jawny;
 - [ ] RAW -> SEMANTIC -> MEMORY zachowuje source lineage;
-- [ ] source classification jest evidence/provenance, nie wynikiem samego podobieństwa tekstu;
-- [ ] brak klasyfikacji nie jest automatycznie `PRIMARY`.
+- [ ] classification wynika z evidence/provenance, nie samego similarity;
+- [ ] brak klasyfikacji nie oznacza `PRIMARY`;
+- [ ] Dream/reflection nie może self-certify factual memory.
 
 ---
 
-## 5. Wersjonowanie
+## 6. Wersjonowanie
 
-Aktualny branch nadal dziedziczy `16.3.25.3` z mastera. To stan WIP, a nie legalny finalny patch systemowy.
+Branch WIP może tymczasowo dziedziczyć wersję mastera, ale finalny system patch musi mieć własny legalny bump w tej samej zmianie systemowej.
 
-Przed merge wymagany jest systemowy bump:
+Jeżeli numer pozostaje wolny:
 
 ```text
 DISTRIBUTION_VERSION = "16.3.25.4"
@@ -211,13 +218,11 @@ PACKAGE_VERSION = "16.3.25.4"
 PACKAGE_RELEASE_NAME = "memory-rebuild-v4-consolidation"
 ```
 
-Jeżeli przed zamknięciem branchu master otrzyma kolejny patch z tej samej linii, numer trzeba ponownie rozstrzygnąć na świeżo. Nie wolno użyć `16.3.26` dla tego zakresu.
+Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej roadmapie/AGENTS. Nie używać `16.3.26` dla Memory Rebuild.
 
 ---
 
-## 6. Dokumentacja i migracja hardeningów
-
-Przed merge trzeba zaktualizować bieżące dokumenty operatorskie Memory Rebuild tak, aby nie opisywały starego engine jako aktywnej architektury.
+## 7. Dokumentacja i migracja hardeningów
 
 Dawne moduły:
 
@@ -225,17 +230,19 @@ Dawne moduły:
 - `v16312_ci_hotfix.py`;
 - `v16325_hardening.py`
 
-muszą być sklasyfikowane w raporcie jako:
+muszą być sklasyfikowane jako:
 
 - `SUPERSEDED` — zachowanie przeniesione natywnie;
-- `RETIRED` — aktywna ścieżka nie istnieje i testy dowodzą braku zależności;
-- albo `STILL_REQUIRED` — jeśli audyt znajdzie realny kontrakt, którego nie skonsolidowano.
+- `RETIRED` — aktywna ścieżka nie istnieje i regresje to dowodzą;
+- `STILL_REQUIRED` — audyt znalazł realny nieprzeniesiony kontrakt.
 
-Nie przywracać monkey-patch stacku tylko po to, aby zachować zgodność testu.
+Nie przywracać monkey-patch stacku tylko dla starego testu.
 
 ---
 
-## 7. Walidacja merge gate
+## 8. Walidacja merge gate
+
+Twarda kolejność:
 
 ```text
 P1
@@ -246,7 +253,7 @@ P1
 -> PR
 ```
 
-Minimalne wymagania przed PR/merge:
+Minimum:
 
 ```text
 python -X utf8 -m compileall -q latka_jazn tests main.py run.py
@@ -257,52 +264,51 @@ python -X utf8 run.py package-smoke --profile system --json
 git diff --check
 ```
 
-Dla dotkniętych baz SQLite dodatkowo:
+Dla SQLite:
 
 - `PRAGMA integrity_check`;
 - `PRAGMA foreign_key_check`;
 - FTS5 integrity-check.
 
-Release metadata synchronizować wyłącznie kanonicznym `release_metadata_sync`; nie edytować ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`.
-
-GitHub CI na końcowym SHA musi przejść przed merge. Brak workflow/statusów na checkpointcie nie jest PASS.
+Release metadata wyłącznie przez kanoniczny `release_metadata_sync`; zero ręcznej edycji hashy. Wymagane GitHub CI na finalnym SHA musi być rzeczywiście green.
 
 ---
 
-## 8. Relacja do Issue #59 i #189
+## 9. Relacja do #59 i #189
 
-- `#189` śledzi ten release/tool consolidation i może zostać zamknięte po merge-ready/merge v16.3.25.4.
-- `#59` pozostaje otwarte do finalnego stanu `ACCEPTED` w v16.6.0.
+- `#189` śledzi consolidation/tool release i zamyka się przy właściwym finalnym merge/DoD.
+- `#59` pozostaje otwarte do finalnego `ACCEPTED` / v16.6 closure.
 
-`16.3.25.4` ma dać wiarygodne narzędzie/protokół do późniejszego v16.5.0. Dopiero v16.5.0 buduje finalny prywatny artefakt i może osiągnąć `VERIFIED`; kolejne etapy prowadzą do `ATTACHABLE`, `RETRIEVABLE` i `ACCEPTED`.
-
----
-
-## 9. Branch / PR policy
-
-- pracujemy na istniejącym `upgrade/memory-rebuild-v4-consolidation`;
-- bez rebase/force-push bez osobnej zgody;
-- checkpointy mają być interrupt-safe;
-- nie mergować dopóki P1/version/docs/metadata/full validation/CI nie są zielone;
-- jeden finalny PR do `master` dla v16.3.25.4;
-- branch attachment ingress 16.3.26 zaczyna się dopiero z mastera zawierającego zaakceptowaną konsolidację albo po jawnej decyzji o odłożeniu tej zależności.
+`16.3.25.4` daje wiarygodne narzędzie/protokół. v16.5.0 dopiero buduje finalny prywatny artefakt `VERIFIED`.
 
 ---
 
-## 10. Warunek zamknięcia etapu
+## 10. Branch / PR policy
 
-`16.3.25.4-memory-rebuild-v4-consolidation` można uznać za gotowe dopiero, gdy:
+- kontynuować istniejący `upgrade/memory-rebuild-v4-consolidation`;
+- bez rebase/force-push bez osobnej decyzji;
+- checkpointy interrupt-safe;
+- nie mergować przed P1/version/docs/metadata/full validation/CI;
+- jeden finalny PR do master;
+- attachment 16.3.26 startuje z mastera zawierającego zaakceptowaną konsolidację, chyba że jawna decyzja engineeringowa udowodni bezpieczne rozdzielenie.
 
-1. P0 pozostaje zielone;
-2. P1 Test00–Final jest jednym spójnym silnikiem;
-3. RunManifest ma poprawny lifecycle;
-4. CLI i Studio używają tego samego ApplicationService;
+---
+
+## 11. Warunek zamknięcia
+
+Release jest gotowy tylko gdy:
+
+1. P0 remains green;
+2. P1 Test00–Final = jeden engine;
+3. RunManifest lifecycle jest poprawny;
+4. CLI/Studio = ten sam ApplicationService;
 5. stary hardening stack nie jest aktywną zależnością;
-6. source-monitoring/lineage contract jest możliwy do zachowania przez L0 i nie dopuszcza derived->primary self-amplification;
-7. wersja została podniesiona;
-8. dokumentacja jest zgodna z kodem;
-9. release metadata są kanonicznie zsynchronizowane;
-10. pełna lokalna walidacja PASS;
-11. wymagane CI na finalnym SHA PASS;
-12. brak prywatnych danych/artefaktów runtime w diffie;
-13. PR jest merge-ready bez otwartego P0/P1.
+6. source-lineage contract działa i blokuje derived->primary amplification;
+7. finalny poziom capability evidence odpowiada deklaracji `working`;
+8. wersja jest legalna i podniesiona;
+9. docs odpowiadają kodowi;
+10. release metadata są zsynchronizowane;
+11. pełna lokalna walidacja PASS;
+12. wymagane CI na finalnym SHA PASS;
+13. brak prywatnych/runtime artefaktów w diff;
+14. PR jest merge-ready bez open P0/P1.
