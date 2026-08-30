@@ -1,9 +1,10 @@
 # Plans index — current execution map
 
 **Updated:** 2026-08-30  
-**Current master:** `a8f5c0cc0c5a5a2add8714d29e56659e9d5a6c8e` / `16.3.25.3-release-metadata-semantics`
+**Current release line at synchronization:** `16.3.25.3-release-metadata-semantics`  
+**Current master HEAD:** intentionally not frozen in this index; resolve `master`/`origin/master` at execution time.
 
-Ten indeks rozróżnia plany aktywne, przekrojowe, referencyjne i historyczne. Historyczny implementation plan nie jest bieżącym poleceniem wykonawczym i nie powinien nadpisywać świeższej roadmapy/release trainu.
+Ten indeks rozróżnia plany aktywne, przekrojowe, referencyjne i historyczne. Historyczny implementation plan nie jest bieżącym poleceniem wykonawczym i nie powinien nadpisywać świeższej roadmapy/release trainu. Nie zamrażamy tutaj „current master SHA”, ponieważ docs-only merge/metadata-sync może zmienić HEAD bez zmiany release line.
 
 ## Active / current execution
 
@@ -37,7 +38,7 @@ Ten indeks rozróżnia plany aktywne, przekrojowe, referencyjne i historyczne. H
 ## Current ordering
 
 ```text
-16.3.25.3 master
+16.3.25.3 current release line
 -> 16.3.25.4 Memory Rebuild v4 consolidation
 -> 16.3.26 attachment + multimodal ingress
 -> 16.4.0-16.4.2 evidence-aware Polish NLP
