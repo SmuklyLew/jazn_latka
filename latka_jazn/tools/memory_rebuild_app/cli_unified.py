@@ -4,9 +4,11 @@ from pathlib import Path
 from typing import Any
 import argparse
 
+from .application import MemoryRebuildApplicationService
 from .final_export import export_final_memory
 from .test_profiles import PROFILE_NAMES, run_test_profile
 from .settings import MemoryRebuildSettings
+from .test_spec import TEST_PROTOCOL_ORDER
 from .typed_api import MemoryLayer, RecallQuery, TypedMemoryAPI
 from .unified_memory import UnifiedMemoryDatabase
 from .chat_sources import compare_chat_sources, list_chat_conversations
@@ -30,6 +32,8 @@ UNIFIED_COMMANDS = {
     "test-profile",
     "final-export",
     "recall",
+    "protocol-run",
+    "protocol-validate",
 }
 
 
@@ -184,6 +188,30 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     recall.add_argument("--include-active", action="store_true", help="Jawnie dołącz pamięć aktywną do domyślnego L0.")
     recall.add_argument("--allow-missing-provenance", action="store_true")
 
+    protocol = sub.add_parser("protocol-run", help="Uruchom proceduralny Test00-04 albo Final przez wspólny ProtocolEngine.")
+    protocol.add_argument("--profile", required=True, choices=TEST_PROTOCOL_ORDER)
+    protocol.add_argument("--output-root", required=True, type=Path)
+    protocol.add_argument("--source", action="append", type=Path, default=[])
+    protocol.add_argument("--database", type=Path)
+    protocol.add_argument("--test00-result", type=Path)
+    protocol.add_argument("--benchmark", type=Path)
+    protocol.add_argument("--restart-continuity-report", type=Path)
+    protocol.add_argument("--test04-result", type=Path)
+    protocol.add_argument("--final-output", type=Path)
+    protocol.add_argument("--system-acceptance", action="store_true")
+    protocol.add_argument("--base-commit")
+    protocol.add_argument("--run-id")
+
+    validate_protocol = sub.add_parser("protocol-validate", help="Waliduj istniejący artefakt bez uruchamiania protokołu.")
+    validate_protocol.add_argument("--profile", required=True, choices=TEST_PROTOCOL_ORDER)
+    validate_protocol.add_argument("--artifact", required=True, type=Path)
+    validate_protocol.add_argument("--output-root", required=True, type=Path)
+    validate_protocol.add_argument("--benchmark", type=Path)
+    validate_protocol.add_argument("--test04-result", type=Path)
+    validate_protocol.add_argument("--restart-continuity-report", type=Path)
+    validate_protocol.add_argument("--system-acceptance", action="store_true")
+    validate_protocol.add_argument("--base-commit")
+
 
 def run_unified_command(
     args: argparse.Namespace,
@@ -201,6 +229,69 @@ def run_unified_command(
         )
 
     resolved_settings = settings or MemoryRebuildSettings()
+    if command in {"protocol-run", "protocol-validate"}:
+        service = MemoryRebuildApplicationService(
+            args.output_root,
+            tool_root=Path.cwd(),
+            settings=resolved_settings,
+            base_commit=args.base_commit,
+            run_id=getattr(args, "run_id", None),
+        )
+        if command == "protocol-validate":
+            kwargs: dict[str, Any] = {}
+            if args.profile == "test04":
+                if args.benchmark is None:
+                    raise ValueError("protocol-validate test04 requires --benchmark")
+                kwargs = {
+                    "benchmark": args.benchmark,
+                    "system_acceptance": args.system_acceptance,
+                    "restart_continuity_report": args.restart_continuity_report,
+                }
+            elif args.profile == "final":
+                if args.test04_result is None:
+                    raise ValueError("protocol-validate final requires --test04-result")
+                kwargs = {"test04_result": args.test04_result}
+            return service.validate_protocol(args.profile, args.artifact, **kwargs)
+
+        profile = args.profile
+        if profile in {"test00", "test01", "test03"} and not args.source:
+            raise ValueError(f"protocol-run {profile} requires at least one --source")
+        if profile in {"test01", "test02", "test04", "final"} and args.database is None:
+            raise ValueError(f"protocol-run {profile} requires --database")
+        if profile == "test00":
+            run_kwargs = {"sources": args.source}
+        elif profile == "test01":
+            if args.test00_result is None:
+                raise ValueError("protocol-run test01 requires --test00-result")
+            run_kwargs = {
+                "sources": args.source,
+                "database": args.database,
+                "test00_result": args.test00_result,
+            }
+        elif profile == "test02":
+            run_kwargs = {"database": args.database}
+        elif profile == "test03":
+            run_kwargs = {"sources": args.source, "test00_result": args.test00_result}
+        elif profile == "test04":
+            if args.benchmark is None:
+                raise ValueError("protocol-run test04 requires --benchmark")
+            run_kwargs = {
+                "database": args.database,
+                "benchmark": args.benchmark,
+                "system_acceptance": args.system_acceptance,
+                "restart_continuity_report": args.restart_continuity_report,
+            }
+        else:
+            if args.test04_result is None or args.final_output is None:
+                raise ValueError("protocol-run final requires --test04-result and --final-output")
+            run_kwargs = {
+                "database": args.database,
+                "output": args.final_output,
+                "test04_result": args.test04_result,
+                "sources": args.source,
+            }
+        return service.run_protocol(profile, **run_kwargs)
+
     store = UnifiedMemoryDatabase(args.database, settings=resolved_settings)
     if command == "unified-init":
         return store.initialize()

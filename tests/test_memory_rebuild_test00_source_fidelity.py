@@ -112,7 +112,7 @@ def test_embedded_html_is_structural_pass_and_rendered_fallback_is_lossy(tmp_pat
     )
     embedded_result = run_test00_source_fidelity([embedded], output_root=tmp_path / "test00", run_id="embedded")
     assert embedded_result["ok"] is True
-    assert embedded_result["results"][0]["parse_mode"] == "embedded_json"
+    assert embedded_result["results"][0]["parse_mode"] == "embedded_json_lossless"
     assert embedded_result["results"][0]["role_counts"]["tool"] == 1
 
     fallback = tmp_path / "fallback.html"

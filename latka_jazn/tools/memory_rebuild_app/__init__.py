@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .baseline_registry import baseline_from_path, discover_baseline_roots, refresh_baseline
 from .adapters import AdapterRegistry, default_adapter_registry
+from .application import MemoryRebuildApplicationService
 from .config import APP_VERSION, TOOL_VERSION
 from .controller import MemoryRebuildAppController, MemoryRebuildAppError
 from .final_export import EXPORT_SCHEMA, export_final_memory
@@ -16,6 +17,8 @@ from .models import (
     TRUTH_DOMAINS,
 )
 from .project_store import ProjectStore, default_project_root
+from .protocol_engine import ProtocolArtifact, ProtocolEngine
+from .run_manifest import RunManifest
 from .source_inventory import SourceInspection, inspect_source, inspect_sources
 from .settings import MemoryRebuildSettings, load_settings
 from .source_union import (
@@ -62,6 +65,7 @@ __all__ = [
     "HOTFIX_VERSION",
     "HtmlImportResult",
     "LEGACY_DATABASE_NAMES",
+    "MemoryRebuildApplicationService",
     "MemoryRebuildAppController",
     "MemoryRebuildAppError",
     "MemoryRebuildSettings",
@@ -71,6 +75,9 @@ __all__ = [
     "PROFILE_NAMES",
     "PROJECT_SCHEMA",
     "ProjectStore",
+    "ProtocolArtifact",
+    "ProtocolEngine",
+    "RunManifest",
     "RebuildProject",
     "RecallHit",
     "RecallQuery",

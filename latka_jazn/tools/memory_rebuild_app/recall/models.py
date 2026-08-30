@@ -33,6 +33,7 @@ class RecallBenchmarkCase:
     case_id: str
     query: str
     category: RecallCaseCategory = RecallCaseCategory.DIRECT
+    context_turns: tuple[str, ...] = ()
     expected_any: tuple[str, ...] = ()
     expected_all: tuple[str, ...] = ()
     forbidden_any: tuple[str, ...] = ()
@@ -98,6 +99,7 @@ class RecallBenchmarkCase:
             case_id=str(payload.get("id") or payload.get("case_id") or "").strip(),
             query=str(payload.get("query") or "").strip(),
             category=category,
+            context_turns=strings("context_turns") or strings("prior_turns"),
             expected_any=strings("expected_any"),
             expected_all=strings("expected_all"),
             forbidden_any=strings("forbidden_any"),

@@ -4,6 +4,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
+import hashlib
 import json
 import os
 import uuid
@@ -12,6 +13,18 @@ from .report_sanitizer import sanitize_report
 
 
 RUN_MANIFEST_SCHEMA = "jazn_memory_rebuild_run_manifest/v4"
+_PROTOCOL_NAMES = ("test00", "test01", "test02", "test03", "test04", "final")
+_PRIVATE_RESULT_KEYS = {
+    "conversation_id",
+    "conversation_ids",
+    "requested_conversation_ids",
+    "query",
+    "content",
+    "text",
+    "title",
+    "raw_json",
+    "source_record_id",
+}
 
 
 def _utc_now() -> str:
@@ -59,6 +72,23 @@ class RunManifest:
             source_bundle_inventory=source_bundle_inventory,
             source_roles=dict(source_roles or {}),
             source_sha256=dict(source_sha256 or {}),
+            results={name: {"outcome": "NOT RUN", "ok": False} for name in _PROTOCOL_NAMES},
+        )
+
+    def with_sources(self, inventory: tuple[Mapping[str, Any], ...]) -> "RunManifest":
+        if self.completed_at is not None:
+            raise RuntimeError("completed RunManifest is immutable")
+        roles: dict[str, str] = {}
+        digests: dict[str, str] = {}
+        for index, item in enumerate(inventory, start=1):
+            key = str(item.get("relative_path") or item.get("path") or index)
+            roles[key] = str(item.get("role") or "unknown_sidecar")
+            digests[key] = str(item.get("sha256") or "")
+        return replace(
+            self,
+            source_bundle_inventory=tuple(dict(item) for item in inventory),
+            source_roles=roles,
+            source_sha256=digests,
         )
 
     def with_result(self, name: str, result: Mapping[str, Any]) -> "RunManifest":
@@ -113,7 +143,7 @@ class RunManifest:
         }
 
     def sanitized_dict(self) -> dict[str, Any]:
-        value = sanitize_report(self.to_dict())
+        value = _sanitize_manifest_value(sanitize_report(self.to_dict()))
         assert isinstance(value, dict)
         value["source_bundle_inventory"] = [
             {
@@ -141,6 +171,23 @@ class RunManifest:
         _write_once(private, self.to_dict())
         _write_once(sanitized, self.sanitized_dict())
         return {"private": str(private), "sanitized": str(sanitized)}
+
+
+def _sanitize_manifest_value(value: Any, *, key: str = "") -> Any:
+    if isinstance(value, Mapping):
+        result: dict[str, Any] = {}
+        for raw_key, item in value.items():
+            child_key = str(raw_key)
+            if child_key in _PRIVATE_RESULT_KEYS or child_key.endswith("_conversation_id"):
+                serialized = json.dumps(item, ensure_ascii=False, sort_keys=True, default=str)
+                result[child_key + "_removed"] = True
+                result[child_key + "_sha256"] = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+            else:
+                result[child_key] = _sanitize_manifest_value(item, key=child_key)
+        return result
+    if isinstance(value, (list, tuple)):
+        return [_sanitize_manifest_value(item, key=key) for item in value]
+    return value
 
 
 def _write_once(path: Path, payload: Mapping[str, Any]) -> None:

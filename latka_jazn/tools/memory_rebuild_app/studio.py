@@ -15,6 +15,7 @@ import os
 
 from latka_jazn.version import PACKAGE_VERSION
 
+from .application import MemoryRebuildApplicationService
 from .layout import build_studio_layout
 from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore
@@ -26,11 +27,9 @@ from .settings import (
     resolve_settings_path,
     save_tool_settings,
 )
-from .source_fidelity import default_test00_root, run_test00_source_fidelity
 from .studio_dialogs import DialogBackend, TextDialogs, make_dialogs
 from .studio_workflows import StudioWorkflows
-from .test_profiles import PROFILE_NAMES, run_test_profile
-from .test_spec import TEST_SPECS, get_test_spec
+from .test_spec import TEST_PROTOCOL_ORDER, TEST_SPECS, get_test_spec
 from .themes import THEMES, get_theme, prompt_toolkit_style
 
 
@@ -709,7 +708,7 @@ def _run_shell(state: StudioState) -> StudioAction:
 
 def _project_sources(state: StudioState) -> list[Path]:
     if not state.project:
-        raise ValueError("Test00 wymaga projektu z jawną listą źródeł.")
+        raise ValueError("Protokół wymaga projektu z jawną listą źródeł.")
     project = ProjectStore(state.project_root).load(state.project)
     sources = [Path(item.path).expanduser().resolve() for item in project.enabled_sources()]
     if not sources:
@@ -718,38 +717,58 @@ def _project_sources(state: StudioState) -> list[Path]:
 
 
 def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
-    if profile == "test00":
-        report = run_test00_source_fidelity(
-            _project_sources(state),
-            output_root=default_test00_root(state.tool_root),
-        )
-        normalized = dict(report)
-        state.test_results[profile] = normalized
-        outcome = str(report.get("outcome") or "FAILED")
-        state.status = f"TEST00: {outcome}"
-        state.status_kind = "ok" if outcome == "PASSED" else "error"
-        dialogs.message("WYNIK TEST00", json.dumps(report, ensure_ascii=False, indent=2, default=str)[:12000])
-        return
-    if profile not in PROFILE_NAMES:
+    if profile not in TEST_PROTOCOL_ORDER:
         raise ValueError(profile)
     project = ProjectStore(state.project_root).load(state.project) if state.project else None
-    baselines = [item.path for item in project.enabled_baselines()] if project else []
     settings = dict(project.settings) if project else {}
-    report = run_test_profile(
-        state.database,
-        profile,
-        baselines=baselines,
-        full_validation=True,
-        acceptance_report=settings.get("test04_acceptance_report"),
-        system_acceptance=bool(settings.get("system_acceptance", False)),
+    sources = _project_sources(state) if profile in {"test00", "test01", "test03"} else []
+    service = MemoryRebuildApplicationService(
+        state.tool_root / "memory" / "rebuild_tests" / "protocols",
+        tool_root=state.tool_root,
+        settings=state.runtime_settings,
     )
-    normalized = dict(report)
-    normalized["outcome"] = "PASSED" if report.get("ok") else "FAILED"
-    state.test_results[profile] = normalized
-    state.status = f"{profile.upper()}: {normalized['outcome']}"
+    state.test_results[profile] = {"outcome": "RUNNING", "ok": False}
+    state.status = f"{profile.upper()}: RUNNING"
+    state.status_kind = "ok"
+
+    if profile == "test00":
+        kwargs: dict[str, Any] = {"sources": sources}
+    elif profile == "test01":
+        prerequisite = state.test_results.get("test00")
+        if not prerequisite or not prerequisite.get("ok"):
+            raise ValueError("Test01 wymaga zaliczonego Test00 w tej sesji Studio.")
+        kwargs = {"sources": sources, "database": state.database, "test00_result": prerequisite}
+    elif profile == "test02":
+        kwargs = {"database": state.database}
+    elif profile == "test03":
+        kwargs = {"sources": sources, "test00_result": state.test_results.get("test00")}
+    elif profile == "test04":
+        benchmark = settings.get("test04_benchmark")
+        if not benchmark:
+            raise ValueError("Test04 wymaga prywatnego ustawienia projektu test04_benchmark.")
+        kwargs = {
+            "database": state.database,
+            "benchmark": benchmark,
+            "system_acceptance": bool(settings.get("system_acceptance", False)),
+            "restart_continuity_report": settings.get("restart_continuity_report"),
+        }
+    else:
+        prerequisite = state.test_results.get("test04")
+        if not prerequisite or not prerequisite.get("ok"):
+            raise ValueError("Final wymaga zaliczonego Test04 w tej sesji Studio.")
+        final_output = settings.get("final_output") or str(state.database.parent / "final-memory")
+        kwargs = {
+            "database": state.database,
+            "output": final_output,
+            "test04_result": prerequisite,
+            "sources": [Path(item.path) for item in project.enabled_sources()] if project else [],
+        }
+    report = service.run_protocol(profile, **kwargs)
+    state.test_results[profile] = dict(report)
+    state.status = f"{profile.upper()}: {report['outcome']}"
     state.status_kind = "ok" if report.get("ok") else "error"
     dialogs.message(
-        "WYNIK TESTU PAMIĘCI",
+        "WYNIK PROTOKOŁU PAMIĘCI",
         json.dumps(report, ensure_ascii=False, indent=2, default=str)[:12000],
     )
 

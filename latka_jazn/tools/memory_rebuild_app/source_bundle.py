@@ -29,7 +29,7 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _role_for(relative_path: str) -> SourceRole:
+def classify_source_role(relative_path: str) -> SourceRole:
     normalized = relative_path.replace("\\", "/")
     name = Path(normalized).name.casefold()
     first = normalized.split("/", 1)[0].casefold()
@@ -74,7 +74,7 @@ class ChatGPTExportBundle:
         members = tuple(
             SourceBundleMember(
                 relative_path=path.relative_to(resolved).as_posix(),
-                role=_role_for(path.relative_to(resolved).as_posix()),
+                role=classify_source_role(path.relative_to(resolved).as_posix()),
                 source_sha256=_sha256_file(path),
                 size_bytes=path.stat().st_size,
             )
@@ -107,4 +107,9 @@ class ChatGPTExportBundle:
         ))
 
 
-__all__ = ["ChatGPTExportBundle", "SourceBundleMember", "SourceRole"]
+__all__ = [
+    "ChatGPTExportBundle",
+    "SourceBundleMember",
+    "SourceRole",
+    "classify_source_role",
+]
