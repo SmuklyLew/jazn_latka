@@ -14,19 +14,24 @@ Dokumentacja jest porządkowana według właściciela i cyklu życia, a nie wed�
 
 Żywa dokumentacja techniczna pozostaje w katalogach domenowych:
 
-- `docs/memory/` — Memory Rebuild, recovery, recall, restore i prywatna walidacja;
+- `docs/memory/` — architektura Memory Rebuild, recovery, recall, restore i ingress źródeł;
+- `docs/tools/` — aktywne kontrakty operatorskie i dokumentacja narzędzi, których stabilne ścieżki są częścią testowanego kontraktu;
 - `docs/nlp/` — polskie zasoby językowe/reasoning;
 - `docs/runtime/` — host/runtime/finalization/workspace;
 - `docs/packaging/` — kontrakty pakowania;
 - `docs/templates/` — wersjonowane szablony operatorskie.
 
-Stabilne ścieżki runtime/packaging/templates nie są sztucznie zagnieżdżane pod dodatkowym `domains/`, aby nie łamać kontraktów operacyjnych.
+Stabilne ścieżki runtime/packaging/tools/templates nie są sztucznie zagnieżdżane pod dodatkowym `domains/`, aby nie łamać kontraktów operacyjnych.
 
 ## 4. Historical
 
 `docs/archive/` zawiera zakończone lub zastąpione plany, stare roadmapy, raporty release/implementacji, review, patche oraz historyczne noty narzędziowe.
 
 Historyczny dokument jest dowodem stanu z czasu jego powstania, ale nie jest bieżącym poleceniem wykonawczym.
+
+## Compatibility pointers
+
+Jeżeli ścieżka dokumentu jest częścią istniejącego testowanego kontraktu, może pozostać krótki compatibility pointer prowadzący do nowej lokalizacji. Pointer nie zmienia właściciela dokumentu i nie staje się nowym źródłem prawdy.
 
 ## Zasada przenoszenia
 
