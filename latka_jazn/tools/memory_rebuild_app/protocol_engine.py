@@ -313,19 +313,94 @@ class ProtocolEngine:
             base_commit=base_commit,
             run_id=self.run_id,
         )
-        self._manifest_paths: dict[str, str] | None = None
+        self._manifest_paths: dict[str, Any] | None = None
+
+    @classmethod
+    def resume(
+        cls,
+        output_root: str | Path,
+        *,
+        settings: MemoryRebuildSettings | None = None,
+        tool_version: str = TOOL_VERSION,
+        system_version: str,
+        base_commit: str,
+        run_id: str,
+    ) -> "ProtocolEngine":
+        root = Path(output_root).expanduser().resolve()
+        manifest = RunManifest.load_draft(
+            root / run_id,
+            run_id=run_id,
+            tool_version=tool_version,
+            system_version=system_version,
+            base_commit=base_commit,
+        )
+        engine = cls(
+            root,
+            settings=settings,
+            tool_version=tool_version,
+            system_version=system_version,
+            base_commit=base_commit,
+            run_id=run_id,
+        )
+        engine._restore_manifest(manifest)
+        return engine
+
+    def _restore_manifest(self, manifest: RunManifest) -> None:
+        restored: dict[str, dict[str, Any]] = {}
+        incomplete_seen = False
+        for index, name in enumerate(TEST_PROTOCOL_ORDER):
+            value = dict(manifest.results[name])
+            outcome = str(value.get("outcome") or "")
+            if outcome == "NOT RUN":
+                incomplete_seen = True
+                continue
+            if incomplete_seen:
+                raise ValueError("RunManifest completed profiles must form one chain prefix")
+            artifacts_value = value.get("artifacts")
+            artifacts = dict(artifacts_value) if isinstance(artifacts_value, Mapping) else {}
+            expected_chain = list(TEST_PROTOCOL_ORDER[: index + 1])
+            checks = {
+                "schema_version": value.get("schema_version") == PROTOCOL_ENGINE_SCHEMA,
+                "profile": value.get("profile") == name,
+                "run_id": value.get("run_id") == self.run_id,
+                "dependency_chain": artifacts.get("dependency_chain") == expected_chain,
+            }
+            failed = [key for key, passed in checks.items() if not passed]
+            if failed:
+                raise ValueError(
+                    f"RunManifest {name} resume contract mismatch: {', '.join(failed)}"
+                )
+            restored[name] = value
+            self._source_inventory_fingerprint = (
+                str(artifacts.get("source_inventory_fingerprint") or "") or None
+            )
+            self._source_union_fingerprint = (
+                str(artifacts.get("source_union_fingerprint") or "") or None
+            )
+            self._database_sha256 = str(artifacts.get("database_sha256") or "") or None
+            self._database_fingerprint = (
+                str(artifacts.get("database_fingerprint") or "") or None
+            )
+        self.results = restored
+        self._manifest = manifest
 
     def _ensure_root(self) -> Path:
         self.run_root.mkdir(parents=True, exist_ok=True)
         return self.run_root
 
+    def _require_open(self) -> None:
+        if self._manifest.completed_at is not None:
+            raise RuntimeError("sealed ProtocolEngine run is immutable")
+
     def _record(self, artifact: ProtocolArtifact) -> dict[str, Any]:
+        self._require_open()
         if artifact.profile in self.results:
             raise RuntimeError(f"protocol stage already recorded: {artifact.profile}")
         payload = artifact.to_dict()
-        self.results[artifact.profile] = payload
-        self._manifest = self._manifest.with_result(artifact.profile, payload)
+        updated_manifest = self._manifest.with_result(artifact.profile, payload)
         report_paths = write_report_pair(self._ensure_root(), f"{artifact.profile}-result", payload)
+        self.results[artifact.profile] = payload
+        self._manifest = updated_manifest
         payload["private_report"] = report_paths["private"]
         payload["sanitized_report"] = report_paths["sanitized"]
         return payload
@@ -494,6 +569,7 @@ class ProtocolEngine:
         }, None
 
     def _sources(self, sources: Iterable[str | Path]) -> tuple[list[Path], list[dict[str, Any]]]:
+        self._require_open()
         paths: list[Path] = []
         inventory: list[dict[str, Any]] = []
         seen: set[str] = set()
@@ -723,6 +799,7 @@ class ProtocolEngine:
         *,
         test01_result: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
+        self._require_open()
         path = Path(database).expanduser().resolve()
         current_database_sha256 = sha256_file(path)
         current_database_fingerprint = _database_lineage_fingerprint(path)
@@ -895,6 +972,7 @@ class ProtocolEngine:
         system_acceptance: bool = False,
         restart_continuity_report: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
+        self._require_open()
         path = Path(database).expanduser().resolve()
         current_database_sha256 = sha256_file(path)
         current_database_fingerprint = _database_lineage_fingerprint(path)
@@ -998,6 +1076,7 @@ class ProtocolEngine:
         test04_result: str | Path | Mapping[str, Any],
         sources: Iterable[str | Path] = (),
     ) -> dict[str, Any]:
+        self._require_open()
         source = Path(database).expanduser().resolve()
         current_database_sha256 = sha256_file(source)
         current_database_fingerprint = _database_lineage_fingerprint(source)
@@ -1106,9 +1185,7 @@ class ProtocolEngine:
             raise ValueError(f"unknown protocol: {profile}")
         return dict(validator(artifact, **kwargs))
 
-    def seal_manifest(self) -> dict[str, str]:
-        if self._manifest_paths is not None:
-            return dict(self._manifest_paths)
+    def _manifest_rollup(self) -> dict[str, Any]:
         warnings = tuple(
             warning
             for result in self.results.values()
@@ -1119,14 +1196,65 @@ class ProtocolEngine:
             for result in self.results.values()
             for blocker in result.get("blockers", [])
         )
-        completed = self._manifest.complete(
-            source_union_fingerprint=self._source_union_fingerprint,
-            database_sha256=self._database_sha256,
-            warnings=warnings,
-            blockers=blockers,
-            validation_results={name: {"ok": value.get("ok"), "outcome": value.get("outcome")} for name, value in self.results.items()},
+        validation_results = {
+            name: {"ok": value.get("ok"), "outcome": value.get("outcome")}
+            for name, value in self.results.items()
+        }
+        return {
+            "source_union_fingerprint": self._source_union_fingerprint,
+            "database_sha256": self._database_sha256,
+            "warnings": warnings,
+            "blockers": blockers,
+            "validation_results": validation_results,
+        }
+
+    def _completed_profiles(self) -> list[str]:
+        return [name for name in TEST_PROTOCOL_ORDER if name in self.results]
+
+    def checkpoint_manifest(self) -> dict[str, Any]:
+        if self._manifest.completed_at is not None or self._manifest_paths is not None:
+            raise RuntimeError("sealed ProtocolEngine run is immutable")
+        self._manifest = self._manifest.with_checkpoint(**self._manifest_rollup())
+        paths = self._manifest.write_draft(self._ensure_root())
+        return {
+            "sealed": False,
+            "completed_profiles": self._completed_profiles(),
+            "private": None,
+            "sanitized": None,
+            **paths,
+        }
+
+    def seal_manifest(self) -> dict[str, Any]:
+        if self._manifest.completed_at is not None or self._manifest_paths is not None:
+            raise RuntimeError("sealed ProtocolEngine run is immutable")
+        final = self.results.get("final")
+        final_artifacts_value = final.get("artifacts") if final is not None else None
+        final_artifacts = (
+            dict(final_artifacts_value)
+            if isinstance(final_artifacts_value, Mapping)
+            else {}
         )
-        self._manifest_paths = completed.write_once(self._ensure_root())
+        if (
+            final is None
+            or final.get("outcome") != TestOutcome.PASSED.value
+            or final.get("ok") is not True
+            or final_artifacts.get("dependency_chain") != list(TEST_PROTOCOL_ORDER)
+            or self._completed_profiles() != list(TEST_PROTOCOL_ORDER)
+        ):
+            raise RuntimeError("RunManifest seal requires a successful authentic Final stage")
+        completed = self._manifest.complete(
+            **self._manifest_rollup(),
+        )
+        self._manifest = completed
+        paths = completed.write_once(self._ensure_root())
+        RunManifest.remove_draft(self.run_root)
+        self._manifest_paths = {
+            "sealed": True,
+            "completed_profiles": self._completed_profiles(),
+            "draft_private": None,
+            "draft_sanitized": None,
+            **paths,
+        }
         return dict(self._manifest_paths)
 
 

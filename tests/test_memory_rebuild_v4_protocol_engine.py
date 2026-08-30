@@ -115,14 +115,15 @@ def test_protocol_engine_runs_real_test00_test01_test02_and_test03(tmp_path: Pat
     assert test03["ok"] is True, test03
     assert test03["details"]["semantic_reconciliation"] is True
 
-    manifests = engine.seal_manifest()
-    private = json.loads(Path(manifests["private"]).read_text(encoding="utf-8"))
-    sanitized = json.loads(Path(manifests["sanitized"]).read_text(encoding="utf-8"))
+    checkpoint = engine.checkpoint_manifest()
+    private = json.loads(Path(checkpoint["draft_private"]).read_text(encoding="utf-8"))
+    sanitized = json.loads(Path(checkpoint["draft_sanitized"]).read_text(encoding="utf-8"))
     assert private["results"]["test00"]["outcome"] == "PASSED"
     assert private["results"]["test03"]["outcome"] == "PASSED"
+    assert private["completed_at"] is None
     assert sanitized["source_bundle_inventory"][0].get("path") is None
-    with pytest.raises(FileExistsError):
-        engine._manifest.complete().write_once(engine.run_root)
+    with pytest.raises(RuntimeError, match="Final"):
+        engine.seal_manifest()
 
 
 def test_dependency_graph_blocks_test01_without_test00(tmp_path: Path) -> None:
@@ -263,6 +264,8 @@ def test_application_service_keeps_one_manifest_open_across_stages(tmp_path: Pat
     assert test00["run_manifest"]["completed_profiles"] == ["test00"]
     assert test00["run_manifest"]["private"] is None
     assert test00["run_manifest"]["sanitized"] is None
+    assert Path(test00["run_manifest"]["draft_private"]).is_file()
+    assert Path(test00["run_manifest"]["draft_sanitized"]).is_file()
     assert service.engine._manifest.completed_at is None
 
     test01 = service.run_protocol(
@@ -276,6 +279,83 @@ def test_application_service_keeps_one_manifest_open_across_stages(tmp_path: Pat
     assert test01["run_manifest"]["sealed"] is False
     assert test01["run_manifest"]["completed_profiles"] == ["test00", "test01"]
     assert service.engine._manifest.completed_at is None
+
+
+def test_application_service_resumes_interrupted_draft_after_test02(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    output_root = tmp_path / "resume-service"
+    database = tmp_path / "resume-memory.sqlite3"
+    first = MemoryRebuildApplicationService(
+        output_root,
+        tool_root=Path.cwd(),
+        base_commit=BASE_COMMIT,
+        run_id="resumable-run",
+    )
+    test00 = first.run_protocol("test00", sources=[source])
+    test01 = first.run_protocol(
+        "test01",
+        sources=[source],
+        database=database,
+        test00_result=test00,
+    )
+    test02 = first.run_protocol("test02", database=database, test01_result=test01)
+    assert test02["run_manifest"]["completed_profiles"] == ["test00", "test01", "test02"]
+
+    with pytest.raises(FileExistsError, match="explicit resume"):
+        MemoryRebuildApplicationService(
+            output_root,
+            tool_root=Path.cwd(),
+            base_commit=BASE_COMMIT,
+            run_id="resumable-run",
+        )
+
+    resumed = MemoryRebuildApplicationService(
+        output_root,
+        tool_root=Path.cwd(),
+        base_commit=BASE_COMMIT,
+        run_id="resumable-run",
+        resume=True,
+    )
+
+    assert resumed.engine.run_id == first.engine.run_id
+    assert list(resumed.engine.results) == ["test00", "test01", "test02"]
+    test03 = resumed.run_protocol("test03", sources=[source])
+    assert test03["ok"] is True, test03
+    assert test03["run_manifest"]["completed_profiles"] == [
+        "test00",
+        "test01",
+        "test02",
+        "test03",
+    ]
+    test04 = resumed.run_protocol(
+        "test04",
+        database=database,
+        benchmark=_benchmark(tmp_path / "resume-benchmark.private.json"),
+        test03_result=test03,
+    )
+    final = resumed.run_protocol(
+        "final",
+        database=database,
+        output=tmp_path / "resumed-final-memory",
+        test04_result=test04,
+        sources=[source],
+    )
+    assert final["ok"] is True, final
+    assert final["run_manifest"]["sealed"] is True
+    assert final["run_manifest"]["completed_profiles"] == [
+        "test00",
+        "test01",
+        "test02",
+        "test03",
+        "test04",
+        "final",
+    ]
+    assert Path(final["run_manifest"]["private"]).is_file()
+    assert Path(final["run_manifest"]["sanitized"]).is_file()
+    assert final["run_manifest"]["draft_private"] is None
+    assert final["run_manifest"]["draft_sanitized"] is None
+    assert not Path(test02["run_manifest"]["draft_private"]).exists()
+    assert not Path(test02["run_manifest"]["draft_sanitized"]).exists()
 
 
 def _benchmark(path: Path) -> Path:
@@ -370,6 +450,13 @@ def test_test04_runs_recall_categories_and_final_uses_sqlite_backup_api(tmp_path
     assert final["details"]["validation"]["integrity"] == ["ok"]
     assert final["details"]["validation"]["foreign_key_error_count"] == 0
     assert final["details"]["validation"]["fts"]["ok"] is True
+    manifests = engine.seal_manifest()
+    assert Path(manifests["private"]).is_file()
+    assert Path(manifests["sanitized"]).is_file()
+    with pytest.raises(RuntimeError, match="sealed"):
+        engine.seal_manifest()
+    with pytest.raises(RuntimeError, match="sealed"):
+        engine.run_test00([source])
 
 
 def test_cli_protocol_run_and_validate_use_application_service(tmp_path: Path, capsys) -> None:
@@ -398,7 +485,9 @@ def test_cli_protocol_run_and_validate_use_application_service(tmp_path: Path, c
     ) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["ok"] is True
-    assert Path(payload["run_manifest"]["sanitized"]).is_file()
+    assert payload["run_manifest"]["sealed"] is False
+    assert payload["run_manifest"]["sanitized"] is None
+    assert Path(payload["run_manifest"]["draft_sanitized"]).is_file()
 
 
 def test_studio_runner_constructs_the_same_application_service(monkeypatch, tmp_path: Path) -> None:

@@ -44,16 +44,33 @@ class MemoryRebuildApplicationService:
         settings: MemoryRebuildSettings | None = None,
         base_commit: str | None = None,
         run_id: str | None = None,
+        resume: bool = False,
     ) -> None:
         self.output_root = Path(output_root).expanduser().resolve()
         self.tool_root = Path(tool_root).expanduser().resolve()
-        self.engine = ProtocolEngine(
-            self.output_root,
-            settings=settings,
-            system_version=PACKAGE_VERSION_FULL,
-            base_commit=base_commit or resolve_base_commit(self.tool_root),
-            run_id=run_id,
-        )
+        resolved_base_commit = base_commit or resolve_base_commit(self.tool_root)
+        if resume:
+            if run_id is None:
+                raise ValueError("explicit run_id is required to resume Memory Rebuild")
+            self.engine = ProtocolEngine.resume(
+                self.output_root,
+                settings=settings,
+                system_version=PACKAGE_VERSION_FULL,
+                base_commit=resolved_base_commit,
+                run_id=run_id,
+            )
+        else:
+            if run_id is not None and (self.output_root / run_id).exists():
+                raise FileExistsError(
+                    "existing Memory Rebuild run requires explicit resume or a new run_id"
+                )
+            self.engine = ProtocolEngine(
+                self.output_root,
+                settings=settings,
+                system_version=PACKAGE_VERSION_FULL,
+                base_commit=resolved_base_commit,
+                run_id=run_id,
+            )
 
     def run_protocol(self, profile: str, **kwargs: Any) -> dict[str, Any]:
         selected = profile.strip().lower()
@@ -61,7 +78,14 @@ class MemoryRebuildApplicationService:
             raise ValueError(f"unknown Memory Rebuild protocol: {profile}")
         runner = getattr(self.engine, f"run_{selected}")
         result = dict(runner(**kwargs))
-        result["run_manifest"] = self.engine.seal_manifest()
+        if (
+            selected == "final"
+            and result.get("outcome") == "PASSED"
+            and result.get("ok") is True
+        ):
+            result["run_manifest"] = self.engine.seal_manifest()
+        else:
+            result["run_manifest"] = self.engine.checkpoint_manifest()
         return result
 
     def validate_protocol(
