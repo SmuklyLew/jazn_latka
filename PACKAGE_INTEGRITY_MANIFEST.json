@@ -3,11 +3,11 @@
   "version": "16.3.25.3-release-metadata-semantics",
   "runtime_version": "16.3.25.3-release-metadata-semantics",
   "package_version": "16.3.25.3-release-metadata-semantics",
-  "generated_at_utc": "2026-08-30T13:09:06+00:00",
-  "updated_at_utc": "2026-08-30T13:09:06+00:00",
+  "generated_at_utc": "2026-08-30T14:05:05+00:00",
+  "updated_at_utc": "2026-08-30T14:05:05+00:00",
   "start_file": "run.py",
-  "file_count": 927,
-  "static_file_count": 927,
+  "file_count": 928,
+  "static_file_count": 928,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -174,7 +174,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2848,
-      "sha256": "0a4a1ab351d105cc7ea3fccc4fd6e888c6fc5a72f646983241f85155c6cc50d0",
+      "sha256": "89ffdf0c4a974d8c5de27082c698970b530c1aacb0c7635258d693267ba098bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -370,6 +370,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx",
+      "size_bytes": 15009,
+      "sha256": "edde1c1153c3f460401f67c5930b9dec6bb48e1c24764dabbc0d8d0fed524ff1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
       "size_bytes": 2268,
       "sha256": "3ad6c4a401b4687bc8163cd6e48a47ae3a3deb5f22052239b1775132cf1a84f3",
@@ -389,8 +398,8 @@
     },
     {
       "path": "docs/plans/README.md",
-      "size_bytes": 3284,
-      "sha256": "689a3e32a75c6e69b9eef21d9f4a0e9d001ff0307f02291a8e95101fafd790c1",
+      "size_bytes": 4043,
+      "sha256": "ad5186037720483f401ad02af62de19466231bf1f335a04b20ff709c2f4c0077",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
