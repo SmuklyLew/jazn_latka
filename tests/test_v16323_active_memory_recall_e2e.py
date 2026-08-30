@@ -56,6 +56,7 @@ def _memory_observability(**overrides: Any) -> dict[str, Any]:
         "resolved_active_root": "/runtime_B",
         "daemon_endpoint_root": "/runtime_B",
         "daemon_identity_verified": True,
+        "daemon_pid": 4242,
     }
     payload.update(overrides)
     return payload
@@ -72,6 +73,7 @@ def _memory_response(
         "phase": "runtime_final_available",
         "turn_id": "turn-memory-v16323",
         "trace_id": "trace-memory-v16323",
+        "author_source": "jazn_runtime",
         "final_visible_text": MEMORY_TEXT,
         "chatgpt_host_bridge": {
             "turn_id": "turn-memory-v16323",
@@ -85,6 +87,7 @@ def _memory_response(
             "resolved_active_root": "/runtime_B",
             "daemon_endpoint_root": "/runtime_B",
             "daemon_identity_verified": True,
+            "daemon_pid": 4242,
             "daemon_reused": True,
             "daemon_started": False,
             "one_shot_verified": False,

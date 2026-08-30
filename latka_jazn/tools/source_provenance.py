@@ -8,7 +8,11 @@ import re
 import subprocess
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
-from latka_jazn.version import schema_version
+from latka_jazn.version import (
+    contract_schema_version,
+    schema_contract_metadata,
+    schema_version,
+)
 
 PROVENANCE_FILENAME = "SOURCE_PROVENANCE.json"
 
@@ -81,15 +85,34 @@ def build_source_provenance_document(
     tags = [line for line in _git(root, "tag", "--points-at", head).splitlines() if line.strip()]
     commit_date = _git(root, "show", "-s", "--format=%cI", head)
     payload = {
-        "schema_version": schema_version("source_provenance"),
+        "schema_version": contract_schema_version("source_provenance"),
+        "schema_contract": schema_contract_metadata("source_provenance"),
         "repository": _repository_name(remote_url),
         "remote_url": remote_url,
         "base_branch": branch,
+        # Historical aliases retained for readers shipped before v16.3.25.3.
         "base_merge_commit": head,
-        "git_tree_sha": tree,
         "base_version": runtime_version,
-        "runtime_version": runtime_version,
         "update_version": runtime_version,
+        "source_commit": head,
+        "source_version": runtime_version,
+        "release_version": runtime_version,
+        "lineage": {
+            "base_branch": branch,
+            "base_commit": head,
+            "base_version": runtime_version,
+            "source_commit": head,
+            "source_version": runtime_version,
+            "relationship": "checkout_head_snapshot",
+            "resolution": "resolved",
+        },
+        "legacy_aliases": {
+            "base_merge_commit": "source_commit",
+            "base_version": "source_version",
+            "update_version": "release_version",
+        },
+        "git_tree_sha": tree,
+        "runtime_version": runtime_version,
         "version_source": "latka_jazn/version.py",
         "dirty": dirty,
         "tag": tags[0] if tags else None,
@@ -98,8 +121,10 @@ def build_source_provenance_document(
         "generation_mode": "development_preview" if dirty else "release",
         "truth_boundary": (
             "Git fields were read from this checkout. dirty=true is never promoted to release-clean. "
-            "An export without .git can verify this document only through PACKAGE_INTEGRITY_MANIFEST.json; "
-            "branch, tag and dirty state cannot then be independently rechecked."
+            "Contract schema identity is independent from runtime/release identity. "
+            "source_commit/source_version identify the immutable checkout source; legacy base_*/update_version "
+            "fields are migration aliases only. An export without .git can verify this document only through "
+            "PACKAGE_INTEGRITY_MANIFEST.json; branch, tag and dirty state cannot then be independently rechecked."
         ),
     }
     if write:
@@ -118,6 +143,7 @@ def generate_source_provenance(root: Path | str, *, allow_dirty: bool = False) -
             "path": str(root / PROVENANCE_FILENAME),
             "dirty": payload["dirty"],
             "base_merge_commit": payload["base_merge_commit"],
+            "source_commit": payload["source_commit"],
             "document": payload,
         }
     except SourceProvenanceError as exc:

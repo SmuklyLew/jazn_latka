@@ -15,6 +15,9 @@ on:
       - "latka_jazn/core/runtime_environment.py"
       - "latka_jazn/core/runtime_root.py"
       - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/readiness.py"
+      - "latka_jazn/core/voice_e2e_verification.py"
+      - "latka_jazn/core/voice_source_contract.py"
       - "latka_jazn/core/chat_command_contract.py"
       - "latka_jazn/core/chatgpt_host_pre_response_gate.py"
       - "latka_jazn/core/host_response_candidate_guard.py"
@@ -34,6 +37,8 @@ on:
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
       - "tests/test_v16323_host_pre_response_gate.py"
+      - "tests/test_v163251_host_finalization_gate.py"
+      - "tests/test_v163252_live_voice_readiness.py"
       - "tests/test_v16323_persistent_runtime_lifecycle_transport.py"
       - "tests/test_v16323_active_memory_recall_e2e.py"
       - "tests/test_v16322_active_runtime_subject_root.py"
@@ -65,6 +70,9 @@ on:
       - "latka_jazn/core/runtime_environment.py"
       - "latka_jazn/core/runtime_root.py"
       - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/readiness.py"
+      - "latka_jazn/core/voice_e2e_verification.py"
+      - "latka_jazn/core/voice_source_contract.py"
       - "latka_jazn/core/chat_command_contract.py"
       - "latka_jazn/core/chatgpt_host_pre_response_gate.py"
       - "latka_jazn/core/host_response_candidate_guard.py"
@@ -84,6 +92,8 @@ on:
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
       - "tests/test_v16323_host_pre_response_gate.py"
+      - "tests/test_v163251_host_finalization_gate.py"
+      - "tests/test_v163252_live_voice_readiness.py"
       - "tests/test_v16323_persistent_runtime_lifecycle_transport.py"
       - "tests/test_v16323_active_memory_recall_e2e.py"
       - "tests/test_v16322_active_runtime_subject_root.py"
@@ -162,6 +172,7 @@ jobs:
           tests/test_runtime_daemon_security_contract.py
           tests/test_runtime_stability_daemon_status.py
           tests/test_memory_recall_timeout_hardening.py
+          tests/test_v163252_live_voice_readiness.py
 
       - name: Presentation and finalization fail-closed matrix
         run: >-
@@ -170,6 +181,7 @@ jobs:
           tests/test_chatgpt_mcp_two_phase_protocol.py
           tests/test_v1607_host_finalization_lifecycle.py
           tests/test_v1631_host_finalization_provenance_polish_nlp.py
+          tests/test_v163251_host_finalization_gate.py
 
       - name: Clean checkout guard
         if: always()

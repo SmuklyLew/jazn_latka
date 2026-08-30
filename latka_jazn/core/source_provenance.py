@@ -9,7 +9,11 @@ import re
 import subprocess
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
-from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+from latka_jazn.version import (
+    PACKAGE_VERSION_FULL,
+    schema_version,
+    schema_version_compatibility,
+)
 
 SCHEMA_VERSION = schema_version("source_provenance_status")
 PROVENANCE_FILENAME = "SOURCE_PROVENANCE.json"
@@ -45,6 +49,10 @@ class SourceProvenanceStatus:
     head_sha: str | None = None
     commit_matches_head: bool | None = None
     tree_matches_commit: bool | None = None
+    document_schema_version: str | None = None
+    schema_compatible: bool = False
+    schema_migration_required: bool = False
+    schema_compatibility_kind: str = "missing_or_unreadable"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -154,8 +162,23 @@ def read_source_provenance(
             truth_boundary="Invalid provenance is not accepted as source history.",
         )
 
+    document_schema_version = str(payload.get("schema_version") or "") or None
+    schema_compatibility = schema_version_compatibility(
+        "source_provenance",
+        document_schema_version,
+    )
+    schema_compatible = bool(schema_compatibility.get("compatible"))
+    schema_migration_required = bool(schema_compatibility.get("migration_required"))
+    schema_compatibility_kind = str(schema_compatibility.get("kind") or "unsupported_schema")
+    if not schema_compatible:
+        limitations.append(
+            "unsupported source provenance schema: "
+            f"{document_schema_version!r}; expected "
+            f"{schema_compatibility.get('current_schema_version')!r} or a supported legacy runtime-coupled schema"
+        )
+
     runtime_version = str(payload.get("runtime_version") or "") or None
-    merge_commit = str(payload.get("base_merge_commit") or "") or None
+    merge_commit = str(payload.get("source_commit") or payload.get("base_merge_commit") or "") or None
     expected_runtime_version = (
         read_runtime_version_from_version_py(root, fallback=PACKAGE_VERSION_FULL)
         or PACKAGE_VERSION_FULL
@@ -229,11 +252,11 @@ def read_source_provenance(
                 f"{expected_runtime_version!r}"
             )
         if not commit_valid:
-            limitations.append("base_merge_commit is not a 40-character Git SHA")
+            limitations.append("source/base commit is not a 40-character Git SHA")
         if not tree_shape_valid:
             limitations.append("git_tree_sha is not a 40-character Git SHA")
 
-    if not filesystem_snapshot_mode and version_matches and commit_valid and tree_shape_valid and git_present:
+    if not filesystem_snapshot_mode and schema_compatible and version_matches and commit_valid and tree_shape_valid and git_present:
         assert merge_commit is not None
         commit_rc, _, commit_error = _git(root, "cat-file", "-e", f"{merge_commit}^{{commit}}")
         _, current_tree, _ = _git(root, "rev-parse", f"{merge_commit}^{{tree}}")
@@ -251,9 +274,9 @@ def read_source_provenance(
         if commit_rc != 0:
             limitations.append(f"base commit does not exist in checkout: {commit_error}")
         if not tree_matches_commit:
-            limitations.append("git_tree_sha does not match base commit")
+            limitations.append("git_tree_sha does not match source/base commit")
         if not commit_matches_head and not metadata_descendant:
-            limitations.append("provenance commit does not match current HEAD")
+            limitations.append("provenance source/base commit does not match current HEAD")
         if declared_dirty is None or declared_dirty != actual_dirty:
             limitations.append("declared dirty state does not match working tree")
 
@@ -270,7 +293,7 @@ def read_source_provenance(
         if not limitations:
             status = "development_dirty_verified" if actual_dirty else "clean_checkout_verified"
 
-    elif not filesystem_snapshot_mode and version_matches and commit_valid and tree_shape_valid and not git_present:
+    elif not filesystem_snapshot_mode and schema_compatible and version_matches and commit_valid and tree_shape_valid and not git_present:
         limitations.append(".git is not included; local branch, tag and dirty state cannot be independently verified")
         strict_export_ok = bool(
             profile == "export_without_git"
@@ -293,7 +316,7 @@ def read_source_provenance(
         file_sha256=_sha256_file(path),
         repository=str(payload.get("repository") or "") or None,
         base_branch=str(payload.get("base_branch") or "") or None,
-        base_version=str(payload.get("base_version") or "") or None,
+        base_version=str(payload.get("base_version") or payload.get("source_version") or "") or None,
         base_pull_request=(
             int(payload["base_pull_request"])
             if payload.get("base_pull_request") is not None
@@ -317,4 +340,8 @@ def read_source_provenance(
         head_sha=head_sha,
         commit_matches_head=commit_matches_head,
         tree_matches_commit=tree_matches_commit,
+        document_schema_version=document_schema_version,
+        schema_compatible=schema_compatible,
+        schema_migration_required=schema_migration_required,
+        schema_compatibility_kind=schema_compatibility_kind,
     )

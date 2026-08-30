@@ -7,7 +7,6 @@ import argparse
 import hashlib
 import json
 import sys
-import urllib.request
 import zipfile
 
 from latka_jazn.config import JaznConfig
@@ -23,8 +22,10 @@ from latka_jazn.model_adapters.factory import build_model_adapter_status
 from latka_jazn.core.runtime_environment import detect_runtime_environment
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet, build_self_knowledge_summary
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
+from latka_jazn.nlp.dictionary_readiness import build_dictionary_readiness_status
 from latka_jazn.version import schema_version
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.core.readiness import evaluate_voice_live_readiness
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 
 SCHEMA_VERSION = schema_version("self_owned_startup_contract")
@@ -79,6 +80,10 @@ class StartupStatus:
     status_quality: str
     folder_ready: bool
     daemon_ready: bool
+    voice_configured: bool
+    voice_live_ready: bool
+    voice_e2e_verified: bool
+    voice_live_readiness_status: dict[str, Any]
     voice_ready: bool
     one_shot_or_chat_loop_limit: str
     truth_boundary: str
@@ -117,51 +122,77 @@ def _display_path(root: Path, path: str | Path | None) -> str | None:
         return str(path)
 
 
-def _daemon_ready_from_active_marker(root: Path, cache_status: dict[str, Any], *, timeout_seconds: float = 0.75) -> bool:
-    """Confirm daemon readiness through the marker-bound loopback /ready endpoint.
+def _inactive_daemon_status(reason: str, *, root: Path) -> dict[str, Any]:
+    return {
+        "active_state": "inactive",
+        "runtime_active_state": "inactive",
+        "resolved_active_root": str(root.resolve()),
+        "subject_runtime_root": str(root.resolve()),
+        "pid_alive": False,
+        "process_identity_confirmed": False,
+        "endpoint_probe_performed": False,
+        "endpoint_reachable": False,
+        "endpoint_pid_matches": False,
+        "endpoint_root_matches": False,
+        "endpoint_identity_matches": False,
+        "heartbeat_fresh": False,
+        "package_integrity_verified": False,
+        "source_provenance_verified": False,
+        "active_state_reason": reason,
+    }
 
-    The startup status must not infer a live daemon from a fresh marker alone.  A
-    positive result requires a valid marker, an answering loopback endpoint, an
-    active/readiness state and (when both are available) the same PID in the
-    marker and endpoint payload.  Failures remain observational and non-blocking.
-    """
 
-    if cache_status.get("existing_marker_found") is not True or cache_status.get("active_marker_valid") is not True:
-        return False
+def _daemon_status_from_active_marker(
+    cfg: JaznConfig,
+    cache_status: dict[str, Any],
+) -> dict[str, Any]:
+    """Obtain the canonical live daemon status bound to the active marker."""
+
+    root = Path(cfg.root).resolve()
+    if cache_status.get("existing_marker_found") is not True:
+        return _inactive_daemon_status("active_runtime_marker_missing", root=root)
+    if cache_status.get("active_marker_valid") is not True:
+        return _inactive_daemon_status("active_root_marker_invalid", root=root)
     marker_output = cache_status.get("marker_output")
     marker_path = Path(str(marker_output)).resolve() if marker_output else active_runtime_marker_path(root)
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        return False
+        return _inactive_daemon_status("active_runtime_marker_unreadable", root=root)
     host = str(marker.get("daemon_host") or "127.0.0.1").strip()
     if host not in {"127.0.0.1", "localhost", "::1"}:
-        return False
+        return _inactive_daemon_status("daemon_host_not_loopback", root=root)
     try:
         port = int(marker.get("daemon_port") or 8787)
     except (TypeError, ValueError):
-        return False
+        return _inactive_daemon_status("daemon_port_invalid", root=root)
     try:
-        with urllib.request.urlopen(f"http://{host}:{port}/ready", timeout=max(0.05, float(timeout_seconds))) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        return False
-    marker_pid = marker.get("daemon_pid") or (marker.get("runtime_daemon") or {}).get("pid")
-    endpoint_pid = payload.get("daemon_pid") or (payload.get("runtime_daemon") or {}).get("pid")
-    if marker_pid is not None and endpoint_pid is not None:
-        try:
-            if int(marker_pid) != int(endpoint_pid):
-                return False
-        except (TypeError, ValueError):
-            return False
-    return bool(
-        payload.get("ok") is True
-        and payload.get("endpoint_ok", True) is True
-        and payload.get("liveness_ok", True) is True
-        and payload.get("readiness_ok", True) is True
-        and payload.get("runtime_process_active", True) is True
-        and payload.get("active_state") in {"active_trusted", "active_degraded"}
-    )
+        # Lazy import avoids runtime_daemon -> runtime_session -> engine ->
+        # startup_contract import cycles while retaining one canonical evaluator.
+        from latka_jazn.core.runtime_daemon import status_daemon
+
+        return status_daemon(
+            cfg,
+            host=host,
+            port=port,
+            marker_output=marker_path,
+            probe_endpoint=True,
+        )
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        return _inactive_daemon_status(
+            f"daemon_status_probe_failed:{type(exc).__name__}",
+            root=root,
+        )
+
+
+def _daemon_ready_from_active_marker(root: Path, cache_status: dict[str, Any]) -> bool:
+    """Backward-compatible private helper using canonical daemon evidence."""
+
+    status = _daemon_status_from_active_marker(JaznConfig(root=root), cache_status)
+    return evaluate_voice_live_readiness(
+        daemon=status,
+        expected_active_root=root,
+    ).ready
 
 
 def default_responsibility_split() -> StartupResponsibilitySplit:
@@ -295,16 +326,7 @@ def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:
     }
 
 def dictionary_provider_status(cfg: JaznConfig) -> dict[str, Any]:
-    return {
-        'schema_version': schema_version('dictionary_provider_status'),
-        'allow_network': cfg.dictionary_allow_network,
-        'provider_order': list(cfg.dictionary_provider_order),
-        'cache_path': str(cfg.runtime_workspace_dir / 'dictionary_cache.sqlite3'),
-        'mediawiki_wiktionary_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'mediawiki_wiktionary_provider.py').exists(),
-        'sjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'sjp_reference_provider.py').exists(),
-        'wsjp_reference_provider': (Path(cfg.root) / 'latka_jazn' / 'nlp' / 'providers' / 'wsjp_reference_provider.py').exists(),
-        'truth_boundary': 'Dostępność pliku providera nie oznacza, że sieć w danym środowisku odpowiedziała; wynik lookupu pokazuje provider_statuses. SJP/WSJP w poprzednia linia runtime są linkami referencyjnymi bez masowego scrapingu definicji.',
-    }
+    return build_dictionary_readiness_status(cfg)
 
 def manifest_profile_status(root: Path) -> dict[str, Any]:
     p = root / 'latka_jazn' / 'resources' / 'package_manifest_profiles.json'
@@ -322,6 +344,7 @@ def build_startup_status(
     mode: str = "fast",
     runtime_command: str | None = None,
     infer_host_environment: bool = False,
+    canonical_daemon_status: dict[str, Any] | None = None,
 ) -> StartupStatus:
     cfg = config or JaznConfig()
     mode = (mode or getattr(cfg, "startup_status_default_mode", "fast") or "fast").strip().lower()
@@ -350,12 +373,6 @@ def build_startup_status(
     if cache_status.get('existing_marker_found') and not cache_status.get('active_marker_valid'):
         missing.append('active_root_marker_invalid')
     status_quality = 'ready' if not missing else 'startup_blocked:' + ','.join(missing)
-    runtime_active_for_voice = bool(
-        status_quality == 'ready'
-        and cache_status.get('runtime_root_valid') is True
-        and cache_status.get('existing_marker_found') is True
-        and cache_status.get('active_marker_valid') is True
-    )
     runtime_environment = detect_runtime_environment(
         cfg,
         command=runtime_command,
@@ -372,9 +389,36 @@ def build_startup_status(
         or runtime_environment.visible_channel_adapter
         or 'chatgpt_or_model_adapter'
     )
-    voice_source_contract = VoiceSourceContract.build(runtime_active=runtime_active_for_voice, runtime_mode='one_shot', language_channel=str(language_channel)).to_dict()
+    voice_configured = bool(
+        status_quality == "ready"
+        and start_file
+        and (root / "latka_jazn" / "core" / "voice_source_contract.py").is_file()
+        and (root / "latka_jazn" / "voice" / "voice_truth_boundary.py").is_file()
+    )
+    if canonical_daemon_status is not None:
+        daemon_status = dict(canonical_daemon_status)
+    elif mode == "metadata":
+        daemon_status = _inactive_daemon_status(
+            "metadata_mode_does_not_probe_daemon",
+            root=root,
+        )
+    else:
+        daemon_status = _daemon_status_from_active_marker(cfg, cache_status)
+    voice_live_readiness = evaluate_voice_live_readiness(
+        daemon=daemon_status,
+        expected_active_root=root,
+    )
+    voice_live_ready = bool(voice_configured and voice_live_readiness.ready)
+    voice_source_contract = VoiceSourceContract.build(
+        runtime_active=voice_live_ready,
+        runtime_mode="one_shot",
+        language_channel=str(language_channel),
+        voice_configured=voice_configured,
+        voice_live_ready=voice_live_ready,
+        voice_e2e_verified=False,
+    ).to_dict()
     active_runtime_write_database = runtime_write_status.get("active_runtime_write_database") or "unavailable:runtime_write_v1_missing_or_not_initialized"
-    daemon_ready = False if mode == "metadata" else _daemon_ready_from_active_marker(root, cache_status)
+    daemon_ready = voice_live_readiness.ready
     conversation_archive_status = build_conversation_archive_status(root, health_mode=sqlite_health_mode).to_dict()
     memory_normalization_status = build_memory_normalization_status(cfg).to_dict()
     wake_state_status = build_wake_state_status(cfg).to_dict()
@@ -438,7 +482,11 @@ def build_startup_status(
         status_quality=status_quality,
         folder_ready=status_quality == "ready",
         daemon_ready=daemon_ready,
-        voice_ready=bool(runtime_active_for_voice and voice_source_contract.get('chatgpt_may_speak_as_voice')),
+        voice_configured=voice_configured,
+        voice_live_ready=voice_live_ready,
+        voice_e2e_verified=False,
+        voice_live_readiness_status=voice_live_readiness.to_dict(),
+        voice_ready=voice_live_ready,
         one_shot_or_chat_loop_limit='W ChatGPT zwykle działa jednorazowe wywołanie procesu. Stała pętla rozmowy istnieje lokalnie dopiero przez python main.py --chat.',
         truth_boundary=split['truth_boundary'],
         startup_status_mode=mode,
