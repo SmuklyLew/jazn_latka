@@ -3,8 +3,8 @@
 ## Runtime, host ingress, polski NLP, Memory Rebuild v4, finalna pamięć, cognitive/truth hardening i zamknięcie Issue #59
 
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Bieżąca baza planu:** `master @ a8f5c0cc0c5a5a2add8714d29e56659e9d5a6c8e`  
-**Wersja bazowa:** `16.3.25.3-release-metadata-semantics`  
+**Bieżąca baza wykonawcza:** `master` / `origin/master`; dokładny HEAD należy rozwiązać i zweryfikować przy rozpoczęciu pracy, nie zamrażać w roadmapie  
+**Wersja bazowa linii przy tej synchronizacji:** `16.3.25.3-release-metadata-semantics`  
 **Cel końcowy programu:** `16.6.0-final-runtime-memory-nlp-convergence`  
 **Issue odbiorcze finalnej pamięci:** `#59`  
 **Issue Memory Rebuild v4:** `#189`  
@@ -13,7 +13,7 @@
 **Przekrojowy hardening:** `docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md`  
 **Aktualizacja roadmapy:** 2026-08-30
 
-> Ta roadmapa jest bieżącym planem wykonawczym do v16.6.0. Dokument oceny v16.6 -> v17+ jest audytem i źródłem wymagań jakościowych; sam nie ustanawia release'u v17. Historyczne raporty release'ów pozostają dowodem stanu z chwili ich wykonania i nie są przepisywane retroaktywnie.
+> Ta roadmapa jest bieżącym planem wykonawczym do v16.6.0. Dokument oceny v16.6 -> v17+ jest audytem i źródłem wymagań jakościowych; sam nie ustanawia release'u v17. Historyczne raporty release'ów pozostają dowodem stanu z chwili ich wykonania i nie są przepisywane retroaktywnie. Docs-only merge i metadata-sync mogą zmieniać HEAD bez zmiany release line, dlatego „current master SHA” nie jest tutaj kanonicznie zamrażany.
 
 ---
 
@@ -95,7 +95,7 @@ Finalna pamięć przechodzi pięć jawnych stanów:
 | `16.3.25` | **zrealizowane:** Memory Rebuild source-union hardening | lossless source-union bez nazwy/rozmiaru/order jako truth |
 | `16.3.25.1` | **zrealizowane:** host-finalization gate hotfix | #185 closed; next-turn serialization za finalization |
 | `16.3.25.2` | **zrealizowane:** live Voice readiness | daemon-backed readiness i Voice E2E |
-| `16.3.25.3` | **bieżący master:** release metadata semantics | stabilne schema identifiers oddzielone od release/runtime version |
+| `16.3.25.3` | **bieżąca release line:** release metadata semantics | stabilne schema identifiers oddzielone od release/runtime version |
 | `16.3.25.4` | **AKTYWNY:** Memory Rebuild Application v4 consolidation | jeden ProtocolEngine/ApplicationService, Test00–Final, RunManifest, source-lineage-ready L0, full validation/CI |
 | `16.3.25.A.01+` | **planistyczny train:** attachment/multimodal ingress | checkpointy jednego branchu prowadzącego do `16.3.26` |
 | `16.3.26` | Host attachment + multimodal ingress convergence | attachment-only/text+multi-file/provenance/staging/vision + untrusted-data authority boundary PASS |
@@ -442,7 +442,7 @@ Roadmapa jest planem, nie dowodem aktywności ani poprawności runtime.
 Najbliższa kolejność jest teraz jawna:
 
 ```text
-master 16.3.25.3
+16.3.25.3 current release line
   -> 16.3.25.4 Memory Rebuild v4 consolidation
   -> 16.3.26 attachment + multimodal ingress
   -> 16.4.x evidence-aware Polish NLP
