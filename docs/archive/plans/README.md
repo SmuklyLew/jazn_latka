@@ -22,6 +22,8 @@ historyczny dokument pozostaje dowodem przeszłego projektu, **nie źródłem bi
 - `v15/JAZN_V15_4_2_0_REST_REPLAY_DREAM_CONTINUITY.md` — source-grounded Rest/Replay/Dream, synthetic truth boundary, no automatic L3.
 - `v15/JAZN_V15_4_2_1_COGNITIVE_TRUTH_MEMORY_INTEGRATION_HARDENING.md` — behavioral capability evidence ladder i false-green hardening.
 - `v15/JAZN_V15_5_LOCAL_FIRST_MEMORY_CLOUD.md` — local-first memory, encrypted cloud durability, staging/restore boundaries.
+- `v15/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md` — v15.1 backlog restart/private validation; jego żywy zakres został wchłonięty przez #59 i v16.5–v16.6.
+- `v15/MEMORY_RECALL_HARDENING_PLAN.md` — bounded/cancellable recall; phase 1 zmergowana przez PR #125, a późniejsze fazy zostały zastąpione przez aktualne source-aware/private Recall plans.
 
 ## v16 completed foundations
 
@@ -49,6 +51,8 @@ oraz:
 - retrieval evidence ≠ identity;
 - local memory truth ≠ cloud transport;
 - first-person style ≠ causal continuity;
-- source fidelity przed memory interpretation.
+- source fidelity przed memory interpretation;
+- deep recall pozostaje bounded/cancellable i nie jest „naprawiany” przez nieskończony timeout;
+- private benchmark i manual L3 pozostają odrębnymi acceptance gates.
 
-Ich bieżącą semantykę definiuje `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
+Ich bieżącą semantykę definiuje `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md` i aktualna roadmapa.
