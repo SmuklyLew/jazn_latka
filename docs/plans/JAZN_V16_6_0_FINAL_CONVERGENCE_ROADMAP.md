@@ -1,15 +1,16 @@
 # Łatka / Jaźń — roadmapa do v16.6.0
 
-## Runtime, host ingress, polski NLP, finalna pamięć i zamknięcie Issue #59
+## Runtime, host ingress, polski NLP, Memory Rebuild v4, finalna pamięć i zamknięcie Issue #59
 
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Bieżąca baza planu:** `master @ f56ea911d981295e37b8cf62e63cf806137dbfe0`  
-**Wersja bazowa:** `16.3.25-memory-rebuild-source-union-hardening`  
+**Bieżąca baza planu:** `master @ 420b1b6d3bd2b550fbbde1102b57ca2d3f7ba339`  
+**Wersja bazowa:** `16.3.25.3-release-metadata-semantics`  
 **Cel końcowy programu:** `16.6.0-final-runtime-memory-nlp-convergence`  
-**Issue odbiorcze pamięci:** `#59`  
-**Aktualizacja roadmapy:** 2026-08-29
+**Issue odbiorcze finalnej pamięci:** `#59`  
+**Issue persistent active-memory recall E2E:** `#180` — zrealizowane w v16.3.23, zamknięte po synchronizacji planów  
+**Aktualizacja roadmapy:** 2026-08-30
 
-> Ta wersja roadmapy aktualizuje plan po wejściu linii `16.3.22`–`16.3.25` do historii `master`. Szczegółowy snapshot planu z 2026-08-27 zostaje zachowany jako dokument historyczny w `docs/archive/roadmaps/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP_2026-08-27.md`. Historyczne raporty release'ów pozostają dowodem stanu z chwili ich wykonania i nie są przepisywane retroaktywnie.
+> Ta roadmapa jest bieżącym planem wykonawczym. Historyczne raporty release'ów pozostają dowodem stanu z chwili ich wykonania i nie są przepisywane retroaktywnie. Snapshot poprzedniej dużej wersji roadmapy z 2026-08-27 pozostaje w `docs/archive/roadmaps/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP_2026-08-27.md`.
 
 ---
 
@@ -20,22 +21,18 @@ Release **v16.0.0 / single-canonical-runtime-workspace** ustanowił invariant ob
 1. istnieje jeden host-level `workspace_runtime`;
 2. istnieje jeden kanoniczny `workspace_runtime/JAZN_ACTIVE_RUNTIME.json`;
 3. mutable host/process state nie należy do wersjonowanego `active_root`;
-4. historyczny `<active_root>/workspace_runtime` jest wyłącznie źródłem migracji/zgodności, nie równoległym źródłem prawdy;
+4. historyczny `<active_root>/workspace_runtime` jest wyłącznie źródłem migracji/zgodności;
 5. `workspace_runtime` nie jest częścią paczki `system` ani `memory`;
-6. sam marker nie dowodzi aktywnego procesu — trust nadal wymaga zgodnego rootu, integralności/provenance, PID/endpointu i świeżego heartbeat;
-7. nowe namespace'y hosta mogą rozszerzać kanoniczny workspace, ale nie mogą tworzyć per-release mutable state.
+6. sam marker nie dowodzi aktywnego procesu — trust wymaga zgodnego rootu, integralności/provenance, PID/endpointu i świeżego heartbeat;
+7. host może rozszerzać kanoniczny workspace, ale nie może tworzyć równoległego per-release mutable truth state.
 
-Bieżący opis tego invariantu znajduje się w:
-
-- `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md`.
-
-Plan `16.3.25.A.01+ -> 16.3.26` dla załączników i multimodalności **dziedziczy** ten kontrakt. Jeżeli potrzebna jest materializacja pliku, staging/cache ma należeć do host-level `workspace_runtime`, a nie do wersjonowanego kodu. Samo odebranie pliku nie oznacza zapisania go do pamięci.
+Bieżący opis: `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md`.
 
 ---
 
 # 1. Granice prawdy i źródła kanoniczne
 
-Obowiązują aktualne `AGENTS.md`, `AGENTS.chatgpt.md`, `AGENTS.codex.md` oraz nested `AGENTS.md` dla zmienianych ścieżek.
+Obowiązują aktualne `AGENTS.md`, `AGENTS.chatgpt.md`, `AGENTS.codex.md` oraz nested `AGENTS.md`.
 
 Kanoniczne źródła prawdy technicznej:
 
@@ -44,27 +41,13 @@ Kanoniczne źródła prawdy technicznej:
 - pochodzenie wydania: `SOURCE_PROVENANCE.json`;
 - operator: `run.py`;
 - techniczny punkt zgodności: `main.py`;
-- aktywny runtime: zweryfikowany host-level `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` + wskazany `active_root` + live truth gate;
+- aktywny runtime: zweryfikowany host-level marker + wskazany `active_root` + live truth gate;
 - aktywna pamięć: `JAZN_MEMORY_ROOT` albo kanoniczny host-level `workspace_runtime/memory`;
 - repozytorium: `SmuklyLew/jazn_latka`.
 
-Nie wolno przedstawiać jako aktywnego runtime:
+Nie wolno przedstawiać jako aktywnego runtime samego ZIP-a, katalogu kodu, markera, PID-u, odpowiedzi modelu ani niezależnej bazy SQLite bez kanonicznego attach i truth gate.
 
-- samego ZIP-a;
-- katalogu z kodem;
-- samego markera;
-- samego PID-u;
-- odpowiedzi modelu;
-- niezależnej bazy SQLite bez kanonicznego attach i truth gate.
-
-Nie wolno commitować bez osobnego jawnego wyjątku:
-
-- `memory/`;
-- `workspace_runtime/`;
-- SQLite/WAL/SHM;
-- prywatnych eksportów;
-- ZIP-ów i split parts;
-- sekretów, tokenów i logów runtime.
+Bez osobnego wyjątku nie commitujemy `memory/`, `workspace_runtime/`, SQLite/WAL/SHM, prywatnych eksportów, ZIP/split parts, sekretów ani logów runtime.
 
 ---
 
@@ -72,17 +55,15 @@ Nie wolno commitować bez osobnego jawnego wyjątku:
 
 Każdy **systemowy** patch/update/upgrade:
 
-1. zaczyna się od świeżego `master` i odczytu obowiązujących AGENTS;
-2. zapisuje baseline oraz bezpieczny checkpoint przed kodem;
-3. dla P0/P1, jeśli technicznie możliwe, najpierw reprodukuje problem i dodaje regresję;
-4. nie osłabia truth/integrity/safety tylko po to, żeby test był zielony;
-5. podnosi `latka_jazn/version.py` w tej samej zmianie;
+1. zaczyna się od świeżego `master` i odczytu AGENTS;
+2. zapisuje baseline i bezpieczny checkpoint;
+3. dla P0/P1 reprodukuje problem i dodaje regresję, jeśli technicznie możliwe;
+4. nie osłabia truth/integrity/safety dla green testu;
+5. podnosi `latka_jazn/version.py` w tej samej finalnej zmianie systemowej;
 6. nie edytuje ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`;
-7. kończy się skupionymi testami, pełną deterministyczną walidacją i właściwym E2E dla zmienianej platformy.
+7. kończy się focused tests, pełną deterministyczną walidacją i właściwym E2E.
 
 Dokumentacja planistyczna sama w sobie nie jest patchem systemowym i nie wymaga podbicia wersji runtime.
-
-Jeżeli problem zostaje znaleziony **przed merge** bieżącego release branchu i nie zmienia zasadniczo zakresu, jest naprawiany w tym samym release. Problem znaleziony po merge wymaga kolejnego numeru.
 
 ---
 
@@ -93,272 +74,205 @@ Finalna pamięć przechodzi pięć jawnych stanów:
 1. **BUILDABLE** — importer potrafi odtworzyć bazę ze źródeł.
 2. **VERIFIED** — source fidelity, integrity, FK, FTS, provenance i reproducibility są zaliczone.
 3. **ATTACHABLE** — finalny artefakt ma poprawny profil paczki, sidecary, hashe i przechodzi kanoniczny `memory-attach`.
-4. **RETRIEVABLE** — aktualny benchmark Recall i naturalny multi-turn osiągają uzgodnione wyniki bez fałszywych wspomnień i leakage.
-5. **ACCEPTED** — review L2/L3 jest zakończone, restart continuity przechodzi, runtime używa właściwej finalnej pamięci, a sanitizowany raport końcowy spełnia #59.
+4. **RETRIEVABLE** — Recall i naturalny multi-turn spełniają kryteria bez false-memory i leakage.
+5. **ACCEPTED** — review L2/L3, restart continuity, runtime identity i finalny raport spełniają #59.
 
 Żaden wcześniejszy stan nie implikuje następnego.
 
 ---
 
-# 4. Release train do v16.6.0
+# 4. Aktualny release train do v16.6.0
 
 | Linia | Status / cel | Kluczowy dowód PASS |
 |---|---|---|
-| `16.0.0` | **historyczny fundament:** single canonical runtime workspace | jeden host-level workspace/marker; brak per-release mutable truth state |
+| `16.0.0` | **historyczny fundament:** single canonical runtime workspace | jeden host-level workspace/marker |
 | `16.3.22` | **zrealizowane:** active runtime subject-root identity | `A -> B -> B` trusted, `A -> B -> C` fail-closed |
-| `16.3.23` | **zrealizowane:** persistent daemon lifecycle + transport observability | subject-root B, lifecycle/reuse i transport widoczne diagnostycznie |
-| `16.3.24` | **zrealizowane:** package provenance/bootstrap hardening | bootstrap i provenance paczki domknięte bez zgadywania źródła |
-| `16.3.25` | **bieżąca baza:** Memory Rebuild source-union hardening | lossless source-union bez uznawania rozmiaru/nazwy/order za truth |
-| `16.3.25.A.01+` | **train planistyczny, nie `PACKAGE_VERSION`:** host attachment/multimodal ingress | kolejne checkpointy jednego branchu prowadzącego do `16.3.26` |
-| `16.3.26` | Host attachment + multimodal ingress convergence | attachment-only/text+multi-file/provenance/secure staging/vision capability PASS; brak auto-memory promotion |
-| `16.4.0` | Kanoniczna normalizacja polskiego NLP + lexical evidence contract | deterministyczny fixture Unicode/POS/provenance |
-| `16.4.1` | Morfeusz/plWordNet/project lexicon/resource registry hardening | ambiguity/OOV/resource provenance PASS |
-| `16.4.2` | NLP/recall query interface i regression corpus | query evidence bez fałszywej pewności; offline PASS |
-| `16.5.0` | Final Memory Rebuild: source fidelity + provenance + reproducibility | finalna DB VERIFIED |
+| `16.3.23` | **zrealizowane:** persistent daemon lifecycle + host pre-response gate + active-memory recall E2E | persistent two-turn, recall execution/provenance, Windows+Ubuntu PASS |
+| `16.3.24` | **zrealizowane:** package provenance/bootstrap hardening | bootstrap/provenance domknięte fail-closed |
+| `16.3.25` | **zrealizowane:** Memory Rebuild source-union hardening | lossless source-union bez nazwy/rozmiaru/order jako truth |
+| `16.3.25.1` | **zrealizowane:** host-finalization gate hotfix | #185 closed; next-turn serialization za finalization |
+| `16.3.25.2` | **zrealizowane:** live Voice readiness | daemon-backed readiness i Voice E2E |
+| `16.3.25.3` | **bieżący master:** release metadata semantics | stabilne schema identifiers oddzielone od release/runtime version |
+| `16.3.25.4` | **AKTYWNY:** Memory Rebuild Application v4 consolidation | jeden ProtocolEngine/ApplicationService, Test00–Final, RunManifest, full validation/CI |
+| `16.3.25.A.01+` | **planistyczny train:** attachment/multimodal ingress | checkpointy jednego branchu prowadzącego do `16.3.26` |
+| `16.3.26` | Host attachment + multimodal ingress convergence | attachment-only/text+multi-file/provenance/staging/vision PASS |
+| `16.4.0` | Kanoniczna normalizacja polskiego NLP | deterministyczny Unicode/POS/provenance corpus |
+| `16.4.1` | Morfeusz/plWordNet/project lexicon/resource registry | ambiguity/OOV/resource provenance PASS |
+| `16.4.2` | NLP/recall query interface | query evidence bez fałszywej pewności |
+| `16.5.0` | Final Memory Rebuild | finalna prywatna DB VERIFIED |
 | `16.5.1` | Final memory packaging + canonical attach | finalna DB ATTACHABLE |
 | `16.5.2` | Prywatny Recall + natural multi-turn baseline | mierzalny raport jakości |
-| `16.5.x` | tylko mierzone poprawki retrieval, jeśli baseline nie przejdzie | A/B improvement bez regresji safety |
-| `16.5.y` | L2/L3 review + restart continuity + acceptance candidate | pamięć ACCEPTED-candidate |
-| `16.6.0` | Finalna konwergencja runtime + host ingress + NLP + memory; closure #59 | wszystkie truth gates PASS |
+| `16.5.x` | tylko mierzone poprawki retrieval, jeśli baseline nie przejdzie | A/B improvement bez safety regression |
+| `16.5.y` | L2/L3 review + restart continuity | ACCEPTED-candidate |
+| `16.6.0` | Final convergence | wszystkie truth gates PASS i closure #59 |
 
-Numery `16.5.x/y` pozostają rezerwą. Nie wymuszamy z góry liczby iteracji.
-
----
-
-# 5. Historia zamkniętych etapów 16.3.22–16.3.25
-
-## 5.1. v16.3.22 — Active runtime subject-root identity
-
-Kontrakt rozdziela requested/observer root od subject root. Dla topologii:
-
-```text
-requested/staging root = A
-host marker active_root = B
-daemon endpoint root = B
-```
-
-integrity/provenance/version/endpoint aktywnego procesu są oceniane względem **B**, a A pozostaje informacją diagnostyczną. A/B/C i inne rozbieżności pozostają fail-closed.
-
-## 5.2. v16.3.23 — Persistent runtime lifecycle observability
-
-Lifecycle i transport rozszerzają poprawny subject-root contract. Persistent daemon może być reuse'owany pomiędzy turami, ale tylko po potwierdzeniu aktualnego rootu, procesu, endpointu i truth state. Stan procesu i session/checkpoint state nadal należą do host-level workspace z v16.0.0.
-
-## 5.3. v16.3.24 — Package provenance/bootstrap hardening
-
-Bootstrap paczki i provenance zostały rozdzielone od samej obecności kodu/ZIP-a. Package/root/source identity ma być jawna i weryfikowalna; nie wolno traktować nazwy pliku albo samego archiwum jako dowodu aktywności.
-
-## 5.4. v16.3.25 — Memory Rebuild source-union hardening
-
-Bieżąca baza domyka source-set closure dla Memory Rebuild: wszystkie lossless snapshoty ChatGPT są unionowane bez używania rozmiaru, kolejności lub nazwy pliku jako arbitra prawdy, a zachowana rozbieżność branchy jest oddzielona od nierozstrzygniętych edycji.
-
-Szczegółowe raporty historyczne pozostają w `docs/reports/` i nie są przepisywane przez tę roadmapę.
+`16.5.x/y` pozostają rezerwą; nie wymuszamy z góry liczby iteracji.
 
 ---
 
-# 6. v16.3.25.A.01+ — Attachment ingress implementation train
+# 5. Historia zamkniętych etapów 16.3.22–16.3.25.3
 
-**Status:** numery A.xx są checkpointami planistycznymi jednego niezmargowanego trainu, nie kanonicznymi wersjami runtime.
+## 5.1 v16.3.22 — Active runtime subject-root identity
 
-**Plan szczegółowy:** `docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md`.
+Requested/observer root A został oddzielony od subject root B. Integrity/provenance/version/endpoint aktywnego procesu są oceniane względem B; A pozostaje diagnostyczne.
 
-| Checkpoint | Zakres |
-|---|---|
-| `A.01` | audyt host→runtime, reprodukcja attachment-only, projekt kontraktu wejścia |
-| `A.02` | text-only / attachment-only / text+attachments / multi-attachment |
-| `A.03` | bounded secure staging w host-level `workspace_runtime` |
-| `A.04` | text/document extraction, MIME/type policy, provenance |
-| `A.05` | image ingress i capability negotiation |
-| `A.06` | Ollama multimodal; text-only fail-closed |
-| `A.07` | ChatGPT/MCP/runtime/model-context integration |
-| `A.08` | memory boundary — plik nie jest automatycznie pamięcią |
-| `A.09` | regression/security/E2E closure |
-| `A.10+` | defect loop P0/P1 przed finalnym release closure |
+## 5.2 v16.3.23 — Persistent runtime lifecycle + active-memory recall E2E
 
-Nie wykonujemy częściowych merge'y A.xx do `master`. Train ma prowadzić do jednego release'u systemowego `16.3.26`.
+Release domknął host pre-response gate, subject-root lifecycle, persistent transport observability i deterministic active-memory recall E2E. Raport `docs/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md` dokumentuje focused `109 passed` oraz Windows/Ubuntu PASS na CI. Test `tests/test_v16323_active_memory_recall_e2e.py` dowodzi samego persistent daemon B, exact second-turn binding, realnego active-memory search, provenance i fail-closed zakazu substytucji host context.
 
----
+W związku z tym #180 nie jest już otwartym blockerem release trainu; pozostaje historycznym kontraktem regresyjnym.
 
-# 7. v16.3.26 — Host attachment + multimodal ingress
+## 5.3 v16.3.24 — Package provenance/bootstrap hardening
 
-**Proponowany release name:** `host-attachment-multimodal-ingress-hardening`
+Bootstrap paczki i provenance zostały rozdzielone od samej obecności kodu/ZIP-a; root/source identity jest jawna i weryfikowalna.
 
-## 7.1. Problem
+## 5.4 v16.3.25 — Memory Rebuild source-union hardening
 
-Host/runtime contract jest nadal głównie tekstowy. Tura zawierająca sam plik może zostać zredukowana do pustego tekstu zamiast wejść do kanonicznego routingu. Obraz może być użyteczny tylko wtedy, gdy wybrany backend ma jawnie potwierdzone capability vision.
+Source-set closure unionuje wszystkie lossless snapshoty ChatGPT bez używania rozmiaru, kolejności lub nazwy pliku jako arbitra prawdy. Preserved branch union jest oddzielony od unresolved conflicts.
 
-## 7.2. Invariants
+## 5.5 v16.3.25.1–16.3.25.3 — post-release hardening
 
-- legalne są `text-only`, `attachment-only`, `text+attachments` i wiele załączników;
-- nie używamy sztucznego placeholdera tekstowego do obejścia pustego `body`;
-- oryginalny tekst użytkownika pozostaje zachowany lossless;
-- attachment ma identity/type/size/source/ref oraz provenance;
-- nazwa/ścieżka/MIME są nieufne i przechodzą policy gate;
-- materializacja jest bounded i należy do host-level workspace zgodnego z v16.0.0;
-- transient staging można usunąć bez utraty trwałej pamięci;
-- plik/fakt z pliku nie staje się automatycznie L2/L3;
-- model text-only nie może twierdzić, że widział obraz;
-- unsupported typ/capability kończy się jawnie i fail-closed;
-- prywatne bajty/treść plików nie trafiają do repo ani sanitizowanych raportów.
-
-## 7.3. Zakres implementacyjny
-
-Przed dodaniem nowej klasy sprawdzić odpowiedzialności istniejących:
-
-- `latka_jazn/core/message_envelope.py`;
-- istniejące turn/cognitive envelopes;
-- `latka_jazn/core/chat_command_contract.py`;
-- adapter ChatGPT / host bridge;
-- MCP tools;
-- model context compiler;
-- model route/capability resolver;
-- backend Ollama;
-- memory use/promotion/truth gates.
-
-Preferowany kierunek to jawny kontrakt **wejścia tury** z `text` i `attachments[]`, zamiast wtłaczania załączników do envelope finalnej widocznej odpowiedzi Łatki.
-
-## 7.4. Acceptance
-
-Release jest gotowy dopiero, gdy:
-
-1. attachment-only dochodzi do kanonicznego runtime bez zawieszenia/pustej tury;
-2. text+attachments i multi-attachment zachowują identity/order/provenance;
-3. pliki tekstowe/dokumenty przechodzą jawne extract/policy gates;
-4. obrazy trafiają tylko do backendu z potwierdzonym vision capability;
-5. text-only/unsupported path jest fail-closed;
-6. staging pozostaje w jednym host-level workspace;
-7. zero automatycznej promocji plików/faktów do trwałej pamięci;
-8. prywatna zawartość nie wycieka do repo/telemetrii;
-9. regresje host/runtime, security i E2E przechodzą;
-10. finalny systemowy branch ma kanoniczny `PACKAGE_VERSION = "16.3.26"`.
+- `16.3.25.1-host-finalization-gate-hotfix` zamknęło #185;
+- `16.3.25.2-live-voice-readiness` oddzieliło core readiness od live Voice/E2E readiness;
+- `16.3.25.3-release-metadata-semantics` rozdzieliło stable schema identity od runtime/release version markers.
 
 ---
 
-# 8. v16.4.0 — Kanoniczna normalizacja polskiego NLP
+# 6. v16.3.25.4 — Memory Rebuild Application v4 consolidation
 
-Prace NLP zaczynają się dopiero po zamknięciu kontraktu wejścia hosta z `16.3.26`, żeby późniejsza analiza językowa nie musiała równolegle rozwiązywać niejasności transportu załączników.
+**Status:** aktywny branch `upgrade/memory-rebuild-v4-consolidation`; na zdalnym HEAD `0b33c15e1257e77c30d6ba321c10d250a1d1920d` branch zawiera aktualny master, ale nie jest jeszcze merge-ready.
+
+Plan szczegółowy:
+
+- `docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md`.
+
+Cel tego etapu to **narzędzie/protokół**, nie finalny prywatny artefakt pamięci.
+
+Twarde wymagania przed merge:
+
+1. domknąć P1: autentyczny łańcuch `Test00 -> Test01 -> Test02 -> Test03 -> Test04 -> Final`;
+2. poprawny lifecycle `RunManifest` jednego przebiegu;
+3. CLI i Studio używają jednego `MemoryRebuildApplicationService`/`ProtocolEngine`;
+4. brak aktywnej zależności od versioned monkey-patch hardenings;
+5. systemowy bump do następnego legalnego patch release; przy obecnym masterze planowany `16.3.25.4-memory-rebuild-v4-consolidation`;
+6. zaktualizowana dokumentacja operatorska;
+7. canonical release metadata sync;
+8. pełna walidacja + wymagane CI na finalnym SHA;
+9. prywatny acceptance tylko lokalnie; brak danych prywatnych w Git.
+
+`16.3.25.4` nie oznacza `VERIFIED` finalnej prywatnej DB i nie zamyka #59.
+
+---
+
+# 7. v16.3.25.A.01+ -> v16.3.26 — Attachment ingress
+
+Train attachment ingress zaczyna się po zaakceptowaniu konsolidacji v4 albo po jawnej decyzji, że zależność może zostać odłożona bez ryzyka. `A.xx` są checkpointami planistycznymi, nie `PACKAGE_VERSION`.
+
+Plan szczegółowy: `docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md`.
 
 Zakres:
 
-- jedna kanoniczna normalizacja Unicode/case/diakrytyki;
-- lexical evidence z provenance;
-- deterministyczne token/POS/resource fixtures;
-- brak cichego uznawania heurystyki za fakt;
-- zachowanie zgodności z memory query i routingiem.
+- text-only / attachment-only / text+attachments / multi-attachment;
+- secure bounded staging w host-level `workspace_runtime`;
+- text/document extraction + MIME/type policy + provenance;
+- image ingress i capability negotiation;
+- Ollama multimodal oraz text-only fail-closed;
+- ChatGPT/MCP/runtime/model-context integration;
+- memory boundary — attachment nie jest automatycznie pamięcią;
+- regression/security/E2E closure.
 
-**PASS:** deterministyczny corpus offline oraz jawny provenance każdej zewnętrznej warstwy leksykalnej.
-
----
-
-# 9. v16.4.1 — Morfeusz/plWordNet/project lexicon/resource registry
-
-Zakres:
-
-- jawny rejestr zasobów i wersji;
-- obsługa ambiguity/OOV;
-- project lexicon bez maskowania niepewności;
-- resource provenance i degrade/fail state;
-- brak wymagania sieciowego dla krytycznej ścieżki rozmowy.
-
-**PASS:** ambiguity/OOV/resource provenance suite bez fałszywej pewności.
+Finalny release ma numer `16.3.26`.
 
 ---
 
-# 10. v16.4.2 — NLP/recall query interface
+# 8. v16.4.0–16.4.2 — Polski NLP i query evidence
 
-Zakres:
+## 8.1 v16.4.0
 
-- query evidence contract pomiędzy NLP a recall;
-- regression corpus naturalnych polskich pytań;
-- rozdzielenie sygnału leksykalnego od memory truth;
-- brak automatycznej promocji wyniku heurystycznego do faktu.
+Jedna kanoniczna normalizacja Unicode/case/diakrytyki, lexical evidence z provenance, deterministyczne token/POS/resource fixtures.
 
-**PASS:** mierzalne query/recall fixtures offline, bez leakage i fałszywej pewności.
+## 8.2 v16.4.1
+
+Jawny resource registry, Morfeusz/plWordNet/project lexicon, ambiguity/OOV, resource provenance i degrade/fail state.
+
+## 8.3 v16.4.2
+
+Query evidence contract pomiędzy NLP a recall, regression corpus naturalnych polskich pytań i rozdzielenie sygnału leksykalnego od memory truth.
 
 ---
 
-# 11. v16.5.0 — Final Memory Rebuild
+# 9. v16.5.0 — Final Memory Rebuild / VERIFIED
 
-Cel: finalny artefakt pamięci osiąga stan **VERIFIED**.
+v16.5.0 wykorzystuje skonsolidowane narzędzie v4 do budowy finalnego prywatnego artefaktu.
 
 Wymagane:
 
+- final source inventory frozen;
 - pełna source fidelity;
-- provenance każdego importu;
+- exact provenance każdego importu;
 - reproducibility;
 - integrity/FK/FTS;
-- jawna deduplikacja bez utraty wariantów źródeł;
-- brak prywatnych danych w repo/CI.
+- deduplikacja bez utraty wariantów;
+- final database SHA;
+- prywatne dane pozostają poza repo/CI.
 
-**PASS:** finalna DB VERIFIED z sanitizowanym raportem.
-
----
-
-# 12. v16.5.1 — Packaging + canonical memory attach
-
-Cel: finalna DB osiąga **ATTACHABLE**.
-
-- poprawny profil paczki memory;
-- sidecary/hashes;
-- lokalny attach i opcjonalny cloud materialization przez ten sam canonical attach contract;
-- brak traktowania chmury jako `active_root`;
-- workspace/pamięć pozostają rozdzielone zgodnie z v16.0.0.
-
-**PASS:** finalna DB ATTACHABLE po kanonicznym attach.
+**PASS:** finalna DB osiąga stan **VERIFIED**.
 
 ---
 
-# 13. v16.5.2 / v16.5.x / v16.5.y — Recall i akceptacja
+# 10. v16.5.1 — Packaging + canonical attach / ATTACHABLE
 
-## 13.1. v16.5.2
+- poprawny profile/sidecary/hashes;
+- canonical `memory-attach`;
+- lokalny attach i opcjonalny cloud materialization przez ten sam contract;
+- runtime potwierdza identity finalnej DB;
+- chmura nigdy nie jest `active_root`.
 
-Prywatny Recall + natural multi-turn baseline. Raport ma mierzyć trafność, fałszywe wspomnienia, abstention i continuity po restarcie.
-
-## 13.2. v16.5.x
-
-Tylko mierzone poprawki retrieval, jeśli baseline nie spełni kryteriów. Każda zmiana wymaga A/B i braku regresji safety/truth.
-
-## 13.3. v16.5.y
-
-Review L2/L3 + restart continuity + acceptance candidate. Jeśli kryteria przechodzą, pamięć może zostać oznaczona jako ACCEPTED-candidate.
+**PASS:** finalna DB **ATTACHABLE**.
 
 ---
 
-# 14. v16.6.0 — Final convergence
+# 11. v16.5.2 / v16.5.x / v16.5.y — RETRIEVABLE -> ACCEPTED
 
-v16.6.0 jest końcowym etapem programu, a nie miejscem na ukrywanie niezakończonych prac z wcześniejszych linii.
+## v16.5.2
+
+Prywatny Recall + natural multi-turn baseline: Recall@k, MRR, nDCG, wrong-conversation, false-memory, abstention, provenance, temporal/update, sensitive leakage, referential follow-up, latency.
+
+## v16.5.x
+
+Tylko mierzone poprawki retrieval, jeśli baseline nie spełni kryteriów. Każda zmiana wymaga hipotezy, A/B i rollback path.
+
+## v16.5.y
+
+Manual L2/L3 review + restart continuity. Każda promocja przechodzi `request -> decision -> ledger`; `zero promotions` jest legalne.
+
+---
+
+# 12. v16.6.0 — Final convergence
 
 Wymagane jednocześnie:
 
-- single canonical runtime workspace invariant z v16.0.0 zachowany;
+- single canonical runtime workspace zachowany;
 - active runtime subject-root/truth gate poprawny;
-- persistent host/runtime transport i finalization bez bypassu;
-- host attachment/multimodal ingress z `16.3.26` zaakceptowany;
+- persistent transport/finalization bez bypassu;
+- attachment/multimodal ingress zaakceptowany;
 - polski NLP/resource provenance zaakceptowany;
 - finalna pamięć ACCEPTED;
 - restart continuity;
-- prywatny recall/multi-turn spełnia ustalone bramki;
+- private Recall/multi-turn PASS;
 - packaging/provenance/integrity spójne;
-- Issue #59 może zostać zamknięte na podstawie dowodów, nie deklaracji.
-
-**PASS:** wszystkie wcześniejsze bramki są zielone i brak otwartego P0/P1 w zakresie finalnej konwergencji.
+- brak otwartego P0/P1 w finalnym zakresie;
+- Issue #59 można zamknąć na podstawie dowodów.
 
 ---
 
-# 15. Branch strategy
+# 13. Branch strategy
 
-Każdy release pracuje na osobnym branchu ze świeżego `master`.
-
-Dla nowego trainu:
+Aktywne / planowane branche:
 
 ```text
+upgrade/memory-rebuild-v4-consolidation
 upgrade/v16.3.26-host-attachment-multimodal-ingress-hardening
-```
-
-Checkpointy `16.3.25.A.xx` pozostają commitami/checkpointami tego jednego branchu, bez częściowych merge'y do `master`.
-
-Dalsze przykładowe branche:
-
-```text
 upgrade/v16.4.0-polish-nlp-normalization
 upgrade/v16.4.1-polish-lexical-resources
 upgrade/v16.4.2-nlp-recall-query-interface
@@ -368,67 +282,70 @@ upgrade/v16.5.2-private-recall-baseline
 upgrade/v16.6.0-final-convergence
 ```
 
-Nie cherry-pickować szerokich, starych branchy „w ciemno”. Najpierw semantycznie porównać kod, raporty i aktualny `master`.
+Nie cherry-pickujemy szerokich starych branchy w ciemno. Każdy kolejny release startuje ze świeżego mastera, chyba że aktywny release branch jest jawnie kontynuowany przez użytkownika.
 
 ---
 
-# 16. Defect loop i priorytety
+# 14. Defect loop i priorytety
 
-- **P0** — truth/safety/integrity, ryzyko obcego runtime, utraty pamięci/danych lub fałszywego sukcesu: blokuje release.
+- **P0** — truth/safety/integrity, obcy runtime, utrata danych lub false success: blokuje release.
 - **P1** — kryterium bieżącego release'u nie działa: blokuje release.
-- **P2** — realny błąd poza krytycznym zakresem: tylko mała i bezpieczna poprawka teraz, inaczej backlog.
+- **P2** — realny błąd poza krytycznym zakresem: mała bezpieczna poprawka albo backlog.
 - **P3** — kosmetyka/refactor: nie rozszerzać release'u bez potrzeby.
 
 Dla P0/P1:
 
 ```text
-finding -> root cause -> źródło -> regression test -> fix -> focused test -> full suite -> raport
+finding -> root cause -> source -> regression test -> fix -> focused test -> full suite -> report
 ```
 
-Nie wolno maskować świeżej regresji przez `xfail`, szeroki `except`, zwiększenie timeoutu bez diagnozy ani fallback udający naprawę przyczyny.
+---
+
+# 15. Issue map
+
+## #59 — finalna akceptacja pamięci
+
+Pozostaje otwarte aż do **ACCEPTED**. Nie jest issue „zbudować narzędzie Memory Rebuild”. v16.3.25.4 jest tylko zależnością infrastrukturalną.
+
+## #180 — persistent active-memory recall E2E
+
+Kontrakt został zaimplementowany i udokumentowany w v16.3.23; testy regresyjne pozostają obowiązkowe w dalszych release'ach. Issue może być zamknięte jako completed.
+
+## #185 — host finalization gate
+
+Zamknięte przez v16.3.25.1 / PR #186. Pozostaje historycznym regression contractem.
+
+## Aktywny Memory Rebuild v4
+
+Powinien mieć osobne tracking issue dla konsolidacji v16.3.25.4, zamiast przeciążać #59.
 
 ---
 
-# 17. Research registry
+# 16. Dokumenty powiązane
 
-Przy każdym release używać przede wszystkim źródeł pierwotnych/oficjalnych.
-
-Dla `16.3.26` obowiązkowo zweryfikować aktualne:
-
-- dokumentację OpenAI/ChatGPT dotyczącą file/image inputs i host capabilities;
-- dokumentację OpenAI API dla używanych input contracts, jeśli runtime korzysta z API;
-- dokumentację Ollama dotyczącą vision/multimodal input i capability modelu;
-- Python/OS semantics dla bezpiecznej materializacji, atomic operations, temporary files i path handling;
-- własne kontrakty repozytorium jako źródło prawdy o tym, co już istnieje.
-
-Blogi, posty forum i wynik wyszukiwarki są materiałem pomocniczym, nie podstawą projektu, jeśli istnieje źródło oficjalne.
-
----
-
-# 18. Dokumenty powiązane
-
-- `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md` — bieżący invariant wywiedziony z v16.0.0;
-- `docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md` — szczegółowy train A.xx → 16.3.26;
-- `docs/plans/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_IMPLEMENTATION_PLAN.md` — historyczny plan subject-root;
-- `docs/plans/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_IMPLEMENTATION_PLAN.md` — historyczny plan lifecycle;
-- `docs/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md` — raport 16.3.24;
-- `docs/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md` — raport 16.3.25;
-- `docs/archive/roadmaps/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP_2026-08-27.md` — zachowany szczegółowy snapshot poprzedniej roadmapy.
-
-Historyczne raporty nie są aktualizowane retroaktywnie: mają pozostać dowodem tego, co zostało wykonane i zweryfikowane w danym release.
+- `docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md` — aktywny plan v4 consolidation;
+- `docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md` — attachment train;
+- `docs/plans/JAZN_V16_3_14_MEMORY_REBUILD_TEST00_RECALL.md` — historyczny fundament Test00/Recall;
+- `docs/plans/JAZN_V16_3_22_ACTIVE_RUNTIME_SUBJECT_ROOT_IMPLEMENTATION_PLAN.md` — historyczny plan v16.3.22;
+- `docs/plans/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_IMPLEMENTATION_PLAN.md` — historyczny plan v16.3.23;
+- `docs/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md` — engineering acceptance v16.3.23;
+- `docs/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md` — raport v16.3.24;
+- `docs/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md` — raport v16.3.25;
+- `docs/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md` — raport v16.3.25.3;
+- `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md` — invariant workspace.
 
 ---
 
-# 19. Zasada końcowa
+# 17. Zasada końcowa
 
-Roadmapa jest planem, nie dowodem aktywności ani poprawności runtime. Każdy przyszły systemowy release musi osobno udowodnić swoje kryteria na aktualnym kodzie i właściwej platformie.
+Roadmapa jest planem, nie dowodem aktywności ani poprawności runtime.
 
-Dla najbliższej kontynuacji kolejność jest jawna:
+Najbliższa kolejność jest teraz jawna:
 
 ```text
-master 16.3.25
-  -> 16.3.25.A.01+
-  -> 16.3.26 host attachment + multimodal ingress
+master 16.3.25.3
+  -> 16.3.25.4 Memory Rebuild v4 consolidation
+  -> 16.3.26 attachment + multimodal ingress
   -> 16.4.x polski NLP
   -> 16.5.x final memory acceptance
   -> 16.6.0 final convergence
