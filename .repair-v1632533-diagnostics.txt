@@ -32,7 +32,7 @@ E       if incoming_zip_name is not None:
 E   IndentationError: expected an indented block after 'if' statement on line 795
 =========================== short test summary info ============================
 ERROR tests/test_v1632533_chatgpt_package_discovery_bootstrap.py
-1 error in 0.16s
+1 error in 0.12s
 EXIT=4
 === new regression: renamed memory sidecar ===
 ERROR: found no collectors for /home/runner/work/jazn_latka/jazn_latka/tests/test_v1632533_chatgpt_package_discovery_bootstrap.py::test_memory_autodiscovery_accepts_chatgpt_renamed_package_sidecar
@@ -64,7 +64,7 @@ E       if incoming_zip_name is not None:
 E   IndentationError: expected an indented block after 'if' statement on line 795
 =========================== short test summary info ============================
 ERROR tests/test_v1632533_chatgpt_package_discovery_bootstrap.py
-1 error in 0.12s
+1 error in 0.13s
 EXIT=4
 === new regression: complete zip plus parts sha ===
 ERROR: found no collectors for /home/runner/work/jazn_latka/jazn_latka/tests/test_v1632533_chatgpt_package_discovery_bootstrap.py::test_single_complete_zip_listed_by_parts_sha_is_a_valid_package_part
@@ -128,7 +128,7 @@ E       if incoming_zip_name is not None:
 E   IndentationError: expected an indented block after 'if' statement on line 795
 =========================== short test summary info ============================
 ERROR tests/test_v1632533_chatgpt_package_discovery_bootstrap.py
-1 error in 0.12s
+1 error in 0.11s
 EXIT=4
 === existing loader contract ===
 
@@ -159,7 +159,7 @@ E   IndentationError: expected an indented block after 'if' statement on line 79
 =========================== short test summary info ============================
 ERROR tests/test_runtime_package_loader_contract.py
 !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-1 error in 0.29s
+1 error in 0.28s
 EXIT=2
 === diff check ===
 EXIT=0
