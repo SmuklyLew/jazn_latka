@@ -181,6 +181,8 @@ def test_memory_rebuild_package_import_does_not_apply_versioned_monkey_patches()
     "v16312_ci_hotfix",
     "v16325_hardening",
 ])
-def test_versioned_hardening_modules_are_not_required_by_active_import_path(module_name: str) -> None:
+def test_versioned_hardening_modules_are_not_shipped_or_required(module_name: str) -> None:
     init_source = Path("latka_jazn/tools/memory_rebuild_app/__init__.py").read_text(encoding="utf-8")
+    module_path = Path("latka_jazn/tools/memory_rebuild_app") / f"{module_name}.py"
     assert module_name not in init_source
+    assert not module_path.exists()
