@@ -22,3 +22,9 @@ Initial provenance:
 | `tests/test_memory_rebuild_v24_unified.py` | `test_memory_rebuild_v24_unified_v16_3_25_3_1.py` | `3f40d2e39fc803976beb3c3f1b8dd5b0d0a19085` |
 
 All three initial snapshots come from merge-base `3884bed3d8445924c6783a1cc87d15e91b8fcbe2`.
+
+Additional append-only provenance:
+
+| Active source before change | Immutable snapshot | Git blob |
+| --- | --- | --- |
+| `tests/test_release_metadata_semantics_v163253.py` from master release `16.3.25.3.4` | `test_release_metadata_semantics_v163253_v16_3_25_3_4.py` | `280fe1dbfc838fe4afe36666f4b81c0a3831a46b` |

@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
-import os
 import shutil
-import stat
 import subprocess
 
 from latka_jazn.core.source_provenance import read_source_provenance
@@ -66,14 +64,6 @@ def _repo(tmp_path: Path) -> Path:
     return root
 
 
-def _remove_git_metadata(root: Path) -> None:
-    def _clear_readonly_and_retry(function, path, _excinfo) -> None:
-        os.chmod(path, stat.S_IWRITE)
-        function(path)
-
-    shutil.rmtree(root / ".git", onexc=_clear_readonly_and_retry)
-
-
 def test_contract_schema_versions_are_independent_from_release_identity() -> None:
     assert contract_schema_version("startup_contract") == "startup_contract/v1"
     assert contract_schema_version("source_provenance") == "source_provenance/v2"
@@ -116,7 +106,7 @@ def test_provenance_reader_accepts_legacy_schema_as_migration_and_rejects_foreig
         encoding="utf-8",
     )
     write_package_integrity_manifest(root)
-    _remove_git_metadata(root)
+    shutil.rmtree(root / ".git")
 
     legacy = read_source_provenance(root, profile="system_smoke")
     assert legacy.status == "verified_export_without_git_history"
