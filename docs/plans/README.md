@@ -4,7 +4,7 @@ Ten katalog zawiera tylko bieżące plany i roadmapy. Każdy plan ma własny fol
 
 | Folder | Status | Znaczenie |
 |---|---|---|
-| `16.3.25.4-memory-rebuild-v4/` | **IN_PROGRESS** | P1 + VERSION + DOCS DONE; release metadata, full validation, private acceptance status and CI pending |
+| `16.3.25.4-memory-rebuild-v4/` | **IN_PROGRESS** | master merge + P0/P1 + VERSION + DOCS + release metadata DONE; full validation, private acceptance execution status, CI and PR pending |
 | `16.3.26-attachment-ingress/` | **PLANNED** | attachment + multimodal ingress |
 | `16.4-to-16.6-cognitive-hardening/` | **PLANNED / CROSS-CUTTING** | memory/continuity/affect/NLP/evidence hardening |
 | `16.6.0-final-convergence/` | **ACTIVE_ROADMAP** | nadrzędna kolejność release trainu do v16.6.0 |

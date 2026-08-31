@@ -4,17 +4,17 @@
 
 **Typ:** aktywny plan wykonawczy / release-prep  
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Baza wykonawcza:** bieżące `master` / `origin/master`; dokładny SHA zweryfikować przed synchronizacją brancha  
-**Wersja bazowa linii przy audycie:** `16.3.25.3-release-metadata-semantics`  
+**Baza wykonawcza:** `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c`, scalony zwykłym merge do brancha
+**Wersja bazowa linii przy audycie:** `16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip`
 **Branch implementacyjny:** `upgrade/memory-rebuild-v4-consolidation`  
-**Ostatni zweryfikowany zdalny HEAD przy audycie:** `4c59bbd7b791d90fa7dea27014f876be9acca9f6` — P1 i atom wersji zamknięte; zawsze sprawdzić ponownie przed pracą
+**Ostatni zweryfikowany zdalny checkpoint testowy:** `b0c264967d4c89ec98c50ea8e0146e4f0655d094` — master scalony, P0/P1 i brama wersji ponownie zielone
 **Tracking issue:** `#189`  
 **Docelowy numer patch-release przy niezmienionej linii:** `16.3.25.4`  
 **Proponowany release name:** `memory-rebuild-v4-consolidation`  
 **Kanoniczne założenia:** `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
 **Roadmapa nadrzędna:** `docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md`  
 **Issue finalnej pamięci:** `#59`  
-**Data aktualizacji:** 2026-08-31
+**Data aktualizacji:** 2026-09-01
 
 > Ten etap **nie jest** finalnym Memory Rebuild z v16.5.0 i nie oznacza stanu `VERIFIED` prywatnej pamięci. Konsoliduje narzędzie/protokół Test00–Final i przygotowuje source-lineage-ready RAW/L0 dla późniejszej finalnej odbudowy.
 
@@ -37,9 +37,9 @@
 
 ---
 
-## 2. Co jest na branchu — P1 implementacyjnie DONE, release nadal otwarty
+## 2. Co jest na branchu — P0/P1 po merge DONE, release nadal otwarty
 
-Na checkpointcie `4c59bbd7b791d90fa7dea27014f876be9acca9f6` branch zawiera m.in.:
+Na zweryfikowanym checkpointcie `b0c264967d4c89ec98c50ea8e0146e4f0655d094` branch zawiera m.in.:
 
 - natywny `SourceBundle` / `ChatGPTExportBundle`;
 - `html_semantics.py` i jawne `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
@@ -56,9 +56,11 @@ Na checkpointcie `4c59bbd7b791d90fa7dea27014f876be9acca9f6` branch zawiera m.in.
 - testy v4 consolidation/protocol;
 - jawny HTML LOSSY boundary.
 
-Brama implementacyjna P1 jest zamknięta: skonsolidowany focused gate Test00→Final, recovery, CLI/Studio, compatibility i retirement dał `81 passed, 1` znane ostrzeżenie kolekcji; focused gate wersji dał `34 passed`.
+Branch scalił `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c` w merge commicie `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9`. Konflikty ograniczały się do kanonicznej wersji oraz dwóch plików generowanych; zachowano legalną wersję targetu, a metadane skierowano do ponownej kanonicznej synchronizacji.
 
-To potwierdza P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Release metadata, pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają niewykonane.
+Pełny aktywny nadzbiór Memory Rebuild po merge dał `148 passed, 1` znane ostrzeżenie kolekcji. Nadzbiór bramy wersji i semantyki metadanych dał `43 passed`. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7 oraz usuwania read-only `.git` na Windows mają osobne regresje i są zielone.
+
+To potwierdza P0/P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Post-merge release metadata są synchronizowane kanonicznym generatorem po tej finalnej treści dokumentacji. Pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają odrębnymi gate'ami.
 
 Prywatny dataset nie został użyty w tych bramach. Stan Test04 na realnych danych pozostaje `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
 
@@ -95,88 +97,90 @@ Każdy etap ma osobne `run_*` i `validate_*`. Engine egzekwuje zależności zami
 
 ### 4.1 ProtocolEngine
 
-- [ ] `run_test00()` + `validate_test00()`;
-- [ ] `run_test01()` + `validate_test01()`;
-- [ ] `run_test02()` + `validate_test02()`;
-- [ ] `run_test03()` + `validate_test03()`;
-- [ ] `run_test04()` + `validate_test04()`;
-- [ ] `run_final()` + `validate_final()`;
-- [ ] dependency graph wymusza pełny łańcuch;
-- [ ] CLI i Studio używają jednego engine;
-- [ ] compatibility API wyłącznie deleguje.
+- [x] `run_test00()` + `validate_test00()`;
+- [x] `run_test01()` + `validate_test01()`;
+- [x] `run_test02()` + `validate_test02()`;
+- [x] `run_test03()` + `validate_test03()`;
+- [x] `run_test04()` + `validate_test04()`;
+- [x] `run_final()` + `validate_final()`;
+- [x] dependency graph wymusza pełny łańcuch;
+- [x] CLI i Studio używają jednego engine;
+- [x] compatibility API wyłącznie deleguje.
 
 ### 4.2 Test00 — source fidelity
 
-- [ ] source inventory + exact source identity;
-- [ ] source mirror/fidelity;
-- [ ] source-set closure;
-- [ ] jawne `PASSED / LOSSY / BLOCKED / FAILED`;
-- [ ] `rendered_html_lossy` zachowane jako evidence, nigdy lossless PASS;
-- [ ] source-union bierze wyłącznie lossless graph sources;
-- [ ] source role jest odrębna od memory/source-trust class.
+- [x] source inventory + exact source identity;
+- [x] source mirror/fidelity;
+- [x] source-set closure;
+- [x] jawne `PASSED / LOSSY / BLOCKED / FAILED`;
+- [x] `rendered_html_lossy` zachowane jako evidence, nigdy lossless PASS;
+- [x] source-union bierze wyłącznie lossless graph sources;
+- [x] source role jest odrębna od memory/source-trust class.
 
 ### 4.3 Test01 — fresh canonical L0
 
-- [ ] fresh build;
-- [ ] provenance closure;
-- [ ] pełne conversations/branches/revisions/assets/sidecars;
-- [ ] integrity/FK/FTS;
-- [ ] zero automatic L2/L3/activation;
-- [ ] payload/schema pozwala zachować primary-vs-derived lineage bez destrukcyjnego spłaszczenia.
+- [x] fresh build;
+- [x] provenance closure;
+- [x] pełne conversations/branches/revisions/assets/sidecars;
+- [x] integrity/FK/FTS;
+- [x] zero automatic L2/L3/activation;
+- [x] payload/schema pozwala zachować primary-vs-derived lineage bez destrukcyjnego spłaszczenia.
 
 ### 4.4 Test02 — projections
 
-- [ ] visibility/role/sensitivity/eligibility/timestamp;
-- [ ] raw <-> normalized reconciliation;
-- [ ] projections nie modyfikują source L0;
-- [ ] derived projection nie zmienia source precedence.
+- [x] visibility/role/sensitivity/eligibility/timestamp;
+- [x] raw <-> normalized reconciliation;
+- [x] projections nie modyfikują source L0;
+- [x] derived projection nie zmienia source precedence.
 
 ### 4.5 Test03 — reproducibility
 
-- [ ] fresh build A/B;
-- [ ] reversed input order;
-- [ ] stable fingerprint;
-- [ ] reconciliation z wcześniejszymi etapami;
-- [ ] preserved branch union != unresolved conflict;
-- [ ] input order/derived duplicate count nie zmienia source precedence.
+- [x] fresh build A/B;
+- [x] reversed input order;
+- [x] stable fingerprint;
+- [x] reconciliation z wcześniejszymi etapami;
+- [x] preserved branch union != unresolved conflict;
+- [x] input order/derived duplicate count nie zmienia source precedence.
 
 ### 4.6 Test04 — real private Recall acceptance
 
 Test04 nie jest parserem gotowego raportu.
 
-- [ ] final source set/operator attestation;
-- [ ] real private benchmark, gdy dataset lokalnie dostępny;
-- [ ] provenance;
-- [ ] wrong-conversation / wrong-source;
-- [ ] false-memory;
-- [ ] abstention;
-- [ ] temporal/update/supersession;
-- [ ] sensitive leakage;
-- [ ] referential two-turn/natural multi-turn;
-- [ ] source discrimination: primary user/conversation vs reflection/runtime/system/dream;
-- [ ] derived-source trap: późniejsza refleksja systemu nie może zostać przypisana użytkownikowi;
-- [ ] brak prywatnej treści w repo/CI;
-- [ ] brak datasetu = `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
+- [x] final source set/operator attestation;
+- [x] real private benchmark runner, gdy dataset lokalnie dostępny;
+- [x] provenance;
+- [x] wrong-conversation / wrong-source;
+- [x] false-memory;
+- [x] abstention;
+- [x] temporal/update/supersession;
+- [x] sensitive leakage;
+- [x] referential two-turn/natural multi-turn;
+- [x] source discrimination: primary user/conversation vs reflection/runtime/system/dream;
+- [x] derived-source trap: późniejsza refleksja systemu nie może zostać przypisana użytkownikowi;
+- [x] brak prywatnej treści w repo/CI;
+- [x] brak datasetu = `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
+
+Implementacja runnera jest DONE. Wykonanie na realnym prywatnym datasecie w tym release pozostaje `PRIVATE ACCEPTANCE: NOT RUN`.
 
 ### 4.7 Final
 
-- [ ] wymaga właściwie zaliczonego Test04 według policy;
-- [ ] SQLite Backup API do staging snapshot;
-- [ ] `PRAGMA integrity_check`;
-- [ ] `PRAGMA foreign_key_check`;
-- [ ] FTS5 integrity-check;
-- [ ] final source/provenance/database SHA;
-- [ ] publikacja dopiero po walidacji staging;
-- [ ] zero automatycznej aktywacji runtime memory.
+- [x] wymaga właściwie zaliczonego Test04 według policy;
+- [x] SQLite Backup API do staging snapshot;
+- [x] `PRAGMA integrity_check`;
+- [x] `PRAGMA foreign_key_check`;
+- [x] FTS5 integrity-check;
+- [x] final source/provenance/database SHA;
+- [x] publikacja dopiero po walidacji staging;
+- [x] zero automatycznej aktywacji runtime memory.
 
 ### 4.8 RunManifest
 
-- [ ] jeden manifest obejmuje kolejne Test00–Final;
-- [ ] final seal jest write-once, ale run nie zamyka się po pierwszym etapie;
-- [ ] source inventory/provenance/fingerprint/database SHA;
-- [ ] source-class/lineage summary bez prywatnej treści;
-- [ ] private + sanitized manifest;
-- [ ] sanitized nie zawiera prywatnych paths/content/PII.
+- [x] jeden manifest obejmuje kolejne Test00–Final;
+- [x] final seal jest write-once, ale run nie zamyka się po pierwszym etapie;
+- [x] source inventory/provenance/fingerprint/database SHA;
+- [x] source-class/lineage summary bez prywatnej treści;
+- [x] private + sanitized manifest;
+- [x] sanitized nie zawiera prywatnych paths/content/PII.
 
 ---
 
@@ -200,13 +204,13 @@ SYSTEM_METADATA
 
 Twarde zasady:
 
-- [ ] derived record nie staje się primary przez dedupe/merge;
-- [ ] liczba kopii derived eventu nie zwiększa epistemicznego priorytetu;
-- [ ] conflict primary-vs-derived pozostaje jawny;
-- [ ] RAW -> SEMANTIC -> MEMORY zachowuje source lineage;
-- [ ] classification wynika z evidence/provenance, nie samego similarity;
-- [ ] brak klasyfikacji nie oznacza `PRIMARY`;
-- [ ] Dream/reflection nie może self-certify factual memory.
+- [x] derived record nie staje się primary przez dedupe/merge;
+- [x] liczba kopii derived eventu nie zwiększa epistemicznego priorytetu;
+- [x] conflict primary-vs-derived pozostaje jawny;
+- [x] RAW -> SEMANTIC -> MEMORY zachowuje source lineage;
+- [x] classification wynika z evidence/provenance, nie samego similarity;
+- [x] brak klasyfikacji nie oznacza `PRIMARY`;
+- [x] Dream/reflection nie może self-certify factual memory.
 
 ---
 
@@ -224,9 +228,9 @@ PACKAGE_RELEASE_NAME = "memory-rebuild-v4-consolidation"
 
 Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej roadmapie/AGENTS. Nie używać `16.3.26` dla Memory Rebuild.
 
-Stan na 2026-08-31: kanoniczny bump został już zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3`; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
+Stan na 2026-09-01: kanoniczny bump został zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3` i zachowany świadomie podczas merge; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
 
-Focused walidacja jednego źródła wersji: `34 passed`; drugi bump nie jest wymagany.
+Post-merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych: `43 passed`; drugi bump nie jest wymagany.
 
 ---
 
