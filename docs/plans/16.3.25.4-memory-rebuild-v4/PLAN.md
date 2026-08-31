@@ -58,7 +58,7 @@ Na zweryfikowanym checkpointcie `b0c264967d4c89ec98c50ea8e0146e4f0655d094` branc
 
 Branch scalił `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c` w merge commicie `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9`. Konflikty ograniczały się do kanonicznej wersji oraz dwóch plików generowanych; zachowano legalną wersję targetu, a metadane skierowano do ponownej kanonicznej synchronizacji.
 
-Pełny aktywny nadzbiór Memory Rebuild po merge dał `148 passed, 1` znane ostrzeżenie kolekcji. Nadzbiór bramy wersji i semantyki metadanych dał `43 passed`. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7 oraz usuwania read-only `.git` na Windows mają osobne regresje i są zielone.
+Pełny aktywny nadzbiór Memory Rebuild po merge dał `148 passed, 1` znane ostrzeżenie kolekcji. Nadzbiór bramy wersji i semantyki metadanych dał `43 passed`. Po dostosowaniu audytu do stabilnych schematów kontraktowych v2 jego skupiony nadzbiór dał `27 passed`, a audyt wykonany na rzeczywistym repo zwrócił `ok: true`, `errors: []`, `metadata_errors: []` i `literal_violations: []`. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7, usuwania read-only `.git` na Windows oraz rozróżnienia stabilnego schematu metadanych od wersji runtime mają osobne regresje i są zielone.
 
 To potwierdza P0/P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Post-merge release metadata są synchronizowane kanonicznym generatorem po tej finalnej treści dokumentacji. Pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają odrębnymi gate'ami.
 
@@ -230,7 +230,7 @@ Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej road
 
 Stan na 2026-09-01: kanoniczny bump został zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3` i zachowany świadomie podczas merge; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
 
-Post-merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych: `43 passed`; drugi bump nie jest wymagany.
+Post-merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych: `43 passed`; skupiony nadzbiór audytu stabilnego schematu: `27 passed`; rzeczywisty `version_consistency_audit`: `ok: true`, zero błędów i naruszeń literałów. Drugi bump nie jest wymagany.
 
 ---
 

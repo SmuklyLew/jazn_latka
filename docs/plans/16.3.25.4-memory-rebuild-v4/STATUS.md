@@ -13,7 +13,7 @@
 |---|---|---|
 | Master integration | `DONE` | merge `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9` has parents `3fe2040...` and `origin/master@3983c57...` |
 | P0/P1 Test00→Final implementation | `DONE` | full active Memory Rebuild superset: `148 passed, 1` known collection warning |
-| Canonical version | `DONE` | `16.3.25.4-memory-rebuild-v4-consolidation`; post-merge version/metadata-semantics superset: `43 passed` |
+| Canonical version | `DONE` | `16.3.25.4-memory-rebuild-v4-consolidation`; post-merge version/metadata-semantics superset: `43 passed`; focused stable-schema audit superset: `27 passed`; real-repo `version_consistency_audit`: `ok: true`, zero errors/violations |
 | Documentation | `DONE` | canonical plan, status and active-plan index reconciled after master merge |
 | Release metadata | `DONE` | canonical `release_metadata_sync --write` followed by `--check` in the post-merge docs/metadata atom; no manual hash edits |
 | Full local validation | `NOT RUN` | intentionally ordered after metadata |
@@ -21,7 +21,7 @@
 | GitHub CI | `NOT RUN` | required on final pushed SHA |
 | PR / merge to master | `NOT RUN` | no merge authorization is implied |
 
-P0/P1 recovery, one-run CLI/Studio integration, compatibility/retirement and the legal version bump were revalidated after master integration at remote checkpoint `b0c264967d4c89ec98c50ea8e0146e4f0655d094`. The post-merge metadata check correctly reported both generated files stale before this docs/metadata atom; they were then regenerated canonically from the finalized tracked content.
+P0/P1 recovery, one-run CLI/Studio integration, compatibility/retirement and the legal version bump were revalidated after master integration at remote checkpoint `b0c264967d4c89ec98c50ea8e0146e4f0655d094`. The version consistency audit was also corrected to consume the stable metadata contract schemas and to distinguish release documentation/public compatibility labels from executable version authorities; its regressions and real-repository run are green. The post-merge metadata check correctly reported both generated files stale before the docs/metadata atom; every later tracked update is followed by a fresh canonical regeneration rather than a manual hash edit.
 
 The release remains open because full local validation, private acceptance execution status, CI and PR gates are not closed.
 
