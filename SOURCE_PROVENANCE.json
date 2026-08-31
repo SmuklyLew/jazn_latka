@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
+  "base_merge_commit": "d7c9dbc8bcabb19d5398300c0164edd5113a3128",
   "base_version": "16.3.25.4-memory-rebuild-v4-consolidation",
-  "commit_date": "2026-09-01T00:41:10+02:00",
+  "commit_date": "2026-09-01T00:49:39+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-31T22:41:10+00:00",
+  "generated_at_utc": "2026-08-31T22:49:39+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ba166f39775d011c53492a1726e5643b885cb1da",
+  "git_tree_sha": "041bf58085764a50e6140e4e8f04f37e12c6a43d",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
+    "source_commit": "d7c9dbc8bcabb19d5398300c0164edd5113a3128",
     "source_version": "16.3.25.4-memory-rebuild-v4-consolidation"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
+  "source_commit": "d7c9dbc8bcabb19d5398300c0164edd5113a3128",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.4-memory-rebuild-v4-consolidation",
   "tag": null,
