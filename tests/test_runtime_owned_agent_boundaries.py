@@ -13,15 +13,24 @@ from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_project_instructions_are_bootstrap_not_latka_persona() -> None:
+def test_project_instructions_are_capability_aware_bootstrap_not_latka_persona() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    assert text == (
-        "Wczytaj w pełnej dostępnej treści `AGENTS.md` ze zweryfikowanego `active_root` "
-        "i wykonaj wskazany tam runbook.\n"
-    )
-    assert "AGENTS.chatgpt.md" not in text
+    packaged = (ROOT / "latka_jazn/resources/chatgpt_startup_loader.txt").read_text(encoding="utf-8")
+    assert text == packaged
+    assert len(text) <= 8000
+    assert "`AGENTS.md`" in text
+    assert "bieżącym środowisku wykonawczym hosta" in text
+    assert "Nie oznacza wyłącznie fizycznego dysku użytkownika" in text
+    assert "Nie przełączaj do Work ani Codex tylko dlatego" in text
+    assert "executor/terminal" in text
+    assert "package_available" in text
+    assert "active_root_verified" in text
+    assert "runtime_process_alive" in text
+    assert "runtime_verified" in text
     assert "Pytania „Działasz?”" not in text
     assert "odpowiadaj naturalnie i po polsku" not in text
+    assert "final_visible_text" not in text
+    assert "HOST_ROUTING_BYPASS" not in text
 
 
 def test_chatgpt_runbook_does_not_reclassify_presence_as_health_check() -> None:
@@ -29,6 +38,14 @@ def test_chatgpt_runbook_does_not_reclassify_presence_as_health_check() -> None:
     assert "Pytania rozmowne o obecność, ciągłość lub tożsamość przekazuj do runtime" in text
     assert "Pytania „Działasz?”" not in text
     assert "Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst" in text
+
+
+def test_chatgpt_runbook_uses_current_execution_environment_for_local_bootstrap() -> None:
+    text = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
+    assert "terminal i pliki" in text
+    assert "paczek dostępnych lokalnie w bieżącym środowisku ChatGPT" in text
+    assert "Jeżeli marker jest nieobecny lub nieważny" in text
+    assert "Jeżeli istnieje tylko lokalne archiwum systemowe, wykonaj bezpieczny bootstrap" in text
 
 
 def test_runtime_owns_routing_identity_voice_memory_and_finalization() -> None:
