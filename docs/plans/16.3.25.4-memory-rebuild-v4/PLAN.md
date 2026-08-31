@@ -7,14 +7,14 @@
 **Baza wykonawcza:** bieżące `master` / `origin/master`; dokładny SHA zweryfikować przed synchronizacją brancha  
 **Wersja bazowa linii przy audycie:** `16.3.25.3-release-metadata-semantics`  
 **Branch implementacyjny:** `upgrade/memory-rebuild-v4-consolidation`  
-**Ostatni zweryfikowany zdalny HEAD przy audycie:** `0b33c15e1257e77c30d6ba321c10d250a1d1920d` — zawsze sprawdzić ponownie przed pracą  
+**Ostatni zweryfikowany zdalny HEAD przy audycie:** `4c59bbd7b791d90fa7dea27014f876be9acca9f6` — P1 i atom wersji zamknięte; zawsze sprawdzić ponownie przed pracą
 **Tracking issue:** `#189`  
 **Docelowy numer patch-release przy niezmienionej linii:** `16.3.25.4`  
 **Proponowany release name:** `memory-rebuild-v4-consolidation`  
 **Kanoniczne założenia:** `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
 **Roadmapa nadrzędna:** `docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md`  
 **Issue finalnej pamięci:** `#59`  
-**Data aktualizacji:** 2026-08-30
+**Data aktualizacji:** 2026-08-31
 
 > Ten etap **nie jest** finalnym Memory Rebuild z v16.5.0 i nie oznacza stanu `VERIFIED` prywatnej pamięci. Konsoliduje narzędzie/protokół Test00–Final i przygotowuje source-lineage-ready RAW/L0 dla późniejszej finalnej odbudowy.
 
@@ -37,9 +37,9 @@
 
 ---
 
-## 2. Co już jest na branchu — checkpoint, nie finalny PASS
+## 2. Co jest na branchu — P1 implementacyjnie DONE, release nadal otwarty
 
-Branch zawiera m.in.:
+Na checkpointcie `4c59bbd7b791d90fa7dea27014f876be9acca9f6` branch zawiera m.in.:
 
 - natywny `SourceBundle` / `ChatGPTExportBundle`;
 - `html_semantics.py` i jawne `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
@@ -56,7 +56,11 @@ Branch zawiera m.in.:
 - testy v4 consolidation/protocol;
 - jawny HTML LOSSY boundary.
 
-Samo istnienie tych artefaktów jest najwyżej `present/constructible/callable`. Merge gate wymaga właściwego poziomu z kanonicznej drabiny evidence, zwłaszcza `reachable_from_turn/effect_observed` dla engine paths i rzeczywistych wyników walidacji.
+Brama implementacyjna P1 jest zamknięta: skonsolidowany focused gate Test00→Final, recovery, CLI/Studio, compatibility i retirement dał `81 passed, 1` znane ostrzeżenie kolekcji; focused gate wersji dał `34 passed`.
+
+To potwierdza P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Release metadata, pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają niewykonane.
+
+Prywatny dataset nie został użyty w tych bramach. Stan Test04 na realnych danych pozostaje `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
 
 ---
 
@@ -219,6 +223,10 @@ PACKAGE_RELEASE_NAME = "memory-rebuild-v4-consolidation"
 ```
 
 Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej roadmapie/AGENTS. Nie używać `16.3.26` dla Memory Rebuild.
+
+Stan na 2026-08-31: kanoniczny bump został już zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3`; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
+
+Focused walidacja jednego źródła wersji: `34 passed`; drugi bump nie jest wymagany.
 
 ---
 
