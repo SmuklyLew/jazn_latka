@@ -21,12 +21,12 @@ BUNDLED_MODULE_NAMES = (
 )
 
 
-def test_v86_generator_has_no_legacy_helper_files() -> None:
+def test_v87_generator_has_no_legacy_helper_files() -> None:
     for filename in LEGACY_HELPERS:
         assert not (ROOT / "tools" / filename).exists(), filename
 
 
-def test_v86_generator_uses_bundled_modules_without_static_legacy_imports() -> None:
+def test_v87_generator_uses_bundled_modules_without_static_legacy_imports() -> None:
     source = GENERATOR.read_text(encoding="utf-8")
 
     assert "from tools import _jazn_pack_generator_memory_v2" not in source
@@ -38,9 +38,9 @@ def test_v86_generator_uses_bundled_modules_without_static_legacy_imports() -> N
         assert module_name in source
 
 
-def test_v86_generator_imports_from_two_file_bundle() -> None:
+def test_v87_generator_imports_from_two_file_bundle() -> None:
     module = importlib.import_module("tools.jazn_pack_generator")
 
-    assert module.GENERATOR_VERSION == "8.6"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"
+    assert module.GENERATOR_VERSION == "8.7"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"
     assert callable(module.main)
