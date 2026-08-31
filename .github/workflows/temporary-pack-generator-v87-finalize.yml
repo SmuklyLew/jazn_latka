@@ -7,180 +7,118 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  actions: read
+  contents: write
 
 jobs:
-  patch-test-export:
+  publish-validated-artifact:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 10
     env:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
+      GH_TOKEN: ${{ github.token }}
+      FINAL_BRANCH: pr/v16.3.25.3.4-pack-generator-v87-studio-portable-zip
+      VALIDATED_RUN_ID: "33425362391"
     steps:
-      - name: Checkout staging branch
+      - name: Checkout publisher source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
           ref: upgrade/v16.3.25.3.4-pack-generator-v87-studio-portable-zip
 
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.12"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: "24"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[memory-rebuild-ui]" pytest
-          npm install --global pyright@1.1.411
-
-      - name: Align patcher with v8.6 public wrapper
-        run: |
-          python -X utf8 - <<'PY'
-          from pathlib import Path
-          path = Path('tools/_apply_pack_generator_v87.py')
-          text = path.read_text(encoding='utf-8')
-          text = text.replace('_bundle_Any', 'Any')
-          text = text.replace('_bundle_Sequence', 'Sequence')
-          text = text.replace('_bundle_Path', '_BundlePath')
-          text = text.replace(
-              'import unicodedata as _v87_unicodedata\nfrom dataclasses import replace as _v87_replace',
-              'import unicodedata as _v87_unicodedata\nfrom typing import cast as _v87_cast\nfrom dataclasses import replace as _v87_replace',
-          )
-          text = text.replace(
-              'def interoperability_profile(container_format: str, volume_format: str) -> dict[str, object]:',
-              'def interoperability_profile(container_format: str, volume_format: str) -> dict[str, Any]:',
-          )
-          text = text.replace(
-              'original_matrix(temp_dir, outputs, archive_format), archive_format',
-              '_v87_cast(dict[str, Any], original_matrix(temp_dir, outputs, archive_format)), archive_format',
-          )
-          text = text.replace(
-              'result = original_package_one(plan, options, base_zip_name)',
-              'result = _v87_cast(Any, original_package_one(plan, options, base_zip_name))',
-          )
-          path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Apply v8.7 patch
-        run: python -X utf8 tools/_apply_pack_generator_v87.py
-
-      - name: Synchronize current generator identity guards
-        run: |
-          python -X utf8 - <<'PY'
-          from pathlib import Path
-
-          paths = (
-              Path('tests/test_jazn_pack_generator_v82_contract.py'),
-              Path('tests/test_jazn_pack_generator_v84_contract.py'),
-              Path('tests/test_jazn_pack_generator_v16311_profiles.py'),
-              Path('tests/test_independent_memory_package_contract_v2.py'),
-          )
-          replacements = (
-              ('assert module.GENERATOR_VERSION == "8.6"', 'assert module.GENERATOR_VERSION == "8.7"'),
-              ('assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"', 'assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"'),
-              ('assert generator.GENERATOR_VERSION == "8.6"', 'assert generator.GENERATOR_VERSION == "8.7"'),
-              ('assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"', 'assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"'),
-          )
-          for path in paths:
-              text = path.read_text(encoding='utf-8')
-              changed = False
-              for old, new in replacements:
-                  count = text.count(old)
-                  if count > 1:
-                      raise SystemExit(f'{path}: ambiguous identity guard {old!r}: {count}')
-                  if count == 1:
-                      text = text.replace(old, new, 1)
-                      changed = True
-              if not changed:
-                  raise SystemExit(f'{path}: no v8.6 current-identity guard found')
-              path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Refresh editable package metadata after version bump
-        run: python -m pip install -e ".[memory-rebuild-ui]"
-
-      - name: Compile generator and regressions
-        run: >-
-          python -X utf8 -m compileall -q
-          tools/jazn_pack_generator.py
-          tests/test_jazn_pack_generator_two_file_bundle_v87.py
-          tests/test_jazn_pack_generator_v87_studio_portability.py
-
-      - name: Pyright generator
-        run: pyright tools/jazn_pack_generator.py
-
-      - name: Focused generator suite
-        run: >-
-          python -X utf8 -m pytest -q -ra --tb=short
-          tests/test_jazn_pack_generator_two_file_bundle_v87.py
-          tests/test_jazn_pack_generator_v87_studio_portability.py
-          tests/test_jazn_pack_generator_v82_contract.py
-          tests/test_jazn_pack_generator_v82_dashboard.py
-          tests/test_jazn_pack_generator_v84_contract.py
-          tests/test_jazn_pack_generator_v16311_profiles.py
-          tests/test_pack_generator_archive_io_v1638.py
-          tests/test_package_generator_release_version.py
-          tests/test_independent_memory_package_contract_v2.py
-
-      - name: System package smoke
-        run: python -X utf8 run.py package-smoke --profile system --json
-
-      - name: Full deterministic suite
-        run: >-
-          python -X utf8 -m pytest -q -ra --tb=short
-          -m "not live_model and not live_mcp"
-
-      - name: Diff check
-        run: git diff --check
-
-      - name: Export validated source set
+      - name: Download exact validated source artifact
         shell: bash
         run: |
-          rm -rf pack-v87-final
-          mkdir -p pack-v87-final
-          files=(
-            tools/jazn_pack_generator.py
-            latka_jazn/version.py
-            tests/test_independent_memory_package_contract_v2.py
-            tests/test_jazn_pack_generator_v82_contract.py
-            tests/test_jazn_pack_generator_v84_contract.py
-            tests/test_jazn_pack_generator_v16311_profiles.py
-            tests/test_jazn_pack_generator_two_file_bundle_v87.py
-            tests/test_jazn_pack_generator_v87_studio_portability.py
-            docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
-          )
-          for file in "${files[@]}"; do
-            mkdir -p "pack-v87-final/$(dirname "$file")"
-            cp "$file" "pack-v87-final/$file"
-          done
+          rm -rf "$RUNNER_TEMP/validated-v87"
+          mkdir -p "$RUNNER_TEMP/validated-v87"
+          gh run download "$VALIDATED_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name pack-generator-v87-validated-source \
+            --dir "$RUNNER_TEMP/validated-v87"
+
+      - name: Verify validated file manifest
+        shell: bash
+        run: |
           python -X utf8 - <<'PY'
           from pathlib import Path
-          import hashlib, json
-          root = Path('pack-v87-final')
-          rows = []
-          for path in sorted(p for p in root.rglob('*') if p.is_file()):
+          import hashlib, json, os, sys
+          root = Path(os.environ['RUNNER_TEMP']) / 'validated-v87'
+          manifest = root / 'VALIDATED_FILESET.json'
+          payload = json.loads(manifest.read_text(encoding='utf-8'))
+          if payload.get('schema') != 'jazn_pack_generator_v87_validated_files/v1':
+              raise SystemExit('unexpected validated artifact schema')
+          rows = payload.get('files') or []
+          if len(rows) != 9:
+              raise SystemExit(f'unexpected validated file count: {len(rows)}')
+          for row in rows:
+              path = root / str(row['path'])
               data = path.read_bytes()
-              rows.append({
-                  'path': path.relative_to(root).as_posix(),
-                  'size': len(data),
-                  'sha256': hashlib.sha256(data).hexdigest(),
-              })
-          (root / 'VALIDATED_FILESET.json').write_text(
-              json.dumps({'schema': 'jazn_pack_generator_v87_validated_files/v1', 'files': rows}, indent=2, sort_keys=True) + '\n',
-              encoding='utf-8',
-          )
+              digest = hashlib.sha256(data).hexdigest()
+              if len(data) != int(row['size']) or digest != str(row['sha256']):
+                  raise SystemExit(f'validated artifact mismatch: {row["path"]}')
+          print(f'validated artifact OK: {len(rows)} files')
           PY
 
-      - name: Upload validated source set
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: pack-generator-v87-validated-source
-          path: pack-v87-final
-          if-no-files-found: error
-          retention-days: 3
+      - name: Rebase publication tree onto current master
+        shell: bash
+        run: |
+          git fetch origin master "$FINAL_BRANCH"
+          git reset --hard origin/master
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          import json, os, shutil
+          source = Path(os.environ['RUNNER_TEMP']) / 'validated-v87'
+          payload = json.loads((source / 'VALIDATED_FILESET.json').read_text(encoding='utf-8'))
+          root = Path.cwd()
+          for row in payload['files']:
+              relative = Path(str(row['path']))
+              target = root / relative
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(source / relative, target)
+          PY
+          git rm tests/test_jazn_pack_generator_two_file_bundle_v86.py
+
+      - name: Verify exact clean publication diff
+        shell: bash
+        run: |
+          git add \
+            tools/jazn_pack_generator.py \
+            latka_jazn/version.py \
+            tests/test_independent_memory_package_contract_v2.py \
+            tests/test_jazn_pack_generator_v82_contract.py \
+            tests/test_jazn_pack_generator_v84_contract.py \
+            tests/test_jazn_pack_generator_v16311_profiles.py \
+            tests/test_jazn_pack_generator_two_file_bundle_v87.py \
+            tests/test_jazn_pack_generator_v87_studio_portability.py \
+            docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
+          git diff --cached --check
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          expected = {
+              'docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md',
+              'latka_jazn/version.py',
+              'tests/test_independent_memory_package_contract_v2.py',
+              'tests/test_jazn_pack_generator_two_file_bundle_v86.py',
+              'tests/test_jazn_pack_generator_two_file_bundle_v87.py',
+              'tests/test_jazn_pack_generator_v16311_profiles.py',
+              'tests/test_jazn_pack_generator_v82_contract.py',
+              'tests/test_jazn_pack_generator_v84_contract.py',
+              'tests/test_jazn_pack_generator_v87_studio_portability.py',
+              'tools/jazn_pack_generator.py',
+          }
+          output = subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True)
+          actual = {line.strip() for line in output.splitlines() if line.strip()}
+          if actual != expected:
+              raise SystemExit(f'unexpected publication diff: missing={sorted(expected-actual)}, extra={sorted(actual-expected)}')
+          print('publication diff OK:', len(actual), 'paths')
+          PY
+
+      - name: Commit and publish PR branch
+        shell: bash
+        run: |
+          git config user.name "SmuklyLew"
+          git config user.email "smuklylew@gmail.com"
+          git commit -m "upgrade: pack generator v8.7 Studio portable ZIP"
+          git push origin "HEAD:$FINAL_BRANCH"
