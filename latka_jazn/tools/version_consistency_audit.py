@@ -79,6 +79,7 @@ SKIP_PREFIXES = (
     "patchs/",
     "backups/",
     "backups_git/",
+    "tests/archive/",
 )
 MAX_SCAN_BYTES = 4 * 1024 * 1024
 VERSION_PATTERN = re.compile(r"v\d+\.\d+(?:\.\d+)*(?:[-_][A-Za-z0-9_.-]+)?|\d+\.\d+(?:\.\d+)+")

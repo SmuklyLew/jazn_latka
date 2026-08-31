@@ -27,6 +27,7 @@ def test_v90_archive_audit_uses_fixed_migration_boundary() -> None:
 def test_docs_archive_is_not_part_of_the_active_tree() -> None:
     assert _is_active_path("docs/archive/reports/old-release.md") is False
     assert _is_active_path("docs/archive/tools/memory-rebuild/legacy.md") is False
+    assert _is_active_path("tests/archive/test_retired_contract.py") is False
     assert _is_active_path("docs/project/current-contract.md") is True
 
 

@@ -17,6 +17,7 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+norecursedirs = ["archive"]
 addopts = ["--strict-markers"]
 markers = [
   "unit: isolated deterministic unit test",

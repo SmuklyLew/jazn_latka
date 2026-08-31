@@ -84,7 +84,11 @@ def _tracked_paths(root: Path) -> list[str]:
 
 def _is_active_path(path: str) -> bool:
     folded = path.replace("\\", "/")
-    if folded.startswith(".archives/") or folded.startswith("docs/archive/"):
+    if (
+        folded.startswith(".archives/")
+        or folded.startswith("docs/archive/")
+        or folded.startswith("tests/archive/")
+    ):
         return False
     return folded not in EXCLUDED_ACTIVE_PATHS
 

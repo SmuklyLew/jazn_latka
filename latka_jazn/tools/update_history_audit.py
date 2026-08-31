@@ -84,10 +84,13 @@ def find_test_evidence(root: Path, feature: str) -> list[str]:
     tokens=[t.lower() for t in re.findall(r'[A-Za-z_]{5,}|[ąćęłńóśźżA-ZĄĆĘŁŃÓŚŹŻa-z]{5,}', feature or '')[:5]]
     hits=[]
     for p in (root/'tests').rglob('test*.py') if (root/'tests').exists() else []:
+        rel=p.relative_to(root).as_posix()
+        if rel.startswith('tests/archive/'):
+            continue
         try: s=p.read_text(encoding='utf-8', errors='ignore').lower()
         except Exception: continue
         if any(t in s for t in tokens):
-            hits.append(p.relative_to(root).as_posix())
+            hits.append(rel)
     return hits[:8]
 
 def classify_implementation_status(root: Path, feature: str) -> str:
