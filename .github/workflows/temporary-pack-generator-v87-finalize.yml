@@ -39,6 +39,17 @@ jobs:
           python -m pip install -e ".[memory-rebuild-ui]" pytest
           npm install --global pyright@1.1.411
 
+      - name: Align patcher with v8.6 public wrapper
+        run: |
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          path = Path('tools/_apply_pack_generator_v87.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace('_bundle_Any', 'Any')
+          text = text.replace('_bundle_Sequence', 'Sequence')
+          path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Apply v8.7 patch
         id: apply_patch
         continue-on-error: true
