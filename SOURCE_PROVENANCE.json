@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2d708eda0242b6a784af4457749422cdc4e04ddb",
+  "base_merge_commit": "8cb492d2b2752a461a400bdbd879bfdc6b151c9b",
   "base_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
-  "commit_date": "2026-08-31T20:02:13+02:00",
+  "commit_date": "2026-08-31T20:03:40+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-31T18:02:13+00:00",
+  "generated_at_utc": "2026-08-31T18:03:40+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "5711470e31a95cbbcfc62c144ad21ed49a9981cf",
+  "git_tree_sha": "534c156d430c09fd03208393dd2de9f3c92d61cf",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2d708eda0242b6a784af4457749422cdc4e04ddb",
+    "base_commit": "8cb492d2b2752a461a400bdbd879bfdc6b151c9b",
     "base_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2d708eda0242b6a784af4457749422cdc4e04ddb",
+    "source_commit": "8cb492d2b2752a461a400bdbd879bfdc6b151c9b",
     "source_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2d708eda0242b6a784af4457749422cdc4e04ddb",
+  "source_commit": "8cb492d2b2752a461a400bdbd879bfdc6b151c9b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
   "tag": null,
