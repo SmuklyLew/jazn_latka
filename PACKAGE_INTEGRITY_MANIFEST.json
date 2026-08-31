@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.1-docs-taxonomy-contract",
-  "runtime_version": "16.3.25.3.1-docs-taxonomy-contract",
-  "package_version": "16.3.25.3.1-docs-taxonomy-contract",
-  "generated_at_utc": "2026-08-30T18:47:34+00:00",
-  "updated_at_utc": "2026-08-30T18:47:34+00:00",
+  "version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+  "runtime_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+  "package_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+  "generated_at_utc": "2026-08-31T15:18:53+00:00",
+  "updated_at_utc": "2026-08-31T15:18:53+00:00",
   "start_file": "run.py",
   "file_count": 952,
   "static_file_count": 952,
@@ -173,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2834,
-      "sha256": "c5d5b3e006e71f098f0d118b0f37273c7196323b2b318c043addca4518c4fc6b",
+      "size_bytes": 2925,
+      "sha256": "016b2e60f1d9c82b92b454ded99d6002f1ddc4e405f9701cfca27e7eed400364",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1253,8 +1253,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 114,
-      "sha256": "4297be0a23fce5c019751683dbd3bef078cbd3026dfaf5a7438a0907dcbe6a4c",
+      "size_bytes": 2488,
+      "sha256": "d90c88cbdff4a01e31ac96915227a9bee233a766a1296a2994c8e72fa42870cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5177,8 +5177,8 @@
     },
     {
       "path": "latka_jazn/resources/chatgpt_startup_loader.txt",
-      "size_bytes": 114,
-      "sha256": "4297be0a23fce5c019751683dbd3bef078cbd3026dfaf5a7438a0907dcbe6a4c",
+      "size_bytes": 2488,
+      "sha256": "d90c88cbdff4a01e31ac96915227a9bee233a766a1296a2994c8e72fa42870cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6482,8 +6482,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6484,
-      "sha256": "1919998a61906f6da9ffe28c18a20dab9e53126a5e75ca8d4a0e4194ce1ad8eb",
+      "size_bytes": 6499,
+      "sha256": "be5a5222e84f0d706289b60fb1b93c6ec0d0dfbe0509d7ecd6ef64368dacedd9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7778,8 +7778,8 @@
     },
     {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
-      "size_bytes": 5718,
-      "sha256": "698de7234ea5e4986dbc993a58dc4eaaf50b642be71a39ba262a2364c718a7dc",
+      "size_bytes": 6664,
+      "sha256": "fee8307d61cef2da42f8f5322b40978b0b09804258449337a9f517de36070e23",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8999,11 +8999,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.1-docs-taxonomy-contract",
+  "release_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.1-docs-taxonomy-contract",
-    "package_version": "16.3.25.3.1-docs-taxonomy-contract",
-    "release_version": "16.3.25.3.1-docs-taxonomy-contract"
+    "runtime_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+    "package_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+    "release_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap"
   },
   "legacy_aliases": {
     "version": "release_version"
