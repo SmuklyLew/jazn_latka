@@ -99,6 +99,7 @@ jobs:
               Path('tests/test_jazn_pack_generator_v82_contract.py'),
               Path('tests/test_jazn_pack_generator_v84_contract.py'),
               Path('tests/test_jazn_pack_generator_v16311_profiles.py'),
+              Path('tests/test_independent_memory_package_contract_v2.py'),
           )
           replacements = (
               ('assert module.GENERATOR_VERSION == "8.6"', 'assert module.GENERATOR_VERSION == "8.7"'),
@@ -165,6 +166,7 @@ jobs:
           tests/test_jazn_pack_generator_v16311_profiles.py
           tests/test_pack_generator_archive_io_v1638.py
           tests/test_package_generator_release_version.py
+          tests/test_independent_memory_package_contract_v2.py
 
       - name: System package smoke
         run: python -X utf8 tools/jazn_pack_generator.py package-smoke --profile system
