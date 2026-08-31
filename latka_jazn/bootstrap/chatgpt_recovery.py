@@ -20,6 +20,7 @@ from latka_jazn.core.runtime_daemon import (
     status_daemon,
 )
 from latka_jazn.packaging.split_zip_package import (
+    discover_package_sidecars,
     extract_independent_zip_set_resumable,
     extract_joined_zip_resumable,
     infer_base_zip_name,
@@ -418,10 +419,7 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
 
     directory = Path(parts_dir).expanduser().resolve()
     candidates: list[dict[str, Any]] = []
-    for sidecar_path in sorted(directory.glob("*.package.json")):
-        payload = _read_json(sidecar_path)
-        if not isinstance(payload, dict):
-            continue
+    for sidecar_path, payload in discover_package_sidecars(directory):
         if str(payload.get("profile") or "").strip().lower() != "memory":
             continue
         package_name = str(payload.get("package_name") or "").strip()
@@ -453,7 +451,6 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
             "candidate_names": [item["package_name"] for item in candidates],
         }
     return {"ok": True, "state": "memory_package_discovered", **candidates[0]}
-
 
 def _memory_package_requires_v3_repack(sidecar: dict[str, Any]) -> dict[str, Any]:
     """Decide whether legacy transport must be segmented before safe extraction."""
@@ -761,9 +758,72 @@ def _recover_chatgpt_runtime_impl(
         "memory_zip_name": memory_zip_name,
     }
 
+
+    runtime_profiles = frozenset({"system", "combined", "unknown"})
+    incoming_zip_name: str | None = None
+    incoming_package_set: dict[str, Any] | None = None
+    try:
+        incoming_zip_name = infer_base_zip_name(
+            parts_dir,
+            base_zip_name,
+            allowed_profiles=runtime_profiles,
+        )
+    except FileNotFoundError as exc:
+        report["incoming_runtime_package"] = {"present": False, "reason": str(exc)}
+    except ValueError as exc:
+        report["incoming_runtime_package"] = {
+            "present": True,
+            "ambiguous": True,
+            "error": str(exc),
+        }
+        return RecoveryResult(
+            ok=False,
+            state="runtime_package_discovery_ambiguous",
+            active_root=str(destination),
+            report=report,
+            exit_code=8,
+        )
+    if incoming_zip_name is not None:
+        incoming_package_set = load_package_set_metadata(parts_dir, incoming_zip_name)
+        report["incoming_runtime_package"] = {
+            "present": True,
+            "base_zip_name": incoming_zip_name,
+            "package_set": incoming_package_set,
+        }
+
     preflight = runtime_preflight(destination)
     report["preflight_before"] = preflight.to_dict()
     if preflight.structure_ok and preflight.manifest_ok and preflight.provenance_ok and not force_reextract:
+
+        if incoming_zip_name is not None:
+            incoming_version = str((incoming_package_set or {}).get("package_version") or "").strip()
+            active_version = str(preflight.version or "").strip()
+            same_release = bool(
+                incoming_version
+                and active_version
+                and incoming_version.lstrip("v") == active_version.lstrip("v")
+            )
+            if not same_release:
+                report["replacement_blocked"] = {
+                    "ok": False,
+                    "reason": "incoming_system_package_requires_new_destination",
+                    "incoming_base_zip_name": incoming_zip_name,
+                    "incoming_package_version": incoming_version or None,
+                    "active_version": active_version or None,
+                    "destination": str(destination),
+                    "recovery_hint": (
+                        "Wskaż nowy, wersjonowany katalog destination dla nowej paczki. "
+                        "Loader nie może po cichu zignorować nowego system ZIP ani nadpisać "
+                        "zweryfikowanego active_root."
+                    ),
+                }
+                return RecoveryResult(
+                    ok=False,
+                    state="incoming_package_requires_new_destination",
+                    active_root=str(destination),
+                    report=report,
+                    exit_code=9,
+                )
         if auto_attach_memory:
             report["auto_memory"] = _auto_attach_memory_before_daemon(
                 destination=destination,
@@ -844,9 +904,32 @@ def _recover_chatgpt_runtime_impl(
             exit_code=9,
         )
 
-    zip_name = infer_base_zip_name(parts_dir, base_zip_name)
+
+    if incoming_zip_name is None:
+        memory_only = _discover_memory_package(parts_dir, memory_zip_name)
+        report["memory_only_discovery"] = {
+            key: value for key, value in memory_only.items() if key != "sidecar"
+        }
+        if memory_only.get("ok") is True and memory_only.get("state") == "memory_package_discovered":
+            report["profile_gate"] = {
+                "ok": False,
+                "reason": "memory_profile_is_not_a_runtime_root",
+                "truth_boundary": (
+                    "Paczka memory może zostać dołączona wyłącznie do osobno zweryfikowanego systemu; "
+                    "sama nie zawiera startowego active_root."
+                ),
+            }
+            return RecoveryResult(
+                ok=False,
+                state="memory_profile_rejected",
+                active_root=str(destination),
+                report=report,
+                exit_code=8,
+            )
+        raise FileNotFoundError(f"Nie znaleziono systemowej paczki ZIP w folderze: {parts_dir}")
+    zip_name = incoming_zip_name
     report["base_zip_name"] = zip_name
-    package_set = load_package_set_metadata(parts_dir, zip_name)
+    package_set = incoming_package_set or load_package_set_metadata(parts_dir, zip_name)
     report["package_set"] = package_set
     declared_profile = str(package_set.get("profile") or "unknown").strip().lower()
     package_contract_source = str(package_set.get("source") or "")
