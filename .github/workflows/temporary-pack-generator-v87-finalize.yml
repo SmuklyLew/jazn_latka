@@ -90,6 +90,40 @@ jobs:
         if: steps.apply_patch.outcome == 'failure'
         run: exit 1
 
+      - name: Synchronize current generator identity guards
+        run: |
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+
+          paths = (
+              Path('tests/test_jazn_pack_generator_v82_contract.py'),
+              Path('tests/test_jazn_pack_generator_v84_contract.py'),
+              Path('tests/test_jazn_pack_generator_v16311_profiles.py'),
+          )
+          replacements = (
+              ('assert module.GENERATOR_VERSION == "8.6"', 'assert module.GENERATOR_VERSION == "8.7"'),
+              ('assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"', 'assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"'),
+              ('assert generator.GENERATOR_VERSION == "8.6"', 'assert generator.GENERATOR_VERSION == "8.7"'),
+              ('assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"', 'assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"'),
+          )
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              changed = False
+              for old, new in replacements:
+                  count = text.count(old)
+                  if count > 1:
+                      raise SystemExit(f'{path}: ambiguous identity guard {old!r}: {count}')
+                  if count == 1:
+                      text = text.replace(old, new, 1)
+                      changed = True
+              if not changed:
+                  raise SystemExit(f'{path}: no v8.6 current-identity guard found')
+              path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Refresh editable package metadata after version bump
+        run: python -m pip install -e ".[memory-rebuild-ui]"
+
       - name: Compile generator and regressions
         run: >-
           python -X utf8 -m compileall -q
