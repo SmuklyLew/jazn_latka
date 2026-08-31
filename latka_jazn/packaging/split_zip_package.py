@@ -106,20 +106,38 @@ def _read_package_sidecar(path: Path) -> dict[str, Any]:
     return payload
 
 
+def discover_package_sidecars(parts_dir: Path) -> list[tuple[Path, dict[str, Any]]]:
+    """Return valid current package sidecars, including host-renamed uploads.
+
+    Chat hosts may rename ``archive.zip.package.json`` to forms such as
+    ``archive.zip.package(1).json``. The declared ``package_name`` remains
+    the canonical identity; the upload filename is only transport metadata.
+    """
+
+    directory = Path(parts_dir).expanduser().resolve()
+    discovered: list[tuple[Path, dict[str, Any]]] = []
+    for candidate in sorted(directory.glob("*.json")):
+        if ".package" not in candidate.name:
+            continue
+        try:
+            payload = _read_package_sidecar(candidate)
+            sanitize_zip_name(str(payload.get("package_name") or ""))
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+        discovered.append((candidate, payload))
+    return discovered
+
+
 def _find_package_sidecar(parts_dir: Path, base_zip_name: str) -> tuple[Path | None, dict[str, Any] | None]:
     exact = parts_dir / f"{base_zip_name}.package.json"
     if exact.is_file():
         return exact, _read_package_sidecar(exact)
 
     matches: list[tuple[Path, dict[str, Any]]] = []
-    for candidate in sorted(parts_dir.glob("*.json")):
-        if candidate == exact or ".package" not in candidate.name:
+    for candidate, payload in discover_package_sidecars(parts_dir):
+        if candidate == exact:
             continue
-        try:
-            payload = _read_package_sidecar(candidate)
-            declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
-        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
-            continue
+        declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
         if declared_name == base_zip_name:
             matches.append((candidate, payload))
     if len(matches) > 1:
@@ -128,7 +146,6 @@ def _find_package_sidecar(parts_dir: Path, base_zip_name: str) -> tuple[Path | N
             f"{base_zip_name!r}: " + ", ".join(path.name for path, _ in matches)
         )
     return matches[0] if matches else (None, None)
-
 
 def load_package_set_metadata(parts_dir: Path, base_zip_name: str) -> dict[str, Any]:
     """Read the current package-set contract, with an explicit legacy fallback."""
@@ -173,49 +190,88 @@ def load_package_set_metadata(parts_dir: Path, base_zip_name: str) -> dict[str, 
     }
 
 
-def infer_base_zip_name(parts_dir: Path, base_zip_name: str | None = None) -> str:
-    parts_dir = Path(parts_dir).expanduser().resolve()
+def infer_base_zip_name(
+    parts_dir: Path,
+    base_zip_name: str | None = None,
+    *,
+    allowed_profiles: set[str] | frozenset[str] | None = None,
+) -> str:
+    """Infer one canonical package without allowing another profile to hijack it.
 
+    Discovery accepts current and host-renamed package sidecars, canonical
+    split volumes and checksum-only transfers. For ``*.parts.sha256`` the
+    filenames declared inside the checksum file are authoritative, so a
+    host rename such as ``.parts(1).sha256`` does not change package identity.
+    """
+
+    parts_dir = Path(parts_dir).expanduser().resolve()
     if base_zip_name:
         return sanitize_zip_name(base_zip_name)
 
-    current_sidecars = sorted(parts_dir.glob("*.zip.package.json"))
-    legacy_sidecars = sorted(parts_dir.glob("*.zip.manifest.json"))
-    sidecar_names = {
-        path.name[: -len(".package.json")]
-        for path in current_sidecars
-    } | {
-        path.name[: -len(".manifest.json")]
-        for path in legacy_sidecars
-    }
-    for candidate in sorted(parts_dir.glob("*.json")):
-        if candidate in current_sidecars or ".package" not in candidate.name:
-            continue
-        try:
-            payload = _read_package_sidecar(candidate)
-            declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
-        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
-            continue
-        sidecar_names.add(declared_name)
-    if len(sidecar_names) == 1:
-        return next(iter(sidecar_names))
-
-    groups: dict[str, int] = {}
-    for part in parts_dir.glob("*.zip.[0-9][0-9][0-9]"):
-        base = part.name[:-4]
-        groups[base] = groups.get(base, 0) + 1
-
-    if len(groups) == 1:
-        return next(iter(groups))
-
-    if not sidecar_names and not groups:
-        raise FileNotFoundError(f"Nie znaleziono części ZIP w folderze: {parts_dir}")
-
-    raise ValueError(
-        "W folderze jest więcej niż jedna możliwa paczka. "
-        "Podaj nazwę przez base_zip_name / --zip-name."
+    profile_filter = (
+        {str(item).strip().lower() for item in allowed_profiles}
+        if allowed_profiles is not None
+        else None
     )
+    canonical_current_names = {
+        path.name[: -len(".package.json")]
+        for path in sorted(parts_dir.glob("*.zip.package.json"))
+    }
+    all_sidecar_names: set[str] = set(canonical_current_names)
+    sidecar_names: set[str] = set(canonical_current_names)
+    blocked_sidecar_names: set[str] = set()
+    for _candidate, payload in discover_package_sidecars(parts_dir):
+        declared_name = sanitize_zip_name(str(payload.get("package_name") or ""))
+        profile = str(payload.get("profile") or "unknown").strip().lower()
+        all_sidecar_names.add(declared_name)
+        if profile_filter is None or profile in profile_filter:
+            sidecar_names.add(declared_name)
+        else:
+            blocked_sidecar_names.add(declared_name)
+            sidecar_names.discard(declared_name)
 
+    legacy_names = {
+        path.name[: -len(".manifest.json")]
+        for path in sorted(parts_dir.glob("*.zip.manifest.json"))
+    }
+    all_sidecar_names.update(legacy_names)
+    if profile_filter is None or "unknown" in profile_filter:
+        sidecar_names.update(legacy_names)
+
+    checksum_names: set[str] = set()
+    for checksum in sorted(parts_dir.glob("*.sha256")):
+        if ".parts" not in checksum.name:
+            continue
+        declared_bases: set[str] = set()
+        for _digest, filename in parse_sha256sum_file(checksum):
+            lower = filename.lower()
+            if re.search(r"\.zip\.\d{3}$", lower):
+                declared_bases.add(filename[:-4])
+            elif lower.endswith(".zip"):
+                declared_bases.add(filename)
+        if len(declared_bases) == 1:
+            checksum_names.update(declared_bases)
+
+    split_names = {
+        part.name[:-4]
+        for part in parts_dir.glob("*.zip.[0-9][0-9][0-9]")
+    }
+    fallback_names = (checksum_names | split_names) - blocked_sidecar_names
+    candidate_names = sidecar_names | fallback_names
+    if len(candidate_names) == 1:
+        return next(iter(candidate_names))
+    if not candidate_names:
+        if all_sidecar_names or checksum_names or split_names:
+            raise FileNotFoundError(
+                "Nie znaleziono paczki zgodnej z wymaganym profilem w folderze: "
+                f"{parts_dir}"
+            )
+        raise FileNotFoundError(f"Nie znaleziono części ZIP w folderze: {parts_dir}")
+    raise ValueError(
+        "W folderze jest więcej niż jedna możliwa paczka: "
+        + ", ".join(sorted(candidate_names))
+        + ". Podaj nazwę przez base_zip_name / --zip-name."
+    )
 
 def load_package_expectations(
     parts_dir: Path,
@@ -739,9 +795,10 @@ def validate_package_parts(
     if extra_parts:
         raise ValueError("Znaleziono dodatkowe części nieujęte w manifeście/hashach: " + ", ".join(extra_parts))
 
+    single_complete_zip = len(expected) == 1 and expected[0].filename == base_zip_name
     for index, part in enumerate(expected, start=1):
         suffix = f".{index:03d}"
-        if not part.filename.endswith(suffix):
+        if not single_complete_zip and not part.filename.endswith(suffix):
             raise ValueError(f"Nieciągła albo błędna kolejność części: oczekiwano {suffix}, jest {part.filename}")
 
         part_path = parts_dir / part.filename
