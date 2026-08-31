@@ -36,5 +36,5 @@ FAILED tests/test_runtime_package_loader_contract.py::test_current_package_with_
   
   - runtime_package_contract_invalid
   + runtime_package_source_missing
-1 failed, 21 passed in 1.78s
+1 failed, 21 passed in 1.82s
 EXIT=1
