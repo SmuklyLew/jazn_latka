@@ -40,7 +40,27 @@ jobs:
           npm install --global pyright@1.1.411
 
       - name: Apply v8.7 patch
-        run: python -X utf8 tools/_apply_pack_generator_v87.py
+        id: apply_patch
+        continue-on-error: true
+        shell: bash
+        run: |
+          python -X utf8 tools/_apply_pack_generator_v87.py > pack-v87-patch.log 2>&1
+          code=$?
+          cat pack-v87-patch.log
+          exit "$code"
+
+      - name: Upload patch diagnostic
+        if: steps.apply_patch.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pack-v87-patch-diagnostic
+          path: pack-v87-patch.log
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Stop after patch failure
+        if: steps.apply_patch.outcome == 'failure'
+        run: exit 1
 
       - name: Compile generator and regressions
         run: >-
@@ -79,6 +99,7 @@ jobs:
         shell: bash
         run: |
           git rm tools/_apply_pack_generator_v87.py .github/workflows/temporary-pack-generator-v87-finalize.yml
+          rm -f pack-v87-patch.log
           git config user.name "SmuklyLew"
           git config user.email "smuklylew@gmail.com"
           git add tools/jazn_pack_generator.py latka_jazn/version.py tests docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
