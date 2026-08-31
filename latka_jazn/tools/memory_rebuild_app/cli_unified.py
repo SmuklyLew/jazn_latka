@@ -194,6 +194,9 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     protocol.add_argument("--source", action="append", type=Path, default=[])
     protocol.add_argument("--database", type=Path)
     protocol.add_argument("--test00-result", type=Path)
+    protocol.add_argument("--test01-result", type=Path)
+    protocol.add_argument("--test02-result", type=Path)
+    protocol.add_argument("--test03-result", type=Path)
     protocol.add_argument("--benchmark", type=Path)
     protocol.add_argument("--restart-continuity-report", type=Path)
     protocol.add_argument("--test04-result", type=Path)
@@ -201,6 +204,7 @@ def add_unified_subcommands(sub: argparse._SubParsersAction[argparse.ArgumentPar
     protocol.add_argument("--system-acceptance", action="store_true")
     protocol.add_argument("--base-commit")
     protocol.add_argument("--run-id")
+    protocol.add_argument("--resume", action="store_true", help="Wznów jawnie istniejący draft tego samego run_id.")
 
     validate_protocol = sub.add_parser("protocol-validate", help="Waliduj istniejący artefakt bez uruchamiania protokołu.")
     validate_protocol.add_argument("--profile", required=True, choices=TEST_PROTOCOL_ORDER)
@@ -236,6 +240,7 @@ def run_unified_command(
             settings=resolved_settings,
             base_commit=args.base_commit,
             run_id=getattr(args, "run_id", None),
+            resume=bool(getattr(args, "resume", False)),
         )
         if command == "protocol-validate":
             kwargs: dict[str, Any] = {}
@@ -254,6 +259,13 @@ def run_unified_command(
             return service.validate_protocol(args.profile, args.artifact, **kwargs)
 
         profile = args.profile
+
+        def predecessor(name: str) -> Any:
+            explicit = getattr(args, f"{name}_result", None)
+            if explicit is not None:
+                return explicit
+            return service.engine.results.get(name)
+
         if profile in {"test00", "test01", "test03"} and not args.source:
             raise ValueError(f"protocol-run {profile} requires at least one --source")
         if profile in {"test01", "test02", "test04", "final"} and args.database is None:
@@ -261,33 +273,47 @@ def run_unified_command(
         if profile == "test00":
             run_kwargs = {"sources": args.source}
         elif profile == "test01":
-            if args.test00_result is None:
-                raise ValueError("protocol-run test01 requires --test00-result")
+            prerequisite = predecessor("test00")
+            if prerequisite is None:
+                raise ValueError("protocol-run test01 requires Test00 from this run or --test00-result")
             run_kwargs = {
                 "sources": args.source,
                 "database": args.database,
-                "test00_result": args.test00_result,
+                "test00_result": prerequisite,
             }
         elif profile == "test02":
-            run_kwargs = {"database": args.database}
+            prerequisite = predecessor("test01")
+            if prerequisite is None:
+                raise ValueError("protocol-run test02 requires Test01 from this run or --test01-result")
+            run_kwargs = {"database": args.database, "test01_result": prerequisite}
         elif profile == "test03":
-            run_kwargs = {"sources": args.source, "test00_result": args.test00_result}
+            prerequisite = predecessor("test02")
+            if prerequisite is None:
+                raise ValueError("protocol-run test03 requires Test02 from this run or --test02-result")
+            run_kwargs = {"sources": args.source, "test02_result": prerequisite}
         elif profile == "test04":
             if args.benchmark is None:
                 raise ValueError("protocol-run test04 requires --benchmark")
+            prerequisite = predecessor("test03")
+            if prerequisite is None:
+                raise ValueError("protocol-run test04 requires Test03 from this run or --test03-result")
             run_kwargs = {
                 "database": args.database,
                 "benchmark": args.benchmark,
+                "test03_result": prerequisite,
                 "system_acceptance": args.system_acceptance,
                 "restart_continuity_report": args.restart_continuity_report,
             }
         else:
-            if args.test04_result is None or args.final_output is None:
-                raise ValueError("protocol-run final requires --test04-result and --final-output")
+            prerequisite = predecessor("test04")
+            if prerequisite is None:
+                raise ValueError("protocol-run final requires Test04 from this run or --test04-result")
+            if args.final_output is None:
+                raise ValueError("protocol-run final requires --final-output")
             run_kwargs = {
                 "database": args.database,
                 "output": args.final_output,
-                "test04_result": args.test04_result,
+                "test04_result": prerequisite,
                 "sources": args.source,
             }
         return service.run_protocol(profile, **run_kwargs)

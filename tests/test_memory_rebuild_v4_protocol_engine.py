@@ -534,33 +534,107 @@ def test_cli_protocol_run_and_validate_use_application_service(tmp_path: Path, c
         ]
     )
     assert parsed.command == "protocol-run"
-    assert cli_main(
+
+    output_root = tmp_path / "cli"
+    database = tmp_path / "cli-memory.sqlite3"
+    common = [
+        "--output-root", str(output_root),
+        "--base-commit", BASE_COMMIT,
+        "--run-id", "cli-run",
+    ]
+
+    def run_cli(profile: str, *extra: str, resume: bool = False) -> dict:
+        arguments = ["protocol-run", "--profile", profile, *common]
+        if resume:
+            arguments.append("--resume")
+        arguments.extend(extra)
+        assert cli_main(arguments) == 0
+        return json.loads(capsys.readouterr().out)
+
+    test00 = run_cli("test00", "--source", str(source))
+    assert test00["ok"] is True
+    assert test00["run_manifest"]["sealed"] is False
+    assert test00["run_manifest"]["sanitized"] is None
+    assert Path(test00["run_manifest"]["draft_sanitized"]).is_file()
+
+    test01 = run_cli(
+        "test01",
+        "--source", str(source),
+        "--database", str(database),
+        resume=True,
+    )
+    assert test01["ok"] is True, test01
+    assert test01["run_id"] == test00["run_id"]
+    assert test01["run_manifest"]["completed_profiles"] == ["test00", "test01"]
+
+    test02 = run_cli("test02", "--database", str(database), resume=True)
+    assert test02["ok"] is True, test02
+    assert test02["run_manifest"]["completed_profiles"] == ["test00", "test01", "test02"]
+
+    test03 = run_cli("test03", "--source", str(source), resume=True)
+    assert test03["ok"] is True, test03
+    assert test03["run_manifest"]["completed_profiles"] == [
+        "test00", "test01", "test02", "test03",
+    ]
+
+    test04 = run_cli(
+        "test04",
+        "--database", str(database),
+        "--benchmark", str(_benchmark(tmp_path / "cli-benchmark.private.json")),
+        resume=True,
+    )
+    assert test04["ok"] is True, test04
+    assert test04["run_manifest"]["completed_profiles"] == [
+        "test00", "test01", "test02", "test03", "test04",
+    ]
+
+    final = run_cli(
+        "final",
+        "--database", str(database),
+        "--final-output", str(tmp_path / "cli-final-memory"),
+        "--source", str(source),
+        resume=True,
+    )
+    assert final["ok"] is True, final
+    assert final["run_id"] == test00["run_id"]
+    assert final["run_manifest"]["sealed"] is True
+    assert final["run_manifest"]["completed_profiles"] == [
+        "test00", "test01", "test02", "test03", "test04", "final",
+    ]
+
+    resume_parsed = parser.parse_args(
         [
             "protocol-run",
-            "--profile", "test00",
-            "--output-root", str(tmp_path / "cli"),
-            "--source", str(source),
+            "--profile", "test03",
+            "--output-root", str(output_root),
             "--base-commit", BASE_COMMIT,
             "--run-id", "cli-run",
+            "--resume",
         ]
-    ) == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["ok"] is True
-    assert payload["run_manifest"]["sealed"] is False
-    assert payload["run_manifest"]["sanitized"] is None
-    assert Path(payload["run_manifest"]["draft_sanitized"]).is_file()
+    )
+    assert resume_parsed.resume is True
 
 
-def test_studio_runner_constructs_the_same_application_service(monkeypatch, tmp_path: Path) -> None:
-    calls = []
+def test_studio_runner_reuses_one_application_service_and_authentic_chain(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    constructors = []
+    calls: list[tuple[str, dict]] = []
 
     class FakeService:
         def __init__(self, output_root, **kwargs):
-            calls.append((Path(output_root), kwargs))
+            constructors.append((self, Path(output_root), kwargs))
 
         def run_protocol(self, profile, **kwargs):
             calls.append((profile, kwargs))
-            return {"ok": True, "outcome": "PASSED", "profile": profile}
+            return {
+                "ok": True,
+                "outcome": "PASSED",
+                "profile": profile,
+                "run_id": "studio-one-run",
+                "downstream_ready": True,
+            }
 
     state = studio.StudioState(
         database=tmp_path / "memory_jazn.sqlite3",
@@ -571,11 +645,20 @@ def test_studio_runner_constructs_the_same_application_service(monkeypatch, tmp_
     )
     dialogs = type("Dialogs", (), {"message": lambda self, *_args: None})()
     monkeypatch.setattr(studio, "MemoryRebuildApplicationService", FakeService)
+    source = _write_source(tmp_path / "studio-conversations.json", "conversation-a", "Tayfa")
+    monkeypatch.setattr(studio, "_project_sources", lambda _state: [source])
 
+    studio._run_test(state, dialogs, "test00")
+    studio._run_test(state, dialogs, "test01")
     studio._run_test(state, dialogs, "test02")
+    studio._run_test(state, dialogs, "test03")
 
-    assert calls[-1][0] == "test02"
-    assert calls[-1][1]["database"] == state.database
+    assert len(constructors) == 1
+    assert state.protocol_service is constructors[0][0]
+    assert [profile for profile, _kwargs in calls] == ["test00", "test01", "test02", "test03"]
+    assert calls[1][1]["test00_result"] == state.test_results["test00"]
+    assert calls[2][1]["test01_result"] == state.test_results["test01"]
+    assert calls[3][1]["test02_result"] == state.test_results["test02"]
 
 
 def test_test00_accepts_classified_bundle_attachments_as_opaque_raw_evidence(tmp_path: Path) -> None:

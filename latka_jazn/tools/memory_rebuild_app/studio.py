@@ -195,6 +195,7 @@ class StudioState:
     project_error: str | None = None
     runtime_settings: MemoryRebuildSettings = field(default_factory=MemoryRebuildSettings)
     test_results: dict[str, dict[str, Any]] = field(default_factory=dict)
+    protocol_service: MemoryRebuildApplicationService | None = field(default=None, repr=False)
     dialogs: DialogBackend | None = field(default=None, repr=False)
     settings_file: Path = field(init=False)
     tool_settings: MemoryRebuildToolSettings = field(init=False)
@@ -722,11 +723,17 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
     project = ProjectStore(state.project_root).load(state.project) if state.project else None
     settings = dict(project.settings) if project else {}
     sources = _project_sources(state) if profile in {"test00", "test01", "test03"} else []
-    service = MemoryRebuildApplicationService(
-        state.tool_root / "memory" / "rebuild_tests" / "protocols",
-        tool_root=state.tool_root,
-        settings=state.runtime_settings,
-    )
+    if profile == "test00":
+        state.test_results.clear()
+        state.protocol_service = MemoryRebuildApplicationService(
+            state.tool_root / "memory" / "rebuild_tests" / "protocols",
+            tool_root=state.tool_root,
+            settings=state.runtime_settings,
+        )
+    elif state.protocol_service is None:
+        raise ValueError(f"{profile.upper()} wymaga rozpoczęcia runu od Test00 w tej sesji Studio.")
+    service = state.protocol_service
+    assert service is not None
     state.test_results[profile] = {"outcome": "RUNNING", "ok": False}
     state.status = f"{profile.upper()}: RUNNING"
     state.status_kind = "ok"
@@ -739,16 +746,26 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
             raise ValueError("Test01 wymaga zaliczonego Test00 w tej sesji Studio.")
         kwargs = {"sources": sources, "database": state.database, "test00_result": prerequisite}
     elif profile == "test02":
-        kwargs = {"database": state.database}
+        prerequisite = state.test_results.get("test01")
+        if not prerequisite or not prerequisite.get("ok"):
+            raise ValueError("Test02 wymaga zaliczonego Test01 w tej sesji Studio.")
+        kwargs = {"database": state.database, "test01_result": prerequisite}
     elif profile == "test03":
-        kwargs = {"sources": sources, "test00_result": state.test_results.get("test00")}
+        prerequisite = state.test_results.get("test02")
+        if not prerequisite or not prerequisite.get("ok"):
+            raise ValueError("Test03 wymaga zaliczonego Test02 w tej sesji Studio.")
+        kwargs = {"sources": sources, "test02_result": prerequisite}
     elif profile == "test04":
+        prerequisite = state.test_results.get("test03")
+        if not prerequisite or not prerequisite.get("ok"):
+            raise ValueError("Test04 wymaga zaliczonego Test03 w tej sesji Studio.")
         benchmark = settings.get("test04_benchmark")
         if not benchmark:
             raise ValueError("Test04 wymaga prywatnego ustawienia projektu test04_benchmark.")
         kwargs = {
             "database": state.database,
             "benchmark": benchmark,
+            "test03_result": prerequisite,
             "system_acceptance": bool(settings.get("system_acceptance", False)),
             "restart_continuity_report": settings.get("restart_continuity_report"),
         }
