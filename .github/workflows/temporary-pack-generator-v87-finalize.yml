@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-test-commit:
+  patch-test-export:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -68,27 +68,7 @@ jobs:
           PY
 
       - name: Apply v8.7 patch
-        id: apply_patch
-        continue-on-error: true
-        shell: bash
-        run: |
-          python -X utf8 tools/_apply_pack_generator_v87.py > pack-v87-patch.log 2>&1
-          code=$?
-          cat pack-v87-patch.log
-          exit "$code"
-
-      - name: Upload patch diagnostic
-        if: steps.apply_patch.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: pack-v87-patch-diagnostic
-          path: pack-v87-patch.log
-          if-no-files-found: error
-          retention-days: 3
-
-      - name: Stop after patch failure
-        if: steps.apply_patch.outcome == 'failure'
-        run: exit 1
+        run: python -X utf8 tools/_apply_pack_generator_v87.py
 
       - name: Synchronize current generator identity guards
         run: |
@@ -133,27 +113,7 @@ jobs:
           tests/test_jazn_pack_generator_v87_studio_portability.py
 
       - name: Pyright generator
-        id: pyright_generator
-        continue-on-error: true
-        shell: bash
-        run: |
-          pyright tools/jazn_pack_generator.py > pack-v87-pyright.log 2>&1
-          code=$?
-          cat pack-v87-pyright.log
-          exit "$code"
-
-      - name: Upload Pyright diagnostic
-        if: steps.pyright_generator.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: pack-v87-pyright-diagnostic
-          path: pack-v87-pyright.log
-          if-no-files-found: error
-          retention-days: 3
-
-      - name: Stop after Pyright failure
-        if: steps.pyright_generator.outcome == 'failure'
-        run: exit 1
+        run: pyright tools/jazn_pack_generator.py
 
       - name: Focused generator suite
         run: >-
@@ -179,14 +139,48 @@ jobs:
       - name: Diff check
         run: git diff --check
 
-      - name: Commit validated source change
+      - name: Export validated source set
         shell: bash
         run: |
-          git rm tools/_apply_pack_generator_v87.py .github/workflows/temporary-pack-generator-v87-finalize.yml
-          rm -f pack-v87-patch.log pack-v87-pyright.log
-          git config user.name "SmuklyLew"
-          git config user.email "smuklylew@gmail.com"
-          git add tools/jazn_pack_generator.py latka_jazn/version.py tests docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
-          git diff --cached --check
-          git commit -m "upgrade: pack generator v8.7 Studio portable ZIP"
-          git push origin HEAD:upgrade/v16.3.25.3.4-pack-generator-v87-studio-portable-zip
+          rm -rf pack-v87-final
+          mkdir -p pack-v87-final
+          files=(
+            tools/jazn_pack_generator.py
+            latka_jazn/version.py
+            tests/test_independent_memory_package_contract_v2.py
+            tests/test_jazn_pack_generator_v82_contract.py
+            tests/test_jazn_pack_generator_v84_contract.py
+            tests/test_jazn_pack_generator_v16311_profiles.py
+            tests/test_jazn_pack_generator_two_file_bundle_v87.py
+            tests/test_jazn_pack_generator_v87_studio_portability.py
+            docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
+          )
+          for file in "${files[@]}"; do
+            mkdir -p "pack-v87-final/$(dirname "$file")"
+            cp "$file" "pack-v87-final/$file"
+          done
+          python -X utf8 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          root = Path('pack-v87-final')
+          rows = []
+          for path in sorted(p for p in root.rglob('*') if p.is_file()):
+              data = path.read_bytes()
+              rows.append({
+                  'path': path.relative_to(root).as_posix(),
+                  'size': len(data),
+                  'sha256': hashlib.sha256(data).hexdigest(),
+              })
+          (root / 'VALIDATED_FILESET.json').write_text(
+              json.dumps({'schema': 'jazn_pack_generator_v87_validated_files/v1', 'files': rows}, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Upload validated source set
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pack-generator-v87-validated-source
+          path: pack-v87-final
+          if-no-files-found: error
+          retention-days: 3
