@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
-  "runtime_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
-  "package_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
-  "generated_at_utc": "2026-08-31T15:18:53+00:00",
-  "updated_at_utc": "2026-08-31T15:18:53+00:00",
+  "version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
+  "runtime_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
+  "package_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
+  "generated_at_utc": "2026-08-31T17:22:17+00:00",
+  "updated_at_utc": "2026-08-31T17:22:17+00:00",
   "start_file": "run.py",
-  "file_count": 952,
-  "static_file_count": 952,
+  "file_count": 953,
+  "static_file_count": 953,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -174,7 +174,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2925,
-      "sha256": "016b2e60f1d9c82b92b454ded99d6002f1ddc4e405f9701cfca27e7eed400364",
+      "sha256": "1f2b2ab15d0e207ae55c234289258234c087f1f221e989e25b3243d534a65947",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1424,8 +1424,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_recovery.py",
-      "size_bytes": 52115,
-      "sha256": "b7d9b2fb3c290798149abd02ddc7b8c0f8e6182f7e3dd332fde9b28754d9ddd6",
+      "size_bytes": 55698,
+      "sha256": "422995755a4adfeeb945462ab174629c148bf72b21823551c50e66c875745b1b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5105,8 +5105,8 @@
     },
     {
       "path": "latka_jazn/packaging/split_zip_package.py",
-      "size_bytes": 39671,
-      "sha256": "36cca0b1060cbc810e236898ee4d3e3e9ae63bf42b4ebe5273919c391f95fffa",
+      "size_bytes": 42306,
+      "sha256": "7704a7b01886d7f7a67fe97304be18ca80e72c4cd54c940600cf26e8eda33660",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6482,8 +6482,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6499,
-      "sha256": "be5a5222e84f0d706289b60fb1b93c6ec0d0dfbe0509d7ecd6ef64368dacedd9",
+      "size_bytes": 6491,
+      "sha256": "8b6efb0b6d8a7eff3f2dd7eb7031c295dcbc0db89740c524b79b3d9e030701a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8290,6 +8290,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v1632533_chatgpt_package_discovery_bootstrap.py",
+      "size_bytes": 5149,
+      "sha256": "04064cbebd05be9dcfd4d071ffdc4851ccdde5623f03c5f0f6d0210007b09a7b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -8999,11 +9008,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
+  "release_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
-    "package_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap",
-    "release_version": "16.3.25.3.2-chatgpt-loader-capability-bootstrap"
+    "runtime_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
+    "package_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap",
+    "release_version": "16.3.25.3.3-chatgpt-package-discovery-bootstrap"
   },
   "legacy_aliases": {
     "version": "release_version"
