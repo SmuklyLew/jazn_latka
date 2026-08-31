@@ -81,7 +81,27 @@ jobs:
           tests/test_jazn_pack_generator_v87_studio_portability.py
 
       - name: Pyright generator
-        run: pyright tools/jazn_pack_generator.py
+        id: pyright_generator
+        continue-on-error: true
+        shell: bash
+        run: |
+          pyright tools/jazn_pack_generator.py > pack-v87-pyright.log 2>&1
+          code=$?
+          cat pack-v87-pyright.log
+          exit "$code"
+
+      - name: Upload Pyright diagnostic
+        if: steps.pyright_generator.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pack-v87-pyright-diagnostic
+          path: pack-v87-pyright.log
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Stop after Pyright failure
+        if: steps.pyright_generator.outcome == 'failure'
+        run: exit 1
 
       - name: Focused generator suite
         run: >-
@@ -110,7 +130,7 @@ jobs:
         shell: bash
         run: |
           git rm tools/_apply_pack_generator_v87.py .github/workflows/temporary-pack-generator-v87-finalize.yml
-          rm -f pack-v87-patch.log
+          rm -f pack-v87-patch.log pack-v87-pyright.log
           git config user.name "SmuklyLew"
           git config user.email "smuklylew@gmail.com"
           git add tools/jazn_pack_generator.py latka_jazn/version.py tests docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md
