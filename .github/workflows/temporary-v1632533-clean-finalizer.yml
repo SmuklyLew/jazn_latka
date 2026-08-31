@@ -1,4 +1,4 @@
-name: Temporary v16.3.25.3.3 package discovery final v3
+name: Temporary v16.3.25.3.3 clean finalizer
 
 on:
   push:
@@ -8,8 +8,12 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: v1632533-clean-finalizer
+  cancel-in-progress: false
+
 jobs:
-  apply-validate-and-self-remove:
+  finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -31,7 +35,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pytest
 
-      - name: Apply corrected repair and compatibility adjustments
+      - name: Recover validated applicator from restore parent
+        shell: bash
+        run: |
+          git show HEAD^:.github/workflows/temporary-v1632533-package-discovery-fix-v2.yml > /tmp/v1632533-fix-v2.yml
+
+      - name: Apply validated source repair
         shell: bash
         run: |
           python - <<'PY'
@@ -39,9 +48,9 @@ jobs:
           import subprocess
           import textwrap
 
-          path = Path('.github/workflows/temporary-v1632533-package-discovery-fix-v4.yml')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          marker = '      - name: Apply v2 guarded repair and correct generated indentation'
+          source = Path('/tmp/v1632533-fix-v2.yml')
+          lines = source.read_text(encoding='utf-8').splitlines()
+          marker = '      - name: Apply guarded source repair'
           start = lines.index(marker)
           run_at = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'run: |')
           body = []
@@ -50,8 +59,41 @@ jobs:
                   break
               body.append(line)
           script = textwrap.dedent('\n'.join(body)) + '\n'
-          Path('/tmp/apply-v1632533-v4.sh').write_text(script, encoding='utf-8')
-          subprocess.run(['bash', '/tmp/apply-v1632533-v4.sh'], check=True)
+          Path('/tmp/apply-v1632533.sh').write_text(script, encoding='utf-8')
+          subprocess.run(['bash', '/tmp/apply-v1632533.sh'], check=True)
+
+          recovery_path = Path('latka_jazn/bootstrap/chatgpt_recovery.py')
+          rows = recovery_path.read_text(encoding='utf-8').splitlines()
+
+          def indent_range(start_text: str, end_text: str, spaces: int, *, occurrence: int = 1, include_end: bool = False) -> None:
+              starts = [i for i, row in enumerate(rows) if row.strip() == start_text]
+              if len(starts) < occurrence:
+                  raise SystemExit(f'missing indentation start: {start_text!r}')
+              start_idx = starts[occurrence - 1]
+              end_idx = next(i for i in range(start_idx + 1, len(rows)) if rows[i].strip() == end_text)
+              stop = end_idx + 1 if include_end else end_idx
+              prefix = ' ' * spaces
+              for idx in range(start_idx, stop):
+                  if rows[idx].strip():
+                      rows[idx] = prefix + rows[idx]
+
+          indent_range(
+              'runtime_profiles = frozenset({"system", "combined", "unknown"})',
+              'preflight = runtime_preflight(destination)',
+              4,
+          )
+          indent_range(
+              'if incoming_zip_name is not None:',
+              'if auto_attach_memory:',
+              8,
+          )
+          indent_range(
+              'if incoming_zip_name is None:',
+              'package_set = incoming_package_set or load_package_set_metadata(parts_dir, zip_name)',
+              4,
+              include_end=True,
+          )
+          recovery_path.write_text('\n'.join(rows) + '\n', encoding='utf-8')
 
           split_path = Path('latka_jazn/packaging/split_zip_package.py')
           rows = split_path.read_text(encoding='utf-8').splitlines()
@@ -125,19 +167,10 @@ jobs:
       - name: Check patch whitespace
         run: git diff --check
 
-      - name: Commit validated source repair and clean temporary files
+      - name: Commit clean validated repair
         shell: bash
         run: |
-          git rm .github/workflows/temporary-v1632533-package-discovery-fix.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-fix-v2.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-diagnostic.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-fix-v4.yml
-          git rm .github/workflows/temporary-v1632533-existing-contract-diagnostic.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-final.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-final-v2.yml
-          git rm .github/workflows/temporary-v1632533-package-discovery-final-v3.yml
-          git rm .repair-v1632533-diagnostics.txt
-          git rm .repair-v1632533-existing-contract.txt
+          git rm .github/workflows/temporary-v1632533-clean-finalizer.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add latka_jazn/packaging/split_zip_package.py latka_jazn/bootstrap/chatgpt_recovery.py latka_jazn/version.py tests/test_v1632533_chatgpt_package_discovery_bootstrap.py
