@@ -65,8 +65,8 @@ def _zip_path(result) -> Path:
 def test_generator_identity_examples_and_default_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     generator = _load_generator()
 
-    assert generator.GENERATOR_VERSION == "8.6"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.6"
+    assert generator.GENERATOR_VERSION == "8.7"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"
     assert generator.__doc__ is not None
     assert r"py -X utf8 .\tools\jazn_pack_generator.py" in generator.__doc__
     assert "py _jazn_pack_generator.py" not in generator.__doc__
