@@ -356,6 +356,67 @@ def test_application_service_resumes_interrupted_draft_after_test02(tmp_path: Pa
     assert final["run_manifest"]["draft_sanitized"] is None
     assert not Path(test02["run_manifest"]["draft_private"]).exists()
     assert not Path(test02["run_manifest"]["draft_sanitized"]).exists()
+    sanitized_text = Path(final["run_manifest"]["sanitized"]).read_text(encoding="utf-8")
+    assert str(source) not in sanitized_text
+    assert "conversation-a" not in sanitized_text
+    assert "Tayfa" not in sanitized_text
+    with pytest.raises(RuntimeError, match="sealed"):
+        MemoryRebuildApplicationService(
+            output_root,
+            tool_root=Path.cwd(),
+            base_commit=BASE_COMMIT,
+            run_id="resumable-run",
+            resume=True,
+        )
+
+
+def test_application_service_resume_rejects_invalid_draft_recovery_contract(
+    tmp_path: Path,
+) -> None:
+    source = _write_source(tmp_path / "conversations.json", "conversation-a", "Tayfa")
+    output_root = tmp_path / "invalid-resume-service"
+    service = MemoryRebuildApplicationService(
+        output_root,
+        tool_root=Path.cwd(),
+        base_commit=BASE_COMMIT,
+        run_id="invalid-resume-run",
+    )
+    test00 = service.run_protocol("test00", sources=[source])
+    draft_private = Path(test00["run_manifest"]["draft_private"])
+    draft_sanitized = Path(test00["run_manifest"]["draft_sanitized"])
+
+    with pytest.raises(ValueError, match="base_commit"):
+        MemoryRebuildApplicationService(
+            output_root,
+            tool_root=Path.cwd(),
+            base_commit="c" * 40,
+            run_id="invalid-resume-run",
+            resume=True,
+        )
+
+    draft_sanitized.unlink()
+    with pytest.raises(FileNotFoundError, match="complete RunManifest draft pair"):
+        MemoryRebuildApplicationService(
+            output_root,
+            tool_root=Path.cwd(),
+            base_commit=BASE_COMMIT,
+            run_id="invalid-resume-run",
+            resume=True,
+        )
+
+    service.engine.checkpoint_manifest()
+    tampered = json.loads(draft_sanitized.read_text(encoding="utf-8"))
+    tampered["run_id"] = "tampered-run"
+    draft_sanitized.write_text(json.dumps(tampered), encoding="utf-8")
+    assert draft_private.is_file()
+    with pytest.raises(ValueError, match="private/sanitized pair mismatch"):
+        MemoryRebuildApplicationService(
+            output_root,
+            tool_root=Path.cwd(),
+            base_commit=BASE_COMMIT,
+            run_id="invalid-resume-run",
+            resume=True,
+        )
 
 
 def _benchmark(path: Path) -> Path:
