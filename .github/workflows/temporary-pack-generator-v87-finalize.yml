@@ -47,6 +47,23 @@ jobs:
           text = path.read_text(encoding='utf-8')
           text = text.replace('_bundle_Any', 'Any')
           text = text.replace('_bundle_Sequence', 'Sequence')
+          text = text.replace('_bundle_Path', '_BundlePath')
+          text = text.replace(
+              'import unicodedata as _v87_unicodedata\nfrom dataclasses import replace as _v87_replace',
+              'import unicodedata as _v87_unicodedata\nfrom typing import cast as _v87_cast\nfrom dataclasses import replace as _v87_replace',
+          )
+          text = text.replace(
+              'def interoperability_profile(container_format: str, volume_format: str) -> dict[str, object]:',
+              'def interoperability_profile(container_format: str, volume_format: str) -> dict[str, Any]:',
+          )
+          text = text.replace(
+              'original_matrix(temp_dir, outputs, archive_format), archive_format',
+              '_v87_cast(dict[str, Any], original_matrix(temp_dir, outputs, archive_format)), archive_format',
+          )
+          text = text.replace(
+              'result = original_package_one(plan, options, base_zip_name)',
+              'result = _v87_cast(Any, original_package_one(plan, options, base_zip_name))',
+          )
           path.write_text(text, encoding='utf-8')
           PY
 
