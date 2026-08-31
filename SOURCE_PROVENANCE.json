@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "bbde58f8998ca136874e673abdd598355c394c69",
+  "base_merge_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
   "base_version": "16.3.25.4-memory-rebuild-v4-consolidation",
-  "commit_date": "2026-08-31T12:20:12+02:00",
+  "commit_date": "2026-09-01T00:41:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-08-31T10:20:12+00:00",
+  "generated_at_utc": "2026-08-31T22:41:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "e6e9fb655b4f0fb9542e36ba7d7cd10acbc18daa",
+  "git_tree_sha": "ba166f39775d011c53492a1726e5643b885cb1da",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3884bed3d8445924c6783a1cc87d15e91b8fcbe2",
-    "base_version": "16.3.25.3.1-docs-taxonomy-contract",
+    "base_commit": "3983c577bc86ffdf6fa5bae138a4a20120bd9d5c",
+    "base_version": "16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "bbde58f8998ca136874e673abdd598355c394c69",
+    "source_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
     "source_version": "16.3.25.4-memory-rebuild-v4-consolidation"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "bbde58f8998ca136874e673abdd598355c394c69",
+  "source_commit": "521c25a38d4dacdba9c5b28882cfb3c0f4473508",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.4-memory-rebuild-v4-consolidation",
   "tag": null,
