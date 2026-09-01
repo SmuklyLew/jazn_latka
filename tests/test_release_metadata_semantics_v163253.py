@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import os
 import shutil
+import stat
 import subprocess
 
 from latka_jazn.core.source_provenance import read_source_provenance
@@ -39,6 +41,17 @@ def _git(root: Path, *args: str) -> str:
         encoding="utf-8",
     )
     return completed.stdout.strip()
+
+
+def _remove_readonly_then_retry(func, path, _excinfo) -> None:
+    """Clear a Windows read-only bit once, then let a real retry failure surface."""
+
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def _remove_git_metadata(root: Path) -> None:
+    shutil.rmtree(root / ".git", onexc=_remove_readonly_then_retry)
 
 
 def _repo(tmp_path: Path) -> Path:
@@ -106,7 +119,7 @@ def test_provenance_reader_accepts_legacy_schema_as_migration_and_rejects_foreig
         encoding="utf-8",
     )
     write_package_integrity_manifest(root)
-    shutil.rmtree(root / ".git")
+    _remove_git_metadata(root)
 
     legacy = read_source_provenance(root, profile="system_smoke")
     assert legacy.status == "verified_export_without_git_history"
