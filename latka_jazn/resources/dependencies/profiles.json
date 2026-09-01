@@ -1,0 +1,72 @@
+{
+  "schema_version": "jazn_dependency_profiles/v1",
+  "activation_profiles": ["core", "archive"],
+  "profiles": {
+    "core": {
+      "kind": "runtime_required",
+      "source": "project.dependencies",
+      "exclude_distributions": ["py7zr", "pyzipper"]
+    },
+    "archive": {
+      "kind": "runtime_required",
+      "requirements": [
+        "py7zr>=1.1.3,<2",
+        "pyzipper>=0.4.0,<1"
+      ]
+    },
+    "studio": {
+      "kind": "operator_optional",
+      "source_optional_group": "memory-rebuild-ui"
+    },
+    "memory-cloud": {
+      "kind": "runtime_optional",
+      "source_optional_group": "memory-cloud"
+    },
+    "memory-cloud-server": {
+      "kind": "service_optional",
+      "source_optional_group": "memory-cloud-server"
+    },
+    "polish-nlp": {
+      "kind": "runtime_optional_heavy",
+      "source_optional_group": "polish-nlp"
+    },
+    "all": {
+      "kind": "aggregate",
+      "includes": [
+        "core",
+        "archive",
+        "studio",
+        "memory-cloud",
+        "memory-cloud-server",
+        "polish-nlp"
+      ]
+    }
+  },
+  "import_name_overrides": {
+    "pypdf": "pypdf",
+    "tzdata": "tzdata",
+    "py7zr": "py7zr",
+    "pyzipper": "pyzipper",
+    "prompt-toolkit": "prompt_toolkit",
+    "pynacl": "nacl",
+    "psycopg": "psycopg",
+    "boto3": "boto3",
+    "spacy": "spacy",
+    "morfeusz2": "morfeusz2",
+    "stanza": "stanza",
+    "transformers": "transformers",
+    "accelerate": "accelerate",
+    "torch": "torch",
+    "datasets": "datasets",
+    "sentencepiece": "sentencepiece",
+    "tokenizers": "tokenizers",
+    "rapidfuzz": "rapidfuzz",
+    "orjson": "orjson",
+    "pydantic": "pydantic",
+    "requests": "requests",
+    "diskcache": "diskcache",
+    "conllu": "conllu",
+    "networkx": "networkx",
+    "language-tool-python": "language_tool_python"
+  }
+}

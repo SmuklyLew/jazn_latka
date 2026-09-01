@@ -5,7 +5,8 @@ Ten katalog zawiera aktywne kontrakty operatorskie i dokumentację narzędzi, kt
 ## Current
 
 - `MEMORY_SQLITE_TEST_04.md` — aktywny, testowany kontrakt operatorski Testu 04;
-- `PRIVATE_MEMORY_VALIDATION.md` — aktywny, testowany kontrakt prywatnej walidacji pamięci dla Issue #59.
+- `PRIVATE_MEMORY_VALIDATION.md` — aktywny, testowany kontrakt prywatnej walidacji pamięci dla Issue #59;
+- `JAZN_DEPENDENCY_STUDIO.md` — wersjonowany wheelhouse, offline bootstrap środowiska Python i dependency readiness Jaźni.
 
 Architektura i ogólna dokumentacja pamięci znajduje się w `../memory/`. Jawnie zakończone lub superseded noty narzędziowe są w `../archive/tools/`.
 
