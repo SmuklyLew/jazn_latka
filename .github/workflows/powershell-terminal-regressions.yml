@@ -16,7 +16,7 @@ concurrency:
 jobs:
   windows-powershell-regressions:
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
@@ -71,6 +71,13 @@ jobs:
           tests/test_release_metadata_semantics_v163253.py
           tests/test_runtime_stability_wake_state.py
           tests/test_v16324_offline_provenance_readiness.py
+
+      - name: Full deterministic suite in PowerShell
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=25
+          -m "not live_model and not live_mcp"
 
       - name: System package smoke in PowerShell environment
         shell: pwsh
