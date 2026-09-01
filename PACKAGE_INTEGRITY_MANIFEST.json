@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.13-powershell-terminal-regression-repairs",
-  "runtime_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
-  "package_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
-  "generated_at_utc": "2026-09-01T08:31:18+00:00",
-  "updated_at_utc": "2026-09-01T08:31:18+00:00",
+  "version": "16.3.25.3.14-archive-tools-understanding-added",
+  "runtime_version": "16.3.25.3.14-archive-tools-understanding-added",
+  "package_version": "16.3.25.3.14-archive-tools-understanding-added",
+  "generated_at_utc": "2026-09-01T09:51:30+00:00",
+  "updated_at_utc": "2026-09-01T09:51:30+00:00",
   "start_file": "run.py",
-  "file_count": 975,
-  "static_file_count": 975,
+  "file_count": 978,
+  "static_file_count": 978,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -182,8 +182,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2953,
-      "sha256": "867cbff608d45631a8575562ea32f3f5fe25352357bdcb415e7525c99ed63c32",
+      "size_bytes": 2918,
+      "sha256": "0c4423be18eb6f3691059be8f8d9a0d96aa08fa3f20745b65d77482fbf5fb5e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -652,6 +652,15 @@
       "path": "docs/archive/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md",
       "size_bytes": 4296,
       "sha256": "9cb7e4aefaf0f64d9a9205208859402f3e652bfec4dcca86bad1fdeba88da817",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/archive/reports/JAZN_V16_3_25_3_14_ARCHIVE_TOOLS_UNDERSTANDING.md",
+      "size_bytes": 4272,
+      "sha256": "6802dda2f1a829231bfa1bd5b1781bc2f2c6a5ab70295a58b8aabe2ef362eb5c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1469,8 +1478,17 @@
     },
     {
       "path": "latka_jazn/archive/__init__.py",
-      "size_bytes": 489,
-      "sha256": "5c05225399a9612a56ea6c2898845c7ce025b6df9816ca1e05d6e3877c9fec83",
+      "size_bytes": 831,
+      "sha256": "2d9456fc61a87fdb90b98095670de1c7b09a26119c5907a44abb90b1e1df6216",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/archive/capabilities.py",
+      "size_bytes": 10025,
+      "sha256": "a9820e043a6bd68b1791f022d267c42db419213e8ebd8a3aabc011a53033a9af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1865,8 +1883,8 @@
     },
     {
       "path": "latka_jazn/core/capability_reality_checker.py",
-      "size_bytes": 4657,
-      "sha256": "9bba33a89994586938c904677c39156acb349c0e1a83bb5b017591c966a8111a",
+      "size_bytes": 6272,
+      "sha256": "d5ea6128ab23bf1af0ac91052be9dc7d6f2df01402047d1c0d8b9f03436792d4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2180,8 +2198,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/capability_status_handler.py",
-      "size_bytes": 18141,
-      "sha256": "0ccc662eb04b886f6ebd8582b1553cf71672b8d21bdeb2d51c2566143f80ef06",
+      "size_bytes": 19225,
+      "sha256": "0d90327ec7783800256742403cc64f54d44c365e53018792d834be94e0db900a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3188,8 +3206,8 @@
     },
     {
       "path": "latka_jazn/core/self_knowledge_contract.py",
-      "size_bytes": 13622,
-      "sha256": "2fd91752c102013dcc438177731e794e879124928098767736b9a68d0185471a",
+      "size_bytes": 14020,
+      "sha256": "7554b650180b7d7cad7eb8a045e6e1de51743d120b8dccd09c77b16ee1fa2d0f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5312,8 +5330,8 @@
     },
     {
       "path": "latka_jazn/resources/canon/LATKA_SELF_KNOWLEDGE_CONTRACT.json",
-      "size_bytes": 8925,
-      "sha256": "7241e4520f24cc2e55f60b3a0ba65b758340915eb8db8745b530de6a7ca7953f",
+      "size_bytes": 9906,
+      "sha256": "892ff96ddfb78d07d55badad101712e176b9e0c6b4d11c953be7e0f5c6217d85",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6644,8 +6662,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6583,
-      "sha256": "2cb02a504fba08e093bb09efdb7f804d18ef69850888e4098bf7a264790358fa",
+      "size_bytes": 6566,
+      "sha256": "77be31c28da63ada2d051d3038a52be532ea26daf239299222efff65cba1baed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6790,6 +6808,15 @@
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_archive_capabilities_v16325314.py",
+      "size_bytes": 5191,
+      "sha256": "843cfcea8cb977ec0163003d21b8987ede435de44a8ebd85639e8e6917a9969e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9206,11 +9233,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+  "release_version": "16.3.25.3.14-archive-tools-understanding-added",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
-    "package_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
-    "release_version": "16.3.25.3.13-powershell-terminal-regression-repairs"
+    "runtime_version": "16.3.25.3.14-archive-tools-understanding-added",
+    "package_version": "16.3.25.3.14-archive-tools-understanding-added",
+    "release_version": "16.3.25.3.14-archive-tools-understanding-added"
   },
   "legacy_aliases": {
     "version": "release_version"
