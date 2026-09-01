@@ -92,7 +92,9 @@ def install_bundle(
 
     base_python = str(python_executable or sys.executable)
     probe = _probe_python(base_python)
-    target = manifest.get("target") if isinstance(manifest.get("target"), dict) else {}
+    target = manifest.get("target")
+    if not isinstance(target, dict):
+        target = {}
     if str(target.get("alias") or "") != probe["platform"]:
         raise DependencyStudioError("Wheelhouse platform does not match selected interpreter")
     if str(target.get("python_version") or "") != probe["python_version"]:
@@ -275,7 +277,9 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     status = dependency_activation_status(project_root)
     if status.get("current_interpreter_ready") is True:
         return {"ok": True, "state": "current_interpreter_ready", "reexec_python": None, "status": status}
-    managed = status.get("managed_environment") if isinstance(status.get("managed_environment"), dict) else {}
+    managed = status.get("managed_environment")
+    if not isinstance(managed, dict):
+        managed = {}
     managed_python = str(managed.get("python_executable") or "")
     if status.get("required_ready") is True and managed.get("ready") is True and managed_python:
         try:
