@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.13 repairs regressions exposed by the Windows/PowerShell validation
-# pass without weakening runtime dependency, provenance, or activation truth gates.
-DISTRIBUTION_VERSION = "16.3.25.3.13"
-PACKAGE_VERSION = "16.3.25.3.13"
-PACKAGE_RELEASE_NAME = "powershell-terminal-regression-repairs"
+# v16.3.25.3.14 adds a truthful archive capability/knowledge matrix over the
+# existing hardened ZIP/7z/AES-ZIP execution layer and dependency contract.
+DISTRIBUTION_VERSION = "16.3.25.3.14"
+PACKAGE_VERSION = "16.3.25.3.14"
+PACKAGE_RELEASE_NAME = "archive-tools-understanding-added"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
