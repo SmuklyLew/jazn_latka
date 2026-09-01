@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.7 aligns the minimal HostRuntimeGateway protocol with its actual
-# positional call contract and adds Pyright coverage for the affected test doubles.
-DISTRIBUTION_VERSION = "16.3.25.3.7"
-PACKAGE_VERSION = "16.3.25.3.7"
-PACKAGE_RELEASE_NAME = "vscode-protocol-gateway-test-doubles"
+# v16.3.25.3.8 keeps runtime health replies readable and routes natural wake-up
+# phrases such as "Obudź się Łatko" to presence instead of technical health-checks.
+DISTRIBUTION_VERSION = "16.3.25.3.8"
+PACKAGE_VERSION = "16.3.25.3.8"
+PACKAGE_RELEASE_NAME = "readable-health-check-wake-routing"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
