@@ -15,6 +15,14 @@ def _package_integrity_ok() -> dict[str, bool]:
     }
 
 
+def _ready_dependencies() -> dict[str, object]:
+    return {
+        "required_ready": True,
+        "selected_source": "deterministic_test_fixture",
+        "missing_or_incompatible_distributions": [],
+    }
+
+
 def test_filesystem_snapshot_can_activate_without_becoming_release_ready() -> None:
     readiness = evaluate_runtime_readiness(
         required_checks={"runtime_files": True, "startup_contract": True},
@@ -31,6 +39,7 @@ def test_filesystem_snapshot_can_activate_without_becoming_release_ready() -> No
             "heartbeat_fresh": True,
         },
         transactional_memory={"ready": False, "exists": False},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.installation_ok is True
@@ -51,6 +60,7 @@ def test_release_export_without_git_history_keeps_release_readiness_compatibilit
         },
         daemon={},
         transactional_memory={"ready": False},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.activation_prerequisites_ready is True
@@ -69,6 +79,7 @@ def test_clean_git_checkout_remains_release_ready() -> None:
         },
         daemon={},
         transactional_memory={"ready": False},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.release_metadata_current is True

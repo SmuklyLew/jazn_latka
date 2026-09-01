@@ -236,10 +236,21 @@ def evaluate_runtime_readiness(
     daemon: Mapping[str, Any],
     transactional_memory: Mapping[str, Any],
     dependency_root: Path | str | None = None,
+    dependency_evidence: Mapping[str, Any] | None = None,
 ) -> RuntimeReadiness:
-    """Evaluate readiness once so all diagnostic surfaces use identical semantics."""
+    """Evaluate readiness from explicit evidence using one shared decision contract.
 
-    dependency_status = _dependency_readiness(dependency_root)
+    Production callers normally omit ``dependency_evidence`` and the evaluator
+    observes the active core+archive dependency environment itself. Deterministic
+    callers may inject a previously observed dependency status. This keeps the
+    decision function reproducible without weakening the production dependency
+    gate or making historical readiness tests depend on the ambient test venv.
+    """
+
+    if dependency_evidence is None:
+        dependency_status = _dependency_readiness(dependency_root)
+    else:
+        dependency_status = dict(dependency_evidence)
     required_dependencies_ready = dependency_status.get("required_ready") is True
     installation_ok = bool(
         all(bool(value) for value in required_checks.values())
