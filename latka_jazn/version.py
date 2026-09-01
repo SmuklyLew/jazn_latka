@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.6 removes the duplicate packaged ChatGPT startup loader and makes
-# AGENTS.md -> AGENTS.chatgpt.md the single canonical host startup path.
-DISTRIBUTION_VERSION = "16.3.25.3.6"
-PACKAGE_VERSION = "16.3.25.3.6"
-PACKAGE_RELEASE_NAME = "agents-chatgpt-single-startup-source"
+# v16.3.25.3.7 aligns the minimal HostRuntimeGateway protocol with its actual
+# positional call contract and adds Pyright coverage for the affected test doubles.
+DISTRIBUTION_VERSION = "16.3.25.3.7"
+PACKAGE_VERSION = "16.3.25.3.7"
+PACKAGE_RELEASE_NAME = "vscode-protocol-gateway-test-doubles"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
