@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.12 aligns regression tests with canonical version/readiness contracts:
-# health-check expectations derive from PACKAGE_VERSION and readiness summary
-# explicitly includes required dependency readiness introduced by Dependency Studio.
-DISTRIBUTION_VERSION = "16.3.25.3.12"
-PACKAGE_VERSION = "16.3.25.3.12"
-PACKAGE_RELEASE_NAME = "dependency-studio-offline-wheelhouse"
+# v16.3.25.3.13 repairs regressions exposed by the Windows/PowerShell validation
+# pass without weakening runtime dependency, provenance, or activation truth gates.
+DISTRIBUTION_VERSION = "16.3.25.3.13"
+PACKAGE_VERSION = "16.3.25.3.13"
+PACKAGE_RELEASE_NAME = "powershell-terminal-regression-repairs"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
