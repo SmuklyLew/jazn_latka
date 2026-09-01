@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
-  "runtime_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
-  "package_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
-  "generated_at_utc": "2026-09-01T07:10:46+00:00",
-  "updated_at_utc": "2026-09-01T07:10:46+00:00",
+  "version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+  "runtime_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+  "package_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+  "generated_at_utc": "2026-09-01T08:31:18+00:00",
+  "updated_at_utc": "2026-09-01T08:31:18+00:00",
   "start_file": "run.py",
-  "file_count": 974,
-  "static_file_count": 974,
+  "file_count": 975,
+  "static_file_count": 975,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -100,6 +100,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/powershell-terminal-regressions.yml",
+      "size_bytes": 3226,
+      "sha256": "0a12955d47e86f7c50c2cf996e9674fd9b22542a64994268bf1d12722feb0c51",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 13509,
       "sha256": "d9f52e4a45d6b2edd2a8ef1600b72173c29343ce574720e666c0c2715e50a231",
@@ -173,8 +182,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "bbfa9fa098e20b060d3d585ad858c3d486874d810dc6ea2f85b1d2ea25315662",
+      "size_bytes": 2953,
+      "sha256": "867cbff608d45631a8575562ea32f3f5fe25352357bdcb415e7525c99ed63c32",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2873,8 +2882,8 @@
     },
     {
       "path": "latka_jazn/core/readiness.py",
-      "size_bytes": 11895,
-      "sha256": "67622b8793b3f311e450159194b9aa8a933be100e38516d8c94c8c41ed8ff014",
+      "size_bytes": 12463,
+      "sha256": "efd4b200c7330dfeef8b8780100227ffad285a6abff42ad01e11a6ca7f4f6ed5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6635,8 +6644,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6663,
-      "sha256": "f0fe7abe6601ff88d371cad48383b5a3eea6599441e9ba02d3ecbbe9e6df50bd",
+      "size_bytes": 6583,
+      "sha256": "2cb02a504fba08e093bb09efdb7f804d18ef69850888e4098bf7a264790358fa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7436,8 +7445,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_test00_source_fidelity.py",
-      "size_bytes": 7996,
-      "sha256": "b5d2f8d453744652e1553686b60ace70665998fc22a62a973baca0b02c77a376",
+      "size_bytes": 8119,
+      "sha256": "fa10be6e42d786090039c27bc7c6dbd6cfad2ab55f04082d256b5be6172f2225",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7769,8 +7778,8 @@
     },
     {
       "path": "tests/test_readiness_contract.py",
-      "size_bytes": 5456,
-      "sha256": "244abe40de8585bd39911fd1bcc6149aee803be8867b4108b757c0e294af7074",
+      "size_bytes": 5820,
+      "sha256": "9dfc25e1a87882580c31769c0f02f2969ec72c995020d6be247e9cbd7ed0a2d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7787,8 +7796,8 @@
     },
     {
       "path": "tests/test_release_completion.py",
-      "size_bytes": 12378,
-      "sha256": "2059d85fad3c598e11cbebe57a2710b4a0c233137a4d171414b105614832a3fe",
+      "size_bytes": 12669,
+      "sha256": "aa7d8522cc47806a14f92630de88dfdf2020d8c4a5a78db1bb17a0120ca25a24",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7841,8 +7850,8 @@
     },
     {
       "path": "tests/test_release_metadata_semantics_v163253.py",
-      "size_bytes": 10135,
-      "sha256": "870b73523fb071db1f4c405a4b5981cbf4434da85577a9894b17a4e341c0a590",
+      "size_bytes": 10471,
+      "sha256": "4f4131f910a7a3381525aeec238e6e15157b2dc793d2c79f71778b5185e21757",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8444,8 +8453,8 @@
     },
     {
       "path": "tests/test_v16324_offline_provenance_readiness.py",
-      "size_bytes": 2573,
-      "sha256": "6cf45635224113c47632a2ce5dfaee798ad4ae932f40829f3880776bde21e006",
+      "size_bytes": 2937,
+      "sha256": "b168c3530b548ce91d702e256f57b5dda5d8aa91bcff7fc0a8e306c3d2ac49ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9197,11 +9206,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+  "release_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
-    "package_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
-    "release_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse"
+    "runtime_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+    "package_version": "16.3.25.3.13-powershell-terminal-regression-repairs",
+    "release_version": "16.3.25.3.13-powershell-terminal-regression-repairs"
   },
   "legacy_aliases": {
     "version": "release_version"
