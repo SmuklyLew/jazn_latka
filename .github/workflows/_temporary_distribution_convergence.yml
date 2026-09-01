@@ -51,6 +51,15 @@ jobs:
           python -X utf8 tools/_apply_distribution_convergence.py
           rm -f tools/_apply_distribution_convergence.py tools/_fix_scaffold.py .github/workflows/_temporary_distribution_convergence.yml
 
+      - name: Create clean local checkpoint for metadata synchronization
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "wip: stage package distribution convergence for metadata sync"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
       - name: Install development validation dependencies
         shell: bash
         run: |
@@ -109,13 +118,11 @@ jobs:
           python -X utf8 run.py package-smoke --profile system --json
           git diff --check
 
-      - name: Commit validated implementation locally
+      - name: Finalize validated implementation commit locally
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "upgrade: converge package distribution contracts v16.3.25.3.15"
+          git commit --amend -m "upgrade: converge package distribution contracts v16.3.25.3.15"
           test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Validate clean release artifact before push
