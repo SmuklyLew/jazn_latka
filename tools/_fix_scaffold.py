@@ -67,6 +67,30 @@ if s.count(release_insert_old) != 1:
     raise SystemExit('release sidecar manifest re-open block not found uniquely')
 s = s.replace(release_insert_old, release_insert_new, 1)
 
+# Pyright must be able to prove the target object is a dictionary. Calling
+# manifest.get("target") twice does not preserve the isinstance narrowing across
+# the second call because each call may theoretically return a different value.
+release_target_old = '''                manifest = read_manifest(bundle / "JAZN_WHEELHOUSE_MANIFEST.json") or {}\n                target = manifest.get("target") if isinstance(manifest.get("target"), dict) else {}\n                alias = str(target.get("alias") or "unknown")\n                pyver = str(target.get("python_version") or "unknown").replace(".", "")\n'''
+release_target_new = '''                manifest = read_manifest(bundle / "JAZN_WHEELHOUSE_MANIFEST.json") or {}\n                raw_target = manifest.get("target")\n                target: dict[str, Any] = dict(raw_target) if isinstance(raw_target, dict) else {}\n                alias = str(target.get("alias") or "unknown")\n                pyver = str(target.get("python_version") or "unknown").replace(".", "")\n'''
+if s.count(release_target_old) != 1:
+    raise SystemExit('dependency release target narrowing block not found uniquely')
+s = s.replace(release_target_old, release_target_new, 1)
+
+# PackagePlan.entries is intentionally immutable (tuple). Use distinct local
+# names for the combined tuple and the mutable accumulator so a function-local
+# variable annotation cannot make Pyright treat both shapes as one list type.
+combined_entries_old = '''                    by_path = {item.path: item for item in (*system.entries, *memory.entries)}\n                    entries = tuple(by_path[path] for path in sorted(by_path))\n                    return PackagePlan(\n                        self.root, "combined", entries,\n'''
+combined_entries_new = '''                    by_path = {item.path: item for item in (*system.entries, *memory.entries)}\n                    combined_entries = tuple(by_path[path] for path in sorted(by_path))\n                    return PackagePlan(\n                        self.root, "combined", combined_entries,\n'''
+if s.count(combined_entries_old) != 1:
+    raise SystemExit('combined package-plan entries block not found uniquely')
+s = s.replace(combined_entries_old, combined_entries_new, 1)
+
+plan_entries_old = '''                entries: list[PackagePlanEntry] = []\n                for relative in selected:\n                    source = resolve_safe_source(self.root, relative)\n                    before = source.stat()\n                    digest = _sha256_file(source)\n                    after = source.stat()\n                    if before.st_size != after.st_size or before.st_mtime_ns != after.st_mtime_ns:\n                        raise PackagePlanError(f"source changed while freezing package plan: {relative}")\n                    entries.append(PackagePlanEntry(\n                        relative if False else relative,\n                        source,\n                        after.st_size,\n                        digest,\n                        "memory_file" if self.profile == "memory" else "static_project_file",\n                    ))\n                return PackagePlan(self.root, self.profile, tuple(entries), tuple(excluded), self.source_mode)\n'''
+plan_entries_new = '''                plan_entries: list[PackagePlanEntry] = []\n                for relative in selected:\n                    source = resolve_safe_source(self.root, relative)\n                    before = source.stat()\n                    digest = _sha256_file(source)\n                    after = source.stat()\n                    if before.st_size != after.st_size or before.st_mtime_ns != after.st_mtime_ns:\n                        raise PackagePlanError(f"source changed while freezing package plan: {relative}")\n                    plan_entries.append(PackagePlanEntry(\n                        relative if False else relative,\n                        source,\n                        after.st_size,\n                        digest,\n                        "memory_file" if self.profile == "memory" else "static_project_file",\n                    ))\n                return PackagePlan(self.root, self.profile, tuple(plan_entries), tuple(excluded), self.source_mode)\n'''
+if s.count(plan_entries_old) != 1:
+    raise SystemExit('mutable package-plan entries block not found uniquely')
+s = s.replace(plan_entries_old, plan_entries_new, 1)
+
 p.write_text(s, encoding='utf-8', newline='\n')
 
 # Patch the current generator bootstrap before the convergence driver rebuilds
