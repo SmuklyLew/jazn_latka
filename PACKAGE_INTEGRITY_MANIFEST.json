@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-  "runtime_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-  "package_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-  "generated_at_utc": "2026-09-01T02:21:04+00:00",
-  "updated_at_utc": "2026-09-01T02:21:04+00:00",
+  "version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "package_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "generated_at_utc": "2026-09-01T03:53:12+00:00",
+  "updated_at_utc": "2026-09-01T03:53:12+00:00",
   "start_file": "run.py",
-  "file_count": 960,
-  "static_file_count": 960,
+  "file_count": 963,
+  "static_file_count": 963,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -173,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "f315a7508492ae775602782681023b974724b65aabe3bac5a51b3b0b52d1306d",
+      "size_bytes": 2918,
+      "sha256": "6080fd63d1699f84329abb88e9ac4ea5f06e980e12699b11fdc11b920f8117bb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -982,9 +982,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/nlp/NLP_RESOURCE_CONVERGENCE_RESEARCH.md",
+      "size_bytes": 4452,
+      "sha256": "995ef94f03f2db679e2573e3ffaa9a98bdc30a25ad71b64862d917f3b0f07639",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/nlp/POLISH_REASONING_RESOURCE_BOOTSTRAP.md",
-      "size_bytes": 1447,
-      "sha256": "c4b9206a10ed73470d5996b741d2d171824d5147b95cd5b3f7d3db17f71a043b",
+      "size_bytes": 2499,
+      "sha256": "b9306dc4fef8abf880e0cd5d24c4de92b1563b834a3b3d98e636f6ce6b9e7f55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -992,8 +1001,8 @@
     },
     {
       "path": "docs/nlp/README.md",
-      "size_bytes": 227,
-      "sha256": "60bd901fe21f6543d67dd01b3a8a62d3c73cbd15cc3971772c86500da00360ff",
+      "size_bytes": 837,
+      "sha256": "042e0e5287d7bfcb1f141c9a77263da10c34793b0a05f7f5647d5405b14044dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1081,6 +1090,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/NLP_RESOURCE_CONVERGENCE.md",
+      "size_bytes": 8244,
+      "sha256": "983604c148839624042aed72da0dfbfbe466d63a96e29104d191a9d4ac938c9a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/16.4-to-16.6-cognitive-hardening/PLAN.md",
       "size_bytes": 16853,
       "sha256": "c7ad9b0a9115baf956b385ebf8f3d84c69bc654bae3e983f1780daecc4c1ae38",
@@ -1091,8 +1109,8 @@
     },
     {
       "path": "docs/plans/16.4-to-16.6-cognitive-hardening/STATUS.md",
-      "size_bytes": 393,
-      "sha256": "5f1ad1dedb8fd111b5cc1ea579a27c279408ecaa534d0e0e2f04ec3afc977c5c",
+      "size_bytes": 731,
+      "sha256": "49a714c5c7e72d31592f832b32aa65a5abc50c3895bc57e8540dc23bd2208fb7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2144,8 +2162,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/capability_status_handler.py",
-      "size_bytes": 15314,
-      "sha256": "90d05a550c35812109f73d28183cf39a6c99d0de29858c203600c40947b091dd",
+      "size_bytes": 18141,
+      "sha256": "0ccc662eb04b886f6ebd8582b1553cf71672b8d21bdeb2d51c2566143f80ef06",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2306,8 +2324,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/presence_status_handler.py",
-      "size_bytes": 3310,
-      "sha256": "253cf6071dd766d61b7430523922b7ec4fab88a9582916827b18be3c215c21b1",
+      "size_bytes": 4023,
+      "sha256": "ee95a07c964bd850aaf91e87f55f4133f388f5f1eb992283e93a836dfa3912a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4889,8 +4907,8 @@
     },
     {
       "path": "latka_jazn/nlp/topic_mismatch_guard.py",
-      "size_bytes": 11178,
-      "sha256": "a36c384d189cb8f1b0ee652b0b7c2dac9b9af849d558e865f9e6429a75fcf882",
+      "size_bytes": 11503,
+      "sha256": "d1ad527364b55f7678b26f4454e2555b2549aee421320219208aa70a9ae0f215",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5303,8 +5321,8 @@
     },
     {
       "path": "latka_jazn/resources/nlp/polish_dialogue_route_lexicon.json",
-      "size_bytes": 11670,
-      "sha256": "06386ea5e417f585fd466d3f010d970e094c003f7bf17ded19e235516417cf11",
+      "size_bytes": 11850,
+      "sha256": "f0dd3493596415cfb1a31a62522b70deb50943bf8bfab924e7db2b076b59aa6a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6536,8 +6554,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6576,
-      "sha256": "285710804dff1d788e36acf93d751f90def9852f0ad720949e7c7ec22dead9c3",
+      "size_bytes": 6579,
+      "sha256": "998fd243170335039813523bf7a0b3b00e75f5e7be5d80177abe1ea7e543d69d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7645,6 +7663,15 @@
       "path": "tests/test_quoted_control_text_routing.py",
       "size_bytes": 1242,
       "sha256": "3d0cec0b5c17653ab5c02f846b8148f2f2084b901c0b6e017c9673f381ab0a0f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_readable_health_check_wake_routing.py",
+      "size_bytes": 4893,
+      "sha256": "42a55240a4e89e8e66617c08f82030d09a60958faab0ea6ea1e51fd1afcc0743",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9071,11 +9098,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "release_version": "16.3.25.3.8-readable-health-check-wake-routing",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-    "package_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-    "release_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles"
+    "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
+    "package_version": "16.3.25.3.8-readable-health-check-wake-routing",
+    "release_version": "16.3.25.3.8-readable-health-check-wake-routing"
   },
   "legacy_aliases": {
     "version": "release_version"

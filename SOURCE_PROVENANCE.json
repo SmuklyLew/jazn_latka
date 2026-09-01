@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "dd1b12d2b503a01eab994203534d53ba4d366a9e",
-  "base_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
-  "commit_date": "2026-09-01T04:21:04+02:00",
+  "base_merge_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
+  "base_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "commit_date": "2026-09-01T05:53:12+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-01T02:21:04+00:00",
+  "generated_at_utc": "2026-09-01T03:53:12+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "820a15449fb3bbd864ddc7dabb810a18de19c7cb",
+  "git_tree_sha": "1caf190d906d32e6118a408b1e2d128b59dd2aaf",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "dd1b12d2b503a01eab994203534d53ba4d366a9e",
-    "base_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+    "base_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
+    "base_version": "16.3.25.3.8-readable-health-check-wake-routing",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "dd1b12d2b503a01eab994203534d53ba4d366a9e",
-    "source_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles"
+    "source_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
+    "source_version": "16.3.25.3.8-readable-health-check-wake-routing"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "release_version": "16.3.25.3.8-readable-health-check-wake-routing",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "dd1b12d2b503a01eab994203534d53ba4d366a9e",
+  "source_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "source_version": "16.3.25.3.8-readable-health-check-wake-routing",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "update_version": "16.3.25.3.8-readable-health-check-wake-routing",
   "version_source": "latka_jazn/version.py"
 }
