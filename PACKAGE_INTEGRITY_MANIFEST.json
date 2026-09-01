@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-  "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-  "package_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-  "generated_at_utc": "2026-09-01T01:54:59+00:00",
-  "updated_at_utc": "2026-09-01T01:54:59+00:00",
+  "version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "runtime_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "package_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+  "generated_at_utc": "2026-09-01T02:21:04+00:00",
+  "updated_at_utc": "2026-09-01T02:21:04+00:00",
   "start_file": "run.py",
   "file_count": 960,
   "static_file_count": 960,
@@ -174,7 +174,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2932,
-      "sha256": "3a2f9744bdd2d103b9ec29be85eb5b675ee713f51b60039e1a2d841e1b6fe881",
+      "sha256": "f315a7508492ae775602782681023b974724b65aabe3bac5a51b3b0b52d1306d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3602,8 +3602,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_generate_visible_reply.py",
-      "size_bytes": 12868,
-      "sha256": "86fe47ee49761ac376fc5e3cbdeb3df72664ce61319f1f5db33286e35e7bc8c3",
+      "size_bytes": 12874,
+      "sha256": "559b6c9fc90b9a3772aea86ec13b31c39fd49bbf1d6814a682cdac5bc6d2a58a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6536,8 +6536,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6566,
-      "sha256": "ddc06bf7b049c7e277f72ccd894d28589a1bd3b822651940ad300f19ea4dd0a6",
+      "size_bytes": 6576,
+      "sha256": "285710804dff1d788e36acf93d751f90def9852f0ad720949e7c7ec22dead9c3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9071,11 +9071,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+  "release_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-    "package_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-    "release_version": "16.3.25.3.6-agents-chatgpt-single-startup-source"
+    "runtime_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+    "package_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles",
+    "release_version": "16.3.25.3.7-vscode-protocol-gateway-test-doubles"
   },
   "legacy_aliases": {
     "version": "release_version"
