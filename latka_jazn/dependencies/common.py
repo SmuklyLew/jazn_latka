@@ -92,7 +92,9 @@ def project_dependency_groups(root: Path | str) -> tuple[list[str], dict[str, li
         payload = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise DependencyStudioError(f"Cannot read pyproject.toml: {exc}") from exc
-    project = payload.get("project") if isinstance(payload.get("project"), dict) else {}
+    project = payload.get("project")
+    if not isinstance(project, dict):
+        project = {}
     base = [str(item) for item in project.get("dependencies") or []]
     optional: dict[str, list[str]] = {}
     raw = project.get("optional-dependencies")
