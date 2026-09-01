@@ -3,11 +3,11 @@
   "version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "package_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
-  "generated_at_utc": "2026-09-01T00:48:48+00:00",
-  "updated_at_utc": "2026-09-01T00:48:48+00:00",
+  "generated_at_utc": "2026-09-01T01:54:59+00:00",
+  "updated_at_utc": "2026-09-01T01:54:59+00:00",
   "start_file": "run.py",
-  "file_count": 954,
-  "static_file_count": 954,
+  "file_count": 960,
+  "static_file_count": 960,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -164,8 +164,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 16375,
-      "sha256": "e603721364b428a268dc9c2c2e5b8109eb3ca0189093e861464f80fb795b664f",
+      "size_bytes": 5127,
+      "sha256": "966e2927c606eb9e4c0b517b529ad577bc6239d6f3afe9f93e18269772745b94",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -174,7 +174,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2932,
-      "sha256": "a7f4c99521e369287235964452ca40f81c1e46c548ffba48585331c8e55e856c",
+      "sha256": "3a2f9744bdd2d103b9ec29be85eb5b675ee713f51b60039e1a2d841e1b6fe881",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/README.md",
-      "size_bytes": 2185,
-      "sha256": "53637372b126e300863e4946b144c088d68ddf04325839240ec92f071a456fe0",
+      "size_bytes": 4850,
+      "sha256": "5b8412a40e0d8702739a28c08d844275766eee66b592f3228e0be707042bf768",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1100,8 +1100,8 @@
     },
     {
       "path": "docs/plans/16.6.0-final-convergence/ROADMAP.md",
-      "size_bytes": 18439,
-      "sha256": "e0314101a398e83314479e6dd4d44baa1db0f960c0a80cd1f1f8e4307fb140e8",
+      "size_bytes": 24411,
+      "sha256": "9d974eb3d3c2e02727dc7d3984b3703e4e12bdde77352ab8a96fa6903a290678",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1109,8 +1109,26 @@
     },
     {
       "path": "docs/plans/16.6.0-final-convergence/STATUS.md",
-      "size_bytes": 420,
-      "sha256": "b61f1d5593d48da976394d0b5c595f691a15284cb3bc743d900c3421a0b0dbef",
+      "size_bytes": 970,
+      "sha256": "b8199672688bdd3654ef35015a68955feb4c3abc6e915afc43f8b4ba365ae5bb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md",
+      "size_bytes": 9196,
+      "sha256": "165652c940b3fd7d012a5a567e810f23f5da8187847575a307ab9e2ae92c2447",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/17.0.0-measured-architecture-consolidation/STATUS.md",
+      "size_bytes": 479,
+      "sha256": "a8c5cd17de8fb2f613a222aeac2876d62bd6db41535e6a6d160496aa4667e3c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1198,6 +1216,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/project/CURRENT_STATE.md",
+      "size_bytes": 3859,
+      "sha256": "4f299d220313c8ae51d9bd36e1d07e170d4af8ec9d084853ce65a6ca5e96c2a4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/project/PLAN_COHERENCE_AUDIT_2026-08-30.md",
       "size_bytes": 14008,
       "sha256": "8db3dd2a3275f8b25be1315048eab934d3fa69e949df4a44652b7d899cfa2ef0",
@@ -1217,8 +1244,26 @@
     },
     {
       "path": "docs/project/README.md",
-      "size_bytes": 867,
-      "sha256": "ed1b576059d51063ac659c9ee7fc773cce25a2e7f0492706c7fa53f59dc7c4f9",
+      "size_bytes": 1875,
+      "sha256": "375221929fc9d095f1fba9cd6bf07de423aa7296df68447dd7b6a80e2dfeceb8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/project/RELEASE_TIMELINE.md",
+      "size_bytes": 4778,
+      "sha256": "fc34f0bdcec89600c85a4874c6e9fd2b81e14b3cd80e77a89e169fa0da73f98a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/project/REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md",
+      "size_bytes": 9657,
+      "sha256": "935a43f00085c525450dd5b560b882adfbd4fdc9cd023201d69e1ffe13e9b4f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1237,6 +1282,15 @@
       "path": "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
       "size_bytes": 27747,
       "sha256": "f01103857ff35e8cbb9a4a19515e665813edb325d4605dd61b72945f96f71c9a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md",
+      "size_bytes": 7823,
+      "sha256": "27390b309d55e68a6b3174ae42456fb8b1933c49ad46884c20a21e463ab6a35d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
