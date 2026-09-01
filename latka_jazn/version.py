@@ -3,11 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.10 hardens the Dependency Studio bootstrap and CI contracts:
-# syntax/TOML fixes, canonical wheelhouse environment override, consistent
-# re-exec status keys, and current-platform wheelhouse discovery on POSIX hosts.
-DISTRIBUTION_VERSION = "16.3.25.3.10"
-PACKAGE_VERSION = "16.3.25.3.10"
+# v16.3.25.3.11 hardens CI portability and runtime session startup budgets:
+# Pyright-safe explicit type narrowing for Dependency Studio manifests and a
+# session worker startup wait that honors the configured runtime timeout instead
+# of imposing a hidden 10-second cap on slower Windows active-memory startup.
+DISTRIBUTION_VERSION = "16.3.25.3.11"
+PACKAGE_VERSION = "16.3.25.3.11"
 PACKAGE_RELEASE_NAME = "dependency-studio-offline-wheelhouse"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
