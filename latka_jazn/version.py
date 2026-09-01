@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.8 keeps runtime health replies readable and routes natural wake-up
-# phrases such as "Obudź się Łatko" to presence instead of technical health-checks.
-DISTRIBUTION_VERSION = "16.3.25.3.8"
-PACKAGE_VERSION = "16.3.25.3.8"
-PACKAGE_RELEASE_NAME = "readable-health-check-wake-routing"
+# v16.3.25.3.9 adds a versioned offline Python wheelhouse, Dependency Studio,
+# managed environments and dependency-aware runtime activation readiness.
+DISTRIBUTION_VERSION = "16.3.25.3.9"
+PACKAGE_VERSION = "16.3.25.3.9"
+PACKAGE_RELEASE_NAME = "dependency-studio-offline-wheelhouse"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
