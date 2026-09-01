@@ -126,8 +126,6 @@ def test_system_package_plan_excludes_historical_archives(tmp_path: Path) -> Non
     assert forbidden_package_reason(".archives/old/tree/run.py") is not None
 
 
-
-
 def test_release_build_failure_preserves_existing_zip(monkeypatch, tmp_path: Path) -> None:
     repo = _minimal_release_repo(tmp_path)
     output = tmp_path / "existing-release.zip"
@@ -241,6 +239,14 @@ def test_doctor_separates_installation_activation_release_and_live_readiness(mon
             "version_matches_runtime": True,
         }),
     )
+    monkeypatch.setattr(
+        "latka_jazn.dependencies.runtime.dependency_activation_status",
+        lambda _root: {
+            "required_ready": True,
+            "selected_source": "deterministic_test_fixture",
+            "missing_or_incompatible_distributions": [],
+        },
+    )
 
     payload = diagnostics.doctor_payload(root)
     assert payload["ok"] is True
@@ -259,6 +265,7 @@ def test_doctor_separates_installation_activation_release_and_live_readiness(mon
     assert stale["installation_ok"] is True
     assert stale["activation_ready"] is False
     assert stale["release_ready"] is False
+
 
 def test_release_build_persists_final_report_paths(
     monkeypatch,
