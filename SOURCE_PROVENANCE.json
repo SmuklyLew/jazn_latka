@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e5d8ce3eda665102a463ee16fc14d6788aa4a937",
-  "base_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-  "commit_date": "2026-09-01T02:16:05+02:00",
+  "base_merge_commit": "f40ae2ece9cd510c465c351e8c114d6b49dea50f",
+  "base_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+  "commit_date": "2026-09-01T02:48:48+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-01T00:16:05+00:00",
+  "generated_at_utc": "2026-09-01T00:48:48+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "d55baf5c0fbb2f5f44517a433e4e5f6e7079a6ff",
+  "git_tree_sha": "0a2c711640230b69f153009955e850b504a7a5a8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e5d8ce3eda665102a463ee16fc14d6788aa4a937",
-    "base_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+    "base_commit": "f40ae2ece9cd510c465c351e8c114d6b49dea50f",
+    "base_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "e5d8ce3eda665102a463ee16fc14d6788aa4a937",
-    "source_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap"
+    "source_commit": "f40ae2ece9cd510c465c351e8c114d6b49dea50f",
+    "source_version": "16.3.25.3.6-agents-chatgpt-single-startup-source"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+  "release_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+  "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "e5d8ce3eda665102a463ee16fc14d6788aa4a937",
+  "source_commit": "f40ae2ece9cd510c465c351e8c114d6b49dea50f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+  "source_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+  "update_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "version_source": "latka_jazn/version.py"
 }

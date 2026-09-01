@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-  "runtime_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-  "package_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-  "generated_at_utc": "2026-09-01T00:16:05+00:00",
-  "updated_at_utc": "2026-09-01T00:16:05+00:00",
+  "version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+  "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+  "package_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+  "generated_at_utc": "2026-09-01T00:48:48+00:00",
+  "updated_at_utc": "2026-09-01T00:48:48+00:00",
   "start_file": "run.py",
-  "file_count": 955,
-  "static_file_count": 955,
+  "file_count": 954,
+  "static_file_count": 954,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -173,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "a6c8747982e3e33d625e174aa9cc1c98c3bb180e999f1841b6d378230d5695fd",
+      "size_bytes": 2932,
+      "sha256": "a7f4c99521e369287235964452ca40f81c1e46c548ffba48585331c8e55e856c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1253,8 +1253,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 2488,
-      "sha256": "d90c88cbdff4a01e31ac96915227a9bee233a766a1296a2994c8e72fa42870cd",
+      "size_bytes": 998,
+      "sha256": "113b5ce7f23af7210e17e7180ca68ee1963fec9d5c93e5421640ac0bb0863d1f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1442,8 +1442,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/contract_loader.py",
-      "size_bytes": 2300,
-      "sha256": "7e88dc96e5513a0ad037279969561d5a18ad9c0ff2e4c5ec9b17f9cf034a42ea",
+      "size_bytes": 2245,
+      "sha256": "ac77196e89a787e66a1816160bcb47bda943b1c3f2533644ed79586cf94d7fed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3206,8 +3206,8 @@
     },
     {
       "path": "latka_jazn/core/startup_contract.py",
-      "size_bytes": 31017,
-      "sha256": "a6f2cc4ef414d14de69b6e63c776537dd49337f3027aed4ee1d574a11c1d39d7",
+      "size_bytes": 30984,
+      "sha256": "e691ce49474245d3890ffe4491f876ec3e1177b569c058d0d35bf956179efdaf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5185,15 +5185,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/chatgpt_startup_loader.txt",
-      "size_bytes": 2488,
-      "sha256": "d90c88cbdff4a01e31ac96915227a9bee233a766a1296a2994c8e72fa42870cd",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "latka_jazn/resources/cognition/v154_architecture.json",
       "size_bytes": 2345,
       "sha256": "b394cf007314a527b3bb0fc61be251cd517848be344cfdb61bc0239bd29d1e55",
@@ -5357,8 +5348,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 856,
-      "sha256": "5da622e9fd12bc756a4e465d2d4694f3fc227aeb68fdf289781b972c45262c35",
+      "size_bytes": 966,
+      "sha256": "4f0316d9389f6c311b1e63f72eb7171bd60efab65412707df17ae3d3637ccd11",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6491,8 +6482,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6497,
-      "sha256": "1895381a513a110e40a15c86c514ae0a1d5a439dd85e512d0ab1bb0144b271ce",
+      "size_bytes": 6566,
+      "sha256": "ddc06bf7b049c7e277f72ccd894d28589a1bd3b822651940ad300f19ea4dd0a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7634,8 +7625,8 @@
     },
     {
       "path": "tests/test_release_hardening_active_contracts.py",
-      "size_bytes": 11772,
-      "sha256": "68edf6bb2e0b3a79584c124b55f89d5b3a11700673c2578298399ac0c3bd7290",
+      "size_bytes": 11918,
+      "sha256": "b19f2d00604ce23bdfa7345185a496f4ca53a105b0495d63d51fc39146a1e768",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7796,8 +7787,8 @@
     },
     {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
-      "size_bytes": 6664,
-      "sha256": "fee8307d61cef2da42f8f5322b40978b0b09804258449337a9f517de36070e23",
+      "size_bytes": 6542,
+      "sha256": "62e432e4b8f3bc103b211fec5ce84e7d2456e27925113fbd994e5ef998a42105",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9026,11 +9017,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
+  "release_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-    "package_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap",
-    "release_version": "16.3.25.3.5-agents-role-routing-chatgpt-bootstrap"
+    "runtime_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+    "package_version": "16.3.25.3.6-agents-chatgpt-single-startup-source",
+    "release_version": "16.3.25.3.6-agents-chatgpt-single-startup-source"
   },
   "legacy_aliases": {
     "version": "release_version"
