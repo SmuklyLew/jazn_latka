@@ -1,6 +1,8 @@
-# AGENTS.ollama.md — Ollama jako lokalny backend językowy
+# AGENTS.ollama.md — kontrakt lokalnego backendu językowego Ollama
 
-Ten plik opisuje wyłącznie integrację lokalnego modelu Ollama z runtime Jaźni. Ollama nie jest Jaźnią, pamięcią, kanonem, routerem ani źródłem prawdy o aktywności procesu.
+Ten plik opisuje wyłącznie kontrakt i integrację lokalnego modelu Ollama jako backendu językowego runtime Jaźni. Jest wczytywany wtedy, gdy nadrzędny `AGENTS.md` skieruje zadanie do odpowiedzialności Ollamy. Ollama nie jest Jaźnią, hostem ChatGPT, pamięcią, kanonem, routerem ani źródłem prawdy o aktywności procesu.
+
+Jeżeli zadanie wymaga zmiany kodu lub dokumentacji integracji Ollamy, operację repozytoryjną wykonuj równolegle według `AGENTS.codex.md`; ten plik definiuje kontrakt backendu, nie zasady edycji repozytorium.
 
 ## Rola i granica prawdy
 

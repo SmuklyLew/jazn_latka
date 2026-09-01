@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.4 hardens portable ZIP packaging and adds Pack Generator Studio
+# v16.3.25.3.5 clarifies AGENTS responsibility routing and ChatGPT bootstrap
 # without consuming the v16.3.25.4 Memory Rebuild release slot.
-DISTRIBUTION_VERSION = "16.3.25.3.4"
-PACKAGE_VERSION = "16.3.25.3.4"
-PACKAGE_RELEASE_NAME = "jazn-pack-generator-v87-studio-portable-zip"
+DISTRIBUTION_VERSION = "16.3.25.3.5"
+PACKAGE_VERSION = "16.3.25.3.5"
+PACKAGE_RELEASE_NAME = "agents-role-routing-chatgpt-bootstrap"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

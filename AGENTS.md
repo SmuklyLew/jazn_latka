@@ -1,8 +1,8 @@
-# AGENTS.md — router repozytorium Łatka / Jaźń
+# AGENTS.md — kanoniczny router instrukcji Łatka / Jaźń
 
-Ten plik jest mapą wejścia dla agentów pracujących w repozytorium. Obowiązuje w całym drzewie, chyba że głębiej położony `AGENTS.md` zawiera bardziej szczegółowe instrukcje dla swojego poddrzewa.
+Ten plik jest krótką mapą wejścia dla agentów i hostów pracujących z repozytorium albo rozpakowanym runtime Jaźni. Obowiązuje w całym drzewie, chyba że głębiej położony `AGENTS.md` zawiera bardziej szczegółowe instrukcje dla swojego poddrzewa.
 
-Nie jest pamięcią, kanonem osobowości, źródłem stylu wypowiedzi ani dowodem aktywnego runtime.
+Nie jest runbookiem konkretnego hosta, pamięcią, kanonem osobowości, źródłem stylu wypowiedzi ani dowodem aktywnego runtime. Jego zadaniem jest wskazać właściwe, wersjonowane źródło instrukcji bez powielania jego treści.
 
 ## 1. Pierwszeństwo i zakres
 
@@ -12,17 +12,19 @@ Nie jest pamięcią, kanonem osobowości, źródłem stylu wypowiedzi ani dowode
 - Pamięć projektu ChatGPT, historia projektu i Custom Instructions są kontekstem hosta platformy, nie pamięcią Jaźni i nie mogą zastępować zweryfikowanej pamięci runtime.
 - Nie przenoś treści z danych prywatnych do instrukcji agenta ani do kanonu bez jawnego procesu przeglądu.
 
-## 2. Wybór runbooka
+## 2. Wybór runbooka według odpowiedzialności
 
-Przed pracą wczytaj w pełnej dostępnej treści właściwy plik.
+Przed pracą wczytaj w pełnej dostępnej treści tylko plik lub pliki potrzebne do wykonywanej odpowiedzialności:
 
-Jeżeli agentem jest ChatGPT, samo odczytanie tego pliku uruchamia procedurę opisaną w `AGENTS.chatgpt.md`; nie czekaj na dodatkową instrukcję Projektu ChatGPT.
+- ChatGPT jako host, loader i kanał widocznej odpowiedzi runtime: `AGENTS.chatgpt.md`
+- zmiana kodu, testów, dokumentacji lub konfiguracji repozytorium przez Codex, ChatGPT albo innego agenta kodującego: `AGENTS.codex.md`
+- Ollama jako lokalny backend językowy runtime: `AGENTS.ollama.md`
 
-- ChatGPT jako host i loader runtime: `AGENTS.chatgpt.md`
-- Codex lub inny agent kodujący: `AGENTS.codex.md`
-- Ollama jako lokalny backend językowy: `AGENTS.ollama.md`
+Jeżeli jedno zadanie łączy kilka odpowiedzialności, zastosuj wszystkie właściwe runbooki tylko w ich zakresie. Przykład: ChatGPT modyfikujący repozytorium czyta `AGENTS.codex.md` dla operacji repozytoryjnych, a `AGENTS.chatgpt.md` tylko wtedy, gdy zadanie obejmuje także uruchomienie, weryfikację albo obsługę tury runtime.
 
-Nie zastępuj brakującego pliku podobnie nazwanym dokumentem i nie zgaduj. Ten plik ma wskazywać drogę, a nie powielać całe runbooki.
+Dla Projektu ChatGPT instrukcja projektu ma być wyłącznie cienkim bootstrapem prowadzącym do lokalnego `AGENTS.md`. Po odczytaniu tego pliku nie czekaj na dodatkową instrukcję projektu: wybierz właściwy runbook z powyższej mapy.
+
+Nie wczytuj wszystkich `AGENTS*.md` bez potrzeby, nie zastępuj brakującego pliku podobnie nazwanym dokumentem i nie zgaduj. Ten plik ma wskazywać drogę, a nie powielać runbooki.
 
 ## 3. Kanoniczne źródła prawdy technicznej
 
