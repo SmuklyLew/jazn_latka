@@ -85,12 +85,14 @@ def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
     directory = Path(bundle_dir).resolve()
     manifest_path = directory / MANIFEST_NAME
     manifest = read_manifest(manifest_path)
-    if not manifest:
+    if manifest is None:
         return {'ok': False, 'bundle_dir': str(directory), 'errors': [{'code': 'manifest_unreadable'}]}
     errors: list[dict[str, Any]] = []
     if manifest.get('schema_version') != WHEELHOUSE_SCHEMA:
         errors.append({'code': 'manifest_schema_unsupported'})
-    files = manifest.get('files') if isinstance(manifest.get('files'), list) else []
+    files = manifest.get('files')
+    if not isinstance(files, list):
+        files = []
     expected: set[str] = set()
     verified = 0
     for row in files:
@@ -114,7 +116,9 @@ def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
             actual = wheel_metadata(target)
         except DependencyStudioError as exc:
             errors.append({'code': 'wheel_structure_invalid', 'filename': name, 'detail': str(exc)}); continue
-        declared = row.get('metadata') if isinstance(row.get('metadata'), dict) else {}
+        declared = row.get('metadata')
+        if not isinstance(declared, dict):
+            declared = {}
         if any(str(actual.get(k) or '') != str(declared.get(k) or '') for k in ('name', 'version')):
             errors.append({'code': 'wheel_metadata_mismatch', 'filename': name}); continue
         verified += 1
@@ -213,7 +217,9 @@ def discover_bundles(root: Path | str, *, wheelhouse_root: Path | str | None = N
         m = read_manifest(mp)
         if not m or m.get('schema_version') != WHEELHOUSE_SCHEMA: continue
         coverage = set(str(x) for x in (m.get('resolved_profiles') or m.get('profiles') or []))
-        target = m.get('target') if isinstance(m.get('target'), dict) else {}
+        target = m.get('target')
+        if not isinstance(target, dict):
+            target = {}
         if wanted_profiles and not wanted_profiles.issubset(coverage): continue
         if wanted_python and str(target.get('python_version') or '') != wanted_python: continue
         if wanted_platform and str(target.get('alias') or '') != wanted_platform: continue
