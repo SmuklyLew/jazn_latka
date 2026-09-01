@@ -175,37 +175,103 @@ class CapabilityStatusHandler:
             satisfied = ["internet_access", "provider_status", "truth_boundary", "source_origin"]
             route = "internet_access_status"
         elif intent in {"runtime_health_check", "runtime_health_check_after_update"}:
-            body = (
-                "Działam w aktywnym folderze runtime. Krótki raport health-check: "
-                f"runtime_version={runtime_version}, active_cache_version={active_cache.get('version')}, "
-                f"active_root={active_cache.get('active_root') or status.get('active_root')}, start_file={status.get('start_file')}, "
-                f"active_database={status.get('active_database')}, active_runtime_write_database={status.get('active_runtime_write_database')}, "
-                f"process_lifecycle={status.get('process_lifecycle')}, pid={status.get('pid')}, endpoint={status.get('endpoint')}, heartbeat={status.get('heartbeat')}, "
-                f"wake_state_status={wake_state.get('status') or 'status_not_available'}, "
-                f"memory_continuity_status={memory_continuity.get('status') or 'status_not_available'}, "
-                f"continuity_claim_allowed={memory_continuity.get('continuity_claim_allowed')}, "
-                f"memory_fallback_policy={memory_continuity.get('fallback_policy')}, "
-                f"wake_state_snapshot_id={wake_snapshot.get('snapshot_id')}, "
-                f"wake_state_snapshot_sha256={wake_snapshot.get('snapshot_sha256')}, "
-                f"wake_state_validation_status={wake_snapshot.get('validation_status')}, "
-                f"wake_state_freshness_reason={wake_freshness.get('reason')}, "
-                f"wake_state_invalidated={wake_freshness.get('invalidates_wake_state')}, "
-                f"wake_state_sidecar={wake_state.get('sidecar_db_path')}, "
-                f"conversation_archive_status={archive_memory.get('status') or 'status_not_available'}, ready_for_search={archive_memory.get('ready_for_search')}, "
-                f"should_reuse_existing_extraction={active_cache.get('should_reuse_existing_extraction')}, "
-                f"cache_miss_reasons={active_cache.get('cache_miss_reasons') or []}, "
-                f"runtime_write_raw_memory_status={raw_memory.get('status') or 'status_not_available'}, "
-                f"source_origin=runtime_rule_handler_response, "
-                f"source_origin_detail=capability_status_handler/v{runtime_version_number}. "
-                "(runtime_write jest kontrolnym statusem bieżących zapisów; conversation_archive/FTS pozostaje głównym indeksem pełnych rozmów). "
-                + (
-                    "To jest pytanie o stan działania po aktualizacji, nie polecenie wykonania nowej aktualizacji kodu. "
-                    if intent == "runtime_health_check_after_update"
-                    else "To jest pytanie diagnostyczne o działanie runtime, nie zwykła rozmowa ani deklaracja stałego życia w tle. "
-                )
-                + "Granica prawdy: `persistent_daemon_async_job` oznacza turę obsłużoną przez trwały daemon do jawnego stopu; "
-                "`--chat` jest osobną interaktywną pętlą terminalową do EOF albo /exit, a `--runtime-preview` pozostaje turą one-shot."
+            low_text = " ".join((text or "").lower().split())
+            detailed_health = any(marker in low_text for marker in (
+                "pełna diagnostyka", "pelna diagnostyka", "pełną diagnostykę", "pelna diagnostyke",
+                "pełna telemetria", "pelna telemetria", "pełną telemetrię", "pelna telemetrie",
+                "surowa telemetria", "surową telemetrię", "surowa telemetrie",
+                "szczegółowa diagnostyka", "szczegolowa diagnostyka",
+                "wszystkie pola", "pełny health-check", "pelny health-check",
+            ))
+            wake_details_requested = any(marker in low_text for marker in (
+                "wake-state", "wake state", "wake_state", "stan przebudzenia",
+                "snapshot wake", "aktywny snapshot",
+            ))
+            source_details_requested = any(marker in low_text for marker in (
+                "źródło tej odpowiedzi", "zrodlo tej odpowiedzi", "skąd ta odpowiedź",
+                "skad ta odpowiedz", "source_origin", "source origin", "pochodzenie odpowiedzi",
+            ))
+
+            lifecycle = str(status.get("process_lifecycle") or "status_not_available")
+            raw_memory_status = str(raw_memory.get("status") or "status_not_available")
+            wake_status = str(wake_state.get("status") or "status_not_available")
+            continuity_status = str(memory_continuity.get("status") or "status_not_available")
+            continuity_label = (
+                "niezweryfikowana w szybkim teście"
+                if continuity_status == "not_evaluated_fast_path"
+                else continuity_status
             )
+            heartbeat_label = "zarejestrowany" if status.get("heartbeat") else "brak w szybkim statusie"
+
+            lines = [
+                "Działam prawidłowo w aktywnym runtime.",
+                "",
+                f"- Runtime: v{runtime_version_number}",
+                f"- Proces: {lifecycle}",
+                f"- Pamięć robocza: {raw_memory_status}",
+                f"- Wake state: {wake_status}",
+                f"- Ciągłość pamięci: {continuity_label}",
+                f"- Heartbeat: {heartbeat_label}",
+            ]
+
+            if wake_details_requested or detailed_health:
+                lines.extend([
+                    f"- Snapshot wake-state: snapshot_id={wake_snapshot.get('snapshot_id')}, snapshot_sha256={wake_snapshot.get('snapshot_sha256')}",
+                    f"- Walidacja wake-state: {wake_snapshot.get('validation_status')}",
+                    f"- Wake-state freshness: reason={wake_freshness.get('reason')}, invalidated={wake_freshness.get('invalidates_wake_state')}",
+                ])
+            if wake_details_requested:
+                lines.extend([
+                    f"- wake_state_status={wake_status}",
+                    f"- wake_state_snapshot_id={wake_snapshot.get('snapshot_id')}",
+                    f"- wake_state_snapshot_sha256={wake_snapshot.get('snapshot_sha256')}",
+                    f"- wake_state_freshness_reason={wake_freshness.get('reason')}",
+                ])
+            if source_details_requested:
+                lines.append("- source_origin=runtime_rule_handler_response")
+            if source_details_requested or detailed_health:
+                lines.append(
+                    f"- Source origin: runtime_rule_handler_response (capability_status_handler/v{runtime_version_number})"
+                )
+
+            if detailed_health:
+                lines.extend([
+                    "",
+                    "Pełna telemetria runtime:",
+                    f"- Active root: {active_cache.get('active_root') or status.get('active_root')}",
+                    f"- Start file: {status.get('start_file')}",
+                    f"- Active database: {status.get('active_database')}",
+                    f"- Runtime write database: {status.get('active_runtime_write_database')}",
+                    f"- PID: {status.get('pid')}",
+                    f"- Endpoint: {status.get('endpoint')}",
+                    f"- Heartbeat UTC: {status.get('heartbeat')}",
+                    f"- Wake-state sidecar: {wake_state.get('sidecar_db_path')}",
+                    f"- Conversation archive: {archive_memory.get('status') or 'status_not_available'}; ready_for_search={archive_memory.get('ready_for_search')}",
+                    f"- Cache reuse: {active_cache.get('should_reuse_existing_extraction')}",
+                    f"- Cache miss reasons: {active_cache.get('cache_miss_reasons') or []}",
+                    f"- Continuity claim allowed: {memory_continuity.get('continuity_claim_allowed')}",
+                    f"- Memory fallback policy: {memory_continuity.get('fallback_policy')}",
+                ])
+
+            lines.append("")
+            if intent == "runtime_health_check_after_update":
+                lines.append("To jest sprawdzenie stanu po aktualizacji; nie uruchamia kolejnej aktualizacji kodu.")
+            if wake_details_requested or source_details_requested or detailed_health:
+                lines.append(
+                    "Granica procesu: `--chat` jest osobną interaktywną pętlą terminalową do EOF albo /exit, "
+                    "a `--runtime-preview` pozostaje turą one-shot."
+                )
+            lines.append(
+                "Granica prawdy: szybki health-check potwierdza bieżący proces i lokalne metadane; "
+                "nie wykonuje pełnego skanu archiwum ani nie dowodzi ciągłości pamięci bez osobnej walidacji."
+            )
+            if not detailed_health:
+                lines.append(
+                    "Pełna telemetria (`active_database`, `cache_miss_reasons` i pozostałe pola) "
+                    "jest dostępna na wyraźne żądanie."
+                )
+
+            body = "\n".join(lines)
             satisfied = [
                 "runtime_status", "version", "active_database", "cache_reuse",
                 "memory_status", "wake_state_status", "wake_state_snapshot",
