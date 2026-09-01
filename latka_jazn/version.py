@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.3.5 clarifies AGENTS responsibility routing and ChatGPT bootstrap
-# without consuming the v16.3.25.4 Memory Rebuild release slot.
-DISTRIBUTION_VERSION = "16.3.25.3.5"
-PACKAGE_VERSION = "16.3.25.3.5"
-PACKAGE_RELEASE_NAME = "agents-role-routing-chatgpt-bootstrap"
+# v16.3.25.3.6 removes the duplicate packaged ChatGPT startup loader and makes
+# AGENTS.md -> AGENTS.chatgpt.md the single canonical host startup path.
+DISTRIBUTION_VERSION = "16.3.25.3.6"
+PACKAGE_VERSION = "16.3.25.3.6"
+PACKAGE_RELEASE_NAME = "agents-chatgpt-single-startup-source"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
@@ -20,6 +20,8 @@ _SCHEMA_MAJOR_BY_COMPONENT: dict[str, int] = {
     "source_provenance": 2,
     "package_integrity_manifest": 2,
     "voice_source_contract": 2,
+    "self_owned_startup_contract": 2,
+    "self_check": 2,
 }
 # These documents existed before an explicit schema_version field was required.
 # Missing schema identity is accepted only as a bounded migration path for these

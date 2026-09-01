@@ -13,24 +13,25 @@ from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_project_instructions_are_capability_aware_bootstrap_not_latka_persona() -> None:
+def test_project_instructions_are_thin_loader_to_agents_router() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    packaged = (ROOT / "latka_jazn/resources/chatgpt_startup_loader.txt").read_text(encoding="utf-8")
-    assert text == packaged
     assert len(text) <= 8000
     assert "`AGENTS.md`" in text
-    assert "bieżącym środowisku wykonawczym hosta" in text
-    assert "Nie oznacza wyłącznie fizycznego dysku użytkownika" in text
-    assert "Nie przełączaj do Work ani Codex tylko dlatego" in text
-    assert "executor/terminal" in text
-    assert "package_available" in text
-    assert "active_root_verified" in text
-    assert "runtime_process_alive" in text
-    assert "runtime_verified" in text
-    assert "Pytania „Działasz?”" not in text
-    assert "odpowiadaj naturalnie i po polsku" not in text
+    assert "`AGENTS.chatgpt.md`" in text
+    assert "Przed pierwszą zwykłą odpowiedzią" in text
+    assert "ZIP" in text
+    assert "executora/terminala" in text
+    assert "kanonicznym runbookiem" in text
+    assert "package_available" not in text
+    assert "runtime_process_alive" not in text
     assert "final_visible_text" not in text
     assert "HOST_ROUTING_BYPASS" not in text
+
+
+def test_obsolete_packaged_chatgpt_loader_is_removed() -> None:
+    assert not (ROOT / "latka_jazn/resources/chatgpt_startup_loader.txt").exists()
+    assert (ROOT / "AGENTS.md").is_file()
+    assert (ROOT / "AGENTS.chatgpt.md").is_file()
 
 
 def test_chatgpt_runbook_does_not_reclassify_presence_as_health_check() -> None:

@@ -13,7 +13,6 @@ CURRENT_CONTRACT_SOURCES = (
     "AGENTS.codex.md",
     "AGENTS.ollama.md",
     "README.md",
-    "latka_jazn/resources/chatgpt_startup_loader.txt",
     "latka_jazn/resources/startup_contract.json",
 )
 
