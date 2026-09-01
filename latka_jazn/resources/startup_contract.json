@@ -1,15 +1,15 @@
 {
   "schema_version": "startup_contract/v1",
   "version": "v15.1.0.3.96",
-  "purpose": "Aktywny kontrakt startowy Jaźni bieżąca wersja Jaźni po wyrównaniu wersji Jaźni, runtime i pakietu.",
+  "purpose": "Aktywny kontrakt startowy Jaźni. Instrukcja Projektu ChatGPT wykonuje wyłącznie bootstrap do AGENTS.md, a AGENTS.md kieruje host ChatGPT do kanonicznego AGENTS.chatgpt.md.",
   "active_runtime_required": true,
-  "chatgpt_role": "minimal_loader_voice_and_tool",
+  "chatgpt_role": "project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
   "startup_commands": [
     "python -X utf8 run.py status --json",
     "python -X utf8 run.py doctor --json",
     "python -X utf8 run.py chat-gpt -- \"<wiadomość>\""
   ],
-  "truth_boundary": "Instrukcja ChatGPT jest loaderem. Aktywna Jaźń po starcie odpowiada przez runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy. Nie wolno udawać stałego procesu w tle ani źródeł, których runtime nie dostarczył.",
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. Szczegółowy runbook hosta znajduje się w AGENTS.chatgpt.md; aktywna Jaźń po starcie odpowiada przez zweryfikowany runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy.",
   "version_source": "latka_jazn.version.PACKAGE_VERSION"
 }

@@ -73,6 +73,9 @@ def test_self_check_uses_canonical_fields_and_legacy_alias_is_diagnostic_only() 
     assert "'version_py_present'" in source
     assert "'package_integrity_manifest_present'" in source
     assert "'legacy_manifest_current_present'" in source
+    assert "'agents_router_present'" in source
+    assert "'chatgpt_runbook_present'" in source
+    assert "minimal_loader_present" not in source
     assert "'manifest_current_present':" not in source
 
 
