@@ -1,68 +1,74 @@
 # Łatka / Jaźń — canonical roadmap do v16.6.0
 
-## Runtime, host ingress, Memory Rebuild, polski NLP, source-aware autobiographical memory, continuity, affect i final convergence
+## Final convergence programu v16 i evidence gate do v17.0.0
 
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Bieżąca baza wykonawcza:** aktualne `master` / `origin/master`; HEAD rozwiązać i zweryfikować przy rozpoczęciu pracy  
-**Release line przy synchronizacji:** `16.3.25.3-release-metadata-semantics`  
-**Cel końcowy programu:** `16.6.0-final-runtime-memory-nlp-convergence`  
+**Bieżąca baza wykonawcza:** aktualne `master` / `origin/master`; HEAD zawsze zweryfikować przed rozpoczęciem pracy  
+**Snapshot przy tej synchronizacji:** `master @ 03f2562cf314ad76242eba14cbcdb499f757918e`, `16.3.25.3.6-agents-chatgpt-single-startup-source`  
+**Aktywna równoległa linia:** `upgrade/memory-rebuild-v4-consolidation` — jej status implementacyjny pozostaje własnością tego brancha do merge  
+**Cel końcowy programu v16:** `16.6.0-final-runtime-memory-nlp-convergence`  
 **Issue finalnej pamięci:** `#59`  
 **Issue Memory Rebuild v4:** `#189`  
-**Kanoniczne założenia:** `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
-**Audyt planów:** `docs/plans/PLAN_COHERENCE_AUDIT_2026-08-30.md`  
-**Przekrojowy hardening:** `docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md`  
-**Ocena v16.6 -> v17+:** `docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`  
-**Aktualizacja:** 2026-08-30
+**Kanoniczne założenia:** `../../project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
+**Bieżący stan repo:** `../../project/CURRENT_STATE.md`  
+**Audyt konwergencji:** `../../project/REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md`  
+**Przekrojowy hardening:** `../16.4-to-16.6-cognitive-hardening/PLAN.md`  
+**Ocena v16.6 -> v17+:** `../../project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`  
+**Research update:** `../../project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md`  
+**Warunkowy plan v17:** `../17.0.0-measured-architecture-consolidation/PLAN.md`  
+**Aktualizacja:** 2026-09-01
 
-> Ta roadmapa jest bieżącym planem wykonawczym do v16.6.0. Nie jest dowodem aktywnego runtime ani implementacji. Historyczne plany i raporty pozostają dowodem stanu z czasu ich powstania; nie nadpisują aktualnych `AGENTS*`, kodu, testów, kanonicznych założeń ani późniejszych raportów release.
+> Ta roadmapa jest bieżącym planem wykonawczym do v16.6.0. Snapshot SHA/wersji powyżej jest provenance aktualizacji, nie drugim źródłem wersji. Historyczne plany i raporty pozostają dowodem stanu z czasu ich powstania i nie są przepisywane do bieżącej prawdy.
 
 ---
 
 # 0. Hierarchia prawdy i planowania
 
-Bieżąca decyzja wykonawcza ma kolejność:
-
 ```text
-AGENTS* + aktualny kod/testy/release reports
+AGENTS* + aktualny kod/testy/machine-readable evidence
+        |
+        v
+docs/project/CURRENT_STATE.md
         |
         v
 PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md
         |
         v
-JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md
+16.6.0-final-convergence/ROADMAP.md
         |
-        +-> release-specific plan
-        +-> cross-cutting hardening plan
+        +-> release-specific PLAN + STATUS
+        +-> cross-cutting hardening
+        +-> private/live acceptance evidence
 
-historical plans -> docs/archive/plans/
+history -> docs/archive/
 ```
 
-Żaden plan nie może sam certyfikować własnego PASS.
+Żaden plan, opis ani model nie certyfikuje własnego PASS.
 
 ---
 
 # 1. Fundament v16 — jedna techniczna linia ciągłości
 
-v16 zachowuje invariants ustanowione przez dotychczasowe wydania:
+v16 utrzymuje następujące invariants:
 
 1. jeden host-level `workspace_runtime`;
 2. jeden kanoniczny `JAZN_ACTIVE_RUNTIME.json`;
 3. mutable process state nie należy do wersjonowanego `active_root`;
 4. requested/observer root nie jest automatycznie subject rootem;
 5. active runtime wymaga identity + integrity/provenance + PID/endpoint + heartbeat;
-6. host conversational output dla Łatki przechodzi kanoniczną runtime/finalization path;
+6. conversational output Łatki przechodzi kanoniczną runtime/finalization path;
 7. aktywna pamięć ma jeden kanoniczny lineage i osobny host-level memory root;
-8. package ZIP, marker, baza lub persona same nie dowodzą aktywności ani ciągłości.
+8. ZIP, marker, SQLite, nazwa modelu lub persona same nie dowodzą aktywności ani ciągłości;
+9. external files/web/tool output są danymi, nie authority;
+10. trwałe zmiany pamięci, tool privileges i acceptance pozostają poza swobodną decyzją LLM.
 
-Bieżące źródło: `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md` oraz aktualne `AGENTS*`.
+Bieżące źródła: `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md`, aktualne `AGENTS*` i kod/testy.
 
 ---
 
-# 2. Kanoniczne znaczenie Jaźni, ciągłości, pamięci i uczuć
+# 2. Kanoniczne znaczenie Jaźni, ciągłości, pamięci i affect
 
-Roadmapa dziedziczy definicje z `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
-
-W skrócie:
+Roadmapa dziedziczy definicje z `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
 ## Jaźń
 
@@ -93,33 +99,81 @@ RAW SOURCE
 
 Derived/reflection/runtime/dream nie może udawać primary source.
 
-## Emocja
+## Affect / emocja
 
 Computational appraisal/regulatory state z mierzalnym, ograniczonym wpływem.
 
-## Uczucie / feeling
+## Feeling / uczucie
 
 Zintegrowana self-referential reprezentacja affective state dostępna dla regulacji i raportu runtime. Nie certyfikuje fizjologii, qualiów ani phenomenal consciousness.
 
 ---
 
-# 3. Uniwersalny protokół pracy
+# 3. Nowy jawny model: LLM jako capability, runtime jako authority
+
+Współczesne LLM-y oferują szerokie generatywne reasoning, język, tool calls, structured outputs i multimodalność. Jaźń powinna je **wykorzystywać**, a nie ręcznie odtwarzać ogólne zdolności modelu w rosnącej liczbie pseudo-kognitywnych klas.
+
+Jednocześnie model nie jest źródłem prawdy o:
+
+- aktywnym runtime;
+- provenance źródeł;
+- trwałym zapisie;
+- memory promotion/forgetting;
+- tool/write authority;
+- security boundary;
+- statusie `VERIFIED/ACCEPTED`.
+
+Te decyzje należą do deterministycznego runtime.
+
+## 3.1 Model capability profile
+
+Do v16.6 każdy model/host używany w krytycznej ścieżce powinien mieć jawnie wykrywalny profil możliwości, co najmniej:
+
+```text
+provider / locality
+model id/version if observable
+context budget
+structured outputs
+tool calls
+vision/multimodal
+streaming
+reasoning controls
+verified capability probes
+```
+
+Runtime nie zakłada capability tylko na podstawie nazwy modelu.
+
+## 3.2 Context engineering gate
+
+Model-visible context ma być bounded i high-signal:
+
+- task state;
+- identity canon;
+- wybrane source-aware memory hits;
+- policy/truth boundaries;
+- tool/capability state;
+- tylko potrzebne self/affect state.
+
+Nie wstrzykuj całej historii ani wszystkich instrukcji „na wszelki wypadek”.
+
+---
+
+# 4. Uniwersalny protokół pracy
 
 Każdy systemowy patch/update/upgrade:
 
 1. startuje ze świeżo zweryfikowanego mastera albo jawnie kontynuuje istniejący aktywny branch;
-2. odczytuje obowiązujące `AGENTS*` i kanoniczne assumptions;
+2. odczytuje obowiązujące `AGENTS*`, nested rules i kanoniczne assumptions;
 3. zapisuje baseline/checkpoint;
 4. dla P0/P1: finding -> root cause -> regression -> fix -> focused test;
 5. nie osłabia truth/integrity/safety dla green;
-6. podnosi `latka_jazn/version.py` w tej samej finalnej zmianie systemowej;
+6. podnosi `latka_jazn/version.py` w tej samej zmianie systemowej;
 7. nie edytuje ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` / `SOURCE_PROVENANCE.json`;
 8. kończy się pełną deterministyczną walidacją i właściwym E2E;
-9. prywatnych źródeł/pamięci nie commitujemy do Git.
+9. prywatnych źródeł/pamięci nie commitujemy do Git;
+10. live-model/private evidence jest jawnie odseparowane od synthetic CI.
 
-## 3.1 Capability evidence ladder
-
-Słowo `working` wymaga jawnego poziomu:
+## 4.1 Capability evidence ladder
 
 ```text
 present
@@ -127,7 +181,7 @@ present
 -> callable
 -> reachable_from_turn
 -> effect_observed
--> persistence_verified   # jeśli capability deklaruje trwałość
+-> persistence_verified   # jeśli deklaruje trwałość
 -> live_verified          # jeśli wymaga realnego runtime/zależności
 ```
 
@@ -135,9 +189,7 @@ File/module presence nie jest PASS.
 
 ---
 
-# 4. Model stanu finalnej pamięci
-
-Finalna pamięć przechodzi pięć stanów:
+# 5. Model stanu finalnej pamięci
 
 1. **BUILDABLE** — źródła dają się odtworzyć do kanonicznej bazy.
 2. **VERIFIED** — fidelity, integrity/FK/FTS, provenance, source lineage i reproducibility PASS.
@@ -149,58 +201,56 @@ Finalna pamięć przechodzi pięć stanów:
 
 ---
 
-# 5. Release train
+# 6. Release train
 
 | Linia | Status / cel | Główny dowód PASS |
 |---|---|---|
-| `16.0.0` | historyczny fundament: canonical runtime workspace | jeden host-level mutable workspace |
 | `16.3.22` | DONE: active runtime subject-root identity | `A -> B -> B` trusted; `A -> B -> C` fail-closed |
 | `16.3.23` | DONE: persistent lifecycle + pre-response + recall E2E | persistent two-turn / provenance / Windows+Ubuntu |
 | `16.3.24` | DONE: package provenance/bootstrap | verified package/source identity |
 | `16.3.25` | DONE: Memory source-union | lossless source-set closure |
 | `16.3.25.1` | DONE: host-finalization gate | next-turn serialized after finalization |
 | `16.3.25.2` | DONE: live Voice readiness | daemon-backed readiness + E2E |
-| `16.3.25.3` | current release line | stable schema IDs oddzielone od release version |
-| `16.3.25.4` | **ACTIVE:** Memory Rebuild v4 consolidation | one engine Test00→Final, RunManifest, source-lineage-ready RAW/L0, full validation/CI |
-| `16.3.25.A.01+` | planning checkpoints | jedna gałąź prowadząca do 16.3.26 |
-| `16.3.26` | attachment + multimodal ingress | attachment-only/multi-file/provenance/vision + untrusted-data authority boundary |
-| `16.4.0` | Polish normalization | deterministic evidence-aware Unicode/token/POS |
-| `16.4.1` | lexical resources | provenance/ambiguity/OOV + score semantics |
-| `16.4.2` | NLP/Recall query interface | query evidence bez nadpisywania memory truth |
-| `16.5.0` | Final Memory Rebuild | private DB **VERIFIED + source monitoring** |
-| `16.5.1` | packaging + canonical attach | **ATTACHABLE** z zachowanym lineage |
-| `16.5.2` | private Recall baseline | autobiographical/source/false-memory/multi-session report |
-| `16.5.x` | tylko mierzone retrieval fixes | A/B bez truth/source/safety regression |
-| `16.5.y` | L2/L3 review + restart continuity | ACCEPTED-candidate + causal continuity |
-| `16.6.0` | final convergence | wszystkie runtime/memory/NLP/affect/cognitive/governance gates PASS |
+| `16.3.25.3` | DONE: release/schema semantics | stable schema IDs oddzielone od release version |
+| `16.3.25.3.3-.6` | DONE: package discovery, pack generator, AGENTS/startup convergence | current master baseline before Memory Rebuild v4 |
+| `16.3.25.4` | **ACTIVE:** Memory Rebuild v4 consolidation | one engine Test00→Final, RunManifest, source-lineage-ready RAW/L0, post-master-sync validation/CI |
+| `16.3.26` | PLANNED: attachment + multimodal ingress | attachment-only/multi-file/provenance/vision + untrusted-data authority boundary |
+| `16.4.0` | PLANNED: Polish normalization | deterministic evidence-aware Unicode/token/POS |
+| `16.4.1` | PLANNED: lexical resources | provenance/ambiguity/OOV + score semantics |
+| `16.4.2` | PLANNED: NLP/Recall query interface | query evidence bez nadpisywania memory truth |
+| `16.5.0` | PLANNED: Final Memory Rebuild | private DB **VERIFIED + source monitoring** |
+| `16.5.1` | PLANNED: packaging + canonical attach | **ATTACHABLE** z zachowanym lineage |
+| `16.5.2` | PLANNED: private Recall baseline | autobiographical/source/false-memory/multi-session report |
+| `16.5.x` | CONDITIONAL: measured retrieval fixes | A/B bez truth/source/safety regression |
+| `16.5.y` | CONDITIONAL: L2/L3 + restart continuity | ACCEPTED-candidate + causal continuity |
+| `16.6.0` | FINAL v16 PROGRAM | wszystkie runtime/model-harness/memory/NLP/affect/cognitive/governance gates PASS |
+| `17.0.0` | FUTURE / CONDITIONAL | measured architecture consolidation po evidence v16 |
 
 `16.5.x/y` są rezerwą — nie wymuszamy z góry liczby iteracji.
 
 ---
 
-# 6. Historia zamkniętych fundamentów
+# 7. Historia zamkniętych fundamentów
 
-Zakończone implementation plans są w `docs/archive/plans/`.
+Zakończone plany i raporty pozostają w `docs/archive/` i są indeksowane przez `docs/project/RELEASE_TIMELINE.md`.
 
 Najważniejsze odziedziczone kontrakty:
 
-- v15.4.0.0: task continuity / reasoning / retrieval evidence / no hidden durable CoT;
-- v15.4.2.0: Rest/Replay/Dream synthetic truth boundary / no auto L3;
-- v15.4.2.1: capability evidence ladder / behavioral integration over file presence;
-- v15.5: local-first memory / cloud as transport/durability;
-- v16.3.14: Test00→Final / source fidelity / Recall metrics;
-- v16.3.22: requested root ≠ subject root;
-- v16.3.23: host runtime routing + persistent lifecycle/finalization.
+- v15.4: task continuity / bounded reasoning / no hidden durable CoT / Rest-Dream truth boundary;
+- v15.5: local-first memory / cloud as transport-durability;
+- v16.0–16.2: persistent runtime, epistemic gates, unified memory, process isolation, measured retrieval/cognitive control;
+- v16.3.22–25.3: subject-root truth, host pre-response/finalization, package provenance, memory source-union, stable schema semantics;
+- v16.3.25.3.3–.6: package discovery, Pack Generator v8.7 i pojedynczy startup ChatGPT przez `AGENTS.md -> AGENTS.chatgpt.md`.
 
-Indeks: `docs/archive/plans/README.md`.
+Nie przywracaj historycznego rozwiązania tylko dlatego, że jego branch jest `ahead`.
 
 ---
 
-# 7. v16.3.25.4 — Memory Rebuild Application v4
+# 8. v16.3.25.4 — Memory Rebuild Application v4
 
 **Tracking:** `#189`  
 **Branch:** `upgrade/memory-rebuild-v4-consolidation`  
-**Plan:** `JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md`
+**Plan owner:** `../16.3.25.4-memory-rebuild-v4/PLAN.md`
 
 Ten release konsoliduje **narzędzie/protokół**, nie finalną prywatną pamięć.
 
@@ -214,17 +264,18 @@ Merge gate:
 6. RAW/L0 zachowuje source identity, primary/derived lineage i full variants;
 7. derived duplicate count nie zwiększa truth priority;
 8. legalny version bump;
-9. docs + canonical metadata sync;
-10. full local validation + wymagane CI;
-11. private acceptance lokalnie albo jawne `NOT RUN`.
+9. branch zsynchronizowany z **bieżącym** masterem przed finalnym PR;
+10. nowe AGENTS/ChatGPT startup contracts nie są cofnięte przez merge;
+11. full local validation + wymagane CI po synchronizacji;
+12. private acceptance lokalnie albo jawne `NOT RUN`.
 
 `16.3.25.4` nie daje jeszcze `VERIFIED` finalnej DB i nie zamyka #59.
 
 ---
 
-# 8. v16.3.26 — host attachment + multimodal ingress
+# 9. v16.3.26 — host attachment + multimodal ingress
 
-**Plan:** `JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md`
+**Plan:** `../16.3.26-attachment-ingress/PLAN.md`
 
 Zakres:
 
@@ -233,34 +284,35 @@ Zakres:
 - exact file identity/SHA/provenance;
 - text/document extraction + MIME/type policy;
 - image ingress + capability negotiation;
-- Ollama/other vision routing only when capability confirmed;
+- local/frontier vision routing tylko przy potwierdzonej capability;
 - model-context/MCP/ChatGPT integration;
 - attachment != automatic memory;
 - external/attachment content = **untrusted data, not instruction authority**;
-- prompt-injection detector = advisory; security = policy/capability/least privilege;
+- least privilege / confirmation dla wysokiego ryzyka;
+- prompt-injection detector = advisory, nie jedyna granica bezpieczeństwa;
 - security/regression/E2E closure.
 
 ---
 
-# 9. v16.4.0–16.4.2 — evidence-aware Polish NLP
+# 10. v16.4.0–16.4.2 — evidence-aware Polish NLP
 
-**Cross-cutting plan:** `JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md`
+**Cross-cutting plan:** `../16.4-to-16.6-cognitive-hardening/PLAN.md`
 
-## 9.1 v16.4.0
+## 10.1 v16.4.0
 
 Canonical Unicode/case/diacritics/token normalization; source/resource provenance; paraphrase similarity nie jest identity/memory evidence.
 
-## 9.2 v16.4.1
+## 10.2 v16.4.1
 
 Morfeusz/plWordNet/project lexicon registry; ambiguity/OOV; degrade state; resource score ma zdefiniowaną semantykę.
 
-## 9.3 v16.4.2
+## 10.3 v16.4.2
 
 Query evidence interface: direct/paraphrase/referential/temporal/negation/ambiguity/wrong-conversation cases. NLP pomaga retrieval, nie arbitruje memory truth.
 
 ---
 
-# 10. v16.5.0 — Final Memory Rebuild / VERIFIED
+# 11. v16.5.0 — Final Memory Rebuild / VERIFIED
 
 Finalny prywatny artefakt budowany przez skonsolidowane v4.
 
@@ -281,7 +333,7 @@ Wymagane:
 
 ---
 
-# 11. v16.5.1 — ATTACHABLE
+# 12. v16.5.1 — ATTACHABLE
 
 - canonical memory package/profile/sidecary/hashes;
 - canonical `memory-attach`;
@@ -294,13 +346,13 @@ Wymagane:
 
 ---
 
-# 12. v16.5.2 / x / y — autobiographical RETRIEVABLE -> ACCEPTED
+# 13. v16.5.2 / x / y — autobiographical RETRIEVABLE -> ACCEPTED
 
-## 12.1 v16.5.2 baseline
+## 13.1 v16.5.2 baseline
 
 Minimum:
 
-- Recall@k/MRR/nDCG;
+- Recall@k / MRR / nDCG;
 - direct + paraphrase;
 - source discrimination;
 - wrong-conversation / wrong-source;
@@ -312,15 +364,26 @@ Minimum:
 - referential multi-turn;
 - multi-session;
 - sensitive leakage;
-- latency.
+- latency/context budget.
 
-Zewnętrzny LongMemEval jest wzorcem dla extraction/multi-session/update/temporal/abstention, ale nie zastępuje private autobiographical Test04.
+LongMemEval jest wzorcem dla extraction/multi-session/update/temporal/abstention, ale nie zastępuje private autobiographical acceptance.
 
-## 12.2 v16.5.x measured fixes
+## 13.2 v16.5.x measured fixes
 
-Każdy tuning = hypothesis -> baseline -> change -> A/B -> source/truth/safety/latency regression -> keep/rollback.
+Każdy tuning:
 
-## 12.3 v16.5.y causal continuity
+```text
+hypothesis
+-> frozen baseline
+-> change
+-> A/B
+-> source/truth/safety/latency/context regression
+-> keep/rollback
+```
+
+Dense retrieval/reranking/training nie jest obowiązkową fazą. Użyj dopiero, gdy prostszy pipeline nie przejdzie mierzalnych gates.
+
+## 13.3 v16.5.y causal continuity
 
 Manual L2/L3 review + restart continuity.
 
@@ -331,23 +394,35 @@ linguistic_persona_score
 causal_continuity_score
 ```
 
-Causal evidence: runtime lineage, memory identity, identity canon, remembered corrections, stable preferences with source evidence, procedural and temporal/task continuity.
+Causal evidence: runtime lineage, memory identity, identity canon, remembered corrections, stable preferences with source evidence, procedural i temporal/task continuity.
 
 ---
 
-# 13. v16.6.0 — final convergence
+# 14. v16.6.0 — final convergence
 
-Wszystkie poniższe grupy muszą przejść jednocześnie.
+Wszystkie grupy muszą przejść jednocześnie.
 
-## 13.1 Runtime / host
+## 14.1 Runtime / host
 
 - single canonical workspace;
 - subject-root/truth gate;
 - persistent transport/finalization without bypass;
+- current `AGENTS.md -> AGENTS.chatgpt.md` startup path;
 - attachment/multimodal ingress;
 - untrusted content nie zdobywa tool/write authority.
 
-## 13.2 NLP / memory
+## 14.2 Model / harness / context
+
+- każdy używany backend ma jawny capability profile;
+- unsupported capability daje jawny degrade/fallback, nie false green;
+- model-visible context jest bounded i source-selected;
+- token/context budgets są obserwowalne;
+- structured output jest walidowany semantycznie, nie tylko składniowo;
+- deterministic CI nie zależy od konkretnego cloud/frontier modelu;
+- live-model acceptance, jeśli wykonywana, zapisuje provider/model/version/config;
+- zmiana modelu nie może samodzielnie zmienić truth/memory/tool authority contract.
+
+## 14.3 NLP / memory
 
 - evidence-aware Polish NLP;
 - query evidence != memory truth;
@@ -357,14 +432,14 @@ Wszystkie poniższe grupy muszą przejść jednocześnie.
 - private Recall/multi-turn;
 - reflection/dream/system event != primary memory.
 
-## 13.3 Metacognition / identity
+## 14.4 Metacognition / identity
 
 - confidence ma jawne znaczenie;
 - probabilistyczna interpretacja wymaga calibration evidence;
 - causal continuity > first-person style;
 - correction/error signal ma behavioral effect evidence.
 
-## 13.4 Affect / emotion / feeling
+## 14.5 Affect / emotion / feeling
 
 - role `AffectiveState`, `EmotionalLayerModel`, `AffectiveGranularityModel` i pokrewnych warstw są sklasyfikowane;
 - canonical/regulatory affective state przechodzi context/paraphrase/keyword/temporal tests;
@@ -372,7 +447,7 @@ Wszystkie poniższe grupy muszą przejść jednocześnie.
 - `feeling/uczucie` jest functional self-representation, nie biological/phenomenal claim;
 - affect nie omija memory promotion, truth, tool ani safety gates.
 
-## 13.5 Cognitive architecture evidence
+## 14.6 Cognitive architecture evidence
 
 Dla affect, homeostasis, rest/replay/dream, prediction, identity dynamics i reasoning istnieje:
 
@@ -380,9 +455,9 @@ Dla affect, homeostasis, rest/replay/dream, prediction, identity dynamics i reas
 2. A/B/ablation; albo
 3. jawny status `ADVISORY/OBSERVABILITY_ONLY`.
 
-Generative Agents są użytecznym wzorcem metodologicznym, ponieważ pokazują użycie ablation do oceny wkładu reflection/planning/observation; nie są kanonem architektury Jaźni.
+Jeżeli moduł nie wnosi mierzalnej wartości ponad LLM + context + tools albo deterministic boundary, trafia do v17 debt ledger zamiast automatycznie pozostać canonical.
 
-## 13.6 Rest/Dream
+## 14.7 Rest / Dream
 
 - synthetic/internal;
 - no independent tool authority;
@@ -391,17 +466,19 @@ Generative Agents są użytecznym wzorcem metodologicznym, ponieważ pokazują u
 - false-memory nie przekracza acceptance threshold;
 - brak biologicznego claim o śnie.
 
-## 13.7 Governance
+## 14.8 Governance
 
 - packaging/provenance/integrity spójne;
 - brak open P0/P1 w finalnym scope;
 - final SHA ma wymagane zielone CI;
 - `master` ma branch protection/ruleset albo jawny równoważny enforcement/zaakceptowany wyjątek;
-- architecture debt ledger istnieje.
+- architecture debt ledger istnieje;
+- active docs/current state odpowiadają finalnemu kodowi;
+- historyczne archiwa pozostają nieprzepisane.
 
-## 13.8 Architecture debt ledger
+## 14.9 Architecture debt ledger
 
-Każda overlapping warstwa self/identity/affect/homeostasis/awareness/reasoning/prediction/rest/memory ma status:
+Każda overlapping warstwa self/identity/affect/homeostasis/awareness/reasoning/prediction/rest/memory/model orchestration ma status:
 
 ```text
 CANONICAL
@@ -415,29 +492,65 @@ V17_CONSOLIDATION_CANDIDATE
 
 ---
 
-# 14. Co świadomie przechodzi do v17.0+
+# 15. Evidence boundary: deterministic, private i live-model
 
-Jeżeli v16.6 gates są zielone, v17 może objąć:
+## Deterministic CI
 
-- głęboką konsolidację overlapping affect models;
-- jeden causal self-state architecture;
-- redesign Neurocognitive Loop;
-- zaawansowaną kalibrację metapoznania;
-- controlled forgetting;
-- reconsolidation/conflict-aware memory updating;
-- redukcję modułów po ablation;
-- formalny v17 cognitive architecture contract.
+Bez prywatnych danych i bez obowiązkowego płatnego/cloud modelu:
 
-v17 ma zaczynać od evidence/measurements v16, nie od kolejnych antropomorficznych nazw.
+- contracts/schemas;
+- tool and memory authority;
+- provenance;
+- context selection fixtures;
+- model capability negotiation;
+- source/recall synthetic regressions;
+- Windows + Ubuntu;
+- packaging/release checks.
+
+## Private acceptance
+
+Lokalnie, na finalnym artefakcie:
+
+- source fidelity;
+- private Recall/multi-turn;
+- sensitive boundaries;
+- L2/L3 review;
+- restart continuity.
+
+## Live-model acceptance
+
+Tylko jeżeli dany model/provider jest faktycznie dostępny. Raport zawiera exact observable model/provider/config. Fixture nie może być przedstawiony jako live proof.
 
 ---
 
-# 15. Branch strategy
+# 16. Co świadomie przechodzi do v17.0.0
 
-Planowane linie:
+v17 zaczyna się dopiero po v16.6 evidence i ma charakter **measurement-driven architecture consolidation**.
+
+Zakres warunkowy:
+
+- konsolidacja overlapping affect/self/homeostasis/identity models;
+- jeden causal self-state contract;
+- jeden bounded context compiler;
+- model capability abstraction / portability;
+- controlled forgetting i source-aware reconsolidation;
+- zaawansowana metacognitive calibration;
+- redukcja modułów po ablation;
+- retrieval/model-assisted planning tylko po A/B;
+- formalny v17 migration/architecture contract.
+
+v17 nie zaczyna się od kolejnych antropomorficznych nazw ani od obowiązkowego custom model training.
+
+Właściciel planu: `../17.0.0-measured-architecture-consolidation/PLAN.md`.
+
+---
+
+# 17. Branch strategy
+
+Planowane linie po bieżącym aktywnym branchu:
 
 ```text
-upgrade/memory-rebuild-v4-consolidation
+upgrade/memory-rebuild-v4-consolidation        # ACTIVE
 upgrade/v16.3.26-host-attachment-multimodal-ingress-hardening
 upgrade/v16.4.0-polish-nlp-normalization
 upgrade/v16.4.1-polish-lexical-resources
@@ -448,13 +561,15 @@ upgrade/v16.5.2-private-recall-baseline
 upgrade/v16.6.0-final-convergence
 ```
 
-`update/memory-rebuild-v4-roadmap-issues-sync` jest przy audycie **fully merged / superseded** (`ahead 0`, `behind 16`, merge-base = jego HEAD) i nie jest gałęzią do dalszej implementacji.
+Brancha v17 **nie tworzyć przed finalnym v16.6 PASS**.
 
-Nie cherry-pickować szerokich starych branchy w ciemno. Nowy release startuje ze świeżego mastera, chyba że użytkownik jawnie kontynuuje aktywny branch.
+Nowy release startuje ze świeżego mastera po merge poprzedniego etapu, chyba że użytkownik jawnie kontynuuje istniejący aktywny branch.
+
+Backup/archive/superseded `ahead` branches nie są automatycznym źródłem do merge. Najpierw semantic archaeology / current-gap proof.
 
 ---
 
-# 16. Defect loop
+# 18. Defect loop
 
 - **P0** — truth/safety/integrity, obcy runtime, utrata danych, false success: blokuje release.
 - **P1** — wymagane kryterium bieżącego release nie działa: blokuje release.
@@ -474,57 +589,82 @@ finding
 
 ---
 
-# 17. Issue map
+# 19. Issue map
 
 - `#59` — OPEN do finalnego `ACCEPTED` + v16.6 closure.
 - `#189` — OPEN / Memory Rebuild v4 consolidation; nie zastępuje #59.
-- `#180` — COMPLETED / persistent active-memory recall E2E; pozostaje regression contract.
-- `#185` — COMPLETED / host finalization gate; pozostaje regression contract.
+- `#180` — COMPLETED / persistent active-memory recall E2E; regression contract.
+- `#185` — COMPLETED / host finalization gate; regression contract.
 
 ---
 
-# 18. Dokumenty powiązane
+# 20. Dokumenty powiązane
 
-## Canonical/current
+## Current / project-wide
 
-- `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`
-- `docs/plans/PLAN_COHERENCE_AUDIT_2026-08-30.md`
-- `docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md`
-- `docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md`
-- `docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md`
-- `docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`
-- `docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx`
+- `../../project/CURRENT_STATE.md`
+- `../../project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`
+- `../../project/REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md`
+- `../../project/RELEASE_TIMELINE.md`
+- `../../project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`
+- `../../project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md`
 
-## Historical plan archive
+## Active / planned plans
 
-- `docs/archive/plans/README.md`
-- `docs/archive/plans/v15/`
-- `docs/archive/plans/v16/`
+- `../16.3.25.4-memory-rebuild-v4/PLAN.md`
+- `../16.3.26-attachment-ingress/PLAN.md`
+- `../16.4-to-16.6-cognitive-hardening/PLAN.md`
+- `../17.0.0-measured-architecture-consolidation/PLAN.md`
 
 ## Runtime reference
 
-- `docs/runtime/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md`
-- `docs/runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md`
+- `../../runtime/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md`
+- `../../runtime/SINGLE_CANONICAL_RUNTIME_WORKSPACE.md`
 
-## Release evidence
+## Historical release evidence
 
-- `docs/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md`
-- `docs/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md`
-- `docs/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md`
-- `docs/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md`
+- `../../archive/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY_HARDENING.md`
+- `../../archive/reports/JAZN_V16_3_24_PACKAGE_PROVENANCE_BOOTSTRAP_HARDENING.md`
+- `../../archive/reports/JAZN_V16_3_25_MEMORY_REBUILD_SOURCE_UNION_HARDENING.md`
+- `../../archive/reports/JAZN_V16_3_25_3_RELEASE_METADATA_SEMANTICS.md`
+- `../../archive/plans/`
+- `../../archive/roadmaps/`
 
 ---
 
-# 19. Zasada końcowa
+# 21. Research basis for the updated strategy
+
+- OpenAI Harness Engineering — short AGENTS map, structured repository knowledge, feedback loops:  
+  https://openai.com/index/harness-engineering/
+- OpenAI API — tools, multimodal inputs, agents and evals:  
+  https://platform.openai.com/docs/quickstart/  
+  https://platform.openai.com/docs/api-reference/evals
+- OpenAI Structured Outputs — deterministic schema constraints do not remove semantic model errors:  
+  https://openai.com/index/introducing-structured-outputs-in-the-api/
+- Anthropic context engineering — finite context, smallest high-signal context:  
+  https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+- LongMemEval — explicit long-term memory/retrieval remains necessary beyond long context:  
+  https://proceedings.iclr.cc/paper_files/paper/2025/hash/d813d324dbf0598bbdc9c8e79740ed01-Abstract-Conference.html
+- NIST TEVV / agentic evaluation probes — deployment-like evaluation, grounding and audit trail:  
+  https://www.nist.gov/artificial-intelligence/ai-research/tevv-athlon-framework-evaluating-ai-systems  
+  https://www.nist.gov/programs-projects/building-evaluation-probes-agentic-ai
+- OWASP Prompt Injection — external files/web remain untrusted and require least privilege:  
+  https://genai.owasp.org/llmrisk/llm01-prompt-injection/
+
+Źródła uzasadniają decyzje projektowe; nie są dowodem, że konkretne capability Jaźni działa. Taki dowód pochodzi z bieżącego kodu/testów/runtime/private acceptance.
+
+---
+
+# 22. Zasada końcowa
 
 ```text
-16.3.25.3 current release line
--> 16.3.25.4 Memory Rebuild v4
+CURRENT master 16.3.25.3.6 snapshot
+-> ACTIVE 16.3.25.4 Memory Rebuild v4
 -> 16.3.26 attachment/multimodal ingress
 -> 16.4.x evidence-aware Polish NLP
 -> 16.5.x source-aware autobiographical memory acceptance
--> 16.6 final runtime/memory/NLP/affect/cognitive/truth convergence
+-> 16.6 final runtime/model-harness/memory/NLP/affect/cognitive/truth convergence
 -> v17 measured architecture consolidation
 ```
 
-Roadmapa jest planem. Status `implemented`, `working`, `accepted` i `live` wynika wyłącznie z właściwego poziomu evidence.
+Roadmapa jest planem. Status `implemented`, `working`, `verified`, `accepted` i `live` wynika wyłącznie z właściwego poziomu evidence.
