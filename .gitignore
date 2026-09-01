@@ -113,9 +113,10 @@ PACKAGE_INTEGRITY_MANIFEST.json
 # Preserve exact historical PowerShell artifacts in versioned archives.
 !/.archives/**/*.ps1
 
-# Persistent local NLP models/data downloaded by the explicit bootstrap tool.
+# Persistent local NLP models/data and Python wheelhouses/environments.
 # Keep them next to the Jaźń package, but outside Git and release manifests.
 /latka_jazn/local_resources/
 
-# This reviewed installer is source code despite the repository-wide *.ps1 rule.
+# Reviewed operator launchers are source code despite the repository-wide *.ps1 rule.
 !/tools/Install-JaznPolishReasoningResources.ps1
+!/tools/Start-JaznDependencyStudio.ps1

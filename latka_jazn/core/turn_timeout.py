@@ -181,7 +181,10 @@ class RuntimeSessionWorker:
         self.last_turn_context: TurnExecutionContext | None = None
         self._thread = threading.Thread(target=self._run, name=f"jazn-{command}-session-worker", daemon=True)
         self._thread.start()
-        ready_timeout = min(max(self._timeout_seconds, 1.0), 10.0)
+        # Session construction is part of the configured runtime execution budget.
+        # Do not impose a second hidden 10-second cap: on Windows, opening the
+        # active-memory SQLite runtime can legitimately take longer than that.
+        ready_timeout = max(float(self._timeout_seconds), 0.001)
         try:
             status, payload = self._ready.get(timeout=ready_timeout)
         except queue.Empty as exc:

@@ -8,6 +8,7 @@ from latka_jazn.core.handlers.presence_status_handler import PresenceStatusHandl
 from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.nlp.topic_mismatch_guard import TopicMismatchGuard
+from latka_jazn.version import PACKAGE_VERSION
 
 
 def test_natural_wake_routes_to_presence_in_classifier_and_guard() -> None:
@@ -60,7 +61,7 @@ def test_default_health_check_is_readable_and_hides_raw_telemetry(tmp_path: Path
     )
     body = result.body
     assert "Działam prawidłowo w aktywnym runtime." in body
-    assert "\n- Runtime: v16.3.25.3.8" in body
+    assert f"\n- Runtime: v{PACKAGE_VERSION}" in body
     assert "\n- Proces: persistent_daemon_async_job" in body
     assert "\n- Pamięć robocza:" in body
     assert "\n- Wake state:" in body
