@@ -49,7 +49,7 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
     pyproject += "memory-rebuild-ui=['prompt-toolkit>=3.0.52,<4']\n"
     pyproject += "memory-cloud=['PyNaCl>=1.5,<2']\n"
     pyproject += "memory-cloud-server=['PyNaCl>=1.5,<2','psycopg[binary]>=3.2,<4','boto3>=1.35,<2']\n"
-    pyproject += "polish-nlp=['requests>=2.31#]\n"
+    pyproject += "polish-nlp=['requests>=2.31']\n"
     (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
     return root
 
@@ -57,7 +57,7 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
 def _fake_wheel(directory: Path, name: str = "demo", version: str = "1.0") -> Path:
     wheel = directory / f"{name}-{version}-py3-none-any.whl"
     dist_info = f"{name}-{version}.dist-info"
-    with zipfile.ZipFile(wheel, "w", compression=zipfile.ZIP_DEFLATED) archive:
+    with zipfile.ZipFile(wheel, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(f"{name}/__init__.py", "__version__='1.0'\n")
         archive.writestr(
             f"{dist_info}/METADATA",
@@ -126,6 +126,15 @@ def test_windows_x64_download_plan_is_wheel_only_and_targeted(tmp_path: Path) ->
     assert command[command.index("--platform") + 1] == "win_amd64"
     assert command[command.index("--python-version") + 1] == "3.12"
     assert command[command.index("--abi") + 1] == "cp312"
+
+
+def test_explicit_current_platform_alias_is_accepted_for_current_python() -> None:
+    target = target_spec(
+        current_platform_alias(),
+        f"{sys.version_info.major}.{sys.version_info.minor}",
+    )
+    assert target.alias == current_platform_alias()
+    assert target.python_version == f"{sys.version_info.major}.{sys.version_info.minor}"
 
 
 def test_verify_bundle_checks_sha_and_wheel_structure(tmp_path: Path) -> None:
@@ -210,6 +219,27 @@ def test_entrypoint_bootstrap_does_not_use_network_without_verified_bundle(tmp_p
     result = prepare_entrypoint_environment(root, auto_install=True)
     assert result["ok"] is False
     assert result["state"] == "dependencies_missing_no_verified_wheelhouse"
+    assert result["reexec_python"] is None
+
+
+def test_entrypoint_bootstrap_honors_canonical_wheelhouse_env_var(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = _project(
+        tmp_path,
+        dependencies=[
+            "definitely-not-installed-jazn-fixture>=1",
+            "py7zr>=1.1.3,<2",
+            "pyzipper>=0.4.0,<1",
+        ],
+    )
+    external_wheelhouse = tmp_path / "external-wheelhouse"
+    monkeypatch.setenv("JAZN_DEPENDENCY_WHEELHOUSE", str(external_wheelhouse))
+    result = prepare_entrypoint_environment(root, auto_install=True)
+    assert result["ok"] is False
+    assert result["state"] == "dependencies_missing_no_verified_wheelhouse"
+    assert result["wheelhouse_root"] == str(external_wheelhouse.resolve())
     assert result["reexec_python"] is None
 
 

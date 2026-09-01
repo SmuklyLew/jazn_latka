@@ -311,21 +311,28 @@ def normalize_python_version(value: str | None) -> str:
 def target_spec(platform_alias: str | None, python_version: str | None) -> TargetSpec:
     py = normalize_python_version(python_version)
     alias = str(platform_alias or "current").strip().lower()
+    current_alias = current_platform_alias()
+    current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
     if alias == "current":
-        current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py != current_py:
             raise DependencyStudioError(
                 "A different Python version with --platform current is ambiguous; choose windows-x64/windows-arm64 explicitly"
             )
-        return TargetSpec(current_platform_alias(), py, "cp", None, None)
+        return TargetSpec(current_alias, py, "cp", None, None)
     digits = py.replace(".", "")
     mappings = {
         "windows-x64": ("win_amd64", f"cp{digits}"),
         "windows-arm64": ("win_arm64", f"cp{digits}"),
     }
-    if alias not in mappings:
-        raise DependencyStudioError(
-            f"Cross-platform target {alias!r} unsupported in v1; use current, windows-x64 or windows-arm64"
-        )
-    pip_platform, abi = mappings[alias]
-    return TargetSpec(alias, py, "cp", abi, pip_platform)
+    if alias in mappings:
+        pip_platform, abi = mappings[alias]
+        return TargetSpec(alias, py, "cp", abi, pip_platform)
+    if alias == current_alias:
+        if py != current_py:
+            raise DependencyStudioError(
+                f"A different Python version for current platform {alias!r} is unsupported; use a supported explicit cross-platform target"
+            )
+        return TargetSpec(alias, py, "cp", None, None)
+    raise DependencyStudioError(
+        f"Cross-platform target {alias!r} unsupported in v1; use current, windows-x64 or windows-arm64"
+    )

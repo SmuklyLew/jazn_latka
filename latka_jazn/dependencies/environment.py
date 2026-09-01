@@ -243,7 +243,8 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
         managed_py_ok = tuple(int(part) for part in str(marker.get("python_version") or "").split(".")[:2]) >= (3, 12)
     except (TypeError, ValueError):
         managed_py_ok = False
-    required_ready = bool(current_ready or (managed.get("ready") is True and managed_py_ok and managed_covers))
+    managed_ready = bool(managed.get("ready") is True and managed_py_ok and managed_covers)
+    required_ready = bool(current_ready or managed_ready)
     return {
         "schema_version": "jazn_dependency_activation_status/v1",
         "required_ready": required_ready,
@@ -255,7 +256,13 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
         "current_interpreter": sys.executable,
         "managed_environment": managed,
         "managed_environment_covers_required_profiles": managed_covers,
-        "selected_source": "current_interpreter" if current_ready else "managed_environment" if managed.get("ready" is True and managed_covers else "missing",
+        "selected_source": (
+            "current_interpreter"
+            if current_ready
+            else "managed_environment"
+            if managed_ready
+            else "missing"
+        ),
         "missing_or_incompatible_distributions": [item.distribution for item in current if not item.ready],
         "truth_boundary": "Required readiness proves Python/package availability only; optional capability profiles remain separate.",
     }
@@ -279,7 +286,7 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     disabled = os.environ.get("JAZN_DEPENDENCY_AUTOBOOTSTRAP", "1").strip().lower() in {"0", "false", "no", "off"}
     if not auto_install or disabled:
         return {"ok": False, "state": "dependencies_missing_autobootstrap_disabled", "reexec_python": None, "status": status}
-    explicit = os.environ.get("JAZN_DEPENDENCY_WHEELHSUSE")
+    explicit = os.environ.get("JAZN_DEPENDENCY_WHEELHOUSE")
     wheelhouse = Path(explicit).expanduser().resolve() if explicit else default_wheelhouse_root(project_root)
     bundles = discover_bundles(
         project_root,
@@ -291,7 +298,7 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     )
     usable = next((item for item in bundles if (item.get("verification") or {}).get("ok") is True), None)
     if usable is None:
-        return {"ok": False, "state": "dependencies_missing_no_verified_wheelhouse", "reexec_pythoon": None, "wheelhouse_root": str(wheelhouse), "status": status}
+        return {"ok": False, "state": "dependencies_missing_no_verified_wheelhouse", "reexec_python": None, "wheelhouse_root": str(wheelhouse), "status": status}
     installed = install_bundle(project_root, usable["bundle_dir"], offline=True)
     new_python = str((installed.get("marker") or {}).get("python_executable") or "")
     return {"ok": bool(installed.get("ok")), "state": "managed_environment_installed", "reexec_python": new_python or None, "installation": installed, "status_before": status}
