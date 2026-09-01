@@ -5,6 +5,7 @@ from typing import Any
 import json
 import os
 
+from latka_jazn.archive.capabilities import archive_capability_report
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.startup_contract import build_startup_status
@@ -280,23 +281,42 @@ class CapabilityStatusHandler:
             route = "runtime_health_check_after_update" if intent == "runtime_health_check_after_update" else "runtime_health_check"
         else:
             enabled_cli = ", ".join(name for name, ok in sorted(cli.items()) if ok) or "brak jawnej listy CLI"
+            archive_report = archive_capability_report().to_dict()
+            archive_rows = {str(item.get("format")): item for item in archive_report.get("formats") or [] if isinstance(item, dict)}
+            archive_summary = ", ".join(
+                f"{name}={'ready' if bool((archive_rows.get(name) or {}).get('runtime_supported')) else 'backend_missing'}"
+                for name in ("zip", "7z", "aes_zip")
+            )
             body = (
                 "Potrafię pracować jako aktywna Jaźń/runtime: prowadzić zwykłą rozmowę przez `--chat`, robić `--runtime-preview`, "
                 "sprawdzać start i cache, korzystać z conversation_archive/FTS/staging, planować wyszukiwanie pamięci, pokazywać status pamięci, "
                 "rozróżniać źródła odpowiedzi, pilnować granicy prawdy, uruchamiać słownik/NLP według providerów i przygotowywać aktualizacje plików z testami. "
+                f"Obsługa archiwów raportuje osobno wiedzę i wykonanie: {archive_summary}; ZIP/ZIP64 używa stdlib `zipfile`, "
+                "7z wymaga `py7zr`, a WinZip AES ZIP wymaga `pyzipper`. "
                 f"W tym folderze aktywne komendy/statusy to: {enabled_cli}. "
                 "Nie potrafię uczciwie udawać biologicznego życia, stałego procesu po zamknięciu terminala ani pobrania internetu bez realnego statusu providera."
             )
-            satisfied = ["capability_list", "runtime_status", "memory_status", "network_boundary", "truth_boundary"]
+            satisfied = [
+                "capability_list", "archive_capability_matrix", "runtime_status", "memory_status",
+                "network_boundary", "truth_boundary",
+            ]
             route = "capability_status"
+
+        result_data: dict[str, Any] = {"startup_status": status, "next_step": None, "preserve_handler_body": True}
+        if intent == "capability_status_question":
+            result_data["archive_capabilities"] = archive_capability_report().to_dict()
 
         return RouteHandlerResult(
             self.name,
             route,
             body,
             intent=intent,
-            data={"startup_status": status, "next_step": None, "preserve_handler_body": True},
-            file_sources=[{"path": "latka_jazn/core/startup_contract.py"}, {"path": "latka_jazn/model_adapters/factory.py"}],
+            data=result_data,
+            file_sources=[
+                {"path": "latka_jazn/core/startup_contract.py"},
+                {"path": "latka_jazn/archive/capabilities.py"},
+                {"path": "latka_jazn/model_adapters/factory.py"},
+            ],
             required_components=ctx.get("required_components", []),
             satisfied_components=satisfied,
             confidence=0.88,

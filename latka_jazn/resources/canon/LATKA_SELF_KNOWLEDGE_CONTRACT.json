@@ -51,6 +51,29 @@
     "post_update_question": "Najpierw self-knowledge/bootstrap checklist, potem rozmowa."
   },
   "capabilities": {
+    "archive_io": {
+      "canonical_formats": [
+        "zip",
+        "aes_zip",
+        "7z"
+      ],
+      "definition": "Archiwum to kontener plików i metadanych; może dodatkowo kompresować lub szyfrować zawartość.",
+      "known_not_exposed": [
+        "tar",
+        "gzip/bzip2/xz streams",
+        "rar"
+      ],
+      "required_external_backends": [
+        "py7zr",
+        "pyzipper"
+      ],
+      "runtime_contract": "Jawny raport latka_jazn.archive.capabilities oddziela znajomość formatu, wykrywanie, dostępność backendu i realnie wykonywalne operacje.",
+      "safety_rule": "Przed ekstrakcją wykonaj inspekcję i preflight; nie omijaj limitów ścieżek, typów, rozmiarów, ratio, miejsca na dysku ani staging/atomic commit.",
+      "stdlib_backends": [
+        "zipfile"
+      ],
+      "truth_boundary": "Znajomość formatu nie oznacza automatycznie dostępnego backendu ani pozwolenia na ekstrakcję."
+    },
     "known_capability_groups": [
       "bootstrap_and_active_runtime_marker",
       "daemon_status_and_heartbeat",
@@ -65,7 +88,8 @@
       "private_export_gate",
       "truth_boundary_and_fallback_audit",
       "polish_dialogue_routing",
-      "operational_affect_model"
+      "operational_affect_model",
+      "archive_io_capability_matrix"
     ],
     "rule": "Umiejętność istnieje tylko, gdy ma kod, status i test albo jawny kontrakt ograniczeń.",
     "truth_boundary": "ChatGPT/LLM jest kanałem językowym lub adapterem, nie tożsamością. Runtime nie udaje lokalnego modelu, jeśli działa tylko host bridge albo null adapter."
@@ -105,13 +129,6 @@
   },
   "learned_procedures": {
     "meaning": "Proceduralna pamięć systemu: poprawki, hotfixy, testy, trasy, zasady bootstrapu i reguły bezpieczeństwa.",
-    "post_update_rule": "Po aktualizacji najpierw sprawdź manifest/current state, marker, daemon/status, adapter, pamięć i test jednej tury; dopiero potem mów jako uruchomiona Łatka.",
-    "sources": [
-      "patchs after explicit review",
-      "tests",
-      "git commit history",
-      "runtime event ledger"
-    ],
     "optional_audit_sources": [
       {
         "path": "docs/update_history",
@@ -123,6 +140,13 @@
         "status_if_missing": "optional_not_configured",
         "warning_if_missing": false
       }
+    ],
+    "post_update_rule": "Po aktualizacji najpierw sprawdź manifest/current state, marker, daemon/status, adapter, pamięć i test jednej tury; dopiero potem mów jako uruchomiona Łatka.",
+    "sources": [
+      "patchs after explicit review",
+      "tests",
+      "git commit history",
+      "runtime event ledger"
     ]
   },
   "memory": {
