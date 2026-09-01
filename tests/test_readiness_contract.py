@@ -42,6 +42,7 @@ def test_readiness_separates_activation_prerequisites_from_live_runtime() -> Non
     assert readiness.summary() == {
         "installation": "ready",
         "activation_prerequisites": "ready",
+        "dependencies": "ready",
         "release": "ready",
         "runtime": "inactive",
         "transactional_memory": "missing",
