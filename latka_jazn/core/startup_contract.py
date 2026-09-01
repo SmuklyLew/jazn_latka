@@ -29,7 +29,7 @@ from latka_jazn.core.readiness import evaluate_voice_live_readiness
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 
 SCHEMA_VERSION = schema_version("self_owned_startup_contract")
-MINIMAL_LOADER_RESOURCE = "latka_jazn/resources/chatgpt_startup_loader.txt"
+CHATGPT_RUNBOOK_RESOURCE = "AGENTS.chatgpt.md"
 STARTUP_CONTRACT_RESOURCE = "latka_jazn/resources/startup_contract.json"
 
 
@@ -75,7 +75,6 @@ class StartupStatus:
     raw_chat_importer_status: dict[str, Any]
     cli_capabilities: dict[str, bool]
     responsibility_split: dict[str, Any]
-    minimal_chatgpt_loader: str
     runtime_contract_files: list[str]
     status_quality: str
     folder_ready: bool
@@ -359,7 +358,6 @@ def build_startup_status(
     start_file = detect_start_file(root)
     # Status paths are observational. A missing project index is reported below;
     # creating it belongs to the explicit project-index command.
-    loader = _read_optional(root, MINIMAL_LOADER_RESOURCE).strip()
     split = default_responsibility_split().to_dict()
     missing: list[str] = []
     if not root.exists():
@@ -457,11 +455,11 @@ def build_startup_status(
         raw_chat_importer_status=RawChatImporter(root).inspect().to_dict(),
         cli_capabilities=cli_capabilities(start_file),
         responsibility_split=split,
-        minimal_chatgpt_loader=loader,
         runtime_contract_files=[
             'latka_jazn/core/startup_contract.py',
             STARTUP_CONTRACT_RESOURCE,
-            MINIMAL_LOADER_RESOURCE,
+            'AGENTS.md',
+            CHATGPT_RUNBOOK_RESOURCE,
             'latka_jazn/tools/active_extraction_cache.py',
             'latka_jazn/core/final_response_contract.py',
             'latka_jazn/core/memory_search_planner.py',
@@ -536,7 +534,8 @@ def build_self_check(config: JaznConfig | None = None) -> dict[str, Any]:
         'active_root': status.active_root,
         'start_file': status.start_file,
         'startup_contract_ready': status.status_quality == 'ready',
-        'minimal_loader_present': bool(status.minimal_chatgpt_loader),
+        'agents_router_present': (root / 'AGENTS.md').is_file(),
+        'chatgpt_runbook_present': (root / CHATGPT_RUNBOOK_RESOURCE).is_file(),
         'version_py_present': (root / VERSION_MODULE_RELATIVE_PATH).is_file(),
         'package_integrity_manifest_present': (root / 'PACKAGE_INTEGRITY_MANIFEST.json').is_file(),
         'package_integrity_manifest_status': package_integrity_manifest_status(root).to_dict(),
@@ -553,7 +552,7 @@ def build_self_check(config: JaznConfig | None = None) -> dict[str, Any]:
         'self_knowledge_resource_present': (root / 'latka_jazn/resources/canon/LATKA_SELF_KNOWLEDGE_CONTRACT.json').exists(),
         'raw_chat_importer_owned_by_runtime': (root / 'latka_jazn/memory/raw_chat_importer.py').exists(),
         'project_startup_index_status': project_startup_index_status(root),
-        'chatgpt_instruction_role': 'minimal_loader_only',
+        'chatgpt_instruction_role': 'project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md',
         'truth_boundary': status.truth_boundary,
     }
 
