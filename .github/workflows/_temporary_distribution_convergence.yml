@@ -51,15 +51,6 @@ jobs:
           python -X utf8 tools/_apply_distribution_convergence.py
           rm -f tools/_apply_distribution_convergence.py tools/_fix_scaffold.py .github/workflows/_temporary_distribution_convergence.yml
 
-      - name: Create clean local checkpoint for metadata synchronization
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "wip: stage package distribution convergence for metadata sync"
-          test -z "$(git status --porcelain --untracked-files=all)"
-
       - name: Install development validation dependencies
         shell: bash
         run: |
@@ -67,17 +58,47 @@ jobs:
           python -m pip install -e ".[memory-rebuild-ui]" pytest
           npm install --global pyright@1.1.411
 
-      - name: Synchronize canonical release metadata
+      - name: Finalize deterministic generator bundle
         shell: bash
-        run: >-
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync
-          --root . --base-branch master --write --json
-
-      - name: Generator bundle freshness
-        run: python -X utf8 tools/build_jazn_pack_generator_bundle.py --check
+        run: |
+          python -X utf8 tools/build_jazn_pack_generator_bundle.py --write
+          python -X utf8 tools/build_jazn_pack_generator_bundle.py --check
+          git diff --check
 
       - name: Compile active Python
         run: python -X utf8 -m compileall -q latka_jazn tests tools/build_jazn_pack_generator_bundle.py main.py run.py
+
+      - name: Commit immutable code and content source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "upgrade: converge package distribution contracts v16.3.25.3.15"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git rev-parse HEAD
+
+      - name: Synchronize canonical release metadata
+        shell: bash
+        run: |
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --check --json
+          mapfile -t changed < <(git diff --name-only | sort)
+          printf 'metadata changes:\n%s\n' "${changed[*]}"
+          test "${#changed[@]}" -eq 2
+          test "${changed[0]}" = "PACKAGE_INTEGRITY_MANIFEST.json"
+          test "${changed[1]}" = "SOURCE_PROVENANCE.json"
+          git diff --check
+
+      - name: Commit metadata-only descendant
+        shell: bash
+        run: |
+          git add PACKAGE_INTEGRITY_MANIFEST.json SOURCE_PROVENANCE.json
+          git commit -m "chore: synchronize release metadata v16.3.25.3.15"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Generator bundle freshness after metadata commit
+        run: python -X utf8 tools/build_jazn_pack_generator_bundle.py --check
 
       - name: Focused convergence regression suite
         run: >-
@@ -112,17 +133,12 @@ jobs:
           -q -ra --tb=short --durations=30
           -m "not live_model and not live_mcp"
 
-      - name: Runtime diagnostics on prepared tree
+      - name: Runtime diagnostics on final committed tree
         run: |
           python -X utf8 run.py doctor --json
           python -X utf8 run.py package-smoke --profile system --json
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --check --json
           git diff --check
-
-      - name: Finalize validated implementation commit locally
-        shell: bash
-        run: |
-          git add -A
-          git commit --amend -m "upgrade: converge package distribution contracts v16.3.25.3.15"
           test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Validate clean release artifact before push
@@ -136,6 +152,6 @@ jobs:
           git diff --check
           test -z "$(git status --porcelain --untracked-files=all)"
 
-      - name: Push validated convergence commit
+      - name: Push validated convergence commits
         shell: bash
         run: git push origin HEAD:upgrade/v16.3.25.3.15-package-distribution-convergence
