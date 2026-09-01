@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.3.8-readable-health-check-wake-routing",
-  "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
-  "package_version": "16.3.25.3.8-readable-health-check-wake-routing",
-  "generated_at_utc": "2026-09-01T03:53:12+00:00",
-  "updated_at_utc": "2026-09-01T03:53:12+00:00",
+  "version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+  "runtime_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+  "package_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+  "generated_at_utc": "2026-09-01T07:10:46+00:00",
+  "updated_at_utc": "2026-09-01T07:10:46+00:00",
   "start_file": "run.py",
-  "file_count": 963,
-  "static_file_count": 963,
+  "file_count": 974,
+  "static_file_count": 974,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2295,
-      "sha256": "cb721e912a578c39d46950bd47d994cf985285222557e30fab103710b026314a",
+      "size_bytes": 2333,
+      "sha256": "d2ca79b7188b5eeb505ad0c8166019249a4c4dda03ec8e01774cf291db9643f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -173,8 +173,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2918,
-      "sha256": "6080fd63d1699f84329abb88e9ac4ea5f06e980e12699b11fdc11b920f8117bb",
+      "size_bytes": 2939,
+      "sha256": "bbfa9fa098e20b060d3d585ad858c3d486874d810dc6ea2f85b1d2ea25315662",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1387,6 +1387,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
+      "size_bytes": 7674,
+      "sha256": "8df64fd59d066c03f10193d8d9fda0d350693fc7668d2a90e956475bb6737efd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/tools/MEMORY_SQLITE_TEST_04.md",
       "size_bytes": 18930,
       "sha256": "394728aaa14970d61ddf578de1523c189e3c42c6d14551425bcf1ec4c35d8d7f",
@@ -1406,8 +1415,8 @@
     },
     {
       "path": "docs/tools/README.md",
-      "size_bytes": 778,
-      "sha256": "5d809915bb6af7aa13ec4dddc8d8bf8870b0bed3d925f6cdfabf1d180be28cfc",
+      "size_bytes": 905,
+      "sha256": "9972107b6d3a2605b9b52a36e56ffd168eb9a2bd54b2fcb7b3143c7272ef474d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2864,8 +2873,8 @@
     },
     {
       "path": "latka_jazn/core/readiness.py",
-      "size_bytes": 10200,
-      "sha256": "f16f1c8827febdd3e8d1012f6cb0afb53523fe3a175d443f0d33de3a1a7a1c59",
+      "size_bytes": 11895,
+      "sha256": "67622b8793b3f311e450159194b9aa8a933be100e38516d8c94c8c41ed8ff014",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3440,8 +3449,8 @@
     },
     {
       "path": "latka_jazn/core/turn_timeout.py",
-      "size_bytes": 37118,
-      "sha256": "be2d3ccf2e9655d786b558f6d2420a37d87597698c48f411cb447070bb2588d2",
+      "size_bytes": 37357,
+      "sha256": "ea60e8ae6d8fdd0b89eae979c57ac49f029921c7cf249c4bc9ccb5f96134611c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3550,6 +3559,60 @@
       "path": "latka_jazn/db/shard_manifest.py",
       "size_bytes": 12299,
       "sha256": "4bc07817aa8bb3d62d99949bc32e18defc108eafb28ad6b8c1e8ba04f1d873ad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/__init__.py",
+      "size_bytes": 59,
+      "sha256": "e79789a3c8f3d1edd543b2fcc5cb6064095c1fd0824ff741ac0d76d717035c24",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/audit.py",
+      "size_bytes": 6364,
+      "sha256": "64c61fe970ab2053f8991bce2fa9d07df5e08aa53257cbb5415ac972ca956f43",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/common.py",
+      "size_bytes": 13177,
+      "sha256": "8adcd890a3cc0247a2e79f8d1ae4d0147939d8f60d8255f45a91f3d7f2fd86e3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/environment.py",
+      "size_bytes": 15034,
+      "sha256": "4deeaa4256d18dc4c156ebccd5063e7f3cec8196056cc9f023d6c8e64a001771",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/runtime.py",
+      "size_bytes": 1211,
+      "sha256": "8cbf2fe0b0b7f0ef9ebada72907e1a015c8c1765db90f078f6120525c630c950",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/wheelhouse.py",
+      "size_bytes": 12933,
+      "sha256": "62270f6c5046ceb0a57370e4743cf4955615f6acae3e1492030529004d6dd64a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5293,6 +5356,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/resources/dependencies/profiles.json",
+      "size_bytes": 1817,
+      "sha256": "7622633a624371e40001df26bee28442be2e27002e59dbc11ea2dd8d6bdddf0c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/resources/memory_search_topics.json",
       "size_bytes": 7658,
       "sha256": "ada3ced6dbf3f86f7314bfd2f912c85419bbffc5d581c4f08f274e439bc9c972",
@@ -5674,6 +5746,15 @@
       "path": "latka_jazn/tools/dedup_manifest.py",
       "size_bytes": 4090,
       "sha256": "664e313b0f1f8f50a40e1bab0313e26fe3a6dd985cfd36ec5dac0199cd301747",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/dependency_studio.py",
+      "size_bytes": 9561,
+      "sha256": "48924f2b6dce9dfd1f72fd2fb23514837c312598c6303a7e9ee2d66ec814d649",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6554,8 +6635,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6579,
-      "sha256": "998fd243170335039813523bf7a0b3b00e75f5e7be5d80177abe1ea7e543d69d",
+      "size_bytes": 6663,
+      "sha256": "f0fe7abe6601ff88d371cad48383b5a3eea6599441e9ba02d3ecbbe9e6df50bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6689,8 +6770,8 @@
     },
     {
       "path": "run.py",
-      "size_bytes": 177,
-      "sha256": "88db8ed0b79423cda1357b9ccb2e54e6686903444e252988ce7a4f48b3b148ae",
+      "size_bytes": 2367,
+      "sha256": "37ea5a00e1061884445d79a78cd21208bb29490c11efacf825fa94d3fde240ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6961,6 +7042,15 @@
       "path": "tests/test_current_line_v90_migration.py",
       "size_bytes": 3613,
       "sha256": "cd77d440ddf26b902027f71ce342592b34e092820f44d2a613ad70003c194695",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_studio_v1632539.py",
+      "size_bytes": 13238,
+      "sha256": "42fa11a644bd93021a7323db7a0865364f528ad2f00fe042a706b00e1263848d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7670,8 +7760,8 @@
     },
     {
       "path": "tests/test_readable_health_check_wake_routing.py",
-      "size_bytes": 4893,
-      "sha256": "42a55240a4e89e8e66617c08f82030d09a60958faab0ea6ea1e51fd1afcc0743",
+      "size_bytes": 4947,
+      "sha256": "704fe52eb7866695a55da0cecae4c44d4e368ce86631f64cc8a2d9ed0a648b21",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7679,8 +7769,8 @@
     },
     {
       "path": "tests/test_readiness_contract.py",
-      "size_bytes": 5423,
-      "sha256": "888cfa952d39549462cebc0d32509e79cbb5feab35af2b7707c06448bec62431",
+      "size_bytes": 5456,
+      "sha256": "244abe40de8585bd39911fd1bcc6149aee803be8867b4108b757c0e294af7074",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8551,6 +8641,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/Start-JaznDependencyStudio.ps1",
+      "size_bytes": 2562,
+      "sha256": "69eff1bb38c4f06b99b7ea4e9081f7f7959f57350e735b60ea2f4e4aacfce9bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/bootstrap_polish_reasoning_resources.py",
       "size_bytes": 6235,
       "sha256": "ca2598c49414cefa57d04a41249f46099be44a6cef2ba48fe0e9a09ba38095bf",
@@ -9098,11 +9197,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "release_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
   "artifact_identity": {
-    "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
-    "package_version": "16.3.25.3.8-readable-health-check-wake-routing",
-    "release_version": "16.3.25.3.8-readable-health-check-wake-routing"
+    "runtime_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+    "package_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+    "release_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
-  "base_version": "16.3.25.3.8-readable-health-check-wake-routing",
-  "commit_date": "2026-09-01T05:53:12+02:00",
+  "base_merge_commit": "fd3c87d1309078d9ab2814cf34f52c71be52ec4f",
+  "base_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
+  "commit_date": "2026-09-01T09:10:46+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-01T03:53:12+00:00",
+  "generated_at_utc": "2026-09-01T07:10:46+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1caf190d906d32e6118a408b1e2d128b59dd2aaf",
+  "git_tree_sha": "5acf0de7621e1572b6bc582371c2a58f57483554",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
-    "base_version": "16.3.25.3.8-readable-health-check-wake-routing",
+    "base_commit": "fd3c87d1309078d9ab2814cf34f52c71be52ec4f",
+    "base_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
-    "source_version": "16.3.25.3.8-readable-health-check-wake-routing"
+    "source_commit": "fd3c87d1309078d9ab2814cf34f52c71be52ec4f",
+    "source_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "release_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "runtime_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2266d58d341a26966e15ee6a35a9852378e97372",
+  "source_commit": "fd3c87d1309078d9ab2814cf34f52c71be52ec4f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "source_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.3.8-readable-health-check-wake-routing",
+  "update_version": "16.3.25.3.12-dependency-studio-offline-wheelhouse",
   "version_source": "latka_jazn/version.py"
 }
