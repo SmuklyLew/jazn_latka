@@ -46,9 +46,10 @@ jobs:
       - name: Validate and apply convergence driver
         shell: bash
         run: |
+          python -X utf8 tools/_fix_scaffold.py
           python -X utf8 -m py_compile tools/_apply_distribution_convergence.py
           python -X utf8 tools/_apply_distribution_convergence.py
-          git rm tools/_apply_distribution_convergence.py .github/workflows/_temporary_distribution_convergence.yml
+          git rm tools/_apply_distribution_convergence.py tools/_fix_scaffold.py .github/workflows/_temporary_distribution_convergence.yml
 
       - name: Install development validation dependencies
         shell: bash
