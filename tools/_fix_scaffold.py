@@ -17,4 +17,9 @@ stable = '''    insert_after_import(\n        "latka_jazn/packaging/memory_packa
 if s.count(fragile) != 1:
     raise SystemExit('fragile memory attach insertion block not found uniquely')
 s = s.replace(fragile, stable, 1)
+old_bundle_insert = r'''            text = text.replace(marker, marker + "\n" + overlay(), 1)'''
+new_bundle_insert = r'''            text = text.replace(marker, marker + overlay(), 1)'''
+if s.count(old_bundle_insert) != 1:
+    raise SystemExit('bundle idempotence insertion marker not found uniquely')
+s = s.replace(old_bundle_insert, new_bundle_insert, 1)
 p.write_text(s, encoding='utf-8', newline='\n')
