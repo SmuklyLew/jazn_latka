@@ -13,6 +13,9 @@ import tempfile
 import uuid
 import zipfile
 
+from latka_jazn.packaging.package_set_contract import validate_package_set, PackageSetContractError
+from latka_jazn.tools.safe_paths import validate_safe_relative_path, UnsafeRelativePathError
+
 from latka_jazn.core.package_integrity_manifest import sha256_file
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.storage_limits import (
@@ -52,12 +55,12 @@ class LegacyMemoryRepackError(RuntimeError):
 
 
 def _safe_memory_path(value: str) -> str:
-    text = str(value or "").replace("\\", "/").strip()
-    reason = unsafe_zip_member_name(text)
-    if reason:
-        raise LegacyMemoryRepackError(f"unsafe legacy ZIP member {value!r}: {reason}")
+    try:
+        text = validate_safe_relative_path(str(value))
+    except UnsafeRelativePathError as exc:
+        raise LegacyMemoryRepackError(f"unsafe legacy ZIP member {value!r}: {exc}") from exc
     path = PurePosixPath(text)
-    if not text or text.endswith("/") or not path.parts or path.parts[0] != "memory":
+    if not path.parts or path.parts[0] != "memory":
         raise LegacyMemoryRepackError(f"legacy package member is outside memory/: {value!r}")
     return path.as_posix()
 
@@ -72,8 +75,10 @@ def _load_sidecar(parts_dir: Path, base_zip_name: str) -> dict[str, Any]:
         raise LegacyMemoryRepackError(f"invalid legacy package sidecar: {exc}") from exc
     if not isinstance(payload, dict):
         raise LegacyMemoryRepackError("legacy package sidecar must be a JSON object")
-    if str(payload.get("schema_version") or "") not in {"jazn_package_set/v1", "jazn_package_set/v2"}:
-        raise LegacyMemoryRepackError("legacy package sidecar schema is unsupported")
+    try:
+        payload = validate_package_set(payload)
+    except PackageSetContractError as exc:
+        raise LegacyMemoryRepackError(f"legacy package sidecar schema is unsupported: {exc}") from exc
     if str(payload.get("profile") or "").strip().lower() != "memory":
         raise LegacyMemoryRepackError("legacy package sidecar is not profile=memory")
     return payload

@@ -8,6 +8,8 @@ import importlib
 import json
 import os
 
+from latka_jazn.packaging.package_set_contract import validate_package_set, PackageSetContractError
+
 from latka_jazn.core.runtime_root import workspace_runtime_path
 
 
@@ -207,8 +209,10 @@ def materialize_r2_memory_package(
         raise MemoryPackageSourceError(f"invalid R2 package sidecar: {exc}") from exc
     if not isinstance(payload, Mapping):
         raise MemoryPackageSourceError("R2 package sidecar root must be a JSON object")
-    if str(payload.get("schema_version") or "") != "jazn_package_set/v2":
-        raise MemoryPackageSourceError("R2 package sidecar schema is unsupported")
+    try:
+        payload = validate_package_set(payload)
+    except PackageSetContractError as exc:
+        raise MemoryPackageSourceError(f"R2 package sidecar schema/contract is unsupported: {exc}") from exc
     if str(payload.get("profile") or "").strip().lower() != "memory":
         raise MemoryPackageSourceError("R2 package sidecar is not profile=memory")
     outputs = payload.get("outputs")

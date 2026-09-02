@@ -4,15 +4,17 @@ from dataclasses import asdict, dataclass
 import os
 import zipfile
 
+from latka_jazn.archive.resource_policy import SYSTEM_PACKAGE
+
 
 class ZipResourceLimitError(ValueError):
     pass
 
 
-DEFAULT_MAX_MEMBERS = 20_000
-DEFAULT_MAX_TOTAL_UNCOMPRESSED_BYTES = 8 * 1024**3
-DEFAULT_MAX_MEMBER_UNCOMPRESSED_BYTES = 2 * 1024**3
-DEFAULT_MAX_COMPRESSION_RATIO = 1_000.0
+DEFAULT_MAX_MEMBERS = SYSTEM_PACKAGE.max_members
+DEFAULT_MAX_TOTAL_UNCOMPRESSED_BYTES = SYSTEM_PACKAGE.max_total_uncompressed_bytes
+DEFAULT_MAX_MEMBER_UNCOMPRESSED_BYTES = SYSTEM_PACKAGE.max_member_uncompressed_bytes
+DEFAULT_MAX_COMPRESSION_RATIO = SYSTEM_PACKAGE.max_compression_ratio
 
 
 @dataclass(frozen=True, slots=True)

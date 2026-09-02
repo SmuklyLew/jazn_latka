@@ -61,7 +61,7 @@ class PrivateDataExportGate:
 
     @staticmethod
     def _private_content_markers(path: Path) -> list[str]:
-        normalized = path.as_posix().lower().lstrip("./")
+        normalized = path.as_posix().lower()
         evidence: list[str] = []
         if any(normalized.endswith(suffix) for suffix in _PRIVATE_EXACT_SUFFIXES):
             evidence.append("known_private_generated_source")

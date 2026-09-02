@@ -13,6 +13,7 @@ from latka_jazn.tools.package_integrity import (
     write_package_integrity_manifest,
 )
 from latka_jazn.tools.safe_paths import resolve_safe_destination, resolve_safe_source, validate_safe_relative_path
+from latka_jazn.packaging.package_plan import select_candidate_paths
 from latka_jazn.tools.source_provenance import (
     SourceProvenanceError,
     build_source_provenance_document,
@@ -153,6 +154,12 @@ def create_release_staging(
             raise SourceProvenanceError(f"release staging rejects non-regular Git entry: {relative}")
         entries.append((object_sha, relative))
 
+    selected_paths, excluded_paths = select_candidate_paths(
+        root, [relative for _sha, relative in entries], profile="system"
+    )
+    selected_set = set(selected_paths)
+    entries = [(sha, relative) for sha, relative in entries if relative in selected_set]
+
     # Read every blob through one long-lived Git process.  Each request is
     # followed immediately by its response so neither the stdin nor stdout
     # pipe can fill and deadlock on Windows.
@@ -206,7 +213,9 @@ def create_release_staging(
         "staging_root": str(destination),
         "source_commit": selected,
         "source_tree": provenance.get("git_tree_sha"),
-        "tracked_file_count": file_count,
+        "tracked_file_count": len(selected_paths) + len(excluded_paths),
+        "selected_file_count": file_count,
+        "excluded_file_count": len(excluded_paths),
         "manifest_file_count": manifest.get("file_count"),
         "manifest_verification": verification,
         "provenance": provenance_status,

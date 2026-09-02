@@ -211,6 +211,15 @@ def _version_tuple(value: str) -> tuple[int, ...] | None:
 
 
 def version_satisfies_requirement(installed_version: str, requirement: str) -> bool | None:
+    try:
+        from packaging.requirements import Requirement
+        from packaging.version import Version
+        parsed = Requirement(requirement)
+        return Version(installed_version) in parsed.specifier
+    except ImportError:
+        pass
+    except Exception:
+        return None
     specifier = _specifier_text(requirement)
     if not specifier:
         return True
@@ -229,15 +238,7 @@ def version_satisfies_requirement(installed_version: str, requirement: str) -> b
         left = installed + (0,) * (width - len(installed))
         right = expected + (0,) * (width - len(expected))
         comparison = (left > right) - (left < right)
-        passed = {
-            ">=": comparison >= 0,
-            "<=": comparison <= 0,
-            ">": comparison > 0,
-            "<": comparison < 0,
-            "==": comparison == 0,
-            "!=": comparison != 0,
-        }[operator]
-        if not passed:
+        if not {">=": comparison >= 0, "<=": comparison <= 0, ">": comparison > 0, "<": comparison < 0, "==": comparison == 0, "!=": comparison != 0}[operator]:
             return False
     return True
 

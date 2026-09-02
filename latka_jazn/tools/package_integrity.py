@@ -12,6 +12,7 @@ import zipfile
 
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.package_plan import package_safety_reason
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
     resolve_safe_path,
@@ -270,24 +271,9 @@ def path_is_forbidden(relative: str) -> bool:
         rel = validate_safe_relative_path(relative)
     except UnsafeRelativePathError:
         return True
-    parts = [part for part in rel.split("/") if part]
-    lower_parts = [part.lower() for part in parts]
-    forbidden_roots = {name.lower() for name in FORBIDDEN_ROOT_NAMES}
-    if not parts or lower_parts[0] in forbidden_roots:
+    if rel == MANIFEST_NAME:
         return True
-    name = parts[-1]
-    lower_name = name.lower()
-    if lower_name in {item.lower() for item in FORBIDDEN_FILE_NAMES}:
-        return True
-    if lower_name == ".env" or lower_name.startswith(".env.") and lower_name != ".env.example":
-        return True
-    if any(token in lower_name for token in ("secret", "private_key", "credentials")):
-        return True
-    if any(lower_name.endswith(suffix.lower()) for suffix in FORBIDDEN_SUFFIXES):
-        return True
-    if ".zip." in lower_name or lower_name.endswith(("-wal", "-shm")):
-        return True
-    return False
+    return package_safety_reason(rel, "system") is not None
 
 
 def _git_name_set(root: Path, *args: str) -> set[str]:

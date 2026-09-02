@@ -11,6 +11,10 @@ import tempfile
 import unicodedata
 import uuid
 import zipfile
+
+from latka_jazn.packaging.package_set_contract import READABLE_SCHEMAS
+from latka_jazn.archive.resource_policy import GENERIC_ARCHIVE
+from latka_jazn.tools.safe_paths import validate_safe_relative_path, portable_path_key
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Sequence
@@ -19,7 +23,7 @@ from typing import Any, Iterable, Sequence
 CHUNK_SIZE = 8 * 1024 * 1024
 SEVEN_Z_SIGNATURE = b"7z\xbc\xaf\x27\x1c"
 ZIP_SIGNATURES = (b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08")
-SUPPORTED_PACKAGE_SCHEMAS = {"jazn_package_set/v2", "jazn_package_set/v3"}
+SUPPORTED_PACKAGE_SCHEMAS = READABLE_SCHEMAS
 ARCHIVE_FORMAT_ALIASES = {
     "zip": "zip",
     "zip64": "zip",
@@ -48,10 +52,10 @@ class ArchiveError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class ArchiveSecurityLimits:
-    max_members: int = 200_000
-    max_total_uncompressed_bytes: int = 64 * 1024 * 1024 * 1024
-    max_member_bytes: int = 16 * 1024 * 1024 * 1024
-    max_compression_ratio: float = 500.0
+    max_members: int = GENERIC_ARCHIVE.max_members
+    max_total_uncompressed_bytes: int = GENERIC_ARCHIVE.max_total_uncompressed_bytes
+    max_member_bytes: int = GENERIC_ARCHIVE.max_member_uncompressed_bytes
+    max_compression_ratio: float = GENERIC_ARCHIVE.max_compression_ratio
     max_name_length: int = 1024
     require_free_space: bool = True
     reject_symlinks: bool = True
@@ -115,30 +119,17 @@ def normalize_archive_format(value: str | None) -> str:
 
 
 def _normalize_member_name(value: str) -> str:
-    raw = str(value or "").replace("\\", "/")
-    if not raw or "\x00" in raw:
-        raise ArchiveError("unsafe_archive_member:empty_or_nul")
-    if raw.startswith("/") or raw.startswith("//") or _DRIVE_PREFIX.match(raw):
-        raise ArchiveError(f"unsafe_archive_member:absolute:{value}")
-    raw = raw.rstrip("/")
-    parts = PurePosixPath(raw).parts
-    if not parts or any(part in {"", ".", ".."} for part in parts):
-        raise ArchiveError(f"unsafe_archive_member:traversal:{value}")
-    clean_parts: list[str] = []
-    for part in parts:
-        if part.endswith(" ") or part.endswith("."):
-            raise ArchiveError(f"unsafe_archive_member:windows_normalization:{value}")
-        if ":" in part:
-            raise ArchiveError(f"unsafe_archive_member:alternate_data_stream:{value}")
-        stem = part.split(".", 1)[0].upper()
-        if stem in _WINDOWS_RESERVED:
-            raise ArchiveError(f"unsafe_archive_member:windows_reserved:{value}")
-        clean_parts.append(part)
-    return PurePosixPath(*clean_parts).as_posix()
+    try:
+        return validate_safe_relative_path(str(value or ""))
+    except Exception as exc:
+        raise ArchiveError(f"unsafe_archive_member:{value}:{exc}") from exc
 
 
 def _member_key(name: str) -> str:
-    return unicodedata.normalize("NFC", name).casefold()
+    try:
+        return portable_path_key(name)
+    except Exception as exc:
+        raise ArchiveError(f"unsafe_archive_member:{name}:{exc}") from exc
 
 
 def _zip_has_aes_extra(extra: bytes) -> bool:

@@ -2,7 +2,7 @@
   "schema_version": "zip_package_profiles/v1",
   "version_source": "latka_jazn/version.py",
   "manifest_source": "PACKAGE_INTEGRITY_MANIFEST.json",
-  "truth_boundary": "Package profiles select transport content only. They are not a version source, runtime marker, memory source or integrity proof.",
+  "truth_boundary": "Profiles are declarative allowlists. PackagePlanBuilder applies an additional non-disableable security policy; .gitignore is never a package security boundary.",
   "profiles": [
     {
       "name": "system",
@@ -33,7 +33,21 @@
         "**/*.sqlite3-wal",
         "**/*.sqlite3-shm",
         "**/*.zip",
-        "**/*.zip.*"
+        "**/*.zip.*",
+        ".git/**",
+        ".codex/**",
+        ".venv/**",
+        "venv/**",
+        ".archives/**",
+        "latka_jazn/local_resources/python/environments/**",
+        "latka_jazn/local_resources/python/wheelhouse/**",
+        "latka_jazn/core/canon/local_private_canon_extension.py",
+        "**/*.db",
+        "**/*.sqlite",
+        "**/*.7z",
+        "**/*.rar",
+        "**/*.tar",
+        "**/*.tgz"
       ],
       "purpose": "Kod, testy, konfiguracja CI i kanoniczne metadane pakietu bez pamięci oraz stanu roboczego runtime."
     },
@@ -117,7 +131,21 @@
         "**/*.sqlite3-wal",
         "**/*.sqlite3-shm",
         "**/*.zip",
-        "**/*.zip.*"
+        "**/*.zip.*",
+        ".git/**",
+        ".codex/**",
+        ".venv/**",
+        "venv/**",
+        ".archives/**",
+        "latka_jazn/local_resources/python/environments/**",
+        "latka_jazn/local_resources/python/wheelhouse/**",
+        "latka_jazn/core/canon/local_private_canon_extension.py",
+        "**/*.db",
+        "**/*.sqlite",
+        "**/*.7z",
+        "**/*.rar",
+        "**/*.tar",
+        "**/*.tgz"
       ],
       "purpose": "Źródłowy snapshot GitHub bez prywatnej pamięci, runtime workspace, baz i paczek transportowych."
     }

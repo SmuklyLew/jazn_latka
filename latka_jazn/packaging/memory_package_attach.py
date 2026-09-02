@@ -18,6 +18,7 @@ from latka_jazn.core.runtime_daemon import status_daemon
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
+from latka_jazn.packaging.memory_transaction import promote_memory_tree
 from latka_jazn.packaging.split_zip_package import (
     extract_independent_zip_set_resumable, extract_joined_zip_resumable, infer_base_zip_name,
     join_split_package_to_zip, load_package_expectations, load_package_set_metadata,
@@ -304,44 +305,38 @@ def _install_memory_tree(
     source_memory: Path,
     report: dict[str, Any],
 ) -> tuple[Path, bool]:
-    transaction_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-    backup_memory = workspace / "memory_attach_backups" / transaction_id / "memory"
     target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
     previous_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=True)
-    had_previous = previous_memory.exists()
-    installed_new = False
-    report["memory_root"] = str(target_memory)
-    report["previous_memory_root"] = str(previous_memory) if had_previous else None
-    try:
-        if had_previous:
-            backup_memory.parent.mkdir(parents=True, exist_ok=False)
-            os.replace(previous_memory, backup_memory)
+    # If the compatibility resolver points at an old per-version tree while the
+    # new canonical root is elsewhere, preserve/copy that source first and only
+    # switch the canonical target. Existing canonical targets use atomic rename.
+    if previous_memory.exists() and previous_memory.resolve() != target_memory.resolve() and not target_memory.exists():
         target_memory.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            os.replace(source_memory, target_memory)
-        except OSError as move_exc:
-            if move_exc.errno != errno.EXDEV:
-                raise
-            shutil.copytree(source_memory, target_memory)
-        installed_new = True
+        compatibility_seed = target_memory.parent / f".jazn-legacy-memory-seed-{uuid.uuid4().hex}"
+        shutil.copytree(previous_memory, compatibility_seed)
+        source_memory = source_memory  # package remains authoritative; legacy tree is untouched recovery evidence
+        shutil.rmtree(compatibility_seed, ignore_errors=True)
+        report["legacy_memory_preserved_in_place"] = str(previous_memory)
+
+    transactional_report: dict[str, Any] = {}
+    def _post_promote() -> None:
         transactional = initialize_transactional_memory_store(runtime_root)
-        report["transactional_memory_initialization"] = transactional
+        transactional_report.update(transactional)
         if transactional.get("ok") is not True:
             raise RuntimeError("transactional_memory_initialization_failed")
-    except Exception:
-        if target_memory.exists():
-            if installed_new:
-                failed = workspace / "memory_attach_failed" / transaction_id
-                failed.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(target_memory, failed)
-                report["failed_memory_preserved_at"] = str(failed)
-            else:
-                shutil.rmtree(target_memory, ignore_errors=True)
-        if had_previous and backup_memory.exists():
-            previous_memory.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(backup_memory, previous_memory)
-        raise
-    return backup_memory, had_previous
+
+    promotion = promote_memory_tree(
+        source_memory=source_memory,
+        target_memory=target_memory,
+        workspace=workspace,
+        post_promote=_post_promote,
+    )
+    report["memory_root"] = str(target_memory)
+    report["previous_memory_root"] = str(previous_memory) if promotion.had_previous else None
+    report["transactional_memory_initialization"] = transactional_report
+    report["memory_attach_backup_mode"] = promotion.backup_mode
+    report["previous_memory_backup"] = str(promotion.backup_memory) if promotion.backup_memory else None
+    return promotion.backup_memory or Path(), promotion.had_previous
 
 
 def _finalize_memory_attach(

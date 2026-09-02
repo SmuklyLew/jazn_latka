@@ -96,7 +96,7 @@ python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destin
 `--force-reextract` czyści wyłącznie staging. Nie zezwala na zastąpienie zajętego `destination`.
 Profil `combined` wymaga dodatkowo zgodnego `memory/MEMORY_PACKAGE_MANIFEST.json` oraz SHA-256 każdego pliku pamięci.
 Profil `system` nie może zawierać prywatnego drzewa `memory/`.
-Bieżący sidecar generatora używa schematu `jazn_package_set/v2`; loader zachowuje zgodność z `jazn_package_set/v1`. Sidecar wymaga jawnego profilu i wersji zgodnej z rozpakowanym runtime.
+Bieżący sidecar generatora używa schematu `jazn_package_set/v3`; loader zachowuje zgodność odczytu z `jazn_package_set/v1` i `jazn_package_set/v2`. Sidecar wymaga jawnego profilu i wersji zgodnej z rozpakowanym runtime.
 Loader odrzuca nieobjęty manifestem kod, semantycznie niewiarygodny `SOURCE_PROVENANCE.json` oraz spakowany stan mutable (`workspace_runtime`, marker, cache aktywacji). Błąd I/O ma zwrócić `bootstrap_blocked`, bez tracebacku.
 
 `--no-start-daemon` nigdy nie oznacza aktywacji: także z poprawną pamięcią wynik ma pozostać `installed_inactive`. `active` wolno przyjąć dopiero po potwierdzeniu żywego endpointu Daemona i zdrowia SQLite.
@@ -143,7 +143,7 @@ python -X utf8 run.py memory-attach --root <VERIFIED_SYSTEM_ROOT> \
 
 Endpoint można także podać przez `JAZN_MEMORY_CLOUD_S3_ENDPOINT` albo `JAZN_MEMORY_CLOUD_R2_ACCOUNT_ID`, a bucket przez `JAZN_MEMORY_CLOUD_S3_BUCKET`. Uwierzytelnienie pozostaje po stronie klienta S3; nie wolno traktować samego pobrania z R2 jako dowodu integralności ani aktywnej Jaźni.
 
-Jeżeli w katalogu znajduje się dokładnie jedna paczka o sidecarze `profile=memory`, loader wybiera ją nawet wtedy, gdy obok leży paczka systemowa. Przy kilku paczkach memory podaj `--zip-name`. `memory-attach` musi zweryfikować sidecar, komplet części, SHA-256, CRC, bezpieczne ścieżki ZIP, manifest pamięci i SQLite; wcześniejszą pamięć zachowuje jako backup pod `workspace_runtime/memory_attach_backups/`. Duże surowe JSONL-e są rekonstruowane z logicznych segmentów dopiero po weryfikacji. SQLite w paczce musi pozostać kompletną bazą/snapshotem — nie wolno obchodzić limitów przez binarne cięcie pliku `.sqlite3`.
+Jeżeli w katalogu znajduje się dokładnie jedna paczka o sidecarze `profile=memory`, loader wybiera ją nawet wtedy, gdy obok leży paczka systemowa. Przy kilku paczkach memory podaj `--zip-name`. `memory-attach` musi zweryfikować sidecar, komplet części, SHA-256, CRC, bezpieczne ścieżki ZIP, manifest pamięci i SQLite; wcześniejszą pamięć zachowuje atomowo pod `workspace_runtime/memory_attach_backups/` gdy jest to ten sam filesystem; dla zewnętrznego `JAZN_MEMORY_ROOT` używa target-side backupu na tym samym filesystemie i raportuje jego dokładną ścieżkę. Duże surowe JSONL-e są rekonstruowane z logicznych segmentów dopiero po weryfikacji. SQLite w paczce musi pozostać kompletną bazą/snapshotem — nie wolno obchodzić limitów przez binarne cięcie pliku `.sqlite3`.
 
 Po udanym dołączeniu nie zakładaj jeszcze pełnej ciągłości. Sprawdź pamięć i odbuduj warstwy zależne od aktualnego runtime, gdy raport lub wake-state tego wymaga:
 

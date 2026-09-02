@@ -14,6 +14,7 @@ import zipfile
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.package_plan import PackagePlanBuilder, package_safety_reason
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
     resolve_safe_destination,
@@ -142,22 +143,7 @@ def _normalize_package_rel(rel: str) -> str:
 
 
 def forbidden_package_reason(rel: str) -> str | None:
-    try:
-        rel = validate_safe_relative_path(str(rel))
-    except UnsafeRelativePathError as exc:
-        return str(exc)
-    parts = set(Path(rel).parts)
-    if "__pycache__" in parts:
-        return "__pycache__ is never packaged"
-    if ".pytest_cache" in parts:
-        return ".pytest_cache is never packaged"
-    if rel in FORBIDDEN_PACKAGE_EXACT:
-        return "runtime/root marker is never packaged"
-    if rel.startswith(FORBIDDEN_PACKAGE_PREFIXES):
-        return "runtime or bridge queue directory is never packaged"
-    if any(Path(rel).match(pattern) for pattern in FORBIDDEN_PACKAGE_GLOBS):
-        return "forbidden runtime/cache pattern is never packaged"
-    return None
+    return package_safety_reason(str(rel), "system")
 
 
 def find_forbidden_package_paths(rel_paths) -> list[tuple[str, str]]:
@@ -253,15 +239,15 @@ def _iter_files(root: Path, mode: str, output_zip: Path):
 
 
 def build_package_plan(root: Path, mode: str, output_zip: Path | None = None) -> list[tuple[Path, str]]:
-    """Build the exact immutable-by-value plan used by preview and export."""
+    """Compatibility facade over the one canonical PackagePlanBuilder."""
     root = Path(root).resolve()
-    preview_output = Path(output_zip).resolve() if output_zip is not None else (root / "exports" / ".preview.zip").resolve()
-    plan = list(_iter_files(root, mode, preview_output))
-    validate_package_plan((rel for _, rel in plan), root=root)
+    plan = PackagePlanBuilder(root, mode, source_mode="package_export").build()
+    rows = [(item.source, item.path) for item in plan.entries]
+    validate_package_plan((rel for _, rel in rows), root=root)
     if mode == "github_source_safe":
         blocked = [
             {"path": rel, "reason": reason}
-            for path, rel in plan
+            for path, rel in rows
             if (reason := private_generated_source_reason(path, rel))
         ]
         if blocked:
@@ -269,7 +255,7 @@ def build_package_plan(root: Path, mode: str, output_zip: Path | None = None) ->
                 "Private generated sources remain in source-safe plan: "
                 + json.dumps(blocked[:10], ensure_ascii=False)
             )
-    return plan
+    return rows
 
 
 def _checkpoint_sqlite_databases(root: Path) -> list[str]:

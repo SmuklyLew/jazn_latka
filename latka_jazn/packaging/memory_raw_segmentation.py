@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
+
+from latka_jazn.tools.safe_paths import validate_safe_relative_path, UnsafeRelativePathError
 import hashlib
 import os
 import uuid
@@ -310,11 +312,13 @@ class RawJsonlSegmenter:
 
     @staticmethod
     def _safe_memory_path(value: str) -> str:
-        normalized = value.replace("\\", "/").strip().lstrip("./")
-        path = PurePosixPath(normalized)
-        if not normalized or path.is_absolute() or ".." in path.parts or not normalized.startswith("memory/"):
-            raise RawMemorySegmentationError(f"unsafe memory path: {value!r}")
-        return path.as_posix()
+        try:
+            canonical = validate_safe_relative_path(str(value))
+        except UnsafeRelativePathError as exc:
+            raise RawMemorySegmentationError(f"unsafe memory path: {value!r}: {exc}") from exc
+        if not canonical.startswith("memory/"):
+            raise RawMemorySegmentationError(f"unsafe memory path outside memory/: {value!r}")
+        return canonical
 
     @staticmethod
     def _remove_tree(path: Path) -> None:

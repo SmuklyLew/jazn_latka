@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.package_set_contract import build_single_zip_sidecar
 from latka_jazn.tools.package_export import export_package
 from latka_jazn.tools.release_readiness import build_release_readiness_report
 from latka_jazn.tools.release_staging import create_release_staging
@@ -142,6 +143,9 @@ def verify_release_zip_manifest(zip_path: Path | str) -> dict[str, Any]:
         "zip_sha256": _sha256_file(zip_path) if zip_path.is_file() else None,
         "manifest_runtime_version": manifest.get("runtime_version") or manifest.get("version"),
         "checked_file_count": checked,
+        "_verified_manifest_entries": [
+            dict(item) for item in manifest.get("files") or [] if isinstance(item, dict)
+        ],
         "errors": errors,
     }
 
@@ -205,6 +209,11 @@ def build_release_bundle(
                 candidate = build_dir / output.name
                 export_report = export_package(staging, "system", candidate).to_dict()
                 zip_verification = verify_release_zip_manifest(candidate)
+                verified_manifest_entries = tuple(
+                    dict(item)
+                    for item in zip_verification.pop("_verified_manifest_entries", [])
+                    if isinstance(item, dict)
+                )
                 candidate_digest = _sha256_file(candidate)
                 candidate_ok = bool(
                     zip_verification.get("ok")
@@ -259,6 +268,21 @@ def build_release_bundle(
                     )
 
         digest = _sha256_file(output)
+        integrity_entries = list(verified_manifest_entries)
+        package_sidecar = build_single_zip_sidecar(
+            package_name=output.name,
+            profile="system",
+            package_version=PACKAGE_VERSION_FULL,
+            zip_path=output,
+            entries=integrity_entries,
+            artifact_role="system",
+            generator="latka_jazn.tools.release_bundle",
+        )
+        package_sidecar_path = output.with_name(output.name + ".package.json")
+        package_sidecar_path.write_text(json.dumps(package_sidecar, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        parts_sha_path = output.with_name(output.name + ".parts.sha256")
+        parts_sha_path.write_text(f"{digest}  {output.name}\n", encoding="ascii")
+
         sha_path = output.with_name(output.name + ".sha256")
         sha_temp = sha_path.with_name(sha_path.name + ".tmp")
         sha_temp.write_text(f"{digest}  {output.name}\n", encoding="ascii")
@@ -272,6 +296,8 @@ def build_release_bundle(
             "output_zip": str(output),
             "sha256": digest,
             "sha256_path": str(sha_path),
+            "package_sidecar_path": str(package_sidecar_path),
+            "parts_sha256_path": str(parts_sha_path),
             "package_manifest_path": package_manifest_path,
             "packing_audit_path": packing_audit_path,
             "report_path": report_path,

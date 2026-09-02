@@ -24,7 +24,7 @@ sys.modules[name] = module
 spec.loader.exec_module(module)
 
 public = importlib.import_module("tools.jazn_pack_generator")
-assert public.GENERATOR_VERSION == "8.7"
+assert public.GENERATOR_VERSION == "8.8"
 """
     result = subprocess.run(
         [sys.executable, "-X", "utf8", "-c", script],

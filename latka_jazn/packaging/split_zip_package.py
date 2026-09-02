@@ -11,6 +11,7 @@ import uuid
 import zipfile
 
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.package_set_contract import READABLE_SCHEMAS
 import zlib
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -19,7 +20,7 @@ from typing import Any
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 
 CHUNK_SIZE = 8 * 1024 * 1024
-SUPPORTED_PACKAGE_SET_SCHEMAS = frozenset({"jazn_package_set/v1", "jazn_package_set/v2"})
+SUPPORTED_PACKAGE_SET_SCHEMAS = READABLE_SCHEMAS
 
 
 @dataclass(slots=True)

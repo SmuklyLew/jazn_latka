@@ -41,6 +41,6 @@ def test_v87_generator_uses_bundled_modules_without_static_legacy_imports() -> N
 def test_v87_generator_imports_from_two_file_bundle() -> None:
     module = importlib.import_module("tools.jazn_pack_generator")
 
-    assert module.GENERATOR_VERSION == "8.7"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"
+    assert module.GENERATOR_VERSION == "8.8"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.8"
     assert callable(module.main)
