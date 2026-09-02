@@ -4,10 +4,11 @@
 
 **Typ:** aktywny plan wykonawczy / release-prep  
 **Repozytorium:** `SmuklyLew/jazn_latka`  
-**Baza wykonawcza:** `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c`, scalony zwykłym merge do brancha
-**Wersja bazowa linii przy audycie:** `16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip`
+**Baza wykonawcza:** `origin/master@5f2c267cbff3bbacd15af06479d1f406bf85e686`, scalony zwykłym merge do brancha
+**Wersja bazowa linii przy drugim merge:** `16.3.25.3.14-archive-tools-understanding-added`
 **Branch implementacyjny:** `upgrade/memory-rebuild-v4-consolidation`  
-**Ostatni zweryfikowany zdalny checkpoint testowy:** `b0c264967d4c89ec98c50ea8e0146e4f0655d094` — master scalony, P0/P1 i brama wersji ponownie zielone
+**Ostatni wypchnięty bezpieczny checkpoint:** `39317cb23626cb930b05dda68c4a20c88dde6877`
+**Bieżący zweryfikowany merge checkpoint:** `cdba4d2e209242454d7899fe0997b48ec3014953` — aktualny master scalony, P0/P1 ponownie zielone
 **Tracking issue:** `#189`  
 **Docelowy numer patch-release przy niezmienionej linii:** `16.3.25.4`  
 **Proponowany release name:** `memory-rebuild-v4-consolidation`  
@@ -39,7 +40,7 @@
 
 ## 2. Co jest na branchu — P0/P1 po merge DONE, release nadal otwarty
 
-Na zweryfikowanym checkpointcie `b0c264967d4c89ec98c50ea8e0146e4f0655d094` branch zawiera m.in.:
+Na zweryfikowanym merge checkpointcie `cdba4d2e209242454d7899fe0997b48ec3014953` branch zawiera m.in.:
 
 - natywny `SourceBundle` / `ChatGPTExportBundle`;
 - `html_semantics.py` i jawne `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
@@ -56,9 +57,9 @@ Na zweryfikowanym checkpointcie `b0c264967d4c89ec98c50ea8e0146e4f0655d094` branc
 - testy v4 consolidation/protocol;
 - jawny HTML LOSSY boundary.
 
-Branch scalił `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c` w merge commicie `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9`. Konflikty ograniczały się do kanonicznej wersji oraz dwóch plików generowanych; zachowano legalną wersję targetu, a metadane skierowano do ponownej kanonicznej synchronizacji.
+Branch scalił `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c` w merge commicie `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9`. Gdy master przesunął się dalej, `origin/master@5f2c267cbff3bbacd15af06479d1f406bf85e686` został ponownie scalony zwykłym merge w `cdba4d2e209242454d7899fe0997b48ec3014953`, którego drugim rodzicem jest dokładnie ten master. Drugi merge zachował legalną wersję targetu, włączył nowe schematy kontraktowe i poprawkę aliasowania `TestOutcome`, zachował aktywne rozróżnienie `embedded_json_lossless` / `rendered_html_lossy` oraz skierował oba pliki generowane do ponownej kanonicznej synchronizacji. Wykryty na Windows problem kodowania blokującego JSON-u Dependency Studio został naprawiony w entrypoincie przez jawne UTF-8 stdio; bezpośrednia regresja jest zielona.
 
-Pełny aktywny nadzbiór Memory Rebuild po merge dał `148 passed, 1` znane ostrzeżenie kolekcji. Nadzbiór bramy wersji i semantyki metadanych dał `43 passed`. Po dostosowaniu audytu do stabilnych schematów kontraktowych v2 jego skupiony nadzbiór dał `27 passed`, a audyt wykonany na rzeczywistym repo zwrócił `ok: true`, `errors: []`, `metadata_errors: []` i `literal_violations: []`. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7, usuwania read-only `.git` na Windows oraz rozróżnienia stabilnego schematu metadanych od wersji runtime mają osobne regresje i są zielone.
+Po pierwszym merge aktywny nadzbiór Memory Rebuild dał `148 passed, 1` znane ostrzeżenie kolekcji, nadzbiór wersji/metadanych dał `43 passed`, a skupiony audyt stabilnego schematu dał `27 passed`. Po drugim merge skupiony zestaw konfliktów i nowych komponentów mastera dał `44 passed`, a pełny aktywny nadzbiór Memory Rebuild wzrósł do `172 passed`. Rzeczywisty audyt repo i brama wersji/metadanych są powtarzane po kanonicznej synchronizacji generowanych plików. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7, usuwania read-only `.git` na Windows, rozróżnienia stabilnego schematu metadanych od wersji runtime oraz kodowania bezpośredniego entrypointu mają osobne regresje i są zielone.
 
 To potwierdza P0/P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Post-merge release metadata są synchronizowane kanonicznym generatorem po tej finalnej treści dokumentacji. Pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają odrębnymi gate'ami.
 
@@ -228,9 +229,9 @@ PACKAGE_RELEASE_NAME = "memory-rebuild-v4-consolidation"
 
 Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej roadmapie/AGENTS. Nie używać `16.3.26` dla Memory Rebuild.
 
-Stan na 2026-09-01: kanoniczny bump został zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3` i zachowany świadomie podczas merge; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
+Stan na 2026-09-02: kanoniczny bump został zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3` i zachowany świadomie podczas obu merge; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
 
-Post-merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych: `43 passed`; skupiony nadzbiór audytu stabilnego schematu: `27 passed`; rzeczywisty `version_consistency_audit`: `ok: true`, zero błędów i naruszeń literałów. Drugi bump nie jest wymagany.
+Po pierwszym merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych dał `43 passed`, skupiony nadzbiór audytu stabilnego schematu dał `27 passed`, a rzeczywisty `version_consistency_audit` zwrócił `ok: true`. Po drugim merge wersja targetu i nowe stabilne schematy mastera są zachowane; pełna brama jest powtarzana po bieżącym metadata sync. Drugi bump nie jest wymagany dla nadal niewydanego targetu `16.3.25.4`.
 
 ---
 
