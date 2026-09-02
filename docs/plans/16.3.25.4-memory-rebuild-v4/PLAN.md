@@ -7,15 +7,15 @@
 **Baza wykonawcza:** `origin/master@5f2c267cbff3bbacd15af06479d1f406bf85e686`, scalony zwykłym merge do brancha
 **Wersja bazowa linii przy drugim merge:** `16.3.25.3.14-archive-tools-understanding-added`
 **Branch implementacyjny:** `upgrade/memory-rebuild-v4-consolidation`  
-**Ostatni wypchnięty bezpieczny checkpoint:** `39317cb23626cb930b05dda68c4a20c88dde6877`
-**Bieżący zweryfikowany merge checkpoint:** `cdba4d2e209242454d7899fe0997b48ec3014953` — aktualny master scalony, P0/P1 ponownie zielone
+**Ostatni wypchnięty bezpieczny checkpoint:** `9f11fc8fbcdccc4aca9cd0b171e02e07218e17d7`
+**Bieżący zweryfikowany release checkpoint:** `9f11fc8fbcdccc4aca9cd0b171e02e07218e17d7` — aktualny master scalony, P0/P1 i wszystkie uruchomione bramy release poza Pyright są zielone
 **Tracking issue:** `#189`  
 **Docelowy numer patch-release przy niezmienionej linii:** `16.3.25.4`  
 **Proponowany release name:** `memory-rebuild-v4-consolidation`  
 **Kanoniczne założenia:** `docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`  
 **Roadmapa nadrzędna:** `docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md`  
 **Issue finalnej pamięci:** `#59`  
-**Data aktualizacji:** 2026-09-01
+**Data aktualizacji:** 2026-09-02
 
 > Ten etap **nie jest** finalnym Memory Rebuild z v16.5.0 i nie oznacza stanu `VERIFIED` prywatnej pamięci. Konsoliduje narzędzie/protokół Test00–Final i przygotowuje source-lineage-ready RAW/L0 dla późniejszej finalnej odbudowy.
 
@@ -40,7 +40,7 @@
 
 ## 2. Co jest na branchu — P0/P1 po merge DONE, release nadal otwarty
 
-Na zweryfikowanym merge checkpointcie `cdba4d2e209242454d7899fe0997b48ec3014953` branch zawiera m.in.:
+Na zweryfikowanym release checkpointcie `9f11fc8fbcdccc4aca9cd0b171e02e07218e17d7` branch zawiera m.in.:
 
 - natywny `SourceBundle` / `ChatGPTExportBundle`;
 - `html_semantics.py` i jawne `embedded_json_lossless`, `rendered_html_lossy`, `invalid_html`;
@@ -59,9 +59,9 @@ Na zweryfikowanym merge checkpointcie `cdba4d2e209242454d7899fe0997b48ec3014953`
 
 Branch scalił `origin/master@3983c577bc86ffdf6fa5bae138a4a20120bd9d5c` w merge commicie `2284ac735ddb9ef2b0c4ba9cdb6ee53955a4f7d9`. Gdy master przesunął się dalej, `origin/master@5f2c267cbff3bbacd15af06479d1f406bf85e686` został ponownie scalony zwykłym merge w `cdba4d2e209242454d7899fe0997b48ec3014953`, którego drugim rodzicem jest dokładnie ten master. Drugi merge zachował legalną wersję targetu, włączył nowe schematy kontraktowe i poprawkę aliasowania `TestOutcome`, zachował aktywne rozróżnienie `embedded_json_lossless` / `rendered_html_lossy` oraz skierował oba pliki generowane do ponownej kanonicznej synchronizacji. Wykryty na Windows problem kodowania blokującego JSON-u Dependency Studio został naprawiony w entrypoincie przez jawne UTF-8 stdio; bezpośrednia regresja jest zielona.
 
-Po pierwszym merge aktywny nadzbiór Memory Rebuild dał `148 passed, 1` znane ostrzeżenie kolekcji, nadzbiór wersji/metadanych dał `43 passed`, a skupiony audyt stabilnego schematu dał `27 passed`. Po drugim merge skupiony zestaw konfliktów i nowych komponentów mastera dał `44 passed`, a pełny aktywny nadzbiór Memory Rebuild wzrósł do `172 passed`. Rzeczywisty audyt repo i brama wersji/metadanych są powtarzane po kanonicznej synchronizacji generowanych plików. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7, usuwania read-only `.git` na Windows, rozróżnienia stabilnego schematu metadanych od wersji runtime oraz kodowania bezpośredniego entrypointu mają osobne regresje i są zielone.
+Po pierwszym merge aktywny nadzbiór Memory Rebuild dał `148 passed, 1` znane ostrzeżenie kolekcji, nadzbiór wersji/metadanych dał `43 passed`, a skupiony audyt stabilnego schematu dał `27 passed`. Po drugim merge skupiony zestaw konfliktów i nowych komponentów mastera dał `44 passed`, a pełny aktywny nadzbiór Memory Rebuild wzrósł do `172 passed`. Post-merge brama wersji/metadanych dała `45 passed`, skupiona regresja audytu `2 passed`, a rzeczywisty `version_consistency_audit` zwrócił `ok: true`, bez błędów i literal violations. Kanoniczne metadane checkpointu obejmują `995` statycznych plików. Wykryte podczas integracji problemy zależnego od kolejności importu Pack Generatora v8.7, usuwania read-only `.git` na Windows, rozróżnienia stabilnego schematu metadanych od wersji runtime oraz kodowania bezpośredniego entrypointu mają osobne regresje i są zielone.
 
-To potwierdza P0/P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalny release. Post-merge release metadata są synchronizowane kanonicznym generatorem po tej finalnej treści dokumentacji. Pełna lokalna walidacja, prywatna akceptacja, GitHub CI i PR pozostają odrębnymi gate'ami.
+To potwierdza P0/P1 i legalny bump `16.3.25.4-memory-rebuild-v4-consolidation`, a nie finalną prywatną pamięć. Post-merge release metadata są synchronizowane wyłącznie kanonicznym generatorem po finalnej treści dokumentacji. Lokalna walidacja jest zielona dla wszystkich uruchomionych bram, ale pozostaje niepełna wyłącznie dlatego, że przypięty Pyright 1.1.411 nie został uruchomiony: `npx` nie jest dostępny, a pobranie przez dołączony `pnpm` zostało zablokowane przez `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. GitHub CI i PR pozostają odrębnymi gate'ami.
 
 Prywatny dataset nie został użyty w tych bramach. Stan Test04 na realnych danych pozostaje `PRIVATE ACCEPTANCE: NOT RUN`, nigdy syntetyczny PASS.
 
@@ -231,7 +231,7 @@ Jeżeli master przesunie release line, rozstrzygnąć ponownie na aktualnej road
 
 Stan na 2026-09-02: kanoniczny bump został zapisany w `latka_jazn/version.py` w commicie `03859e7fd2ad357f9f645946c0572ba16306f7c3` i zachowany świadomie podczas obu merge; `DISTRIBUTION_VERSION` i `PACKAGE_VERSION` wynoszą `16.3.25.4`, a `PACKAGE_RELEASE_NAME` wynosi `memory-rebuild-v4-consolidation`.
 
-Po pierwszym merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych dał `43 passed`, skupiony nadzbiór audytu stabilnego schematu dał `27 passed`, a rzeczywisty `version_consistency_audit` zwrócił `ok: true`. Po drugim merge wersja targetu i nowe stabilne schematy mastera są zachowane; pełna brama jest powtarzana po bieżącym metadata sync. Drugi bump nie jest wymagany dla nadal niewydanego targetu `16.3.25.4`.
+Po pierwszym merge nadzbiór walidacji jednego źródła wersji i semantyki metadanych dał `43 passed`, skupiony nadzbiór audytu stabilnego schematu dał `27 passed`, a rzeczywisty `version_consistency_audit` zwrócił `ok: true`. Po drugim merge wersja targetu i nowe stabilne schematy mastera są zachowane; post-sync brama dała `45 passed`, regresja klasyfikacji publicznego routera dokumentacji `2 passed`, a rzeczywisty audyt ponownie zwrócił `ok: true`, `errors: []`, `metadata_errors: []` i `literal_violations: []`. Drugi bump nie jest wymagany dla nadal niewydanego targetu `16.3.25.4`.
 
 ---
 
@@ -277,11 +277,26 @@ python -X utf8 run.py package-smoke --profile system --json
 git diff --check
 ```
 
+Wynik lokalnych bram na czystym i wypchniętym checkpointcie `9f11fc8fbcdccc4aca9cd0b171e02e07218e17d7`:
+
+- Pyright 1.1.411 source + regression set: `NOT RUN` — brak `npx`, a dołączony `pnpm` nie pobrał paczki przez `UNABLE_TO_VERIFY_LEAF_SIGNATURE`; SSL nie został osłabiony;
+- pełny deterministyczny pytest po uzupełnieniu zadeklarowanego `py7zr>=1.1.3,<2`: `1305 passed, 5 skipped in 391.99s`;
+- compileall: `PASS`, bytecode poza repozytorium;
+- independent semantic route audit: `ok: true`, `checked: 132`, `failure_count: 0`;
+- cognitive architecture audit: `ok: true`, wszystkie kontrole `true`;
+- doctor: exit `0`, `ok: true`, `release_ready: true`, `995/995` plików manifestu; brak prywatnej pamięci i nieaktywny daemon są raportowane prawdziwie i osobno;
+- system package-smoke: `15/15`, `failed: 0`, exit `0`;
+- release package-smoke: `15/15`, `failed: 0`, exit `0`;
+- release-build: exit `0`, CRC/extract smoke/ZIP manifest `PASS`, `996` plików eksportu, `3 867 574` B, SHA-256 `3aefb082f1cad2c867b8730e64167ea13ed81f84b6562e15d554578780b2fcdd`;
+- prywatna akceptacja: `NOT RUN`.
+
 Dla SQLite:
 
 - `PRAGMA integrity_check`;
 - `PRAGMA foreign_key_check`;
 - FTS5 integrity-check.
+
+Jawny syntetyczny gate pełnego łańcucha Test04→Final przeszedł osobno (`1 passed`) i potwierdził `integrity == ["ok"]`, `foreign_key_error_count == 0` oraz `fts.ok == true`. Nie użyto prywatnej bazy.
 
 Release metadata wyłącznie przez kanoniczny `release_metadata_sync`; zero ręcznej edycji hashy. Wymagane GitHub CI na finalnym SHA musi być rzeczywiście green.
 
