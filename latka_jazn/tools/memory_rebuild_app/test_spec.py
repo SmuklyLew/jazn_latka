@@ -13,6 +13,7 @@ from enum import Enum
 
 class TestOutcome(str, Enum):
     NOT_RUN = "NOT RUN"
+    RUNNING = "RUNNING"
     PASSED = "PASSED"
     FAILED = "FAILED"
     LOSSY = "LOSSY"

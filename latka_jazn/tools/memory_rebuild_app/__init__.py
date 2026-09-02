@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .baseline_registry import baseline_from_path, discover_baseline_roots, refresh_baseline
 from .adapters import AdapterRegistry, default_adapter_registry
+from .application import MemoryRebuildApplicationService
 from .config import APP_VERSION, TOOL_VERSION
 from .controller import MemoryRebuildAppController, MemoryRebuildAppError
 from .final_export import EXPORT_SCHEMA, export_final_memory
@@ -16,6 +17,8 @@ from .models import (
     TRUTH_DOMAINS,
 )
 from .project_store import ProjectStore, default_project_root
+from .protocol_engine import ProtocolArtifact, ProtocolEngine
+from .run_manifest import RunManifest
 from .source_inventory import SourceInspection, inspect_source, inspect_sources
 from .settings import MemoryRebuildSettings, load_settings
 from .source_union import (
@@ -43,24 +46,13 @@ from .typed_api import (
     RecallStatus,
     TypedMemoryAPI,
 )
-from .v16311_hardening import (
-    EXTENDED_L0_SCHEMA_VERSION,
-    HARDENING_VERSION,
-    compare_chat_sources,
-    list_chat_conversations,
-)
-from .v16311_hardening import apply as _apply_v16311_hardening
-from .v16312_ci_hotfix import HOTFIX_VERSION
-from .v16312_ci_hotfix import apply as _apply_v16312_ci_hotfix
-from .v16325_hardening import HARDENING_VERSION as SOURCE_UNION_HARDENING_VERSION
-from .v16325_hardening import apply as _apply_v16325_hardening
+from .chat_sources import compare_chat_sources, list_chat_conversations
+from .schema_l0 import L0_SCHEMA_VERSION
 
-# Install versioned migrations only after the base modular components are
-# imported. Operations are idempotent and do not touch user data until a store
-# is explicitly initialized/imported.
-_apply_v16311_hardening()
-_apply_v16312_ci_hotfix()
-_apply_v16325_hardening()
+EXTENDED_L0_SCHEMA_VERSION = L0_SCHEMA_VERSION
+HARDENING_VERSION = "memory-rebuild-v4-consolidation"
+HOTFIX_VERSION = "superseded-by-memory-rebuild-v4-consolidation"
+SOURCE_UNION_HARDENING_VERSION = "native-memory-rebuild-v4-consolidation"
 
 __all__ = [
     "BaselineSpec",
@@ -73,6 +65,7 @@ __all__ = [
     "HOTFIX_VERSION",
     "HtmlImportResult",
     "LEGACY_DATABASE_NAMES",
+    "MemoryRebuildApplicationService",
     "MemoryRebuildAppController",
     "MemoryRebuildAppError",
     "MemoryRebuildSettings",
@@ -82,6 +75,9 @@ __all__ = [
     "PROFILE_NAMES",
     "PROJECT_SCHEMA",
     "ProjectStore",
+    "ProtocolArtifact",
+    "ProtocolEngine",
+    "RunManifest",
     "RebuildProject",
     "RecallHit",
     "RecallQuery",

@@ -66,6 +66,14 @@ python -X utf8 -m latka_jazn.tools.release_metadata_sync \
 
 Na branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może wykonać synchronizację po otwarciu PR do `master`. Nie commituj ręcznie samodzielnie obliczonych hashy.
 
+### Historyczne snapshoty testów
+
+- `tests/archive/` przechowuje wyłącznie niezmienne, historyczne snapshoty testów i nie należy do domyślnej kolekcji pytest.
+- Przed modyfikacją istniejącego aktywnego testu zachowaj jego ostatnią zatwierdzoną postać bajt w bajt w `tests/archive/`, z wersją źródłową w nazwie pliku. Nowy aktywny test nie wymaga snapshotu poprzednika.
+- Snapshoty są append-only: nie poprawiaj, nie formatuj, nie przenoś i nie nadpisuj istniejącego pliku. Kolejny stan zachowaj jako nowy snapshot.
+- Snapshot wolno uruchamiać jawnie przez podanie jego ścieżki. Wynik historycznego testu jest dowodem zgodności historycznej, a nie bieżącym gate'em release'u.
+- Audyty aktywnej linii, spójności wersji i historii aktualizacji muszą ignorować `tests/archive/` jako aktywne źródło lub bieżący dowód testowy.
+
 ## 5. Walidacja
 
 Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych.

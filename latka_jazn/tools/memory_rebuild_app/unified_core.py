@@ -21,6 +21,7 @@ from .intermediate import PreparedSource
 from .l0_store import UnifiedL0Store
 from .unified_contracts import UnifiedMixinHost
 from .read_only_validation import read_only_stats, validate_existing_database
+from .selective_import import import_selected_conversations
 from .source_detection import SourceProbe, probe_source
 from .sqlite_utils import ClosingSQLiteConnection
 from .unified_schema import (
@@ -184,6 +185,27 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             "automatic_activation": False,
         }
         return UnifiedImportResult(str(path), prepared.source_kind, status, payload)
+    def import_source_selected(
+        self,
+        source: str | Path,
+        *,
+        conversation_ids: tuple[str, ...] = (),
+        title: str | None = None,
+        temporal_start: str | None = None,
+        temporal_end: str | None = None,
+        html_control: str | Path | None = None,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        return import_selected_conversations(
+            self,
+            source,
+            conversation_ids=conversation_ids,
+            title=title,
+            temporal_start=temporal_start,
+            temporal_end=temporal_end,
+            html_control=html_control,
+            dry_run=dry_run,
+        )
 
     def _preview_import_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="jazn-memory-plan-") as temporary_root:

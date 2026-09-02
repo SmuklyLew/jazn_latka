@@ -8,7 +8,7 @@ import subprocess
 from typing import Any, Callable, Iterable
 
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
-from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+from latka_jazn.version import PACKAGE_VERSION_FULL, contract_schema_version, schema_version
 from latka_jazn.core.version_source import (
     read_runtime_version_from_version_py,
     read_version_metadata_from_version_py,
@@ -72,6 +72,13 @@ TEXT_SUFFIXES = {
 SKIP_PREFIXES = (
     ".git/",
     ".archives/",
+    # Release plans/project evaluations intentionally name release identities;
+    # they document versioning but are never executable version sources.
+    "docs/plans/",
+    "docs/project/",
+    # The documentation router names versioned plan directories; it is an
+    # index, not a runtime or package version authority.
+    "docs/README.md",
     "memory/",
     "workspace_runtime/",
     "exports/",
@@ -79,6 +86,10 @@ SKIP_PREFIXES = (
     "patchs/",
     "backups/",
     "backups_git/",
+    "tests/archive/",
+    # These public compatibility labels identify the release that retired the
+    # historical hardening stack; they are not a second version authority.
+    "latka_jazn/tools/memory_rebuild_app/__init__.py",
 )
 MAX_SCAN_BYTES = 4 * 1024 * 1024
 VERSION_PATTERN = re.compile(r"v\d+\.\d+(?:\.\d+)*(?:[-_][A-Za-z0-9_.-]+)?|\d+\.\d+(?:\.\d+)+")
@@ -262,14 +273,14 @@ def _generated_metadata_errors(root: Path) -> list[dict[str, Any]]:
         for key in ("version", "runtime_version", "package_version"):
             if manifest.get(key) != metadata.package_version_full:
                 errors.append({"kind": "generated_manifest_stale", "path": "PACKAGE_INTEGRITY_MANIFEST.json", "field": key})
-        expected_schema = f"package_integrity_manifest/{metadata.package_version}"
+        expected_schema = contract_schema_version("package_integrity_manifest")
         if manifest.get("schema_version") != expected_schema:
             errors.append({"kind": "generated_manifest_stale", "path": "PACKAGE_INTEGRITY_MANIFEST.json", "field": "schema_version"})
 
     provenance = _load_json(root / "SOURCE_PROVENANCE.json")
     if provenance:
         expected = {
-            "schema_version": f"source_provenance/{metadata.package_version}",
+            "schema_version": contract_schema_version("source_provenance"),
             "runtime_version": metadata.package_version_full,
             "update_version": metadata.package_version_full,
             "version_source": "latka_jazn/version.py",

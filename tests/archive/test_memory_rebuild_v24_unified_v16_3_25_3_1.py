@@ -123,7 +123,7 @@ def test_unified_database_imports_new_threads_and_dry_run_is_non_mutating(tmp_pa
     assert store.validate(full=True)["ok"]
 
 
-def test_html_import_reports_exact_lossless_and_lossy_semantics(tmp_path: Path) -> None:
+def test_html_import_supports_embedded_json_and_rendered_fallback(tmp_path: Path) -> None:
     embedded_database = tmp_path / "embedded.sqlite3"
     embedded_html = tmp_path / "chat-embedded.html"
     payload = [_conversation("conv-html", "HTML JSON", "Treść użytkownika", "Treść odpowiedzi")]
@@ -132,7 +132,7 @@ def test_html_import_reports_exact_lossless_and_lossy_semantics(tmp_path: Path) 
         encoding="utf-8",
     )
     embedded = import_chat_html(embedded_html, embedded_database)
-    assert embedded.mode == "embedded_json_lossless"
+    assert embedded.mode == "embedded_json"
     assert embedded.conversations_seen == 1
     assert UnifiedMemoryDatabase(embedded_database).stats()["conversations"] == 1
 
@@ -145,7 +145,7 @@ def test_html_import_reports_exact_lossless_and_lossy_semantics(tmp_path: Path) 
         encoding="utf-8",
     )
     fallback = import_chat_html(fallback_html, fallback_database)
-    assert fallback.mode == "rendered_html_lossy"
+    assert fallback.mode == "rendered_html_fallback"
     assert fallback.conversations_seen == 1
     assert UnifiedMemoryDatabase(fallback_database).stats()["nodes"] >= 2
 

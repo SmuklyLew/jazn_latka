@@ -120,3 +120,6 @@ PACKAGE_INTEGRITY_MANIFEST.json
 # Reviewed operator launchers are source code despite the repository-wide *.ps1 rule.
 !/tools/Install-JaznPolishReasoningResources.ps1
 !/tools/Start-JaznDependencyStudio.ps1
+
+# Local pytest integration workspaces
+/.pytest-p1b/

@@ -46,7 +46,14 @@ def _ensure_package(name: str) -> _bundle_types.ModuleType:
     module = _bundle_types.ModuleType(name)
     module.__file__ = _BUNDLE_FILE
     module.__package__ = name.rpartition(".")[0]
-    module.__path__ = []  # type: ignore[attr-defined]
+    # Direct spec loading is used by contract tests and by portable launchers.
+    # Keep the public tools package importable afterwards instead of leaving a
+    # synthetic package with an empty search path in sys.modules.
+    module.__path__ = (  # type: ignore[attr-defined]
+        [str(_BundlePath(_BUNDLE_FILE).resolve().parent)]
+        if name == "tools"
+        else []
+    )
     _bundle_sys.modules[name] = module
     if "." in name:
         parent_name, child = name.rsplit(".", 1)

@@ -11,6 +11,18 @@ from latka_jazn.dependencies.runtime import (
 )
 
 
+def _configure_utf8_stdio() -> None:
+    """Keep direct entrypoint diagnostics machine-readable across platforms."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
+
+
+_configure_utf8_stdio()
+
+
 _ACTIVATION_COMMANDS = {
     "start",
     "restart",

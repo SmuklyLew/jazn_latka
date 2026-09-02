@@ -38,8 +38,9 @@ class FTS5RecallBaseline:
         self.api = TypedMemoryAPI(self.database, settings=self.settings, embedding_provider=None)
 
     def search(self, case: RecallBenchmarkCase) -> dict[str, Any]:
+        contextual_query = " ".join((*case.context_turns, case.query)).strip()
         query = RecallQuery(
-            text=case.query,
+            text=contextual_query,
             layers=(MemoryLayer.L0,),
             temporal_start=case.temporal_start,
             temporal_end=case.temporal_end,

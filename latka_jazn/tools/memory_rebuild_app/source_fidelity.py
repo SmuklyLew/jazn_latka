@@ -15,6 +15,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Iterable
 import json
+import os
 import sqlite3
 import uuid
 import zipfile
@@ -366,6 +367,7 @@ def _parse_source(
     path: Path,
     con: sqlite3.Connection,
     source_id: str,
+    *, allow_opaque: bool = False,
 ) -> tuple[str, str, dict[str, Any], list[str], list[str], int]:
     suffix = path.suffix.casefold()
     warnings: list[str] = []
@@ -395,7 +397,7 @@ def _parse_source(
                 counts, compare_errors = _iter_and_compare(records)
                 errors.extend(compare_errors)
                 details.update(counts)
-                if html_mode == "rendered_html_fallback":
+                if html_mode in {"rendered_html_fallback", "rendered_html_lossy"}:
                     outcome = TestOutcome.LOSSY.value
             else:
                 outcome = TestOutcome.BLOCKED.value
@@ -410,7 +412,7 @@ def _parse_source(
         counts, compare_errors = _iter_and_compare(records)
         errors.extend(compare_errors)
         details.update(counts)
-        if html_mode == "rendered_html_fallback":
+        if html_mode in {"rendered_html_fallback", "rendered_html_lossy"}:
             outcome = TestOutcome.LOSSY.value
         return parse_mode, outcome, details, warnings, errors, 0
 
@@ -427,6 +429,9 @@ def _parse_source(
             parse_mode = f"sidecar_json:{source_kind}"
             details.update(_read_generic_json(path))
         return parse_mode, outcome, details, warnings, errors, 0
+
+    if allow_opaque:
+        return "opaque_source_evidence", TestOutcome.PASSED.value, {"parsed": False}, warnings, errors, 0
 
     return "unsupported", TestOutcome.BLOCKED.value, details, warnings, ["unsupported_source_type"], 0
 
@@ -457,7 +462,7 @@ def _json_safe_details(details: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _inspect_one(path: Path, con: sqlite3.Connection) -> SourceFidelityResult:
+def _inspect_one(path: Path, con: sqlite3.Connection, *, allow_opaque: bool = False) -> SourceFidelityResult:
     source_id = f"src-{uuid.uuid4().hex}"
     suffix = path.suffix.casefold()
     source_kind = {".json": "json", ".html": "html", ".htm": "html", ".zip": "zip"}.get(suffix, "unknown")
@@ -467,7 +472,9 @@ def _inspect_one(path: Path, con: sqlite3.Connection) -> SourceFidelityResult:
     details: dict[str, Any] = {}
     zip_member_count = 0
     try:
-        parse_mode, outcome, details, warnings, errors, zip_member_count = _parse_source(path, con, source_id)
+        parse_mode, outcome, details, warnings, errors, zip_member_count = _parse_source(
+            path, con, source_id, allow_opaque=allow_opaque,
+        )
     except (OSError, UnicodeError, ValueError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
         parse_mode = "parse_failed"
         outcome = TestOutcome.FAILED.value
@@ -570,6 +577,7 @@ def run_test00_source_fidelity(
     *,
     output_root: str | Path,
     run_id: str | None = None,
+    opaque_evidence: Iterable[str | Path] = (),
 ) -> dict[str, Any]:
     source_paths: list[Path] = []
     seen: set[str] = set()
@@ -585,6 +593,10 @@ def run_test00_source_fidelity(
     for path in source_paths:
         if not path.is_file():
             raise FileNotFoundError(path)
+    opaque_keys = {
+        os.path.normcase(str(Path(item).expanduser().resolve()))
+        for item in opaque_evidence
+    }
 
     root = Path(output_root).expanduser().resolve()
     resolved_run_id = run_id or (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8])
@@ -595,7 +607,10 @@ def run_test00_source_fidelity(
     with closing(_connect(database)) as con:
         _initialize(con)
         for path in source_paths:
-            results.append(_inspect_one(path, con))
+            results.append(_inspect_one(
+                path, con,
+                allow_opaque=os.path.normcase(str(path)) in opaque_keys,
+            ))
         integrity = [str(row[0]) for row in con.execute("PRAGMA integrity_check")]
         foreign_keys = [tuple(row) for row in con.execute("PRAGMA foreign_key_check")]
         con.execute("PRAGMA wal_checkpoint(TRUNCATE)")

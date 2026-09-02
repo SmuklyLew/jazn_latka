@@ -9,6 +9,13 @@ import time
 import uuid
 import zlib
 
+from latka_jazn.tools.chat_archive_policy import (
+    archive_variant,
+    ensure_archive_schema,
+    parent_conflicts,
+    resolve_divergence,
+    update_visibility,
+)
 from latka_jazn.tools.chat_export_dedupe import ActiveConversationState, stable_node_hash
 from latka_jazn.tools.chat_export_models import ConversationGraph, ConversationPlan, ExportSourceInfo
 from latka_jazn.version import schema_version
@@ -207,6 +214,7 @@ class ChatExportArchiveStore:
         self.con.execute("PRAGMA temp_store=MEMORY")
         self.con.execute("PRAGMA cache_size=-65536")
         self.con.executescript(SCHEMA_SQL)
+        ensure_archive_schema(self.con)
         self.con.execute(
             "INSERT OR REPLACE INTO archive_meta(key,value) VALUES('schema_version',?)",
             (SCHEMA_VERSION,),
@@ -322,6 +330,7 @@ class ChatExportArchiveStore:
             "conflicts": 0,
         }
         now = _utc_now()
+        parent_conflict_ids = parent_conflicts(self.con, graph)
         if plan.relation == "new":
             compressed, raw_size = _compressed_payload(graph)
             self.con.execute(
@@ -373,10 +382,25 @@ class ChatExportArchiveStore:
         else:
             self._record_conflict(import_id, graph, plan)
             counters["conflicts"] = 1
-            new_nodes = []
+            added = set(plan.added_node_ids)
+            new_nodes = [node for node in graph.nodes if node.node_id in added]
 
         if new_nodes:
             counters.update(self._insert_nodes(import_id, graph, new_nodes))
+        if plan.relation == "divergent" and new_nodes:
+            self.con.execute(
+                """UPDATE conversations
+                   SET node_count=node_count+?,message_count=message_count+?,
+                       last_seen_import_id=?,updated_at_utc=?
+                   WHERE conversation_id=?""",
+                (
+                    len(new_nodes),
+                    sum(1 for node in new_nodes if node.message_id),
+                    import_id,
+                    now,
+                    graph.conversation_id,
+                ),
+            )
         self.con.execute(
             """INSERT OR IGNORE INTO conversation_occurrences
                (conversation_id,import_id,relation_to_active,raw_tree_sha256,semantic_tree_sha256,
@@ -403,6 +427,24 @@ class ChatExportArchiveStore:
                 json.dumps(details, ensure_ascii=False, sort_keys=True), now,
             ),
         )
+
+        archive_variant(
+            self.con,
+            import_id=import_id,
+            graph=graph,
+            relation=str(plan.relation),
+        )
+        update_visibility(self.con, graph)
+        if plan.relation == "divergent":
+            safe = resolve_divergence(
+                self.con,
+                import_id=import_id,
+                conversation_id=graph.conversation_id,
+                changed_node_ids=tuple(str(item) for item in plan.changed_node_ids),
+                parent_conflict_ids=parent_conflict_ids,
+            )
+            counters["preserved_divergences"] = int(safe)
+            counters["unresolved_divergences"] = int(not safe)
         return counters
 
     def _insert_nodes(self, import_id: str, graph: ConversationGraph, nodes: list[Any]) -> dict[str, int]:
@@ -511,7 +553,7 @@ class ChatExportArchiveStore:
     def counts(self) -> dict[str, int]:
         tables = (
             "import_sources", "import_source_aliases", "conversations", "conversation_occurrences",
-            "conversation_revisions", "nodes", "fts_docs", "assets", "message_assets", "import_conflicts",
+            "conversation_revisions", "conversation_variant_payloads", "nodes", "fts_docs", "assets", "message_assets", "import_conflicts",
         )
         return {
             table: int(self.con.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0])

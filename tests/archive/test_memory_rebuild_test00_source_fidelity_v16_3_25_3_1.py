@@ -7,11 +7,7 @@ import sqlite3
 import zipfile
 
 from latka_jazn.tools.memory_rebuild_app.source_fidelity import CHUNK_SIZE, run_test00_source_fidelity
-from latka_jazn.tools.memory_rebuild_app.test_spec import (
-    TEST_PROTOCOL_ORDER,
-    TestOutcome as MemoryRebuildTestOutcome,
-    get_test_spec,
-)
+from latka_jazn.tools.memory_rebuild_app.test_spec import TEST_PROTOCOL_ORDER, TestOutcome, get_test_spec
 
 
 def _message(message_id: str, role: str, content_type: str, text: str) -> dict:
@@ -73,7 +69,7 @@ def test_json_source_is_mirrored_byte_exact_and_preserves_all_observed_roles(tmp
     source.write_text(json.dumps([_conversation()], ensure_ascii=False), encoding="utf-8")
     result = run_test00_source_fidelity([source], output_root=tmp_path / "test00", run_id="json")
     assert result["ok"] is True
-    assert result["outcome"] == MemoryRebuildTestOutcome.PASSED.value
+    assert result["outcome"] == TestOutcome.PASSED.value
     item = result["results"][0]
     assert item["role_counts"] == {
         "assistant": 1,
@@ -103,7 +99,7 @@ def test_chunked_mirror_reconstructs_source_larger_than_one_chunk(tmp_path: Path
     payload = b"[" + (b" " * (CHUNK_SIZE + 137)) + b"]"
     source.write_bytes(payload)
     result = run_test00_source_fidelity([source], output_root=tmp_path / "test00", run_id="chunks")
-    assert result["outcome"] == MemoryRebuildTestOutcome.PASSED.value
+    assert result["outcome"] == TestOutcome.PASSED.value
     assert result["results"][0]["raw_chunk_count"] == 2
     assert _read_mirrored_blob(Path(result["database"])) == payload
 
@@ -116,7 +112,7 @@ def test_embedded_html_is_structural_pass_and_rendered_fallback_is_lossy(tmp_pat
     )
     embedded_result = run_test00_source_fidelity([embedded], output_root=tmp_path / "test00", run_id="embedded")
     assert embedded_result["ok"] is True
-    assert embedded_result["results"][0]["parse_mode"] == "embedded_json_lossless"
+    assert embedded_result["results"][0]["parse_mode"] == "embedded_json"
     assert embedded_result["results"][0]["role_counts"]["tool"] == 1
 
     fallback = tmp_path / "fallback.html"
@@ -127,8 +123,8 @@ def test_embedded_html_is_structural_pass_and_rendered_fallback_is_lossy(tmp_pat
     )
     fallback_result = run_test00_source_fidelity([fallback], output_root=tmp_path / "test00", run_id="fallback")
     assert fallback_result["ok"] is False
-    assert fallback_result["outcome"] == MemoryRebuildTestOutcome.LOSSY.value
-    assert fallback_result["results"][0]["parse_mode"] == "rendered_html_lossy"
+    assert fallback_result["outcome"] == TestOutcome.LOSSY.value
+    assert fallback_result["results"][0]["parse_mode"] == "rendered_html_fallback"
     assert _read_mirrored_blob(Path(fallback_result["database"])) == fallback.read_bytes()
 
 
@@ -140,7 +136,7 @@ def test_zip_reads_every_member_and_keeps_exact_container_bytes(tmp_path: Path) 
         archive.writestr("user.json", json.dumps({"id": "private-user"}))
         archive.writestr("assets/example.txt", "załącznik")
     result = run_test00_source_fidelity([source], output_root=tmp_path / "test00", run_id="zip")
-    assert result["outcome"] == MemoryRebuildTestOutcome.PASSED.value
+    assert result["outcome"] == TestOutcome.PASSED.value
     item = result["results"][0]
     assert item["zip_member_count"] == 4
     database = Path(result["database"])
@@ -166,7 +162,7 @@ def test_generic_json_sidecar_is_fully_validated_without_becoming_conversation(t
     ]
     sidecar.write_text(json.dumps(payload), encoding="utf-8")
     result = run_test00_source_fidelity([sidecar], output_root=tmp_path / "test00", run_id="sidecar")
-    assert result["outcome"] == MemoryRebuildTestOutcome.PASSED.value
+    assert result["outcome"] == TestOutcome.PASSED.value
     item = result["results"][0]
     assert item["conversation_count"] == 0
     assert item["parse_mode"].startswith("sidecar_json:")
@@ -177,5 +173,5 @@ def test_unsupported_source_is_byte_preserved_but_blocked(tmp_path: Path) -> Non
     source = tmp_path / "notes.txt"
     source.write_bytes(b"raw evidence remains exact\x00even when unsupported")
     result = run_test00_source_fidelity([source], output_root=tmp_path / "test00", run_id="blocked")
-    assert result["outcome"] == MemoryRebuildTestOutcome.BLOCKED.value
+    assert result["outcome"] == TestOutcome.BLOCKED.value
     assert _read_mirrored_blob(Path(result["database"])) == source.read_bytes()
