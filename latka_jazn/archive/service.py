@@ -15,6 +15,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Sequence
 
+from latka_jazn.archive.resource_policy import (
+    ArchiveResourcePolicyError,
+    member_collision_key,
+    normalize_member_path,
+)
+
 
 CHUNK_SIZE = 8 * 1024 * 1024
 SEVEN_Z_SIGNATURE = b"7z\xbc\xaf\x27\x1c"
@@ -115,30 +121,14 @@ def normalize_archive_format(value: str | None) -> str:
 
 
 def _normalize_member_name(value: str) -> str:
-    raw = str(value or "").replace("\\", "/")
-    if not raw or "\x00" in raw:
-        raise ArchiveError("unsafe_archive_member:empty_or_nul")
-    if raw.startswith("/") or raw.startswith("//") or _DRIVE_PREFIX.match(raw):
-        raise ArchiveError(f"unsafe_archive_member:absolute:{value}")
-    raw = raw.rstrip("/")
-    parts = PurePosixPath(raw).parts
-    if not parts or any(part in {"", ".", ".."} for part in parts):
-        raise ArchiveError(f"unsafe_archive_member:traversal:{value}")
-    clean_parts: list[str] = []
-    for part in parts:
-        if part.endswith(" ") or part.endswith("."):
-            raise ArchiveError(f"unsafe_archive_member:windows_normalization:{value}")
-        if ":" in part:
-            raise ArchiveError(f"unsafe_archive_member:alternate_data_stream:{value}")
-        stem = part.split(".", 1)[0].upper()
-        if stem in _WINDOWS_RESERVED:
-            raise ArchiveError(f"unsafe_archive_member:windows_reserved:{value}")
-        clean_parts.append(part)
-    return PurePosixPath(*clean_parts).as_posix()
+    try:
+        return normalize_member_path(value, normalize_backslash=True)
+    except ArchiveResourcePolicyError as exc:
+        raise ArchiveError(str(exc)) from exc
 
 
 def _member_key(name: str) -> str:
-    return unicodedata.normalize("NFC", name).casefold()
+    return member_collision_key(name)
 
 
 def _zip_has_aes_extra(extra: bytes) -> bool:

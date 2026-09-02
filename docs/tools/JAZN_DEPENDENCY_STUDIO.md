@@ -2,7 +2,7 @@
 
 ## Status
 
-`16.3.25.3.9-dependency-studio-offline-wheelhouse` introduces an operator-owned dependency layer for Python packages used by Jaźń. The goal is to make dependency availability explicit, reproducible and usable without PyPI during ordinary runtime activation.
+`16.3.25.5-package-distribution-convergence` promotes Dependency Studio to the release dependency contract. It keeps the operator-owned offline layer, but the release now transports target-specific verified dependency artifacts instead of assuming a pre-existing local wheelhouse.
 
 The Studio is not a second package manager. It orchestrates standard Python `venv` and `pip` commands with Jaźń-specific profiles, manifests, SHA-256 verification and activation gates.
 
@@ -33,14 +33,15 @@ python/
 ├─ wheelhouse/
 │  ├─ core+archive__windows-x64__py312__<resolution>/
 │  │  ├─ *.whl
-│  │  └─ JAZN_WHEELHOUSE_MANIFEST.json
+│  │  ├─ JAZN_WHEELHOUSE_MANIFEST.json
+│  │  └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
 │  └─ ...
 ├─ environments/
 │  └─ <platform>__py<major-minor>__<manifest-sha>/
 └─ JAZN_DEPENDENCY_ENVIRONMENT.json
 ```
 
-`latka_jazn/local_resources/` remains excluded from Git. A portable release may transport that directory or an external wheelhouse separately without changing the source-control contract.
+`latka_jazn/local_resources/` remains excluded from Git. Releases transport wheelhouse bundles as immutable dependency sidecar ZIPs described by `JAZN_DEPENDENCY_SET.json`; ready-made `venv`/`site-packages` trees remain non-transportable runtime state.
 
 Set `JAZN_DEPENDENCY_WHEELHOUSE` to an explicit external wheelhouse when the bundle should live outside the runtime root.
 
@@ -83,7 +84,7 @@ Build an offline wheelhouse for Windows x64 / Python 3.12:
     -Platform windows-x64
 ```
 
-Verify manifests, SHA-256, wheel ZIP structure, Name/Version metadata and recorded license metadata:
+Verify manifest v2, SHA-256, ZIP CRC, filename/metadata Name+Version, `METADATA`, `WHEEL`, complete `RECORD` hashes/sizes, `Requires-Python`, compatibility tags, duplicates/unlisted wheels and license metadata:
 
 ```powershell
 .\tools\Start-JaznDependencyStudio.ps1 verify
@@ -137,11 +138,12 @@ If a requested dependency has no compatible wheel, the operation fails closed in
 1. verifies the selected bundle;
 2. checks that its target platform/Python match the selected interpreter;
 3. creates a fresh managed `venv` when needed;
-4. runs pip using `--no-index --find-links <verified-bundle>`;
+4. verifies `JAZN_WHEELHOUSE_REQUIREMENTS.txt` and runs pip with `--no-index --only-binary=:all: --require-hashes --find-links <verified-bundle> -r JAZN_WHEELHOUSE_REQUIREMENTS.txt`;
 5. runs `pip check`;
 6. imports every direct profile package as a smoke test;
-7. writes a managed-environment marker only after success;
-8. updates the activation marker only when the environment covers all activation-required profiles.
+7. records `pip inspect --local` and requires installed distribution inventory to match the resolved manifest;
+8. writes a managed-environment v2 marker only after success;
+9. updates the activation marker only when the environment covers all activation-required profiles.
 
 An optional-only environment cannot replace the activation environment marker.
 
@@ -190,3 +192,29 @@ NLP Resource Studio -> provision/verify SGJP/plWordNet/Stanza model data
 ```
 
 Neither layer may silently download resources during a conversation turn.
+
+
+## Contract v2 and release artifacts
+
+`jazn_dependency_wheelhouse/v2` uses PyPA `packaging` after dependency handoff for PEP 440 requirements, wheel filename parsing and compatibility tags. The pre-handoff bootstrap remains stdlib-only, so an ambient interpreter does not need `packaging` merely to discover a managed environment or a transported sidecar.
+
+Each release dependency artifact contains one verified wheelhouse for exactly one target. A target records friendly alias plus Python version, implementation, ABI, platform family, architecture, libc family and the compatible tag set. `.25.5` release support is Windows x86-64 and Linux glibc x86-64 for Python 3.12, 3.13 and 3.14. Linux musl and ARM targets are represented by the API/schema but are not release-supported until native clean-room acceptance exists.
+
+The system package carries `JAZN_DEPENDENCY_SET.json`; dependency artifacts remain sibling files. Discovery verifies package-set metadata and outer SHA before extracting a sidecar, then verifies the inner wheelhouse and hash lock. A wrong Python/platform/libc bundle is rejected before pip is invoked.
+
+## Managed Environment Contract v2
+
+The managed marker separates `created_for_runtime_version` from `dependency_contract_fingerprint`. A runtime-only version bump does not invalidate an otherwise compatible environment. Changes to dependency declarations/profile registry, target or verified wheelhouse do invalidate it. Cleanup is explicit only:
+
+```text
+python -X utf8 -m latka_jazn.tools.dependency_studio gc --dry-run
+python -X utf8 -m latka_jazn.tools.dependency_studio gc --apply
+```
+
+Bootstrap never performs garbage collection automatically.
+
+## Release locks
+
+Release CI builds wheelhouses on native runners and emits exact target locks under `latka_jazn/resources/dependencies/locks/core+archive/`. Every line is fully pinned and SHA-256 locked, including transitive dependencies. The first native matrix run materializes release evidence for all six required targets and persists those exact locks on the release branch. Subsequent matrix runs consume the persisted lock through `dependency-studio download --lock-file ...`, so `pip download` itself runs with `--require-hashes --only-binary=:all:` and the regenerated bundle lock must be byte-identical to the committed target lock.
+
+A release is not considered converged merely because the bootstrap resolution succeeded once: the canonical-lock consumer run must also pass on Windows x64 and Linux glibc x64 for Python 3.12, 3.13 and 3.14. The locks are therefore generated from native wheelhouse resolution rather than handwritten or inferred across platforms. `pylock.<target>.toml` may be emitted later as an additional audit/export format, but it is not a bootstrap dependency in `.25.5`.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from latka_jazn.dependencies.process_handoff import managed_python_command
+
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
@@ -867,10 +869,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
         session_factory: Callable[..., Any] = JaznRuntimeSession,
         execution_timeout_seconds: float | None = None,
         hard_worker_process_isolation: bool | None = None,
+        daemon_instance_id: str | None = None,
     ) -> None:
         super().__init__(server_address, RequestHandlerClass)
         self.config = config
         self.marker_path = Path(marker_path)
+        self.daemon_instance_id = str(daemon_instance_id or uuid.uuid4())
         self.heartbeat_interval = float(heartbeat_interval)
         self._session_factory = session_factory
         configured_process_isolation = bool(
@@ -2626,7 +2630,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         payload = {
             **active,
             "schema_version": DAEMON_SCHEMA_VERSION,
-            "runtime_daemon": self.state.to_dict(),
+            "daemon_instance_id": self.daemon_instance_id,
+            "runtime_daemon": {**self.state.to_dict(), "daemon_instance_id": self.daemon_instance_id},
             "active_state": active_state,
             "runtime_active_state": active_state,
             "time_trust_state": time_state,
@@ -2708,6 +2713,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         )
         return {
             "schema_version": DAEMON_SCHEMA_VERSION,
+            "daemon_instance_id": self.daemon_instance_id,
             "ok": liveness_ok,
             "liveness_ok": liveness_ok,
             "active_state": active_state if liveness_ok else "inactive",
@@ -2787,6 +2793,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         )
         return {
             "schema_version": DAEMON_SCHEMA_VERSION,
+            "daemon_instance_id": self.daemon_instance_id,
             "ok": readiness_ok,
             "liveness_ok": liveness_ok,
             "readiness_ok": readiness_ok,
@@ -3377,6 +3384,7 @@ def run_daemon(
     marker_output: Path | None = None,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
     execution_timeout_seconds: float | None = None,
+    daemon_instance_id: str | None = None,
 ) -> int:
     marker_path = resolve_active_runtime_marker_path(config.root, marker_output)
     package_verification = verify_package_integrity_manifest(config.root)
@@ -3416,6 +3424,7 @@ def run_daemon(
         marker_path=marker_path,
         heartbeat_interval=heartbeat_interval,
         execution_timeout_seconds=execution_timeout_seconds,
+        daemon_instance_id=daemon_instance_id,
     )
     server.refresh_timestamp_contract(reason="startup_background", background=True, force=True)
     server.write_marker()
@@ -3461,6 +3470,7 @@ def build_daemon_start_command(
     marker_output: Path | None = None,
     heartbeat_interval: float = DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
     execution_timeout_seconds: float | None = None,
+    daemon_instance_id: str | None = None,
 ) -> list[str]:
     root = Path(root).resolve()
     start_file = root / "main.py" if (root / "main.py").is_file() else (find_start_file(root) or root / "main.py")
@@ -3469,6 +3479,8 @@ def build_daemon_start_command(
         cmd.extend(["--daemon-chat-timeout", str(float(execution_timeout_seconds))])
     if marker_output:
         cmd.extend(["--daemon-marker-output", str(resolve_active_runtime_marker_path(root, marker_output))])
+    if daemon_instance_id:
+        cmd.extend(["--daemon-instance-id", str(daemon_instance_id)])
     return cmd
 
 
@@ -3572,6 +3584,7 @@ def _daemon_degraded_recommendation(
     endpoint_reachable: bool,
     endpoint_root_matches: bool,
     endpoint_pid_matches: bool,
+    endpoint_instance_matches: bool | None,
     timestamp_trusted: bool | None,
     heartbeat_fresh: bool,
 ) -> dict[str, Any] | None:
@@ -3580,10 +3593,15 @@ def _daemon_degraded_recommendation(
             "kind": "runtime_root_mismatch",
             "summary": "Port Daemona odpowiada, ale endpoint należy do innego folderu runtime. Nie uruchamiaj ani nie zatrzymuj procesu przez ten marker; wybierz inny port albo zatrzymaj właściwy runtime.",
         }
-    if endpoint_reachable and not endpoint_pid_matches:
+    if endpoint_reachable and endpoint_instance_matches is False:
+        return {
+            "kind": "daemon_instance_mismatch",
+            "summary": "Endpoint odpowiada, ale daemon_instance_id nie zgadza się z markerem. Port może należeć do starszej lub obcej instancji; status pozostaje fail-closed.",
+        }
+    if endpoint_reachable and endpoint_instance_matches is None and not endpoint_pid_matches:
         return {
             "kind": "daemon_pid_mismatch",
-            "summary": "Endpoint odpowiada, ale jego PID nie zgadza się z PID-em zapisanym w markerze. Odśwież marker lub uruchom ponownie właściwego Daemona; status nie może być active_trusted.",
+            "summary": "Legacy endpoint bez daemon_instance_id odpowiada, ale jego PID nie zgadza się z PID-em zapisanym w markerze. Odśwież marker lub uruchom ponownie właściwego Daemona; status nie może być active_trusted.",
         }
     if endpoint_reachable and not heartbeat_fresh:
         return {
@@ -3680,7 +3698,16 @@ def start_daemon(
         if isinstance(existing, dict):
             existing_pid = _daemon_pid_from_status(existing)
             root_matches = _endpoint_confirms_root(subject_root, existing)
-            if existing.get("active_state") in {"active_trusted", "active_degraded"} and root_matches:
+            existing_instance_id = str(existing.get("daemon_instance_id") or "")
+            existing_version_matches = str(existing.get("runtime_version") or existing.get("version") or "") in {PACKAGE_VERSION, PACKAGE_VERSION_FULL}
+            existing_heartbeat_fresh = bool(_heartbeat_fresh(existing)[0])
+            if (
+                existing.get("active_state") in {"active_trusted", "active_degraded"}
+                and root_matches
+                and existing_instance_id
+                and existing_version_matches
+                and existing_heartbeat_fresh
+            ):
                 return {
                     "ok": True,
                     "trusted": existing.get("active_state") == "active_trusted",
@@ -3688,7 +3715,22 @@ def start_daemon(
                     "started": False,
                     "degraded": existing.get("active_state") == "active_degraded",
                     "pid": existing_pid,
+                    "daemon_instance_id": existing_instance_id,
                     "status": existing,
+                    "marker_path": str(marker_path),
+                    **subject_context,
+                }
+            if existing.get("active_state") in {"active_trusted", "active_degraded"} and root_matches:
+                return {
+                    "ok": False,
+                    "trusted": False,
+                    "already_running": False,
+                    "started": False,
+                    "error_code": "daemon_existing_instance_unverified",
+                    "error": "Existing endpoint for this root lacks a complete daemon_instance_id/version/heartbeat identity proof.",
+                    "existing_pid": existing_pid,
+                    "existing_daemon_instance_id": existing_instance_id or None,
+                    "existing_status": existing,
                     "marker_path": str(marker_path),
                     **subject_context,
                 }
@@ -3803,6 +3845,7 @@ def start_daemon(
             **subject_context,
         }
     event_path = daemon_process_event_path(subject_root)
+    daemon_instance_id = str(uuid.uuid4())
     cmd = build_daemon_start_command(
         subject_root,
         host=host,
@@ -3810,7 +3853,9 @@ def start_daemon(
         marker_output=marker_path,
         heartbeat_interval=heartbeat_interval,
         execution_timeout_seconds=execution_timeout_seconds,
+        daemon_instance_id=daemon_instance_id,
     )
+    cmd, daemon_env = managed_python_command(sys.executable, cmd[1:])
     creationflags = 0
     popen_kwargs: dict[str, Any] = {}
     if os.name == "nt":
@@ -3820,6 +3865,7 @@ def start_daemon(
     append_daemon_process_event(
         subject_root,
         "spawn_attempt",
+        daemon_instance_id=daemon_instance_id,
         console_mode=console_mode,
         command=cmd,
         cwd=str(subject_root),
@@ -3834,6 +3880,7 @@ def start_daemon(
                 cwd=str(subject_root),
                 stdin=subprocess.DEVNULL,
                 creationflags=creationflags,
+                env=daemon_env,
                 **popen_kwargs,
             )
         else:
@@ -3845,6 +3892,7 @@ def start_daemon(
                     stderr=err,
                     stdin=subprocess.DEVNULL,
                     creationflags=creationflags,
+                    env=daemon_env,
                     **popen_kwargs,
                 )
     except OSError as exc:
@@ -3873,6 +3921,7 @@ def start_daemon(
     append_daemon_process_event(
         subject_root,
         "spawned",
+        daemon_instance_id=daemon_instance_id,
         console_mode=console_mode,
         daemon_pid=proc.pid,
         command=cmd,
@@ -3889,15 +3938,21 @@ def start_daemon(
             if isinstance(status, dict) and status.get("active_state") in {"active_trusted", "active_degraded"}:
                 status_pid = _daemon_pid_from_status(status)
                 root_matches = _endpoint_confirms_root(subject_root, status)
+                instance_matches = str(status.get("daemon_instance_id") or "") == daemon_instance_id
+                version_matches = str(status.get("runtime_version") or status.get("version") or "") in {PACKAGE_VERSION, PACKAGE_VERSION_FULL}
                 process_matches = bool(status_pid and int(status_pid) == int(proc.pid))
-                if root_matches and process_matches:
+                if root_matches and instance_matches and version_matches:
                     status.setdefault("endpoint", status_endpoint or status.get("endpoint"))
                     return {
                         "ok": True,
                         "trusted": status.get("active_state") == "active_trusted",
                         "started": True,
                         "degraded": status.get("active_state") == "active_degraded",
-                        "pid": proc.pid,
+                        "pid": status_pid or proc.pid,
+                        "spawned_pid": proc.pid,
+                        "endpoint_pid": status_pid,
+                        "pid_matches_spawn": process_matches,
+                        "daemon_instance_id": daemon_instance_id,
                         "status": status,
                         "marker_path": str(marker_path),
                         "stdout_log": str(stdout_path),
@@ -3911,6 +3966,7 @@ def start_daemon(
                     "daemon endpoint identity mismatch after spawn: "
                     f"expected_root={subject_root}, endpoint_root="
                     f"{status.get('active_root') or status.get('configured_runtime_root')}, "
+                    f"expected_instance={daemon_instance_id}, endpoint_instance={status.get('daemon_instance_id')}, "
                     f"spawned_pid={proc.pid}, endpoint_pid={status_pid}"
                 )
             else:
@@ -3918,8 +3974,27 @@ def start_daemon(
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
         time.sleep(0.2)
-    append_daemon_process_event(subject_root, "startup_failed", daemon_pid=proc.pid, console_mode=console_mode, error=last_error or "daemon did not answer before timeout")
-    return {"ok": False, "started": False, "pid": proc.pid, "error": last_error or "daemon did not answer before timeout", "marker_path": str(marker_path), "stdout_log": str(stdout_path), "stderr_log": str(stderr_path), "process_event_log": str(event_path), "daemon_console_mode": console_mode, "command": cmd, **subject_context}
+    final_status, final_error, final_endpoint = _probe_daemon_status(host, int(port))
+    if isinstance(final_status, dict) and final_status.get("active_state") in {"active_trusted", "active_degraded"}:
+        final_pid = _daemon_pid_from_status(final_status)
+        if (
+            _endpoint_confirms_root(subject_root, final_status)
+            and str(final_status.get("daemon_instance_id") or "") == daemon_instance_id
+            and str(final_status.get("runtime_version") or final_status.get("version") or "") in {PACKAGE_VERSION, PACKAGE_VERSION_FULL}
+        ):
+            return {
+                "ok": True, "trusted": final_status.get("active_state") == "active_trusted",
+                "started": True, "degraded": final_status.get("active_state") == "active_degraded",
+                "pid": final_pid or proc.pid, "spawned_pid": proc.pid, "endpoint_pid": final_pid,
+                "pid_matches_spawn": bool(final_pid and int(final_pid) == int(proc.pid)),
+                "daemon_instance_id": daemon_instance_id, "status": final_status,
+                "endpoint": final_endpoint, "marker_path": str(marker_path),
+                "stdout_log": str(stdout_path), "stderr_log": str(stderr_path),
+                "process_event_log": str(event_path), "daemon_console_mode": console_mode,
+                "command": cmd, **subject_context,
+            }
+    append_daemon_process_event(subject_root, "startup_failed", daemon_pid=proc.pid, daemon_instance_id=daemon_instance_id, console_mode=console_mode, error=last_error or final_error or "daemon did not answer before timeout")
+    return {"ok": False, "started": False, "pid": proc.pid, "daemon_instance_id": daemon_instance_id, "error": last_error or final_error or "daemon did not answer before timeout", "marker_path": str(marker_path), "stdout_log": str(stdout_path), "stderr_log": str(stderr_path), "process_event_log": str(event_path), "daemon_console_mode": console_mode, "command": cmd, **subject_context}
 
 
 def status_daemon(
@@ -3958,7 +4033,16 @@ def status_daemon(
     endpoint_pid_matches = _endpoint_confirms_pid(pid_int, ping)
     endpoint_reported_root = _endpoint_reported_root(ping)
     endpoint_root_matches = _endpoint_confirms_root(subject_root, ping)
-    endpoint_identity_matches = bool(endpoint_pid_matches and endpoint_root_matches)
+    marker_instance_id = str((marker or {}).get("daemon_instance_id") or "") if isinstance(marker, dict) else ""
+    endpoint_instance_id = str((ping or {}).get("daemon_instance_id") or "") if isinstance(ping, dict) else ""
+    if marker_instance_id and endpoint_instance_id:
+        endpoint_instance_matches: bool | None = marker_instance_id == endpoint_instance_id
+        endpoint_identity_matches = bool(endpoint_root_matches and endpoint_instance_matches)
+        endpoint_identity_basis = "daemon_instance_id+root"
+    else:
+        endpoint_instance_matches = None
+        endpoint_identity_matches = bool(endpoint_pid_matches and endpoint_root_matches)
+        endpoint_identity_basis = "legacy_pid+root"
 
     marker_heartbeat_fresh, marker_heartbeat_age, marker_heartbeat_threshold = _heartbeat_fresh(marker)
     ping_heartbeat_fresh, ping_heartbeat_age, ping_heartbeat_threshold = _heartbeat_fresh(ping)
@@ -4008,7 +4092,9 @@ def status_daemon(
     elif endpoint_reachable:
         if not endpoint_root_matches:
             active_state_reason = "endpoint_runtime_root_mismatch"
-        elif not endpoint_pid_matches:
+        elif endpoint_instance_matches is False:
+            active_state_reason = "endpoint_daemon_instance_mismatch"
+        elif endpoint_instance_matches is None and not endpoint_pid_matches:
             active_state_reason = "endpoint_pid_mismatch"
         elif not heartbeat_is_fresh:
             active_state = "active_degraded"
@@ -4092,6 +4178,11 @@ def status_daemon(
         "endpoint_probe_performed": bool(probe_endpoint),
         "endpoint_pid_matches": endpoint_pid_matches,
         "endpoint_root_matches": endpoint_root_matches,
+        "endpoint_instance_matches": endpoint_instance_matches,
+        "endpoint_identity_basis": endpoint_identity_basis,
+        "daemon_instance_id": marker_instance_id or endpoint_instance_id or None,
+        "marker_daemon_instance_id": marker_instance_id or None,
+        "endpoint_daemon_instance_id": endpoint_instance_id or None,
         "endpoint_identity_matches": endpoint_identity_matches,
         "endpoint_expected_active_root": str(subject_root),
         "endpoint_reported_active_root": (
@@ -4117,14 +4208,15 @@ def status_daemon(
             endpoint_reachable=endpoint_reachable,
             endpoint_root_matches=endpoint_root_matches,
             endpoint_pid_matches=endpoint_pid_matches,
+            endpoint_instance_matches=endpoint_instance_matches,
             timestamp_trusted=timestamp_trusted,
             heartbeat_fresh=heartbeat_is_fresh,
         ),
         "truth_boundary": (
             "Status active_trusted wymaga pełnej zgodności rozmiarów i SHA-256 manifestu, "
             "zweryfikowanego pochodzenia źródła, zgodnego markera, "
-            "zgodności rootu runtime, tego samego PID-u "
-            "w markerze i endpointcie, runtime_process_active=true, świeżego heartbeat oraz odpowiedzi lokalnego endpointu. "
+            "zgodności rootu runtime oraz daemon_instance_id między markerem i endpointem; PID pozostaje dodatkowym dowodem "
+            "i jest wymagany tylko dla legacy endpointu bez instance ID. runtime_process_active=true, świeży heartbeat i lokalny endpoint pozostają wymagane. "
             "Żywy PID bez potwierdzonej tożsamości nie wystarcza. Zaufanie czasu jest raportowane osobno; "
             "brak czasu sieciowego nie blokuje startu. Endpoint chwilowo niedostępny przy żywym PID i świeżym "
             "markerze daje wyłącznie active_degraded."

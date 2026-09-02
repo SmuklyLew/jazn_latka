@@ -96,7 +96,7 @@ python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destin
 `--force-reextract` czyści wyłącznie staging. Nie zezwala na zastąpienie zajętego `destination`.
 Profil `combined` wymaga dodatkowo zgodnego `memory/MEMORY_PACKAGE_MANIFEST.json` oraz SHA-256 każdego pliku pamięci.
 Profil `system` nie może zawierać prywatnego drzewa `memory/`.
-Bieżący sidecar generatora używa schematu `jazn_package_set/v2`; loader zachowuje zgodność z `jazn_package_set/v1`. Sidecar wymaga jawnego profilu i wersji zgodnej z rozpakowanym runtime.
+Bieżący package-set używa schematu `jazn_package_set/v3`; loader zachowuje zgodność odczytu z `jazn_package_set/v1` i `jazn_package_set/v2`. v3 rozdziela semantyczne role `system`, `memory` i `dependencies`. Systemowy ZIP może zawierać `JAZN_DEPENDENCY_SET.json`, który opisuje lokalne dependency-sidecary wraz z SHA-256 i pełnym targetem (Python/implementation/ABI/platform/libc). Nie wybieraj dependency bundle wyłącznie po nazwie pliku. Zweryfikuj SHA sidecara, jego descriptor, `JAZN_WHEELHOUSE_MANIFEST.json`, hash-lock i target przed instalacją. Brak kompatybilnego, zweryfikowanego dependency sidecara ma zakończyć bootstrap stanem `no_compatible_verified_dependency_bundle`; host nie może zastąpić go sieciowym `pip install`.
 Loader odrzuca nieobjęty manifestem kod, semantycznie niewiarygodny `SOURCE_PROVENANCE.json` oraz spakowany stan mutable (`workspace_runtime`, marker, cache aktywacji). Błąd I/O ma zwrócić `bootstrap_blocked`, bez tracebacku.
 
 `--no-start-daemon` nigdy nie oznacza aktywacji: także z poprawną pamięcią wynik ma pozostać `installed_inactive`. `active` wolno przyjąć dopiero po potwierdzeniu żywego endpointu Daemona i zdrowia SQLite.

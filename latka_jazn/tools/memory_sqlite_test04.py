@@ -19,7 +19,10 @@ import sys
 import time
 import zipfile
 
-from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.zip_resource_limits import (
+    ZipResourceLimitError,
+    validate_zip_resources,
+)
 from latka_jazn.core.runtime_root import workspace_runtime_path
 
 from latka_jazn.tools.memory_restore import (
@@ -571,7 +574,10 @@ def inspect_zip_safety(path: Path) -> dict[str, Any]:
     }
     try:
         with zipfile.ZipFile(path, "r") as archive:
-            validate_zip_resources(archive)
+            # Preserve Test04's historical structured safety report while also
+            # enforcing the shared archive resource policy.  Structural
+            # findings must be recorded before the shared validator can fail
+            # closed so callers still receive path/symlink/collision booleans.
             infos = [item for item in archive.infolist() if not item.is_dir()]
             names = [item.filename for item in infos]
             report["member_count"] = len(names)
@@ -614,6 +620,17 @@ def inspect_zip_safety(path: Path) -> dict[str, Any]:
                 report["errors"].append("case_colliding_member_paths")
             if encrypted:
                 report["errors"].append("encrypted_zip_not_supported")
+
+            try:
+                validate_zip_resources(archive)
+            except ZipResourceLimitError as exc:
+                # The common policy is authoritative for acceptance, but this
+                # legacy inspector reports findings instead of raising them.
+                # Keep that API stable for Memory Rebuild Test04.
+                policy_error = f"zip_resource_policy_failed:{exc}"
+                if policy_error not in report["errors"]:
+                    report["errors"].append(policy_error)
+
             bad_member = archive.testzip()
             report["crc_checked"] = True
             report["crc_ok"] = bad_member is None
