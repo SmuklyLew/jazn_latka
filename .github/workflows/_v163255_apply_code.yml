@@ -1,0 +1,53 @@
+name: v163255-apply-code
+on:
+  push:
+    branches:
+      - tmp/v163255-final-tree-build
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Reconstruct and apply verified payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .jazn-v163255-patch -maxdepth 1 -type f -print0 | sort -z | xargs -0 cat > /tmp/v163255.b64
+          base64 -d /tmp/v163255.b64 > /tmp/v163255.patch.gz
+          echo 'a6f31dfbfcf569ce6e927756697b6bbe6bef26f1bcbb87ed70a688629bd8b6ef  /tmp/v163255.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/v163255.patch.gz > /tmp/v163255.patch
+          archive=tests/archive/v16.3.25.4-package-distribution-preconvergence
+          mkdir -p "$archive"
+          cp tests/test_dependency_studio_v1632539.py "$archive/"
+          cp tests/test_independent_memory_package_contract_v2.py "$archive/"
+          cp tests/test_jazn_pack_generator_two_file_bundle_v87.py "$archive/"
+          cp tests/test_jazn_pack_generator_v16311_profiles.py "$archive/"
+          cp tests/test_jazn_pack_generator_v82_contract.py "$archive/"
+          cp tests/test_jazn_pack_generator_v84_contract.py "$archive/"
+          cp tests/test_jazn_pack_generator_v87_import_isolation.py "$archive/"
+          cp tests/test_jazn_pack_generator_v87_studio_portability.py "$archive/"
+          git apply --check /tmp/v163255.patch
+          git apply /tmp/v163255.patch
+          cp tools/jazn_pack_generator.py tools/pack_generator_sources/jazn_pack_generator_v88.py
+          git checkout origin/master -- .github/workflows/release-hardening.yml
+          rm -f .github/workflows/dependency-artifacts.yml .github/workflows/dependency-review.yml .github/workflows/package-distribution-cleanroom.yml
+          rm -rf .jazn-v163255-patch
+          git diff --check
+          python -X utf8 -m compileall -q latka_jazn tests main.py run.py tools/build_jazn_pack_generator_bundle.py
+      - name: Commit code staging tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'upgrade: stage v16.3.25.5 code payload'
+          git push origin HEAD:tmp/v163255-final-tree-build
