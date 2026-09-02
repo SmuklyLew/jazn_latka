@@ -1,0 +1,39 @@
+name: v163255-scaffold-probe
+
+on:
+  push:
+    branches:
+      - tmp/v163255-gitdata-probe-2
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Apply historical scaffold only as a probe
+        shell: bash
+        run: |
+          git fetch origin upgrade/v16.3.25.3.15-package-distribution-convergence
+          git show origin/upgrade/v16.3.25.3.15-package-distribution-convergence:tools/_apply_distribution_convergence.py > tools/_apply_distribution_convergence.py
+          git show origin/upgrade/v16.3.25.3.15-package-distribution-convergence:tools/_fix_scaffold.py > tools/_fix_scaffold.py
+          python -X utf8 tools/_fix_scaffold.py
+          python -X utf8 tools/_apply_distribution_convergence.py
+          rm -f tools/_apply_distribution_convergence.py tools/_fix_scaffold.py .github/workflows/_v163255_scaffold_probe.yml
+          git status --short
+      - name: Commit probe result
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'probe: apply historical distribution scaffold to current master'
+          git push origin HEAD:tmp/v163255-gitdata-probe-2
