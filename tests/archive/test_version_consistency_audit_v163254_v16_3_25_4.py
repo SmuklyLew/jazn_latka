@@ -70,7 +70,6 @@ def test_current_literal_scan_exempts_release_docs_and_compatibility_labels(
     root = tmp_path / "repo"
     _write_version(root)
     approved = (
-        root / "docs" / "README.md",
         root / "docs" / "plans" / "release.md",
         root / "docs" / "project" / "evaluation.md",
         root / "latka_jazn" / "tools" / "memory_rebuild_app" / "__init__.py",

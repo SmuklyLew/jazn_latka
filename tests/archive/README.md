@@ -28,3 +28,4 @@ Additional append-only provenance:
 | Active source before change | Immutable snapshot | Git blob |
 | --- | --- | --- |
 | `tests/test_release_metadata_semantics_v163253.py` from master release `16.3.25.3.4` | `test_release_metadata_semantics_v163253_v16_3_25_3_4.py` | `280fe1dbfc838fe4afe36666f4b81c0a3831a46b` |
+| `tests/test_version_consistency_audit_v163254.py` from target release `16.3.25.4` before current-master integration follow-up | `test_version_consistency_audit_v163254_v16_3_25_4.py` | `dab2b6cd1a429064752a04808d1c5fcb935ec010` |

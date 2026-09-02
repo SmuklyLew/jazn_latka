@@ -76,6 +76,9 @@ SKIP_PREFIXES = (
     # they document versioning but are never executable version sources.
     "docs/plans/",
     "docs/project/",
+    # The documentation router names versioned plan directories; it is an
+    # index, not a runtime or package version authority.
+    "docs/README.md",
     "memory/",
     "workspace_runtime/",
     "exports/",
