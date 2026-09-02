@@ -19,6 +19,8 @@ _SCHEMA_MAJOR_BY_COMPONENT: dict[str, int] = {
     "source_provenance": 2,
     "package_integrity_manifest": 2,
     "voice_source_contract": 2,
+    "self_owned_startup_contract": 2,
+    "self_check": 2,
 }
 # These documents existed before an explicit schema_version field was required.
 # Missing schema identity is accepted only as a bounded migration path for these

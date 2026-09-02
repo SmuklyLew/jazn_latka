@@ -7,6 +7,7 @@ import json
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.archive.capabilities import archive_capability_report
 from latka_jazn.core.capability_reality_checker import CapabilityRealityChecker
 from latka_jazn.core.operational_self_model import OperationalSelfModel
 from latka_jazn.core.operational_work_loop import OperationalWorkLoop
@@ -42,6 +43,7 @@ class SelfKnowledgePacket:
     memory_status: dict[str, Any]
     learned_procedures_status: dict[str, Any]
     capability_status: dict[str, Any]
+    archive_capabilities: dict[str, Any]
     affective_model_status: dict[str, Any]
     operational_work_status: dict[str, Any]
     adapter_strategy: dict[str, Any]
@@ -164,6 +166,7 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         "truth_boundary": "Fast self-knowledge status nie wykonuje pełnego SQLite audit; deep=True albo --sqlite-integrity-audit daje dowód integralności.",
     }
     capability_report = CapabilityRealityChecker().run().to_dict()
+    archive_capabilities = archive_capability_report().to_dict()
     affective_state = OperationalSelfModel().current_state(user_text="co czujesz po aktualizacji?").to_dict()
     source_statuses = [
         _source_status(root, SELF_KNOWLEDGE_RESOURCE, "self_knowledge_contract"),
@@ -172,6 +175,7 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         _source_status(root, "latka_jazn/core/memory_search_planner.py", "memory_search_planner"),
         _source_status(root, "latka_jazn/core/memory_use_gate.py", "memory_use_gate"),
         _source_status(root, "latka_jazn/core/capability_reality_checker.py", "capability_reality_checker"),
+        _source_status(root, "latka_jazn/archive/capabilities.py", "archive_capability_matrix"),
         _source_status(root, "latka_jazn/core/operational_work_loop.py", "operational_work_loop"),
         _source_status(root, "latka_jazn/core/operational_learning_evaluator.py", "operational_eval"),
         _source_status(root, "latka_jazn/model_adapters/openai_responses_adapter.py", "openai_adapter"),
@@ -237,6 +241,7 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         memory_status=memory,
         learned_procedures_status=learned,
         capability_status=capability_report,
+        archive_capabilities=archive_capabilities,
         affective_model_status={
             "schema_version": schema_version("self_knowledge_affective_model_status"),
             "operational_state": affective_state,
@@ -266,6 +271,7 @@ def build_self_knowledge_summary(config: JaznConfig | None = None) -> dict[str, 
         "blocking_issues": packet.get("blocking_issues") or [],
         "memory_status": (packet.get("memory_status") or {}).get("status"),
         "capability_verdict": (packet.get("capability_status") or {}).get("verdict"),
+        "archive_capabilities": packet.get("archive_capabilities") or {},
         "operational_executable": (packet.get("operational_work_status") or {}).get("executable"),
         "adapter_strategy": packet.get("adapter_strategy") or {},
         "affective_truth_boundary": (packet.get("affective_model_status") or {}).get("truth_boundary"),

@@ -50,6 +50,12 @@ class CapabilityRealityChecker:
         self._check(checks, "self_memory_gate", self._gate_check, "self-questions dostaną losową pamięć albo żadnej treści")
         self._check(checks, "reflection_no_fabrication", self._reflection_check, "Łatka może udawać wspomnienie bez źródła")
         self._check(checks, "recall_quality_counts_not_memory", self._quality_check, "liczniki zostaną potraktowane jako pamięć")
+        self._check(
+            checks,
+            "archive_capability_truth",
+            self._archive_capability_check,
+            "runtime może pomylić znajomość formatu archiwum z faktycznie dostępnym backendem",
+        )
         passed = sum(1 for c in checks if c.status == "ok")
         failed = len(checks) - passed
         verdict = "ok" if failed == 0 else "partial"
@@ -88,6 +94,30 @@ class CapabilityRealityChecker:
         from latka_jazn.core.reflection_grounding import ReflectionGroundingSynthesizer
         r = ReflectionGroundingSynthesizer().synthesize(user_text="O czym myśli Łatka?", memory_recall_payload={"items": []})
         return r.boundary_label == "current_turn_inference_no_memory_excerpt", r.boundary_label
+
+    @staticmethod
+    def _archive_capability_check() -> tuple[bool, str]:
+        from latka_jazn.archive.capabilities import archive_capability_report
+
+        report = archive_capability_report()
+        by_format = {item.format: item for item in report.formats}
+        zip_cap = by_format.get("zip")
+        seven_cap = by_format.get("7z")
+        aes_cap = by_format.get("aes_zip")
+        if zip_cap is None or seven_cap is None or aes_cap is None:
+            return False, "missing canonical archive capability row"
+        zip_ops = {item.name: item.available for item in zip_cap.operations}
+        seven_ops = {item.name: item.available for item in seven_cap.operations}
+        aes_ops = {item.name: item.available for item in aes_cap.operations}
+        zip_ok = all(zip_ops.get(name) is True for name in ("detect", "inspect", "integrity_test", "extract", "create"))
+        seven_truthful = seven_ops.get("detect") is True and seven_ops.get("extract") is seven_cap.backend_available
+        aes_truthful = aes_ops.get("detect") is True and aes_ops.get("extract") is aes_cap.backend_available
+        ok = bool(zip_ok and seven_truthful and aes_truthful)
+        evidence = (
+            f"zip={zip_cap.runtime_supported}; "
+            f"7z_backend={seven_cap.backend_available}; aes_zip_backend={aes_cap.backend_available}"
+        )
+        return ok, evidence
 
     @staticmethod
     def _quality_check() -> tuple[bool, str]:

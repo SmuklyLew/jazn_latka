@@ -43,6 +43,17 @@ def _git(root: Path, *args: str) -> str:
     return completed.stdout.strip()
 
 
+def _remove_readonly_then_retry(func, path, _excinfo) -> None:
+    """Clear a Windows read-only bit once, then let a real retry failure surface."""
+
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
+def _remove_git_metadata(root: Path) -> None:
+    shutil.rmtree(root / ".git", onexc=_remove_readonly_then_retry)
+
+
 def _repo(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
     (root / "latka_jazn").mkdir(parents=True)

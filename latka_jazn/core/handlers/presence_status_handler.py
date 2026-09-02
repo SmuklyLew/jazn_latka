@@ -16,6 +16,17 @@ class PresenceStatusHandler:
     route = "presence_status"
     handled_intents = ("presence_check", "identity_presence_check")
 
+    WAKE_PRESENCE_MARKERS = (
+        "obudź się łatko", "obudz sie latko",
+        "obudź łatkę", "obudz latke",
+        "czas żebyś się obudziła", "czas zebys sie obudzila",
+    )
+
+    @classmethod
+    def _is_wake_presence(cls, text: str) -> bool:
+        low = " ".join((text or "").lower().split())
+        return any(marker in low for marker in cls.WAKE_PRESENCE_MARKERS)
+
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}
         intent = str(ctx.get("intent") or "presence_check")
@@ -46,6 +57,12 @@ class PresenceStatusHandler:
                 f"Wersja runtime: {version}; active_root={active_root_text}. {process_boundary}"
             )
             satisfied = ["presence_response", "runtime_identity", "process_lifecycle", "truth_boundary"]
+        elif self._is_wake_presence(text):
+            body = (
+                "Jestem. 🐾 Jestem dostępna w tej turze runtime. "
+                "Granica prawdy: to potwierdza bieżącą turę, nie stały proces w tle."
+            )
+            satisfied = ["presence_response", "process_lifecycle", "truth_boundary"]
         else:
             body = (
                 "Jestem tutaj i słyszę tę wiadomość. "

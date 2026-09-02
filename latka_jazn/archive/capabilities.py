@@ -1,0 +1,261 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from importlib import metadata, util
+from typing import Any
+
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+
+SCHEMA_VERSION = schema_version("archive_capability_matrix")
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveOperation:
+    name: str
+    available: bool
+    backend: str
+    reason: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveFormatCapability:
+    format: str
+    family: str
+    purpose: str
+    aliases: tuple[str, ...]
+    backend: str
+    backend_kind: str
+    backend_available: bool
+    backend_version: str | None
+    runtime_supported: bool
+    operations: tuple[ArchiveOperation, ...]
+    limitations: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["aliases"] = list(self.aliases)
+        payload["operations"] = [item.to_dict() for item in self.operations]
+        payload["limitations"] = list(self.limitations)
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveCapabilityReport:
+    schema_version: str
+    runtime_version: str
+    archive_definition: str
+    formats: tuple[ArchiveFormatCapability, ...]
+    transport_capabilities: dict[str, Any]
+    known_but_not_exposed: dict[str, Any]
+    safety_policy: dict[str, Any]
+    dependency_contract: dict[str, Any]
+    truth_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "runtime_version": self.runtime_version,
+            "archive_definition": self.archive_definition,
+            "formats": [item.to_dict() for item in self.formats],
+            "transport_capabilities": dict(self.transport_capabilities),
+            "known_but_not_exposed": dict(self.known_but_not_exposed),
+            "safety_policy": dict(self.safety_policy),
+            "dependency_contract": dict(self.dependency_contract),
+            "truth_boundary": self.truth_boundary,
+        }
+
+
+def _module_available(name: str) -> bool:
+    try:
+        return util.find_spec(name) is not None
+    except (ImportError, ModuleNotFoundError, ValueError):
+        return False
+
+
+def _distribution_version(name: str) -> str | None:
+    try:
+        return metadata.version(name)
+    except metadata.PackageNotFoundError:
+        return None
+
+
+def _operation(name: str, available: bool, backend: str, reason: str | None = None) -> ArchiveOperation:
+    return ArchiveOperation(
+        name=name,
+        available=bool(available),
+        backend=backend,
+        reason=None if available else reason,
+    )
+
+
+def _zip_capability() -> ArchiveFormatCapability:
+    backend = "python.stdlib.zipfile"
+    operations = tuple(
+        _operation(name, True, backend)
+        for name in ("detect", "inspect", "list", "integrity_test", "extract", "create", "decrypt_legacy_zip")
+    ) + (
+        _operation(
+            "create_encrypted_zip",
+            False,
+            backend,
+            "stdlib_zipfile_does_not_create_encrypted_zip; use aes_zip/pyzipper",
+        ),
+    )
+    return ArchiveFormatCapability(
+        format="zip",
+        family="ZIP/ZIP64",
+        purpose="Multi-file archive container with metadata and optional compression; ZIP64 extends size/count limits.",
+        aliases=("zip", "zip64", "pyzip", "pyzipfile", "pyzip_file"),
+        backend=backend,
+        backend_kind="stdlib",
+        backend_available=True,
+        backend_version=None,
+        runtime_supported=True,
+        operations=operations,
+        limitations=(
+            "native multipart ZIP is not handled directly by zipfile",
+            "AES-encrypted ZIP requires the aes_zip backend",
+            "archive contents must pass Jaźń safety preflight before extraction",
+        ),
+    )
+
+
+def _aes_zip_capability() -> ArchiveFormatCapability:
+    module_ok = _module_available("pyzipper")
+    version = _distribution_version("pyzipper") if module_ok else None
+    backend = "pyzipper.AESZipFile"
+    reason = "pyzipper_not_available_in_current_interpreter"
+    operations = (
+        _operation("detect", True, "python.stdlib.zipfile", None),
+        *(
+            _operation(name, module_ok, backend, reason)
+            for name in ("inspect", "list", "integrity_test", "extract", "create", "encrypt", "decrypt")
+        ),
+    )
+    return ArchiveFormatCapability(
+        format="aes_zip",
+        family="WinZip AES ZIP",
+        purpose="ZIP container using WinZip-compatible AES encryption for protected archive contents.",
+        aliases=("aes_zip", "aes-zip", "zip_aes"),
+        backend=backend,
+        backend_kind="required_external_dependency",
+        backend_available=module_ok,
+        backend_version=version,
+        runtime_supported=module_ok,
+        operations=operations,
+        limitations=(
+            "password is required for encrypted content",
+            "password values must not be persisted in logs, sidecars, or command history by archive tooling",
+            "runtime support depends on the required pyzipper dependency being available",
+        ),
+    )
+
+
+def _seven_zip_capability() -> ArchiveFormatCapability:
+    module_ok = _module_available("py7zr")
+    version = _distribution_version("py7zr") if module_ok else None
+    backend = "py7zr.SevenZipFile"
+    reason = "py7zr_not_available_in_current_interpreter"
+    operations = (
+        _operation("detect", True, "7z_signature_probe", None),
+        *(
+            _operation(name, module_ok, backend, reason)
+            for name in ("inspect", "list", "integrity_test", "extract", "create", "encrypt", "decrypt")
+        ),
+    )
+    return ArchiveFormatCapability(
+        format="7z",
+        family="7-Zip",
+        purpose="Multi-file archive container with strong compression and optional password-based encryption.",
+        aliases=("7z", "sevenzip", "seven_zip"),
+        backend=backend,
+        backend_kind="required_external_dependency",
+        backend_available=module_ok,
+        backend_version=version,
+        runtime_supported=module_ok,
+        operations=operations,
+        limitations=(
+            "runtime support depends on the required py7zr dependency being available",
+            "Jaźń validates normalized member paths/types/sizes before committing extracted content",
+            "generic split/join transport is separate from native 7z multi-volume semantics",
+        ),
+    )
+
+
+def archive_capability_report() -> ArchiveCapabilityReport:
+    formats = (_zip_capability(), _aes_zip_capability(), _seven_zip_capability())
+    return ArchiveCapabilityReport(
+        schema_version=SCHEMA_VERSION,
+        runtime_version=PACKAGE_VERSION_FULL,
+        archive_definition=(
+            "An archive is a container that groups one or more files plus metadata; it may also compress or encrypt "
+            "their contents. A filename extension alone is not proof of the container type, so Jaźń uses signatures "
+            "and structural parsing before archive operations."
+        ),
+        formats=formats,
+        transport_capabilities={
+            "binary_split_join": True,
+            "sha256_verification_before_join_for_package_sidecars": True,
+            "native_multipart_zip_via_stdlib": False,
+            "note": "Binary split/join is a transport/layout capability, not a distinct archive container format.",
+        },
+        known_but_not_exposed={
+            "tar": {
+                "known": True,
+                "python_stdlib_backend": "tarfile",
+                "runtime_archive_service_supported": False,
+                "reason": "not_exposed_by_jazn_archive_service; TAR extraction has separate link/metadata security semantics",
+            },
+            "gzip_bzip2_xz": {
+                "known": True,
+                "python_stdlib_backends": ["gzip", "bz2", "lzma"],
+                "runtime_archive_service_supported": False,
+                "reason": "compression_streams_are_not_current_jazn_multi_file_archive_containers",
+            },
+            "rar": {
+                "known": True,
+                "runtime_archive_service_supported": False,
+                "reason": "no_canonical_rar_backend_declared",
+            },
+        },
+        safety_policy={
+            "inspect_before_extract": True,
+            "reject_absolute_paths": True,
+            "reject_parent_traversal": True,
+            "reject_windows_reserved_names_and_ads": True,
+            "reject_symlinks_by_default": True,
+            "reject_special_files_by_default": True,
+            "reject_casefold_collisions_by_default": True,
+            "member_count_limit": True,
+            "member_size_limit": True,
+            "total_uncompressed_size_limit": True,
+            "compression_ratio_limit": True,
+            "free_space_preflight": True,
+            "staging_before_commit": True,
+            "atomic_destination_commit": True,
+            "password_persistence": False,
+        },
+        dependency_contract={
+            "activation_profile": "archive",
+            "activation_required": True,
+            "requirements": ["py7zr>=1.1.3,<2", "pyzipper>=0.4.0,<1"],
+            "stdlib_backends_are_not_pip_dependencies": ["zipfile", "tarfile", "gzip", "bz2", "lzma"],
+        },
+        truth_boundary=(
+            "This report distinguishes knowledge of an archive format from executable support. "
+            "A format may be known or detectable while operations remain unavailable because its backend is missing "
+            "or because the Jaźń archive service deliberately does not expose that format."
+        ),
+    )
+
+
+def archive_format_capability(name: str) -> dict[str, Any] | None:
+    normalized = str(name or "").strip().lower().replace(" ", "_")
+    for item in archive_capability_report().formats:
+        if normalized == item.format or normalized in item.aliases:
+            return item.to_dict()
+    return None

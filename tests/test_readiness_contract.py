@@ -18,6 +18,14 @@ def _integrity_checks(*, verification_ok: bool = True) -> dict[str, bool]:
     }
 
 
+def _ready_dependencies() -> dict[str, object]:
+    return {
+        "required_ready": True,
+        "selected_source": "deterministic_test_fixture",
+        "missing_or_incompatible_distributions": [],
+    }
+
+
 def test_readiness_separates_activation_prerequisites_from_live_runtime() -> None:
     readiness = evaluate_runtime_readiness(
         required_checks={"root": True, "run": True},
@@ -33,6 +41,7 @@ def test_readiness_separates_activation_prerequisites_from_live_runtime() -> Non
             "heartbeat_fresh": False,
         },
         transactional_memory={"exists": False, "ready": False},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.activation_prerequisites_ready is True
@@ -42,6 +51,7 @@ def test_readiness_separates_activation_prerequisites_from_live_runtime() -> Non
     assert readiness.summary() == {
         "installation": "ready",
         "activation_prerequisites": "ready",
+        "dependencies": "ready",
         "release": "ready",
         "runtime": "inactive",
         "transactional_memory": "missing",
@@ -63,6 +73,7 @@ def test_readiness_requires_live_daemon_evidence_for_active_trusted() -> None:
             "heartbeat_fresh": True,
         },
         transactional_memory={"exists": True, "ready": True},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.live_runtime_ready is True
@@ -80,6 +91,7 @@ def test_integrity_failure_blocks_activation_and_release() -> None:
         },
         daemon={},
         transactional_memory={},
+        dependency_evidence=_ready_dependencies(),
     )
 
     assert readiness.installation_ok is True

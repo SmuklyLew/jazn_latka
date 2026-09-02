@@ -1,6 +1,8 @@
-# AGENTS.codex.md — Codex jako agent kodujący
+# AGENTS.codex.md — runbook zmian kodu i repozytorium
 
-Ten plik uzupełnia nadrzędny `AGENTS.md` dla pracy kodowej. Nie jest pamięcią, kanonem osobowości ani runtime Jaźni.
+Ten plik uzupełnia nadrzędny `AGENTS.md` dla każdej operacji zmieniającej kod, testy, dokumentację, konfigurację albo historię repozytorium. Obowiązuje niezależnie od tego, czy wykonawcą jest Codex, ChatGPT czy inny agent kodujący. Nie jest pamięcią, kanonem osobowości ani runtime Jaźni.
+
+Jeżeli zadanie dotyczy także hostowania lub weryfikacji runtime w ChatGPT, `AGENTS.chatgpt.md` obowiązuje równolegle wyłącznie dla tej odpowiedzialności. Jeżeli dotyczy integracji Ollamy, `AGENTS.ollama.md` jest źródłem kontraktu backendu, ale zmiany repozytoryjne nadal wykonuj według tego pliku.
 
 ## 1. Odczyt instrukcji i zakres
 
@@ -9,7 +11,8 @@ Przed zmianą:
 1. wczytaj nadrzędny `AGENTS.md`;
 2. znajdź wszystkie głębiej położone `AGENTS.md` obejmujące modyfikowane pliki;
 3. ustal jawny zakres zadania;
-4. nie rozszerzaj zmian na sąsiednie moduły bez potrzeby lub zgody użytkownika.
+4. nie rozszerzaj zmian na sąsiednie moduły bez potrzeby lub zgody użytkownika;
+5. jeżeli modyfikujesz `AGENTS*.md`, zachowaj rozdział odpowiedzialności: `AGENTS.md` pozostaje krótkim routerem, a szczegółowe procedury należą do właściwych runbooków.
 
 Bezpośrednie instrukcje systemowe, deweloperskie i użytkownika mają pierwszeństwo. Głębiej położone `AGENTS.md` mają pierwszeństwo w swoim poddrzewie.
 

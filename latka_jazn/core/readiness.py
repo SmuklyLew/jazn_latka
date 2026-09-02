@@ -17,6 +17,9 @@ class RuntimeReadiness:
     live_runtime_ready: bool
     transactional_memory_ready: bool
     transactional_memory_exists: bool | None
+    required_dependencies_ready: bool = True
+    dependency_source: str = "legacy_unchecked"
+    dependency_missing: tuple[str, ...] = ()
 
     @property
     def activation_ready(self) -> bool:
@@ -37,6 +40,7 @@ class RuntimeReadiness:
             "activation_prerequisites": (
                 "ready" if self.activation_prerequisites_ready else "not_ready"
             ),
+            "dependencies": "ready" if self.required_dependencies_ready else "not_ready",
             "release": "ready" if self.release_ready else "not_ready",
             "runtime": "active_trusted" if self.live_runtime_ready else "inactive",
             "transactional_memory": memory_status,
@@ -200,6 +204,30 @@ def evaluate_system_readiness_profile(
     }
 
 
+def _dependency_readiness(root: Path | str | None = None) -> dict[str, Any]:
+    """Resolve core+archive Python readiness without importing optional providers."""
+
+    try:
+        from latka_jazn.dependencies.runtime import dependency_activation_status
+
+        project_root = (
+            Path(root).expanduser().resolve()
+            if root is not None
+            else Path(__file__).resolve().parents[2]
+        )
+        status = dependency_activation_status(project_root)
+        if not isinstance(status, dict):
+            raise TypeError("dependency_activation_status_not_mapping")
+        return status
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        return {
+            "required_ready": False,
+            "selected_source": "unavailable",
+            "missing_or_incompatible_distributions": [],
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+
 def evaluate_runtime_readiness(
     *,
     required_checks: Mapping[str, Any],
@@ -207,10 +235,27 @@ def evaluate_runtime_readiness(
     provenance: Mapping[str, Any],
     daemon: Mapping[str, Any],
     transactional_memory: Mapping[str, Any],
+    dependency_root: Path | str | None = None,
+    dependency_evidence: Mapping[str, Any] | None = None,
 ) -> RuntimeReadiness:
-    """Evaluate readiness once so all diagnostic surfaces use identical semantics."""
+    """Evaluate readiness from explicit evidence using one shared decision contract.
 
-    installation_ok = all(bool(value) for value in required_checks.values())
+    Production callers normally omit ``dependency_evidence`` and the evaluator
+    observes the active core+archive dependency environment itself. Deterministic
+    callers may inject a previously observed dependency status. This keeps the
+    decision function reproducible without weakening the production dependency
+    gate or making historical readiness tests depend on the ambient test venv.
+    """
+
+    if dependency_evidence is None:
+        dependency_status = _dependency_readiness(dependency_root)
+    else:
+        dependency_status = dict(dependency_evidence)
+    required_dependencies_ready = dependency_status.get("required_ready") is True
+    installation_ok = bool(
+        all(bool(value) for value in required_checks.values())
+        and required_dependencies_ready
+    )
     activation_prerequisites_ready = bool(
         installation_ok
         and package_integrity_checks.get("present")
@@ -255,4 +300,10 @@ def evaluate_runtime_readiness(
         live_runtime_ready=live_runtime_ready,
         transactional_memory_ready=bool(transactional_memory.get("ready")),
         transactional_memory_exists=transactional_memory_exists,
+        required_dependencies_ready=required_dependencies_ready,
+        dependency_source=str(dependency_status.get("selected_source") or "unknown"),
+        dependency_missing=tuple(
+            str(item)
+            for item in dependency_status.get("missing_or_incompatible_distributions") or []
+        ),
     )
