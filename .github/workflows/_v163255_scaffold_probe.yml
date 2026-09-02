@@ -27,7 +27,8 @@ jobs:
           git show origin/upgrade/v16.3.25.3.15-package-distribution-convergence:tools/_fix_scaffold.py > tools/_fix_scaffold.py
           python -X utf8 tools/_fix_scaffold.py
           python -X utf8 tools/_apply_distribution_convergence.py
-          rm -f tools/_apply_distribution_convergence.py tools/_fix_scaffold.py .github/workflows/_v163255_scaffold_probe.yml
+          rm -f tools/_apply_distribution_convergence.py tools/_fix_scaffold.py
+          rm -f .github/workflows/package-distribution-cleanroom.yml
           git status --short
       - name: Commit probe result
         shell: bash
