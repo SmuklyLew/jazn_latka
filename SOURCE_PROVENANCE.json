@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "5f2c267cbff3bbacd15af06479d1f406bf85e686",
-    "base_version": "16.3.25.3.14-archive-tools-understanding-added",
+    "base_commit": "6fac1ec4d9b4c6313a4aca2b24b42d85e4d8cc40",
+    "base_version": "16.3.25.4-memory-rebuild-v4-consolidation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "6fac1ec4d9b4c6313a4aca2b24b42d85e4d8cc40",
