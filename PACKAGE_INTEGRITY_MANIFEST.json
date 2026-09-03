@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5-package-distribution-convergence",
-  "runtime_version": "16.3.25.5-package-distribution-convergence",
-  "package_version": "16.3.25.5-package-distribution-convergence",
-  "generated_at_utc": "2026-09-02T22:34:51+00:00",
-  "updated_at_utc": "2026-09-02T22:34:51+00:00",
+  "version": "16.3.25.5.5-package-distribution-convergence",
+  "runtime_version": "16.3.25.5.5-package-distribution-convergence",
+  "package_version": "16.3.25.5.5-package-distribution-convergence",
+  "generated_at_utc": "2026-09-03T17:41:42+00:00",
+  "updated_at_utc": "2026-09-03T17:41:42+00:00",
   "start_file": "run.py",
-  "file_count": 1022,
-  "static_file_count": 1022,
+  "file_count": 1033,
+  "static_file_count": 1033,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 10336,
-      "sha256": "10a0983f2a37599a82af85a04d9efebb25f6ac51b929f7255d7f5b6a88b7dc88",
+      "size_bytes": 13222,
+      "sha256": "c5c00bd8bd0ba6d63db7ed8a7420ad99cc845b90033462543056e700c982cd20",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -209,8 +209,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2884,
-      "sha256": "8a56f6e6ecb8fc9d73a5803c4cabe922e7b3635e6d2cab610c2850ee597477c1",
+      "size_bytes": 2904,
+      "sha256": "0a837d1be1be52be544276ead43d2cb81ae92be75ec69ae29f51f0d9e4cc8a8f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3656,8 +3656,8 @@
     },
     {
       "path": "latka_jazn/dependencies/common.py",
-      "size_bytes": 17965,
-      "sha256": "e4e671268d3a38b838b333ede452d020a9d61544403e2eaabe820723acc73276",
+      "size_bytes": 18179,
+      "sha256": "2691489bdb9b29073fee403279392c9c69f7be39eec81b16489631b7824f31a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3665,8 +3665,8 @@
     },
     {
       "path": "latka_jazn/dependencies/environment.py",
-      "size_bytes": 22098,
-      "sha256": "a0159ed3fe7f93e92e8ddce8522bbfcbcea10a3b2ff633db8d629cad546d357d",
+      "size_bytes": 22140,
+      "sha256": "77c56fcf1892878e654da6d442c40d82228398f32beb6c53607bf056edf87706",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3683,8 +3683,8 @@
     },
     {
       "path": "latka_jazn/dependencies/release_artifact.py",
-      "size_bytes": 6603,
-      "sha256": "64ab1fec0dfa62ed8695bf99057059e2f01ac3abc3663d9fca3a954bf77dabd9",
+      "size_bytes": 8925,
+      "sha256": "8374f8d1aac3f9f3555bf53dfeb667025de5276e0e2f49cdb564a385ae938676",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3701,8 +3701,17 @@
     },
     {
       "path": "latka_jazn/dependencies/wheelhouse.py",
-      "size_bytes": 27112,
-      "sha256": "6330fd7801738aa2c4df8987c8c3743f957935f09cf048ab0d294d9241a57b5b",
+      "size_bytes": 28870,
+      "sha256": "d59e2cef4850a26fe548a2b583ec55a304f2b23fae09cefafb73b0e2b8e3dbf2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/dependencies/wheelhouse_bootstrap.py",
+      "size_bytes": 14235,
+      "sha256": "b50cde326dff361038a991152dfc0cbd7ba2d70e626dad0799be62f1a3f639d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5888,8 +5897,8 @@
     },
     {
       "path": "latka_jazn/tools/dependency_studio.py",
-      "size_bytes": 10401,
-      "sha256": "d8654690faa796506b3920273beaf911c53f2e52c5c3e2aff22334f621768152",
+      "size_bytes": 10529,
+      "sha256": "3a0bcf8ccce1c969834f931966da321ae4e4dba216b99895f9a0307932a2d3ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6680,8 +6689,8 @@
     },
     {
       "path": "latka_jazn/tools/package_export.py",
-      "size_bytes": 21361,
-      "sha256": "55774eca90cd05485a6cd8cdac6832155e106b3a5c9e439b4e9dcc5a506e5dca",
+      "size_bytes": 28754,
+      "sha256": "e56b645590124e60b54dc83dcf1ee4eb31e3b43c5de32affe4c5fa00a54ec11a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6824,8 +6833,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6498,
-      "sha256": "690d64fe11b70c8eecbcb116761775585ec62d7344554919f6fee1f3667ab0ff",
+      "size_bytes": 6524,
+      "sha256": "5340df25e2318420b8c8ac3d148b59369ad70e46a0fad5fe99bd7d790f3d6076",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7408,9 +7417,63 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_dependency_host_workspace_v1632555.py",
+      "size_bytes": 1649,
+      "sha256": "89781fdc33ebcd114986559b901d4fa82eb9d55cf12e0bd2e5c9a471a76b06c3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_inventory_name_normalization_v1632551.py",
+      "size_bytes": 469,
+      "sha256": "f0576048cf388b55d74fd1a36233d417c9a693f6dfcde90e4562bb266ddd1199",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_sidecar_absence_classification_v1632555.py",
+      "size_bytes": 1526,
+      "sha256": "f9fc9d38a18a0f3484cb6439fd19a7ca494d710834f0601b6810aceef619abd8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_studio_repeated_profiles_v1632554.py",
+      "size_bytes": 1576,
+      "sha256": "165c08b8a2a8297b6c3e10a33af06eb5e42d2bd062ee8194b29d78e40babd88c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_dependency_studio_v1632539.py",
       "size_bytes": 16672,
       "sha256": "e2afceb7de9282402bdeb56b450ef2c8b68e3ae40f6b55df811d6d85973fc5bf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_unpacked_wheel_bootstrap_v1632555.py",
+      "size_bytes": 9133,
+      "sha256": "3e11d5888a46beb7199e6e0d65e5d2ee7d289cb915b3c129235557e5340c19f7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_dependency_wheelhouse_override_v1632555.py",
+      "size_bytes": 2408,
+      "sha256": "eb03de66c93950e6f67aed23e1734d2b84bc8125210378f2868b0455fee75f40",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8074,6 +8137,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_package_distribution_cleanroom_activation_observability_v1632555.py",
+      "size_bytes": 1192,
+      "sha256": "4bf17d0ecdd43ef3fffa4aeb4c80ee25b76baf7eb42edf9eb902dc511a4f7715",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_package_distribution_cleanroom_doctor_semantics_v1632555.py",
+      "size_bytes": 633,
+      "sha256": "837e1bbdda6c7755a6a5937569e1895781dbb3eeeb3613cbd8475580e6d3c893",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_package_distribution_cleanroom_prestart_contract_v1632553.py",
+      "size_bytes": 1997,
+      "sha256": "c1bd6ea78b8e5e5fc9b1781a77d9265606a8188d7769d493efae823d4c12f87a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_package_distribution_v163255.py",
       "size_bytes": 14197,
       "sha256": "66ee130ccf82783aff35cb406263c3dc9f72767791cb1d3d7725c113fd7c0a27",
@@ -8527,6 +8617,15 @@
       "path": "tests/test_startup_stability.py",
       "size_bytes": 7069,
       "sha256": "ad993f594752fe0e40e5db7bc26eccce91fbc0b328b002d5d7f7e5b36490f633",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_system_package_canonical_integrity_v1632552.py",
+      "size_bytes": 5040,
+      "sha256": "aab5292cf93d6e1264f4c9a0be8cf72ca4bc65158096ecf6b3e565906d2e8c6a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9629,11 +9728,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5-package-distribution-convergence",
+  "release_version": "16.3.25.5.5-package-distribution-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5-package-distribution-convergence",
-    "package_version": "16.3.25.5-package-distribution-convergence",
-    "release_version": "16.3.25.5-package-distribution-convergence"
+    "runtime_version": "16.3.25.5.5-package-distribution-convergence",
+    "package_version": "16.3.25.5.5-package-distribution-convergence",
+    "release_version": "16.3.25.5.5-package-distribution-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
