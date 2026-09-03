@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Jaźń / Łatka Pack Generator v8.9 public launcher.
+r"""Jaźń / Łatka Pack Generator v8.9 public launcher.
 
 Canonical CLI entrypoint examples::
 
