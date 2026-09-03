@@ -25,15 +25,15 @@ def _root(tmp_path: Path, version: str, release: str) -> Path:
     return root
 
 
-def test_v89_keeps_v88_portability_api_exposed() -> None:
+def test_v1001_exposes_terminal_studio_and_portability_helpers() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "8.9"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.9"
-    assert callable(module.run_studio)
+    assert module.GENERATOR_VERSION == "10.0.1"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert callable(module.run_terminal_studio)
     assert callable(module.refresh_archive_basename_for_current_release)
 
 
-def test_v88_startup_refreshes_stale_generator_owned_name(tmp_path: Path) -> None:
+def test_v1001_startup_refreshes_stale_generator_owned_name(tmp_path: Path) -> None:
     module = generator()
     root = _root(tmp_path, "16.3.25.3.4", "jazn-pack-generator-v87-studio-portable-zip")
     state = module.InteractiveState(
@@ -45,7 +45,7 @@ def test_v88_startup_refreshes_stale_generator_owned_name(tmp_path: Path) -> Non
     assert state.archive_basename == "jazn_latka_v16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip"
 
 
-def test_v88_preserves_explicit_custom_current_name(tmp_path: Path) -> None:
+def test_v1001_preserves_explicit_custom_current_name(tmp_path: Path) -> None:
     module = generator()
     root = _root(tmp_path, "16.3.25.3.4", "jazn-pack-generator-v87-studio-portable-zip")
     custom = "backup_K_v16.3.25.3.4-jazn-pack-generator-v87-studio-portable-zip"
@@ -54,14 +54,14 @@ def test_v88_preserves_explicit_custom_current_name(tmp_path: Path) -> None:
     assert state.archive_basename == custom
 
 
-def test_v88_rejects_windows_reserved_member_name() -> None:
+def test_v1001_rejects_windows_reserved_member_name() -> None:
     module = generator()
     plan = SimpleNamespace(entries=[SimpleNamespace(relative="docs/CON.txt")])
     with pytest.raises(module.PackError, match="zarezerwowana"):
         module.validate_portable_member_names(plan)
 
 
-def test_v88_rejects_windows_casefold_collision() -> None:
+def test_v1001_rejects_windows_casefold_collision() -> None:
     module = generator()
     plan = SimpleNamespace(entries=[
         SimpleNamespace(relative="Latka/File.txt"),
@@ -71,7 +71,7 @@ def test_v88_rejects_windows_casefold_collision() -> None:
         module.validate_portable_member_names(plan)
 
 
-def test_v88_binary_transport_is_not_claimed_as_direct_windows_zip() -> None:
+def test_v1001_binary_transport_is_not_claimed_as_direct_windows_zip() -> None:
     module = generator()
     profile = module.interoperability_profile("zip", "binary")
     assert profile["portable_standard_zip"] is False
@@ -79,7 +79,7 @@ def test_v88_binary_transport_is_not_claimed_as_direct_windows_zip() -> None:
     assert profile["targets"]["windows_11_file_explorer"] == "join_required"
 
 
-def test_v88_independent_deflate_profile_is_portable_standard_zip() -> None:
+def test_v1001_independent_deflate_profile_is_portable_standard_zip() -> None:
     module = generator()
     profile = module.interoperability_profile("zip", "independent")
     assert profile["portable_standard_zip"] is True
@@ -87,7 +87,7 @@ def test_v88_independent_deflate_profile_is_portable_standard_zip() -> None:
     assert profile["targets"]["windows_11_file_explorer"] == "direct"
 
 
-def test_v88_standard_writer_uses_deflate_and_unicode_names(tmp_path: Path) -> None:
+def test_v1001_standard_writer_uses_deflate_and_unicode_names(tmp_path: Path) -> None:
     module = generator()
     raw = "zażółć gęślą jaźń".encode("utf-8")
     entry = module.PlanEntry(
