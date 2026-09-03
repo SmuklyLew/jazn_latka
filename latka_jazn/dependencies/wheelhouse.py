@@ -310,7 +310,7 @@ def verify_hash_lock(directory: Path, manifest: dict[str, Any]) -> list[dict[str
     return errors
 
 
-def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
+def _verify_bundle_full(bundle_dir: Path | str) -> dict[str, Any]:
     directory = Path(bundle_dir).resolve()
     manifest_path = directory / MANIFEST_NAME
     manifest = read_manifest(manifest_path)
@@ -397,6 +397,46 @@ def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
         "errors": errors,
         "truth_boundary": "v2 verifies SHA-256, CRC, METADATA/WHEEL/RECORD, filename Name/Version, target tags, Requires-Python, exact inventory and hash lock.",
     }
+
+
+def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
+    directory = Path(bundle_dir).resolve()
+    manifest_path = directory / MANIFEST_NAME
+    manifest = read_manifest(manifest_path)
+    if manifest is None:
+        return _verify_bundle_full(directory)
+
+    from .wheelhouse_bootstrap import packaging_runtime_available, unpacked_packaging_bootstrap
+
+    if packaging_runtime_available():
+        result = _verify_bundle_full(directory)
+        result["validator_dependency_source"] = "ambient_unpacked_packaging"
+        return result
+
+    try:
+        with unpacked_packaging_bootstrap(
+            directory,
+            manifest,
+            sha256_file=sha256_file,
+            record_verification=_record_verification,
+        ) as bootstrap:
+            result = _verify_bundle_full(directory)
+            result["validator_dependency_source"] = str(bootstrap.get("mode") or "verified_unpacked_packaging_bootstrap")
+            result["validator_bootstrap_wheel"] = bootstrap.get("wheel")
+            return result
+    except DependencyStudioError as exc:
+        return {
+            "ok": False,
+            "bundle_dir": str(directory),
+            "manifest_path": str(manifest_path),
+            "manifest_sha256": sha256_file(manifest_path) if manifest_path.is_file() else None,
+            "errors": [{"code": "validator_dependency_bootstrap_failed", "detail": str(exc)}],
+            "validator_dependency_source": "unavailable",
+            "truth_boundary": (
+                "Wheelhouse v2 fails closed unless packaging validation is available from unpacked files; "
+                "a hash/RECORD-verified packaging wheel may be unpacked to temporary staging, never imported from its archive."
+            ),
+        }
 
 
 def _tool_version(executable: str, module: str) -> str | None:
