@@ -10,7 +10,7 @@ import tempfile
 from typing import Any, Callable, Iterator, Mapping
 import zipfile
 
-from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.zip_resource_limits import ZipResourceLimitError, validate_zip_resources
 from latka_jazn.tools.safe_paths import validate_safe_relative_path
 
 from .common import DependencyStudioError, canonicalize_distribution_name
@@ -61,6 +61,15 @@ def packaging_runtime_available() -> bool:
     except ImportError:
         return False
     return all(_module_is_unpacked(module) for module in (packaging, specifiers, utils, version))
+
+
+def _validate_bootstrap_archive_resources(archive: zipfile.ZipFile) -> None:
+    try:
+        validate_zip_resources(archive)
+    except ZipResourceLimitError as exc:
+        raise DependencyStudioError(
+            f"packaging bootstrap wheel violates archive resource policy: {exc}"
+        ) from exc
 
 
 def _safe_bootstrap_member(info: zipfile.ZipInfo, *, dist_info_prefix: str) -> str | None:
@@ -134,11 +143,13 @@ def _validate_bootstrap_wheel(
     if not expected_sha or sha256_file(wheel) != expected_sha:
         raise DependencyStudioError("packaging bootstrap wheel SHA-256 mismatch")
 
-    declared_metadata = file_row.get("metadata") if isinstance(file_row.get("metadata"), Mapping) else {}
-    declared_filename = (
-        declared_metadata.get("filename")
-        if isinstance(declared_metadata.get("filename"), Mapping)
-        else {}
+    raw_declared_metadata = file_row.get("metadata")
+    declared_metadata: dict[str, Any] = (
+        dict(raw_declared_metadata) if isinstance(raw_declared_metadata, Mapping) else {}
+    )
+    raw_declared_filename = declared_metadata.get("filename")
+    declared_filename: dict[str, Any] = (
+        dict(raw_declared_filename) if isinstance(raw_declared_filename, Mapping) else {}
     )
     expected_version = str(resolved_row.get("version") or "")
     if not expected_version:
@@ -150,7 +161,7 @@ def _validate_bootstrap_wheel(
 
     try:
         with zipfile.ZipFile(wheel) as archive:
-            validate_zip_resources(archive)
+            _validate_bootstrap_archive_resources(archive)
             bad = archive.testzip()
             if bad:
                 raise DependencyStudioError(f"packaging bootstrap wheel CRC failed: {bad}")
@@ -251,7 +262,7 @@ def unpacked_packaging_bootstrap(
             with zipfile.ZipFile(wheel) as archive:
                 # Re-check the exact archive before extraction. The first pass proves
                 # it is safe to inspect; this pass ensures extraction reads the same file.
-                validate_zip_resources(archive)
+                _validate_bootstrap_archive_resources(archive)
                 if archive.testzip() is not None:
                     raise DependencyStudioError("packaging bootstrap wheel changed before extraction")
                 for info in infos:
