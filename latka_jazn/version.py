@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.4 preserves repeated Dependency Studio profiles so core+archive release sidecars are complete.
-DISTRIBUTION_VERSION = "16.3.25.5.4"
-PACKAGE_VERSION = "16.3.25.5.4"
+# v16.3.25.5.5 verifies clean-room wheelhouses with packaging unpacked to temporary staging, never from archives.
+DISTRIBUTION_VERSION = "16.3.25.5.5"
+PACKAGE_VERSION = "16.3.25.5.5"
 PACKAGE_RELEASE_NAME = "package-distribution-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
