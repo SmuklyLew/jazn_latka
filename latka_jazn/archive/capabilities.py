@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 from importlib import metadata, util
 from typing import Any
 
+from latka_jazn.archive.rar_backend import rar_backend_status
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 
@@ -186,8 +187,51 @@ def _seven_zip_capability() -> ArchiveFormatCapability:
     )
 
 
+def _rar_capability() -> ArchiveFormatCapability:
+    status = rar_backend_status()
+    backend = "rarfile.RarFile"
+    module_reason = "rarfile_not_available_in_current_interpreter"
+    extract_reason = (
+        module_reason
+        if not status.module_available
+        else "rarfile_requires_external_unrar_unar_7zip_or_bsdtar_for_compressed_payloads"
+    )
+    operations = (
+        _operation("detect", True, "rar_signature_probe"),
+        _operation("inspect", status.metadata_ready, backend, module_reason),
+        _operation("list", status.metadata_ready, backend, module_reason),
+        _operation("integrity_test", status.compressed_extract_ready, backend, extract_reason),
+        _operation("extract", status.compressed_extract_ready, backend, extract_reason),
+        _operation(
+            "create",
+            False,
+            backend,
+            "rarfile_is_read_only; Jaźń Pack Generator may use a separately detected external rar executable",
+        ),
+    )
+    return ArchiveFormatCapability(
+        format="rar",
+        family="RAR3/RAR5",
+        purpose="RAR3/RAR5 read, inspection and extraction through the canonical rarfile backend.",
+        aliases=("rar", "rar3", "rar5"),
+        backend=backend,
+        backend_kind="core_runtime_dependency_plus_external_decompressor",
+        backend_available=status.module_available,
+        backend_version=status.module_version,
+        runtime_supported=status.metadata_ready,
+        operations=operations,
+        limitations=(
+            "rarfile does not create RAR archives",
+            "compressed RAR extraction requires a supported external backend such as unrar, unar, 7zip or bsdtar",
+            "metadata parsing and uncompressed entries are handled in Python",
+            "Jaźń rejects symlinks/special files and commits extraction through staging",
+        ),
+    )
+
+
 def archive_capability_report() -> ArchiveCapabilityReport:
-    formats = (_zip_capability(), _aes_zip_capability(), _seven_zip_capability())
+    formats = (_zip_capability(), _aes_zip_capability(), _seven_zip_capability(), _rar_capability())
+    rar_status = rar_backend_status()
     return ArchiveCapabilityReport(
         schema_version=SCHEMA_VERSION,
         runtime_version=PACKAGE_VERSION_FULL,
@@ -216,11 +260,6 @@ def archive_capability_report() -> ArchiveCapabilityReport:
                 "runtime_archive_service_supported": False,
                 "reason": "compression_streams_are_not_current_jazn_multi_file_archive_containers",
             },
-            "rar": {
-                "known": True,
-                "runtime_archive_service_supported": False,
-                "reason": "no_canonical_rar_backend_declared",
-            },
         },
         safety_policy={
             "inspect_before_extract": True,
@@ -243,12 +282,15 @@ def archive_capability_report() -> ArchiveCapabilityReport:
             "activation_profile": "archive",
             "activation_required": True,
             "requirements": ["py7zr>=1.1.3,<2", "pyzipper>=0.4.0,<1"],
+            "core_runtime_requirements": ["rarfile>=4.5,<5"],
+            "rar_external_backends_detected": list(rar_status.external_backends),
+            "rar_external_backend_required_for_compressed_extract": True,
             "stdlib_backends_are_not_pip_dependencies": ["zipfile", "tarfile", "gzip", "bz2", "lzma"],
         },
         truth_boundary=(
             "This report distinguishes knowledge of an archive format from executable support. "
-            "A format may be known or detectable while operations remain unavailable because its backend is missing "
-            "or because the Jaźń archive service deliberately does not expose that format."
+            "RAR metadata support requires rarfile, while compressed RAR extraction additionally depends on a supported "
+            "external decompressor. RAR creation is not provided by rarfile and is reported separately by the Pack Generator."
         ),
     )
 
