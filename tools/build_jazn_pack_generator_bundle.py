@@ -7,14 +7,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "tools" / "pack_generator_sources"
 CORE_SOURCE = SOURCE_DIR / "jazn_pack_generator_v1001.py"
+COMPAT_SOURCE = SOURCE_DIR / "jazn_pack_generator_v1001_compat.py"
 UI_SOURCE = SOURCE_DIR / "jazn_pack_generator_v1001_ui.py"
 SOURCE_METADATA = SOURCE_DIR / "__init__.py"
 LAUNCHER = ROOT / "tools" / "jazn_pack_generator.py"
 
-SOURCE_SET = (LAUNCHER, CORE_SOURCE, UI_SOURCE, SOURCE_METADATA)
+SOURCE_SET = (LAUNCHER, CORE_SOURCE, COMPAT_SOURCE, UI_SOURCE, SOURCE_METADATA)
 LAUNCHER_MARKERS = (
     "jazn_pack_generator_v1001.py",
+    "jazn_pack_generator_v1001_compat.py",
     "jazn_pack_generator_v1001_ui.py",
+    "_compat.install(_impl)",
     'GENERATOR_VERSION = _impl.GENERATOR_VERSION',
 )
 
