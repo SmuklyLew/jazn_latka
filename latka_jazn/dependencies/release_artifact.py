@@ -42,7 +42,6 @@ def load_dependency_set(root: Path | str) -> tuple[Path | None, dict[str, Any] |
     return None, None
 
 
-
 def _verified_package_set_for_dependency_set(
     project_root: Path,
     dependency_set: dict[str, Any],
@@ -76,6 +75,46 @@ def _verified_package_set_for_dependency_set(
     return None, None, rejected
 
 
+def _only_declared_dependency_outputs_are_missing(
+    dependency_set: Mapping[str, Any],
+    rejections: list[dict[str, Any]],
+) -> bool:
+    """Distinguish an absent sidecar from a malformed/tampered package-set.
+
+    The package-set verifier remains strict. This helper only maps the narrow
+    case where every verification error is ``missing_output:<declared dependency>``
+    to the operator-facing no-compatible-bundle state required by the release
+    contract. Any hash, schema, projection, role, size, or unrelated missing
+    output error remains ``dependency_package_set_unverified``.
+    """
+
+    declared = {
+        str(item.get("filename") or "")
+        for item in _list(dependency_set.get("artifacts"))
+        if isinstance(item, Mapping) and str(item.get("filename") or "")
+    }
+    if not declared or not rejections:
+        return False
+
+    saw_missing = False
+    for rejection in rejections:
+        if rejection.get("reason") != "package_set_verification_failed":
+            return False
+        errors = rejection.get("errors")
+        if not isinstance(errors, list) or not errors:
+            return False
+        for raw_error in errors:
+            error = str(raw_error or "")
+            prefix = "missing_output:"
+            if not error.startswith(prefix):
+                return False
+            filename = error[len(prefix):]
+            if filename not in declared:
+                return False
+            saw_missing = True
+    return saw_missing
+
+
 def materialize_compatible_dependency_artifact(root: Path | str) -> dict[str, Any]:
     project_root = Path(root).resolve()
     set_path, payload = load_dependency_set(project_root)
@@ -83,12 +122,22 @@ def materialize_compatible_dependency_artifact(root: Path | str) -> dict[str, An
         return {"ok": False, "state": "dependency_set_missing", "searched": [str(p) for p in _candidate_source_dirs(project_root)]}
     package_set_path, package_set, package_set_rejections = _verified_package_set_for_dependency_set(project_root, payload)
     if package_set_path is None or package_set is None:
+        missing_declared_sidecar = _only_declared_dependency_outputs_are_missing(payload, package_set_rejections)
         return {
             "ok": False,
-            "state": "dependency_package_set_unverified",
+            "state": (
+                "no_compatible_verified_dependency_bundle"
+                if missing_declared_sidecar
+                else "dependency_package_set_unverified"
+            ),
             "dependency_set_path": str(set_path),
             "searched": [str(p) for p in _candidate_source_dirs(project_root)],
             "package_set_rejections": package_set_rejections,
+            "truth_boundary": (
+                "Declared dependency artifact is absent; no network fallback is allowed."
+                if missing_declared_sidecar
+                else "Dependency package-set could not be verified; integrity failures are not downgraded to absence."
+            ),
         }
     current = target_spec("current", None)
     wanted = current.to_dict()
