@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.12 preserves Windows CLI examples literally in the Generator 8.9 module docstring.
-DISTRIBUTION_VERSION = "16.3.25.5.12"
-PACKAGE_VERSION = "16.3.25.5.12"
-PACKAGE_RELEASE_NAME = "pack-generator-v89-docstring-escape-fix"
+# v16.3.25.5.13 introduces Jaźń Pack Generator v10.0.1: terminal-only UI,
+# canonical SYSTEM/PAMIĘĆ distribution orchestration and transport backends.
+DISTRIBUTION_VERSION = "16.3.25.5.13"
+PACKAGE_VERSION = "16.3.25.5.13"
+PACKAGE_RELEASE_NAME = "pack-generator-v1001-repaired-distribution"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
