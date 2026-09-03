@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.8 hardens Generator 8.9 target resolution and Linux CPython 3.13 dependency release locking.
-DISTRIBUTION_VERSION = "16.3.25.5.8"
-PACKAGE_VERSION = "16.3.25.5.8"
-PACKAGE_RELEASE_NAME = "pack-generator-v89-linux-py313-hardening"
+# v16.3.25.5.9 completes Generator 8.9 release-hardening snapshot compliance after CI validation.
+DISTRIBUTION_VERSION = "16.3.25.5.9"
+PACKAGE_VERSION = "16.3.25.5.9"
+PACKAGE_RELEASE_NAME = "pack-generator-v89-release-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
