@@ -16,6 +16,7 @@ from .common import (
     MANIFEST_NAME,
     DependencyStudioError,
     activation_profile_names,
+    canonicalize_distribution_name,
     current_abi_tag,
     current_implementation_tag,
     current_libc_family,
@@ -103,7 +104,7 @@ def _inspect_inventory(payload: Mapping[str, Any]) -> dict[str, str]:
         if not isinstance(item, Mapping):
             continue
         metadata = _mapping(item.get("metadata"))
-        name = str(metadata.get("name") or "").lower().replace("_", "-")
+        name = canonicalize_distribution_name(str(metadata.get("name") or ""))
         version = str(metadata.get("version") or "")
         if name and version:
             inventory[name] = version

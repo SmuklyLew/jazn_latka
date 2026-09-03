@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5 converges dependency transport, package distribution and clean-room bootstrap.
-DISTRIBUTION_VERSION = "16.3.25.5"
-PACKAGE_VERSION = "16.3.25.5"
+# v16.3.25.5.1 fixes canonical distribution-name matching in offline dependency verification.
+DISTRIBUTION_VERSION = "16.3.25.5.1"
+PACKAGE_VERSION = "16.3.25.5.1"
 PACKAGE_RELEASE_NAME = "package-distribution-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
