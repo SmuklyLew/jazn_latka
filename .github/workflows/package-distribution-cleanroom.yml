@@ -210,11 +210,11 @@ jobs:
           grep -q "no_compatible_verified_dependency_bundle\|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
 
   persist_release_locks:
-    name: persist canonical dependency locks
+    name: persist canonical dependency locks and release metadata
     if: github.event_name == 'push' && (github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence' || github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence-final')
     needs: dependency_artifact
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
@@ -223,6 +223,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
+
+      - name: Set up Python 3.14 for canonical metadata sync
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.14"
 
       - name: Download Windows 3.12 package evidence
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
@@ -255,7 +260,7 @@ jobs:
           name: jazn-package-linux-x64-py3.14
           path: ${{ runner.temp }}/release-locks/linux-x64-py314
 
-      - name: Verify and persist exact native locks
+      - name: Persist native locks then synchronize canonical release metadata
         shell: bash
         run: |
           set -euo pipefail
@@ -274,12 +279,38 @@ jobs:
           test "$count" -eq 6
           test "$(find "$destination" -maxdepth 1 -type f -name '*.txt' | wc -l)" -ge 6
 
-          if git diff --quiet -- "$destination"; then
-            echo "Canonical release locks already match native artifacts."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$destination"
-          git commit -m "release: lock v16.3.25.5 dependency matrix [skip ci-lock-bootstrap]"
+
+          if ! git diff --quiet -- "$destination"; then
+            git add "$destination"
+            git commit -m "release: lock v16.3.25.5.5 dependency matrix"
+          else
+            echo "Canonical release locks already match native artifacts."
+          fi
+
+          source_commit="$(git rev-parse HEAD)"
+          runtime_version="$(python -X utf8 -c 'from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)')"
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
+            --root . \
+            --base-branch master \
+            --write \
+            --json
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
+            --root . \
+            --base-branch master \
+            --check \
+            --json
+
+          if ! git diff --quiet -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json; then
+            git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+            git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
+          else
+            echo "Canonical release metadata already matches source commit ${source_commit}."
+          fi
+
+          if [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ]; then
+            echo "Branch already contains canonical locks and metadata."
+            exit 0
+          fi
           git push origin "HEAD:${GITHUB_REF#refs/heads/}"
