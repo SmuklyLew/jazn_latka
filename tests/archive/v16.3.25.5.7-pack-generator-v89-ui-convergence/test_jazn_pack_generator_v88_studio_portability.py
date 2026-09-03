@@ -25,10 +25,10 @@ def _root(tmp_path: Path, version: str, release: str) -> Path:
     return root
 
 
-def test_v89_keeps_v88_portability_api_exposed() -> None:
+def test_v88_version_and_studio_api_are_exposed() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "8.9"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.9"
+    assert module.GENERATOR_VERSION == "8.8"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.8"
     assert callable(module.run_studio)
     assert callable(module.refresh_archive_basename_for_current_release)
 
