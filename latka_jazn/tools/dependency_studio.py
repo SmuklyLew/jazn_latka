@@ -22,14 +22,16 @@ from latka_jazn.dependencies.runtime import (
 )
 
 
-def _profile_list(value: str | None, *, default: Sequence[str]) -> list[str]:
+def _profile_list(value: str | Sequence[str] | None, *, default: Sequence[str]) -> list[str]:
     if not value:
         return list(default)
+    raw_values = [value] if isinstance(value, str) else list(value)
     result: list[str] = []
-    for part in str(value).split(","):
-        item = part.strip()
-        if item and item not in result:
-            result.append(item)
+    for raw in raw_values:
+        for part in str(raw).split(","):
+            item = part.strip()
+            if item and item not in result:
+                result.append(item)
     return result or list(default)
 
 
@@ -54,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     for name in ("download", "update"):
         child = sub.add_parser(name, allow_abbrev=False)
-        child.add_argument("--profile", default="core,archive")
+        child.add_argument("--profile", action="append")
         child.add_argument("--python-version")
         child.add_argument("--platform", default="current")
         child.add_argument("--python-executable")
@@ -63,13 +65,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     child = sub.add_parser("verify", allow_abbrev=False)
     child.add_argument("--bundle", type=Path)
-    child.add_argument("--profile")
+    child.add_argument("--profile", action="append")
     child.add_argument("--python-version")
     child.add_argument("--platform")
 
     child = sub.add_parser("install", allow_abbrev=False)
     child.add_argument("--bundle", type=Path)
-    child.add_argument("--profile", default="core,archive")
+    child.add_argument("--profile", action="append")
     child.add_argument("--python-executable")
     child.add_argument("--environment-root", type=Path)
     child.add_argument("--offline", action="store_true")
