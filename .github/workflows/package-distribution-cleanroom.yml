@@ -133,25 +133,53 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ steps.extract.outputs.runtime_dir }}"
+
           set +e
           python run.py status --json > "$RUNNER_TEMP/status.json"
           status_rc=$?
           set -e
+          cat "$RUNNER_TEMP/status.json"
           test "$status_rc" -eq 1
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; assert p.get("ok") is False, p; assert d.get("active_state") == "inactive", d; assert d.get("package_integrity_verified") is True, d' "$RUNNER_TEMP/status.json"
+
           set +e
           python run.py doctor --json > "$RUNNER_TEMP/doctor.json"
           doctor_rc=$?
           set -e
+          cat "$RUNNER_TEMP/doctor.json"
           test "$doctor_rc" -eq 1
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is False, p; assert p.get("live_runtime_ready") is False, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
+
+          set +e
           python run.py start --json > "$RUNNER_TEMP/start.json"
+          start_rc=$?
+          set -e
+          cat "$RUNNER_TEMP/start.json"
+          test "$start_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
+
+          set +e
           python run.py status --json > "$RUNNER_TEMP/status-after-start.json"
+          status_after_rc=$?
+          set -e
+          cat "$RUNNER_TEMP/status-after-start.json"
+          test "$status_after_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; r=d.get("readiness") or {}; st=p.get("startup") or {}; assert p.get("ok") is True, p; assert p.get("runtime_core_ready") is True, p; assert p.get("runtime_write_ready") is True, p; assert d.get("active_state") == "active_trusted", d; assert d.get("endpoint_reachable") is True, d; assert d.get("heartbeat_fresh") is True, d; assert r.get("ok") is True, r; assert st.get("voice_live_ready") is True, st' "$RUNNER_TEMP/status-after-start.json"
+
+          set +e
           python run.py start --json > "$RUNNER_TEMP/start-again.json"
+          start_again_rc=$?
+          set -e
+          cat "$RUNNER_TEMP/start-again.json"
+          test "$start_again_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("already_running") is True or (p.get("daemon") or {}).get("already_running") is True, p' "$RUNNER_TEMP/start-again.json"
+
+          set +e
           python run.py stop --json > "$RUNNER_TEMP/stop.json"
+          stop_rc=$?
+          set -e
+          cat "$RUNNER_TEMP/stop.json"
+          test "$stop_rc" -eq 0
 
       - name: Reject package when dependency sidecar is absent
         shell: bash
@@ -163,12 +191,20 @@ jobs:
           sidecar="$(find "$package_dir" -maxdepth 1 -name '*.dependencies-*.zip' -print -quit)"
           test -n "$sidecar"
           mv "$sidecar" "$sidecar.hidden"
-          rm -rf "${{ steps.extract.outputs.runtime_dir }}/latka_jazn/local_resources/python"
-          set +e
           cd "${{ steps.extract.outputs.runtime_dir }}"
+          dependency_state="$(python - <<'PY'
+          from pathlib import Path
+          from latka_jazn.core.runtime_root import workspace_runtime_path
+          print(workspace_runtime_path(Path.cwd()) / "local_resources" / "python")
+          PY
+          )"
+          test -n "$dependency_state"
+          rm -rf "$dependency_state"
+          set +e
           python run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
           rc=$?
           set -e
+          cat "$RUNNER_TEMP/no-sidecar.out"
           mv "$sidecar.hidden" "$sidecar"
           test "$rc" -ne 0
           grep -q "no_compatible_verified_dependency_bundle\|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
