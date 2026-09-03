@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib
 import json
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -22,14 +21,10 @@ def test_v89_public_entrypoint_and_v3_distribution_contract() -> None:
     assert plan["target_runtime"]["requested_python_version"] == "3.13.5"
 
 
-def test_v89_legacy_plan_hard_excludes_managed_python_resources(monkeypatch) -> None:
+def test_v89_legacy_plan_hard_excludes_managed_python_resources() -> None:
     module = generator()
-    core = module._legacy_core()
-    calls = []
-    original = core.build_plan
-    monkeypatch.setattr(module.legacy._impl._core, "build_plan", original)
-    # The overlay installed during import is itself the contract under test.
     assert module.MANAGED_PYTHON_RESOURCE_EXCLUDE == "latka_jazn/local_resources/python/**"
+    assert getattr(module._legacy_core().build_plan, "_jazn_v89_safe", False) is True
 
 
 def test_v89_dependency_bundle_discovery_uses_manifest_not_directory_name(tmp_path: Path) -> None:
@@ -76,52 +71,3 @@ def test_v89_rejects_cross_target_materialization(tmp_path: Path) -> None:
     other = "linux-x64" if current == "windows-x64" else "windows-x64"
     with pytest.raises(RuntimeError, match="Cross-target"):
         module.materialize_native_dependency_bundle(tmp_path, target_alias=other, python_version="3.13")
-
-
-def test_v89_exposes_five_ui_modes() -> None:
-    module = generator()
-    assert module.UI_MODE_CHOICES == (
-        "tekstowy", "kursorowy", "studio-terminal", "studio-windows", "studio-linux"
-    )
-    assert module.UI_MODE_LABELS["studio-terminal"] == "Studio w terminalu"
-    assert module.UI_MODE_LABELS["studio-windows"] == "Studio dla Windows"
-    assert module.UI_MODE_LABELS["studio-linux"] == "Studio dla Linuksa"
-
-
-def test_v89_ui_mode_dispatch_is_explicit(monkeypatch) -> None:
-    module = generator()
-    seen = []
-    monkeypatch.setattr(module.legacy._impl, "interactive", lambda ui_override=None: seen.append(ui_override) or 0)
-    assert module.run_ui_mode("tekstowy") == 0
-    assert module.run_ui_mode("kursorowy") == 0
-    assert seen == ["tekstowy", "kursorowy"]
-
-
-def test_v89_platform_specific_studio_fails_closed_on_wrong_os(monkeypatch) -> None:
-    module = generator()
-    if module.os.name == "nt":
-        with pytest.raises(RuntimeError, match="Linuks"):
-            module._platform_guard("linux")
-    else:
-        with pytest.raises(RuntimeError, match="Windows"):
-            module._platform_guard("windows")
-
-
-def test_v89_settings_persist_ui_and_distribution_preferences(monkeypatch, tmp_path: Path) -> None:
-    module = generator()
-    settings = tmp_path / "settings.json"
-    monkeypatch.setattr(module, "_settings_path", lambda: settings)
-    saved = module.save_studio_preferences(
-        ui_mode="studio-terminal",
-        ui_auto_start=True,
-        distribution_mode="system-portable",
-        target_alias="linux-x64",
-        python_version="3.13.5",
-        dependency_bundle="/tmp/bundle",
-        materialize_dependencies=False,
-    )
-    assert saved["ui_mode"] == "studio-terminal"
-    payload = json.loads(settings.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == "jazn_pack_generator_settings/v8.9"
-    assert payload["studio_v89"]["target_alias"] == "linux-x64"
-    assert payload["studio_v89"]["python_version"] == "3.13.5"

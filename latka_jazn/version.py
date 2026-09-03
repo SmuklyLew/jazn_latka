@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.6 routes Pack Generator 8.9 through the canonical v3 distribution contract.
-DISTRIBUTION_VERSION = "16.3.25.5.6"
-PACKAGE_VERSION = "16.3.25.5.6"
-PACKAGE_RELEASE_NAME = "pack-generator-v89-distribution-contract"
+# v16.3.25.5.7 adds explicit cross-platform UI selection and v3-first Pack Generator Studio.
+DISTRIBUTION_VERSION = "16.3.25.5.7"
+PACKAGE_VERSION = "16.3.25.5.7"
+PACKAGE_RELEASE_NAME = "pack-generator-v89-ui-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

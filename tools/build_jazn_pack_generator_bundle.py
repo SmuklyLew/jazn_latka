@@ -7,9 +7,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "tools" / "pack_generator_sources" / "jazn_pack_generator_v89.py"
 LEGACY_SOURCE = ROOT / "tools" / "pack_generator_sources" / "jazn_pack_generator_v88.py"
+UI_SOURCE = ROOT / "tools" / "pack_generator_sources" / "jazn_pack_generator_v89_ui.py"
 OUTPUT = ROOT / "tools" / "jazn_pack_generator.py"
 
-LAUNCHER_MARKER = 'pack_generator_sources" / "jazn_pack_generator_v89.py"'
+LAUNCHER_MARKER = "jazn_pack_generator_v89.py"
 
 
 def source_bytes() -> bytes:
@@ -23,7 +24,7 @@ def build(*, check: bool = False) -> tuple[bool, str]:
     source = source_bytes()
     digest = hashlib.sha256(source).hexdigest()
     launcher = OUTPUT.read_text(encoding="utf-8") if OUTPUT.is_file() else ""
-    fresh = bool(SOURCE.is_file() and LEGACY_SOURCE.is_file() and LAUNCHER_MARKER in launcher)
+    fresh = bool(SOURCE.is_file() and LEGACY_SOURCE.is_file() and UI_SOURCE.is_file() and LAUNCHER_MARKER in launcher and "jazn_pack_generator_v89_ui.py" in launcher)
     if check:
         return fresh, digest
     if not fresh:
