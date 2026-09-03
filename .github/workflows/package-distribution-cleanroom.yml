@@ -133,10 +133,18 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ steps.extract.outputs.runtime_dir }}"
+          set +e
           python run.py status --json > "$RUNNER_TEMP/status.json"
-          python -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$RUNNER_TEMP/status.json"
+          status_rc=$?
+          set -e
+          test "$status_rc" -eq 1
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; assert p.get("ok") is False, p; assert d.get("active_state") == "inactive", d; assert d.get("package_integrity_verified") is True, d' "$RUNNER_TEMP/status.json"
+          set +e
           python run.py doctor --json > "$RUNNER_TEMP/doctor.json"
-          python -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$RUNNER_TEMP/doctor.json"
+          doctor_rc=$?
+          set -e
+          test "$doctor_rc" -eq 1
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is False, p; assert p.get("live_runtime_ready") is False, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
           python run.py start --json > "$RUNNER_TEMP/start.json"
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
           python run.py status --json > "$RUNNER_TEMP/status-after-start.json"

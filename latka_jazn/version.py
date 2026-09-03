@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.2 exports system packages from canonical integrity bytes and exact protected inventory.
-DISTRIBUTION_VERSION = "16.3.25.5.2"
-PACKAGE_VERSION = "16.3.25.5.2"
+# v16.3.25.5.3 makes clean-room pre-start diagnostics exit-code aware while preserving fail-fast activation checks.
+DISTRIBUTION_VERSION = "16.3.25.5.3"
+PACKAGE_VERSION = "16.3.25.5.3"
 PACKAGE_RELEASE_NAME = "package-distribution-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
