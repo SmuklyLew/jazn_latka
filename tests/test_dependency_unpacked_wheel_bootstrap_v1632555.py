@@ -199,10 +199,12 @@ def test_clean_room_verifier_bootstraps_only_from_unpacked_packaging(
             module = importlib.import_module("packaging")
             origin = str(module.__file__).replace("\\", "/")
             extracted_root = str(state["extracted_root"]).replace("\\", "/")
+            bootstrap_wheel = str(bundle / "packaging-99.0-py3-none-any.whl")
             assert origin.startswith(extracted_root + "/")
             assert ".whl/" not in origin.lower()
             assert ".zip/" not in origin.lower()
-            assert all(not str(item).lower().endswith((".whl", ".zip")) for item in sys.path)
+            assert Path(sys.path[0]).resolve() == Path(state["extracted_root"]).resolve()
+            assert all(str(item) != bootstrap_wheel for item in sys.path)
             observed["origin"] = origin
             observed["root"] = extracted_root
             yield state
