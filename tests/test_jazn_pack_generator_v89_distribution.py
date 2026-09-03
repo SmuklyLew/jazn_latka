@@ -125,3 +125,64 @@ def test_v89_settings_persist_ui_and_distribution_preferences(monkeypatch, tmp_p
     assert payload["schema_version"] == "jazn_pack_generator_settings/v8.9"
     assert payload["studio_v89"]["target_alias"] == "linux-x64"
     assert payload["studio_v89"]["python_version"] == "3.13.5"
+
+
+def test_v89_current_target_resolves_to_native_release_alias() -> None:
+    module = generator()
+    resolved = module.resolve_distribution_target_alias("current")
+    if module.os.name == "nt":
+        assert resolved == "windows-x64"
+    else:
+        assert module.sys.platform.startswith("linux")
+        assert resolved == "linux-x64"
+    plan = module.distribution_mode_plan(
+        "system-portable", target_alias="current", python_version="3.13.5"
+    )
+    assert plan["target_runtime"]["alias"] == resolved
+    assert plan["target_runtime"]["requested_alias"] == "current"
+    assert plan["target_runtime"]["python_version"] == "3.13"
+
+
+def test_v89_linux_py313_canonical_lock_is_exact_pr209_evidence() -> None:
+    import hashlib
+
+    module = generator()
+    root = Path(__file__).resolve().parents[1]
+    lock = module.canonical_dependency_lock_path(root, "linux-x64", "3.13.5")
+    raw = lock.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == "81afe3398aba06931c9d7cbc5672eb14d00a11e5c9b6ede1239ccf56e226e0f6"
+    text = raw.decode("utf-8")
+    assert "py7zr==1.1.3" in text
+    assert "pyzipper==0.4.0" in text
+    assert "pycryptodomex==3.23.0" in text
+    assert "pypdf==6.16.2" in text
+
+
+def test_v89_native_materialization_uses_canonical_lock_when_present(monkeypatch, tmp_path: Path) -> None:
+    module = generator()
+    current = module.current_distribution_target_alias()
+    lock = (
+        tmp_path / "latka_jazn" / "resources" / "dependencies" / "locks" / "core+archive"
+        / f"{current}-py313.txt"
+    )
+    lock.parent.mkdir(parents=True)
+    lock.write_text("example==1 --hash=sha256:" + "0" * 64 + "\n", encoding="utf-8")
+    bundle = tmp_path / "latka_jazn" / "local_resources" / "python" / "wheelhouse" / "bundle"
+    bundle.mkdir(parents=True)
+    (bundle / "JAZN_WHEELHOUSE_MANIFEST.json").write_text(
+        json.dumps({"target": {"alias": current, "python_version": "3.13"}}), encoding="utf-8"
+    )
+    captured = {}
+
+    def fake_run(command, *, cwd, env):
+        captured["command"] = list(command)
+        return {"ok": True, "bundle_dir": str(bundle)}
+
+    monkeypatch.setattr(module, "_run_json", fake_run)
+    result = module.materialize_native_dependency_bundle(
+        tmp_path, target_alias="current", python_version="3.13.5"
+    )
+    assert result == bundle.resolve()
+    command = captured["command"]
+    assert command[command.index("--python-version") + 1] == "3.13"
+    assert command[command.index("--lock-file") + 1] == str(lock.resolve())

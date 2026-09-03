@@ -31,7 +31,29 @@ def _load_legacy():
         raise RuntimeError(f"Cannot load legacy generator core: {source}")
     module = importlib.util.module_from_spec(spec)
     sys.modules.setdefault(spec.name, module)
-    spec.loader.exec_module(module)
+
+    # The historical portable v8.8 bundle creates synthetic ``latka_jazn``
+    # packages in sys.modules so it can run as a standalone two-file tool.
+    # Generator 8.9 is repository-native; leaking those synthetic packages would
+    # shadow the real project package for the rest of the Python process. Keep
+    # v8.8's module objects private to the loaded legacy module and restore the
+    # import table immediately after initialization.
+    before = dict(sys.modules)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        for name in list(sys.modules):
+            legacy_support = (
+                name == "latka_jazn"
+                or name.startswith("latka_jazn.")
+                or name.startswith("tools._jazn_pack_generator")
+            )
+            if not legacy_support:
+                continue
+            if name in before:
+                sys.modules[name] = before[name]
+            else:
+                sys.modules.pop(name, None)
     return module
 
 
@@ -84,6 +106,46 @@ def normalize_distribution_python_version(value: str | None) -> str:
     return f"{int(parts[0])}.{int(parts[1])}"
 
 
+def current_distribution_target_alias() -> str:
+    if os.name == "nt":
+        return "windows-x64"
+    if sys.platform.startswith("linux"):
+        return "linux-x64"
+    raise RuntimeError(
+        "Current host platform is not a supported Jaźń dependency release target. "
+        "Select windows-x64 or linux-x64 and provide a verified native bundle."
+    )
+
+
+def resolve_distribution_target_alias(value: str | None) -> str:
+    raw = str(value or "current").strip().lower()
+    if raw == "current":
+        return current_distribution_target_alias()
+    if raw not in DISTRIBUTION_TARGET_CHOICES:
+        raise ValueError(f"unsupported distribution target: {value!r}")
+    return raw
+
+
+def canonical_dependency_lock_path(
+    source: Path | str,
+    target_alias: str,
+    python_version: str,
+) -> Path:
+    source_root = Path(source).expanduser().resolve()
+    target = resolve_distribution_target_alias(target_alias)
+    python_minor = normalize_distribution_python_version(python_version)
+    py_digits = python_minor.replace(".", "")
+    return (
+        source_root
+        / "latka_jazn"
+        / "resources"
+        / "dependencies"
+        / "locks"
+        / "core+archive"
+        / f"{target}-py{py_digits}.txt"
+    ).resolve()
+
+
 def distribution_mode_plan(
     mode: str,
     *,
@@ -96,9 +158,8 @@ def distribution_mode_plan(
     include_system = normalized in {"system-thin", "system-portable", "system+memory", "system+memory+dependencies"}
     include_memory = normalized in {"memory-only", "system+memory", "system+memory+dependencies"}
     include_dependencies = normalized in {"dependencies-only", "system-portable", "system+memory+dependencies"}
-    target = str(target_alias or "current").strip().lower()
-    if include_dependencies and target not in DISTRIBUTION_TARGET_CHOICES:
-        raise ValueError(f"unsupported distribution target: {target_alias!r}")
+    requested_target = str(target_alias or "current").strip().lower()
+    target = resolve_distribution_target_alias(requested_target) if include_dependencies else requested_target
     requested_python = str(python_version or "current").strip()
     resolved_python = normalize_distribution_python_version(requested_python)
     return {
@@ -111,6 +172,7 @@ def distribution_mode_plan(
         "target_runtime": (
             {
                 "alias": target,
+                "requested_alias": requested_target,
                 "python_version": resolved_python,
                 "requested_python_version": requested_python,
             }
@@ -137,7 +199,7 @@ def find_matching_dependency_bundle(
     python_version: str,
 ) -> Path | None:
     source_root = Path(source).expanduser().resolve()
-    target = str(target_alias or "current").strip().lower()
+    target = resolve_distribution_target_alias(target_alias)
     python_minor = normalize_distribution_python_version(python_version)
     wheelhouse = source_root / "latka_jazn" / "local_resources" / "python" / "wheelhouse"
     if not wheelhouse.is_dir():
@@ -180,30 +242,38 @@ def materialize_native_dependency_bundle(
     python_version: str,
 ) -> Path:
     source_root = Path(source).expanduser().resolve()
-    target = str(target_alias or "current").strip().lower()
+    target = resolve_distribution_target_alias(target_alias)
     python_minor = normalize_distribution_python_version(python_version)
-    current_alias = "windows-x64" if os.name == "nt" else ("linux-x64" if sys.platform.startswith("linux") else "current")
-    if target not in {"current", current_alias}:
+    current_alias = current_distribution_target_alias()
+    if target != current_alias:
         raise RuntimeError(
             "Cross-target dependency materialization is forbidden. Build the dependency bundle on its native runner."
         )
     wheelhouse_root = source_root / "latka_jazn" / "local_resources" / "python" / "wheelhouse"
     env = dict(os.environ)
     env["PYTHONPATH"] = str(source_root) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
-    report = _run_json(
-        [
-            sys.executable, "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
-            "--root", str(source_root), "--wheelhouse-root", str(wheelhouse_root), "--json",
-            "download", "--profile", "core", "--profile", "archive",
-            "--python-version", python_minor, "--platform", "current",
-        ],
-        cwd=source_root,
-        env=env,
-    )
+    lock_path = canonical_dependency_lock_path(source_root, target, python_minor)
+    command = [
+        sys.executable, "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
+        "--root", str(source_root), "--wheelhouse-root", str(wheelhouse_root), "--json",
+        "download", "--profile", "core", "--profile", "archive",
+        "--python-version", python_minor, "--platform", "current",
+    ]
+    if lock_path.is_file():
+        command += ["--lock-file", str(lock_path)]
+    report = _run_json(command, cwd=source_root, env=env)
     bundle = Path(str(report.get("bundle_dir") or "")).resolve()
     manifest = _bundle_manifest(bundle)
     if manifest is None:
         raise RuntimeError(f"materialized dependency bundle lacks manifest: {bundle}")
+    manifest_target = manifest.get("target") if isinstance(manifest.get("target"), dict) else {}
+    observed_alias = str(manifest_target.get("alias") or "").strip().lower()
+    observed_python = normalize_distribution_python_version(str(manifest_target.get("python_version") or ""))
+    if observed_alias != target or observed_python != python_minor:
+        raise RuntimeError(
+            "materialized dependency bundle target mismatch: "
+            f"expected {target}/py{python_minor}, got {observed_alias}/py{observed_python}"
+        )
     return bundle
 
 
@@ -220,7 +290,7 @@ def run_distribution_pack(
     source_root = Path(source).expanduser().resolve()
     destination = Path(out_dir).expanduser().resolve()
     plan = distribution_mode_plan(mode, target_alias=target_alias, python_version=python_version)
-    target = str(target_alias or "current").strip().lower()
+    target = resolve_distribution_target_alias(target_alias)
     python_minor = normalize_distribution_python_version(python_version)
     bundle: Path | None = None
     if plan["dependencies"]:
