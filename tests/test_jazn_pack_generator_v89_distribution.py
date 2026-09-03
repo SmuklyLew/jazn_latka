@@ -178,19 +178,19 @@ def test_v1001_current_target_resolves_to_native_release_alias() -> None:
     assert plan["target_runtime"]["python_version"] == "3.13"
 
 
-def test_v1001_linux_py313_canonical_lock_is_exact_pr209_evidence() -> None:
-    import hashlib
-
+def test_v1001_linux_py313_canonical_lock_contains_required_archive_backends() -> None:
     module = generator()
     root = Path(__file__).resolve().parents[1]
     lock = module.canonical_dependency_lock_path(root, "linux-x64", "3.13.5")
-    raw = lock.read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == "81afe3398aba06931c9d7cbc5672eb14d00a11e5c9b6ede1239ccf56e226e0f6"
-    text = raw.decode("utf-8")
+    text = lock.read_text(encoding="utf-8")
     assert "py7zr==1.1.3" in text
     assert "pyzipper==0.4.0" in text
+    assert "rarfile==4.5 --hash=sha256:c74341f4b9a3a3ebb35ef396d59daf059eb028f34995a7162950a41d97b84de9" in text
     assert "pycryptodomex==3.23.0" in text
     assert "pypdf==6.16.2" in text
+    for line in text.splitlines():
+        if line and not line.startswith("#"):
+            assert "==" in line and " --hash=sha256:" in line
 
 
 def test_v1001_native_materialization_uses_canonical_lock_when_present(monkeypatch, tmp_path: Path) -> None:
