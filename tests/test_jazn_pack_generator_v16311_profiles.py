@@ -3,9 +3,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 GENERATOR_PATH = ROOT / "tools" / "jazn_pack_generator.py"
@@ -21,57 +19,42 @@ def _load_generator():
     return module
 
 
-def test_v16311_exposes_exact_four_user_profiles_in_requested_order() -> None:
+def test_v1001_exposes_exact_three_user_content_choices() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "8.9"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.9"
-    # Historical constants stay source-compatible; this is the new canonical UI order.
-    assert generator.USER_PROFILE_CHOICES == ("combined", "system", "memory", "dual")
-    assert generator.PROFILE_DISPLAY["combined"] == "SYSTEM + PAMIĘĆ (1 ZIP)"
-    assert generator.PROFILE_DISPLAY["dual"] == "SYSTEM + PAMIĘĆ (2 OSOBNE ZIP-y)"
-
-    parser = generator.parser()
-    parsed = parser.parse_args(["pack", ".", "--profile", "combined"])
-    assert parsed.profile == "combined"
+    assert generator.GENERATOR_VERSION == "10.0.1"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
+    assert generator.LAYOUT_CHOICES == ("single", "separate")
 
 
-def test_dual_profile_cannot_silently_degrade_to_system_only(tmp_path: Path) -> None:
+def test_system_always_maps_to_portable_with_dependencies() -> None:
     generator = _load_generator()
-    options = generator.PackOptions(
-        source=tmp_path,
-        out_dir=tmp_path.parent / "packages",
-        profile="dual",
-    )
-    with pytest.raises(generator.PackError, match="nie został zrealizowany w całości"):
-        generator.run_pack_with_plans(options, [SimpleNamespace(profile="system")])
+    plan = generator.distribution_request_plan(content="system", layout="separate", archive_format="zip")
+    assert plan["layout"] == "single"
+    assert plan["jobs"] == [{"role": "system", "distribution_mode": "system-portable"}]
+    assert plan["system_dependencies_included"] is True
 
 
-def test_combined_profile_requires_real_memory_payload(tmp_path: Path) -> None:
+def test_memory_is_independent_canonical_export() -> None:
     generator = _load_generator()
-    options = generator.PackOptions(
-        source=tmp_path,
-        out_dir=tmp_path.parent / "packages",
-        profile="combined",
-    )
-    fake = SimpleNamespace(profile="combined", paths=["run.py", "memory/MEMORY_PACKAGE_MANIFEST.json"])
-    with pytest.raises(generator.PackError, match="wymaga rzeczywistych plików pamięci"):
-        generator.run_pack_with_plans(options, [fake])
+    plan = generator.distribution_request_plan(content="memory", layout="separate", archive_format="zip")
+    assert plan["layout"] == "single"
+    assert plan["jobs"] == [{"role": "memory", "distribution_mode": "memory-only"}]
+    assert plan["memory_export_is_canonical"] is True
 
 
-def test_exact_profile_contract_accepts_complete_shapes() -> None:
+def test_combined_single_and_separate_have_distinct_exact_shapes() -> None:
     generator = _load_generator()
-    generator.require_exact_profile_set(
-        "combined",
-        [SimpleNamespace(profile="combined", paths=["run.py", "memory/sqlite/memory_jazn.sqlite3"])],
+    single = generator.distribution_request_plan(
+        content="system+memory", layout="single", archive_format="zip"
     )
-    generator.require_exact_profile_set("system", [SimpleNamespace(profile="system", paths=["run.py"])])
-    generator.require_exact_profile_set(
-        "memory",
-        [SimpleNamespace(profile="memory", paths=["memory/sqlite/memory_jazn.sqlite3"])],
+    separate = generator.distribution_request_plan(
+        content="system+memory", layout="separate", archive_format="zip"
     )
-    generator.require_exact_profile_set(
-        "dual",
-        [
-            SimpleNamespace(profile="system", paths=["run.py"]),
-            SimpleNamespace(profile="memory", paths=["memory/sqlite/memory_jazn.sqlite3"])],
-    )
+    assert single["jobs"] == [
+        {"role": "system+memory", "distribution_mode": "system+memory+dependencies"}
+    ]
+    assert separate["jobs"] == [
+        {"role": "system", "distribution_mode": "system-portable"},
+        {"role": "memory", "distribution_mode": "memory-only"},
+    ]
