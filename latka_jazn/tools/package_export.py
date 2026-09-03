@@ -9,6 +9,7 @@ import json
 import shutil
 import sqlite3
 import stat
+import subprocess
 import tempfile
 import zipfile
 
@@ -136,6 +137,116 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+SYSTEM_INTEGRITY_MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
+
+
+def _system_integrity_contract(root: Path) -> tuple[dict, dict[str, dict]]:
+    manifest_path = root / SYSTEM_INTEGRITY_MANIFEST_NAME
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PackagePlanValidationError(f"System integrity manifest is unavailable or invalid: {exc}") from exc
+    if not isinstance(payload, dict) or not isinstance(payload.get("files"), list):
+        raise PackagePlanValidationError("System integrity manifest does not contain a files list")
+    entries: dict[str, dict] = {}
+    for raw_entry in payload["files"]:
+        if not isinstance(raw_entry, dict):
+            raise PackagePlanValidationError("System integrity manifest contains a non-object entry")
+        try:
+            rel = validate_safe_relative_path(str(raw_entry.get("path") or ""))
+        except UnsafeRelativePathError as exc:
+            raise PackagePlanValidationError(f"Unsafe path in system integrity manifest: {raw_entry.get('path')!r}") from exc
+        if rel == SYSTEM_INTEGRITY_MANIFEST_NAME or rel in entries:
+            raise PackagePlanValidationError(f"Duplicate or self-referential system integrity path: {rel}")
+        if forbidden_package_reason(rel) or rel.startswith(SYSTEM_EXCLUDE_PREFIXES):
+            raise PackagePlanValidationError(f"System integrity manifest contains a non-packageable path: {rel}")
+        digest = str(raw_entry.get("sha256") or "").lower()
+        size = raw_entry.get("size_bytes")
+        if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+            raise PackagePlanValidationError(f"System integrity manifest has invalid SHA-256 for: {rel}")
+        if isinstance(size, bool) or not isinstance(size, int) or size < 0:
+            raise PackagePlanValidationError(f"System integrity manifest has invalid size for: {rel}")
+        entries[rel] = dict(raw_entry)
+    if payload.get("file_count") != len(entries):
+        raise PackagePlanValidationError("System integrity manifest file_count does not match its files list")
+    return payload, entries
+
+
+def _git_head_blob(root: Path, rel: str) -> bytes | None:
+    """Return canonical HEAD bytes only when ``root`` is the exact Git repository."""
+    try:
+        top = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            check=False, timeout=15,
+        )
+        if top.returncode != 0 or Path(top.stdout.strip()).resolve() != root:
+            return None
+        blob = subprocess.run(
+            ["git", "-C", str(root), "show", f"HEAD:{rel}"],
+            capture_output=True, check=False, timeout=30,
+        )
+    except (OSError, RuntimeError, subprocess.TimeoutExpired):
+        return None
+    return bytes(blob.stdout) if blob.returncode == 0 else None
+
+
+def _system_entry_bytes(root: Path, path: Path, rel: str, entry: Mapping[str, object]) -> bytes:
+    expected_size = int(entry["size_bytes"])
+    expected_sha = str(entry["sha256"]).lower()
+    try:
+        worktree_bytes = path.read_bytes()
+    except OSError as exc:
+        raise PackagePlanValidationError(f"Protected system file is missing or unreadable: {rel}") from exc
+    if len(worktree_bytes) == expected_size and _sha256_bytes(worktree_bytes) == expected_sha:
+        return worktree_bytes
+
+    canonical = _git_head_blob(root, rel)
+    if canonical is not None and len(canonical) == expected_size and _sha256_bytes(canonical) == expected_sha:
+        return canonical
+    raise PackagePlanValidationError(
+        f"Protected system file bytes do not match the canonical integrity manifest: {rel}"
+    )
+
+
+def _package_local_system_manifest(
+    canonical_manifest: Mapping[str, object],
+    virtual_payloads: Mapping[str, bytes],
+) -> bytes:
+    payload = dict(canonical_manifest)
+    raw_files = canonical_manifest.get("files")
+    if not isinstance(raw_files, list):
+        raise PackagePlanValidationError("System integrity manifest does not contain a files list")
+    files = [dict(item) for item in raw_files if isinstance(item, dict)]
+    seen = {str(item.get("path") or "") for item in files}
+    for rel, raw in sorted(virtual_payloads.items()):
+        if rel in seen or rel == SYSTEM_INTEGRITY_MANIFEST_NAME:
+            raise PackagePlanValidationError(f"Virtual package path collides with protected system inventory: {rel}")
+        files.append({
+            "path": rel,
+            "size_bytes": len(raw),
+            "sha256": _sha256_bytes(raw),
+            "mutable_runtime": False,
+            "classification": "package_virtual_file",
+            "archive": False,
+            "hash_policy": "sha256_file_bytes",
+        })
+        seen.add(rel)
+    files.sort(key=lambda item: str(item.get("path") or ""))
+    payload["files"] = files
+    payload["file_count"] = len(files)
+    payload["static_file_count"] = len(files)
+    payload["truth_boundary"] = (
+        str(canonical_manifest.get("truth_boundary") or "").rstrip()
+        + " Package-local virtual metadata is explicitly hashed into this transported manifest."
+    ).strip()
+    return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
 def _normalize_package_rel(rel: str) -> str:
@@ -468,9 +579,27 @@ def export_package(
             raise PackagePlanValidationError(f"Forbidden virtual package path: {name}")
         payload = raw_payload.encode("utf-8") if isinstance(raw_payload, str) else bytes(raw_payload)
         virtual_payloads[name] = payload
-    package_plan = build_package_plan(root, mode, output_zip)
+    system_entries: dict[str, dict] | None = None
+    system_manifest_bytes: bytes | None = None
+    if mode == "system":
+        canonical_manifest, system_entries = _system_integrity_contract(root)
+        package_plan = []
+        for rel in sorted(system_entries):
+            path = resolve_safe_source(root, rel)
+            if not path.is_file():
+                raise PackagePlanValidationError(f"Protected system file is missing: {rel}")
+            package_plan.append((path, rel))
+        manifest_path = resolve_safe_source(root, SYSTEM_INTEGRITY_MANIFEST_NAME)
+        if not manifest_path.is_file():
+            raise PackagePlanValidationError("System integrity manifest is missing")
+        package_plan.append((manifest_path, SYSTEM_INTEGRITY_MANIFEST_NAME))
+        validate_package_plan((rel for _, rel in package_plan), root=root)
+        system_manifest_bytes = _package_local_system_manifest(canonical_manifest, virtual_payloads)
+    else:
+        package_plan = build_package_plan(root, mode, output_zip)
+
     physical_names = {rel for _, rel in package_plan}
-    collisions = sorted(physical_names & set(virtual_payloads))
+    collisions = sorted((physical_names - {SYSTEM_INTEGRITY_MANIFEST_NAME}) & set(virtual_payloads))
     if collisions:
         raise PackagePlanValidationError(f"Virtual package paths collide with physical files: {collisions}")
     with zipfile.ZipFile(
@@ -481,11 +610,21 @@ def export_package(
         compresslevel=1,
     ) as zf:
         for path, rel in package_plan:
-            stat = path.stat()
-            total += stat.st_size
-            file_count += 1
             compress_type = zipfile.ZIP_STORED if rel.endswith((".sqlite3", ".7z")) else zipfile.ZIP_DEFLATED
-            zf.write(path, rel, compress_type=compress_type)
+            if mode == "system":
+                assert system_entries is not None and system_manifest_bytes is not None
+                if rel == SYSTEM_INTEGRITY_MANIFEST_NAME:
+                    raw = system_manifest_bytes
+                else:
+                    raw = _system_entry_bytes(root, path, rel, system_entries[rel])
+                info = zipfile.ZipInfo.from_file(path, rel)
+                info.compress_type = compress_type
+                zf.writestr(info, raw)
+                total += len(raw)
+            else:
+                zf.write(path, rel, compress_type=compress_type)
+                total += path.stat().st_size
+            file_count += 1
         for rel, payload in virtual_payloads.items():
             info = zipfile.ZipInfo(rel, date_time=(1980, 1, 1, 0, 0, 0))
             info.create_system = 3
