@@ -131,7 +131,7 @@ jobs:
 
   verify_ubuntu:
     name: verify (ubuntu-latest)
-    needs: manifest_sync
+    needs: [manifest_sync, dependency_contract_matrix]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -179,6 +179,9 @@ jobs:
       - name: Static type audit
         run: pyright latka_jazn main.py run.py
 
+      - name: Verify deterministic Pack Generator 8.8 bundle freshness
+        run: python -X utf8 tools/build_jazn_pack_generator_bundle.py --check
+
       - name: Static type audit for regression test and pack-generator contracts
         run: >-
           pyright
@@ -224,7 +227,7 @@ jobs:
 
   verify_windows:
     name: verify (windows-latest targeted)
-    needs: manifest_sync
+    needs: [manifest_sync, dependency_contract_matrix]
     runs-on: windows-latest
     timeout-minutes: 20
     env:
@@ -331,6 +334,59 @@ jobs:
             $dirty | ForEach-Object { Write-Host $_ }
             throw "Tests left tracked or untracked files in the checkout."
           }
+
+  dependency_contract_matrix:
+    name: dependency contract (${{ matrix.target }} py${{ matrix.python }})
+    needs: manifest_sync
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.12"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.13"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.14"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.12"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.13"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.14"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 12
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout synchronized source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.manifest_sync.outputs.head_sha }}
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependency-contract tooling
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+      - name: Validate native target contract and resolution command
+        shell: bash
+        run: |
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json audit
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json download \
+            --profile core --profile archive --platform current \
+            --python-version "${{ matrix.python }}" --dry-run
 
   finalization:
     name: release finalization

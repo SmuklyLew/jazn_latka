@@ -1,0 +1,206 @@
+name: dependency-artifact-build
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      python-version:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Native GitHub runner label
+        required: true
+        default: ubuntu-latest
+        type: string
+      target:
+        description: Jaźń target alias
+        required: true
+        default: linux-x64
+        type: string
+      python-version:
+        description: Python minor
+        required: true
+        default: "3.14"
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 35
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JAZN_RELEASE_BASE_BRANCH: master
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install builder tooling
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest pip-audit
+
+      - name: Resolve canonical target lock
+        id: release_lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          py_digits="${{ inputs.python-version }}"
+          py_digits="${py_digits//./}"
+          lock="latka_jazn/resources/dependencies/locks/core+archive/${{ inputs.target }}-py${py_digits}.txt"
+          if [ -f "$lock" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "path=$lock" >> "$GITHUB_OUTPUT"
+            echo "Using canonical release lock: $lock"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "Canonical release lock not present yet; this run will materialize bootstrap release evidence."
+          fi
+
+      - name: Materialize canonical release metadata
+        shell: bash
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root . --base-branch master --write --json
+
+      - name: Build and verify native wheelhouse
+        id: wheelhouse
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheelhouse_root="$RUNNER_TEMP/jazn-wheelhouse"
+          result="$RUNNER_TEMP/dependency-download.json"
+          lock_args=()
+          if [ "${{ steps.release_lock.outputs.present }}" = "true" ]; then
+            lock_args=(--lock-file "${{ steps.release_lock.outputs.path }}")
+          fi
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --wheelhouse-root "$wheelhouse_root" --json \
+            download --profile core --profile archive \
+            --python-version "${{ inputs.python-version }}" --platform current \
+            "${lock_args[@]}" > "$result"
+          cat "$result"
+          bundle_dir="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$result")"
+          echo "bundle_dir=$bundle_dir" >> "$GITHUB_OUTPUT"
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json verify --bundle "$bundle_dir"
+          if [ "${{ steps.release_lock.outputs.present }}" = "true" ]; then
+            cmp "${{ steps.release_lock.outputs.path }}" "$bundle_dir/JAZN_WHEELHOUSE_REQUIREMENTS.txt"
+          fi
+
+      - name: Prove hash-locked offline installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --json install --bundle "${{ steps.wheelhouse.outputs.bundle_dir }}" \
+            --environment-root "$RUNNER_TEMP/jazn-environments" --offline
+
+      - name: Audit resolved dependency lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip_audit \
+            -r "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
+            --strict --format json --output "$RUNNER_TEMP/pip-audit.json"
+          python -m pip_audit \
+            -r "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
+            --strict --format cyclonedx-json --output "$RUNNER_TEMP/dependencies.cdx.json"
+
+      - name: Build target-specific portable package set
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          dist="$RUNNER_TEMP/jazn-package-set"
+          mkdir -p "$dist/locks/core+archive"
+          py_digits="${{ inputs.python-version }}"
+          py_digits="${py_digits//./}"
+          cp "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
+            "$dist/locks/core+archive/${{ inputs.target }}-py${py_digits}.txt"
+          cp "$RUNNER_TEMP/pip-audit.json" "$dist/pip-audit.json"
+          cp "$RUNNER_TEMP/dependencies.cdx.json" "$dist/dependencies.cdx.json"
+          python -X utf8 -m latka_jazn.tools.package_distribution \
+            --root . --output-dir "$dist" --mode system-portable \
+            --dependency-bundle "${{ steps.wheelhouse.outputs.bundle_dir }}" \
+            --target "${{ inputs.target }}" --python-version "${{ inputs.python-version }}" --json
+          echo "dist=$dist" >> "$GITHUB_OUTPUT"
+          python - "$dist" <<'PY'
+          import hashlib, json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          report = {"files": []}
+          for path in sorted(root.rglob("*")):
+              if path.is_file():
+                  report["files"].append({
+                      "path": path.relative_to(root).as_posix(),
+                      "size_bytes": path.stat().st_size,
+                      "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                  })
+          (root / "JAZN_RELEASE_ARTIFACT_SHA256.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+
+      - name: Attest package-set artifacts
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: ${{ steps.package.outputs.dist }}/*
+
+      - name: Upload package set
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jazn-package-${{ inputs.target }}-py${{ inputs.python-version }}
+          path: ${{ steps.package.outputs.dist }}/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Record independent GitHub artifact digest
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["DIST"])
+          dependency_set = json.loads((root / "JAZN_DEPENDENCY_SET.json").read_text(encoding="utf-8"))
+          payload = {
+              "github_artifact_digest": os.environ["ARTIFACT_DIGEST"],
+              "jazn_dependency_sidecars": [
+                  {"filename": item["filename"], "sha256": item["sha256"]}
+                  for item in dependency_set.get("artifacts", [])
+              ],
+              "note": "GitHub artifact digest and Jaźń sidecar SHA-256 cover different layers and are intentionally recorded independently.",
+          }
+          (root / "GITHUB_ARTIFACT_DIGEST.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+        env:
+          DIST: ${{ steps.package.outputs.dist }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+
+      - name: Upload digest report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jazn-package-${{ inputs.target }}-py${{ inputs.python-version }}-digest
+          path: ${{ steps.package.outputs.dist }}/GITHUB_ARTIFACT_DIGEST.json
+          if-no-files-found: error
+          retention-days: 7

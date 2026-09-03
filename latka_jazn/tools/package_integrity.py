@@ -827,3 +827,103 @@ def verify_package_integrity_manifest_in_zips(
         "member_count": len(members),
         "errors": errors,
     }
+
+
+def verify_distribution_artifact_set(package_set_path: Path | str) -> dict[str, Any]:
+    """Verify a v3 distribution package set, dependency sidecars and embedded dependency set."""
+
+    from latka_jazn.dependencies.common import DEPENDENCY_SET_NAME
+    from latka_jazn.packaging.dependency_package_contract import verify_dependency_sidecar
+    from latka_jazn.packaging.package_set_contract import read_package_set, verify_package_set
+
+    path = Path(package_set_path).resolve()
+    base_dir = path.parent
+    errors: list[dict[str, Any]] = []
+    try:
+        payload = read_package_set(path)
+    except Exception as exc:
+        return {
+            "schema_version": schema_version("distribution_artifact_set_verification"),
+            "ok": False,
+            "package_set_path": str(path),
+            "errors": [{"code": "package_set_unreadable", "detail": f"{type(exc).__name__}:{exc}"}],
+        }
+
+    for error in verify_package_set(base_dir, payload):
+        errors.append({"code": "package_set_contract_error", "detail": error})
+
+    dependency_results: list[dict[str, Any]] = []
+    dependency_entries = [
+        item for item in payload.get("dependency_artifacts") or [] if isinstance(item, Mapping)
+    ]
+    for entry in dependency_entries:
+        filename = str(entry.get("filename") or "")
+        sidecar_path = base_dir / filename
+        result = verify_dependency_sidecar(
+            sidecar_path,
+            expected_sha256=str(entry.get("sha256") or "") or None,
+            expected_target=entry.get("target") if isinstance(entry.get("target"), Mapping) else None,
+        )
+        dependency_results.append(result)
+        if result.get("ok") is not True:
+            errors.append({
+                "code": "dependency_sidecar_verification_failed",
+                "filename": filename,
+                "detail": result.get("errors"),
+            })
+
+    expected_dependency_projection = [
+        {
+            "filename": str(item.get("filename") or ""),
+            "size_bytes": int(item.get("size_bytes") or 0),
+            "sha256": str(item.get("sha256") or "").lower(),
+            "bundle_name": item.get("bundle_name"),
+            "profiles": list(item.get("profiles") or []),
+            "target": dict(item.get("target") or {}),
+            "dependency_contract_fingerprint": item.get("dependency_contract_fingerprint"),
+            "wheelhouse_manifest_sha256": item.get("wheelhouse_manifest_sha256"),
+            "hash_lock_sha256": item.get("hash_lock_sha256"),
+        }
+        for item in dependency_entries
+    ]
+
+    embedded_dependency_sets: list[dict[str, Any]] = []
+    for output in payload.get("outputs") or []:
+        if not isinstance(output, Mapping) or str(output.get("role") or "") not in {"system", "system+memory"}:
+            continue
+        filename = str(output.get("filename") or "")
+        archive_path = base_dir / filename
+        try:
+            with zipfile.ZipFile(archive_path) as archive:
+                validate_zip_resources(archive)
+                embedded = json.loads(archive.read(DEPENDENCY_SET_NAME).decode("utf-8"))
+        except Exception as exc:
+            errors.append({
+                "code": "embedded_dependency_set_unreadable",
+                "filename": filename,
+                "detail": f"{type(exc).__name__}:{exc}",
+            })
+            continue
+        if not isinstance(embedded, dict):
+            errors.append({"code": "embedded_dependency_set_invalid", "filename": filename})
+            continue
+        embedded_dependency_sets.append({"filename": filename, "payload": embedded})
+        observed = embedded.get("artifacts") if isinstance(embedded.get("artifacts"), list) else []
+        if observed != expected_dependency_projection:
+            errors.append({"code": "embedded_dependency_set_mismatch", "filename": filename})
+        if embedded.get("network_fallback_allowed") is not False:
+            errors.append({
+                "code": "embedded_dependency_set_network_fallback_not_disabled",
+                "filename": filename,
+            })
+
+    return {
+        "schema_version": schema_version("distribution_artifact_set_verification"),
+        "ok": not errors,
+        "package_set_path": str(path),
+        "package_set_schema": payload.get("schema_version"),
+        "package_set_sha256": payload.get("package_set_sha256"),
+        "dependency_sidecars": dependency_results,
+        "embedded_dependency_sets": embedded_dependency_sets,
+        "errors": errors,
+    }

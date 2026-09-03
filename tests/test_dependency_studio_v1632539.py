@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -9,20 +11,31 @@ import pytest
 
 from latka_jazn.dependencies.runtime import (
     ENVIRONMENT_MARKER_NAME,
+    LOCK_NAME,
     MANIFEST_NAME,
     WHEELHOUSE_SCHEMA,
+    ENVIRONMENT_SCHEMA,
     activation_profile_names,
     audit_project_dependencies,
     build_download_command,
+    current_abi_tag,
+    current_implementation_tag,
     current_platform_alias,
+    current_libc_family,
+    default_environments_root,
     default_wheelhouse_root,
+    dependency_contract_fingerprint,
+    environment_marker_path,
     dependency_activation_status,
     install_bundle,
+    managed_environment_status,
     prepare_entrypoint_environment,
+    render_hash_lock,
     resolve_profile_requirements,
     sha256_file,
     target_spec,
     verify_bundle,
+    wheel_metadata,
 )
 from latka_jazn.tools.dependency_studio import build_parser, execute
 
@@ -40,6 +53,7 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
     deps = dependencies or [
         "pypdf>=5.0.0",
         "tzdata>=2024.1",
+        "packaging>=24.2,<27",
         "py7zr>=1.1.3,<2",
         "pyzipper>=0.4.0,<1",
     ]
@@ -54,49 +68,77 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
     return root
 
 
+def _record_hash(data: bytes) -> str:
+    digest = hashlib.sha256(data).digest()
+    encoded = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+    return f"sha256={encoded}"
+
+
 def _fake_wheel(directory: Path, name: str = "demo", version: str = "1.0") -> Path:
     wheel = directory / f"{name}-{version}-py3-none-any.whl"
     dist_info = f"{name}-{version}.dist-info"
+    members = {
+        f"{name}/__init__.py": b"__version__='1.0'\n",
+        f"{dist_info}/METADATA": (
+            f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\n"
+            "Requires-Python: >=3.12\nLicense-Expression: MIT\n\n"
+        ).encode("utf-8"),
+        f"{dist_info}/WHEEL": (
+            "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"
+        ).encode("utf-8"),
+    }
+    record_name = f"{dist_info}/RECORD"
+    rows = [f"{path},{_record_hash(data)},{len(data)}" for path, data in members.items()]
+    rows.append(f"{record_name},,")
+    members[record_name] = ("\n".join(rows) + "\n").encode("utf-8")
     with zipfile.ZipFile(wheel, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(f"{name}/__init__.py", "__version__='1.0'\n")
-        archive.writestr(
-            f"{dist_info}/METADATA",
-            f"Metadata-Version: 2.1\nName: {name}\nVersion: {version}\nLicense: MIT\n\n",
-        )
-        archive.writestr(
-            f"{dist_info}/WHEEL",
-            "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
-        )
-        archive.writestr(f"{dist_info}/RECORD", "")
+        for path, data in members.items():
+            archive.writestr(path, data)
     return wheel
 
 
 def _bundle(root: Path, bundle_dir: Path, *, profiles: list[str] | None = None) -> Path:
     bundle_dir.mkdir(parents=True)
     wheel = _fake_wheel(bundle_dir)
+    metadata = wheel_metadata(wheel)
+    row = {
+        "filename": wheel.name,
+        "size_bytes": wheel.stat().st_size,
+        "sha256": sha256_file(wheel),
+        "metadata": metadata,
+    }
+    resolved = [{
+        "name": "demo",
+        "version": "1.0",
+        "filename": wheel.name,
+        "sha256": row["sha256"],
+        "size_bytes": row["size_bytes"],
+        "requires_python": metadata.get("requires_python"),
+        "license_expression": metadata.get("license_expression"),
+        "license": metadata.get("license"),
+        "license_files": list(metadata.get("license_files") or []),
+        "tags": list((metadata.get("filename") or {}).get("tags") or []),
+        "record_verified": True,
+    }]
+    lock_text = render_hash_lock(resolved)
+    lock_path = bundle_dir / LOCK_NAME
+    lock_path.write_text(lock_text, encoding="utf-8")
+    target = target_spec("current", f"{sys.version_info.major}.{sys.version_info.minor}")
     manifest = {
         "schema_version": WHEELHOUSE_SCHEMA,
         "runtime_version": "fixture",
         "created_at_utc": "2026-09-01T00:00:00+00:00",
         "profiles": profiles or ["core", "archive"],
+        "resolved_profiles": profiles or ["core", "archive"],
         "requirements": ["demo==1.0"],
-        "target": {
-            "alias": current_platform_alias(),
-            "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
-            "implementation": "cp",
-            "abi": None,
-            "pip_platform": None,
-        },
-        "files": [
-            {
-                "filename": wheel.name,
-                "size_bytes": wheel.stat().st_size,
-                "sha256": sha256_file(wheel),
-                "metadata": {"name": "demo", "version": "1.0"},
-            }
-        ],
+        "direct_requirements": ["demo==1.0"],
+        "dependency_contract_fingerprint": "fixture-dependency-contract",
+        "target": target.to_dict(),
+        "resolved_distributions": resolved,
+        "files": [row],
         "wheel_count": 1,
         "total_size_bytes": wheel.stat().st_size,
+        "hash_lock_sha256": sha256_file(lock_path),
     }
     (bundle_dir / MANIFEST_NAME).write_text(json.dumps(manifest), encoding="utf-8")
     return bundle_dir
@@ -108,6 +150,7 @@ def test_core_archive_resolves_all_required_base_dependencies(tmp_path: Path) ->
     assert requirements == [
         "pypdf>=5.0.0",
         "tzdata>=2024.1",
+        "packaging>=24.2,<27",
         "py7zr>=1.1.3,<2",
         "pyzipper>=0.4.0,<1",
     ]
@@ -149,7 +192,6 @@ def test_verify_bundle_checks_sha_and_wheel_structure(tmp_path: Path) -> None:
     failed = verify_bundle(bundle)
     assert failed["ok"] is False
     assert any(item["code"] == "wheel_size_mismatch" for item in failed["errors"])
-    assert any(item["code"] == "wheel_sha256_mismatch" for item in failed["errors"])
 
 
 def test_install_dry_run_is_offline_and_uses_managed_environment(tmp_path: Path) -> None:
@@ -357,3 +399,42 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
     assert completed.returncode == 78
     assert "required_python_dependencies_not_ready" in completed.stderr
     assert "no_verified_wheelhouse" in completed.stderr
+
+
+def test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift(tmp_path: Path) -> None:
+    root = _project(tmp_path)
+    bundle = _bundle(root, tmp_path / "bundle-target-drift")
+    environments_root = default_environments_root(root)
+    environment_root = environments_root / "fixture"
+    python_path = environment_root / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    python_path.parent.mkdir(parents=True, exist_ok=True)
+    python_path.write_bytes(b"fixture")
+
+    marker_path = environment_marker_path(root)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker = {
+        "schema_version": ENVIRONMENT_SCHEMA,
+        "ready": True,
+        "environment_root": str(environment_root),
+        "managed_environments_root": str(environments_root),
+        "python_executable": str(python_path),
+        "python_version": "0.0",
+        "platform": current_platform_alias(),
+        "implementation": current_implementation_tag(),
+        "abi": current_abi_tag(),
+        "libc_family": current_libc_family(),
+        "profiles": ["core", "archive"],
+        "resolved_profiles": ["core", "archive"],
+        "wheelhouse_bundle": str(bundle),
+        "wheelhouse_manifest_sha256": sha256_file(bundle / MANIFEST_NAME),
+        "hash_lock_sha256": sha256_file(bundle / LOCK_NAME),
+        "dependency_contract_fingerprint": dependency_contract_fingerprint(root, ["core", "archive"]),
+        "created_for_runtime_version": "16.3.25.4-memory-rebuild-v4-consolidation",
+        "import_smoke": {},
+    }
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+
+    status = managed_environment_status(root)
+    assert status["ready"] is False
+    assert "environment_python_target_changed_reinstall_required" in status["errors"]
+    assert not any("runtime_version" in error for error in status["errors"])

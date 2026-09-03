@@ -72,7 +72,7 @@ def _load_sidecar(parts_dir: Path, base_zip_name: str) -> dict[str, Any]:
         raise LegacyMemoryRepackError(f"invalid legacy package sidecar: {exc}") from exc
     if not isinstance(payload, dict):
         raise LegacyMemoryRepackError("legacy package sidecar must be a JSON object")
-    if str(payload.get("schema_version") or "") not in {"jazn_package_set/v1", "jazn_package_set/v2"}:
+    if str(payload.get("schema_version") or "") not in {"jazn_package_set/v1", "jazn_package_set/v2", "jazn_package_set/v3"}:
         raise LegacyMemoryRepackError("legacy package sidecar schema is unsupported")
     if str(payload.get("profile") or "").strip().lower() != "memory":
         raise LegacyMemoryRepackError("legacy package sidecar is not profile=memory")

@@ -160,6 +160,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--daemon-console", choices=("hidden", "visible"), default=None, help="Windows: hidden nie tworzy migającego okna; visible utrzymuje jedno stałe okno diagnostyczne daemona.")
     parser.add_argument("--daemon-start-timeout", type=float, default=DEFAULT_START_TIMEOUT_SECONDS, help="Ile sekund --daemon-start czeka na odpowiedź /status.")
     parser.add_argument("--daemon-marker-output", type=Path, default=None, help="Opcjonalna ścieżka markera JAZN_ACTIVE_RUNTIME.json dla daemonu.")
+    parser.add_argument("--daemon-instance-id", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--daemon-refresh-time", action="store_true", dest="daemon_refresh_time", help="Poproś daemon o odświeżenie trusted/degraded timestamp cache i zwróć status.")
     parser.add_argument("--runtime-write-status", action="store_true", dest="runtime_write_status", help="Pokaż kontrakt dostępu do memory/sqlite/runtime_write_v1 bez zapisu.")
     parser.add_argument("--runtime-write-init", action="store_true", dest="runtime_write_init", help="Utwórz czysty memory/sqlite/runtime_write_v1 i shard manifesty, jeśli ich brakuje.")
@@ -1297,6 +1298,7 @@ def main(argv: list[str] | None = None) -> int:
             marker_output=ns.daemon_marker_output,
             heartbeat_interval=ns.daemon_heartbeat_interval,
             execution_timeout_seconds=ns.daemon_chat_timeout,
+            daemon_instance_id=ns.daemon_instance_id,
         )
 
     if ns.daemon_start:

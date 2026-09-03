@@ -7,6 +7,7 @@ import sys
 
 from latka_jazn.dependencies.runtime import (
     DependencyStudioError,
+    handoff_to_managed_python,
     prepare_entrypoint_environment,
 )
 
@@ -54,13 +55,12 @@ def _dependency_bootstrap() -> None:
 
     target = str(result.get("reexec_python") or "").strip()
     if target:
-        env = os.environ.copy()
-        env["JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE"] = "1"
-        os.execve(
+        exit_code = handoff_to_managed_python(
             target,
-            [target, str(Path(__file__).resolve()), *sys.argv[1:]],
-            env,
+            [str(Path(__file__).resolve()), *sys.argv[1:]],
+            replace_process=True,
         )
+        raise SystemExit(exit_code)
 
     if result.get("ok") is True:
         return

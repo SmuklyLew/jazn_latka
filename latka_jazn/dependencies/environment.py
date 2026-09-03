@@ -12,12 +12,18 @@ from .common import (
     DEFAULT_TIMEOUT_SECONDS,
     ENVIRONMENT_MARKER_NAME,
     ENVIRONMENT_SCHEMA,
+    LOCK_NAME,
     MANIFEST_NAME,
     DependencyStudioError,
     activation_profile_names,
+    canonicalize_distribution_name,
+    current_abi_tag,
+    current_implementation_tag,
+    current_libc_family,
     current_platform_alias,
     default_environments_root,
     default_wheelhouse_root,
+    dependency_contract_fingerprint,
     distribution_name_from_requirement,
     environment_marker_path,
     import_name_for_distribution,
@@ -25,7 +31,12 @@ from .common import (
     resolve_profile_requirements,
     runtime_version,
 )
+from .release_artifact import materialize_compatible_dependency_artifact
 from .wheelhouse import discover_bundles, read_manifest, sha256_file, verify_bundle
+
+
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
 
 
 def _env_python(root: Path) -> Path:
@@ -59,14 +70,45 @@ def _probe_python(executable: str) -> dict[str, str]:
         "('linux','arm64'):'linux-arm64',('linux','aarch64'):'linux-arm64',"
         "('darwin','arm64'):'macos-arm64',('darwin','aarch64'):'macos-arm64',"
         "('darwin','amd64'):'macos-x64',('darwin','x86_64'):'macos-x64'};"
+        "libc=(platform.libc_ver()[0] or '').lower();"
+        "lf=('musl' if 'musl' in libc else 'glibc' if libc in {'glibc','gnu libc','libc'} else 'unknown') if s=='linux' else 'not-applicable';"
+        "impl=('cp' if sys.implementation.name=='cpython' else 'pp' if sys.implementation.name=='pypy' else sys.implementation.name[:2]);"
+        "abi=(f'cp{sys.version_info.major}{sys.version_info.minor}{getattr(sys,\"abiflags\",\"\")}' if impl=='cp' else '');"
         "print(json.dumps({'python_version':f'{sys.version_info.major}.{sys.version_info.minor}',"
-        "'platform':t.get((s,m),f'{s}-{m}'),'executable':sys.executable}))"
+        "'platform':t.get((s,m),f'{s}-{m}'),'libc_family':lf,'implementation':impl,'abi':abi,'executable':sys.executable}))"
     )
     completed = _run([executable, "-X", "utf8", "-c", code], cwd=Path.cwd(), timeout=30)
     payload = json.loads(completed.stdout)
     if not isinstance(payload, dict):
         raise DependencyStudioError("Python probe returned a non-object")
-    return {str(key): str(value) for key, value in payload.items()}
+    result = {str(key): str(value) for key, value in payload.items()}
+    if result.get("platform", "").startswith("linux-") and result.get("libc_family") == "unknown":
+        result["libc_family"] = current_libc_family()
+    return result
+
+
+def _pip_inspect(env_python: Path, *, cwd: Path, timeout: int) -> dict[str, Any]:
+    completed = _run([str(env_python), "-m", "pip", "inspect", "--local"], cwd=cwd, timeout=timeout)
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise DependencyStudioError(f"pip inspect returned invalid JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise DependencyStudioError("pip inspect returned a non-object")
+    return payload
+
+
+def _inspect_inventory(payload: Mapping[str, Any]) -> dict[str, str]:
+    inventory: dict[str, str] = {}
+    for item in payload.get("installed") or []:
+        if not isinstance(item, Mapping):
+            continue
+        metadata = _mapping(item.get("metadata"))
+        name = canonicalize_distribution_name(str(metadata.get("name") or ""))
+        version = str(metadata.get("version") or "")
+        if name and version:
+            inventory[name] = version
+    return inventory
 
 
 def install_bundle(
@@ -92,29 +134,36 @@ def install_bundle(
 
     base_python = str(python_executable or sys.executable)
     probe = _probe_python(base_python)
-    target = manifest.get("target")
-    if not isinstance(target, dict):
-        target = {}
+    target = _mapping(manifest.get("target"))
     if str(target.get("alias") or "") != probe["platform"]:
         raise DependencyStudioError("Wheelhouse platform does not match selected interpreter")
     if str(target.get("python_version") or "") != probe["python_version"]:
         raise DependencyStudioError("Wheelhouse Python version does not match selected interpreter")
+    if str(target.get("implementation") or "") != probe.get("implementation"):
+        raise DependencyStudioError("Wheelhouse Python implementation does not match selected interpreter")
+    if str(target.get("abi") or "") != str(probe.get("abi") or ""):
+        raise DependencyStudioError("Wheelhouse Python ABI does not match selected interpreter")
+    if probe["platform"].startswith("linux-") and str(target.get("libc_family") or "") != probe["libc_family"]:
+        raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
 
     requirements = [str(item) for item in manifest.get("requirements") or []]
-    import_names = [
-        import_name_for_distribution(project_root, distribution_name_from_requirement(item))
-        for item in requirements
-    ]
+    import_names = [import_name_for_distribution(project_root, distribution_name_from_requirement(item)) for item in requirements]
     manifest_sha = sha256_file(bundle / MANIFEST_NAME)
+    lock_path = bundle / LOCK_NAME
+    lock_sha = sha256_file(lock_path)
+    contract_fingerprint = str(manifest.get("dependency_contract_fingerprint") or "")
+    if not contract_fingerprint:
+        raise DependencyStudioError("Wheelhouse manifest is missing dependency_contract_fingerprint")
     envs_root = Path(environments_root).resolve() if environments_root else default_environments_root(project_root)
     alias = probe["platform"]
     pyver = probe["python_version"]
-    env_root = envs_root / f"{alias}__py{pyver.replace('.', '')}__{manifest_sha[:12]}"
+    env_root = envs_root / f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__{manifest_sha[:12]}"
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
         str(env_python), "-m", "pip", "install", "--disable-pip-version-check",
-        "--no-index", "--find-links", str(bundle), *requirements,
+        "--no-index", "--only-binary=:all:", "--require-hashes", "--find-links", str(bundle),
+        "-r", str(lock_path),
     ]
     plan: dict[str, Any] = {
         "environment_root": str(env_root),
@@ -122,11 +171,14 @@ def install_bundle(
         "python_executable": str(env_python),
         "bundle_dir": str(bundle),
         "manifest_sha256": manifest_sha,
+        "hash_lock_sha256": lock_sha,
+        "dependency_contract_fingerprint": contract_fingerprint,
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
         "offline": True,
-        "commands": {"create_venv": create, "install": install, "pip_check": [str(env_python), "-m", "pip", "check"]},
+        "commands": {"create_venv": create, "install": install, "pip_check": [str(env_python), "-m", "pip", "check"],
+                     "pip_inspect": [str(env_python), "-m", "pip", "inspect", "--local"]},
     }
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
@@ -143,9 +195,17 @@ def install_bundle(
         "; print(json.dumps({n:bool(importlib.import_module(n)) for n in names},sort_keys=True))"
     )
     smoke = _run([str(env_python), "-X", "utf8", "-c", smoke_code], cwd=project_root, timeout=min(timeout_seconds, 300))
+    inspect_payload = _pip_inspect(env_python, cwd=project_root, timeout=min(timeout_seconds, 300))
+    inventory = _inspect_inventory(inspect_payload)
+    expected_inventory = {str(item.get("name") or ""): str(item.get("version") or "") for item in manifest.get("resolved_distributions") or [] if isinstance(item, Mapping)}
+    missing = {name: version for name, version in expected_inventory.items() if inventory.get(name) != version}
+    if missing:
+        raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
+
     marker: dict[str, Any] = {
         "schema_version": ENVIRONMENT_SCHEMA,
-        "runtime_version": runtime_version(),
+        "created_for_runtime_version": runtime_version(),
+        "dependency_contract_fingerprint": contract_fingerprint,
         "ready": True,
         "project_root": str(project_root),
         "environment_root": str(env_root),
@@ -153,14 +213,20 @@ def install_bundle(
         "python_executable": str(env_python),
         "python_version": pyver,
         "platform": alias,
+        "implementation": probe.get("implementation"),
+        "abi": probe.get("abi"),
+        "libc_family": probe.get("libc_family"),
         "profiles": plan["profiles"],
         "resolved_profiles": plan["resolved_profiles"],
         "requirements": requirements,
         "wheelhouse_bundle": str(bundle),
         "wheelhouse_manifest_sha256": manifest_sha,
+        "hash_lock_sha256": lock_sha,
         "pip_check": pip_check.stdout.strip() or "No broken requirements found.",
         "import_smoke": json.loads(smoke.stdout.strip() or "{}"),
-        "truth_boundary": "ready=true proves verified local wheelhouse install + pip check + direct import smoke; it does not certify package security.",
+        "pip_inspect": inspect_payload,
+        "installed_inventory": inventory,
+        "truth_boundary": "v2 ready proves verified hash-locked offline wheelhouse install + pip check + import smoke + pip inspect inventory.",
     }
     env_marker = env_root / ENVIRONMENT_MARKER_NAME
     _write_json(env_marker, marker)
@@ -170,15 +236,9 @@ def install_bundle(
     activation_marker = environment_marker_path(project_root)
     if activation_eligible:
         _write_json(activation_marker, marker)
-    return {
-        "ok": True,
-        "state": "environment_ready" if activation_eligible else "optional_environment_ready",
-        "environment_marker_path": str(env_marker),
-        "activation_marker_path": str(activation_marker),
-        "activation_marker_updated": activation_eligible,
-        "marker": marker,
-        **plan,
-    }
+    return {"ok": True, "state": "environment_ready" if activation_eligible else "optional_environment_ready",
+            "environment_marker_path": str(env_marker), "activation_marker_path": str(activation_marker),
+            "activation_marker_updated": activation_eligible, "marker": marker, **plan}
 
 
 def managed_environment_status(root: Path | str) -> dict[str, Any]:
@@ -195,28 +255,45 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
     declared = str(marker.get("managed_environments_root") or "").strip()
     allowed = Path(declared).expanduser().resolve() if declared else default_environments_root(project_root).resolve()
     try:
-        resolved_env = env_root.resolve()
-        resolved_env.relative_to(allowed)
+        resolved_env = env_root.resolve(); resolved_env.relative_to(allowed)
     except (OSError, RuntimeError, ValueError):
-        resolved_env = env_root
-        errors.append("environment_root_outside_managed_root")
+        resolved_env = env_root; errors.append("environment_root_outside_managed_root")
     try:
-        resolved_python = python_path.resolve()
-        resolved_python.relative_to(resolved_env)
+        resolved_python = python_path.resolve(); resolved_python.relative_to(resolved_env)
     except (OSError, RuntimeError, ValueError):
-        resolved_python = python_path
-        errors.append("python_outside_environment")
+        resolved_python = python_path; errors.append("python_outside_environment")
     if not resolved_python.is_file():
         errors.append("python_missing")
-    observed_runtime = str(marker.get("runtime_version") or "")
-    if runtime_version() != "unknown" and observed_runtime not in {runtime_version(), "unknown"}:
-        errors.append("runtime_version_changed_reinstall_required")
+    current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    if str(marker.get("python_version") or "") != current_python_version:
+        errors.append("environment_python_target_changed_reinstall_required")
+    if str(marker.get("platform") or "") != current_platform_alias():
+        errors.append("environment_platform_target_changed_reinstall_required")
+    if str(marker.get("implementation") or "") != current_implementation_tag():
+        errors.append("environment_implementation_changed_reinstall_required")
+    if str(marker.get("abi") or "") != str(current_abi_tag() or ""):
+        errors.append("environment_abi_changed_reinstall_required")
+    if current_platform_alias().startswith("linux-") and str(marker.get("libc_family") or "") != current_libc_family():
+        errors.append("environment_libc_changed_reinstall_required")
+
+    profiles = list(marker.get("resolved_profiles") or marker.get("profiles") or [])
+    try:
+        current_fingerprint = dependency_contract_fingerprint(project_root, profiles)
+    except DependencyStudioError:
+        current_fingerprint = ""
+    if current_fingerprint and str(marker.get("dependency_contract_fingerprint") or "") != current_fingerprint:
+        errors.append("dependency_contract_changed_reinstall_required")
     manifest_path = Path(str(marker.get("wheelhouse_bundle") or "")) / MANIFEST_NAME
-    expected_sha = str(marker.get("wheelhouse_manifest_sha256") or "")
+    lock_path = manifest_path.parent / LOCK_NAME
     if not manifest_path.is_file():
         errors.append("wheelhouse_manifest_missing")
-    elif sha256_file(manifest_path) != expected_sha:
+    elif sha256_file(manifest_path) != str(marker.get("wheelhouse_manifest_sha256") or ""):
         errors.append("wheelhouse_manifest_changed")
+    if not lock_path.is_file() or sha256_file(lock_path) != str(marker.get("hash_lock_sha256") or ""):
+        errors.append("hash_lock_changed")
+    smoke = marker.get("import_smoke") if isinstance(marker.get("import_smoke"), dict) else {}
+    if smoke and not all(value is True for value in smoke.values()):
+        errors.append("import_smoke_not_ready")
     return {
         "ready": not errors,
         "status": "ready" if not errors else "invalid",
@@ -224,7 +301,9 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
         "python_executable": str(resolved_python),
         "environment_root": str(resolved_env),
         "profiles": list(marker.get("profiles") or []),
-        "resolved_profiles": list(marker.get("resolved_profiles") or marker.get("profiles") or []),
+        "resolved_profiles": profiles,
+        "created_for_runtime_version": marker.get("created_for_runtime_version"),
+        "dependency_contract_fingerprint": marker.get("dependency_contract_fingerprint"),
         "errors": errors,
         "wheelhouse_manifest_present": manifest_path.is_file(),
     }
@@ -248,9 +327,10 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
     managed_ready = bool(managed.get("ready") is True and managed_py_ok and managed_covers)
     required_ready = bool(current_ready or managed_ready)
     return {
-        "schema_version": "jazn_dependency_activation_status/v1",
+        "schema_version": "jazn_dependency_activation_status/v2",
         "required_ready": required_ready,
         "activation_profiles": list(profiles),
+        "dependency_contract_fingerprint": dependency_contract_fingerprint(project_root, profiles),
         "requirements": [item.to_dict() for item in current],
         "python_supported": python_supported,
         "minimum_python": "3.12",
@@ -258,13 +338,7 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
         "current_interpreter": sys.executable,
         "managed_environment": managed,
         "managed_environment_covers_required_profiles": managed_covers,
-        "selected_source": (
-            "current_interpreter"
-            if current_ready
-            else "managed_environment"
-            if managed_ready
-            else "missing"
-        ),
+        "selected_source": "current_interpreter" if current_ready else "managed_environment" if managed_ready else "missing",
         "missing_or_incompatible_distributions": [item.distribution for item in current if not item.ready],
         "truth_boundary": "Required readiness proves Python/package availability only; optional capability profiles remain separate.",
     }
@@ -277,9 +351,7 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     status = dependency_activation_status(project_root)
     if status.get("current_interpreter_ready") is True:
         return {"ok": True, "state": "current_interpreter_ready", "reexec_python": None, "status": status}
-    managed = status.get("managed_environment")
-    if not isinstance(managed, dict):
-        managed = {}
+    managed = _mapping(status.get("managed_environment"))
     managed_python = str(managed.get("python_executable") or "")
     if status.get("required_ready") is True and managed.get("ready") is True and managed_python:
         try:
@@ -290,19 +362,52 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     disabled = os.environ.get("JAZN_DEPENDENCY_AUTOBOOTSTRAP", "1").strip().lower() in {"0", "false", "no", "off"}
     if not auto_install or disabled:
         return {"ok": False, "state": "dependencies_missing_autobootstrap_disabled", "reexec_python": None, "status": status}
+
+    artifact = materialize_compatible_dependency_artifact(project_root)
     explicit = os.environ.get("JAZN_DEPENDENCY_WHEELHOUSE")
     wheelhouse = Path(explicit).expanduser().resolve() if explicit else default_wheelhouse_root(project_root)
-    bundles = discover_bundles(
-        project_root,
-        wheelhouse_root=wheelhouse,
-        required_profiles=activation_profile_names(project_root),
-        python_version=f"{sys.version_info.major}.{sys.version_info.minor}",
-        platform_alias=current_platform_alias(),
-        verify=True,
-    )
+    bundles = discover_bundles(project_root, wheelhouse_root=wheelhouse,
+                               required_profiles=activation_profile_names(project_root),
+                               python_version=f"{sys.version_info.major}.{sys.version_info.minor}",
+                               platform_alias=current_platform_alias(), verify=True)
     usable = next((item for item in bundles if (item.get("verification") or {}).get("ok") is True), None)
     if usable is None:
-        return {"ok": False, "state": "dependencies_missing_no_verified_wheelhouse", "reexec_python": None, "wheelhouse_root": str(wheelhouse), "status": status}
+        artifact_state = str(artifact.get("state") or "")
+        state = (
+            artifact_state
+            if artifact_state in {"no_compatible_verified_dependency_bundle", "dependency_package_set_unverified"}
+            else "dependencies_missing_no_verified_wheelhouse"
+        )
+        return {"ok": False, "state": state, "reexec_python": None, "wheelhouse_root": str(wheelhouse),
+                "dependency_artifact_discovery": artifact, "status": status}
     installed = install_bundle(project_root, usable["bundle_dir"], offline=True)
     new_python = str((installed.get("marker") or {}).get("python_executable") or "")
-    return {"ok": bool(installed.get("ok")), "state": "managed_environment_installed", "reexec_python": new_python or None, "installation": installed, "status_before": status}
+    return {"ok": bool(installed.get("ok")), "state": "managed_environment_installed", "reexec_python": new_python or None,
+            "installation": installed, "dependency_artifact_discovery": artifact, "status_before": status}
+
+
+def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
+    project_root = Path(root).resolve()
+    envs_root = default_environments_root(project_root)
+    marker = read_manifest(environment_marker_path(project_root)) or {}
+    active = str(marker.get("environment_root") or "")
+    active_path = Path(active).resolve() if active else None
+    candidates: list[str] = []
+    removed: list[str] = []
+    if envs_root.is_dir():
+        for child in sorted(envs_root.iterdir()):
+            if not child.is_dir() or child.is_symlink():
+                continue
+            try:
+                is_active = active_path is not None and child.resolve() == active_path
+            except OSError:
+                is_active = False
+            if is_active:
+                continue
+            candidates.append(str(child))
+            if not dry_run:
+                shutil.rmtree(child)
+                removed.append(str(child))
+    return {"ok": True, "dry_run": dry_run, "managed_environments_root": str(envs_root),
+            "active_environment": str(active_path) if active_path else None,
+            "gc_candidates": candidates, "removed": removed}

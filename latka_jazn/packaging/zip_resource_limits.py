@@ -4,6 +4,10 @@ from dataclasses import asdict, dataclass
 import os
 import zipfile
 
+from latka_jazn.archive.resource_policy import (
+    ArchiveResourcePolicy, ArchiveResourcePolicyError, validate_member_inventory,
+)
+
 
 class ZipResourceLimitError(ValueError):
     pass
@@ -48,6 +52,31 @@ def validate_zip_resources(
 ) -> dict[str, int | float]:
     active = limits or ZipResourceLimits.from_env()
     infos = archive.infolist()
+    try:
+        validate_member_inventory(
+            infos,
+            policy=ArchiveResourcePolicy(
+                max_members=active.max_members,
+                max_total_uncompressed_bytes=active.max_total_uncompressed_bytes,
+                max_member_bytes=active.max_member_uncompressed_bytes,
+                max_compression_ratio=active.max_compression_ratio,
+            ),
+        )
+    except ArchiveResourcePolicyError as exc:
+        # Preserve the established ZIP-specific error contract for callers
+        # while the shared policy engine uses archive-generic diagnostics.
+        message = str(exc)
+        legacy_prefixes = {
+            "archive_member_limit_exceeded:": "zip_member_limit_exceeded:",
+            "archive_member_size_limit_exceeded:": "zip_member_size_limit_exceeded:",
+            "archive_total_size_limit_exceeded:": "zip_total_size_limit_exceeded:",
+            "archive_compression_ratio_limit_exceeded:": "zip_compression_ratio_limit_exceeded:",
+        }
+        for current, legacy in legacy_prefixes.items():
+            if message.startswith(current):
+                message = legacy + message[len(current):]
+                break
+        raise ZipResourceLimitError(message) from exc
     if len(infos) > active.max_members:
         raise ZipResourceLimitError(
             f"zip_member_limit_exceeded:{len(infos)}>{active.max_members}"
