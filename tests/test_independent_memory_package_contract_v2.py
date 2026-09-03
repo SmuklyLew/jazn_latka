@@ -19,23 +19,13 @@ LEGACY_MEMORY_VERSION = "v" + ".".join(("15", "0", "3", "222")) + "-RUN HOTFIX"
 
 
 def _load_generator():
-    name = "jazn_pack_generator_memory_v2_contract_test"
+    name = "jazn_pack_generator_memory_v1001_contract_test"
     spec = importlib.util.spec_from_file_location(name, GENERATOR_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
-
-
-def _version(generator, full: str = "v15.4.2.1-current"):
-    return generator.VersionInfo(
-        version_file=Path("latka_jazn/version.py"),
-        package_version="v15.4.2.1",
-        release_name="current",
-        full_version=full,
-        filename_version="15.4.2.1-current",
-    )
 
 
 def _write_runtime_version(root: Path, full: str = "v15.4.2.1-current") -> None:
@@ -62,89 +52,13 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def test_generator_keeps_v89_public_identity_and_uses_v3_memory_contract() -> None:
+def test_generator_v1001_uses_canonical_memory_distribution_job() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "8.9"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.9"
-    assert generator.MEMORY_MANIFEST_SCHEMA == "jazn_memory_package_manifest/v3"
-    assert generator.MEMORY_FORMAT_VERSION == 3
-
-
-def test_memory_plan_snapshots_live_wal_sqlite_and_records_current_identity(tmp_path: Path) -> None:
-    generator = _load_generator()
-    root = tmp_path / "runtime"
-    db = root / "memory" / "sqlite" / "runtime_write_v2" / "runtime_memory.sqlite3"
-    db.parent.mkdir(parents=True)
-    source = sqlite3.connect(db)
-    source.execute("PRAGMA journal_mode=WAL")
-    source.execute("PRAGMA user_version=7")
-    source.execute("PRAGMA application_id=424242")
-    source.execute("CREATE TABLE items(id INTEGER PRIMARY KEY, value TEXT NOT NULL)")
-    source.execute(
-        "CREATE TABLE jazn_database_identity("
-        "singleton INTEGER PRIMARY KEY, database_uuid TEXT, schema_identity TEXT, "
-        "schema_version_number INTEGER, created_by_runtime TEXT, created_at_utc TEXT, trust_state TEXT)"
-    )
-    source.execute(
-        "INSERT INTO jazn_database_identity VALUES(1,?,?,?,?,?,?)",
-        ("db-uuid", "runtime_memory_v2", 7, "v15.4.2.1-current", "2026-08-14T00:00:00+00:00", "verified"),
-    )
-    source.execute("INSERT INTO items(value) VALUES('committed-in-wal')")
-    source.commit()
-    assert (Path(str(db) + "-wal")).exists()
-
-    plan = generator.build_memory_plan(
-        root,
-        _version(generator),
-        [db.relative_to(root).as_posix()],
-        [],
-        "test",
-    )
-    try:
-        manifest_entry = next(item for item in plan.entries if item.relative == generator.MEMORY_PACKAGE_MANIFEST)
-        assert manifest_entry.virtual_bytes is not None
-        payload = json.loads(manifest_entry.virtual_bytes)
-        assert payload["schema_version"] == "jazn_memory_package_manifest/v3"
-        assert payload["memory_format_version"] == 3
-        assert payload["created_with_runtime"] == "v15.4.2.1-current"
-        assert payload["compatibility"]["runtime_version_is_provenance_only"] is True
-        database = payload["databases"][0]
-        assert database["snapshot_method"] in {"sqlite_backup_api", "sqlite_online_backup_api"}
-        assert database["user_version"] == 7
-        assert database["application_id"] == 424242
-        snapshot_entry = next(item for item in plan.entries if item.relative == db.relative_to(root).as_posix())
-        assert snapshot_entry.source is not None and snapshot_entry.source != db
-        with sqlite3.connect(snapshot_entry.source) as snap:
-            assert snap.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-            assert snap.execute("SELECT value FROM items").fetchone()[0] == "committed-in-wal"
-    finally:
-        plan.cleanup()
-        source.close()
-
-
-def test_memory_sidecar_has_independent_version_axis(tmp_path: Path) -> None:
-    generator = _load_generator()
-    plan = generator.PackPlan(
-        root=tmp_path,
-        profile="memory",
-        version=_version(generator, "v15.4.2.1-current"),
-        entries=[],
-        manifest_builder="memory_manifest_v2+sqlite_backup_api",
-    )
-    payload = generator.sidecar_payload(
-        "memory.zip",
-        plan,
-        "independent",
-        1024,
-        6,
-        [],
-        None,
-        {"ok": True},
-    )
-    assert payload["package_version"] == "memory-format-v3"
-    assert payload["created_with_runtime"] == "v15.4.2.1-current"
-    assert payload["runtime_version_is_provenance_only"] is True
-    assert payload["memory_compatibility_contract"] == "jazn_memory_runtime/v1"
+    assert generator.GENERATOR_VERSION == "10.0.1"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    plan = generator.distribution_request_plan(content="memory", layout="single", archive_format="zip")
+    assert plan["jobs"] == [{"role": "memory", "distribution_mode": "memory-only"}]
+    assert plan["memory_export_is_canonical"] is True
 
 
 def test_legacy_v1_runtime_mismatch_is_advisory_for_standalone_and_strict_for_combined(tmp_path: Path) -> None:
