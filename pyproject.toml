@@ -20,6 +20,7 @@ dependencies = [
 pythonpath = ["."]
 testpaths = ["tests"]
 norecursedirs = ["archive"]
+strict_config = true
 addopts = ["--strict-markers"]
 markers = [
   "unit: isolated deterministic unit test",
