@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.9 completes Generator 8.9 release-hardening snapshot compliance after CI validation.
-DISTRIBUTION_VERSION = "16.3.25.5.9"
-PACKAGE_VERSION = "16.3.25.5.9"
-PACKAGE_RELEASE_NAME = "pack-generator-v89-release-hardening"
+# v16.3.25.5.10 converges Generator 8.9 public delegation, import isolation, and CI monkeypatch contracts.
+DISTRIBUTION_VERSION = "16.3.25.5.10"
+PACKAGE_VERSION = "16.3.25.5.10"
+PACKAGE_RELEASE_NAME = "pack-generator-v89-ci-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
