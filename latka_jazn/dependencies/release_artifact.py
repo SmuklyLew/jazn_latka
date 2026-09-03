@@ -75,6 +75,7 @@ def _verified_package_set_for_dependency_set(
             return candidate, package_set, rejected
     return None, None, rejected
 
+
 def materialize_compatible_dependency_artifact(root: Path | str) -> dict[str, Any]:
     project_root = Path(root).resolve()
     set_path, payload = load_dependency_set(project_root)
@@ -132,7 +133,13 @@ def materialize_compatible_dependency_artifact(root: Path | str) -> dict[str, An
             })
             continue
         bundle_name = str(raw.get("bundle_name") or Path(name).stem)
-        destination = default_wheelhouse_root(project_root) / bundle_name
+        explicit_wheelhouse = os.environ.get("JAZN_DEPENDENCY_WHEELHOUSE")
+        wheelhouse_root = (
+            Path(explicit_wheelhouse).expanduser().resolve()
+            if explicit_wheelhouse and explicit_wheelhouse.strip()
+            else default_wheelhouse_root(project_root)
+        )
+        destination = wheelhouse_root / bundle_name
         try:
             from latka_jazn.packaging.dependency_package_contract import extract_verified_dependency_sidecar
             result = extract_verified_dependency_sidecar(
