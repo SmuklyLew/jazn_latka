@@ -1,0 +1,241 @@
+name: package-distribution-cleanroom
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency_artifact:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.12"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.13"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.14"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.12"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.13"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.14"
+    uses: ./.github/workflows/dependency-artifacts.yml
+    with:
+      runner: ${{ matrix.runner }}
+      target: ${{ matrix.target }}
+      python-version: ${{ matrix.python }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+  cleanroom:
+    needs: dependency_artifact
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.12"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.13"
+          - runner: windows-latest
+            target: windows-x64
+            python: "3.14"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.12"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.13"
+          - runner: ubuntu-latest
+            target: linux-x64
+            python: "3.14"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      PIP_NO_INDEX: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Set up ambient Python only
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Download built package artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-${{ matrix.target }}-py${{ matrix.python }}
+          path: ${{ runner.temp }}/jazn-consumer
+
+      - name: Prove ambient Python lacks archive dependencies
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.util
+          assert importlib.util.find_spec("py7zr") is None
+          assert importlib.util.find_spec("pyzipper") is None
+          PY
+
+      - name: Extract only the transported system ZIP
+        id: extract
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_dir="$RUNNER_TEMP/jazn-consumer"
+          runtime_dir="$RUNNER_TEMP/jazn-runtime"
+          system_zip="$(python - "$package_dir" <<'PY'
+          import pathlib, sys, zipfile
+          root = pathlib.Path(sys.argv[1])
+          matches=[]
+          for path in root.glob("*.zip"):
+              with zipfile.ZipFile(path) as z:
+                  if "run.py" in z.namelist() and "JAZN_DEPENDENCY_SET.json" in z.namelist():
+                      matches.append(path)
+          assert len(matches) == 1, matches
+          print(matches[0])
+          PY
+          )"
+          python - "$system_zip" "$runtime_dir" <<'PY'
+          import pathlib, sys, zipfile
+          source, target = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+          target.mkdir(parents=True, exist_ok=True)
+          with zipfile.ZipFile(source) as z:
+              z.extractall(target)
+          PY
+          echo "runtime_dir=$runtime_dir" >> "$GITHUB_OUTPUT"
+          echo "package_dir=$package_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Ambient run.py performs verified offline handoff
+        shell: bash
+        env:
+          JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
+        run: |
+          set -euo pipefail
+          cd "${{ steps.extract.outputs.runtime_dir }}"
+          python run.py status --json > "$RUNNER_TEMP/status.json"
+          python -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$RUNNER_TEMP/status.json"
+          python run.py doctor --json > "$RUNNER_TEMP/doctor.json"
+          python -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8"))' "$RUNNER_TEMP/doctor.json"
+          python run.py start --json > "$RUNNER_TEMP/start.json"
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
+          python run.py status --json > "$RUNNER_TEMP/status-after-start.json"
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; r=d.get("readiness") or {}; st=p.get("startup") or {}; assert p.get("ok") is True, p; assert p.get("runtime_core_ready") is True, p; assert p.get("runtime_write_ready") is True, p; assert d.get("active_state") == "active_trusted", d; assert d.get("endpoint_reachable") is True, d; assert d.get("heartbeat_fresh") is True, d; assert r.get("ok") is True, r; assert st.get("voice_live_ready") is True, st' "$RUNNER_TEMP/status-after-start.json"
+          python run.py start --json > "$RUNNER_TEMP/start-again.json"
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("already_running") is True or (p.get("daemon") or {}).get("already_running") is True, p' "$RUNNER_TEMP/start-again.json"
+          python run.py stop --json > "$RUNNER_TEMP/stop.json"
+
+      - name: Reject package when dependency sidecar is absent
+        shell: bash
+        env:
+          JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
+        run: |
+          set -euo pipefail
+          package_dir="${{ steps.extract.outputs.package_dir }}"
+          sidecar="$(find "$package_dir" -maxdepth 1 -name '*.dependencies-*.zip' -print -quit)"
+          test -n "$sidecar"
+          mv "$sidecar" "$sidecar.hidden"
+          rm -rf "${{ steps.extract.outputs.runtime_dir }}/latka_jazn/local_resources/python"
+          set +e
+          cd "${{ steps.extract.outputs.runtime_dir }}"
+          python run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
+          rc=$?
+          set -e
+          mv "$sidecar.hidden" "$sidecar"
+          test "$rc" -ne 0
+          grep -q "no_compatible_verified_dependency_bundle\|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
+
+  persist_release_locks:
+    name: persist canonical dependency locks
+    if: github.event_name == 'push' && (github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence' || github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence-final')
+    needs: dependency_artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Download Windows 3.12 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-windows-x64-py3.12
+          path: ${{ runner.temp }}/release-locks/windows-x64-py312
+      - name: Download Windows 3.13 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-windows-x64-py3.13
+          path: ${{ runner.temp }}/release-locks/windows-x64-py313
+      - name: Download Windows 3.14 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-windows-x64-py3.14
+          path: ${{ runner.temp }}/release-locks/windows-x64-py314
+      - name: Download Linux 3.12 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-linux-x64-py3.12
+          path: ${{ runner.temp }}/release-locks/linux-x64-py312
+      - name: Download Linux 3.13 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-linux-x64-py3.13
+          path: ${{ runner.temp }}/release-locks/linux-x64-py313
+      - name: Download Linux 3.14 package evidence
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: jazn-package-linux-x64-py3.14
+          path: ${{ runner.temp }}/release-locks/linux-x64-py314
+
+      - name: Verify and persist exact native locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination="latka_jazn/resources/dependencies/locks/core+archive"
+          mkdir -p "$destination"
+          count=0
+          while IFS= read -r lock; do
+            name="$(basename "$lock")"
+            case "$name" in
+              windows-x64-py312.txt|windows-x64-py313.txt|windows-x64-py314.txt|linux-x64-py312.txt|linux-x64-py313.txt|linux-x64-py314.txt) ;;
+              *) continue ;;
+            esac
+            cp "$lock" "$destination/$name"
+            count=$((count + 1))
+          done < <(find "$RUNNER_TEMP/release-locks" -type f -path '*/locks/core+archive/*.txt' | sort)
+          test "$count" -eq 6
+          test "$(find "$destination" -maxdepth 1 -type f -name '*.txt' | wc -l)" -ge 6
+
+          if git diff --quiet -- "$destination"; then
+            echo "Canonical release locks already match native artifacts."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$destination"
+          git commit -m "release: lock v16.3.25.5 dependency matrix [skip ci-lock-bootstrap]"
+          git push origin "HEAD:${GITHUB_REF#refs/heads/}"

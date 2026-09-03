@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
 import importlib.metadata
 import importlib.util
 import json
@@ -8,15 +9,21 @@ import os
 from pathlib import Path
 import platform as platform_module
 import re
+import subprocess
 import sys
+import sysconfig
 import tomllib
 from typing import Any, Iterable, Sequence
 
 PROFILE_SCHEMA = "jazn_dependency_profiles/v1"
-WHEELHOUSE_SCHEMA = "jazn_dependency_wheelhouse/v1"
-ENVIRONMENT_SCHEMA = "jazn_dependency_environment/v1"
+WHEELHOUSE_SCHEMA = "jazn_dependency_wheelhouse/v2"
+ENVIRONMENT_SCHEMA = "jazn_dependency_environment/v2"
+DEPENDENCY_ARTIFACT_SCHEMA = "jazn_dependency_artifact/v1"
+DEPENDENCY_SET_SCHEMA = "jazn_dependency_set/v1"
 MANIFEST_NAME = "JAZN_WHEELHOUSE_MANIFEST.json"
+LOCK_NAME = "JAZN_WHEELHOUSE_REQUIREMENTS.txt"
 ENVIRONMENT_MARKER_NAME = "JAZN_DEPENDENCY_ENVIRONMENT.json"
+DEPENDENCY_SET_NAME = "JAZN_DEPENDENCY_SET.json"
 DEFAULT_TIMEOUT_SECONDS = 1800
 
 
@@ -31,9 +38,16 @@ class TargetSpec:
     implementation: str
     abi: str | None
     pip_platform: str | None
+    platform_family: str
+    architecture: str
+    libc_family: str
+    compatible_tags: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["compatible_platform_tags"] = list(self.compatible_tags)
+        payload.pop("compatible_tags", None)
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,11 +72,31 @@ def runtime_version() -> str:
         return "unknown"
 
 
+def _packaging_requirement(text: str) -> Any | None:
+    """Parse with PyPA packaging when available, without making bootstrap depend on it."""
+    try:
+        from packaging.requirements import Requirement
+    except ImportError:
+        return None
+    try:
+        return Requirement(str(text))
+    except Exception as exc:
+        raise DependencyStudioError(f"Invalid requirement: {text!r}: {exc}") from exc
+
+
 def canonicalize_distribution_name(value: str) -> str:
-    return re.sub(r"[-_.]+", "-", str(value or "").strip()).lower()
+    try:
+        from packaging.utils import canonicalize_name
+    except ImportError:
+        return re.sub(r"[-_.]+", "-", str(value or "").strip()).lower()
+    return str(canonicalize_name(str(value or "").strip()))
 
 
 def distribution_name_from_requirement(requirement: str) -> str:
+    parsed = _packaging_requirement(requirement)
+    if parsed is not None:
+        return canonicalize_distribution_name(parsed.name)
+    # stdlib-only bootstrap fallback supports package names and ordinary extras.
     match = re.match(r"^([A-Za-z0-9][A-Za-z0-9._-]*)", str(requirement or "").strip())
     if not match:
         raise DependencyStudioError(f"Invalid requirement: {requirement!r}")
@@ -115,9 +149,7 @@ def dedupe_requirements(requirements: Iterable[str]) -> list[str]:
         name = distribution_name_from_requirement(requirement)
         previous = seen.get(name)
         if previous is not None and previous != requirement:
-            raise DependencyStudioError(
-                f"Conflicting requirements for {name}: {previous!r} vs {requirement!r}"
-            )
+            raise DependencyStudioError(f"Conflicting requirements for {name}: {previous!r} vs {requirement!r}")
         if previous is None:
             seen[name] = requirement
             result.append(requirement)
@@ -160,26 +192,31 @@ def resolve_profile_requirements(root: Path | str, profile_names: Sequence[str])
     for name in expand_profile_names(root, profile_names):
         raw = profiles[name]
         if raw.get("source") == "project.dependencies":
-            excluded = {
-                canonicalize_distribution_name(str(item))
-                for item in raw.get("exclude_distributions") or []
-            }
-            requirements.extend(
-                item for item in base
-                if distribution_name_from_requirement(item) not in excluded
-            )
+            excluded = {canonicalize_distribution_name(str(item)) for item in raw.get("exclude_distributions") or []}
+            requirements.extend(item for item in base if distribution_name_from_requirement(item) not in excluded)
         group = str(raw.get("source_optional_group") or "").strip()
         if group:
             if group not in optional:
-                raise DependencyStudioError(
-                    f"Profile {name} references missing pyproject optional group {group!r}"
-                )
+                raise DependencyStudioError(f"Profile {name} references missing pyproject optional group {group!r}")
             requirements.extend(optional[group])
         explicit = raw.get("requirements") or []
         if not isinstance(explicit, list):
             raise DependencyStudioError(f"Invalid requirements in profile {name}")
         requirements.extend(str(item) for item in explicit)
     return dedupe_requirements(requirements)
+
+
+def dependency_contract_fingerprint(root: Path | str, profile_names: Sequence[str]) -> str:
+    project_root = Path(root).resolve()
+    registry = load_profile_registry(project_root)
+    payload = {
+        "profiles": list(profile_names),
+        "resolved_profiles": list(expand_profile_names(project_root, profile_names)),
+        "requirements": resolve_profile_requirements(project_root, profile_names),
+        "registry": registry,
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
 
 
 def activation_profile_names(root: Path | str) -> tuple[str, ...]:
@@ -201,8 +238,7 @@ def _specifier_text(requirement: str) -> str:
     match = re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]*(?:\[[^\]]+\])?", str(requirement).strip())
     if not match:
         return ""
-    remainder = str(requirement)[match.end():].split(";", 1)[0]
-    return remainder.strip()
+    return str(requirement)[match.end():].split(";", 1)[0].strip()
 
 
 def _version_tuple(value: str) -> tuple[int, ...] | None:
@@ -211,6 +247,14 @@ def _version_tuple(value: str) -> tuple[int, ...] | None:
 
 
 def version_satisfies_requirement(installed_version: str, requirement: str) -> bool | None:
+    parsed = _packaging_requirement(requirement)
+    if parsed is not None:
+        try:
+            from packaging.version import Version
+            return Version(str(installed_version)) in parsed.specifier
+        except Exception:
+            return None
+    # Minimal bootstrap fallback. Full PEP 440 validation is performed after handoff.
     specifier = _specifier_text(requirement)
     if not specifier:
         return True
@@ -229,15 +273,8 @@ def version_satisfies_requirement(installed_version: str, requirement: str) -> b
         left = installed + (0,) * (width - len(installed))
         right = expected + (0,) * (width - len(expected))
         comparison = (left > right) - (left < right)
-        passed = {
-            ">=": comparison >= 0,
-            "<=": comparison <= 0,
-            ">": comparison > 0,
-            "<": comparison < 0,
-            "==": comparison == 0,
-            "!=": comparison != 0,
-        }[operator]
-        if not passed:
+        if not {">=": comparison >= 0, "<=": comparison <= 0, ">": comparison > 0, "<": comparison < 0,
+                "==": comparison == 0, "!=": comparison != 0}[operator]:
             return False
     return True
 
@@ -255,19 +292,9 @@ def inspect_current_requirements(root: Path | str, requirements: Sequence[str]) 
             import_available = importlib.util.find_spec(import_name) is not None
         except (ImportError, AttributeError, ValueError):
             import_available = False
-        version_ok = (
-            version_satisfies_requirement(installed_version, requirement)
-            if installed_version is not None else False
-        )
-        statuses.append(RequirementStatus(
-            requirement=requirement,
-            distribution=distribution,
-            import_name=import_name,
-            installed_version=installed_version,
-            import_available=import_available,
-            version_satisfies=version_ok,
-            ready=bool(import_available and version_ok is True),
-        ))
+        version_ok = version_satisfies_requirement(installed_version, requirement) if installed_version is not None else False
+        statuses.append(RequirementStatus(requirement, distribution, import_name, installed_version,
+                                          import_available, version_ok, bool(import_available and version_ok is True)))
     return statuses
 
 
@@ -302,6 +329,28 @@ def current_platform_alias() -> str:
     return table.get((system, machine), f"{system or 'unknown'}-{machine or 'unknown'}")
 
 
+def current_libc_family() -> str:
+    if platform_module.system().lower() != "linux":
+        return "not-applicable"
+    libc_name, _ = platform_module.libc_ver()
+    lowered = str(libc_name or "").lower()
+    if "musl" in lowered:
+        return "musl"
+    if lowered in {"glibc", "gnu libc", "libc"}:
+        return "glibc"
+    # platform.libc_ver can be empty in minimal containers. Ask ldd without making it mandatory.
+    try:
+        cp = subprocess.run(["ldd", "--version"], capture_output=True, text=True, timeout=2, check=False)
+        text = (cp.stdout + cp.stderr).lower()
+        if "musl" in text:
+            return "musl"
+        if "glibc" in text or "gnu libc" in text:
+            return "glibc"
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return "unknown"
+
+
 def normalize_python_version(value: str | None) -> str:
     raw = str(value or f"{sys.version_info.major}.{sys.version_info.minor}").strip()
     match = re.fullmatch(r"(\d+)\.(\d+)(?:\.\d+)?", raw)
@@ -310,31 +359,80 @@ def normalize_python_version(value: str | None) -> str:
     return f"{int(match.group(1))}.{int(match.group(2))}"
 
 
+def _architecture_for_alias(alias: str) -> str:
+    if alias.endswith("-x64"):
+        return "x86_64"
+    if alias.endswith("-arm64"):
+        return "arm64"
+    return platform_module.machine().lower() or "unknown"
+
+
+def current_implementation_tag() -> str:
+    name = str(getattr(getattr(sys, "implementation", None), "name", "") or "").strip().lower()
+    if name == "cpython":
+        return "cp"
+    if name == "pypy":
+        return "pp"
+    return name[:2] or "unknown"
+
+
+def current_abi_tag() -> str | None:
+    implementation = current_implementation_tag()
+    if implementation == "cp":
+        flags = str(getattr(sys, "abiflags", "") or "")
+        return f"cp{sys.version_info.major}{sys.version_info.minor}{flags}"
+    return None
+
+
+def _target_tags(alias: str, py: str, abi: str | None, pip_platform: str | None) -> tuple[str, ...]:
+    try:
+        from packaging.tags import compatible_tags, cpython_tags, sys_tags
+    except ImportError:
+        return ()
+    current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
+    if alias == current_platform_alias() and py == current_py:
+        return tuple(str(tag) for tag in sys_tags())
+    if alias.startswith("windows-") and pip_platform:
+        major, minor = (int(x) for x in py.split("."))
+        abis = [abi] if abi else None
+        tags = list(cpython_tags((major, minor), abis=abis, platforms=[pip_platform]))
+        tags.extend(compatible_tags((major, minor), interpreter=f"cp{major}{minor}", platforms=[pip_platform]))
+        return tuple(dict.fromkeys(str(tag) for tag in tags))
+    return ()
+
+
 def target_spec(platform_alias: str | None, python_version: str | None) -> TargetSpec:
     py = normalize_python_version(python_version)
     alias = str(platform_alias or "current").strip().lower()
     current_alias = current_platform_alias()
     current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
     if alias == "current":
-        if py != current_py:
-            raise DependencyStudioError(
-                "A different Python version with --platform current is ambiguous; choose windows-x64/windows-arm64 explicitly"
-            )
-        return TargetSpec(current_alias, py, "cp", None, None)
+        alias = current_alias
     digits = py.replace(".", "")
-    mappings = {
-        "windows-x64": ("win_amd64", f"cp{digits}"),
-        "windows-arm64": ("win_arm64", f"cp{digits}"),
-    }
-    if alias in mappings:
-        pip_platform, abi = mappings[alias]
-        return TargetSpec(alias, py, "cp", abi, pip_platform)
-    if alias == current_alias:
-        if py != current_py:
+    pip_platform: str | None = None
+    native_target = alias == current_alias and py == current_py
+    implementation = current_implementation_tag() if native_target else "cp"
+    abi: str | None = current_abi_tag() if native_target else None
+    if alias == "windows-x64":
+        pip_platform = "win_amd64"
+        abi = abi or f"cp{digits}"
+    elif alias == "windows-arm64":
+        pip_platform = "win_arm64"
+        abi = abi or f"cp{digits}"
+    elif alias in {"linux-x64", "linux-arm64", "macos-x64", "macos-arm64"}:
+        # Linux wheel compatibility must be generated natively because manylinux/musllinux
+        # depend on the running libc/kernel. macOS is likewise native-only in v2.
+        if alias != current_alias or py != current_py:
             raise DependencyStudioError(
-                f"A different Python version for current platform {alias!r} is unsupported; use a supported explicit cross-platform target"
+                f"Cross-target {alias!r} must be materialized on a native runner with Python {py}; "
+                "v2 does not guess platform compatibility tags"
             )
-        return TargetSpec(alias, py, "cp", None, None)
-    raise DependencyStudioError(
-        f"Cross-platform target {alias!r} unsupported in v1; use current, windows-x64 or windows-arm64"
-    )
+    else:
+        raise DependencyStudioError(f"Unsupported dependency target alias: {alias!r}")
+
+    family = alias.split("-", 1)[0]
+    libc = current_libc_family() if family == "linux" and alias == current_alias else ("native-required" if family == "linux" else "not-applicable")
+    if family == "linux" and libc == "musl":
+        raise DependencyStudioError("no_compatible_dependency_bundle: musl is not release-supported in 16.3.25.5")
+    tags = _target_tags(alias, py, abi, pip_platform)
+    return TargetSpec(alias, py, implementation, abi, pip_platform, family, _architecture_for_alias(alias), libc, tags)

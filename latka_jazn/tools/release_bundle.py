@@ -10,6 +10,8 @@ import zipfile
 
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 from latka_jazn.tools.package_export import export_package
+from latka_jazn.tools.package_integrity import verify_distribution_artifact_set
+from latka_jazn.tools.package_distribution import build_distribution_set
 from latka_jazn.tools.release_readiness import build_release_readiness_report
 from latka_jazn.tools.release_staging import create_release_staging
 from latka_jazn.tools.safe_paths import validate_safe_relative_path
@@ -297,4 +299,52 @@ def build_release_bundle(
             "runtime_version": PACKAGE_VERSION_FULL,
             "output_zip": str(output),
             "error": repr(exc),
+        }
+
+def build_release_distribution_bundle(
+    root: Path | str,
+    output_dir: Path | str,
+    *,
+    mode: str,
+    dependency_bundles: tuple[Path | str, ...] = (),
+    target_alias: str | None = None,
+    python_version: str | None = None,
+) -> dict[str, Any]:
+    """Build a v3 release artifact set from a clean, metadata-synchronized staging tree.
+
+    Dependency wheelhouses are external immutable inputs. System/memory content is
+    always taken from one clean Git commit and receives canonical provenance and
+    package-integrity metadata in staging before packaging.
+    """
+    source = Path(root).resolve()
+    destination = Path(output_dir).resolve()
+    destination.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="jazn-release-distribution-") as temp_name:
+        staging = Path(temp_name) / "staging"
+        staging_report = create_release_staging(source, staging)
+        readiness = build_release_readiness_report(staging, profile="export-without-git")
+        if not readiness.get("ok"):
+            return {
+                "schema_version": schema_version("release_distribution_bundle"),
+                "ok": False,
+                "staging": staging_report,
+                "readiness": readiness,
+                "error": "release staging readiness failed",
+            }
+        distribution = build_distribution_set(
+            staging,
+            destination,
+            mode=mode,
+            dependency_bundles=dependency_bundles,
+            target_alias=target_alias,
+            python_version=python_version,
+        )
+        artifact_set_verification = verify_distribution_artifact_set(distribution["package_set_path"])
+        return {
+            "schema_version": schema_version("release_distribution_bundle"),
+            "ok": bool(distribution.get("ok") and artifact_set_verification.get("ok")),
+            "staging": staging_report,
+            "readiness": readiness,
+            "distribution": distribution,
+            "artifact_set_verification": artifact_set_verification,
         }

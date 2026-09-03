@@ -207,7 +207,7 @@ def materialize_r2_memory_package(
         raise MemoryPackageSourceError(f"invalid R2 package sidecar: {exc}") from exc
     if not isinstance(payload, Mapping):
         raise MemoryPackageSourceError("R2 package sidecar root must be a JSON object")
-    if str(payload.get("schema_version") or "") != "jazn_package_set/v2":
+    if str(payload.get("schema_version") or "") not in {"jazn_package_set/v2", "jazn_package_set/v3"}:
         raise MemoryPackageSourceError("R2 package sidecar schema is unsupported")
     if str(payload.get("profile") or "").strip().lower() != "memory":
         raise MemoryPackageSourceError("R2 package sidecar is not profile=memory")

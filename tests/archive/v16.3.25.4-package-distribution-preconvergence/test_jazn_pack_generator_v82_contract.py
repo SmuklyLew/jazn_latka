@@ -18,5 +18,5 @@ def test_v82_contract_is_retired_after_v84_synchronization() -> None:
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
 
-    assert module.GENERATOR_VERSION == "8.8"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.8"
+    assert module.GENERATOR_VERSION == "8.7"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"

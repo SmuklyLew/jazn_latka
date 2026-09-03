@@ -64,8 +64,8 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
 
 def test_generator_keeps_v86_public_identity_and_uses_v3_memory_contract() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "8.8"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.8"
+    assert generator.GENERATOR_VERSION == "8.7"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.7"
     assert generator.MEMORY_MANIFEST_SCHEMA == "jazn_memory_package_manifest/v3"
     assert generator.MEMORY_FORMAT_VERSION == 3
 

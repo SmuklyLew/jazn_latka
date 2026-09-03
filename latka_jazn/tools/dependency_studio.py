@@ -15,6 +15,7 @@ from latka_jazn.dependencies.runtime import (
     default_wheelhouse_root,
     discover_bundles,
     download_bundle,
+    dependency_environment_gc,
     install_bundle,
     normalize_python_version,
     verify_bundle,
@@ -57,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
         child.add_argument("--python-version")
         child.add_argument("--platform", default="current")
         child.add_argument("--python-executable")
+        child.add_argument("--lock-file", type=Path)
         child.add_argument("--dry-run", action="store_true")
 
     child = sub.add_parser("verify", allow_abbrev=False)
@@ -74,6 +76,10 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--dry-run", action="store_true")
 
     sub.add_parser("benchmark", allow_abbrev=False)
+
+    child = sub.add_parser("gc", allow_abbrev=False)
+    child.add_argument("--dry-run", action="store_true")
+    child.add_argument("--apply", action="store_true")
     return parser
 
 
@@ -119,6 +125,7 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             platform_alias=ns.platform,
             python_executable=ns.python_executable,
             wheelhouse_root=wheelhouse,
+            lock_file=ns.lock_file,
             timeout_seconds=ns.timeout_seconds,
             dry_run=bool(ns.dry_run),
         )
@@ -184,6 +191,13 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         payload["command"] = "benchmark"
         return (0 if payload.get("ok") else 7), payload
 
+    if ns.command == "gc":
+        if ns.dry_run and ns.apply:
+            raise DependencyStudioError("Choose either --dry-run or --apply, not both")
+        payload = dependency_environment_gc(root, dry_run=not bool(ns.apply))
+        payload["command"] = "gc"
+        return 0, payload
+
     raise DependencyStudioError(f"Unsupported command: {ns.command}")
 
 
@@ -224,6 +238,12 @@ def _human(payload: dict[str, Any]) -> str:
             f"Dependency probe: {payload.get('activation_probe_seconds')} s",
             f"Wheelhouse verify: {payload.get('wheelhouse_verify_seconds')} s",
             f"Verified bundles: {payload.get('verified_bundle_count')}",
+        ])
+    elif command == "gc":
+        lines.extend([
+            f"Mode: {'dry-run' if payload.get('dry_run') else 'apply'}",
+            f"Candidates: {len(payload.get('gc_candidates') or [])}",
+            f"Removed: {len(payload.get('removed') or [])}",
         ])
     return "\n".join(lines)
 

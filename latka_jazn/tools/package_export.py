@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Mapping
 import hashlib
 import json
 import shutil
@@ -13,7 +14,7 @@ import zipfile
 
 from latka_jazn.memory.session_continuity import SessionContinuityManager
 from latka_jazn.core.version_source import read_runtime_version_from_version_py
-from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
+from latka_jazn.packaging.zip_resource_limits import ZipResourceLimitError, validate_zip_resources
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
     resolve_safe_destination,
@@ -295,7 +296,14 @@ def _checkpoint_sqlite_databases(root: Path) -> list[str]:
 
 
 def _unsafe_zip_entries(zf: zipfile.ZipFile) -> list[str]:
-    validate_zip_resources(zf)
+    try:
+        validate_zip_resources(zf)
+    except ZipResourceLimitError as exc:
+        # The audit must be able to enumerate unsafe names in order to report
+        # them. Resource exhaustion remains fatal; only path-policy failures
+        # are converted into audit findings below.
+        if not str(exc).startswith("unsafe_archive_member:"):
+            raise
     unsafe: list[str] = []
     for info in zf.infolist():
         name = info.filename[:-1] if info.is_dir() and info.filename.endswith("/") else info.filename
@@ -333,7 +341,14 @@ def _extract_zip_safely(zf: zipfile.ZipFile, target: Path) -> list[str]:
 def build_package_manifest(zip_path: Path, *, mode: str) -> dict:
     zip_path = Path(zip_path)
     with zipfile.ZipFile(zip_path, "r") as zf:
-        validate_zip_resources(zf)
+        try:
+            validate_zip_resources(zf)
+        except ZipResourceLimitError as exc:
+            # A package manifest is also the input to the packing audit. Keep
+            # unsafe member names observable so the audit can report them, but
+            # continue to fail closed for actual resource-limit violations.
+            if not str(exc).startswith("unsafe_archive_member:"):
+                raise
         entries = [
             {
                 "path": info.filename,
@@ -403,8 +418,19 @@ def build_packing_audit(zip_path: Path, package_manifest: dict) -> dict:
     }
 
 
-def export_package(root: Path, mode: str, output_zip: Path | None = None) -> PackageExportReport:
-    """Create a validated system, memory, NLP, GitHub-safe or full ZIP."""
+def export_package(
+    root: Path,
+    mode: str,
+    output_zip: Path | None = None,
+    *,
+    virtual_files: Mapping[str, str | bytes] | None = None,
+) -> PackageExportReport:
+    """Create a validated ZIP, optionally injecting verified virtual metadata.
+
+    ``virtual_files`` exists for release metadata such as ``JAZN_DEPENDENCY_SET.json``.
+    It never mutates the source tree; every virtual path is validated by the same
+    fail-closed package path policy used for physical files.
+    """
     root = Path(root).resolve()
     if mode not in {"system", "memory", "nlp", "github_source_safe", "full"}:
         raise ValueError("mode must be one of: system, memory, nlp, github_source_safe, full")
@@ -435,7 +461,18 @@ def export_package(root: Path, mode: str, output_zip: Path | None = None) -> Pac
 
     file_count = 0
     total = 0
+    virtual_payloads: dict[str, bytes] = {}
+    for raw_name, raw_payload in sorted((virtual_files or {}).items()):
+        name = validate_safe_relative_path(raw_name)
+        if forbidden_package_reason(name):
+            raise PackagePlanValidationError(f"Forbidden virtual package path: {name}")
+        payload = raw_payload.encode("utf-8") if isinstance(raw_payload, str) else bytes(raw_payload)
+        virtual_payloads[name] = payload
     package_plan = build_package_plan(root, mode, output_zip)
+    physical_names = {rel for _, rel in package_plan}
+    collisions = sorted(physical_names & set(virtual_payloads))
+    if collisions:
+        raise PackagePlanValidationError(f"Virtual package paths collide with physical files: {collisions}")
     with zipfile.ZipFile(
         output_zip,
         "w",
@@ -449,6 +486,14 @@ def export_package(root: Path, mode: str, output_zip: Path | None = None) -> Pac
             file_count += 1
             compress_type = zipfile.ZIP_STORED if rel.endswith((".sqlite3", ".7z")) else zipfile.ZIP_DEFLATED
             zf.write(path, rel, compress_type=compress_type)
+        for rel, payload in virtual_payloads.items():
+            info = zipfile.ZipInfo(rel, date_time=(1980, 1, 1, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            zf.writestr(info, payload)
+            total += len(payload)
+            file_count += 1
 
     if file_count == 0:
         notes.append("Paczka nie zawierała plików; sprawdź tryb eksportu i ścieżkę root.")

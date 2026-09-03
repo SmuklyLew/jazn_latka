@@ -19,7 +19,7 @@ from typing import Any
 from latka_jazn.tools.console_progress import TerminalProgress, add_progress_arguments
 
 CHUNK_SIZE = 8 * 1024 * 1024
-SUPPORTED_PACKAGE_SET_SCHEMAS = frozenset({"jazn_package_set/v1", "jazn_package_set/v2"})
+SUPPORTED_PACKAGE_SET_SCHEMAS = frozenset({"jazn_package_set/v1", "jazn_package_set/v2", "jazn_package_set/v3"})
 
 
 @dataclass(slots=True)
@@ -888,7 +888,6 @@ def unsafe_zip_member_name(name: str) -> str | None:
 
 
 def validate_zip_member_names(zf: zipfile.ZipFile) -> None:
-    validate_zip_resources(zf)
     bad: list[str] = []
     seen: set[str] = set()
     files: set[str] = set()
@@ -926,6 +925,9 @@ def validate_zip_member_names(zf: zipfile.ZipFile) -> None:
         sample = "\n".join(bad[:20])
         more = "" if len(bad) <= 20 else f"\n... oraz {len(bad) - 20} więcej"
         raise ValueError("ZIP zawiera niebezpieczne ścieżki:\n" + sample + more)
+    # Shared resource policy runs after the historical structural error contract
+    # so callers retain their stable duplicate/symlink diagnostics.
+    validate_zip_resources(zf)
 
 
 def test_joined_zip(out_zip: Path, *, run_crc: bool = True) -> dict[str, Any]:
