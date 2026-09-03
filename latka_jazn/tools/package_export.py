@@ -198,8 +198,13 @@ def _git_head_blob(root: Path, rel: str) -> bytes | None:
 
 
 def _system_entry_bytes(root: Path, path: Path, rel: str, entry: Mapping[str, object]) -> bytes:
-    expected_size = int(entry["size_bytes"])
-    expected_sha = str(entry["sha256"]).lower()
+    raw_size = entry.get("size_bytes")
+    if isinstance(raw_size, bool) or not isinstance(raw_size, int) or raw_size < 0:
+        raise PackagePlanValidationError(f"Protected system file has invalid canonical size: {rel}")
+    expected_size = raw_size
+    expected_sha = str(entry.get("sha256") or "").lower()
+    if len(expected_sha) != 64 or any(ch not in "0123456789abcdef" for ch in expected_sha):
+        raise PackagePlanValidationError(f"Protected system file has invalid canonical SHA-256: {rel}")
     try:
         worktree_bytes = path.read_bytes()
     except OSError as exc:
