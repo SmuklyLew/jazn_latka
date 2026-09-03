@@ -299,7 +299,11 @@ def inspect_current_requirements(root: Path | str, requirements: Sequence[str]) 
 
 
 def default_local_python_root(root: Path | str) -> Path:
-    return Path(root).resolve() / "latka_jazn" / "local_resources" / "python"
+    """Return host-level mutable dependency state, never a directory inside active_root."""
+    from latka_jazn.core.runtime_root import workspace_runtime_path
+
+    project_root = Path(root).expanduser().resolve()
+    return workspace_runtime_path(project_root) / "local_resources" / "python"
 
 
 def default_wheelhouse_root(root: Path | str) -> Path:
