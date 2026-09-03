@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.10 converges Generator 8.9 public delegation, import isolation, and CI monkeypatch contracts.
-DISTRIBUTION_VERSION = "16.3.25.5.10"
-PACKAGE_VERSION = "16.3.25.5.10"
-PACKAGE_RELEASE_NAME = "pack-generator-v89-ci-convergence"
+# v16.3.25.5.11 migrates active Generator identity tests to the public 8.9 contract while archiving 8.8-era snapshots.
+DISTRIBUTION_VERSION = "16.3.25.5.11"
+PACKAGE_VERSION = "16.3.25.5.11"
+PACKAGE_RELEASE_NAME = "pack-generator-v89-test-contract-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

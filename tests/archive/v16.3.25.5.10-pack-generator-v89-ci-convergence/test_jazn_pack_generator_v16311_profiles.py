@@ -23,8 +23,8 @@ def _load_generator():
 
 def test_v16311_exposes_exact_four_user_profiles_in_requested_order() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "8.9"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.9"
+    assert generator.GENERATOR_VERSION == "8.8"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v8.8"
     # Historical constants stay source-compatible; this is the new canonical UI order.
     assert generator.USER_PROFILE_CHOICES == ("combined", "system", "memory", "dual")
     assert generator.PROFILE_DISPLAY["combined"] == "SYSTEM + PAMIĘĆ (1 ZIP)"
@@ -73,5 +73,6 @@ def test_exact_profile_contract_accepts_complete_shapes() -> None:
         "dual",
         [
             SimpleNamespace(profile="system", paths=["run.py"]),
-            SimpleNamespace(profile="memory", paths=["memory/sqlite/memory_jazn.sqlite3"])],
+            SimpleNamespace(profile="memory", paths=["memory/sqlite/memory_jazn.sqlite3"]),
+        ],
     )
