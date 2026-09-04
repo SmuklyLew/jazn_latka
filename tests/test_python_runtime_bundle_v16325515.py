@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -208,3 +210,41 @@ def test_windows_launcher_prefers_private_runtime_contract_before_host_python() 
     assert "JAZN_PYTHON_RUNTIME_SET.json" in text
     assert "Start-JaznPythonRuntime.ps1" in text
     assert text.index("JAZN_PYTHON_RUNTIME_SET.json") < text.index("where py.exe")
+
+
+def test_windows_runtime_launcher_powershell_parses_when_shell_is_available() -> None:
+    shell = shutil.which("pwsh") or shutil.which("powershell") or shutil.which("powershell.exe")
+    if shell is None:
+        pytest.skip("PowerShell is not available on this runner")
+    script = ROOT / "tools" / "Start-JaznPythonRuntime.ps1"
+    command = (
+        "$ErrorActionPreference='Stop';"
+        "$p=$args[0];"
+        "$null=[ScriptBlock]::Create([IO.File]::ReadAllText($p,[Text.Encoding]::UTF8))"
+    )
+    completed = subprocess.run(
+        [shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command, str(script)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
+def test_posix_runtime_launcher_shell_syntax_when_sh_is_available() -> None:
+    shell = shutil.which("sh")
+    if shell is None:
+        pytest.skip("POSIX sh is not available on this runner")
+    completed = subprocess.run(
+        [shell, "-n", str(ROOT / "jazn")],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
