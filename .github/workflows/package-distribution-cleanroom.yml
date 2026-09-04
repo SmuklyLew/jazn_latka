@@ -385,11 +385,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if ! git diff --quiet -- "$destination"; then
-            git add "$destination"
+          git add "$destination"
+          if ! git diff --cached --quiet -- "$destination"; then
             git commit -m "release: lock ${runtime_version} dependency matrix"
           else
             echo "Canonical release locks already match native artifacts."
+          fi
+
+          dirty="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$dirty" ]; then
+            echo "Working tree is dirty before release metadata synchronization:" >&2
+            printf '%s\n' "$dirty" >&2
+            exit 2
           fi
 
           source_commit="$(git rev-parse HEAD)"
@@ -409,6 +416,13 @@ jobs:
             git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
           else
             echo "Canonical release metadata already matches source commit ${source_commit}."
+          fi
+
+          dirty="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$dirty" ]; then
+            echo "Working tree is dirty before release push:" >&2
+            printf '%s\n' "$dirty" >&2
+            exit 2
           fi
 
           if [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ]; then

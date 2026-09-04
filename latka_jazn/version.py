@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.17 rewrites Pack Generator 10.1.86.0 as a deterministic bundled
-# launcher and adds hash-locked cross-target dependency materialization with a
-# canonical host-workspace wheelhouse and an explicit Linux glibc policy.
-DISTRIBUTION_VERSION = "16.3.25.5.17"
-PACKAGE_VERSION = "16.3.25.5.17"
-PACKAGE_RELEASE_NAME = "pack-generator-cross-target-dependency-materialization"
+# v16.3.25.5.18 hardens Pack Generator 10.1.86.0 release automation so newly
+# materialized cross-target dependency locks are staged and committed before
+# canonical release-metadata synchronization requires a clean working tree.
+DISTRIBUTION_VERSION = "16.3.25.5.18"
+PACKAGE_VERSION = "16.3.25.5.18"
+PACKAGE_RELEASE_NAME = "pack-generator-lock-persistence-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
