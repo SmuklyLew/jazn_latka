@@ -16,6 +16,13 @@ from latka_jazn.archive.capabilities import (
     archive_capability_report,
     archive_format_capability,
 )
+from latka_jazn.archive.rar_backend import (
+    RarBackendStatus,
+    extract_rar,
+    inspect_rar,
+    is_rar_file,
+    rar_backend_status,
+)
 
 __all__ = [
     "ArchiveCapabilityReport",
@@ -27,7 +34,12 @@ __all__ = [
     "ArchiveOperation",
     "ArchiveSecurityLimits",
     "ArchiveWriteEntry",
+    "RarBackendStatus",
     "archive_capability_report",
     "archive_format_capability",
+    "extract_rar",
+    "inspect_rar",
+    "is_rar_file",
     "normalize_archive_format",
+    "rar_backend_status",
 ]

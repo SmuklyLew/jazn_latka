@@ -52,14 +52,21 @@ def test_optional_archive_backends_report_missing_without_erasing_format_knowled
     assert _operations(aes)["extract"] is False
 
 
-def test_archive_report_knows_formats_that_service_deliberately_does_not_expose() -> None:
+def test_archive_report_exposes_rarfile_as_canonical_read_backend() -> None:
     report = archive_capability_report().to_dict()
     known = report["known_but_not_exposed"]
     assert known["tar"]["known"] is True
     assert known["tar"]["python_stdlib_backend"] == "tarfile"
     assert known["tar"]["runtime_archive_service_supported"] is False
-    assert known["rar"]["runtime_archive_service_supported"] is False
-    assert known["rar"]["reason"] == "no_canonical_rar_backend_declared"
+
+    rar = _format(report, "rar")
+    assert rar["backend"] == "rarfile.RarFile"
+    assert rar["family"] == "RAR3/RAR5"
+    rar_ops = _operations(rar)
+    assert rar_ops["detect"] is True
+    assert rar_ops["create"] is False
+    assert rar_ops["inspect"] is rar["backend_available"]
+    assert "rarfile>=4.5,<5" in report["dependency_contract"]["core_runtime_requirements"]
 
 
 def test_archive_report_exposes_existing_fail_closed_security_policy() -> None:
@@ -96,7 +103,7 @@ def test_archive_format_lookup_accepts_canonical_aliases() -> None:
     assert archive_format_capability("zip64")["format"] == "zip"  # type: ignore[index]
     assert archive_format_capability("sevenzip")["format"] == "7z"  # type: ignore[index]
     assert archive_format_capability("aes-zip")["format"] == "aes_zip"  # type: ignore[index]
-    assert archive_format_capability("rar") is None
+    assert archive_format_capability("rar")["format"] == "rar"  # type: ignore[index]
 
 
 def test_capability_handler_surfaces_archive_matrix_instead_of_generic_claim() -> None:

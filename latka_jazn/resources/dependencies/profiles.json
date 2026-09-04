@@ -47,6 +47,7 @@
     "tzdata": "tzdata",
     "py7zr": "py7zr",
     "pyzipper": "pyzipper",
+    "rarfile": "rarfile",
     "prompt-toolkit": "prompt_toolkit",
     "pynacl": "nacl",
     "psycopg": "psycopg",
