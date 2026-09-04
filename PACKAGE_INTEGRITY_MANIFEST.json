@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
-  "runtime_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
-  "package_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
-  "generated_at_utc": "2026-09-03T23:46:36+00:00",
-  "updated_at_utc": "2026-09-03T23:46:36+00:00",
+  "version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+  "runtime_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+  "package_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+  "generated_at_utc": "2026-09-04T03:22:58+00:00",
+  "updated_at_utc": "2026-09-04T03:22:58+00:00",
   "start_file": "run.py",
-  "file_count": 1064,
-  "static_file_count": 1064,
+  "file_count": 1078,
+  "static_file_count": 1078,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -191,8 +191,8 @@
     },
     {
       "path": "JAZN.cmd",
-      "size_bytes": 821,
-      "sha256": "55243ab8c0d75edfe28b644629ce474744ebbbb1614d4068ac2ac6354befb44d",
+      "size_bytes": 1751,
+      "sha256": "2dc5c9de68b3759607600270ab868d4b0dd7445e095d53fd91eb7e65f38ddb9f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -209,8 +209,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2946,
-      "sha256": "27f86d1741cf9ec577c384c6c415b90722f4dc5a1be277968af51ec9d50a793e",
+      "size_bytes": 2925,
+      "sha256": "cdde25e49cdc0f7cf14d47945189356e4d1ef53b7d052810bf46225c4125edc8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1459,6 +1459,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/tools/JAZN_PYTHON_RUNTIME_BUNDLE.md",
+      "size_bytes": 7648,
+      "sha256": "0b8b2a47b0ce94c8d604fc37d747246586fbd57ad1880e75793fbc3a7530112b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/tools/MEMORY_SQLITE_TEST_04.md",
       "size_bytes": 18930,
       "sha256": "394728aaa14970d61ddf578de1523c189e3c42c6d14551425bcf1ec4c35d8d7f",
@@ -1480,6 +1489,24 @@
       "path": "docs/tools/README.md",
       "size_bytes": 905,
       "sha256": "9972107b6d3a2605b9b52a36e56ffd168eb9a2bd54b2fcb7b3143c7272ef474d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "jazn",
+      "size_bytes": 5642,
+      "sha256": "9f673876b2b8ac7cc8abc416eb8241cd6a9c93de4de0ef4e461b37514d58e8d0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "jazn_runtime_bootstrap.py",
+      "size_bytes": 2783,
+      "sha256": "44be0559e2fe2b2e75a86dbe2b90c5fa40e075ce42349ecf44e75c39cf8d421f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3710,8 +3737,8 @@
     },
     {
       "path": "latka_jazn/dependencies/runtime.py",
-      "size_bytes": 1679,
-      "sha256": "927fd87b6c0cb57bc26762958fd8ec85e21bbde7f97f62d6dd7262b364fbc836",
+      "size_bytes": 3296,
+      "sha256": "1a1d0d6b4c5fae37673278499e87b384ac36ac617c4dc905799d3aeb50d28ceb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5410,6 +5437,60 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/python_runtime/__init__.py",
+      "size_bytes": 1708,
+      "sha256": "728cc9337db5105b376cbd963d349a17094832655dba624f2067e3ee2fb6b59c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/python_runtime/bundle.py",
+      "size_bytes": 17011,
+      "sha256": "82261b2bf02370377ade7a81a6ead096f243c17ac6b40036a198380501f22426",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/python_runtime/catalog.py",
+      "size_bytes": 9800,
+      "sha256": "c324d2fb6bee75de0148b6bd32490259a0b496c9f972111f2011e9bd71e57407",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/python_runtime/contract.py",
+      "size_bytes": 6480,
+      "sha256": "74ca2009a98148d74d910cfbfd718e333b6ef837e740710df37edcb3251efe7d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/python_runtime/launcher.py",
+      "size_bytes": 1834,
+      "sha256": "2613e2f5f8907b70b97384d158ff58da5146741299c48aecb8c69465c914ec8d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/python_runtime/vendor.py",
+      "size_bytes": 8226,
+      "sha256": "240bfa2aaef2ed6d63143ae50726272932c3a742edba869870a73384d74b5941",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/resources/__init__.py",
       "size_bytes": 56,
       "sha256": "ecf0b246369a3f8da0e004d381d24595bf3df459d98ef18850bff8eb82b8b717",
@@ -5600,8 +5681,8 @@
     },
     {
       "path": "latka_jazn/resources/package_manifest_profiles.json",
-      "size_bytes": 2596,
-      "sha256": "14c794bcf18c6d6692a54762a0f4bbd1bb0d8ee8bd133d74d7cf90e89177254b",
+      "size_bytes": 2698,
+      "sha256": "1f998e510697a7b14d82740c911824f5cab596f273f6a406ca1ce738a6e1e2cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6707,8 +6788,8 @@
     },
     {
       "path": "latka_jazn/tools/package_distribution.py",
-      "size_bytes": 9312,
-      "sha256": "a880874f311a859cbd23e35a3722d9ac0c5047ac1ac0acf9816a8170d879f140",
+      "size_bytes": 13062,
+      "sha256": "5cdd57b36c2a43aa174e7eedc7d0b128fbe875a45add83ff93c00ce4811b8ebc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6736,6 +6817,15 @@
       "path": "latka_jazn/tools/private_memory_acceptance.py",
       "size_bytes": 41757,
       "sha256": "eaa327faed2f1986293ed81a0c3394180450f0843a3d086e6cd3d155aff4e78a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/python_runtime_studio.py",
+      "size_bytes": 7091,
+      "sha256": "d3b358d555a57485c4dfba7a0f16433354fea767a0133d853e6f51841d5ceff0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6860,8 +6950,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6629,
-      "sha256": "06bcea54eaef4bdaa78d02f7c2473c5abfb6049d3d34e228066933c0903a0b79",
+      "size_bytes": 6657,
+      "sha256": "7eae9051b7ba7a7d6cb7cbb28a5143dde6a7cbcd96f4120a2038c4ab8604654b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7267,6 +7357,15 @@
       "path": "tests/archive/v16.3.25.5.12-pack-generator-v89-docstring-escape-fix/test_jazn_pack_generator_v89_distribution.py",
       "size_bytes": 7587,
       "sha256": "a6cf5a4fbe8572817ba56c5d7729d2a5ca8498c28ff0a496c7c631a469fc6207",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.15-python-runtime-bundle-auto-target/test_python_runtime_bundle_v16325515.py",
+      "size_bytes": 9743,
+      "sha256": "1a35f95782bece43ab1851e2664240cc4b22aff2dc6ff0d72a8e4ff933e6d931",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8470,6 +8569,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_python_runtime_bundle_v16325515.py",
+      "size_bytes": 10390,
+      "sha256": "602608a602752aab4d862fe70350d4f022e49f23ed3e0d39af058096a7fa29ec",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_quoted_control_text_routing.py",
       "size_bytes": 1242,
       "sha256": "3d0cec0b5c17653ab5c02f846b8148f2f2084b901c0b6e017c9673f381ab0a0f",
@@ -9388,6 +9496,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/Start-JaznPythonRuntime.ps1",
+      "size_bytes": 9967,
+      "sha256": "57497b091802c8f217fdf2083f15ecd42e4def543e60d199aaaf73eb68d8aea3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/bootstrap_polish_reasoning_resources.py",
       "size_bytes": 6235,
       "sha256": "ca2598c49414cefa57d04a41249f46099be44a6cef2ba48fe0e9a09ba38095bf",
@@ -9398,8 +9515,8 @@
     },
     {
       "path": "tools/build_jazn_pack_generator_bundle.py",
-      "size_bytes": 2459,
-      "sha256": "d0fa23717f60e6766fd92400c3f01cb38b8ec68d44bf65aa219df0bfd9774d53",
+      "size_bytes": 2619,
+      "sha256": "8642a554497ced100ee9bfecef9326bb509f0792bcd8c546f88bb553de3e318a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9416,8 +9533,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 2821,
-      "sha256": "0d49f35f2e7672514c9266775dc38de26adaa4e758959c33f6f72985c3486e8a",
+      "size_bytes": 3044,
+      "sha256": "187d5c56d167cc38025b6a0fdca4b5f9b6272548a84ae7beb5aa16b1ee228489",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9533,8 +9650,8 @@
     },
     {
       "path": "tools/pack_generator_sources/__init__.py",
-      "size_bytes": 407,
-      "sha256": "e3944152b0ed99c5aee77c30c2bdc7e10942f45e43300bba8f9bcac063d4bc1b",
+      "size_bytes": 470,
+      "sha256": "1747dc1b51e955e07de08bb0ce33a2256e33783e34f7c20cb235221b7f9f8c2b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9553,6 +9670,15 @@
       "path": "tools/pack_generator_sources/jazn_pack_generator_v1001_compat.py",
       "size_bytes": 26090,
       "sha256": "d1dfca773a53bcf49a5ba1ff675c03abdf187160e166bb84097c902704cbd006",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/jazn_pack_generator_v1001_runtime.py",
+      "size_bytes": 7237,
+      "sha256": "75be7b00ae5020da43122e1f2fe3f31a8bcaf8903ab555a90e9d025748a597b1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10007,11 +10133,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
+  "release_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
-    "package_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening",
-    "release_version": "16.3.25.5.14-pack-generator-v1001-rar-ci-hardening"
+    "runtime_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+    "package_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+    "release_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
