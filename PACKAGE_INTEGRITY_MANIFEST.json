@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-  "runtime_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-  "package_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-  "generated_at_utc": "2026-09-04T05:20:32+00:00",
-  "updated_at_utc": "2026-09-04T05:20:32+00:00",
+  "version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+  "runtime_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+  "package_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+  "generated_at_utc": "2026-09-04T06:53:32+00:00",
+  "updated_at_utc": "2026-09-04T06:53:32+00:00",
   "start_file": "run.py",
-  "file_count": 1098,
-  "static_file_count": 1098,
+  "file_count": 1105,
+  "static_file_count": 1105,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 17403,
-      "sha256": "c20986fb84bd740acf4c16451694a4a7fc001a4d946758df6a1c7b616af74325",
+      "size_bytes": 17908,
+      "sha256": "dce2932b94431a50914922d3feae03523719a01a585305cf42e38be7c7637573",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -209,8 +209,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3045,
-      "sha256": "3aff5f66c987b813166550d64854fd5395aa9c21c2f49f873d584f190ea56624",
+      "size_bytes": 2962,
+      "sha256": "4f8be7f8774182f3a7a4ad2fc19103377104033a5e4eca30b35ac23b7be9d07c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1118,8 +1118,8 @@
     },
     {
       "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/FILE_CLASSIFICATION.md",
-      "size_bytes": 9043,
-      "sha256": "42d28832c068d93577e93c05ede0331af50332e091ff7ed04a6bf675f4640e52",
+      "size_bytes": 9825,
+      "sha256": "31dd94e91cbdd63dae638b44ea6033890959dd32d972d5e35dc16e8fc39cb418",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1127,8 +1127,17 @@
     },
     {
       "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/PLAN.md",
-      "size_bytes": 3686,
-      "sha256": "d707a08c6cee756d01434ca231d622bd5b67cacf3f07ef3d2a1057091d2d0586",
+      "size_bytes": 5100,
+      "sha256": "07bd701485e397f2afe4e3639abf2d76c5e1489852d2e819762a48b808979994",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/RESUME_STATE.md",
+      "size_bytes": 16971,
+      "sha256": "7b00c84ba63059e20fc3228d55b6412e2bd1de4b0cf0b907ba01f493e2a7619d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1136,8 +1145,8 @@
     },
     {
       "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/STATUS.md",
-      "size_bytes": 3578,
-      "sha256": "7c92efe5ddc8347f379e7bd7b5ebec1f0a6e2cb21aec544a9e4a864b90061c43",
+      "size_bytes": 7163,
+      "sha256": "fc4e7a380cfefdee9ff6a2480b5752eb760e474b80e58e6e223921440b3833a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5626,9 +5635,54 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py312.txt",
+      "size_bytes": 1511,
+      "sha256": "4fa5fa9d041942794ee7eca8b296797fd795fcf6d8184a5aeb3d4f19c24d8bb8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py313.txt",
       "size_bytes": 1511,
       "sha256": "6446c8f0025b1350e395a9bb761d594186a59425fe420417af4747a54c75179b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py314.txt",
+      "size_bytes": 1410,
+      "sha256": "b4aed61430b1e2d473749a1ee5530025bd4fa077ef9bb193859c101e0cc9c461",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py312.txt",
+      "size_bytes": 1511,
+      "sha256": "e4b59088a52207084262b694c47ba9b785b3cf151e351261c52f0b65c7b66e2c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py313.txt",
+      "size_bytes": 1511,
+      "sha256": "3f0fa37746ccc0d224502903d6ff2e5fd2f179ebb445babfde5e311fb0f7a755",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py314.txt",
+      "size_bytes": 1410,
+      "sha256": "9cf7bb2f19d13becf7ae9bd39e4fda433d499e6fd663f1f7a39df0f15d0eca44",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6986,8 +7040,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6664,
-      "sha256": "ec5d41fd79c74651ec712f6ab6239c73f01e7defbadbe6f25fc013231db3d787",
+      "size_bytes": 6651,
+      "sha256": "5f9b3562fed04655bcbffdc4a7a69d3d6a6f549eb6c3f666eb268015e39b8999",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8617,6 +8671,15 @@
       "path": "tests/test_package_distribution_cleanroom_doctor_semantics_v1632555.py",
       "size_bytes": 633,
       "sha256": "837e1bbdda6c7755a6a5937569e1895781dbb3eeeb3613cbd8475580e6d3c893",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_package_distribution_cleanroom_lock_persistence_v16325518.py",
+      "size_bytes": 1505,
+      "sha256": "a84ad16acf0b641835070cd0f5afefabcf4822782ec7594ea9ebde2fb67f4417",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10313,11 +10376,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+  "release_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-    "package_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-    "release_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization"
+    "runtime_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+    "package_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+    "release_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
