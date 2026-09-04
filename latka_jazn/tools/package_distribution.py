@@ -5,13 +5,22 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+import shutil
 from typing import Any, Mapping, Sequence
 
 from latka_jazn.dependencies.common import DEPENDENCY_SET_NAME, DEPENDENCY_SET_SCHEMA
-from latka_jazn.dependencies.wheelhouse import read_manifest, sha256_file, verify_bundle
+from latka_jazn.dependencies.wheelhouse import read_manifest, verify_bundle
 from latka_jazn.packaging.dependency_package_contract import build_dependency_sidecar
 from latka_jazn.packaging.package_plan import build_distribution_package_plan
 from latka_jazn.packaging.package_set_contract import build_v3_package_set, verify_package_set
+from latka_jazn.python_runtime import (
+    RUNTIME_INDEX_NAME,
+    RUNTIME_SET_NAME,
+    build_runtime_set,
+    render_runtime_index,
+    runtime_target_from_mapping,
+    verify_runtime_bundle,
+)
 from latka_jazn.tools.package_export import export_package
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -33,6 +42,13 @@ def _dependency_filename(manifest: dict[str, Any]) -> str:
         f"jazn_latka_v{_slug(PACKAGE_VERSION_FULL)}.dependencies-{_slug(profiles)}"
         f"__{alias}__py{python_version}.zip"
     )
+
+
+def _python_runtime_filename(manifest: Mapping[str, Any]) -> str:
+    target = runtime_target_from_mapping(
+        manifest.get("target") if isinstance(manifest.get("target"), Mapping) else {}
+    )
+    return f"jazn_latka_v{_slug(PACKAGE_VERSION_FULL)}.python-runtime__{_slug(target.target_id)}.zip"
 
 
 def _dependency_set_payload(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
@@ -67,6 +83,7 @@ def build_distribution_set(
     *,
     mode: str,
     dependency_bundles: Sequence[Path | str] = (),
+    python_runtime_bundles: Sequence[Path | str] = (),
     target_alias: str | None = None,
     python_version: str | None = None,
 ) -> dict[str, Any]:
@@ -101,6 +118,39 @@ def build_distribution_set(
 
     dependency_set = _dependency_set_payload(dependency_artifacts)
     dependency_set_text = json.dumps(dependency_set, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+
+    runtime_sidecars: list[Path] = []
+    if python_runtime_bundles and not plan.include_system:
+        raise ValueError("Python runtime bundles may only accompany a system-bearing distribution")
+    for raw_bundle in python_runtime_bundles:
+        source = Path(raw_bundle).resolve()
+        verification = verify_runtime_bundle(source)
+        if verification.get("ok") is not True:
+            raise ValueError(f"Python runtime bundle is not verified: {source}: {verification.get('errors')}")
+        manifest = verification.get("manifest")
+        if not isinstance(manifest, Mapping):
+            raise ValueError(f"Python runtime bundle has no verified manifest: {source}")
+        target = runtime_target_from_mapping(
+            manifest.get("target") if isinstance(manifest.get("target"), Mapping) else {}
+        )
+        if target_alias and target.alias != target_alias:
+            raise ValueError(f"Python runtime target mismatch: {target.alias!r} != {target_alias!r}")
+        if python_version and target.python_version != python_version:
+            raise ValueError(
+                f"Python runtime version mismatch: {target.python_version!r} != {python_version!r}"
+            )
+        sidecar = destination / _python_runtime_filename(manifest)
+        if source != sidecar:
+            shutil.copy2(source, sidecar)
+        runtime_sidecars.append(sidecar)
+
+    runtime_set = build_runtime_set(runtime_sidecars) if runtime_sidecars else None
+    runtime_set_text = (
+        json.dumps(runtime_set, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        if runtime_set is not None else None
+    )
+    runtime_index_text = render_runtime_index(runtime_set) if runtime_set is not None else None
+
     outputs: list[dict[str, Any]] = []
     roles: list[str] = []
 
@@ -116,11 +166,15 @@ def build_distribution_set(
             system_name += f"__{_slug(target_alias or 'current')}__py{_slug((python_version or '').replace('.', ''))}"
         system_zip = destination / f"{system_name}.zip"
         export_mode = "full" if plan.include_memory else "system"
+        virtual_files: dict[str, str | bytes] = {DEPENDENCY_SET_NAME: dependency_set_text}
+        if runtime_set_text is not None and runtime_index_text is not None:
+            virtual_files[RUNTIME_SET_NAME] = runtime_set_text
+            virtual_files[RUNTIME_INDEX_NAME] = runtime_index_text
         export = export_package(
             project_root,
             export_mode,
             system_zip,
-            virtual_files={DEPENDENCY_SET_NAME: dependency_set_text},
+            virtual_files=virtual_files,
         )
         outputs.append({
             "filename": system_zip.name,
@@ -153,6 +207,17 @@ def build_distribution_set(
         if "dependencies" not in roles:
             roles.append("dependencies")
 
+    for sidecar in runtime_sidecars:
+        outputs.append({
+            "filename": sidecar.name,
+            "size_bytes": sidecar.stat().st_size,
+            "sha256": verify_runtime_bundle(sidecar)["sha256"],
+            "role": "python-runtime",
+            "is_complete_zip": True,
+        })
+        if "python-runtime" not in roles:
+            roles.append("python-runtime")
+
     package_name = f"jazn_latka_v{_slug(PACKAGE_VERSION_FULL)}.{_slug(mode)}"
     package_set = build_v3_package_set(
         package_name=package_name,
@@ -162,7 +227,7 @@ def build_distribution_set(
         outputs=outputs,
         dependency_artifacts=dependency_set["artifacts"],
         generator="latka_jazn.tools.package_distribution",
-        generator_version="1",
+        generator_version="2",
     )
     package_set_path = destination / f"{package_name}.package.json"
     package_set_path.write_text(
@@ -171,6 +236,13 @@ def build_distribution_set(
     )
     dependency_set_path = destination / DEPENDENCY_SET_NAME
     dependency_set_path.write_text(dependency_set_text, encoding="utf-8")
+    runtime_set_path: Path | None = None
+    runtime_index_path: Path | None = None
+    if runtime_set_text is not None and runtime_index_text is not None:
+        runtime_set_path = destination / RUNTIME_SET_NAME
+        runtime_index_path = destination / RUNTIME_INDEX_NAME
+        runtime_set_path.write_text(runtime_set_text, encoding="utf-8")
+        runtime_index_path.write_text(runtime_index_text, encoding="utf-8")
     package_set_errors = verify_package_set(destination, package_set)
     if package_set_errors:
         raise ValueError(f"built package set failed verification: {package_set_errors}")
@@ -181,19 +253,23 @@ def build_distribution_set(
         "plan": plan.to_dict(),
         "package_set_path": str(package_set_path),
         "dependency_set_path": str(dependency_set_path),
+        "python_runtime_set_path": str(runtime_set_path) if runtime_set_path else None,
+        "python_runtime_index_path": str(runtime_index_path) if runtime_index_path else None,
         "package_set": package_set,
         "package_set_verification": {"ok": True, "errors": []},
         "dependency_set": dependency_set,
+        "python_runtime_set": runtime_set,
         "outputs": outputs,
     }
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Build Jaźń package-distribution artifact sets.")
+    parser = argparse.ArgumentParser(description="Build Jaźń package-distribution artifact sets.", allow_abbrev=False)
     parser.add_argument("--root", default=".")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--mode", required=True)
     parser.add_argument("--dependency-bundle", action="append", default=[])
+    parser.add_argument("--python-runtime-bundle", action="append", default=[])
     parser.add_argument("--target")
     parser.add_argument("--python-version")
     parser.add_argument("--json", action="store_true")
@@ -208,6 +284,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.output_dir,
             mode=args.mode,
             dependency_bundles=args.dependency_bundle,
+            python_runtime_bundles=args.python_runtime_bundle,
             target_alias=args.target,
             python_version=args.python_version,
         )

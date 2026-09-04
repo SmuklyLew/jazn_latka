@@ -2,12 +2,16 @@
   "schema_version": "package_manifest_profiles/v1",
   "profiles": {
     "static_package": {
-      "description": "source code, docs, tests, config, resources; stable SHA after export",
+      "description": "source code, launchers, docs, tests, config, resources; stable SHA after export",
       "include": [
         "AGENTS.md",
         "AGENTS.chatgpt.md",
         "AGENTS.codex.md",
         "AGENTS.ollama.md",
+        "JAZN.cmd",
+        "jazn",
+        "jazn_runtime_bootstrap.py",
+        "run.py",
         "latka_jazn/**",
         "tests/**",
         "tools/**",

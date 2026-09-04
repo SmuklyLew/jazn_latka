@@ -48,6 +48,11 @@ _compat = _load(
     _SOURCE_ROOT / "jazn_pack_generator_v1001_compat.py",
 )
 _compat.install(_impl)
+_runtime = _load(
+    "_jazn_pack_generator_v1001_runtime",
+    _SOURCE_ROOT / "jazn_pack_generator_v1001_runtime.py",
+)
+_runtime.install(_impl)
 _ui = _load("_jazn_pack_generator_v1001_ui", _SOURCE_ROOT / "jazn_pack_generator_v1001_ui.py")
 _ui.bind(_impl)
 
@@ -64,6 +69,8 @@ def __getattr__(name: str) -> Any:
         return getattr(_ui, name)
     if hasattr(_impl, name):
         return getattr(_impl, name)
+    if hasattr(_runtime, name):
+        return getattr(_runtime, name)
     return getattr(_compat, name)
 
 
@@ -71,19 +78,19 @@ class _PublicModule(types.ModuleType):
     """Keep monkeypatch/backward-compatibility overrides visible to v10 internals.
 
     Historical generator tests and external callers patch public launcher
-    attributes.  The v10 split-source launcher therefore mirrors writes into
-    the native implementation/compatibility modules when those attributes are
-    defined there, without loading any retired v8/v9 runtime implementation.
+    attributes. The v10 split-source launcher therefore mirrors writes into
+    the native implementation/compatibility/runtime modules when those
+    attributes are defined there, without loading retired v8/v9 code.
     """
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
         if name.startswith("__") or name in {
-            "_impl", "_compat", "_ui", "GENERATOR_VERSION", "GENERATOR_TITLE",
+            "_impl", "_compat", "_runtime", "_ui", "GENERATOR_VERSION", "GENERATOR_TITLE",
             "SETTINGS_SCHEMA", "UI_MODE_CHOICES", "UI_MODE_LABELS", "main",
         }:
             return
-        for target in (_impl, _compat, _ui):
+        for target in (_impl, _compat, _runtime, _ui):
             if hasattr(target, name):
                 setattr(target, name, value)
 

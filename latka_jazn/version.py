@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.14 repairs the Pack Generator v10.0.1 public compatibility
-# contract, integrates rarfile as a core runtime archive dependency/backend,
-# and hardens the generator source-set/CI regression boundary.
-DISTRIBUTION_VERSION = "16.3.25.5.14"
-PACKAGE_VERSION = "16.3.25.5.14"
-PACKAGE_RELEASE_NAME = "pack-generator-v1001-rar-ci-hardening"
+# v16.3.25.5.16 hardens the Python runtime bundle CI boundary: untrusted JSON
+# target payloads are narrowed fail-closed, public __all__ contracts are static,
+# and PowerShell launcher syntax validation uses the official Parser.ParseFile API.
+DISTRIBUTION_VERSION = "16.3.25.5.16"
+PACKAGE_VERSION = "16.3.25.5.16"
+PACKAGE_RELEASE_NAME = "python-runtime-bundle-ci-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
