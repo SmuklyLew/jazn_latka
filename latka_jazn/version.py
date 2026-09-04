@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.16 hardens the Python runtime bundle CI boundary: untrusted JSON
-# target payloads are narrowed fail-closed, public __all__ contracts are static,
-# and PowerShell launcher syntax validation uses the official Parser.ParseFile API.
-DISTRIBUTION_VERSION = "16.3.25.5.16"
-PACKAGE_VERSION = "16.3.25.5.16"
-PACKAGE_RELEASE_NAME = "python-runtime-bundle-ci-hardening"
+# v16.3.25.5.17 establishes one canonical Pyright active-tree contract shared
+# by local Pylance/Pyright diagnostics and CI, while keeping archive snapshots
+# outside the active static-analysis boundary.
+DISTRIBUTION_VERSION = "16.3.25.5.17"
+PACKAGE_VERSION = "16.3.25.5.17"
+PACKAGE_RELEASE_NAME = "pylance-pyright-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

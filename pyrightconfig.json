@@ -1,0 +1,14 @@
+{
+  "typeCheckingMode": "standard",
+  "pythonVersion": "3.12",
+  "include": [
+    "latka_jazn",
+    "tests",
+    "tools",
+    "main.py",
+    "run.py"
+  ],
+  "exclude": [
+    "**/archive/**"
+  ]
+}
