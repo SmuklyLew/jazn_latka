@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d2cfd338688a68e458525476b2e21c0023e344b4",
+  "base_merge_commit": "0faa6770efc4b57cc9ba3f4de2d425d650a11e88",
   "base_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
-  "commit_date": "2026-09-04T06:29:56+02:00",
+  "commit_date": "2026-09-04T06:55:18+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-04T04:29:56+00:00",
+  "generated_at_utc": "2026-09-04T04:55:18+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "78aaa126123fda85e23e6f3924c6edcbc096ea3b",
+  "git_tree_sha": "081d2ab3adf6107bb967a67d34e3c03aa28dbf3d",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d2cfd338688a68e458525476b2e21c0023e344b4",
+    "source_commit": "0faa6770efc4b57cc9ba3f4de2d425d650a11e88",
     "source_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d2cfd338688a68e458525476b2e21c0023e344b4",
+  "source_commit": "0faa6770efc4b57cc9ba3f4de2d425d650a11e88",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
   "tag": null,
