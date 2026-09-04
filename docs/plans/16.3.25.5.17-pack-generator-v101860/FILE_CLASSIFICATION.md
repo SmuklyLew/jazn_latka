@@ -169,3 +169,17 @@ These files define or verify a contract crossed by generated packages:
 - The v8.6 file supplied for comparison remains external read-only evidence; it
   is not copied into the repository. Its useful two-file/in-memory design is
   represented by the new deterministic builder and portability test.
+
+## Checkpoint clarification
+
+This classification remains complete at the safe checkpoint. The reference to
+six canonical release locks in section C describes the target release matrix,
+not six files already persisted in Git. The base tree contained only the
+existing `linux-x64-py313.txt` release lock, and the workflow has not yet
+persisted the remaining native locks. Their creation, opposite-OS replay and
+readback remain release gates documented in `RESUME_STATE.md`.
+
+The last local fixes did not change maintenance ownership: UTF-8/LF lock bytes
+remain integration-contract work in `latka_jazn/dependencies/wheelhouse.py`,
+while replacing zlib compression with raw Base85 remains generator-only work in
+`tools/build_jazn_pack_generator_bundle.py` and its generated launcher.

@@ -1,4 +1,76 @@
-# Pre-publication implementation status
+# Safe checkpoint status
+
+Checkpoint captured after implementation and CI diagnosis, before publication
+of the final local corrections. The authoritative continuation record is
+`RESUME_STATE.md`.
+
+## Git identity
+
+- branch: `upgrade/package-generator-v10.1.86.0-rewrite`;
+- base/master: `635e9674abe8163a943b922a84b4fe4fb258143f`;
+- implementation HEAD before this documentation-only checkpoint commit:
+  `020b60ca7e10b4f10a04078e06dcd3e34e966b0a`;
+- last pushed branch head: `b8bc63ffd5fc103f16d6ae8c4e8855288dda177b`;
+- pre-checkpoint working tree: clean, with no staged or unstaged tracked files;
+- local branch was two commits ahead of its remote-tracking branch before this
+  documentation commit;
+- no push, new PR or merge is authorized as part of this checkpoint.
+
+## Work state
+
+| Area | Status | Evidence |
+|---|---|---|
+| audit and three-way file classification | DONE | `FILE_CLASSIFICATION.md` |
+| generator-only rewrite | DONE | version-neutral sources plus bundled public launcher |
+| old generator archive | DONE | exact `R100` moves under `archive/pre-v10.1.86.0/` |
+| generator/system contracts | DONE | wheelhouse v3 and dependency artifact v2 |
+| cross-target policy | DONE locally | native lock creation plus foreign hash-locked replay |
+| CI portability fixes | DONE locally | compatible manylinux tags, canonical LF lock bytes, raw deterministic Base85 |
+| local validation | PARTIAL | focused suites pass; final full suite/smoke still required |
+| release metadata | PARTIAL | passed before checkpoint docs; must be regenerated after them |
+| publication | PARTIAL | earlier push and PR #214 exist; latest local commits are unpushed |
+| merge to master | NOT RUN | explicitly outside authorization |
+
+## Latest validation evidence
+
+- deterministic builder check — PASS, `bundle_fresh=true`, source-set SHA-256
+  `fcead7c054fbf29f68eb69d8211d19e9f48e7ff1f43f88462b0722b08f4b4871`;
+- active compileall — PASS;
+- five changed-area test files — PASS, `46 passed`, one expected duplicate-ZIP
+  warning;
+- active generator/dependency/distribution selection — PASS, `95 passed,
+  1 skipped`, one expected duplicate-ZIP warning;
+- three additional dependency boundary files — PASS, `6 passed`;
+- metadata check — PASS for source commit `25c68b4...`, `1098` files, before
+  the checkpoint documentation changes.
+
+Direct PowerShell test attempts produced `WinError 50`/previously `WinError 6`
+while Python created child processes. Running the same tests through a clean
+`cmd.exe` child passed. This is an executor/handle limitation, not a confirmed
+code regression. No test was disabled or weakened.
+
+## Remote evidence already obtained
+
+- existing PR: <https://github.com/SmuklyLew/jazn_latka/pull/214>;
+- package workflow run `33839296643`: native builds succeeded; opposite-OS
+  replay exposed CRLF/LF lock drift. The local fix is in `25c68b4` and is not
+  pushed;
+- release-hardening run `33839296416`: Ubuntu bundle freshness exposed
+  zlib-version-dependent output. The local raw-Base85 fix is also in `25c68b4`
+  and is not pushed;
+- these failed runs motivated the local fixes; they are not final green CI.
+
+## Stop boundary
+
+Do not infer completion from this checkpoint. Regenerate metadata, rerun the
+listed final gates, publish the existing branch, verify new CI and update the
+existing PR. Do not create a replacement branch, rebase, force-push or merge.
+
+## Historical pre-publication implementation status
+
+The section below is retained as pre-first-push evidence. Its `NOT RUN` rows do
+not describe the later checkpoint; the current state above and
+`RESUME_STATE.md` take precedence.
 
 This is the local evidence checkpoint captured before the first branch push.
 Status values are `PASS`, `FAIL`, `SKIPPED`, `NOT RUN` or `BLOCKED`; a planned

@@ -71,3 +71,28 @@ The pip target-selector limitation for environment-marker evaluation is also
 tracked upstream at <https://github.com/pypa/pip/issues/13442>. This design does
 not treat foreign `pip` resolution as authoritative: native CI creates the
 resolved lock, and foreign hosts perform only hash-locked, no-dependency replay.
+
+## Safe checkpoint status
+
+Work was stopped on explicit operator request after the local implementation
+and two CI-derived corrections, but before publishing those last corrections.
+The executable continuation state is in `RESUME_STATE.md`.
+
+- [DONE] base/master preflight and complete generator-file classification;
+- [DONE] immutable pre-change test snapshots and lossless archive of retired
+  generator modules;
+- [DONE] Pack Generator `10.1.86.0` rewrite and deterministic two-file launcher;
+- [DONE] Jaźń version `16.3.25.5.17` and dependency contract revisions;
+- [DONE] canonical host wheelhouse placement and locked cross-target replay;
+- [DONE] local LF lock transport and platform-independent Base85 bundle fixes;
+- [PARTIAL] local validation: focused/active suites and compile checks pass, but
+  final full non-live pytest and final release smoke must be rerun at the
+  checkpoint head;
+- [PARTIAL] release metadata: canonical write/check passed for implementation
+  commit `25c68b4b9c0998f7422869eed9083b032a488ca7`; checkpoint documentation now
+  requires one final write/check cycle;
+- [PARTIAL] publication: PR #214 and an earlier remote branch head already
+  exist, but local commits after `b8bc63f` have deliberately not been pushed;
+- [TODO] push the checkpointed commits, verify the fresh GitHub matrices,
+  persist/read back all six native locks, update PR evidence and stop before
+  merge.
