@@ -1,0 +1,139 @@
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+INDEX="$ROOT/JAZN_PYTHON_RUNTIME_INDEX.tsv"
+SET="$ROOT/JAZN_PYTHON_RUNTIME_SET.json"
+
+sha256_file() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$1" | awk '{print $1}'
+    else
+        echo "[JAZN] Brak sha256sum/shasum potrzebnego do weryfikacji private runtime." >&2
+        exit 78
+    fi
+}
+
+if [ -f "$SET" ] && [ -f "$INDEX" ]; then
+    OS=$(uname -s 2>/dev/null || true)
+    ARCH=$(uname -m 2>/dev/null || true)
+    case "$OS:$ARCH" in
+        Linux:x86_64|Linux:amd64) TARGET_ALIAS="linux-x64" ;;
+        Linux:aarch64|Linux:arm64) TARGET_ALIAS="linux-arm64" ;;
+        Darwin:x86_64|Darwin:amd64) TARGET_ALIAS="macos-x64" ;;
+        Darwin:arm64|Darwin:aarch64) TARGET_ALIAS="macos-arm64" ;;
+        *) echo "[JAZN] Unsupported portable runtime host: $OS/$ARCH" >&2; exit 78 ;;
+    esac
+
+    if [ "$OS" = "Linux" ]; then
+        LDD_TEXT=$(ldd --version 2>&1 || true)
+        case "$LDD_TEXT" in
+            *musl*|*Musl*) LIBC="musl" ;;
+            *glibc*|*GLIBC*|*GNU\ libc*|*GNU\ C\ Library*) LIBC="glibc" ;;
+            *)
+                if command -v getconf >/dev/null 2>&1 && getconf GNU_LIBC_VERSION >/dev/null 2>&1; then
+                    LIBC="glibc"
+                else
+                    echo "[JAZN] Nie można wiarygodnie określić libc dla Linux runtime." >&2
+                    exit 78
+                fi
+                ;;
+        esac
+    else
+        LIBC="not-applicable"
+    fi
+
+    if [ -n "${JAZN_PYTHON_VERSION:-}" ]; then
+        PREFERENCE="$JAZN_PYTHON_VERSION"
+    else
+        PREFERENCE="3.14 3.13 3.12"
+    fi
+
+    SELECTED=""
+    for PYVER in $PREFERENCE; do
+        SELECTED=$(awk -F '\t' -v a="$TARGET_ALIAS" -v p="$PYVER" -v l="$LIBC" 'NR>1 && $2==a && $3==p && $4==l {print; exit}' "$INDEX")
+        [ -n "$SELECTED" ] && break
+    done
+    if [ -z "$SELECTED" ]; then
+        echo "[JAZN] Brak zgodnego runtime dla $TARGET_ALIAS/$LIBC; preference: $PREFERENCE" >&2
+        exit 78
+    fi
+
+    TARGET_ID=$(printf '%s\n' "$SELECTED" | cut -f1)
+    FILENAME=$(printf '%s\n' "$SELECTED" | cut -f5)
+    EXPECTED_SHA=$(printf '%s\n' "$SELECTED" | cut -f6)
+    INTERPRETER_REL=$(printf '%s\n' "$SELECTED" | cut -f7)
+    PACKAGES_REL=$(printf '%s\n' "$SELECTED" | cut -f8)
+
+    case "$FILENAME" in */*|*\\*|"" ) echo "[JAZN] Niebezpieczna nazwa runtime artifact." >&2; exit 78 ;; esac
+    BUNDLE=""
+    for candidate in "$ROOT/$FILENAME" "$ROOT/runtime_bundles/$FILENAME" "$(dirname -- "$ROOT")/$FILENAME"; do
+        if [ -f "$candidate" ]; then BUNDLE=$candidate; break; fi
+    done
+    if [ -z "$BUNDLE" ]; then
+        echo "[JAZN] Brak runtime artifact: $FILENAME" >&2
+        exit 78
+    fi
+    ACTUAL_SHA=$(sha256_file "$BUNDLE")
+    if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+        echo "[JAZN] SHA-256 runtime artifact nie zgadza się z indeksem." >&2
+        exit 78
+    fi
+
+    if [ -n "${JAZN_RUNTIME_WORKSPACE_DIR:-}" ]; then
+        case "$JAZN_RUNTIME_WORKSPACE_DIR" in
+            /*) WORKSPACE=$JAZN_RUNTIME_WORKSPACE_DIR ;;
+            *) WORKSPACE="$ROOT/$JAZN_RUNTIME_WORKSPACE_DIR" ;;
+        esac
+    else
+        WORKSPACE="$(dirname -- "$ROOT")/workspace_runtime"
+    fi
+    RUNTIME_BASE="$WORKSPACE/local_resources/python_runtime/runtimes"
+    RUNTIME_ROOT="$RUNTIME_BASE/$TARGET_ID--$(printf '%s' "$EXPECTED_SHA" | cut -c1-12)"
+    READY="$RUNTIME_ROOT/JAZN_PYTHON_RUNTIME_READY.json"
+    mkdir -p "$RUNTIME_BASE"
+
+    if [ ! -f "$READY" ]; then
+        if ! command -v unzip >/dev/null 2>&1; then
+            echo "[JAZN] Brak unzip potrzebnego do pierwszej materializacji runtime ZIP." >&2
+            exit 78
+        fi
+        NAMES=$(unzip -Z1 "$BUNDLE")
+        if printf '%s\n' "$NAMES" | grep -E '(^/|(^|/)\.\.(/|$)|\\|^[A-Za-z]:)' >/dev/null 2>&1; then
+            echo "[JAZN] Runtime ZIP zawiera niebezpieczną ścieżkę." >&2
+            exit 78
+        fi
+        STAGING="$RUNTIME_BASE/.$TARGET_ID.staging-$$"
+        rm -rf "$STAGING"
+        mkdir -p "$STAGING"
+        if ! unzip -q "$BUNDLE" -d "$STAGING"; then
+            rm -rf "$STAGING"
+            exit 78
+        fi
+        printf '{"schema_version":"jazn_python_runtime_ready/v1","bundle_sha256":"%s","target_id":"%s"}\n' "$EXPECTED_SHA" "$TARGET_ID" > "$STAGING/JAZN_PYTHON_RUNTIME_READY.json"
+        rm -rf "$RUNTIME_ROOT"
+        mv "$STAGING" "$RUNTIME_ROOT"
+    fi
+
+    case "$INTERPRETER_REL" in /*|*\\*|*../*|../*|*:*|"" ) echo "[JAZN] Niebezpieczna ścieżka interpretera." >&2; exit 78 ;; esac
+    PYTHON="$RUNTIME_ROOT/$INTERPRETER_REL"
+    if [ ! -x "$PYTHON" ]; then
+        echo "[JAZN] Interpreter private runtime nie istnieje lub nie jest wykonywalny: $PYTHON" >&2
+        exit 78
+    fi
+    unset PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONUSERBASE VIRTUAL_ENV __PYVENV_LAUNCHER__ || true
+    export PYTHONUTF8=1 PYTHONNOUSERSITE=1 JAZN_PYTHON_RUNTIME_ACTIVE=1 JAZN_PYTHON_RUNTIME_ROOT="$RUNTIME_ROOT"
+    exec "$PYTHON" -I -X utf8 "$ROOT/jazn_runtime_bootstrap.py" --app-root "$ROOT" --runtime-root "$RUNTIME_ROOT" --packages-relative-path "$PACKAGES_REL" -- "$@"
+fi
+
+# Thin/developer fallback only when no private runtime-set contract is present.
+for PYTHON in python3 python; do
+    if command -v "$PYTHON" >/dev/null 2>&1 && "$PYTHON" -X utf8 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3,12) else 3)' >/dev/null 2>&1; then
+        exec "$PYTHON" -X utf8 "$ROOT/run.py" "$@"
+    fi
+done
+
+echo "[JAZN] Nie znaleziono private runtime ani Pythona 3.12+." >&2
+exit 127
