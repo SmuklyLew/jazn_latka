@@ -19,7 +19,7 @@ can be replayed on the opposite operating system.
 ## Design decisions
 
 1. The public `tools/jazn_pack_generator.py` embeds only generator modules as
-   deterministic zlib/Base85 payloads and imports them as private in-memory
+   deterministic Base85 payloads and imports them as private in-memory
    modules. This recovers the useful portability property of v8.6.
 2. Runtime/system code is never embedded. The launcher resolves an explicit or
    adjacent-settings Jaźń source root and imports the current canonical system

@@ -33,7 +33,7 @@ def test_v101860_launcher_embeds_only_current_runtime_sources() -> None:
 
     assert "_BUNDLED_MODULES" in launcher
     assert "b85decode" in launcher
-    assert "zlib" in launcher
+    assert "zlib" not in launcher
     assert "pack_generator_sources" not in launcher
     assert "jazn_pack_generator_v89.py" not in launcher
     assert "jazn_pack_generator_v88.py" not in launcher

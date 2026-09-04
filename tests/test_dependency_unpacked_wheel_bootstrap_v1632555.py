@@ -161,7 +161,7 @@ def _bundle(tmp_path: Path, *, unsafe_packaging_member: bool = False) -> Path:
 
     resolved.sort(key=lambda item: str(item["name"]))
     lock_path = bundle / LOCK_NAME
-    lock_path.write_text(render_hash_lock(resolved), encoding="utf-8")
+    lock_path.write_bytes(render_hash_lock(resolved).encode("utf-8"))
     target = target_spec("current", f"{sys.version_info.major}.{sys.version_info.minor}")
     manifest = {
         "schema_version": WHEELHOUSE_SCHEMA,

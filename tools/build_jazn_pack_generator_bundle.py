@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import zlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,7 +39,7 @@ def source_set_sha256() -> str:
 
 def _embedded_sources() -> dict[str, str]:
     return {
-        name: base64.b85encode(zlib.compress(path.read_bytes(), level=9)).decode("ascii")
+        name: base64.b85encode(path.read_bytes()).decode("ascii")
         for name, path in MODULE_SOURCES
     }
 
@@ -59,9 +58,9 @@ Physical operator files:
 Run from the repository on Windows:
   py -X utf8 .\\tools\\jazn_pack_generator.py
 
-The maintained generator modules are compressed into this file and loaded only
-in memory. The selected Jaźń source tree remains the canonical provider of
-runtime, packaging, dependency and release contracts.
+The maintained generator modules are Base85-encoded into this file and loaded
+only in memory. The selected Jaźń source tree remains the canonical provider
+of runtime, packaging, dependency and release contracts.
 """
 from __future__ import annotations
 
@@ -72,7 +71,6 @@ from pathlib import Path as _BundlePath
 import sys as _bundle_sys
 import types as _bundle_types
 from typing import Any
-import zlib as _bundle_zlib
 
 
 _BUNDLE_FILE = str(_BundlePath(__file__).resolve())
@@ -132,9 +130,7 @@ _SOURCE_ROOT = _bootstrap_source_root()
 
 def _load_bundled_module(name: str) -> _bundle_types.ModuleType:
     encoded = _BUNDLED_MODULES[name]
-    source = _bundle_zlib.decompress(
-        _bundle_base64.b85decode(encoded.encode("ascii"))
-    ).decode("utf-8")
+    source = _bundle_base64.b85decode(encoded.encode("ascii")).decode("utf-8")
     module = _bundle_types.ModuleType(name)
     module.__file__ = _BUNDLE_FILE
     module.__package__ = ""

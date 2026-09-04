@@ -122,7 +122,7 @@ def _bundle(root: Path, bundle_dir: Path, *, profiles: list[str] | None = None) 
     }]
     lock_text = render_hash_lock(resolved)
     lock_path = bundle_dir / LOCK_NAME
-    lock_path.write_text(lock_text, encoding="utf-8")
+    lock_path.write_bytes(lock_text.encode("utf-8"))
     target = target_spec("current", f"{sys.version_info.major}.{sys.version_info.minor}")
     manifest = {
         "schema_version": WHEELHOUSE_SCHEMA,

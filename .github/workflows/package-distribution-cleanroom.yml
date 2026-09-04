@@ -107,12 +107,16 @@ jobs:
           lock="$RUNNER_TEMP/native-evidence/locks/core+archive/${{ matrix.target }}-py${py_digits}.txt"
           test -f "$lock"
           result="$RUNNER_TEMP/cross-target-download.json"
+          set +e
           python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --wheelhouse-root "$RUNNER_TEMP/cross-target-wheelhouse" --json \
             download --profile core --profile archive \
             --python-version "${{ matrix.python }}" --platform "${{ matrix.target }}" \
             --lock-file "$lock" > "$result"
+          download_rc=$?
+          set -e
           cat "$result"
+          test "$download_rc" -eq 0
           bundle_dir="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$result")"
           python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --json verify --bundle "$bundle_dir"

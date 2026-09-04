@@ -298,6 +298,12 @@ def render_hash_lock(resolved: Sequence[dict[str, Any]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_hash_lock_bytes(resolved: Sequence[dict[str, Any]]) -> bytes:
+    """Return the canonical cross-platform lock representation: UTF-8 with LF."""
+
+    return render_hash_lock(resolved).encode("utf-8")
+
+
 def verify_hash_lock(directory: Path, manifest: dict[str, Any]) -> list[dict[str, Any]]:
     errors: list[dict[str, Any]] = []
     lock_path = directory / LOCK_NAME
@@ -306,11 +312,11 @@ def verify_hash_lock(directory: Path, manifest: dict[str, Any]) -> list[dict[str
     expected_sha = str(manifest.get("hash_lock_sha256") or "")
     if not expected_sha or sha256_file(lock_path) != expected_sha:
         errors.append({"code": "hash_lock_sha256_mismatch"})
-    expected = render_hash_lock(manifest.get("resolved_distributions") or [])
+    expected = render_hash_lock_bytes(manifest.get("resolved_distributions") or [])
     try:
-        actual = lock_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError):
-        actual = ""
+        actual = lock_path.read_bytes()
+    except OSError:
+        actual = b""
     if actual != expected:
         errors.append({"code": "hash_lock_content_mismatch"})
     return errors
@@ -572,18 +578,18 @@ def download_bundle(
             input_lock_path=input_lock,
             materialization_mode=materialization_mode,
         )
-        lock_text = render_hash_lock(manifest["resolved_distributions"])
+        lock_bytes = render_hash_lock_bytes(manifest["resolved_distributions"])
         if input_lock is not None:
             try:
-                input_lock_text = input_lock.read_text(encoding="utf-8")
-            except (OSError, UnicodeError) as exc:
+                input_lock_bytes = input_lock.read_bytes()
+            except OSError as exc:
                 raise DependencyStudioError(f"Cannot read release hash lock {input_lock}: {exc}") from exc
-            if input_lock_text != lock_text:
+            if input_lock_bytes != lock_bytes:
                 raise DependencyStudioError(
                     "Resolved wheel inventory does not reproduce the canonical release hash lock"
                 )
         lock_path = stage / LOCK_NAME
-        lock_path.write_text(lock_text, encoding="utf-8")
+        lock_path.write_bytes(lock_bytes)
         manifest["hash_lock_sha256"] = sha256_file(lock_path)
         slug = "+".join(re.sub(r"[^a-z0-9._+-]+", "-", profile.lower()) for profile in profile_names) or "default"
         name = f"{slug}__{target.alias}__py{target.python_version.replace('.', '')}__{manifest['resolution_fingerprint'][:12]}"
