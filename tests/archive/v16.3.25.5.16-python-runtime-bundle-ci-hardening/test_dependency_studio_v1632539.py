@@ -209,14 +209,13 @@ def test_install_dry_run_is_offline_and_uses_managed_environment(tmp_path: Path)
 
 def test_download_dry_run_does_not_create_wheelhouse(tmp_path: Path) -> None:
     root = _project(tmp_path)
-    current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
     parser = build_parser()
     ns = parser.parse_args([
         "--root", str(root),
         "download",
         "--profile", "core,archive",
-        "--python-version", current_python,
-        "--platform", "current",
+        "--python-version", "3.12",
+        "--platform", "windows-x64",
         "--dry-run",
     ])
     exit_code, payload = execute(ns)

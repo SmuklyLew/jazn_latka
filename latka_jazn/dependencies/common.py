@@ -16,15 +16,20 @@ import tomllib
 from typing import Any, Iterable, Sequence
 
 PROFILE_SCHEMA = "jazn_dependency_profiles/v1"
-WHEELHOUSE_SCHEMA = "jazn_dependency_wheelhouse/v2"
+WHEELHOUSE_SCHEMA = "jazn_dependency_wheelhouse/v3"
 ENVIRONMENT_SCHEMA = "jazn_dependency_environment/v2"
-DEPENDENCY_ARTIFACT_SCHEMA = "jazn_dependency_artifact/v1"
+DEPENDENCY_ARTIFACT_SCHEMA = "jazn_dependency_artifact/v2"
 DEPENDENCY_SET_SCHEMA = "jazn_dependency_set/v1"
 MANIFEST_NAME = "JAZN_WHEELHOUSE_MANIFEST.json"
 LOCK_NAME = "JAZN_WHEELHOUSE_REQUIREMENTS.txt"
 ENVIRONMENT_MARKER_NAME = "JAZN_DEPENDENCY_ENVIRONMENT.json"
 DEPENDENCY_SET_NAME = "JAZN_DEPENDENCY_SET.json"
 DEFAULT_TIMEOUT_SECONDS = 1800
+LINUX_GLIBC_MINIMUM = "2.17"
+LINUX_X64_PIP_PLATFORMS = (
+    "manylinux_2_17_x86_64",
+    "manylinux2014_x86_64",
+)
 
 
 class DependencyStudioError(RuntimeError):
@@ -38,13 +43,17 @@ class TargetSpec:
     implementation: str
     abi: str | None
     pip_platform: str | None
+    pip_platforms: tuple[str, ...]
     platform_family: str
     architecture: str
     libc_family: str
+    minimum_libc_version: str | None = None
     compatible_tags: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
+        payload["compatible_pip_platforms"] = list(self.pip_platforms)
+        payload.pop("pip_platforms", None)
         payload["compatible_platform_tags"] = list(self.compatible_tags)
         payload.pop("compatible_tags", None)
         return payload
@@ -388,21 +397,44 @@ def current_abi_tag() -> str | None:
     return None
 
 
-def _target_tags(alias: str, py: str, abi: str | None, pip_platform: str | None) -> tuple[str, ...]:
+def _target_tags(
+    alias: str,
+    py: str,
+    abi: str | None,
+    pip_platforms: Sequence[str],
+) -> tuple[str, ...]:
     try:
         from packaging.tags import compatible_tags, cpython_tags, sys_tags
     except ImportError:
         return ()
+    if pip_platforms:
+        major, minor = (int(x) for x in py.split("."))
+        abis = [abi] if abi else None
+        platforms = list(pip_platforms)
+        tags = list(cpython_tags((major, minor), abis=abis, platforms=platforms))
+        tags.extend(
+            compatible_tags(
+                (major, minor),
+                interpreter=f"cp{major}{minor}",
+                platforms=platforms,
+            )
+        )
+        return tuple(dict.fromkeys(str(tag) for tag in tags))
     current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
     if alias == current_platform_alias() and py == current_py:
         return tuple(str(tag) for tag in sys_tags())
-    if alias.startswith("windows-") and pip_platform:
-        major, minor = (int(x) for x in py.split("."))
-        abis = [abi] if abi else None
-        tags = list(cpython_tags((major, minor), abis=abis, platforms=[pip_platform]))
-        tags.extend(compatible_tags((major, minor), interpreter=f"cp{major}{minor}", platforms=[pip_platform]))
-        return tuple(dict.fromkeys(str(tag) for tag in tags))
     return ()
+
+
+def target_is_current_host(target: TargetSpec) -> bool:
+    current_py = f"{sys.version_info.major}.{sys.version_info.minor}"
+    if target.alias != current_platform_alias() or target.python_version != current_py:
+        return False
+    if target.implementation != current_implementation_tag():
+        return False
+    if target.platform_family == "linux":
+        return target.libc_family == current_libc_family()
+    return True
 
 
 def target_spec(platform_alias: str | None, python_version: str | None) -> TargetSpec:
@@ -413,30 +445,57 @@ def target_spec(platform_alias: str | None, python_version: str | None) -> Targe
     if alias == "current":
         alias = current_alias
     digits = py.replace(".", "")
-    pip_platform: str | None = None
     native_target = alias == current_alias and py == current_py
     implementation = current_implementation_tag() if native_target else "cp"
     abi: str | None = current_abi_tag() if native_target else None
+    pip_platforms: tuple[str, ...] = ()
+    libc = "not-applicable"
+    minimum_libc_version: str | None = None
     if alias == "windows-x64":
-        pip_platform = "win_amd64"
+        pip_platforms = ("win_amd64",)
         abi = abi or f"cp{digits}"
     elif alias == "windows-arm64":
-        pip_platform = "win_arm64"
+        pip_platforms = ("win_arm64",)
         abi = abi or f"cp{digits}"
-    elif alias in {"linux-x64", "linux-arm64", "macos-x64", "macos-arm64"}:
-        # Linux wheel compatibility must be generated natively because manylinux/musllinux
-        # depend on the running libc/kernel. macOS is likewise native-only in v2.
+    elif alias == "linux-x64":
+        actual_libc = current_libc_family() if alias == current_alias else None
+        if actual_libc not in {None, "glibc"}:
+            raise DependencyStudioError(
+                "no_compatible_dependency_bundle: linux-x64 release target requires glibc"
+            )
+        pip_platforms = LINUX_X64_PIP_PLATFORMS
+        abi = abi or f"cp{digits}"
+        libc = "glibc"
+        minimum_libc_version = LINUX_GLIBC_MINIMUM
+    elif alias in {"linux-arm64", "macos-x64", "macos-arm64"}:
+        # ARM Linux and macOS remain native-only until their release policies and
+        # clean-room matrices are explicitly accepted.
         if alias != current_alias or py != current_py:
             raise DependencyStudioError(
                 f"Cross-target {alias!r} must be materialized on a native runner with Python {py}; "
-                "v2 does not guess platform compatibility tags"
+                "the release does not define a deterministic compatibility policy"
             )
     else:
         raise DependencyStudioError(f"Unsupported dependency target alias: {alias!r}")
 
     family = alias.split("-", 1)[0]
-    libc = current_libc_family() if family == "linux" and alias == current_alias else ("native-required" if family == "linux" else "not-applicable")
-    if family == "linux" and libc == "musl":
-        raise DependencyStudioError("no_compatible_dependency_bundle: musl is not release-supported in 16.3.25.5")
-    tags = _target_tags(alias, py, abi, pip_platform)
-    return TargetSpec(alias, py, implementation, abi, pip_platform, family, _architecture_for_alias(alias), libc, tags)
+    if family == "linux" and alias != "linux-x64":
+        libc = current_libc_family() if alias == current_alias else "native-required"
+        if libc == "musl":
+            raise DependencyStudioError(
+                "no_compatible_dependency_bundle: musl is not release-supported in 16.3.25.5"
+            )
+    tags = _target_tags(alias, py, abi, pip_platforms)
+    return TargetSpec(
+        alias=alias,
+        python_version=py,
+        implementation=implementation,
+        abi=abi,
+        pip_platform=pip_platforms[0] if pip_platforms else None,
+        pip_platforms=pip_platforms,
+        platform_family=family,
+        architecture=_architecture_for_alias(alias),
+        libc_family=libc,
+        minimum_libc_version=minimum_libc_version,
+        compatible_tags=tags,
+    )

@@ -27,8 +27,8 @@ def _root(tmp_path: Path, version: str, release: str) -> Path:
 
 def test_v1001_exposes_terminal_studio_and_portability_helpers() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "10.1.86.0"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
+    assert module.GENERATOR_VERSION == "10.0.1"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
     assert callable(module.run_terminal_studio)
     assert callable(module.refresh_archive_basename_for_current_release)
 

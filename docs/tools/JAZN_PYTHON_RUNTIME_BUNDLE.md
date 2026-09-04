@@ -82,7 +82,7 @@ JSON jest kanonicznym kontraktem programu. TSV jest minimalnym indeksem bootstra
 
 ## Vendoring zależności
 
-`python_runtime_studio build --dependency-bundle ...` może przygotować `packages/` wyłącznie ze zweryfikowanego `jazn_dependency_wheelhouse/v2`. Builder Python musi odpowiadać temu samemu OS/architecture/Python/ABI/libc co target runtime. Instalacja używa:
+`python_runtime_studio build --dependency-bundle ...` może przygotować `packages/` wyłącznie ze zweryfikowanego `jazn_dependency_wheelhouse/v3`. Builder Python musi odpowiadać temu samemu OS/architecture/Python/ABI/libc co target runtime. Instalacja używa:
 
 ```text
 python -m pip install

@@ -18,6 +18,6 @@ def test_v82_contract_is_retired_after_v1001_convergence() -> None:
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
 
-    assert module.GENERATOR_VERSION == "10.1.86.0"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
+    assert module.GENERATOR_VERSION == "10.0.1"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
     assert module.UI_MODE_CHOICES == ("tekstowy", "kursorowy", "studio-terminal")

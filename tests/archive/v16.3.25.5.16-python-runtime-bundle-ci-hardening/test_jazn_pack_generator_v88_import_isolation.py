@@ -24,8 +24,8 @@ sys.modules[name] = module
 spec.loader.exec_module(module)
 
 public = importlib.import_module("tools.jazn_pack_generator")
-assert public.GENERATOR_VERSION == "10.1.86.0"
-assert public.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
+assert public.GENERATOR_VERSION == "10.0.1"
+assert public.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
 assert public.UI_MODE_CHOICES == ("tekstowy", "kursorowy", "studio-terminal")
 """
     result = subprocess.run(

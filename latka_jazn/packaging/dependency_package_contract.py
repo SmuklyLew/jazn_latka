@@ -29,6 +29,9 @@ _TARGET_IDENTITY_FIELDS = (
     "platform_family",
     "architecture",
     "libc_family",
+    "minimum_libc_version",
+    "pip_platform",
+    "compatible_pip_platforms",
 )
 
 
@@ -62,7 +65,7 @@ def dependency_artifact_descriptor(bundle_dir: Path | str) -> dict[str, Any]:
         "wheelhouse_manifest_sha256": sha256_file(bundle / MANIFEST_NAME),
         "hash_lock_sha256": sha256_file(bundle / LOCK_NAME),
         "wheel_count": verification.get("wheel_count"),
-        "truth_boundary": "Artifact is transport for one verified Wheelhouse Contract v2 bundle; environments/site-packages are never transported.",
+        "truth_boundary": "Artifact is transport for one verified Wheelhouse Contract v3 bundle; environments/site-packages are never transported.",
     }
 
 
