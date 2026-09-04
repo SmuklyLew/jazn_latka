@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
-  "runtime_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
-  "package_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
-  "generated_at_utc": "2026-09-04T03:22:58+00:00",
-  "updated_at_utc": "2026-09-04T03:22:58+00:00",
+  "version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+  "runtime_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+  "package_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+  "generated_at_utc": "2026-09-04T04:29:56+00:00",
+  "updated_at_utc": "2026-09-04T04:29:56+00:00",
   "start_file": "run.py",
-  "file_count": 1078,
-  "static_file_count": 1078,
+  "file_count": 1098,
+  "static_file_count": 1098,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -110,8 +110,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 13222,
-      "sha256": "c5c00bd8bd0ba6d63db7ed8a7420ad99cc845b90033462543056e700c982cd20",
+      "size_bytes": 17308,
+      "sha256": "be6016159f610f462d62b37ec4b021114e70d836e1b25325eb312c9a1f329e6b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 15555,
-      "sha256": "8599939e2c0d6eb7b6810465db69cf473c47d69d87b91bfc99f803637dbb89ae",
+      "size_bytes": 15561,
+      "sha256": "2c2a73efe2424d161f9c0ad20a74f94a9609bfdd7ac04f540746fd0c8bf4acec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -209,8 +209,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2925,
-      "sha256": "cdde25e49cdc0f7cf14d47945189356e4d1ef53b7d052810bf46225c4125edc8",
+      "size_bytes": 3045,
+      "sha256": "abe568466ad44657e28523500aa318cc40c49f7e71b3e271005ffc160bb2cbc5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1117,6 +1117,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/FILE_CLASSIFICATION.md",
+      "size_bytes": 9043,
+      "sha256": "42d28832c068d93577e93c05ede0331af50332e091ff7ed04a6bf675f4640e52",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/PLAN.md",
+      "size_bytes": 3691,
+      "sha256": "c78f712c0f1c29383959394dc8d70a95477a82a3b05f1a2b70a301401e300eb1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/STATUS.md",
+      "size_bytes": 2279,
+      "sha256": "1efe40bc7ff3b94de2b3cb280f3f18529708b9ce43987947482e044c24775faf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/16.3.26-attachment-ingress/PLAN.md",
       "size_bytes": 8579,
       "sha256": "61f288aaf913c8a984ffb1bf6076998ec6f14b51b0a804ac1313b4c58e670fe9",
@@ -1387,6 +1414,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/runtime/JAZN_PACK_GENERATOR_V101860_CROSS_TARGET.md",
+      "size_bytes": 3311,
+      "sha256": "2d1378a13d72ab55aced965ddc1cc52fc252f29ce295b41cdd515813d9a05fa1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md",
       "size_bytes": 1784,
       "sha256": "25483f3bc7e63b0b47470797bb8d8acecc9b590d621f320d35c6d27cdbcd8f6e",
@@ -1451,8 +1487,8 @@
     },
     {
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
-      "size_bytes": 10940,
-      "sha256": "8618389ca8076f4f2f29cd9201b831db701c68f29ddb650794e9145cf63a40c1",
+      "size_bytes": 12226,
+      "sha256": "d003c478176a5ad2b2e432cd88d586e558829882c86b741161240e375d230abd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1461,7 +1497,7 @@
     {
       "path": "docs/tools/JAZN_PYTHON_RUNTIME_BUNDLE.md",
       "size_bytes": 7648,
-      "sha256": "0b8b2a47b0ce94c8d604fc37d747246586fbd57ad1880e75793fbc3a7530112b",
+      "sha256": "bbb18c1599744f962ba7903957b4853210c6c78d54dbc16d1fb9a02eaa802c69",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1487,8 +1523,8 @@
     },
     {
       "path": "docs/tools/README.md",
-      "size_bytes": 905,
-      "sha256": "9972107b6d3a2605b9b52a36e56ffd168eb9a2bd54b2fcb7b3143c7272ef474d",
+      "size_bytes": 1165,
+      "sha256": "4d812271f4eeef3f5e5b45d41d7d32ae194cfc875bdb610ad8d2f3156aaa4528",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3701,8 +3737,8 @@
     },
     {
       "path": "latka_jazn/dependencies/common.py",
-      "size_bytes": 18179,
-      "sha256": "2691489bdb9b29073fee403279392c9c69f7be39eec81b16489631b7824f31a3",
+      "size_bytes": 19860,
+      "sha256": "8ca7bdf94eca210d774cc7a9c15f1aa35058d92c634c9ef1a08e9f3a17fab54e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3746,8 +3782,8 @@
     },
     {
       "path": "latka_jazn/dependencies/wheelhouse.py",
-      "size_bytes": 28870,
-      "sha256": "d59e2cef4850a26fe548a2b583ec55a304f2b23fae09cefafb73b0e2b8e3dbf2",
+      "size_bytes": 29750,
+      "sha256": "c4a6654b0cfd58610c15401e40d8c929110f953ce142856b77db217932019378",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3756,7 +3792,7 @@
     {
       "path": "latka_jazn/dependencies/wheelhouse_bootstrap.py",
       "size_bytes": 14235,
-      "sha256": "b50cde326dff361038a991152dfc0cbd7ba2d70e626dad0799be62f1a3f639d7",
+      "sha256": "5d7d870510f8bcefea8bc5daa5a14e1425dea2c7ad5f520ec4fcc610562d7d4e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5321,8 +5357,8 @@
     },
     {
       "path": "latka_jazn/packaging/dependency_package_contract.py",
-      "size_bytes": 10748,
-      "sha256": "07ab1fd81fc63da2b7a768ba1baea60bc0fea737bc6b8123c0c507989fea45cb",
+      "size_bytes": 10828,
+      "sha256": "299c2e6e11c3618749e77bf41ab663493c5e7523187581deea22c262f49c892d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5582,8 +5618,8 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/locks/README.md",
-      "size_bytes": 857,
-      "sha256": "0b2a69b6cb8dc3804ea317984e00693f422de4fb2e8e5aef49658eaf1ce882c0",
+      "size_bytes": 1187,
+      "sha256": "e827def7f14c7e96f45e889a07c29cb312b2433a8fe64bc945feeaf0831358df",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6950,8 +6986,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6657,
-      "sha256": "7eae9051b7ba7a7d6cb7cbb28a5143dde6a7cbcd96f4120a2038c4ab8604654b",
+      "size_bytes": 6664,
+      "sha256": "ec5d41fd79c74651ec712f6ab6239c73f01e7defbadbe6f25fc013231db3d787",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7372,6 +7408,96 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_dependency_studio_v1632539.py",
+      "size_bytes": 16672,
+      "sha256": "e2afceb7de9282402bdeb56b450ef2c8b68e3ae40f6b55df811d6d85973fc5bf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_independent_memory_package_contract_v2.py",
+      "size_bytes": 8748,
+      "sha256": "1138e5f784354a54784352464ef670bbec3e592a0de20b190dc9cc6a0199e816",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_two_file_bundle_v88.py",
+      "size_bytes": 1691,
+      "sha256": "398d23857caeca23e86afbd777ce02f8022c3844a59b354233fe33eb653a6440",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v1001_public_api_contract.py",
+      "size_bytes": 4101,
+      "sha256": "a97da1e4fb2a818736b24aac77888bbf22296e065d1f52102172fd35905f7770",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v16311_profiles.py",
+      "size_bytes": 2355,
+      "sha256": "f2c44a81cb55138dffadf05796da2972cf32facc31c78dd1d63c30f0773fc4a1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v82_contract.py",
+      "size_bytes": 876,
+      "sha256": "820013d5cd384209a6cce7be5b175bb91421cdfe12c9bdc364de940b5278e4cf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v84_contract.py",
+      "size_bytes": 3781,
+      "sha256": "7758d5f8d2dfa49065e002790096c9775cef147ecf3dc0f95e65fb820f8a8b6c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v88_import_isolation.py",
+      "size_bytes": 1146,
+      "sha256": "1a21393f8775953fa1592e7017f1910c3ae2369814d18649925e72708f38f8c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v88_studio_portability.py",
+      "size_bytes": 4203,
+      "sha256": "93bb216370c4a1ad2cd50761a37a76da07b6b0e44707667bfb42a09e72943c1e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.16-python-runtime-bundle-ci-hardening/test_jazn_pack_generator_v89_distribution.py",
+      "size_bytes": 9100,
+      "sha256": "1e850c69f3f0dfeac1ad2215e0647fc06f620fd604ea91830eda12512e46eafc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.5-pack-generator-v88/SHA256SUMS.txt",
       "size_bytes": 117,
       "sha256": "6c7dc996b12a0c655e7fb0c896620c2498fb18ee206fad8028e3e4a39c17d688",
@@ -7732,6 +7858,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_dependency_cross_target_materialization_v16325517.py",
+      "size_bytes": 3102,
+      "sha256": "e04dd4cdff7cfb0908ba83f0804ac44b9d8d309282f139a43d2fa035d7c50c6b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_dependency_host_workspace_v1632555.py",
       "size_bytes": 1649,
       "sha256": "89781fdc33ebcd114986559b901d4fa82eb9d55cf12e0bd2e5c9a471a76b06c3",
@@ -7769,8 +7904,8 @@
     },
     {
       "path": "tests/test_dependency_studio_v1632539.py",
-      "size_bytes": 16672,
-      "sha256": "e2afceb7de9282402bdeb56b450ef2c8b68e3ae40f6b55df811d6d85973fc5bf",
+      "size_bytes": 16750,
+      "sha256": "2de5a513058cf9176c3e0136c0136e01347f9e966dd67143aa9c0033d92be78b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7886,8 +8021,8 @@
     },
     {
       "path": "tests/test_independent_memory_package_contract_v2.py",
-      "size_bytes": 8748,
-      "sha256": "1138e5f784354a54784352464ef670bbec3e592a0de20b190dc9cc6a0199e816",
+      "size_bytes": 8754,
+      "sha256": "919aaf9a98f4d2f888e962fce2c0f81cab42bef96c8d72df2053f20f58bc3930",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7895,8 +8030,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_two_file_bundle_v88.py",
-      "size_bytes": 1691,
-      "sha256": "398d23857caeca23e86afbd777ce02f8022c3844a59b354233fe33eb653a6440",
+      "size_bytes": 2644,
+      "sha256": "1d9c6dcccea21069dff126d74c3c53a61ca6d60d1c67e44d07a8c7e4ccade1aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7904,8 +8039,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v1001_public_api_contract.py",
-      "size_bytes": 4101,
-      "sha256": "a97da1e4fb2a818736b24aac77888bbf22296e065d1f52102172fd35905f7770",
+      "size_bytes": 4096,
+      "sha256": "1757e953f7006de5927b3222022c5fc96c2d0cfe22f7abfae14d2a3ab33c8f19",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7913,8 +8048,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v16311_profiles.py",
-      "size_bytes": 2355,
-      "sha256": "f2c44a81cb55138dffadf05796da2972cf32facc31c78dd1d63c30f0773fc4a1",
+      "size_bytes": 2361,
+      "sha256": "d8dc20a3dadb30aa4d28cf6413f291bfc30129370e10b9e51c16868a7e949d6a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7922,8 +8057,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v82_contract.py",
-      "size_bytes": 876,
-      "sha256": "820013d5cd384209a6cce7be5b175bb91421cdfe12c9bdc364de940b5278e4cf",
+      "size_bytes": 882,
+      "sha256": "9b01e1c01e82414af296d6ab67391924cdd68143362042f8c9953290baa2910d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7940,8 +8075,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v84_contract.py",
-      "size_bytes": 3781,
-      "sha256": "7758d5f8d2dfa49065e002790096c9775cef147ecf3dc0f95e65fb820f8a8b6c",
+      "size_bytes": 3782,
+      "sha256": "bd0db16b96c62ca884d766664d090246d5365e4bed164660e1f0413db961aeff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7949,8 +8084,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v88_import_isolation.py",
-      "size_bytes": 1146,
-      "sha256": "1a21393f8775953fa1592e7017f1910c3ae2369814d18649925e72708f38f8c7",
+      "size_bytes": 1152,
+      "sha256": "b8ff04447007099f2c4727aa469cc35d9ae5ac2d640283e049f15ea45809108e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7958,8 +8093,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v88_studio_portability.py",
-      "size_bytes": 4203,
-      "sha256": "93bb216370c4a1ad2cd50761a37a76da07b6b0e44707667bfb42a09e72943c1e",
+      "size_bytes": 4209,
+      "sha256": "ad5e9bbdbd919a8c1c308e1bc1dd788e980fc3736c298aad9fadddd587913d89",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7967,8 +8102,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v89_distribution.py",
-      "size_bytes": 9100,
-      "sha256": "1e850c69f3f0dfeac1ad2215e0647fc06f620fd604ea91830eda12512e46eafc",
+      "size_bytes": 11126,
+      "sha256": "a4c51d3c94c5b1193377da86139df5f7ebc577f0d3df77eda0ecdb32d8f5dad6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9515,8 +9650,8 @@
     },
     {
       "path": "tools/build_jazn_pack_generator_bundle.py",
-      "size_bytes": 2619,
-      "sha256": "8642a554497ced100ee9bfecef9326bb509f0792bcd8c546f88bb553de3e318a",
+      "size_bytes": 7724,
+      "sha256": "658f2a3d26a80a9bbcca42c35c1ecbffb24a8b9064873dc17dbe8a8ccafc7ef2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9533,8 +9668,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 3044,
-      "sha256": "187d5c56d167cc38025b6a0fdca4b5f9b6272548a84ae7beb5aa16b1ee228489",
+      "size_bytes": 35066,
+      "sha256": "f35f98440b30cacb45d4dffc1fe4948f62cc695f93adbf524b0d5279c6e9ea82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9650,15 +9785,24 @@
     },
     {
       "path": "tools/pack_generator_sources/__init__.py",
-      "size_bytes": 470,
-      "sha256": "1747dc1b51e955e07de08bb0ce33a2256e33783e34f7c20cb235221b7f9f8c2b",
+      "size_bytes": 380,
+      "sha256": "70ce3afb7cec863890e631b854022b618b2f09363ba3b07e7c9360de6afba00a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v1001.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/README.md",
+      "size_bytes": 467,
+      "sha256": "00e5ed1363cf31d424f664bb1bf2216f0001f633eecb6dd6b8119d5551a5c1dc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v1001.py",
       "size_bytes": 43498,
       "sha256": "7ff58f15adc74de5b155c0a31f7a141af472d05a1c38d599886a5ab01820c920",
       "mutable_runtime": false,
@@ -9667,7 +9811,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v1001_compat.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v1001_compat.py",
       "size_bytes": 26090,
       "sha256": "d1dfca773a53bcf49a5ba1ff675c03abdf187160e166bb84097c902704cbd006",
       "mutable_runtime": false,
@@ -9676,7 +9820,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v1001_runtime.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v1001_runtime.py",
       "size_bytes": 7237,
       "sha256": "75be7b00ae5020da43122e1f2fe3f31a8bcaf8903ab555a90e9d025748a597b1",
       "mutable_runtime": false,
@@ -9685,7 +9829,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v1001_ui.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v1001_ui.py",
       "size_bytes": 14930,
       "sha256": "4cd5ed08032e2d997213b60df10f2439889c1034a27bf84f412c53a24a8f8c06",
       "mutable_runtime": false,
@@ -9694,7 +9838,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v88.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v88.py",
       "size_bytes": 167001,
       "sha256": "b61bcab63c6cda0c624cba9ce44f0bf08d5ebacf2cae111815e25affa8255912",
       "mutable_runtime": false,
@@ -9703,7 +9847,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v89.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v89.py",
       "size_bytes": 14534,
       "sha256": "8724fb1ea2f3e72ed75591de17d294313f625ba57953b3df75eb9a8f4d4737cd",
       "mutable_runtime": false,
@@ -9712,9 +9856,45 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tools/pack_generator_sources/jazn_pack_generator_v89_ui.py",
+      "path": "tools/pack_generator_sources/archive/pre-v10.1.86.0/jazn_pack_generator_v89_ui.py",
       "size_bytes": 13806,
       "sha256": "adaedece54d90e9252ac3a658733710f8708ec190143816d1a8af81d4d4d6ce7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/jazn_pack_generator_compat.py",
+      "size_bytes": 26084,
+      "sha256": "aef6d2612ecddacb932fcd7f13550b0f1c3b77eb867275fdda0a2f356ec4127a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/jazn_pack_generator_core.py",
+      "size_bytes": 46037,
+      "sha256": "57ab62f27a9f08f5edb90f7067a99895b1e62c9790d8db0466a54c59620e5902",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/jazn_pack_generator_runtime.py",
+      "size_bytes": 7242,
+      "sha256": "b19f784763cedc52c056517d2532cf5f12e316aa8af7306a2c65febcff5ee6c8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/pack_generator_sources/jazn_pack_generator_ui.py",
+      "size_bytes": 15088,
+      "sha256": "b5f1d512ff239c136fa0a68516f8bf128d345b570b345d1fea0182d202939725",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10133,11 +10313,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+  "release_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
-    "package_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
-    "release_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening"
+    "runtime_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+    "package_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization",
+    "release_version": "16.3.25.5.17-pack-generator-cross-target-dependency-materialization"
   },
   "legacy_aliases": {
     "version": "release_version"
