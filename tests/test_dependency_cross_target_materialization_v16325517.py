@@ -28,6 +28,7 @@ def test_linux_x64_descriptor_is_deterministic_off_target() -> None:
     assert target.minimum_libc_version == LINUX_GLIBC_MINIMUM == "2.17"
     assert target.pip_platforms == LINUX_X64_PIP_PLATFORMS
     assert "cp313-cp313-manylinux_2_17_x86_64" in target.compatible_tags
+    assert "cp36-abi3-manylinux_2_12_x86_64" in target.compatible_tags
     assert "py3-none-any" in target.compatible_tags
 
 

@@ -26,9 +26,26 @@ ENVIRONMENT_MARKER_NAME = "JAZN_DEPENDENCY_ENVIRONMENT.json"
 DEPENDENCY_SET_NAME = "JAZN_DEPENDENCY_SET.json"
 DEFAULT_TIMEOUT_SECONDS = 1800
 LINUX_GLIBC_MINIMUM = "2.17"
+# A glibc 2.17 target accepts wheels whose declared minimum is 2.17 or older.
+# Keep the PEP 600 spellings and the bounded legacy aliases explicit so pip's
+# candidate selection and the post-download tag verifier use the same set.
 LINUX_X64_PIP_PLATFORMS = (
     "manylinux_2_17_x86_64",
     "manylinux2014_x86_64",
+    "manylinux_2_16_x86_64",
+    "manylinux_2_15_x86_64",
+    "manylinux_2_14_x86_64",
+    "manylinux_2_13_x86_64",
+    "manylinux_2_12_x86_64",
+    "manylinux2010_x86_64",
+    "manylinux_2_11_x86_64",
+    "manylinux_2_10_x86_64",
+    "manylinux_2_9_x86_64",
+    "manylinux_2_8_x86_64",
+    "manylinux_2_7_x86_64",
+    "manylinux_2_6_x86_64",
+    "manylinux_2_5_x86_64",
+    "manylinux1_x86_64",
 )
 
 
