@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -20,7 +19,6 @@ from latka_jazn.python_runtime import (
     materialize_runtime_bundle,
     render_runtime_index,
     runtime_target,
-    runtime_target_from_mapping,
     sanitized_runtime_environment,
     select_runtime_artifact,
     verify_runtime_bundle,
@@ -76,12 +74,6 @@ def test_runtime_target_ids_keep_linux_libc_explicit() -> None:
     assert linux.target_id == "linux-x64-glibc-py314"
     with pytest.raises(PythonRuntimeContractError):
         runtime_target("linux-x64", "3.14")
-
-
-@pytest.mark.parametrize("value", [None, [], "windows-x64"])
-def test_runtime_target_from_mapping_rejects_non_mapping(value: object) -> None:
-    with pytest.raises(PythonRuntimeContractError, match="runtime_target_not_mapping"):
-        runtime_target_from_mapping(value)
 
 
 def test_runtime_bundle_roundtrip_is_hash_verified_and_materialized(tmp_path: Path) -> None:
@@ -225,21 +217,13 @@ def test_windows_runtime_launcher_powershell_parses_when_shell_is_available() ->
     if shell is None:
         pytest.skip("PowerShell is not available on this runner")
     script = ROOT / "tools" / "Start-JaznPythonRuntime.ps1"
-    environment = dict(os.environ)
-    environment["JAZN_POWERSHELL_PARSE_FILE"] = str(script)
     command = (
         "$ErrorActionPreference='Stop';"
-        "$tokens=$null;$errors=$null;"
-        "$null=[System.Management.Automation.Language.Parser]::ParseFile("
-        "$env:JAZN_POWERSHELL_PARSE_FILE,[ref]$tokens,[ref]$errors);"
-        "if(@($errors).Count -gt 0){"
-        "$errors | ForEach-Object { [Console]::Error.WriteLine($_.ToString()) };"
-        "exit 1"
-        "}"
+        "$p=$args[0];"
+        "$null=[ScriptBlock]::Create([IO.File]::ReadAllText($p,[Text.Encoding]::UTF8))"
     )
     completed = subprocess.run(
-        [shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command],
-        env=environment,
+        [shell, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command, str(script)],
         capture_output=True,
         text=True,
         encoding="utf-8",

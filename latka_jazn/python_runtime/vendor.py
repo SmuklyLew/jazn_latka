@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 import json
 import os
 from pathlib import Path, PurePosixPath
-import platform
 import shutil
 import subprocess
 import sys
-from typing import Any, Mapping
+from typing import Any
 
 from latka_jazn.dependencies.common import (
     LOCK_NAME,
@@ -100,7 +100,10 @@ def vendor_verified_dependencies(
     manifest = read_manifest(bundle / MANIFEST_NAME)
     if not isinstance(manifest, Mapping):
         raise PythonRuntimeContractError("verified_wheelhouse_manifest_missing")
-    wheel_target = manifest.get("target") if isinstance(manifest.get("target"), Mapping) else {}
+    raw_wheel_target = manifest.get("target")
+    if not isinstance(raw_wheel_target, Mapping):
+        raise PythonRuntimeContractError("verified_wheelhouse_target_missing")
+    wheel_target: Mapping[object, object] = raw_wheel_target
     expected = target.to_dict()
     for key in ("alias", "python_version", "implementation", "abi", "libc_family"):
         if str(wheel_target.get(key) or "") != str(expected.get(key) or ""):

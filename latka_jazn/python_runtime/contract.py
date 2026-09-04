@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 import os
 import platform
 import re
 import sys
-from typing import Any, Mapping, Sequence
 
 from latka_jazn.dependencies.common import current_libc_family, current_platform_alias
 
@@ -119,13 +119,20 @@ def runtime_target(
     )
 
 
-def runtime_target_from_mapping(value: Mapping[str, Any]) -> RuntimeTarget:
+def runtime_target_from_mapping(value: object) -> RuntimeTarget:
+    """Parse an untrusted JSON-like target object with a fail-closed type boundary."""
+
+    if not isinstance(value, Mapping):
+        raise PythonRuntimeContractError(
+            f"runtime_target_not_mapping:{type(value).__name__}"
+        )
+    mapping: Mapping[object, object] = value
     return runtime_target(
-        str(value.get("alias") or ""),
-        str(value.get("python_version") or ""),
-        libc_family=str(value.get("libc_family") or ""),
-        implementation=str(value.get("implementation") or "cp"),
-        abi=str(value.get("abi") or ""),
+        str(mapping.get("alias") or ""),
+        str(mapping.get("python_version") or ""),
+        libc_family=str(mapping.get("libc_family") or ""),
+        implementation=str(mapping.get("implementation") or "cp"),
+        abi=str(mapping.get("abi") or ""),
     )
 
 

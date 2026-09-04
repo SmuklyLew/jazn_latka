@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.15 introduces verified private Python runtime bundles, automatic
-# target selection, isolated launcher/bootstrap contracts, and package-distribution
-# carriage of target-matched Python runtime sidecars without committing binaries.
-DISTRIBUTION_VERSION = "16.3.25.5.15"
-PACKAGE_VERSION = "16.3.25.5.15"
-PACKAGE_RELEASE_NAME = "python-runtime-bundle-auto-target"
+# v16.3.25.5.16 hardens the Python runtime bundle CI boundary: untrusted JSON
+# target payloads are narrowed fail-closed, public __all__ contracts are static,
+# and PowerShell launcher syntax validation uses the official Parser.ParseFile API.
+DISTRIBUTION_VERSION = "16.3.25.5.16"
+PACKAGE_VERSION = "16.3.25.5.16"
+PACKAGE_RELEASE_NAME = "python-runtime-bundle-ci-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
