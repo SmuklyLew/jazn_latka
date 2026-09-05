@@ -79,9 +79,23 @@ jobs:
           -q -ra --tb=short --durations=25
           -m "not live_model and not live_mcp"
 
-      - name: System package smoke in PowerShell environment
+      - name: Capture system package smoke report
         shell: pwsh
-        run: python -X utf8 run.py package-smoke --profile system --json
+        run: |
+          $output = python -X utf8 run.py package-smoke --profile system --json 2>&1 | Out-String
+          $exitCode = $LASTEXITCODE
+          $output | Set-Content -LiteralPath package-smoke-output.txt -Encoding utf8
+          "exit_code=$exitCode" | Add-Content -LiteralPath package-smoke-output.txt -Encoding utf8
+          Write-Host $output
+          if ($exitCode -ne 0) { exit $exitCode }
+
+      - name: Upload system package smoke report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: package-smoke-windows-report
+          path: package-smoke-output.txt
+          if-no-files-found: error
 
       - name: Clean checkout guard
         if: always()

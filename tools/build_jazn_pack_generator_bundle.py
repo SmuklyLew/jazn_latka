@@ -1,224 +1,89 @@
 from __future__ import annotations
 
-import argparse
-import base64
-import hashlib
-import json
-import os
-from pathlib import Path
+"""Compatibility CI validator for Jaźń Pack Generator v10.1.86.0.111.
 
+The pre-10.1.86.0.111 tool generated a Base85 single-file launcher. The clean
+rewrite deliberately uses a small public launcher plus maintained modules under
+``tools/jazn_pack_generator_app``.  This filename and ``--check`` command remain
+as a stable CI entrypoint, but they now validate that source layout instead of
+generating another Python file.
+"""
+
+import argparse
+import hashlib
+from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DIR = ROOT / "tools" / "pack_generator_sources"
-SOURCE_METADATA = SOURCE_DIR / "__init__.py"
 LAUNCHER = ROOT / "tools" / "jazn_pack_generator.py"
+SOURCE_DIR = ROOT / "tools" / "jazn_pack_generator_app"
 MODULE_SOURCES = (
-    ("_jazn_pack_generator_core", SOURCE_DIR / "jazn_pack_generator_core.py"),
-    ("_jazn_pack_generator_compat", SOURCE_DIR / "jazn_pack_generator_compat.py"),
-    ("_jazn_pack_generator_runtime", SOURCE_DIR / "jazn_pack_generator_runtime.py"),
-    ("_jazn_pack_generator_ui", SOURCE_DIR / "jazn_pack_generator_ui.py"),
+    SOURCE_DIR / "__init__.py",
+    SOURCE_DIR / "constants.py",
+    SOURCE_DIR / "errors.py",
+    SOURCE_DIR / "models.py",
+    SOURCE_DIR / "settings.py",
+    SOURCE_DIR / "scanner.py",
+    SOURCE_DIR / "archive.py",
+    SOURCE_DIR / "transport.py",
+    SOURCE_DIR / "manifest.py",
+    SOURCE_DIR / "service.py",
+    SOURCE_DIR / "ui_text.py",
+    SOURCE_DIR / "ui_tui.py",
+    SOURCE_DIR / "ui_studio.py",
 )
-SOURCE_SET = tuple(path for _, path in MODULE_SOURCES) + (SOURCE_METADATA,)
-
-
-def source_set_bytes() -> bytes:
-    payload = bytearray()
-    for path in SOURCE_SET:
-        relative = path.relative_to(ROOT).as_posix().encode("utf-8")
-        data = path.read_bytes()
-        payload.extend(len(relative).to_bytes(4, "big"))
-        payload.extend(relative)
-        payload.extend(len(data).to_bytes(8, "big"))
-        payload.extend(data)
-    return bytes(payload)
+SOURCE_SET = (LAUNCHER,) + MODULE_SOURCES
+EXPECTED_GENERATOR_VERSION = "10.1.86.0.111"
 
 
 def source_set_sha256() -> str:
-    return hashlib.sha256(source_set_bytes()).hexdigest()
+    digest = hashlib.sha256()
+    for path in SOURCE_SET:
+        relative = path.relative_to(ROOT).as_posix().encode("utf-8")
+        data = path.read_bytes()
+        digest.update(len(relative).to_bytes(4, "big"))
+        digest.update(relative)
+        digest.update(len(data).to_bytes(8, "big"))
+        digest.update(data)
+    return digest.hexdigest()
 
 
-def _embedded_sources() -> dict[str, str]:
-    return {
-        name: base64.b85encode(path.read_bytes()).decode("ascii")
-        for name, path in MODULE_SOURCES
-    }
+def validate() -> tuple[bool, list[str]]:
+    errors: list[str] = []
+    for path in SOURCE_SET:
+        if not path.is_file():
+            errors.append(f"missing:{path.relative_to(ROOT).as_posix()}")
+    if errors:
+        return False, errors
 
-
-def render_launcher() -> bytes:
-    digest = source_set_sha256()
-    embedded = json.dumps(_embedded_sources(), indent=4, sort_keys=True)
-    text = f'''#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-r"""Jaźń / Łatka Pack Generator v10.1.86.0 — bundled public launcher.
-
-Physical operator files:
-  1. jazn_pack_generator.py
-  2. jazn_pack_generator_settings.json
-
-Run from the repository on Windows:
-  py -X utf8 .\\tools\\jazn_pack_generator.py
-
-The maintained generator modules are Base85-encoded into this file and loaded
-only in memory. The selected Jaźń source tree remains the canonical provider
-of runtime, packaging, dependency and release contracts.
-"""
-from __future__ import annotations
-
-import base64 as _bundle_base64
-import json as _bundle_json
-import os as _bundle_os
-from pathlib import Path as _BundlePath
-import sys as _bundle_sys
-import types as _bundle_types
-from typing import Any
-
-
-_BUNDLE_FILE = str(_BundlePath(__file__).resolve())
-_BUNDLE_SOURCE_SHA256 = "{digest}"
-_BUNDLED_MODULES: dict[str, str] = {embedded}
-
-
-def _candidate_source_roots() -> tuple[_BundlePath, ...]:
-    candidates: list[_BundlePath] = []
-    explicit = str(_bundle_os.environ.get("JAZN_SOURCE_ROOT") or "").strip()
-    if explicit:
-        candidates.append(_BundlePath(explicit).expanduser())
-
-    settings = _BundlePath(_BUNDLE_FILE).with_name("jazn_pack_generator_settings.json")
-    if settings.is_file():
-        try:
-            payload = _bundle_json.loads(settings.read_text(encoding="utf-8-sig"))
-        except (OSError, UnicodeError, _bundle_json.JSONDecodeError):
-            payload = {{}}
-        if isinstance(payload, dict) and str(payload.get("source") or "").strip():
-            candidates.append(_BundlePath(str(payload["source"])).expanduser())
-
-    candidates.extend(
-        (
-            _BundlePath(_BUNDLE_FILE).parent.parent,
-            _BundlePath.cwd(),
-            _BundlePath("D:/" + ".AI/jazn_latka_master"),
-            _BundlePath.home() / "jazn_latka",
-        )
-    )
-    unique: list[_BundlePath] = []
-    for candidate in candidates:
-        try:
-            resolved = candidate.resolve()
-        except (OSError, RuntimeError):
-            continue
-        if resolved not in unique:
-            unique.append(resolved)
-    return tuple(unique)
-
-
-def _bootstrap_source_root() -> _BundlePath:
-    for candidate in _candidate_source_roots():
-        if (candidate / "latka_jazn" / "version.py").is_file() and (candidate / "run.py").is_file():
-            value = str(candidate)
-            if value not in _bundle_sys.path:
-                _bundle_sys.path.insert(0, value)
-            return candidate
-    raise RuntimeError(
-        "Nie można odnaleźć źródła Jaźni. Ustaw JAZN_SOURCE_ROOT albo umieść obok generatora "
-        "jazn_pack_generator_settings.json z polem source wskazującym root Jaźni."
-    )
-
-
-_SOURCE_ROOT = _bootstrap_source_root()
-
-
-def _load_bundled_module(name: str) -> _bundle_types.ModuleType:
-    encoded = _BUNDLED_MODULES[name]
-    source = _bundle_base64.b85decode(encoded.encode("ascii")).decode("utf-8")
-    module = _bundle_types.ModuleType(name)
-    module.__file__ = _BUNDLE_FILE
-    module.__package__ = ""
-    _bundle_sys.modules[name] = module
-    exec(compile(source, f"{{_BUNDLE_FILE}}::{{name}}", "exec"), module.__dict__)
-    return module
-
-
-_impl = _load_bundled_module("_jazn_pack_generator_core")
-_compat = _load_bundled_module("_jazn_pack_generator_compat")
-_compat.install(_impl)
-_runtime = _load_bundled_module("_jazn_pack_generator_runtime")
-_runtime.install(_impl)
-_ui = _load_bundled_module("_jazn_pack_generator_ui")
-_ui.bind(_impl)
-
-GENERATOR_VERSION = _impl.GENERATOR_VERSION
-GENERATOR_TITLE = _impl.GENERATOR_TITLE
-SETTINGS_SCHEMA = _impl.SETTINGS_SCHEMA
-UI_MODE_CHOICES = _ui.UI_MODE_CHOICES
-UI_MODE_LABELS = _ui.UI_MODE_LABELS
-main = _ui.main
-
-
-def __getattr__(name: str) -> Any:
-    for target in (_ui, _impl, _runtime, _compat):
-        if hasattr(target, name):
-            return getattr(target, name)
-    raise AttributeError(f"module {{__name__!r}} has no attribute {{name!r}}")
-
-
-class _PublicModule(_bundle_types.ModuleType):
-    """Forward compatibility monkeypatches to the in-memory implementation."""
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        super().__setattr__(name, value)
-        if name.startswith("__") or name in {{
-            "_impl", "_compat", "_runtime", "_ui", "GENERATOR_VERSION",
-            "GENERATOR_TITLE", "SETTINGS_SCHEMA", "UI_MODE_CHOICES",
-            "UI_MODE_LABELS", "main",
-        }}:
-            return
-        for target in (_impl, _compat, _runtime, _ui):
-            if hasattr(target, name):
-                setattr(target, name, value)
-
-
-_current_module = _bundle_sys.modules.get(__name__)
-if _current_module is not None and not isinstance(_current_module, _PublicModule):
-    _current_module.__class__ = _PublicModule
-
-
-if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        raise SystemExit(130)
-'''
-    return text.encode("utf-8")
-
-
-def build(*, check: bool = False) -> tuple[bool, str]:
-    missing = [str(path) for path in SOURCE_SET if not path.is_file()]
-    if missing:
-        raise RuntimeError("Generator source set is incomplete: " + ", ".join(missing))
-    rendered = render_launcher()
-    current = LAUNCHER.read_bytes() if LAUNCHER.is_file() else b""
-    fresh = current == rendered
-    digest = source_set_sha256()
-    if check:
-        return fresh, digest
-    if not fresh:
-        temporary = LAUNCHER.with_name(LAUNCHER.name + ".tmp")
-        temporary.write_bytes(rendered)
-        os.replace(temporary, LAUNCHER)
-    return True, digest
+    launcher = LAUNCHER.read_text(encoding="utf-8")
+    constants = (SOURCE_DIR / "constants.py").read_text(encoding="utf-8")
+    match = re.search(r'^GENERATOR_VERSION\s*=\s*"([^"]+)"', constants, re.MULTILINE)
+    observed = match.group(1) if match else None
+    if observed != EXPECTED_GENERATOR_VERSION:
+        errors.append(f"generator_version:{observed!r}")
+    if "_BUNDLED_MODULES" in launcher or "b85decode" in launcher:
+        errors.append("launcher_still_contains_embedded_bundle")
+    if "package_distribution" in launcher:
+        errors.append("launcher_still_routes_package_distribution")
+    if "jazn_pack_generator_app" not in launcher:
+        errors.append("launcher_does_not_use_app_package")
+    return not errors, errors
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Build the deterministic Jaźń Pack Generator v10.1.86.0 bundled launcher",
+        description="Validate Jaźń Pack Generator v10.1.86.0.111 source layout",
         allow_abbrev=False,
     )
-    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--check", action="store_true", help="Compatibility flag; validation is always read-only.")
     args = parser.parse_args(argv)
-    ok, digest = build(check=args.check)
-    print(f"generator_source_set_sha256={digest}")
-    print(f"bundle_fresh={str(ok).lower()}")
+    del args
+    ok, errors = validate()
+    print(f"generator_source_set_sha256={source_set_sha256() if ok else 'unavailable'}")
+    print(f"source_layout_valid={str(ok).lower()}")
+    for error in errors:
+        print(f"error={error}")
     return 0 if ok else 1
 
 
