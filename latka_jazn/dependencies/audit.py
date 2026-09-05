@@ -16,6 +16,11 @@ from .environment import dependency_activation_status
 from .wheelhouse import discover_bundles
 
 
+_INACTIVE_SOURCE_PREFIXES = (
+    ("tools", "pack_generator_sources", "archive"),
+)
+
+
 def _iter_python_files(root: Path) -> Iterable[Path]:
     candidates: list[Path] = []
     for directory in (root / "latka_jazn", root / "tools"):
@@ -23,9 +28,26 @@ def _iter_python_files(root: Path) -> Iterable[Path]:
             candidates.extend(directory.rglob("*.py"))
     candidates.extend(path for path in (root / "main.py", root / "run.py") if path.is_file())
     for path in sorted(set(candidates)):
-        parts = set(path.relative_to(root).parts)
-        if "local_resources" not in parts and "__pycache__" not in parts and ".archives" not in parts:
-            yield path
+        relative_parts = path.relative_to(root).parts
+        parts = set(relative_parts)
+        if {"local_resources", "__pycache__", ".archives"} & parts:
+            continue
+        if any(relative_parts[: len(prefix)] == prefix for prefix in _INACTIVE_SOURCE_PREFIXES):
+            continue
+        yield path
+
+
+def _tool_local_import_names(root: Path) -> set[str]:
+    tools_root = root / "tools"
+    if not tools_root.is_dir():
+        return set()
+    names: set[str] = set()
+    for child in tools_root.iterdir():
+        if child.is_file() and child.suffix == ".py" and child.stem != "__init__":
+            names.add(child.stem)
+        elif child.is_dir() and (child / "__init__.py").is_file():
+            names.add(child.name)
+    return names
 
 
 def scan_external_imports(root: Path | str) -> dict[str, Any]:
@@ -33,6 +55,8 @@ def scan_external_imports(root: Path | str) -> dict[str, Any]:
     imports: dict[str, list[str]] = {}
     parse_errors: list[dict[str, str]] = []
     stdlib = set(getattr(sys, "stdlib_module_names", set()))
+    tool_local_imports = _tool_local_import_names(project_root)
+    tools_root = project_root / "tools"
     for path in _iter_python_files(project_root):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8-sig"), filename=str(path))
@@ -47,6 +71,8 @@ def scan_external_imports(root: Path | str) -> dict[str, Any]:
                 names = [node.module.split(".", 1)[0]]
             for name in names:
                 if not name or name in stdlib or name in {"latka_jazn", "main", "run", "__future__"}:
+                    continue
+                if tools_root in path.parents and name in tool_local_imports:
                     continue
                 imports.setdefault(name, [])
                 relative = path.relative_to(project_root).as_posix()

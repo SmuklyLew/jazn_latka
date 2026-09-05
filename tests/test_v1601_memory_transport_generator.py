@@ -54,33 +54,29 @@ def _write_runtime_version(root: Path) -> None:
     )
 
 
-def test_generator_profiles_and_cloud_sidecar_contract(tmp_path: Path) -> None:
+def test_generator_memory_mode_is_archive_only_and_cloud_attach_stays_outside_generator(tmp_path: Path) -> None:
     generator = _load_generator()
-    assert generator.PROFILE_CHOICES == ("system", "dual", "memory")
-    assert generator.PACK_PROFILE_CHOICES == ("system", "dual", "memory", "combined")
-    assert generator.parser().parse_args(["pack", ".", "--profile", "dual"]).profile == "dual"
-    assert generator.parser().parse_args(["pack", ".", "--profile", "combined"]).profile == "combined"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.111"
+    assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
+    assert not hasattr(generator, "sidecar_payload")
+    assert "target-platform" in generator.config_report()["not_in_scope"]
 
-    version = generator.VersionInfo(
-        version_file=Path("latka_jazn/version.py"),
-        package_version="v16.0.1",
-        release_name="single-canonical-runtime-workspace",
-        full_version="v16.0.1-single-canonical-runtime-workspace",
-        filename_version="16.0.1-single-canonical-runtime-workspace",
+    root = tmp_path / "runtime"
+    _write_runtime_version(root)
+    (root / "run.py").write_text("pass\n", encoding="utf-8")
+    memory = tmp_path / "memory-source"
+    memory.mkdir()
+    (memory / "item.json").write_text("{}", encoding="utf-8")
+    plan = generator.plan_pack(
+        generator.PackRequest(
+            source_root=root,
+            output_root=tmp_path / "out",
+            content=generator.ContentMode.MEMORY,
+            memory_root=memory,
+        )
     )
-    plan = generator.PackPlan(
-        root=tmp_path,
-        profile="memory",
-        version=version,
-        entries=[],
-        manifest_builder="memory_v3",
-    )
-    payload = generator.sidecar_payload("memory.zip", plan, "independent", 1024, 6, [], None, {"ok": True})
-    assert payload["package_version"] == "memory-format-v3"
-    assert payload["memory_transport_contract"] == "jazn_memory_package_transport/v1"
-    assert payload["cloud_attach_compatible"] is True
-    assert payload["cloud_object_layout"]["kind"] == "flat_package_set"
-    assert payload["cloud_object_layout"]["provider"] == "s3_compatible"
+    assert {entry.archive_path for entry in plan.entries} == {"memory/item.json"}
+
 
 
 class _FakeR2Client:
@@ -169,18 +165,26 @@ def test_memory_attach_sources_are_exclusive_and_r2_verifies_transport(tmp_path:
         )
 
 
-def test_generator_never_binary_splits_oversized_sqlite(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_generator_keeps_sqlite_as_one_zip_member_before_optional_outer_transport_split(tmp_path: Path) -> None:
     generator = _load_generator()
     root = tmp_path / "runtime"
-    db = root / "memory" / "runtime_memory.sqlite3"
+    _write_runtime_version(root)
+    (root / "run.py").write_text("pass\n", encoding="utf-8")
+    db = tmp_path / "memory-source" / "runtime_memory.sqlite3"
     db.parent.mkdir(parents=True)
     with sqlite3.connect(db) as connection:
         connection.execute("CREATE TABLE item(id INTEGER PRIMARY KEY, value TEXT)")
         connection.execute("INSERT INTO item(value) VALUES (?)", ("x" * 4096,))
-    monkeypatch.setattr(generator, "MEMORY_SQLITE_MEMBER_MAX_BYTES", 1)
-    version = generator.VersionInfo(Path("latka_jazn/version.py"), "v16.0.1", "current", "v16.0.1-current", "16.0.1-current")
-    with pytest.raises(generator.PackError, match="(?i)shard/roll"):
-        generator.build_memory_plan(root, version, [db.relative_to(root).as_posix()], [], "test")
+    plan = generator.plan_pack(
+        generator.PackRequest(
+            source_root=root,
+            output_root=tmp_path / "out",
+            content=generator.ContentMode.MEMORY,
+            memory_root=db.parent,
+        )
+    )
+    assert "memory/runtime_memory.sqlite3" in {entry.archive_path for entry in plan.entries}
+
 
 
 def _write_legacy_package_set(parts_dir: Path) -> bytes:
