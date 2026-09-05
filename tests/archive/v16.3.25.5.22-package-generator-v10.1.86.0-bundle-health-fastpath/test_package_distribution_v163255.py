@@ -145,14 +145,14 @@ def test_package_set_v3_has_explicit_dependency_role() -> None:
     assert payload["dependency_artifacts"][0]["filename"] == "deps.zip"
 
 
-def test_pack_generator_clean_source_layout_is_valid() -> None:
+def test_generator_88_source_bundle_is_fresh() -> None:
     root = Path(__file__).parents[1]
     result = subprocess.run(
         [sys.executable, str(root / "tools" / "build_jazn_pack_generator_bundle.py"), "--check"],
         cwd=root, capture_output=True, text=True, check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "source_layout_valid=true" in result.stdout
+    assert "bundle_fresh=true" in result.stdout
 
 
 def test_distribution_modes_require_target_only_when_dependencies_present() -> None:

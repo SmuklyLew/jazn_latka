@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import json
+import os
 import sys
 from pathlib import Path
+import zipfile
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,7 +14,7 @@ GENERATOR_PATH = ROOT / "tools" / "jazn_pack_generator.py"
 
 
 def _load_generator():
-    name = "jazn_pack_generator_archive_io_v1638_test"
+    name = "jazn_pack_generator_archive_io_v101860111_test"
     spec = importlib.util.spec_from_file_location(name, GENERATOR_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -20,99 +23,61 @@ def _load_generator():
     return module
 
 
-def _memory_plan(generator, tmp_path: Path):
-    source = tmp_path / "memory-source.txt"
-    source.write_text("archive generator fixture\n", encoding="utf-8")
-    version = generator.VersionInfo(
-        Path("latka_jazn/version.py"),
-        "16.3.8",
-        "archive-io-generator-hardening",
-        "16.3.8-archive-io-generator-hardening",
-        "16.3.8-archive-io-generator-hardening",
+def _root(tmp_path: Path) -> Path:
+    root = tmp_path / "runtime"
+    (root / "latka_jazn").mkdir(parents=True)
+    (root / "latka_jazn" / "version.py").write_text(
+        'PACKAGE_VERSION = "16.3.25.5.23"\n'
+        'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-clean-rewrite"\n',
+        encoding="utf-8",
     )
-    entry = generator.PlanEntry(
-        relative="memory/raw/fixture.txt",
-        source=source,
-        size_bytes=source.stat().st_size,
-        sha256=generator.sha256_file(source),
-        classification="memory_file",
-    )
-    return generator.PackPlan(
-        root=tmp_path,
-        profile="memory",
-        version=version,
-        entries=[entry],
-        manifest_builder="test",
-    )
+    (root / "run.py").write_text("pass\n", encoding="utf-8")
+    return root
 
 
-def test_parser_exposes_archive_container_and_security_options() -> None:
+def test_parser_exposes_only_zip_and_split_transport_scope() -> None:
     generator = _load_generator()
-    parsed = generator.parser().parse_args(
-        [
-            "pack", ".", "--profile", "memory",
-            "--container-format", "7z",
-            "--encrypt-7z",
-            "--password-env", "TEST_ARCHIVE_PASSWORD",
-            "--extract-max-ratio", "250",
-        ]
+    parsed = generator._parser().parse_args(
+        ["pack", "--source", ".", "--out-dir", "out", "--content", "memory", "--split"]
     )
-    assert parsed.container_format == "7z"
-    assert parsed.encrypt_7z is True
-    assert parsed.archive_password_env == "TEST_ARCHIVE_PASSWORD"
-    assert parsed.archive_max_ratio == 250.0
+    assert parsed.content == "memory"
+    assert parsed.split is True
+    with pytest.raises(SystemExit):
+        generator._parser().parse_args(
+            ["pack", "--source", ".", "--out-dir", "out", "--container-format", "7z"]
+        )
 
 
-def test_generator_7z_package_and_sidecar_roundtrip(tmp_path: Path) -> None:
+def test_split_transport_is_one_logical_zip_joined_byte_for_byte(tmp_path: Path) -> None:
     generator = _load_generator()
-    plan = _memory_plan(generator, tmp_path)
-    options = generator.PackOptions(
-        source=tmp_path,
-        out_dir=tmp_path / "out",
-        profile="memory",
-        archive_format="independent",
-        archive_basename="jazn_latka_v16.3.8-archive-io-generator-hardening",
-        sidecars=True,
-        compatibility_checks=False,
+    root = _root(tmp_path)
+    memory = tmp_path / "memory"
+    memory.mkdir()
+    (memory / "blob.bin").write_bytes(os.urandom(2 * 1024 * 1024 + 17))
+    result = generator.run_pack_request(
+        source=root,
+        out_dir=tmp_path / "packages",
+        content="memory",
+        memory_root=memory,
+        split=True,
+        split_size_mib=1,
+        force_split=True,
     )
-    settings = generator.GeneratorArchiveSettings(container_format="7z", require_free_space=False)
-    with generator.archive_settings_override(settings):
-        result = generator.package_one(plan, options, "fixture_memory.zip")
-        assert result.package_name == "fixture_memory.7z"
-        assert result.sidecar_path.name == "fixture_memory.7z.package.json"
-        payload = json.loads(result.sidecar_path.read_text(encoding="utf-8"))
-        assert payload["container_format"] == "7z"
-        assert payload["archive_io_contract"] == "jazn_archive_io/v1"
-        assert payload["encryption"]["secret_persisted"] is False
-        extracted = generator.extract_package_sidecar(result.sidecar_path, tmp_path / "roundtrip")
-    assert (tmp_path / "roundtrip/memory/raw/fixture.txt").read_text(encoding="utf-8") == "archive generator fixture\n"
+    assert result["logical_archive"] is None
+    assert len(result["parts"]) >= 2
+    joined = generator.join_parts(Path(result["parts"][0]), tmp_path / "joined.zip")
+    assert generator.verify_package(joined)["ok"] is True
+    with zipfile.ZipFile(joined, "r") as archive:
+        assert archive.testzip() is None
+        assert archive.read("memory/blob.bin") == (memory / "blob.bin").read_bytes()
 
 
-def test_generator_aes_zip_never_persists_secret(tmp_path: Path, monkeypatch) -> None:
+def test_configuration_does_not_claim_7z_rar_or_encryption_backends() -> None:
     generator = _load_generator()
-    plan = _memory_plan(generator, tmp_path)
-    options = generator.PackOptions(
-        source=tmp_path,
-        out_dir=tmp_path / "aes-out",
-        profile="memory",
-        archive_format="independent",
-        sidecars=True,
-        compatibility_checks=False,
-    )
-    monkeypatch.setenv("TEST_JAZN_AES_PASSWORD", "not-written-to-sidecar")
-    settings = generator.GeneratorArchiveSettings(
-        container_format="aes_zip",
-        password_env="TEST_JAZN_AES_PASSWORD",
-        aes_bits=256,
-        require_free_space=False,
-    )
-    with generator.archive_settings_override(settings):
-        result = generator.package_one(plan, options, "fixture_memory.zip")
-        payload_text = result.sidecar_path.read_text(encoding="utf-8")
-        payload = json.loads(payload_text)
-        assert payload["container_format"] == "aes_zip"
-        assert payload["encryption"]["method"] == "WZ_AES_256"
-        assert payload["encryption"]["password_env"] == "TEST_JAZN_AES_PASSWORD"
-        assert "not-written-to-sidecar" not in payload_text
-        generator.extract_package_sidecar(result.sidecar_path, tmp_path / "aes-roundtrip")
-    assert (tmp_path / "aes-roundtrip/memory/raw/fixture.txt").is_file()
+    report = generator.config_report()
+    assert report["features"]["zip"] is True
+    assert report["features"]["zip64"] is True
+    assert report["features"]["split_transport"] is True
+    rendered = str(report).lower()
+    assert "aes_zip" not in rendered
+    assert "rar" not in report["features"]

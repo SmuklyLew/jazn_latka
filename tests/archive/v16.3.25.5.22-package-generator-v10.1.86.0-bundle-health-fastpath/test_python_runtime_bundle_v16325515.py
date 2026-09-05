@@ -184,14 +184,33 @@ def test_package_distribution_cli_accepts_verified_python_runtime_sidecars() -> 
     assert parsed.python_runtime_bundle == ["python-runtime.zip"]
 
 
-def test_clean_pack_generator_does_not_route_python_runtime_sidecars() -> None:
+def test_pack_generator_passes_explicit_verified_runtime_to_canonical_distribution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     generator = _pack_generator_module()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.111"
-    assert not hasattr(generator, "run_distribution_pack")
-    report = generator.config_report()
-    assert "python-runtime" in report["not_in_scope"]
-    assert "target-platform" in report["not_in_scope"]
+    bundle = _bundle(tmp_path, "win314", alias="windows-x64", py="3.14")
+    captured: dict[str, object] = {}
 
+    def fake_run_json(command, *, cwd, env):
+        captured["command"] = list(command)
+        captured["cwd"] = cwd
+        captured["env"] = env
+        return {"package_set": {"schema_version": "jazn_package_set/v3"}}
+
+    monkeypatch.setattr(generator, "_run_json", fake_run_json)
+    report = generator.run_distribution_pack(
+        source=ROOT,
+        out_dir=tmp_path / "dist",
+        mode="system-thin",
+        target_alias="windows-x64",
+        python_version="3.14",
+        python_runtime_bundle=bundle,
+    )
+    command = captured["command"]
+    assert isinstance(command, list)
+    assert "--python-runtime-bundle" in command
+    assert command[command.index("--python-runtime-bundle") + 1] == str(bundle.resolve())
+    assert report["python_runtime"]["portable_interpreter_included"] is True
 
 
 def test_windows_launcher_prefers_private_runtime_contract_before_host_python() -> None:
