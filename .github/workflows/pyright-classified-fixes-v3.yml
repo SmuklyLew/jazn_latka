@@ -11,6 +11,7 @@ permissions:
 jobs:
   apply_classified_fixes:
     name: apply classified Pyright fixes then validate
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -37,11 +38,6 @@ jobs:
         run: |
           set -euo pipefail
           python -X utf8 tools/_pyright_classified_fixer_20260904.py
-          git rm -f --ignore-unmatch -- \
-            .github/workflows/pyright-classified-fixes.yml \
-            .github/workflows/pyright-classified-fixes-v2.yml \
-            .github/workflows/pyright-classified-fixes-v3.yml \
-            tools/_pyright_classified_fixer_20260904.py
           git diff --check
           git status --short
 
@@ -84,7 +80,9 @@ jobs:
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "fix: integrate Pack Generator 10.1.86.0 with active-tree Pyright"
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: integrate Pack Generator 10.1.86.0 with active-tree Pyright"
+          fi
 
       - name: Synchronize canonical release metadata after code settles
         run: |
@@ -122,4 +120,12 @@ jobs:
           test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Push validated code and metadata without force
-        run: git push origin "HEAD:${GITHUB_REF_NAME}"
+        run: |
+          set -euo pipefail
+          remote_head="$(git rev-parse "origin/${GITHUB_REF_NAME}")"
+          local_head="$(git rev-parse HEAD)"
+          if [ "$local_head" = "$remote_head" ]; then
+            echo "Validated branch already points at ${local_head}."
+            exit 0
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
