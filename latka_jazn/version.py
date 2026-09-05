@@ -3,14 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.22 finalizes the Pack Generator 10.1.86.0 deterministic bundle
-# contract after the Pylance/archive follow-up. The public launcher and its
-# canonical five-file source set are byte-for-byte converged again; the default
-# runtime health path remains metadata-only while explicit wake-state/full
-# telemetry requests retain their bounded sidecar status read.
-DISTRIBUTION_VERSION = "16.3.25.5.22"
-PACKAGE_VERSION = "16.3.25.5.22"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-bundle-health-fastpath"
+# v16.3.25.5.23 replaces the bundled Pack Generator architecture with the
+# clean Jaźń Pack Generator 10.1.86.0.111 archiver. The public launcher is
+# intentionally small; maintained implementation files live under
+# tools/jazn_pack_generator_app/ and share one SYSTEM/MEMORY/SYSTEM+MEMORY core
+# across text, terminal-TUI and native Tk/ttk Studio interfaces.
+DISTRIBUTION_VERSION = "16.3.25.5.23"
+PACKAGE_VERSION = "16.3.25.5.23"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-clean-rewrite"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
