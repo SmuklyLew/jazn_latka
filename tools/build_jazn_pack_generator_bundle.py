@@ -219,6 +219,10 @@ def main(argv: list[str] | None = None) -> int:
     ok, digest = build(check=args.check)
     print(f"generator_source_set_sha256={digest}")
     print(f"bundle_fresh={str(ok).lower()}")
+    if args.check and not ok:
+        encoded = base64.b64encode(render_launcher()).decode("ascii")
+        for index in range(0, len(encoded), 4000):
+            print(f"bundle_expected_base64[{index // 4000:04d}]={encoded[index:index + 4000]}")
     return 0 if ok else 1
 
 
