@@ -1,4 +1,4 @@
-# Jaźń Pack Generator 10.1.86.0.111
+# Jaźń Pack Generator 10.1.86.0.112
 
 Active implementation of `tools/jazn_pack_generator.py`.
 
@@ -39,3 +39,10 @@ gitignored. `JAZN_PACK_GENERATOR_SETTINGS` can point at another location.
 - CRC and SHA-256 are verified;
 - split packages have logical and per-part SHA-256 sidecars;
 - extraction is staged and committed only after preflight.
+
+## Integralność 10.1.86.0.112
+
+Przed zapisem ZIP generator tworzy tymczasowy canonical release staging jako kopię
+bajt-w-bajt. Dla plików SYSTEM sprawdza politykę EOL z `.gitattributes` i kończy
+operację błędem przy drift LF/CRLF. Każdy plik ma SHA-256 w manifestcie v2, a
+weryfikator ponownie liczy SHA-256 bezpośrednio z wpisów ZIP.

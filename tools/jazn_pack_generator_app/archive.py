@@ -146,6 +146,55 @@ def verify_zip(
     return {"ok": True, "member_count": len(infos), "crc": "ok"}
 
 
+
+def verify_zip_member_hashes(
+    path: Path,
+    expected_sha256: dict[str, str],
+    *,
+    callback: ProgressCallback | None = None,
+    cancel_event: Event | None = None,
+) -> dict[str, object]:
+    _check_cancel(cancel_event)
+    with zipfile.ZipFile(path, "r") as archive:
+        actual_files = {
+            info.filename: info
+            for info in archive.infolist()
+            if not info.is_dir()
+        }
+        expected_names = set(expected_sha256)
+        actual_names = set(actual_files)
+        missing = sorted(expected_names - actual_names)
+        unexpected = sorted(actual_names - expected_names)
+        if missing or unexpected:
+            raise PackIntegrityError(
+                "Niezgodny zestaw plików ZIP względem manifestu byte-exact: "
+                f"missing={missing[:10]}, unexpected={unexpected[:10]}"
+            )
+        total = len(expected_names)
+        for index, name in enumerate(sorted(expected_names), start=1):
+            _check_cancel(cancel_event)
+            digest = hashlib.sha256()
+            with archive.open(actual_files[name], "r") as handle:
+                while True:
+                    _check_cancel(cancel_event)
+                    chunk = handle.read(_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    digest.update(chunk)
+            observed = digest.hexdigest()
+            expected = expected_sha256[name]
+            if observed != expected:
+                raise PackIntegrityError(
+                    f"SHA-256 wpisu ZIP nie zgadza się dla {name}: expected={expected}, observed={observed}"
+                )
+            _emit(callback, ProgressEvent("verify-hash", "Weryfikacja SHA-256 wpisów ZIP", index, total, name))
+    return {
+        "ok": True,
+        "member_sha256": "ok",
+        "member_count": total,
+        "byte_exact": True,
+    }
+
 def safe_extract_zip(
     source: Path,
     destination: Path,

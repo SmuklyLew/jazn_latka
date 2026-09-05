@@ -24,7 +24,7 @@ def _root(tmp_path: Path) -> Path:
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "version.py").write_text(
         'PACKAGE_VERSION = "16.3.25.5.23"\n'
-        'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.112-clean-rewrite"\n',
+        'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-clean-rewrite"\n',
         encoding="utf-8",
     )
     (root / "run.py").write_text("pass\n", encoding="utf-8")
@@ -34,7 +34,7 @@ def _root(tmp_path: Path) -> Path:
 
 def test_v101860111_exposes_exact_three_user_content_choices() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.112"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.111"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
     assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
 

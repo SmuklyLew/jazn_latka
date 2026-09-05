@@ -10,7 +10,7 @@ def generator():
 
 def test_v101860111_exposes_three_real_ui_modes() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "10.1.86.0.112"
+    assert module.GENERATOR_VERSION == "10.1.86.0.111"
     assert module.UI_MODE_CHOICES == ("text", "tui", "studio")
     assert callable(module.run_text_ui)
     assert callable(module.run_terminal_tui)
@@ -29,7 +29,6 @@ def test_v101860111_standard_zip_uses_deflate_and_unicode_names(tmp_path: Path) 
         'PACKAGE_VERSION = "1.2.3"\nPACKAGE_RELEASE_NAME = "test"\n', encoding="utf-8"
     )
     (root / "run.py").write_text("pass\n", encoding="utf-8")
-    (root / ".gitattributes").write_text("* text=auto eol=lf\n*.txt text eol=lf\n", encoding="utf-8")
     (root / "zażółć.txt").write_text("gęślą jaźń", encoding="utf-8")
     out = tmp_path / "out"
     result = module.run_pack_request(source=root, out_dir=out, content="system")

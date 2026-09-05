@@ -18,6 +18,7 @@ def build_manifest(
     split_enabled: bool,
     parts: list[dict[str, Any]],
     verification: dict[str, Any],
+    source_sha256: dict[str, str],
 ) -> dict[str, Any]:
     return {
         "schema_version": PACKAGE_MANIFEST_SCHEMA,
@@ -46,11 +47,18 @@ def build_manifest(
             "file_count": plan.file_count,
             "directory_count": plan.directory_count,
             "total_size_bytes": plan.source_total_size_bytes,
+            "byte_exact": True,
+            "staging_mode": "canonical-byte-copy",
             "entries": [
                 {
                     "path": item.archive_path,
                     "size_bytes": item.size_bytes,
                     "kind": "directory" if item.is_dir else "file",
+                    **(
+                        {"sha256": source_sha256[item.archive_path]}
+                        if not item.is_dir
+                        else {}
+                    ),
                 }
                 for item in plan.entries
             ],
@@ -58,7 +66,8 @@ def build_manifest(
         "excluded": list(plan.excluded),
         "verification": verification,
         "truth_boundary": (
-            "Jaźń Pack Generator jest archiwizatorem wybranego drzewa SYSTEM/MEMORY. "
+            "Jaźń Pack Generator archiwizuje kanoniczny byte-exact staging wybranego drzewa "
+            "SYSTEM/MEMORY i weryfikuje SHA-256 każdego pliku względem wpisu ZIP. "
             "Nie buduje dependency bundle, wheelhouse ani środowiska Python."
         ),
     }

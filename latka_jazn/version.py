@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.25 repairs the Windows package-smoke version contract and keeps
-# diagnostic smoke artifacts outside the Git checkout so clean-tree validation
-# remains meaningful after PR diagnostics.
-DISTRIBUTION_VERSION = "16.3.25.5.25"
-PACKAGE_VERSION = "16.3.25.5.25"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix"
+# v16.3.25.5.26 hardens Pack Generator 10.1.86.0.112 with canonical byte-exact
+# release staging, per-member SHA-256 verification and fail-closed EOL policy
+# validation derived from the repository .gitattributes contract.
+DISTRIBUTION_VERSION = "16.3.25.5.26"
+PACKAGE_VERSION = "16.3.25.5.26"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.112-byte-exact-eol-staging"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
