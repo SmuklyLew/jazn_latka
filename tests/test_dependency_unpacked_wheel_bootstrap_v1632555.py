@@ -135,11 +135,14 @@ def _bundle(tmp_path: Path, *, unsafe_packaging_member: bool = False) -> Path:
 
     files: list[dict[str, object]] = []
     resolved: list[dict[str, object]] = []
+    total_size_bytes = 0
     for wheel in (packaging_wheel, demo_wheel):
         metadata = wheel_metadata(wheel)
+        size_bytes = wheel.stat().st_size
+        total_size_bytes += size_bytes
         row = {
             "filename": wheel.name,
-            "size_bytes": wheel.stat().st_size,
+            "size_bytes": size_bytes,
             "sha256": sha256_file(wheel),
             "metadata": metadata,
         }
@@ -176,7 +179,7 @@ def _bundle(tmp_path: Path, *, unsafe_packaging_member: bool = False) -> Path:
         "resolved_distributions": resolved,
         "files": files,
         "wheel_count": len(files),
-        "total_size_bytes": sum(int(item["size_bytes"]) for item in files),
+        "total_size_bytes": total_size_bytes,
         "hash_lock_sha256": sha256_file(lock_path),
     }
     (bundle / MANIFEST_NAME).write_text(json.dumps(manifest), encoding="utf-8")
