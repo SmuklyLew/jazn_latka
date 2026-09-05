@@ -26,11 +26,17 @@ def test_v101860111_standard_zip_uses_deflate_and_unicode_names(tmp_path: Path) 
     root = tmp_path / "root"
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn/version.py").write_text(
-        'PACKAGE_VERSION = "1.2.3"\nPACKAGE_RELEASE_NAME = "test"\n', encoding="utf-8"
+        'PACKAGE_VERSION = "1.2.3"\nPACKAGE_RELEASE_NAME = "test"\n',
+        encoding="utf-8",
+        newline="\n",
     )
-    (root / "run.py").write_text("pass\n", encoding="utf-8")
-    (root / ".gitattributes").write_text("* text=auto eol=lf\n*.txt text eol=lf\n", encoding="utf-8")
-    (root / "zażółć.txt").write_text("gęślą jaźń", encoding="utf-8")
+    (root / "run.py").write_text("pass\n", encoding="utf-8", newline="\n")
+    (root / ".gitattributes").write_text(
+        "* text=auto eol=lf\n*.txt text eol=lf\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    (root / "zażółć.txt").write_text("gęślą jaźń", encoding="utf-8", newline="\n")
     out = tmp_path / "out"
     result = module.run_pack_request(source=root, out_dir=out, content="system")
     archive = Path(result["logical_archive"])
