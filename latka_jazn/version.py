@@ -3,14 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.23 replaces the bundled Pack Generator architecture with the
-# clean Jaźń Pack Generator 10.1.86.0.111 archiver. The public launcher is
-# intentionally small; maintained implementation files live under
-# tools/jazn_pack_generator_app/ and share one SYSTEM/MEMORY/SYSTEM+MEMORY core
-# across text, terminal-TUI and native Tk/ttk Studio interfaces.
-DISTRIBUTION_VERSION = "16.3.25.5.23"
-PACKAGE_VERSION = "16.3.25.5.23"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-clean-rewrite"
+# v16.3.25.5.24 hardens Dependency Studio after the Pack Generator 10.1.86.0.111
+# rewrite: repository-local tool packages are no longer misclassified as external
+# distributions, and retired Pack Generator source snapshots are excluded from the
+# active-source dependency audit without excluding latka_jazn/archive runtime code.
+DISTRIBUTION_VERSION = "16.3.25.5.24"
+PACKAGE_VERSION = "16.3.25.5.24"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-dependency-audit-local-import-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
