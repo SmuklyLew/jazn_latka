@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "27b0dcb5d1e8f07a9cef17dbadd64b1ca2cb1b30",
-  "base_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
-  "commit_date": "2026-09-05T22:47:26+02:00",
+  "base_merge_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
+  "base_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "commit_date": "2026-09-06T00:53:14+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-05T20:47:26+00:00",
+  "generated_at_utc": "2026-09-05T22:53:14+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "e0ebada7b427b249af7d63b477a2d4913ab6ad4b",
+  "git_tree_sha": "35f6f6ac0050fa1b7c60dd45db68b8b985b79862",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "27b0dcb5d1e8f07a9cef17dbadd64b1ca2cb1b30",
-    "base_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
+    "base_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
+    "base_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "27b0dcb5d1e8f07a9cef17dbadd64b1ca2cb1b30",
-    "source_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix"
+    "source_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
+    "source_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
+  "release_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
+  "runtime_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "27b0dcb5d1e8f07a9cef17dbadd64b1ca2cb1b30",
+  "source_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
+  "source_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix",
+  "update_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
   "version_source": "latka_jazn/version.py"
 }
