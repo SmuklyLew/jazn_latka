@@ -186,7 +186,7 @@ def test_package_distribution_cli_accepts_verified_python_runtime_sidecars() -> 
 
 def test_clean_pack_generator_does_not_route_python_runtime_sidecars() -> None:
     generator = _pack_generator_module()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.112"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.113"
     assert not hasattr(generator, "run_distribution_pack")
     report = generator.config_report()
     assert "python-runtime" in report["not_in_scope"]
