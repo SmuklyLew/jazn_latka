@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
-  "runtime_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
-  "package_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
-  "generated_at_utc": "2026-09-05T10:06:22+00:00",
-  "updated_at_utc": "2026-09-05T10:06:22+00:00",
+  "version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
+  "runtime_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
+  "package_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
+  "generated_at_utc": "2026-09-05T12:11:52+00:00",
+  "updated_at_utc": "2026-09-05T12:11:52+00:00",
   "start_file": "run.py",
   "file_count": 1110,
   "static_file_count": 1110,
@@ -227,8 +227,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3004,
-      "sha256": "f8e7b0797b52d1ac096cc61f9c7c3d08ff5a2d0c191d5d471b2eeac89b2079a8",
+      "size_bytes": 3044,
+      "sha256": "3baaa74596ed3fedb729993c9d0f3bc273c09244472f31fdfb7dc496bd94df93",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2360,8 +2360,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/capability_status_handler.py",
-      "size_bytes": 19225,
-      "sha256": "0d90327ec7783800256742403cc64f54d44c365e53018792d834be94e0db900a",
+      "size_bytes": 21088,
+      "sha256": "4d07759eb3685b747138cdd2b1fa3756148be6c03e0f855af41a5dd7352c4288",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7067,8 +7067,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6633,
-      "sha256": "b209e6bb8fd769ddbb29669b2fd3de7379cb0278c52f946232a9ae4fc3ef308a",
+      "size_bytes": 6801,
+      "sha256": "37f4a0e2d2d7282e460fc9afbd1f88dafee6f8220875999e32fa3541d38c6630",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7193,8 +7193,8 @@
     },
     {
       "path": "pyrightconfig.json",
-      "size_bytes": 196,
-      "sha256": "e0e7c538e746172a144586f53723b7b21a56334ec07d0551318793b86701c3a7",
+      "size_bytes": 235,
+      "sha256": "fb877bf50bc2a7f4f6ef1ece04efbcae966c8856f62ec756f3d52bacf11298b1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8822,8 +8822,8 @@
     },
     {
       "path": "tests/test_readable_health_check_wake_routing.py",
-      "size_bytes": 4947,
-      "sha256": "704fe52eb7866695a55da0cecae4c44d4e368ce86631f64cc8a2d9ed0a648b21",
+      "size_bytes": 6115,
+      "sha256": "7c75d1f884b581f66973a0fdfb9fa2a7c690a0fade723efe3b7323be43254f3d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10421,11 +10421,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+  "release_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
-    "package_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
-    "release_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening"
+    "runtime_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
+    "package_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath",
+    "release_version": "16.3.25.5.22-package-generator-v10.1.86.0-bundle-health-fastpath"
   },
   "legacy_aliases": {
     "version": "release_version"
