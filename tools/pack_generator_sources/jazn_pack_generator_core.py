@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, dataclass, field
 import hashlib
+from importlib import util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -687,9 +688,8 @@ def archive_backend_status() -> dict[str, Any]:
     except ImportError:
         aes_zip = False
     try:
-        import rarfile  # noqa: F401
-        rar_read = True
-    except ImportError:
+        rar_read = util.find_spec("rarfile") is not None
+    except (ImportError, ModuleNotFoundError, ValueError):
         rar_read = False
     rar_create = _rar_executable()
     return {
