@@ -9,7 +9,7 @@ import shutil
 from threading import Event
 from typing import Callable
 
-from .errors import PackIntegrityError, PackValidationError
+from .errors import PackIntegrityError
 from .models import PackPlan, ProgressEvent, SourceEntry
 
 ProgressCallback = Callable[[ProgressEvent], None]
@@ -70,8 +70,8 @@ def _parse_attributes_line(line: str) -> tuple[str, list[str]] | None:
         return None
     try:
         tokens = shlex.split(stripped, comments=True, posix=True)
-    except ValueError as exc:
-        raise PackValidationError(f"Niepoprawna linia .gitattributes: {line!r}: {exc}") from exc
+    except ValueError:
+        return None
     if len(tokens) < 2:
         return None
     return tokens[0], tokens[1:]
@@ -80,9 +80,8 @@ def _parse_attributes_line(line: str) -> tuple[str, list[str]] | None:
 def _load_attribute_rules(source_root: Path) -> list[tuple[str, list[str]]]:
     """Load optional Git EOL policy for diagnostics only.
 
-    A folder snapshot must remain packageable even when it is not a Git checkout.
-    When .gitattributes exists, its EOL policy is reported as a warning surface;
-    it never changes source bytes and never blocks a valid folder snapshot.
+    Missing, unreadable or malformed .gitattributes never blocks a folder
+    snapshot because Git checkout policy does not define archive integrity.
     """
 
     attributes_path = source_root / ".gitattributes"
@@ -90,8 +89,8 @@ def _load_attribute_rules(source_root: Path) -> list[tuple[str, list[str]]]:
         return []
     try:
         lines = attributes_path.read_text(encoding="utf-8-sig").splitlines()
-    except UnicodeDecodeError as exc:
-        raise PackValidationError(f".gitattributes nie jest poprawnym UTF-8: {exc}") from exc
+    except (OSError, UnicodeError):
+        return []
     rules: list[tuple[str, list[str]]] = []
     for line in lines:
         parsed = _parse_attributes_line(line)
@@ -146,11 +145,7 @@ def _looks_text(sample: bytes) -> bool:
 
 
 def _inspect_eol_stream(source: Path, expected: str, *, auto_text: bool) -> bool | None:
-    """Return True/False for EOL conformity, or None when auto-text is binary.
-
-    This is intentionally diagnostic. Integrity is defined by preserving the
-    actual source bytes and matching their SHA-256 after reading them from ZIP.
-    """
+    """Return True/False for EOL conformity, or None for auto-detected binary."""
 
     with source.open("rb") as handle:
         sample = handle.read(_SAMPLE_SIZE)
@@ -247,8 +242,8 @@ def materialize_source_staging(
 ) -> StagingResult:
     """Copy the approved folder plan byte-for-byte into temporary staging.
 
-    .gitattributes is advisory here: it can diagnose EOL drift but it does not
-    define archive bytes. The selected folder and approved exclusion policy do.
+    .gitattributes is advisory: it can diagnose EOL drift but does not define
+    archive bytes. The selected folder and explicit exclusion policy do.
     """
 
     destination = destination.resolve()
