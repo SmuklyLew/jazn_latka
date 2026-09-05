@@ -84,7 +84,6 @@ latka_jazn/core/canon/local_private_canon_extension.py
 # Local generated pack helper scripts
 tools/__jazn_pack_generator.lock.json
 __jazn_pack_generator_settings.json
-tools/__jazn_pack_generator.lock.json
 tools/__jazn_pack_generator_settings.json
 tools/_jazn_pack_generator.py
 tools/jazn_pack_generator_settings.json
@@ -113,4 +112,3 @@ PACKAGE_INTEGRITY_MANIFEST.json
 
 # Local pytest integration workspaces
 /.pytest-p1b/
-tools/pack_generator_sources/jazn_pack_generator_settings.json

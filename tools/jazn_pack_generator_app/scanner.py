@@ -5,7 +5,13 @@ from pathlib import Path, PurePosixPath
 import re
 from typing import Callable
 
-from .constants import EXCLUDED_DIR_NAMES, EXCLUDED_FILE_NAMES, EXCLUDED_FILE_SUFFIXES
+from .constants import (
+    EXCLUDED_DIR_NAMES,
+    EXCLUDED_FILE_NAMES,
+    EXCLUDED_FILE_SUFFIXES,
+    EXCLUDED_SECRET_FILE_NAMES,
+    EXCLUDED_SECRET_NAME_TOKENS,
+)
 from .errors import PackSafetyError, PackValidationError
 from .models import ContentMode, PackPlan, PackRequest, SourceEntry
 
@@ -35,8 +41,6 @@ def resolve_memory_root(source_root: Path, explicit: Path | None) -> Path:
     env_value = str(os.environ.get("JAZN_MEMORY_ROOT") or "").strip()
     if env_value:
         candidates.append(Path(env_value))
-    # Bounded compatibility path. The runtime itself owns more advanced
-    # host-level resolution; the archiver does not guess outside these roots.
     candidates.append(source_root / "memory")
     for candidate in candidates:
         path = candidate.expanduser().resolve()
@@ -51,17 +55,19 @@ def resolve_memory_root(source_root: Path, explicit: Path | None) -> Path:
 
 def _is_system_excluded(relative: PurePosixPath, name: str, is_dir: bool) -> str | None:
     relative_text = relative.as_posix()
+    lower = name.casefold()
     if is_dir:
-        if name in EXCLUDED_DIR_NAMES:
+        if lower in {item.casefold() for item in EXCLUDED_DIR_NAMES}:
             return f"system-dir:{name}"
-        if len(relative.parts) == 1 and name.casefold() == "memory":
+        if len(relative.parts) == 1 and lower == "memory":
             return "system-memory-boundary"
         if relative_text.casefold() == "latka_jazn/local_resources":
             return "system-managed-local-resources"
         return None
-    if name in EXCLUDED_FILE_NAMES:
+    if lower in {item.casefold() for item in EXCLUDED_FILE_NAMES}:
         return f"system-file:{name}"
-    lower = name.casefold()
+    if lower in EXCLUDED_SECRET_FILE_NAMES or any(token in lower for token in EXCLUDED_SECRET_NAME_TOKENS):
+        return "system-secret-file"
     if relative_text.casefold() == "latka_jazn/core/canon/local_private_canon_extension.py":
         return "system-private-canon-extension"
     if lower.endswith((".sqlite3", ".sqlite", ".db")):
@@ -107,7 +113,6 @@ def _scan_tree(
             rel = relative_dir / item.name
             arc_rel = PurePosixPath(archive_prefix) / rel if archive_prefix else rel
             try:
-                item_path = Path(item.path)
                 is_junction = bool(
                     getattr(os.path, "isjunction", lambda _value: False)(item.path)
                 )
@@ -173,8 +178,6 @@ def build_pack_plan(request: PackRequest) -> PackPlan:
             {"path": f"memory/{item['path']}", "reason": item["reason"]} for item in memory_excluded
         )
 
-    # Case-insensitive collisions are rejected because archives are commonly moved
-    # between Windows and Linux.
     seen: dict[str, str] = {}
     for entry in entries:
         normalized = entry.archive_path.rstrip("/")
@@ -187,7 +190,7 @@ def build_pack_plan(request: PackRequest) -> PackPlan:
         seen[key] = normalized
 
     package_version = parse_package_version(source_root)
-    content_slug = request.content.value.replace("+", "+")
+    content_slug = request.content.value
     package_basename = f"jazn_latka_v{package_version}.{content_slug}.zip"
     normalized_request = PackRequest(
         source_root=source_root,

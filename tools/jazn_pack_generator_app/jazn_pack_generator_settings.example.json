@@ -1,10 +1,10 @@
 {
   "schema_version": "jazn_pack_generator_settings/v1",
-  "generator_version": "10.1.86.0.112",
+  "generator_version": "10.1.86.0.113",
   "ui_mode": "studio",
-  "source_root": "D:\\\\.AI\\\\jazn_latka_master",
+  "source_root": "D:\\.AI\\jazn_latka_master",
   "memory_root": "",
-  "output_root": "D:\\\\.AI\\\\jazn_packages",
+  "output_root": "D:\\.AI\\jazn_packages",
   "part_size_mib": 450,
   "compression_level": 6,
   "remember_last_paths": true

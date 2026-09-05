@@ -48,7 +48,7 @@ def build_manifest(
             "directory_count": plan.directory_count,
             "total_size_bytes": plan.source_total_size_bytes,
             "byte_exact": True,
-            "staging_mode": "canonical-byte-copy",
+            "staging_mode": str(verification.get("staging_mode") or "source-folder-byte-copy"),
             "entries": [
                 {
                     "path": item.archive_path,
@@ -66,9 +66,11 @@ def build_manifest(
         "excluded": list(plan.excluded),
         "verification": verification,
         "truth_boundary": (
-            "Jaźń Pack Generator archiwizuje kanoniczny byte-exact staging wybranego drzewa "
-            "SYSTEM/MEMORY i weryfikuje SHA-256 każdego pliku względem wpisu ZIP. "
-            "Nie buduje dependency bundle, wheelhouse ani środowiska Python."
+            "Jaźń Pack Generator archiwizuje rzeczywiste bajty zatwierdzonego planu wybranego "
+            "folderu SYSTEM/MEMORY. .gitattributes może dostarczyć diagnostykę EOL, ale nie "
+            "przekształca bajtów i nie blokuje poprawnego snapshotu folderu. SHA-256 każdego "
+            "pliku jest ponownie sprawdzany względem wpisu ZIP. Opcja split dzieli jeden "
+            "logiczny ZIP na binarne części transportowe."
         ),
     }
 

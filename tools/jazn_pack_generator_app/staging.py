@@ -3,19 +3,19 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 import fnmatch
 import hashlib
-import os
 from pathlib import Path, PurePosixPath
 import shlex
 import shutil
 from threading import Event
 from typing import Callable
 
-from .errors import PackIntegrityError, PackValidationError
+from .errors import PackIntegrityError
 from .models import PackPlan, ProgressEvent, SourceEntry
 
 ProgressCallback = Callable[[ProgressEvent], None]
 _CHUNK_SIZE = 4 * 1024 * 1024
 _SAMPLE_SIZE = 64 * 1024
+_EOL_WARNING_SAMPLE_LIMIT = 100
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,15 +30,18 @@ class StagingResult:
     member_sha256: dict[str, str]
     eol_checked_count: int
     eol_skipped_count: int
-    staging_mode: str = "canonical-byte-copy"
+    eol_warning_paths: tuple[str, ...] = ()
+    staging_mode: str = "source-folder-byte-copy"
 
     def verification_metadata(self) -> dict[str, object]:
         return {
             "staging_mode": self.staging_mode,
             "byte_exact_source_copy": True,
-            "eol_policy": "ok",
+            "eol_policy": "diagnostic_only",
             "eol_checked_count": self.eol_checked_count,
             "eol_skipped_count": self.eol_skipped_count,
+            "eol_warning_count": len(self.eol_warning_paths),
+            "eol_warning_sample": list(self.eol_warning_paths[:_EOL_WARNING_SAMPLE_LIMIT]),
         }
 
 
@@ -67,23 +70,27 @@ def _parse_attributes_line(line: str) -> tuple[str, list[str]] | None:
         return None
     try:
         tokens = shlex.split(stripped, comments=True, posix=True)
-    except ValueError as exc:
-        raise PackValidationError(f"Niepoprawna linia .gitattributes: {line!r}: {exc}") from exc
+    except ValueError:
+        return None
     if len(tokens) < 2:
         return None
     return tokens[0], tokens[1:]
 
 
 def _load_attribute_rules(source_root: Path) -> list[tuple[str, list[str]]]:
+    """Load optional Git EOL policy for diagnostics only.
+
+    Missing, unreadable or malformed .gitattributes never blocks a folder
+    snapshot because Git checkout policy does not define archive integrity.
+    """
+
     attributes_path = source_root / ".gitattributes"
     if not attributes_path.is_file():
-        raise PackValidationError(
-            "Brak .gitattributes wymaganego przez canonical release staging dla paczki SYSTEM."
-        )
+        return []
     try:
         lines = attributes_path.read_text(encoding="utf-8-sig").splitlines()
-    except UnicodeDecodeError as exc:
-        raise PackValidationError(f".gitattributes nie jest poprawnym UTF-8: {exc}") from exc
+    except (OSError, UnicodeError):
+        return []
     rules: list[tuple[str, list[str]]] = []
     for line in lines:
         parsed = _parse_attributes_line(line)
@@ -137,11 +144,13 @@ def _looks_text(sample: bytes) -> bool:
     return True
 
 
-def _validate_eol_stream(source: Path, expected: str, *, path: str, auto_text: bool) -> bool:
+def _inspect_eol_stream(source: Path, expected: str, *, auto_text: bool) -> bool | None:
+    """Return True/False for EOL conformity, or None for auto-detected binary."""
+
     with source.open("rb") as handle:
         sample = handle.read(_SAMPLE_SIZE)
         if auto_text and not _looks_text(sample):
-            return False
+            return None
         handle.seek(0)
         pending_cr = False
         while True:
@@ -150,30 +159,22 @@ def _validate_eol_stream(source: Path, expected: str, *, path: str, auto_text: b
                 break
             if expected == "lf":
                 if b"\r" in chunk:
-                    raise PackIntegrityError(
-                        f"EOL drift: {path} ma CR/CRLF, a .gitattributes wymaga LF."
-                    )
+                    return False
                 continue
             if expected != "crlf":
-                continue
+                return True
             for value in chunk:
                 if pending_cr:
                     if value != 0x0A:
-                        raise PackIntegrityError(
-                            f"EOL drift: {path} ma samotny CR, a .gitattributes wymaga CRLF."
-                        )
+                        return False
                     pending_cr = False
                     continue
                 if value == 0x0D:
                     pending_cr = True
                 elif value == 0x0A:
-                    raise PackIntegrityError(
-                        f"EOL drift: {path} ma samotny LF, a .gitattributes wymaga CRLF."
-                    )
+                    return False
         if expected == "crlf" and pending_cr:
-            raise PackIntegrityError(
-                f"EOL drift: {path} kończy się samotnym CR, a .gitattributes wymaga CRLF."
-            )
+            return False
     return True
 
 
@@ -183,6 +184,7 @@ def _sha256_path(path: Path) -> str:
         while chunk := handle.read(_CHUNK_SIZE):
             digest.update(chunk)
     return digest.hexdigest()
+
 
 def _copy_byte_exact(
     source: Path,
@@ -210,7 +212,7 @@ def _copy_byte_exact(
                 callback,
                 ProgressEvent(
                     "staging",
-                    "Canonical byte-exact staging",
+                    "Source folder byte-exact staging",
                     written,
                     expected_size,
                     archive_path,
@@ -231,13 +233,19 @@ def _copy_byte_exact(
     return source_digest
 
 
-def materialize_canonical_staging(
+def materialize_source_staging(
     plan: PackPlan,
     destination: Path,
     *,
     callback: ProgressCallback | None = None,
     cancel_event: Event | None = None,
 ) -> StagingResult:
+    """Copy the approved folder plan byte-for-byte into temporary staging.
+
+    .gitattributes is advisory: it can diagnose EOL drift but does not define
+    archive bytes. The selected folder and explicit exclusion policy do.
+    """
+
     destination = destination.resolve()
     destination.mkdir(parents=True, exist_ok=True)
     source_root = plan.request.source_root.resolve()
@@ -247,6 +255,7 @@ def materialize_canonical_staging(
     member_sha256: dict[str, str] = {}
     eol_checked = 0
     eol_skipped = 0
+    eol_warnings: list[str] = []
 
     for entry in plan.entries:
         _check_cancel(cancel_event)
@@ -256,30 +265,25 @@ def materialize_canonical_staging(
             staged_entries.append(replace(entry, source=target))
             continue
 
-        should_check_eol = False
         expected_eol: str | None = None
         auto_text = False
         try:
             relative_source = entry.source.resolve().relative_to(source_root)
         except ValueError:
             relative_source = None
-        if relative_source is not None and not entry.archive_path.startswith("memory/"):
+        if relative_source is not None and not entry.archive_path.startswith("memory/") and rules:
             state = attribute_state_for_path(PurePosixPath(relative_source.as_posix()), rules)
             expected_eol = state.eol if state.text is not False else None
             auto_text = state.text == "auto"
-            should_check_eol = expected_eol in {"lf", "crlf"}
 
-        if should_check_eol and expected_eol is not None:
-            checked = _validate_eol_stream(
-                entry.source,
-                expected_eol,
-                path=entry.archive_path,
-                auto_text=auto_text,
-            )
-            if checked:
-                eol_checked += 1
-            else:
+        if expected_eol in {"lf", "crlf"}:
+            observed = _inspect_eol_stream(entry.source, expected_eol, auto_text=auto_text)
+            if observed is None:
                 eol_skipped += 1
+            else:
+                eol_checked += 1
+                if observed is False:
+                    eol_warnings.append(entry.archive_path)
         else:
             eol_skipped += 1
 
@@ -300,4 +304,22 @@ def materialize_canonical_staging(
         member_sha256=member_sha256,
         eol_checked_count=eol_checked,
         eol_skipped_count=eol_skipped,
+        eol_warning_paths=tuple(eol_warnings),
+    )
+
+
+def materialize_canonical_staging(
+    plan: PackPlan,
+    destination: Path,
+    *,
+    callback: ProgressCallback | None = None,
+    cancel_event: Event | None = None,
+) -> StagingResult:
+    """Compatibility alias for callers from generator 10.1.86.0.112."""
+
+    return materialize_source_staging(
+        plan,
+        destination,
+        callback=callback,
+        cancel_event=cancel_event,
     )
