@@ -34,6 +34,21 @@ EXCLUDED_FILE_NAMES = frozenset({
     "memory_rebuild_settings.json",
 })
 
+EXCLUDED_SECRET_FILE_NAMES = frozenset({
+    ".env",
+    "credentials.json",
+    "client_secret.json",
+    "service_account.json",
+    "id_rsa",
+    "id_ed25519",
+})
+
+EXCLUDED_SECRET_NAME_TOKENS = (
+    "private_key",
+    "client_secret",
+    "service_account_key",
+)
+
 WINDOWS_RESERVED_NAMES = frozenset(
     {"CON", "PRN", "AUX", "NUL"}
     | {f"COM{i}" for i in range(1, 10)}
