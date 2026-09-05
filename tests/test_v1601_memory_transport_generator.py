@@ -56,7 +56,7 @@ def _write_runtime_version(root: Path) -> None:
 
 def test_generator_memory_mode_is_archive_only_and_cloud_attach_stays_outside_generator(tmp_path: Path) -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.112"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.113"
     assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
     assert not hasattr(generator, "sidecar_payload")
     assert "target-platform" in generator.config_report()["not_in_scope"]
@@ -76,7 +76,6 @@ def test_generator_memory_mode_is_archive_only_and_cloud_attach_stays_outside_ge
         )
     )
     assert {entry.archive_path for entry in plan.entries} == {"memory/item.json"}
-
 
 
 class _FakeR2Client:
@@ -184,7 +183,6 @@ def test_generator_keeps_sqlite_as_one_zip_member_before_optional_outer_transpor
         )
     )
     assert "memory/runtime_memory.sqlite3" in {entry.archive_path for entry in plan.entries}
-
 
 
 def _write_legacy_package_set(parts_dir: Path) -> bytes:
