@@ -15,12 +15,19 @@ def _root(tmp_path: Path) -> Path:
         'PACKAGE_VERSION = "16.3.25.5.23"\n'
         'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.112-clean-rewrite"\n',
         encoding="utf-8",
+        newline="\n",
     )
-    (root / "run.py").write_text("pass\n", encoding="utf-8")
-    (root / ".gitattributes").write_text("* text=auto eol=lf\n*.txt text eol=lf\n", encoding="utf-8")
-    (root / "system.txt").write_text("system", encoding="utf-8")
+    (root / "run.py").write_text("pass\n", encoding="utf-8", newline="\n")
+    (root / ".gitattributes").write_text(
+        "* text=auto eol=lf\n*.txt text eol=lf\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    (root / "system.txt").write_text("system", encoding="utf-8", newline="\n")
     (root / "memory").mkdir()
-    (root / "memory/old.txt").write_text("must not enter SYSTEM", encoding="utf-8")
+    (root / "memory/old.txt").write_text(
+        "must not enter SYSTEM", encoding="utf-8", newline="\n"
+    )
     return root
 
 def test_v101860111_system_is_folder_snapshot_without_memory(tmp_path: Path) -> None:
@@ -56,7 +63,7 @@ def test_v101860111_system_plus_memory_is_one_logical_zip(tmp_path: Path) -> Non
     root = _root(tmp_path)
     memory = tmp_path / "private-memory"
     memory.mkdir()
-    (memory / "fresh.txt").write_text("memory", encoding="utf-8")
+    (memory / "fresh.txt").write_text("memory", encoding="utf-8", newline="\n")
     result = module.run_pack_request(
         source=root, out_dir=tmp_path / "out", content="system+memory", memory_root=memory,
     )
