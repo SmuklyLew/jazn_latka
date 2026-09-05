@@ -13,13 +13,13 @@ def test_public_launcher_exports_new_archiver_contract() -> None:
     }
     missing = sorted(name for name in required if not hasattr(generator, name))
     assert missing == []
-    assert generator.GENERATOR_VERSION == "10.1.86.0.112"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.113"
     assert generator.UI_MODE_CHOICES == ("text", "tui", "studio")
 
 def test_config_explicitly_declares_distribution_features_out_of_scope() -> None:
     generator = importlib.import_module("tools.jazn_pack_generator")
     report = generator.config_report()
-    assert report["scope"] == "archive-system-memory-system+memory"
+    assert report["scope"] == "folder-snapshot:system-memory-system+memory;single-or-binary-split"
     assert set(report["not_in_scope"]) == {
         "dependency-bundle", "wheelhouse", "python-runtime", "target-platform"
     }
