@@ -81,6 +81,36 @@ def test_default_health_check_is_readable_and_hides_raw_telemetry(tmp_path: Path
     assert validation.accepted is True, validation.to_dict()
 
 
+def test_default_health_check_does_not_revalidate_wake_sidecar(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    cfg = JaznConfig(root=tmp_path / "runtime")
+    cfg.normalization_sidecar_db_path.parent.mkdir(parents=True, exist_ok=True)
+    cfg.normalization_sidecar_db_path.write_bytes(b"metadata-only sentinel")
+
+    def _unexpected_wake_scan(*_args, **_kwargs):
+        raise AssertionError("ordinary health check must not scan wake-state SQLite")
+
+    monkeypatch.setattr(
+        "latka_jazn.core.handlers.capability_status_handler.MemoryNormalizationSidecar.wake_state_status",
+        _unexpected_wake_scan,
+    )
+    result = CapabilityStatusHandler().handle(
+        "Działasz?",
+        {
+            "intent": "runtime_health_check",
+            "config": cfg,
+            "lifecycle": "persistent_daemon_async_job",
+        },
+    )
+
+    assert result.route == "runtime_health_check"
+    assert "Wake state: dostępny; bez ponownej walidacji" in result.body
+    wake = result.data["startup_status"]["wake_state_status"]
+    assert wake["status"] == "present_not_revalidated_fast_path"
+    assert wake["inspection_mode"] == "metadata_only_no_sqlite_scan"
+
+
 def test_requested_wake_and_source_details_remain_available_without_full_dump(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path / "runtime")
     text = "Podaj bieżący stan runtime, wake-state i źródło tej odpowiedzi."
