@@ -17,7 +17,7 @@ from .manifest import build_manifest, write_manifest
 from .models import ContentMode, PackPlan, PackRequest, PackResult, ProgressEvent, TransportMode
 from .scanner import build_pack_plan
 from .settings import settings_path
-from .staging import materialize_canonical_staging
+from .staging import materialize_source_staging
 from .transport import join_parts, split_archive, verify_parts
 
 ProgressCallback = Callable[[ProgressEvent], None]
@@ -82,7 +82,7 @@ def pack(
     backup: Path | None = None
     committed = False
     try:
-        staged = materialize_canonical_staging(
+        staged = materialize_source_staging(
             plan,
             source_staging,
             callback=callback,
@@ -239,6 +239,7 @@ def _expected_member_hashes_from_manifest(manifest_path: Path) -> tuple[dict[str
         )
     return expected, schema or None
 
+
 def verify_package(
     path: Path,
     *,
@@ -295,6 +296,7 @@ def verify_package(
             "manifest_path": str(manifest_path) if manifest_path.is_file() else None,
         }
     raise PackValidationError("Obsługiwane są paczki *.zip oraz pierwsze części *.zip.001.")
+
 
 def unpack_package(
     path: Path,
@@ -356,6 +358,6 @@ def config_report() -> dict[str, Any]:
             "studio_gui": tkinter_ok,
         },
         "tkinter_error": tkinter_error,
-        "scope": "archive-system-memory-system+memory",
+        "scope": "folder-snapshot:system-memory-system+memory;single-or-binary-split",
         "not_in_scope": ["dependency-bundle", "wheelhouse", "python-runtime", "target-platform"],
     }
