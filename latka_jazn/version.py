@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.19 integrates Pack Generator 10.1.86.0 with the canonical
-# active-tree Pyright contract and resolves the remaining classified typing
-# errors without weakening diagnostics or runtime behavior.
-DISTRIBUTION_VERSION = "16.3.25.5.19"
-PACKAGE_VERSION = "16.3.25.5.19"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-pyright-hardening"
+# v16.3.25.5.20 hardens the VS Code/Pylance boundary for historical generator
+# snapshots without weakening diagnostics for active code. Archived pre-v10.1.86.0
+# sources remain immutable history while their diagnostics are explicitly ignored.
+DISTRIBUTION_VERSION = "16.3.25.5.20"
+PACKAGE_VERSION = "16.3.25.5.20"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-vscode-pylance-boundary"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
