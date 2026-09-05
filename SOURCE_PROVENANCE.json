@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "635e9674abe8163a943b922a84b4fe4fb258143f",
-    "base_version": "16.3.25.5.16-python-runtime-bundle-ci-hardening",
+    "base_commit": "88f3f34ce71eaeaf04b6f62044796558f8d34cf8",
+    "base_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "88f3f34ce71eaeaf04b6f62044796558f8d34cf8",
