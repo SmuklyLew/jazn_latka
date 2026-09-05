@@ -78,12 +78,9 @@ _root_list.py
 # Local/private canon extraction outputs
 latka_jazn/core/canon/local_private_canon_extension.py
 
-
 # Heavy local documentation artifacts / generated reports
 *.bundle
 *_stdout.txt
-
-# Local planning / generated artifacts
 
 # Local generated pack helper scripts
 tools/__jazn_pack_generator.lock.json
@@ -92,6 +89,8 @@ tools/__jazn_pack_generator.lock.json
 tools/__jazn_pack_generator_settings.json
 tools/_jazn_pack_generator.py
 tools/jazn_pack_generator_settings.json
+tools/jazn_pack_generator_app/jazn_pack_generator_settings.json
+tools/jazn_pack_generator_app/jazn_pack_generator_settings.json.tmp
 
 # Local Memory Rebuild operator settings (mutable, never release/source data)
 memory_rebuild_settings.json
@@ -114,7 +113,6 @@ PACKAGE_INTEGRITY_MANIFEST.json
 !/.archives/**/*.ps1
 
 # Persistent local NLP models/data and Python wheelhouses/environments.
-# Keep them next to the Jaźń package, but outside Git and release manifests.
 /latka_jazn/local_resources/
 
 # Reviewed operator launchers are source code despite the repository-wide *.ps1 rule.

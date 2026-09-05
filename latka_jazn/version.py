@@ -3,14 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.22 finalizes the Pack Generator 10.1.86.0 deterministic bundle
-# contract after the Pylance/archive follow-up. The public launcher and its
-# canonical five-file source set are byte-for-byte converged again; the default
-# runtime health path remains metadata-only while explicit wake-state/full
-# telemetry requests retain their bounded sidecar status read.
-DISTRIBUTION_VERSION = "16.3.25.5.22"
-PACKAGE_VERSION = "16.3.25.5.22"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-bundle-health-fastpath"
+# v16.3.25.5.25 repairs the Windows package-smoke version contract and keeps
+# diagnostic smoke artifacts outside the Git checkout so clean-tree validation
+# remains meaningful after PR diagnostics.
+DISTRIBUTION_VERSION = "16.3.25.5.25"
+PACKAGE_VERSION = "16.3.25.5.25"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

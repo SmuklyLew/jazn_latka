@@ -5,11 +5,7 @@ import os
 from pathlib import Path
 import sys
 
-from latka_jazn.dependencies.runtime import (
-    DependencyStudioError,
-    handoff_to_managed_python,
-    prepare_entrypoint_environment,
-)
+from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 def _configure_utf8_stdio() -> None:
@@ -21,7 +17,26 @@ def _configure_utf8_stdio() -> None:
             reconfigure(encoding="utf-8", errors="replace")
 
 
+def _version_fast_path_requested(argv: list[str]) -> bool:
+    """Return whether the canonical entrypoint should answer --version directly."""
+
+    return bool(argv and argv[0] == "--version")
+
+
 _configure_utf8_stdio()
+
+# Version discovery is a dependency-free operator contract. Keep it ahead of
+# Dependency Studio bootstrap so diagnostics and package-smoke can always read
+# the identity of the exact run.py tree they launched, including on Windows.
+if __name__ == "__main__" and _version_fast_path_requested(sys.argv[1:]):
+    print(PACKAGE_VERSION_FULL)
+    raise SystemExit(0)
+
+from latka_jazn.dependencies.runtime import (
+    DependencyStudioError,
+    handoff_to_managed_python,
+    prepare_entrypoint_environment,
+)
 
 
 _ACTIVATION_COMMANDS = {

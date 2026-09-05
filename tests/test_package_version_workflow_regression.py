@@ -25,127 +25,8 @@ def load_module(name: str, path: Path):
 
 
 @pytest.fixture()
-def generator():
-    return load_module("jazn_pack_generator_regression", ROOT / "tools" / "jazn_pack_generator.py")
-
-
-@pytest.fixture()
 def rebuild():
     return load_module("jazn_version_rebuild_regression", ROOT / "tools" / "jazn_version_rebuild.py")
-
-
-def version_info(generator):
-    return generator.VersionInfo(
-        version_file=Path("latka_jazn/version.py"),
-        package_version="v15.1.0.3.99",
-        release_name="Memory Sqlite Pipeline",
-        full_version="v15.1.0.3.99-Memory Sqlite Pipeline",
-        filename_version="15.1.0.3.99-Memory-Sqlite-Pipeline",
-    )
-
-
-def provenance_payload(version: str = "v15.1.0.3.99-Memory Sqlite Pipeline") -> dict[str, object]:
-    return {
-        "schema_version": "source_provenance/v15.1.0.3.99",
-        "base_version": version,
-        "runtime_version": version,
-        "update_version": version,
-        "version_source": "latka_jazn/version.py",
-    }
-
-
-def test_pack_options_always_build_canonical_system_metadata_when_source_write_is_disabled(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    generator,
-) -> None:
-    calls: list[bool] = []
-    dummy = generator.PackPlan(
-        root=tmp_path / "source",
-        profile="system",
-        version=version_info(generator),
-        entries=[],
-    )
-
-    def fake_build_plan(*_args, **kwargs):
-        calls.append(bool(kwargs.get("synchronize_release_metadata")))
-        return dummy
-
-    monkeypatch.setattr(generator, "build_plan", fake_build_plan)
-    options = generator.PackOptions(
-        source=tmp_path / "source",
-        out_dir=tmp_path / "out",
-        profile="system",
-        update_source_manifest=False,
-    )
-
-    assert generator.build_plans_for_options(options) == [dummy]
-    assert calls == [True]
-
-
-def test_stale_provenance_is_rejected_even_when_hashes_are_otherwise_valid(generator) -> None:
-    payload = provenance_payload(f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline")
-    with pytest.raises(generator.PackError, match="nie odpowiada version.py"):
-        generator.validate_release_provenance_payload(
-            payload,
-            version_info(generator),
-            context="test",
-        )
-
-
-def test_system_package_rejects_noncanonical_source_provenance_entry(tmp_path: Path, generator) -> None:
-    version = version_info(generator)
-    stale = generator.virtual_entry(
-        generator.SOURCE_PROVENANCE,
-        json.dumps(provenance_payload()).encode("utf-8"),
-        "static_project_file",
-    )
-    # Symuluje historyczny plan: SOURCE_PROVENANCE pochodził z dysku, a nie z
-    # kanonicznego wirtualnego kontraktu wydania.
-    stale = generator.PlanEntry(
-        relative=stale.relative,
-        source=tmp_path / generator.SOURCE_PROVENANCE,
-        size_bytes=stale.size_bytes,
-        sha256=stale.sha256,
-        classification=stale.classification,
-        mtime_ns=0,
-        virtual_bytes=None,
-    )
-    manifest = generator.virtual_entry(
-        generator.PACKAGE_INTEGRITY_MANIFEST,
-        b"{}\n",
-        "package_integrity_manifest",
-    )
-    plan = generator.PackPlan(
-        root=tmp_path,
-        profile="system",
-        version=version,
-        entries=[stale, manifest],
-    )
-
-    with pytest.raises(generator.PackError, match="Odmowa pakowania"):
-        generator.validate_system_plan_release_metadata(plan)
-
-
-def test_system_package_accepts_matching_virtual_release_metadata(tmp_path: Path, generator) -> None:
-    version = version_info(generator)
-    provenance = generator.virtual_entry(
-        generator.SOURCE_PROVENANCE,
-        (json.dumps(provenance_payload(), ensure_ascii=False) + "\n").encode("utf-8"),
-        "static_project_file",
-    )
-    manifest = generator.virtual_entry(
-        generator.PACKAGE_INTEGRITY_MANIFEST,
-        b"{}\n",
-        "package_integrity_manifest",
-    )
-    plan = generator.PackPlan(
-        root=tmp_path,
-        profile="system",
-        version=version,
-        entries=[provenance, manifest],
-    )
-    generator.validate_system_plan_release_metadata(plan)
 
 
 def make_rebuild_fixture(root: Path, rebuild: Any) -> Any:
@@ -247,8 +128,6 @@ def test_version_rebuild_repeated_sync_accepts_current_metadata_only_changes(
 ) -> None:
     version = make_rebuild_fixture(tmp_path, rebuild)
     init_git(tmp_path)
-    # Stan typowy po udanej synchronizacji: oba pliki są semantycznie aktualne,
-    # ale jeszcze nie zostały zatwierdzone w Git.
     provenance_path = tmp_path / rebuild.PROVENANCE_PATH
     provenance_path.write_text(provenance_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 

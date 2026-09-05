@@ -19,7 +19,7 @@ LEGACY_MEMORY_VERSION = "v" + ".".join(("15", "0", "3", "222")) + "-RUN HOTFIX"
 
 
 def _load_generator():
-    name = "jazn_pack_generator_memory_v1001_contract_test"
+    name = "jazn_pack_generator_memory_v101860111_contract_test"
     spec = importlib.util.spec_from_file_location(name, GENERATOR_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -52,13 +52,33 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def test_generator_v1001_uses_canonical_memory_distribution_job() -> None:
+def test_generator_v101860111_archives_memory_without_distribution_job(tmp_path: Path) -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.1.86.0"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
-    plan = generator.distribution_request_plan(content="memory", layout="single", archive_format="zip")
-    assert plan["jobs"] == [{"role": "memory", "distribution_mode": "memory-only"}]
-    assert plan["memory_export_is_canonical"] is True
+    assert generator.GENERATOR_VERSION == "10.1.86.0.111"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
+    assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
+    assert "dependency-bundle" in generator.config_report()["not_in_scope"]
+
+    root = tmp_path / "runtime"
+    (root / "latka_jazn").mkdir(parents=True)
+    (root / "latka_jazn" / "version.py").write_text(
+        'PACKAGE_VERSION = "16.3.25.5.23"\n'
+        'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.111-clean-rewrite"\n',
+        encoding="utf-8",
+    )
+    (root / "run.py").write_text("pass\n", encoding="utf-8")
+    memory = tmp_path / "memory-source"
+    memory.mkdir()
+    (memory / "data.jsonl").write_text('{"memory":true}\n', encoding="utf-8")
+    plan = generator.plan_pack(
+        generator.PackRequest(
+            source_root=root,
+            output_root=tmp_path / "packages",
+            content=generator.ContentMode.MEMORY,
+            memory_root=memory,
+        )
+    )
+    assert {entry.archive_path for entry in plan.entries} == {"memory/data.jsonl"}
 
 
 def test_legacy_v1_runtime_mismatch_is_advisory_for_standalone_and_strict_for_combined(tmp_path: Path) -> None:
