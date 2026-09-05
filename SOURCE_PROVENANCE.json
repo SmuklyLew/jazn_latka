@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
-  "base_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
-  "commit_date": "2026-09-06T00:53:14+02:00",
+  "base_merge_commit": "f8be42954423b6b46d34205cad5fc99f8e94fd5e",
+  "base_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
+  "commit_date": "2026-09-06T01:43:26+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-05T22:53:14+00:00",
+  "generated_at_utc": "2026-09-05T23:43:26+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "35f6f6ac0050fa1b7c60dd45db68b8b985b79862",
+  "git_tree_sha": "43c1a020da530f2743f02b27ad9164076066680d",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
-    "base_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+    "base_commit": "f8be42954423b6b46d34205cad5fc99f8e94fd5e",
+    "base_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
-    "source_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging"
+    "source_commit": "f8be42954423b6b46d34205cad5fc99f8e94fd5e",
+    "source_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "release_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "runtime_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "e1c22e118cdc4b99fda9bac0108c8a2f833dba11",
+  "source_commit": "f8be42954423b6b46d34205cad5fc99f8e94fd5e",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "source_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "update_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
   "version_source": "latka_jazn/version.py"
 }
