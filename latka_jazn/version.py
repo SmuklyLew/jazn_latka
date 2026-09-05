@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.18 hardens Pack Generator 10.1.86.0 release automation so newly
-# materialized cross-target dependency locks are staged and committed before
-# canonical release-metadata synchronization requires a clean working tree.
-DISTRIBUTION_VERSION = "16.3.25.5.18"
-PACKAGE_VERSION = "16.3.25.5.18"
-PACKAGE_RELEASE_NAME = "pack-generator-lock-persistence-hardening"
+# v16.3.25.5.19 integrates Pack Generator 10.1.86.0 with the canonical
+# active-tree Pyright contract and resolves the remaining classified typing
+# errors without weakening diagnostics or runtime behavior.
+DISTRIBUTION_VERSION = "16.3.25.5.19"
+PACKAGE_VERSION = "16.3.25.5.19"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-pyright-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

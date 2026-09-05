@@ -112,13 +112,6 @@ replace_exact(
     '        out: StyleAndTextTuples = [\n            ("class:panel.title", "  WYBRANE ŹRÓDŁO\\n"),',
 )
 
-# Canonical release CI must consume the same active-tree Pyright contract.
-replace_exact(
-    ".github/workflows/release-hardening.yml",
-    "      - name: Static type audit\n        run: pyright latka_jazn main.py run.py\n",
-    "      - name: Static type audit\n        run: pyright --project pyrightconfig.json\n",
-)
-
 # This correction is a versioned patch on top of Pack Generator 10.1.86.0.
 path = "latka_jazn/version.py"
 replace_exact(
