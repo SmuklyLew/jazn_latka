@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-GENERATOR_VERSION = "10.1.86.0.111"
+GENERATOR_VERSION = "10.1.86.0.112"
 GENERATOR_TITLE = "Jaźń Pack Generator"
 SETTINGS_SCHEMA = "jazn_pack_generator_settings/v1"
-PACKAGE_MANIFEST_SCHEMA = "jazn_pack_generator_package/v1"
+PACKAGE_MANIFEST_SCHEMA = "jazn_pack_generator_package/v2"
 
 DEFAULT_PART_SIZE_MIB = 450
 DEFAULT_COMPRESSION_LEVEL = 6

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""Jaźń Pack Generator v10.1.86.0.111.
+r"""Jaźń Pack Generator v10.1.86.0.112.
 
 Public launcher for the rewritten folder archiver.
 
