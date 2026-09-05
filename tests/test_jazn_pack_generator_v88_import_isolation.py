@@ -22,7 +22,7 @@ module = importlib.util.module_from_spec(spec)
 sys.modules[name] = module
 spec.loader.exec_module(module)
 public = importlib.import_module("tools.jazn_pack_generator")
-assert public.GENERATOR_VERSION == "10.1.86.0.112"
+assert public.GENERATOR_VERSION == "10.1.86.0.113"
 assert public.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
 assert public.UI_MODE_CHOICES == ("text", "tui", "studio")
 """
