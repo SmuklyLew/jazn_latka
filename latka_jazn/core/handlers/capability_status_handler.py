@@ -34,6 +34,14 @@ class CapabilityStatusHandler:
 
     @staticmethod
     def _fast_health_status(cfg: Any, ctx: dict[str, Any]) -> dict[str, Any]:
+        """Return bounded metadata without reopening/scanning the wake-state SQLite.
+
+        The ordinary ``Działasz?`` path is intentionally a latency-bounded status
+        check.  It may report that a sidecar exists, but it must not convert mere
+        file presence into a continuity claim.  Explicit wake/full telemetry
+        requests use ``_detailed_wake_state_status`` below.
+        """
+
         root = cfg.root.resolve()
         marker: dict[str, Any] = {}
         marker_path = cfg.active_runtime_marker_path
@@ -53,23 +61,20 @@ class CapabilityStatusHandler:
             "size_bytes": memory_path.stat().st_size if memory_path.is_file() else 0,
             "inspection_mode": "metadata_only",
         }
-        try:
-            wake_state_status = MemoryNormalizationSidecar(
-                root,
-                source_db_path=cfg.normalization_source_db_path,
-                sidecar_db_path=cfg.normalization_sidecar_db_path,
-                runtime_version=cfg.version,
-            ).wake_state_status(deep_verify=False).to_dict()
-        except Exception as exc:
-            wake_state_status = {
-                "status": "status_unavailable",
-                "active_snapshot_present": False,
-                "active_snapshot": None,
-                "freshness": None,
-                "sidecar_db_path": str(cfg.normalization_sidecar_db_path),
-                "error_type": type(exc).__name__,
-                "error": str(exc),
-            }
+        sidecar_path = cfg.normalization_sidecar_db_path
+        sidecar_present = sidecar_path.is_file()
+        wake_state_status = {
+            "status": "present_not_revalidated_fast_path" if sidecar_present else "sidecar_missing",
+            "active_snapshot_present": None if sidecar_present else False,
+            "active_snapshot": None,
+            "freshness": None,
+            "sidecar_db_path": str(sidecar_path),
+            "inspection_mode": "metadata_only_no_sqlite_scan",
+            "truth_boundary": (
+                "Fast health checks report only sidecar presence. They do not infer a valid wake snapshot, "
+                "freshness, or continuity without an explicit bounded wake-state status read."
+            ),
+        }
         adapter = json_object(ctx.get("model_adapter_status"))
         timestamp = json_object(ctx.get("timestamp_contract"))
         endpoint_host = daemon.get("host") or marker.get("host")
@@ -111,8 +116,31 @@ class CapabilityStatusHandler:
             "dictionary_provider_status": {"status": "not_probed_in_health_fast_path"},
             "cli_capabilities": {},
             "startup_status_mode": "health_metadata",
-            "truth_boundary": "Health-check potwierdza wyłącznie bieżący proces i lokalne metadane; nie wykonuje deep verify ani sond sieciowych.",
+            "truth_boundary": (
+                "Health-check potwierdza wyłącznie bieżący proces i lokalne metadane; "
+                "nie skanuje SQLite wake-state, nie wykonuje deep verify ani sond sieciowych."
+            ),
         }
+
+    @staticmethod
+    def _detailed_wake_state_status(cfg: Any) -> dict[str, Any]:
+        try:
+            return MemoryNormalizationSidecar(
+                cfg.root.resolve(),
+                source_db_path=cfg.normalization_source_db_path,
+                sidecar_db_path=cfg.normalization_sidecar_db_path,
+                runtime_version=cfg.version,
+            ).wake_state_status(deep_verify=False).to_dict()
+        except Exception as exc:
+            return {
+                "status": "status_unavailable",
+                "active_snapshot_present": False,
+                "active_snapshot": None,
+                "freshness": None,
+                "sidecar_db_path": str(cfg.normalization_sidecar_db_path),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
 
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx = context or {}
@@ -193,9 +221,20 @@ class CapabilityStatusHandler:
                 "skad ta odpowiedz", "source_origin", "source origin", "pochodzenie odpowiedzi",
             ))
 
+            if cfg and (wake_details_requested or detailed_health):
+                wake_state = self._detailed_wake_state_status(cfg)
+                status["wake_state_status"] = wake_state
+                wake_snapshot = json_object(wake_state.get("active_snapshot"))
+                wake_freshness = json_object(wake_state.get("freshness"))
+
             lifecycle = str(status.get("process_lifecycle") or "status_not_available")
             raw_memory_status = str(raw_memory.get("status") or "status_not_available")
             wake_status = str(wake_state.get("status") or "status_not_available")
+            wake_status_label = (
+                "dostępny; bez ponownej walidacji"
+                if wake_status == "present_not_revalidated_fast_path"
+                else wake_status
+            )
             continuity_status = str(memory_continuity.get("status") or "status_not_available")
             continuity_label = (
                 "niezweryfikowana w szybkim teście"
@@ -210,7 +249,7 @@ class CapabilityStatusHandler:
                 f"- Runtime: v{runtime_version_number}",
                 f"- Proces: {lifecycle}",
                 f"- Pamięć robocza: {raw_memory_status}",
-                f"- Wake state: {wake_status}",
+                f"- Wake state: {wake_status_label}",
                 f"- Ciągłość pamięci: {continuity_label}",
                 f"- Heartbeat: {heartbeat_label}",
             ]
