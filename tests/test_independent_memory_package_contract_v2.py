@@ -54,8 +54,8 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
 
 def test_generator_v1001_uses_canonical_memory_distribution_job() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.0.1"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert generator.GENERATOR_VERSION == "10.1.86.0"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
     plan = generator.distribution_request_plan(content="memory", layout="single", archive_format="zip")
     assert plan["jobs"] == [{"role": "memory", "distribution_mode": "memory-only"}]
     assert plan["memory_export_is_canonical"] is True

@@ -47,7 +47,10 @@ import textwrap
 import threading
 import time
 import traceback
-from typing import Any, Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Sequence
+
+if TYPE_CHECKING:
+    from prompt_toolkit.formatted_text.base import StyleAndTextTuples
 
 TOOL_VERSION = "24.0.2.05"
 TOOL_SCHEMA = "jazn_memory_rebuild_tool/v24"
@@ -255,8 +258,13 @@ def _copy_windows_clipboard(text: str) -> None:
 
     CF_UNICODETEXT = 13
     GMEM_MOVEABLE = 0x0002
-    user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
+    windll = getattr(ctypes, "windll", None)
+    if windll is None:
+        raise MemoryRebuildToolError(
+            "Natywny schowek Windows jest dostępny tylko na Windows."
+        )
+    user32 = windll.user32
+    kernel32 = windll.kernel32
     payload = (str(text) + "\0").encode("utf-16-le")
     handle = None
     clipboard_open = False
@@ -628,9 +636,9 @@ def cursor_select(
                 fragments.append(("class:menu.item", "    " + row + "\n", handler))
         return fragments
 
-    def render_detail() -> list[tuple[str, str]]:
+    def render_detail() -> StyleAndTextTuples:
         width = max(20, _detail_width() - 4)
-        out: list[tuple[str, str]] = [("class:panel.title", "  STAN\n")]
+        out: StyleAndTextTuples = [("class:panel.title", "  STAN\n")]
         for line in status:
             out.append(("class:panel.label", "  " + line + "\n"))
         out.append(("class:panel.label", "\n  " + "─" * width + "\n"))
@@ -832,7 +840,7 @@ def cursor_multi_select(
             out.append((style, f"  {'▶' if number == index else ' '} {marker} {path.name}\n", mouse_handler(number)))
         return out
 
-    def render_detail() -> list[tuple[str, str]]:
+    def render_detail() -> StyleAndTextTuples:
         path = paths[index]
         try:
             size = path.stat().st_size
@@ -841,7 +849,7 @@ def cursor_multi_select(
         key = os.path.normcase(str(path.resolve()))
         selected = key in chosen
         width = max(20, _detail_width() - 4)
-        out = [
+        out: StyleAndTextTuples = [
             ("class:panel.title", "  WYBRANE ŹRÓDŁO\n"),
             ("class:panel.label", f"  Pozycja: {index + 1}/{len(paths)}\n"),
             ("class:panel.label", f"  Stan: {'ZAZNACZONE' if selected else 'NIEZAZNACZONE'}\n"),
@@ -1167,8 +1175,8 @@ def cursor_view_text(
         ]
     )
 
-    def render_footer() -> list[tuple[str, str]]:
-        fragments: list[tuple[str, str]] = [
+    def render_footer() -> StyleAndTextTuples:
+        fragments: StyleAndTextTuples = [
             ("class:footer.key", " ↑/↓ PgUp/PgDn "), ("class:footer.text", "przewiń  "),
             ("class:footer.key", " Ctrl+C "), ("class:footer.text", "kopiuj całość  "),
         ]
@@ -1274,7 +1282,7 @@ class ProgressScreen:
         assert FormattedTextControl is not None
         keys = KeyBindings()
 
-        def render() -> list[tuple[str, str]]:
+        def render() -> StyleAndTextTuples:
             with self.lock:
                 event = dict(self.event)
                 lines = list(self.lines)
@@ -1285,7 +1293,7 @@ class ProgressScreen:
             width = 46
             done = int(width * fraction)
             bar = "█" * done + "░" * (width - done)
-            out: list[tuple[str, str]] = [
+            out: StyleAndTextTuples = [
                 ("class:panel.title", f"  {name}\n\n"),
                 ("class:progress.done", "  " + bar[:done]),
                 ("class:progress.todo", bar[done:] + f"  {fraction * 100:5.1f}%\n\n"),

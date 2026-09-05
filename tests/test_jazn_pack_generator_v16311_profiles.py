@@ -21,8 +21,8 @@ def _load_generator():
 
 def test_v1001_exposes_exact_three_user_content_choices() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.0.1"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert generator.GENERATOR_VERSION == "10.1.86.0"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
     assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
     assert generator.LAYOUT_CHOICES == ("single", "separate")
 

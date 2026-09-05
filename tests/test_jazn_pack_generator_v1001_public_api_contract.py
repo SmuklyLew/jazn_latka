@@ -116,5 +116,5 @@ def test_rarfile_is_core_runtime_dependency_not_duplicated_archive_requirement()
 
 def test_source_set_validator_covers_native_compatibility_module() -> None:
     validator = (ROOT / "tools" / "build_jazn_pack_generator_bundle.py").read_text(encoding="utf-8")
-    assert "jazn_pack_generator_v1001_compat.py" in validator
-    assert "COMPAT_SOURCE" in validator
+    assert "jazn_pack_generator_compat.py" in validator
+    assert "MODULE_SOURCES" in validator

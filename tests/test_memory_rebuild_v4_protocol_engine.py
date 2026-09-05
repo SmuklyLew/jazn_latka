@@ -643,7 +643,11 @@ def test_studio_runner_reuses_one_application_service_and_authentic_chain(
         tool_root=Path.cwd(),
         settings_path=tmp_path / "settings.json",
     )
-    dialogs = type("Dialogs", (), {"message": lambda self, *_args: None})()
+    class SilentDialogs(studio.TextDialogs):
+        def message(self, title: str, text: str) -> None:
+            del title, text
+
+    dialogs = SilentDialogs()
     monkeypatch.setattr(studio, "MemoryRebuildApplicationService", FakeService)
     source = _write_source(tmp_path / "studio-conversations.json", "conversation-a", "Tayfa")
     monkeypatch.setattr(studio, "_project_sources", lambda _state: [source])

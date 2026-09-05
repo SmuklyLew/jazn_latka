@@ -110,6 +110,8 @@ def _chat_payload_from_output(output: str) -> dict[str, Any] | None:
 
 def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
     chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
+    port = _free_port()
+    marker = workspace_runtime_path(isolated) / "package_smoke_chat_marker.json"
     attempts: list[dict[str, Any]] = []
     final_result: dict[str, Any] = {"returncode": 2, "stdout": "", "stderr": ""}
     final_consensus: dict[str, Any] = {}
@@ -118,6 +120,7 @@ def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
     for attempt_number in (1, 2):
         result = _run(
             isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+            "--daemon-port", str(port), "--daemon-marker-output", str(marker),
             input_text=chat_input, timeout=120.0,
         )
         chat = _chat_payload_from_output(result["stdout"])
@@ -158,6 +161,8 @@ def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
         attempt_count=len(attempts),
         retry_used=len(attempts) > 1,
         attempts=attempts,
+        port=port,
+        marker_output=str(marker),
     )
 
 

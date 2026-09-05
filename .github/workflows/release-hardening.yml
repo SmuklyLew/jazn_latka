@@ -179,7 +179,7 @@ jobs:
       - name: Static type audit
         run: pyright latka_jazn main.py run.py
 
-      - name: Verify deterministic Pack Generator 8.8 bundle freshness
+      - name: Verify deterministic Pack Generator 10.1.86.0 bundle freshness
         run: python -X utf8 tools/build_jazn_pack_generator_bundle.py --check
 
       - name: Static type audit for regression test and pack-generator contracts

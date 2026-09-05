@@ -33,6 +33,7 @@ from .common import (
     resolve_profile_requirements,
     runtime_version,
     target_spec,
+    target_is_current_host,
 )
 
 
@@ -87,9 +88,11 @@ def build_download_command(*, python_executable: str, destination: Path,
                            requirements: Sequence[str], target: TargetSpec) -> list[str]:
     cmd = [python_executable, "-m", "pip", "download", "--disable-pip-version-check",
            "--dest", str(destination), "--only-binary=:all:"]
-    if target.pip_platform:
-        cmd += ["--platform", target.pip_platform, "--python-version", target.python_version,
-                "--implementation", target.implementation]
+    platforms = target.pip_platforms or ((target.pip_platform,) if target.pip_platform else ())
+    if platforms:
+        for platform in platforms:
+            cmd += ["--platform", platform]
+        cmd += ["--python-version", target.python_version, "--implementation", target.implementation]
         if target.abi:
             cmd += ["--abi", target.abi]
     return [*cmd, *requirements]
@@ -98,10 +101,13 @@ def build_download_command(*, python_executable: str, destination: Path,
 def build_locked_download_command(*, python_executable: str, destination: Path,
                                   lock_file: Path, target: TargetSpec) -> list[str]:
     cmd = [python_executable, "-m", "pip", "download", "--disable-pip-version-check",
-           "--dest", str(destination), "--only-binary=:all:", "--require-hashes", "-r", str(lock_file)]
-    if target.pip_platform:
-        cmd += ["--platform", target.pip_platform, "--python-version", target.python_version,
-                "--implementation", target.implementation]
+           "--dest", str(destination), "--only-binary=:all:", "--require-hashes", "--no-deps",
+           "-r", str(lock_file)]
+    platforms = target.pip_platforms or ((target.pip_platform,) if target.pip_platform else ())
+    if platforms:
+        for platform in platforms:
+            cmd += ["--platform", platform]
+        cmd += ["--python-version", target.python_version, "--implementation", target.implementation]
         if target.abi:
             cmd += ["--abi", target.abi]
     return cmd
@@ -184,7 +190,7 @@ def _filename_metadata(path: Path) -> dict[str, Any]:
     try:
         from packaging.utils import parse_wheel_filename
     except ImportError as exc:
-        raise DependencyStudioError("packaging is required for Wheelhouse Contract v2 validation") from exc
+        raise DependencyStudioError("packaging is required for Wheelhouse Contract v3 validation") from exc
     try:
         name, version, build, tags = parse_wheel_filename(path.name)
     except Exception as exc:
@@ -292,6 +298,12 @@ def render_hash_lock(resolved: Sequence[dict[str, Any]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_hash_lock_bytes(resolved: Sequence[dict[str, Any]]) -> bytes:
+    """Return the canonical cross-platform lock representation: UTF-8 with LF."""
+
+    return render_hash_lock(resolved).encode("utf-8")
+
+
 def verify_hash_lock(directory: Path, manifest: dict[str, Any]) -> list[dict[str, Any]]:
     errors: list[dict[str, Any]] = []
     lock_path = directory / LOCK_NAME
@@ -300,11 +312,11 @@ def verify_hash_lock(directory: Path, manifest: dict[str, Any]) -> list[dict[str
     expected_sha = str(manifest.get("hash_lock_sha256") or "")
     if not expected_sha or sha256_file(lock_path) != expected_sha:
         errors.append({"code": "hash_lock_sha256_mismatch"})
-    expected = render_hash_lock(manifest.get("resolved_distributions") or [])
+    expected = render_hash_lock_bytes(manifest.get("resolved_distributions") or [])
     try:
-        actual = lock_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError):
-        actual = ""
+        actual = lock_path.read_bytes()
+    except OSError:
+        actual = b""
     if actual != expected:
         errors.append({"code": "hash_lock_content_mismatch"})
     return errors
@@ -395,7 +407,7 @@ def _verify_bundle_full(bundle_dir: Path | str) -> dict[str, Any]:
         "verified_wheel_count": verified,
         "record_verified_wheel_count": verified,
         "errors": errors,
-        "truth_boundary": "v2 verifies SHA-256, CRC, METADATA/WHEEL/RECORD, filename Name/Version, target tags, Requires-Python, exact inventory and hash lock.",
+        "truth_boundary": "v3 verifies SHA-256, CRC, METADATA/WHEEL/RECORD, filename Name/Version, target tags, Requires-Python, exact inventory and hash lock.",
     }
 
 
@@ -433,7 +445,7 @@ def verify_bundle(bundle_dir: Path | str) -> dict[str, Any]:
             "errors": [{"code": "validator_dependency_bootstrap_failed", "detail": str(exc)}],
             "validator_dependency_source": "unavailable",
             "truth_boundary": (
-                "Wheelhouse v2 fails closed unless packaging validation is available from unpacked files; "
+                "Wheelhouse v3 fails closed unless packaging validation is available from unpacked files; "
                 "a hash/RECORD-verified packaging wheel may be unpacked to temporary staging, never imported from its archive."
             ),
         }
@@ -458,6 +470,7 @@ def _manifest(
     *,
     python_executable: str,
     input_lock_path: Path | None = None,
+    materialization_mode: str,
 ) -> dict[str, Any]:
     rows = [_wheel_row(path) for path in sorted(wheels, key=lambda path: path.name.lower())]
     resolved = _resolved_distributions(rows)
@@ -484,6 +497,7 @@ def _manifest(
         "pip_version": _tool_version(python_executable, "pip"),
         "packaging_version": _tool_version(python_executable, "packaging"),
         "resolution_source": "release_hash_lock" if input_lock_path is not None else "direct_requirements",
+        "materialization_mode": materialization_mode,
         "input_hash_lock_sha256": sha256_file(input_lock_path) if input_lock_path is not None else None,
         "network_used_for_download": True,
         "install_policy": "offline_no_index_only_binary_require_hashes",
@@ -504,11 +518,19 @@ def download_bundle(
 ) -> dict[str, Any]:
     project_root = Path(root).resolve()
     target = target_spec(platform_alias, python_version)
-    requirements = resolve_profile_requirements(project_root, profile_names)
     executable = str(python_executable or sys.executable)
     wheelhouse = Path(wheelhouse_root).resolve() if wheelhouse_root else default_wheelhouse_root(project_root)
     stage = wheelhouse / f".download-{uuid.uuid4().hex}"
     input_lock = Path(lock_file).expanduser().resolve() if lock_file is not None else None
+    is_native = target_is_current_host(target)
+    if input_lock is None and not is_native:
+        raise DependencyStudioError(
+            "Cross-target dependency materialization requires a canonical, fully pinned SHA-256 lock"
+        )
+    requirements = resolve_profile_requirements(project_root, profile_names)
+    materialization_mode = "native-locked" if is_native and input_lock is not None else (
+        "native-resolve" if is_native else "cross-target-locked"
+    )
     if input_lock is not None:
         if not input_lock.is_file() or input_lock.is_symlink():
             raise DependencyStudioError(f"Release hash lock is missing or not a regular file: {input_lock}")
@@ -529,6 +551,7 @@ def download_bundle(
             "wheelhouse_root": str(wheelhouse),
             "release_lock_path": str(input_lock) if input_lock is not None else None,
             "release_lock_sha256": sha256_file(input_lock) if input_lock is not None else None,
+            "materialization_mode": materialization_mode,
             "command": command,
         }
     wheelhouse.mkdir(parents=True, exist_ok=True)
@@ -553,19 +576,20 @@ def download_bundle(
             command,
             python_executable=executable,
             input_lock_path=input_lock,
+            materialization_mode=materialization_mode,
         )
-        lock_text = render_hash_lock(manifest["resolved_distributions"])
+        lock_bytes = render_hash_lock_bytes(manifest["resolved_distributions"])
         if input_lock is not None:
             try:
-                input_lock_text = input_lock.read_text(encoding="utf-8")
-            except (OSError, UnicodeError) as exc:
+                input_lock_bytes = input_lock.read_bytes()
+            except OSError as exc:
                 raise DependencyStudioError(f"Cannot read release hash lock {input_lock}: {exc}") from exc
-            if input_lock_text != lock_text:
+            if input_lock_bytes != lock_bytes:
                 raise DependencyStudioError(
                     "Resolved wheel inventory does not reproduce the canonical release hash lock"
                 )
         lock_path = stage / LOCK_NAME
-        lock_path.write_text(lock_text, encoding="utf-8")
+        lock_path.write_bytes(lock_bytes)
         manifest["hash_lock_sha256"] = sha256_file(lock_path)
         slug = "+".join(re.sub(r"[^a-z0-9._+-]+", "-", profile.lower()) for profile in profile_names) or "default"
         name = f"{slug}__{target.alias}__py{target.python_version.replace('.', '')}__{manifest['resolution_fingerprint'][:12]}"
