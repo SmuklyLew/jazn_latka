@@ -79,11 +79,13 @@ def test_v101860113_missing_or_unreadable_gitattributes_does_not_block_snapshot(
     assert result["ok"] is True
 
 
-def test_v101860113_system_excludes_archive_and_local_operator_settings(tmp_path: Path) -> None:
+def test_v101860113_system_excludes_archive_local_settings_and_secrets(tmp_path: Path) -> None:
     root = _root(tmp_path)
     (root / ".archives").mkdir()
     (root / ".archives" / "historical.py").write_text("OLD = True\n", encoding="utf-8")
     (root / "memory_rebuild_settings.json").write_text("{}\n", encoding="utf-8")
+    (root / ".env").write_text("TOKEN=private\n", encoding="utf-8")
+    (root / "client_secret.json").write_text("{}\n", encoding="utf-8")
     (root / "system.txt").write_text("system\n", encoding="utf-8")
 
     plan = generator.plan_pack(
@@ -96,6 +98,8 @@ def test_v101860113_system_excludes_archive_and_local_operator_settings(tmp_path
     names = {entry.archive_path for entry in plan.entries}
     assert "system.txt" in names
     assert "memory_rebuild_settings.json" not in names
+    assert ".env" not in names
+    assert "client_secret.json" not in names
     assert not any(name.startswith(".archives/") for name in names)
 
 
