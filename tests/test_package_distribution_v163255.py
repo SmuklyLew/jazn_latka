@@ -75,7 +75,7 @@ def _valid_bundle(tmp_path: Path) -> Path:
         "tags": list(metadata["filename"]["tags"]), "record_verified": True,
     }]
     lock = bundle / LOCK_NAME
-    lock.write_text(render_hash_lock(resolved), encoding="utf-8")
+    lock.write_bytes(render_hash_lock(resolved).encode("utf-8"))
     target = target_spec("current", f"{sys.version_info.major}.{sys.version_info.minor}")
     manifest = {
         "schema_version": WHEELHOUSE_SCHEMA,
@@ -112,7 +112,7 @@ def test_wheelhouse_v2_fails_closed_on_record_tamper(tmp_path: Path) -> None:
     manifest["resolved_distributions"][0]["size_bytes"] = wheel.stat().st_size
     manifest["resolved_distributions"][0]["sha256"] = sha256_file(wheel)
     lock = bundle / LOCK_NAME
-    lock.write_text(render_hash_lock(manifest["resolved_distributions"]), encoding="utf-8")
+    lock.write_bytes(render_hash_lock(manifest["resolved_distributions"]).encode("utf-8"))
     manifest["hash_lock_sha256"] = sha256_file(lock)
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     result = verify_bundle(bundle)

@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           python -X utf8 tools/_pyright_classified_fixer_20260904.py
-          git rm -- \
+          git rm -f --ignore-unmatch -- \
             .github/workflows/pyright-classified-fixes.yml \
             .github/workflows/pyright-classified-fixes-v2.yml \
             .github/workflows/pyright-classified-fixes-v3.yml \
@@ -81,9 +81,10 @@ jobs:
           set -euo pipefail
           git diff --check
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "fix: resolve classified active-tree Pyright errors"
+          git commit -m "fix: integrate Pack Generator 10.1.86.0 with active-tree Pyright"
 
       - name: Synchronize canonical release metadata after code settles
         run: |

@@ -25,9 +25,9 @@ def _load_generator():
 def test_generator_identity_examples_and_default_output() -> None:
     generator = _load_generator()
 
-    assert generator.GENERATOR_VERSION == "10.0.1"
-    assert generator.GENERATOR_TITLE == "Naprawiony generator dystrybucji Jaźni"
-    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert generator.GENERATOR_VERSION == "10.1.86.0"
+    assert generator.GENERATOR_TITLE == "Generator dystrybucji Jaźni"
+    assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
     assert generator.__doc__ is not None
     assert r"py -X utf8 .\tools\jazn_pack_generator.py" in generator.__doc__
     assert "tkinter" not in GENERATOR_PATH.read_text(encoding="utf-8")
@@ -70,7 +70,7 @@ def test_configuration_reports_all_transport_backends() -> None:
     generator = _load_generator()
     payload = generator.config_report()
     assert payload["ok"] is True
-    assert payload["generator_version"] == "10.0.1"
+    assert payload["generator_version"] == "10.1.86.0"
     assert set(payload["archive_format_choices"]) == {"zip", "split-zip", "7z", "tar", "rar"}
     backends = payload["archive_backends"]
     assert backends["zip"]["backend"] == "python.stdlib.zipfile"
@@ -94,7 +94,7 @@ def test_settings_are_json_and_versioned(monkeypatch: pytest.MonkeyPatch, tmp_pa
         materialize_dependencies=False,
         ui_mode="studio-terminal",
     )
-    assert saved["schema_version"] == "jazn_pack_generator_settings/v10.0.1"
+    assert saved["schema_version"] == "jazn_pack_generator_settings/v10.1.86.0"
     payload = json.loads(settings_path.read_text(encoding="utf-8"))
     assert payload["layout"] == "separate"
     assert payload["ui_mode"] == "studio-terminal"

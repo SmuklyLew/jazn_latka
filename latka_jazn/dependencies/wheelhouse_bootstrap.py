@@ -91,7 +91,7 @@ def _bootstrap_row(manifest: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapp
     resolved = manifest.get("resolved_distributions")
     files = manifest.get("files")
     if not isinstance(resolved, list) or not isinstance(files, list):
-        raise DependencyStudioError("packaging bootstrap requires Wheelhouse v2 inventory")
+        raise DependencyStudioError("packaging bootstrap requires Wheelhouse v3 inventory")
 
     packaging_rows = [
         item for item in resolved
@@ -234,7 +234,7 @@ def unpacked_packaging_bootstrap(
     """Temporarily expose a verified packaging wheel only after safe unpacking.
 
     The wheel archive is never placed on ``sys.path`` and never imported from
-    directly. Full Wheelhouse v2 verification remains the authoritative check.
+    directly. Full Wheelhouse v3 verification remains the authoritative check.
     """
 
     directory = Path(directory).resolve()

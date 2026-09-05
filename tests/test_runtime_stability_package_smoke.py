@@ -121,6 +121,30 @@ def test_chat_integrity_check_retries_transient_missing_consensus(monkeypatch, t
     assert result["consensus"]["valid"] is True
 
 
+def test_chat_integrity_check_uses_isolated_transport_identity(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def run_once(root: Path, *args: str, **kwargs: object) -> dict:
+        captured.update({"root": root, "args": args, "kwargs": kwargs})
+        return _chat_result({
+            "final_visible_text": "Działam.",
+            "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+        })
+
+    monkeypatch.setattr(release_readiness, "_free_port", lambda: 43127)
+    monkeypatch.setattr(release_readiness, "_run", run_once)
+
+    result = release_readiness._run_chat_integrity_check(tmp_path)
+
+    args = captured["args"]
+    assert isinstance(args, tuple)
+    assert args[args.index("--daemon-port") + 1] == "43127"
+    marker = Path(args[args.index("--daemon-marker-output") + 1])
+    assert marker == release_readiness.workspace_runtime_path(tmp_path) / "package_smoke_chat_marker.json"
+    assert result["port"] == 43127
+    assert Path(result["marker_output"]) == marker
+
+
 def test_chat_integrity_check_selects_payload_before_trailing_json_noise(monkeypatch, tmp_path: Path) -> None:
     payload = {
         "final_visible_text": "Działam.",

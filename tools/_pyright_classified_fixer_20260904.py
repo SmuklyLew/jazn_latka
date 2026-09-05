@@ -3,10 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
+def replace_exact(path: str, old: str, new: str, *, expected: int = 1) -> None:
     target = Path(path)
+    if not target.is_file():
+        raise SystemExit(f"{path}: required file is missing")
     text = target.read_text(encoding="utf-8")
     observed = text.count(old)
+    if observed == 0 and new in text:
+        return
     if observed != expected:
         raise SystemExit(
             f"{path}: expected {expected} occurrence(s), found {observed}: {old!r}"
@@ -14,7 +18,7 @@ def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
     target.write_text(text.replace(old, new), encoding="utf-8")
 
 
-# Test typing: retain the integer while constructing the fixture.
+# Preserve the integer type while constructing the wheel fixture.
 path = "tests/test_dependency_unpacked_wheel_bootstrap_v1632555.py"
 replace_exact(
     path,
@@ -27,7 +31,7 @@ replace_exact(
     '        "total_size_bytes": total_size_bytes,',
 )
 
-# Test typing: the double must genuinely satisfy DialogBackend.
+# The test double must genuinely satisfy the production DialogBackend protocol.
 path = "tests/test_memory_rebuild_v4_protocol_engine.py"
 replace_exact(
     path,
@@ -38,7 +42,7 @@ replace_exact(
     '    dialogs = SilentDialogs()\n',
 )
 
-# Test typing: remove the duplicate helper declaration, keep the shared Windows-safe helper.
+# Keep the shared Windows-safe helper and remove the duplicate declaration.
 path = "tests/test_release_metadata_semantics_v163253.py"
 replace_exact(
     path,
@@ -50,7 +54,7 @@ replace_exact(
     '',
 )
 
-# Active legacy compatibility tool: make platform and Prompt Toolkit contracts explicit.
+# Active legacy operator tool: express Windows and Prompt Toolkit contracts explicitly.
 path = "tools/memory_rebuild_legacy_v24.py"
 replace_exact(
     path,
@@ -67,11 +71,13 @@ replace_exact(
     "    kernel32 = ctypes.windll.kernel32\n",
     "    CF_UNICODETEXT = 13\n"
     "    GMEM_MOVEABLE = 0x0002\n"
-    "    if sys.platform == \"win32\":\n"
-    "        user32 = ctypes.windll.user32\n"
-    "        kernel32 = ctypes.windll.kernel32\n"
-    "    else:\n"
-    "        raise MemoryRebuildToolError(\"Natywny schowek Windows jest dostępny tylko na Windows.\")\n",
+    "    windll = getattr(ctypes, \"windll\", None)\n"
+    "    if windll is None:\n"
+    "        raise MemoryRebuildToolError(\n"
+    "            \"Natywny schowek Windows jest dostępny tylko na Windows.\"\n"
+    "        )\n"
+    "    user32 = windll.user32\n"
+    "    kernel32 = windll.kernel32\n",
 )
 replace_exact(
     path,
@@ -106,47 +112,27 @@ replace_exact(
     '        out: StyleAndTextTuples = [\n            ("class:panel.title", "  WYBRANE ŹRÓDŁO\\n"),',
 )
 
-# Active v8.9 compatibility source: express intentional dynamic module writes dynamically.
-path = "tools/pack_generator_sources/jazn_pack_generator_v89.py"
-replace_exact(
-    path,
-    "    legacy.GENERATOR_VERSION = GENERATOR_VERSION\n    legacy.SETTINGS_SCHEMA = SETTINGS_SCHEMA\n",
-    "    setattr(legacy, \"GENERATOR_VERSION\", GENERATOR_VERSION)\n"
-    "    setattr(legacy, \"SETTINGS_SCHEMA\", SETTINGS_SCHEMA)\n",
-)
-replace_exact(
-    path,
-    "    legacy.build_plan = build_plan\n",
-    "    setattr(legacy, \"build_plan\", build_plan)\n",
-)
-replace_exact(
-    path,
-    '    manifest_target = manifest.get("target") if isinstance(manifest.get("target"), dict) else {}\n',
-    '    raw_target = manifest.get("target")\n'
-    '    manifest_target = raw_target if isinstance(raw_target, dict) else {}\n',
-)
-
-# Canonical CI now consumes the same project-wide configuration as Pylance/Pyright.
+# Canonical release CI must consume the same active-tree Pyright contract.
 replace_exact(
     ".github/workflows/release-hardening.yml",
     "      - name: Static type audit\n        run: pyright latka_jazn main.py run.py\n",
     "      - name: Static type audit\n        run: pyright --project pyrightconfig.json\n",
 )
 
-# This correction is a separate versioned patch after the baseline/config stage.
+# This correction is a versioned patch on top of Pack Generator 10.1.86.0.
 path = "latka_jazn/version.py"
 replace_exact(
     path,
-    "# v16.3.25.5.17 establishes one canonical Pyright active-tree contract shared\n"
-    "# by local Pylance/Pyright diagnostics and CI, while keeping archive snapshots\n"
-    "# outside the active static-analysis boundary.\n"
-    'DISTRIBUTION_VERSION = "16.3.25.5.17"\n'
-    'PACKAGE_VERSION = "16.3.25.5.17"\n'
-    'PACKAGE_RELEASE_NAME = "pylance-pyright-hardening"\n',
-    "# v16.3.25.5.18 corrects every classified active-tree Pyright baseline error\n"
-    "# without weakening diagnostics, while preserving explicit platform and\n"
-    "# compatibility boundaries for the Jaźń runtime and operator tools.\n"
+    "# v16.3.25.5.18 hardens Pack Generator 10.1.86.0 release automation so newly\n"
+    "# materialized cross-target dependency locks are staged and committed before\n"
+    "# canonical release-metadata synchronization requires a clean working tree.\n"
     'DISTRIBUTION_VERSION = "16.3.25.5.18"\n'
     'PACKAGE_VERSION = "16.3.25.5.18"\n'
-    'PACKAGE_RELEASE_NAME = "pylance-pyright-active-tree-corrections"\n',
+    'PACKAGE_RELEASE_NAME = "pack-generator-lock-persistence-hardening"\n',
+    "# v16.3.25.5.19 integrates Pack Generator 10.1.86.0 with the canonical\n"
+    "# active-tree Pyright contract and resolves the remaining classified typing\n"
+    "# errors without weakening diagnostics or runtime behavior.\n"
+    'DISTRIBUTION_VERSION = "16.3.25.5.19"\n'
+    'PACKAGE_VERSION = "16.3.25.5.19"\n'
+    'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0-pyright-hardening"\n',
 )

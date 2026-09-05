@@ -98,12 +98,16 @@ jobs:
           if [ "${{ steps.release_lock.outputs.present }}" = "true" ]; then
             lock_args=(--lock-file "${{ steps.release_lock.outputs.path }}")
           fi
+          set +e
           python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --wheelhouse-root "$wheelhouse_root" --json \
             download --profile core --profile archive \
             --python-version "${{ inputs.python-version }}" --platform current \
             "${lock_args[@]}" > "$result"
+          download_rc=$?
+          set -e
           cat "$result"
+          test "$download_rc" -eq 0
           bundle_dir="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$result")"
           echo "bundle_dir=$bundle_dir" >> "$GITHUB_OUTPUT"
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json verify --bundle "$bundle_dir"

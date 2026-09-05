@@ -1,12 +1,8 @@
-"""Canonical source inputs for the Jaźń Pack Generator."""
+"""Canonical source inputs for the Jaźń Pack Generator bundled launcher."""
 
-SOURCE_MODULE = "jazn_pack_generator_v1001.py"
-COMPAT_SOURCE_MODULE = "jazn_pack_generator_v1001_compat.py"
-RUNTIME_SOURCE_MODULE = "jazn_pack_generator_v1001_runtime.py"
-UI_SOURCE_MODULE = "jazn_pack_generator_v1001_ui.py"
-LEGACY_SOURCE_MODULES = (
-    "jazn_pack_generator_v89.py",
-    "jazn_pack_generator_v89_ui.py",
-    "jazn_pack_generator_v88.py",
-)
-SOURCE_CONTRACT = "jazn_pack_generator_sources/v4"
+SOURCE_MODULE = "jazn_pack_generator_core.py"
+COMPAT_SOURCE_MODULE = "jazn_pack_generator_compat.py"
+RUNTIME_SOURCE_MODULE = "jazn_pack_generator_runtime.py"
+UI_SOURCE_MODULE = "jazn_pack_generator_ui.py"
+ARCHIVE_DIRECTORY = "archive/pre-v10.1.86.0"
+SOURCE_CONTRACT = "jazn_pack_generator_sources/v5"

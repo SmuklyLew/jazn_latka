@@ -13,8 +13,8 @@ def generator():
 
 def test_v1001_public_entrypoint_and_request_contract() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "10.0.1"
-    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.0.1"
+    assert module.GENERATOR_VERSION == "10.1.86.0"
+    assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v10.1.86.0"
     plan = module.distribution_request_plan(
         content="system+memory", layout="single", archive_format="zip"
     )
@@ -44,14 +44,27 @@ def test_v1001_hard_excludes_private_runtime_and_managed_resources() -> None:
     assert module.MANAGED_PYTHON_RESOURCE_EXCLUDE == "latka_jazn/local_resources/python/**"
 
 
-def test_v1001_dependency_bundle_discovery_uses_manifest_not_directory_name(tmp_path: Path) -> None:
+def test_v101860_dependency_bundle_discovery_uses_canonical_verified_wheelhouse(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
     module = generator()
-    bundle = tmp_path / "latka_jazn/local_resources/python/wheelhouse/arbitrary-cache-name"
+    wheelhouse = tmp_path / "workspace_runtime/local_resources/python/wheelhouse"
+    bundle = wheelhouse / "arbitrary-cache-name"
     bundle.mkdir(parents=True)
-    (bundle / "JAZN_WHEELHOUSE_MANIFEST.json").write_text(json.dumps({
-        "target": {"alias": "linux-x64", "python_version": "3.13"}
-    }), encoding="utf-8")
+    captured = {}
+
+    def fake_discover(root, **kwargs):
+        captured["root"] = Path(root)
+        captured.update(kwargs)
+        return [{"bundle_dir": str(bundle), "verification": {"ok": True}}]
+
+    monkeypatch.setattr(module._impl, "dependency_wheelhouse_root", lambda _root: wheelhouse)
+    monkeypatch.setattr(module._impl, "discover_bundles", fake_discover)
     assert module.find_matching_dependency_bundle(tmp_path, "linux-x64", "3.13.5") == bundle.resolve()
+    assert captured["wheelhouse_root"] == wheelhouse
+    assert captured["required_profiles"] == ("core", "archive")
+    assert captured["verify"] is True
 
 
 def test_v1001_distribution_pack_calls_canonical_package_distribution(monkeypatch, tmp_path: Path) -> None:
@@ -82,12 +95,50 @@ def test_v1001_distribution_pack_calls_canonical_package_distribution(monkeypatc
     assert command[command.index("--target") + 1] == "linux-x64"
 
 
-def test_v1001_rejects_cross_target_materialization(tmp_path: Path) -> None:
+def test_v101860_cross_target_materialization_requires_canonical_lock(tmp_path: Path) -> None:
     module = generator()
     current = "windows-x64" if module.os.name == "nt" else "linux-x64"
     other = "linux-x64" if current == "windows-x64" else "windows-x64"
-    with pytest.raises(RuntimeError, match="Cross-target"):
-        module.materialize_native_dependency_bundle(tmp_path, target_alias=other, python_version="3.13")
+    with pytest.raises(RuntimeError, match="kanonicznego locka cross-target"):
+        module.materialize_dependency_bundle(
+            tmp_path,
+            target_alias=other,
+            python_version="3.13",
+        )
+
+
+def test_v101860_cross_target_materialization_replays_lock(monkeypatch, tmp_path: Path) -> None:
+    module = generator()
+    current = "windows-x64" if module.os.name == "nt" else "linux-x64"
+    other = "linux-x64" if current == "windows-x64" else "windows-x64"
+    lock = module.canonical_dependency_lock_path(tmp_path, other, "3.13")
+    lock.parent.mkdir(parents=True)
+    lock.write_text("example==1 --hash=sha256:" + "0" * 64 + "\n", encoding="utf-8")
+    wheelhouse = tmp_path / "workspace_runtime/local_resources/python/wheelhouse"
+    bundle = wheelhouse / "bundle"
+    bundle.mkdir(parents=True)
+    (bundle / "JAZN_WHEELHOUSE_MANIFEST.json").write_text(
+        json.dumps({"target": {"alias": other, "python_version": "3.13"}}),
+        encoding="utf-8",
+    )
+    captured = {}
+
+    def fake_run(command, *, cwd, env):
+        captured["command"] = list(command)
+        return {"ok": True, "bundle_dir": str(bundle)}
+
+    monkeypatch.setattr(module._impl, "dependency_wheelhouse_root", lambda _root: wheelhouse)
+    monkeypatch.setattr(module._impl, "_run_json", fake_run)
+    result = module.materialize_dependency_bundle(
+        tmp_path,
+        target_alias=other,
+        python_version="3.13",
+    )
+    assert result == bundle.resolve()
+    command = captured["command"]
+    assert command[command.index("--platform") + 1] == other
+    assert command[command.index("--lock-file") + 1] == str(lock.resolve())
+    assert command[command.index("--wheelhouse-root") + 1] == str(wheelhouse)
 
 
 def test_v1001_exposes_only_three_terminal_ui_modes() -> None:
@@ -129,7 +180,7 @@ def test_v1001_settings_persist_distribution_preferences(monkeypatch, tmp_path: 
     )
     assert saved["layout"] == "separate"
     payload = json.loads(settings.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == "jazn_pack_generator_settings/v10.0.1"
+    assert payload["schema_version"] == "jazn_pack_generator_settings/v10.1.86.0"
     assert payload["archive_format"] == "split-zip"
     assert payload["split_size_mib"] == 512
 

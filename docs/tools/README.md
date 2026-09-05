@@ -6,7 +6,9 @@ Ten katalog zawiera aktywne kontrakty operatorskie i dokumentację narzędzi, kt
 
 - `MEMORY_SQLITE_TEST_04.md` — aktywny, testowany kontrakt operatorski Testu 04;
 - `PRIVATE_MEMORY_VALIDATION.md` — aktywny, testowany kontrakt prywatnej walidacji pamięci dla Issue #59;
-- `JAZN_DEPENDENCY_STUDIO.md` — wersjonowany wheelhouse, offline bootstrap środowiska Python i dependency readiness Jaźni.
+- `JAZN_DEPENDENCY_STUDIO.md` — Wheelhouse Contract v3, natywne locki, cross-target replay, offline bootstrap środowiska Python i dependency readiness Jaźni;
+- `JAZN_PYTHON_RUNTIME_BUNDLE.md` — zweryfikowany przenośny interpreter i vendoring z Wheelhouse Contract v3;
+- `../runtime/JAZN_PACK_GENERATOR_V101860_CROSS_TARGET.md` — aktywny kontrakt generatora 10.1.86.0 i jego CI.
 
 Architektura i ogólna dokumentacja pamięci znajduje się w `../memory/`. Jawnie zakończone lub superseded noty narzędziowe są w `../archive/tools/`.
 
