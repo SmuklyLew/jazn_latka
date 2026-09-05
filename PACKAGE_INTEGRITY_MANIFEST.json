@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
-  "runtime_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
-  "package_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
-  "generated_at_utc": "2026-09-04T06:53:32+00:00",
-  "updated_at_utc": "2026-09-04T06:53:32+00:00",
+  "version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+  "runtime_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+  "package_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+  "generated_at_utc": "2026-09-05T10:06:22+00:00",
+  "updated_at_utc": "2026-09-05T10:06:22+00:00",
   "start_file": "run.py",
-  "file_count": 1105,
-  "static_file_count": 1105,
+  "file_count": 1110,
+  "static_file_count": 1110,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 346,
@@ -136,6 +136,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/pyright-active-tree-audit.yml",
+      "size_bytes": 2639,
+      "sha256": "425c60bf29ade07cbc6834bdd0773fb83ffa567ea020d4cd24ee2fee746a95fb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/pyright-classified-fixes-v3.yml",
+      "size_bytes": 4778,
+      "sha256": "5c613dbe5c1f3ceb5ca1e281ba731ce01aae8e4940547dfb96214dbd05cd3a2e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/release-hardening.yml",
       "size_bytes": 15561,
       "sha256": "2c2a73efe2424d161f9c0ad20a74f94a9609bfdd7ac04f540746fd0c8bf4acec",
@@ -209,8 +227,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "4f8be7f8774182f3a7a4ad2fc19103377104033a5e4eca30b35ac23b7be9d07c",
+      "size_bytes": 2992,
+      "sha256": "d01813ef80f46508d002c00123355336225cd44d4e88349b20cad61461a06b37",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1390,6 +1408,15 @@
       "path": "docs/project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md",
       "size_bytes": 7823,
       "sha256": "27390b309d55e68a6b3174ae42456fb8b1933c49ad46884c20a21e463ab6a35d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
+      "size_bytes": 4120,
+      "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7040,8 +7067,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6651,
-      "sha256": "5f9b3562fed04655bcbffdc4a7a69d3d6a6f549eb6c3f666eb268015e39b8999",
+      "size_bytes": 6633,
+      "sha256": "b209e6bb8fd769ddbb29669b2fd3de7379cb0278c52f946232a9ae4fc3ef308a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7159,6 +7186,15 @@
       "path": "pyproject.toml",
       "size_bytes": 2025,
       "sha256": "8ebfa8e22683f7cee79430254317addf337e162c06b19b60656107d2d4bd38d6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "pyrightconfig.json",
+      "size_bytes": 196,
+      "sha256": "e0e7c538e746172a144586f53723b7b21a56334ec07d0551318793b86701c3a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7967,8 +8003,8 @@
     },
     {
       "path": "tests/test_dependency_unpacked_wheel_bootstrap_v1632555.py",
-      "size_bytes": 9132,
-      "sha256": "a9b9a5ff3178134852b82ad5111961f2d37ce84b7076d5c0da93cfe6f20947cc",
+      "size_bytes": 9198,
+      "sha256": "02ee7fe23fd01270859d348851de778debcead9d2be9c63ba52d7f71c29de0f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8471,8 +8507,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
-      "size_bytes": 26841,
-      "sha256": "46ca4524fc5d5ebb5692a68578c05269bbffc670aee4759a97f0224788df368a",
+      "size_bytes": 26927,
+      "sha256": "ee266c56931a2344b404cc6a0ee60c2cb1ca5f8613c80c94cceb268cd368d59e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8867,8 +8903,8 @@
     },
     {
       "path": "tests/test_release_metadata_semantics_v163253.py",
-      "size_bytes": 10716,
-      "sha256": "816434777778fb317ca7fb39325a7494a749a58b94ea782593f723cdc1da4a19",
+      "size_bytes": 10471,
+      "sha256": "4f4131f910a7a3381525aeec238e6e15157b2dc793d2c79f71778b5185e21757",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9703,6 +9739,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/_pyright_classified_fixer_20260904.py",
+      "size_bytes": 5249,
+      "sha256": "c4a3948091b486b5d7751c2617e037244a1a490baa65685b0933207429fa7b2e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/bootstrap_polish_reasoning_resources.py",
       "size_bytes": 6235,
       "sha256": "ca2598c49414cefa57d04a41249f46099be44a6cef2ba48fe0e9a09ba38095bf",
@@ -9839,8 +9884,8 @@
     },
     {
       "path": "tools/memory_rebuild_legacy_v24.py",
-      "size_bytes": 84447,
-      "sha256": "b5154bdf612e023625aebfeb3066b6dd0f2b38697d060010255b279d84ec5638",
+      "size_bytes": 84723,
+      "sha256": "c50f1f6846398d8526c969f79265ee2318f8901d3896b7272bdf84cb6142ee68",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10376,11 +10421,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
+  "release_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
-    "package_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening",
-    "release_version": "16.3.25.5.18-pack-generator-lock-persistence-hardening"
+    "runtime_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+    "package_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening",
+    "release_version": "16.3.25.5.19-package-generator-v10.1.86.0-pyright-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
