@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.26 hardens Pack Generator 10.1.86.0.112 with canonical byte-exact
-# release staging, per-member SHA-256 verification and fail-closed EOL policy
-# validation derived from the repository .gitattributes contract.
-DISTRIBUTION_VERSION = "16.3.25.5.26"
-PACKAGE_VERSION = "16.3.25.5.26"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.112-byte-exact-eol-staging"
+# v16.3.25.5.27 restores Pack Generator 10.1.86.0.113 to its primary folder
+# snapshot contract: actual selected-folder bytes, one logical ZIP, optional
+# binary transport split, SHA-256/CRC verification, and diagnostic-only EOL policy.
+DISTRIBUTION_VERSION = "16.3.25.5.27"
+PACKAGE_VERSION = "16.3.25.5.27"
+PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.113-folder-snapshot"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
