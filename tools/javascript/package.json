@@ -1,0 +1,13 @@
+{
+  "name": "jazn-node24-tooling",
+  "version": "16.3.25.5.30",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "check": "node --check ./jazn_node24_probe.mjs",
+    "probe": "node ./jazn_node24_probe.mjs"
+  }
+}

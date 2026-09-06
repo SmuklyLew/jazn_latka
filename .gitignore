@@ -7,6 +7,11 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# JavaScript/Node tooling (source and lockfiles stay tracked; installs do not)
+node_modules/
+.npm/
+npm-debug.log*
+
 # Runtime/private state at repository root
 /ACTIVE_RUNTIME_CACHE_CONTRACT.json
 /BOOTSTRAP_JAZN_CURRENT.json

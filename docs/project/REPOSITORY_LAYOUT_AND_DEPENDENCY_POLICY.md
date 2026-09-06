@@ -38,6 +38,7 @@ innego szablonu projektu.
 │  ├─ resources/                  # wersjonowane zasoby statyczne
 │  └─ tools/                      # narzędzia należące do pakietu
 ├─ tools/                         # narzędzia repo/release/operator studio
+│  └─ javascript/                 # opcjonalny, izolowany Node/ESM tooling contract
 ├─ tests/                         # aktywne testy
 │  └─ archive/                    # append-only snapshoty historycznych testów
 ├─ docs/                          # żywa dokumentacja i archiwum
@@ -99,7 +100,41 @@ kontrakt i nie istnieje zmierzona luka funkcjonalna.
 Stan Ollamy i stan Jaźni raportuj oddzielnie: działający endpoint modelu nie
 jest dowodem aktywnego runtime Jaźni.
 
-## 7. Release i synchronizacja metadanych
+## 7. JavaScript i Node.js
+
+JavaScript jest od wersji `16.3.25.5.30` jawnie obsługiwaną **opcjonalną
+capability narzędziową**, a nie drugim rdzeniem runtime. Python i `run.py`
+pozostają kanoniczną ścieżką startu systemu; brak `node` w środowisku nie może
+blokować Jaźni.
+
+Bieżąca linia testowana przez CI to **Node.js 24 LTS**. Kod JavaScript projektu
+używa ESM i jest izolowany pod `tools/javascript/`. Capability hosta można
+sprawdzić bez instalowania czegokolwiek:
+
+```text
+python -X utf8 -m latka_jazn.tools.javascript_runtime --json
+```
+
+Wymagania dla repo JavaScript:
+
+- `package.json` i `package-lock.json` są śledzone; `node_modules/` nigdy;
+- CI używa `npm ci`, nie mutującego lockfile `npm install`;
+- instalacja CI ma wyłączone zbędne skrypty/audit/funding, gdy nie są potrzebne;
+- nowa zależność npm wymaga konkretnej capability, przeglądu supply-chain,
+  lockfile i testów Windows/Linux;
+- Node nie trafia do Python wheelhouse i nie jest automatycznie pobierany przez
+  portable runtime;
+- akcje GitHub pozostają przypięte do pełnych 40-znakowych SHA. Każdy nowy albo
+  zmieniony external Action wymaga ponownego audytu upstreamowego `action.yml`,
+  w tym `runs.using`, zanim SHA zostanie zaakceptowany przez
+  `tools/github_actions_node24_audit.py`.
+
+Dla obecnej migracji `checkout`, `setup-python` i `setup-node` zostały
+przeniesione z upstreamowych wydań deklarujących `node20` na zweryfikowane
+wydania deklarujące `node24`. Akcje już korzystające z Node 24 nie są
+podnoszone wyłącznie dla numeru wersji.
+
+## 8. Release i synchronizacja metadanych
 
 Każdy systemowy patch podnosi `latka_jazn/version.py`.
 
@@ -113,7 +148,7 @@ samodzielnego przesuwania headu PR.
 Branch nie jest gotowy do raportu jako release candidate, dopóki synchronizacja
 jest idempotentna i wymagane CI nie jest zielone.
 
-## 8. Zmiany strukturalne
+## 9. Zmiany strukturalne
 
 Masowe przeniesienie katalogu jest dopuszczalne tylko wtedy, gdy jednocześnie:
 

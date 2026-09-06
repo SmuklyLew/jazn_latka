@@ -3,13 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.29 converges release metadata, repository layout policy and
-# operator entrypoints: eligible work branches receive canonical metadata
-# synchronization, run.py is also the public Ollama entrypoint, and dependency
-# policy remains stdlib/host-first with verified offline bundles for extras.
-DISTRIBUTION_VERSION = "16.3.25.5.29"
-PACKAGE_VERSION = "16.3.25.5.29"
-PACKAGE_RELEASE_NAME = "release-metadata-layout-operator-convergence"
+# v16.3.25.5.30 converges active GitHub JavaScript Actions on Node.js 24,
+# preserves full-SHA action pinning, and adds an optional JavaScript capability
+# boundary for Jaźń tooling without making Node.js a core runtime dependency.
+DISTRIBUTION_VERSION = "16.3.25.5.30"
+PACKAGE_VERSION = "16.3.25.5.30"
+PACKAGE_RELEASE_NAME = "github-actions-node24-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
