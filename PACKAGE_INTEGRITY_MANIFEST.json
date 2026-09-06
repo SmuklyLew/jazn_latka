@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
-  "runtime_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
-  "package_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
-  "generated_at_utc": "2026-09-05T23:43:26+00:00",
-  "updated_at_utc": "2026-09-05T23:43:26+00:00",
+  "version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+  "runtime_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+  "package_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+  "generated_at_utc": "2026-09-06T00:47:34+00:00",
+  "updated_at_utc": "2026-09-06T00:47:34+00:00",
   "start_file": "run.py",
-  "file_count": 1145,
-  "static_file_count": 1145,
+  "file_count": 1146,
+  "static_file_count": 1146,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -173,8 +173,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 22752,
-      "sha256": "525c4bc5851383e3a39aa53d5766e3b6b1d35fcc995f53d14ca1bf25b9ba0b4f",
+      "size_bytes": 22055,
+      "sha256": "3d30ea2bd6b45b5a994dd8fadc868cada0471ec9922faa77218d879d96cf0c22",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -191,8 +191,8 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 5938,
-      "sha256": "93c852ea1ce89bbf4b80809723052fa6acfe5daaf4277b870c59ff7efb857067",
+      "size_bytes": 7352,
+      "sha256": "666af46422c9867dcd799ced3da950e31ff76d4e0220936e247e0d49ca0b679b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -227,8 +227,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3023,
-      "sha256": "893f19cd28e3a6c31616a0f2ca35b32996edc27affea5bef09a242a5e52f2203",
+      "size_bytes": 2925,
+      "sha256": "f1dba4c0ee2379153dca717d2f668faa592042d55c65994a937feb33fff3cc69",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1433,8 +1433,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 998,
-      "sha256": "113b5ce7f23af7210e17e7180ca68ee1963fec9d5c93e5421640ac0bb0863d1f",
+      "size_bytes": 1678,
+      "sha256": "6cf41a8485d146a4dddc4b93468b9ef925dd83b9e03a261122bbff64ecd66c93",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7085,8 +7085,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6665,
-      "sha256": "80439851d28364b06aef8f638ec2359c00d1bad44dabcf3fab3885c24b006047",
+      "size_bytes": 6716,
+      "sha256": "f9621d7ebb7bfa3871c5c33cd51b8f9690cc627f0a85ac90ddcc3baa802f61d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8095,6 +8095,15 @@
       "path": "tests/test_chatgpt_recovery_integrity.py",
       "size_bytes": 7059,
       "sha256": "058c7b655c53a3a6a337277949b3cd00c98a5a5f66d7fe979142adc45eaf5ece",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_runtime_first_host_instructions_v16325528.py",
+      "size_bytes": 2201,
+      "sha256": "8adce88a5484d1b21993924fa4ddd910b24e8cb31f75d92e2d32e49623cc18ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10757,11 +10766,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
+  "release_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
-    "package_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot",
-    "release_version": "16.3.25.5.27-package-generator-v10.1.86.0.113-folder-snapshot"
+    "runtime_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+    "package_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+    "release_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff"
   },
   "legacy_aliases": {
     "version": "release_version"
