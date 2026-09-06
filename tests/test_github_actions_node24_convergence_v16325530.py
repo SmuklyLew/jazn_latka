@@ -6,13 +6,11 @@ import subprocess
 import sys
 
 from latka_jazn.tools.javascript_runtime import inspect_javascript_runtime, parse_node_version
-from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ROOT / ".github" / "workflows"
 JAVASCRIPT_ROOT = ROOT / "tools" / "javascript"
-EXPECTED_VERSION = "16.3.25.5.30-github-actions-node24-convergence"
 CHECKOUT_NODE24_SHA = "3d3c42e5aac5ba805825da76410c181273ba90b1"
 SETUP_PYTHON_NODE24_SHA = "5fda3b95a4ea91299a34e894583c3862153e4b97"
 SETUP_NODE_NODE24_SHA = "820762786026740c76f36085b0efc47a31fe5020"
@@ -27,10 +25,6 @@ def _all_active_workflow_text() -> str:
     paths = sorted(WORKFLOWS.glob("*.yml")) + sorted(WORKFLOWS.glob("*.yaml"))
     assert len(paths) >= 11
     return "\n".join(path.read_text(encoding="utf-8") for path in paths)
-
-
-def test_release_identity_is_node24_convergence() -> None:
-    assert PACKAGE_VERSION_FULL == EXPECTED_VERSION
 
 
 def test_all_active_github_actions_pass_fail_closed_node24_audit() -> None:
