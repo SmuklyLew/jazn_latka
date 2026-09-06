@@ -1,94 +1,69 @@
 # Dokumentacja Jaźni — mapa i źródła prawdy
 
-Dokumentacja jest porządkowana według **właściciela, aktualności i poziomu dowodu**, a nie według przypadkowej historii nazw plików.
+**Aktualizacja mapy:** 2026-09-07  
+**Zweryfikowany master przy reorganizacji:** `378e9e6aceb83edbd679751e19cbe5c64c978025` / `16.3.25.5.36-ci-archive-scope-contract-hardening`
+
+Dokumentacja jest porządkowana według **właściciela, aktualności i poziomu dowodu**.
 
 ## Zacznij tutaj
 
-1. [`../AGENTS.md`](../AGENTS.md) — router odpowiedzialności agentów/hostów;
-2. [`project/CURRENT_STATE.md`](project/CURRENT_STATE.md) — bieżący snapshot mastera, aktywnych branchy i kolejności pracy;
-3. [`project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md) — kanoniczny układ repozytorium, entrypointy i polityka zależności;
-4. [`plans/16.6.0-final-convergence/ROADMAP.md`](plans/16.6.0-final-convergence/ROADMAP.md) — kanoniczna roadmapa programu v16;
-5. [`project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — przekrojowy kontrakt pojęć i granic naukowych;
-6. [`plans/17.0.0-measured-architecture-consolidation/PLAN.md`](plans/17.0.0-measured-architecture-consolidation/PLAN.md) — warunkowy plan v17 uruchamiany dopiero po evidence z v16.6.
+1. [`../AGENTS.md`](../AGENTS.md) — router odpowiedzialności hostów/agentów;
+2. [`project/CURRENT_STATE.md`](project/CURRENT_STATE.md) — bieżący overlay mastera i otwartych gates;
+3. [`plans/README.md`](plans/README.md) — kanoniczna mapa aktualnych planów;
+4. [`plans/PLAN_EXECUTION_HISTORY.md`](plans/PLAN_EXECUTION_HISTORY.md) — co planowano, co wdrożono, co zastąpiono i co zostało;
+5. [`plans/CURRENT_STEP.md`](plans/CURRENT_STEP.md) — dokładny bieżący krok i kolejność dalszych prac;
+6. [`project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — przekrojowe definicje i granice naukowe.
 
-## 1. Project-wide — `docs/project/`
+## Aktualne plany domenowe
 
-Bieżące kontrakty, audyty i oceny wspólne dla wielu release'ów:
+- [`plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md`](plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md) — finalne przywracanie/odbudowa/akceptacja pamięci;
+- [`plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md`](plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md) — Emotion Engine / canonical affect;
+- [`plans/V17_PLUS_SYSTEM_EVALUATION.md`](plans/V17_PLUS_SYSTEM_EVALUATION.md) — aktualna ocena systemu i warunkowy program v17+.
 
-- `CURRENT_STATE.md` — aktualny snapshot techniczny i branch ownership;
-- `REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md` — stabilne role katalogów, operator `run.py`, polityka stdlib/host-first i granice zależności;
-- `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md` — kanoniczne definicje Jaźni, ciągłości, pamięci, affect i granic epistemicznych;
-- `REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md` — audyt master/branch/docs po zmianach loadera i Pack Generatora;
-- `RELEASE_TIMELINE.md` — indeks release'ów, decyzji i archiwalnych dowodów;
-- `system-evaluation/` — przekrojowa ocena v16.6→v17+ oraz datowane research addenda.
+## Poprzednie plany
 
-Datowany audyt pozostaje snapshotem swojej epoki. Nowy stan dopisuje się jako nowy dokument lub jawny current-state overlay zamiast przepisywać historyczne ustalenia.
+Cała poprzednia zawartość `docs/plans/` została zachowana w:
 
-## 2. Plan-owned — `docs/plans/`
+[`plans/only_to_check/`](plans/only_to_check/)
 
-Zawiera aktywne i planowane roadmapy/plany wykonawcze. Każdy plan powinien mieć właściciela treści i `STATUS.md`.
+To materiał `ONLY_TO_CHECK / HISTORICAL_PLANNING_INPUT`. Stare `STATUS.md`, SHA, branch names i target versions zachowują wartość historyczną, ale nie są bieżącą prawdą.
 
-Obecnie nadrzędne:
+## Project-wide — `docs/project/`
 
-- `16.3.25.4-memory-rebuild-v4/` — aktywna równoległa implementacja Memory Rebuild v4; jej branch roboczy może mieć nowszy `PLAN/STATUS` niż master do chwili merge;
-- `16.3.26-attachment-ingress/` — kolejny release po bezpiecznym domknięciu/synchronizacji Memory Rebuild;
-- `16.4-to-16.6-cognitive-hardening/` — przekrojowe kryteria evidence;
-- `16.6.0-final-convergence/` — główna roadmapa kończąca program v16;
-- `17.0.0-measured-architecture-consolidation/` — future/conditional; bez implementacji przed finalnym v16.6 evidence.
+- `CURRENT_STATE.md` — bieżący overlay techniczny;
+- `REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md` — role katalogów/entrypointów/dependencies;
+- `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md` — definicje Jaźni, pamięci, affect i granic;
+- `RELEASE_TIMELINE.md` — release/decision index;
+- `system-evaluation/` — datowane audyty/research snapshots; nie przepisywać ich po fakcie.
 
-Pliki w `docs/plans/` o dawnych nazwach mogą być krótkimi compatibility pointerami prowadzącymi do kanonicznej lokalizacji. Pointer nie jest drugim źródłem prawdy.
+## Domain docs
 
-## 3. Domain docs
+- `docs/memory/` — Memory Rebuild, restore, recall, source fidelity;
+- `docs/runtime/` — lifecycle, host/finalization/workspace;
+- `docs/nlp/` — język i zasoby NLP;
+- `docs/packaging/` — transport/package/attach;
+- `docs/tools/` — aktywne narzędzia operatorskie;
+- `docs/templates/` — acceptance/evidence templates.
 
-Żywa dokumentacja techniczna:
+## Historical — `docs/archive/`
 
-- `docs/memory/` — recovery, Memory Rebuild, recall, source fidelity i pamięć;
-- `docs/runtime/` — host/runtime/finalization/workspace i loader projektu ChatGPT;
-- `docs/nlp/` — polskie zasoby językowe i kontrakty NLP;
-- `docs/packaging/` — pakowanie, sidecary i attach;
-- `docs/tools/` — aktywne kontrakty operatorskie;
-- `docs/templates/` — wersjonowane szablony acceptance/evidence.
+Archiwum przechowuje zakończone/superseded raporty, plany, review, patche i stare narzędzia. Nie aktualizować snapshotów historycznych tak, aby wyglądały jak current docs.
 
-Stabilnych ścieżek operatorskich nie przenosi się tylko dla estetyki, jeżeli są częścią testowanego kontraktu.
-
-## 4. Historical — `docs/archive/`
-
-Archiwum przechowuje zakończone lub zastąpione:
-
-- plany i roadmapy;
-- raporty release/implementacji/research;
-- review;
-- patche;
-- historyczne dokumenty hosta i narzędzi.
-
-**Nie aktualizuj historycznego snapshotu tak, aby wyglądał jak dokument bieżący.** Stare SHA, ścieżki, wersje, niezielone wyniki i odrzucone eksperymenty są częścią wartości archiwum.
-
-Jeżeli aktywny dokument chce odwołać się do raportu po reorganizacji, powinien wskazywać `docs/archive/...`, a nie nieistniejące dawne `docs/reports/...`.
-
-## 5. Zasada bieżącej prawdy
-
-Dla stwierdzeń typu `active`, `working`, `verified`, `accepted`, `merged` kolejność dowodu jest następująca:
+## Zasada bieżącej prawdy
 
 ```text
 aktualne AGENTS*
--> aktualny kod / testy / machine-readable evidence
--> CURRENT_STATE + aktywny PLAN/STATUS
--> przekrojowe docs/project
--> historyczne docs/archive
+→ aktualny kod / testy / machine-readable evidence
+→ aktualny master / PR / issue / CI
+→ project/CURRENT_STATE.md
+→ plans/PLAN_EXECUTION_HISTORY.md + CURRENT_STEP.md
+→ plan domenowy
+→ plans/only_to_check/
+→ archive/
 ```
 
-Lokalizacja pliku, nazwa brancha, zielony dawny raport albo licznik `ahead` nie są samodzielnym dowodem, że branch jest nowszym systemem niż master.
+File/module presence, dawny zielony raport, nazwa brancha lub `ahead > 0` nie są samodzielnym dowodem `working/accepted/live`.
 
-## 6. Documentation convergence / gardening
+## Granica naukowa
 
-Przy każdej większej konwergencji sprawdzaj co najmniej:
-
-- martwe linki i dawne lokalizacje `docs/reports/`;
-- stale current-version labels w dokumentach aktywnych;
-- czy dokument nie wskazuje superseded branchu jako bieżącego;
-- czy aktywny branch ma jawnego właściciela scope;
-- czy current docs nie kopiują runbooków z `AGENTS*`;
-- czy archiwa pozostały niezmienionymi snapshotami;
-- czy nowe capability mają evidence i acceptance gate, a nie tylko opis.
-
-Pełny release history/change-log jest indeksowany w [`project/RELEASE_TIMELINE.md`](project/RELEASE_TIMELINE.md).
+System może implementować funkcjonalne appraisal, affect, homeostasis, replay, self-state i podobne kontrakty. Nie oznacza to biologicznego mózgu ani dowodu phenomenal consciousness. Wartość modułu wynika z evidence, causal effect, persistence i ablation — nie z antropomorficznej nazwy.
