@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "dc47b76161524b3fcdf1b571346f24c67493fe6c",
-    "base_version": "16.3.25.5.33-host-executor-recovery-ci-convergence",
+    "base_commit": "70d88f4503cf291d7b4c12cbcc890e20edcd6d27",
+    "base_version": "16.3.25.5.34-package-runtime-plugin-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "70d88f4503cf291d7b4c12cbcc890e20edcd6d27",
