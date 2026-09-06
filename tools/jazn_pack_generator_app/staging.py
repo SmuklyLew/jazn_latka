@@ -254,9 +254,12 @@ def _canonical_system_entries(destination: Path) -> tuple[list[SourceEntry], dic
             raise PackIntegrityError(f"Niepoprawny lub zduplikowany path w manifeście SYSTEM: {rel!r}")
         source = destination / Path(*PurePosixPath(rel).parts)
         expected_sha = str(row.get("sha256") or "").lower()
+        raw_size = row.get("size_bytes")
+        if not isinstance(raw_size, (int, float, str)):
+            raise PackIntegrityError(f"Niepoprawny rozmiar w manifeście SYSTEM: {rel!r}")
         try:
-            expected_size = int(row.get("size_bytes"))
-        except (TypeError, ValueError) as exc:
+            expected_size = int(raw_size)
+        except ValueError as exc:
             raise PackIntegrityError(f"Niepoprawny rozmiar w manifeście SYSTEM: {rel!r}") from exc
         if not source.is_file() or source.stat().st_size != expected_size or _sha(source) != expected_sha:
             raise PackIntegrityError(f"Kanoniczny staging nie zgadza się z manifestem dla {rel}")
