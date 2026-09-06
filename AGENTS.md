@@ -12,7 +12,20 @@ Nie jest runbookiem konkretnego hosta, pamięcią, kanonem osobowości, źródł
 - Pamięć projektu ChatGPT, historia projektu i Custom Instructions są kontekstem hosta platformy, nie pamięcią Jaźni i nie mogą zastępować zweryfikowanej pamięci runtime.
 - Nie przenoś treści z danych prywatnych do instrukcji agenta ani do kanonu bez jawnego procesu przeglądu.
 
-## 2. Wybór runbooka według odpowiedzialności
+## 2. Zasada wykonawcza: runtime-first
+
+`run.py` jest kanonicznym operatorem i głównym wykonawczym wejściem do systemu Jaźni. Instrukcje `AGENTS*.md` prowadzą hosta do operatora, wyznaczają granice odpowiedzialności i sposób interpretacji jego zweryfikowanych wyników; nie zastępują implementacji lifecycle, routingu, pamięci, tożsamości, narzędzi ani finalizacji zawartej w runtime.
+
+Po znalezieniu i zweryfikowaniu `active_root`:
+- używaj `run.py` dla każdej operacji, dla której kanoniczny CLI udostępnia komendę;
+- nie rekonstruuj w hoście logiki, którą wykonuje runtime;
+- `main.py` traktuj wyłącznie jako techniczny punkt zgodności, nie preferowane wejście operatora;
+- dla ChatGPT z terminalem docelowym stanem sesji jest zweryfikowany persistent daemon uruchomiony przez `run.py start`, o ile bieżące środowisko potrafi utrzymać proces;
+- zweryfikowana tura one-shot może potwierdzić wykonanie konkretnej wiadomości, ale sama nie oznacza działającego persistent procesu.
+
+Jeżeli `run.py` nie jest jeszcze dostępny, host może wykonać tylko minimalne czynności discovery i bezpiecznego bootstrapu potrzebne do uzyskania zweryfikowanego operatora. Po jego uzyskaniu sterowanie techniczne ma wrócić do runtime.
+
+## 3. Wybór runbooka według odpowiedzialności
 
 Przed pracą wczytaj w pełnej dostępnej treści tylko plik lub pliki potrzebne do wykonywanej odpowiedzialności:
 
@@ -26,7 +39,7 @@ Dla Projektu ChatGPT instrukcja projektu ma być wyłącznie cienkim bootstrapem
 
 Nie wczytuj wszystkich `AGENTS*.md` bez potrzeby, nie zastępuj brakującego pliku podobnie nazwanym dokumentem i nie zgaduj. Ten plik ma wskazywać drogę, a nie powielać runbooki.
 
-## 3. Kanoniczne źródła prawdy technicznej
+## 4. Kanoniczne źródła prawdy technicznej
 
 - wersja: `latka_jazn/version.py`
 - integralność paczki: `PACKAGE_INTEGRITY_MANIFEST.json`
@@ -39,7 +52,7 @@ Nie wczytuj wszystkich `AGENTS*.md` bez potrzeby, nie zastępuj brakującego pli
 
 Nie wymagaj, nie twórz ani nie odtwarzaj `VERSION.txt` lub `MANIFEST_CURRENT.json`. `RUNTIME_STATE.json` jest snapshotem stanu, nie manifestem paczki.
 
-## 4. Własność zachowania Jaźni
+## 5. Własność zachowania Jaźni
 
 Instrukcje agentów nie definiują sposobu mówienia, osobowości ani pamięci Łatki. Te odpowiedzialności należą do kodu runtime:
 
@@ -51,16 +64,16 @@ Instrukcje agentów nie definiują sposobu mówienia, osobowości ani pamięci �
 
 Agent może uruchamiać, testować i diagnozować te moduły, ale nie może zastąpić ich własnym stylem, wspomnieniami ani interpretacją tożsamości.
 
-## 5. Granica prawdy runtime
+## 6. Granica prawdy runtime
 
-Aktywną Jaźń wolno potwierdzić wyłącznie po:
+Rozróżniaj dwa stany:
 
-1. zweryfikowanym żywym daemonie: zgodny marker i root, wersja i manifest, właściwy PID i komenda, działający endpoint oraz świeży heartbeat; albo
-2. poprawnej, zweryfikowanej turze one-shot dla bieżącej wiadomości z prawidłowym `final_visible_text`, integralnością i truth gate.
+1. **persistent runtime active** — zweryfikowany żywy daemon: zgodny marker i root, wersja i manifest, właściwy PID i komenda, działający endpoint oraz świeży heartbeat;
+2. **verified runtime turn** — poprawna, zweryfikowana tura dla bieżącej wiadomości z prawidłowym `final_visible_text`, integralnością i truth gate; może pochodzić z persistent daemona albo z dozwolonego one-shot fallbacku.
 
-Sam marker, folder, ZIP, kod, styl odpowiedzi lub niezweryfikowany tekst nie wystarczają. Szczegółową procedurę hosta definiuje `AGENTS.chatgpt.md`.
+Sam marker, folder, ZIP, kod, styl odpowiedzi lub niezweryfikowany tekst nie wystarczają. One-shot nie może być przedstawiany jako persistent proces. Szczegółową procedurę hosta definiuje `AGENTS.chatgpt.md`.
 
-## 6. Zasady zmian
+## 7. Zasady zmian
 
 Przed modyfikacją:
 
@@ -75,7 +88,7 @@ Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.jso
 
 Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia.
 
-## 7. Dane wyłączone z repozytorium
+## 8. Dane wyłączone z repozytorium
 
 Bez jawnej zgody nie commituj:
 

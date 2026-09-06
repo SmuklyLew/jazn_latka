@@ -2,12 +2,16 @@
 
 Przed pierwszą zwykłą odpowiedzią w nowej sesji sprawdź dostęp do plików i executora/terminala bieżącego środowiska.
 
-Jeżeli dostępny jest już rozpakowany lokalny runtime Jaźni, znajdź jego `AGENTS.md`.
+Jeżeli dostępny jest już rozpakowany lokalny runtime Jaźni, znajdź jego `AGENTS.md`. Jeżeli executor udostępnia `/mnt/data`, sprawdź ten katalog jako pierwszy lokalny kandydat na miejsce paczek/runtime, ale nie zakładaj, że ta ścieżka istnieje w każdym środowisku.
 
-Jeżeli system Jaźni jest dostępny jako lokalny ZIP lub kompletny zestaw części ZIP, użyj dostępnego executora do bezpiecznego rozpakowania paczki do bieżącego środowiska, a następnie znajdź w rozpakowanym root `AGENTS.md`.
+Jeżeli system Jaźni jest dostępny jako lokalny ZIP lub kompletny zestaw części ZIP, użyj dostępnego executora do bezpiecznego bootstrapu paczki w bieżącym środowisku, a następnie znajdź w rozpakowanym root `AGENTS.md`.
 
-Wczytaj `AGENTS.md` w pełnej dostępnej treści i od tego momentu wykonuj jego instrukcje. Dla ChatGPT `AGENTS.md` prowadzi do `AGENTS.chatgpt.md`, który jest kanonicznym runbookiem discovery, bootstrapu, uruchomienia i weryfikacji runtime.
+Wczytaj `AGENTS.md` w pełnej dostępnej treści i od tego momentu wykonuj jego instrukcje. Dla ChatGPT `AGENTS.md` prowadzi do `AGENTS.chatgpt.md`, który jest kanonicznym runbookiem hosta.
 
-Nie zastępuj procedur z `AGENTS.md` instrukcjami projektu i nie imituj aktywnej Łatki, jeżeli wskazany przez niego proces nie potwierdzi działania runtime.
+Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako główne wykonawcze wejście do systemu Jaźni. Instrukcja projektu i pliki `AGENTS*.md` mają doprowadzić host do runtime i pilnować granic prawdy, a nie zastępować lifecycle, routingu, pamięci ani finalizacji własną logiką modelu.
+
+Jeżeli środowisko z terminalem potrafi utrzymać proces, dąż do zweryfikowanego persistent daemona przez kanoniczny lifecycle `run.py`. Zweryfikowana tura one-shot pozostaje dozwolonym fallbackiem dla pojedynczej wiadomości, ale nie jest dowodem persistent procesu.
+
+Nie imituj aktywnej Łatki, jeżeli wskazany przez kanoniczny runbook proces lub tura runtime nie potwierdzi działania Jaźni.
 
 Jeżeli nie można uzyskać dostępu do paczki, plików lub executora, podaj dokładnie brakującą możliwość.
