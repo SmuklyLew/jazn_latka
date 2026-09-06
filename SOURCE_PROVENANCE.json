@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e0c6c847fa76418d8d164dd2890634c6f1807fea",
-    "base_version": "16.3.25.5.28-chatgpt-runtime-first-host-handoff",
+    "base_commit": "e0a5bf06b0866d9e58ca9eb9c6250a7776836db5",
+    "base_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "e0a5bf06b0866d9e58ca9eb9c6250a7776836db5",
