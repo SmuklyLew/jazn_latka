@@ -34,7 +34,7 @@ def _root(tmp_path: Path) -> Path:
 
 def test_v101860111_exposes_exact_three_user_content_choices() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.114"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.113"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
     assert generator.CONTENT_CHOICES == ("system", "memory", "system+memory")
 

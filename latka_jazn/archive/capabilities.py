@@ -151,7 +151,7 @@ def _aes_zip_capability() -> ArchiveFormatCapability:
         limitations=(
             "password is required for encrypted content",
             "password values must not be persisted in logs, sidecars, or command history by archive tooling",
-            "runtime support depends on the required pyzipper dependency being available",
+            "enhanced runtime support depends on the optional archive plugin dependency pyzipper",
         ),
     )
 
@@ -180,7 +180,7 @@ def _seven_zip_capability() -> ArchiveFormatCapability:
         runtime_supported=module_ok,
         operations=operations,
         limitations=(
-            "runtime support depends on the required py7zr dependency being available",
+            "enhanced runtime support depends on the optional archive plugin dependency py7zr",
             "Jaźń validates normalized member paths/types/sizes before committing extracted content",
             "generic split/join transport is separate from native 7z multi-volume semantics",
         ),
@@ -215,7 +215,7 @@ def _rar_capability() -> ArchiveFormatCapability:
         purpose="RAR3/RAR5 read, inspection and extraction through the canonical rarfile backend.",
         aliases=("rar", "rar3", "rar5"),
         backend=backend,
-        backend_kind="core_runtime_dependency_plus_external_decompressor",
+        backend_kind="optional_plugin_dependency_plus_external_decompressor",
         backend_available=status.module_available,
         backend_version=status.module_version,
         runtime_supported=status.metadata_ready,
@@ -279,18 +279,20 @@ def archive_capability_report() -> ArchiveCapabilityReport:
             "password_persistence": False,
         },
         dependency_contract={
-            "activation_profile": "archive",
-            "activation_required": True,
-            "requirements": ["py7zr>=1.1.3,<2", "pyzipper>=0.4.0,<1"],
-            "core_runtime_requirements": ["rarfile>=4.5,<5"],
+            "profile": "archive",
+            "profile_kind": "runtime_optional",
+            "activation_required": False,
+            "requirements": ["py7zr>=1.1.3,<2", "pyzipper>=0.4.0,<1", "rarfile>=4.5,<5"],
+            "core_runtime_requirements": [],
             "rar_external_backends_detected": list(rar_status.external_backends),
             "rar_external_backend_required_for_compressed_extract": True,
             "stdlib_backends_are_not_pip_dependencies": ["zipfile", "tarfile", "gzip", "bz2", "lzma"],
         },
         truth_boundary=(
             "This report distinguishes knowledge of an archive format from executable support. "
-            "RAR metadata support requires rarfile, while compressed RAR extraction additionally depends on a supported "
-            "external decompressor. RAR creation is not provided by rarfile and is reported separately by the Pack Generator."
+            "Baseline ZIP support is stdlib-only. Enhanced AES ZIP, 7z and RAR support belongs to the optional archive "
+            "capability. RAR metadata requires rarfile and compressed extraction additionally requires a supported external "
+            "decompressor. Missing optional archive backends never proves core runtime failure."
         ),
     )
 

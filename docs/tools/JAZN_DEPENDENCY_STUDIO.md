@@ -14,7 +14,7 @@ The Studio is not a second package manager. It orchestrates standard Python `ven
 4. `download` is an explicit operator/network action.
 5. Runtime autobootstrap never downloads from the network. It may only reuse a verified managed environment or install from a verified local wheelhouse.
 6. A wheelhouse bundle is immutable. `update` creates a new resolution when bytes/versions change and keeps the previous bundle available for rollback.
-7. `core` + `archive` are activation-required. Optional profiles do not silently become required.
+7. `core` is activation-required. `archive` is runtime-optional but remains in the explicit release profile `core+archive`; other optional profiles do not silently become required.
 8. `activation_ready=True` requires the activation dependency profiles to be satisfied by the current interpreter or a verified managed environment.
 9. SHA-256 and recorded package metadata prove local byte identity relative to the manifest; they do not certify upstream package safety or legal compatibility.
 
@@ -57,15 +57,15 @@ Current profiles:
 
 | Profile | Role | Source |
 |---|---|---|
-| `core` | runtime required | base `project.dependencies` except archive-only packages |
-| `archive` | runtime required | `py7zr`, `pyzipper` |
+| `core` | runtime required | base `project.dependencies` |
+| `archive` | runtime optional / release sidecar | `py7zr`, `pyzipper`, `rarfile` |
 | `studio` | operator optional | `memory-rebuild-ui` optional dependencies |
 | `memory-cloud` | runtime optional | matching `pyproject.toml` optional group |
 | `memory-cloud-server` | service optional | matching optional group |
 | `polish-nlp` | heavy optional | Morfeusz/Stanza/spaCy/transformer NLP dependency group |
 | `all` | aggregate | all profiles above |
 
-This deliberately makes `py7zr` and `pyzipper` real activation dependencies because the archive subsystem already relies on them.
+The archive profile is an optional capability containing `py7zr`, `pyzipper` and `rarfile`. Baseline ZIP remains stdlib-only; enhanced 7z/AES ZIP/RAR readiness is reported separately and does not block core activation.
 
 ## Terminal commands
 
@@ -169,18 +169,18 @@ An optional-only environment cannot replace the activation environment marker.
 Canonical `run.py` performs a bounded local dependency preflight before importing the full CLI:
 
 ```text
-current interpreter ready?
+current interpreter satisfies activation-required core?
   -> yes: continue
   -> no: verified managed activation environment?
        -> yes: re-exec with its Python
-       -> no: verified local core+archive wheelhouse?
+       -> no: verified local core wheelhouse?
             -> yes: offline install -> re-exec
             -> no: activation command is blocked
 ```
 
 There is deliberately no network branch in this graph.
 
-Diagnostic/operator commands remain available so an operator can inspect and repair dependency state. Runtime activation commands (`start`, `restart`, `chat`, `chat-gpt`, `runtime-bootstrap`) fail closed if `core+archive` cannot be satisfied.
+Diagnostic/operator commands remain available so an operator can inspect and repair dependency state. Runtime activation commands (`start`, `restart`, `chat`, `chat-gpt`, `runtime-bootstrap`) fail closed if `core` cannot be satisfied.
 
 ## `activation_ready`
 
@@ -235,3 +235,8 @@ Bootstrap never performs garbage collection automatically.
 Release CI builds wheelhouses on native runners and emits exact target locks under `latka_jazn/resources/dependencies/locks/core+archive/`. Every line is fully pinned and SHA-256 locked, including transitive dependencies. The first native matrix run materializes release evidence for all six required targets. Before persistence, Windows runners replay the three Linux locks and Ubuntu runners replay the three Windows locks with `--require-hashes --no-deps --only-binary=:all:`. The replayed lock and full resolved filename/SHA-256 inventory must match native evidence exactly. Subsequent native runs consume the persisted lock through `dependency-studio download --lock-file ...`.
 
 A release is not considered converged merely because bootstrap resolution succeeded once: native locked consumers, opposite-OS replay and clean-room package consumers must pass for Windows x64 and Linux glibc x64 on Python 3.12, 3.13 and 3.14. Locks are generated from native wheelhouse resolution rather than handwritten or inferred across platforms. `pylock.<target>.toml` may be emitted later as an additional audit/export format, but it is not a bootstrap dependency in `.25.5.17`.
+
+
+## v16.3.25.5.34 capability split
+
+`activation_profiles=["core"]` controls runtime bootstrap. `release_profiles=["core","archive"]` preserves the existing target-specific release sidecar contract while allowing ordinary Jaźń core activation without optional archive backends. A real `install` always creates a fresh path-stable venv and atomically switches only the activation marker after verification; existing environments are never mutated in place.

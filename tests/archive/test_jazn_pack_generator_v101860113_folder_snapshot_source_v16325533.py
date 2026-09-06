@@ -13,8 +13,8 @@ def _root(tmp_path: Path, *, attributes: bytes | None = None) -> Path:
     root = tmp_path / "root"
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn" / "version.py").write_text(
-        'PACKAGE_VERSION = "16.3.25.5.34"\n'
-        'PACKAGE_RELEASE_NAME = "package-runtime-plugin-convergence"\n',
+        'PACKAGE_VERSION = "16.3.25.5.27"\n'
+        'PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.113-folder-snapshot"\n',
         encoding="utf-8",
         newline="\n",
     )
@@ -24,52 +24,62 @@ def _root(tmp_path: Path, *, attributes: bytes | None = None) -> Path:
     return root
 
 
-def test_v101860114_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserved(tmp_path: Path) -> None:
-    root = _root(tmp_path)
-    memory = tmp_path / "memory"
-    memory.mkdir()
-    source = memory / "drift.py"
-    source_bytes = b"print('memory snapshot')\r\n"
+def test_v101860113_crlf_drift_is_diagnostic_and_source_bytes_are_preserved(tmp_path: Path) -> None:
+    root = _root(
+        tmp_path,
+        attributes=b"* text=auto eol=lf\n*.py text eol=lf\n",
+    )
+    source = root / "drift.py"
+    source_bytes = b"print('windows working tree')\r\n"
     source.write_bytes(source_bytes)
 
     result = generator.run_pack_request(
         source=root,
         out_dir=tmp_path / "out",
-        content="memory",
-        memory_root=memory,
+        content="system",
     )
 
     archive = Path(result["logical_archive"])
     with zipfile.ZipFile(archive, "r") as handle:
-        assert handle.read("memory/drift.py") == source_bytes
+        assert handle.read("drift.py") == source_bytes
         assert handle.testzip() is None
 
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
-    rows = {item["path"]: item for item in manifest["source"]["entries"] if item["kind"] == "file"}
-    assert rows["memory/drift.py"]["sha256"] == hashlib.sha256(source_bytes).hexdigest()
+    rows = {
+        item["path"]: item
+        for item in manifest["source"]["entries"]
+        if item["kind"] == "file"
+    }
+    assert rows["drift.py"]["sha256"] == hashlib.sha256(source_bytes).hexdigest()
     assert manifest["source"]["staging_mode"] == "source-folder-byte-copy"
-    assert manifest["source"]["source_basis"] == "selected_folder"
     assert manifest["verification"]["byte_exact"] is True
     assert manifest["verification"]["member_sha256"] == "ok"
     assert manifest["verification"]["eol_policy"] == "diagnostic_only"
-    assert manifest["verification"]["system_extract_reverify"] == "not_applicable"
+    assert manifest["verification"]["eol_warning_count"] >= 1
+    assert "drift.py" in manifest["verification"]["eol_warning_sample"]
 
 
-def test_v101860114_memory_snapshot_does_not_require_gitattributes(tmp_path: Path) -> None:
-    root = _root(tmp_path)
-    memory = tmp_path / "memory"
-    memory.mkdir()
-    (memory / "snapshot.txt").write_bytes(b"folder snapshot\r\n")
+def test_v101860113_missing_or_unreadable_gitattributes_does_not_block_snapshot(tmp_path: Path) -> None:
+    missing = _root(tmp_path / "missing")
+    (missing / "system.txt").write_bytes(b"folder snapshot\r\n")
     result = generator.run_pack_request(
-        source=root,
-        out_dir=tmp_path / "out",
-        content="memory",
-        memory_root=memory,
+        source=missing,
+        out_dir=tmp_path / "out-missing",
+        content="system",
+    )
+    assert result["ok"] is True
+
+    unreadable = _root(tmp_path / "invalid", attributes=b"\xff\xfe\x00\x00")
+    (unreadable / "system.txt").write_bytes(b"still packageable\r\n")
+    result = generator.run_pack_request(
+        source=unreadable,
+        out_dir=tmp_path / "out-invalid",
+        content="system",
     )
     assert result["ok"] is True
 
 
-def test_v101860114_system_plan_excludes_archive_local_settings_and_secrets(tmp_path: Path) -> None:
+def test_v101860113_system_excludes_archive_local_settings_and_secrets(tmp_path: Path) -> None:
     root = _root(tmp_path)
     (root / ".archives").mkdir()
     (root / ".archives" / "historical.py").write_text("OLD = True\n", encoding="utf-8")
@@ -93,18 +103,15 @@ def test_v101860114_system_plan_excludes_archive_local_settings_and_secrets(tmp_
     assert not any(name.startswith(".archives/") for name in names)
 
 
-def test_v101860114_memory_split_is_one_logical_zip_cut_into_binary_transport_parts(tmp_path: Path) -> None:
+def test_v101860113_split_is_one_logical_zip_cut_into_binary_transport_parts(tmp_path: Path) -> None:
     root = _root(tmp_path)
-    memory = tmp_path / "memory"
-    memory.mkdir()
     payload = os.urandom(2 * 1024 * 1024 + 131)
-    (memory / "payload.bin").write_bytes(payload)
+    (root / "payload.bin").write_bytes(payload)
 
     result = generator.run_pack_request(
         source=root,
         out_dir=tmp_path / "out",
-        content="memory",
-        memory_root=memory,
+        content="system",
         split=True,
         split_size_mib=1,
         compression_level=0,
@@ -119,20 +126,17 @@ def test_v101860114_memory_split_is_one_logical_zip_cut_into_binary_transport_pa
     joined = generator.join_parts(parts[0], tmp_path / "joined.zip")
     assert hashlib.sha256(joined.read_bytes()).hexdigest() == result["logical_sha256"]
     with zipfile.ZipFile(joined, "r") as handle:
-        assert handle.read("memory/payload.bin") == payload
+        assert handle.read("payload.bin") == payload
         assert handle.testzip() is None
 
 
-def test_v101860114_verify_rehashes_memory_members_from_zip(tmp_path: Path) -> None:
+def test_v101860113_verify_rehashes_members_from_zip(tmp_path: Path) -> None:
     root = _root(tmp_path)
-    memory = tmp_path / "memory"
-    memory.mkdir()
-    (memory / "snapshot.txt").write_bytes(b"actual memory bytes\r\n")
+    (root / "system.txt").write_bytes(b"actual folder bytes\r\n")
     result = generator.run_pack_request(
         source=root,
         out_dir=tmp_path / "out",
-        content="memory",
-        memory_root=memory,
+        content="system",
     )
 
     report = generator.verify_package(Path(result["logical_archive"]))

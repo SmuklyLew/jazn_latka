@@ -1,26 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""Jaźń Pack Generator v10.1.86.0.113.
+r"""Jaźń Pack Generator v10.1.86.0.114.
 
-Public launcher for the folder archiver.
+Public launcher for the Jaźń package archiver.
 
 Primary contract:
-- archive the selected Jaźń project/system folder using its actual file bytes,
-- keep one ordinary logical ZIP as the archive format,
-- optionally split that logical ZIP into binary transport parts .zip.001, .002, ...,
-- verify CRC and SHA-256 without rewriting source content.
+- runnable SYSTEM bytes come from canonical release staging, never mutable checkout EOL bytes,
+- MEMORY remains a byte-exact selected-folder snapshot,
+- one ordinary logical ZIP is created and verified before optional binary split transport,
+- SYSTEM is safely extracted and its embedded integrity/provenance contracts are reverified before publication.
 
-The generator has one core and three interfaces:
-- text: classic terminal flow,
-- tui: cursor-driven terminal interface,
-- studio: native tkinter/ttk window.
-
-Content modes remain SYSTEM, MEMORY and SYSTEM+MEMORY. Safety exclusions keep
-runtime state, caches, repositories, local mutable settings and nested package
-artifacts out of SYSTEM. EOL policy from .gitattributes is diagnostic only; it
-never changes bytes and never blocks a valid folder snapshot.
-
-The generator does not build wheelhouses, dependency bundles or Python runtimes.
+The generator has one core and three interfaces: text, terminal TUI and Studio GUI.
+It does not build wheelhouses, dependency bundles or Python runtimes; those belong to Dependency Studio.
 """
 from __future__ import annotations
 

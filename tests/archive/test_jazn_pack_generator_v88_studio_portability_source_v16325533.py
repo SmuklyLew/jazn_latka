@@ -10,7 +10,7 @@ def generator():
 
 def test_v101860111_exposes_three_real_ui_modes() -> None:
     module = generator()
-    assert module.GENERATOR_VERSION == "10.1.86.0.114"
+    assert module.GENERATOR_VERSION == "10.1.86.0.113"
     assert module.UI_MODE_CHOICES == ("text", "tui", "studio")
     assert callable(module.run_text_ui)
     assert callable(module.run_terminal_tui)
@@ -37,13 +37,10 @@ def test_v101860111_standard_zip_uses_deflate_and_unicode_names(tmp_path: Path) 
         newline="\n",
     )
     (root / "zażółć.txt").write_text("gęślą jaźń", encoding="utf-8", newline="\n")
-    memory = tmp_path / "memory"
-    memory.mkdir()
-    (memory / "zażółć.txt").write_text("gęślą jaźń", encoding="utf-8", newline="\n")
     out = tmp_path / "out"
-    result = module.run_pack_request(source=root, out_dir=out, content="memory", memory_root=memory)
+    result = module.run_pack_request(source=root, out_dir=out, content="system")
     archive = Path(result["logical_archive"])
     with zipfile.ZipFile(archive, "r") as handle:
-        info = handle.getinfo("memory/zażółć.txt")
+        info = handle.getinfo("zażółć.txt")
         assert info.compress_type == zipfile.ZIP_DEFLATED
         assert handle.testzip() is None

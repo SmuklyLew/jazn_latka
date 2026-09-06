@@ -95,7 +95,6 @@ def create_zip(
                 continue
             info = zipfile.ZipInfo.from_file(entry.source, arcname=arcname)
             info.compress_type = zipfile.ZIP_DEFLATED
-            # ZipInfo carries the per-entry compression level used by ZipFile.open.
             info._compresslevel = plan.request.compression_level  # type: ignore[attr-defined]
             with entry.source.open("rb") as source, archive.open(info, "w", force_zip64=True) as dest:
                 while True:
@@ -136,7 +135,9 @@ def verify_zip(
                 raise PackSafetyError(f"ZIP zawiera symlink: {info.filename}")
             key = name.rstrip("/").casefold()
             previous = seen.get(key)
-            if previous is not None and previous != name:
+            if previous is not None:
+                if previous == name:
+                    raise PackSafetyError(f"Duplikat wpisu ZIP: {name!r}")
                 raise PackSafetyError(f"Kolizja nazw ZIP: {previous!r} vs {name!r}")
             seen[key] = name
             _emit(callback, ProgressEvent("verify", "Preflight ZIP", index, len(infos), info.filename))
@@ -144,7 +145,6 @@ def verify_zip(
     if bad is not None:
         raise PackIntegrityError(f"CRC ZIP nie zgadza się dla: {bad}")
     return {"ok": True, "member_count": len(infos), "crc": "ok"}
-
 
 
 def verify_zip_member_hashes(
@@ -194,6 +194,7 @@ def verify_zip_member_hashes(
         "member_count": total,
         "byte_exact": True,
     }
+
 
 def safe_extract_zip(
     source: Path,

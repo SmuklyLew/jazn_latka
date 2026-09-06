@@ -184,7 +184,9 @@ def dedupe_requirements(requirements: Iterable[str]) -> list[str]:
 
 def expand_profile_names(root: Path | str, profile_names: Sequence[str]) -> tuple[str, ...]:
     profiles = load_profile_registry(root)["profiles"]
-    requested = [str(item).strip() for item in profile_names if str(item).strip()] or ["core", "archive"]
+    requested = [str(item).strip() for item in profile_names if str(item).strip()]
+    if not requested:
+        requested = list(activation_profile_names(root))
     resolving: set[str] = set()
     resolved: list[str] = []
 
@@ -247,7 +249,15 @@ def dependency_contract_fingerprint(root: Path | str, profile_names: Sequence[st
 
 def activation_profile_names(root: Path | str) -> tuple[str, ...]:
     raw = load_profile_registry(root).get("activation_profiles") or []
-    return tuple(str(item) for item in raw) if isinstance(raw, list) and raw else ("core", "archive")
+    return tuple(str(item) for item in raw) if isinstance(raw, list) and raw else ("core",)
+
+
+def release_profile_names(root: Path | str) -> tuple[str, ...]:
+    registry = load_profile_registry(root)
+    raw = registry.get("release_profiles") or []
+    if isinstance(raw, list) and raw:
+        return tuple(str(item) for item in raw)
+    return activation_profile_names(root)
 
 
 def import_name_for_distribution(root: Path | str, distribution: str) -> str:
