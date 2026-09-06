@@ -34,7 +34,11 @@ def parse_node_version(value: str) -> tuple[int, int, int] | None:
     match = _NODE_VERSION_RE.fullmatch(str(value or "").strip())
     if match is None:
         return None
-    return tuple(int(match.group(name)) for name in ("major", "minor", "patch"))
+    return (
+        int(match.group("major")),
+        int(match.group("minor")),
+        int(match.group("patch")),
+    )
 
 
 def inspect_javascript_runtime(
