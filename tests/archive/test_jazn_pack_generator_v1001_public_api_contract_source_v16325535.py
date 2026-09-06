@@ -19,7 +19,7 @@ def test_public_launcher_exports_new_archiver_contract() -> None:
 def test_config_explicitly_declares_distribution_features_out_of_scope() -> None:
     generator = importlib.import_module("tools.jazn_pack_generator")
     report = generator.config_report()
-    assert report["scope"] == "folder-snapshot:memory;canonical-release:system-system+memory;single-or-binary-split"
+    assert report["scope"] == "folder-snapshot:system-memory-system+memory;single-or-binary-split"
     assert set(report["not_in_scope"]) == {
         "dependency-bundle", "wheelhouse", "python-runtime", "target-platform"
     }
