@@ -46,6 +46,7 @@ Nie wczytuj wszystkich `AGENTS*.md` bez potrzeby, nie zastępuj brakującego pli
 - pochodzenie wydania: `SOURCE_PROVENANCE.json`
 - operator: `run.py`
 - techniczny punkt zgodności: `main.py`
+- układ repozytorium i polityka zależności: `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`
 - aktywny runtime: zweryfikowany `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` i wskazany `active_root`
 - aktywna pamięć: `JAZN_MEMORY_ROOT` albo kanoniczny host-level `workspace_runtime/memory`, rozwiązywany przez `latka_jazn/memory/memory_root.py`; historyczne `<active_root>/memory` jest wyłącznie ścieżką zgodnościową/migracyjną
 - repozytorium kanoniczne: `SmuklyLew/jazn_latka`
@@ -84,7 +85,7 @@ Przed modyfikacją:
 
 Każda aktualizacja albo patch systemu Jaźni musi podnieść numer wersji w kanonicznym źródle `latka_jazn/version.py` w tej samej zmianie. Nie odkładaj bumpu wersji na osobny późniejszy commit i nie publikuj patcha systemowego pod niezmienioną wersją.
 
-Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych. Job `manifest_sync` w workflow `release-hardening` może synchronizować je na dozwolonych branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` po otwarciu PR do `master`.
+Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych. Na pushu do `master`, `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może commitować wyłącznie te dwa kanoniczne pliki metadanych na ten sam branch. Dla pull requestu do `master` metadane są materializowane do walidacji bez samodzielnego przesuwania headu PR. Po pushu zweryfikuj idempotencję synchronizacji i wymagane CI przed uznaniem brancha za release candidate.
 
 Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia.
 
