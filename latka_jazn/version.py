@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.28 makes ChatGPT hosting runtime-first: AGENTS routes the host
-# to the canonical run.py operator, persistent daemon activation is preferred
-# when the sandbox can keep a process alive, and verified one-shot remains a
-# per-turn fallback without being misreported as a persistent runtime.
-DISTRIBUTION_VERSION = "16.3.25.5.28"
-PACKAGE_VERSION = "16.3.25.5.28"
-PACKAGE_RELEASE_NAME = "chatgpt-runtime-first-host-handoff"
+# v16.3.25.5.29 converges release metadata, repository layout policy and
+# operator entrypoints: eligible work branches receive canonical metadata
+# synchronization, run.py is also the public Ollama entrypoint, and dependency
+# policy remains stdlib/host-first with verified offline bundles for extras.
+DISTRIBUTION_VERSION = "16.3.25.5.29"
+PACKAGE_VERSION = "16.3.25.5.29"
+PACKAGE_RELEASE_NAME = "release-metadata-layout-operator-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

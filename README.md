@@ -20,6 +20,7 @@ Instrukcje projektu ChatGPT są wyłącznie cienkim loaderem prowadzącym do lok
 ## Bieżący stan projektu
 
 - jedyne kanoniczne źródło wersji: [`latka_jazn/version.py`](latka_jazn/version.py);
+- kanoniczny układ repozytorium i polityka zależności: [`docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md);
 - bieżący snapshot mastera i aktywnych linii pracy: [`docs/project/CURRENT_STATE.md`](docs/project/CURRENT_STATE.md);
 - główny program wykonawczy v16: [`docs/plans/16.6.0-final-convergence/ROADMAP.md`](docs/plans/16.6.0-final-convergence/ROADMAP.md);
 - warunkowy kierunek v17: [`docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md`](docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md);
@@ -64,9 +65,10 @@ python -X utf8 run.py start
 python -X utf8 run.py status --json
 python -X utf8 run.py stop
 python -X utf8 run.py chat-gpt -- "wiadomość"
+python -X utf8 run.py chat-ollama
 ```
 
-Na Windows można również użyć `JAZN.cmd`; aktywacja `.venv` nie jest warunkiem kontraktu runtime.
+Na Windows można również użyć `JAZN.cmd`; aktywacja `.venv` nie jest warunkiem kontraktu runtime. `main.py --...` pozostaje techniczną ścieżką zgodnościową, a publicznym operatorem jest `run.py`.
 
 ## Dokumentacja
 
@@ -82,6 +84,8 @@ Najważniejsze klasy dokumentów:
 ## Release i CI
 
 Każdy systemowy patch/upgrade podnosi `latka_jazn/version.py` w tej samej zmianie. `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są generowane kanonicznym toolingiem, nie ręcznie.
+
+Na dozwolonych branchach `master`, `update/*`, `fix/*`, `hotfix/*`, `upgrade/*` i `tools/upgrade-*` job `release-hardening/manifest_sync` synchronizuje po pushu kanoniczne metadane i może commitować wyłącznie te dwa pliki na ten sam branch. Commit workflow używa repozytoryjnego tokenu GitHub Actions, więc jego push nie tworzy rekursywnej serii workflow. Pull request nadal materializuje metadane do walidacji bez samodzielnego przesuwania headu PR.
 
 Nowe capability otrzymuje status `working` dopiero na podstawie właściwego poziomu evidence: obecność pliku lub zielony unit test nie wystarcza. Krytyczne ścieżki mają być fail-closed, testowane na Windows i Ubuntu oraz rozdzielać deterministic CI od live/model/private acceptance.
 

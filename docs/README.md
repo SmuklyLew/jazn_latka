@@ -6,15 +6,17 @@ Dokumentacja jest porządkowana według **właściciela, aktualności i poziomu 
 
 1. [`../AGENTS.md`](../AGENTS.md) — router odpowiedzialności agentów/hostów;
 2. [`project/CURRENT_STATE.md`](project/CURRENT_STATE.md) — bieżący snapshot mastera, aktywnych branchy i kolejności pracy;
-3. [`plans/16.6.0-final-convergence/ROADMAP.md`](plans/16.6.0-final-convergence/ROADMAP.md) — kanoniczna roadmapa programu v16;
-4. [`project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — przekrojowy kontrakt pojęć i granic naukowych;
-5. [`plans/17.0.0-measured-architecture-consolidation/PLAN.md`](plans/17.0.0-measured-architecture-consolidation/PLAN.md) — warunkowy plan v17 uruchamiany dopiero po evidence z v16.6.
+3. [`project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md) — kanoniczny układ repozytorium, entrypointy i polityka zależności;
+4. [`plans/16.6.0-final-convergence/ROADMAP.md`](plans/16.6.0-final-convergence/ROADMAP.md) — kanoniczna roadmapa programu v16;
+5. [`project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — przekrojowy kontrakt pojęć i granic naukowych;
+6. [`plans/17.0.0-measured-architecture-consolidation/PLAN.md`](plans/17.0.0-measured-architecture-consolidation/PLAN.md) — warunkowy plan v17 uruchamiany dopiero po evidence z v16.6.
 
 ## 1. Project-wide — `docs/project/`
 
 Bieżące kontrakty, audyty i oceny wspólne dla wielu release'ów:
 
 - `CURRENT_STATE.md` — aktualny snapshot techniczny i branch ownership;
+- `REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md` — stabilne role katalogów, operator `run.py`, polityka stdlib/host-first i granice zależności;
 - `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md` — kanoniczne definicje Jaźni, ciągłości, pamięci, affect i granic epistemicznych;
 - `REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md` — audyt master/branch/docs po zmianach loadera i Pack Generatora;
 - `RELEASE_TIMELINE.md` — indeks release'ów, decyzji i archiwalnych dowodów;
