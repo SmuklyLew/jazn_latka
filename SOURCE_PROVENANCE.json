@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3c44ba460225cd26435435e342cfd5b11eb393b8",
-    "base_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+    "base_commit": "a311119f7877a9536679da5b44ffe64d22245ef1",
+    "base_version": "16.3.25.5.33-host-executor-recovery-ci-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "a311119f7877a9536679da5b44ffe64d22245ef1",
