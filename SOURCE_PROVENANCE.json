@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "0c46aa4749331b9efaa2c3d087e68840c1af8d5b",
+  "base_merge_commit": "e4c30593d885f5dc6eb43e9ef799e9884d39a13f",
   "base_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-  "commit_date": "2026-09-06T04:05:33+02:00",
+  "commit_date": "2026-09-06T04:07:07+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-06T02:05:33+00:00",
+  "generated_at_utc": "2026-09-06T02:07:07+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ada0dd08ee766e6ce14a37693e599a6d6c661aa5",
+  "git_tree_sha": "e9446b7379c3d5b975fb9f7b273e109aaa3d884c",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.30-github-actions-node24-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "0c46aa4749331b9efaa2c3d087e68840c1af8d5b",
+    "source_commit": "e4c30593d885f5dc6eb43e9ef799e9884d39a13f",
     "source_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "0c46aa4749331b9efaa2c3d087e68840c1af8d5b",
+  "source_commit": "e4c30593d885f5dc6eb43e9ef799e9884d39a13f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
   "tag": null,

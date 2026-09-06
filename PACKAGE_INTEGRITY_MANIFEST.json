@@ -3,11 +3,11 @@
   "version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
   "runtime_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
   "package_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-  "generated_at_utc": "2026-09-06T02:05:33+00:00",
-  "updated_at_utc": "2026-09-06T02:05:33+00:00",
+  "generated_at_utc": "2026-09-06T02:07:07+00:00",
+  "updated_at_utc": "2026-09-06T02:07:07+00:00",
   "start_file": "run.py",
-  "file_count": 1158,
-  "static_file_count": 1158,
+  "file_count": 1160,
+  "static_file_count": 1160,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 22055,
-      "sha256": "3d30ea2bd6b45b5a994dd8fadc868cada0471ec9922faa77218d879d96cf0c22",
+      "size_bytes": 24271,
+      "sha256": "93cdbd4473cbf5f8644bc98647803694dd51f6977c664e477dd71e4c03c48d4a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2936,
-      "sha256": "e3f55d936c100b10d56f39ad55384fc1ad7176d3fba9b57629058f58a30461ce",
+      "sha256": "0adfafd7281fe87dfff855085ddefd01ec0196d06780239dbdff9328456b5831",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1432,6 +1432,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_31_CHATGPT_HOST_EXECUTOR_TRUTH_BOUNDARY.md",
+      "size_bytes": 3627,
+      "sha256": "a1f67d99c0f68707bb251b9762d9e937e44ad6e752f6d8bd216669d2160c3bc9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1451,8 +1460,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 1678,
-      "sha256": "6cf41a8485d146a4dddc4b93468b9ef925dd83b9e03a261122bbff64ecd66c93",
+      "size_bytes": 2527,
+      "sha256": "432e39a4776c657ca2205de649213115ff4716b0297172b300528bedff64687b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8113,6 +8122,15 @@
       "path": "tests/test_chatgpt_host_contract_hardening.py",
       "size_bytes": 16545,
       "sha256": "530eb1fc3f1deb2996c0db0a7ec6609cbcfa6f7f31623cd21515ec83fe6c09a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_host_executor_truth_boundary_v16325531.py",
+      "size_bytes": 2008,
+      "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
