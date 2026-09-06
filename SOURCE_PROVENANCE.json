@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "f9f683e991d108140e25f308ff3e3b81f4ea31b5",
-    "base_version": "16.3.25.5.30-github-actions-node24-convergence",
+    "base_commit": "e4c30593d885f5dc6eb43e9ef799e9884d39a13f",
+    "base_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "e4c30593d885f5dc6eb43e9ef799e9884d39a13f",
