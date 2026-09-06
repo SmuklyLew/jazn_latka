@@ -13,7 +13,13 @@ Jeżeli zadanie wymaga zmiany kodu lub dokumentacji integracji Ollamy, operację
 
 ## Kanoniczne uruchomienie
 
-Uruchom lokalny runtime z natywnym adapterem Ollama:
+Publicznym wejściem operatorskim jest `run.py`, tak samo jak dla lifecycle i hosta ChatGPT:
+
+```bash
+python -X utf8 run.py chat-ollama
+```
+
+`run.py` zachowuje dojrzałą implementację `main.py --chat-ollama` jako wewnętrzną ścieżkę zgodnościową. Nie przedstawiaj `main.py` jako drugiego równorzędnego operatora. Bezpośrednia komenda zgodnościowa pozostaje dostępna dla starszych integracji:
 
 ```bash
 python -X utf8 main.py --chat-ollama
@@ -26,7 +32,7 @@ W terminalu TTY ta komenda otwiera czytelną pętlę rozmowy z promptem `Ty>`. R
 Można jawnie wskazać model i endpoint:
 
 ```bash
-python -X utf8 main.py --chat-ollama \
+python -X utf8 run.py chat-ollama \
   --ollama-model <nazwa-modelu> \
   --ollama-api-base http://127.0.0.1:11434 \
   --session-id local-runtime

@@ -26,35 +26,14 @@ def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push(
     assert "PACKAGE_VERSION_FULL" in text
     assert "permissions:\n  contents: read" in text
     assert "permissions:\n      contents: write" in text
-    assert "Commit synchronized release metadata on eligible same-repository branch" in text
+    assert "Commit synchronized release metadata on master only" in text
     assert "if: github.event_name != 'pull_request'" in text
-    for branch_filter in (
-        '- master',
-        '- "update/**"',
-        '- "fix/**"',
-        '- "hotfix/**"',
-        '- "upgrade/**"',
-        '- "tools/upgrade-*"',
-    ):
-        assert branch_filter in text
-    assert 'case "$target_branch" in' in text
-    assert "master|update/*|fix/*|hotfix/*|upgrade/*|tools/upgrade-*)" in text
-    assert "Release metadata drift cannot be committed to a fork" in text
-    assert "Refusing metadata commit because unrelated paths are dirty" in text
-    assert "PACKAGE_INTEGRITY_MANIFEST\\.json|SOURCE_PROVENANCE\\.json" in text
+    assert 'if [ "$target_branch" != "master" ]; then' in text
+    assert "Automatic release-metadata commits are forbidden outside master." in text
     assert "[skip ci]" in text
     assert "github.event.pull_request.head.sha || github.head_ref || github.ref_name" in text
     assert "git push origin \"HEAD:${target_branch}\"" in text
-
-
-def test_release_metadata_branch_sync_uses_repository_token_scope_without_recursive_dispatch() -> None:
-    text = _read("release-hardening.yml")
-    assert "workflow_dispatch:" in text
-    assert "permissions:\n      contents: write" in text
-    assert "GITHUB_TOKEN" not in text
-    assert "personal access token" not in text.lower()
-    assert "git push origin \"HEAD:${target_branch}\"" in text
-    assert "repository_dispatch" not in text
+    assert "master|update/*|tools/upgrade-*|hotfix/*|upgrade/*|fix/*" not in text
 
 
 def test_pr_release_metadata_is_materialized_without_moving_exact_head() -> None:

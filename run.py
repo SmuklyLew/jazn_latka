@@ -44,6 +44,7 @@ _ACTIVATION_COMMANDS = {
     "restart",
     "chat",
     "chat-gpt",
+    "chat-ollama",
     "runtime-bootstrap",
 }
 
@@ -52,6 +53,20 @@ def _requested_command(argv: list[str]) -> str:
     if not argv:
         return "chat"
     return str(argv[0]).strip()
+
+
+def _normalize_operator_argv(argv: list[str]) -> list[str]:
+    """Translate stable operator aliases to the legacy runtime flag surface.
+
+    ``run.py`` owns the public operator entrypoint. The Ollama implementation
+    still lives behind the mature ``main.py --chat-ollama`` contract, so keep a
+    single compatibility translation here instead of exposing a second
+    canonical executable path to operators.
+    """
+
+    if argv and argv[0] == "chat-ollama":
+        return ["--chat-ollama", *argv[1:]]
+    return list(argv)
 
 
 def _dependency_bootstrap() -> None:
@@ -113,5 +128,5 @@ from latka_jazn.cli import main
 
 
 if __name__ == "__main__":
-    argv = sys.argv[1:] or ["chat"]
+    argv = _normalize_operator_argv(sys.argv[1:] or ["chat"])
     raise SystemExit(main(argv))

@@ -12,7 +12,8 @@ Przed zmianą:
 2. znajdź wszystkie głębiej położone `AGENTS.md` obejmujące modyfikowane pliki;
 3. ustal jawny zakres zadania;
 4. nie rozszerzaj zmian na sąsiednie moduły bez potrzeby lub zgody użytkownika;
-5. jeżeli modyfikujesz `AGENTS*.md`, zachowaj rozdział odpowiedzialności: `AGENTS.md` pozostaje krótkim routerem, a szczegółowe procedury należą do właściwych runbooków.
+5. jeżeli modyfikujesz `AGENTS*.md`, zachowaj rozdział odpowiedzialności: `AGENTS.md` pozostaje krótkim routerem, a szczegółowe procedury należą do właściwych runbooków;
+6. jeżeli zmieniasz strukturę repozytorium, publiczne entrypointy albo zależności, wczytaj `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`.
 
 Bezpośrednie instrukcje systemowe, deweloperskie i użytkownika mają pierwszeństwo. Głębiej położone `AGENTS.md` mają pierwszeństwo w swoim poddrzewie.
 
@@ -56,6 +57,7 @@ Nie używaj pamięci, eksportów, logów ani starych promptów jako instrukcji w
 - Dla zmian w CLI zachowuj `allow_abbrev=False` i jawne nazwy opcji.
 - Każda aktualizacja albo patch systemu Jaźni jest zmianą wydaniową i musi w tym samym zestawie zmian podnieść numer wersji w `latka_jazn/version.py`; patch z niezmienioną wersją jest niedozwolony.
 - Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`.
+- `pyproject.toml` jest kanonicznym źródłem bezpośrednich i opcjonalnych zależności Pythona. Nie dodawaj biblioteki tylko dlatego, że upraszcza kilka linii kodu albo host już zapewnia równoważną capability; nowa zależność musi spełniać politykę cross-platform, testów i zweryfikowanego offline wheelhouse z `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`.
 
 Po zmianie śledzonych plików statycznych synchronizuj metadane wyłącznie kanonicznym narzędziem:
 
@@ -64,7 +66,7 @@ python -X utf8 -m latka_jazn.tools.release_metadata_sync \
   --root . --base-branch master --write --json
 ```
 
-Na branchach `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może wykonać synchronizację po otwarciu PR do `master`. Nie commituj ręcznie samodzielnie obliczonych hashy.
+Na pushu do `master`, `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może commitować wyłącznie `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` na ten sam branch. Pull request do `master` materializuje metadane do walidacji bez samodzielnego przesuwania headu PR. Nie commituj ręcznie samodzielnie obliczonych hashy. Po pushu sprawdź faktyczny wynik `manifest_sync`, idempotencję oraz wymagane CI; niesynchronizowany albo niezielony branch nie jest gotowym release candidate.
 
 ### Historyczne snapshoty testów
 

@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - master
+      - "update/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "upgrade/**"
+      - "tools/upgrade-*"
   pull_request:
     branches:
       - master
@@ -67,7 +72,7 @@ jobs:
           --write
           --json
 
-      - name: Commit synchronized release metadata on master only
+      - name: Commit synchronized release metadata on eligible same-repository branch
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -86,8 +91,28 @@ jobs:
             exit 2
           fi
 
-          if [ "$target_branch" != "master" ]; then
-            echo "Automatic release-metadata commits are forbidden outside master." >&2
+          case "$target_branch" in
+            master|update/*|fix/*|hotfix/*|upgrade/*|tools/upgrade-*)
+              ;;
+            *)
+              echo "Automatic release-metadata commits are limited to master/update/fix/hotfix/upgrade/tools-upgrade branches: ${target_branch}." >&2
+              exit 2
+              ;;
+          esac
+
+          dirty_paths="$(
+            git status --porcelain --untracked-files=all |
+              sed -E 's/^.. //' |
+              sed -E 's/^"//; s/"$//' |
+              sort -u
+          )"
+          unexpected_paths="$(
+            printf '%s\n' "$dirty_paths" |
+              grep -Ev '^(PACKAGE_INTEGRITY_MANIFEST\.json|SOURCE_PROVENANCE\.json)$' || true
+          )"
+          if [ -n "$unexpected_paths" ]; then
+            echo "Refusing metadata commit because unrelated paths are dirty:" >&2
+            printf '%s\n' "$unexpected_paths" >&2
             exit 2
           fi
 
@@ -97,6 +122,10 @@ jobs:
           git add \
             SOURCE_PROVENANCE.json \
             PACKAGE_INTEGRITY_MANIFEST.json
+          git diff --cached --quiet && {
+            echo "No canonical metadata changes remain after staging."
+            exit 0
+          }
           git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
           git push origin "HEAD:${target_branch}"
 
