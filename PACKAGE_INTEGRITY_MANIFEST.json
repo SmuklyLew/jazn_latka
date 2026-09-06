@@ -3,11 +3,11 @@
   "version": "16.3.25.5.32-chatgpt-host-executor-recovery",
   "runtime_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
   "package_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
-  "generated_at_utc": "2026-09-06T13:36:20+00:00",
-  "updated_at_utc": "2026-09-06T13:36:20+00:00",
+  "generated_at_utc": "2026-09-06T13:37:09+00:00",
+  "updated_at_utc": "2026-09-06T13:37:09+00:00",
   "start_file": "run.py",
-  "file_count": 1165,
-  "static_file_count": 1165,
+  "file_count": 1166,
+  "static_file_count": 1166,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2897,
-      "sha256": "4b23324efdfed33a542041c834534df8c235324a9e983083afd8372eda89b133",
+      "sha256": "5c4de397d34b73a1e49e323b68b55efbc859085d77860cd3fed0a8bc6d7e4878",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7309,6 +7309,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_github_actions_node24_convergence_v16325530.py",
+      "size_bytes": 4173,
+      "sha256": "94de6359675a053c033a44767bf0708a55d1b7b0494be31598a04896742cc9f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_memory_rebuild_source_union_v16_3_25_3_1.py",
       "size_bytes": 8403,
       "sha256": "e262760de7ba3cfef431ecefba2edc8d83cb95b18c0377f92f284c7bf3f2ea7c",
@@ -8174,8 +8183,8 @@
     },
     {
       "path": "tests/test_chatgpt_host_executor_truth_boundary_v16325531.py",
-      "size_bytes": 2008,
-      "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
+      "size_bytes": 1624,
+      "sha256": "d8786a04e6bb8ae10d85e3cbe563fe88399de6b0fb239101883b6866f827509f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8471,8 +8480,8 @@
     },
     {
       "path": "tests/test_github_actions_node24_convergence_v16325530.py",
-      "size_bytes": 4173,
-      "sha256": "94de6359675a053c033a44767bf0708a55d1b7b0494be31598a04896742cc9f0",
+      "size_bytes": 3940,
+      "sha256": "ae086091d6a033742fc5a4471a41d9d61a7848355509068bb38a0c52cddc12fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
