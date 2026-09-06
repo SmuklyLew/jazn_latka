@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
-  "runtime_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
-  "package_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
-  "generated_at_utc": "2026-09-06T01:04:51+00:00",
-  "updated_at_utc": "2026-09-06T01:04:51+00:00",
+  "version": "16.3.25.5.30-github-actions-node24-convergence",
+  "runtime_version": "16.3.25.5.30-github-actions-node24-convergence",
+  "package_version": "16.3.25.5.30-github-actions-node24-convergence",
+  "generated_at_utc": "2026-09-06T01:30:07+00:00",
+  "updated_at_utc": "2026-09-06T01:30:07+00:00",
   "start_file": "run.py",
-  "file_count": 1149,
-  "static_file_count": 1149,
+  "file_count": 1157,
+  "static_file_count": 1157,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -65,8 +65,8 @@
   "files": [
     {
       "path": ".gitattributes",
-      "size_bytes": 1039,
-      "sha256": "caf84ddf960df088fbdfaa6b5f0614f0dc5178dd00ae82aa80cb065b05e967be",
+      "size_bytes": 1081,
+      "sha256": "812f683152b6091fe6291fa76fc10c1e75733cf5585c82937d7b05c2b9f7ea2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -75,7 +75,7 @@
     {
       "path": ".github/workflows/cursor-windows-conpty.yml",
       "size_bytes": 1075,
-      "sha256": "9351f1db87dc140c3d781a051699a7c4d5fc44945afa9faae50e9e5e2fb14729",
+      "sha256": "3638ee0b44dc7bba768cc738309cf03306657ca5c82c5cf2c2700ee1b6a8ef1e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -84,7 +84,7 @@
     {
       "path": ".github/workflows/dependency-artifacts.yml",
       "size_bytes": 8298,
-      "sha256": "e5c43b39921166dd07319e2ecb7b73ada3859cae2de06de89bf078087aae6a87",
+      "sha256": "4a0b9d936530af3a9a4c218b7d304f6b9266b7e6dc7944e1ff1f2484b4c451c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -93,7 +93,16 @@
     {
       "path": ".github/workflows/dependency-review.yml",
       "size_bytes": 431,
-      "sha256": "c11b02d3f94db02883260db6a609c03e7c4d6ce099f9585ca2be7b22586e68de",
+      "sha256": "f009eb6e9bb604f3d66163a9ada2b8016565e18f5e2add508743b527e048d38a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/javascript-node24-contract.yml",
+      "size_bytes": 2709,
+      "sha256": "a20b92e717a98e9680cda5724f663f8f4e819c1fb2097e983241248ed35c28e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -102,7 +111,7 @@
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
       "size_bytes": 2884,
-      "sha256": "7a0518244ac3f63dab9f15aa986676e2ad71fa8142456ef759582768e66a29f1",
+      "sha256": "fb2a63881cac4494611bd8c84f26415c30b55f3a39cac2a69e6d74a269a164f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -111,7 +120,7 @@
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
       "size_bytes": 17908,
-      "sha256": "dce2932b94431a50914922d3feae03523719a01a585305cf42e38be7c7637573",
+      "sha256": "4c98f71d94f733b2a25b17447c0421771732cb3b0fa469a5c09ff69284df6cc3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -120,7 +129,7 @@
     {
       "path": ".github/workflows/persistent-runtime-e2e.yml",
       "size_bytes": 7740,
-      "sha256": "00b3cb90ef2f6a29508d4b3859fb2562538a64cc8e24c0a813ae66c781807bf5",
+      "sha256": "391c8adc8dc65b5a69958692115cd33f0fbdadaf3beb95b226b2ab289bb94671",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -129,7 +138,7 @@
     {
       "path": ".github/workflows/powershell-terminal-regressions.yml",
       "size_bytes": 3911,
-      "sha256": "1588f2904ff6a2b8183039b1f2412c5fe2227416b273aa4cbd99471c6a16e6b2",
+      "sha256": "d88f9d037ab1e9ab195828a6f504ccdfd01e852ac3678e815b6057d57d78671e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -137,8 +146,8 @@
     },
     {
       "path": ".github/workflows/pyright-active-tree-audit.yml",
-      "size_bytes": 2639,
-      "sha256": "425c60bf29ade07cbc6834bdd0773fb83ffa567ea020d4cd24ee2fee746a95fb",
+      "size_bytes": 2678,
+      "sha256": "fbc631d1bc8f395073f82224f1db60f7e2bffce01abfac294b4e3b0def0f969c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -146,8 +155,8 @@
     },
     {
       "path": ".github/workflows/pyright-classified-fixes-v3.yml",
-      "size_bytes": 4778,
-      "sha256": "5c613dbe5c1f3ceb5ca1e281ba731ce01aae8e4940547dfb96214dbd05cd3a2e",
+      "size_bytes": 4817,
+      "sha256": "3343d90ffac8f918c73c22f28ad0c8f66d06e1a329dcef1f164827a43d6751b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -155,8 +164,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 16583,
-      "sha256": "c064ec2534b2fe47057f3bd7b0fdabd9e09c56447ecf14aec528af4ec90363c5",
+      "size_bytes": 16622,
+      "sha256": "dd22a183971da94cb1f2af5573af0103625c3ae2e775c51310265dd89bf9a88d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -164,8 +173,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2064,
-      "sha256": "5759efefd210e4616fe1881a5c09671bfafdadef860b57ca2602fa4ffdfa91df",
+      "size_bytes": 2179,
+      "sha256": "62c87aa974fb581b0310fc972792c392cd552d49ecb8cffb406ed99add632b96",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -182,8 +191,8 @@
     },
     {
       "path": "AGENTS.codex.md",
-      "size_bytes": 6809,
-      "sha256": "d893c885db4a5fd858a6bc85c26bb9c496caf3f07c73361ceba9dd680a718b72",
+      "size_bytes": 8039,
+      "sha256": "1f0eec50ac7f711e4542265bf5658b559f88643fb9e22be32470eb55e1a8c642",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -227,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "08ab4192850bc128dcf85a3e7b54fc7a006a88b9e6e8431f5e5c76d5b8a98e9f",
+      "size_bytes": 2929,
+      "sha256": "aa9efe2b9c76ecf26ce97f587d728c620671f349ee0d9dcf45d079d6b274f282",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1388,8 +1397,8 @@
     },
     {
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
-      "size_bytes": 6278,
-      "sha256": "bc0bb54a0c5a85727db4e59cf60aa03921b4ec138efdcabcfebe119f4f45c919",
+      "size_bytes": 7935,
+      "sha256": "2fc7b7bdfc7075546be8fb97154c8ed7f129f34320dcc4820f52f26705597df6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6157,6 +6166,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/javascript_runtime.py",
+      "size_bytes": 5996,
+      "sha256": "383dda5a3f029de17d13eda38094ef247240ad1ed63e9aaa502b78a7ebed604d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_rebuild.py",
       "size_bytes": 7497,
       "sha256": "e0fa3d65b5e498360ee125c44ad5da2519f37b357964763d6d75b850ad98ec51",
@@ -7094,8 +7112,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6727,
-      "sha256": "4eda25d0787a2304d5e42c405a1f602a3371dd11807264de40c5d2aa33a44e5a",
+      "size_bytes": 6647,
+      "sha256": "fc92d87b0b0c6dda5cd7fd86ba44d22e6e341340a329eaee6c219bea3a9dafcb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8374,6 +8392,15 @@
       "path": "tests/test_full_canon_model_context.py",
       "size_bytes": 5606,
       "sha256": "ca9483e9340ff88be8de24d039a068da2b4ede9d286db78377fc9630585eb94b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_github_actions_node24_convergence_v16325530.py",
+      "size_bytes": 4173,
+      "sha256": "94de6359675a053c033a44767bf0708a55d1b7b0494be31598a04896742cc9f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10090,6 +10117,51 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/github_actions_node24_audit.py",
+      "size_bytes": 4507,
+      "sha256": "e41e87c85706bd8f0c57547c3e72163e1e163462f33d46b7146ef67f049b6ba3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/javascript/README.md",
+      "size_bytes": 1626,
+      "sha256": "072c34d6db1850e56619dd24f1be7e52cbe745b9746097027b9fbc184b478902",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/javascript/jazn_node24_probe.mjs",
+      "size_bytes": 487,
+      "sha256": "76b1d5bfec3a3fcb56e9a5a8bc3b2a278562d6267ac755a73178b02e5f5b5960",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/javascript/package-lock.json",
+      "size_bytes": 270,
+      "sha256": "88044866ff9e4cc9a0a947568ae6d3e4c2c1d21dacd69116eb2274ea5289b6ea",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/javascript/package.json",
+      "size_bytes": 264,
+      "sha256": "dfba9a14e93f18ebdb6f69e0dbbbc01962748a90c1de1865b28198180e697c88",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_archive.py",
       "size_bytes": 4740,
       "sha256": "46cff926b2b6e432a53a097d61c18fb05253805dd1b5f57852fd491821dc3543",
@@ -10793,11 +10865,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
+  "release_version": "16.3.25.5.30-github-actions-node24-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
-    "package_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
-    "release_version": "16.3.25.5.29-release-metadata-layout-operator-convergence"
+    "runtime_version": "16.3.25.5.30-github-actions-node24-convergence",
+    "package_version": "16.3.25.5.30-github-actions-node24-convergence",
+    "release_version": "16.3.25.5.30-github-actions-node24-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
