@@ -62,8 +62,12 @@ class HostExecutorObservation:
             raise ValueError("command_completed_requires_process_created")
         if self.returncode is not None and not self.command_completed:
             raise ValueError("returncode_requires_completed_command")
+        if self.command_completed and self.returncode is None:
+            raise ValueError("completed_command_requires_returncode")
         if self.filesystem_probe_succeeded is not None and not self.command_completed:
             raise ValueError("filesystem_probe_result_requires_completed_command")
+        if self.filesystem_probe_succeeded is True and self.returncode != 0:
+            raise ValueError("successful_filesystem_probe_requires_zero_returncode")
 
 
 @dataclass(frozen=True)
@@ -102,6 +106,21 @@ def classify_host_executor_observation(
     """Classify one host observation without fabricating filesystem/runtime state."""
 
     if not observation.process_created:
+        if not observation.error_class:
+            return HostExecutorRecoveryDecision(
+                schema_version=SCHEMA_VERSION,
+                executor_state=HostExecutorState.UNKNOWN,
+                command_state=HostCommandState.NOT_STARTED,
+                filesystem_state=HostFilesystemState.UNKNOWN,
+                package_state="unknown",
+                runtime_state="unverified",
+                next_action=HostRecoveryAction.STOP_LOCAL_BOOTSTRAP,
+                reason_code="insufficient_executor_observation",
+                retry_allowed=False,
+                retry_budget_remaining=0,
+                canonical_resume_entrypoint=None,
+            )
+
         probes_remaining = max(
             0,
             MAX_ALTERNATIVE_EXECUTOR_PROBES - observation.alternative_probe_count,
@@ -121,11 +140,7 @@ def classify_host_executor_observation(
                 if may_probe_alternative
                 else HostRecoveryAction.STOP_LOCAL_BOOTSTRAP
             ),
-            reason_code=(
-                "host_tool_failed_before_process_creation"
-                if observation.error_class
-                else "process_creation_not_observed"
-            ),
+            reason_code="host_tool_failed_before_process_creation",
             retry_allowed=may_probe_alternative,
             retry_budget_remaining=probes_remaining if may_probe_alternative else 0,
             canonical_resume_entrypoint=None,
@@ -152,7 +167,7 @@ def classify_host_executor_observation(
             canonical_resume_entrypoint=None,
         )
 
-    if observation.returncode not in (None, 0):
+    if observation.returncode != 0:
         return HostExecutorRecoveryDecision(
             schema_version=SCHEMA_VERSION,
             executor_state=HostExecutorState.AVAILABLE,
