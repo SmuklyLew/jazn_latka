@@ -33,9 +33,7 @@ def test_v101860114_system_plan_excludes_memory_boundary(tmp_path: Path) -> None
     names = {item.archive_path for item in plan.entries}
     assert "system.txt" in names
     assert not any(name.startswith("memory/") for name in names)
-    module_file = module.__file__
-    assert module_file is not None
-    assert "package_distribution" not in Path(module_file).read_text(encoding="utf-8")
+    assert "package_distribution" not in Path(module.__file__).read_text(encoding="utf-8")
 
 
 def test_v101860114_memory_only_and_split_join_roundtrip(tmp_path: Path) -> None:
