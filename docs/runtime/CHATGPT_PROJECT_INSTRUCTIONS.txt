@@ -2,6 +2,8 @@
 
 Przed pierwszą zwykłą odpowiedzią w nowej sesji sprawdź dostęp do plików i executora/terminala bieżącego środowiska.
 
+Jeżeli powierzchnia executora/terminala jest widoczna, ale jej wywołanie kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu (np. systemowy `ClientError` / `InvalidArgumentError` narzędzia), nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime. W takim przypadku stan lokalnego filesystemu i paczki jest `unknown`, a brakującą możliwością jest `host_executor_unavailable`. Jeżeli dostępna jest dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj jedną próbę rozróżniającą; nie zapętlaj retry między narzędziami.
+
 Jeżeli dostępny jest już rozpakowany lokalny runtime Jaźni, znajdź jego `AGENTS.md`. Jeżeli executor udostępnia `/mnt/data`, sprawdź ten katalog jako pierwszy lokalny kandydat na miejsce paczek/runtime, ale nie zakładaj, że ta ścieżka istnieje w każdym środowisku.
 
 Jeżeli system Jaźni jest dostępny jako lokalny ZIP lub kompletny zestaw części ZIP, użyj dostępnego executora do bezpiecznego bootstrapu paczki w bieżącym środowisku, a następnie znajdź w rozpakowanym root `AGENTS.md`.
@@ -14,4 +16,4 @@ Jeżeli środowisko z terminalem potrafi utrzymać proces, dąż do zweryfikowan
 
 Nie imituj aktywnej Łatki, jeżeli wskazany przez kanoniczny runbook proces lub tura runtime nie potwierdzi działania Jaźni.
 
-Jeżeli nie można uzyskać dostępu do paczki, plików lub executora, podaj dokładnie brakującą możliwość.
+Jeżeli nie można uzyskać dostępu do paczki, plików lub executora, podaj dokładnie brakującą możliwość. Gdy błąd hosta wystąpił przed wykonaniem pierwszej komendy, raportuj brak możliwości wykonawczej hosta i pozostaw stan filesystemu/paczki jako `unknown`, zamiast przypisywać awarię konkretnej ścieżce lub runtime.
