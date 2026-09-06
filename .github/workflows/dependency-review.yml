@@ -6,9 +6,65 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  classify_changes:
+    name: classify PR scope
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+    steps:
+      - name: Detect docs-only pull request
+        id: scope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          api = os.environ["GITHUB_API_URL"].rstrip("/")
+          repo = os.environ["REPOSITORY"]
+          pr = os.environ["PR_NUMBER"]
+          token = os.environ["GH_TOKEN"]
+          files = []
+          page = 1
+          while True:
+              request = urllib.request.Request(
+                  f"{api}/repos/{repo}/pulls/{pr}/files?per_page=100&page={page}",
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              with urllib.request.urlopen(request) as response:
+                  batch = json.load(response)
+              if not isinstance(batch, list):
+                  raise RuntimeError(f"Unexpected pull files response: {type(batch)!r}")
+              files.extend(str(item["filename"]) for item in batch)
+              if len(batch) < 100:
+                  break
+              page += 1
+
+          docs_only = bool(files) and all(path.startswith("docs/") for path in files)
+          non_docs = [path for path in files if not path.startswith("docs/")]
+          print(f"changed_files={len(files)} docs_only={docs_only}")
+          if non_docs:
+              print("non_docs=" + ",".join(non_docs[:20]))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"docs_only={'true' if docs_only else 'false'}\n")
+          PY
+
   dependency-review:
+    needs: classify_changes
+    if: needs.classify_changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
