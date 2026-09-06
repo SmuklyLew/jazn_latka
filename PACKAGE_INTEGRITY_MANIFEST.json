@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.30-github-actions-node24-convergence",
-  "runtime_version": "16.3.25.5.30-github-actions-node24-convergence",
-  "package_version": "16.3.25.5.30-github-actions-node24-convergence",
-  "generated_at_utc": "2026-09-06T01:39:35+00:00",
-  "updated_at_utc": "2026-09-06T01:39:35+00:00",
+  "version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+  "runtime_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+  "package_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+  "generated_at_utc": "2026-09-06T02:05:33+00:00",
+  "updated_at_utc": "2026-09-06T02:05:33+00:00",
   "start_file": "run.py",
   "file_count": 1158,
   "static_file_count": 1158,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2918,
-      "sha256": "8080178c8f94a6dfe002da3a10d770bc99bf214f58b38009137d04ec1aba2f5b",
+      "size_bytes": 2936,
+      "sha256": "e3f55d936c100b10d56f39ad55384fc1ad7176d3fba9b57629058f58a30461ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7112,8 +7112,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6647,
-      "sha256": "fc92d87b0b0c6dda5cd7fd86ba44d22e6e341340a329eaee6c219bea3a9dafcb",
+      "size_bytes": 6560,
+      "sha256": "8c9192b5dc76f1d9dd4190ba53f1ce77a7401c40cea213dff383aae85f220cc1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10874,11 +10874,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.30-github-actions-node24-convergence",
+  "release_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.30-github-actions-node24-convergence",
-    "package_version": "16.3.25.5.30-github-actions-node24-convergence",
-    "release_version": "16.3.25.5.30-github-actions-node24-convergence"
+    "runtime_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+    "package_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+    "release_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary"
   },
   "legacy_aliases": {
     "version": "release_version"
