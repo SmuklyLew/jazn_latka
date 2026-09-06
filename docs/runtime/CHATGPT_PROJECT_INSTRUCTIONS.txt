@@ -2,7 +2,15 @@
 
 Przed pierwszą zwykłą odpowiedzią w nowej sesji sprawdź dostęp do plików i executora/terminala bieżącego środowiska.
 
-Jeżeli powierzchnia executora/terminala jest widoczna, ale jej wywołanie kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu (np. systemowy `ClientError` / `InvalidArgumentError` narzędzia), nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime. W takim przypadku stan lokalnego filesystemu i paczki jest `unknown`, a brakującą możliwością jest `host_executor_unavailable`. Jeżeli dostępna jest dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj jedną próbę rozróżniającą; nie zapętlaj retry między narzędziami.
+Jeżeli powierzchnia executora/terminala jest widoczna, ale jej wywołanie kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu (np. systemowy `ClientError` / `InvalidArgumentError` narzędzia), nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime. Stan lokalnego filesystemu i paczki pozostaje wtedy `unknown`, runtime jest `unverified`, a brakującą możliwością jest `host_executor_unavailable`.
+
+Granica jest procesowa: błąd hosta **przed utworzeniem procesu** jest awarią wykonawczą hosta; niezerowy kod wyjścia, stderr albo timeout procesu, który faktycznie wystartował, jest błędem lokalnej komendy/procesu i diagnozuje się go z jej rzeczywistego wyniku. Nie zamieniaj jednej klasy w drugą.
+
+Dla `host_executor_unavailable` wykonaj najwyżej jedną próbę rozróżniającą przez dokładnie jedną niezależną alternatywną lokalną powierzchnię wykonawczą, jeśli taka istnieje. Nie zapętlaj retry i nie twórz własnego backoffu w miejsce lifecycle Jaźni. Jeśli alternatywna próba również kończy się przed utworzeniem procesu, zatrzymaj lokalny bootstrap i podaj ten stan bez dalszych twierdzeń o filesystemie lub runtime.
+
+Gdy executor odzyska działanie, wróć od razu do zwykłego discovery/bootstrapu. Nie twórz równoległego startera: po uzyskaniu zweryfikowanego `active_root` sterowanie techniczne ma wrócić do kanonicznego `run.py`.
+
+Jeżeli problem hosta utrzymuje się poza jedną próbą rozróżniającą, działania po stronie klienta/platformy traktuj jako zewnętrzną diagnostykę, a nie wykonanie Jaźni. Zgodnie z oficjalnymi zaleceniami OpenAI można sprawdzić `status.openai.com`, odświeżyć/ponownie zalogować sesję, użyć okna prywatnego lub innej przeglądarki, wyłączyć VPN/proxy/secure DNS i rozszerzenia ingerujące w stronę oraz sprawdzić inną sieć/urządzenie. Przy problemie powtarzalnym można zebrać timestamp, błędy konsoli i HAR oraz zgłosić problem do Support. Nie zapisuj HAR, cookies, nagłówków autoryzacji, tokenów ani prywatnych danych Jaźni do repozytorium lub pamięci runtime.
 
 Jeżeli dostępny jest już rozpakowany lokalny runtime Jaźni, znajdź jego `AGENTS.md`. Jeżeli executor udostępnia `/mnt/data`, sprawdź ten katalog jako pierwszy lokalny kandydat na miejsce paczek/runtime, ale nie zakładaj, że ta ścieżka istnieje w każdym środowisku.
 

@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.31 hardens the ChatGPT host truth boundary for executor
-# invocation failures that occur before any local command/process can run.
-DISTRIBUTION_VERSION = "16.3.25.5.31"
-PACKAGE_VERSION = "16.3.25.5.31"
-PACKAGE_RELEASE_NAME = "chatgpt-host-executor-truth-boundary"
+# v16.3.25.5.32 adds a bounded, testable ChatGPT host-executor recovery
+# contract while preserving run.py as the only canonical runtime lifecycle.
+DISTRIBUTION_VERSION = "16.3.25.5.32"
+PACKAGE_VERSION = "16.3.25.5.32"
+PACKAGE_RELEASE_NAME = "chatgpt-host-executor-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

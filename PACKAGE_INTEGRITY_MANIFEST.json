@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-  "runtime_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-  "package_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-  "generated_at_utc": "2026-09-06T02:07:07+00:00",
-  "updated_at_utc": "2026-09-06T02:07:07+00:00",
+  "version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+  "runtime_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+  "package_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+  "generated_at_utc": "2026-09-06T13:24:39+00:00",
+  "updated_at_utc": "2026-09-06T13:24:39+00:00",
   "start_file": "run.py",
-  "file_count": 1160,
-  "static_file_count": 1160,
+  "file_count": 1164,
+  "static_file_count": 1164,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "973c768bbeb20589f8ef22af8394c4dcab8760a7fef9237ad18120534d06d62c",
+      "size_bytes": 2903,
+      "sha256": "0f2939207db8ba4ff1e80aed82bc754dce261e223ef4d9bff12f3271542d0419",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1441,6 +1441,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_32_CHATGPT_HOST_EXECUTOR_RECOVERY.md",
+      "size_bytes": 6566,
+      "sha256": "a19d58175d001cd752ce2b1c439001bbdcc2dcf5e7092657f4aac4bb5dd2b4a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1460,8 +1469,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 2527,
-      "sha256": "432e39a4776c657ca2205de649213115ff4716b0297172b300528bedff64687b",
+      "size_bytes": 4045,
+      "sha256": "5bd661219428ca6db2b11329fb13304b77cc2fe9d654abd6ae2f7d0c46174445",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2107,6 +2116,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/chatgpt_host_executor_contract.py",
+      "size_bytes": 7647,
+      "sha256": "ae8f7892a1a503a402c6af76dbd523e3684e8f95968866c9b4e454e28ca478ee",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/chatgpt_host_pending_store.py",
       "size_bytes": 24788,
       "sha256": "6385e0122c5ddc75de3b0666bb1cc5fe8a70b95c288378bf4d35d67882047dd2",
@@ -2126,8 +2144,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_recovery.py",
-      "size_bytes": 5650,
-      "sha256": "560b1133868757e75b70aef7778ff51bf238ee485c89608ad845b1c599f7da3d",
+      "size_bytes": 6390,
+      "sha256": "c03a3280562ac7292c6c24435c905b63180827c94705abed14e3054da66b9d7d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7121,8 +7139,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6560,
-      "sha256": "8c9192b5dc76f1d9dd4190ba53f1ce77a7401c40cea213dff383aae85f220cc1",
+      "size_bytes": 6558,
+      "sha256": "dadbd5ff0259534550ac40dffa9a43a034e7ede38771c1ae22c2419270a1b9af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8122,6 +8140,24 @@
       "path": "tests/test_chatgpt_host_contract_hardening.py",
       "size_bytes": 16545,
       "sha256": "530eb1fc3f1deb2996c0db0a7ec6609cbcfa6f7f31623cd21515ec83fe6c09a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_host_executor_observation_validation_v16325532.py",
+      "size_bytes": 1568,
+      "sha256": "cc4df27f5d6718e7493d6cdae6e4b3525ebb7238c6f267604f9d9abaf46995dd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_host_executor_recovery_v16325532.py",
+      "size_bytes": 6000,
+      "sha256": "456ac12c60021059f4d4f0424bc0ec4cd0dff5de4ca40459bc29f56266388c1f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10892,11 +10928,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+  "release_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-    "package_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
-    "release_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary"
+    "runtime_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+    "package_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
+    "release_version": "16.3.25.5.32-chatgpt-host-executor-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
