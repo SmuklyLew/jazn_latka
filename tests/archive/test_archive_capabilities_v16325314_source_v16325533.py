@@ -66,9 +66,7 @@ def test_archive_report_exposes_rarfile_as_canonical_read_backend() -> None:
     assert rar_ops["detect"] is True
     assert rar_ops["create"] is False
     assert rar_ops["inspect"] is rar["backend_available"]
-    assert report["dependency_contract"]["core_runtime_requirements"] == []
-    assert "rarfile>=4.5,<5" in report["dependency_contract"]["requirements"]
-    assert rar["backend_kind"] == "optional_plugin_dependency_plus_external_decompressor"
+    assert "rarfile>=4.5,<5" in report["dependency_contract"]["core_runtime_requirements"]
 
 
 def test_archive_report_exposes_existing_fail_closed_security_policy() -> None:
@@ -95,11 +93,10 @@ def test_archive_dependency_contract_matches_dependency_studio_registry() -> Non
         (ROOT / "latka_jazn" / "resources" / "dependencies" / "profiles.json").read_text(encoding="utf-8")
     )
     archive_profile = registry["profiles"]["archive"]
-    assert registry["activation_profiles"] == ["core"]
-    assert registry["release_profiles"] == ["core", "archive"]
-    assert archive_profile["kind"] == "runtime_optional"
-    assert archive_profile["source_optional_group"] == "archive"
-    assert report["dependency_contract"]["activation_required"] is False
+    assert "archive" in registry["activation_profiles"]
+    assert archive_profile["kind"] == "runtime_required"
+    assert archive_profile["requirements"] == report["dependency_contract"]["requirements"]
+    assert report["dependency_contract"]["activation_required"] is True
 
 
 def test_archive_format_lookup_accepts_canonical_aliases() -> None:

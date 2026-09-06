@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-GENERATOR_VERSION = "10.1.86.0.113"
+GENERATOR_VERSION = "10.1.86.0.114"
 GENERATOR_TITLE = "Jaźń Pack Generator"
 SETTINGS_SCHEMA = "jazn_pack_generator_settings/v1"
 PACKAGE_MANIFEST_SCHEMA = "jazn_pack_generator_package/v2"

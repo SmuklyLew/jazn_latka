@@ -48,6 +48,11 @@ def build_manifest(
             "directory_count": plan.directory_count,
             "total_size_bytes": plan.source_total_size_bytes,
             "byte_exact": True,
+            "source_basis": (
+                "canonical_release"
+                if verification.get("canonical_release_bytes") is True
+                else "selected_folder"
+            ),
             "staging_mode": str(verification.get("staging_mode") or "source-folder-byte-copy"),
             "entries": [
                 {
@@ -66,11 +71,20 @@ def build_manifest(
         "excluded": list(plan.excluded),
         "verification": verification,
         "truth_boundary": (
-            "Jaźń Pack Generator archiwizuje rzeczywiste bajty zatwierdzonego planu wybranego "
-            "folderu SYSTEM/MEMORY. .gitattributes może dostarczyć diagnostykę EOL, ale nie "
-            "przekształca bajtów i nie blokuje poprawnego snapshotu folderu. SHA-256 każdego "
-            "pliku jest ponownie sprawdzany względem wpisu ZIP. Opcja split dzieli jeden "
-            "logiczny ZIP na binarne części transportowe."
+            (
+                "SYSTEM bytes are materialized from canonical Git blobs by create_release_staging, or from an already "
+                "verified export without Git. Checkout EOL conversion is therefore not a release source. The completed "
+                "ZIP is safely extracted to a fresh clean-room and its embedded PACKAGE_INTEGRITY_MANIFEST.json and "
+                "SOURCE_PROVENANCE.json are reverified before publication. MEMORY content, when requested, remains a "
+                "byte-exact filesystem snapshot outside the protected static SYSTEM inventory. Split mode cuts one "
+                "already-verified logical ZIP into binary transport parts."
+            )
+            if plan.request.content.value != "memory"
+            else (
+                "MEMORY packages preserve the actual selected memory bytes. .gitattributes is diagnostic only for "
+                "folder snapshots. Per-file SHA-256 is rechecked against ZIP members; split mode cuts one logical ZIP "
+                "into binary transport parts."
+            )
         ),
     }
 

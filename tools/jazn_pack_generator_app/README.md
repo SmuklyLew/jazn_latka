@@ -1,12 +1,10 @@
-# Jaźń Pack Generator 10.1.86.0.113
+# Jaźń Pack Generator 10.1.86.0.114
 
 Active implementation of `tools/jazn_pack_generator.py`.
 
 ## Primary scope
 
-The tool archives the **selected Jaźń project/system folder** using the actual
-bytes of files admitted by the explicit safety/exclusion policy. Its primary
-archive format is one ordinary logical ZIP.
+The tool has two explicit byte contracts. Runnable **SYSTEM** content is materialized from canonical release staging (Git blobs for a checkout, verified-export bytes without Git). **MEMORY** remains a selected-folder byte-exact snapshot. The primary archive format is one ordinary logical ZIP.
 
 The user chooses whether that logical ZIP remains:
 
@@ -49,9 +47,11 @@ SYSTEM packages.
 - The output cannot be inside the system or memory source.
 - `.git`, `.archives`, runtime state, caches, local mutable settings and nested
   package artifacts are excluded from SYSTEM.
-- Approved source files are copied to temporary staging **byte-for-byte**.
-- Source files changing during staging fail closed.
-- CRC and SHA-256 are verified after ZIP creation.
+- MEMORY source files are copied to temporary staging **byte-for-byte** and changing files fail closed.
+- SYSTEM is materialized through the canonical release staging contract; checkout EOL bytes are not release input.
+- CRC and per-member SHA-256 are verified after ZIP creation.
+- SYSTEM ZIPs are safely extracted into a fresh clean-room and their embedded package-integrity/provenance contracts are reverified before publication.
+- Duplicate members, path traversal, symlinks and case-fold collisions fail closed.
 - Manifest schema `jazn_pack_generator_package/v2` records SHA-256 for every
   packaged file.
 - The verifier reads members back from ZIP and requires their SHA-256 to match
@@ -59,17 +59,10 @@ SYSTEM packages.
 - Split packages have logical and per-part SHA-256 sidecars.
 - Extraction is staged and committed only after preflight.
 
-## EOL policy in 10.1.86.0.113
+## EOL policy in 10.1.86.0.114
 
-`.gitattributes` is repository/checkout policy, not the source of archive bytes.
-When it is readable, Pack Generator may report LF/CRLF differences as
-**diagnostics only**. EOL differences do not transform source bytes and do not
-block a valid folder snapshot.
+For SYSTEM, `.gitattributes` defines checkout behavior but the working tree is not the release byte source. Git text can be LF in the index and CRLF in the working directory; `create_release_staging()` reads canonical Git blobs, so any working-tree EOL drift is bypassed rather than accepted into a runnable release.
 
-Therefore archive byte integrity means:
+For MEMORY, `.gitattributes` remains diagnostic only and snapshot bytes are preserved exactly.
 
-`SHA256(actual selected source bytes) == SHA256(bytes read back from ZIP)`.
-
-A missing, unreadable or malformed `.gitattributes` does not prevent packing a
-normal folder snapshot. This keeps the archiver usable for ordinary folders,
-including copies that are not Git working trees.
+See `docs/runtime/JAZN_PACK_GENERATOR_V101860114_CANONICAL_SYSTEM_RELEASE.md`.

@@ -34,6 +34,7 @@ innego szablonu projektu.
 │  ├─ bridge/ + mcp/              # transporty host-runtime
 │  ├─ memory/ + db/               # pamięć i trwałe magazyny
 │  ├─ dependencies/               # dependency studio i offline bundles
+│  ├─ plugins/                    # optional capabilities + PyPA entry-point registry
 │  ├─ nlp/                        # przetwarzanie języka
 │  ├─ resources/                  # wersjonowane zasoby statyczne
 │  └─ tools/                      # narzędzia należące do pakietu
@@ -160,3 +161,10 @@ Masowe przeniesienie katalogu jest dopuszczalne tylko wtedy, gdy jednocześnie:
 
 Bez tych dowodów preferuj reorganizację odpowiedzialności wewnątrz istniejących
 modułów zamiast masowego rename/move.
+
+
+## 10. Pluginy i capability operatorskie
+
+Opcjonalne rozszerzenia używają grupy PyPA entry points `jazn.plugins`. Discovery nie importuje third-party kodu domyślnie; jawne ładowanie izoluje błąd pluginu jako stan pluginu, nie błąd core. `archive` jest pierwszą built-in optional capability: stdlib ZIP pozostaje dostępny bez extras, natomiast 7z/AES ZIP/RAR mają osobną enhanced readiness.
+
+Git i pip są capability operatorskimi. Live daemon nie może automatycznie wykonywać mutujących `git pull/checkout/reset/merge/push` ani sieciowego `pip install`. pip jest backendem Dependency Studio; bootstrap runtime korzysta tylko z verified local wheelhouse, hash lock i binary wheels.

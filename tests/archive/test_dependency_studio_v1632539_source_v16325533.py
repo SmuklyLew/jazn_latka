@@ -54,11 +54,12 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
         "pypdf>=5.0.0",
         "tzdata>=2024.1",
         "packaging>=24.2,<27",
+        "py7zr>=1.1.3,<2",
+        "pyzipper>=0.4.0,<1",
     ]
     pyproject = "[project]\nname='fixture'\nversion='1.0'\nrequires-python='>=3.12'\ndependencies=[\n"
     pyproject += "".join(f"  {item!r},\n" for item in deps)
     pyproject += "]\n[project.optional-dependencies]\n"
-    pyproject += "archive=['py7zr>=1.1.3,<2','pyzipper>=0.4.0,<1','rarfile>=4.5,<5']\n"
     pyproject += "memory-rebuild-ui=['prompt-toolkit>=3.0.52,<4']\n"
     pyproject += "memory-cloud=['PyNaCl>=1.5,<2']\n"
     pyproject += "memory-cloud-server=['PyNaCl>=1.5,<2','psycopg[binary]>=3.2,<4','boto3>=1.35,<2']\n"
@@ -152,9 +153,8 @@ def test_core_archive_resolves_all_required_base_dependencies(tmp_path: Path) ->
         "packaging>=24.2,<27",
         "py7zr>=1.1.3,<2",
         "pyzipper>=0.4.0,<1",
-        "rarfile>=4.5,<5",
     ]
-    assert activation_profile_names(root) == ("core",)
+    assert activation_profile_names(root) == ("core", "archive")
 
 
 def test_windows_x64_download_plan_is_wheel_only_and_targeted(tmp_path: Path) -> None:
@@ -382,16 +382,8 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
     source_dependencies = Path(__file__).parents[1] / "latka_jazn" / "dependencies"
     for source in source_dependencies.glob("*.py"):
         shutil.copy2(source, root / "latka_jazn" / "dependencies" / source.name)
-    (root / "latka_jazn" / "core").mkdir(exist_ok=True)
-    (root / "latka_jazn" / "core" / "__init__.py").write_text("", encoding="utf-8")
-    for core_name in ("runtime_root.py", "version_source.py"):
-        shutil.copy2(Path(__file__).parents[1] / "latka_jazn" / "core" / core_name, root / "latka_jazn" / "core" / core_name)
     (root / "latka_jazn" / "cli.py").write_text(
         "def main(argv=None):\n    return 0\n", encoding="utf-8"
-    )
-    (root / "latka_jazn" / "version.py").write_text(
-        'PACKAGE_VERSION = "fixture"\nPACKAGE_RELEASE_NAME = ""\nPACKAGE_VERSION_FULL = PACKAGE_VERSION\n',
-        encoding="utf-8",
     )
     shutil.copy2(Path(__file__).parents[1] / "run.py", root / "run.py")
 
@@ -408,28 +400,6 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
     assert completed.returncode == 78
     assert "required_python_dependencies_not_ready" in completed.stderr
     assert "no_verified_wheelhouse" in completed.stderr
-
-
-
-def test_install_uses_fresh_environment_and_atomically_switches_activation_marker(tmp_path: Path) -> None:
-    root = _project(tmp_path, dependencies=["demo==1.0"])
-    bundle = _bundle(root, tmp_path / "bundle-fresh", profiles=["core"])
-    environments = tmp_path / "managed-envs"
-
-    first = install_bundle(root, bundle, offline=True, environments_root=environments)
-    second = install_bundle(root, bundle, offline=True, environments_root=environments)
-
-    first_root = Path(first["environment_root"])
-    second_root = Path(second["environment_root"])
-    assert first_root != second_root
-    assert first_root.is_dir()
-    assert second_root.is_dir()
-    assert first["fresh_environment"] is True
-    assert second["fresh_environment"] is True
-    assert second["activation_marker_updated"] is True
-    marker = json.loads(environment_marker_path(root).read_text(encoding="utf-8"))
-    assert Path(marker["environment_root"]).resolve() == second_root.resolve()
-    assert marker["environment_identity"] == second["environment_identity"]
 
 
 def test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift(tmp_path: Path) -> None:

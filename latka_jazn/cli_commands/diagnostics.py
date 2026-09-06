@@ -9,6 +9,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.chatgpt_host_pending_store import host_request_store_status
 from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.core.operator_capabilities import operator_capability_report
 from latka_jazn.core.readiness import (
     evaluate_runtime_readiness,
     evaluate_system_readiness_profile,
@@ -26,6 +27,7 @@ from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
 from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
+from latka_jazn.plugins import plugin_readiness_report
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -142,9 +144,7 @@ def status_payload(
     process_ok = active_state in {"active_trusted", "active_degraded"}
     runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
     transactional_memory_ready = bool(transactional_memory.get("ready"))
-    runtime_core_ready = bool(
-        process_ok and runtime_write_ready and transactional_memory_ready
-    )
+    runtime_core_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
     fully_ready = runtime_core_ready
     conversation_memory = startup.get("conversation_archive_status") or {}
     try:
@@ -159,6 +159,8 @@ def status_payload(
         }
     continuity = startup.get("memory_continuity_status") or {}
     rest_status = daemon.get("rest_cycle_status") or {}
+    plugin_readiness = plugin_readiness_report()
+    operator_capabilities = operator_capability_report(root)
     try:
         from latka_jazn.memory.memory_sync_runtime import MemorySyncRuntime
 
@@ -172,6 +174,11 @@ def status_payload(
             "error": str(exc),
             "truth_boundary": "Cloud sync diagnostics are non-blocking for local runtime readiness.",
         }
+
+    archive_plugin = next(
+        (item for item in plugin_readiness.get("plugins") or [] if item.get("plugin_id") == "archive"),
+        {},
+    )
     system_readiness = evaluate_system_readiness_profile(
         profile="interactive_live_voice",
         capabilities={
@@ -183,17 +190,11 @@ def status_payload(
             "live_voice": {
                 "classification": "required",
                 "ready": startup.get("voice_live_ready"),
-                "status": (
-                    "ready"
-                    if startup.get("voice_live_ready") is True
-                    else "not_ready"
-                ),
+                "status": "ready" if startup.get("voice_live_ready") is True else "not_ready",
             },
             "dictionary_lookup": {
                 "classification": "optional",
-                "ready": (startup.get("dictionary_provider_status") or {}).get(
-                    "dictionary_lookup_ready"
-                ),
+                "ready": (startup.get("dictionary_provider_status") or {}).get("dictionary_lookup_ready"),
                 "status": "not_yet_capability_probed",
             },
             "nlp_enhanced": {
@@ -213,16 +214,28 @@ def status_payload(
             },
             "rest_scheduler": {
                 "classification": "degraded_allowed",
-                "ready": bool(
-                    rest_status.get("rest_scheduler_ready")
-                    or rest_status.get("running")
-                ),
+                "ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
                 "status": str(rest_status.get("status") or "unknown"),
             },
             "rest_dream": {
                 "classification": "not_applicable",
                 "ready": None,
                 "status": "not_applicable_to_interactive_live_voice",
+            },
+            "archive": {
+                "classification": "optional",
+                "ready": bool(archive_plugin.get("ready")),
+                "status": str(archive_plugin.get("state") or "unavailable"),
+            },
+            "git_operator": {
+                "classification": "optional",
+                "ready": bool((operator_capabilities.get("git") or {}).get("available")),
+                "status": str((operator_capabilities.get("git") or {}).get("status") or "unavailable"),
+            },
+            "pip_operator": {
+                "classification": "optional",
+                "ready": bool((operator_capabilities.get("pip") or {}).get("available")),
+                "status": str((operator_capabilities.get("pip") or {}).get("status") or "unavailable"),
             },
             "cognitive_integration": {
                 "classification": "unknown",
@@ -244,7 +257,13 @@ def status_payload(
         "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
         "system_fully_ready": system_readiness["system_fully_ready"],
         "system_readiness_profile": system_readiness,
-        "truth_boundary": "Process readiness does not imply memory, continuity, dream generation, or cognitive integration readiness.",
+        "plugin_readiness": plugin_readiness,
+        "operator_capabilities": operator_capabilities,
+        "truth_boundary": (
+            "Process readiness does not imply memory, continuity, dream generation, cognitive integration, "
+            "optional plugin, Git-operator, or pip-operator readiness. Optional capabilities never become "
+            "installation blockers merely by being unavailable."
+        ),
     }
     if not process_ok:
         operational_state = "inactive_or_untrusted"
@@ -282,14 +301,15 @@ def status_payload(
         "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
         "activation_truth_gate_eligible": bool(probe_endpoint),
         "status_exit_contract": (
-            "zero_only_for_confirmed_active_process; runtime_core_ready is reported "
-            "separately; fully_ready is its compatibility alias; system_fully_ready "
-            "uses the explicit capability profile; "
+            "zero_only_for_confirmed_active_process; runtime_core_ready is reported separately; "
+            "fully_ready is its compatibility alias; system_fully_ready uses the explicit capability profile; "
             "offline_snapshot is never sufficient to prove a live runtime"
         ),
         "startup": startup,
         "transactional_memory": transactional_memory,
         "memory_sync": memory_sync,
+        "plugin_readiness": plugin_readiness,
+        "operator_capabilities": operator_capabilities,
         "daemon": daemon,
     }
 
@@ -388,7 +408,7 @@ def doctor_payload(
     try:
         GatewayConfig(runtime_root=root).validate()
         mcp_policy_error = None
-    except GatewayError as exc:  # pragma: no cover - defensive serialization path
+    except GatewayError as exc:
         mcp_policy_error = f"{type(exc).__name__}: {exc}"
     _report_progress(progress, 3, progress_total, "Bramki narzędzi i polityka MCP sprawdzone")
 
@@ -483,6 +503,8 @@ def doctor_payload(
             "private_profiles_require_second_confirmation": ["memory", "full"],
         },
         "time": timestamp,
+        "plugins": status.get("plugin_readiness") or plugin_readiness_report(),
+        "operator_capabilities": status.get("operator_capabilities") or operator_capability_report(root),
     }
     _report_progress(progress, 7, progress_total, "Gotowość aktywacji i wydania obliczona")
     payload = {
@@ -505,7 +527,8 @@ def doctor_payload(
         "truth_boundary": (
             "Doctor reports structural installation health separately from activation prerequisites, release metadata, "
             "live runtime readiness and transactional_memory readiness. The legacy activation_ready field is retained as an alias "
-            "for activation_prerequisites_ready; it does not mean that a daemon is running."
+            "for activation_prerequisites_ready; it does not mean that a daemon is running. Optional plugin and operator "
+            "capabilities are reported independently and do not become installation blockers."
         ),
     }
     _report_progress(progress, 8, progress_total, "Gotowość aktywacji i wydania obliczona")

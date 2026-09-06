@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 from typing import Any, Mapping, Sequence
+import uuid
 
 from .common import (
     DEFAULT_TIMEOUT_SECONDS,
@@ -147,7 +148,10 @@ def install_bundle(
         raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
 
     requirements = [str(item) for item in manifest.get("requirements") or []]
-    import_names = [import_name_for_distribution(project_root, distribution_name_from_requirement(item)) for item in requirements]
+    import_names = [
+        import_name_for_distribution(project_root, distribution_name_from_requirement(item))
+        for item in requirements
+    ]
     manifest_sha = sha256_file(bundle / MANIFEST_NAME)
     lock_path = bundle / LOCK_NAME
     lock_sha = sha256_file(lock_path)
@@ -157,7 +161,11 @@ def install_bundle(
     envs_root = Path(environments_root).resolve() if environments_root else default_environments_root(project_root)
     alias = probe["platform"]
     pyver = probe["python_version"]
-    env_root = envs_root / f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__{manifest_sha[:12]}"
+    environment_identity = (
+        f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__"
+        f"{manifest_sha[:12]}__{uuid.uuid4().hex[:12]}"
+    )
+    env_root = envs_root / environment_identity
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
@@ -173,34 +181,51 @@ def install_bundle(
         "manifest_sha256": manifest_sha,
         "hash_lock_sha256": lock_sha,
         "dependency_contract_fingerprint": contract_fingerprint,
+        "environment_identity": environment_identity,
+        "fresh_environment": True,
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
         "offline": True,
-        "commands": {"create_venv": create, "install": install, "pip_check": [str(env_python), "-m", "pip", "check"],
-                     "pip_inspect": [str(env_python), "-m", "pip", "inspect", "--local"]},
+        "commands": {
+            "create_venv": create,
+            "install": install,
+            "pip_check": [str(env_python), "-m", "pip", "check"],
+            "pip_inspect": [str(env_python), "-m", "pip", "inspect", "--local"],
+        },
     }
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
 
     envs_root.mkdir(parents=True, exist_ok=True)
-    if not env_python.is_file():
-        if env_root.exists():
-            shutil.rmtree(env_root)
+    if env_root.exists():
+        raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    try:
         _run(create, cwd=project_root, timeout=timeout_seconds)
-    _run(install, cwd=project_root, timeout=timeout_seconds)
-    pip_check = _run([str(env_python), "-m", "pip", "check"], cwd=project_root, timeout=timeout_seconds)
-    smoke_code = (
-        "import importlib,json; names=" + json.dumps(import_names) +
-        "; print(json.dumps({n:bool(importlib.import_module(n)) for n in names},sort_keys=True))"
-    )
-    smoke = _run([str(env_python), "-X", "utf8", "-c", smoke_code], cwd=project_root, timeout=min(timeout_seconds, 300))
-    inspect_payload = _pip_inspect(env_python, cwd=project_root, timeout=min(timeout_seconds, 300))
-    inventory = _inspect_inventory(inspect_payload)
-    expected_inventory = {str(item.get("name") or ""): str(item.get("version") or "") for item in manifest.get("resolved_distributions") or [] if isinstance(item, Mapping)}
-    missing = {name: version for name, version in expected_inventory.items() if inventory.get(name) != version}
-    if missing:
-        raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
+        _run(install, cwd=project_root, timeout=timeout_seconds)
+        pip_check = _run([str(env_python), "-m", "pip", "check"], cwd=project_root, timeout=timeout_seconds)
+        smoke_code = (
+            "import importlib,json; names=" + json.dumps(import_names) +
+            "; print(json.dumps({n:bool(importlib.import_module(n)) for n in names},sort_keys=True))"
+        )
+        smoke = _run(
+            [str(env_python), "-X", "utf8", "-c", smoke_code],
+            cwd=project_root,
+            timeout=min(timeout_seconds, 300),
+        )
+        inspect_payload = _pip_inspect(env_python, cwd=project_root, timeout=min(timeout_seconds, 300))
+        inventory = _inspect_inventory(inspect_payload)
+        expected_inventory = {
+            str(item.get("name") or ""): str(item.get("version") or "")
+            for item in manifest.get("resolved_distributions") or []
+            if isinstance(item, Mapping)
+        }
+        missing = {name: version for name, version in expected_inventory.items() if inventory.get(name) != version}
+        if missing:
+            raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
+    except Exception:
+        shutil.rmtree(env_root, ignore_errors=True)
+        raise
 
     marker: dict[str, Any] = {
         "schema_version": ENVIRONMENT_SCHEMA,
@@ -209,6 +234,7 @@ def install_bundle(
         "ready": True,
         "project_root": str(project_root),
         "environment_root": str(env_root),
+        "environment_identity": environment_identity,
         "managed_environments_root": str(envs_root),
         "python_executable": str(env_python),
         "python_version": pyver,
@@ -226,7 +252,10 @@ def install_bundle(
         "import_smoke": json.loads(smoke.stdout.strip() or "{}"),
         "pip_inspect": inspect_payload,
         "installed_inventory": inventory,
-        "truth_boundary": "v2 ready proves verified hash-locked offline wheelhouse install + pip check + import smoke + pip inspect inventory.",
+        "truth_boundary": (
+            "v2 ready proves a fresh verified hash-locked offline wheelhouse install + pip check + "
+            "import smoke + pip inspect inventory. Activation changes only after all checks pass."
+        ),
     }
     env_marker = env_root / ENVIRONMENT_MARKER_NAME
     _write_json(env_marker, marker)
@@ -236,9 +265,17 @@ def install_bundle(
     activation_marker = environment_marker_path(project_root)
     if activation_eligible:
         _write_json(activation_marker, marker)
-    return {"ok": True, "state": "environment_ready" if activation_eligible else "optional_environment_ready",
-            "environment_marker_path": str(env_marker), "activation_marker_path": str(activation_marker),
-            "activation_marker_updated": activation_eligible, "marker": marker, **plan}
+    return {
+        "ok": True,
+        "state": "environment_ready" if activation_eligible else "optional_environment_ready",
+        "environment_marker_path": str(env_marker),
+        "activation_marker_path": str(activation_marker),
+        "activation_marker_updated": activation_eligible,
+        "environment_identity": environment_identity,
+        "fresh_environment": True,
+        "marker": marker,
+        **plan,
+    }
 
 
 def managed_environment_status(root: Path | str) -> dict[str, Any]:
@@ -255,13 +292,17 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
     declared = str(marker.get("managed_environments_root") or "").strip()
     allowed = Path(declared).expanduser().resolve() if declared else default_environments_root(project_root).resolve()
     try:
-        resolved_env = env_root.resolve(); resolved_env.relative_to(allowed)
+        resolved_env = env_root.resolve()
+        resolved_env.relative_to(allowed)
     except (OSError, RuntimeError, ValueError):
-        resolved_env = env_root; errors.append("environment_root_outside_managed_root")
+        resolved_env = env_root
+        errors.append("environment_root_outside_managed_root")
     try:
-        resolved_python = python_path.resolve(); resolved_python.relative_to(resolved_env)
+        resolved_python = python_path.resolve()
+        resolved_python.relative_to(resolved_env)
     except (OSError, RuntimeError, ValueError):
-        resolved_python = python_path; errors.append("python_outside_environment")
+        resolved_python = python_path
+        errors.append("python_outside_environment")
     if not resolved_python.is_file():
         errors.append("python_missing")
     current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -300,6 +341,7 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
         "marker_path": str(marker_path),
         "python_executable": str(resolved_python),
         "environment_root": str(resolved_env),
+        "environment_identity": marker.get("environment_identity"),
         "profiles": list(marker.get("profiles") or []),
         "resolved_profiles": profiles,
         "created_for_runtime_version": marker.get("created_for_runtime_version"),
@@ -358,7 +400,12 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
             same = Path(managed_python).resolve() == Path(sys.executable).resolve()
         except (OSError, RuntimeError, ValueError):
             same = managed_python == sys.executable
-        return {"ok": True, "state": "managed_environment_ready", "reexec_python": None if same else managed_python, "status": status}
+        return {
+            "ok": True,
+            "state": "managed_environment_ready",
+            "reexec_python": None if same else managed_python,
+            "status": status,
+        }
     disabled = os.environ.get("JAZN_DEPENDENCY_AUTOBOOTSTRAP", "1").strip().lower() in {"0", "false", "no", "off"}
     if not auto_install or disabled:
         return {"ok": False, "state": "dependencies_missing_autobootstrap_disabled", "reexec_python": None, "status": status}
@@ -366,10 +413,14 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
     artifact = materialize_compatible_dependency_artifact(project_root)
     explicit = os.environ.get("JAZN_DEPENDENCY_WHEELHOUSE")
     wheelhouse = Path(explicit).expanduser().resolve() if explicit else default_wheelhouse_root(project_root)
-    bundles = discover_bundles(project_root, wheelhouse_root=wheelhouse,
-                               required_profiles=activation_profile_names(project_root),
-                               python_version=f"{sys.version_info.major}.{sys.version_info.minor}",
-                               platform_alias=current_platform_alias(), verify=True)
+    bundles = discover_bundles(
+        project_root,
+        wheelhouse_root=wheelhouse,
+        required_profiles=activation_profile_names(project_root),
+        python_version=f"{sys.version_info.major}.{sys.version_info.minor}",
+        platform_alias=current_platform_alias(),
+        verify=True,
+    )
     usable = next((item for item in bundles if (item.get("verification") or {}).get("ok") is True), None)
     if usable is None:
         artifact_state = str(artifact.get("state") or "")
@@ -378,12 +429,24 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
             if artifact_state in {"no_compatible_verified_dependency_bundle", "dependency_package_set_unverified"}
             else "dependencies_missing_no_verified_wheelhouse"
         )
-        return {"ok": False, "state": state, "reexec_python": None, "wheelhouse_root": str(wheelhouse),
-                "dependency_artifact_discovery": artifact, "status": status}
+        return {
+            "ok": False,
+            "state": state,
+            "reexec_python": None,
+            "wheelhouse_root": str(wheelhouse),
+            "dependency_artifact_discovery": artifact,
+            "status": status,
+        }
     installed = install_bundle(project_root, usable["bundle_dir"], offline=True)
     new_python = str((installed.get("marker") or {}).get("python_executable") or "")
-    return {"ok": bool(installed.get("ok")), "state": "managed_environment_installed", "reexec_python": new_python or None,
-            "installation": installed, "dependency_artifact_discovery": artifact, "status_before": status}
+    return {
+        "ok": bool(installed.get("ok")),
+        "state": "managed_environment_installed",
+        "reexec_python": new_python or None,
+        "installation": installed,
+        "dependency_artifact_discovery": artifact,
+        "status_before": status,
+    }
 
 
 def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
@@ -408,6 +471,11 @@ def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict
             if not dry_run:
                 shutil.rmtree(child)
                 removed.append(str(child))
-    return {"ok": True, "dry_run": dry_run, "managed_environments_root": str(envs_root),
-            "active_environment": str(active_path) if active_path else None,
-            "gc_candidates": candidates, "removed": removed}
+    return {
+        "ok": True,
+        "dry_run": dry_run,
+        "managed_environments_root": str(envs_root),
+        "active_environment": str(active_path) if active_path else None,
+        "gc_candidates": candidates,
+        "removed": removed,
+    }

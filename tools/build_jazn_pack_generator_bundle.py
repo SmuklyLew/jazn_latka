@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Compatibility CI validator for Jaźń Pack Generator v10.1.86.0.113.
+"""Compatibility CI validator for Jaźń Pack Generator v10.1.86.0.114.
 
 The pre-10.1.86.0.112 tool generated a Base85 single-file launcher. The clean
 rewrite uses a small public launcher plus maintained modules under
@@ -33,7 +33,7 @@ MODULE_SOURCES = (
     SOURCE_DIR / "ui_studio.py",
 )
 SOURCE_SET = (LAUNCHER,) + MODULE_SOURCES
-EXPECTED_GENERATOR_VERSION = "10.1.86.0.113"
+EXPECTED_GENERATOR_VERSION = "10.1.86.0.114"
 
 
 def source_set_sha256() -> str:
@@ -73,7 +73,7 @@ def validate() -> tuple[bool, list[str]]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate Jaźń Pack Generator v10.1.86.0.113 source layout",
+        description="Validate Jaźń Pack Generator v10.1.86.0.114 source layout",
         allow_abbrev=False,
     )
     parser.add_argument("--check", action="store_true", help="Compatibility flag; validation is always read-only.")

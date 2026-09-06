@@ -8,7 +8,8 @@ Ten katalog zawiera aktywne kontrakty operatorskie i dokumentację narzędzi, kt
 - `PRIVATE_MEMORY_VALIDATION.md` — aktywny, testowany kontrakt prywatnej walidacji pamięci dla Issue #59;
 - `JAZN_DEPENDENCY_STUDIO.md` — Wheelhouse Contract v3, natywne locki, cross-target replay, offline bootstrap środowiska Python i dependency readiness Jaźni;
 - `JAZN_PYTHON_RUNTIME_BUNDLE.md` — zweryfikowany przenośny interpreter i vendoring z Wheelhouse Contract v3;
-- `../runtime/JAZN_PACK_GENERATOR_V101860113_FOLDER_SNAPSHOT.md` — aktywny kontrakt Pack Generator 10.1.86.0.113: snapshot wybranego folderu, rzeczywiste bajty źródła, per-file SHA-256 oraz jeden logiczny ZIP w trybie single albo binarnie dzielony na części transportowe.
+- `../runtime/JAZN_PACK_GENERATOR_V101860114_CANONICAL_SYSTEM_RELEASE.md` — aktywny kontrakt Pack Generator 10.1.86.0.114: canonical SYSTEM release + extract-and-reverify; MEMORY pozostaje folder snapshotem.
+- `../runtime/JAZN_PACK_GENERATOR_V101860113_FOLDER_SNAPSHOT.md` — historyczny kontrakt selected-folder v113 zachowany jako kontekst migracji.
 
 Poprzednie kontrakty Pack Generatora, w tym v10.1.86.0.112 z fail-closed EOL, są historyczne. Materiał bezpośrednio wycofany w aktualizacji v113 znajduje się w `.archives/package_generator_pre_v101860113/`.
 

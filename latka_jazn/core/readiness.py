@@ -205,7 +205,7 @@ def evaluate_system_readiness_profile(
 
 
 def _dependency_readiness(root: Path | str | None = None) -> dict[str, Any]:
-    """Resolve core+archive Python readiness without importing optional providers."""
+    """Resolve activation-required Python readiness without importing optional providers."""
 
     try:
         from latka_jazn.dependencies.runtime import dependency_activation_status
@@ -241,7 +241,7 @@ def evaluate_runtime_readiness(
     """Evaluate readiness from explicit evidence using one shared decision contract.
 
     Production callers normally omit ``dependency_evidence`` and the evaluator
-    observes the active core+archive dependency environment itself. Deterministic
+    observes the active activation-required dependency environment itself. Deterministic
     callers may inject a previously observed dependency status. This keeps the
     decision function reproducible without weakening the production dependency
     gate or making historical readiness tests depend on the ambient test venv.

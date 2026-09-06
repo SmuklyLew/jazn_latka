@@ -18,6 +18,6 @@ def test_v82_contract_is_retired_after_v101860111_clean_rewrite() -> None:
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
 
-    assert module.GENERATOR_VERSION == "10.1.86.0.114"
+    assert module.GENERATOR_VERSION == "10.1.86.0.113"
     assert module.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
     assert module.UI_MODE_CHOICES == ("text", "tui", "studio")
