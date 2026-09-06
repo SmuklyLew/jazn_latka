@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from latka_jazn.core.chatgpt_host_executor_contract import (
+    HostExecutorObservation,
+    HostExecutorRecoveryDecision,
+    classify_host_executor_observation,
+)
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     cleanup_expired_host_requests,
@@ -75,6 +80,20 @@ def _state_error(state: str, record: Mapping[str, Any]) -> HostRequestStoreError
     if state == "expired":
         return HostRequestStoreError("host_request_expired", record=record)
     return HostRequestStoreError("pending_host_request_not_found")
+
+
+def plan_host_executor_recovery(
+    observation: HostExecutorObservation,
+) -> HostExecutorRecoveryDecision:
+    """Return the canonical bounded recovery decision for one host observation.
+
+    This function deliberately does not start, probe, or repair the local
+    runtime itself.  A host-tool failure that happens before process creation is
+    outside the Jaźń process boundary; after the executor becomes available the
+    caller must return to discovery and the canonical ``run.py`` lifecycle.
+    """
+
+    return classify_host_executor_observation(observation)
 
 
 def recover_pending_host_request(
