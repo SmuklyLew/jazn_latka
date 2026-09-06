@@ -3,11 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.32 adds a bounded, testable ChatGPT host-executor recovery
-# contract while preserving run.py as the only canonical runtime lifecycle.
-DISTRIBUTION_VERSION = "16.3.25.5.32"
-PACKAGE_VERSION = "16.3.25.5.32"
-PACKAGE_RELEASE_NAME = "chatgpt-host-executor-recovery"
+# v16.3.25.5.33 converges the v32 host-executor recovery release with the
+# repository's active-test/archive policy after the original PR was merged
+# before its full deterministic suite had completed.
+DISTRIBUTION_VERSION = "16.3.25.5.33"
+PACKAGE_VERSION = "16.3.25.5.33"
+PACKAGE_RELEASE_NAME = "host-executor-recovery-ci-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
