@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.30 converges active GitHub JavaScript Actions on Node.js 24,
-# preserves full-SHA action pinning, and adds an optional JavaScript capability
-# boundary for Jaźń tooling without making Node.js a core runtime dependency.
-DISTRIBUTION_VERSION = "16.3.25.5.30"
-PACKAGE_VERSION = "16.3.25.5.30"
-PACKAGE_RELEASE_NAME = "github-actions-node24-convergence"
+# v16.3.25.5.31 hardens the ChatGPT host truth boundary for executor
+# invocation failures that occur before any local command/process can run.
+DISTRIBUTION_VERSION = "16.3.25.5.31"
+PACKAGE_VERSION = "16.3.25.5.31"
+PACKAGE_RELEASE_NAME = "chatgpt-host-executor-truth-boundary"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
