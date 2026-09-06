@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.35-pylance-optional-contract-hardening",
-  "runtime_version": "16.3.25.5.35-pylance-optional-contract-hardening",
-  "package_version": "16.3.25.5.35-pylance-optional-contract-hardening",
-  "generated_at_utc": "2026-09-06T21:31:59+00:00",
-  "updated_at_utc": "2026-09-06T21:31:59+00:00",
+  "version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+  "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+  "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+  "generated_at_utc": "2026-09-06T21:51:50+00:00",
+  "updated_at_utc": "2026-09-06T21:51:50+00:00",
   "start_file": "run.py",
-  "file_count": 1192,
-  "static_file_count": 1192,
+  "file_count": 1193,
+  "static_file_count": 1193,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -164,8 +164,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 16622,
-      "sha256": "dd22a183971da94cb1f2af5573af0103625c3ae2e775c51310265dd89bf9a88d",
+      "size_bytes": 16630,
+      "sha256": "42446789a1bfd4d4fa887581bfa21d246e262fea2346a7907ad1a28f9ff44146",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2931,
-      "sha256": "ad107359dfbccb4f43bdd1c30fdc80443f406dd8cd8e9fa9c105ecfcc57e374b",
+      "sha256": "002ae46d8891f41fa7f045e5365e1160f9819b5ea373f2383c758ad218cd1861",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7229,8 +7229,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6631,
-      "sha256": "629e153e73dec9be4dbb8de40c935d3ce8c22d7c39cca92e3776a7ef4522bb3d",
+      "size_bytes": 6622,
+      "sha256": "b93973adaa9fbedc14a4f331b0e6f18ca70d65cf51f45ffdd7b11a4100590450",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7438,6 +7438,15 @@
       "path": "tests/archive/test_jazn_pack_generator_v1001_public_api_contract_source_v16325533.py",
       "size_bytes": 1389,
       "sha256": "e070e742be904c5c5ff905bc4e2fc313f3ae63a3db2bccaadd4756d9941c120b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v1001_public_api_contract_source_v16325535.py",
+      "size_bytes": 1389,
+      "sha256": "d8583096a80ee26de932af03c6c699a7ae4e02b506758e7ae4760adc7b4add9f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8750,8 +8759,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v1001_public_api_contract.py",
-      "size_bytes": 1389,
-      "sha256": "d8583096a80ee26de932af03c6c699a7ae4e02b506758e7ae4760adc7b4add9f",
+      "size_bytes": 1407,
+      "sha256": "5ba0252ab5f7e743e281e8516002dd0639780114f95296a2009ef81b7612a79d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11180,11 +11189,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.35-pylance-optional-contract-hardening",
+  "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.35-pylance-optional-contract-hardening",
-    "package_version": "16.3.25.5.35-pylance-optional-contract-hardening",
-    "release_version": "16.3.25.5.35-pylance-optional-contract-hardening"
+    "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+    "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+    "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
