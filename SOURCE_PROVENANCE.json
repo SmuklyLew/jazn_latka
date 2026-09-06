@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "47252fae880ae875ac90c359425765c1fd458659",
-    "base_version": "16.3.25.5.29-release-metadata-layout-operator-convergence",
+    "base_commit": "87623831838455f48f5e8c2dc8523e9014098ef0",
+    "base_version": "16.3.25.5.30-github-actions-node24-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "87623831838455f48f5e8c2dc8523e9014098ef0",
