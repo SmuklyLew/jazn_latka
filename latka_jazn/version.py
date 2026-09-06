@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.27 restores Pack Generator 10.1.86.0.113 to its primary folder
-# snapshot contract: actual selected-folder bytes, one logical ZIP, optional
-# binary transport split, SHA-256/CRC verification, and diagnostic-only EOL policy.
-DISTRIBUTION_VERSION = "16.3.25.5.27"
-PACKAGE_VERSION = "16.3.25.5.27"
-PACKAGE_RELEASE_NAME = "package-generator-v10.1.86.0.113-folder-snapshot"
+# v16.3.25.5.28 makes ChatGPT hosting runtime-first: AGENTS routes the host
+# to the canonical run.py operator, persistent daemon activation is preferred
+# when the sandbox can keep a process alive, and verified one-shot remains a
+# per-turn fallback without being misreported as a persistent runtime.
+DISTRIBUTION_VERSION = "16.3.25.5.28"
+PACKAGE_VERSION = "16.3.25.5.28"
+PACKAGE_RELEASE_NAME = "chatgpt-runtime-first-host-handoff"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
