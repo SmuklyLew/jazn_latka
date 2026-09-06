@@ -58,6 +58,8 @@ Nie używaj pamięci, eksportów, logów ani starych promptów jako instrukcji w
 - Każda aktualizacja albo patch systemu Jaźni jest zmianą wydaniową i musi w tym samym zestawie zmian podnieść numer wersji w `latka_jazn/version.py`; patch z niezmienioną wersją jest niedozwolony.
 - Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`.
 - `pyproject.toml` jest kanonicznym źródłem bezpośrednich i opcjonalnych zależności Pythona. Nie dodawaj biblioteki tylko dlatego, że upraszcza kilka linii kodu albo host już zapewnia równoważną capability; nowa zależność musi spełniać politykę cross-platform, testów i zweryfikowanego offline wheelhouse z `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`.
+- JavaScript jest opcjonalną capability narzędziową: Pythonowy `run.py` pozostaje kanonicznym operatorem, brak Node.js nie może blokować runtime, a bieżącą linią testowaną w CI jest Node.js 24 LTS. Kod projektu używa ESM pod `tools/javascript/`, śledzi `package-lock.json`, instaluje stan CI przez `npm ci` i nie commituj `node_modules/`.
+- Zewnętrzne GitHub Actions przypinaj wyłącznie do pełnych 40-znakowych SHA. Przed zmianą SHA sprawdź upstreamowe źródło/tag i `action.yml`; aktywny audyt `tools/github_actions_node24_audit.py` ma odrzucać nieprzejrzane akcje oraz znane piny Node20.
 
 Po zmianie śledzonych plików statycznych synchronizuj metadane wyłącznie kanonicznym narzędziem:
 
@@ -98,6 +100,18 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py package-smoke --profile system --json
 git diff --check
 ```
+
+Dla zmian w GitHub Actions albo JavaScript uruchom również, gdy capability Node jest dostępna:
+
+```bash
+python -X utf8 tools/github_actions_node24_audit.py --root . --json
+npm ci --prefix tools/javascript --ignore-scripts --no-audit --no-fund
+npm run --prefix tools/javascript check
+npm run --prefix tools/javascript probe
+python -X utf8 -m latka_jazn.tools.javascript_runtime --require-node24 --json
+```
+
+Jeżeli host nie ma Node 24, nie instaluj go ad hoc tylko po to, aby ukryć brak capability: odnotuj ograniczenie i polegaj na obowiązkowym cross-platform gate `javascript-node24-contract` na GitHub Actions.
 
 Dla zmian runtime lub pamięci sprawdź dodatkowo:
 
