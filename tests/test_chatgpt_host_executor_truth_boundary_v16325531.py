@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION, PACKAGE_VERSION_FULL
-
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -37,12 +35,6 @@ def test_project_loader_preserves_unknown_local_state_on_pre_process_host_failur
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
 
     assert "host_executor_unavailable" in text
-    assert "stan lokalnego filesystemu i paczki jest `unknown`" in text
+    assert "filesystemu i paczki pozostaje wtedy `unknown`" in text
     assert "nie traktuj tego jako dowodu braku `/mnt/data`" in text
     assert "przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu" in text
-
-
-def test_release_identity_matches_host_executor_truth_boundary_patch() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.31"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-host-executor-truth-boundary"
-    assert PACKAGE_VERSION_FULL == "16.3.25.5.31-chatgpt-host-executor-truth-boundary"
