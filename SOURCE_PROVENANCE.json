@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "a7eeb6cfc791db0ea3e0db01bbc26965ba1ac8e7",
-    "base_version": "16.3.25.5.31-chatgpt-host-executor-truth-boundary",
+    "base_commit": "d8dd941d585f877fb16d22545768fb9aa4ca8044",
+    "base_version": "16.3.25.5.32-chatgpt-host-executor-recovery",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "d8dd941d585f877fb16d22545768fb9aa4ca8044",
