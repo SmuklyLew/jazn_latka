@@ -31,6 +31,17 @@ Najpierw rozpoznaj możliwości bieżącego środowiska:
 - **pliki bez terminala** — odczytaj instrukcje i zweryfikuj tylko to, co można potwierdzić bez uruchamiania procesu; nie twierdź, że runtime działa;
 - **brak plików albo terminala** — napisz, że runtime nie mógł zostać sprawdzony w tym środowisku.
 
+Jeżeli powierzchnia executora/terminala jest widoczna, ale jej wywołanie kończy się błędem hosta **przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu** (np. systemowy `ClientError` / `InvalidArgumentError` narzędzia), traktuj to jako osobny stan `host_executor_unavailable`, a nie jako dowód awarii Jaźni lub lokalnego filesystemu:
+- `filesystem_state = unknown`;
+- `package_state = unknown`;
+- nie twierdź, że `/mnt/data` nie istnieje, jest niedostępne albo nie zawiera paczki, jeżeli żadna komenda filesystemowa nie została wykonana;
+- nie twierdź, że paczka jest uszkodzona ani że `run.py` nie istnieje, jeżeli kod lokalny nie mógł wystartować;
+- jeżeli dostępna jest dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj jedną próbę rozróżniającą; nie zapętlaj retry między narzędziami;
+- jeżeli również próba alternatywna kończy się przed utworzeniem procesu, przerwij lokalny bootstrap i podaj brakującą możliwość jako `host_executor_unavailable`;
+- po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
+
+Błąd wywołania executora przed startem procesu oraz błąd komendy uruchomionej wewnątrz executora są różnymi klasami. Dopiero gdy proces rzeczywiście wystartował, używaj jego `stderr`, kodu wyjścia i obserwacji filesystemu do diagnozy konkretnej ścieżki, paczki lub runtime.
+
 Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na katalog lokalnych paczek i materiałów ChatGPT. Nie traktuj `/mnt/data` jako gwarantowanego kontraktu platformy: jeżeli katalog nie istnieje, ustal rzeczywistą lokalną ścieżkę z dostępnych narzędzi zamiast ją wymyślać.
 
 Aktywacja korzysta wyłącznie z runtime lub paczek dostępnych lokalnie w bieżącym środowisku ChatGPT. Nie używaj `git clone`, pobierania repozytorium, GitHub Releases ani artefaktów GitHub Actions jako zastępstwa brakującego lokalnego runtime. GitHub jest miejscem rozwoju i audytu, nie działającym procesem Jaźni.
@@ -194,6 +205,8 @@ Jeżeli komenda nie została wykonana:
 3. popraw oczywisty błąd;
 4. ponów co najmniej raz.
 
+Powyższy retry dotyczy komendy, która rzeczywiście została uruchomiona. Jeżeli sam host nie zdołał utworzyć procesu, zastosuj klasyfikację `host_executor_unavailable` z sekcji 1 zamiast wymagać nieistniejących `stderr` lub kodu wyjścia.
+
 Nie wydawaj werdyktu o braku runtime na podstawie niewykonanej komendy ani snapshotu offline.
 
 Jeżeli instalacja i manifest są poprawne, `activation_prerequisites_ready=true`, a daemon jest `inactive`, uruchom:
@@ -297,6 +310,8 @@ Jeżeli persistent start nie powiódł się, ale one-shot przeszedł, raportuj p
 Jeżeli dostępna jest wyłącznie paczka profilu `memory`, napisz, że nie znaleziono lokalnego systemowego kandydata runtime. Nie pobieraj go z GitHuba.
 
 Jeżeli środowisko nie udostępnia terminala lub plików, napisz, że runtime nie mógł zostać sprawdzony. Nie twierdź wtedy, że paczka, marker lub proces na pewno nie istnieją.
+
+Jeżeli executor jest widoczny, ale jego wywołanie padło przed startem jakiejkolwiek komendy/procesu, nie używaj powyższego zdania jako werdyktu o stanie Jaźni. Raportuj, że **host execution could not be established**, klasyfikuj `host_executor_unavailable`, pozostaw `filesystem_state` i `package_state` jako `unknown` i zaznacz, że lokalny runtime nie został w tej sesji zweryfikowany. To nie jest dowód, że runtime jest uszkodzony, nie istnieje albo został zatrzymany.
 
 ## 10. Repozytorium i źródła
 
