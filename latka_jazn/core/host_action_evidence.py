@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 import re
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any, Iterable, Iterator, Mapping, cast
 
 from latka_jazn.version import schema_version
 
@@ -314,7 +314,7 @@ def _install_chat_command_candidate_bridge() -> None:
         if kwargs.get("host_action_evidence") is None and context.get("evidence"):
             kwargs["host_action_evidence"] = list(context.get("evidence") or [])
             kwargs["host_action_binding"] = dict(context.get("binding") or {})
-        return current(*args, **kwargs)
+        return cast(dict[str, Any], current(*args, **kwargs))
 
     setattr(wrapped_candidate_evaluator, "_jazn_host_action_context_bridge", True)
     setattr(wrapped_candidate_evaluator, "_jazn_host_action_original", current)
