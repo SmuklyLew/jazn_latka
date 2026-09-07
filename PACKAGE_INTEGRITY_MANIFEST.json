@@ -3,11 +3,11 @@
   "version": "16.3.25.5.43-host-capability-materialization-hardening",
   "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "generated_at_utc": "2026-09-07T19:20:03+00:00",
-  "updated_at_utc": "2026-09-07T19:20:03+00:00",
+  "generated_at_utc": "2026-09-07T19:25:01+00:00",
+  "updated_at_utc": "2026-09-07T19:25:01+00:00",
   "start_file": "run.py",
-  "file_count": 1229,
-  "static_file_count": 1229,
+  "file_count": 1231,
+  "static_file_count": 1231,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2969,
-      "sha256": "8f38bfe70cbc4bf7f5097872d344682ac1a1d1b77eeaac15ad94352045d28a97",
+      "sha256": "91f7ce82fff121b934139b0b238ccb6969fb6fc27cc9f0440ed5b630ebe2f490",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1721,8 +1721,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 3054,
-      "sha256": "33caf8710d18e5b006b623daddb69946d0ee16b74f65b63f79b0b4fb38f3521d",
+      "size_bytes": 3349,
+      "sha256": "840760240f0546448cfe24f1ed735f1852f15bedfc552ba9804fc51b8a03ade4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8434,6 +8434,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.43-host-capability-materialization-hardening/test_v16325541_runtime_kernel_finalization_canon.py",
+      "size_bytes": 9886,
+      "sha256": "69f9dda6668d7f3c65c54c6a4a5b893f23125b115842622e6b5b32b54f503150",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.43-host-capability-materialization-hardening/test_v16325542_post_merge_ci_contract_repair.py",
+      "size_bytes": 721,
+      "sha256": "e50edb40ae5f9c0eea01d18e8da6462fcc87a92ae5b7dd5b6002987481779717",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.5-pack-generator-v88/SHA256SUMS.txt",
       "size_bytes": 117,
       "sha256": "6c7dc996b12a0c655e7fb0c896620c2498fb18ee206fad8028e3e4a39c17d688",
@@ -10532,8 +10550,8 @@
     },
     {
       "path": "tests/test_v16325541_runtime_kernel_finalization_canon.py",
-      "size_bytes": 9886,
-      "sha256": "69f9dda6668d7f3c65c54c6a4a5b893f23125b115842622e6b5b32b54f503150",
+      "size_bytes": 9657,
+      "sha256": "3acf63cecf2372864d5616538012c8e606b5cb406c0f961999ff37cfacfaa267",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10541,8 +10559,8 @@
     },
     {
       "path": "tests/test_v16325542_post_merge_ci_contract_repair.py",
-      "size_bytes": 721,
-      "sha256": "e50edb40ae5f9c0eea01d18e8da6462fcc87a92ae5b7dd5b6002987481779717",
+      "size_bytes": 451,
+      "sha256": "7bad2b4b75fe7ea00863379b69156e02f6f96012a2e7f3b4552f227b18dae126",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
