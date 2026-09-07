@@ -84,9 +84,10 @@ DOI: https://doi.org/10.1016/j.cogsys.2008.03.005
 - dynamiczne appraisal zależne od aktualnej interpretacji sytuacji;
 - aktualizację affect wraz ze zmianą relacji agent–sytuacja zamiast jednorazowej klasyfikacji.
 
-## Ong et al. — affective inertia methodological guidance
+## Shao & Ong (2026) — affective inertia methodological guidance
 
-*Seven Challenges in Affective Inertia Research* (2026, PMC/NIH manuscript).  
+Sijing Shao, Anthony D. Ong, *Seven Challenges in Affective Inertia Research*, Emotion 26(5):1118–1132.  
+DOI: https://doi.org/10.1037/emo0001630  
 PMCID: https://pmc.ncbi.nlm.nih.gov/articles/PMC12798691/
 
 ### Wspiera
@@ -108,7 +109,7 @@ Nie kodować jednej „naukowej” magicznej `inertia=0.82`. Używać versioned 
 James J. Gross, *Emotion Regulation: Current Status and Future Prospects*, Psychological Inquiry 26(1):1–26.  
 DOI: https://doi.org/10.1080/1047840X.2014.940781
 
-oraz *The Extended Process Model of Emotion Regulation*.  
+oraz *The Extended Process Model of Emotion Regulation: Elaborations, Applications, and Future Directions*.  
 DOI: https://doi.org/10.1080/1047840X.2015.989751
 
 ### Wspiera
