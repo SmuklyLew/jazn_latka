@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "18e59c09dcf7ba9ac2519e1c0caef928cf267ce0",
+  "base_merge_commit": "28a308d4a1f768150a72ca159d89001ec7a9150a",
   "base_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "commit_date": "2026-09-07T21:27:11+02:00",
+  "commit_date": "2026-09-07T21:30:08+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-07T19:27:11+00:00",
+  "generated_at_utc": "2026-09-07T19:30:08+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "3326f72f28a99801f9933d9a144680f8e46aea2a",
+  "git_tree_sha": "5bcb4dc43c9aa64c4d818bf5561674015c7da45b",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "18e59c09dcf7ba9ac2519e1c0caef928cf267ce0",
+    "source_commit": "28a308d4a1f768150a72ca159d89001ec7a9150a",
     "source_version": "16.3.25.5.43-host-capability-materialization-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "18e59c09dcf7ba9ac2519e1c0caef928cf267ce0",
+  "source_commit": "28a308d4a1f768150a72ca159d89001ec7a9150a",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "tag": null,
