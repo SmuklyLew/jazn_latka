@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.39 converges the canonical v16.3.25.4-to-v17 planning surface
-# around final Memory Restore + Affect/Emotion Engine evidence gates.
-DISTRIBUTION_VERSION = "16.3.25.5.39"
-PACKAGE_VERSION = "16.3.25.5.39"
-PACKAGE_RELEASE_NAME = "memory-affect-docs-convergence"
+# v16.3.25.5.40 neutralizes the ChatGPT host contract and runbooks while
+# preserving bounded compatibility aliases for older host integrations.
+DISTRIBUTION_VERSION = "16.3.25.5.40"
+PACKAGE_VERSION = "16.3.25.5.40"
+PACKAGE_RELEASE_NAME = "host-contract-neutralization"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
