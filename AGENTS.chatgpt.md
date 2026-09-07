@@ -8,34 +8,40 @@ Instrukcje Projektu lub globalne Custom Instructions powinny pełnić wyłączni
 
 Celem hosta jest możliwie szybko doprowadzić do zweryfikowanego operatora `run.py`, uruchomić albo reuse'ować właściwy runtime i przekazać mu bieżącą wiadomość.
 
+preferowanym wejściem hosta jest lokalny, zweryfikowany `run.py`; nie uruchamiaj samego `python run.py` bez jawnej komendy operatora.
+
 Po znalezieniu zweryfikowanego `active_root`:
 - `run.py` jest kanonicznym wejściem wykonawczym;
 - używaj komend `run.py` zamiast odtwarzać ich logikę w hoście;
 - `main.py` jest wyłącznie technicznym punktem zgodności;
 - w środowisku zdolnym utrzymać proces dąż do persistent daemona przez `python -X utf8 run.py start`;
-- one-shot pozostaje fallbackiem pojedynczej tury i nie jest dowodem persistent procesu.
+- one-shot pozostaje fallbackiem pojedynczej tury i nie jest dowodem persistent procesu; one-shot nie jest persistent procesem.
 
 Host może wykonywać własne czynności tylko przed uzyskaniem operatora: discovery plików, bezpieczne rozpoznanie paczki oraz minimalny bootstrap. Gdy operator jest dostępny, lifecycle i obsługa tury wracają do runtime.
 
-Nie zastępuj lifecycle własnym `nohup`, `&`, `screen`, `tmux` ani własnym `subprocess.Popen`.
+Nie używaj `nohup`, `&`, `screen`, `tmux` ani własnego `subprocess.Popen` do zastępowania lifecycle runtime.
+
+Jeżeli lokalny operator nie jest dostępny, ale prywatne narzędzia MCP są jawnie dostępne dla bieżącego środowiska, mogą służyć jako ograniczona powierzchnia diagnostyczna lub transportowa zgodnie z własnym kontraktem. Nie traktuj MCP jako dowodu istnienia lokalnego runtime ani jako równoległego zamiennika kanonicznego operatora.
 
 ## 1. Granica executora
 
 Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź możliwość utworzenia lokalnego procesu.
 
-Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj stan jako `host_executor_unavailable`:
+Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj stan jako `host_executor_unavailable`:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
 - runtime pozostaje `unverified`;
-- nie twierdź niczego o istnieniu `/mnt/data`, paczki ani `run.py`, jeżeli żadna komenda lokalna nie wystartowała.
+- nie twierdź, że `/mnt/data` nie istnieje, paczki brakuje ani że `run.py` jest nieobecny, jeżeli żadna komenda lokalna nie wystartowała.
 
-Dla przejściowego błędu hosta wykonaj najwyżej dwie minimalne, bezskuteczne próby utworzenia procesu na tej samej powierzchni. Jeżeli istnieje jedna niezależna alternatywna powierzchnia wykonawcza, wolno wykonać najwyżej jedną próbę rozróżniającą. Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi. Nie twórz własnego długiego backoffu.
+Dla przejściowego błędu hosta wykonaj najwyżej dwie minimalne, bezskuteczne próby utworzenia procesu na tej samej powierzchni. Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać najwyżej jedną próbę rozróżniającą. Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; nie zapętlaj retry między narzędziami i nie twórz własnego długiego backoffu.
+
+po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
 
 Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy i należy diagnozować go osobno od błędu hosta.
 
 ## 2. Discovery i bootstrap
 
-Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszego lokalnego kandydata na paczki lub rozpakowany runtime, ale nie zakładaj, że ścieżka musi istnieć.
+Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na paczki lub rozpakowany runtime, ale nie zakładaj, że ścieżka musi istnieć. Nie traktuj `/mnt/data` jako gwarantowanego kontraktu platformy.
 
 Jeżeli istnieje host-level `workspace_runtime/JAZN_ACTIVE_RUNTIME.json`, zweryfikuj wskazany `active_root`, `run.py`, `latka_jazn/version.py`, `PACKAGE_INTEGRITY_MANIFEST.json`, wersję, SHA manifestu i wymagane drzewo kodu.
 
@@ -75,7 +81,7 @@ python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję i manifest, właściwy PID/komendę, działający endpoint oraz świeży heartbeat. One-shot potwierdza wyłącznie pojedynczą turę.
+Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję i manifest, właściwy PID/komendę, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
 
 Po udanym starcie nie zatrzymuj daemona po każdej wiadomości. Po resecie środowiska ponownie wykonaj discovery i live status.
 

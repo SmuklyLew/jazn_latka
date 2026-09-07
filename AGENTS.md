@@ -21,7 +21,8 @@ Po znalezieniu i zweryfikowaniu `active_root`:
 - nie rekonstruuj w hoście logiki należącej do runtime;
 - `main.py` traktuj wyłącznie jako techniczny punkt zgodności;
 - w środowisku zdolnym utrzymać proces dąż do zweryfikowanego persistent daemona przez `run.py start`;
-- zweryfikowana tura one-shot potwierdza tylko wykonanie danej wiadomości i nie dowodzi utrzymanego procesu.
+- zweryfikowana tura one-shot potwierdza tylko wykonanie danej wiadomości i nie dowodzi utrzymanego procesu;
+- One-shot nie może być przedstawiany jako persistent proces; dowodzi wyłącznie wykonania zweryfikowanej tury.
 
 Jeżeli `run.py` nie jest jeszcze dostępny, host może wykonać wyłącznie minimalne discovery i bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego operatora. Po jego uzyskaniu sterowanie techniczne wraca do runtime.
 

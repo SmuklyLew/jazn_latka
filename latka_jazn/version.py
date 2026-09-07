@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.41 closes the two-phase ChatGPT host-finalization lifecycle and
-# makes the source-controlled identity/birth contracts executable authorities.
-DISTRIBUTION_VERSION = "16.3.25.5.41"
-PACKAGE_VERSION = "16.3.25.5.41"
-PACKAGE_RELEASE_NAME = "runtime-kernel-finalization-canon-convergence"
+# v16.3.25.5.42 repairs the post-merge ChatGPT host runbook contracts and
+# excludes explicitly non-authoritative plan snapshots from active-line audits.
+DISTRIBUTION_VERSION = "16.3.25.5.42"
+PACKAGE_VERSION = "16.3.25.5.42"
+PACKAGE_RELEASE_NAME = "host-runbook-archive-scope-ci-repair"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

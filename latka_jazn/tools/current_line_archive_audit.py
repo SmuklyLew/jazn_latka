@@ -87,6 +87,7 @@ def _is_active_path(path: str) -> bool:
     if (
         folded.startswith(".archives/")
         or folded.startswith("docs/archive/")
+        or folded.startswith("docs/plans/only_to_check/")
         or folded.startswith("tests/archive/")
     ):
         return False
@@ -282,7 +283,8 @@ def run_audit(root: str | Path) -> CurrentLineArchiveAudit:
         archive_issues=archive_issues,
         truth_boundary=(
             "Audyt sprawdza śledzone aktywne pliki tekstowe, jawnie oznaczone legacy source i integralność archiwum. "
-            "docs/archive jest nieaktywną dokumentacją historyczną; jawne project-wide odniesienia historyczne są dopuszczane wyłącznie kontekstowo. "
+            "docs/archive, tests/archive oraz docs/plans/only_to_check są nieaktywną dokumentacją lub historycznym materiałem kontrolnym; "
+            "jawne project-wide odniesienia historyczne są dopuszczane wyłącznie kontekstowo. "
             "Nie interpretuje zawartości prywatnego embedded source; zachowuje wyłącznie jego metadane."
         ),
     )
