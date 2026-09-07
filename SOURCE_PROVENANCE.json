@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2e1df936145ed5ccbebeb18ced98dce160d30d5e",
-    "base_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+    "base_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
+    "base_version": "16.3.25.5.43-host-capability-materialization-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
