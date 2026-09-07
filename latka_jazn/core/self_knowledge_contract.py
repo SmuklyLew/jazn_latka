@@ -6,6 +6,7 @@ from typing import Any
 import json
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.canon.loader import load_identity_canon_data
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.archive.capabilities import archive_capability_report
 from latka_jazn.core.capability_reality_checker import CapabilityRealityChecker
@@ -156,7 +157,12 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
     contract_path = root / SELF_KNOWLEDGE_RESOURCE
     identity_path = root / IDENTITY_CANON_RESOURCE
     contract, contract_error = load_self_knowledge_contract(root)
-    identity, identity_error = _load_json(identity_path)
+    try:
+        identity = load_identity_canon_data(identity_path)
+        identity_error = None
+    except Exception as exc:
+        identity = {}
+        identity_error = f"identity_kernel_load_error:{type(exc).__name__}:{exc}"
     memory = _memory_status(cfg) if deep else {
         "schema_version": schema_version("self_knowledge_memory_status"),
         "status": "metadata_only",
@@ -170,7 +176,7 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
     affective_state = OperationalSelfModel().current_state(user_text="co czujesz po aktualizacji?").to_dict()
     source_statuses = [
         _source_status(root, SELF_KNOWLEDGE_RESOURCE, "self_knowledge_contract"),
-        _source_status(root, IDENTITY_CANON_RESOURCE, "identity_canon"),
+        _source_status(root, IDENTITY_CANON_RESOURCE, "identity_canon_audit_mirror"),
         _source_status(root, "latka_jazn/core/operational_self_model.py", "affective_model_code"),
         _source_status(root, "latka_jazn/core/memory_search_planner.py", "memory_search_planner"),
         _source_status(root, "latka_jazn/core/memory_use_gate.py", "memory_use_gate"),
@@ -197,6 +203,8 @@ def build_self_knowledge_packet(config: JaznConfig | None = None, *, deep: bool 
         "display_name": identity.get("display_name"),
         "grammar_gender": identity.get("grammar_gender"),
         "canon_present": identity_error is None,
+        "identity_authority": (identity.get("source_status") or {}).get("identity_authority"),
+        "public_mirror_kernel_match": (identity.get("source_status") or {}).get("public_mirror_kernel_match"),
         "canon_version": identity.get("canon_version"),
         "relation_model_present": bool(identity.get("relation_model")),
         "truth_boundary": (contract.get("identity") or {}).get("truth_boundary") or identity.get("truthful_memory_contract"),
