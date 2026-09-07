@@ -33,6 +33,11 @@ class EpistemicEvidenceSnapshot:
     external_tool_action_count: int = 0
     external_tool_action_ids: tuple[str, ...] = ()
     external_tool_actions: tuple[str, ...] = ()
+    host_action_count: int = 0
+    host_action_ids: tuple[str, ...] = ()
+    host_actions: tuple[str, ...] = ()
+    host_successful_action_ids: tuple[str, ...] = ()
+    host_successful_actions: tuple[str, ...] = ()
     model_inference_ids: tuple[str, ...] = ()
     hypothesis_ids: tuple[str, ...] = ()
     synthetic_dream_ids: tuple[str, ...] = ()
@@ -42,7 +47,7 @@ class EpistemicEvidenceSnapshot:
     truth_boundary: str = (
         "Evidence snapshots contain only bounded machine-observable identifiers, verified report metadata, and "
         "bounded host-attested external-tool action descriptors. Host attestations prove what the authenticated host "
-        "declared for the turn; they do not make the local runtime the executor of that tool. Model output, confidence, "
+        "declared for the turn; they do not make the local runtime the executor of that tool or host-local process. Model output, confidence, "
         "daemon presence and synthetic dream text are never evidence for their own claims."
     )
 
@@ -123,6 +128,10 @@ class EpistemicEvidenceCollector:
         external_ids = self._ids(external.get("external_source_ids") or external.get("source_ids"))
         external_tool_action_ids = self._ids(external.get("external_tool_action_ids"))
         external_tool_actions = self._ids(external.get("external_tool_actions"))
+        host_action_ids = self._ids(external.get("host_action_ids"))
+        host_actions = self._ids(external.get("host_actions"))
+        host_successful_action_ids = self._ids(external.get("host_successful_action_ids"))
+        host_successful_actions = self._ids(external.get("host_successful_actions"))
         reported_external_count = self._reported_count(external.get("external_source_count"))
         if reported_external_count and reported_external_count != len(external_ids):
             issues.append("external_source_count_not_identifier_backed")
@@ -144,6 +153,11 @@ class EpistemicEvidenceCollector:
             external_tool_action_count=len(external_tool_action_ids),
             external_tool_action_ids=external_tool_action_ids,
             external_tool_actions=external_tool_actions,
+            host_action_count=len(host_action_ids),
+            host_action_ids=host_action_ids,
+            host_actions=host_actions,
+            host_successful_action_ids=host_successful_action_ids,
+            host_successful_actions=host_successful_actions,
             model_inference_ids=self._ids(generated.get("model_inference_ids")),
             hypothesis_ids=self._ids(generated.get("hypothesis_ids")),
             synthetic_dream_ids=self._ids(generated.get("synthetic_dream_ids")),
@@ -195,7 +209,7 @@ def host_tool_attestations_to_external_evidence(
                 source_ids.append(url_id)
         if len(action_ids) >= 8:
             break
-    return {
+    base = {
         "external_source_count": len(source_ids[:32]),
         "external_source_ids": source_ids[:32],
         "external_tool_action_count": len(action_ids[:8]),
@@ -204,6 +218,15 @@ def host_tool_attestations_to_external_evidence(
         "host_attested": bool(action_ids),
         "runtime_independently_verified_execution": False,
     }
+    # Canonical host-finalize can bind local executor evidence in a per-turn
+    # ContextVar. Lazy import avoids an import cycle and preserves the existing
+    # external-tool projection API used by chat_command_contract.
+    from latka_jazn.core.host_action_evidence import (
+        current_host_action_epistemic_evidence,
+        merge_epistemic_external_evidence,
+    )
+
+    return merge_epistemic_external_evidence(base, current_host_action_epistemic_evidence())
 
 
 def collect_epistemic_evidence(

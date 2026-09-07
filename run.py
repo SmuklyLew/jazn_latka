@@ -134,6 +134,15 @@ if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-prefligh
 
 _dependency_bootstrap()
 
+# v16.3.25.5.44 replaces the legacy hard-coded cognitive readiness ``unknown``
+# with a bounded live-effect probe for the canonical status/doctor operator.
+# Keep the overlay isolated from the large diagnostics module so the hotfix
+# does not duplicate or fork its existing readiness implementation.
+if __name__ == "__main__" and _requested_command(sys.argv[1:]) in {"status", "doctor"}:
+    from latka_jazn.cli_commands.cognitive_status_overlay import install_cognitive_status_overlay
+
+    install_cognitive_status_overlay()
+
 # ``host-finalize`` is a canonical two-phase lifecycle command. Keep its parser
 # next to the lifecycle implementation so the legacy aggregate CLI cannot
 # silently degrade it back to validation-only behavior.

@@ -1,8 +1,8 @@
 # Jaźń — PLAN EXECUTION HISTORY v16.3.25.4 → v17
 
 **Status:** `CANONICAL_EXECUTION_HISTORY`  
-**Aktualizacja:** 2026-09-07  
-**Baza przebudowy dokumentacji:** `master @ e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`
+**Aktualizacja:** 2026-09-08  
+**Baza bieżącego overlayu:** `master @ 5a546f22444f954630207ba53e284de7e1af8a05` / `16.3.25.5.43-host-capability-materialization-hardening`
 
 Ten dokument zapisuje historię decyzji bez przepisywania przeszłości. Historyczne plany/statusy pozostają w `only_to_check/`; tutaj utrzymujemy wyłącznie ich aktualną klasyfikację względem bieżącego mastera.
 
@@ -63,6 +63,23 @@ Rzeczywista historia dodała między v16.3.25.4 a dalszymi etapami m.in.:
 - clean release fixture isolation w `.38`.
 
 Historyczne plany generatora v8.x/v10.0.1 i sztywne oczekiwanie „po 16.3.25.4 natychmiast 16.3.26” są `SUPERSEDED` jako numeracja/implementation prescription. Ich cele funkcjonalne są rozliczane względem aktualnego kodu.
+
+## 2A. v16.3.25.5.44 — host finalization evidence binding hotfix
+
+**Status:** `IMPLEMENTED_ON_HOTFIX_BRANCH / PR_PENDING`.
+
+Branch: `hotfix/v16.3.25.5.44-host-finalization-evidence-binding`.
+
+Zakres overlayu nie zmienia kolejności Memory/Affect/NLP. Naprawia krytyczną granicę host↔runtime przed dalszymi etapami programu:
+
+- quote/code/example-aware ekstrakcję silnych self-claims;
+- bounded `HostActionEvidence/v1` związane z `turn_id`, `trace_id` i host request contract;
+- deterministyczny epistemic preflight przed persistence;
+- bezpieczne `indeterminate` jako rzeczywistą niepewność zapisu, z durable reconcile zamiast syntetycznego wtórnego ACK;
+- tri-state `cognitive_integration` readiness oparty na live-effect probe, bez deklaracji świadomości;
+- regresję host-renamed split ZIP `(1).006` bez osłabiania size/SHA/fail-closed materialization.
+
+Aktywne testy i runbook dla tego overlayu należą do samego hotfixu; po merge historia może zostać oznaczona `MERGED`, ale nie wolno na tej podstawie awansować Memory/Affect/NLP do kolejnego stanu.
 
 ---
 

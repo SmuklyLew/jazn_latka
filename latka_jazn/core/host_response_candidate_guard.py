@@ -6,6 +6,13 @@ import re
 from typing import Any
 
 from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_evidence import host_tool_attestations_to_external_evidence
+from latka_jazn.core.host_action_evidence import (
+    host_action_attestations_to_epistemic_evidence,
+    merge_epistemic_external_evidence,
+    validate_host_action_evidence,
+)
 from latka_jazn.core.model_context_compiler import compile_model_context
 from latka_jazn.core.nlg_planner import build_nlg_plan
 from latka_jazn.core.operational_thought_frame import build_operational_thought_frame
@@ -110,6 +117,8 @@ def build_host_generation_context(
             "external_tool_evidence_required": external_web_required,
             "required_external_tool": "web.run" if external_web_required else None,
             "accepted_host_tool_attestations": sorted(_EXTERNAL_TOOL_ALLOWED),
+            "accepted_host_action_evidence_schema": "host_action_evidence/v1",
+            "host_action_evidence_must_match_phase1_binding": True,
             "external_tool_evidence_is_host_attested": True,
             "runtime_does_not_independently_execute_host_web_tool": True,
         },
@@ -189,6 +198,8 @@ def evaluate_host_response_candidate(
     host_generation_context: dict[str, Any],
     used_memory_item_ids: list[str] | None,
     external_tool_evidence: list[dict[str, Any]] | None = None,
+    host_action_evidence: list[dict[str, Any]] | None = None,
+    host_action_binding: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Treat host wording as an untrusted candidate before persistence."""
 
@@ -208,6 +219,26 @@ def evaluate_host_response_candidate(
     }
     violations: list[str] = []
     evidence_validation = validate_external_tool_evidence(external_tool_evidence)
+    binding = host_action_binding if isinstance(host_action_binding, dict) else {}
+    if host_action_evidence:
+        host_action_validation = validate_host_action_evidence(
+            host_action_evidence,
+            expected_turn_id=str(binding.get("turn_id") or ""),
+            expected_trace_id=str(binding.get("trace_id") or ""),
+            expected_request_contract_hash=str(binding.get("host_request_contract_hash") or ""),
+        )
+        if host_action_validation.get("ok") is not True:
+            violations.extend(
+                f"host_action_evidence:{error}"
+                for error in host_action_validation.get("errors") or ["invalid"]
+            )
+    else:
+        host_action_validation = {
+            "ok": True,
+            "evidence": [],
+            "errors": [],
+            "status": "not_supplied",
+        }
     nlg_plan_value = model_context.get("nlg_plan")
     nlg_plan = nlg_plan_value if isinstance(nlg_plan_value, dict) else {}
     external_web_required = str(nlg_plan.get("source_policy") or "") == "requires_external_web"
@@ -225,6 +256,24 @@ def evaluate_host_response_candidate(
         violations.append("host_generation_context_sha256_mismatch")
     if any(item_id not in allowed_ids for item_id in declared_ids):
         violations.append("used_memory_id_not_in_host_context")
+
+    epistemic_external_evidence = merge_epistemic_external_evidence(
+        host_tool_attestations_to_external_evidence(
+            evidence_validation["evidence"] if evidence_validation.get("ok") is True else []
+        ),
+        host_action_attestations_to_epistemic_evidence(
+            host_action_validation["evidence"] if host_action_validation.get("ok") is True else []
+        ),
+    )
+    epistemic_assessments = EpistemicClaimGuard().assess(
+        text,
+        evidence=epistemic_external_evidence,
+    )
+    for assessment in epistemic_assessments:
+        if assessment.blocks_visible_reply:
+            code = f"epistemic_claim:{assessment.kind.value}:{assessment.reason}"
+            if code not in violations:
+                violations.append(code)
 
     template_origin = TemplateRegistry().classify_body(
         text,
@@ -288,6 +337,16 @@ def evaluate_host_response_candidate(
             "accepted_tools": sorted(_EXTERNAL_TOOL_ALLOWED),
             "web_evidence_accepted": web_evidence_accepted,
         },
+        "host_action_evidence": list(host_action_validation.get("evidence") or []),
+        "host_action_evidence_validation": {
+            "ok": host_action_validation.get("ok") is True,
+            "errors": list(host_action_validation.get("errors") or []),
+            "host_attested": bool(host_action_validation.get("evidence")),
+            "runtime_independently_verified_execution": False,
+            "binding_required": True,
+        },
+        "epistemic_evidence": epistemic_external_evidence,
+        "epistemic_claims": [item.to_dict() for item in epistemic_assessments],
         "violations": violations,
         "template_origin": template_origin,
         "candidate_evaluation": candidate_evaluation.to_dict(),

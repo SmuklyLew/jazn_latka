@@ -29,6 +29,7 @@ class EpistemicSourceKind(StrEnum):
     SOURCE_RECORDED_MEMORY = "source_recorded_memory"
     CANONICAL_MEMORY = "canonical_memory"
     TOOL_OR_WEB_SOURCE = "tool_or_web_source"
+    HOST_ACTION = "host_action"
     RUNTIME_EVENT = "runtime_event"
     VERIFIED_REST_REPORT = "verified_rest_report"
     MODEL_INFERENCE = "model_inference"
@@ -87,6 +88,79 @@ class EpistemicClaimViolation(ValueError):
     pass
 
 
+_META_PREFIX_RE = re.compile(
+    r"(?:np\.?|na\s+przykład|przykład|cytat|zdanie|sformułowanie|fraza|tekst|claim)"
+    r"\s*(?:[:=,;–—-]\s*)?[„“\"'`(]*$",
+    re.IGNORECASE,
+)
+_NONASSERTIVE_PREFIX_RE = re.compile(
+    r"(?:nie\s+twierdzę(?:\s*,?\s*że)?|nie\s+mogę\s+twierdzić(?:\s*,?\s*że)?|"
+    r"nie\s+mam\s+podstaw(?:y)?\s+(?:by\s+)?twierdzić(?:\s*,?\s*że)?|"
+    r"to\s+nie\s+znaczy(?:\s*,?\s*że)?|gdybym\s+(?:powiedziała|twierdziła)(?:\s*,?\s*że)?|"
+    r"hipotetycznie(?:\s+mogłabym\s+(?:powiedzieć|twierdzić)(?:\s*,?\s*że)?)?)"
+    r"[^.!?\n]{0,100}$",
+    re.IGNORECASE,
+)
+
+
+def _fenced_code_spans(text: str) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    offset = 0
+    opener: tuple[str, int, int] | None = None
+    for line in text.splitlines(keepends=True):
+        stripped = line.lstrip(" ")
+        indent = len(line) - len(stripped)
+        fence_match = re.match(r"(`{3,}|~{3,})([^\n]*)", stripped) if indent <= 3 else None
+        if fence_match:
+            run = fence_match.group(1)
+            char = run[0]
+            if opener is None:
+                opener = (char, len(run), offset)
+            elif char == opener[0] and len(run) >= opener[1] and not fence_match.group(2).strip():
+                spans.append((opener[2], offset + len(line)))
+                opener = None
+        offset += len(line)
+    if opener is not None:
+        spans.append((opener[2], len(text)))
+    return spans
+
+
+def _inline_code_spans(text: str, blocked: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    pattern = re.compile(r"(?P<ticks>`+)(?P<body>.*?)(?P=ticks)", re.DOTALL)
+    for match in pattern.finditer(text):
+        start, end = match.span()
+        if any(start < blocked_end and end > blocked_start for blocked_start, blocked_end in blocked):
+            continue
+        spans.append((start, end))
+    return spans
+
+
+def _meta_quote_spans(text: str) -> list[tuple[int, int]]:
+    spans: list[tuple[int, int]] = []
+    pairs = (("„", "”"), ("“", "”"), ("«", "»"), ('"', '"'), ("'", "'"))
+    for opening, closing in pairs:
+        cursor = 0
+        while True:
+            start = text.find(opening, cursor)
+            if start < 0:
+                break
+            end = text.find(closing, start + len(opening))
+            if end < 0:
+                break
+            prefix = text[max(0, start - 140):start]
+            if _META_PREFIX_RE.search(prefix):
+                spans.append((start, end + len(closing)))
+            cursor = end + len(closing)
+    return spans
+
+
+def _nonassertive_spans(text: str) -> list[tuple[int, int]]:
+    fenced = _fenced_code_spans(text)
+    spans = [*fenced, *_inline_code_spans(text, fenced), *_meta_quote_spans(text)]
+    return sorted(spans)
+
+
 class EpistemicClaimGuard:
     """Fail closed for deterministic strong self/runtime claims."""
 
@@ -142,12 +216,38 @@ class EpistemicClaimGuard:
         return False
 
     @staticmethod
-    def _first_match(patterns: tuple[re.Pattern[str], ...], text: str) -> str | None:
+    def _first_assertive_match(patterns: tuple[re.Pattern[str], ...], text: str) -> str | None:
+        spans = _nonassertive_spans(text)
         for pattern in patterns:
-            match = pattern.search(text)
-            if match:
+            for match in pattern.finditer(text):
+                start, end = match.span()
+                if any(start < span_end and end > span_start for span_start, span_end in spans):
+                    continue
+                prefix = text[max(0, start - 140):start]
+                if _META_PREFIX_RE.search(prefix) or _NONASSERTIVE_PREFIX_RE.search(prefix):
+                    continue
                 return match.group(0)
         return None
+
+    @staticmethod
+    def _host_actions_support_claim(claim_text: str, successful_actions: tuple[str, ...]) -> bool:
+        if not successful_actions:
+            return False
+        operations = {item.rsplit(":", 1)[-1].casefold() for item in successful_actions}
+        normalized = claim_text.casefold()
+        if normalized.startswith("uruchomiłam"):
+            return bool(operations & {"process_start", "runtime_start"})
+        if normalized.startswith("wykonałam test"):
+            return bool(operations & {"test", "command"})
+        if normalized.startswith(("wykonałam komendę", "wykonałam polecenie")):
+            return "command" in operations
+        if normalized.startswith("wykonałam audyt"):
+            return bool(operations & {"audit", "command", "test"})
+        if normalized.startswith("wdrożyłam"):
+            return "deploy" in operations
+        if normalized.startswith(("zaktualizowałam", "zapisałam", "zmieniłam")):
+            return bool(operations & {"file_write", "repo_update"})
+        return False
 
     @staticmethod
     def _ids(evidence: Mapping[str, Any], key: str) -> tuple[str, ...]:
@@ -161,8 +261,8 @@ class EpistemicClaimGuard:
         supplied = dict(evidence or {})
         assessments: list[EpistemicClaimAssessment] = []
 
-        dream_positive = self._first_match(self._DREAM_POSITIVE, body)
-        dream_negative = self._first_match(self._DREAM_NEGATIVE, body)
+        dream_positive = self._first_assertive_match(self._DREAM_POSITIVE, body)
+        dream_negative = self._first_assertive_match(self._DREAM_NEGATIVE, body)
         if dream_negative:
             assessments.append(EpistemicClaimAssessment(
                 EpistemicClaimKind.DREAM_ACTIVITY,
@@ -194,8 +294,8 @@ class EpistemicClaimGuard:
                 tuple(value for value in (report_id, report_sha, *scene_ids) if value),
             ))
 
-        background_positive = self._first_match(self._BACKGROUND_POSITIVE, body)
-        background_negative = self._first_match(self._BACKGROUND_NEGATIVE, body)
+        background_positive = self._first_assertive_match(self._BACKGROUND_POSITIVE, body)
+        background_negative = self._first_assertive_match(self._BACKGROUND_NEGATIVE, body)
         if background_negative:
             assessments.append(EpistemicClaimAssessment(
                 EpistemicClaimKind.BACKGROUND_ACTIVITY,
@@ -219,18 +319,26 @@ class EpistemicClaimGuard:
                 event_ids,
             ))
 
-        runtime_action = self._first_match(self._RUNTIME_ACTION_POSITIVE, body)
+        runtime_action = self._first_assertive_match(self._RUNTIME_ACTION_POSITIVE, body)
         if runtime_action and not background_positive:
             event_ids = self._ids(supplied, "runtime_action_event_ids")
+            host_action_ids = self._ids(supplied, "host_action_ids")
+            host_successful_actions = self._ids(supplied, "host_successful_actions")
             tool_action_ids = self._ids(supplied, "external_tool_action_ids")
             tool_actions = self._ids(supplied, "external_tool_actions")
             normalized_action = runtime_action.casefold()
+            host_supported = self._host_actions_support_claim(normalized_action, host_successful_actions)
             tool_supported = self._host_tool_actions_support_claim(normalized_action, tool_actions)
             if event_ids:
                 supported = True
                 source_kind = EpistemicSourceKind.RUNTIME_EVENT
                 source_ids = event_ids
                 reason = "verified_runtime_action_events"
+            elif host_action_ids and host_supported:
+                supported = True
+                source_kind = EpistemicSourceKind.HOST_ACTION
+                source_ids = host_action_ids
+                reason = "bound_host_action_evidence"
             elif tool_action_ids and tool_supported:
                 supported = True
                 source_kind = EpistemicSourceKind.TOOL_OR_WEB_SOURCE
@@ -245,9 +353,15 @@ class EpistemicClaimGuard:
                 EpistemicClaimKind.RUNTIME_ACTION,
                 EpistemicClaimStatus.SUPPORTED if supported else EpistemicClaimStatus.UNSUPPORTED,
                 runtime_action,
-                ("runtime_action_event_ids", "external_tool_action_ids+matching_operation"),
+                (
+                    "runtime_action_event_ids",
+                    "bound_host_action_ids+matching_successful_operation",
+                    "external_tool_action_ids+matching_operation",
+                ),
                 {
                     "runtime_action_event_ids": list(event_ids),
+                    "host_action_ids": list(host_action_ids),
+                    "host_successful_actions": list(host_successful_actions),
                     "external_tool_action_ids": list(tool_action_ids),
                     "external_tool_actions": list(tool_actions),
                 },
@@ -264,6 +378,7 @@ class EpistemicClaimGuard:
             EpistemicSourceKind.SOURCE_RECORDED_MEMORY,
             EpistemicSourceKind.CANONICAL_MEMORY,
             EpistemicSourceKind.TOOL_OR_WEB_SOURCE,
+            EpistemicSourceKind.HOST_ACTION,
             EpistemicSourceKind.RUNTIME_EVENT,
             EpistemicSourceKind.VERIFIED_REST_REPORT,
         }
