@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
+  "base_merge_commit": "f415babcd653d7fadcdec3d36d0a0b61bd63e818",
   "base_version": "16.3.25.5.38-ci-release-fixture-isolation",
-  "commit_date": "2026-09-07T02:13:22+02:00",
+  "commit_date": "2026-09-07T03:39:06+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-07T00:13:22+00:00",
+  "generated_at_utc": "2026-09-07T01:39:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a85ba274dad2e5900621db796228af052a8f7e79",
+  "git_tree_sha": "75d82e8d6fcf8a30526f3a365d33bc9673220952",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
+    "base_commit": "e828c2f4ab10a909d9d8b2324e69caf68f82c94d",
     "base_version": "16.3.25.5.38-ci-release-fixture-isolation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
+    "source_commit": "f415babcd653d7fadcdec3d36d0a0b61bd63e818",
     "source_version": "16.3.25.5.38-ci-release-fixture-isolation"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
+  "source_commit": "f415babcd653d7fadcdec3d36d0a0b61bd63e818",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.38-ci-release-fixture-isolation",
   "tag": null,
