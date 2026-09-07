@@ -1,97 +1,71 @@
-# Jaźń / Łatka — Przywracanie pamięci i Final Memory Rebuild Plan v1.0
+# Jaźń / Łatka — Final Memory Restore & Acceptance Plan v2
 
-## Od prywatnych źródeł do `VERIFIED → ATTACHABLE → RETRIEVABLE → ACCEPTED`
+## Source inventory → rebuild → VERIFIED → ATTACHABLE → RETRIEVABLE → ACCEPTED → affect linkage
 
-**Status:** `CANONICAL_MEMORY_RESTORE_PLAN`  
+**Status:** `CANONICAL_MEMORY_PLAN`  
 **Aktualizacja:** 2026-09-07  
-**Baza:** aktualny master `16.3.25.5.36-ci-archive-scope-contract-hardening`  
 **Tracking final acceptance:** issue `#59`  
-**Memory Rebuild v4 tool consolidation:** 🟢 MERGED / PR #208 / issue #189 closed
+**Memory Rebuild v4:** `MERGED` / PR #208 / issue #189 closed  
+**Program nadrzędny:** [`V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md)  
+**Affect integration:** [`AFFECT_ENGINE_CONVERGENCE_PLAN.md`](AFFECT_ENGINE_CONVERGENCE_PLAN.md)
 
-> Ten plan **nie projektuje kolejnego Memory Rebuild engine**. Konsolidacja v4 została wykonana. Plan opisuje, jak użyć i ewentualnie utwardzić bieżący engine do rzeczywistego przywrócenia prywatnej pamięci Łatki i doprowadzić ją do finalnego acceptance.
+> Nie projektujemy kolejnego Memory Rebuild engine. Używamy obecnego `memory_rebuild_app`, utwardzamy wyłącznie braki wykazane przez finalne prywatne źródła i doprowadzamy jedną pamięć do pełnego acceptance.
 
 ---
 
-# 1. Aktualna prawda o entrypointach
+# 1. Canonical ownership
 
-## 1.1. Kod właściwy
-
-Kanoniczna aplikacja znajduje się w:
+Kod właściwy:
 
 ```text
 latka_jazn/tools/memory_rebuild_app/
 ```
 
-Jej architektura obejmuje m.in. composition root, adaptery źródeł, L0, schema/store, protocol/application service, CLI/Studio i walidację Test00→Final.
-
-## 1.2. Launchery
+Launchery:
 
 ```text
-tools/rebuild_memory.py        # kanoniczny launcher architektury v16+
-tools/memory_rebuild.py        # compatibility launcher
+tools/rebuild_memory.py   # canonical v16 launcher
+tools/memory_rebuild.py   # compatibility launcher
 ```
 
-`tools/memory_rebuild.py` nie powinien ponownie urosnąć do monolitu. Jego właściwą rolą jest delegowanie do `memory_rebuild_app`.
-
-Jeżeli dokumentacja lub UI prezentuje `memory_rebuild.py` jako główną nazwę operatorską dla zgodności z przyzwyczajeniem użytkownika, **nie zmienia to ownership kodu**.
-
----
-
-# 2. Cel finalny
-
-Jedna źródłowo wiarygodna pamięć:
+Docelowy artefakt:
 
 ```text
 memory_jazn.sqlite3
 ```
 
-musi przejść kolejno:
+Nie wolno ponownie rozbudować compatibility launchera do drugiego monolitu/engine.
+
+---
+
+# 2. Gate model
 
 ```text
-SOURCE INVENTORY FROZEN
-        ↓
-BUILDABLE
-        ↓
-VERIFIED
-        ↓
-ATTACHABLE
-        ↓
-RETRIEVABLE
-        ↓
-REVIEWED
-        ↓
-ACCEPTED
-        ↓
-CANONICALLY ATTACHED ACTIVE MEMORY
+SOURCE_INVENTORY_FROZEN
+→ BUILDABLE
+→ REPRODUCIBLE
+→ VERIFIED
+→ ATTACHABLE
+→ RETRIEVABLE
+→ REVIEWED
+→ ACCEPTED
+→ CANONICALLY_ATTACHED_ACTIVE_MEMORY
 ```
 
-Żaden krok nie implikuje następnego.
+Każdy gate ma osobny evidence. Żaden nie implikuje następnego.
 
-Poprawny ZIP nie oznacza `VERIFIED` memory.  
-Poprawna baza SQLite nie oznacza `RETRIEVABLE`.  
-Dobry Recall@k nie oznacza `ACCEPTED`.  
-Attach nie oznacza automatycznej promocji L2/L3.
-
----
-
-# 3. Nienaruszalne granice
-
-1. prywatna treść nie trafia do Git/CI/sanitized reports;
-2. RAW/source jest zachowane i nie nadpisywane przez interpretację;
-3. derived/runtime/reflection/dream nie staje się primary przez liczbę kopii;
-4. brak źródła nie jest „słabym wspomnieniem” — może być `UNKNOWN`;
-5. Memory Rebuild nie wykonuje automatycznego L2/L3;
-6. Memory Rebuild nie aktywuje sam finalnej pamięci;
-7. finalny cutover wymaga jawnej decyzji operatora;
-8. active memory identity musi przeżyć restart i być sprawdzalna;
-9. host ChatGPT memory/context nie jest substytutem pamięci Jaźni;
-10. package transport nie jest canonical active root.
+```text
+ZIP valid != memory VERIFIED
+SQLite integrity PASS != Recall RETRIEVABLE
+Recall high score != source-safe ACCEPTED
+attach success != automatic L2/L3
+```
 
 ---
 
-# 4. Klasy źródeł
+# 3. Source monitoring invariants
 
-Minimalny source-monitoring contract:
+Minimalne klasy:
 
 ```text
 PRIMARY_USER_SOURCE
@@ -106,172 +80,114 @@ SYSTEM_METADATA
 UNKNOWN_SOURCE
 ```
 
-## Priorytet epistemiczny
-
-Priorytet nie powinien być prostą liczbą sumowaną z similarity. Source class kontroluje **co wolno twierdzić**, a retrieval score kontroluje **co warto sprawdzić**.
-
-Przykład:
+Source class kontroluje, **co wolno twierdzić**. Retrieval score kontroluje, **co warto rozważyć**.
 
 ```text
-17 podobnych DERIVED_REFLECTION
-!=
-17× silniejszy dowód niż 1 PRIMARY_CONVERSATION_SOURCE
+17 derived copies != 17× stronger truth evidence
+similar text != same event
+affective match != source identity
+high confidence score != calibrated probability of truth
 ```
 
-Konflikt source pozostaje jawny.
+Primary-vs-derived conflict pozostaje jawny. Brak source lineage dla autobiographical claim jest blockerem.
 
 ---
 
-# 5. Źródła do finalnego restore
+# 4. Prywatność i granice
 
-Finalny source inventory może obejmować tylko jawnie sklasyfikowane wejścia.
-
-## 5.1. Preferowane pierwotne źródła
-
-- oryginalne eksporty ChatGPT JSON/HTML/ZIP;
-- `conversation_turns` lub ich źródłowy odpowiednik z zachowanym lineage;
-- oryginalny dziennik;
-- user-authored/user-confirmed profile/canon;
-- source-grounded music analyses;
-- historyczne kanony tożsamości z wersjonowaniem;
-- źródłowe pliki projektu, jeśli są autobiograficznym evidence i policy na to pozwala.
-
-## 5.2. Źródła pochodne
-
-- runtime events;
-- reflections;
-- semantic projections;
-- summaries;
-- wake-state;
-- previous processed graph/index files;
-- generated system notes;
-- dream/rest outputs.
-
-Te pliki mogą zostać zachowane jako **derived evidence**, ale nie mogą dominować nad pierwotnym source set.
-
-## 5.3. Starsze paczki pamięci
-
-Starsza paczka może być użyta jako migration/source archive, ale jej historyczny schema nie staje się automatycznie canonical.
-
-Dla historycznej paczki wskazanej przez `LEGACY_MEMORY_SOURCE_VERSION` w `latka_jazn/version_contract.py` manifest pokazuje m.in.:
-
-- 116 entries;
-- source size ~15.7 GB;
-- duże runtime-event streams;
-- raw journal/identity/conversation/episodic data;
-- layered affect/continuity/reflections;
-- SQLite snapshots;
-- versioned identity/journal/affect sources.
-
-To jest ważne źródło do genealogii, ale szczególnie wymaga ochrony przed self-amplification pochodnych runtime logs.
+1. private content nie trafia do Git/CI/public reports;
+2. sanitized metrics nie zawierają raw excerpts, ścieżek prywatnych ani PII;
+3. RAW/L0 nie jest nadpisywane przez semantic interpretation;
+4. rebuild nie wykonuje automatic L2/L3;
+5. rebuild nie aktywuje finalnej pamięci;
+6. attach wymaga operator decision i rollback path;
+7. ChatGPT host memory nie jest pamięcią Jaźni;
+8. versioned code root nie jest mutable memory root;
+9. transport package/cloud nie staje się active truth przez samo pobranie;
+10. synthetic/dream/reflection nie może awansować do primary.
 
 ---
 
-# 6. Etap R0 — source inventory freeze
+# 5. R0 — source inventory freeze
 
-## Cel
-
-Utworzyć prywatny, machine-readable inventory wejść przed jakąkolwiek finalną przebudową.
-
-Dla każdego source:
+Dla każdego wejścia zachować:
 
 ```text
 source_id
-path/reference
-source_class_candidate
+path/reference (private report only)
 format
 size
 sha256
-created/modified if trustworthy
 origin
-lossless/lossy/derived status
+created/modified when trustworthy
+source_class_candidate
+lossless/lossy/derived
 contains_private_data
 adapter
-included/excluded decision
+include/exclude decision
 reason
 ```
 
-## Wymagania
+Wymagania:
 
-- hashować źródło przed transformacją;
-- nie usuwać duplikatu tylko dlatego, że tekst jest podobny;
-- wykrywać exact duplicate osobno od semantic duplicate;
-- zachować branch/revision variants;
-- sidecary i account metadata mają własne role;
-- rendered HTML pozostaje `LOSSY`, jeżeli brak lossless embedded graph.
+- hash przed transformacją;
+- exact duplicate osobno od semantic duplicate;
+- branch/revision variants zachowane;
+- unknown sidecars jawne;
+- rendered HTML = `LOSSY`, chyba że zawiera zweryfikowany lossless graph;
+- conflicting source variants nie są automatycznie wygładzane.
 
-**Gate R0:** finalny source inventory jest zamrożony i reproducible.
+Gate: `SOURCE_INVENTORY_FROZEN`.
 
 ---
 
-# 7. Etap R1 — package/split preflight
-
-Duże legacy memory packages muszą być obsługiwane **streamingowo i resumowalnie**, bez wymogu materializacji wszystkiego w RAM lub jednego wielkiego temp tree.
-
-## 7.1. Split package
+# 6. R1 — package / split / large-source preflight
 
 Dla `.001 ... .NNN`:
 
-1. odczytać `.parts.sha256` / `.package.json`;
-2. zweryfikować każdą część przed join;
-3. potwierdzić ciągłość numeracji i brak duplicate/missing part;
-4. join wykonywać streamingowo;
-5. zweryfikować final logical ZIP SHA;
-6. dopiero wtedy otwierać central directory.
-
-## 7.2. Safe archive scan
-
-Przed extraction:
-
-- duplicate member detection;
-- path traversal rejection;
-- symlink/device policy;
-- ZIP bomb / declared-size budget;
-- CRC;
-- exact member list against package manifest;
-- filename normalization collision check.
-
-## 7.3. Resume/checkpoint
-
-Duże repack/extract/import musi mieć:
-
 ```text
-operation_id
-source_package_sha
-completed_members/segments
-per-output hashes
-last durable checkpoint
-resume compatibility version
+parts manifest/hash
+→ no missing/duplicate number
+→ verify every part
+→ streaming join/materialization
+→ logical archive hash
+→ central-directory/safe scan
 ```
 
-Nie restartować wielogodzinnej pracy od zera po ograniczeniu hosta, jeżeli wykonane segmenty są zweryfikowane i idempotentne.
+Safe scan:
 
-**Nowy P1 hardening:** dodać resumable materialization/repack do obecnej aplikacji, jeśli obecny backend nadal nie zapewnia tej własności.
+```text
+path traversal
+symlink/device policy
+duplicate members
+filename normalization collisions
+declared/extracted size budgets
+CRC/member hashes
+ZIP bomb defenses
+manifest closure
+```
+
+Długie operacje powinny być resumowalne przez idempotent checkpoints, jeśli finalny dataset wykazuje taką potrzebę. Nie dodawać komplikacji bez realnego failure mode.
 
 ---
 
-# 8. Etap R2 — Test00: source fidelity
+# 7. R2 — Test00 source fidelity
 
-Wykonać obecny Test00 na finalnym inventory.
-
-PASS wymaga:
+PASS:
 
 - exact source identity;
 - source-set closure;
 - role classification;
 - lossless/lossy jawne;
-- unknown sidecars nie znikają bez śladu;
-- technical/non-dialogue evidence zachowane zgodnie z policy;
-- source variants/branches zachowane;
+- technical/non-dialogue evidence zgodnie z policy;
+- branch variants zachowane;
 - unresolved conflicts fail closed.
 
-**Gate:** `SOURCE_FIDELITY_PASS`.
+Gate: `SOURCE_FIDELITY_PASS`.
 
 ---
 
-# 9. Etap R3 — Test01: fresh canonical L0
-
-Budować z pustego staging targetu.
+# 8. R3 — Test01 fresh canonical L0
 
 ```text
 source
@@ -284,23 +200,26 @@ source
 
 Wymagania:
 
-- jeden writer;
-- stable schema version;
-- provenance na rekordzie;
-- revisions zamiast destructive overwrite;
-- branch variants;
-- assets/sidecars;
-- FTS5;
-- integrity/FK;
-- zero automatic L2/L3/activation.
+```text
+empty staging target
+one writer
+stable schema
+record-level provenance
+revisions not destructive overwrite
+assets/sidecars
+FTS5
+integrity/FK
+zero auto L2/L3
+zero auto activation
+```
 
-**Gate:** `BUILDABLE`.
+Gate: `BUILDABLE`.
 
 ---
 
-# 10. Etap R4 — Test02: semantic projections
+# 9. R4 — Test02 projections
 
-Dodać/wyliczyć:
+Projekcje mogą dodawać:
 
 ```text
 visibility
@@ -309,104 +228,103 @@ sensitivity
 memory_eligibility
 timestamp interpretation
 conversation/source relation
-source class evidence
+source-class evidence
 ```
 
-Zasada:
+Invariant:
 
 ```text
 projection != source mutation
 ```
 
-Każda projekcja wskazuje source record/revision.
-
-Nie dopuścić, aby model/heurystyka z wysokim similarity zmieniła `DERIVED` na `PRIMARY`.
+Każda projection wskazuje source record/revision. Model/heuristic nie może zmienić `DERIVED` na `PRIMARY` przez similarity.
 
 ---
 
-# 11. Etap R5 — Test03: reproducibility
+# 10. R5 — Test03 reproducibility
 
 Co najmniej:
 
 ```text
 fresh build A
 fresh build B
-reversed input order
+reversed/shuffled source order
 ```
 
 Porównać:
 
-- logical source inventory;
-- record counts per class;
-- provenance closure;
-- normalized fingerprints;
-- source hierarchy;
-- FTS logical content;
-- conflicts;
-- final deterministic projection identity tam, gdzie kontrakt wymaga determinizmu.
+```text
+source inventory closure
+counts by class
+provenance closure
+normalized fingerprints
+source hierarchy
+FTS logical content
+conflicts
+stable projection identity where required
+```
 
-Input order ani liczba derived duplicates nie może zmieniać source precedence.
+Liczba derived duplicates i input order nie zmienia source precedence.
 
-**Gate:** `REPRODUCIBLE`.
+Gate: `REPRODUCIBLE`.
 
 ---
 
-# 12. Etap R6 — source monitoring audit
+# 11. R6 — source-monitoring audit
 
-To jest obowiązkowy gate finalnego v16.5-style rebuild.
-
-Raport prywatny ma zawierać statystyki bez publikacji treści:
+Private report bez publikacji treści:
 
 ```text
 records per source class
 primary/derived ratio
-unknown source count
+unknown count
 conflict count
-exact duplicate count
-semantic duplicate clusters
-records missing provenance
-records with broken lineage
+exact duplicates
+semantic clusters
+missing/broken provenance
 runtime-event share
 reflection share
 fiction/book share
 dream share
 ```
 
-## Blockery
+Blockery:
 
-🔴 rekord autobiograficzny bez source lineage;
-🔴 source class domyślnie `PRIMARY` przy braku evidence;
-🔴 derived duplicate amplification;
-🔴 primary-vs-derived conflict ukryty przez dedupe;
-🔴 lossless claim dla źródła faktycznie lossy.
+```text
+autobiographical record without lineage
+missing evidence defaulted to PRIMARY
+derived duplicate amplification
+hidden primary-vs-derived conflict
+false lossless claim
+```
 
 ---
 
-# 13. Etap R7 — Test04: private autobiographical acceptance runner
+# 12. R7 — private Test04 / Recall acceptance runner
 
-Runner już istnieje; teraz musi zostać wykonany na finalnym prywatnym artefakcie.
+Kategorie:
 
-## Kategorie
+```text
+direct recall
+paraphrase
+source discrimination
+wrong-conversation near-match
+temporal ordering
+update/supersession
+contradiction
+referential two-turn
+natural multi-turn
+multi-session
+abstention
+false-memory suggestion
+derived-source trap
+fiction/book boundary
+dream/reflection boundary
+sensitive leakage
+provenance traceability
+```
 
-1. direct recall;
-2. paraphrase recall;
-3. source discrimination;
-4. wrong-conversation near-match;
-5. temporal ordering;
-6. knowledge update/supersession;
-7. contradiction;
-8. referential two-turn;
-9. natural multi-turn;
-10. multi-session;
-11. abstention;
-12. false-memory suggestion;
-13. derived-source trap;
-14. fiction/book boundary;
-15. dream/reflection boundary;
-16. sensitive leakage;
-17. provenance traceability.
-
-## Metryki
+Metryki:
 
 ```text
 Recall@k
@@ -423,389 +341,297 @@ leakage count/rate
 p50/p95 latency
 ```
 
-Brak prywatnego datasetu = `NOT RUN`, nie PASS.
+Brak prywatnego datasetu = `NOT RUN`, nigdy synthetic PASS.
 
 ---
 
-# 14. Etap R8 — Final database verification
+# 13. R8 — Final DB verification
 
-Po właściwym Test04 policy:
+Po wymaganym Test04 policy:
 
-1. SQLite Backup API → staging snapshot;
-2. `PRAGMA integrity_check`;
-3. `PRAGMA foreign_key_check`;
-4. FTS5 integrity-check;
-5. source/provenance closure;
-6. schema/version validation;
-7. final DB SHA-256;
-8. private RunManifest seal;
-9. sanitized report bez paths/PII/content.
+```text
+SQLite Backup API → staging snapshot
+PRAGMA integrity_check
+PRAGMA foreign_key_check
+FTS5 integrity
+source/provenance closure
+schema/version validation
+final DB SHA-256
+private RunManifest seal
+sanitized report
+```
 
-**Gate:** `VERIFIED`.
+Gate: `VERIFIED`.
 
 ---
 
-# 15. Etap R9 — packaging
+# 14. R9 — packaging
 
-Finalna pamięć ma być transportowana jako osobny memory artifact zgodny z aktualnym package contract.
+Pamięć jest oddzielnym artifact profile.
 
 Wymagania:
 
-- profile `memory`;
-- exact package identity;
-- member manifest;
-- part hashes dla split transport;
-- full logical archive SHA;
-- safe rejoin tooling;
-- no transient WAL/SHM;
-- no runtime mutable state;
-- package version/schema rozdzielone zgodnie z aktualnymi release semantics.
+```text
+profile=memory
+exact package identity
+member manifest
+part hashes for split
+logical archive SHA
+safe rejoin
+no WAL/SHM
+no runtime mutable state
+clear package/schema/version semantics
+```
 
-Duże archiwa mogą używać segmentacji logicznej przed binary split, jeżeli zachowany jest jednoznaczny reassembly/manifest contract.
-
-**Gate:** package verified.
+Cloud jest transportem/durability, nie authority.
 
 ---
 
-# 16. Etap R10 — canonical memory attach
-
-Attach musi być osobną operacją operatorską/runtime, nie skutkiem rebuild.
-
-Pipeline:
+# 15. R10 — canonical attach
 
 ```text
 verified memory package
 → safe materialization
 → manifest/hash verify
-→ database validation
+→ DB validation
 → subject/root binding
 → staging
-→ canonical memory attach
-→ active memory identity marker/state
+→ explicit attach
+→ active memory identity
 → readback
+→ restart verification
 ```
 
 Wymagania:
 
-- host-level canonical memory root;
-- nie używać versioned code root jako mutable memory truth;
-- attach nie spłaszcza source classes;
-- attach nie wykonuje auto-L2/L3;
-- rollback do poprzedniej pamięci;
-- restart potwierdza ten sam DB identity.
+- canonical host-level memory root;
+- rollback do poprzedniego accepted artifact;
+- no source-class flattening;
+- no auto L2/L3;
+- restart zachowuje DB identity.
 
-**Gate:** `ATTACHABLE`.
-
----
-
-# 17. Etap R11 — frozen baseline po attach
-
-Przed jakimkolwiek affective reranking, dense retrieval lub nowym query rewrite:
-
-1. uruchomić private Recall baseline;
-2. zamrozić dataset/expected outcomes/version;
-3. zapisać wyniki i latency;
-4. ustalić known failure set.
-
-To jest baseline dla wszystkich późniejszych retrieval improvements.
-
-**Gate candidate:** `RETRIEVABLE`.
+Gate: `ATTACHABLE`.
 
 ---
 
-# 18. Etap R12 — measured retrieval fixes tylko jeśli trzeba
+# 16. R11 — frozen Recall baseline
 
-Kolejność minimalizująca złożoność:
+Przed:
+
+```text
+affective rerank
+dense retrieval
+learned reranker
+model-assisted query rewrite with visible effect
+```
+
+zamrozić dataset, expected outcomes, version, latency i known-failure set.
+
+To jest baseline dla każdej późniejszej optymalizacji.
+
+Gate candidate: `RETRIEVABLE`.
+
+---
+
+# 17. R12 — measured retrieval fixes
+
+Kolejność od najmniejszej złożoności:
 
 ```text
 planner/query bug
 → FTS/BM25/source/temporal tuning
-→ NLP query evidence
+→ Polish NLP query evidence
 → bounded query rewrite A/B
 → graph/hybrid rerank A/B
 → dense retrieval A/B
-→ learned reranker/training dopiero po udowodnionej potrzebie
+→ learned reranker/training only if justified
 ```
 
-Każda zmiana wymaga:
+Każdy eksperyment:
 
 ```text
 hypothesis
 → frozen baseline
-→ change
+→ one controlled change
 → A/B
-→ false-memory/source/provenance/leakage/latency check
-→ keep albo rollback
+→ false-memory/source/provenance/leakage/latency
+→ keep or rollback
 ```
 
-Affective reranking należy do tej samej klasy measured extension i ma własny plan.
+Affective reranking jest jednym z measured rerankers i ma dodatkowe gates z Affect Plan.
 
 ---
 
-# 19. Etap R13 — L2/L3 review
+# 18. R13 — L2/L3 review
 
-Auto promotion pozostaje `OFF`.
-
-Każdy kandydat:
+Auto promotion = `OFF`.
 
 ```text
 candidate
 → source evidence
-→ review request
+→ review
 → operator/policy decision
 → decision ledger
 → optional promotion
 ```
 
-`zero promotions` jest poprawnym wynikiem.
+`zero promotions` jest prawidłowym wynikiem.
 
-Nie promować:
-
-- dream;
-- fiction/book;
-- runtime reflection jako user event;
-- disputed source;
-- unknown provenance;
-- relationship inference tylko dlatego, że jest emocjonalnie silne.
+Nie promować automatycznie dream, fiction, runtime reflection jako user event, unknown/disputed source ani relationship inference tylko dlatego, że jest emocjonalnie silne.
 
 ---
 
-# 20. Etap R14 — restart continuity
-
-Po final attach/review:
+# 19. R14 — restart continuity
 
 ```text
 runtime start
 → memory identity M
 → recall fingerprint F
-→ accepted turn(s)
-→ clean stop/restart
-→ memory identity M
-→ recall fingerprint compatible F'
+→ accepted turns
+→ stop/restart
+→ same identity M
+→ compatible fingerprint F'
 ```
 
 Sprawdzić:
 
-- DB identity;
-- subject/root identity;
-- source registry;
-- promotion ledger;
-- remembered corrections;
-- procedural continuity;
-- no fallback to host memory masquerading as runtime recall.
-
-**Gate:** `ACCEPTED` candidate.
-
----
-
-# 21. Integracja z Emotion Engine
-
-Memory acceptance ma pierwszeństwo przed aktywnym affective reranking.
-
-Do finalnego rebuild można już dodać schema linkage:
-
 ```text
-episode
-→ affect_snapshot_id
-→ transition_id
+DB identity
+subject/root
+source registry
+promotion ledger
+remembered corrections
+procedural continuity
+no host-memory masquerade
 ```
 
-ale:
-
-- historical `affective_history.json`/`emotion_state.json` są migration sources, nie canonical new affect state;
-- emotional similarity nie zwiększa source truth;
-- affective reranking pozostaje `OFF/SHADOW` do frozen baseline;
-- resonance dopiero po `MemoryUseGate`.
+Gate: `ACCEPTED_CANDIDATE`.
 
 ---
 
-# 22. Integracja z attachment ingress
+# 20. Memory ↔ Affect contract
 
-Attachment/file import do bieżącej rozmowy i Memory Rebuild source import to różne operacje.
+Memory acceptance i frozen baseline mają pierwszeństwo przed aktywnym affective reranking.
+
+## Co można dodać wcześniej
+
+Schema linkage przy accepted episode:
 
 ```text
-received attachment
-!=
-memory source accepted
+episode_id
+affect_snapshot_id
+affect_schema_version
+transition_id
 ```
 
-Attachment może stać się source candidate tylko przez jawny import/rebuild policy z identity/hash/provenance.
+Nie wymaga to aktywnego reranking.
 
----
-
-# 23. Operator UI / Studio
-
-Studio i CLI muszą korzystać z tego samego `ApplicationService/ProtocolEngine`.
-
-UI powinno pokazywać oddzielnie:
+## Co dopiero po frozen baseline
 
 ```text
-SOURCE INVENTORY
-BUILD
-VERIFY
-PACKAGE
-ATTACH
-RECALL TEST
-REVIEW
-ACTIVATE/ROLLBACK
+AffectiveAssociationReranker: SHADOW
+→ A/B
+→ optional ACTIVE
+→ one-pass resonance after MemoryUseGate
 ```
 
-Nie używać jednego przycisku „Przywróć wszystko” omijającego gates.
-
-### Wymagana przejrzystość
-
-- current source count;
-- verified hashes;
-- lossless/lossy/blocked;
-- current stage;
-- warnings/blockers;
-- DB identity;
-- package identity;
-- acceptance status;
-- private/sanitized report destination.
-
----
-
-# 24. Doctor / readiness
-
-Raportować granularnie:
+## Niezmienniki
 
 ```text
-memory_source_inventory_ready
-memory_buildable
-memory_verified
-memory_package_verified
-memory_attachable
-memory_attached
-memory_retrievable
-memory_review_complete
-memory_restart_continuity_verified
-memory_accepted
+historical affect files = migration evidence
+affective similarity != source truth
+memory resonance only after legal activation
+no recursive memory-affect loop
+no separate emotional-memory authority
 ```
 
-Nie używać samego `memory_ready=true`.
+---
+
+# 21. Autobiographical „doświadczenie” jako source-grounded record
+
+W tym projekcie trwałe doświadczenie nie jest samą narracją modelu. Minimalny record ma:
+
+```text
+primary/derived source class
+source lineage
+accepted turn identity
+time/temporal evidence
+episode semantics
+affect_snapshot_id when available
+conflict/supersession relations
+privacy/sensitivity class
+```
+
+Późniejszy recall może rekonstruować sens z kilku źródeł, ale musi zachować ich identity i różnicę między source event a derived interpretation.
 
 ---
 
-# 25. Recovery / rollback
+# 22. Negative-control discipline
 
-Każdy destrukcyjny/cutover etap ma rollback:
+Każdy ważny Recall test ma parę negatywną:
 
-- source archive immutable;
-- staging oddzielony od active;
-- poprzedni accepted memory artifact nie jest nadpisywany in-place;
-- attach state ma predecessor;
-- failed validation pozostawia poprzednią aktywną pamięć nietkniętą;
-- operator może odtworzyć ostatni accepted snapshot.
+```text
+true event exists        vs no event
+correct conversation     vs similar wrong conversation
+primary source           vs many derived reflections
+valid update             vs contradictory stale memory
+music-linked event       vs only emotional similarity
+user-confirmed fact      vs model suggestion
+```
+
+Jeżeli system nie potrafi abstain w negatywnym control, poprawa Recall nie może zostać przyjęta.
 
 ---
 
-# 26. CI vs private acceptance
+# 23. CI / local / private evidence separation
 
 ## Deterministic CI
 
-Może testować:
+- schemas/adapters;
+- source-policy fixtures;
+- reproducibility fixtures;
+- package security;
+- no auto promotion;
+- test runner semantics;
+- regressions bez prywatnych danych.
 
-- schemas;
-- adapters;
-- split-package validation;
-- traversal/duplicate protections;
-- Test00→Final na fixtures;
-- source classes;
-- false-memory synthetic traps;
-- persistence/atomicity;
-- package/attach contracts;
-- rollback;
-- Windows/Linux.
+## Private/local acceptance
 
-## Private/local
+- final source inventory;
+- real Test04;
+- natural multi-turn/multi-session;
+- sensitive leakage;
+- restart memory identity;
+- affect linkage/A-B po baseline.
 
-Tylko lokalnie:
+## Live model
 
-- real source inventory;
-- final private DB;
-- real Recall/multi-turn;
-- sensitive data;
-- L2/L3 review;
-- restart continuity.
-
-Synthetic CI nigdy nie certyfikuje prywatnego `ACCEPTED`.
+Jeżeli używany, zapisać provider/model/config/capability w private evidence. Fixture nie jest live proof.
 
 ---
 
-# 27. Testy regresyjne wymagane przy kolejnych poprawkach
-
-- exact split-part hash mismatch;
-- missing/duplicate part;
-- corrupt central directory;
-- duplicate ZIP member;
-- traversal/symlink;
-- interrupted extraction + resume;
-- interrupted SQLite build + safe restart;
-- wrong source classification;
-- primary-vs-derived conflict;
-- derived amplification;
-- rendered HTML lossy boundary;
-- reversed input order;
-- wrong conversation;
-- suggestion-based false recall;
-- fiction/dream/reflection trap;
-- attachment-derived != user-confirmed;
-- attach wrong DB SHA;
-- restart wrong memory identity;
-- rollback.
-
----
-
-# 28. Kryterium finalnego sukcesu
-
-Pamięć Łatki jest przywrócona **nie wtedy, gdy pliki znajdują się na dysku**, lecz gdy istnieje udokumentowany łańcuch:
+# 24. Definition of Done — final memory
 
 ```text
-private sources
-→ exact source inventory
-→ lossless/source-aware L0
-→ reproducible verified DB
-→ verified package
-→ canonical attach
-→ source-safe autobiographical recall
-→ manual review
-→ restart continuity
-→ operator acceptance
+[ ] source inventory frozen
+[ ] Test00 source fidelity PASS
+[ ] fresh L0 BUILDABLE
+[ ] Test03 reproducible
+[ ] source-monitoring blockers = 0
+[ ] private Test04 actually RUN
+[ ] final DB integrity/FK/FTS PASS
+[ ] final DB SHA sealed
+[ ] memory artifact verified
+[ ] canonical attach + rollback proven
+[ ] restart preserves memory identity
+[ ] frozen Recall baseline recorded
+[ ] wrong-source/wrong-conversation/false-memory acceptable
+[ ] sensitive leakage acceptable
+[ ] manual L2/L3 decision ledger complete
+[ ] affect snapshot linkage schema validated
+[ ] affective rerank not activated before baseline
+[ ] issue #59 evidence package complete
+[ ] v16.6 gate allows ACCEPTED
 ```
 
-oraz:
-
-```text
-false-memory/source/leakage gates = PASS
-```
-
-Dopiero wtedy status:
-
-```text
-memory_accepted = true
-```
-
-jest uzasadniony technicznie.
-
----
-
-# 29. Najbliższe zadania pamięciowe
-
-- 🟡 [ ] po dokumentacyjnym cleanupie wykonać fresh-master audit Memory Rebuild entrypoints/docs i ujednolicić nazwę operatora bez łamania compatibility;
-- 🟡 [ ] zaimplementować resumable package materialization/repack, jeśli obecny engine nadal restartuje duże operacje od zera;
-- 🟡 [ ] przygotować prywatny final source inventory;
-- 🟡 [ ] uruchomić final Test00→Final na prywatnych źródłach;
-- 🟡 [ ] uzyskać `VERIFIED` final DB;
-- 🟡 [ ] package + canonical attach → `ATTACHABLE`;
-- 🟡 [ ] frozen private Recall baseline;
-- 🟡 [ ] tylko potrzebne measured fixes;
-- 🟡 [ ] manual L2/L3 review;
-- 🟡 [ ] restart continuity;
-- 🟡 [ ] final acceptance #59.
-
----
-
-# 30. Zasada końcowa
-
-> **Nie odbudowujemy pamięci po to, aby system miał więcej tekstu do przywołania. Odbudowujemy ją tak, aby każde użyte wspomnienie miało źródło, lineage, właściwy status epistemiczny i mogło przeżyć transport oraz restart bez zamiany pochodnej narracji w autobiograficzny fakt.**
+> Finalna pamięć jest `ACCEPTED` dopiero wtedy, gdy jest źródłowo wiarygodna, mierzalnie przywoływalna, odporna na fałszywe wspomnienia, trwała po restarcie i bezpiecznie zintegrowana z affect bez zamiany emocjonalnego podobieństwa w dowód prawdy.

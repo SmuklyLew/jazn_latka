@@ -1,113 +1,108 @@
 # Current project state
 
 **Snapshot date:** 2026-09-07  
-**Repository:** `SmuklyLew/jazn_latka`
+**Repository:** `SmuklyLew/jazn_latka`  
+**Current master at documentation baseline:** `e828c2f4ab10a909d9d8b2324e69caf68f82c94d`  
+**Current master version:** `16.3.25.5.38-ci-release-fixture-isolation`  
+**Documentation convergence branch:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
 
-Ten plik jest krótkim overlayem bieżącego stanu. Nie zastępuje `latka_jazn/version.py`, Git ani machine-readable evidence.
+Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
-## Canonical master
+## Runtime / release foundations
 
-Przy tej synchronizacji dokumentacji:
-
-- `master` HEAD: `378e9e6aceb83edbd679751e19cbe5c64c978025`;
-- canonical runtime/package line: `16.3.25.5.36-ci-archive-scope-contract-hardening`;
-- wersję zawsze czytać z `latka_jazn/version.py`;
-- `AGENTS.md` pozostaje routerem odpowiedzialności;
-- `run.py` pozostaje canonical lifecycle/operator surface;
-- package/runtime/plugin/dependency hardening z linii `16.3.25.5.x` jest obecny na master.
+- `run.py` pozostaje canonical lifecycle/operator surface.
+- `AGENTS.md` jest routerem do właściwych runbooków.
+- persistent-runtime, subject-root, host-finalization i host/executor truth foundations są częścią bieżącej linii.
+- package/distribution/generator/dependency/plugin/CI hardening jest obecny do `.38`.
+- `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
 
 ## Memory Rebuild v4
 
-**Stan:** `MERGED / TOOL CONSOLIDATION COMPLETE`.
+**Status:** `MERGED / TOOL-PROTOCOL CONSOLIDATION COMPLETE`.
 
-- PR `#208` został scalony 2026-09-02;
-- merge commit: `601cf3fe977621c5552f7f6e32530da0128ccc8a`;
-- issue `#189` jest zamknięte jako completed;
-- Test00→Final engine/application foundation jest częścią mastera;
-- ten stan nie certyfikuje finalnej prywatnej pamięci.
-
-Stare `docs/plans/.../STATUS.md` mówiące `IN_PROGRESS` są zachowane w `docs/plans/only_to_check/` jako historyczny snapshot.
+- PR #208 merged 2026-09-02;
+- merge commit `601cf3fe977621c5552f7f6e32530da0128ccc8a`;
+- issue #189 closed;
+- Test00→Final engine/application foundation jest na master;
+- ten status nie oznacza final private memory acceptance.
 
 ## Final private memory
 
-Issue `#59`: **OPEN**.
+Issue #59: `OPEN`.
 
-Finalna pamięć musi nadal przejść:
+Wymagane gates:
 
 ```text
-VERIFIED
+SOURCE_INVENTORY_FROZEN
+→ VERIFIED
 → ATTACHABLE
 → RETRIEVABLE
+→ REVIEWED
 → ACCEPTED
 ```
 
-Brak finalnego `ACCEPTED` oznacza, że nie wolno traktować narzędzia Memory Rebuild ani historycznych Test04 jako zamknięcia finalnej pamięci.
+Private Recall, false-memory/source discrimination, restart identity i review pozostają do wykonania na finalnym artefakcie.
 
-## Package/runtime hardening po Memory Rebuild
+## Emotion Engine / Affect
 
-Po v16.3.25.4 master przeszedł przez szeroką linię `16.3.25.5.x`, m.in.:
+**Status:** `PLAN READY / CANONICAL IMPLEMENTATION NOT STARTED`.
 
-- package distribution convergence;
-- Pack Generator hardening do bieżącego kierunku `10.1.86.0.114`;
-- byte-exact/EOL/folder/canonical release staging;
-- Python runtime/dependency hardening;
-- Pyright/Pylance archive/dependency boundaries;
-- GitHub Actions Node24 convergence;
-- ChatGPT runtime-first handoff;
-- host-executor truth boundary i recovery;
-- package-runtime-plugin convergence;
-- optional archive capability i dalsze CI scope fixes.
-
-Dawne plany wskazujące stare wersje generatora są historyczne, nie bieżącym targetem.
-
-## Current documentation convergence branch
-
-Branch:
+Legacy affect/emotion/self/homeostasis modules istnieją i będą inventory input. Docelowy program wymaga:
 
 ```text
-docs/v16-plans-convergence-2026-09-07
+one AffectiveStateIntegrator
+one AffectiveStateV2
+EvidenceRef + AppraisalV2
+FeelingRepresentation derived
+accepted-turn persistence
+bounded SelfState/Homeostasis/Salience effects
+source-safe memory linkage
+ablation
 ```
 
-Jest to **documentation-only convergence branch**, nie nowa linia produktu.
+Affect inventory `A0` może być wykonany shadow-only po merge dokumentacji. Semantic canonical appraisal wymaga Polish NLP evidence. Active affective reranking wymaga frozen private Recall baseline.
 
-Cel:
+## Attachment / multimodal
 
-- przenieść poprzednie `docs/plans/` do `docs/plans/only_to_check/`;
-- utworzyć jedną historię wykonania i current-step;
-- odświeżyć Memory Restore/Rebuild plan;
-- ustanowić canonical Affect Engine subplan;
-- odświeżyć V17+ system evaluation;
-- naprawić dryf current-state/timeline.
+`OPEN`. Package/plugin capability infrastructure nie zastępuje canonical user attachment ingress. Nadal wymagane są exact provenance, secure bounded staging, extraction/type policy, capability routing i host→runtime E2E.
 
-## Następne duże niezamknięte etapy
+## Polish NLP
 
-1. `attachment + multimodal ingress` — nadal planowany i niezakończony;
-2. evidence-aware Polish NLP — nadal wymagany;
-3. final private Memory Rebuild / package / attach / Recall / review / restart (#59);
-4. Emotion Engine canonical affect convergence — nowy plan gotowy, implementation nie rozpoczęty;
-5. v16.6 final evidence gate;
-6. v17 measured consolidation dopiero po v16.6 PASS.
+`OPEN / PARTIAL FOUNDATIONS`. Potrzebny jeden evidence-aware contract dla normalization, lexical provenance, ambiguity/OOV, negation/quotation/fiction i contextual/referential/temporal interpretation.
 
-Affect `E0 inventory/baseline` może być przygotowany równolegle po merge dokumentacji, o ile nie zmienia visible behavior ani memory ranking.
+## Documentation
 
-## Documentation truth rule
+PR #231 został scalony. Obecna `.39` konwergencja domyka po-merge braki:
 
-Nowa mapa:
+- usuwa compatibility pointers z aktywnego `docs/plans/`;
+- zachowuje poprzedni stan w `only_to_check`;
+- ustanawia jedną roadmapę v16.3.25.4→v17;
+- przebudowuje Memory Restore + Affect jako sprzężony program;
+- dodaje research/evidence register;
+- naprawia stale `.36/378e9e6` metadata.
 
-- `docs/plans/PLAN_EXECUTION_HISTORY.md` — przebieg + status + checklista;
-- `docs/plans/CURRENT_STEP.md` — dokładny obecny krok;
-- `docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md` — active memory acceptance plan;
-- `docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md` — active affect subplan;
-- `docs/plans/V17_PLUS_SYSTEM_EVALUATION.md` — current evaluation/future gate;
-- `docs/plans/only_to_check/` — dawne plany/statusy/pointery;
-- `docs/archive/` — starsza historia release/research.
+## v16.6
 
-## Governance gap
+`FUTURE / EVIDENCE GATE`, nie monolityczny refactor. Wymaga jednocześnie runtime/host, attachment, NLP, accepted memory, canonical affect, source monitoring, ablation, model capability/context, package/cross-platform CI i governance evidence.
 
-Przy bieżącym odczycie GitHub raportuje `master` jako `protected=false`.
+## v17
 
-To nie blokuje tej dokumentacyjnej reorganizacji, ale pozostaje otwartym v16.6 governance gate: branch protection/ruleset, równoważny enforcement albo jawnie zaakceptowany wyjątek musi zostać udokumentowany przed finalnym program PASS.
+`FUTURE_CONDITIONAL`. Nie implementować przed v16.6 PASS. Kierunek: measured consolidation, nie dodawanie kolejnych antropomorficznych modułów.
 
-## Truth boundary
+## Governance
 
-`merged`, `working`, `verified`, `accepted`, `live` wynikają z właściwego evidence. Dokument, nazwa brancha, ZIP, marker, SQLite albo persona nie certyfikują tych stanów samodzielnie.
+Ostatni odczyt GitHub dla mastera raportował `protected=false`. Finalny v16.6 wymaga ruleset/branch protection, jawnego równoważnego enforcement albo zaakceptowanego wyjątku z evidence.
+
+## Documentation truth map
+
+- `docs/plans/README.md` — planning index;
+- `docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md` — program owner;
+- `docs/plans/CURRENT_STEP.md` — current action;
+- `docs/plans/PLAN_EXECUTION_HISTORY.md` — history/status;
+- `docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md` — memory owner;
+- `docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md` — affect owner;
+- `docs/plans/RESEARCH_EVIDENCE_BASE.md` — research guidance;
+- `docs/plans/V17_PLUS_SYSTEM_EVALUATION.md` — future entry gate;
+- `docs/plans/only_to_check/` — `HISTORICAL_ONLY`.
+
+`merged`, `working`, `verified`, `accepted` i `live` zawsze wynikają z właściwego evidence, nie z dokumentu, nazwy brancha, ZIP, SQLite lub stylu odpowiedzi.

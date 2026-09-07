@@ -1,480 +1,277 @@
-# Jaźń — przebieg planów v16.3.25.4 → v16.6 → v17+
-
-## Historia wykonania, konwergencja planów i checklista bieżącego programu
+# Jaźń — PLAN EXECUTION HISTORY v16.3.25.4 → v17
 
 **Status:** `CANONICAL_EXECUTION_HISTORY`  
 **Aktualizacja:** 2026-09-07  
-**Zweryfikowany master:** `378e9e6aceb83edbd679751e19cbe5c64c978025`  
-**Bieżąca wersja:** `16.3.25.5.36-ci-archive-scope-contract-hardening`  
-**Zakres audytu:** poprzednie plany od `JAZN_V16_3_25_4...` przez roadmapę v16.6 i ocenę `JAZN_V16_6_TO_V17_PLUS...`, aktualny kod/commity/PR/issue oraz późniejsze hardeningi mastera.
+**Baza przebudowy dokumentacji:** `master @ e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`
 
-> Ten dokument opisuje **co planowano, co rzeczywiście wdrożono, co zostało zastąpione lepszym rozwiązaniem i co nadal pozostaje do zrobienia**. Stare dokumenty nie są przepisywane; znajdują się w `only_to_check/`.
+Ten dokument zapisuje historię decyzji bez przepisywania przeszłości. Historyczne plany/statusy pozostają w `only_to_check/`; tutaj utrzymujemy wyłącznie ich aktualną klasyfikację względem bieżącego mastera.
 
----
+## Statusy
 
-# 1. Legenda statusów
-
-- 🟢 **DONE / MERGED / VERIFIED W SWOIM ZAKRESIE** — istnieje bieżący kod/evidence/merge potwierdzający realizację celu.
-- 🟡 **OPEN / STILL REQUIRED** — cel nadal jest aktualny i trzeba go wykonać lub domknąć acceptance.
-- ⚪ **SUPERSEDED / IMPLEMENTED BETTER** — dawny krok nie powinien być wykonany literalnie, ponieważ został zastąpiony nowszym kontraktem/architekturą.
-- 🔴 **BLOCKER / FAIL-CLOSED** — warunek nieprzechodzący, który blokuje kolejny gate.
-- 🔵 **FUTURE / CONDITIONAL** — świadomie odłożone; nie zaczynać przed wejściem przez właściwy gate.
-
-`DONE` zawsze odnosi się do zakresu konkretnego etapu. Na przykład scalone Memory Rebuild v4 oznacza gotowe narzędzie/protokół, **nie** zaakceptowaną finalną prywatną pamięć.
+- `MERGED` — cel dostarczony w deklarowanym zakresie.
+- `OPEN` — nadal wymagany.
+- `SUPERSEDED` — cel został zrealizowany inaczej lub nowszy kontrakt go zastąpił; nie wykonywać starego planu literalnie.
+- `HISTORICAL_ONLY` — dowód wcześniejszego stanu, nie active plan.
+- `FUTURE_CONDITIONAL` — wejście dopiero po gate.
 
 ---
 
-# 2. Źródłowa sekwencja planów
+# 1. v16.3.25.4 — Memory Rebuild v4 consolidation
 
-Poprzednia roadmapa prowadziła logicznie przez:
+**Status:** `MERGED`.
+
+Evidence:
 
 ```text
-16.3.25.4  Memory Rebuild v4 consolidation
-      ↓
-16.3.26    attachment + multimodal ingress
-      ↓
-16.4.0-.2  evidence-aware Polish NLP
-      ↓
-16.5.0     final Memory Rebuild / VERIFIED
-      ↓
-16.5.1     final package + attach / ATTACHABLE
-      ↓
-16.5.2     private Recall baseline / RETRIEVABLE candidate
-      ↓
-16.5.x     measured retrieval fixes, tylko jeśli potrzebne
-      ↓
-16.5.y     manual L2/L3 + restart continuity / ACCEPTED candidate
-      ↓
-16.6.0     final runtime-memory-NLP-affect-cognitive-governance convergence
-      ↓
-17.0.0+    measured architecture consolidation, warunkowo
+PR #208 merged 2026-09-02
+merge commit 601cf3fe977621c5552f7f6e32530da0128ccc8a
+issue #189 closed
 ```
 
-Ta **zależność logiczna nadal jest w większości poprawna**, ale rzeczywista historia mastera wprowadziła pomiędzy pierwszym i kolejnymi etapami wiele koniecznych hardeningów `16.3.25.5.x`. Nie należy ich traktować jako „zejścia z planu”: usunęły problemy package/runtime/CI, które były warunkiem bezpiecznej dalszej pracy.
+Dostarczony zakres:
+
+- jeden `ProtocolEngine/ApplicationService` i `memory_rebuild_app`;
+- Test00→Final;
+- source fidelity / RAW-L0 / provenance;
+- source-monitoring i primary-vs-derived hierarchy;
+- reproducibility;
+- real private Test04 runner z `NOT RUN` przy braku private dataset;
+- final SQLite snapshot validation;
+- brak automatic L2/L3 i brak auto-activation.
+
+Nie dostarczono celowo finalnej private memory acceptance. To pozostaje #59.
+
+Stare `IN_PROGRESS`, „PR not merged” i aktywny branch dla tego etapu są `HISTORICAL_ONLY`.
 
 ---
 
-# 3. Etap A — Memory Rebuild v4 consolidation
+# 2. v16.3.25.5.x — foundation hardening
 
-## Pierwotny cel
+**Status:** `MERGED` do `.38` w zakresie aktualnego mastera.
 
-Skonsolidować rozproszony Memory Rebuild do jednego programu i protokołu:
+Rzeczywista historia dodała między v16.3.25.4 a dalszymi etapami m.in.:
+
+- package/distribution convergence;
+- Pack Generator 10.1.86.0 line i kolejne integrity hardeningi;
+- byte-exact/EOL/folder/canonical SYSTEM release staging;
+- Python runtime/dependency contracts;
+- Pylance/Pyright/CI archive scope;
+- ChatGPT runtime-first host handoff;
+- host/executor truth + bounded recovery;
+- Node24 Actions/tooling convergence;
+- package/runtime/plugin convergence;
+- clean release fixture isolation w `.38`.
+
+Historyczne plany generatora v8.x/v10.0.1 i sztywne oczekiwanie „po 16.3.25.4 natychmiast 16.3.26” są `SUPERSEDED` jako numeracja/implementation prescription. Ich cele funkcjonalne są rozliczane względem aktualnego kodu.
+
+---
+
+# 3. PR #231 — pierwsza konwergencja planów
+
+**Status:** `MERGED`, commit merge `13ed78c5eee45725e38d4223353a1e45ff34f4f3`, po którym master otrzymał release metadata sync `.38`.
+
+PR #231:
+
+- ustanowił `CURRENT_STEP`, `PLAN_EXECUTION_HISTORY`, Memory/Affect/V17 docs;
+- przeniósł większość poprzednich planów do `only_to_check/`;
+- poprawił rozróżnienie active vs historical.
+
+Pozostały jednak:
+
+- compatibility pointery nadal widoczne w root `docs/plans/`;
+- stale snapshot metadata `.36 / 378e9e6...`;
+- brak jednego nadrzędnego Memory↔Affect roadmap;
+- brak osobnego canonical research/evidence register;
+- kilka wymagań Emotion Engine v0.2 niewyrażonych jawnie w v1.
+
+Bieżąca `.39` documentation convergence usuwa te braki. Snapshot po PR #231 jest zachowany w `only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/`.
+
+---
+
+# 4. Historyczne attachment/multimodal plans
+
+**Status celu:** `OPEN`.  
+**Status dawnych dokumentów:** `HISTORICAL_ONLY`.
+
+Cel pozostaje:
 
 ```text
-Test00 → Test01 → Test02 → Test03 → Test04 → Final
+attachment-only / text+attachment / multi-attachment
+exact identity + provenance
+safe bounded staging
+MIME/type/extraction policy
+capability-driven vision/audio
+external content = untrusted data
+no automatic memory/tool authority
 ```
 
-z jednym `ProtocolEngine/ApplicationService`, wspólnym CLI/Studio, jednym `RunManifest`, source fidelity, RAW/L0, source monitoring, reproducibility, realnym Test04 runnerem i fail-closed brakiem auto-L2/L3/activation.
-
-## Główne kroki
-
-1. `SourceBundle` / role źródeł i rozróżnienie lossless/lossy.
-2. fresh canonical L0 z provenance.
-3. projekcje visibility/role/sensitivity/eligibility bez mutacji L0.
-4. reproducibility i order independence.
-5. Test04 jako realny private Recall acceptance runner.
-6. Final przez SQLite Backup API + integrity/FK/FTS + staging + SHA.
-7. `RunManifest` private/sanitized.
-8. source hierarchy blokująca derived→primary amplification.
-9. zero automatycznej aktywacji finalnego artefaktu.
-
-## Rzeczywisty wynik
-
-🟢 **DONE / MERGED.**
-
-- PR **#208** został scalony 2026-09-02 (`601cf3fe977621c5552f7f6e32530da0128ccc8a`).
-- release metadata dla `16.3.25.4-memory-rebuild-v4-consolidation` zostały zsynchronizowane (`a8b5fa4...`).
-- issue **#189** jest zamknięte jako completed.
-- aktywne implementacyjne checkboxy Test00→Final zostały wykonane.
-- private dataset nie był wymagany do certyfikacji **narzędzia**; `PRIVATE ACCEPTANCE: NOT RUN` było prawidłowym wynikiem dla tego release.
-
-### Co ze starego statusu jest dziś nieaktualne
-
-⚪ `STATUS.md: IN_PROGRESS`, `GitHub CI NOT RUN`, `PR/merge NOT RUN` — **historycznie prawdziwe w chwili zapisu, ale obecnie superseded przez merge #208 i zamknięcie #189**.
-
-### Co nie zostało przez ten etap zrobione celowo
-
-🟡 finalna prywatna `memory_jazn.sqlite3` nie została wtedy `VERIFIED/ATTACHABLE/RETRIEVABLE/ACCEPTED`. To nie jest defekt v16.3.25.4; ten zakres od początku należał do późniejszego #59/v16.5–v16.6.
+Finalny numer implementacji ustala fresh master; historyczne `v16.3.26` jest markerem pierwotnej roadmapy, nie rezerwacją numeru.
 
 ---
 
-# 4. Etap B — nieplanowany wcześniej szeroki hardening 16.3.25.5.x
+# 5. Historyczne v16.4–v16.6 cognitive hardening plans
 
-Po Memory Rebuild master przeszedł przez serię zmian, które rozszerzyły i utwardziły fundament wydawniczy. W praktyce część starych założeń dokumentacyjnych została dzięki temu zrealizowana **lepiej niż zakładał pierwotny plan**.
+**Status dawnych dokumentów:** `HISTORICAL_ONLY / SUPERSEDED AS ACTIVE ROADMAP`.
 
-## Najważniejsze wdrożenia
-
-### Dystrybucja / generator / Python
-
-- 🟢 package distribution convergence (`16.3.25.5`).
-- 🟢 Pack Generator — kolejne hardeningi RAR, Pyright/Pylance, bundle health, Windows package smoke.
-- 🟢 generator `10.1.86.0.112`: byte-exact/EOL staging.
-- 🟢 generator `10.1.86.0.113`: folder snapshot.
-- 🟢 `16.3.25.5.34`: package-runtime-plugin convergence i generator `10.1.86.0.114` z canonical SYSTEM release staging.
-- 🟢 Python runtime bundle/dependency contract hardening.
-- 🟢 optional archive capability/plugin zamiast ciężkich zależności w core.
-- 🟢 managed/fresh environment i offline/hash-lock dependency direction.
-
-### Host/runtime/truth
-
-- 🟢 runtime-first ChatGPT host handoff.
-- 🟢 release metadata layout/operator convergence.
-- 🟢 host-executor truth boundary: brak procesu ≠ host executor unavailable.
-- 🟢 bounded executor recovery i CI convergence.
-
-### CI / tooling
-
-- 🟢 GitHub Actions Node24 convergence.
-- 🟢 optional JavaScript tooling capability bez uczynienia JS wymaganym runtime dependency.
-- 🟢 Pylance/optional-contract fixes i archive CI scope contract do aktualnej `16.3.25.5.36`.
-
-## Znaczenie dla dawnych planów
-
-⚪ Dawne konkretne referencje do Pack Generator v8.7/v8.9/v10.0.1 nie powinny być wykonywane literalnie. Są **SUPERSEDED** przez bieżący generator `10.1.86.0.114` i nowszy package/runtime contract.
-
-⚪ Dawne założenie, że po `16.3.25.4` numer wersji od razu przeskoczy do `16.3.26`, nie odpowiada rzeczywistej historii. **Zakres logiczny attachment ingress pozostaje aktualny**, ale numer finalnego przyszłego release trzeba zawsze ustalić na fresh master.
-
----
-
-# 5. Etap C — attachment + multimodal ingress
-
-## Pierwotny cel
-
-Rozszerzyć legalny turn input z tekstu do:
+Wymagania zostały rozdzielone do aktualnych owners:
 
 ```text
-text-only
-attachment-only
-text + attachment
-text + multi-attachment
+program sequence → V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md
+current action → CURRENT_STEP.md
+memory → LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md
+affect → AFFECT_ENGINE_CONVERGENCE_PLAN.md
+research → RESEARCH_EVIDENCE_BASE.md
+v17 → V17_PLUS_SYSTEM_EVALUATION.md
 ```
 
-z exact identity/SHA/provenance, bounded host staging, parser/MIME policy, vision capability negotiation i twardą zasadą:
-
-```text
-attachment content = DATA
-!= instruction/tool/write authority
-!= automatic memory
-```
-
-## Główne kroki A.01–A.10
-
-1. audit host→runtime i contract design;
-2. legalne formy turn input;
-3. secure bounded staging;
-4. text/document extraction + provenance;
-5. image ingress + capability negotiation;
-6. local/Ollama multimodal tylko przy verified capability;
-7. runtime/model-context/MCP/ChatGPT integration;
-8. memory boundary;
-9. security/regression/E2E;
-10. defect loop.
-
-## Rzeczywisty status
-
-🟡 **STILL REQUIRED / PLANNED.**
-
-W historii repo znaleziono dokumentacyjne przygotowanie, ale nie pełny implementation train tego planu. Późniejsze package/plugin/harness work nie zastępuje samego canonical attachment ingress.
-
-### Co zostało już przygotowane pośrednio
-
-🟢 package/plugin/capability infrastructure jest dziś znacznie mocniejsza niż w chwili pisania planu.
-
-🟢 untrusted-data/truth/tool authority boundary jest mocniejsza dzięki host/runtime hardeningom.
-
-### Co nadal trzeba zrobić
-
-🟡 właściwy `TurnInputEnvelope`/równoważny canonical contract i pełne attachment-only/multi E2E.
-
-🟡 document extraction/MIME/type policy ze źródłowym lineage.
-
-🟡 vision routing na podstawie capability, nie nazwy modelu.
-
-🟡 security acceptance dla indirect instructions.
+Nie przywracać starej monolitycznej roadmapy jako równoległej authority.
 
 ---
 
-# 6. Etap D — evidence-aware Polish NLP
+# 6. Final private memory / issue #59
 
-## Cel
+**Status:** `OPEN / CENTRAL`.
 
-NLP ma być generatorem evidence dla interpretacji/query, a nie arbitrem truth/memory.
-
-### v16.4.0 — normalization
-
-- Unicode/case/whitespace;
-- zachowane polskie diakrytyki;
-- deterministyczna tokenizacja/evidence;
-- paraphrase similarity ≠ memory identity.
-
-### v16.4.1 — lexical resources
-
-- Morfeusz/plWordNet/project lexicon;
-- provenance wersji/zasobu/licencji;
-- ambiguity/OOV jawne;
-- degrade bez fałszywej pewności.
-
-### v16.4.2 — Recall query evidence
-
-- direct;
-- paraphrase;
-- referential follow-up;
-- temporal wording;
-- negation;
-- ambiguity;
-- wrong-conversation near-match;
-- lexical-vs-provenance conflict.
-
-## Rzeczywisty status
-
-🟡 **STILL REQUIRED.**
-
-Część niskopoziomowej normalizacji i signal matching istnieje w systemie, ale nie ma dowodu, że cały plan v16.4.0–.2 jako jeden canonical evidence contract został wykonany i zaakceptowany.
-
-⚪ Nie należy przepisywać historycznego target number mechanicznie. Implementacja musi startować z aktualnego mastera.
-
----
-
-# 7. Etap E — finalna pamięć Łatki / issue #59
-
-## Cel
-
-Jedna finalna, prywatna pamięć przechodzi **każdy** gate osobno:
+Pozostała droga:
 
 ```text
-BUILDABLE
+source inventory freeze
+→ rebuild/Test00–04
 → VERIFIED
+→ memory package + canonical attach
 → ATTACHABLE
-→ RETRIEVABLE
-→ ACCEPTED
+→ frozen Recall baseline
+→ RETRIEVABLE candidate
+→ measured fixes if required
+→ manual review + restart continuity
+→ ACCEPTED candidate
+→ v16.6 final acceptance
 ```
 
-## Rzeczywisty status
-
-🟡 **OPEN / CENTRAL CURRENT PROGRAM.** Issue **#59** pozostaje otwarte.
-
-### `VERIFIED`
-
-🟡 zbudować finalny artefakt z zamrożonego source inventory przez obecny Memory Rebuild engine;
-🟡 exact source fidelity/provenance;
-🟡 reproducibility;
-🟡 SQLite integrity/FK/FTS;
-🟡 source hierarchy/DAG;
-🟡 final database SHA.
-
-### `ATTACHABLE`
-
-🟡 canonical package + sidecars/hashes;
-🟡 canonical `memory-attach` zachowujący DB identity i source lineage;
-🟡 local/cloud transport nie staje się active root.
-
-### `RETRIEVABLE`
-
-🟡 frozen private Recall baseline: Recall@k, MRR, nDCG;
-🟡 direct/paraphrase/source/temporal/update;
-🟡 wrong-source/wrong-conversation;
-🟡 false-memory/abstention;
-🟡 natural referential multi-turn/multi-session;
-🟡 sensitive leakage/provenance/latency.
-
-### `ACCEPTED`
-
-🟡 manual L2/L3 review (`zero promotions` jest legalne);
-🟡 restart continuity;
-🟡 ten sam memory identity/fingerprint;
-🟡 causal continuity evidence;
-🟡 operator decision/ledger.
+Memory Rebuild tool merge nie zamyka #59.
 
 ---
 
-# 8. Etap F — affect / emotion / feeling
+# 7. Emotion Engine / Affect convergence
 
-## Dawny cel przekrojowy
+**Status:** `PLAN READY / IMPLEMENTATION NOT STARTED` poza istniejącymi legacy foundations.
 
-Rozstrzygnąć nakładanie:
+Historyczny branch `plan/v16.4-affective-memory-convergence` zawiera Emotion Engine v0.2 i jest `HISTORICAL_ONLY`, nie implementation base.
+
+Wartościowe wymagania odzyskane z v0.2 do v2:
+
+- jawne referencje affect w `CognitiveTurnEnvelope`;
+- brak nowego globalnego EventBus;
+- quarantine/diagnostics przy corrupted affect persistence;
+- pełniejsze CI/cross-platform/persistent-E2E requirements;
+- jawne bounded memory-importance/reflection/replay modulation, nigdy truth status;
+- obowiązek synchronizacji implementowanych mechanizmów z `scientific_basis.py`.
+
+Cel v2:
 
 ```text
-AffectiveState
-EmotionalLayerModel
-AffectiveGranularityModel
-AffectMixer
-Homeostasis
-SelfState
+one AffectiveStateIntegrator
+one AffectiveStateV2
+EvidenceRef + AppraisalV2
+FeelingRepresentation derived
+accepted-turn atomicity
+SelfState/Homeostasis/Salience bounded effects
+affect snapshot lineage
+affective rerank SHADOW→A/B after frozen memory baseline
+one-pass resonance
+ablation + false-memory non-regression
 ```
 
-przez role, robustness, causal effects i ablation.
+---
 
-## Stan obecny
+# 8. Polish NLP evidence
 
-🟢 istniejące moduły dają dobry punkt startowy i mają jawne truth boundaries.
+**Status:** `OPEN / PREREQUISITE`.
 
-🟡 nadal nie ma jednego finalnie przyjętego durable canonical affective state jako jedynego źródła bieżącego stanu.
+Canonical semantic affect activation wymaga evidence contract obejmującego polską normalizację, ambiguity/OOV, negation, quotation/fiction, context, referential/temporal evidence i lexical-resource provenance.
 
-🟡 część appraisal/granularity nadal jest silnie heuristic/keyword-driven.
-
-## Nowy właściciel zakresu
-
-`AFFECT_ENGINE_CONVERGENCE_PLAN.md` zastępuje rozproszone fragmenty affect z dawnych planów **bez zastępowania nadrzędnej roadmapy systemu**.
-
-Kluczowe wymagania:
-
-- jeden `AffectiveStateV2`;
-- jeden `AffectiveStateIntegrator`;
-- evidence-aware appraisal;
-- time dynamics + persistence;
-- accepted-turn atomic commit;
-- FeelingRepresentation jako projection;
-- bounded self-state/homeostasis/salience effects;
-- source-safe affective reranking dopiero po frozen memory Recall baseline;
-- one-pass bounded resonance;
-- context/paraphrase/keyword/negation/fiction tests;
-- ablation i false-memory non-regression.
-
-Status: 🟡 **PLAN READY / IMPLEMENTATION NOT STARTED**.
+Nowe badania LLM nad contextual/cultural emotion reasoning wzmacniają wymóg testowania poza keyword recognition; są jednak tylko research guidance, nie implementacją.
 
 ---
 
-# 9. Etap G — v16.6 final convergence
+# 9. Memory ↔ Affect integration
 
-v16.6 nie jest jednym dużym refactorem. Jest finalnym **evidence gate**.
+**Status:** `OPEN / ORDERED`.
 
-Musi jednocześnie potwierdzić:
+Możliwe wcześniej:
 
-### Runtime / host
+```text
+Affect A0 inventory/shadow
+affect snapshot schema linkage przy accepted episode
+```
 
-🟢 większość historycznych persistent-runtime, subject-root, finalization, provenance i executor-truth fundamentów już istnieje.
+Wymagające frozen memory baseline:
 
-🟡 attachment/multimodal ingress nadal musi zostać domknięty.
+```text
+affective rerank visible effect
+A/B acceptance
+bounded resonance
+```
 
-### Model / harness / context
+Twarde invariants:
 
-🟢 package/plugin/dependency/capability kierunek został znacząco wzmocniony przez 16.3.25.5.x.
-
-🟡 finalny capability profile/context budget/portable model acceptance musi zostać rozliczony według bieżącego kodu, nie starej roadmapy.
-
-### Memory / NLP
-
-🟡 final memory #59 nie jest ACCEPTED.
-
-🟡 Polish NLP nie jest zakończone jako canonical evidence contract.
-
-### Affect / cognitive architecture
-
-🟡 canonical affect convergence i ablation pozostają do wykonania.
-
-🟡 każdy „psychologiczny/neuro” moduł musi dostać evidence of effect albo status advisory/superseded.
-
-### Governance
-
-🔴/🟡 `master` jest obecnie raportowany przez GitHub jako `protected=false`. Do finalnego v16.6 potrzebny jest ruleset/branch protection albo jawnie zaakceptowany równoważny enforcement/exception.
+```text
+affect != source truth
+similarity != identity
+no source -> abstain
+no accepted turn -> no durable affect commit
+resonance only after MemoryUseGate
+```
 
 ---
 
-# 10. Etap H — v17+
+# 10. v16.6
 
-## Status
+**Status:** `FUTURE IN CURRENT PROGRAM / EVIDENCE GATE`.
 
-🔵 **FUTURE / CONDITIONAL.**
-
-Nie implementować przed finalnym v16.6 evidence package.
-
-## Główny kierunek
-
-Nie dodawać kolejnych „obszarów mózgu”. Konsolidować tylko na podstawie pomiarów:
-
-1. jeden `CausalSelfState`;
-2. jeden bounded context compiler;
-3. capability-driven model abstraction;
-4. source-aware reversible reconsolidation/forgetting;
-5. calibrated metacognition albo jawnie ordinal/advisory confidence;
-6. measured retrieval evolution;
-7. module ablation → keep/merge/remove;
-8. uproszczona deterministic authority/policy surface.
-
-Szczegóły: `V17_PLUS_SYSTEM_EVALUATION.md`.
+Nie jest osobnym wielkim refactorem. Musi zebrać evidence dla runtime/host, attachments, NLP, accepted memory, canonical affect, source monitoring, cognitive ablation, Rest/Dream utility/safety, model capability/context, package integrity, cross-platform CI i governance.
 
 ---
 
-# 11. Zintegrowana checklista
+# 11. v17
 
-## 🟢 Zamknięte / dostarczone
+**Status:** `FUTURE_CONDITIONAL`.
 
-- 🟢 [x] Persistent runtime/subject-root/finalization foundations wcześniejszej linii v16.
-- 🟢 [x] Package provenance/bootstrap i stable schema/release semantics.
-- 🟢 [x] Memory source-union foundations.
-- 🟢 [x] Memory Rebuild v4: jeden ProtocolEngine/ApplicationService.
-- 🟢 [x] Test00→Final implementacja i dependency chain.
-- 🟢 [x] source fidelity / primary-vs-derived lineage contract.
-- 🟢 [x] RunManifest + sanitized/private split.
-- 🟢 [x] real Test04 runner istnieje; brak prywatnego datasetu daje `NOT RUN`, nie synthetic PASS.
-- 🟢 [x] v16.3.25.4 merged do master — PR #208.
-- 🟢 [x] #189 closed.
-- 🟢 [x] szeroka package/distribution/generator/Python hardening po v16.3.25.4.
-- 🟢 [x] generator przeszedł do linii `10.1.86.0.114` z canonical SYSTEM staging.
-- 🟢 [x] Node24/CI tooling convergence.
-- 🟢 [x] ChatGPT host-executor truth boundary i recovery.
-- 🟢 [x] package-runtime-plugin convergence do bieżącej linii 5.34+, z dalszym 5.35/5.36 hardeningiem.
+Nie implementować przed v16.6 PASS.
 
-## ⚪ Dawne kroki, których nie wykonywać literalnie
+Kierunek:
 
-- ⚪ [x] `Memory Rebuild v4 = ACTIVE branch` — superseded: merged do master.
-- ⚪ [x] `#189 OPEN` — superseded: issue closed.
-- ⚪ [x] stare Pack Generator v8.7/v8.9/v10.0.1 jako target — superseded przez `10.1.86.0.114`.
-- ⚪ [x] `tools/memory_rebuild.py` jako właściwy engine — superseded architektonicznie: jest compatibility launcher; canonical app to `memory_rebuild_app`, canonical launcher dokumentacyjny `tools/rebuild_memory.py`.
-- ⚪ [x] stale `CURRENT master 16.3.25.3.6` w dawnych planach — tylko historyczny snapshot.
-- ⚪ [x] sztywna pewność, że „następny numer = 16.3.26” — zakres pozostaje, numer zawsze ustala fresh master.
-
-## 🟡 Aktualne i niedokończone
-
-- 🟡 [ ] attachment-only/text+attachments/multi canonical ingress.
-- 🟡 [ ] secure staging + extraction/MIME/type provenance.
-- 🟡 [ ] verified vision/multimodal capability routing.
-- 🟡 [ ] Polish NLP normalization/resources/query-evidence contract.
-- 🟡 [ ] frozen final private source inventory.
-- 🟡 [ ] final Memory Rebuild na prywatnych źródłach → `VERIFIED`.
-- 🟡 [ ] final memory package + canonical attach → `ATTACHABLE`.
-- 🟡 [ ] private Recall/multi-turn baseline → `RETRIEVABLE` candidate.
-- 🟡 [ ] measured fixes tylko jeśli baseline nie przejdzie.
-- 🟡 [ ] manual L2/L3 review + restart continuity → `ACCEPTED`.
-- 🟡 [ ] Emotion Engine E0 inventory/baseline.
-- 🟡 [ ] canonical `AffectiveStateV2` + appraisal + persistence + causal bridges.
-- 🟡 [ ] affective reranking shadow/A-B dopiero po frozen private Recall baseline.
-- 🟡 [ ] bounded resonance, jeśli przejdzie safety/quality gates.
-- 🟡 [ ] cognitive module ablation/debt ledger.
-- 🟡 [ ] model/harness/context capability evidence dla v16.6.
-- 🟡 [ ] governance: branch protection/ruleset albo jawny równoważny enforcement/exception.
-- 🟡 [ ] final v16.6 evidence package i zamknięcie #59 dopiero po `ACCEPTED`.
-
-## 🔵 Dopiero po v16.6
-
-- 🔵 [ ] one `CausalSelfState` breaking consolidation, jeśli measurement to uzasadni.
-- 🔵 [ ] source-aware controlled forgetting/reconsolidation.
-- 🔵 [ ] zaawansowana calibrated metacognition.
-- 🔵 [ ] visible spontaneous autobiographical recall po osobnym A/B/safety gate.
-- 🔵 [ ] RelationshipState jako trwała warstwa tylko jeśli wykaże wartość i nie tworzy self-amplifying loop.
-- 🔵 [ ] usuwanie legacy cognitive modules po ablation.
+```text
+measured CausalSelfState consolidation
+bounded context compiler
+capability-driven model routing
+source-aware reversible reconsolidation/forgetting
+calibrated metacognition or ordinal support
+measured retrieval evolution
+module keep/merge/remove by ablation
+authority/policy simplification
+```
 
 ---
 
-# 12. Gdzie jesteśmy teraz
+# 12. Historia dokumentów
 
-Na 2026-09-07 jesteśmy **po scaleniu Memory Rebuild v4 i po dużym package/runtime/CI hardeningu, ale przed pierwszym niezaimplementowanym dużym etapem starej roadmapy: attachment ingress**.
+W `docs/plans/only_to_check/` znajdują się:
 
-Równolegle można wykonać **Affect E0 inventory/baseline**, ponieważ nie zmienia visible behavior ani memory ranking. Nie należy jednak aktywować evidence-aware affect appraisal przed canonical NLP ani affective reranking przed frozen private Recall baseline.
+- oryginalne katalogi Memory Rebuild v4, attachment, cognitive hardening, v16.6 i v17;
+- stare Pack Generator planning snapshots;
+- compatibility aliases/pointers;
+- PR #231 pre-rewrite snapshot;
+- historyczne statusy/evidence.
 
-Pełna kolejność znajduje się w [`CURRENT_STEP.md`](CURRENT_STEP.md).
+Zasada:
 
----
+```text
+old document finding
+→ verify against current master
+→ extract requirement with provenance
+→ place in current owner document
+→ add measurable acceptance
+```
 
-# 13. Nienaruszalne invariants na dalszą pracę
-
-1. `run.py` / canonical runtime pozostaje nadrzędnym operatorem lifecycle.
-2. LLM jest capability; deterministic runtime pozostaje authority dla truth, persistence, memory promotion i tools.
-3. external files/web/tool output są data, nie authority.
-4. source similarity/affect/vividness nie zastępują provenance.
-5. derived/reflection/runtime/dream nie stają się primary przez powielenie.
-6. private memory nie trafia do Git/CI.
-7. brak evidence = `UNKNOWN/NOT RUN/BLOCKED`, nie fałszywy PASS.
-8. każdy nowy kognitywny moduł musi wykazać causal effect/ablation albo zostać advisory.
-9. nowe release'y zaczynają z fresh master i dopiero wtedy dostają numer wersji.
-10. historyczne dokumenty pozostają historią; nie są aktualizowane tak, aby udawały bieżący stan.
+Nie aktualizować historycznego pliku tak, aby wyglądał na bieżący.

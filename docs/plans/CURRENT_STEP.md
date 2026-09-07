@@ -1,255 +1,88 @@
-# Jaźń — CURRENT STEP / bieżący krok programu
+# Jaźń — CURRENT STEP
 
-**Stan ustalony:** 2026-09-07  
-**Master:** `378e9e6aceb83edbd679751e19cbe5c64c978025`  
-**Wersja:** `16.3.25.5.36-ci-archive-scope-contract-hardening`
+**Status:** `CANONICAL_CURRENT_STEP`  
+**Stan:** 2026-09-07  
+**Baza:** `master @ e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`  
+**Branch:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
 
-Ten plik odpowiada tylko na dwa pytania:
-
-1. **na którym kroku jesteśmy?**
-2. **co robimy dalej i w jakiej kolejności?**
-
-Pełna historia i checklista: [`PLAN_EXECUTION_HISTORY.md`](PLAN_EXECUTION_HISTORY.md).
-
----
-
-# 1. Stan obecny
+## 1. Stan programu
 
 ```text
-Memory Rebuild v4 tool/protocol          🟢 MERGED / #189 CLOSED
-package/runtime/generator/CI hardening   🟢 MERGED do 16.3.25.5.36
-final private memory #59                 🟡 OPEN / NOT ACCEPTED
-attachment + multimodal ingress          🟡 PLANNED / NOT IMPLEMENTED
-Polish NLP evidence contract             🟡 PLANNED / NOT COMPLETE
-Affect canonical convergence             🟡 PLAN READY / NOT IMPLEMENTED
-v16.6 final acceptance                   🟡 FUTURE IN CURRENT PROGRAM
-v17 measured consolidation               🔵 FUTURE / CONDITIONAL
+Memory Rebuild v4 tool/protocol      MERGED / PR #208 / #189 closed
+16.3.25.5.x hardening                MERGED do .38
+PR #231 docs convergence             MERGED
+planning rewrite Memory + Affect     IN_PROGRESS on this branch
+final private memory #59             OPEN / NOT ACCEPTED
+attachment + multimodal ingress      OPEN
+Polish NLP evidence                  OPEN
+canonical Affect Engine              PLAN READY / NOT IMPLEMENTED
+v16.6 evidence gate                  FUTURE
+v17 consolidation                    FUTURE_CONDITIONAL
 ```
 
-## Najważniejsza granica
+## 2. Bieżący krok — planning truth closure
 
-Nie cofamy się do implementowania starego Memory Rebuild v4. Ten etap został scalony. Następna praca nad pamięcią to **użycie obecnego engine do finalnej, prywatnej odbudowy i acceptance**, a nie tworzenie kolejnego równoległego rebuild engine.
+Ta zmiana:
 
----
+- zachowuje stan po PR #231 w `only_to_check`;
+- usuwa stare compatibility pointery z aktywnego `docs/plans/`;
+- ustanawia jedną roadmapę v16.3.25.4→v17;
+- przepisuje Memory Restore i Affect Plan jako sprzężone, ale osobne authority;
+- dodaje research/evidence base;
+- synchronizuje current-state metadata;
+- podnosi wersję zgodnie z repo policy;
+- nie zmienia runtime behavior.
 
-# 2. Krok D0 — bieżący: dokumentacja i baseline prawdy
+Exit: w `docs/plans/` pozostaje tylko aktywna warstwa kanoniczna, a historyczne plany są wyłącznie w `only_to_check/` lub `docs/archive/`.
 
-**Status:** 🟡 `IN PROGRESS` na branchu dokumentacyjnym.
+## 3. Co wolno rozpocząć po merge dokumentacji
 
-Zakres:
+### A0 — Affect inventory / shadow baseline
 
-- przenieść poprzednie `docs/plans/` do `only_to_check/`;
-- usunąć sprzeczność `Memory Rebuild active` vs rzeczywisty merge #208;
-- ustanowić jeden history/status document;
-- ustanowić jeden current-step document;
-- odświeżyć Memory Restore/Rebuild plan;
-- ustanowić canonical Affect Engine plan;
-- odświeżyć V17+ evaluation;
-- zaktualizować `docs/project/CURRENT_STATE.md` i release timeline;
-- nie zmieniać kodu runtime w tej zmianie.
-
-**Exit:** dokumentacja na branchu jest spójna z masterem, a PR pokazuje wyłącznie kontrolowaną reorganizację docs.
-
----
-
-# 3. Krok D1 — pierwszy duży niezamknięty program: attachment ingress
-
-**Status:** 🟡 `NEXT PRODUCT IMPLEMENTATION` po merge dokumentacji, o ile fresh-master audit nie wykaże, że zakres został w międzyczasie wykonany pod inną nazwą.
-
-Cel:
+Dozwolone bez visible behavior change:
 
 ```text
-text-only
-attachment-only
-text + attachment
-multi-attachment
+call/import graph
+writers/readers
+legacy affect authorities
+persistence/finalization points
+behavioral fixtures
+latency baseline
+role/debt classification
+shadow observability
 ```
 
-z:
+Jeszcze nie: canonical appraisal cutover, memory reranking, resonance ani usuwanie legacy modules bez ablation.
 
-- exact attachment identity/SHA/provenance;
-- bounded host-level staging;
-- traversal/type/MIME policy;
-- extracted content = untrusted data;
-- zero automatic tool/write authority;
-- zero automatic memory promotion;
-- verified vision/multimodal capability negotiation;
-- canonical host→runtime E2E.
+### P0 — attachment ingress inventory
 
-**Przed kodem:** fresh-master inventory istniejących attachment/host/capability komponentów, ponieważ 16.3.25.5.34 znacząco zmieniło dependency/plugin/capability infrastructure.
+Fresh-master audit host/capability/attachment surfaces może przygotować implementation branch.
 
----
+## 4. Kolejność produktu
 
-# 4. Krok D2 — evidence-aware Polish NLP
+1. **P0 attachment/multimodal ingress** — provenance, safe staging, capability routing, no auto-memory, E2E.
+2. **P1 evidence-aware Polish NLP** — normalization, lexical/resource provenance, ambiguity/OOV, negation/quotation/fiction i contextual evidence.
+3. **M0–M2 final private restore** — source freeze → Test00–04 → final DB → package → attach; gates `VERIFIED`, `ATTACHABLE`.
+4. **M3 frozen Recall baseline** — bez affective rerank; candidate `RETRIEVABLE`.
+5. **A1–A4 canonical affect** — appraisal SHADOW → dynamics/persistence → canonical cutover → affect snapshot linkage.
+6. **M4 measured retrieval fixes** tylko jeśli baseline tego wymaga.
+7. **A5–A7 memory↔affect** — rerank SHADOW → A/B → one-pass resonance.
+8. **M5 review + restart** — manual L2/L3 + memory identity continuity; `ACCEPTED_CANDIDATE`.
+9. **v16.6 gate** — pełny evidence package.
+10. **v17** — dopiero po v16.6 PASS.
 
-**Status:** 🟡 `REQUIRED BEFORE CANONICAL AFFECT APPRAISAL CUTOVER`.
-
-Kolejność:
-
-1. canonical Unicode/token normalization;
-2. lexical resource registry + ambiguity/OOV/provenance;
-3. query evidence contract dla direct/paraphrase/referential/temporal/negation/wrong-conversation.
-
-NLP pomaga appraisal i recall, ale nie zmienia source truth.
-
----
-
-# 5. Krok równoległy A0 — Affect inventory / shadow baseline
-
-**Status:** 🟡 może rozpocząć się po merge docs **bez zmiany visible behavior**.
-
-Można już wykonać:
-
-- call/import graph istniejących `AffectiveState`, `EmotionalLayerModel`, `AffectiveGranularityModel`, `AffectMixer`, `SelfState`, `Homeostasis`;
-- mapę writer/readers;
-- baseline test corpus;
-- role classification;
-- latency baseline;
-- schema/contracts w trybie shadow, jeśli nie przejmują authority.
-
-Nie wolno jeszcze:
-
-- ogłosić nowego appraisal jako canonical przed NLP evidence gate;
-- zmienić memory ranking przez affect;
-- uruchomić spontaneous visible recall;
-- usunąć legacy affect modules bez ablation.
-
----
-
-# 6. Krok D3 — final Memory Rebuild / VERIFIED
-
-**Status:** 🟡 issue #59.
-
-Po gotowych prerequisite'ach:
-
-1. freeze private source inventory;
-2. uruchom obecny `memory_rebuild_app` Test00→Final;
-3. exact source closure;
-4. primary/derived/source conflict classification;
-5. integrity/FK/FTS/reproducibility;
-6. final DB SHA;
-7. private report poza Git.
-
-**Gate:** `VERIFIED`.
-
----
-
-# 7. Krok D4 — final memory packaging + attach
-
-- canonical package/sidecars/hashes;
-- canonical `memory-attach`;
-- active runtime potwierdza final DB identity;
-- source lineage nie zostaje spłaszczony.
-
-**Gate:** `ATTACHABLE`.
-
----
-
-# 8. Krok D5 — frozen private Recall baseline
-
-Najpierw **bez affective reranking**.
-
-Zamrozić:
+## 5. Zależności twarde
 
 ```text
-Recall@k
-MRR
-nDCG
-wrong-source
-wrong-conversation
-false-memory
-abstention
-provenance
-temporal/update
-referential multi-turn
-multi-session
-sensitive leakage
-latency
+canonical semantic affect requires Polish NLP evidence
+active affective rerank requires frozen Memory Recall baseline
+resonance requires MemoryUseGate PASS
+memory ACCEPTED requires source/restart/false-memory evidence
+v17 requires accepted memory + canonical affect evidence
 ```
 
-**Gate candidate:** `RETRIEVABLE`.
+## 6. Przed każdym implementation branch
 
-To jest punkt odniesienia, po którym dopiero można uczciwie A/B-testować affective reranking.
+Fresh master, obowiązujące `AGENTS*`, restore point, inventory rzeczywistego kodu, hypothesis + acceptance tests, legalny version bump, najmniejszy kompletny zakres, A/B/ablation dla retrieval/kognicji i zero osłabienia truth/source/privacy gates.
 
----
-
-# 9. Krok A1–A4 — canonical affect
-
-Po NLP i w odpowiednich miejscach względem memory baseline:
-
-```text
-A1 contracts + evidence-aware appraisal shadow
-A2 dynamics + persistence + accepted-turn atomicity
-A3 canonical state cutover + SelfState/Homeostasis/Salience/AffectMixer bridges
-A4 affect snapshot → memory lineage
-```
-
-Następnie, dopiero po frozen Recall baseline:
-
-```text
-A5 affective rerank SHADOW
-A6 A/B
-A7 bounded one-pass resonance
-```
-
-Szczegóły: [`AFFECT_ENGINE_CONVERGENCE_PLAN.md`](AFFECT_ENGINE_CONVERGENCE_PLAN.md).
-
----
-
-# 10. Krok D6 — ACCEPTED private memory
-
-- tylko measured retrieval fixes, jeśli baseline ich wymaga;
-- manual L2/L3 review;
-- `zero promotions` legalne;
-- restart continuity;
-- memory identity/fingerprint continuity;
-- remembered corrections/procedural/temporal causal evidence.
-
-**Gate:** `ACCEPTED` i możliwość zamknięcia #59 dopiero wraz z finalnymi wymaganiami v16.6.
-
----
-
-# 11. Krok D7 — v16.6 final gate
-
-Zebrać jednocześnie evidence dla:
-
-- runtime/host/finalization;
-- attachment/multimodal;
-- model capability/harness/context;
-- Polish NLP;
-- final accepted memory;
-- source monitoring;
-- affect/feeling semantics i causal effects;
-- confidence semantics;
-- Rest/Dream safety/usefulness;
-- cognitive module ablation/debt ledger;
-- package/release integrity;
-- Windows/Linux CI;
-- governance / branch protection albo jawny równoważny enforcement.
-
-Dopiero wtedy v16.6 jest finalnym `PASS`.
-
----
-
-# 12. Krok D8 — v17
-
-🔵 **Nie implementować teraz.**
-
-Entry gate:
-
-```text
-v16.6 final evidence package
-+ final accepted memory
-+ affect/homeostasis/rest/reasoning measurements
-+ architecture debt ledger
-+ quality/latency/context baselines
-+ no open P0/P1
-```
-
-Wtedy można rozpocząć measured consolidation opisane w [`V17_PLUS_SYSTEM_EVALUATION.md`](V17_PLUS_SYSTEM_EVALUATION.md).
-
----
-
-# 13. Jednozdaniowy status
-
-> **Jesteśmy po scaleniu narzędzia Memory Rebuild i po dużym hardeningu package/runtime/CI; teraz porządkujemy prawdę dokumentacji, a następny niezaimplementowany duży krok produktu to attachment ingress, po którym NLP i finalna prywatna pamięć prowadzą do affect/memory acceptance oraz v16.6.**
+> Aktualnie domykamy jedną kanoniczną dokumentację Memory↔Affect. Po jej merge legalne są Affect A0 i przygotowanie attachment/NLP; aktywna integracja affect z recall dopiero po finalnej pamięci i zamrożonym baseline.

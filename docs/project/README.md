@@ -1,27 +1,46 @@
 # Project-wide documents
 
-Ten katalog zawiera dokumenty przekrojowe obowiązujące w całym projekcie albo wspólne audyty/reference dla wielu release'ów.
+**Aktualizacja mapy:** 2026-09-07
+
+Ten katalog zawiera wyłącznie przekrojowe kontrakty projektu, bieżący state overlay oraz datowane audyty/reference. Nie jest drugą powierzchnią aktywnych roadmap.
 
 ## Bieżące źródła
 
-- [`CURRENT_STATE.md`](CURRENT_STATE.md) — bieżący snapshot mastera, aktywnych branchy i kolejności release trainu;
-- [`PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — kanoniczny kontrakt pojęć, source hierarchy i granic naukowych;
-- [`REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md`](REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md) — aktualny audyt branch/docs convergence;
-- [`RELEASE_TIMELINE.md`](RELEASE_TIMELINE.md) — indeks historii wydań i dowodów;
-- [`PLAN_COHERENCE_AUDIT_2026-08-30.md`](PLAN_COHERENCE_AUDIT_2026-08-30.md) — datowany snapshot audytu planów z 2026-08-30;
-- [`system-evaluation/`](system-evaluation/) — ocena architektury v16.6→v17+ oraz późniejsze datowane uzupełnienia research.
+- [`CURRENT_STATE.md`](CURRENT_STATE.md) — bieżący overlay rzeczywistego stanu projektu;
+- [`PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md) — kanoniczny słownik, source hierarchy i granice naukowe;
+- [`RELEASE_TIMELINE.md`](RELEASE_TIMELINE.md) — bieżący indeks historii wydań i otwartych workstreams;
+- [`REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md) — przekrojowa polityka layout/dependencies.
+
+## Datowane audyty — `HISTORICAL_REFERENCE`
+
+- [`PLAN_COHERENCE_AUDIT_2026-08-30.md`](PLAN_COHERENCE_AUDIT_2026-08-30.md);
+- [`REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md`](REPOSITORY_CONVERGENCE_AUDIT_2026-09-01.md).
+
+Datowany audyt zachowuje stan wiedzy z chwili powstania. `ACTIVE`, `IN_PROGRESS`, SHA, branch, target release albo ocena planu wewnątrz takiego dokumentu nie jest bieżącym statusem.
+
+## Aktywne plany są tylko w `docs/plans/`
+
+Kolejność wykonania należy wyłącznie do:
+
+- [`../plans/README.md`](../plans/README.md);
+- [`../plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](../plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md);
+- [`../plans/CURRENT_STEP.md`](../plans/CURRENT_STEP.md);
+- [`../plans/PLAN_EXECUTION_HISTORY.md`](../plans/PLAN_EXECUTION_HISTORY.md);
+- [`../plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md`](../plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md);
+- [`../plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md`](../plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md);
+- [`../plans/RESEARCH_EVIDENCE_BASE.md`](../plans/RESEARCH_EVIDENCE_BASE.md);
+- [`../plans/V17_PLUS_SYSTEM_EVALUATION.md`](../plans/V17_PLUS_SYSTEM_EVALUATION.md).
+
+## Dawne `project/system-evaluation/`
+
+Poprzednia v16.6→v17 evaluation wraz z DOCX i research addendum została przeniesiona bez zmiany treści do:
+
+`../plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/project-system-evaluation/`
+
+Powód: po ustanowieniu nowej kanonicznej v16.3.25.4→v17 roadmapy pozostawienie starej evaluation obok bieżących dokumentów tworzyłoby drugą, konkurencyjną powierzchnię planistyczną.
 
 ## Zasada aktualności
 
-`CURRENT_STATE.md` może być aktualizowany wraz z masterem. Datowane audyty i system-evaluation zachowują kontekst swojej epoki; jeśli zmienił się stan repo, model capabilities albo research, dopisz nowy datowany audit/addendum zamiast przepisywać provenance starego dokumentu.
+`CURRENT_STATE.md` i `RELEASE_TIMELINE.md` mogą być aktualizowane wraz z masterem. Datowanych audytów nie przepisywać po fakcie; jeśli wymaganie nadal jest ważne, zweryfikować je względem current master i włączyć do aktualnego owner planu z mierzalnym acceptance.
 
-Historyczne identyfikatory paczek, SHA, branchy i wersji w datowanym audycie nie są deklaracją bieżącego runtime.
-
-## Relacja do planów
-
-Przekrojowe dokumenty opisują **założenia i evidence**, natomiast kolejność wykonania należy do:
-
-- [`../plans/16.6.0-final-convergence/ROADMAP.md`](../plans/16.6.0-final-convergence/ROADMAP.md) — program v16;
-- [`../plans/17.0.0-measured-architecture-consolidation/PLAN.md`](../plans/17.0.0-measured-architecture-consolidation/PLAN.md) — warunkowy program v17.
-
-Dokumenty projektowe nie certyfikują własnego PASS i nie są dowodem aktywnego runtime.
+Dokument projektowy nie certyfikuje własnego `PASS`, `MERGED`, `VERIFIED`, `ACCEPTED` ani aktywnego runtime.
