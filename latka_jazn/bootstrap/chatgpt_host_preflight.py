@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Iterable
+import json
+from pathlib import Path
+import sys
+from typing import Any, Iterable, Mapping, Sequence
 
 from latka_jazn.core.chatgpt_host_executor_contract import (
     HostCapabilitySnapshot,
@@ -15,6 +19,7 @@ from latka_jazn.core.chatgpt_host_executor_contract import (
 from latka_jazn.packaging.attachment_materialization import (
     AttachmentMaterializationReport,
     AttachmentMaterializationState,
+    probe_attachment_materialization,
 )
 from latka_jazn.version import schema_version
 
@@ -92,8 +97,8 @@ def plan_chatgpt_host_preflight(
     """Compose executor and attachment truth without crossing evidence boundaries.
 
     Host execution capability and attachment readiness are deliberately
-    independent.  A broken ``python_tool`` bridge can yield a degraded but
-    usable environment when a terminal succeeds.  Conversely, an observed
+    independent. A broken ``python_tool`` bridge can yield a degraded but
+    usable environment when a terminal succeeds. Conversely, an observed
     filesystem does not make a still-growing or hash-invalid package safe to
     bootstrap.
     """
@@ -167,3 +172,147 @@ def plan_chatgpt_host_preflight(
         capability_snapshot=capability,
         attachments=tuple(report.to_dict() for report in reports),
     )
+
+
+def _json_object_from_file(path_value: str) -> dict[str, Any]:
+    if path_value == "-":
+        raw = sys.stdin.read()
+    else:
+        raw = Path(path_value).expanduser().read_text(encoding="utf-8")
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("host_preflight_input_must_be_json_object")
+    return value
+
+
+def _optional_bool(mapping: Mapping[str, Any], key: str, default: bool | None) -> bool | None:
+    if key not in mapping:
+        return default
+    value = mapping[key]
+    if value is None and default is None:
+        return None
+    if not isinstance(value, bool):
+        raise ValueError(f"{key}_must_be_boolean")
+    return value
+
+
+def _optional_int(mapping: Mapping[str, Any], key: str, default: int | None) -> int | None:
+    if key not in mapping:
+        return default
+    value = mapping[key]
+    if value is None and default is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{key}_must_be_integer")
+    return int(value)
+
+
+def _executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorObservation:
+    process_created = _optional_bool(item, "process_created", None)
+    if process_created is None:
+        raise ValueError("process_created_is_required")
+    return HostExecutorObservation(
+        process_created=process_created,
+        command_completed=bool(_optional_bool(item, "command_completed", False)),
+        returncode=_optional_int(item, "returncode", None),
+        error_class=(str(item["error_class"]).strip() if item.get("error_class") is not None else None),
+        alternative_surface_available=bool(
+            _optional_bool(item, "alternative_surface_available", False)
+        ),
+        alternative_probe_count=int(_optional_int(item, "alternative_probe_count", 0) or 0),
+        filesystem_probe_succeeded=_optional_bool(item, "filesystem_probe_succeeded", None),
+        surface=str(item.get("surface") or "default"),
+    )
+
+
+def _executor_observations_from_payload(payload: Mapping[str, Any]) -> tuple[HostExecutorObservation, ...]:
+    raw = payload.get("executor_observations", [])
+    if not isinstance(raw, list):
+        raise ValueError("executor_observations_must_be_array")
+    observations: list[HostExecutorObservation] = []
+    for item in raw:
+        if not isinstance(item, Mapping):
+            raise ValueError("executor_observation_must_be_object")
+        observations.append(_executor_observation_from_mapping(item))
+    return tuple(observations)
+
+
+def _attachment_reports_from_payload(payload: Mapping[str, Any]) -> tuple[AttachmentMaterializationReport, ...]:
+    raw = payload.get("attachments", [])
+    if not isinstance(raw, list):
+        raise ValueError("attachments_must_be_array")
+    reports: list[AttachmentMaterializationReport] = []
+    for item in raw:
+        if not isinstance(item, Mapping):
+            raise ValueError("attachment_spec_must_be_object")
+        path_value = str(item.get("path") or "").strip()
+        if not path_value:
+            raise ValueError("attachment_path_is_required")
+        expected_size = _optional_int(item, "expected_size_bytes", None)
+        expected_sha = (
+            str(item["expected_sha256"]).strip()
+            if item.get("expected_sha256") is not None
+            else None
+        )
+        reports.append(
+            probe_attachment_materialization(
+                Path(path_value),
+                expected_size_bytes=expected_size,
+                expected_sha256=expected_sha,
+            )
+        )
+    return tuple(reports)
+
+
+def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
+    """Machine-readable canonical host preflight exposed through ``run.py``."""
+
+    parser = argparse.ArgumentParser(
+        prog="run.py host-preflight",
+        description="Classify host execution surfaces and attachment materialization without fabricating runtime state.",
+        allow_abbrev=False,
+    )
+    parser.add_argument("--input", required=True, help="JSON contract path or '-' for stdin")
+    parser.add_argument("--json", action="store_true", help="Pretty-print JSON output")
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    try:
+        payload = _json_object_from_file(args.input)
+        package_required = _optional_bool(payload, "package_required", False)
+        observations = _executor_observations_from_payload(payload)
+        attachments = _attachment_reports_from_payload(payload)
+        decision = plan_chatgpt_host_preflight(
+            observations,
+            attachment_reports=attachments,
+            package_required=bool(package_required),
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        error_payload = {
+            "ok": False,
+            "error_code": "invalid_host_preflight_input",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+        print(
+            json.dumps(
+                error_payload,
+                ensure_ascii=False,
+                indent=2 if args.json else None,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+
+    result = decision.to_dict()
+    result["ok"] = True
+    result["gate_passed"] = decision.bootstrap_allowed
+    print(
+        json.dumps(
+            result,
+            ensure_ascii=False,
+            indent=2 if args.json else None,
+            sort_keys=True,
+        )
+    )
+    return 0 if decision.bootstrap_allowed else 3
