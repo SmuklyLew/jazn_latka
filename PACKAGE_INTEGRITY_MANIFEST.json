@@ -3,8 +3,8 @@
   "version": "16.3.25.5.43-host-capability-materialization-hardening",
   "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "generated_at_utc": "2026-09-07T19:49:16+00:00",
-  "updated_at_utc": "2026-09-07T19:49:16+00:00",
+  "generated_at_utc": "2026-09-07T19:56:55+00:00",
+  "updated_at_utc": "2026-09-07T19:56:55+00:00",
   "start_file": "run.py",
   "file_count": 1234,
   "static_file_count": 1234,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2969,
-      "sha256": "6ca2d33cfbd7c109d3b047016f5d57121faec2cc52b2e5b21f1e5f8562b8f9a7",
+      "sha256": "4de00872218071ff2a3f2782b3e578e840053333462c9661ac8b9fa1df859a35",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1722,7 +1722,7 @@
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
       "size_bytes": 3536,
-      "sha256": "e5175dab59ec5f0a786da9368142ed3b28ea5fed4188f1a96865aaceb82af573",
+      "sha256": "28634bebcb42200c82a9928f34849eb5c532765050ccca7127e7ff95e063e4ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
