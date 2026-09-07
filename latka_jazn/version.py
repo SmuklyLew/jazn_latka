@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.37 installs declared extras for PowerShell regressions and
+# v16.3.25.5.38 installs declared extras for PowerShell regressions and
 # isolates canonical release packaging tests from CI metadata materialization.
-DISTRIBUTION_VERSION = "16.3.25.5.37"
-PACKAGE_VERSION = "16.3.25.5.37"
+DISTRIBUTION_VERSION = "16.3.25.5.38"
+PACKAGE_VERSION = "16.3.25.5.38"
 PACKAGE_RELEASE_NAME = "ci-release-fixture-isolation"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
