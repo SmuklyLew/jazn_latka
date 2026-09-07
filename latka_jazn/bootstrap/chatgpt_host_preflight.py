@@ -119,6 +119,11 @@ def plan_chatgpt_host_preflight(
         next_action = HostRecoveryAction.PROBE_ALTERNATIVE_ONCE
         reason_code = "executor_alternative_probe_pending"
         resume = None
+    elif capability.next_action is HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND:
+        bootstrap_allowed = False
+        next_action = HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND
+        reason_code = "executor_command_requires_diagnosis"
+        resume = None
     elif not execution_usable:
         bootstrap_allowed = False
         next_action = capability.next_action
