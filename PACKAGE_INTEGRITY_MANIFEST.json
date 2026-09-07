@@ -3,11 +3,11 @@
   "version": "16.3.25.5.43-host-capability-materialization-hardening",
   "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "generated_at_utc": "2026-09-07T19:47:30+00:00",
-  "updated_at_utc": "2026-09-07T19:47:30+00:00",
+  "generated_at_utc": "2026-09-07T19:49:16+00:00",
+  "updated_at_utc": "2026-09-07T19:49:16+00:00",
   "start_file": "run.py",
-  "file_count": 1233,
-  "static_file_count": 1233,
+  "file_count": 1234,
+  "static_file_count": 1234,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2969,
-      "sha256": "f5595fe5ba4c3b6277a95f544dc0ff70598751e8f69899fd98988f55951dd43f",
+      "sha256": "6ca2d33cfbd7c109d3b047016f5d57121faec2cc52b2e5b21f1e5f8562b8f9a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5843,8 +5843,8 @@
     },
     {
       "path": "latka_jazn/packaging/split_zip_package.py",
-      "size_bytes": 42478,
-      "sha256": "c31df9b7c66b267f5afb5f7dfd3b8eb489356c7aa83b7e4879e0579a8be11ed2",
+      "size_bytes": 43704,
+      "sha256": "6d56ab38d6b0da111d675ab42f6d00bb05848345b90582b51a3cba19707150f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7642,6 +7642,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_chatgpt_runtime_first_host_instructions_v16325528.py",
+      "size_bytes": 2201,
+      "sha256": "8adce88a5484d1b21993924fa4ddd910b24e8cb31f75d92e2d32e49623cc18ae",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_dependency_studio_v1632539_source_v16325533.py",
       "size_bytes": 16749,
       "sha256": "f78c08be73af170591a6633391fc09127e818c129fdec67ac9c2019642b495cd",
@@ -8761,15 +8770,6 @@
       "path": "tests/test_chatgpt_recovery_integrity.py",
       "size_bytes": 7059,
       "sha256": "058c7b655c53a3a6a337277949b3cd00c98a5a5f66d7fe979142adc45eaf5ece",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_chatgpt_runtime_first_host_instructions_v16325528.py",
-      "size_bytes": 2201,
-      "sha256": "8adce88a5484d1b21993924fa4ddd910b24e8cb31f75d92e2d32e49623cc18ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10579,6 +10579,15 @@
       "path": "tests/test_v16325542_post_merge_ci_contract_repair.py",
       "size_bytes": 451,
       "sha256": "7bad2b4b75fe7ea00863379b69156e02f6f96012a2e7f3b4552f227b18dae126",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325543_host_package_freeze.py",
+      "size_bytes": 1629,
+      "sha256": "535c53afa5753c30c7610fb7f213114fd7cba8778a9c3c3f782fd586046abe6c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
