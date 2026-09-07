@@ -75,7 +75,7 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
         check=True, capture_output=True, text=True,
     ).stdout.strip()
     subprocess.run(
-        ["git", "clone", "-c", "core.longpaths=true", "--shared", "--no-checkout", str(ROOT), str(source_root)],
+        ["git", "clone", "--shared", "--no-checkout", str(ROOT), str(source_root)],
         check=True, capture_output=True,
     )
     subprocess.run(
