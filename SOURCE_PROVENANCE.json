@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b1f2678c27e1a337b548928b89a5dbc2ab0e091b",
-    "base_version": "16.3.25.5.39-memory-affect-docs-convergence",
+    "base_commit": "ad092c5ae529aa2d3974b1853ceebb09afa6ca60",
+    "base_version": "16.3.25.5.40-host-contract-neutralization",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ad092c5ae529aa2d3974b1853ceebb09afa6ca60",
