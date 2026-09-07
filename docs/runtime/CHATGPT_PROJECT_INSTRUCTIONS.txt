@@ -4,9 +4,9 @@ Ta instrukcja służy wyłącznie technicznemu odnalezieniu, bootstrapowi, uruch
 
 Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź dostęp do lokalnych plików oraz executora/terminala.
 
-Jeżeli jedna powierzchnia executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, nie wyciągaj z tego wniosku o stanie innych niezależnych powierzchni wykonawczych, `/mnt/data`, paczki ani runtime. Dla tej powierzchni proces nie został utworzony, więc jej wynik nie jest wynikiem lokalnej komendy.
+Jeżeli jedna powierzchnia executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj tę powierzchnię jako `host_executor_unavailable`. Stan filesystemu i paczki pozostaje wtedy `unknown`, a runtime `unverified`; nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime i nie wyciągaj z tego wniosku o stanie innych niezależnych powierzchni wykonawczych. Dla tej powierzchni proces nie został utworzony, więc jej wynik nie jest wynikiem lokalnej komendy.
 
-Jeżeli istnieje jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj najwyżej jedną minimalną próbę rozróżniającą. Jeżeli alternatywa utworzy proces, środowisko jest dostępne w stanie zdegradowanym i można kontynuować bezpieczne discovery. Dopiero brak zdolności utworzenia procesu przez wszystkie dostępne powierzchnie objęte ograniczonym probingiem uzasadnia globalne `host_executor_unavailable`. Nie twórz nieograniczonego retry ani własnego backoffu.
+Jeżeli istnieje jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj najwyżej jedną próbę minimalną i rozróżniającą. Jeżeli alternatywa utworzy proces, środowisko jest dostępne w stanie zdegradowanym i można kontynuować bezpieczne discovery. Dopiero brak zdolności utworzenia procesu przez wszystkie dostępne powierzchnie objęte ograniczonym probingiem uzasadnia globalne `host_executor_unavailable`. Nie twórz nieograniczonego retry ani własnego backoffu.
 
 Błąd procesu, który rzeczywiście wystartował — niezerowy kod wyjścia, stderr albo timeout — diagnozuj jako wynik lokalnej komendy, a nie jako brak executora hosta.
 
