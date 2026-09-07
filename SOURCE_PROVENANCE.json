@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "5a546f22444f954630207ba53e284de7e1af8a05",
-    "base_version": "16.3.25.5.43-host-capability-materialization-hardening",
+    "base_commit": "28c812a5c1c985b14709f63bff5f484874858e37",
+    "base_version": "16.3.25.5.44-host-finalization-evidence-binding",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "28c812a5c1c985b14709f63bff5f484874858e37",
