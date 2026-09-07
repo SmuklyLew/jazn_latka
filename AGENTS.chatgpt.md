@@ -125,15 +125,17 @@ Pola zgodnościowe starszych wersji mogą być nadal emitowane przez runtime prz
 
 Jeżeli runtime jawnie wymaga zewnętrznej warstwy językowej:
 1. użyj wyłącznie pól bieżącego kontraktu;
-2. nie dodawaj danych spoza `host_generation_context` i jawnie dopuszczonego tool evidence;
+2. nie dodawaj danych spoza `host_generation_context` i jawnie dopuszczonego evidence: `external_tool_evidence` dla web/GitHub oraz `host_action_evidence` wyłącznie dla faktycznie wykonanych lokalnych działań hosta;
 3. nie zmieniaj `turn_id`, `trace_id`, timestampu, autora ani `host_request_contract_hash`;
 4. oblicz SHA-256 kanonicznego UTF-8/LF pola `final_text` bez BOM;
-5. użyj maszynowego `chatgpt_host_bridge.host_reply_jsonl_shape` jako niezmiennego bindingu phase-2 i wykonaj kanoniczne `run.py host-finalize`;
-6. uznaj phase-2 za zakończoną dopiero po zapisie/consume pending requestu i potwierdzeniu lub odzyskiwalnym reconcile lifecycle daemona; sama walidacja hash/prefix nie jest finalizacją;
-7. pokaż dopiero zaakceptowany `final_visible_text`;
-8. jeżeli transport używa continuation tokenu, nie ujawniaj go i nie replay'uj po niejednoznacznym wyniku.
+5. jeżeli odpowiedź zawiera twierdzenie o lokalnym starcie procesu, komendzie albo teście wykonanym przez host, przekaż `--host-action-evidence-file` zawierający wyłącznie bounded evidence związane z dokładnym `turn_id`, `trace_id` i `host_request_contract_hash`; surowych argumentów polecenia nie zapisuj — użyj digestu;
+6. użyj maszynowego `chatgpt_host_bridge.host_reply_jsonl_shape` jako niezmiennego bindingu phase-2 i wykonaj kanoniczne `run.py host-finalize`;
+7. deterministyczne naruszenie truth/epistemic guard ma zostać odrzucone przed trwałym zapisem; nie klasyfikuj go jako `indeterminate`;
+8. uznaj phase-2 za zakończoną dopiero po zapisie/consume pending requestu i potwierdzeniu lub odzyskiwalnym reconcile lifecycle daemona; sama walidacja hash/prefix nie jest finalizacją;
+9. pokaż dopiero zaakceptowany `final_visible_text`;
+10. jeżeli transport używa continuation tokenu, nie ujawniaj go i nie replay'uj po niejednoznacznym wyniku.
 
-Jeżeli finalizacja mogła dojść do runtime, ale odpowiedź transportowa zginęła, nie wysyłaj ponownie wiadomości użytkownika. Poll/resume istniejący `daemon_request_id`; daemon ma odzyskać stan z trwałego `consumed` pending requestu.
+Jeżeli finalizacja mogła dojść do runtime, ale odpowiedź transportowa zginęła, nie wysyłaj ponownie wiadomości użytkownika. Poll/resume istniejący `daemon_request_id`; daemon ma odzyskać stan z trwałego `consumed` pending requestu. `indeterminate` jest zarezerwowane dla rzeczywistej niepewności skutku zapisu; błędy deterministycznej walidacji muszą pozostać replayowalnym odrzuceniem przed persistence.
 
 ## 8. Fail-closed i diagnostyka
 
