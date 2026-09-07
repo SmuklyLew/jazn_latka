@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.40-host-contract-neutralization",
-  "runtime_version": "16.3.25.5.40-host-contract-neutralization",
-  "package_version": "16.3.25.5.40-host-contract-neutralization",
-  "generated_at_utc": "2026-09-07T16:08:24+00:00",
-  "updated_at_utc": "2026-09-07T16:08:24+00:00",
+  "version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+  "runtime_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+  "package_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+  "generated_at_utc": "2026-09-07T18:02:05+00:00",
+  "updated_at_utc": "2026-09-07T18:02:05+00:00",
   "start_file": "run.py",
-  "file_count": 1220,
-  "static_file_count": 1220,
+  "file_count": 1223,
+  "static_file_count": 1223,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 8788,
-      "sha256": "e65cfbc6af115c5a6ae1841a8b3a5cda6d56098759c6e355fd0fe0971ad7f7d3",
+      "size_bytes": 9246,
+      "sha256": "b9a2e1abc6e1e02f9523ae64501757fb8d6b822db819bc9a49ce90a727ec5389",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2883,
-      "sha256": "c3167d92851a019d06f20cb8424315fea58840fec7750696e20dea85670d19f3",
+      "size_bytes": 2985,
+      "sha256": "5842d3ff79f40ecc1f35d2fdc71da302264478ce851313140f30b4d6c2961c10",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2117,8 +2117,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/host.py",
-      "size_bytes": 1043,
-      "sha256": "7c3c46a47ad9ec2116412b329b0c92e092d820b127de574d2e86fc90ecfc52e6",
+      "size_bytes": 11098,
+      "sha256": "f38df2902099d9180a430cd9b6dbb3185154d9f31bb4c9adb4a0f0dbf26fe58e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2189,8 +2189,8 @@
     },
     {
       "path": "latka_jazn/core/birth_manifest.py",
-      "size_bytes": 9820,
-      "sha256": "5dff1b26dc7a633e8d843b486113e34f1c52a5b12282871c1531b73a0c7b457d",
+      "size_bytes": 13097,
+      "sha256": "f28f3e52ed5eafae2b0ea65a4f4502a19598addf819889fe722cf6b7ca91565d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2216,8 +2216,8 @@
     },
     {
       "path": "latka_jazn/core/canon/__init__.py",
-      "size_bytes": 1701,
-      "sha256": "d3b5254d1a879f534af96cd8fb75abef65714be5d3dded73b01da319a8048611",
+      "size_bytes": 1825,
+      "sha256": "ecc055a7bec5b0410d3d0d337d9e369af47eeab72398054a20eea2c210008ae5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2243,8 +2243,8 @@
     },
     {
       "path": "latka_jazn/core/canon/core_canon.py",
-      "size_bytes": 1655,
-      "sha256": "44e9f1b82aa345a0ac585460e7dd29cd086ed04da40e21eef328138393f15b6b",
+      "size_bytes": 938,
+      "sha256": "610c721c5c37bc6cfab01f18743841142793009ee5e01a428ad123920a256984",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2261,8 +2261,8 @@
     },
     {
       "path": "latka_jazn/core/canon/identity_canon.py",
-      "size_bytes": 6264,
-      "sha256": "8ce3118527c59634310285a8a05b73932f6472a9f082c5e24970be69e296f7bc",
+      "size_bytes": 4102,
+      "sha256": "dd57e6807cd270bbaeeaa0f6908f05d1be24ffc0aa1cca0ac50a729f53d843a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2270,8 +2270,8 @@
     },
     {
       "path": "latka_jazn/core/canon/loader.py",
-      "size_bytes": 4684,
-      "sha256": "80a45ab0e5893e5e2f8000ad97467652ea9a1b8b2403d71a546f1a997dbaac87",
+      "size_bytes": 6717,
+      "sha256": "4b627a0f4402ba241a8013692dc58a53cabf91815cc52a3e0527ef7a81aaa43e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2315,8 +2315,8 @@
     },
     {
       "path": "latka_jazn/core/canon/schema.py",
-      "size_bytes": 1285,
-      "sha256": "0d47decb2d70ec3b4b3655fce7345d6ca33a9ef729fc22e9121a5777e46c66ad",
+      "size_bytes": 5004,
+      "sha256": "045ab153d5a47faab3b91da788a66664b146168e45985357cd1ca2c88913926f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3683,8 +3683,8 @@
     },
     {
       "path": "latka_jazn/core/self_architecture.py",
-      "size_bytes": 9813,
-      "sha256": "acc823877ceab1f44bd0862ccdb278c2dc49cb1e49604ded18be492b4ac7716e",
+      "size_bytes": 9867,
+      "sha256": "ac14b6d1012bb1e226b10319e3b9bda915e554c0021a11d15c6460fbe5babcac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3701,8 +3701,8 @@
     },
     {
       "path": "latka_jazn/core/self_knowledge_contract.py",
-      "size_bytes": 14020,
-      "sha256": "7554b650180b7d7cad7eb8a045e6e1de51743d120b8dccd09c77b16ee1fa2d0f",
+      "size_bytes": 14479,
+      "sha256": "da5a8c3c63d1928e85a1e8a39ae1305f59987b85161fd06c3880c5ba73566835",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5951,8 +5951,8 @@
     },
     {
       "path": "latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json",
-      "size_bytes": 4831,
-      "sha256": "28dfc619520ae8c9cc3150eaecf6f31c789275b34261a3a13e8fb88f0e00de68",
+      "size_bytes": 4483,
+      "sha256": "bdde323c80d27e54ce53ac78ae6976a0d6017c0561dc95a46a0d71c89a09a8c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7445,8 +7445,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6553,
-      "sha256": "db1c7e6ec353f01d283df9b0b403d27aadd66881863bec0f505cf668f775804d",
+      "size_bytes": 6581,
+      "sha256": "00dc4a8f8dbb00680b56a7129954fceac7c9550f22de68c0b5401d00f51354f4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7589,8 +7589,8 @@
     },
     {
       "path": "run.py",
-      "size_bytes": 3915,
-      "sha256": "f6030798ca6e5a8da3e328b1209b88e2f1d38305466ab428ea477f1fc81e620f",
+      "size_bytes": 4430,
+      "sha256": "fdb1c09c09b6b110856f6a08c024b3c0905b06c172c18546a16087f4cb978f84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8392,6 +8392,24 @@
       "path": "tests/archive/v16.3.25.5.25-package-generator-v10.1.86.0.111-windows-package-smoke-cli-version-fix/test_v1601_memory_transport_generator.py",
       "size_bytes": 11700,
       "sha256": "2a73d1f20739bafa2640367d01cb5610be29a1ae85e3b4ece83ae130571cf9ac",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.41-runtime-kernel-finalization-canon-convergence/test_runtime_owned_agent_boundaries.py",
+      "size_bytes": 6542,
+      "sha256": "62e432e4b8f3bc103b211fec5ce84e7d2456e27925113fbd994e5ef998a42105",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.41-runtime-kernel-finalization-canon-convergence/test_v16325540_host_contract_neutralization.py",
+      "size_bytes": 3512,
+      "sha256": "289825d9c45ee961be403a2e03bfd38c7f8a4ffaa9d7e663bf226987d40d22f5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9929,8 +9947,8 @@
     },
     {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
-      "size_bytes": 6542,
-      "sha256": "62e432e4b8f3bc103b211fec5ce84e7d2456e27925113fbd994e5ef998a42105",
+      "size_bytes": 6572,
+      "sha256": "2261dc5438f01cd7236cc1a3a6e01f15237c67778d5f5a26215d7f05f595024a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10460,8 +10478,17 @@
     },
     {
       "path": "tests/test_v16325540_host_contract_neutralization.py",
-      "size_bytes": 3512,
-      "sha256": "289825d9c45ee961be403a2e03bfd38c7f8a4ffaa9d7e663bf226987d40d22f5",
+      "size_bytes": 3543,
+      "sha256": "618fd364c95ec70002c97fb3ac848a77d3a6c2636cc4ab7fee6ab86c6731c6e6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325541_runtime_kernel_finalization_canon.py",
+      "size_bytes": 9886,
+      "sha256": "69f9dda6668d7f3c65c54c6a4a5b893f23125b115842622e6b5b32b54f503150",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11432,11 +11459,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.40-host-contract-neutralization",
+  "release_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.40-host-contract-neutralization",
-    "package_version": "16.3.25.5.40-host-contract-neutralization",
-    "release_version": "16.3.25.5.40-host-contract-neutralization"
+    "runtime_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+    "package_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+    "release_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
