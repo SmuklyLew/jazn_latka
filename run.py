@@ -124,6 +124,19 @@ def _dependency_bootstrap() -> None:
 
 _dependency_bootstrap()
 
+# ``host-finalize`` is a canonical two-phase lifecycle command. Keep its parser
+# next to the lifecycle implementation so the legacy aggregate CLI cannot
+# silently degrade it back to validation-only behavior.
+if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-finalize":
+    from latka_jazn.cli_commands.host import run_host_finalize_cli
+
+    raise SystemExit(
+        run_host_finalize_cli(
+            sys.argv[2:],
+            default_root=Path(__file__).resolve().parent,
+        )
+    )
+
 from latka_jazn.cli import main
 
 

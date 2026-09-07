@@ -17,12 +17,11 @@ def test_project_instructions_are_thin_loader_to_agents_router() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
     assert len(text) <= 8000
     assert "`AGENTS.md`" in text
-    assert "`AGENTS.chatgpt.md`" not in text
-    assert "runbook odpowiedni dla bieżącego hosta lub zadania" in text
+    assert "`AGENTS.chatgpt.md`" in text
     assert "Przed pierwszą zwykłą odpowiedzią" in text
     assert "ZIP" in text
     assert "executora/terminala" in text
-    assert "kanoniczne wykonawcze wejście" in text
+    assert "kanonicznym runbookiem" in text
     assert "package_available" not in text
     assert "runtime_process_alive" not in text
     assert "final_visible_text" not in text
@@ -35,20 +34,19 @@ def test_obsolete_packaged_chatgpt_loader_is_removed() -> None:
     assert (ROOT / "AGENTS.chatgpt.md").is_file()
 
 
-def test_chatgpt_runbook_routes_every_current_message_through_runtime_without_host_reclassification() -> None:
+def test_chatgpt_runbook_does_not_reclassify_presence_as_health_check() -> None:
     text = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
-    assert "każdą bieżącą wiadomość przekaż w dokładnym brzmieniu" in text
-    assert "run.py chat-gpt" in text
-    assert "Nie parafrazuj wiadomości przed przekazaniem" in text
-    assert "Nie wyprowadzaj akcji samodzielnie" in text
+    assert "Pytania rozmowne o obecność, ciągłość lub tożsamość przekazuj do runtime" in text
+    assert "Pytania „Działasz?”" not in text
+    assert "Jeżeli runtime zwróci zaakceptowany `final_visible_text`, pokaż dokładnie ten tekst" in text
 
 
 def test_chatgpt_runbook_uses_current_execution_environment_for_local_bootstrap() -> None:
     text = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
-    assert "pliki i executor/terminal" in text
-    assert "Jeżeli istnieje `/mnt/data`" in text
-    assert "Jeżeli marker nie istnieje albo jest nieważny" in text
-    assert "kompletna paczka systemowa ZIP" in text
+    assert "terminal i pliki" in text
+    assert "paczek dostępnych lokalnie w bieżącym środowisku ChatGPT" in text
+    assert "Jeżeli marker jest nieobecny lub nieważny" in text
+    assert "Jeżeli istnieje tylko lokalne archiwum systemowe, wykonaj bezpieczny bootstrap" in text
 
 
 def test_runtime_owns_routing_identity_voice_memory_and_finalization() -> None:

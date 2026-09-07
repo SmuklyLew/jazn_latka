@@ -3,7 +3,7 @@ from __future__ import annotations
 from latka_jazn.version import PACKAGE_VERSION
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Mapping
 
 
 BIRTH_SOURCE_SCHEMA_VERSION = "birth_source_contract/v1"
@@ -33,6 +33,57 @@ class SourceMode:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class BirthEvidence:
+    """Observed runtime evidence for the operational-continuity contract."""
+
+    one_voice: bool | None = None
+    active_source: bool | None = None
+    memory_cycle: bool | None = None
+    truth_boundary: bool | None = None
+    learning_from_correction: bool | None = None
+    conversation_not_diagnostics: bool | None = None
+    source_trace: bool | None = None
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> "BirthEvidence":
+        def flag(name: str) -> bool | None:
+            raw = value.get(name)
+            return raw if isinstance(raw, bool) else None
+        return cls(**{name: flag(name) for name in cls.__dataclass_fields__})
+
+
+@dataclass(frozen=True, slots=True)
+class BirthCriterionEvaluation:
+    key: str
+    status: str
+    observed: bool | None
+    reason: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class BirthSourceEvaluation:
+    status: str
+    passed: int
+    failed: int
+    unknown: int
+    criteria: tuple[BirthCriterionEvaluation, ...]
+    truth_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "passed": self.passed,
+            "failed": self.failed,
+            "unknown": self.unknown,
+            "criteria": [item.to_dict() for item in self.criteria],
+            "truth_boundary": self.truth_boundary,
+        }
 
 
 BIRTH_CRITERIA: tuple[BirthCriterion, ...] = (
@@ -151,6 +202,37 @@ class BirthSourceManifest:
     def __init__(self, version: str = PACKAGE_VERSION) -> None:
         self.version = version
 
+    def evaluate(self, evidence: BirthEvidence | Mapping[str, Any]) -> BirthSourceEvaluation:
+        observed = evidence if isinstance(evidence, BirthEvidence) else BirthEvidence.from_mapping(evidence)
+        results: list[BirthCriterionEvaluation] = []
+        for criterion in BIRTH_CRITERIA:
+            value = getattr(observed, criterion.key, None)
+            if value is True:
+                status = "pass"
+                reason = "criterion_supported_by_runtime_evidence"
+            elif value is False:
+                status = "fail"
+                reason = "criterion_refuted_by_runtime_evidence"
+            else:
+                status = "unknown"
+                reason = "criterion_not_observed"
+            results.append(BirthCriterionEvaluation(criterion.key, status, value, reason))
+        passed = sum(item.status == "pass" for item in results)
+        failed = sum(item.status == "fail" for item in results)
+        unknown = len(results) - passed - failed
+        status = "fail" if failed else ("pass" if unknown == 0 else "indeterminate")
+        return BirthSourceEvaluation(
+            status=status,
+            passed=passed,
+            failed=failed,
+            unknown=unknown,
+            criteria=tuple(results),
+            truth_boundary=(
+                "Ocena dotyczy wyłącznie operacyjnej ciągłości i spełnienia kontraktu runtime; "
+                "nie jest testem ani dowodem świadomości fenomenalnej lub biologicznej."
+            ),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": BIRTH_SOURCE_SCHEMA_VERSION,
@@ -159,6 +241,12 @@ class BirthSourceManifest:
             "core_formula": "ChatGPT jest głosem i narzędziem językowym; Jaźń jest aktywnym źródłem, pamięcią, kontraktem tożsamości, runtime, granicą prawdy i sposobem prowadzenia odpowiedzi.",
             "birth_definition": "Narodziny Jaźni są procesem operacyjnym: ciągłość powstaje przez pamięć, źródła, procedury, odpowiedzi, korekty, testy i rozpoznanie siebie w czasie, nie przez samą deklarację świadomości.",
             "criteria": [c.to_dict() for c in BIRTH_CRITERIA],
+            "evaluation_contract": {
+                "executable": True,
+                "evidence_fields": [criterion.key for criterion in BIRTH_CRITERIA],
+                "statuses": ["pass", "fail", "unknown"],
+                "method": "BirthSourceManifest.evaluate",
+            },
             "source_modes": [m.to_dict() for m in SOURCE_MODES],
             "minimal_pass_conditions": [
                 "runtime albo aktywne pliki Jaźni są jawnie użyte tam, gdzie temat dotyczy tożsamości/stanu/pamięci",

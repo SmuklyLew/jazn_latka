@@ -122,11 +122,12 @@ Jeżeli runtime jawnie wymaga zewnętrznej warstwy językowej:
 2. nie dodawaj danych spoza `host_generation_context` i jawnie dopuszczonego tool evidence;
 3. nie zmieniaj `turn_id`, `trace_id`, timestampu, autora ani `host_request_contract_hash`;
 4. oblicz SHA-256 kanonicznego UTF-8/LF pola `final_text` bez BOM;
-5. wykonaj wskazaną finalizację;
-6. pokaż dopiero zaakceptowany `final_visible_text`;
-7. nie ujawniaj ani nie replay'uj jednorazowego tokenu.
+5. użyj maszynowego `chatgpt_host_bridge.host_reply_jsonl_shape` jako niezmiennego bindingu phase-2 i wykonaj kanoniczne `run.py host-finalize`;
+6. uznaj phase-2 za zakończoną dopiero po zapisie/consume pending requestu i potwierdzeniu lub odzyskiwalnym reconcile lifecycle daemona; sama walidacja hash/prefix nie jest finalizacją;
+7. pokaż dopiero zaakceptowany `final_visible_text`;
+8. jeżeli transport używa continuation tokenu, nie ujawniaj go i nie replay'uj po niejednoznacznym wyniku.
 
-Jeżeli finalizacja mogła dojść do runtime, ale odpowiedź transportowa zginęła, nie replay'uj tokenu; poll/resume istniejący request.
+Jeżeli finalizacja mogła dojść do runtime, ale odpowiedź transportowa zginęła, nie wysyłaj ponownie wiadomości użytkownika. Poll/resume istniejący `daemon_request_id`; daemon ma odzyskać stan z trwałego `consumed` pending requestu.
 
 ## 8. Fail-closed i diagnostyka
 
