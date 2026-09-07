@@ -3,8 +3,8 @@
   "version": "16.3.25.5.39-memory-affect-docs-convergence",
   "runtime_version": "16.3.25.5.39-memory-affect-docs-convergence",
   "package_version": "16.3.25.5.39-memory-affect-docs-convergence",
-  "generated_at_utc": "2026-09-07T01:49:00+00:00",
-  "updated_at_utc": "2026-09-07T01:49:00+00:00",
+  "generated_at_utc": "2026-09-07T01:53:19+00:00",
+  "updated_at_utc": "2026-09-07T01:53:19+00:00",
   "start_file": "run.py",
   "file_count": 1218,
   "static_file_count": 1218,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2895,
-      "sha256": "580e981212bbf6159ae0897691c7fb4cafd19bd57829cf83836045b56824f0c0",
+      "sha256": "ca717e1f4d0041b09a5cb3a59eaf1d097174c753231e21fc7c8146a4e0bc3c63",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1477,6 +1477,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/project-system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx",
+      "size_bytes": 15009,
+      "sha256": "edde1c1153c3f460401f67c5930b9dec6bb48e1c24764dabbc0d8d0fed524ff1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/project-system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+      "size_bytes": 27747,
+      "sha256": "f01103857ff35e8cbb9a4a19515e665813edb325d4605dd61b72945f96f71c9a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/project-system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md",
+      "size_bytes": 7823,
+      "sha256": "27390b309d55e68a6b3174ae42456fb8b1933c49ad46884c20a21e463ab6a35d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/only_to_check/ARCHIVE_NOTICE.md",
       "size_bytes": 882,
       "sha256": "f8c8196ffdabb7c2c40898f0c01ca2b8c07bfbf7264dab67ae677eccd492bff1",
@@ -1595,8 +1622,8 @@
     },
     {
       "path": "docs/project/README.md",
-      "size_bytes": 1875,
-      "sha256": "375221929fc9d095f1fba9cd6bf07de423aa7296df68447dd7b6a80e2dfeceb8",
+      "size_bytes": 2772,
+      "sha256": "5ae9ce4435da7fa8b08dc31cda041a9019046348cfb67643fd30fa56d0430dac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1624,33 +1651,6 @@
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
       "size_bytes": 8725,
       "sha256": "fbfbf47e4b43ed4a6d8b38f5641e721f09f19e7b5e470dd00ef084ca1d817a11",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.docx",
-      "size_bytes": 15009,
-      "sha256": "edde1c1153c3f460401f67c5930b9dec6bb48e1c24764dabbc0d8d0fed524ff1",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
-      "size_bytes": 27747,
-      "sha256": "f01103857ff35e8cbb9a4a19515e665813edb325d4605dd61b72945f96f71c9a",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "docs/project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md",
-      "size_bytes": 7823,
-      "sha256": "27390b309d55e68a6b3174ae42456fb8b1933c49ad46884c20a21e463ab6a35d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

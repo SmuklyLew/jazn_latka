@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "203426a7c061192743e476758bbb38b5567eeaeb",
+  "base_merge_commit": "f84339478dc75b28d50aaa27e6599401b1ba46ba",
   "base_version": "16.3.25.5.39-memory-affect-docs-convergence",
-  "commit_date": "2026-09-07T03:49:00+02:00",
+  "commit_date": "2026-09-07T03:53:19+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-07T01:49:00+00:00",
+  "generated_at_utc": "2026-09-07T01:53:19+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c738cf586af952e78c4ecb1006ba90f406c6fb5d",
+  "git_tree_sha": "5c9571bf61c2b241bc0b1c73d5028afcfd8497fc",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.38-ci-release-fixture-isolation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "203426a7c061192743e476758bbb38b5567eeaeb",
+    "source_commit": "f84339478dc75b28d50aaa27e6599401b1ba46ba",
     "source_version": "16.3.25.5.39-memory-affect-docs-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "203426a7c061192743e476758bbb38b5567eeaeb",
+  "source_commit": "f84339478dc75b28d50aaa27e6599401b1ba46ba",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.39-memory-affect-docs-convergence",
   "tag": null,
