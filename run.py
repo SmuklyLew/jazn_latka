@@ -122,6 +122,16 @@ def _dependency_bootstrap() -> None:
     raise SystemExit(78)
 
 
+# Host preflight is a diagnostic truth-boundary command, not runtime
+# activation. Dispatch it before Dependency Studio can perform any managed
+# environment handoff or installation work. The command itself is stdlib-only
+# and may report a degraded host even when a separate bridge failed earlier.
+if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-preflight":
+    from latka_jazn.bootstrap.chatgpt_host_preflight import run_host_preflight_cli
+
+    raise SystemExit(run_host_preflight_cli(sys.argv[2:]))
+
+
 _dependency_bootstrap()
 
 # ``host-finalize`` is a canonical two-phase lifecycle command. Keep its parser

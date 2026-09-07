@@ -3,11 +3,13 @@ from __future__ import annotations
 import hmac
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 from latka_jazn.core.chatgpt_host_executor_contract import (
+    HostCapabilitySnapshot,
     HostExecutorObservation,
     HostExecutorRecoveryDecision,
+    aggregate_host_executor_observations,
     classify_host_executor_observation,
 )
 from latka_jazn.core.chatgpt_host_pending_store import (
@@ -85,15 +87,30 @@ def _state_error(state: str, record: Mapping[str, Any]) -> HostRequestStoreError
 def plan_host_executor_recovery(
     observation: HostExecutorObservation,
 ) -> HostExecutorRecoveryDecision:
-    """Return the canonical bounded recovery decision for one host observation.
+    """Return the backwards-compatible recovery decision for one host surface.
 
     This function deliberately does not start, probe, or repair the local
     runtime itself.  A host-tool failure that happens before process creation is
-    outside the Jaźń process boundary; after the executor becomes available the
-    caller must return to discovery and the canonical ``run.py`` lifecycle.
+    outside the Jaźń process boundary; callers that can observe more than one
+    execution surface should use :func:`plan_host_capability_recovery` so one
+    broken bridge is not mistaken for failure of the whole host environment.
     """
 
     return classify_host_executor_observation(observation)
+
+
+def plan_host_capability_recovery(
+    observations: Iterable[HostExecutorObservation],
+) -> HostCapabilitySnapshot:
+    """Aggregate independently observed executor surfaces into one host snapshot.
+
+    The function is pure and performs no retries itself.  It preserves the
+    bounded one-alternative-probe policy while allowing a working terminal (or
+    another execution surface) to keep canonical discovery available when a
+    separate bridge such as ``python_tool`` fails before process creation.
+    """
+
+    return aggregate_host_executor_observations(observations)
 
 
 def recover_pending_host_request(

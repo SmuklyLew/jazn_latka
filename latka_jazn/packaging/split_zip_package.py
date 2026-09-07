@@ -10,6 +10,12 @@ import time
 import uuid
 import zipfile
 
+from latka_jazn.packaging.attachment_materialization import (
+    AttachmentMaterializationError,
+    AttachmentMaterializationState,
+    materialize_verified_attachment_copy,
+    probe_attachment_materialization,
+)
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 import zlib
 from dataclasses import dataclass
@@ -360,12 +366,15 @@ def resolve_renamed_package_parts(
     canonical_dir: Path,
     skip_part_hash: bool = False,
 ) -> dict[str, Any]:
-    """Resolve upload-renamed parts without trusting filenames alone.
+    """Resolve and freeze upload-renamed parts without trusting filenames alone.
 
     Chat clients may rename ``archive.zip.001`` to ``archive.zip(1).001``.
-    A candidate is accepted only when the numeric suffix, expected size and
-    expected SHA256 all match.  Canonical hard links (or copies as fallback)
-    are created in a separate directory; source uploads are never renamed.
+    Candidate identity is established from the expected numeric suffix plus a
+    stable full-file read, expected size and (unless explicitly skipped)
+    expected SHA-256.  The selected source is then copied into a unique
+    temporary file and atomically published in ``canonical_dir``.  Hard links
+    are intentionally forbidden: a later host rewrite of the upload must not
+    mutate a supposedly canonical package part.
     """
     parts_dir = Path(parts_dir).expanduser().resolve()
     canonical_dir = Path(canonical_dir).expanduser().resolve()
@@ -390,25 +399,36 @@ def resolve_renamed_package_parts(
                 and path not in candidates
                 and path.suffix.lower() in {".zip", f".{part.part_no:03d}"}
             )
+
+        expected_sha = None if skip_part_hash else part.sha256
         matches: list[tuple[Path, str | None]] = []
         rejected: list[dict[str, Any]] = []
         for candidate in candidates:
             if candidate in used:
                 continue
-            size = candidate.stat().st_size
-            if part.size_bytes is not None and size != part.size_bytes:
-                rejected.append({"path": str(candidate), "reason": "size_mismatch", "size_bytes": size})
+            report = probe_attachment_materialization(
+                candidate,
+                expected_size_bytes=part.size_bytes,
+                expected_sha256=expected_sha,
+                chunk_size=CHUNK_SIZE,
+            )
+            if report.state is not AttachmentMaterializationState.READY:
+                rejected.append(
+                    {
+                        "path": str(candidate),
+                        "reason": report.state.value,
+                        "reason_code": report.reason_code,
+                        "size_bytes": report.observed_size_bytes,
+                        "sha256": report.observed_sha256,
+                        "stable_during_read": report.stable_during_read,
+                    }
+                )
                 continue
-            digest: str | None = None
-            if part.sha256 and not skip_part_hash:
-                digest = sha256_file(candidate)
-                if digest != part.sha256:
-                    rejected.append({"path": str(candidate), "reason": "sha256_mismatch", "sha256": digest})
-                    continue
-            matches.append((candidate, digest))
+            matches.append((candidate, report.observed_sha256))
+
         if not matches:
             raise FileNotFoundError(
-                f"Nie znaleziono poprawnej części {part.part_no:03d} ({part.filename}); "
+                f"Nie znaleziono stabilnej i poprawnej części {part.part_no:03d} ({part.filename}); "
                 f"odrzucone={rejected}"
             )
         if len(matches) > 1:
@@ -420,17 +440,26 @@ def resolve_renamed_package_parts(
                     f"Niejednoznaczne części dla numeru {part.part_no:03d}: "
                     + ", ".join(str(item[0]) for item in matches)
                 )
-        source, digest = matches[0]
+
+        source, _probed_digest = matches[0]
         used.add(source)
         target = canonical_dir / safe_filename
-        if target.exists():
-            target.unlink()
         try:
-            os.link(source, target)
-            materialization = "hardlink"
-        except OSError:
-            shutil.copy2(source, target)
-            materialization = "copy"
+            copy_report = materialize_verified_attachment_copy(
+                source,
+                target,
+                expected_size_bytes=part.size_bytes,
+                expected_sha256=expected_sha,
+                chunk_size=CHUNK_SIZE,
+            )
+        except AttachmentMaterializationError as exc:
+            report = exc.report
+            raise ValueError(
+                f"Źródło części {part.part_no:03d} zmieniło się lub utraciło integralność "
+                f"podczas zamrażania: state={report.state.value}, reason={report.reason_code}"
+            ) from exc
+
+        source_identity_after = copy_report.get("source_identity_after") or {}
         resolved.append({
             "part_no": part.part_no,
             "expected_name": part.filename,
@@ -438,10 +467,10 @@ def resolve_renamed_package_parts(
             "source_path": str(source),
             "canonical_path": str(target),
             "renamed_by_host": source.name != part.filename,
-            "materialization": materialization,
-            "size_bytes": source.stat().st_size,
-            "source_mtime_ns": source.stat().st_mtime_ns,
-            "sha256": digest or part.sha256,
+            "materialization": copy_report["materialization"],
+            "size_bytes": copy_report["size_bytes"],
+            "source_mtime_ns": source_identity_after.get("mtime_ns"),
+            "sha256": copy_report["sha256"],
         })
     return {
         "ok": True,

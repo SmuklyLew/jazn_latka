@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
-  "runtime_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
-  "package_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
-  "generated_at_utc": "2026-09-07T18:25:19+00:00",
-  "updated_at_utc": "2026-09-07T18:25:19+00:00",
+  "version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "generated_at_utc": "2026-09-07T20:01:52+00:00",
+  "updated_at_utc": "2026-09-07T20:01:52+00:00",
   "start_file": "run.py",
-  "file_count": 1224,
-  "static_file_count": 1224,
+  "file_count": 1234,
+  "static_file_count": 1234,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "92ab88e5cb17f017073f44e81b18e14b6b811694be8ee68f886ab0ced8935122",
+      "size_bytes": 2969,
+      "sha256": "7a41095d79d3ff087ccf6c0aa9637692b0b240346286e3cdbcd2558a100c46ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1721,8 +1721,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 3054,
-      "sha256": "33caf8710d18e5b006b623daddb69946d0ee16b74f65b63f79b0b4fb38f3521d",
+      "size_bytes": 3550,
+      "sha256": "12e59c91a6534a0adfe776b7735e93fa490e0f6084e74df6d29104ea3aa1a2c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2011,6 +2011,15 @@
       "path": "latka_jazn/bootstrap/__init__.py",
       "size_bytes": 63,
       "sha256": "0d08fda139583dc0f57804c9b70a71e74b3dc735768e90606ca7fc21c6050a27",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/bootstrap/chatgpt_host_preflight.py",
+      "size_bytes": 12227,
+      "sha256": "f1b65e81723782a5cff4589ed7e884c388163bf8991a0d84b300328539fb6321",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2378,8 +2387,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_executor_contract.py",
-      "size_bytes": 7647,
-      "sha256": "ae8f7892a1a503a402c6af76dbd523e3684e8f95968866c9b4e454e28ca478ee",
+      "size_bytes": 15316,
+      "sha256": "a38650392592dc65dc91a0a7a26470fa9fcc14c220a378e5be504e390a2fafc2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2405,8 +2414,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_recovery.py",
-      "size_bytes": 6390,
-      "sha256": "c03a3280562ac7292c6c24435c905b63180827c94705abed14e3054da66b9d7d",
+      "size_bytes": 7124,
+      "sha256": "e096c6f56bf6705d59cd60a161364b3091a5ab080ab2673263e61aab57772113",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5725,6 +5734,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/packaging/attachment_materialization.py",
+      "size_bytes": 12675,
+      "sha256": "d12049f0690d66ba63cf2a75bcc5fbf26efc063baa623a99f481a1f5a03b5362",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/packaging/dependency_package_contract.py",
       "size_bytes": 10828,
       "sha256": "299c2e6e11c3618749e77bf41ab663493c5e7523187581deea22c262f49c892d",
@@ -5825,8 +5843,8 @@
     },
     {
       "path": "latka_jazn/packaging/split_zip_package.py",
-      "size_bytes": 42478,
-      "sha256": "c31df9b7c66b267f5afb5f7dfd3b8eb489356c7aa83b7e4879e0579a8be11ed2",
+      "size_bytes": 43704,
+      "sha256": "6d56ab38d6b0da111d675ab42f6d00bb05848345b90582b51a3cba19707150f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7445,8 +7463,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6570,
-      "sha256": "9ca3f077fcff37d1b1566bf7b47909d20569ea7fab6e4f9c7c477c47a4ade341",
+      "size_bytes": 6577,
+      "sha256": "4435c98b53ab4f664874d12eb8b5157ba9d33a3fb487e83b5aeae413dd293712",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7589,8 +7607,8 @@
     },
     {
       "path": "run.py",
-      "size_bytes": 4430,
-      "sha256": "fdb1c09c09b6b110856f6a08c024b3c0905b06c172c18546a16087f4cb978f84",
+      "size_bytes": 4958,
+      "sha256": "fa1e939d01ffd0ced7b78c6a9c829197bf17547c82cba3f73fdc54eb94ab8cd2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7618,6 +7636,15 @@
       "path": "tests/archive/test_chatgpt_host_executor_truth_boundary_v16325531.py",
       "size_bytes": 2008,
       "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_chatgpt_runtime_first_host_instructions_v16325528.py",
+      "size_bytes": 2201,
+      "sha256": "8adce88a5484d1b21993924fa4ddd910b24e8cb31f75d92e2d32e49623cc18ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8416,6 +8443,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.43-host-capability-materialization-hardening/test_v16325541_runtime_kernel_finalization_canon.py",
+      "size_bytes": 9886,
+      "sha256": "69f9dda6668d7f3c65c54c6a4a5b893f23125b115842622e6b5b32b54f503150",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.43-host-capability-materialization-hardening/test_v16325542_post_merge_ci_contract_repair.py",
+      "size_bytes": 721,
+      "sha256": "e50edb40ae5f9c0eea01d18e8da6462fcc87a92ae5b7dd5b6002987481779717",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.5-pack-generator-v88/SHA256SUMS.txt",
       "size_bytes": 117,
       "sha256": "6c7dc996b12a0c655e7fb0c896620c2498fb18ee206fad8028e3e4a39c17d688",
@@ -8518,6 +8563,15 @@
       "path": "tests/test_archived_test_policy.py",
       "size_bytes": 3106,
       "sha256": "77994e4c049549763936833326050c4d837bcf1311f69243a25a96ad0471b3a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_attachment_materialization_v16325543.py",
+      "size_bytes": 4372,
+      "sha256": "8c92b2999b643983c6f62895119d19f34909be9ba48cd5a40e13e8dc690845c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8632,6 +8686,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_host_capability_aggregation_v16325543.py",
+      "size_bytes": 6621,
+      "sha256": "24556fc8259b4be307b54ae67342973b4aa822716ebcb22cbb93e4dbb833d463",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_host_contract_hardening.py",
       "size_bytes": 16545,
       "sha256": "530eb1fc3f1deb2996c0db0a7ec6609cbcfa6f7f31623cd21515ec83fe6c09a2",
@@ -8668,6 +8731,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_host_preflight_command_failure_v16325543.py",
+      "size_bytes": 1306,
+      "sha256": "f4f46825aa3fecfc1a814bae5c3dac2ca6d1699608dea5e95d5bf63644dc2b5a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_host_preflight_v16325543.py",
+      "size_bytes": 4367,
+      "sha256": "a2bd2e3d03f384cd237804435300d7c3d9f3ee9fda1b091185ec6fc6d59424e9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_mcp_end_to_end_v96.py",
       "size_bytes": 13036,
       "sha256": "d0018006cb9caa250ac0c0a6c156197a5a3ff45e58efc89f22230473924e6ad4",
@@ -8689,15 +8770,6 @@
       "path": "tests/test_chatgpt_recovery_integrity.py",
       "size_bytes": 7059,
       "sha256": "058c7b655c53a3a6a337277949b3cd00c98a5a5f66d7fe979142adc45eaf5ece",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_chatgpt_runtime_first_host_instructions_v16325528.py",
-      "size_bytes": 2201,
-      "sha256": "8adce88a5484d1b21993924fa4ddd910b24e8cb31f75d92e2d32e49623cc18ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9901,6 +9973,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_run_py_host_preflight_v16325543.py",
+      "size_bytes": 2868,
+      "sha256": "53948029721dcceaaa9f245ed3b8ec91f390962396b20530ae28494996f46587",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_run_version_fastpath_v16325525.py",
       "size_bytes": 1913,
       "sha256": "6e583b23d0f1aa25dfd3001c5de2a26f93735c1ad4fa29d50c62a09436411ba0",
@@ -10487,8 +10568,8 @@
     },
     {
       "path": "tests/test_v16325541_runtime_kernel_finalization_canon.py",
-      "size_bytes": 9886,
-      "sha256": "69f9dda6668d7f3c65c54c6a4a5b893f23125b115842622e6b5b32b54f503150",
+      "size_bytes": 9657,
+      "sha256": "3acf63cecf2372864d5616538012c8e606b5cb406c0f961999ff37cfacfaa267",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10496,8 +10577,17 @@
     },
     {
       "path": "tests/test_v16325542_post_merge_ci_contract_repair.py",
-      "size_bytes": 721,
-      "sha256": "e50edb40ae5f9c0eea01d18e8da6462fcc87a92ae5b7dd5b6002987481779717",
+      "size_bytes": 451,
+      "sha256": "7bad2b4b75fe7ea00863379b69156e02f6f96012a2e7f3b4552f227b18dae126",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325543_host_package_freeze.py",
+      "size_bytes": 1629,
+      "sha256": "535c53afa5753c30c7610fb7f213114fd7cba8778a9c3c3f782fd586046abe6c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11468,11 +11558,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+  "release_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
-    "package_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
-    "release_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair"
+    "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
+    "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
+    "release_version": "16.3.25.5.43-host-capability-materialization-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
