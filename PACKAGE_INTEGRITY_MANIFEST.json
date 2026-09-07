@@ -3,11 +3,11 @@
   "version": "16.3.25.5.43-host-capability-materialization-hardening",
   "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
   "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "generated_at_utc": "2026-09-07T19:13:41+00:00",
-  "updated_at_utc": "2026-09-07T19:13:41+00:00",
+  "generated_at_utc": "2026-09-07T19:17:46+00:00",
+  "updated_at_utc": "2026-09-07T19:17:46+00:00",
   "start_file": "run.py",
-  "file_count": 1225,
-  "static_file_count": 1225,
+  "file_count": 1227,
+  "static_file_count": 1227,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2969,
-      "sha256": "bb5c7ba4c7e6aecdc1aa6a41ac1e2cf8634adfbf17dcbb79feae169ad3ef1f1e",
+      "sha256": "bcb6f777766a25ce95bce0171b7b243cc05f2c1b1123e9f0f55f21c9f7bef07f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5725,6 +5725,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/packaging/attachment_materialization.py",
+      "size_bytes": 12675,
+      "sha256": "d12049f0690d66ba63cf2a75bcc5fbf26efc063baa623a99f481a1f5a03b5362",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/packaging/dependency_package_contract.py",
       "size_bytes": 10828,
       "sha256": "299c2e6e11c3618749e77bf41ab663493c5e7523187581deea22c262f49c892d",
@@ -8518,6 +8527,15 @@
       "path": "tests/test_archived_test_policy.py",
       "size_bytes": 3106,
       "sha256": "77994e4c049549763936833326050c4d837bcf1311f69243a25a96ad0471b3a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_attachment_materialization_v16325543.py",
+      "size_bytes": 4372,
+      "sha256": "8c92b2999b643983c6f62895119d19f34909be9ba48cd5a40e13e8dc690845c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
