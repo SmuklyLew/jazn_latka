@@ -1,264 +1,77 @@
-# Jaźń / Łatka — V17_PLUS_SYSTEM_EVALUATION
+# Jaźń / Łatka — V17 measured system evaluation & consolidation
 
-## Zaktualizowana ocena systemu po Memory Rebuild v4 i linii 16.3.25.5.x
-
-**Status:** `CURRENT_SYSTEM_EVALUATION / V17_ENTRY_GUIDANCE`  
+**Status:** `FUTURE_CONDITIONAL / V17_ENTRY_GUIDANCE`  
 **Aktualizacja:** 2026-09-07  
-**Zweryfikowany master:** `378e9e6aceb83edbd679751e19cbe5c64c978025`  
-**Wersja:** `16.3.25.5.36-ci-archive-scope-contract-hardening`  
-**Historyczny audyt 2026-08-30:** zachowany w `docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md`  
-**Research update 2026-09-01:** zachowany w `docs/project/system-evaluation/V16_6_TO_V17_0_RESEARCH_UPDATE_2026-09-01.md`
+**Program wejściowy:** [`V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md)
 
-> Ten dokument aktualizuje ocenę systemu. Nie jest dowodem aktywnego runtime ani consciousness assessment. Terminy psychologiczne/neuronaukowe są funkcjonalnymi inspiracjami software, chyba że jawnie wskazano inaczej.
+> V17 nie jest zgodą na większą liczbę modułów ani próbą „symulacji mózgu”. Jest warunkową konsolidacją dopiero po zmierzeniu i zaakceptowaniu v16.
 
 ---
 
-# 1. Najważniejsza zmiana od audytu 2026-08-30
+# 1. Entry gate
 
-Stary audyt poprawnie wskazał trzy największe priorytety:
-
-1. source-aware Memory Rebuild;
-2. rozdzielenie causal continuity od stylu pierwszej osoby;
-3. konsolidację overlapping self/affect/cognitive modules na podstawie pomiarów.
-
-Od tego czasu pierwszy punkt przeszedł istotny etap:
+Nie tworzyć implementation branch v17, dopóki nie istnieje pełny evidence package:
 
 ```text
-Memory Rebuild v4 tool/protocol
-→ MERGED do master
-→ PR #208
-→ #189 CLOSED
+[ ] attachment/multimodal canonical ingress accepted
+[ ] Polish NLP evidence contract accepted
+[ ] final private memory VERIFIED
+[ ] memory ATTACHABLE + rollback + restart identity
+[ ] frozen private Recall baseline
+[ ] memory ACCEPTED
+[ ] exactly one canonical AffectiveStateV2
+[ ] accepted-turn affect persistence verified
+[ ] affect↔memory source-safe A/B evidence
+[ ] false-memory/wrong-source/privacy non-regression
+[ ] affect/homeostasis/rest/reasoning ablation/debt ledger
+[ ] model capability/context baselines
+[ ] package/release cross-platform evidence
+[ ] governance gate resolved or explicit accepted exception
+[ ] no open P0/P1 in v16 scope
+[ ] v16 accepted artifacts + rollback path
 ```
 
-Jednocześnie **finalna prywatna pamięć nadal nie jest ACCEPTED** — issue #59 pozostaje otwarte. Zatem Memory Rebuild przestał być problemem „czy mamy właściwe narzędzie?”, a stał się problemem „czy finalny prywatny source set przejdzie cały acceptance pipeline?”.
-
-Drugą dużą zmianą jest seria `16.3.25.5.x`, która znacznie utwardziła package/runtime/tooling/host/CI fundament przed planowanymi 16.3.26+ etapami.
+Bez tego status pozostaje `PLANNING_ONLY`.
 
 ---
 
-# 2. Aktualny obraz systemu
+# 2. V17 principle: measured consolidation
 
-## 2.1. Truth/provenance — nadal największa siła
-
-🟢 System ma dojrzałą zasadę:
+Każdy kandydat architektoniczny przechodzi:
 
 ```text
-claim strength ≤ evidence strength
+current accepted baseline
+→ one hypothesis
+→ compatibility/staging implementation
+→ fixed evaluation corpus
+→ quality/safety/latency/context measurements
+→ ablation/A-B
+→ KEEP / MERGE / REMOVE / ROLLBACK
 ```
 
-oraz rozdzielenie:
-
-```text
-runtime evidence
-memory/source evidence
-model inference
-reflection
-dream/synthetic
-host observation
-```
-
-To pozostaje najbardziej wartościową cechą Jaźni. V17 nie może uprościć architektury kosztem tej granicy.
-
-## 2.2. Runtime/host continuity — mocny fundament
-
-🟢 Dostarczone zostały m.in.:
-
-- subject-root identity;
-- persistent daemon/liveness contracts;
-- host pre-response/finalization lifecycle;
-- process/endpoint/heartbeat truth;
-- runtime-first ChatGPT handoff;
-- host executor truth boundary;
-- bounded executor recovery;
-- package/runtime provenance.
-
-Causal continuity ma dzięki temu techniczny fundament silniejszy niż persona consistency.
-
-## 2.3. Packaging/dependencies/plugins — znacznie dojrzalsze niż w audycie 30.08
-
-🟢 Linia 16.3.25.5.x dostarczyła:
-
-- package distribution convergence;
-- wielokrotny Pack Generator hardening;
-- byte-exact/EOL/folder/canonical release staging;
-- Python runtime/dependency contracts;
-- Pyright/Pylance/CI boundary fixes;
-- Node24 Actions convergence;
-- optional JavaScript tooling capability;
-- package-runtime-plugin convergence;
-- optional archive capability zamiast obciążania core;
-- generator `10.1.86.0.114` w bieżącym kierunku.
-
-To redukuje ryzyko, że v17 będzie musiało poświęcić duży breaking release na podstawowe packaging hygiene.
-
-## 2.4. Memory architecture — narzędzie mocne, acceptance nadal otwarte
-
-🟢 Memory Rebuild v4 ma jeden protocol/application engine, Test00→Final, source fidelity, source monitoring contract i fail-closed no-auto-promotion.
-
-🟡 Brakuje finalnego prywatnego przejścia:
-
-```text
-VERIFIED
-→ ATTACHABLE
-→ RETRIEVABLE
-→ ACCEPTED
-```
-
-Dopóki to nie przejdzie, v17 nie może projektować reconsolidation/forgetting na niezaakceptowanym fundamencie.
-
-## 2.5. Attachment/multimodal ingress — realna luka v16
-
-🟡 Package/plugin capability infrastructure istnieje, ale canonical user attachment turn contract nie jest jeszcze zamknięty jako pełny product feature.
-
-Potrzebne pozostają:
-
-- attachment-only/multi;
-- exact identity/provenance;
-- bounded host staging;
-- extraction/type policy;
-- vision capability routing;
-- external content = untrusted data, not authority;
-- no auto-memory.
-
-## 2.6. Polish NLP — nadal planowany evidence layer
-
-🟡 System ma różne mechanizmy normalizacji/signal matching, ale nie ma zamkniętego jednego programu:
-
-```text
-canonical normalization
-→ lexical resource provenance
-→ ambiguity/OOV
-→ recall query evidence
-```
-
-To jest ważne zarówno dla Recall, jak i przyszłego evidence-aware appraisal.
-
-## 2.7. Affect/emotion — koncepcyjnie wartościowy, architektonicznie nadal rozproszony
-
-🟡 Nadal istnieją nakładające się:
-
-```text
-AffectiveState
-EmotionalLayerModel
-AffectiveGranularityModel
-AffectMixer
-SelfState affect bridge
-Homeostasis
-```
-
-Największy postęp planistyczny: nowy [`AFFECT_ENGINE_CONVERGENCE_PLAN.md`](AFFECT_ENGINE_CONVERGENCE_PLAN.md) ustanawia jasną drogę:
-
-```text
-Appraisal evidence
-→ one AffectiveStateIntegrator
-→ one durable AffectiveStateV2
-→ derived FeelingRepresentation
-→ bounded causal bridges
-```
-
-To jest właściwy program v16, zanim v17 spróbuje włączyć affect do większego `CausalSelfState`.
-
-## 2.8. Functional neurocognition — wartość tylko tam, gdzie istnieje effect
-
-Obecne nazwy typu homeostasis/neurocognitive/replay są akceptowalne jako funkcjonalne analogie, **jeśli mają testowalny skutek**.
-
-Przykłady wartościowych mechanizmów:
-
-```text
-salience competition
-bounded regulation
-prediction error / expectedness
-memory source discrimination
-context reinstatement
-replay measured against recall/conflict
-```
-
-Nie jest celem v17 implementowanie biologicznych odpowiedników ani zwiększanie liczby neuroanatomicznych nazw klas.
+Nazwy psychologiczne nie są argumentem za zachowaniem modułu.
 
 ---
 
-# 3. Ocena jakościowa 2026-09-07
+# 3. Workstream A — CausalSelfState candidate
 
-Zamiast pozornej precyzji jedną oceną liczbową używamy stanów evidence.
-
-| Obszar | Stan | Komentarz |
-|---|---|---|
-| Truth / provenance | 🟢 STRONG | centralny wyróżnik projektu |
-| Runtime identity / finalization | 🟢 STRONG | wiele etapów merge + regressions |
-| Package / release integrity | 🟢 STRONG, nadal aktywnie hardenowane | duży postęp 16.3.25.5.x |
-| Memory Rebuild tool | 🟢 MERGED | #189 zamknięte |
-| Final private memory | 🟡 OPEN | #59, brak ACCEPTED |
-| Recall acceptance | 🟡 OPEN | musi być wykonany na finalnym artefakcie |
-| Attachment/multimodal ingress | 🟡 PLANNED | nie zastąpiony samym plugin frameworkiem |
-| Polish NLP evidence | 🟡 PLANNED/PARTIAL FOUNDATIONS | brak full acceptance |
-| Affect canonical state | 🟡 PLANNED | nowy plan gotowy, cutover nie wykonany |
-| Homeostasis/regulation | 🟢/🟡 USEFUL BUT REQUIRES ABLATION | ma realne efekty, potrzebne final measurements |
-| Rest/Dream | 🟢 safety / 🟡 utility | granica prawdy dobra, wartość poznawcza musi być mierzona |
-| Identity continuity | 🟢 technical lineage / 🟡 metric consolidation | first-person style nie może dominować |
-| Metacognition/confidence | 🟡 | potrzebuje kalibracji albo jawnie ordinal semantics |
-| Maintainability | 🟡 | wiele dobrych warstw nadal nakłada odpowiedzialności |
-| Governance | 🟡/🔴 final gate | master `protected=false` przy bieżącym odczycie GitHub |
-
----
-
-# 4. Główny werdykt
-
-Jaźń nie potrzebuje już **większej liczby modułów poznawczych** jako podstawowego kierunku rozwoju.
-
-Potrzebuje:
-
-```text
-1. domkniętych danych/pamięci
-2. canonical input/NLP contracts
-3. jednego canonical affect state
-4. mierzalnych causal effects
-5. bounded context assembly
-6. capability-driven model routing
-7. redukcji nakładania po ablation
-```
-
-V17 powinno być zatem **breaking consolidation only when measurements justify it**.
-
----
-
-# 5. Gate wejścia do v17
-
-Nie tworzyć implementation branch v17 przed:
-
-- [ ] final v16.6 runtime/host evidence;
-- [ ] attachment/multimodal acceptance;
-- [ ] Polish NLP evidence contract;
-- [ ] final private memory `ACCEPTED`;
-- [ ] source-aware Recall/multi-session evidence;
-- [ ] canonical affect state + persistence/effect evidence;
-- [ ] affect/homeostasis/rest/reasoning ablation/effect results;
-- [ ] model/harness capability profile evidence;
-- [ ] architecture debt ledger;
-- [ ] quality/latency/context/token baselines;
-- [ ] no unresolved v16 P0/P1;
-- [ ] v16 accepted artifacts + rollback path.
-
-Jeżeli tych danych nie ma, v17 pozostaje **planning-only**.
-
----
-
-# 6. V17 Workstream A — one CausalSelfState
-
-Cel:
+Rozważyć po stabilnym v16 affect:
 
 ```text
 CausalSelfState
 ├── identity_ref
-├── task_state
-├── affective_regulation
-├── homeostatic_constraints
-├── confidence/calibration
+├── task/turn state
+├── affective_state_ref
+├── regulation/homeostasis refs
+├── confidence/support semantics
 ├── source/memory bindings
 ├── temporal continuity
 └── policy-visible effects
 ```
 
-Dla każdej starej warstwy:
+V17 nie powinno po cichu przepisać `AffectiveStateV2`. Najpierw kompatybilny adapter i pomiar, czy połączenie self/affect faktycznie zmniejsza sprzeczności/złożoność bez utraty auditability.
+
+Disposition każdego legacy component:
 
 ```text
 MIGRATE_TO_CANONICAL
@@ -267,135 +80,124 @@ COMPATIBILITY_ADAPTER
 REMOVE
 ```
 
-Nie migrować tylko dlatego, że nazwy wydają się podobne. Potrzebne są before/after behavioral tests.
-
-### Relacja do Emotion Engine
-
-V16 powinno najpierw ustanowić stabilny `AffectiveStateV2`. V17 może następnie **osadzić jego kontrakt** w `CausalSelfState`, jeśli pomiary pokażą, że osobny durable self/affect split generuje niepotrzebne koszty lub sprzeczności.
-
 ---
 
-# 7. V17 Workstream B — one bounded context compiler
+# 4. Workstream B — one bounded context compiler
 
-Jedna warstwa składa najmniejszy high-signal model context z:
+Jedna warstwa składa minimalny model-visible context:
 
 ```text
 task/turn state
 identity canon
 bounded wake state
-selected source-aware memories
+source-aware selected memories
+affective/regularory summary
 tool/capability state
-policy/truth boundaries
-optional affective regulation
-model capability/context budget
+truth/policy boundaries
+model context budget
 ```
 
 Wymagania:
 
 - deterministic selection metadata;
-- token/context accounting;
+- token accounting;
 - provenance każdego memory/evidence fragmentu;
 - no unbounded raw history;
-- no duplicate instruction sources;
-- explicit degrade przy mniejszym context window;
-- host memory/context nie podszywa się pod runtime memory.
+- no duplicate instruction authorities;
+- graceful degrade dla mniejszych context windows;
+- host memory nie podszywa się pod runtime memory.
 
 ---
 
-# 8. V17 Workstream C — model capability abstraction
+# 5. Workstream C — capability-driven model abstraction
 
-Route wybierany po capability, nie po nazwie modelu.
+Route na podstawie zweryfikowanych capabilities, nie nazwy modelu:
 
 ```text
-provider
-model_id/version if observable
-local_or_remote
-context_budget
-structured_output_support
-tool_call_support
-vision_support
-streaming_support
-reasoning_controls
+provider/model identity when observable
+local/remote
+context budget
+structured output
+tool calls
+vision/audio if available
+streaming
+reasoning controls
 latency/cost class
 verified probes
 ```
 
-Zasady:
+Unsupported capability → explicit degrade, nie udawana funkcja.
 
-- local i frontier mogą używać tego samego semantic runtime contract;
-- unsupported feature → explicit degrade;
-- deterministic CI nie zależy od proprietary model;
-- live acceptance zapisuje exact observable config;
-- model nie może sam zmienić memory/tool/truth authority.
+Model pozostaje providerem inference, nie authority dla durable memory/tool/truth.
 
 ---
 
-# 9. V17 Workstream D — source-aware reconsolidation / controlled forgetting
+# 6. Workstream D — source-aware reconsolidation / controlled forgetting
 
-Dopiero po accepted v16 memory.
+Dopiero na accepted memory.
 
-Nie implementować „zapominania”, które usuwa rekord, bo model ocenił go jako mało ważny.
-
-Wymagania:
+Preferować:
 
 ```text
-immutable/source-retained RAW lineage
-explicit candidate operation
-conflict/supersession policy
-human/policy gate dla destructive long-term change
-before/after recall benchmark
-rollback
-audit ledger
-sensitive-data lifecycle separate from autobiographical salience
-```
-
-Preferowany model:
-
-```text
-source record remains
-→ newer interpretation/supersession relation
-→ retrieval policy adjusts current use
+immutable source record
+→ newer interpretation / supersession relation
+→ retrieval policy changes current use
 ```
 
 zamiast destructive rewrite.
 
+Każda destructive long-term operation wymaga:
+
+- explicit candidate;
+- source/conflict review;
+- policy/operator gate;
+- audit ledger;
+- before/after Recall benchmark;
+- rollback;
+- oddzielnej privacy/data-lifecycle policy.
+
+Affect może modulować candidacy/prioritization, nigdy sam nie autoryzuje forgetting.
+
 ---
 
-# 10. V17 Workstream E — calibrated metacognition
+# 7. Workstream E — calibrated metacognition
 
-`confidence` może być probabilistyczne tylko po kalibracji względem correctness.
+Probabilistic `confidence` tylko po rzeczywistej kalibracji względem correctness.
 
-Testować:
+Testy:
 
-- reliability/calibration bins;
-- abstention;
-- conflicting/missing source;
-- zmianę support po retrieval/tool evidence;
-- linguistic certainty vs measured correctness.
+```text
+reliability/calibration bins
+abstention
+missing/conflicting source
+support update after retrieval/tool evidence
+linguistic certainty vs measured correctness
+```
 
-Jeśli kalibracja nie przejdzie:
+Jeżeli kalibracja nie przechodzi:
 
 ```text
 internal_support_score
 LOW / MEDIUM / HIGH
 ```
 
-zamiast „82% pewności”.
+zamiast pseudo-precyzyjnego „82% pewności”.
 
 ---
 
-# 11. V17 Workstream F — measured retrieval evolution
+# 8. Workstream F — retrieval evolution
 
-Nie zakładać, że dense/learned retrieval jest potrzebny.
+Nie zakładać, że dense/learned = lepsze.
 
 Kolejność:
 
 ```text
-deterministic planner/query fixes
+deterministic query/planner fixes
 → FTS/BM25/source/temporal tuning
-→ model-assisted query rewrite A/B
+→ Polish NLP evidence
+→ query rewrite A/B
 → graph/hybrid/dense A/B
-→ learned reranker/training only if frozen benchmark justifies
+→ learned reranker/training only if justified
 ```
 
 Każdy keep musi przeżyć:
@@ -407,32 +209,39 @@ wrong-conversation
 abstention
 provenance
 temporal/update
-leakage
+sensitive leakage
 latency/cost
 ```
 
-Affective reranking z v16 jest jednym z measured rerankers, nie oddzielną memory authority.
+Affective rerank z v16 jest jednym measured feature, nie memory authority.
 
 ---
 
-# 12. V17 Workstream G — cognitive module ablation and deletion
+# 9. Workstream G — Affect evolution
 
-Każdy `V17_CONSOLIDATION_CANDIDATE`:
+Po v16 acceptance można badać:
 
-```text
-baseline
-→ disable/remove
-→ fixed evaluation corpus
-→ quality/safety/latency/context metrics
-→ KEEP / MERGE / REMOVE
-```
+- richer dynamics profiles;
+- relationship model z anti-feedback-loop controls;
+- richer music/sensory cues przy real capabilities;
+- source-aware spontaneous recall;
+- learned appraisal provider jako opcjonalny evidence provider;
+- personalized calibration tylko z privacy/source controls.
 
-Obowiązkowo objąć:
+Każde rozszerzenie zachowuje one canonical state authority i accepted-turn commit semantics albo wymaga jawnej migracji kontraktu.
+
+Nie trenować prywatnych wspomnień w model weights tylko dlatego, że są dostępne. Fine-tuning/continual learning wymaga osobnego threat model, dataset lineage, consent/policy, evaluation i rollback.
+
+---
+
+# 10. Workstream H — cognitive module ablation/deletion
+
+Objąć:
 
 ```text
 identity/self representations
 affect layers
-homeostasis
+homeostasis/regulation
 awareness
 prediction
 reasoning coordinators
@@ -441,58 +250,63 @@ legacy memory adapters
 context assemblers
 ```
 
-Moduł bez meaningful effect nie zostaje tylko dlatego, że ma psychologiczną nazwę.
+Proces:
+
+```text
+baseline
+→ disable candidate
+→ fixed corpus
+→ quality/safety/latency/context diff
+→ KEEP / MERGE / REMOVE
+```
+
+Moduł bez meaningful causal effect nie zostaje tylko ze względu na nazwę lub narracyjną atrakcyjność.
 
 ---
 
-# 13. V17 Workstream H — authority/policy simplification
+# 11. Workstream I — authority/policy simplification
 
-Docelowo mała, jawna policy surface dla:
+Docelowo mała, jawna surface dla:
 
 ```text
 tool authority
 write authority
 memory promotion/forgetting
-external content
+external content handling
 privileged actions
 ```
 
-External web/files/tool output = untrusted data.
-
-Model może proponować, nie może self-grant authority.
-
-High-impact/destructive operations zachowują deterministic confirmation/approval.
+External web/files/tool output = untrusted data. Model może proponować działania; nie może self-grant authority.
 
 ---
 
-# 14. V17 Workstream I — neurofunctional integration bez fake brain simulation
+# 12. Functional neurocognition — test functions, not fake anatomy
 
-Ten workstream jest **opcjonalnym porządkiem ewaluacyjnym**, nie nowym zbiorem klas.
+V17 może mierzyć przekrojowe funkcje:
 
-Zamiast „implementować obszary mózgu”, mierzyć kilka funkcji przekrojowych:
+```text
+salience competition
+context reinstatement
+prediction error / expectedness
+regulatory flexibility
+replay utility
+memory modulation
+```
 
-1. **salience competition** — czy ważne evidence rzeczywiście wygrywa attention budget;
-2. **context reinstatement** — czy recall poprawnie wykorzystuje temporal/participant/topic/affective cues;
-3. **prediction error** — czy expectedness wpływa na novelty/verification bez zwiększania false claims;
-4. **regulatory flexibility** — czy stan potrafi zmienić się przy silnym nowym evidence;
-5. **replay utility** — czy Rest poprawia recall/conflict/procedural outcome;
-6. **memory modulation** — czy affective salience poprawia retrieval bez source regression.
-
-Jeżeli mechanizm nie zmienia wyników, nie uzyskuje canonical status.
+Nie tworzyć klas neuroanatomicznych bez realnej potrzeby. `amygdala.py` czy `dopamine.py` nie są celem architecture consolidation.
 
 ---
 
-# 15. V17 evaluation matrix
+# 13. Evaluation matrix
 
 ## Deterministic CI
 
-- schema/contracts;
+- schemas/migrations;
 - policy/authority;
 - source provenance;
 - persistence/atomicity;
 - context fixtures;
 - capability negotiation;
-- migration compatibility;
 - security regressions;
 - ablation fixtures.
 
@@ -502,29 +316,18 @@ Jeżeli mechanizm nie zmienia wyników, nie uzyskuje canonical status.
 - natural multi-turn/multi-session;
 - restart continuity;
 - sensitive boundaries;
-- controlled reconsolidation/forgetting;
-- affective/source-safe recall.
+- reconsolidation/forgetting tests;
+- affective source-safe recall.
 
 ## Live model
 
-Jeżeli dostępny:
-
-```text
-provider/model/version/config
-capabilities used
-quality
-truth/source regressions
-latency
-token/cost budget
-```
+Zapisać exact observable provider/model/config/capabilities, quality, truth/source regressions, latency i token/cost budget.
 
 Fixture != live proof.
 
 ---
 
-# 16. V17 migration strategy
-
-Preferowany model:
+# 14. Migration strategy
 
 ```text
 v16 accepted snapshot
@@ -533,100 +336,29 @@ v16 accepted snapshot
 → validation/reproducibility
 → A/B acceptance
 → explicit cutover
-→ rollback available
+→ rollback remains available
 ```
 
 Nigdy nie przepisywać jedynego accepted memory artifact in-place.
 
-Każdy schema bump ma jawny migration contract.
-
 ---
 
-# 17. Czego V17 nie ma robić
-
-- nie dowodzić phenomenal consciousness;
-- nie budować biologicznego mózgu;
-- nie zwiększać liczby antropomorficznych modułów dla samej narracji;
-- nie przechowywać hidden durable chain-of-thought;
-- nie włączać autonomous L3 promotion;
-- nie oddawać tool authority modelowi;
-- nie wymagać proprietary LLM;
-- nie trenować custom model bez wykazanej potrzeby;
-- nie niszczyć source truth dla lepszej „spójności wspomnienia”.
-
----
-
-# 18. Definition of Done — v17
-
-V17 może zostać uznane za complete dopiero gdy:
-
-1. overlapping v16 modules mają measured keep/merge/remove disposition;
-2. one causal self-state contract owns durable self-state semantics;
-3. one bounded context compiler owns model-visible assembly;
-4. model routing jest capability-driven;
-5. reconsolidation/forgetting jest reversible/source-aware/auditable;
-6. confidence ma evidence-backed semantics albo jest jawnie advisory;
-7. retrieval changes poprawiają frozen benchmark bez truth/safety regression;
-8. deterministic authority pozostaje poza modelem;
-9. v16 accepted artifacts mają migration + rollback;
-10. private/live/deterministic evidence jest rozdzielone;
-11. architecture complexity jest mniejsza lub uzasadniona lepszymi metrykami;
-12. no open P0/P1 w zakresie release.
-
----
-
-# 19. Co musi wydarzyć się wcześniej — checklista v16
-
-## 🟢 Już osiągnięte fundamenty
-
-- 🟢 [x] Memory Rebuild v4 tool consolidation merged.
-- 🟢 [x] source-monitoring/fail-closed foundations.
-- 🟢 [x] persistent runtime/finalization/subject-root foundations.
-- 🟢 [x] package provenance i szeroki 16.3.25.5.x hardening.
-- 🟢 [x] host executor truth/recovery foundations.
-- 🟢 [x] package/runtime/plugin convergence.
-
-## 🟡 Wymagane przed V17
-
-- 🟡 [ ] attachment/multimodal canonical ingress.
-- 🟡 [ ] Polish NLP evidence contract.
-- 🟡 [ ] final private memory `VERIFIED`.
-- 🟡 [ ] `ATTACHABLE` package + canonical attach.
-- 🟡 [ ] frozen private Recall + natural multi-turn.
-- 🟡 [ ] manual L2/L3 + restart → `ACCEPTED`.
-- 🟡 [ ] canonical Affect Engine v16.
-- 🟡 [ ] affect/homeostasis/rest/reasoning ablation/effect evidence.
-- 🟡 [ ] confidence semantics/calibration decision.
-- 🟡 [ ] architecture debt ledger.
-- 🟡 [ ] model capability/context evidence.
-- 🟡 [ ] governance final gate.
-- 🟡 [ ] full v16.6 acceptance package.
-
----
-
-# 20. Ostateczna rekomendacja
-
-> **Nie zaczynać implementacji v17 teraz.**
-
-Największa wartość najbliższych prac leży w zamknięciu v16 jako mierzalnego fundamentu:
+# 15. V17 Definition of Done
 
 ```text
-attachment
-→ NLP evidence
-→ final accepted memory
-→ canonical affect
-→ ablation/cognitive evidence
-→ v16.6 final gate
+[ ] every overlapping v16 module has measured disposition
+[ ] one causal self-state contract owns intended durable self semantics
+[ ] bounded context compiler owns model-visible assembly
+[ ] model routing capability-driven
+[ ] memory reconsolidation/forgetting reversible/source-aware/auditable
+[ ] confidence calibrated or explicitly ordinal/advisory
+[ ] retrieval changes beat/non-inferior frozen baseline without safety regression
+[ ] affect evolution preserves canonical authority and truth boundaries
+[ ] deterministic authority remains outside model
+[ ] accepted v16 artifacts have migration + rollback
+[ ] private/live/deterministic evidence separated
+[ ] architecture complexity reduced or justified by measured benefit
+[ ] no open P0/P1 in release scope
 ```
 
-Dopiero wtedy V17 ma wystarczające dane, aby zrobić coś, czego Jaźń naprawdę potrzebuje: **usunąć lub połączyć zbędne warstwy bez utraty truth, memory, continuity i safety**.
-
-Najważniejszy kierunek V17 pozostaje:
-
-```text
-LESS ARCHITECTURE THEATER
-+ FEWER CANONICAL CONTRACTS
-+ MORE MEASURED CAUSAL EFFECT
-+ SOURCE-SAFE LONG-TERM MEMORY
-+ MODEL-AGNOSTIC HARNESS
-```
+> V17 ma uprościć i skonsolidować to, co v16 udowodniło pomiarami. Nie ma zastępować brakujących dowodów większą liczbą modułów ani bardziej antropomorficzną narracją.

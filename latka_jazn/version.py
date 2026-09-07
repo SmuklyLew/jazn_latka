@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.38 installs declared extras for PowerShell regressions and
-# isolates canonical release packaging tests from CI metadata materialization.
-DISTRIBUTION_VERSION = "16.3.25.5.38"
-PACKAGE_VERSION = "16.3.25.5.38"
-PACKAGE_RELEASE_NAME = "ci-release-fixture-isolation"
+# v16.3.25.5.39 converges the canonical v16.3.25.4-to-v17 planning surface
+# around final Memory Restore + Affect/Emotion Engine evidence gates.
+DISTRIBUTION_VERSION = "16.3.25.5.39"
+PACKAGE_VERSION = "16.3.25.5.39"
+PACKAGE_RELEASE_NAME = "memory-affect-docs-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

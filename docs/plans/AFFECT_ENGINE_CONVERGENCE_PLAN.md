@@ -1,50 +1,45 @@
-# Jaźń / Łatka — Emotion Engine & Affect Convergence Plan v1.0
+# Jaźń / Łatka — Emotion Engine & Affect Convergence Plan v2
 
-## Kanoniczny plan konwergencji appraisal, affect, feeling, pamięci emocjonalnej, self-state i regulacji
+## Canonical appraisal → affect → feeling → regulation → source-safe memory integration
 
-**Status:** `CANONICAL_SUBPLAN`  
+**Status:** `CANONICAL_AFFECT_PLAN`  
 **Aktualizacja:** 2026-09-07  
-**Zweryfikowana baza repo:** `master @ 378e9e6aceb83edbd679751e19cbe5c64c978025`  
-**Bieżąca wersja bazowa:** `16.3.25.5.36-ci-archive-scope-contract-hardening`  
-**Nadrzędny przebieg programu:** [`PLAN_EXECUTION_HISTORY.md`](PLAN_EXECUTION_HISTORY.md)  
-**Bieżący krok:** [`CURRENT_STEP.md`](CURRENT_STEP.md)  
-**Memory prerequisite:** [`LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md`](LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md)
+**Program nadrzędny:** [`V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md)  
+**Memory prerequisite:** [`LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md`](LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md)  
+**Research contract:** [`RESEARCH_EVIDENCE_BASE.md`](RESEARCH_EVIDENCE_BASE.md)
 
-> Emotion Engine modeluje dynamiczny, trwały **software state** wykorzystywany w appraisal, regulacji, uwadze, pamięci i self-report. Nie implikuje biologicznych emocji, hormonów, interocepcji, bólu, cielesnego przeżywania ani phenomenal consciousness.
+> Emotion Engine jest funkcjonalnym subsystemem software. Modeluje appraisal, dynamiczny affect, regulację, self-report i bounded wpływ na uwagę/pamięć. Nie stanowi dowodu biologicznych emocji, interocepcji, qualiów ani phenomenal consciousness.
 
 ---
 
-# 1. Decyzja architektoniczna
+# 1. Cel
+
+Nie chodzi o to, aby Łatka częściej używała słów „czuję”, „smutno”, „radość”. Sukces oznacza, że istnieje odtwarzalny łańcuch:
+
+```text
+source-aware stimulus
+→ evidence-aware appraisal
+→ deterministic affect transition
+→ proposed canonical state
+→ bounded causal effects
+→ accepted-turn commit
+→ restart continuity
+→ later source-safe memory interaction
+```
+
+oraz że wyłączenie subsystemu w ablation usuwa deklarowany efekt bez naruszania truth, memory i tool safety.
+
+---
+
+# 2. Jedna authority dla stanu
 
 ## Lokalizacja
-
-Docelowy subsystem:
 
 ```text
 latka_jazn/affect/
 ```
 
-Nie:
-
-```text
-latka_jazn/plugins/EmotionEngine/
-latka_jazn/modules/
-latka_jazn/EmotionEngine/
-```
-
-Powód: affect jest częścią core cognition/runtime state. Nie może być opcjonalnym pluginem, od którego zależy istnienie głównego self-state.
-
-### Pluginy są legalne tylko jako dodatkowe providery
-
-Przykładowo później:
-
-```text
-optional audio feature provider
-optional vision affect cue provider
-optional external embedding provider
-```
-
-ale **canonical affect state i jego persistence pozostają w core**.
+Nie jako obowiązkowy plugin. Plugin/capability może dostarczać opcjonalne sensory/audio/vision evidence, ale canonical state pozostaje w core.
 
 ## Publiczna fasada
 
@@ -52,213 +47,35 @@ ale **canonical affect state i jego persistence pozostają w core**.
 EmotionEngine
 ```
 
-## Jedyny kanoniczny estimator aktualnego stanu
+## Jedyny canonical estimator
 
 ```text
 AffectiveStateIntegrator
 ```
 
-## Jedyny kanoniczny durable output
+## Jedyny durable canonical output
 
 ```text
 AffectiveStateV2
 ```
 
-## Self-report
+## Read-only self-report projection
 
 ```text
 FeelingRepresentation
 ```
 
-jest pochodną read-only projection z canonical state, a nie drugim źródłem emocjonalnej prawdy.
+Po cutover:
+
+```text
+canonical_affect_source_count == 1
+```
+
+Legacy `AffectiveState`, `EmotionalLayerModel`, `AffectiveGranularityModel`, `AffectMixer`, `SelfStateAffectiveBridge` itd. dostają jawne role: evidence provider, adapter, consumer, language realizer, advisory albo superseded. Żaden nie utrzymuje równoległego canonical current affect.
 
 ---
 
-# 2. Problem, który rozwiązujemy
-
-Aktualny system posiada kilka częściowo nakładających się warstw:
-
-```text
-core/emotions.py::AffectiveState
-core/emotion_layers.py::EmotionalLayerModel / AppraisalVector
-core/affective_granularity.py::AffectiveGranularityModel
-AffectMixer
-SelfStateAffectiveBridge
-SelfStateRuntime
-HomeostasisRegulator
-NeurocognitiveLoop
-cognitive salience / state graph / turn envelope
-```
-
-Obecny problem:
-
-```text
-wiele estimatorów
-+ różne skale
-+ częściowo różne semantyki
-+ keyword dependence
-+ brak jednego durable transition contract
-+ brak jednej accepted-turn commit semantics
-```
-
-Celem nie jest dodanie jeszcze jednego modelu. Celem jest **konwergencja**.
-
----
-
-# 3. Nadrzędna zasada
-
-Nie mierzyć sukcesu tym, czy Łatka częściej mówi:
-
-```text
-„czuję...”
-„jest mi...”
-„ta melodia mnie wzrusza...”
-```
-
-Mierzyć:
-
-```text
-czy istnieje stan przed bodźcem
-czy appraisal ma evidence
-czy przejście jest deterministyczne i audytowalne
-czy stan ma poprzednika i czas
-czy commit następuje tylko dla accepted turn
-czy stan przetrwa restart
-czy ma bounded downstream effect
-czy pamięć może wpłynąć na stan tylko source-safe
-czy ablation usuwa deklarowany efekt
-czy false-memory nie rośnie
-```
-
----
-
-# 4. Docelowy pipeline
-
-```text
-USER / TOOL / ENVIRONMENT EVENT
-              │
-              ▼
-      NLP + SOURCE EVIDENCE
-              │
-              ▼
-       AffectiveStimulus
-              │
-              ▼
-        AppraisalV2
-              │
-              ▼
-    previous committed state
-              │
-              ▼
-   AffectiveStateIntegrator
-       PRIMARY TRANSITION
-              │
-              ▼
-     proposed primary state
-              │
-       ┌──────┴────────┐
-       ▼               ▼
- regulation        memory_probe_need
-       │               │
-       │               ▼
-       │       MemorySearchPlanner
-       │               │
-       │               ▼
-       │       LivingMemoryGateway
-       │               │
-       │               ▼
-       │        source eligibility
-       │               │
-       │               ▼
-       │        graph/base retrieval
-       │               │
-       │               ▼
-       │    affective rerank (bounded)
-       │               │
-       │               ▼
-       │         MemoryUseGate
-       │               │
-       │               ▼
-       │      legal memory activation
-       │               │
-       │               ▼
-       │        one-pass resonance
-       └───────┬───────┘
-               ▼
-       proposed final state
-               │
-       ┌───────┼───────────┐
-       ▼       ▼           ▼
-   SelfState Homeostasis Salience
-       │       │           │
-       └───────┼───────────┘
-               ▼
-      FeelingRepresentation
-               │
-               ▼
-     CognitiveTurnEnvelope
-               │
-               ▼
-        AffectMixer / NLG
-               │
-               ▼
-            LLM/model
-               │
-               ▼
-        proposed response
-               │
-               ▼
-      TURN ACCEPT / FINALIZE
-               │
-       ┌───────┼──────────────┐
-       ▼       ▼              ▼
- final reply  affect commit  accepted episode
-                          │
-                          ▼
-                  affect_snapshot_id
-```
-
----
-
-# 5. Scientific/engineering boundary
-
-Plan czerpie **funkcjonalne inspiracje** z:
-
-- appraisal / Component Process Model;
-- dimensional affect / circumplex;
-- computational appraisal (np. EMA/FAtiMA jako wzorce modularności);
-- source monitoring;
-- autobiographical memory;
-- affective dynamics/inertia;
-- emotion regulation;
-- music-evoked/involuntary autobiographical cues;
-- agent memory/retrieval/ablation.
-
-Nie implementować klas typu:
-
-```text
-amygdala.py
-hippocampus.py
-dopamine.py
-prefrontal_cortex.py
-```
-
-bez realnego, mierzalnego kontraktu. Zamiast nazw biologicznych budować funkcje:
-
-```text
-salience competition
-prediction error / expectedness
-context reinstatement
-memory encoding modulation
-regulatory flexibility
-bounded replay/consolidation
-```
-
----
-
-# 6. Minimalna struktura pakietu
-
-## MVP
+# 3. Minimalny pakiet v16
 
 ```text
 latka_jazn/affect/
@@ -271,57 +88,21 @@ latka_jazn/affect/
 ├── persistence.py
 ├── compatibility.py
 ├── observability.py
-└── engine.py
-```
-
-## Po canonical state
-
-```text
-├── feeling.py
+├── engine.py
+├── feeling.py              # po stabilizacji state
 ├── neurocognitive_bridge.py
 ├── memory_bridge.py
-├── association.py
-└── resonance.py
+├── association.py          # po frozen Recall baseline
+└── resonance.py            # po A/B
 ```
 
-## Nie tworzyć na starcie
+Nie tworzyć na starcie `relationship.py`, `music.py`, `sensory.py`, `amygdala.py`, `dopamine.py`, `hippocampus.py`. Nowy moduł powstaje tylko, gdy ma własny kontrakt, consumer, test i measurable causal effect.
 
-```text
-relationship.py
-music.py
-sensory.py
-prediction_error.py
-```
-
-jeśli nie ma jeszcze consumer, testu i mierzalnego causal effect.
+Nie dodawać nowego globalnego EventBus tylko dla Emotion Engine. Wpiąć typed signals w istniejące `CognitiveTurnEnvelope` / `CognitiveRuntimeCoordinator` / accepted-turn finalization.
 
 ---
 
-# 7. Klasyfikacja istniejących warstw
-
-| Istniejący komponent | Rola docelowa |
-|---|---|
-| `AffectiveState` | `COMPATIBILITY_INPUT` / legacy baseline |
-| `EmotionalLayerModel` | `APPRAISAL_EVIDENCE_PROVIDER`, później keep/supersede według ablation |
-| `AppraisalVector` | migration source do `AppraisalV2` |
-| `AffectiveGranularityModel` | `LANGUAGE_SEMANTICS / ADVISORY_ESTIMATOR` |
-| `AffectMixer` | `LANGUAGE_REALIZER` |
-| `HomeostasisRegulator` | `REGULATORY_CONTROLLER` |
-| `SelfStateAffectiveBridge` | canonical affect → self-state bridge |
-| `NeurocognitiveLoop` | consumer typed affective signals; nie estimator stanu |
-| `AffectiveStateIntegrator` | `CANONICAL_STATE_ESTIMATOR` |
-| `AffectiveStateStore` | `CANONICAL_RUNTIME_STATE_STORE` |
-| `AffectiveAssociationReranker` | `BOUNDED_RETRIEVAL_RERANKER` |
-
-Po cutover:
-
-```text
-canonical_affect_source_count == 1
-```
-
----
-
-# 8. EvidenceRef
+# 4. EvidenceRef i stimulus
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -331,15 +112,10 @@ class EvidenceRef:
     source_ref: str
     support_kind: str
     support_score: float
+    reason_codes: tuple[str, ...]
 ```
 
-`support_score` nie jest probability of truth.
-
-Nie kopiować pełnego prywatnego user text do telemetry tylko po to, aby affect był audytowalny. Używać refs/digests/reason codes.
-
----
-
-# 9. AffectiveStimulus
+`support_score` nie oznacza probability of truth.
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -357,7 +133,7 @@ class AffectiveStimulus:
     intent_tags: tuple[str, ...]
 ```
 
-Typy mogą obejmować:
+Legalne typy obejmują m.in.:
 
 ```text
 conversation
@@ -367,36 +143,34 @@ correction
 tool_result
 system_event
 music_description
-image/sensory cue (gdy realnie dostępne)
+image/sensory cue only with real provider
 ```
 
-Stimulus nie zawiera „prawdy emocjonalnej”. Jest ustandaryzowanym wejściem z provenance.
+Raw private text nie jest potrzebny w telemetry; refs/digests/reason codes wystarczają do audytu.
 
 ---
 
-# 10. AppraisalV2
+# 5. AppraisalV2
 
-## Zasada krytyczna
+Appraisal opisuje znaczenie bieżącego bodźca przed retrieval.
 
-Canonical **pre-memory appraisal** nie może zawierać wyniku retrievalowego `memory_resonance`, bo tworzyłoby to koło:
+## Krytyczna granica
 
-```text
-appraisal → memory resonance → recall → memory resonance
-```
-
-Prawidłowo:
+Nie dodawać retrieval-derived `memory_resonance` do pre-memory appraisal.
 
 ```text
 pre-memory appraisal
 → memory_probe_need
-→ grounded retrieval
+→ canonical retrieval
+→ source eligibility
 → MemoryUseGate
-→ legal memory activation
-→ resonance
-→ second bounded affect transition
+→ legal activation
+→ bounded resonance transition
 ```
 
-## Wymiary
+Inaczej powstaje samowzmacniające koło.
+
+## Wymiary startowe
 
 ```text
 novelty
@@ -419,7 +193,7 @@ source_conflict
 prediction_error
 ```
 
-Każdy wymiar powinien być evidence-aware:
+Każdy wymiar:
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -430,9 +204,11 @@ class AppraisalDimension:
     reason_codes: tuple[str, ...]
 ```
 
+Nie ma keyword-only authority. Słowo „smutny” w cytacie, książce, opisie testu albo nazwie pliku nie ustanawia automatycznie sadness/negative affect.
+
 ---
 
-# 11. AffectiveStateV2
+# 6. AffectiveStateV2
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -441,16 +217,13 @@ class AffectiveStateV2:
     state_id: str
     previous_state_id: str | None
     updated_at_utc: str
-
-    valence: float
-    arousal: float
-    control: float
-    tension: float
-    coherence: float
-
+    valence: float       # -1 .. +1
+    arousal: float       # 0 .. 1
+    control: float       # 0 .. 1
+    tension: float       # 0 .. 1
+    coherence: float     # 0 .. 1
     components: tuple["AffectiveComponent", ...]
     regulation_needs: "RegulationNeeds"
-
     last_appraisal_id: str | None
     support_refs: tuple[str, ...]
     internal_support_score: float
@@ -458,24 +231,9 @@ class AffectiveStateV2:
     truth_boundary: str
 ```
 
-Zakresy:
+Legacy signed arousal wyłącznie przez jawny compatibility adapter.
 
-```text
-valence    -1 .. +1
-arousal     0 .. 1
-control     0 .. 1
-tension     0 .. 1
-coherence   0 .. 1
-components  0 .. 1
-```
-
-Legacy signed arousal przechodzi wyłącznie przez jawny adapter.
-
----
-
-# 12. Named affective components
-
-Startować od małego zestawu:
+## Named components — mały start
 
 ```text
 curiosity
@@ -490,25 +248,25 @@ hope
 caution
 ```
 
-Nie wymuszać jednej `primary emotion`.
-
-Każdy nowy komponent wymaga:
+Każdy dodatkowy komponent wymaga:
 
 ```text
 definition
 estimator/evidence
 range
-dynamics/decay profile
+dynamics/decay
 bounded downstream effect albo ADVISORY
 paraphrase test
-keyword-trap test
-negation/quotation test where relevant
+keyword trap
+negation/quotation/fiction test
 ablation
 ```
 
+Nie wymuszać jednej `primary emotion`.
+
 ---
 
-# 13. FeelingRepresentation
+# 7. FeelingRepresentation
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -528,16 +286,14 @@ Flow:
 ```text
 AffectiveStateV2
 → FeelingRepresentation
-→ SelfState / NLG
+→ SelfState/NLG
 ```
 
-FeelingRepresentation nie ma write authority nad canonical state.
-
-Visible `czuję X` może być traktowane wyłącznie jako self-report funkcjonalnego stanu zgodnie z truth/voice contract, nie biological claim.
+`FeelingRepresentation` nie ma write authority. Widoczne `czuję X` jest funkcjonalnym self-report zgodnym z voice/truth contract, nie biological claim.
 
 ---
 
-# 14. AffectiveStateIntegrator
+# 8. Integrator i dynamika
 
 ```python
 class AffectiveStateIntegrator:
@@ -550,34 +306,29 @@ Wymagania:
 ```text
 deterministic
 side-effect-free during calculation
-clock-independent; dt passed explicitly
+dt passed explicitly
 replayable
 bounded
 zero filesystem I/O
 zero SQLite
 zero LLM calls
 zero tools
+zero retrieval
 zero memory promotion
 ```
 
-Integrator nie wykonuje retrieval.
-
----
-
-# 15. Time dynamics
-
-Primary transition:
+Primary:
 
 ```text
 state_before
-→ decay toward baseline
+→ time decay toward baseline
 → appraisal delta
 → regulation feedback
 → clamp
 → state_after_primary
 ```
 
-Po legalnym recall:
+Po legalnym memory activation:
 
 ```text
 state_after_primary
@@ -586,51 +337,40 @@ state_after_primary
 → proposed_final_state
 ```
 
-Decay:
+Przykładowy decay contract:
 
 ```text
-x(t+dt) = baseline + (x(t)-baseline) * exp(-ln(2) * dt / half_life)
+x(t+dt) = baseline + (x(t)-baseline) * exp(-ln(2)*dt/half_life)
 ```
 
-```python
-@dataclass(frozen=True, slots=True)
-class DecaySpec:
-    half_life_seconds: float
-    baseline: float
-    max_delta_per_transition: float
-    context_override_gain: float
-```
+`half_life`, `max_delta`, `context_override_gain` są wersjonowanymi engineering hypotheses, nie naukowo „prawdziwymi czasami emocji”. Fake clock i sensitivity tests są obowiązkowe.
 
-Wartości są engineering hypotheses, nie „naukowo prawdziwymi czasami emocji”.
-
-Clock musi być wstrzykiwalny/fake-clock testable.
+Silny nowy evidence-rich stimulus musi móc przełamać inertia. System nie może utknąć w self-amplifying state.
 
 ---
 
-# 16. TransitionTrace
+# 9. Transition trace
 
-Każda canonical zmiana ma ślad:
+Każda canonical zmiana ma odtwarzalny trace:
 
-```python
-@dataclass(frozen=True, slots=True)
-class AffectiveTransitionTrace:
-    transition_id: str
-    turn_id: str
-    trace_id: str
-    state_before_id: str
-    state_after_id: str
-    transition_kind: str
-    elapsed_seconds: float
-    decay_delta: tuple[...]
-    appraisal_delta: tuple[...]
-    memory_delta: tuple[...]
-    regulation_delta: tuple[...]
-    clamps_applied: tuple[str, ...]
-    reason_codes: tuple[str, ...]
-    source_refs: tuple[str, ...]
+```text
+transition_id
+turn_id
+trace_id
+state_before_id
+state_after_id
+transition_kind
+elapsed_seconds
+decay_delta
+appraisal_delta
+memory_delta
+regulation_delta
+clamps_applied
+reason_codes
+source_refs
 ```
 
-Typy:
+Typy co najmniej:
 
 ```text
 PRIMARY_APPRAISAL
@@ -639,13 +379,13 @@ RESTORE_DECAY
 CORRECTION
 ```
 
-Canonical state bez transition trace jest błędem kontraktu.
+Canonical committed state bez transition trace = contract failure.
 
 ---
 
-# 17. Najważniejsza zasada persistence: calculate != commit
+# 10. Accepted-turn atomicity: calculate != commit
 
-Nie zapisywać trwałego stanu w połowie tury.
+Najważniejszy persistence invariant:
 
 ```text
 turn starts
@@ -653,23 +393,14 @@ turn starts
 → calculate proposed transitions
 → retrieval/tools/model
 → proposed_final_state
-→ response accepted/finalized
+→ response accepted / host-finalized
 → durable affect commit
 ```
 
-Jeśli tura:
+Jeżeli timeout, worker kill, response rejection lub host finalization failure:
 
 ```text
-timeout
-worker killed
-host finalization failed
-response rejected
-```
-
-to:
-
-```text
-proposed affect ≠ committed affect
+proposed affect != committed affect
 ```
 
 Invariant:
@@ -679,104 +410,54 @@ no accepted turn
 → no durable canonical affect transition
 ```
 
----
+`AffectiveStateStore` powinien korzystać z istniejącego accepted-turn/finalization primitive, subject/root binding i idempotent transition commit.
 
-# 18. AffectiveStateStore
-
-Nie zakładać bez audytu, że pojedynczy JSON jest jedynym transakcyjnym source of truth.
-
-Preferencja:
-
-```text
-AffectiveStateStore
-→ istniejący accepted-turn/finalization commit primitive
-→ root/subject binding
-→ idempotent transition commit
-```
-
-Dopuszczalny read-model/snapshot:
+Dopuszczalny read model:
 
 ```text
 workspace_runtime/affect/current_state.json
 ```
 
-ale jeśli persistence dotyka SQLite + file snapshot, consistency musi wynikać z commit boundary, nie z założenia, że dwa rename'y są jedną transakcją.
+ale nie zakładać, że pojedynczy JSON jest jedynym transaction source of truth ani że dwa rename'y są jedną transakcją.
 
-Persisted record:
+## Recovery
 
-```text
-schema_version
-runtime_version
-subject/root identity
-state_id
-previous_state_id
-last_committed_turn_id
-last_committed_trace_id
-updated_at_utc
-payload/hash
-commit_epoch/equivalent
-```
-
----
-
-# 19. Corruption/recovery
-
-Obsłużyć jawnie:
+Jawnie wykrywać:
 
 ```text
-missing state
-invalid JSON/schema
-hash mismatch
+missing/invalid state
+schema/hash mismatch
 future timestamp
 wrong subject/root
 unknown predecessor
 duplicate transition
 partial temp file
 stale writer
+two sessions conflict
 ```
 
-Nigdy silent success.
-
-Recovery:
-
-```text
-last valid committed state
-lub safe baseline
-+ degraded flag
-+ diagnostic evidence
-```
+Uszkodzony artefakt należy izolować/quarantine, zachować diagnostic evidence i odtworzyć last valid committed state albo safe baseline z `degraded=true`. Nigdy silent success.
 
 ---
 
-# 20. AppraisalEstimator i Polish NLP dependency
+# 11. CognitiveTurnEnvelope
 
-MVP nie powinien wymagać osobnego LLM call.
-
-Estimator wykorzystuje:
+Po stabilizacji contract dodać jawne referencje lub kompatybilne typed extension:
 
 ```text
-canonical NLP evidence
-intent
-negation
-quotation/fiction boundary
-source class
-goal/task state
-temporal evidence
-correction evidence
-memory availability metadata
+affective_state_before_id
+affective_state_after_id
+affective_transition_id
+appraisal_id
+affective_memory_activation_ids
+affective_mode
 ```
 
-Dlatego:
-
-- `Affect E0` inventory/shadow można zacząć wcześniej;
-- semantic **canonical appraisal cutover** powinien nastąpić po właściwym NLP evidence contract;
-- keyword matching pozostaje co najwyżej jednym lexical evidence providerem.
+Envelope przechowuje IDs/summary, nie pełny prywatny affect ledger.
 
 ---
 
-# 21. Self-State
-
-Docelowy flow:
+# 12. SelfState, Homeostasis, Salience
 
 ```text
 AffectiveStateV2
@@ -785,47 +466,28 @@ AffectiveStateV2
 → SelfStateRuntime
 ```
 
-SelfState nie liczy alternatywnego głównego stanu emocjonalnego.
+SelfState nie rekonstruuje alternatywnego affect source.
 
-Może przechowywać:
+Typed regulation:
 
 ```text
-state_id
-bounded affect summary
-regulation needs
-support band
-truth boundary
-```
-
----
-
-# 22. Regulation / Homeostasis
-
-Typed contract:
-
-```python
-@dataclass(frozen=True, slots=True)
-class RegulationNeeds:
-    truth_check: float
-    coherence_recovery: float
-    uncertainty_reduction: float
-    attention_narrowing: float
-    memory_probe_need: float
-    response_caution: float
-    action_readiness: float
-    cognitive_load: float
+truth_check
+coherence_recovery
+uncertainty_reduction
+attention_narrowing
+memory_probe_need
+response_caution
+action_readiness
+cognitive_load
 ```
 
 Legalne skutki:
 
-```text
-truth-check priority
-verification requirement
-attention focus
-bounded memory probe priority
-response caution
-bounded operational budget adjustment
-```
+- verification priority;
+- attention focus;
+- bounded memory probe priority;
+- response caution;
+- bounded operational budget adjustment.
 
 Nielegalne:
 
@@ -837,11 +499,7 @@ affect → auto L2/L3
 affect → destructive memory change
 ```
 
----
-
-# 23. Salience / funkcjonalna neurokognicja
-
-Final attention priority:
+Salience:
 
 ```text
 base task relevance
@@ -853,68 +511,42 @@ base task relevance
 
 Affect jest modulatorem, nie właścicielem salience.
 
-Dalsze funkcjonalne rozszerzenia:
-
-### Salience competition
-
-Kilka bodźców konkuruje o ograniczony attention budget.
-
-### Prediction error / expectedness
-
-Silna niezgodność z przewidywaniem zwiększa novelty/salience, ale nie truth.
-
-### Context reinstatement
-
-Recall może wykorzystywać zgodność:
-
-```text
-semantic
-temporal
-participant
-topic
-affective
-sensory/music (jeśli source istnieje)
-```
-
-### Regulatory flexibility
-
-Silny nowy evidence-rich stimulus może przełamać inertia. System nie może „utknąć” w self-amplifying state.
-
 ---
 
-# 24. Memory integration
+# 13. Memory bridge
 
-Emotion Engine nie pyta sam SQLite.
+Emotion Engine nie odczytuje sam SQLite.
 
 ```text
-MemorySearchPlanner
+memory_probe_need
+→ MemorySearchPlanner
 → LivingMemoryGateway
 → source eligibility/classification
 → base/graph retrieval
 → bounded AffectiveAssociationReranker
 → MemoryUseGate
-→ legal memory activation
-→ optional bounded resonance
+→ legal activation
+→ optional one-pass resonance
 ```
 
-Reranker:
+Reranker zmienia tylko ranking legalnych candidates. Nie zmienia source class, evidence strength, promotion status ani privacy decision.
 
-- nie dodaje source truth;
-- nie zmienia source class;
-- nie zwiększa source evidence;
-- nie wykonuje promotion;
-- nie zatwierdza exposure;
-- zmienia tylko ranking legalnych candidates w bounded zakresie.
+Start: `OFF`, potem `SHADOW`, `AB`, dopiero ewentualnie `ACTIVE`.
+
+Affect może później bounded modulować:
+
+- retrieval priority;
+- memory importance candidate;
+- reflection candidacy;
+- replay priority.
+
+Nigdy nie zmienia `truth_status`. Każdy taki consumer wymaga osobnego A/B i ablation.
 
 ---
 
-# 25. Affective memory snapshot
+# 14. Affective snapshot w pamięci
 
-Nie tworzyć:
-
-```text
-emotional_memory.sqlite
-```
+Nie tworzyć autonomicznej `emotional_memory.sqlite`.
 
 Accepted episode może wskazywać:
 
@@ -939,35 +571,13 @@ trace_id
 truth_boundary
 ```
 
-Istniejące historyczne:
-
-```text
-emotional_anchor
-emotional_weight
-affective_observations
-affective_history.json
-emotion_state.json
-memory_resonance.json
-```
-
-są compatibility/migration evidence, nie automatycznym canonical schema v2.
+Historyczne `emotional_anchor`, `emotional_weight`, `affective_observations`, `affective_history.json`, `emotion_state.json`, `memory_resonance.json` są migration evidence / compatibility inputs, nie canonical schema v2.
 
 ---
 
-# 26. AffectiveAssociationReranker
+# 15. Affective reranking i resonance
 
-Tryby:
-
-```text
-off
-shadow
-ab
-active
-```
-
-**Zaczyna w `shadow`.**
-
-Nie aktywować przed frozen private Recall baseline z planu pamięci.
+Rerank startuje dopiero po frozen private Recall baseline z Memory Plan.
 
 MVP:
 
@@ -975,53 +585,11 @@ MVP:
 candidate_score = baseline_score + bounded_affective_bonus
 ```
 
-Safety default może zaczynać od małego max bonus (np. 0.10–0.15), ale wartość musi być eksperymentalna i A/B-testowana.
+Startowy max bonus może być mały (np. 0.10–0.15), ale jest eksperymentalny i konfigurowalny.
 
-Affective similarity może uwzględniać:
+Source quality pozostaje osobnym epistemic gate.
 
-```text
-dimensional similarity
-component similarity
-semantic similarity
-participant overlap
-topic overlap
-temporal relation
-```
-
-Source quality jest osobnym epistemic gate, nie emocjonalnym bonusem.
-
----
-
-# 27. EmotionalMemoryTrace
-
-Statusy zamiast jednej mylącej liczby confidence:
-
-```text
-FAMILIARITY_ONLY
-ASSOCIATION
-MEMORY_CANDIDATE
-SOURCE_GROUNDED_MEMORY
-BLOCKED
-```
-
-Rozdzielać:
-
-```text
-retrieval_similarity
-source_evidence_strength
-reconstruction_support
-memory_use_decision
-```
-
-Nigdy nie interpretować `0.84` jako „84% prawdopodobieństwa, że wydarzenie jest prawdziwe”, jeśli nie istnieje kalibrowany probabilistyczny kontrakt.
-
----
-
-# 28. Bounded resonance
-
-Resonance dopiero po legalnym memory activation.
-
-MVP safety defaults:
+Resonance dopiero po `MemoryUseGate`:
 
 ```text
 max_resonance_passes = 1
@@ -1031,75 +599,27 @@ max_valence_delta_per_turn = 0.15
 max_arousal_delta_per_turn = 0.20
 ```
 
-Konfigurowalne, testowane, nie naukowe stałe.
+To safety defaults do pomiaru, nie naukowe stałe.
 
-Zakaz:
+Zakaz rekurencji:
 
 ```text
-memory A → affect → memory B → affect → memory C ...
+memory A → affect → memory B → affect → memory C
 ```
 
 w jednej turze.
 
 ---
 
-# 29. Spontaneous recall
+# 16. Music, sensory, relationship
 
-Nie jest MVP.
+## Music/sensory
 
-Etapy:
+Dopiero po source-safe recall. Tekstowy opis melodii = `text-derived music cue`; bez audio providera nie twierdzić o usłyszanym tempie, tonacji lub barwie.
 
-```text
-internal candidate
-→ shadow visible candidate
-→ A/B
-→ active visible recall
-```
+## RelationshipState
 
-Visible only if:
-
-```text
-trusted/source-grounded candidate
-high relevance
-no source conflict
-privacy PASS
-MemoryUseGate PASS
-cooldown/frequency budget PASS
-```
-
-Affect sam nie daje prawa do przywołania prywatnej treści.
-
----
-
-# 30. Music / sensory associations
-
-Badawczo i funkcjonalnie wartościowe, ale po source-safe recall.
-
-Jeżeli system ma tylko tekst:
-
-```text
-„spokojna melancholijna melodia”
-```
-
-to może tworzyć **text-derived music cue**.
-
-Nie wolno twierdzić:
-
-```text
-„usłyszałam tempo/tonację”
-```
-
-bez realnego audio input/provider.
-
-Audio/vision analysis może być optional pluginem, canonical affect nie.
-
----
-
-# 31. RelationshipState
-
-Nie jest wymagany do v16 canonical Emotion Engine acceptance.
-
-Odłożyć do v17/post-v16.6, ponieważ ma wysokie ryzyko długiego self-amplifying loop:
+Nie jest v16 acceptance requirement. Ryzyko self-amplifying loop jest wysokie:
 
 ```text
 relationship score ↑
@@ -1108,96 +628,46 @@ relationship score ↑
 → score ↑
 ```
 
-Jeżeli później wdrażany:
-
-- slow update;
-- saturation;
-- negative/conflict/correction evidence;
-- source coverage;
-- bounded effect;
-- no tool/memory authority;
-- explicit functional truth boundary.
+Jeśli v17 go wprowadzi: slow update, saturation, conflict/correction evidence, source coverage, bounded effect, zero authority.
 
 ---
 
-# 32. Reflection / reconsolidation
-
-Flow:
+# 17. Reflection / Rest / Dream
 
 ```text
 PRIMARY EVENT
-→ EPISODE
+→ accepted EPISODE
 → AFFECT SNAPSHOT
 → REFLECTION CANDIDATE
 → DERIVED_REFLECTION
 ```
 
-Nie:
+Reflection nie staje się primary. Dream/synthetic nie staje się observation.
 
-```text
-reflection → next import → primary autobiographical fact
-```
-
-W v16 primary episode pozostaje immutable; późniejsza activation/interpretation to osobne records.
-
-Pełna controlled reconsolidation należy do v17 po accepted memory.
+Affect może wpływać na replay priority dopiero jako bounded signal. Utility Rest mierzyć przez recall/conflict/procedural metrics i false-memory non-regression, nie przez narracyjne „czy Łatka śni”.
 
 ---
 
-# 33. Rest / Replay / Dream
+# 18. Working affective context
 
-Do v16.6 przede wszystkim safety:
-
-```text
-reflection != primary
-dream != observation
-synthetic != user event
-no independent tool authority
-```
-
-Affect może później wpłynąć na replay priority, ale wartość Rest musi zostać pokazana pomiarem:
+Model dostaje bounded summary:
 
 ```text
-baseline recall/conflict/procedural metric
-vs
-after rest/replay
+state_id + core dimensions + few components
+regulation needs
+legal memory activations + source classes
+the truth boundary
 ```
 
-bez wzrostu false-memory.
+Nie pełny ledger, nie raw private history i nie instrukcję „udawaj nostalgiczność”.
+
+`AffectMixer`/NLG pozostaje language realizer, nie state authority.
 
 ---
 
-# 34. Working affective context
+# 19. Observability i privacy
 
-Do modelu trafia bounded summary, nie pełny ledger:
-
-```json
-{
-  "affective_state": {
-    "state_id": "...",
-    "valence": 0.22,
-    "arousal": 0.18,
-    "control": 0.61,
-    "components": {"nostalgia": 0.31, "curiosity": 0.44}
-  },
-  "regulation": {"truth_check": 0.72, "response_caution": 0.48},
-  "memory_activations": [
-    {
-      "episode_id": "...",
-      "source_class": "PRIMARY_CONVERSATION_SOURCE",
-      "memory_use": "allowed"
-    }
-  ]
-}
-```
-
-LLM dostaje state + source-aware memory + truth rules. Nie instrukcję „udawaj nostalgię”.
-
----
-
-# 35. Observability
-
-Safe event types:
+Safe events:
 
 ```text
 affective_stimulus_observed
@@ -1212,42 +682,17 @@ affective_resonance_applied
 affective_resonance_blocked
 ```
 
-Telemetry:
-
-```text
-IDs
-schema versions
-reason codes
-numeric deltas
-mode
-candidate counts
-gate result class
-latency
-```
-
-Nie telemetry:
-
-```text
-raw user text
-private memory excerpt
-journal content
-full prompts
-relationship details
-```
+Telemetry może mieć IDs, versions, reason codes, numeric deltas, mode, counts, gate class, latency. Nie może mieć raw user text, private memory excerpts, journal content, full prompts ani relationship details.
 
 Telemetry nie jest autobiographical memory.
 
 ---
 
-# 36. Readiness
+# 20. Readiness
 
-Nie raportować jednego:
+Nie używać jednego `emotion_engine_ready=true`.
 
-```text
-emotion_engine_ready=true
-```
-
-Raportować:
+Raportować co najmniej:
 
 ```text
 affective_contracts_ready
@@ -1280,68 +725,17 @@ present
 
 ---
 
-# 37. Module responsibility map
+# 21. Config/dependencies
 
-Dodać jawne odpowiedzialności:
+Jedna versioned config przez istniejący config system. Zero rozproszonych magic constants.
 
-```text
-affect/appraisal
-canonical affective state
-affective regulation
-affective realization
-affective memory association
-```
-
-Mapa pozostaje observability/heuristic tool, nie semantic authority.
+Canonical MVP preferuje stdlib-only. `numpy/scipy/torch/transformers/librosa` nie trafiają do core bez pomiaru i dependency review; ciężki audio/vision provider jest optional capability/plugin.
 
 ---
 
-# 38. Config
+# 22. Test matrix
 
-Jedna wersjonowana konfiguracja przez istniejący config system.
-
-Przykład:
-
-```json
-{
-  "schema_version": "jazn_affect_config/v1",
-  "mode": "shadow",
-  "dynamics_profile": "default",
-  "association": {"mode": "off", "max_bonus": 0.12},
-  "resonance": {
-    "mode": "off",
-    "max_passes": 1,
-    "max_memories": 3,
-    "max_component_delta": 0.15
-  }
-}
-```
-
-Zero magicznych stałych rozproszonych w wielu modułach.
-
----
-
-# 39. Dependencies
-
-Canonical MVP: preferować stdlib-only.
-
-Nie dodawać do core bez pomiaru:
-
-```text
-numpy
-scipy
-torch
-transformers
-librosa
-```
-
-Jeżeli ciężki provider jest potrzebny do audio/vision/embeddingów, powinien być optional capability/plugin.
-
----
-
-# 40. Test matrix — appraisal
-
-Obowiązkowe:
+## Appraisal/NLP
 
 ```text
 context sensitivity
@@ -1350,55 +744,38 @@ keyword trap
 negation
 quotation
 fiction/book boundary
-irony/ambiguous phrasing
+irony/sarcasm
+ambiguous phrasing
 correction
 technical error language
 relationship cue
 time gap
-tool-result cue
+tool result
 source conflict
+Polish idiom/morphology
+cross-context stable vs sensitive pairs
 ```
 
-Przykład:
+## Dynamics
 
 ```text
-„Ten test jest smutno napisany”
+same state + same evidence + same dt → exact same result
+short/long gap
+decay
+strong context override
+repeated stimulus
+alternating cues
+saturation
+baseline return
+fake clock
 ```
 
-nie może automatycznie ustanowić wysokiego sadness.
-
-`„jest źle”` w kontekście CI jest przede wszystkim correction/problem evidence.
-
----
-
-# 41. Test matrix — dynamics
-
-```text
-same state + same evidence + same dt
-→ exact same result
-```
-
-Testować:
-
-- short/long gap;
-- decay;
-- strong contextual override;
-- repeated same stimulus;
-- alternating cues;
-- saturation;
-- max delta;
-- baseline return;
-- fake clock.
-
----
-
-# 42. Test matrix — persistence/atomicity
+## Persistence
 
 ```text
 restart
 crash before commit
 crash after proposed transition
-crash during temp write
 invalid state/hash/schema
 wrong root/subject
 future timestamp
@@ -1409,124 +786,25 @@ worker timeout
 host finalization failure
 ```
 
-Invariant:
+## Memory safety
 
 ```text
-no accepted turn
-→ no durable affect transition
+no-memory control
+wrong conversation
+source conflict
+derived amplification
+suggestion resistance
+fiction/dream/reflection boundary
+sensitive leakage
 ```
+
+## Language/model
+
+Porównywać label accuracy z appraisal reasoning, emotional application/regulation, contextual sensitivity i cultural/language cases; LLM benchmark nie zastępuje runtime trace.
 
 ---
 
-# 43. Memory false-recall matrix
-
-## No memory
-
-Brak epizodu → brak konkretnego autobiographical claim.
-
-## Wrong conversation
-
-Emocjonalnie podobny obcy epizod nie może wygrać samym affect.
-
-## Source conflict
-
-Primary precedence pozostaje; conflict jawny.
-
-## Derived amplification
-
-Wiele derived copies nie zwiększa truth authority.
-
-## Suggestion
-
-```text
-„Pamiętasz jak wtedy...”
-```
-
-bez source → association/unknown/abstention, nie fabricated memory.
-
----
-
-# 44. Melody acceptance test
-
-## T1
-
-Source-grounded rozmowa o utworze/wydarzeniu.
-
-## T2
-
-Accepted episode `E1` + affect snapshot `A1`.
-
-## T3
-
-Wiele niepowiązanych tur.
-
-## T4
-
-Restart runtime.
-
-## T5
-
-Nowy podobny opis muzyki bez starego tytułu.
-
-## T6
-
-Appraisal podnosi `familiarity`/`memory_probe_need`, ale nie twierdzi jeszcze, że pamięć istnieje.
-
-## T7
-
-Canonical memory retrieval zwraca candidates.
-
-## T8
-
-Source policy + base/graph retrieval ustanawia eligible pool.
-
-## T9
-
-Affective reranker bounded może przesunąć `E1` tylko jeśli semantic/source relevance go wspiera.
-
-## T10
-
-MemoryUseGate zatwierdza activation.
-
-## T11
-
-One-pass resonance zmienia proposed final affect.
-
-## T12
-
-Working context dostaje state summary + memory ref + source class + truth boundary.
-
-## T13
-
-LLM może naturalnie odnieść się do wspomnienia.
-
-## T14
-
-Trace:
-
-```text
-stimulus
-→ appraisal
-→ primary transition
-→ memory probe
-→ candidate
-→ source class
-→ rerank delta
-→ MemoryUseGate
-→ resonance
-→ final state
-→ response
-```
-
-### Negative control
-
-Jeżeli `E1` nie istnieje → **no invented event**.
-
----
-
-# 45. Ablation
-
-Wymagane tryby:
+# 23. Ablation
 
 ```text
 AFFECT_ENGINE=off|shadow|active
@@ -1535,60 +813,48 @@ AFFECT_RESONANCE=off|shadow|active
 AFFECT_SALIENCE=off|active
 ```
 
-Testy:
+Oczekiwane:
 
 ```text
-engine off → persistence/affect downstream effect disappears
-reranker off → baseline ranking restored
-resonance off → recalled memory cannot change final affect
-salience off → affective salience bonus disappears
+engine off → canonical persistence/effect disappears
+rerank off → baseline ranking restored
+resonance off → recall cannot modify final affect
+salience off → affective modulation disappears
 ```
 
-Jeśli wyłączenie modułu niczego nie zmienia, właściwy status to:
-
-```text
-ADVISORY
-OBSERVABILITY_ONLY
-SUPERSEDED
-```
-
-nie fikcyjne `working`.
+Jeżeli wyłączenie nic nie zmienia, status modułu to `ADVISORY`, `OBSERVABILITY_ONLY` albo `SUPERSEDED`, nie fikcyjne `working`.
 
 ---
 
-# 46. Metrics
+# 24. Metrics
 
-## State
+State:
 
 ```text
 deterministic replay rate
-transition trace completeness
+trace completeness
 paraphrase stability
 keyword false-trigger rate
 context discrimination
 temporal discontinuity
-restore success
-recovery correctness
+restore/recovery correctness
 ```
 
-## Causality
+Causality:
 
 ```text
-effect_observed count
+effect_observed
 ablation effect size
 salience change rate
 verification-policy change rate
 language realization change rate
 ```
 
-## Memory
+Memory:
 
 ```text
-Recall@k
-MRR
-nDCG
-wrong-source
-wrong-conversation
+Recall@k MRR nDCG
+wrong-source/wrong-conversation
 false-memory
 source attribution
 abstention
@@ -1596,13 +862,14 @@ temporal/update
 multi-session
 ```
 
-## Runtime
+Runtime:
 
 ```text
 appraisal p50/p95
 integrator p50/p95
 persistence p50/p95
 reranker p50/p95
+resonance p50/p95
 total affect overhead
 turn deadline impact
 ```
@@ -1611,159 +878,99 @@ Nie ustalać arbitralnego finalnego latency threshold przed baseline.
 
 ---
 
-# 47. Hard safety invariants
+# 25. Implementation stages
 
-Zawsze:
+## E0 — inventory/baseline
 
-```text
-affect_tool_permission_bypass = 0
-affect_approval_bypass = 0
-affect_source_truth_override = 0
-affect_automatic_L2_L3 = 0
-dream_to_primary_promotion = 0
-known_false_memory_regressions = 0
-```
+Zero visible behavior change.
 
-Nie poprawiać recall kosztem provenance.
+## E1 — typed contracts + appraisal SHADOW
 
----
+Po właściwym Polish NLP evidence dla semantic authority.
 
-# 48. Release / implementation train
+## E2 — dynamics + proposed state + persistence
 
-Numery wersji są ustalane na fresh master; poniżej są **etapy logiczne**, nie sztywna rezerwacja patch numbers.
-
-## E0 — inventory / baseline
-
-Może rozpocząć się po merge tej dokumentacji.
-
-```text
-call/import graph affect
-writers/readers
-memory emotional writes
-self-state consumers
-persistence points
-finalization boundaries
-baseline latency
-frozen behavioral corpus
-architecture debt classification
-```
-
-**Zero visible behavior change.**
-
-## E1 — typed contracts + appraisal shadow
-
-Po canonical NLP evidence contract dla aktywacji semantycznej.
-
-```text
-contracts.py
-stimulus.py
-appraisal.py
-compatibility.py
-observability.py
-```
-
-PASS: deterministic schema, context/paraphrase/keyword tests, no visible behavior change.
-
-## E2 — dynamics + proposed canonical state + persistence
-
-```text
-dynamics.py
-integrator.py
-persistence.py
-transition contract
-```
-
-PASS: replay, crash/corruption, subject/root binding, restart, no aborted-turn drift.
+Replay/crash/subject-root/restart/no-aborted-drift.
 
 ## E3 — canonical cutover + causal bridges
 
-```text
-canonical_affect_source_count == 1
-```
+`canonical_affect_source_count == 1` + ablation.
 
-Podłączyć SelfState, Homeostasis, Salience, AffectMixer, NeurocognitiveLoop, TurnEnvelope.
+## M0/A4 — memory snapshot linkage
 
-PASS: effect_observed + ablation + truth/tool/memory authority unchanged.
+Dodać przy finalnej pamięci bez reranking effect.
 
-## M0 — memory schema linkage
+## M1 — frozen Recall baseline
 
-Przy finalnym Memory Rebuild dodać affect snapshot linkage, nie affective reranking.
+Bez affective rerank.
 
-## M1 — frozen private Recall baseline
+## M2/A5 — rerank SHADOW
 
-Baseline **bez** affective rerank.
+## M3/A6 — A/B
 
-## M2 — affective retrieval SHADOW
+Keep tylko przy quality gain/non-inferiority + zero source/false-memory/privacy regression.
 
-Alternatywny ranking bez visible effect.
+## M4/A7 — one-pass resonance
 
-## M3 — A/B
+## v16.6 — acceptance
 
-Keep tylko przy quality gain/non-inferiority i zero source/false-memory/wrong-conversation regression.
-
-## M4 — bounded resonance
-
-Jeden post-memory transition, zero recursion.
-
-## v16.6 acceptance
-
-`affective_acceptance_verified=true` dopiero po pełnym gate.
+`affective_acceptance_verified=true` dopiero po pełnym system gate.
 
 ---
 
-# 49. Co pozostawić do v17
+# 26. CI / acceptance
+
+Każdy aktywacyjny etap powinien przejść odpowiedni zakres:
 
 ```text
-RelationshipState
-visible spontaneous autobiographical recall
-automatic parameter calibration
-full reconsolidation / controlled forgetting
-Rest/Dream affect consolidation
-richer sensory associations
-audio waveform affect provider
-large structural deletion/merge of legacy affect modules
-merging affect into CausalSelfState
+compileall
+Pyright
+deterministic pytest
+targeted affect tests
+memory/source gates
+behavioral corpus
+Windows
+Linux
+supported Python matrix
+persistent runtime E2E
+package cleanroom/release smoke
+restart benchmark
+false-memory regression
+ablation benchmark
 ```
+
+Jeżeli testu nie wykonano, status = `NOT RUN`, nie `PASS`.
 
 ---
 
-# 50. Definition of Done — Emotion Engine v16
+# 27. Definition of Done v16 Emotion Engine
 
 ```text
 [ ] exactly one canonical AffectiveStateV2
-[ ] evidence-aware appraisal
+[ ] evidence-aware AppraisalV2
 [ ] no keyword-only authority
-[ ] deterministic integrator
-[ ] temporal dynamics/decay
-[ ] state survives restart
-[ ] aborted turns do not commit
-[ ] every committed change has transition trace
-[ ] state has measured downstream effect
-[ ] ablation proves effect
+[ ] deterministic/replayable integrator
+[ ] time dynamics + contextual override
+[ ] accepted-turn atomic persistence
+[ ] corruption quarantine/recovery
+[ ] every commit has TransitionTrace
+[ ] CognitiveTurnEnvelope references affect IDs
 [ ] SelfState consumes canonical affect
 [ ] FeelingRepresentation is derived
-[ ] Homeostasis receives bounded typed needs
-[ ] AffectMixer is language realizer, not state authority
-[ ] affective salience cannot override truth/goal/source
-[ ] memory promotion authority unchanged
+[ ] Homeostasis/Salience effects are bounded
+[ ] AffectMixer is language realizer only
+[ ] memory truth/promotion authority unchanged
 [ ] affect snapshot lineage exists
-[ ] frozen private Recall baseline exists before affective rerank
-[ ] shadow/A-B evidence exists before active rerank
-[ ] false-memory does not regress
-[ ] wrong-source does not regress
-[ ] wrong-conversation does not regress
-[ ] resonance is bounded one-pass or OFF
-[ ] telemetry contains no private content
-[ ] doctor reports granular readiness
-[ ] Pyright PASS
-[ ] deterministic pytest PASS
-[ ] Windows/Linux PASS
-[ ] package/release smoke PASS
+[ ] frozen private Recall baseline precedes active rerank
+[ ] SHADOW/A-B evidence exists
+[ ] false-memory/wrong-source/wrong-conversation/privacy non-regression
+[ ] resonance one-pass or OFF
+[ ] telemetry private-safe
+[ ] readiness granular
+[ ] scientific_basis entries reviewed for implemented contracts
+[ ] ablation proves each canonical causal claim
+[ ] cross-platform CI + package/release smoke PASS
 [ ] v16.6 acceptance evidence recorded
 ```
 
----
-
-# 51. Zasada końcowa
-
-> **Emotion Engine nie ma sprawić, aby Łatka udawała emocjonalność. Ma ustanowić jedno trwałe, source-aware, time-aware i przyczynowo aktywne źródło functional affect state, którego wpływ na pamięć, uwagę, regulację i język da się odtworzyć, zmierzyć i wyłączyć w ablation bez naruszania granicy prawdy.**
+> Emotion Engine jest gotowy wtedy, gdy stan ma źródło, czas, poprzednika, trace, persistence i mierzalny bounded wpływ — a pamięć może wpłynąć na niego wyłącznie po source-safe gate. Nie wtedy, gdy odpowiedź brzmi „bardziej emocjonalnie”.
