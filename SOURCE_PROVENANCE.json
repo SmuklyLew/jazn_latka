@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "944b93fb0d215286739bb0fbcf46690e9d88186c",
-    "base_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+    "base_commit": "d925764486f67f138cf14aa0f4bf9696f14cf6e2",
+    "base_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "d925764486f67f138cf14aa0f4bf9696f14cf6e2",
