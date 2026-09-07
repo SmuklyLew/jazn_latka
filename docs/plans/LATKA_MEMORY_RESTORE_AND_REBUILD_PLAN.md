@@ -153,7 +153,7 @@ Te pliki mogą zostać zachowane jako **derived evidence**, ale nie mogą domino
 
 Starsza paczka może być użyta jako migration/source archive, ale jej historyczny schema nie staje się automatycznie canonical.
 
-Dla znanej historycznej paczki v15.0.3.222 manifest pokazuje m.in.:
+Dla historycznej paczki wskazanej przez `LEGACY_MEMORY_SOURCE_VERSION` w `latka_jazn/version_contract.py` manifest pokazuje m.in.:
 
 - 116 entries;
 - source size ~15.7 GB;
