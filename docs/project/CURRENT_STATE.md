@@ -1,98 +1,113 @@
 # Current project state
 
-**Snapshot date:** 2026-09-01  
+**Snapshot date:** 2026-09-07  
 **Repository:** `SmuklyLew/jazn_latka`
 
-Ten plik jest krótkim overlayem bieżącego stanu. Nie zastępuje `latka_jazn/version.py`, Git ani machine-readable evidence. Po zmianie mastera/aktywnych branchy snapshot należy ponownie zweryfikować.
+Ten plik jest krótkim overlayem bieżącego stanu. Nie zastępuje `latka_jazn/version.py`, Git ani machine-readable evidence.
 
 ## Canonical master
 
-Przy tym audycie:
+Przy tej synchronizacji dokumentacji:
 
-- `master` HEAD: `03f2562cf314ad76242eba14cbcdb499f757918e`;
-- canonical runtime line: `16.3.25.3.6-agents-chatgpt-single-startup-source`;
-- `AGENTS.md` jest routerem odpowiedzialności;
-- startup ChatGPT ma jedno źródło: `AGENTS.md -> AGENTS.chatgpt.md`;
-- duplicate packaged `latka_jazn/resources/chatgpt_startup_loader.txt` został usunięty z aktywnego kontraktu;
-- Pack Generator v8.7 i package-discovery/provenance hardening są już w master.
+- `master` HEAD: `378e9e6aceb83edbd679751e19cbe5c64c978025`;
+- canonical runtime/package line: `16.3.25.5.36-ci-archive-scope-contract-hardening`;
+- wersję zawsze czytać z `latka_jazn/version.py`;
+- `AGENTS.md` pozostaje routerem odpowiedzialności;
+- `run.py` pozostaje canonical lifecycle/operator surface;
+- package/runtime/plugin/dependency hardening z linii `16.3.25.5.x` jest obecny na master.
 
-Numer bieżącej wersji zawsze czytaj z `latka_jazn/version.py`; powyższa wartość jest wyłącznie datowanym snapshotem.
+## Memory Rebuild v4
 
-## Active parallel implementation: Memory Rebuild v4
+**Stan:** `MERGED / TOOL CONSOLIDATION COMPLETE`.
+
+- PR `#208` został scalony 2026-09-02;
+- merge commit: `601cf3fe977621c5552f7f6e32530da0128ccc8a`;
+- issue `#189` jest zamknięte jako completed;
+- Test00→Final engine/application foundation jest częścią mastera;
+- ten stan nie certyfikuje finalnej prywatnej pamięci.
+
+Stare `docs/plans/.../STATUS.md` mówiące `IN_PROGRESS` są zachowane w `docs/plans/only_to_check/` jako historyczny snapshot.
+
+## Final private memory
+
+Issue `#59`: **OPEN**.
+
+Finalna pamięć musi nadal przejść:
+
+```text
+VERIFIED
+→ ATTACHABLE
+→ RETRIEVABLE
+→ ACCEPTED
+```
+
+Brak finalnego `ACCEPTED` oznacza, że nie wolno traktować narzędzia Memory Rebuild ani historycznych Test04 jako zamknięcia finalnej pamięci.
+
+## Package/runtime hardening po Memory Rebuild
+
+Po v16.3.25.4 master przeszedł przez szeroką linię `16.3.25.5.x`, m.in.:
+
+- package distribution convergence;
+- Pack Generator hardening do bieżącego kierunku `10.1.86.0.114`;
+- byte-exact/EOL/folder/canonical release staging;
+- Python runtime/dependency hardening;
+- Pyright/Pylance archive/dependency boundaries;
+- GitHub Actions Node24 convergence;
+- ChatGPT runtime-first handoff;
+- host-executor truth boundary i recovery;
+- package-runtime-plugin convergence;
+- optional archive capability i dalsze CI scope fixes.
+
+Dawne plany wskazujące stare wersje generatora są historyczne, nie bieżącym targetem.
+
+## Current documentation convergence branch
 
 Branch:
 
-`upgrade/memory-rebuild-v4-consolidation`
-
-Przy tym audycie:
-
-- HEAD: `39317cb23626cb930b05dda68c4a20c88dde6877`;
-- względem master: `22 ahead / 7 behind`;
-- merge-base: `3983c577bc86ffdf6fa5bae138a4a20120bd9d5c`;
-- branch posiada własne nowsze zmiany Memory Rebuild v4, w tym `ProtocolEngine`, `RunManifest`, source-fidelity/union i testy;
-- jednocześnie nie zawiera jeszcze siedmiu późniejszych commitów mastera z linii AGENTS/ChatGPT startup.
-
-### Ownership do chwili merge
-
-Dla **bieżącego statusu implementacji Memory Rebuild v4** branch roboczy jest źródłem nowszej informacji niż kopia `PLAN.md/STATUS.md` na masterze.
-
-Dla **AGENTS, startup ChatGPT, ogólnego runtime, package discovery i innych obszarów poza zakresem Memory Rebuild** źródłem jest aktualny master.
-
-Przed PR/merge Memory Rebuild branch musi ponownie zsynchronizować aktualny master i zachować nowe kontrakty `AGENTS.md -> AGENTS.chatgpt.md`. Po synchronizacji należy ponownie uruchomić wymagane testy; wcześniejsze PASS-y nie są automatycznie dowodem po merge mastera.
-
-## Release train
-
 ```text
-CURRENT MASTER
-16.3.25.3.6
-    |
-    v
-ACTIVE PARALLEL
-16.3.25.4 Memory Rebuild v4
-    |
-    v
-PLANNED
-16.3.26 attachment / multimodal ingress
-    |
-    v
-16.4.0 -> 16.4.2 evidence-aware Polish NLP
-    |
-    v
-16.5.x final source-aware memory verification / attach / recall / acceptance
-    |
-    v
-16.6.0 final convergence of program v16
-    |
-    v
-FUTURE / CONDITIONAL
-17.0.0 measured architecture consolidation
+docs/v16-plans-convergence-2026-09-07
 ```
 
-Kolejny release zaczyna się ze świeżego mastera po merge poprzedniego etapu, chyba że jawnie kontynuowany jest istniejący aktywny branch.
+Jest to **documentation-only convergence branch**, nie nowa linia produktu.
 
-## Branch truth rule
+Cel:
 
-`ahead > 0` nie oznacza automatycznie, że branch jest nowszym systemem.
+- przenieść poprzednie `docs/plans/` do `docs/plans/only_to_check/`;
+- utworzyć jedną historię wykonania i current-step;
+- odświeżyć Memory Restore/Rebuild plan;
+- ustanowić canonical Affect Engine subplan;
+- odświeżyć V17+ system evaluation;
+- naprawić dryf current-state/timeline.
 
-Branche klasyfikujemy jako:
+## Następne duże niezamknięte etapy
 
-- `ACTIVE_PRODUCT` — jawnie wskazana niepołączona linia produktu;
-- `MERGED` — zakres już obecny na master;
-- `SUPERSEDED` — historia implementacji zastąpiona finalnym branchem/PR;
-- `BACKUP` — punkt przywracania;
-- `ARCHIVE` — materiał audytowy/historyczny;
-- `FUTURE` — planowana linia, która nie powinna jeszcze nieść implementacji.
+1. `attachment + multimodal ingress` — nadal planowany i niezakończony;
+2. evidence-aware Polish NLP — nadal wymagany;
+3. final private Memory Rebuild / package / attach / Recall / review / restart (#59);
+4. Emotion Engine canonical affect convergence — nowy plan gotowy, implementation nie rozpoczęty;
+5. v16.6 final evidence gate;
+6. v17 measured consolidation dopiero po v16.6 PASS.
 
-Na dzień snapshotu jedyną jawnie aktywną niepołączoną linią produktu jest `upgrade/memory-rebuild-v4-consolidation`.
+Affect `E0 inventory/baseline` może być przygotowany równolegle po merge dokumentacji, o ile nie zmienia visible behavior ani memory ranking.
 
 ## Documentation truth rule
 
-- `docs/project/CURRENT_STATE.md` — bieżący overlay;
-- `docs/plans/.../PLAN.md` + `STATUS.md` — właściciel zakresu release;
-- `docs/plans/16.6.0-final-convergence/ROADMAP.md` — kolejność całego programu v16;
-- `docs/archive/` — historia; nie przepisywać jej do bieżącego stanu;
-- datowane audyty zachowują stare SHA/wersje jako provenance.
+Nowa mapa:
+
+- `docs/plans/PLAN_EXECUTION_HISTORY.md` — przebieg + status + checklista;
+- `docs/plans/CURRENT_STEP.md` — dokładny obecny krok;
+- `docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md` — active memory acceptance plan;
+- `docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md` — active affect subplan;
+- `docs/plans/V17_PLUS_SYSTEM_EVALUATION.md` — current evaluation/future gate;
+- `docs/plans/only_to_check/` — dawne plany/statusy/pointery;
+- `docs/archive/` — starsza historia release/research.
 
 ## Governance gap
 
-Przy snapshotcie GitHub raportuje `master` jako `protected=false`. Finalny gate v16.6 wymaga branch protection/ruleset albo jawnie udokumentowanego równoważnego enforcement/zaakceptowanego wyjątku.
+Przy bieżącym odczycie GitHub raportuje `master` jako `protected=false`.
+
+To nie blokuje tej dokumentacyjnej reorganizacji, ale pozostaje otwartym v16.6 governance gate: branch protection/ruleset, równoważny enforcement albo jawnie zaakceptowany wyjątek musi zostać udokumentowany przed finalnym program PASS.
+
+## Truth boundary
+
+`merged`, `working`, `verified`, `accepted`, `live` wynikają z właściwego evidence. Dokument, nazwa brancha, ZIP, marker, SQLite albo persona nie certyfikują tych stanów samodzielnie.

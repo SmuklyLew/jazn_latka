@@ -41,7 +41,7 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e . pytest
+          python -m pip install -e ".[archive,memory-rebuild-ui]" pytest
           python -m pip check
 
       - name: Materialize canonical PR metadata locally

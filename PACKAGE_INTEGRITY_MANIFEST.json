@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "generated_at_utc": "2026-09-06T21:51:50+00:00",
-  "updated_at_utc": "2026-09-06T21:51:50+00:00",
+  "version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "generated_at_utc": "2026-09-07T00:13:22+00:00",
+  "updated_at_utc": "2026-09-07T00:13:22+00:00",
   "start_file": "run.py",
-  "file_count": 1193,
-  "static_file_count": 1193,
+  "file_count": 1207,
+  "static_file_count": 1207,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/powershell-terminal-regressions.yml",
-      "size_bytes": 3911,
-      "sha256": "d88f9d037ab1e9ab195828a6f504ccdfd01e852ac3678e815b6057d57d78671e",
+      "size_bytes": 3940,
+      "sha256": "58ebc4dc6daced83bd717161a97096ff0e9f03c2340386b9b96ea1c059468c91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "85bdb529449276390c2155e5b7d20a5e9db31bd7b00b986c9bd62347a045c609",
+      "size_bytes": 2890,
+      "sha256": "025ba870aea6ed96156566241f51e7fc1c34716aca088c40c28a1eb219fe1749",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +245,8 @@
     },
     {
       "path": "docs/README.md",
-      "size_bytes": 5180,
-      "sha256": "1107ad8d69c1fdbf14ab5ded6f9cf4268501a44a4020d641f2f1eadd4f1a0db6",
+      "size_bytes": 3510,
+      "sha256": "18eddb0bc444ce528de5b1f6184d054ae225039edcac7a8f1e81bf29145c2b3a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1099,7 +1099,106 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
+      "path": "docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md",
+      "size_bytes": 33115,
+      "sha256": "ab3021d108f5c4c4ffa0e1b2a1aba38909c71beebb58eec3cfd2ec9aa1d79452",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/CURRENT_STEP.md",
+      "size_bytes": 7175,
+      "sha256": "6346843567cf14b1990be3df7ab92208c0344c36a5c067ea4688493a3acf971a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md",
+      "size_bytes": 578,
+      "sha256": "7554dd0729bbddbeaf68708a5143857fb8bd092346027b58145540817754d718",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md",
+      "size_bytes": 569,
+      "sha256": "e347ea67f7dd35a9cd626f4fad8d1555eea4d774b8ad40d77afbdb1efc977377",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md",
+      "size_bytes": 773,
+      "sha256": "08a5581c1494c8e6003d23c611b19f279c0ba56d0f25fe8f6fd8d4c87ddf8b5d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md",
+      "size_bytes": 563,
+      "sha256": "e87aaa0a2512711302c05b01b2fd167084aef80efc2582f36213dbef326d0612",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+      "size_bytes": 520,
+      "sha256": "6a415764dc3cb754936ae18ceb735ed3e5df60c97d7d6faf764d617a04e4d59a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md",
+      "size_bytes": 18733,
+      "sha256": "24eaa6d48dd11e7a4441e7aca67f8f3b3c605b3fb269d778b08e7d855cda5f59",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/PLAN_EXECUTION_HISTORY.md",
+      "size_bytes": 18704,
+      "sha256": "43b0e229effbaea033fe815d37323259467adc0c3a511a41ea88151618645432",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/README.md",
+      "size_bytes": 3236,
+      "sha256": "83b0fd3fc8efb0dbae5e088065268c3ce0ab9a8d95bd88f38616a9ec265e3af6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/V17_PLUS_SYSTEM_EVALUATION.md",
+      "size_bytes": 18085,
+      "sha256": "dda29dc102549f51754c1ac9ce60376008af677c623844683a7f680b18b234b6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/16.3.25.4-memory-rebuild-v4/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
       "size_bytes": 5169,
       "sha256": "86ee02f1e1ee4e4bea1893fac3f8b0ac0402e513bd9f6a6ecb7b7041f1ca109a",
       "mutable_runtime": false,
@@ -1108,7 +1207,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/PLAN.md",
+      "path": "docs/plans/only_to_check/16.3.25.4-memory-rebuild-v4/PLAN.md",
       "size_bytes": 15592,
       "sha256": "d7201f8306aa0e25bc7d1289a9185d99e53b7d43f499ac7a02473c66a77bdb32",
       "mutable_runtime": false,
@@ -1117,7 +1216,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/STATUS.md",
+      "path": "docs/plans/only_to_check/16.3.25.4-memory-rebuild-v4/STATUS.md",
       "size_bytes": 3451,
       "sha256": "a2ba5948e1272263ea6e8a09851c757a0a8e0aa0731643c1ccb7c9b3c8719e5a",
       "mutable_runtime": false,
@@ -1126,7 +1225,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_deep_archive_search.json",
+      "path": "docs/plans/only_to_check/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_deep_archive_search.json",
       "size_bytes": 396,
       "sha256": "e0cc9933d78f35fa2a19891929d263991cb51eb6df5316221daf2502be2d6815",
       "mutable_runtime": false,
@@ -1135,7 +1234,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_sqlite_audit.json",
+      "path": "docs/plans/only_to_check/16.3.25.4-memory-rebuild-v4/evidence/jazn_memory_tests_sqlite_audit.json",
       "size_bytes": 69176,
       "sha256": "c27346e751d9e6d5d83a6a78353c49687f57903bfb03c196757372af4383f5cd",
       "mutable_runtime": false,
@@ -1144,7 +1243,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/FILE_CLASSIFICATION.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.17-pack-generator-v101860/FILE_CLASSIFICATION.md",
       "size_bytes": 9825,
       "sha256": "31dd94e91cbdd63dae638b44ea6033890959dd32d972d5e35dc16e8fc39cb418",
       "mutable_runtime": false,
@@ -1153,7 +1252,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/PLAN.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.17-pack-generator-v101860/PLAN.md",
       "size_bytes": 5100,
       "sha256": "07bd701485e397f2afe4e3639abf2d76c5e1489852d2e819762a48b808979994",
       "mutable_runtime": false,
@@ -1162,7 +1261,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/RESUME_STATE.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.17-pack-generator-v101860/RESUME_STATE.md",
       "size_bytes": 16971,
       "sha256": "7b00c84ba63059e20fc3228d55b6412e2bd1de4b0cf0b907ba01f493e2a7619d",
       "mutable_runtime": false,
@@ -1171,7 +1270,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.17-pack-generator-v101860/STATUS.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.17-pack-generator-v101860/STATUS.md",
       "size_bytes": 7163,
       "sha256": "fc4e7a380cfefdee9ff6a2480b5752eb760e474b80e58e6e223921440b3833a3",
       "mutable_runtime": false,
@@ -1180,7 +1279,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.34-package-runtime-plugin-convergence/PLAN.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.34-package-runtime-plugin-convergence/PLAN.md",
       "size_bytes": 4339,
       "sha256": "4dd752f60a101f01f8488ef868507e4599b1a9f9dbf907402980309aba96bba3",
       "mutable_runtime": false,
@@ -1189,7 +1288,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.25.5.34-package-runtime-plugin-convergence/STATUS.md",
+      "path": "docs/plans/only_to_check/16.3.25.5.34-package-runtime-plugin-convergence/STATUS.md",
       "size_bytes": 567,
       "sha256": "4ae5560805c2477f26060a6586c11329a7795c841adf61e59e45b586255c3d02",
       "mutable_runtime": false,
@@ -1198,7 +1297,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.26-attachment-ingress/PLAN.md",
+      "path": "docs/plans/only_to_check/16.3.26-attachment-ingress/PLAN.md",
       "size_bytes": 8579,
       "sha256": "61f288aaf913c8a984ffb1bf6076998ec6f14b51b0a804ac1313b4c58e670fe9",
       "mutable_runtime": false,
@@ -1207,7 +1306,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.3.26-attachment-ingress/STATUS.md",
+      "path": "docs/plans/only_to_check/16.3.26-attachment-ingress/STATUS.md",
       "size_bytes": 386,
       "sha256": "9114c5b79b4ded9c9f61d800db3606be63628ec3bd27843f4c012fdbf778b6f5",
       "mutable_runtime": false,
@@ -1216,7 +1315,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/NLP_RESOURCE_CONVERGENCE.md",
+      "path": "docs/plans/only_to_check/16.4-to-16.6-cognitive-hardening/NLP_RESOURCE_CONVERGENCE.md",
       "size_bytes": 8244,
       "sha256": "983604c148839624042aed72da0dfbfbe466d63a96e29104d191a9d4ac938c9a",
       "mutable_runtime": false,
@@ -1225,7 +1324,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/PLAN.md",
+      "path": "docs/plans/only_to_check/16.4-to-16.6-cognitive-hardening/PLAN.md",
       "size_bytes": 16853,
       "sha256": "c7ad9b0a9115baf956b385ebf8f3d84c69bc654bae3e983f1780daecc4c1ae38",
       "mutable_runtime": false,
@@ -1234,7 +1333,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.4-to-16.6-cognitive-hardening/STATUS.md",
+      "path": "docs/plans/only_to_check/16.4-to-16.6-cognitive-hardening/STATUS.md",
       "size_bytes": 731,
       "sha256": "49a714c5c7e72d31592f832b32aa65a5abc50c3895bc57e8540dc23bd2208fb7",
       "mutable_runtime": false,
@@ -1243,7 +1342,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.6.0-final-convergence/ROADMAP.md",
+      "path": "docs/plans/only_to_check/16.6.0-final-convergence/ROADMAP.md",
       "size_bytes": 24411,
       "sha256": "9d974eb3d3c2e02727dc7d3984b3703e4e12bdde77352ab8a96fa6903a290678",
       "mutable_runtime": false,
@@ -1252,7 +1351,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/16.6.0-final-convergence/STATUS.md",
+      "path": "docs/plans/only_to_check/16.6.0-final-convergence/STATUS.md",
       "size_bytes": 970,
       "sha256": "b8199672688bdd3654ef35015a68955feb4c3abc6e915afc43f8b4ba365ae5bb",
       "mutable_runtime": false,
@@ -1261,7 +1360,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md",
+      "path": "docs/plans/only_to_check/17.0.0-measured-architecture-consolidation/PLAN.md",
       "size_bytes": 9196,
       "sha256": "165652c940b3fd7d012a5a567e810f23f5da8187847575a307ab9e2ae92c2447",
       "mutable_runtime": false,
@@ -1270,7 +1369,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/17.0.0-measured-architecture-consolidation/STATUS.md",
+      "path": "docs/plans/only_to_check/17.0.0-measured-architecture-consolidation/STATUS.md",
       "size_bytes": 479,
       "sha256": "a8c5cd17de8fb2f613a222aeac2876d62bd6db41535e6a6d160496aa4667e3c6",
       "mutable_runtime": false,
@@ -1279,7 +1378,16 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
+      "path": "docs/plans/only_to_check/ARCHIVE_NOTICE.md",
+      "size_bytes": 1727,
+      "sha256": "b2940a8733e462b64401e444546c57855474893f531502b68f77d905dd4a3c98",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/CHATGPT_EXPORT_RELATION_MAP_2025-06.md",
       "size_bytes": 234,
       "sha256": "32e6a85d15d6a8cc621875a8ff044ca25e8cc5d541d79a09e69d6ad164359cde",
       "mutable_runtime": false,
@@ -1288,7 +1396,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md",
+      "path": "docs/plans/only_to_check/JAZN_V16_3_25_4_MEMORY_REBUILD_V4_CONSOLIDATION_PLAN.md",
       "size_bytes": 172,
       "sha256": "56fb092ececa5577e2bbdde03340ce7b2f69a62048f58518ce52e65b8452e62b",
       "mutable_runtime": false,
@@ -1297,7 +1405,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md",
+      "path": "docs/plans/only_to_check/JAZN_V16_3_25_A_TO_V16_3_26_ATTACHMENT_INGRESS_PLAN.md",
       "size_bytes": 170,
       "sha256": "e95aeee82dfe8d6e95354f897c9e3c6f24e98d6cfa4033f0f9dcc7a3346dc4c0",
       "mutable_runtime": false,
@@ -1306,7 +1414,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md",
+      "path": "docs/plans/only_to_check/JAZN_V16_4_TO_V16_6_COGNITIVE_EVALUATION_HARDENING_PLAN.md",
       "size_bytes": 182,
       "sha256": "9cb0bf7b70b1c9b5b3850804dc459b512743eb77699ccb96a4a8bb5faabe5a20",
       "mutable_runtime": false,
@@ -1315,7 +1423,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md",
+      "path": "docs/plans/only_to_check/JAZN_V16_6_0_FINAL_CONVERGENCE_ROADMAP.md",
       "size_bytes": 172,
       "sha256": "fad9ed103ea321ad1e4d0fc730fd862276fc2c1c58b000efba090c6198f27d18",
       "mutable_runtime": false,
@@ -1324,7 +1432,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
+      "path": "docs/plans/only_to_check/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",
       "size_bytes": 261,
       "sha256": "942ad748ac5bc644a0506141bb2fc4f1813e0b488e16cb852eb99828af59dee2",
       "mutable_runtime": false,
@@ -1333,7 +1441,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/PLAN_COHERENCE_AUDIT_2026-08-30.md",
+      "path": "docs/plans/only_to_check/PLAN_COHERENCE_AUDIT_2026-08-30.md",
       "size_bytes": 205,
       "sha256": "6ad327a2955d11cd504432c7af5b324195089f9be39513e2276a90c4864b618d",
       "mutable_runtime": false,
@@ -1342,7 +1450,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md",
+      "path": "docs/plans/only_to_check/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md",
       "size_bytes": 233,
       "sha256": "075401d27ef930e53ad66cbd6282950a4c2cf487b868ede9d8ac6b9420a51c81",
       "mutable_runtime": false,
@@ -1351,7 +1459,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "docs/plans/README.md",
+      "path": "docs/plans/only_to_check/README.md",
       "size_bytes": 1155,
       "sha256": "5b450fb0c5a9671f4aecc41ce3b77e30d9fc2f9cc7446d49d69504731ffba840",
       "mutable_runtime": false,
@@ -1361,8 +1469,8 @@
     },
     {
       "path": "docs/project/CURRENT_STATE.md",
-      "size_bytes": 3859,
-      "sha256": "4f299d220313c8ae51d9bd36e1d07e170d4af8ec9d084853ce65a6ca5e96c2a4",
+      "size_bytes": 4291,
+      "sha256": "602a85f1a78748c6b54aeaf279e37388ec9769da735a90ae7ca0f51497ca1d91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1397,8 +1505,8 @@
     },
     {
       "path": "docs/project/RELEASE_TIMELINE.md",
-      "size_bytes": 4778,
-      "sha256": "fc34f0bdcec89600c85a4874c6e9fd2b81e14b3cd80e77a89e169fa0da73f98a",
+      "size_bytes": 5748,
+      "sha256": "661ffb94ff5ce15a9b5cf6f361f0d77facebd11f10ccdf9ab118b457f070d1d5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7229,8 +7337,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6622,
-      "sha256": "b93973adaa9fbedc14a4f331b0e6f18ca70d65cf51f45ffdd7b11a4100590450",
+      "size_bytes": 6559,
+      "sha256": "8134df0c6e61dfd1416176658c4a9612d202ec85ff29a2fe661f730af466eff9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7456,6 +7564,24 @@
       "path": "tests/archive/test_jazn_pack_generator_v101860113_folder_snapshot_source_v16325533.py",
       "size_bytes": 5394,
       "sha256": "057a5d3cb8db3f0fe7c6c4ac77cc5f382e8d2b423711c5cec2ac863d3eb82308",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_36.py",
+      "size_bytes": 4315,
+      "sha256": "451efb988e01ff6688be9aea50eb43f4ad78c16afa8664fac6b51c55215b638d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_37.py",
+      "size_bytes": 5322,
+      "sha256": "dafab4a9072ff420ad10cb6fcd107c57a437a3daff3ff1352246ecc84ba89480",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8903,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v101860114_canonical_system_release.py",
-      "size_bytes": 4315,
-      "sha256": "451efb988e01ff6688be9aea50eb43f4ad78c16afa8664fac6b51c55215b638d",
+      "size_bytes": 5351,
+      "sha256": "94d39ecbbbfe98c7f5c6d3e44271ee10d173f5b9cd5f1fcbbbbbcd3698d5e6a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11189,11 +11315,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+  "release_version": "16.3.25.5.38-ci-release-fixture-isolation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-    "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-    "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening"
+    "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "release_version": "16.3.25.5.38-ci-release-fixture-isolation"
   },
   "legacy_aliases": {
     "version": "release_version"
