@@ -119,6 +119,32 @@ def _enforce_persistent_voice_e2e(
     return attached
 
 
+def _normalize_host_presentation_contract(presentation: Mapping[str, Any]) -> None:
+    """Normalize the final host-facing packet to neutral runtime voice fields.
+
+    The historical ``*_latka_voice`` keys remain bounded compatibility aliases.
+    New host integrations consume only the neutral ``*_runtime_voice`` keys.
+    This runs at the pre-response gate so every packet returned to a host crosses
+    one normalization boundary before it can become visible.
+    """
+    if not isinstance(presentation, dict):
+        return
+    must_not_claim = bool(
+        presentation.get("must_not_claim_runtime_voice", presentation.get("must_not_claim_latka_voice", False))
+    )
+    must_preserve = bool(
+        presentation.get("must_preserve_runtime_voice", presentation.get("must_preserve_latka_voice", False))
+    )
+    presentation["must_not_claim_runtime_voice"] = must_not_claim
+    presentation["must_preserve_runtime_voice"] = must_preserve
+    presentation["must_not_claim_latka_voice"] = must_not_claim
+    presentation["must_preserve_latka_voice"] = must_preserve
+    if str(presentation.get("action") or "") == "host_diagnostic":
+        presentation["host_instruction"] = (
+            "Pokaż krótką techniczną diagnozę hosta; nie przypisuj jej runtime."
+        )
+
+
 def build_host_pre_response_gate_telemetry(
     *,
     presentation: Mapping[str, Any],
@@ -132,6 +158,7 @@ def build_host_pre_response_gate_telemetry(
     bypass_reason: str | None = None,
     finalization_completed: bool | None = None,
 ) -> dict[str, Any]:
+    _normalize_host_presentation_contract(presentation)
     presentation_map = dict(presentation)
     response_map = dict(response or {})
     bridge = _mapping(presentation_map.get("chatgpt_host_bridge"))

@@ -797,7 +797,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "display_exact_runtime_final": displayable_runtime_final,
         "truth_boundary": (
             "Host wykonuje wyłącznie akcję wskazaną w phase. runtime_final_available oznacza dosłowne wyświetlenie tekstu; "
-            "host_visible_generation_requested wymaga związanej z turą drugiej fazy; host_diagnostic_required zabrania hostowi przypisywania własnego tekstu runtime."
+            "host_visible_generation_requested wymaga związanej z turą drugiej fazy; host_diagnostic_required zabrania imitowania Łatki."
         ),
     }
     if requires_host:
@@ -852,7 +852,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "Hash tekstu licz po kanonizacji UTF-8 z końcami linii LF i bez BOM.",
         "Zadeklaruj każdy użyty identyfikator pamięci i nie używaj identyfikatorów spoza host_generation_context.allowed_memory_item_ids.",
         "Jeżeli host rzeczywiście wykonał web.run lub GitHub, przekaż ograniczone external_tool_evidence; nigdy nie wymyślaj dowodu wykonania narzędzia.",
-        "Jeżeli phase=host_diagnostic_required, pokaż techniczną diagnozę hosta i nie przypisuj własnego tekstu runtime.",
+        "Jeżeli phase=host_diagnostic_required, pokaż diagnozę hosta zamiast imitować wypowiedź Łatki.",
     ]
     if requires_host and not host_generation_context_valid:
         bridge.update({
@@ -914,11 +914,6 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
     final_contract = json_object(payload.get("final_response_contract"))
     host_policy = json_object(bridge.get("host_generation_policy"))
     voice_policy = json_object(host_policy.get("voice_continuity_policy"))
-    must_not_claim_runtime_voice = action in {"host_diagnostic", "poll_runtime"}
-    must_preserve_runtime_voice = bool(
-        action == "generate_then_finalize"
-        and voice_policy.get("active_runtime_first_person_voice_required")
-    )
     packet: dict[str, Any] = {
         "schema_version": schema_version("chatgpt_host_presentation_packet"),
         "type": "chatgpt_host_presentation",
@@ -932,12 +927,8 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         ),
         "must_display_exactly": action == "display_exact",
         "must_not_paraphrase": action == "display_exact",
-        "must_not_claim_runtime_voice": must_not_claim_runtime_voice,
-        "must_preserve_runtime_voice": must_preserve_runtime_voice,
-        # Bounded compatibility aliases for pre-v16.3.25.5.40 consumers.
-        # New integrations must use the neutral runtime_voice fields above.
-        "must_not_claim_latka_voice": must_not_claim_runtime_voice,
-        "must_preserve_latka_voice": must_preserve_runtime_voice,
+        "must_not_claim_latka_voice": action in {"host_diagnostic", "poll_runtime"},
+        "must_preserve_latka_voice": bool(action == "generate_then_finalize" and voice_policy.get("active_runtime_first_person_voice_required")),
         "external_tools_do_not_transfer_voice": bool(voice_policy.get("external_tools_do_not_transfer_voice")),
         "forbidden_visible_prefixes": list(voice_policy.get("forbidden_visible_prefixes") or []),
         "required_visible_prefix": bridge.get("required_visible_prefix"),
@@ -960,9 +951,9 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         },
         "host_instruction": {
             "display_exact": "Pokaż wyłącznie final_visible_text znak w znak.",
-            "generate_then_finalize": "Wygeneruj tekst wyłącznie z host_generation_policy, odeřlij host_visible_reply i pokaż dopiero final zaakceptowany przez runtime. Degradacja do świeżego czasu OS jest informacją, nie powodem zmiany action na host_diagnostic.",
+            "generate_then_finalize": "Wygeneruj tekst wyłącznie z host_generation_policy, odeślij host_visible_reply i pokaż dopiero final zaakceptowany przez runtime. Degradacja do świeżego czasu OS jest informacją, nie powodem zmiany action na host_diagnostic.",
             "poll_runtime": "Nie uruchamiaj ponownie wiadomości. Pobierz wynik istniejącej tury przez poll_command/request_id.",
-            "host_diagnostic": "Pokaż krótką techniczną diagnozę hosta; nie przypisuj jej runtime.",
+            "host_diagnostic": "Nie imituj Łatki; pokaż krótką diagnozę jako Host ChatGPT.",
         }[action],
     }
     if transport_observability:
@@ -1017,9 +1008,9 @@ def attach_chatgpt_host_contract(
             ttl_seconds = continuation_ttl_for_bridge(bridge)
             pending = persist_pending_host_request(config.root, bridge, ttl_seconds=ttl_seconds)
             bridge["pending_request_persisted"] = True
-            bride["pending_request_state"] = pending.get("state")
-            bride["pending_request_ttl_seconds"] = ttl_seconds
-            bride["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
+            bridge["pending_request_state"] = pending.get("state")
+            bridge["pending_request_ttl_seconds"] = ttl_seconds
+            bridge["pending_request_expires_at_utc"] = pending.get("expires_at_utc")
         except HostRequestStoreError as exc:
             bridge.update({
                 "phase": "host_diagnostic_required",
@@ -1308,7 +1299,7 @@ def persist_chatgpt_host_visible_reply(
 
 
 def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
-    """Return the visible runtime reply from a chat bridge payload.
+    """Return the visible Łatka reply from a chat bridge payload.
 
     The JSONL protocol remains the default source of truth. This helper is only
     for the human-readable --chat-gpt rendering mode.
