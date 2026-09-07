@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.42 repairs the post-merge ChatGPT host runbook contracts and
-# excludes explicitly non-authoritative plan snapshots from active-line audits.
-DISTRIBUTION_VERSION = "16.3.25.5.42"
-PACKAGE_VERSION = "16.3.25.5.42"
-PACKAGE_RELEASE_NAME = "host-runbook-archive-scope-ci-repair"
+# v16.3.25.5.43 makes ChatGPT host recovery capability-aware across independent
+# execution surfaces and hardens staged attachment/package materialization.
+DISTRIBUTION_VERSION = "16.3.25.5.43"
+PACKAGE_VERSION = "16.3.25.5.43"
+PACKAGE_RELEASE_NAME = "host-capability-materialization-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
