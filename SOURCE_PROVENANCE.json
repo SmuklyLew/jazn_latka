@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e828c2f4ab10a909d9d8b2324e69caf68f82c94d",
-    "base_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "base_commit": "738f89dc4378123910fcdc9cffd3cb50d8332476",
+    "base_version": "16.3.25.5.39-memory-affect-docs-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "738f89dc4378123910fcdc9cffd3cb50d8332476",
