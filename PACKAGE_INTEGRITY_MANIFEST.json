@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.38-ci-release-fixture-isolation",
-  "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
-  "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
-  "generated_at_utc": "2026-09-07T01:39:06+00:00",
-  "updated_at_utc": "2026-09-07T01:39:06+00:00",
+  "version": "16.3.25.5.39-memory-affect-docs-convergence",
+  "runtime_version": "16.3.25.5.39-memory-affect-docs-convergence",
+  "package_version": "16.3.25.5.39-memory-affect-docs-convergence",
+  "generated_at_utc": "2026-09-07T01:49:00+00:00",
+  "updated_at_utc": "2026-09-07T01:49:00+00:00",
   "start_file": "run.py",
-  "file_count": 1214,
-  "static_file_count": 1214,
+  "file_count": 1218,
+  "static_file_count": 1218,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2883,
-      "sha256": "fe1e61e807a875203b7b92eeeddb0753f38cb3aec1e8fef9fcac13e5b67bd84b",
+      "size_bytes": 2895,
+      "sha256": "580e981212bbf6159ae0897691c7fb4cafd19bd57829cf83836045b56824f0c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +245,8 @@
     },
     {
       "path": "docs/README.md",
-      "size_bytes": 3510,
-      "sha256": "18eddb0bc444ce528de5b1f6184d054ae225039edcac7a8f1e81bf29145c2b3a",
+      "size_bytes": 3307,
+      "sha256": "3b2dd551735e3b4985694e7493858d471989f879f4928467fc6dbafdb48be77c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1100,8 +1100,8 @@
     },
     {
       "path": "docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md",
-      "size_bytes": 33115,
-      "sha256": "ab3021d108f5c4c4ffa0e1b2a1aba38909c71beebb58eec3cfd2ec9aa1d79452",
+      "size_bytes": 20679,
+      "sha256": "f8ab1361e7a98b6b59c4097c0657626cddbf8450d5365acba68b7b16b12a90fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1109,8 +1109,8 @@
     },
     {
       "path": "docs/plans/CURRENT_STEP.md",
-      "size_bytes": 7175,
-      "sha256": "6346843567cf14b1990be3df7ab92208c0344c36a5c067ea4688493a3acf971a",
+      "size_bytes": 3813,
+      "sha256": "b849d73402dcb19b6de6ed82e540066de1a6c3fc27174b04a496dace45b409c5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1118,8 +1118,8 @@
     },
     {
       "path": "docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md",
-      "size_bytes": 18733,
-      "sha256": "24eaa6d48dd11e7a4441e7aca67f8f3b3c605b3fb269d778b08e7d855cda5f59",
+      "size_bytes": 12877,
+      "sha256": "80aed1afec7d90b410013e97734a754a0cc65d4a3520782811c4098a779228ab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1127,8 +1127,8 @@
     },
     {
       "path": "docs/plans/PLAN_EXECUTION_HISTORY.md",
-      "size_bytes": 18704,
-      "sha256": "43b0e229effbaea033fe815d37323259467adc0c3a511a41ea88151618645432",
+      "size_bytes": 8106,
+      "sha256": "9a4567888e9c3f2868b80f812449bbb28903c80d1d84a90e593a95ff9ba57965",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1136,8 +1136,26 @@
     },
     {
       "path": "docs/plans/README.md",
-      "size_bytes": 3236,
-      "sha256": "83b0fd3fc8efb0dbae5e088065268c3ce0ab9a8d95bd88f38616a9ec265e3af6",
+      "size_bytes": 5650,
+      "sha256": "a94db131722a7563402d6fb884cf56d8ea3e11176605ae62a41bcc87a3219a85",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/RESEARCH_EVIDENCE_BASE.md",
+      "size_bytes": 10665,
+      "sha256": "5cb76e2995dc3cbc07a13c23bbc137e63b5de9b2e49d0fb4ea4cf3601afebde9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md",
+      "size_bytes": 15232,
+      "sha256": "e405184f0276f70c95f15f78fd4d3c5528f83d1219aade5af57e6f26193a9da1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1145,8 +1163,8 @@
     },
     {
       "path": "docs/plans/V17_PLUS_SYSTEM_EVALUATION.md",
-      "size_bytes": 18085,
-      "sha256": "dda29dc102549f51754c1ac9ce60376008af677c623844683a7f680b18b234b6",
+      "size_bytes": 8886,
+      "sha256": "83f40b1ae51251706c55f1d060421e6ebf19afbbbcaf72b8b2cf176a8c6e609c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1342,6 +1360,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/ARCHIVE_NOTICE_PRE_REWRITE.md",
+      "size_bytes": 1727,
+      "sha256": "b2940a8733e462b64401e444546c57855474893f531502b68f77d905dd4a3c98",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/CURRENT_STEP.md",
       "size_bytes": 7175,
       "sha256": "6346843567cf14b1990be3df7ab92208c0344c36a5c067ea4688493a3acf971a",
@@ -1405,6 +1432,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/ONLY_TO_CHECK_ROOT_README_PRE_REWRITE.md",
+      "size_bytes": 1155,
+      "sha256": "5b450fb0c5a9671f4aecc41ce3b77e30d9fc2f9cc7446d49d69504731ffba840",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/only_to_check/2026-09-07-pr231-pre-memory-affect-rewrite/PLANS_README.md",
       "size_bytes": 3236,
       "sha256": "83b0fd3fc8efb0dbae5e088065268c3ce0ab9a8d95bd88f38616a9ec265e3af6",
@@ -1442,8 +1478,8 @@
     },
     {
       "path": "docs/plans/only_to_check/ARCHIVE_NOTICE.md",
-      "size_bytes": 1727,
-      "sha256": "b2940a8733e462b64401e444546c57855474893f531502b68f77d905dd4a3c98",
+      "size_bytes": 882,
+      "sha256": "f8c8196ffdabb7c2c40898f0c01ca2b8c07bfbf7264dab67ae677eccd492bff1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1523,8 +1559,8 @@
     },
     {
       "path": "docs/plans/only_to_check/README.md",
-      "size_bytes": 1155,
-      "sha256": "5b450fb0c5a9671f4aecc41ce3b77e30d9fc2f9cc7446d49d69504731ffba840",
+      "size_bytes": 2371,
+      "sha256": "18bfd6d482cfd7c6c1fe5d3a54865f7652802b8cefd191bd01d62d6561d0a9b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1532,8 +1568,8 @@
     },
     {
       "path": "docs/project/CURRENT_STATE.md",
-      "size_bytes": 4291,
-      "sha256": "602a85f1a78748c6b54aeaf279e37388ec9769da735a90ae7ca0f51497ca1d91",
+      "size_bytes": 4480,
+      "sha256": "19569d96b2f86dface8758ea0183394c63e7234da134bbdabc78cf97a89d2540",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1568,8 +1604,8 @@
     },
     {
       "path": "docs/project/RELEASE_TIMELINE.md",
-      "size_bytes": 5748,
-      "sha256": "661ffb94ff5ce15a9b5cf6f361f0d77facebd11f10ccdf9ab118b457f070d1d5",
+      "size_bytes": 4757,
+      "sha256": "a3da0d8e801991e6368f638979a20a66ab6ca928ff3e71e27c6bd9d4cfb07adf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7400,8 +7436,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6559,
-      "sha256": "8134df0c6e61dfd1416176658c4a9612d202ec85ff29a2fe661f730af466eff9",
+      "size_bytes": 6555,
+      "sha256": "025a31db806061c1362866d491001955c22063bcc070f8734247b2021e248181",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11378,11 +11414,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "release_version": "16.3.25.5.39-memory-affect-docs-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
-    "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
-    "release_version": "16.3.25.5.38-ci-release-fixture-isolation"
+    "runtime_version": "16.3.25.5.39-memory-affect-docs-convergence",
+    "package_version": "16.3.25.5.39-memory-affect-docs-convergence",
+    "release_version": "16.3.25.5.39-memory-affect-docs-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
