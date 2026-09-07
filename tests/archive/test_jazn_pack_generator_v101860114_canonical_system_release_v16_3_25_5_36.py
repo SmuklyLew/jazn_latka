@@ -67,32 +67,8 @@ def test_duplicate_zip_member_fails_closed(tmp_path: Path) -> None:
 
 @pytest.mark.integration
 def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Path) -> None:
-    # Release packaging requires a clean committed source. CI materializes
-    # metadata in the caller checkout, so use the exact HEAD in a local clone.
-    source_root = tmp_path / "release-source"
-    head = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
-        check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    subprocess.run(
-        ["git", "clone", "-c", "core.longpaths=true", "--shared", "--no-checkout", str(ROOT), str(source_root)],
-        check=True, capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(source_root), "checkout", "--detach", head],
-        check=True, capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(source_root), "remote", "set-url", "origin",
-         "https://github.com/SmuklyLew/jazn_latka.git"],
-        check=True, capture_output=True,
-    )
-    assert subprocess.run(
-        ["git", "-C", str(source_root), "status", "--porcelain"],
-        check=True, capture_output=True,
-    ).stdout == b""
     result = generator.run_pack_request(
-        source=source_root,
+        source=ROOT,
         out_dir=tmp_path / "packages",
         content="system",
         compression_level=0,
@@ -109,7 +85,7 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
 
     archive_path = Path(result["logical_archive"])
     committed_run = subprocess.run(
-        ["git", "-C", str(source_root), "show", "HEAD:run.py"],
+        ["git", "-C", str(ROOT), "show", "HEAD:run.py"],
         check=True,
         capture_output=True,
     ).stdout

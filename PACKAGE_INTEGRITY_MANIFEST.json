@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-  "generated_at_utc": "2026-09-06T21:51:50+00:00",
-  "updated_at_utc": "2026-09-06T21:51:50+00:00",
+  "version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "generated_at_utc": "2026-09-07T00:12:28+00:00",
+  "updated_at_utc": "2026-09-07T00:12:28+00:00",
   "start_file": "run.py",
-  "file_count": 1193,
-  "static_file_count": 1193,
+  "file_count": 1196,
+  "static_file_count": 1196,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/powershell-terminal-regressions.yml",
-      "size_bytes": 3911,
-      "sha256": "d88f9d037ab1e9ab195828a6f504ccdfd01e852ac3678e815b6057d57d78671e",
+      "size_bytes": 3940,
+      "sha256": "58ebc4dc6daced83bd717161a97096ff0e9f03c2340386b9b96ea1c059468c91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "85bdb529449276390c2155e5b7d20a5e9db31bd7b00b986c9bd62347a045c609",
+      "size_bytes": 2890,
+      "sha256": "5e564d76b5a8e9e4cf35d539c7b0e2b32ab4cdfda7aa4dca4aa7c676a2c9144b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1210,6 +1210,15 @@
       "path": "docs/plans/16.3.26-attachment-ingress/STATUS.md",
       "size_bytes": 386,
       "sha256": "9114c5b79b4ded9c9f61d800db3606be63628ec3bd27843f4c012fdbf778b6f5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/16.4-affective-memory-convergence/PLAN.md",
+      "size_bytes": 37423,
+      "sha256": "cbfdc66be5e0f4999afe15c0490164443e6281453acb07dd21332e790a0f1c51",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7229,8 +7238,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6622,
-      "sha256": "b93973adaa9fbedc14a4f331b0e6f18ca70d65cf51f45ffdd7b11a4100590450",
+      "size_bytes": 6559,
+      "sha256": "8134df0c6e61dfd1416176658c4a9612d202ec85ff29a2fe661f730af466eff9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7456,6 +7465,24 @@
       "path": "tests/archive/test_jazn_pack_generator_v101860113_folder_snapshot_source_v16325533.py",
       "size_bytes": 5394,
       "sha256": "057a5d3cb8db3f0fe7c6c4ac77cc5f382e8d2b423711c5cec2ac863d3eb82308",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_36.py",
+      "size_bytes": 4315,
+      "sha256": "451efb988e01ff6688be9aea50eb43f4ad78c16afa8664fac6b51c55215b638d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_37.py",
+      "size_bytes": 5322,
+      "sha256": "dafab4a9072ff420ad10cb6fcd107c57a437a3daff3ff1352246ecc84ba89480",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8804,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v101860114_canonical_system_release.py",
-      "size_bytes": 4315,
-      "sha256": "451efb988e01ff6688be9aea50eb43f4ad78c16afa8664fac6b51c55215b638d",
+      "size_bytes": 5351,
+      "sha256": "94d39ecbbbfe98c7f5c6d3e44271ee10d173f5b9cd5f1fcbbbbbcd3698d5e6a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11189,11 +11216,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+  "release_version": "16.3.25.5.38-ci-release-fixture-isolation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-    "package_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
-    "release_version": "16.3.25.5.36-ci-archive-scope-contract-hardening"
+    "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "release_version": "16.3.25.5.38-ci-release-fixture-isolation"
   },
   "legacy_aliases": {
     "version": "release_version"
