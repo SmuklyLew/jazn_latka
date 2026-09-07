@@ -209,7 +209,7 @@ def host_tool_attestations_to_external_evidence(
                 source_ids.append(url_id)
         if len(action_ids) >= 8:
             break
-    return {
+    base = {
         "external_source_count": len(source_ids[:32]),
         "external_source_ids": source_ids[:32],
         "external_tool_action_count": len(action_ids[:8]),
@@ -218,6 +218,15 @@ def host_tool_attestations_to_external_evidence(
         "host_attested": bool(action_ids),
         "runtime_independently_verified_execution": False,
     }
+    # Canonical host-finalize can bind local executor evidence in a per-turn
+    # ContextVar. Lazy import avoids an import cycle and preserves the existing
+    # external-tool projection API used by chat_command_contract.
+    from latka_jazn.core.host_action_evidence import (
+        current_host_action_epistemic_evidence,
+        merge_epistemic_external_evidence,
+    )
+
+    return merge_epistemic_external_evidence(base, current_host_action_epistemic_evidence())
 
 
 def collect_epistemic_evidence(

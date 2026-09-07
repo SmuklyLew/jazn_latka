@@ -13,9 +13,11 @@ from latka_jazn.core.chat_command_contract import (
     persist_chatgpt_host_visible_reply,
 )
 from latka_jazn.core.chatgpt_host_pending_store import host_request_lifecycle_state
+from latka_jazn.core.host_action_evidence import host_action_evidence_scope
 
 
 MAX_EXTERNAL_TOOL_EVIDENCE = 8
+MAX_HOST_ACTION_EVIDENCE = 8
 MAX_USED_MEMORY_ITEM_IDS = 8
 
 
@@ -34,6 +36,23 @@ def _read_external_tool_evidence(path: Path | None) -> list[dict[str, Any]]:
         result.append(dict(item))
     return result
 
+
+
+
+def _read_host_action_evidence(path: Path | None) -> list[dict[str, Any]]:
+    if path is None:
+        return []
+    value = json.loads(path.read_text(encoding="utf-8-sig"))
+    if not isinstance(value, list):
+        raise ValueError("host_action_evidence_must_be_json_array")
+    if len(value) > MAX_HOST_ACTION_EVIDENCE:
+        raise ValueError("host_action_evidence_limit_exceeded")
+    result: list[dict[str, Any]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise ValueError(f"host_action_evidence_not_object:{index}")
+        result.append(dict(item))
+    return result
 
 def _lifecycle_record(root: Path, turn_id: str) -> dict[str, Any]:
     state = host_request_lifecycle_state(root, turn_id=turn_id)
@@ -116,6 +135,15 @@ def finalize_payload(args: Any) -> dict[str, Any]:
             "error_code": "external_tool_evidence_invalid",
             "error": f"{type(exc).__name__}:{exc}",
         }
+    try:
+        host_action_evidence = _read_host_action_evidence(getattr(args, "host_action_evidence_file", None))
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        return {
+            "ok": False,
+            "accepted": False,
+            "error_code": "host_action_evidence_invalid",
+            "error": f"{type(exc).__name__}:{exc}",
+        }
 
     payload = {
         "type": "host_visible_reply",
@@ -136,30 +164,57 @@ def finalize_payload(args: Any) -> dict[str, Any]:
         "used_memory_item_ids": used_memory_item_ids,
         "external_tool_evidence": external_tool_evidence,
     }
-    persisted, errors = persist_chatgpt_host_visible_reply(
-        config=JaznConfig(root=root),
-        payload=payload,
-        chat_bridge_meta={
-            "client": "canonical_host_finalize_cli",
-            "lifecycle": "run_py_host_finalize_phase2",
-            "mode": "two_phase_host_visible_reply",
-            "transport": "local_canonical_cli",
-        },
-        contract=chat_gpt_contract(process_lifecycle="canonical_cli_two_phase").to_dict(),
-    )
+    try:
+        with host_action_evidence_scope(
+            host_action_evidence,
+            expected_turn_id=str(args.turn_id),
+            expected_trace_id=str(args.trace_id),
+            expected_request_contract_hash=host_request_contract_hash,
+        ):
+            persisted, errors = persist_chatgpt_host_visible_reply(
+                config=JaznConfig(root=root),
+                payload=payload,
+                chat_bridge_meta={
+                    "client": "canonical_host_finalize_cli",
+                    "lifecycle": "run_py_host_finalize_phase2",
+                    "mode": "two_phase_host_visible_reply",
+                    "transport": "local_canonical_cli",
+                },
+                contract=chat_gpt_contract(process_lifecycle="canonical_cli_two_phase").to_dict(),
+            )
+    except ValueError as exc:
+        return {
+            "ok": False,
+            "accepted": False,
+            "error_code": "host_action_evidence_invalid",
+            "error": f"{type(exc).__name__}:{exc}",
+        }
     if errors or not isinstance(persisted, dict):
         lifecycle = host_request_lifecycle_state(root, turn_id=str(args.turn_id))
         state = str(lifecycle.get("state") or "")
         outcome = "expired" if state == "expired" else "rejected"
-        notification = _notify_daemon(
-            root=root,
-            daemon_host=str(getattr(args, "daemon_host", "127.0.0.1")),
-            daemon_port=int(getattr(args, "daemon_port", 8787)),
-            turn_id=str(args.turn_id),
-            outcome=outcome,
-            reason=";".join(str(item) for item in errors) or "runtime_finalization_rejected",
-            terminal=state in {"expired", "indeterminate"},
-        )
+        if state == "indeterminate":
+            # The append outcome is genuinely uncertain.  Do not manufacture a
+            # second terminal ACK from host-side reconstruction: the durable
+            # pending store is the recovery authority and the daemon already
+            # reconciles ``indeterminate`` fail-closed.  This avoids turning one
+            # uncertainty into a misleading binding-mismatch side failure.
+            notification = {
+                "ok": True,
+                "deferred_to_durable_reconciliation": True,
+                "reason": "host_request_persistence_indeterminate",
+                "host_request_state": "indeterminate",
+            }
+        else:
+            notification = _notify_daemon(
+                root=root,
+                daemon_host=str(getattr(args, "daemon_host", "127.0.0.1")),
+                daemon_port=int(getattr(args, "daemon_port", 8787)),
+                turn_id=str(args.turn_id),
+                outcome=outcome,
+                reason=";".join(str(item) for item in errors) or "runtime_finalization_rejected",
+                terminal=state == "expired",
+            )
         return {
             "ok": False,
             "accepted": False,
@@ -239,6 +294,7 @@ def build_host_finalize_parser(*, default_root: Path) -> argparse.ArgumentParser
     parser.add_argument("--supplied-trace-id")
     parser.add_argument("--used-memory-item-id", action="append", default=[])
     parser.add_argument("--external-tool-evidence-file", type=Path)
+    parser.add_argument("--host-action-evidence-file", type=Path)
     parser.add_argument("--daemon-host", default="127.0.0.1")
     parser.add_argument("--daemon-port", type=int, default=8787)
     parser.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024)

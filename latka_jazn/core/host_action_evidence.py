@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 import hashlib
 import json
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Iterator, Mapping
 
 from latka_jazn.version import schema_version
 
@@ -23,6 +25,11 @@ _ALLOWED_OPERATIONS = frozenset({
     "runtime_start",
     "test",
 })
+
+
+_HOST_ACTION_CONTEXT: ContextVar[dict[str, Any] | None] = ContextVar(
+    "jazn_host_action_evidence_context", default=None
+)
 
 
 @dataclass(slots=True, frozen=True)
@@ -266,3 +273,99 @@ def merge_epistemic_external_evidence(*items: Mapping[str, Any] | None) -> dict[
             else:
                 merged[key] = value
     return merged
+
+
+def current_host_action_evidence_context() -> dict[str, Any]:
+    """Return one bounded phase-2 host-action context for the current execution context."""
+
+    value = _HOST_ACTION_CONTEXT.get()
+    if not isinstance(value, dict):
+        return {"evidence": [], "binding": {}, "validation": {"ok": True, "status": "not_supplied"}}
+    return {
+        "evidence": [dict(item) for item in value.get("evidence") or [] if isinstance(item, Mapping)],
+        "binding": dict(value.get("binding") or {}),
+        "validation": dict(value.get("validation") or {}),
+    }
+
+
+def current_host_action_epistemic_evidence() -> dict[str, Any]:
+    context = current_host_action_evidence_context()
+    return host_action_attestations_to_epistemic_evidence(context.get("evidence") or [])
+
+
+def _install_chat_command_candidate_bridge() -> None:
+    """Install one ContextVar-aware compatibility wrapper at the phase-2 callsite.
+
+    ``chat_command_contract`` predates host-local executor evidence and imports
+    the candidate evaluator by value.  Wrapping that module-level reference
+    keeps the large transport module unchanged while still passing only the
+    evidence bound to the current ContextVar.  The wrapper is process-global
+    but context-safe: concurrent turns without this scope receive no evidence.
+    """
+
+    from latka_jazn.core import chat_command_contract as contract_module
+
+    current = getattr(contract_module, "evaluate_host_response_candidate", None)
+    if not callable(current) or bool(getattr(current, "_jazn_host_action_context_bridge", False)):
+        return
+
+    def wrapped_candidate_evaluator(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        context = current_host_action_evidence_context()
+        if kwargs.get("host_action_evidence") is None and context.get("evidence"):
+            kwargs["host_action_evidence"] = list(context.get("evidence") or [])
+            kwargs["host_action_binding"] = dict(context.get("binding") or {})
+        return current(*args, **kwargs)
+
+    setattr(wrapped_candidate_evaluator, "_jazn_host_action_context_bridge", True)
+    setattr(wrapped_candidate_evaluator, "_jazn_host_action_original", current)
+    contract_module.evaluate_host_response_candidate = wrapped_candidate_evaluator
+
+
+@contextmanager
+def host_action_evidence_scope(
+    value: Any,
+    *,
+    expected_turn_id: str,
+    expected_trace_id: str,
+    expected_request_contract_hash: str,
+) -> Iterator[dict[str, Any]]:
+    """Bind validated host-local evidence to exactly one canonical phase-2 call.
+
+    ContextVar keeps the binding local to the current execution context and is
+    reset unconditionally after finalization, preventing evidence from leaking
+    into another turn or concurrent task. Empty evidence is a valid no-op scope.
+    """
+
+    if value in (None, []):
+        validation = {
+            "ok": True,
+            "evidence": [],
+            "errors": [],
+            "status": "not_supplied",
+            "binding": {
+                "turn_id": _bounded(expected_turn_id, 160),
+                "trace_id": _bounded(expected_trace_id, 160),
+                "host_request_contract_hash": _bounded(expected_request_contract_hash, 64).lower(),
+            },
+        }
+    else:
+        validation = validate_host_action_evidence(
+            value,
+            expected_turn_id=expected_turn_id,
+            expected_trace_id=expected_trace_id,
+            expected_request_contract_hash=expected_request_contract_hash,
+        )
+        if validation.get("ok") is not True:
+            errors = ",".join(str(item) for item in validation.get("errors") or ["invalid"])
+            raise ValueError(f"host_action_evidence_invalid:{errors}")
+    context = {
+        "evidence": [dict(item) for item in validation.get("evidence") or []],
+        "binding": dict(validation.get("binding") or {}),
+        "validation": dict(validation),
+    }
+    token = _HOST_ACTION_CONTEXT.set(context)
+    try:
+        _install_chat_command_candidate_bridge()
+        yield current_host_action_evidence_context()
+    finally:
+        _HOST_ACTION_CONTEXT.reset(token)
