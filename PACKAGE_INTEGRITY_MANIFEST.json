@@ -3,11 +3,11 @@
   "version": "16.3.25.5.44-host-finalization-evidence-binding",
   "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "package_version": "16.3.25.5.44-host-finalization-evidence-binding",
-  "generated_at_utc": "2026-09-07T23:12:01+00:00",
-  "updated_at_utc": "2026-09-07T23:12:01+00:00",
+  "generated_at_utc": "2026-09-07T23:23:37+00:00",
+  "updated_at_utc": "2026-09-07T23:23:37+00:00",
   "start_file": "run.py",
-  "file_count": 1237,
-  "static_file_count": 1237,
+  "file_count": 1241,
+  "static_file_count": 1241,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 10125,
-      "sha256": "b4c723a5571eb07fdd3f21faea50d45f31884cfaeb58acbb393534e34b5a8f9c",
+      "size_bytes": 10905,
+      "sha256": "e0808cb0211b1fef2adbd033ab41eb30bb8e09643ab980f3377f45f8676f877f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2932,
-      "sha256": "b0d45401e7c4e8fe2a4335ef9f1cca9f986d48f290f945cca4faee7d91064d45",
+      "sha256": "328169188f74e1176572a07ea658be1e6b201278bf58aad4d3d7f59597c5ed52",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1127,8 +1127,8 @@
     },
     {
       "path": "docs/plans/PLAN_EXECUTION_HISTORY.md",
-      "size_bytes": 8106,
-      "sha256": "9a4567888e9c3f2868b80f812449bbb28903c80d1d84a90e593a95ff9ba57965",
+      "size_bytes": 9191,
+      "sha256": "72b67e75733a97380d50faa6efd490839167ff8893be035e9aa8ffe5cc0886a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1702,6 +1702,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_44_HOST_FINALIZATION_EVIDENCE_BINDING.md",
+      "size_bytes": 10804,
+      "sha256": "a1d952de8d56721a10bdebd6e64ec3512ddca744a3da011a08c4d62d970abfc4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1712,8 +1721,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_HOST_FINALIZATION_PROTOCOL_TEST_MATRIX.md",
-      "size_bytes": 2163,
-      "sha256": "c25a7992b0a4d31e622cea354ed9cbfaca192f1265000247784486a33ef80b00",
+      "size_bytes": 3238,
+      "sha256": "0c6aafeddf0c65e92d80df2e576bb40c75400a38e4b60cb88bd02418fc2430ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10615,6 +10624,33 @@
       "path": "tests/test_v16325543_host_package_freeze.py",
       "size_bytes": 1629,
       "sha256": "535c53afa5753c30c7610fb7f213114fd7cba8778a9c3c3f782fd586046abe6c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325544_attachment_part006_regression.py",
+      "size_bytes": 2453,
+      "sha256": "03a18fdd624293b4307d0478496e53a0939398fd0d87d29938b67d7a881858bb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325544_cognitive_integration_readiness.py",
+      "size_bytes": 4490,
+      "sha256": "cbf22ce7b88dd47ab7fab0faa6de9438cbbc275f384a7a23b4987cbe53a1d630",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325544_host_finalization_evidence_binding.py",
+      "size_bytes": 13693,
+      "sha256": "a6d0f70b772104d58116bd24ed396a125672d02601e09c2deb17a9396c001495",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
