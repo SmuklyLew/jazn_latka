@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
-  "runtime_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
-  "package_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
-  "generated_at_utc": "2026-09-07T18:02:05+00:00",
-  "updated_at_utc": "2026-09-07T18:02:05+00:00",
+  "version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+  "runtime_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+  "package_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+  "generated_at_utc": "2026-09-07T18:25:19+00:00",
+  "updated_at_utc": "2026-09-07T18:25:19+00:00",
   "start_file": "run.py",
-  "file_count": 1223,
-  "static_file_count": 1223,
+  "file_count": 1224,
+  "static_file_count": 1224,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 9246,
-      "sha256": "b9a2e1abc6e1e02f9523ae64501757fb8d6b822db819bc9a49ce90a727ec5389",
+      "size_bytes": 10125,
+      "sha256": "b4c723a5571eb07fdd3f21faea50d45f31884cfaeb58acbb393534e34b5a8f9c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 5040,
-      "sha256": "ffc6d091b8dc29aa9420f678228b5facb8d7f93ef6448f59f09c6cbfcbdd35c0",
+      "size_bytes": 5155,
+      "sha256": "6d72ca19ad4f8831788132ac79783d71c7538a32160dd32d1dbbfc6fefe65b34",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "daa5181dbc5e3be3b005acb8b530a6714290b48ea589864ca34d4ae3ec8cb440",
+      "size_bytes": 2948,
+      "sha256": "6f4ec2f78a927a199189db7cfcc91b4347b201627a205e77c50aa8769d9953ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1721,8 +1721,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 2683,
-      "sha256": "38be1c867fb630ed5c71ed1e92e05ae3efbea82f705ad2edf0979e7f0ec1f126",
+      "size_bytes": 3054,
+      "sha256": "33caf8710d18e5b006b623daddb69946d0ee16b74f65b63f79b0b4fb38f3521d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6464,8 +6464,8 @@
     },
     {
       "path": "latka_jazn/tools/current_line_archive_audit.py",
-      "size_bytes": 12139,
-      "sha256": "93187ab949d5ec925e9c6ab6950c9a205f67e8f80cc337a76cc86c47f5e38120",
+      "size_bytes": 12283,
+      "sha256": "9fe75318f1874b2bdadf34a1f64d8a31bc358d0fa2a6d0cd4826ab38e0974b3a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7445,8 +7445,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6581,
-      "sha256": "00dc4a8f8dbb00680b56a7129954fceac7c9550f22de68c0b5401d00f51354f4",
+      "size_bytes": 6570,
+      "sha256": "9ca3f077fcff37d1b1566bf7b47909d20569ea7fab6e4f9c7c477c47a4ade341",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10495,6 +10495,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325542_post_merge_ci_contract_repair.py",
+      "size_bytes": 721,
+      "sha256": "e50edb40ae5f9c0eea01d18e8da6462fcc87a92ae5b7dd5b6002987481779717",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -11459,11 +11468,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
+  "release_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
-    "package_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence",
-    "release_version": "16.3.25.5.41-runtime-kernel-finalization-canon-convergence"
+    "runtime_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+    "package_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair",
+    "release_version": "16.3.25.5.42-host-runbook-archive-scope-ci-repair"
   },
   "legacy_aliases": {
     "version": "release_version"
