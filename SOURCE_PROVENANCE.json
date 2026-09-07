@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "378e9e6aceb83edbd679751e19cbe5c64c978025",
-    "base_version": "16.3.25.5.36-ci-archive-scope-contract-hardening",
+    "base_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
+    "base_version": "16.3.25.5.38-ci-release-fixture-isolation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "610d0e62a4504d139df1e071dec7395c73ed4e3f",
