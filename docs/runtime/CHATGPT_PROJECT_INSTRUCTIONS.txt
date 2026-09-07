@@ -4,25 +4,25 @@ Ta instrukcja służy wyłącznie technicznemu odnalezieniu, bootstrapowi, uruch
 
 Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź dostęp do lokalnych plików oraz executora/terminala.
 
-Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj stan jako `host_executor_unavailable`. Stan filesystemu i paczki pozostaje wtedy `unknown`, a runtime `unverified`; nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime.
+Jeżeli jedna powierzchnia executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, nie wyciągaj z tego wniosku o stanie innych niezależnych powierzchni wykonawczych, `/mnt/data`, paczki ani runtime. Dla tej powierzchni proces nie został utworzony, więc jej wynik nie jest wynikiem lokalnej komendy.
 
-Błąd hosta przed utworzeniem procesu odróżniaj od błędu procesu, który rzeczywiście wystartował. niezerowy kod wyjścia, stderr albo timeout uruchomionego procesu diagnozuj jako wynik lokalnej komendy.
+Jeżeli istnieje jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj najwyżej jedną minimalną próbę rozróżniającą. Jeżeli alternatywa utworzy proces, środowisko jest dostępne w stanie zdegradowanym i można kontynuować bezpieczne discovery. Dopiero brak zdolności utworzenia procesu przez wszystkie dostępne powierzchnie objęte ograniczonym probingiem uzasadnia globalne `host_executor_unavailable`. Nie twórz nieograniczonego retry ani własnego backoffu.
 
-Dla przejściowego `host_executor_unavailable` wykonuj wyłącznie ograniczone, bezskuteczne próby utworzenia procesu; jeżeli istnieje jedna niezależna alternatywna powierzchnia wykonawcza, wykonaj najwyżej jedną próbę rozróżniającą. Nie ponawiaj podczas recovery operacji ZIP, bootstrapu ani innych czynności mających skutki uboczne. Nie twórz nieograniczonego retry ani własnego backoffu.
+Błąd procesu, który rzeczywiście wystartował — niezerowy kod wyjścia, stderr albo timeout — diagnozuj jako wynik lokalnej komendy, a nie jako brak executora hosta.
 
 Jeżeli wygląda to na problem platformy, można sprawdzić status.openai.com. Jeżeli Support poprosi o HAR, traktuj HAR jako potencjalnie wrażliwy artefakt diagnostyczny. Nie zapisuj HAR w repozytorium, pamięci Jaźni ani śledzonych plikach projektu.
 
-Jeżeli executor udostępnia `/mnt/data`, sprawdź go jako pierwszy lokalny kandydat na paczki lub rozpakowany runtime, ale nie zakładaj istnienia tej ścieżki.
+Jeżeli executor udostępnia `/mnt/data`, sprawdź go jako pierwszy lokalny kandydat na paczki lub rozpakowany runtime, ale nie zakładaj istnienia tej ścieżki. Dostępny filesystem nie jest dowodem, że każdy załącznik zakończył materializację: przed joinem albo bootstrapem paczki wymagaj stabilnego pliku, oczekiwanego rozmiaru i SHA-256 zgodnego z sidecarem/manifestem.
 
 Jeżeli istnieje już lokalny rozpakowany runtime systemowy, znajdź w jego root `AGENTS.md`.
 
 Jeżeli dostępna jest lokalna kompletna paczka systemowa ZIP lub kompletny zestaw jej części, wykonaj bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego operatora. Nie traktuj paczki profilu `memory` jako systemowego `active_root`.
 
-Wczytaj pełną dostępną treść `AGENTS.md`, a dla ChatGPT zastosuj wskazany `AGENTS.chatgpt.md` odpowiedni dla bieżącego hosta.
+Wczytaj pełną dostępną treść `AGENTS.md` i zastosuj wskazany przez niego runbook odpowiedni dla bieżącego hosta lub zadania.
 
-Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako główne wykonawcze wejście do systemu. Nie odtwarzaj w hoście własnej implementacji lifecycle, routingu, pamięci, finalizacji ani innych funkcji należących do runtime.
+Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wykonawcze wejście do systemu. Nie odtwarzaj w hoście własnej implementacji lifecycle, routingu, pamięci, finalizacji ani innych funkcji należących do runtime.
 
-Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle udostępniany przez `run.py`. one-shot jest wyłącznie fallbackiem pojedynczej tury i nie stanowi dowodu utrzymanego procesu.
+Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle udostępniany przez `run.py`. One-shot jest wyłącznie fallbackiem pojedynczej tury i nie stanowi dowodu utrzymanego procesu.
 
 Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji.
 

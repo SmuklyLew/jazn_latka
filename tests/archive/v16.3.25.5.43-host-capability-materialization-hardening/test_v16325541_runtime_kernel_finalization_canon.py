@@ -21,7 +21,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     persist_pending_host_request,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
-from latka_jazn.version import PACKAGE_VERSION
+from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
 def _bridge(turn_id: str = "turn-v16325541") -> dict[str, Any]:
@@ -245,3 +245,8 @@ def test_birth_source_manifest_has_executable_fail_closed_evaluation() -> None:
     })
     assert failed.status == "fail"
     assert manifest.to_dict()["evaluation_contract"]["executable"] is True
+
+
+def test_release_version_is_bumped_for_runtime_kernel_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.41"
+    assert PACKAGE_RELEASE_NAME == "runtime-kernel-finalization-canon-convergence"
