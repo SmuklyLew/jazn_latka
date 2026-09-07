@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
-  "base_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "commit_date": "2026-09-07T22:01:52+02:00",
+  "base_merge_commit": "dea0fd6bf6dc0a138a61702fcf91e91e1efcba4c",
+  "base_version": "16.3.25.5.44-host-finalization-evidence-binding",
+  "commit_date": "2026-09-08T00:50:39+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-07T20:01:52+00:00",
+  "generated_at_utc": "2026-09-07T22:50:39+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "3aa9b056d5e92f0bcf549df6028c6c5e5905ae47",
+  "git_tree_sha": "915c2662a0ec076674e45abf795ea9cc4291b017",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
+    "base_commit": "5a546f22444f954630207ba53e284de7e1af8a05",
     "base_version": "16.3.25.5.43-host-capability-materialization-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
-    "source_version": "16.3.25.5.43-host-capability-materialization-hardening"
+    "source_commit": "dea0fd6bf6dc0a138a61702fcf91e91e1efcba4c",
+    "source_version": "16.3.25.5.44-host-finalization-evidence-binding"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "release_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "14a975f2d92ac72d9d614b0671d9d79a642bfc75",
+  "source_commit": "dea0fd6bf6dc0a138a61702fcf91e91e1efcba4c",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "source_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "update_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "version_source": "latka_jazn/version.py"
 }

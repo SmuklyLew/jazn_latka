@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-  "generated_at_utc": "2026-09-07T20:01:52+00:00",
-  "updated_at_utc": "2026-09-07T20:01:52+00:00",
+  "version": "16.3.25.5.44-host-finalization-evidence-binding",
+  "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
+  "package_version": "16.3.25.5.44-host-finalization-evidence-binding",
+  "generated_at_utc": "2026-09-07T22:50:39+00:00",
+  "updated_at_utc": "2026-09-07T22:50:39+00:00",
   "start_file": "run.py",
-  "file_count": 1234,
-  "static_file_count": 1234,
+  "file_count": 1236,
+  "static_file_count": 1236,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "1021c4d0d32f1d7752783b59f79d314b8d6090ef719df9e07e92dabe2ab04381",
+      "size_bytes": 2932,
+      "sha256": "3b053e36675df277fc315a3d8f1b9d1a104783d19e146988c108ec7d4ea2f87a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2449,6 +2449,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/cognitive_integration_readiness.py",
+      "size_bytes": 5907,
+      "sha256": "6a7a5fca56f588a93a074a548c536578fe37dee1bcbf2fa81b1e41424bca272c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/cognitive_lineage.py",
       "size_bytes": 16307,
       "sha256": "32ce84d9f4f9a7a9e9c19576cdde47717a59379f1c824e0ca33072e45daa341f",
@@ -2603,8 +2612,8 @@
     },
     {
       "path": "latka_jazn/core/epistemic_claim_guard.py",
-      "size_bytes": 14867,
-      "sha256": "ebda59001da693860e027ebe524d3ddcdf1ad77d755ab91075eb22df57bbbc85",
+      "size_bytes": 20024,
+      "sha256": "a7ab70b55fa496fa6ea6e7363fa8f83288fd955b92279abeb0173a50f8fb3ce6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2621,8 +2630,8 @@
     },
     {
       "path": "latka_jazn/core/epistemic_evidence.py",
-      "size_bytes": 9878,
-      "sha256": "af38bfe8bf6b33119608e4052af1240ad607f676b778e2112618d1b3d6d73d29",
+      "size_bytes": 10687,
+      "sha256": "63f48e2cef0118388235da19315afc61c45b576a5235a9d886b591b958c7c2ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2971,6 +2980,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_action_evidence.py",
+      "size_bytes": 10255,
+      "sha256": "a788f05e11dc0a4b5ba671664e24971632cd22a7e83f7abb7e826a721c31f5a7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_regeneration_policy.py",
       "size_bytes": 1603,
       "sha256": "df524f7ea0f69fe7a8d7e94779fd0fb8bd83bef58ba675e95e5e23755606d9d7",
@@ -2981,8 +2999,8 @@
     },
     {
       "path": "latka_jazn/core/host_response_candidate_guard.py",
-      "size_bytes": 16872,
-      "sha256": "3fdf611c16ae00e7836501e66475d8158c3f78c645072d2fd81910d1d7213340",
+      "size_bytes": 19685,
+      "sha256": "3d4a2f77c47ac857f237c6a156fa8ed516b8483087ec349dd36932c5428c1ddd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7463,8 +7481,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "4435c98b53ab4f664874d12eb8b5157ba9d33a3fb487e83b5aeae413dd293712",
+      "size_bytes": 6570,
+      "sha256": "f2b49412be1d6a2ed0b0d8ff35d2ceef06379f8e393e28cbee5d63ab1f1b3ea9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11558,11 +11576,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.43-host-capability-materialization-hardening",
+  "release_version": "16.3.25.5.44-host-finalization-evidence-binding",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.43-host-capability-materialization-hardening",
-    "package_version": "16.3.25.5.43-host-capability-materialization-hardening",
-    "release_version": "16.3.25.5.43-host-capability-materialization-hardening"
+    "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
+    "package_version": "16.3.25.5.44-host-finalization-evidence-binding",
+    "release_version": "16.3.25.5.44-host-finalization-evidence-binding"
   },
   "legacy_aliases": {
     "version": "release_version"
