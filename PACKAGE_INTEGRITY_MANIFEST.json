@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.37-ci-release-fixture-isolation",
-  "runtime_version": "16.3.25.5.37-ci-release-fixture-isolation",
-  "package_version": "16.3.25.5.37-ci-release-fixture-isolation",
-  "generated_at_utc": "2026-09-07T00:09:39+00:00",
-  "updated_at_utc": "2026-09-07T00:09:39+00:00",
+  "version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+  "generated_at_utc": "2026-09-07T00:12:28+00:00",
+  "updated_at_utc": "2026-09-07T00:12:28+00:00",
   "start_file": "run.py",
-  "file_count": 1195,
-  "static_file_count": 1195,
+  "file_count": 1196,
+  "static_file_count": 1196,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2890,
-      "sha256": "32d02472344bab7e6e3ffabad25c22910962a15afeca3b94789a9a24bc4fc59e",
+      "sha256": "5e564d76b5a8e9e4cf35d539c7b0e2b32ab4cdfda7aa4dca4aa7c676a2c9144b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7239,7 +7239,7 @@
     {
       "path": "latka_jazn/version.py",
       "size_bytes": 6559,
-      "sha256": "82cd882a4d6e443f7299668e5deab1de50576de8d78694ad886b9ae0ff372a41",
+      "sha256": "8134df0c6e61dfd1416176658c4a9612d202ec85ff29a2fe661f730af466eff9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7474,6 +7474,15 @@
       "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_36.py",
       "size_bytes": 4315,
       "sha256": "451efb988e01ff6688be9aea50eb43f4ad78c16afa8664fac6b51c55215b638d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_pack_generator_v101860114_canonical_system_release_v16_3_25_5_37.py",
+      "size_bytes": 5322,
+      "sha256": "dafab4a9072ff420ad10cb6fcd107c57a437a3daff3ff1352246ecc84ba89480",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8795,8 +8804,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_v101860114_canonical_system_release.py",
-      "size_bytes": 5322,
-      "sha256": "dafab4a9072ff420ad10cb6fcd107c57a437a3daff3ff1352246ecc84ba89480",
+      "size_bytes": 5351,
+      "sha256": "94d39ecbbbfe98c7f5c6d3e44271ee10d173f5b9cd5f1fcbbbbbcd3698d5e6a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11207,11 +11216,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.37-ci-release-fixture-isolation",
+  "release_version": "16.3.25.5.38-ci-release-fixture-isolation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.37-ci-release-fixture-isolation",
-    "package_version": "16.3.25.5.37-ci-release-fixture-isolation",
-    "release_version": "16.3.25.5.37-ci-release-fixture-isolation"
+    "runtime_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "package_version": "16.3.25.5.38-ci-release-fixture-isolation",
+    "release_version": "16.3.25.5.38-ci-release-fixture-isolation"
   },
   "legacy_aliases": {
     "version": "release_version"
