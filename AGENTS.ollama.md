@@ -1,33 +1,27 @@
 # AGENTS.ollama.md — kontrakt lokalnego backendu językowego Ollama
 
-Ten plik opisuje wyłącznie kontrakt i integrację lokalnego modelu Ollama jako backendu językowego runtime Jaźni. Jest wczytywany wtedy, gdy nadrzędny `AGENTS.md` skieruje zadanie do odpowiedzialności Ollamy. Ollama nie jest Jaźnią, hostem ChatGPT, pamięcią, kanonem, routerem ani źródłem prawdy o aktywności procesu.
+Ten plik opisuje wyłącznie integrację Ollamy jako backendu językowego runtime systemu Jaźni. Nie jest operatorem systemu, pamięcią ani źródłem prawdy o aktywności procesu.
 
-Jeżeli zadanie wymaga zmiany kodu lub dokumentacji integracji Ollamy, operację repozytoryjną wykonuj równolegle według `AGENTS.codex.md`; ten plik definiuje kontrakt backendu, nie zasady edycji repozytorium.
+**Ten plik nie jest system promptem modelu Ollama.** Nie wolno automatycznie wstrzykiwać jego treści do `messages`, `SYSTEM`, `Modelfile` ani innego kontekstu modelu. Instrukcja służy agentowi lub programiście integrującemu backend; treść wysyłana do modelu powstaje wyłącznie w kanonicznym pipeline runtime.
 
-## Rola i granica prawdy
+Jeżeli zadanie wymaga zmiany kodu albo dokumentacji integracji Ollamy, operacje repozytoryjne wykonuj równolegle według `AGENTS.codex.md`.
 
-- Tożsamość, pamięć, routing, walidacja, narzędzia i decyzje L2/L3 należą do runtime Jaźni.
-- Model Ollama nie może sam zatwierdzać pamięci, deklarować wykonania narzędzia ani potwierdzać aktywnego runtime.
-- Odpowiedź modelu jest kandydatem językowym i musi przejść kontrakty runtime, truth gate oraz walidację widocznej odpowiedzi.
-- Brak modelu, endpointu lub zgodnej odpowiedzi prowadzi do prawdomównego błędu albo jawnego fallbacku, nigdy do udawania działania.
+## 1. Rola i granica prawdy
 
-## Kanoniczne uruchomienie
+- Ollama jest backendem generowania kandydata językowego.
+- Routing, pamięć, truth gate, walidacja, narzędzia i finalizacja należą do runtime.
+- Sam działający endpoint Ollamy nie dowodzi działania systemu Jaźni.
+- Brak modelu, endpointu lub zgodnej odpowiedzi prowadzi do jawnego błędu albo kontrolowanego fallbacku, nigdy do fałszywego sukcesu.
 
-Publicznym wejściem operatorskim jest `run.py`, tak samo jak dla lifecycle i hosta ChatGPT:
+## 2. Kanoniczne uruchomienie
+
+Publicznym wejściem operatorskim jest `run.py`:
 
 ```bash
 python -X utf8 run.py chat-ollama
 ```
 
-`run.py` zachowuje dojrzałą implementację `main.py --chat-ollama` jako wewnętrzną ścieżkę zgodnościową. Nie przedstawiaj `main.py` jako drugiego równorzędnego operatora. Bezpośrednia komenda zgodnościowa pozostaje dostępna dla starszych integracji:
-
-```bash
-python -X utf8 main.py --chat-ollama
-```
-
-W terminalu TTY ta komenda otwiera czytelną pętlę rozmowy z promptem `Ty>`. Runtime generuje identyfikator sesji automatycznie, gdy `--session-id` nie został podany. Bez jawnego `--ollama-model` odczytuje `/api/ps` i `/api/tags`, pokazuje wszystkie dostępne modele w numerowanej liście oraz prosi o wybór; Enter zatwierdza model domyślny. Gdy wejście pochodzi z pipe lub przekierowanego stdin, zachowany zostaje maszynowy kontrakt JSONL i selektor nie pyta o wybór.
-
-`--no-carryover` oznacza czysty start bez wczytania checkpointu poprzedniego uruchomienia. Kolejne tury tej samej uruchomionej pętli nadal zachowują bezpośredni kontekst rozmowy.
+`main.py --chat-ollama` pozostaje techniczną ścieżką zgodnościową, nie drugim równorzędnym operatorem.
 
 Można jawnie wskazać model i endpoint:
 
@@ -47,53 +41,35 @@ JAZN_OLLAMA_BASE_URL=http://127.0.0.1:11434
 
 Nie wymagaj `OPENAI_API_KEY` dla lokalnej Ollamy.
 
-## Kontrakt transportu
+## 3. Kontrakt transportu
 
-Domyślny lokalny adres API Ollamy to:
+Domyślny lokalny adres API Ollamy:
 
 ```text
 http://127.0.0.1:11434/api
 ```
 
 Wymagane operacje:
-
 - wykrywanie modeli: `GET /api/tags`;
 - rozmowa: `POST /api/chat`;
-- wiadomości w polu `messages` z rolami i treścią;
+- wejście rozmowy w polu `messages`;
 - poprawne zakończenie odpowiedzi potwierdzone przez `done=true`;
-- obsługa odpowiedzi strumieniowej lub jawne `stream=false` zgodnie z adapterem;
+- obsługa streamingu albo jawne `stream=false` zgodnie z adapterem;
 - respektowanie timeoutu, limitu wyjścia i jawnie wybranego modelu.
 
-Lokalny endpoint `http://127.0.0.1:11434` nie wymaga uwierzytelnienia. Modele chmurowe Ollama i bezpośredni dostęp do `https://ollama.com/api` mogą wymagać logowania lub klucza; nie myl tego z lokalnym transportem.
+Lokalny endpoint `http://127.0.0.1:11434` nie wymaga uwierzytelnienia. Bezpośredni dostęp do usług chmurowych Ollamy może mieć inny kontrakt uwierzytelniania i nie może być utożsamiany z lokalnym transportem.
 
-## Diagnostyka
+## 4. Diagnostyka
 
 Przed użyciem modelu sprawdź:
-
 1. czy endpoint odpowiada;
 2. czy żądany model jest widoczny w `/api/tags`;
 3. czy konfiguracja runtime wskazuje adapter Ollama;
 4. czy odpowiedź `/api/chat` ma poprawną strukturę;
 5. czy runtime zachowuje źródło modelu, metryki i przyczynę zakończenia.
 
-Raportuj oddzielnie:
+Raportuj oddzielnie stan daemona systemu, stan adaptera, dostępność endpointu, faktycznie użyty model i błąd transportu.
 
-- stan daemona Jaźni;
-- stan adaptera Ollama;
-- dostępność endpointu;
-- nazwę faktycznie użytego modelu;
-- timeout lub błąd transportu.
+## 5. Windows i proces daemona
 
-Działająca Ollama nie dowodzi działania Jaźni, a działająca Jaźń nie dowodzi dostępności Ollamy.
-
-## Konsola daemona na Windows
-
-Domyślnie daemon używa `JAZN_DAEMON_CONSOLE=hidden`: proces nie tworzy migającego okna, a stdout/stderr i audyt uruchomień trafiają do `workspace_runtime/daemon/`. Do jawnej obserwacji można uruchomić jedno stałe okno diagnostyczne:
-
-```powershell
-py run.py start --daemon-console visible
-```
-
-lub ustawić `$env:JAZN_DAEMON_CONSOLE = "visible"` przed startem. Heartbeat pozostaje wątkiem wewnątrz jednego procesu; nie powinien uruchamiać nowego terminala co interwał.
-
-Pytania o bieżący model lub adapter raportują rzeczywiste pola `provider`, `model`, `configured`, `endpoint_reachable`, `probe_state` i `last_probe_error`. Kandydat Ollamy naruszający wymóg języka polskiego jest ponawiany jeden raz z mocniejszym kontraktem językowym, a po drugim naruszeniu zostaje odrzucony zamiast trafić do `final_visible_text`.
+Domyślnie daemon może działać z ukrytą konsolą, a stdout/stderr i audyt uruchomień trafiają do host-level `workspace_runtime/daemon/`. Jawna konsola diagnostyczna nie zmienia kontraktu lifecycle: `run.py start` pozostaje właścicielem procesu.

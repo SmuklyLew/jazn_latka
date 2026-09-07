@@ -85,7 +85,7 @@ Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych.
 Dla samych instrukcji i dokumentacji:
 
 ```bash
-python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 8000"
+python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
 git diff --check
 ```
 
