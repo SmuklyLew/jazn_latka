@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from latka_jazn.version import schema_version
 
-SCHEMA_VERSION = schema_version("reasoning_orchestrator")
+SCHEMA_VERSION = "reasoning_orchestrator/v2"
 
 
 @dataclass(slots=True)
@@ -21,6 +21,9 @@ class ReasoningPlan:
     operational_steps: list[str] = field(default_factory=list)
     stop_conditions: list[str] = field(default_factory=list)
     evidence: list[str] = field(default_factory=list)
+    identity_verification_required: bool = True
+    turn_authority_required: bool = True
+    tool_plan_required: bool = False
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
         "Plan zawiera wyłącznie jawne kroki operacyjne i bramki weryfikacji. "
@@ -128,4 +131,7 @@ class ReasoningOrchestrator:
             operational_steps=steps,
             stop_conditions=stop_conditions,
             evidence=evidence,
+            identity_verification_required=True,
+            turn_authority_required=True,
+            tool_plan_required=requires_tools,
         )
