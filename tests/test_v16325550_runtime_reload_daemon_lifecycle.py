@@ -9,6 +9,13 @@ import sys
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon, runtime_lifecycle
+from latka_jazn.core.runtime_daemon_lifecycle_hotfix import (
+    PROCESS_FINGERPRINT_SCHEMA_VERSION,
+    _cleanup_owned_pid_file,
+    _terminate_spawned_process,
+    process_fingerprint,
+    process_fingerprint_matches,
+)
 
 
 def _status(root: Path, *, active: bool) -> dict:
@@ -41,20 +48,20 @@ def _preflight(root: Path) -> dict:
 
 
 def test_process_fingerprint_binds_pid_to_start_identity() -> None:
-    observed = runtime_daemon.process_fingerprint(os.getpid())
+    observed = process_fingerprint(os.getpid(), pid_is_alive=runtime_daemon.pid_is_alive)
     assert observed["pid"] == os.getpid()
     assert observed["state"] in {"observed", "alive_without_stable_token"}
     if observed["available"] is True:
-        assert runtime_daemon.process_fingerprint_matches(observed, dict(observed)) is True
+        assert process_fingerprint_matches(observed, dict(observed)) is True
         forged = dict(observed)
         forged["identity_token"] = str(observed["identity_token"]) + "-other"
-        assert runtime_daemon.process_fingerprint_matches(observed, forged) is False
+        assert process_fingerprint_matches(observed, forged) is False
 
 
 def test_spawn_cleanup_terminates_owned_child() -> None:
     proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
     try:
-        result = runtime_daemon._terminate_spawned_process(proc, grace_seconds=0.5)
+        result = _terminate_spawned_process(proc, grace_seconds=0.5)
         assert result["attempted"] is True
         assert result["terminated"] is True
         assert proc.poll() is not None
@@ -71,10 +78,10 @@ def test_owned_pid_file_cleanup_refuses_foreign_pid(tmp_path: Path, monkeypatch)
     pid_path = runtime_daemon.daemon_pid_path(root)
     pid_path.parent.mkdir(parents=True, exist_ok=True)
     pid_path.write_text("222", encoding="utf-8")
-    refused = runtime_daemon._cleanup_owned_pid_file(root, 111)
+    refused = _cleanup_owned_pid_file(runtime_daemon, root, 111)
     assert refused["owned"] is False
     assert pid_path.exists()
-    removed = runtime_daemon._cleanup_owned_pid_file(root, 222)
+    removed = _cleanup_owned_pid_file(runtime_daemon, root, 222)
     assert removed["owned"] is True
     assert removed["removed"] is True
     assert not pid_path.exists()
@@ -194,7 +201,7 @@ def test_status_rejects_reused_pid_when_marker_fingerprint_differs(tmp_path: Pat
         "last_heartbeat_at_utc": datetime.now(timezone.utc).isoformat(),
         "heartbeat_interval_seconds": 30.0,
         "process_fingerprint": {
-            "schema_version": runtime_daemon.PROCESS_FINGERPRINT_SCHEMA_VERSION,
+            "schema_version": PROCESS_FINGERPRINT_SCHEMA_VERSION,
             "pid": 4242,
             "platform": os.name,
             "available": True,
@@ -224,7 +231,7 @@ def test_status_rejects_reused_pid_when_marker_fingerprint_differs(tmp_path: Pat
         runtime_daemon,
         "process_fingerprint",
         lambda pid: {
-            "schema_version": runtime_daemon.PROCESS_FINGERPRINT_SCHEMA_VERSION,
+            "schema_version": PROCESS_FINGERPRINT_SCHEMA_VERSION,
             "pid": pid,
             "platform": os.name,
             "available": True,
