@@ -9,6 +9,7 @@
       "includes": [
         "run.py",
         "main.py",
+        "CHATGPT_BOOTSTRAP.py",
         "latka_jazn/**",
         "tests/**",
         ".github/**",
@@ -93,6 +94,7 @@
       "includes": [
         "run.py",
         "main.py",
+        "CHATGPT_BOOTSTRAP.py",
         "latka_jazn/**",
         "tests/**",
         ".github/**",
