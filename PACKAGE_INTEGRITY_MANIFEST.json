@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "generated_at_utc": "2026-09-08T13:35:01+00:00",
-  "updated_at_utc": "2026-09-08T13:35:01+00:00",
+  "version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+  "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+  "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+  "generated_at_utc": "2026-09-08T15:23:07+00:00",
+  "updated_at_utc": "2026-09-08T15:23:07+00:00",
   "start_file": "run.py",
   "file_count": 1273,
   "static_file_count": 1273,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2911,
-      "sha256": "dd4e2ee86e97e18ea5f24e57c6b09cc1a07ce4ad4e39767243ebcb602f7a2afa",
+      "size_bytes": 2904,
+      "sha256": "7aaa4167d749ec38c9d07bb206863c588d1daa51cea48a5d149fd49150a769f7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7661,8 +7661,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6641,
-      "sha256": "7f6507649f50db6c4726b400beb38d2dbe56b59d58250fa056fc19db7aab33b3",
+      "size_bytes": 6617,
+      "sha256": "54017231cf297bcb88e369c5abffd084cc3d29314699e25bfcfddb0fc71757ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11909,11 +11909,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
-    "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
-    "release_version": "16.3.25.5.51-pylance-type-contract-hardening"
+    "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+    "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+    "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
