@@ -81,9 +81,23 @@ python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję i manifest, właściwy PID/komendę, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
+Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję i manifest, właściwy PID/komendę, działający endpoint oraz świeży heartbeat. Bieżący lifecycle wiąże PID dodatkowo z fingerprintem procesu (Linux: boot-id + `/proc/<pid>/stat` starttime; Windows: creation FILETIME), ponieważ sam PID może zostać ponownie użyty. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
 
 Po udanym starcie nie zatrzymuj daemona po każdej wiadomości. Po resecie środowiska ponownie wykonaj discovery i live status.
+
+Kontrolowany restart tego samego aktywnego rootu wykonuj przez:
+
+```bash
+python -X utf8 run.py restart --root <ACTIVE_ROOT> --json
+```
+
+Przełączenie na już zweryfikowany nowszy root wykonuj przez transakcyjny handoff:
+
+```bash
+python -X utf8 run.py reload --root <CURRENT_OPERATOR_ROOT> --target-root <NEW_VERSIONED_ROOT> --json
+```
+
+`reload` wykonuje preflight celu, potwierdzony stop starej instancji, atomową zmianę markera i start celu. Jeżeli start celu nie powiedzie się, przywraca poprzedni marker i próbuje wznowić poprzedni root. Nie zastępuj tej transakcji ręcznym `kill`, edycją `JAZN_ACTIVE_RUNTIME.json` ani luźnym `stop` + `start`. `runtime-bootstrap` z włączonym startem używa tego samego handoffu po bezpiecznej materializacji paczki.
 
 ## 4. Każda bieżąca wiadomość: operator przed tekstem hosta
 
