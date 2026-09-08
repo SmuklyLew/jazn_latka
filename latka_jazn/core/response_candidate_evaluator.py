@@ -8,6 +8,7 @@ from latka_jazn.core.full_canon_model_context import (
     evaluate_visible_voice_against_full_canon,
     validate_full_canon_model_context,
 )
+from latka_jazn.core.identity_response_evaluator import evaluate_identity_response
 from latka_jazn.core.memory_grounded_generation_bridge import (
     build_grounded_memory_items,
     enforce_memory_grounding,
@@ -99,6 +100,17 @@ def evaluate_response_candidate(
             for violation in voice_validation.get("violations") or []:
                 if violation not in violations:
                     violations.append(violation)
+            identity_response = evaluate_identity_response(
+                text=text,
+                full_canon_model_context=full_canon,
+                answer_kind=str(plan.get("answer_kind") or "natural_dialogue"),
+                user_text=str(context.get("user_text") or ""),
+            )
+            for violation in identity_response.violations:
+                if violation not in violations:
+                    violations.append(violation)
+            if identity_response.accepted:
+                reasons.append("identity_response_continuity_verified")
 
     if candidate.source == "runtime_fallback" and text.strip():
         reasons.append("runtime_fallback_is_available")

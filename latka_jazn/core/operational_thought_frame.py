@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass
 import re
 from typing import Any
 
 from latka_jazn.core.nlg_plan import NlgPlan, default_truth_boundary
 
-SCHEMA_VERSION = "operational_thought_frame/v1"
+SCHEMA_VERSION = "operational_thought_frame/v2"
 
 
 @dataclass(slots=True)
@@ -48,6 +48,11 @@ class OperationalThoughtFrame:
     refusal_or_boundary: str | None
     rejected_paths: list[str]
     truth_boundary: str
+    constraints: list[str] = field(default_factory=list)
+    evidence_requirements: list[str] = field(default_factory=list)
+    verification_checks: list[str] = field(default_factory=list)
+    identity_commitments: list[str] = field(default_factory=list)
+    tool_plan: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.schema_version = str(self.schema_version or SCHEMA_VERSION)
@@ -62,6 +67,11 @@ class OperationalThoughtFrame:
         self.refusal_or_boundary = boundary or None
         self.rejected_paths = _dedupe(self.rejected_paths)
         self.truth_boundary = _clean_text(self.truth_boundary, fallback=default_truth_boundary())
+        self.constraints = _dedupe(self.constraints)
+        self.evidence_requirements = _dedupe(self.evidence_requirements)
+        self.verification_checks = _dedupe(self.verification_checks)
+        self.identity_commitments = _dedupe(self.identity_commitments)
+        self.tool_plan = dict(self.tool_plan or {})
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -136,6 +146,16 @@ def build_operational_thought_frame(
         refusal_or_boundary=_boundary_note(memory_policy, source_policy, model_policy, truth_boundary),
         rejected_paths=_rejected_paths(answer_kind, memory_policy, source_policy, model_policy),
         truth_boundary=truth_boundary,
+        constraints=_operational_constraints(plan, policy),
+        evidence_requirements=_evidence_requirements(memory_policy, source_policy),
+        verification_checks=_verification_checks(answer_kind, memory_policy, source_policy, model_policy),
+        identity_commitments=[
+            "runtime_owns_visible_voice",
+            "model_or_host_is_language_channel_only",
+            "evaluate_generated_output_against_identity_canon",
+            "transient_state_cannot_mutate_stable_identity",
+        ],
+        tool_plan=_as_dict(frame.get("host_tool_turn_policy")),
     )
 
 
@@ -236,3 +256,46 @@ def _rejected_paths(answer_kind: str, memory_policy: str, source_policy: str, mo
     if source_policy == "requires_external_web":
         rejected.append("local_runtime_fake_web_lookup")
     return _dedupe(rejected)
+
+
+def _operational_constraints(plan: dict[str, Any], policy: dict[str, Any]) -> list[str]:
+    values = [
+        "answer_exact_current_user_turn",
+        "no_private_chain_of_thought_in_visible_or_persisted_plan",
+        "runtime_truth_boundary_is_authoritative",
+        "tools_are_subordinate_to_runtime_turn",
+    ]
+    values.extend(str(item) for item in plan.get("style_constraints") or [])
+    values.extend(str(item) for item in plan.get("forbidden_components") or [])
+    if policy.get("exact_runtime_required") is True:
+        values.append("exact_runtime_text_must_not_be_paraphrased")
+    return _dedupe(values)
+
+
+def _evidence_requirements(memory_policy: str, source_policy: str) -> list[str]:
+    values: list[str] = []
+    if memory_policy == "required_grounded_payload":
+        values.append("grounded_memory_payload_with_source_ids")
+    if source_policy == "requires_external_web":
+        values.append("host_attested_external_tool_evidence:web.run")
+    if source_policy == "exact_runtime_only":
+        values.append("exact_runtime_final_integrity")
+    return values
+
+
+def _verification_checks(answer_kind: str, memory_policy: str, source_policy: str, model_policy: str) -> list[str]:
+    checks = [
+        "goal_alignment",
+        "identity_response_alignment",
+        "truth_boundary_compliance",
+        "turn_authority_binding_before_visible_output",
+    ]
+    if memory_policy == "required_grounded_payload":
+        checks.append("memory_source_binding")
+    if source_policy == "requires_external_web":
+        checks.append("external_tool_evidence_binding")
+    if model_policy.startswith("allowed"):
+        checks.append("candidate_evaluator_acceptance")
+    if answer_kind == "exact_runtime_quote":
+        checks.append("exact_text_hash_match")
+    return _dedupe(checks)

@@ -24,6 +24,6 @@ Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wyko
 
 Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle udostępniany przez `run.py`. One-shot jest wyłącznie fallbackiem pojedynczej tury i nie stanowi dowodu utrzymanego procesu.
 
-Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji.
+Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji. Po aktywacji runtime nie rozpoczynaj web/GitHub/image/file ani innej ścieżki narzędziowej przed kontraktem tej samej tury; narzędzia są podporządkowane turze i nie są źródłem głosu Łatki.
 
 Jeżeli runtime, paczka, pliki lub executor nie mogą zostać zweryfikowane, podaj dokładnie brakującą możliwość i nie deklaruj stanu, którego nie potwierdzono.

@@ -3,11 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.48 keeps the rest/NLP readiness convergence within the
-# existing diagnostics code-health budget without weakening its regression gate.
-DISTRIBUTION_VERSION = "16.3.25.5.48"
-PACKAGE_VERSION = "16.3.25.5.48"
-PACKAGE_RELEASE_NAME = "rest-nlp-readiness-convergence"
+# v16.3.25.5.49 binds every runtime-owned visible reply to one exact turn,
+# separates input identity signals from output identity verification, and keeps
+# host tools subordinate to the canonical Jaźń turn/finalization pipeline.
+DISTRIBUTION_VERSION = "16.3.25.5.49"
+PACKAGE_VERSION = "16.3.25.5.49"
+PACKAGE_RELEASE_NAME = "turn-authority-cognition-identity-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

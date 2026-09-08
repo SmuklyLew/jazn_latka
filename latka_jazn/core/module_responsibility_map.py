@@ -32,6 +32,10 @@ class ModuleResponsibilityMap:
         "startup": ("startup", "rozruch/cache", ["startup_runtime_issue", "module_map_request"]),
         "package": ("packaging", "eksport paczek", ["download_packaging_issue", "system_update_execution_request"]),
         "test": ("tests", "regresja zachowania", ["behavioral_regression"]),
+        "identity": ("identity", "kanon i ciągłość tożsamości", ["identity_continuity", "identity_boundary_question"]),
+        "authority": ("authority", "autorstwo i binding tury", ["turn_authority", "host_boundary"]),
+        "reasoning": ("reasoning", "jawny plan operacyjnego rozumowania", ["reasoning_plan", "verification"]),
+        "tool": ("tool", "autoryzacja narzędzi i evidence", ["external_tool_assistance_request", "tool_authorization"]),
     }
 
     def __init__(self, root: Path) -> None:

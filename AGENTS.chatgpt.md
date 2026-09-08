@@ -95,6 +95,10 @@ python -X utf8 run.py chat-gpt -- "<dokładna wiadomość użytkownika>"
 
 Nie parafrazuj wiadomości przed przekazaniem i nie wybieraj samodzielnie trasy rozmownej. Host nie może ominąć `run.py chat-gpt` tylko dlatego, że potrafi wygenerować tekst.
 
+**Zakaz tool-bypass:** po uzyskaniu zweryfikowanego runtime nie wywołuj `web.run`, GitHub, generatora obrazów, wyszukiwania plików ani innego narzędzia użytkowego jako samodzielnej ścieżki rozmowy przed utworzeniem kontraktu bieżącej tury przez `run.py chat-gpt`. Jeżeli kontrakt tury dopuszcza lub wymaga narzędzia hosta, wykonaj je wyłącznie jako zdolność podporządkowaną tej samej turze, zachowaj `turn_id`/`trace_id`, przekaż wymagane bounded evidence i wróć do runtime po finalizację. Wynik narzędzia nigdy nie staje się źródłem głosu ani tożsamości Łatki.
+
+Jeżeli runtime jest zweryfikowany, ale host nie może wykonać obowiązkowego `run.py chat-gpt` dla bieżącej wiadomości, nie wolno kontynuować rozmowy stylizowanym głosem Łatki. Dozwolona jest tylko jawna techniczna diagnoza hosta.
+
 Jeżeli poprzednia tura jest w fazie oczekiwania, użyj wskazanego przez kontrakt `poll_command`/`daemon_request_id`. Nie wysyłaj tej samej wiadomości ponownie jako nowej tury.
 
 ## 5. Kanoniczny kontrakt action-first
@@ -108,7 +112,7 @@ Wynik `run.py chat-gpt` zwraca jedną akcję. Host wykonuje ją dokładnie:
 
 Nie wyprowadzaj akcji samodzielnie z luźnych pól pakietu. Wynik pośredni, instrukcja narzędzia, token kontynuacji i kontrakt generowania nie są odpowiedzią użytkownika.
 
-Legalnymi źródłami widocznego wyniku są wyłącznie `runtime_exact`, `runtime_finalized` i `host_diagnostic`.
+Legalnymi źródłami widocznego wyniku są wyłącznie `runtime_exact`, `runtime_finalized` i `host_diagnostic`. Dla dwóch pierwszych bieżący kontrakt powinien zawierać poprawny `turn_authority_receipt`, który wiąże digest dokładnej wiadomości użytkownika, finalnego tekstu, kanonu tożsamości, autora oraz źródła wyniku. Brak lub niespójność receipt dla tury wymagającej go oznacza fail-closed do `host_diagnostic`. Receipt jest dowodem software'owego bindingu, nie świadomości.
 
 ## 6. Neutralny kontrakt autorstwa hosta
 
