@@ -3,11 +3,11 @@
   "version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
   "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
   "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "generated_at_utc": "2026-09-08T12:51:21+00:00",
-  "updated_at_utc": "2026-09-08T12:51:21+00:00",
+  "generated_at_utc": "2026-09-08T12:53:53+00:00",
+  "updated_at_utc": "2026-09-08T12:53:53+00:00",
   "start_file": "run.py",
-  "file_count": 1265,
-  "static_file_count": 1265,
+  "file_count": 1268,
+  "static_file_count": 1268,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2960,
-      "sha256": "2f1e7c350a6a33f93ea154215e1197932db6304c6d4849ef47c7c25486762416",
+      "sha256": "fd4667b219a7e8b0aecfa92be0db3ec182cf40c0ff8be69bbe0ededd86b77b2c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2116,6 +2116,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/bootstrap/runtime_bootstrap_v50.py",
+      "size_bytes": 10056,
+      "sha256": "5f96adcf8b8882d7b34b6a511a43d5b7ba7ca9ff1c7bee5f546e969f859b397c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/bridge/__init__.py",
       "size_bytes": 52,
       "sha256": "0a7a5f6ff816537064ed70fc9888761d794b850bdc9b1fb4049c3669f764881c",
@@ -3703,6 +3712,15 @@
       "path": "latka_jazn/core/runtime_environment.py",
       "size_bytes": 9355,
       "sha256": "b9678ed15581965a8fcd75074f4fa515d09acfd6632535afa54b74a04dc216c8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/runtime_lifecycle.py",
+      "size_bytes": 15519,
+      "sha256": "56a3d3336575b0c1b75b91a2102155e5a90ac610cf6e8955edeccbb45db403e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10867,6 +10885,15 @@
       "path": "tests/test_v16325549_turn_pipeline_authority_integration.py",
       "size_bytes": 3516,
       "sha256": "685a3fc536be998a01dd738a9a41dbbbc8f13858073e0468c666adf96caf6fe0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325550_runtime_reload_daemon_lifecycle.py",
+      "size_bytes": 11275,
+      "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
