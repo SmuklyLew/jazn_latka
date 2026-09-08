@@ -211,6 +211,12 @@ def reload_daemon(
                         "marker_changed": False,
                     }
 
+            # Once the old daemon is confirmed stopped, remove its marker before
+            # publishing the target marker.  The legacy marker writer resolves an
+            # existing trusted marker as authoritative; leaving the old marker in
+            # place would therefore rewrite the old root instead of switching to
+            # the explicit target.  The exact previous bytes are already captured
+            # above for rollback.
             marker_clear = _restore_marker(marker_path, None)
             if marker_clear.get("ok") is not True:
                 rollback_marker = _restore_marker(marker_path, marker_before)
