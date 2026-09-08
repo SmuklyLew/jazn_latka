@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--daemon-host", default="127.0.0.1")
     child.add_argument("--daemon-port", type=int, default=8787)
     child.add_argument("--daemon-marker-output", type=Path)
+    child.add_argument(
+        "--deep-capability-probes",
+        action="store_true",
+        help="Uruchom cięższe opcjonalne probe capabilities (np. lokalne Stanza); nigdy nie pobiera modeli.",
+    )
 
     for name in ("bridge-discovery", "self-test"):
         child = sub.add_parser(name, allow_abbrev=False)
@@ -405,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
                 daemon_host=ns.daemon_host,
                 daemon_port=ns.daemon_port,
                 marker_output=ns.daemon_marker_output,
+                deep_capability_probes=bool(ns.deep_capability_probes),
                 progress=progress.callback(),
             )
         except Exception as exc:
