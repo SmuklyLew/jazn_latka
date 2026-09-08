@@ -317,6 +317,6 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         return result, []
 
     bridge.persist_chatgpt_host_visible_reply = persist_with_authority
-    bridge._turn_authority_runtime_overlay_installed = True
-    bridge._turn_authority_runtime_overlay_version = _OVERLAY_VERSION
+    setattr(bridge, "_turn_authority_runtime_overlay_installed", True)
+    setattr(bridge, "_turn_authority_runtime_overlay_version", _OVERLAY_VERSION)
     return {"installed": True, "already_installed": False, "schema_version": _OVERLAY_VERSION}
