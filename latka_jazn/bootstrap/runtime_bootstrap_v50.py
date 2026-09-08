@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 import hashlib
 import json
 import os
@@ -16,6 +16,12 @@ from latka_jazn.core.runtime_lifecycle import reload_daemon
 PACK_GENERATOR_V2 = "jazn_pack_generator_package/v2"
 LEGACY_COMPAT_SCHEMA = "jazn_package_set/v3"
 CHUNK_SIZE = 8 * 1024 * 1024
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    """Return a concrete mapping so static narrowing and runtime validation agree."""
+
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _sha256_file(path: Path) -> str:
@@ -55,7 +61,7 @@ def _discover_generator_sidecar(parts_dir: Path, zip_name: str | None) -> tuple[
             continue
         if not isinstance(payload, dict) or payload.get("schema_version") != PACK_GENERATOR_V2:
             continue
-        archive = payload.get("archive") if isinstance(payload.get("archive"), dict) else {}
+        archive = _mapping(payload.get("archive"))
         logical = str(archive.get("logical_filename") or "").strip()
         if not logical.lower().endswith(".zip"):
             continue
@@ -86,7 +92,7 @@ def _find_transport_file(parts_dir: Path, canonical_name: str, sha256: str | Non
 
 
 def _materialize_v2_compat(parts_dir: Path, payload: dict[str, Any], compat_dir: Path) -> str:
-    archive = payload.get("archive") if isinstance(payload.get("archive"), dict) else {}
+    archive = _mapping(payload.get("archive"))
     logical_name = str(archive.get("logical_filename") or "").strip()
     logical_sha = str(archive.get("logical_sha256") or "").strip().lower() or None
     logical_size = int(archive["logical_size_bytes"]) if archive.get("logical_size_bytes") is not None else None
@@ -95,8 +101,9 @@ def _materialize_v2_compat(parts_dir: Path, payload: dict[str, Any], compat_dir:
     if profile is None:
         raise ValueError(f"unsupported generator package content: {content!r}")
 
-    split = payload.get("split") if isinstance(payload.get("split"), dict) else {}
-    split_parts = split.get("parts") if isinstance(split.get("parts"), list) else []
+    split = _mapping(payload.get("split"))
+    raw_split_parts = split.get("parts")
+    split_parts = raw_split_parts if isinstance(raw_split_parts, list) else []
     outputs: list[dict[str, Any]] = []
     if split_parts:
         for index, raw in enumerate(split_parts, start=1):
