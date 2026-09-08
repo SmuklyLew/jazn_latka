@@ -3,11 +3,11 @@
   "version": "16.3.25.5.51-pylance-type-contract-hardening",
   "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "generated_at_utc": "2026-09-08T13:33:33+00:00",
-  "updated_at_utc": "2026-09-08T13:33:33+00:00",
+  "generated_at_utc": "2026-09-08T13:35:01+00:00",
+  "updated_at_utc": "2026-09-08T13:35:01+00:00",
   "start_file": "run.py",
-  "file_count": 1272,
-  "static_file_count": 1272,
+  "file_count": 1273,
+  "static_file_count": 1273,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2911,
-      "sha256": "1c103f21b81bcf909b8dd8cfa7ab8d289ce51a82c47bf122f634fac1c4485bbd",
+      "sha256": "dd4e2ee86e97e18ea5f24e57c6b09cc1a07ce4ad4e39767243ebcb602f7a2afa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8065,6 +8065,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_v16325549_host_tool_turn_ownership_source_v16325550.py",
+      "size_bytes": 2662,
+      "sha256": "baaef74e54a3022ae47d93958a100ba6ef45d5b38972eb0d0bfbf53dd36178f7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_v16325550_runtime_reload_daemon_lifecycle_source_v16325550.py",
       "size_bytes": 11275,
       "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
@@ -8975,8 +8984,8 @@
     },
     {
       "path": "tests/test_chatgpt_mcp_end_to_end_v96.py",
-      "size_bytes": 13036,
-      "sha256": "d0018006cb9caa250ac0c0a6c156197a5a3ff45e58efc89f22230473924e6ad4",
+      "size_bytes": 13390,
+      "sha256": "d8255f6440822fd540229e74edbd62f7594fb32b524708aa86d01f2107cfe2b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10874,8 +10883,8 @@
     },
     {
       "path": "tests/test_v16325549_host_tool_turn_ownership.py",
-      "size_bytes": 2662,
-      "sha256": "baaef74e54a3022ae47d93958a100ba6ef45d5b38972eb0d0bfbf53dd36178f7",
+      "size_bytes": 2961,
+      "sha256": "b94aef103c630ea0ec23ba787056946a7d12890f48083d50a104925645fcac3c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
