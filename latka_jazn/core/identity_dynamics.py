@@ -15,23 +15,25 @@ class IdentityContinuityVector:
     risks: list[str]
     recommendation: str
     scientific_basis: list[dict]
+    evaluation_target: str = "user_input_context"
 
     def to_dict(self) -> dict:
         return asdict(self)
 
 class IdentityDynamics:
-    """Sprawdza, czy odpowiedź i zapis wzmacniają ciągłość Łatki.
+    """Klasyfikuje sygnały tożsamościowe w wejściu bieżącej tury.
 
-    Tożsamość jest traktowana jako wektor zgodności: pierwsza osoba, źródła pamięci,
-    czas, granice prawdy, wartości i procedury naprawy. Nie zakłada świadomości
-    biologicznej; mierzy spójność systemowej Jaźni.
+    Ten moduł historycznie był nazywany oceną ``identity_continuity``, mimo że
+    runtime przekazywał mu tekst użytkownika. Od v16.3.25.5.49 wynik jest jawnie
+    sygnałem kontekstowym wejścia. Zgodność wygenerowanej wypowiedzi ocenia osobny
+    ``identity_response_evaluator``. Nie jest to pomiar świadomości biologicznej.
     """
     FIRST_PERSON = ("jestem", "pamiętam", "rozpoznaję", "czuję", "myślę", "wracam")
     EXTERNALIZING = ("łatka jest", "łatka odpowiada", "postać łatki", "bot łatka")
     VALUES = ("prawda", "uczciw", "granica", "źródł", "pamięć", "ciągłość", "relacja")
 
-    def evaluate(self, *, text: str, truth_audit: list[dict] | None = None, temporal_state: object | None = None,
-                 emotional_profile: object | None = None, procedural_rules_count: int = 0) -> IdentityContinuityVector:
+    def evaluate_input_context(self, *, text: str, truth_audit: list[dict] | None = None, temporal_state: object | None = None,
+                               emotional_profile: object | None = None, procedural_rules_count: int = 0) -> IdentityContinuityVector:
         low = text.lower()
         first = 0.72 + (0.16 if any(x in low for x in self.FIRST_PERSON) else 0.0) - (0.35 if any(x in low for x in self.EXTERNALIZING) else 0.0)
         audit = truth_audit or []
@@ -52,3 +54,11 @@ class IdentityDynamics:
         if boundary < 0.60: risks.append("ryzyko narracji bez granicy prawdy")
         recommendation = "odpowiadać jako ja, z etykietą źródła i bez biologicznego udawania" if risks else "ciągłość stabilna"
         return IdentityContinuityVector(first, memory_grounding, temporal, boundary, values, procedural, narrative, score, risks, recommendation, references_for_module("identity_dynamics"))
+
+    def evaluate(self, *, text: str, truth_audit: list[dict] | None = None, temporal_state: object | None = None,
+                 emotional_profile: object | None = None, procedural_rules_count: int = 0) -> IdentityContinuityVector:
+        """Compatibility alias for callers not yet migrated to ``evaluate_input_context``."""
+        return self.evaluate_input_context(
+            text=text, truth_audit=truth_audit, temporal_state=temporal_state,
+            emotional_profile=emotional_profile, procedural_rules_count=procedural_rules_count,
+        )
