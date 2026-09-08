@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8a8bbb55b67a1abe0bc0ee7d5289e09360f66d9e",
-    "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
+    "base_commit": "ba2a6657bf17f02c9f140ea0745f1c080cbd1162",
+    "base_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ba2a6657bf17f02c9f140ea0745f1c080cbd1162",
