@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
-  "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "commit_date": "2026-09-08T14:59:45+02:00",
+  "base_merge_commit": "b0f9d4749b6bff4f0bbb6db7e978afe4628faf5c",
+  "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "commit_date": "2026-09-08T15:16:13+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-08T12:59:45+00:00",
+  "generated_at_utc": "2026-09-08T13:16:13+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "90f5350788af7ecfdd14a1f145f01a98a7df7893",
+  "git_tree_sha": "f14ba856211fee9bcc1f56cb044d9c95cebba39a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
+    "base_commit": "7346c7b61edb09cc4e8c42e17104e7c82b3224fe",
     "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
-    "source_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix"
+    "source_commit": "b0f9d4749b6bff4f0bbb6db7e978afe4628faf5c",
+    "source_version": "16.3.25.5.51-pylance-type-contract-hardening"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "release_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
+  "source_commit": "b0f9d4749b6bff4f0bbb6db7e978afe4628faf5c",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "source_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "update_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "version_source": "latka_jazn/version.py"
 }

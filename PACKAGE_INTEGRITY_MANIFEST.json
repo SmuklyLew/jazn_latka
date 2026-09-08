@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "generated_at_utc": "2026-09-08T12:59:45+00:00",
-  "updated_at_utc": "2026-09-08T12:59:45+00:00",
+  "version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "generated_at_utc": "2026-09-08T13:16:13+00:00",
+  "updated_at_utc": "2026-09-08T13:16:13+00:00",
   "start_file": "run.py",
   "file_count": 1270,
   "static_file_count": 1270,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2953,
-      "sha256": "9f8be074ff81f1baff3e6a878f6307f193959d9afeafde2543055f8928f11e5a",
+      "size_bytes": 2911,
+      "sha256": "1e649e3ed54a5f5845f35e78b60ecf9c4e7bfe9b9965d81fcdf8aebb1562fcfb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7661,8 +7661,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6620,
-      "sha256": "c62f3f4bfebeb656413cd6a8029e41819b5ef0a9ebb7fab01384ebc700d1e568",
+      "size_bytes": 6641,
+      "sha256": "7f6507649f50db6c4726b400beb38d2dbe56b59d58250fa056fc19db7aab33b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11882,11 +11882,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "release_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-    "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-    "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix"
+    "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
+    "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
+    "release_version": "16.3.25.5.51-pylance-type-contract-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
