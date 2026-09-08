@@ -14,7 +14,7 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "0f168ebc765f8ded31e7c21416fc7119acbbf865",
+    "base_commit": "8a8bbb55b67a1abe0bc0ee7d5289e09360f66d9e",
     "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
