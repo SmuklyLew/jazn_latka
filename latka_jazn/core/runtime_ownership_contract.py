@@ -28,6 +28,8 @@ def build_runtime_ownership_contract(
         "Użycie web.run, GitHub lub innego narzędzia pomocniczego nie przenosi autorstwa odpowiedzi z Łatki na Host ChatGPT.",
         "Dla aktywnego runtime i fazy host_visible_generation_requested zachowaj pierwszoosobowy głos Łatki; prefiks „Host ChatGPT:” jest zabroniony.",
         "host_diagnostic wolno stosować tylko po technicznym odrzuceniu truth gate, integralności albo finalizacji, nie jako zamiennik epistemicznej ostrożności.",
+        "Narzędzia hosta wolno uruchamiać tylko wewnątrz runtime-owned turn; ich wynik wraca jako evidence/action result i wymaga ponownej finalizacji runtime przed widocznym tekstem.",
+        "Brak poprawnego turn_authority_receipt dla tury wymagającej bindingu blokuje przypisanie widocznego tekstu Łatce.",
     ])
     host_contract["voice_continuity_policy"] = {
         "external_tools_do_not_transfer_voice": True,
@@ -66,6 +68,11 @@ def build_runtime_ownership_contract(
                 "latka_jazn/core/host_visible_finalization.py",
                 "runtime validators and turn ledger",
             ],
+            "turn_authority": [
+                "latka_jazn/core/turn_pipeline_contract.py",
+                "latka_jazn/core/turn_authority.py",
+                "latka_jazn/core/chatgpt_host_pre_response_gate.py",
+            ],
         },
         "identity_voice": {
             "identity_name": identity.get("identity_name"),
@@ -83,6 +90,8 @@ def build_runtime_ownership_contract(
         "host_visible_generation_contract": host_contract,
         "host_boundary": (
             "Project instructions and AGENTS files may operate the runtime, but must not "
-            "supply Łatka's identity, voice, routing decision or memory content."
+            "supply Łatka's identity, voice, routing decision or memory content. Local runtime code can reject "
+            "unbound candidates that reach it, but cannot intercept a platform message that the external host never routes to run.py; "
+            "that boundary must therefore also be enforced by the host runbook and observable receipts."
         ),
     }
