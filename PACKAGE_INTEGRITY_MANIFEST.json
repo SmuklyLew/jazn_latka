@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
-  "runtime_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
-  "package_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
-  "generated_at_utc": "2026-09-08T12:49:20+00:00",
-  "updated_at_utc": "2026-09-08T12:49:20+00:00",
+  "version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "generated_at_utc": "2026-09-08T12:51:21+00:00",
+  "updated_at_utc": "2026-09-08T12:51:21+00:00",
   "start_file": "run.py",
-  "file_count": 1263,
-  "static_file_count": 1263,
+  "file_count": 1265,
+  "static_file_count": 1265,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "5c30e2932e6f2959d9e413528c1d7a2e3b37a9b0345733c56d6389e9a9596f8b",
+      "size_bytes": 2960,
+      "sha256": "2f1e7c350a6a33f93ea154215e1197932db6304c6d4849ef47c7c25486762416",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1525,6 +1525,15 @@
       "path": "docs/plans/only_to_check/2026-09-08-runtime-reload-daemon-lifecycle-hotfix/PLAN.md",
       "size_bytes": 3127,
       "sha256": "1b69945a9e106ed61d5f65b4afe6c508dbce709e755b449f199d7d015a79b4f9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/2026-09-08-runtime-reload-daemon-lifecycle-hotfix/STATUS.md",
+      "size_bytes": 1885,
+      "sha256": "7dc99ac04e24cae6a9bd9b3f6ffd60728a16cbf5153dfe2d37f14c5bb32cd032",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3676,6 +3685,15 @@
       "path": "latka_jazn/core/runtime_daemon.py",
       "size_bytes": 219332,
       "sha256": "a334b037c7bfaf0a4da68447620d8597f0479aec5b1f78a4fcf9a8f9f249ff43",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/runtime_daemon_lifecycle_hotfix.py",
+      "size_bytes": 16202,
+      "sha256": "4b0ecaf9380babe08c4955cd122f053ac8cd1380477eda230a367d1f8643e904",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7616,8 +7634,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6657,
-      "sha256": "a8f8cdcd5d743805f4767d08f31f5a093b54a73de78b79a695c11bcec3a8af35",
+      "size_bytes": 6620,
+      "sha256": "c62f3f4bfebeb656413cd6a8029e41819b5ef0a9ebb7fab01384ebc700d1e568",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11819,11 +11837,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
+  "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
-    "package_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
-    "release_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence"
+    "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+    "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+    "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix"
   },
   "legacy_aliases": {
     "version": "release_version"
