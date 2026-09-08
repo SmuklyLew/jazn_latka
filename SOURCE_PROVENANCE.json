@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "7346c7b61edb09cc4e8c42e17104e7c82b3224fe",
-    "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+    "base_commit": "0f168ebc765f8ded31e7c21416fc7119acbbf865",
+    "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "0f168ebc765f8ded31e7c21416fc7119acbbf865",
