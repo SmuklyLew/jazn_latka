@@ -3,10 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from latka_jazn.core.turn_authority_runtime_overlay import install_turn_authority_runtime_overlay
-
-install_turn_authority_runtime_overlay()
-
 from latka_jazn.core.chat_command_contract import (
     build_chatgpt_host_bridge_turn_contract,
     build_chatgpt_host_presentation_packet,
