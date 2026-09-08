@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.44-host-finalization-evidence-binding",
-  "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
-  "package_version": "16.3.25.5.44-host-finalization-evidence-binding",
-  "generated_at_utc": "2026-09-07T23:27:06+00:00",
-  "updated_at_utc": "2026-09-07T23:27:06+00:00",
+  "version": "16.3.25.5.48-rest-nlp-readiness-convergence",
+  "runtime_version": "16.3.25.5.48-rest-nlp-readiness-convergence",
+  "package_version": "16.3.25.5.48-rest-nlp-readiness-convergence",
+  "generated_at_utc": "2026-09-08T08:53:02+00:00",
+  "updated_at_utc": "2026-09-08T08:53:02+00:00",
   "start_file": "run.py",
-  "file_count": 1241,
-  "static_file_count": 1241,
+  "file_count": 1248,
+  "static_file_count": 1248,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2925,
-      "sha256": "0a6da4c117355087add4bf35d93da9ee7845dd8bf59a95b364038d4ca1653e7e",
+      "size_bytes": 2901,
+      "sha256": "a023d325c02a06ea3cbfd4d586a62f355945d9d51b25a7363938ee3e045a7b83",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1504,6 +1504,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/only_to_check/2026-09-08-rest-nlp-readiness-convergence/PLAN.md",
+      "size_bytes": 2853,
+      "sha256": "624336f68974e956c7dfc3e8ac8bcde90ee8a27fe1077ffdfa509819139cf144",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/only_to_check/2026-09-08-rest-nlp-readiness-convergence/STATUS.md",
+      "size_bytes": 904,
+      "sha256": "301474c08cf102033a6d6e989e09b04e47e7d1592508f35711a37c6868194d28",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/only_to_check/ARCHIVE_NOTICE.md",
       "size_bytes": 882,
       "sha256": "f8c8196ffdabb7c2c40898f0c01ca2b8c07bfbf7264dab67ae677eccd492bff1",
@@ -2090,8 +2108,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 31804,
-      "sha256": "d0a9ea796fd868d06953396603815b0722d95d3d3587591e225c83790dea951b",
+      "size_bytes": 32083,
+      "sha256": "074bf4cc6fe568be69e04fdc6317d228c39b81e41c6357957c3f503541cabb09",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2126,8 +2144,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/diagnostics.py",
-      "size_bytes": 24834,
-      "sha256": "15a6b53fd9bf3e1ceae5aa4f232092cfb0a69daab1ad277424920e5991ee179d",
+      "size_bytes": 29057,
+      "sha256": "d91e2c3528e44eec92a7ac13bd84ded0000b79736c2ef49857d9dada380a3cb7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3530,8 +3548,8 @@
     },
     {
       "path": "latka_jazn/core/rest_cycle_controller.py",
-      "size_bytes": 18020,
-      "sha256": "6491147a48121b4a9ba9de0dc82f710f3edaeebd5666390f58fbcc22bfd2fbd1",
+      "size_bytes": 18106,
+      "sha256": "3b96474d5496be65eac16485f872ac69b6c383fcd6c76f5fc3a13491623965e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5159,8 +5177,8 @@
     },
     {
       "path": "latka_jazn/nlp/__init__.py",
-      "size_bytes": 1311,
-      "sha256": "f5464c9a9feddd4f7bd8d5d2c43bb452f9682a8dd9485cfc592d61d40b028ccf",
+      "size_bytes": 1476,
+      "sha256": "953b6dae5f205b71c5bde06333ad5ffb069a7219ad03c124610e2958da06e9e1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5530,6 +5548,15 @@
       "path": "latka_jazn/nlp/response_language_guard.py",
       "size_bytes": 3526,
       "sha256": "9171f25fb8444f7d6b1944db95a8093f928456814fa525cd470aea97cbdfd5f4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/nlp/runtime_capability_probe.py",
+      "size_bytes": 11115,
+      "sha256": "36515ab68b065123b3b3ed9b824afdbd6d2818c01e0ce0890a3d5634c7b230c9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6169,6 +6196,15 @@
       "path": "latka_jazn/resources/nlp/nlp_architecture_sources.json",
       "size_bytes": 3121,
       "sha256": "0ba498237210dc64d1ffa6cdab3df9e06c413cc6ce46e4ddd85bde8ec77d1082",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/resources/nlp/polish_capability_probe_corpus.json",
+      "size_bytes": 2260,
+      "sha256": "5f316e161e026693aa3496ea1dd615ea9a405d319066d802cfa6532a5e248c65",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7499,8 +7535,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6570,
-      "sha256": "f2b49412be1d6a2ed0b0d8ff35d2ceef06379f8e393e28cbee5d63ab1f1b3ea9",
+      "size_bytes": 6559,
+      "sha256": "037095cc3ea514c6e4fc1b493f4b2cd089e553bb74a988501d1491bb0b99a164",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10657,6 +10693,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325545_rest_scheduler_readiness_binding.py",
+      "size_bytes": 2610,
+      "sha256": "69458a61ddb189cfde30067f1eb5a3a82e83a32f8e62c4789bdc635cb5c80bf5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325546_nlp_runtime_capability_probe.py",
+      "size_bytes": 3985,
+      "sha256": "77c8ed8291d07564873b25b109c99f41641561104fdeaaf9d34f4208a925647a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325547_diagnostics_rest_nlp_readiness.py",
+      "size_bytes": 4601,
+      "sha256": "07f2bf1d82d3cc8b16b60467c3b0de4589e3429f7cea31f3ef5b237f437a4ba6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -11621,11 +11684,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.44-host-finalization-evidence-binding",
+  "release_version": "16.3.25.5.48-rest-nlp-readiness-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.44-host-finalization-evidence-binding",
-    "package_version": "16.3.25.5.44-host-finalization-evidence-binding",
-    "release_version": "16.3.25.5.44-host-finalization-evidence-binding"
+    "runtime_version": "16.3.25.5.48-rest-nlp-readiness-convergence",
+    "package_version": "16.3.25.5.48-rest-nlp-readiness-convergence",
+    "release_version": "16.3.25.5.48-rest-nlp-readiness-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

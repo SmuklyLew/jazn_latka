@@ -27,6 +27,7 @@ from latka_jazn.core.tool_execution_controller import ToolExecutionController
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
 from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
+from latka_jazn.nlp.runtime_capability_probe import probe_nlp_runtime_capability
 from latka_jazn.plugins import plugin_readiness_report
 from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
@@ -112,6 +113,41 @@ def _probe_daemon_readiness(host: str, port: int) -> dict[str, Any]:
         }
 
 
+def _daemon_subsystem_status(daemon: dict[str, Any], key: str) -> tuple[dict[str, Any], str]:
+    """Resolve subsystem evidence without conflating liveness with readiness.
+
+    ``status_daemon`` deliberately treats ``/live`` as the primary liveness probe.
+    Optional subsystem readiness is returned by the separate ``/ready`` probe and
+    stored under ``daemon["readiness"]``. Older payload shapes are retained only
+    as bounded compatibility fallbacks.
+    """
+    for source, candidate in (
+        (f"daemon.{key}", daemon.get(key)),
+        (f"daemon.readiness.{key}", (daemon.get("readiness") or {}).get(key) if isinstance(daemon.get("readiness"), dict) else None),
+        (f"daemon.ping.{key}", (daemon.get("ping") or {}).get(key) if isinstance(daemon.get("ping"), dict) else None),
+    ):
+        if isinstance(candidate, dict) and candidate:
+            return candidate, source
+    return {}, "unavailable"
+
+
+def _rest_scheduler_capability(rest_status: dict[str, Any]) -> tuple[bool, bool, str]:
+    if not rest_status:
+        return False, False, "readiness_evidence_unavailable"
+    running_value = rest_status.get("rest_scheduler_running")
+    if not isinstance(running_value, bool):
+        running_value = rest_status.get("running")
+    running = running_value is True
+    reported_ready = rest_status.get("rest_scheduler_ready") is True
+    enabled = rest_status.get("enabled") is not False
+    ready = bool(enabled and reported_ready and running)
+    if rest_status.get("enabled") is False:
+        state = "disabled"
+    else:
+        state = str(rest_status.get("state") or rest_status.get("status") or "state_unreported")
+    return ready, running, state
+
+
 def status_payload(
     root: Path,
     *,
@@ -119,6 +155,7 @@ def status_payload(
     daemon_host: str = DEFAULT_DAEMON_HOST,
     daemon_port: int = DEFAULT_DAEMON_PORT,
     marker_output: Path | None = None,
+    nlp_probe_mode: str = "fast",
 ) -> dict[str, Any]:
     cfg = JaznConfig(root=root)
     daemon = status_daemon(
@@ -158,7 +195,27 @@ def status_payload(
             "error": str(exc),
         }
     continuity = startup.get("memory_continuity_status") or {}
-    rest_status = daemon.get("rest_cycle_status") or {}
+    rest_status, rest_status_source = _daemon_subsystem_status(daemon, "rest_cycle_status")
+    rest_scheduler_ready, rest_scheduler_running, rest_scheduler_state = _rest_scheduler_capability(rest_status)
+    try:
+        nlp_probe = probe_nlp_runtime_capability(
+            root,
+            mode="deep" if nlp_probe_mode == "deep" else "fast",
+        ).to_dict()
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        nlp_probe = {
+            "schema_version": schema_version("nlp_runtime_capability_probe"),
+            "mode": "deep" if nlp_probe_mode == "deep" else "fast",
+            "status": "nlp_capability_probe_failed",
+            "core_probe_executed": False,
+            "core_ready": False,
+            "enhanced_probe_requested": nlp_probe_mode == "deep",
+            "enhanced_probe_executed": False,
+            "enhanced_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "truth_boundary": "Probe failure is reported fail-closed and does not become NLP readiness.",
+        }
     plugin_readiness = plugin_readiness_report()
     operator_capabilities = operator_capability_report(root)
     try:
@@ -197,10 +254,18 @@ def status_payload(
                 "ready": (startup.get("dictionary_provider_status") or {}).get("dictionary_lookup_ready"),
                 "status": "not_yet_capability_probed",
             },
+            "nlp_core": {
+                "classification": "optional",
+                "ready": bool(nlp_probe.get("core_ready")),
+                "status": "ready" if nlp_probe.get("core_ready") is True else str(nlp_probe.get("status") or "probe_failed"),
+                "probe_executed": bool(nlp_probe.get("core_probe_executed")),
+            },
             "nlp_enhanced": {
                 "classification": "optional",
-                "ready": startup.get("nlp_enhanced_ready"),
-                "status": "not_yet_capability_probed",
+                "ready": bool(nlp_probe.get("enhanced_ready")),
+                "status": str(nlp_probe.get("status") or "probe_failed"),
+                "probe_requested": bool(nlp_probe.get("enhanced_probe_requested")),
+                "probe_executed": bool(nlp_probe.get("enhanced_probe_executed")),
             },
             "memory_search": {
                 "classification": "degraded_allowed",
@@ -214,8 +279,10 @@ def status_payload(
             },
             "rest_scheduler": {
                 "classification": "degraded_allowed",
-                "ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
-                "status": str(rest_status.get("status") or "unknown"),
+                "ready": rest_scheduler_ready,
+                "status": rest_scheduler_state,
+                "running": rest_scheduler_running,
+                "evidence_source": rest_status_source,
             },
             "rest_dream": {
                 "classification": "not_applicable",
@@ -247,11 +314,21 @@ def status_payload(
     capability_readiness = {
         "runtime_core_ready": runtime_core_ready,
         "runtime_ready": runtime_core_ready,
+        "nlp_core_ready": bool(nlp_probe.get("core_ready")),
+        "nlp_core_probe_executed": bool(nlp_probe.get("core_probe_executed")),
+        "nlp_enhanced_ready": bool(nlp_probe.get("enhanced_ready")),
+        "nlp_enhanced_status": str(nlp_probe.get("status") or "probe_failed"),
+        "nlp_enhanced_probe_requested": bool(nlp_probe.get("enhanced_probe_requested")),
+        "nlp_enhanced_probe_executed": bool(nlp_probe.get("enhanced_probe_executed")),
+        "nlp_capability_probe": nlp_probe,
         "memory_search_ready": bool(living_memory.get("memory_search_ready")),
         "memory_search_status": living_memory.get("status"),
         "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
         "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
-        "rest_scheduler_ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
+        "rest_scheduler_ready": rest_scheduler_ready,
+        "rest_scheduler_running": rest_scheduler_running,
+        "rest_scheduler_status": rest_scheduler_state,
+        "rest_scheduler_evidence_source": rest_status_source,
         "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),
         "cognitive_integration_ready": None,
         "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
@@ -359,15 +436,14 @@ def doctor_payload(
     daemon_host: str = DEFAULT_DAEMON_HOST,
     daemon_port: int = DEFAULT_DAEMON_PORT,
     marker_output: Path | None = None,
+    deep_capability_probes: bool = False,
     progress: DoctorProgressCallback | None = None,
 ) -> dict[str, Any]:
     progress_total = 8
     _report_progress(progress, 0, progress_total, "Wczytywanie stanu runtime i pamięci")
     status = status_payload(
-        root,
-        daemon_host=daemon_host,
-        daemon_port=daemon_port,
-        marker_output=marker_output,
+        root, daemon_host=daemon_host, daemon_port=daemon_port, marker_output=marker_output,
+        nlp_probe_mode="deep" if deep_capability_probes else "fast",
     )
     _report_progress(progress, 1, progress_total, "Wczytywanie stanu runtime i pamięci")
     startup = status.get("startup") or {}
@@ -503,6 +579,7 @@ def doctor_payload(
             "private_profiles_require_second_confirmation": ["memory", "full"],
         },
         "time": timestamp,
+        "nlp": (status.get("capability_readiness") or {}).get("nlp_capability_probe") or {},
         "plugins": status.get("plugin_readiness") or plugin_readiness_report(),
         "operator_capabilities": status.get("operator_capabilities") or operator_capability_report(root),
     }
