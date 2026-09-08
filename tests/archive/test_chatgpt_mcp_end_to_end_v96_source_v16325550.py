@@ -8,13 +8,6 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from latka_jazn.core.turn_authority_runtime_overlay import install_turn_authority_runtime_overlay
-
-# Match the canonical run.py entrypoint before importing main, bridge, and MCP
-# helpers. This prevents pytest collection order from retaining pre-overlay
-# function references in the two-phase finalization path.
-install_turn_authority_runtime_overlay()
-
 import main as main_module
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import (

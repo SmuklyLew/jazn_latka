@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "generated_at_utc": "2026-09-08T12:59:45+00:00",
-  "updated_at_utc": "2026-09-08T12:59:45+00:00",
+  "version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
+  "generated_at_utc": "2026-09-08T13:35:01+00:00",
+  "updated_at_utc": "2026-09-08T13:35:01+00:00",
   "start_file": "run.py",
-  "file_count": 1270,
-  "static_file_count": 1270,
+  "file_count": 1273,
+  "static_file_count": 1273,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -236,8 +236,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2953,
-      "sha256": "9f8be074ff81f1baff3e6a878f6307f193959d9afeafde2543055f8928f11e5a",
+      "size_bytes": 2911,
+      "sha256": "dd4e2ee86e97e18ea5f24e57c6b09cc1a07ce4ad4e39767243ebcb602f7a2afa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2126,8 +2126,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/runtime_bootstrap_v50.py",
-      "size_bytes": 10269,
-      "sha256": "6f0421854ce81fa3aa0e87ee4295d91c26bd717c6a4e1efdc42737d3a7a59e03",
+      "size_bytes": 10383,
+      "sha256": "dc1c39897afb9c789fa9360373df5ce217fed015961e5ad9b5695f858d449d97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3143,8 +3143,8 @@
     },
     {
       "path": "latka_jazn/core/identity_response_evaluator.py",
-      "size_bytes": 3428,
-      "sha256": "28973ea55c572fb64c5f1ece3e011286ea8386e26fc17714f158da3d710a1bed",
+      "size_bytes": 3535,
+      "sha256": "124a810f606e8f241b9982e803cfd0a07751b2bb1cd5beda92d58b9f99ef4a73",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3710,8 +3710,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon_lifecycle_hotfix.py",
-      "size_bytes": 16202,
-      "sha256": "4b0ecaf9380babe08c4955cd122f053ac8cd1380477eda230a367d1f8643e904",
+      "size_bytes": 17376,
+      "sha256": "5842e0a93d75ffdd5a96d4a9f625fea50278468b658eb386776ee325459bb820",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4088,8 +4088,8 @@
     },
     {
       "path": "latka_jazn/core/turn_authority_runtime_overlay.py",
-      "size_bytes": 16643,
-      "sha256": "5a56274cbfb3eb1c9da9dd237622d5d60ad0958aef398f9987e92e904b152540",
+      "size_bytes": 16665,
+      "sha256": "ab9777208d2352b157842ccdc15600cc6713d9d936a32f99091d0febb9dea184",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4133,8 +4133,8 @@
     },
     {
       "path": "latka_jazn/core/turn_pipeline_contract.py",
-      "size_bytes": 4814,
-      "sha256": "20e61070118e39ce099923e6fbc7e71806dabfc5346abee1319d163de315e469",
+      "size_bytes": 4505,
+      "sha256": "9b6e5d6fdbab5c0cd658297205814523e1061adab9981906d0a4f71e5e84c2af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7661,8 +7661,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6620,
-      "sha256": "c62f3f4bfebeb656413cd6a8029e41819b5ef0a9ebb7fab01384ebc700d1e568",
+      "size_bytes": 6641,
+      "sha256": "7f6507649f50db6c4726b400beb38d2dbe56b59d58250fa056fc19db7aab33b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7834,6 +7834,15 @@
       "path": "tests/archive/test_chatgpt_host_executor_truth_boundary_v16325531.py",
       "size_bytes": 2008,
       "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_chatgpt_mcp_end_to_end_v96_source_v16325550.py",
+      "size_bytes": 13036,
+      "sha256": "d0018006cb9caa250ac0c0a6c156197a5a3ff45e58efc89f22230473924e6ad4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8050,6 +8059,24 @@
       "path": "tests/archive/test_v1601_memory_transport_generator_source_v16325533.py",
       "size_bytes": 11698,
       "sha256": "fda750cd018826654277cc5e28bd1956b0ebc7c07c28fdef335e0bdfb16b78ca",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325549_host_tool_turn_ownership_source_v16325550.py",
+      "size_bytes": 2662,
+      "sha256": "baaef74e54a3022ae47d93958a100ba6ef45d5b38972eb0d0bfbf53dd36178f7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325550_runtime_reload_daemon_lifecycle_source_v16325550.py",
+      "size_bytes": 11275,
+      "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8957,8 +8984,8 @@
     },
     {
       "path": "tests/test_chatgpt_mcp_end_to_end_v96.py",
-      "size_bytes": 13036,
-      "sha256": "d0018006cb9caa250ac0c0a6c156197a5a3ff45e58efc89f22230473924e6ad4",
+      "size_bytes": 13390,
+      "sha256": "d8255f6440822fd540229e74edbd62f7594fb32b524708aa86d01f2107cfe2b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10856,8 +10883,8 @@
     },
     {
       "path": "tests/test_v16325549_host_tool_turn_ownership.py",
-      "size_bytes": 2662,
-      "sha256": "baaef74e54a3022ae47d93958a100ba6ef45d5b38972eb0d0bfbf53dd36178f7",
+      "size_bytes": 2961,
+      "sha256": "b94aef103c630ea0ec23ba787056946a7d12890f48083d50a104925645fcac3c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10910,8 +10937,8 @@
     },
     {
       "path": "tests/test_v16325550_runtime_reload_daemon_lifecycle.py",
-      "size_bytes": 11275,
-      "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
+      "size_bytes": 11452,
+      "sha256": "c70d946e462456a095312a36e5cbdecd9ef4bcdc7231402d9f3a9d283048b5b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11882,11 +11909,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
+  "release_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-    "package_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-    "release_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix"
+    "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
+    "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
+    "release_version": "16.3.25.5.51-pylance-type-contract-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"

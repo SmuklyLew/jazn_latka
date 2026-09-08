@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import hashlib
-import json
 import re
 from typing import Any, Mapping
 
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("turn_pipeline_contract")
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 @dataclass(slots=True)
@@ -41,10 +43,10 @@ def build_turn_pipeline_contract(
     requires_host_generation: bool,
     runtime_final_available: bool,
 ) -> dict[str, Any]:
-    context = dict(host_generation_context or {})
-    model_context = context.get("model_context") if isinstance(context.get("model_context"), Mapping) else {}
-    thought = model_context.get("operational_thought_frame") if isinstance(model_context, Mapping) and isinstance(model_context.get("operational_thought_frame"), Mapping) else {}
-    tool_policy = context.get("host_tool_turn_policy") if isinstance(context.get("host_tool_turn_policy"), Mapping) else {}
+    context = _mapping(host_generation_context)
+    model_context = _mapping(context.get("model_context"))
+    thought = _mapping(model_context.get("operational_thought_frame"))
+    tool_policy = _mapping(context.get("host_tool_turn_policy"))
     stages = {
         "input_bound": "complete",
         "runtime_routing": "complete",
@@ -63,13 +65,13 @@ def build_turn_pipeline_contract(
         identity_canon_sha256=str(identity_canon_sha256 or "").lower(),
         runtime_owns_turn=True,
         stages=stages,
-        tool_policy=dict(tool_policy),
+        tool_policy=tool_policy,
     ).to_dict()
 
 
 def finalize_turn_pipeline_contract(value: Any) -> dict[str, Any]:
-    payload = dict(value) if isinstance(value, Mapping) else {}
-    stages = dict(payload.get("stages") or {})
+    payload = _mapping(value)
+    stages = _mapping(payload.get("stages"))
     for key in ("candidate_generation", "candidate_evaluation", "runtime_finalization", "visible_reply_authority"):
         stages[key] = "complete"
     payload["stages"] = stages
@@ -79,7 +81,7 @@ def finalize_turn_pipeline_contract(value: Any) -> dict[str, Any]:
 
 
 def validate_turn_pipeline_contract(value: Any) -> dict[str, Any]:
-    payload = dict(value) if isinstance(value, Mapping) else {}
+    payload = _mapping(value)
     violations: list[str] = []
     if payload.get("runtime_owns_turn") is not True:
         violations.append("runtime_turn_ownership_missing")
@@ -88,12 +90,12 @@ def validate_turn_pipeline_contract(value: Any) -> dict[str, Any]:
     for field in ("user_text_sha256", "identity_canon_sha256"):
         if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(field) or "").lower()):
             violations.append(f"invalid_sha256:{field}")
-    stages = payload.get("stages") if isinstance(payload.get("stages"), Mapping) else {}
+    stages = _mapping(payload.get("stages"))
     if stages.get("input_bound") != "complete" or stages.get("runtime_routing") != "complete":
         violations.append("turn_pipeline_not_rooted_in_runtime_input_and_routing")
     if stages.get("visible_reply_authority") == "complete" and stages.get("runtime_finalization") != "complete":
         violations.append("visible_reply_authorized_before_runtime_finalization")
-    policy = payload.get("tool_policy") if isinstance(payload.get("tool_policy"), Mapping) else {}
+    policy = _mapping(payload.get("tool_policy"))
     if policy and policy.get("tool_results_cannot_be_voice_source") is not True:
         violations.append("tool_voice_boundary_missing")
     return {

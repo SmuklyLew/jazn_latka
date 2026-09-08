@@ -188,12 +188,17 @@ class _SubprocessProxy:
         return proc
 
 
-def _private_daemon_start_command(rd: Any, root: Path, **kwargs: Any) -> list[str]:
+def _private_daemon_start_command(
+    rd: Any,
+    root: Path,
+    original_build_daemon_start_command: Callable[..., list[str]],
+    **kwargs: Any,
+) -> list[str]:
     root = Path(root).resolve()
     run_file = root / "run.py"
     hotfix_module = root / "latka_jazn" / "core" / "runtime_daemon_lifecycle_hotfix.py"
     if not run_file.is_file() or not hotfix_module.is_file():
-        return rd._v50_original_build_daemon_start_command(root, **kwargs)
+        return original_build_daemon_start_command(root, **kwargs)
     command = [
         sys.executable, str(run_file), "__daemon-run-hotfix",
         "--root", str(root), "--daemon-run",
@@ -223,18 +228,35 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
         _INSTALLED = True
         return
 
-    rd.PROCESS_FINGERPRINT_SCHEMA_VERSION = PROCESS_FINGERPRINT_SCHEMA_VERSION
-    rd.read_runtime_version_from_version_py = read_runtime_version_from_version_py
-    rd._terminate_spawned_process = _terminate_spawned_process
-    rd._cleanup_owned_pid_file = lambda root, expected_pid: _cleanup_owned_pid_file(rd, Path(root), expected_pid)
-    rd._v50_original_build_daemon_start_command = rd.build_daemon_start_command
-    rd._v50_original_start_daemon = rd.start_daemon
-    rd._v50_original_status_daemon = rd.status_daemon
-    rd._v50_original_stop_daemon = rd.stop_daemon
-    rd._v50_original_run_daemon = rd.run_daemon
-    rd.process_fingerprint = lambda pid: process_fingerprint(pid, pid_is_alive=rd.pid_is_alive)
-    rd.process_fingerprint_matches = process_fingerprint_matches
-    rd.build_daemon_start_command = lambda root, **kwargs: _private_daemon_start_command(rd, root, **kwargs)
+    original_build_daemon_start_command = rd.build_daemon_start_command
+    original_start_daemon = rd.start_daemon
+    original_status_daemon = rd.status_daemon
+    original_stop_daemon = rd.stop_daemon
+    original_run_daemon = rd.run_daemon
+
+    def runtime_process_fingerprint(pid: int | None) -> dict[str, Any]:
+        return process_fingerprint(pid, pid_is_alive=rd.pid_is_alive)
+
+    def cleanup_owned_pid_file(root: Path, expected_pid: int | None) -> dict[str, Any]:
+        return _cleanup_owned_pid_file(rd, Path(root), expected_pid)
+
+    # These names are compatibility exports installed dynamically by design.
+    # Use setattr/getattr so static analysis does not mistake them for the
+    # declared source API of ``runtime_daemon``.
+    setattr(rd, "PROCESS_FINGERPRINT_SCHEMA_VERSION", PROCESS_FINGERPRINT_SCHEMA_VERSION)
+    setattr(rd, "read_runtime_version_from_version_py", read_runtime_version_from_version_py)
+    setattr(rd, "_terminate_spawned_process", _terminate_spawned_process)
+    setattr(rd, "_cleanup_owned_pid_file", cleanup_owned_pid_file)
+    setattr(rd, "_v50_original_build_daemon_start_command", original_build_daemon_start_command)
+    setattr(rd, "_v50_original_start_daemon", original_start_daemon)
+    setattr(rd, "_v50_original_status_daemon", original_status_daemon)
+    setattr(rd, "_v50_original_stop_daemon", original_stop_daemon)
+    setattr(rd, "_v50_original_run_daemon", original_run_daemon)
+    setattr(rd, "process_fingerprint", runtime_process_fingerprint)
+    setattr(rd, "process_fingerprint_matches", process_fingerprint_matches)
+    rd.build_daemon_start_command = lambda root, **kwargs: _private_daemon_start_command(
+        rd, root, original_build_daemon_start_command, **kwargs
+    )
 
     for method_name in ("marker_payload", "liveness_status_payload"):
         original = getattr(rd.JaznDaemonServer, method_name)
@@ -246,15 +268,17 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
         setattr(rd.JaznDaemonServer, method_name, wrapped)
 
     def status_daemon(config: Any, **kwargs: Any) -> dict[str, Any]:
-        payload = rd._v50_original_status_daemon(config, **kwargs)
+        payload = original_status_daemon(config, **kwargs)
         root = Path(str(payload.get("active_root") or config.root)).expanduser().resolve()
-        _base, full = _runtime_versions(root, rd.PACKAGE_VERSION_FULL, reader=rd.read_runtime_version_from_version_py)
+        version_reader = getattr(rd, "read_runtime_version_from_version_py", read_runtime_version_from_version_py)
+        _base, full = _runtime_versions(root, rd.PACKAGE_VERSION_FULL, reader=version_reader)
         payload["runtime_version"] = full
         marker = payload.get("marker") if isinstance(payload.get("marker"), dict) else {}
         expected = marker.get("process_fingerprint") if isinstance(marker, dict) else None
         pid = payload.get("pid")
         raw_alive = bool(payload.get("pid_alive_os_probe"))
-        observed = rd.process_fingerprint(int(pid) if pid else None) if raw_alive else process_fingerprint(None)
+        fingerprint_reader = getattr(rd, "process_fingerprint", runtime_process_fingerprint)
+        observed = fingerprint_reader(int(pid) if pid else None) if raw_alive else process_fingerprint(None)
         match = process_fingerprint_matches(expected, observed)
         identity_alive = bool(raw_alive and match is not False)
         payload.update({
@@ -288,14 +312,15 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
         else:
             resolution = rd.resolve_active_runtime_root(requested_root, marker_path=marker_path)
             subject_root = resolution.root
-        base_version, full_version = _runtime_versions(subject_root, rd.PACKAGE_VERSION_FULL, reader=rd.read_runtime_version_from_version_py)
+        version_reader = getattr(rd, "read_runtime_version_from_version_py", read_runtime_version_from_version_py)
+        base_version, full_version = _runtime_versions(subject_root, rd.PACKAGE_VERSION_FULL, reader=version_reader)
         old_base, old_full, old_time, old_subprocess = rd.PACKAGE_VERSION, rd.PACKAGE_VERSION_FULL, rd.time, rd.subprocess
         spawned: list[subprocess_module.Popen[Any]] = []
         rd.PACKAGE_VERSION, rd.PACKAGE_VERSION_FULL = base_version, full_version
         rd.time = _TimeProxy()
         rd.subprocess = _SubprocessProxy(spawned)
         try:
-            result = rd._v50_original_start_daemon(config, **kwargs)
+            result = original_start_daemon(config, **kwargs)
         finally:
             rd.PACKAGE_VERSION, rd.PACKAGE_VERSION_FULL, rd.time, rd.subprocess = old_base, old_full, old_time, old_subprocess
         if result.get("ok") is True:
@@ -330,7 +355,7 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
             return True
         rd.pid_is_alive = guarded_pid_is_alive
         try:
-            result = rd._v50_original_stop_daemon(config, **kwargs)
+            result = original_stop_daemon(config, **kwargs)
         finally:
             rd.pid_is_alive = original_pid_is_alive
         result["expected_process_fingerprint"] = expected
@@ -342,7 +367,7 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
     def run_daemon(*args: Any, **kwargs: Any) -> int:
         root = Path(args[0].root if args else kwargs["config"].root).expanduser().resolve()
         try:
-            return int(rd._v50_original_run_daemon(*args, **kwargs))
+            return int(original_run_daemon(*args, **kwargs))
         finally:
             _cleanup_owned_pid_file(rd, root, os.getpid())
 
@@ -350,5 +375,5 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
     rd.start_daemon = start_daemon
     rd.stop_daemon = stop_daemon
     rd.run_daemon = run_daemon
-    rd._v50_runtime_lifecycle_hotfix_installed = True
+    setattr(rd, "_v50_runtime_lifecycle_hotfix_installed", True)
     _INSTALLED = True

@@ -1,11 +1,5 @@
 from __future__ import annotations
 
-from latka_jazn.core.turn_authority_runtime_overlay import install_turn_authority_runtime_overlay
-
-# Match the canonical run.py entrypoint before importing bridge helpers. This
-# prevents pytest collection order from retaining pre-overlay function objects.
-install_turn_authority_runtime_overlay()
-
 from latka_jazn.core.host_response_candidate_guard import build_host_generation_context
 from latka_jazn.core.host_tool_turn_policy import build_host_tool_turn_policy, validate_tool_evidence_against_policy
 from latka_jazn.core.model_context_compiler import compile_model_context

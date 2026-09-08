@@ -17,6 +17,16 @@ _HOST_IDENTITY_LEAKS = (
 )
 
 
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _string_list(value: Any) -> list[str]:
+    if not isinstance(value, (list, tuple)):
+        return []
+    return [str(item) for item in value]
+
+
 @dataclass(slots=True)
 class IdentityResponseEvaluation:
     accepted: bool
@@ -51,13 +61,15 @@ def evaluate_identity_response(
         full_canon_model_context,
         answer_kind=answer_kind,
     )
-    violations = list(dict.fromkeys([*(validation.get("violations") or []), *(voice.get("violations") or [])]))
+    violations: list[str] = list(
+        dict.fromkeys([*_string_list(validation.get("violations")), *_string_list(voice.get("violations"))])
+    )
     if any(marker in low for marker in _HOST_IDENTITY_LEAKS):
         violations.append("host_persona_identity_leak")
 
-    context = dict(full_canon_model_context) if isinstance(full_canon_model_context, Mapping) else {}
-    canon = context.get("immutable_canon") if isinstance(context.get("immutable_canon"), Mapping) else {}
-    identity = canon.get("identity_core") if isinstance(canon, Mapping) and isinstance(canon.get("identity_core"), Mapping) else {}
+    context = _mapping(full_canon_model_context)
+    canon = _mapping(context.get("immutable_canon"))
+    identity = _mapping(canon.get("identity_core"))
     expected_name = str(identity.get("identity_name") or identity.get("display_name") or "Łatka")
     name_conflict = bool(re.search(r"\b(?:nie\s+jestem|nie\s+nazywam\s+się)\s+Łatk", clean, flags=re.IGNORECASE))
     if name_conflict:
