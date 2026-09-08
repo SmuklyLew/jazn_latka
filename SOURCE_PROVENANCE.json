@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "0a145ff319c4419d84dd82cb0e707acf54beb6eb",
+  "base_merge_commit": "ba2a6657bf17f02c9f140ea0745f1c080cbd1162",
   "base_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "commit_date": "2026-09-08T17:27:30+02:00",
+  "commit_date": "2026-09-08T17:28:58+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-08T15:27:30+00:00",
+  "generated_at_utc": "2026-09-08T15:28:58+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ab4a918abc954cb9bca3dab89d7526e4d78ce31c",
+  "git_tree_sha": "77611ad0f8b9707fded3d37d218a698032c1e614",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "0a145ff319c4419d84dd82cb0e707acf54beb6eb",
+    "source_commit": "ba2a6657bf17f02c9f140ea0745f1c080cbd1162",
     "source_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "0a145ff319c4419d84dd82cb0e707acf54beb6eb",
+  "source_commit": "ba2a6657bf17f02c9f140ea0745f1c080cbd1162",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
   "tag": null,
