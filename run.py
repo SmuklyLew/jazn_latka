@@ -156,6 +156,12 @@ if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-finalize
         )
     )
 
+# v16.3.25.5.49 installs turn-authority/identity/tool ownership invariants
+# before the legacy aggregate CLI imports its bridge functions.
+from latka_jazn.core.turn_authority_runtime_overlay import install_turn_authority_runtime_overlay
+
+install_turn_authority_runtime_overlay()
+
 from latka_jazn.cli import main
 
 
