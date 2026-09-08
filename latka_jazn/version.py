@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.44 fixes host-visible epistemic preflight/finalization binding,
-# adds bound host-local action evidence, and materializes cognitive readiness.
-DISTRIBUTION_VERSION = "16.3.25.5.44"
-PACKAGE_VERSION = "16.3.25.5.44"
-PACKAGE_RELEASE_NAME = "host-finalization-evidence-binding"
+# v16.3.25.5.45 binds rest readiness to the live /ready subsystem evidence
+# and requires the scheduler thread to be running before reporting ready.
+DISTRIBUTION_VERSION = "16.3.25.5.45"
+PACKAGE_VERSION = "16.3.25.5.45"
+PACKAGE_RELEASE_NAME = "rest-readiness-binding"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

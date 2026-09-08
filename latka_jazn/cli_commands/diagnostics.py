@@ -112,6 +112,41 @@ def _probe_daemon_readiness(host: str, port: int) -> dict[str, Any]:
         }
 
 
+def _daemon_subsystem_status(daemon: dict[str, Any], key: str) -> tuple[dict[str, Any], str]:
+    """Resolve subsystem evidence without conflating liveness with readiness.
+
+    ``status_daemon`` deliberately treats ``/live`` as the primary liveness probe.
+    Optional subsystem readiness is returned by the separate ``/ready`` probe and
+    stored under ``daemon["readiness"]``. Older payload shapes are retained only
+    as bounded compatibility fallbacks.
+    """
+    for source, candidate in (
+        (f"daemon.{key}", daemon.get(key)),
+        (f"daemon.readiness.{key}", (daemon.get("readiness") or {}).get(key) if isinstance(daemon.get("readiness"), dict) else None),
+        (f"daemon.ping.{key}", (daemon.get("ping") or {}).get(key) if isinstance(daemon.get("ping"), dict) else None),
+    ):
+        if isinstance(candidate, dict) and candidate:
+            return candidate, source
+    return {}, "unavailable"
+
+
+def _rest_scheduler_capability(rest_status: dict[str, Any]) -> tuple[bool, bool, str]:
+    if not rest_status:
+        return False, False, "readiness_evidence_unavailable"
+    running_value = rest_status.get("rest_scheduler_running")
+    if not isinstance(running_value, bool):
+        running_value = rest_status.get("running")
+    running = running_value is True
+    reported_ready = rest_status.get("rest_scheduler_ready") is True
+    enabled = rest_status.get("enabled") is not False
+    ready = bool(enabled and reported_ready and running)
+    if rest_status.get("enabled") is False:
+        state = "disabled"
+    else:
+        state = str(rest_status.get("state") or rest_status.get("status") or "state_unreported")
+    return ready, running, state
+
+
 def status_payload(
     root: Path,
     *,
@@ -158,7 +193,8 @@ def status_payload(
             "error": str(exc),
         }
     continuity = startup.get("memory_continuity_status") or {}
-    rest_status = daemon.get("rest_cycle_status") or {}
+    rest_status, rest_status_source = _daemon_subsystem_status(daemon, "rest_cycle_status")
+    rest_scheduler_ready, rest_scheduler_running, rest_scheduler_state = _rest_scheduler_capability(rest_status)
     plugin_readiness = plugin_readiness_report()
     operator_capabilities = operator_capability_report(root)
     try:
@@ -214,8 +250,10 @@ def status_payload(
             },
             "rest_scheduler": {
                 "classification": "degraded_allowed",
-                "ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
-                "status": str(rest_status.get("status") or "unknown"),
+                "ready": rest_scheduler_ready,
+                "status": rest_scheduler_state,
+                "running": rest_scheduler_running,
+                "evidence_source": rest_status_source,
             },
             "rest_dream": {
                 "classification": "not_applicable",
@@ -251,7 +289,10 @@ def status_payload(
         "memory_search_status": living_memory.get("status"),
         "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
         "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
-        "rest_scheduler_ready": bool(rest_status.get("rest_scheduler_ready") or rest_status.get("running")),
+        "rest_scheduler_ready": rest_scheduler_ready,
+        "rest_scheduler_running": rest_scheduler_running,
+        "rest_scheduler_status": rest_scheduler_state,
+        "rest_scheduler_evidence_source": rest_status_source,
         "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),
         "cognitive_integration_ready": None,
         "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
