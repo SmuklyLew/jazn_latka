@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.45 binds rest readiness to the live /ready subsystem evidence
-# and requires the scheduler thread to be running before reporting ready.
-DISTRIBUTION_VERSION = "16.3.25.5.45"
-PACKAGE_VERSION = "16.3.25.5.45"
-PACKAGE_RELEASE_NAME = "rest-readiness-binding"
+# v16.3.25.5.46 adds an executable Polish NLP capability probe with a
+# synthetic regression corpus and fail-closed deep Stanza verification.
+DISTRIBUTION_VERSION = "16.3.25.5.46"
+PACKAGE_VERSION = "16.3.25.5.46"
+PACKAGE_RELEASE_NAME = "nlp-capability-probe"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

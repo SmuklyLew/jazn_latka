@@ -12,6 +12,7 @@ from .polish_tokenizer import PolishTokenizer, PolishToken
 from .topic_mismatch_guard import TopicMismatchGuard, TopicMismatchReport
 from .intent_feature_engine import IntentFeatureEngine, IntentDecisionFrame, IntentCandidate
 from .nlp_capability_audit import NLPCapabilityAudit, NLPCapabilityReport, NLPLayerStatus
+from .runtime_capability_probe import NLPRuntimeCapabilityReport, probe_nlp_runtime_capability
 
 __all__ = [
     "PolishLemmatizationEngine",
@@ -27,6 +28,8 @@ __all__ = [
     "IntentDecisionFrame",
     "IntentCandidate",
     "NLPCapabilityAudit",
+    "NLPRuntimeCapabilityReport",
+    "probe_nlp_runtime_capability",
     "NLPCapabilityReport",
     "NLPLayerStatus",
 ]
