@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3c74e55c7ac3086a3d301641b0f881481e992825",
-    "base_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
+    "base_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
+    "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "b9340d0377919cf7a669aa2c81c429e0111f6a16",
