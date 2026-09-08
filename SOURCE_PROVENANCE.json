@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ed3db6a41376572b16c38a125fa174d2d04a313c",
+  "base_merge_commit": "c4372d801559ce2c9df29c94d13f17087488cca4",
   "base_version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "commit_date": "2026-09-08T15:23:24+02:00",
+  "commit_date": "2026-09-08T15:25:51+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-08T13:23:24+00:00",
+  "generated_at_utc": "2026-09-08T13:25:51+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "81a693dd732927e3e1d2b286d329a1632eadaf87",
+  "git_tree_sha": "4fac992c2ea3117efd297d68786faeaaed1616a3",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "ed3db6a41376572b16c38a125fa174d2d04a313c",
+    "source_commit": "c4372d801559ce2c9df29c94d13f17087488cca4",
     "source_version": "16.3.25.5.51-pylance-type-contract-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "ed3db6a41376572b16c38a125fa174d2d04a313c",
+  "source_commit": "c4372d801559ce2c9df29c94d13f17087488cca4",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "tag": null,

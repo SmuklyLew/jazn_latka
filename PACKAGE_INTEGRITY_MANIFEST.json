@@ -3,11 +3,11 @@
   "version": "16.3.25.5.51-pylance-type-contract-hardening",
   "runtime_version": "16.3.25.5.51-pylance-type-contract-hardening",
   "package_version": "16.3.25.5.51-pylance-type-contract-hardening",
-  "generated_at_utc": "2026-09-08T13:23:24+00:00",
-  "updated_at_utc": "2026-09-08T13:23:24+00:00",
+  "generated_at_utc": "2026-09-08T13:25:51+00:00",
+  "updated_at_utc": "2026-09-08T13:25:51+00:00",
   "start_file": "run.py",
-  "file_count": 1270,
-  "static_file_count": 1270,
+  "file_count": 1271,
+  "static_file_count": 1271,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -237,7 +237,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2911,
-      "sha256": "f2e3236ba7eab610b997775db09451b0f87035d4978c1cd04804fa180a769bd4",
+      "sha256": "10f6f29a75ebb42661fc9915901099686141cdff742c313225dd8617aac7d3ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8056,6 +8056,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_v16325550_runtime_reload_daemon_lifecycle_source_v16325550.py",
+      "size_bytes": 11275,
+      "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_version_consistency_audit_v163254_v16_3_25_4.py",
       "size_bytes": 2787,
       "sha256": "ece1e1947c791482c4dbd335e7301c7a982dce9c03c4bdfacb21f654c2ef290c",
@@ -10910,8 +10919,8 @@
     },
     {
       "path": "tests/test_v16325550_runtime_reload_daemon_lifecycle.py",
-      "size_bytes": 11275,
-      "sha256": "15fe454414f1acf264d32b89f75d4f9e0906feaf481045ddbc6f37f8e6030737",
+      "size_bytes": 11452,
+      "sha256": "c70d946e462456a095312a36e5cbdecd9ef4bcdc7231402d9f3a9d283048b5b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
