@@ -5,6 +5,7 @@
     "latka_jazn",
     "tests",
     "tools",
+    "CHATGPT_BOOTSTRAP.py",
     "main.py",
     "run.py"
   ],
