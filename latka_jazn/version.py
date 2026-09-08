@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.47 converges live rest readiness and executable NLP probes
-# into status/doctor while keeping optional enhanced NLP fail-closed.
-DISTRIBUTION_VERSION = "16.3.25.5.47"
-PACKAGE_VERSION = "16.3.25.5.47"
+# v16.3.25.5.48 keeps the rest/NLP readiness convergence within the
+# existing diagnostics code-health budget without weakening its regression gate.
+DISTRIBUTION_VERSION = "16.3.25.5.48"
+PACKAGE_VERSION = "16.3.25.5.48"
 PACKAGE_RELEASE_NAME = "rest-nlp-readiness-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

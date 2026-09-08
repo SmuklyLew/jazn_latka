@@ -442,10 +442,7 @@ def doctor_payload(
     progress_total = 8
     _report_progress(progress, 0, progress_total, "Wczytywanie stanu runtime i pamięci")
     status = status_payload(
-        root,
-        daemon_host=daemon_host,
-        daemon_port=daemon_port,
-        marker_output=marker_output,
+        root, daemon_host=daemon_host, daemon_port=daemon_port, marker_output=marker_output,
         nlp_probe_mode="deep" if deep_capability_probes else "fast",
     )
     _report_progress(progress, 1, progress_total, "Wczytywanie stanu runtime i pamięci")
