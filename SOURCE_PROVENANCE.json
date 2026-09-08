@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "5adabf8d67c8e9be64326b8f251106071895fbe1",
+  "base_merge_commit": "93477bf9bd1b9872d4cf30809fcb607766e171a9",
   "base_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
-  "commit_date": "2026-09-08T14:53:53+02:00",
+  "commit_date": "2026-09-08T14:55:05+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-08T12:53:53+00:00",
+  "generated_at_utc": "2026-09-08T12:55:05+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c6c64325e264a737bdfa71898d9b39ed275bbde7",
+  "git_tree_sha": "a2c05b38d148b6d92990991a9afd10500e424263",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.49-turn-authority-cognition-identity-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "5adabf8d67c8e9be64326b8f251106071895fbe1",
+    "source_commit": "93477bf9bd1b9872d4cf30809fcb607766e171a9",
     "source_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "5adabf8d67c8e9be64326b8f251106071895fbe1",
+  "source_commit": "93477bf9bd1b9872d4cf30809fcb607766e171a9",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.50-runtime-reload-daemon-lifecycle-hotfix",
   "tag": null,
