@@ -164,6 +164,9 @@ def bootstrap_and_reload(
         if v2 is not None:
             compat_parts = temp_root / "compat-parts"; compat_parts.mkdir()
             resolved_zip_name = _materialize_v2_compat(parts_dir, v2[1], compat_parts)
+            # Preserve a legacy memory package next to the adapted system package
+            # only when auto-memory is requested. Existing recovery performs the
+            # final memory contract verification.
             if not no_auto_memory:
                 for candidate in parts_dir.iterdir():
                     if candidate.is_file() and (candidate.name.endswith(".sha256") or ".package" in candidate.name or ".zip." in candidate.name):
