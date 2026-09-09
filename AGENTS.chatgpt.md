@@ -1,6 +1,6 @@
 # AGENTS.chatgpt.md — techniczny runbook hosta ChatGPT
 
-Ten plik opisuje wyłącznie techniczną obsługę lokalnego systemu Jaźni w środowisku ChatGPT, które udostępnia pliki i lokalną powierzchnię wykonawczą. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
+Ten plik opisuje wyłącznie techniczną obsługę lokalnego systemu Jaźni w środowisku ChatGPT, które udostępnia pliki i executor/terminal. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
 
 Instrukcje Projektu ChatGPT powinny być cienkim loaderem prowadzącym do lokalnego `AGENTS.md`. Wersjonowane procedury techniczne pozostają w zweryfikowanym `active_root`.
 
@@ -47,15 +47,17 @@ Nie dokumentuj ani nie uruchamiaj `main.py` jako równorzędnego operatora.
 
 Przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
-Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError` albo `TransportTimeoutError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował:
+Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError` albo `TransportTimeoutError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
 - runtime pozostaje `unverified`;
 - nie twierdź, że `/mnt/data` nie istnieje, paczki brakuje ani że `run.py` jest nieobecny.
 
-Jeżeli istnieje jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie twórz retry-loopu, cyklicznego przełączania executorów ani własnego backoffu. Globalne `host_executor_unavailable` wolno zadeklarować dopiero wtedy, gdy żadna objęta tym ograniczonym probingiem powierzchnia nie utworzy procesu.
+Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu. Globalne `host_executor_unavailable` wolno zadeklarować dopiero wtedy, gdy żadna objęta tym ograniczonym probingiem powierzchnia nie utworzy procesu.
 
-Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy, a nie awarią hostowego transportu.
+Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
+
+Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy, a nie awarią hostowego transportu. `TransportTimeoutError` nie jest dowodem uszkodzenia ZIP-a; jeżeli wystąpił przed utworzeniem procesu, awaria leży przed etapem lokalnej inspekcji archiwum.
 
 ## 3. Discovery i bootstrap operatora
 
@@ -63,17 +65,18 @@ Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na paczki lub r
 
 Jeżeli istnieje host-level `workspace_runtime/JAZN_ACTIVE_RUNTIME.json`, zweryfikuj wskazany `active_root`, `run.py`, `latka_jazn/version.py`, `PACKAGE_INTEGRITY_MANIFEST.json`, wersję, SHA manifestu i wymagane drzewo kodu.
 
-Jeżeli marker jest nieobecny albo nieważny, znajdź jeden jednoznaczny lokalny rozpakowany kandydat systemowy. Paczka profilu `memory` jest źródłem danych i nigdy sama nie jest systemowym `active_root`.
+Jeżeli marker nie istnieje albo jest nieważny, znajdź jeden jednoznaczny lokalny rozpakowany kandydat systemowy. Paczka profilu `memory` jest źródłem danych i nigdy sama nie jest systemowym `active_root`.
 
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
-Jeżeli nie ma jeszcze operatora, ale kompletna systemowa paczka ZIP i zaufany SHA-256 są lokalnie dostępne:
+Jeżeli nie ma jeszcze operatora, ale kompletna paczka systemowa ZIP i zaufany SHA-256 są lokalnie dostępne:
 1. zweryfikuj cały ZIP;
 2. jeżeli root ZIP zawiera `CHATGPT_BOOTSTRAP.py`, odczytaj tylko ten member przez `ZipFile.read()` do świeżego pliku tymczasowego;
 3. nie używaj surowego `extractall()` jako bootstrapu;
 4. uruchom helper lokalnym Pythonem z `--zip`, `--destination`, `--json` i dokładnie jednym z `--sha256-file` lub `--expected-sha256`;
 5. przekaż `--expected-size-bytes`, jeżeli rozmiar jest znany;
-6. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime.
+6. lokalny sidecar nie jest wymagany, jeżeli host ma już zaufany SHA-256 dla dokładnie tego ZIP-a;
+7. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime.
 
 Standalone bootstrap ma działać fail-closed: odrzucać traversal, ścieżki absolutne/drive-qualified, backslashe w nazwach ZIP, duplikaty, symlinki, nietypowe wpisy, szyfrowanie, przekroczenia limitów liczby/rozmiaru/compression-ratio i błędy CRC.
 
@@ -104,7 +107,7 @@ python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat.
+Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
 
 Po udanym starcie nie zatrzymuj daemona po każdej wiadomości.
 
@@ -191,7 +194,7 @@ Jeżeli truth gate, integralność albo finalizator blokuje odpowiedź, przejdź
 
 Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych lokalnych kroków. Jeżeli executor nie utworzył procesu, raportuj `host_executor_unavailable` i pozostaw stan filesystemu/paczki jako `unknown`.
 
-Awaria hostowego control plane/executora przed utworzeniem procesu nie może zostać naprawiona przez kod znajdujący się wewnątrz ZIP-a, ponieważ ten kod nie został jeszcze wykonany.
+Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący executor został odzyskany.
 
 ## 9. Repozytorium i źródła zewnętrzne
 

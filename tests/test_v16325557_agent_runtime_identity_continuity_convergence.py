@@ -17,7 +17,7 @@ def test_root_agents_router_matches_real_operator_dispatch() -> None:
     run_py = _read("run.py")
 
     assert "`run.py` jest kanonicznym operatorem" in agents
-    assert "`latka_jazn.cli`" in agents
+    assert "latka_jazn.cli.main()" in agents
     assert "`main.py`" in agents
     assert "techniczny punkt zgodności" in agents
 
@@ -40,7 +40,7 @@ def test_chatgpt_runbook_binds_host_to_operator_before_visible_reply() -> None:
     assert "action=host_diagnostic" in text
     assert "must_not_claim_runtime_voice" in text
     assert "must_preserve_runtime_voice" in text
-    assert "Narzedzia hosta sa capability" not in text  # ASCII shadow must not replace canonical Polish heading.
+    assert "Narzedzia hosta sa capability" not in text
     assert "Narzędzia hosta są capability" in text
     assert "Host nie implementuje w ten sposób funkcji runtime" in text
     assert "`main.py`" in text
@@ -52,8 +52,9 @@ def test_chatgpt_project_instructions_remain_thin_loader() -> None:
 
     assert text.startswith("# LOADER SYSTEMU JAŹNI\n")
     assert len(text) <= 5000
-    assert "AGENTS.md" in text
-    assert "AGENTS.chatgpt.md" in text
+    assert "`AGENTS.md`" in text
+    assert "`AGENTS.chatgpt.md`" not in text
+    assert "runbook odpowiedni dla bieżącego hosta lub zadania" in text
     assert "run.py" in text
     assert "main.py" in text
     assert "persona" not in text.lower()

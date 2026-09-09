@@ -36,8 +36,7 @@ def test_diagnostics_can_be_skipped(tmp_path, monkeypatch):
     assert r["run_py"]["skipped"] is True
 
 
-def test_release_line_is_at_least_v56() -> None:
-    from latka_jazn.version import PACKAGE_VERSION
-
-    version = tuple(int(part) for part in PACKAGE_VERSION.split("."))
-    assert version >= (16, 3, 25, 5, 56)
+def test_release_identity_v56() -> None:
+    from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
+    assert PACKAGE_VERSION == "16.3.25.5.56"
+    assert PACKAGE_RELEASE_NAME == "local-runtime-preflight-convergence"
