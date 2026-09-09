@@ -8,7 +8,7 @@ Instrukcje Projektu lub globalne Custom Instructions powinny pełnić wyłączni
 
 Celem hosta jest możliwie szybko doprowadzić do zweryfikowanego operatora `run.py`, uruchomić albo reuse'ować właściwy runtime i przekazać mu bieżącą wiadomość.
 
-preferowanym wejściem hosta jest lokalny, zweryfikowany `run.py`; nie uruchamiaj samego `python run.py` bez jawnej komendy operatora.
+Preferowanym wejściem hosta jest lokalny, zweryfikowany `run.py`; nie uruchamiaj samego `python run.py` bez jawnej komendy operatora.
 
 Po znalezieniu zweryfikowanego `active_root`:
 - `run.py` jest kanonicznym wejściem wykonawczym;
@@ -25,19 +25,19 @@ Jeżeli lokalny operator nie jest dostępny, ale prywatne narzędzia MCP są jaw
 
 ## 1. Granica executora
 
-Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź możliwość utworzenia lokalnego procesu.
+Przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
-Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj stan jako `host_executor_unavailable`:
+Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError` albo `TransportTimeoutError`, klasyfikuj tę powierzchnię jako `host_executor_unavailable`, ale tylko wtedy, gdy nie ma dowodu, że proces rzeczywiście wystartował:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
 - runtime pozostaje `unverified`;
 - nie twierdź, że `/mnt/data` nie istnieje, paczki brakuje ani że `run.py` jest nieobecny, jeżeli żadna komenda lokalna nie wystartowała.
 
-Dla przejściowego błędu hosta wykonaj najwyżej dwie minimalne, bezskuteczne próby utworzenia procesu na tej samej powierzchni. Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać najwyżej jedną próbę rozróżniającą. Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; nie zapętlaj retry między narzędziami i nie twórz własnego długiego backoffu.
+Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie przełączaj się cyklicznie między executorami i nie twórz własnego backoffu. Globalne `host_executor_unavailable` wolno zadeklarować dopiero wtedy, gdy żadna objęta tym ograniczonym probingiem powierzchnia nie potrafi utworzyć procesu.
 
-po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
+Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi. Po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
 
-Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy i należy diagnozować go osobno od błędu hosta.
+Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy i należy diagnozować go osobno od błędu hostowego transportu. `TransportTimeoutError` nie jest dowodem uszkodzenia ZIP-a; jeżeli wystąpił przed utworzeniem procesu, awaria leży przed etapem lokalnej inspekcji archiwum.
 
 ## 2. Discovery i bootstrap
 
@@ -49,7 +49,18 @@ Jeżeli marker nie istnieje albo jest nieważny, znajdź jeden jednoznaczny loka
 
 Paczka profilu `memory` jest źródłem danych i nigdy sama nie jest systemowym `active_root`.
 
-Przed ekstrakcją zweryfikuj dostępne sidecary i SHA-256, pełny CRC ZIP oraz odrzuć path traversal, ścieżki bezwzględne, symlinki i duplikaty wpisów. Nie nadpisuj działającego runtime; materializuj kod do nowego wersjonowanego katalogu.
+Przed joinem albo ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany z metadanych/manifestu, oraz zgodnego SHA-256. Nie uznawaj samej obecności ścieżki za dowód zakończonej materializacji załącznika.
+
+Jeżeli nie ma jeszcze operatora `run.py`, ale kompletna systemowa paczka ZIP i jej zaufany SHA-256 są lokalnie dostępne, użyj samodzielnego recovery bez zależności od `latka_jazn`:
+
+1. otwórz ZIP wyłącznie przez stdlib `zipfile`;
+2. jeżeli archiwum zawiera root `CHATGPT_BOOTSTRAP.py`, odczytaj tylko ten member przez `ZipFile.read()` do świeżego pliku tymczasowego; nie używaj `extract()` ani `extractall()` do wydobycia helpera;
+3. uruchom helper lokalnym Pythonem z `--zip`, `--destination`, `--json` oraz dokładnie jednym źródłem digestu: `--sha256-file`, gdy sidecar jest lokalny, albo `--expected-sha256`, gdy zaufany hash jest już znany z manifestu/metadanych;
+4. gdy znany jest oczekiwany rozmiar całego ZIP-a, przekaż również `--expected-size-bytes`;
+5. lokalny sidecar nie jest wymagany, jeżeli host ma już zaufany SHA-256 dla dokładnie tego ZIP-a;
+6. wynik `materialized_operator_ready` potwierdza wyłącznie gotowy operator na dysku, nie aktywny runtime.
+
+Standalone bootstrap ma działać fail-closed: odrzucać path traversal, ścieżki absolutne i drive-qualified, backslashe, duplikaty, symlinki, nietypowe typy filesystemu, zaszyfrowane wpisy, przekroczenia limitów liczby/rozmiaru/compression-ratio i błędy CRC. Po walidacji ekstrahuje wpisy strumieniowo do świeżego stagingu i nie deleguje decyzji o ścieżkach do `extractall()`.
 
 Jeżeli zweryfikowany operator jest już dostępny, do materializacji nowej paczki użyj jego kanonicznej komendy:
 
@@ -57,7 +68,7 @@ Jeżeli zweryfikowany operator jest już dostępny, do materializacji nowej pacz
 python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT> --json
 ```
 
-Nie pobieraj repozytorium ani release z GitHuba jako automatycznego substytutu brakującego lokalnego runtime.
+Nie pobieraj repozytorium ani release z GitHuba jako automatycznego substytutu brakującego lokalnego runtime. Awaria hostowego executora nie może zostać „naprawiona” przez inną zawartość ZIP-a; kod paczki zaczyna działać dopiero po utworzeniu lokalnego procesu.
 
 ## 3. Preflight i persistent daemon
 
@@ -160,6 +171,8 @@ Jeżeli finalizacja mogła dojść do runtime, ale odpowiedź transportowa zgin�
 Jeżeli truth gate, integralność albo finalizator blokuje odpowiedź, przejdź do `host_diagnostic`. Nie zastępuj zablokowanego wyniku własnym tekstem przypisywanym runtime.
 
 Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich dostępnych lokalnych kroków: discovery, ewentualnego bootstrapu, preflightu, próby startu i ponownego live statusu. Jeżeli executor nie zdołał utworzyć procesu, raportuj `host_executor_unavailable` i pozostaw stan filesystemu/paczki jako `unknown`.
+
+Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący executor został odzyskany.
 
 ## 9. Repozytorium i aktualne źródła
 
