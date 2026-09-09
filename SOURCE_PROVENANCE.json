@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "db9325bd1f1a2a638204ae6963df066bad99099d",
+  "base_merge_commit": "8fa0c6c503c42f2b5e72cbab1ca8d39a7f0005a2",
   "base_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
-  "commit_date": "2026-09-09T12:03:01+02:00",
+  "commit_date": "2026-09-09T12:05:25+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-09T10:03:01+00:00",
+  "generated_at_utc": "2026-09-09T10:05:25+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "e23bb7ed6fcbb6f009c5900ca56ee9979d2d36b3",
+  "git_tree_sha": "98659018344ee8f02eef0d2d42a9ddfebd05a696",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "db9325bd1f1a2a638204ae6963df066bad99099d",
+    "source_commit": "8fa0c6c503c42f2b5e72cbab1ca8d39a7f0005a2",
     "source_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "db9325bd1f1a2a638204ae6963df066bad99099d",
+  "source_commit": "8fa0c6c503c42f2b5e72cbab1ca8d39a7f0005a2",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
   "tag": null,
