@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "generated_at_utc": "2026-09-08T15:28:58+00:00",
-  "updated_at_utc": "2026-09-08T15:28:58+00:00",
+  "version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "runtime_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "package_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "generated_at_utc": "2026-09-09T10:03:01+00:00",
+  "updated_at_utc": "2026-09-09T10:03:01+00:00",
   "start_file": "run.py",
   "file_count": 1277,
   "static_file_count": 1277,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2904,
-      "sha256": "b22feee54058f1caa16463a1367694096215c605b5b633b780fb27228e64c91e",
+      "size_bytes": 2952,
+      "sha256": "6cf81e9d937c02ade720f187e7093edc68317abc41ebd43769280d08c07987b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7679,8 +7679,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6617,
-      "sha256": "54017231cf297bcb88e369c5abffd084cc3d29314699e25bfcfddb0fc71757ac",
+      "size_bytes": 6643,
+      "sha256": "254ee68da8dd03db61d132db2399b571e20973a590849442a18f9b2665fb738f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11945,11 +11945,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+  "release_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-    "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-    "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery"
+    "runtime_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+    "package_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+    "release_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
