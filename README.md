@@ -17,23 +17,48 @@ Styl, pierwsza osoba, nazwa folderu, ZIP, sam marker, SQLite ani obecność kodu
 
 Instrukcje projektu ChatGPT są wyłącznie cienkim loaderem prowadzącym do lokalnego `AGENTS.md`. Kanoniczny tekst loadera operatorskiego: [`docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt`](docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt).
 
+`AGENTS.codex.md` jest projektowym runbookiem wskazywanym przez root `AGENTS.md`; nie należy zakładać, że każda niestandardowa nazwa instrukcji zostanie automatycznie odkryta przez host bez routera lub konfiguracji.
+
 ## Bieżący stan projektu
 
 - jedyne kanoniczne źródło wersji: [`latka_jazn/version.py`](latka_jazn/version.py);
 - kanoniczny układ repozytorium i polityka zależności: [`docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md);
+- kanoniczne założenia tożsamości, pamięci i ciągłości: [`docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`](docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md);
 - bieżący snapshot mastera i aktywnych linii pracy: [`docs/project/CURRENT_STATE.md`](docs/project/CURRENT_STATE.md);
 - główny program wykonawczy v16: [`docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md);
 - warunkowy kierunek v17: [`docs/plans/V17_PLUS_SYSTEM_EVALUATION.md`](docs/plans/V17_PLUS_SYSTEM_EVALUATION.md);
-- historia wydań i decyzji: [`docs/project/RELEASE_TIMELINE.md`](docs/project/RELEASE_TIMELINE.md).
+- historia wydań i decyzji: [`docs/project/RELEASE_TIMELINE.md`](docs/project/RELEASE_TIMELINE.md);
 - lokalny runtime bez `OPENAI_API_KEY`: [`docs/runtime/LOCAL_RUNTIME_NO_API_KEY.md`](docs/runtime/LOCAL_RUNTIME_NO_API_KEY.md).
 
 Nie wpisuj numeru aktualnej wersji ręcznie w dokumentach operacyjnych jako drugiego źródła prawdy. Gdy potrzebny jest snapshot historyczny, zapisuj go jawnie z datą i SHA.
+
+## Kanoniczny operator i dispatch
+
+Publicznym operatorem jest wyłącznie `run.py`. Nie należy upraszczać architektury do `run.py -> main.py`, ponieważ część krytycznych ścieżek kończy się wcześniej, a ogólny dispatch trafia najpierw do modułowego CLI.
+
+```text
+run.py
+├─ --version                         -> dependency-free fast path
+├─ host-preflight                    -> host preflight przed dependency bootstrap
+├─ dependency bootstrap / reexec     -> zweryfikowane środowisko Pythona
+├─ status / doctor                   -> readiness overlay + CLI
+├─ restart / reload                  -> runtime_lifecycle
+├─ runtime-bootstrap                 -> bootstrap_and_reload
+├─ host-finalize                     -> phase-2 finalization
+├─ turn-authority overlay
+└─ latka_jazn.cli.main()
+   └─ main.py tylko dla kontrolowanych ścieżek zgodnościowych
+      └─ właściwe moduły runtime / sesja / adapter modelu
+```
+
+`main.py` jest technicznym punktem zgodności, nie drugim canonical entrypointem. Dzięki temu lifecycle, finalizacja i publiczny kontrakt operatora pozostają w jednym miejscu nawet wtedy, gdy dojrzała implementacja konkretnej komendy nadal znajduje się za warstwą legacy.
 
 ## Architektura w skrócie
 
 ```text
 użytkownik
   -> host / ingress
+  -> run.py / canonical operator
   -> pre-response + capability + authority gates
   -> zweryfikowany runtime Jaźni
   -> task/identity/self-state context
@@ -44,7 +69,13 @@ użytkownik
   -> trwały commit ciągłości dopiero po zaakceptowanej finalizacji
 ```
 
-LLM jest **silnikiem generatywnego rozumowania/języka i użytkownikiem narzędzi**, ale nie jest właścicielem prawdy, pamięci trwałej, uprawnień, promotion L3 ani provenance. Te granice pozostają po stronie deterministycznego runtime.
+LLM jest **silnikiem generatywnego rozumowania/języka i capability używaną przez runtime**, ale nie jest właścicielem prawdy, pamięci trwałej, uprawnień, promotion L3 ani provenance. Te granice pozostają po stronie deterministycznego runtime.
+
+ChatGPT, Codex i Ollama pełnią różne role wokół tego samego systemu:
+
+- ChatGPT może być hostem, kanałem odpowiedzi i powierzchnią zewnętrznych narzędzi;
+- Codex/agent kodujący zmienia repozytorium, ale sam edit/commit nie jest aktywacją runtime;
+- Ollama jest backendem językowym generującym kandydata, a nie właścicielem identity/memory lineage.
 
 ## Pamięć
 
@@ -60,6 +91,8 @@ Samo istnienie poprawnej bazy nie oznacza pamięci `ACCEPTED`. Program v16 rozr�
 ## Szybkie komendy operatora
 
 ```powershell
+python -X utf8 run.py --version
+python -X utf8 run.py host-preflight --json
 python -X utf8 run.py status --snapshot --json
 python -X utf8 run.py doctor --json
 python -X utf8 run.py start

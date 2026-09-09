@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.56-local-runtime-preflight-convergence",
-  "runtime_version": "16.3.25.5.56-local-runtime-preflight-convergence",
-  "package_version": "16.3.25.5.56-local-runtime-preflight-convergence",
-  "generated_at_utc": "2026-09-09T19:56:25+00:00",
-  "updated_at_utc": "2026-09-09T19:56:25+00:00",
+  "version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+  "runtime_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+  "package_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+  "generated_at_utc": "2026-09-09T21:41:36+00:00",
+  "updated_at_utc": "2026-09-09T21:41:36+00:00",
   "start_file": "run.py",
-  "file_count": 1292,
-  "static_file_count": 1292,
+  "file_count": 1295,
+  "static_file_count": 1295,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 15425,
-      "sha256": "13df199f9fc9f431f9c14affd47ebff959189c2679ae3a62c3e972fab9d63c2d",
+      "size_bytes": 12487,
+      "sha256": "28505a20a7258af9cb23062a82424acfad1edad99210b7278f315e091d188386",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -191,8 +191,8 @@
     },
     {
       "path": "AGENTS.codex.md",
-      "size_bytes": 8039,
-      "sha256": "0695533ce1fd925a676d4aae3b6ca1f9ee0450edcc6a337f8a2e8bbf5b7cf918",
+      "size_bytes": 9865,
+      "sha256": "dcbf88468d504b43c86d45198d0e338b34f8d8dd8f4ab294463d369088341268",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 5155,
-      "sha256": "6d72ca19ad4f8831788132ac79783d71c7538a32160dd32d1dbbfc6fefe65b34",
+      "size_bytes": 6734,
+      "sha256": "2956df0cc80b67ebcf4130be3bb4886166a273254eac85040ad7b4cf0053b707",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -209,8 +209,8 @@
     },
     {
       "path": "AGENTS.ollama.md",
-      "size_bytes": 3101,
-      "sha256": "28101e6756c6f86db0f7aae50a8c9aaacc2fb374dfc5d5de0ef5904853dd04e9",
+      "size_bytes": 4824,
+      "sha256": "622973eb2981197dd31148e20005fdcc40c4370e787750aa0fb0e4a02780e0b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -236,8 +236,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 5999,
-      "sha256": "e5750f97b5fb561064f24aafc950fd08682a3e7ca1ffeee58e1f4c02faef312b",
+      "size_bytes": 8153,
+      "sha256": "289203ffb07f15cad0ce3449afa1e3cdb46b5b28cc37b1e7cf6fe51564444019",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "df02e162b8fac2930ac4d8beb20806330ae9137807988dcde1dc7070d00f7c50",
+      "size_bytes": 2992,
+      "sha256": "cf3e9d9afeaeb93aafd5642915a2746958709ced78625794d8e6239840d7ddca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1828,6 +1828,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_57_AGENT_RUNTIME_IDENTITY_CONTINUITY_CONVERGENCE.md",
+      "size_bytes": 8576,
+      "sha256": "08dbddff51c51adb2572ce8c9a678a0710b4fdb53d53905dbe08a11b84b97ac3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1847,8 +1856,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 4733,
-      "sha256": "39948bc7cc527a57d9de6264db10952279c958dc35867ad3267bbb40d498aa6a",
+      "size_bytes": 4600,
+      "sha256": "23b6d51686ab78a2d595ee431f2b2e77ad1b199b7e692dd49e812bcdbf3822dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7733,8 +7742,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6643,
-      "sha256": "0732241fc5dfa483afa6bd00e24f7a81946f7d2e17ed664acab9fa8a7b768da1",
+      "size_bytes": 6720,
+      "sha256": "581af453aec23764c7c4c851645d1ca6e9133cb3a6ccd3892739854e8e0e5e7b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8842,6 +8851,15 @@
       "path": "tests/archive/v16.3.25.5.5-package-distribution-convergence/test_package_distribution_v163255.py",
       "size_bytes": 14197,
       "sha256": "66ee130ccf82783aff35cb406263c3dc9f72767791cb1d3d7725c113fd7c0a27",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.56-local-runtime-preflight-convergence/test_v16325556_local_runtime_preflight.py",
+      "size_bytes": 1746,
+      "sha256": "94622544db75de5bc7952aa65ec5e7bd12bfd2359ca5200fd2a9d7593d3a8cde",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11099,8 +11117,17 @@
     },
     {
       "path": "tests/test_v16325556_local_runtime_preflight.py",
-      "size_bytes": 1746,
-      "sha256": "94622544db75de5bc7952aa65ec5e7bd12bfd2359ca5200fd2a9d7593d3a8cde",
+      "size_bytes": 1726,
+      "sha256": "ae4170cf64e76443484e4ca829bf2eab4643e6da35d20d3472a5ef24bef9986c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325557_agent_runtime_identity_continuity_convergence.py",
+      "size_bytes": 3789,
+      "sha256": "c07f985d4107904a6caacea88be7b0b5d9b6e8271c00aa5fba430e7b7c764909",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12080,11 +12107,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.56-local-runtime-preflight-convergence",
+  "release_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.56-local-runtime-preflight-convergence",
-    "package_version": "16.3.25.5.56-local-runtime-preflight-convergence",
-    "release_version": "16.3.25.5.56-local-runtime-preflight-convergence"
+    "runtime_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+    "package_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+    "release_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
