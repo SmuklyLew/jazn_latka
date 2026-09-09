@@ -6,6 +6,8 @@ Ten dokument oznacza branch `fix/v16.3.25.5.54-chatgpt-sandbox-bootstrap-hardeni
 
 Finalny status RC wolno nadać wyłącznie po zielonym wyniku wymaganych kontroli CI dla bieżącego headu brancha / PR do `master`.
 
+PR walidacyjny: **#246**. Ten commit został wykonany po otwarciu PR celowo bez `[skip ci]`, aby zdarzenie `pull_request/synchronize` uruchomiło rzeczywisty gate CI na bieżącej zmianie.
+
 ## Zakres RC
 
 Release candidate obejmuje wyłącznie zmiany v16.3.25.5.54 dotyczące:
@@ -42,4 +44,4 @@ Branch jest **final release candidate** dopiero gdy:
 4. nie ma nierozwiązanych błędów walidacji, testów ani manifestów;
 5. nie wykonano merge do `master` w ramach samej walidacji RC.
 
-Ten commit celowo nie zawiera `[skip ci]`, aby wymusić rzeczywistą walidację aktualnego headu.
+Commit inicjujący gate RC celowo nie zawiera `[skip ci]`, aby wymusić rzeczywistą walidację aktualnego headu.
