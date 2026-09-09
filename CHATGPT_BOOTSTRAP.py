@@ -22,9 +22,10 @@ import zipfile
 
 BOOTSTRAP_SCHEMA_VERSION = "chatgpt_system_zip_bootstrap/v1"
 CHUNK_SIZE = 8 * 1024 * 1024
-DEFAULT_MAX_ENTRIES = 100_000
+DEFAULT_MAX_ENTRIES = 20_000
 DEFAULT_MAX_TOTAL_BYTES = 8 * 1024 * 1024 * 1024
 DEFAULT_MAX_MEMBER_BYTES = 2 * 1024 * 1024 * 1024
+DEFAULT_MAX_COMPRESSION_RATIO = 1_000.0
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 _REQUIRED_ROOT_FILES = frozenset(
     {
@@ -117,6 +118,7 @@ def inspect_system_zip(
     max_entries: int = DEFAULT_MAX_ENTRIES,
     max_total_bytes: int = DEFAULT_MAX_TOTAL_BYTES,
     max_member_bytes: int = DEFAULT_MAX_MEMBER_BYTES,
+    max_compression_ratio: float = DEFAULT_MAX_COMPRESSION_RATIO,
 ) -> tuple[str, int, int]:
     infos = zf.infolist()
     if not infos:
@@ -131,14 +133,29 @@ def inspect_system_zip(
         if normalized in names:
             raise BootstrapError(f"duplicate ZIP member rejected: {normalized!r}")
         names.add(normalized)
+
         size = int(info.file_size)
-        if size < 0 or size > int(max_member_bytes):
+        compressed = int(info.compress_size)
+        if size < 0:
+            raise BootstrapError(f"ZIP member has negative uncompressed size: {normalized!r}")
+        if compressed < 0:
+            raise BootstrapError(f"ZIP member has negative compressed size: {normalized!r}")
+        if size > int(max_member_bytes):
             raise BootstrapError(f"ZIP member size limit exceeded: {normalized!r}")
+
         total_bytes += size
         if total_bytes > int(max_total_bytes):
             raise BootstrapError(
                 f"ZIP uncompressed-size limit exceeded: {total_bytes} > {max_total_bytes}"
             )
+
+        if size:
+            ratio = float("inf") if compressed == 0 else size / compressed
+            if ratio > float(max_compression_ratio):
+                raise BootstrapError(
+                    "ZIP compression-ratio limit exceeded: "
+                    f"{normalized!r}: {ratio:.2f} > {float(max_compression_ratio):.2f}"
+                )
 
     root_prefix = _resolve_root_prefix(names)
     bad_member = zf.testzip()
@@ -156,6 +173,7 @@ def bootstrap_system_zip(
     max_entries: int = DEFAULT_MAX_ENTRIES,
     max_total_bytes: int = DEFAULT_MAX_TOTAL_BYTES,
     max_member_bytes: int = DEFAULT_MAX_MEMBER_BYTES,
+    max_compression_ratio: float = DEFAULT_MAX_COMPRESSION_RATIO,
 ) -> dict[str, object]:
     zip_path = Path(zip_path).resolve()
     destination = Path(destination).resolve()
@@ -181,6 +199,7 @@ def bootstrap_system_zip(
                 max_entries=max_entries,
                 max_total_bytes=max_total_bytes,
                 max_member_bytes=max_member_bytes,
+                max_compression_ratio=max_compression_ratio,
             )
             zf.extractall(staging)
 
@@ -232,6 +251,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-entries", type=int, default=DEFAULT_MAX_ENTRIES)
     parser.add_argument("--max-total-bytes", type=int, default=DEFAULT_MAX_TOTAL_BYTES)
     parser.add_argument("--max-member-bytes", type=int, default=DEFAULT_MAX_MEMBER_BYTES)
+    parser.add_argument(
+        "--max-compression-ratio",
+        type=float,
+        default=DEFAULT_MAX_COMPRESSION_RATIO,
+    )
     parser.add_argument("--json", action="store_true", dest="as_json")
     return parser
 
@@ -247,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
             max_entries=ns.max_entries,
             max_total_bytes=ns.max_total_bytes,
             max_member_bytes=ns.max_member_bytes,
+            max_compression_ratio=ns.max_compression_ratio,
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
