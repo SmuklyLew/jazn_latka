@@ -6,7 +6,7 @@ Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź dostęp do lo
 
 Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError` albo `TransportTimeoutError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`. Stan filesystemu i paczki pozostaje wtedy `unknown`, a runtime `unverified`; nie traktuj tego jako dowodu braku `/mnt/data`, ZIP-a, plików ani runtime. Błąd hosta przed utworzeniem procesu nie jest wynikiem lokalnej komendy.
 
-Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystartował, diagnozuj jako wynik lokalnej komendy, a nie awarię executora hosta. Nie twórz retry-loopu ani własnego backoffu.
+Błąd procesu, który rzeczywiście wystartował — w tym niezerowy kod wyjścia, stderr albo timeout procesu — diagnozuj jako wynik lokalnej komendy, a nie awarię executora hosta. Nie twórz retry-loopu ani własnego backoffu.
 
 Jeżeli wygląda to na problem platformy, można sprawdzić status.openai.com. Jeżeli Support poprosi o HAR, traktuj HAR jako potencjalnie wrażliwy artefakt diagnostyczny. Nie zapisuj HAR w repozytorium, pamięci Jaźni ani śledzonych plikach projektu.
 
