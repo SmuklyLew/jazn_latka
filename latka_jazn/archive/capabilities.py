@@ -84,6 +84,15 @@ def _distribution_version(name: str) -> str | None:
         return None
 
 
+def _version_tuple(value: str | None) -> tuple[int, int, int]:
+    import re
+
+    parts = [int(item) for item in re.findall(r"\d+", str(value or ""))[:3]]
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts[:3])  # type: ignore[return-value]
+
+
 def _operation(name: str, available: bool, backend: str, reason: str | None = None) -> ArchiveOperation:
     return ArchiveOperation(
         name=name,
@@ -157,10 +166,15 @@ def _aes_zip_capability() -> ArchiveFormatCapability:
 
 
 def _seven_zip_capability() -> ArchiveFormatCapability:
-    module_ok = _module_available("py7zr")
-    version = _distribution_version("py7zr") if module_ok else None
+    module_present = _module_available("py7zr")
+    version = _distribution_version("py7zr") if module_present else None
+    module_ok = bool(module_present and version is not None and _version_tuple(version) >= (1, 1, 3))
     backend = "py7zr.SevenZipFile"
-    reason = "py7zr_not_available_in_current_interpreter"
+    reason = (
+        "py7zr_not_available_in_current_interpreter"
+        if not module_present
+        else f"py7zr_version_unsafe:{version}:requires>=1.1.3"
+    )
     operations = (
         _operation("detect", True, "7z_signature_probe", None),
         *(
@@ -190,10 +204,15 @@ def _seven_zip_capability() -> ArchiveFormatCapability:
 def _rar_capability() -> ArchiveFormatCapability:
     status = rar_backend_status()
     backend = "rarfile.RarFile"
-    module_reason = "rarfile_not_available_in_current_interpreter"
+    if not status.module_available:
+        module_reason = "rarfile_not_available_in_current_interpreter"
+    elif not status.version_supported:
+        module_reason = f"rarfile_version_unsafe:{status.module_version}:requires>=4.5.0"
+    else:
+        module_reason = None
     extract_reason = (
         module_reason
-        if not status.module_available
+        if module_reason is not None
         else "rarfile_requires_external_unrar_unar_7zip_or_bsdtar_for_compressed_payloads"
     )
     operations = (
@@ -216,9 +235,9 @@ def _rar_capability() -> ArchiveFormatCapability:
         aliases=("rar", "rar3", "rar5"),
         backend=backend,
         backend_kind="optional_plugin_dependency_plus_external_decompressor",
-        backend_available=status.module_available,
+        backend_available=status.metadata_ready,
         backend_version=status.module_version,
-        runtime_supported=status.metadata_ready,
+        runtime_supported=status.compressed_extract_ready,
         operations=operations,
         limitations=(
             "rarfile does not create RAR archives",
@@ -244,6 +263,9 @@ def archive_capability_report() -> ArchiveCapabilityReport:
         transport_capabilities={
             "binary_split_join": True,
             "sha256_verification_before_join_for_package_sidecars": True,
+            "transport_renamed_output_resolution": "logical-name-hint + stable-size + sha256",
+            "transport_renamed_sidecar_discovery": True,
+            "stable_input_identity_during_hash_and_join": True,
             "native_multipart_zip_via_stdlib": False,
             "note": "Binary split/join is a transport/layout capability, not a distinct archive container format.",
         },
@@ -276,6 +298,8 @@ def archive_capability_report() -> ArchiveCapabilityReport:
             "free_space_preflight": True,
             "staging_before_commit": True,
             "atomic_destination_commit": True,
+            "minimum_safe_py7zr_enforced": "1.1.3",
+            "minimum_safe_rarfile_enforced": "4.5.0",
             "password_persistence": False,
         },
         dependency_contract={
