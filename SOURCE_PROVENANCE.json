@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3790a4057ed8b6d4c988ff54270cb7d806a20517",
-  "base_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
-  "commit_date": "2026-09-09T16:14:45+02:00",
+  "base_merge_commit": "fc9e7db8db2ba5ece69d2b8f71c50cc04cf83416",
+  "base_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
+  "commit_date": "2026-09-09T16:19:50+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-09T14:14:45+00:00",
+  "generated_at_utc": "2026-09-09T14:19:50+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c7f30e5d86c15ca9100ef68ea5b18755e64c37d9",
+  "git_tree_sha": "9df6c3edf407a45ac9796dce087a55ee1bd1fe4e",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "3790a4057ed8b6d4c988ff54270cb7d806a20517",
-    "source_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening"
+    "source_commit": "fc9e7db8db2ba5ece69d2b8f71c50cc04cf83416",
+    "source_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "release_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "runtime_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "3790a4057ed8b6d4c988ff54270cb7d806a20517",
+  "source_commit": "fc9e7db8db2ba5ece69d2b8f71c50cc04cf83416",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "source_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "update_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
   "version_source": "latka_jazn/version.py"
 }
