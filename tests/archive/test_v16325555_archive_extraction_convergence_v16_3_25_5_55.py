@@ -20,6 +20,7 @@ from latka_jazn.archive import (
     ArchiveWriteEntry,
     normalize_archive_format,
 )
+from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
 def _service() -> ArchiveExtractionService:
@@ -96,13 +97,7 @@ def test_transport_renamed_split_parts_and_sidecar_roundtrip(tmp_path: Path) -> 
     verified = service._verified_outputs(tmp_path, sidecar)
     assert len(verified) == len(renamed)
     assert all(row["transport_alias_used"] is True for row in verified)
-    output_rows = sidecar["outputs"]
-    assert isinstance(output_rows, list)
-    logical_filenames: list[object] = []
-    for raw_output in output_rows:
-        assert isinstance(raw_output, dict)
-        logical_filenames.append(raw_output["filename"])
-    assert [row["logical_filename"] for row in verified] == logical_filenames
+    assert [row["logical_filename"] for row in verified] == [row["filename"] for row in sidecar["outputs"]]
 
     destination = tmp_path / "out"
     result = service.extract_source(renamed[0], destination)
@@ -226,3 +221,8 @@ def test_capability_report_exposes_transport_and_backend_security_contract() -> 
     assert transport["stable_input_identity_during_hash_and_join"] is True
     assert policy["minimum_safe_py7zr_enforced"] == "1.1.3"
     assert policy["minimum_safe_rarfile_enforced"] == "4.5.0"
+
+
+def test_release_identity_v55() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.55"
+    assert PACKAGE_RELEASE_NAME == "archive-extraction-convergence"

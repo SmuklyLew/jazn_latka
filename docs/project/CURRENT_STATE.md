@@ -1,10 +1,10 @@
 # Current project state
 
-**Snapshot date:** 2026-09-07  
+**Snapshot date:** 2026-09-09
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `e828c2f4ab10a909d9d8b2324e69caf68f82c94d`  
-**Current master version:** `16.3.25.5.38-ci-release-fixture-isolation`  
-**Documentation convergence branch:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
+**Current master at documentation baseline:** `e0c6731c851928568a7c23e5f9101d1e95bdd7f8`
+**Current master version:** `16.3.25.5.55-archive-extraction-convergence`
+**Update target:** `16.3.25.5.56-local-runtime-preflight-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
@@ -15,6 +15,15 @@ Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `la
 - persistent-runtime, subject-root, host-finalization i host/executor truth foundations są częścią bieżącej linii.
 - package/distribution/generator/dependency/plugin/CI hardening jest obecny do `.38`.
 - `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
+
+## Local runtime preflight
+
+**Status:** `P0 DEPLOYMENT/PREFLIGHT OVERLAY`.
+
+- `run.py` remains canonical; `main.py` remains compatibility/implementation.
+- ChatGPT-host is explicitly separated from API access.
+- Ollama remains a local no-`OPENAI_API_KEY` backend.
+- `.56` does not claim canonical Affect/Memory convergence.
 
 ## Memory Rebuild v4
 

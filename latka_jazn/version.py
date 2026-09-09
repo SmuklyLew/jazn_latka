@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.55 converges archive extraction around transport-renamed
-# attachments, stable input identity, safe ZIP/7z/RAR routing, and fail-closed
-# package-set materialization while preserving v54 ChatGPT bootstrap hardening.
-DISTRIBUTION_VERSION = "16.3.25.5.55"
-PACKAGE_VERSION = "16.3.25.5.55"
-PACKAGE_RELEASE_NAME = "archive-extraction-convergence"
+# v16.3.25.5.56 converges local runtime preflight and deployment truth around
+# canonical run.py operation, explicit ChatGPT-host vs Ollama semantics, and
+# fail-closed setup while preserving v55 archive extraction convergence.
+DISTRIBUTION_VERSION = "16.3.25.5.56"
+PACKAGE_VERSION = "16.3.25.5.56"
+PACKAGE_RELEASE_NAME = "local-runtime-preflight-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

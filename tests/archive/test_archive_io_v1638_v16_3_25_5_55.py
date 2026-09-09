@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import zipfile
 from pathlib import Path
@@ -116,8 +115,6 @@ def test_verified_binary_split_sidecar_roundtrip(tmp_path: Path) -> None:
 
 
 def test_aes_zip_roundtrip_and_auto_detection(tmp_path: Path) -> None:
-    if importlib.util.find_spec("pyzipper") is None:
-        pytest.skip("optional archive dependency pyzipper is not installed")
     service = _service()
     archive = tmp_path / "secret.zip"
     service.create_archive(
