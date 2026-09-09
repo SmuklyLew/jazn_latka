@@ -6,8 +6,8 @@ from latka_jazn.archive.service import (
     ArchiveInspection,
     ArchiveSecurityLimits,
     ArchiveWriteEntry,
-    normalize_archive_format,
 )
+from latka_jazn.archive.backend_convergence import normalize_archive_format
 from latka_jazn.archive.hardened_service import ArchiveExtractionService
 from latka_jazn.archive.capabilities import (
     ArchiveCapabilityReport,
@@ -19,6 +19,7 @@ from latka_jazn.archive.capabilities import (
 from latka_jazn.archive.rar_backend import (
     RarBackendStatus,
     extract_rar,
+    extract_rar_to_directory,
     inspect_rar,
     is_rar_file,
     rar_backend_status,
@@ -38,6 +39,7 @@ __all__ = [
     "archive_capability_report",
     "archive_format_capability",
     "extract_rar",
+    "extract_rar_to_directory",
     "inspect_rar",
     "is_rar_file",
     "normalize_archive_format",

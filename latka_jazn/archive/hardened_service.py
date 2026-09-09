@@ -4,16 +4,24 @@ import tempfile
 from pathlib import Path
 from typing import Sequence
 
+from latka_jazn.archive.backend_convergence import (
+    ArchiveBackendConvergenceMixin,
+    import_safe_py7zr,
+)
+from latka_jazn.archive.transport_convergence import ArchiveTransportConvergenceMixin
 from latka_jazn.archive.service import (
     ArchiveExtractionService as _BaseArchiveExtractionService,
     ArchiveWriteEntry,
-    _import_py7zr,
     _password_text,
 )
 
 
-class ArchiveExtractionService(_BaseArchiveExtractionService):
-    """v16.3.8 backend hardening layered over the shared archive service."""
+class ArchiveExtractionService(
+    ArchiveTransportConvergenceMixin,
+    ArchiveBackendConvergenceMixin,
+    _BaseArchiveExtractionService,
+):
+    """Hardened shared archive service with v55 extraction convergence."""
 
     @staticmethod
     def _create_7z(
@@ -22,15 +30,11 @@ class ArchiveExtractionService(_BaseArchiveExtractionService):
         level: int,
         password: str | bytes | None,
     ) -> None:
-        py7zr = _import_py7zr()
+        py7zr = import_safe_py7zr()
         text_password = _password_text(password)
         filters = [{"id": py7zr.FILTER_LZMA2, "preset": int(level)}]
         if text_password:
-            # An explicit LZMA2 filter suppresses py7zr's implicit encrypted
-            # default filter chain. Add the crypto coder explicitly so both
-            # file payload and (below) header are protected.
             filters.append({"id": py7zr.FILTER_CRYPTO_AES256_SHA256})
-
         with tempfile.TemporaryDirectory(prefix="jazn-7z-virtual-") as temp_raw:
             temp = Path(temp_raw)
             with py7zr.SevenZipFile(

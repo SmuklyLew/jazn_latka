@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.54 hardens the ChatGPT no-operator recovery path around
-# host/executor truth, stable single-ZIP verification, and streamed fail-closed
-# materialization without treating control-plane transport failures as ZIP errors.
-DISTRIBUTION_VERSION = "16.3.25.5.54"
-PACKAGE_VERSION = "16.3.25.5.54"
-PACKAGE_RELEASE_NAME = "chatgpt-sandbox-bootstrap-hardening"
+# v16.3.25.5.55 converges archive extraction around transport-renamed
+# attachments, stable input identity, safe ZIP/7z/RAR routing, and fail-closed
+# package-set materialization while preserving v54 ChatGPT bootstrap hardening.
+DISTRIBUTION_VERSION = "16.3.25.5.55"
+PACKAGE_VERSION = "16.3.25.5.55"
+PACKAGE_RELEASE_NAME = "archive-extraction-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

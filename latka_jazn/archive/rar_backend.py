@@ -23,6 +23,7 @@ from latka_jazn.archive.service import (
 RAR3_SIGNATURE = b"Rar!\x1a\x07\x00"
 RAR5_SIGNATURE = b"Rar!\x1a\x07\x01\x00"
 RAR_BACKEND_CANDIDATES = ("unrar", "unar", "7zz", "7z", "bsdtar")
+RARFILE_MINIMUM_VERSION = (4, 5, 0)
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +32,7 @@ class RarBackendStatus:
     module_version: str | None
     metadata_ready: bool
     compressed_extract_ready: bool
+    version_supported: bool
     external_backends: tuple[str, ...]
     preferred_backend: str | None
     creation_supported_by_rarfile: bool = False
@@ -41,11 +43,26 @@ class RarBackendStatus:
         return payload
 
 
+def _version_tuple(value: str | None) -> tuple[int, int, int]:
+    import re
+
+    parts = [int(item) for item in re.findall(r"\d+", str(value or ""))[:3]]
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts[:3])  # type: ignore[return-value]
+
+
 def _rarfile_module() -> Any:
     try:
         import rarfile  # type: ignore[import-not-found]
     except ImportError as exc:
         raise ArchiveError("rarfile_not_installed") from exc
+    try:
+        version = metadata.version("rarfile")
+    except metadata.PackageNotFoundError as exc:
+        raise ArchiveError("rarfile_distribution_metadata_missing") from exc
+    if _version_tuple(version) < RARFILE_MINIMUM_VERSION:
+        raise ArchiveError(f"rarfile_version_unsafe:{version}:requires>=4.5.0")
     return rarfile
 
 
@@ -58,12 +75,18 @@ def rar_backend_status() -> RarBackendStatus:
         module_version = metadata.version("rarfile") if module_available else None
     except metadata.PackageNotFoundError:
         module_version = None
+    version_supported = bool(
+        module_available
+        and module_version is not None
+        and _version_tuple(module_version) >= RARFILE_MINIMUM_VERSION
+    )
     backends = tuple(name for name in RAR_BACKEND_CANDIDATES if shutil.which(name))
     return RarBackendStatus(
         module_available=module_available,
         module_version=module_version,
-        metadata_ready=module_available,
-        compressed_extract_ready=bool(module_available and backends),
+        metadata_ready=version_supported,
+        compressed_extract_ready=bool(version_supported and backends),
+        version_supported=version_supported,
         external_backends=backends,
         preferred_backend=backends[0] if backends else None,
     )
@@ -130,14 +153,16 @@ def inspect_rar(
         raise ArchiveError(f"archive_rar_read_failed:{type(exc).__name__}:{exc}") from exc
 
 
-def extract_rar(
+def extract_rar_to_directory(
     source: Path | str,
     destination: Path | str,
     *,
     password: str | None = None,
     limits: ArchiveSecurityLimits | None = None,
-    replace_existing: bool = False,
-) -> dict[str, Any]:
+    verify_crc: bool = False,
+) -> ArchiveInspection:
+    """Safely stream one RAR into an existing staging directory."""
+
     rarfile = _rarfile_module()
     source_path = Path(source).expanduser().resolve()
     destination_path = Path(destination).expanduser().resolve()
@@ -146,24 +171,18 @@ def extract_rar(
         source_path,
         password=password,
         limits=policy,
-        verify_crc=False,
+        verify_crc=verify_crc,
     )
     _check_free_space(destination_path.parent, inspection.total_uncompressed_bytes, policy)
-    destination_path.parent.mkdir(parents=True, exist_ok=True)
-    staging = Path(
-        tempfile.mkdtemp(
-            prefix=f".{destination_path.name}.rar-extract-",
-            dir=str(destination_path.parent),
-        )
-    )
-    backup: Path | None = None
+    destination_path.mkdir(parents=True, exist_ok=True)
+    total_written = 0
     try:
         with rarfile.RarFile(source_path, errors="strict") as archive:
             if password:
                 archive.setpassword(password)
             for info in archive.infolist():
                 name = _normalize_member_name(str(info.filename))
-                target = _safe_target(staging, name)
+                target = _safe_target(destination_path, name)
                 if info.is_symlink():
                     raise ArchiveError(f"archive_symlink_rejected:{name}")
                 if info.is_dir():
@@ -174,11 +193,58 @@ def extract_rar(
                 target.parent.mkdir(parents=True, exist_ok=True)
                 if target.exists():
                     raise ArchiveError(f"archive_target_collision:{name}")
+                expected_size = int(info.file_size or 0)
                 temp = target.with_name(target.name + ".tmp")
+                member_written = 0
                 with archive.open(info, pwd=password) as input_handle, temp.open("xb") as output_handle:
-                    shutil.copyfileobj(input_handle, output_handle, length=CHUNK_SIZE)
+                    while True:
+                        chunk = input_handle.read(CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        member_written += len(chunk)
+                        total_written += len(chunk)
+                        if member_written > expected_size or member_written > policy.max_member_bytes:
+                            raise ArchiveError(f"archive_member_size_limit_exceeded:{name}")
+                        if total_written > policy.max_total_uncompressed_bytes:
+                            raise ArchiveError("archive_total_size_limit_exceeded_during_extract")
+                        output_handle.write(chunk)
+                if member_written != expected_size:
+                    raise ArchiveError(f"archive_member_size_inconsistent:{name}")
                 os.replace(temp, target)
+        return inspection
+    except Exception:
+        for temp in destination_path.rglob("*.tmp") if destination_path.exists() else ():
+            temp.unlink(missing_ok=True)
+        raise
 
+
+def extract_rar(
+    source: Path | str,
+    destination: Path | str,
+    *,
+    password: str | None = None,
+    limits: ArchiveSecurityLimits | None = None,
+    replace_existing: bool = False,
+) -> dict[str, Any]:
+    source_path = Path(source).expanduser().resolve()
+    destination_path = Path(destination).expanduser().resolve()
+    policy = limits or ArchiveSecurityLimits()
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(
+        tempfile.mkdtemp(
+            prefix=f".{destination_path.name}.rar-extract-",
+            dir=str(destination_path.parent),
+        )
+    )
+    backup: Path | None = None
+    try:
+        inspection = extract_rar_to_directory(
+            source_path,
+            staging,
+            password=password,
+            limits=policy,
+            verify_crc=False,
+        )
         if destination_path.exists():
             if not replace_existing:
                 raise ArchiveError(f"archive_destination_exists:{destination_path}")

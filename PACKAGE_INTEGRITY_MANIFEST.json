@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
-  "runtime_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
-  "package_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
-  "generated_at_utc": "2026-09-09T14:38:38+00:00",
-  "updated_at_utc": "2026-09-09T14:38:38+00:00",
+  "version": "16.3.25.5.55-archive-extraction-convergence",
+  "runtime_version": "16.3.25.5.55-archive-extraction-convergence",
+  "package_version": "16.3.25.5.55-archive-extraction-convergence",
+  "generated_at_utc": "2026-09-09T16:32:04+00:00",
+  "updated_at_utc": "2026-09-09T16:32:04+00:00",
   "start_file": "run.py",
-  "file_count": 1281,
-  "static_file_count": 1281,
+  "file_count": 1285,
+  "static_file_count": 1285,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "68c6594110e9691ff549ddbcca6f47d31f3e7fb8afce1fb990d691217c944c92",
+      "size_bytes": 2902,
+      "sha256": "eb57733e9f7d56fb54db739ee6a50339687799fb7f8d14e170f8230c5f789eef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1819,6 +1819,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_55_ARCHIVE_EXTRACTION_CONVERGENCE.md",
+      "size_bytes": 8633,
+      "sha256": "a770652ab7aa42c0d382050af903884c5f2a571866ff05ab36f7b53789612018",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -2054,8 +2063,17 @@
     },
     {
       "path": "latka_jazn/archive/__init__.py",
-      "size_bytes": 1082,
-      "sha256": "038d06a8b266e491d2f875c4e380dd078df7a6b135596c8921e8313fc44b4512",
+      "size_bytes": 1190,
+      "sha256": "0f422527b39889a008ca25b2dc64dc0b09c8a29855126628c4f421b890c7aec5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/archive/backend_convergence.py",
+      "size_bytes": 6699,
+      "sha256": "767f70084ab36a161e8f43cd13da3188c5c1f0132dc7e67b6b762216ac8cb744",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2063,8 +2081,8 @@
     },
     {
       "path": "latka_jazn/archive/capabilities.py",
-      "size_bytes": 12239,
-      "sha256": "ed95aa37ded10cba50dff19da6196e62acff219b36c5eb4aef844ac7984c5e42",
+      "size_bytes": 13261,
+      "sha256": "ebb03f297d0ea21e44b214f14f398cfb995d6ca2c75459c06a9203602e70d0bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2072,8 +2090,8 @@
     },
     {
       "path": "latka_jazn/archive/hardened_service.py",
-      "size_bytes": 1744,
-      "sha256": "c14a791235141775d75375cf68d629390b50abe6c7b686931fb00e0dceb515ef",
+      "size_bytes": 1793,
+      "sha256": "0be996ef9caa23c5167f23aa2d8f999af470e5d19df8ac3a913c68f70458ef9c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2081,8 +2099,8 @@
     },
     {
       "path": "latka_jazn/archive/rar_backend.py",
-      "size_bytes": 7541,
-      "sha256": "8304c8c9a18d4985c3305013e02ab48f1cac90d233244d06113275c868fbd2d4",
+      "size_bytes": 10189,
+      "sha256": "8c83fd265b98bd7f0d2b69a7188ed0af501d54847d138d4b8d4e9875ec8bd283",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2101,6 +2119,15 @@
       "path": "latka_jazn/archive/service.py",
       "size_bytes": 41475,
       "sha256": "117b22cc28a05074d55984b020f9ef4233597e520bc215cb1a653ed6c0d97804",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/archive/transport_convergence.py",
+      "size_bytes": 17343,
+      "sha256": "8ae2cb8a887c6e948ca63fddba98b1a74ffd935a841997503b8e3fa3901a1e1d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7697,8 +7724,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6647,
-      "sha256": "61cc30866bd1fdf780d5cb5ccf6fd2d3005f17f1b9b2974b20a8b288017706dd",
+      "size_bytes": 6639,
+      "sha256": "5304d3523aa264ddb6f4cdfadc4c13d8bcfd5a74062d4735d526ccae53db0b54",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11017,6 +11044,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325555_archive_extraction_convergence.py",
+      "size_bytes": 9042,
+      "sha256": "cae6a78419cf0cdcf5a7106ebf04190277d44ce9178d41c49811fc3382ffbb56",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -11981,11 +12017,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
+  "release_version": "16.3.25.5.55-archive-extraction-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
-    "package_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
-    "release_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening"
+    "runtime_version": "16.3.25.5.55-archive-extraction-convergence",
+    "package_version": "16.3.25.5.55-archive-extraction-convergence",
+    "release_version": "16.3.25.5.55-archive-extraction-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
