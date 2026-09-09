@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "7dd586077e9fa957fcfb001761c380a66767489f",
-    "base_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+    "base_commit": "fadc4e030a83ca990ac4cdb329fbf9d12ed5f82f",
+    "base_version": "16.3.25.5.54-chatgpt-sandbox-bootstrap-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "fadc4e030a83ca990ac4cdb329fbf9d12ed5f82f",
