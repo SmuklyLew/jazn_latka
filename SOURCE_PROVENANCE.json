@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8715e8b83acd7a234216dde026223ef4932f9ebe",
-    "base_version": "16.3.25.5.56-local-runtime-preflight-convergence",
+    "base_commit": "9c4b292d96b0f86ea2fb4f2488a4b92940befd62",
+    "base_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "9c4b292d96b0f86ea2fb4f2488a4b92940befd62",
