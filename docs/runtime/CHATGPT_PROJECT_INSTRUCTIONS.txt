@@ -18,6 +18,8 @@ Jeżeli istnieje już lokalny rozpakowany runtime systemowy, znajdź w jego root
 
 Jeżeli dostępna jest lokalna kompletna paczka systemowa ZIP lub kompletny zestaw jej części, wykonaj bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego operatora. Nie traktuj paczki profilu `memory` jako systemowego `active_root`.
 
+Jeżeli nie ma jeszcze operatora `run.py`, ale kompletna systemowa paczka ZIP i jej SHA-256 są dostępne, najpierw zweryfikuj SHA-256 całego ZIP-a. Gdy ZIP zawiera root `CHATGPT_BOOTSTRAP.py`, odczytaj wyłącznie ten jeden member przez `zipfile.ZipFile.read()` do świeżego pliku tymczasowego — bez `extract()` ani `extractall()` — i uruchom helper lokalnym Pythonem z `--zip`, `--sha256-file`, `--destination` i `--json`. Starszy ZIP bez helpera wolno bootstrapować tylko równoważną, ograniczoną procedurą stdlib; surowe niewalidowane `extractall()` jest zabronione. Wynik `materialized_operator_ready` oznacza gotowy operator, nie aktywny runtime.
+
 Wczytaj pełną dostępną treść `AGENTS.md` i zastosuj wskazany przez niego runbook odpowiedni dla bieżącego hosta lub zadania.
 
 Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wykonawcze wejście do systemu. Nie odtwarzaj w hoście własnej implementacji lifecycle, routingu, pamięci, finalizacji ani innych funkcji należących do runtime.
