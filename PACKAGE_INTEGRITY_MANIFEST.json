@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-  "generated_at_utc": "2026-09-08T15:28:58+00:00",
-  "updated_at_utc": "2026-09-08T15:28:58+00:00",
+  "version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "runtime_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "package_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+  "generated_at_utc": "2026-09-09T10:29:16+00:00",
+  "updated_at_utc": "2026-09-09T10:29:16+00:00",
   "start_file": "run.py",
-  "file_count": 1277,
-  "static_file_count": 1277,
+  "file_count": 1278,
+  "static_file_count": 1278,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -218,8 +218,8 @@
     },
     {
       "path": "CHATGPT_BOOTSTRAP.py",
-      "size_bytes": 9939,
-      "sha256": "dd4b1432eadcebc5c2d5e8c5283959cb20fab772b511993bfe09cb86bcb6346d",
+      "size_bytes": 10986,
+      "sha256": "1766c6e896bfb00450d4350986e87b6f7fecec610320caca864a0506dbd4a0ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2904,
-      "sha256": "a187ecd498e4ee555980ae76d552e8e8397df0fea2037540fe5baeda08310124",
+      "size_bytes": 2952,
+      "sha256": "80af57e7c3a859716ed09cce5ef61429e7bcffc275030814f62bb140fcd1e8a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1820,8 +1820,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 3653,
-      "sha256": "43f591c67f9b95f142e91c921f6545519979314f8e931deda4efc2179749c4f5",
+      "size_bytes": 4695,
+      "sha256": "9bc7c85696f622fe1a6e43162bf31d6005867e82da32ae63b85c0e45f9bb6102",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7679,8 +7679,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6617,
-      "sha256": "54017231cf297bcb88e369c5abffd084cc3d29314699e25bfcfddb0fc71757ac",
+      "size_bytes": 6643,
+      "sha256": "254ee68da8dd03db61d132db2399b571e20973a590849442a18f9b2665fb738f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10981,6 +10981,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325553_chatgpt_bootstrap_resource_policy.py",
+      "size_bytes": 2544,
+      "sha256": "bd2374a395c32ceb8f7e9def73e1ff995e5f9fa5740a3826f624007def9a15d7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -11945,11 +11954,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
+  "release_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-    "package_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery",
-    "release_version": "16.3.25.5.52-chatgpt-host-bootstrap-recovery"
+    "runtime_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+    "package_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening",
+    "release_version": "16.3.25.5.53-chatgpt-bootstrap-resource-ci-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"

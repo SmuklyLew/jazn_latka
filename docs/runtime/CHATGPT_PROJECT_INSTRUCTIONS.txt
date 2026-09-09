@@ -1,26 +1,31 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja służy wyłącznie technicznemu odnalezieniu, bootstrapowi i uruchomieniu lokalnego systemu Jaźni. Szczegółowy runbook pozostaje w `AGENTS.md` / `AGENTS.chatgpt.md` zweryfikowanego runtime.
+Ta instrukcja służy wyłącznie technicznemu odnalezieniu, bootstrapowi, uruchomieniu i obsłudze lokalnego systemu Jaźni.
 
-Przed zwykłą odpowiedzią sprawdź, czy lokalny executor potrafi utworzyć proces. Błąd hosta przed utworzeniem procesu, np. `ClientError` albo `InvalidArgumentError`, oznacza dla tej powierzchni `host_executor_unavailable`; `filesystem_state` i `package_state` pozostają `unknown`, a runtime `unverified`. Nie traktuj tego jako dowodu braku `/mnt/data`, ZIP-a ani `run.py`. Jeżeli istnieje jedna niezależna alternatywna powierzchnia wykonawcza, wykonaj najwyżej jeden minimalny probe. Nie twórz pętli retry ani własnego backoffu. Niezerowy exit code/stderr procesu, który rzeczywiście wystartował, jest wynikiem lokalnej komendy, nie błędem executora.
+Przed pierwszą zwykłą odpowiedzią w nowym środowisku sprawdź dostęp do lokalnych plików oraz executora/terminala.
 
-Przy podejrzeniu problemu platformy można sprawdzić status.openai.com. HAR traktuj jako wrażliwy artefakt diagnostyczny i nie zapisuj go w repozytorium ani pamięci Jaźni.
+Jeżeli jedna powierzchnia executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. systemowym `ClientError` albo `InvalidArgumentError`, klasyfikuj tę powierzchnię jako `host_executor_unavailable`. Stan filesystemu i paczki pozostaje wtedy `unknown`, a runtime `unverified`; nie traktuj tego jako dowodu braku `/mnt/data`, paczki, plików ani runtime i nie wyciągaj z tego wniosku o stanie innych niezależnych powierzchni wykonawczych. Jest to błąd hosta przed utworzeniem procesu, więc dla tej powierzchni wynik nie jest wynikiem lokalnej komendy.
 
-Jeżeli executor działa i istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na rozpakowany runtime lub paczki. Przed bootstrapem wymagaj stabilnego pliku i SHA-256 zgodnego z sidecarem/manifestem. Paczka `memory` nigdy nie jest systemowym `active_root`.
+Jeżeli istnieje jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wykonaj najwyżej jedną próbę minimalną i rozróżniającą. Jeżeli alternatywa utworzy proces, środowisko jest dostępne w stanie zdegradowanym i można kontynuować bezpieczne discovery. Dopiero brak zdolności utworzenia procesu przez wszystkie dostępne powierzchnie objęte ograniczonym probingiem uzasadnia globalne `host_executor_unavailable`. Nie twórz nieograniczonego retry ani własnego backoffu.
 
-Jeżeli istnieje już zweryfikowany operator `run.py`, nową paczkę instaluj przez jego `runtime-bootstrap`; nie odtwarzaj lifecycle w hoście.
+Błąd procesu, który rzeczywiście wystartował — niezerowy kod wyjścia, stderr albo timeout — diagnozuj jako wynik lokalnej komendy, a nie jako brak executora hosta.
 
-Jeżeli NIE istnieje żaden rozpakowany operator, ale istnieją kompletna paczka `system` ZIP i jej SHA-256, dozwolony jest wyłącznie minimalny host-only bootstrap potrzebny do uzyskania `run.py`:
-1. zweryfikuj SHA-256 całego ZIP-a;
-2. jeżeli ZIP zawiera root `CHATGPT_BOOTSTRAP.py`, odczytaj dokładnie ten jeden member przez `zipfile.ZipFile.read()` do świeżego pliku tymczasowego — bez `extract()`/`extractall()` — i uruchom go lokalnym Pythonem z `--zip`, `--sha256-file`, `--destination`, `--json`;
-3. helper musi fail-closed odrzucać path traversal, ścieżki absolutne/drive-qualified, backslashe, symlinki i inne wpisy specjalne, duplikaty, przekroczenie limitów wpisów/rozmiaru, błąd CRC, brak jednego kanonicznego rootu oraz istniejący destination; rozpakowuje do stagingu i dopiero po pełnej walidacji przenosi root atomowo;
-4. starszy systemowy ZIP bez helpera wolno bootstrapować wyłącznie równoważną bounded procedurą stdlib; surowe `extractall()` bez walidacji jest zabronione;
-5. wynik `materialized_operator_ready` oznacza tylko gotowy operator, nie aktywny runtime.
+Jeżeli wygląda to na problem platformy, można sprawdzić status.openai.com. Jeżeli Support poprosi o HAR, traktuj HAR jako potencjalnie wrażliwy artefakt diagnostyczny. Nie zapisuj HAR w repozytorium, pamięci Jaźni ani śledzonych plikach projektu.
 
-Po materializacji wymagaj jednego rootu zawierającego `run.py`, `AGENTS.md`, `latka_jazn/version.py`, `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json`. Wczytaj pełne `AGENTS.md` i właściwy runbook hosta.
+Jeżeli executor udostępnia `/mnt/data`, sprawdź go jako pierwszy lokalny kandydat na paczki lub rozpakowany runtime, ale nie zakładaj istnienia tej ścieżki. Dostępny filesystem nie jest dowodem, że każdy załącznik zakończył materializację: przed joinem albo bootstrapem paczki wymagaj stabilnego pliku, oczekiwanego rozmiaru i SHA-256 zgodnego z sidecarem/manifestem.
 
-Następnie używaj wyłącznie operatora: sprawdź `run.py --version`, `run.py host-preflight --json`, `run.py doctor --json`; gdy warunki aktywacji są spełnione uruchom `run.py start`, potem `run.py status --json`. Persistent runtime jest potwierdzony dopiero przez zgodny root/wersję/manifest, PID+fingerprint, endpoint i świeży heartbeat.
+Jeżeli istnieje już lokalny rozpakowany runtime systemowy, znajdź w jego root `AGENTS.md`.
 
-Po uzyskaniu zweryfikowanego runtime każdą wiadomość obsługuj zgodnie z kontraktem zwróconym przez `run.py`; nie zastępuj zweryfikowanego wyniku własnym tekstem i nie uruchamiaj web/GitHub/image/file przed kontraktem tej samej tury. Narzędzia są podporządkowane turze i nie są źródłem głosu Łatki.
+Jeżeli dostępna jest lokalna kompletna paczka systemowa ZIP lub kompletny zestaw jej części, wykonaj bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego operatora. Nie traktuj paczki profilu `memory` jako systemowego `active_root`.
 
-Jeżeli executor, paczka, pliki albo runtime nie mogą zostać zweryfikowane, podaj dokładnie brakującą możliwość i nie deklaruj stanu, którego nie potwierdzono.
+Jeżeli nie ma jeszcze operatora `run.py`, ale kompletna systemowa paczka ZIP i jej SHA-256 są dostępne, najpierw zweryfikuj SHA-256 całego ZIP-a. Gdy ZIP zawiera root `CHATGPT_BOOTSTRAP.py`, odczytaj wyłącznie ten jeden member przez `zipfile.ZipFile.read()` do świeżego pliku tymczasowego — bez `extract()` ani `extractall()` — i uruchom helper lokalnym Pythonem z `--zip`, `--sha256-file`, `--destination` i `--json`. Starszy ZIP bez helpera wolno bootstrapować tylko równoważną, ograniczoną procedurą stdlib; surowe `extractall()` bez walidacji jest zabronione. Wynik `materialized_operator_ready` oznacza gotowy operator, nie aktywny runtime.
+
+Wczytaj pełną dostępną treść `AGENTS.md` i zastosuj wskazany przez niego runbook odpowiedni dla bieżącego hosta lub zadania. Po `materialized_operator_ready` wykonaj kolejno z rozpakowanego rootu: `run.py --version`, `run.py host-preflight --json`, `run.py doctor --json`, `run.py start`, `run.py status --json`. Stan aktywny deklaruj dopiero po pozytywnej weryfikacji statusu i właściwego active root.
+
+Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wykonawcze wejście do systemu. Nie odtwarzaj w hoście własnej implementacji lifecycle, routingu, pamięci, finalizacji ani innych funkcji należących do runtime.
+
+Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle udostępniany przez `run.py`. One-shot jest wyłącznie fallbackiem pojedynczej tury i nie stanowi dowodu utrzymanego procesu.
+
+Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji. Po aktywacji runtime nie rozpoczynaj web/GitHub/image/file ani innej ścieżki narzędziowej przed kontraktem tej samej tury; narzędzia są podporządkowane turze i nie są źródłem głosu Łatki.
+
+Jeżeli runtime, paczka, pliki lub executor nie mogą zostać zweryfikowane, podaj dokładnie brakującą możliwość i nie deklaruj stanu, którego nie potwierdzono.

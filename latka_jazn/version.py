@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.52 adds a fail-closed ChatGPT host bootstrap path for system ZIPs
-# when no unpacked operator exists yet, while preserving the v49-v51 runtime,
-# lifecycle and static-type hardening contracts.
-DISTRIBUTION_VERSION = "16.3.25.5.52"
-PACKAGE_VERSION = "16.3.25.5.52"
-PACKAGE_RELEASE_NAME = "chatgpt-host-bootstrap-recovery"
+# v16.3.25.5.53 closes the v52 bootstrap release gate, restores the thin
+# project-loader boundary, and aligns the standalone ZIP bootstrap resource
+# policy with the canonical package limits without weakening v52 recovery.
+DISTRIBUTION_VERSION = "16.3.25.5.53"
+PACKAGE_VERSION = "16.3.25.5.53"
+PACKAGE_RELEASE_NAME = "chatgpt-bootstrap-resource-ci-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
