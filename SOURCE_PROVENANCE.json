@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e0c6731c851928568a7c23e5f9101d1e95bdd7f8",
-    "base_version": "16.3.25.5.55-archive-extraction-convergence",
+    "base_commit": "b9b11dca10ccc148aa0e7f110d2977aaa179c4e0",
+    "base_version": "16.3.25.5.56-local-runtime-preflight-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "b9b11dca10ccc148aa0e7f110d2977aaa179c4e0",
