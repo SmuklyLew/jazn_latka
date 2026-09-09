@@ -22,9 +22,10 @@ Instrukcje projektu ChatGPT są wyłącznie cienkim loaderem prowadzącym do lok
 - jedyne kanoniczne źródło wersji: [`latka_jazn/version.py`](latka_jazn/version.py);
 - kanoniczny układ repozytorium i polityka zależności: [`docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`](docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md);
 - bieżący snapshot mastera i aktywnych linii pracy: [`docs/project/CURRENT_STATE.md`](docs/project/CURRENT_STATE.md);
-- główny program wykonawczy v16: [`docs/plans/16.6.0-final-convergence/ROADMAP.md`](docs/plans/16.6.0-final-convergence/ROADMAP.md);
-- warunkowy kierunek v17: [`docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md`](docs/plans/17.0.0-measured-architecture-consolidation/PLAN.md);
+- główny program wykonawczy v16: [`docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md);
+- warunkowy kierunek v17: [`docs/plans/V17_PLUS_SYSTEM_EVALUATION.md`](docs/plans/V17_PLUS_SYSTEM_EVALUATION.md);
 - historia wydań i decyzji: [`docs/project/RELEASE_TIMELINE.md`](docs/project/RELEASE_TIMELINE.md).
+- lokalny runtime bez `OPENAI_API_KEY`: [`docs/runtime/LOCAL_RUNTIME_NO_API_KEY.md`](docs/runtime/LOCAL_RUNTIME_NO_API_KEY.md).
 
 Nie wpisuj numeru aktualnej wersji ręcznie w dokumentach operacyjnych jako drugiego źródła prawdy. Gdy potrzebny jest snapshot historyczny, zapisuj go jawnie z datą i SHA.
 

@@ -1,10 +1,10 @@
 # Jaźń — kanoniczna mapa planów v16.3.25.4 → v17
 
 **Status:** `CANONICAL_PLANNING_INDEX`  
-**Aktualizacja:** 2026-09-07  
-**Baza przebudowy dokumentacji:** `master @ e828c2f4ab10a909d9d8b2324e69caf68f82c94d`  
-**Baza wersji:** `16.3.25.5.38-ci-release-fixture-isolation`  
-**Linia tej aktualizacji:** `16.3.25.5.39-memory-affect-docs-convergence`
+**Aktualizacja:** 2026-09-09
+**Baza przebudowy dokumentacji:** `master @ e0c6731c851928568a7c23e5f9101d1e95bdd7f8`
+**Baza wersji:** `16.3.25.5.55-archive-extraction-convergence`
+**Linia tej aktualizacji:** `16.3.25.5.56-local-runtime-preflight-convergence`
 
 Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowadzącego od dostarczonego `v16.3.25.4 Memory Rebuild v4` do warunkowego `v17`.
 

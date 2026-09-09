@@ -110,7 +110,7 @@ Na lokalnym workspace zmienione moduły archiwów są bajtowo oparte o te same b
 - `python -m compileall -q latka_jazn tests main.py run.py CHATGPT_BOOTSTRAP.py` — PASS;
 - nowy zestaw v55 — 10 passed;
 - rozszerzony zestaw archive/plugin/generator/resource-limit — 36 passed;
-- realny probe nazwy załącznika `jazn_latka_v15.0.3.222-RUN-HOTFIX_memory.zip(1).001` poprawnie odnalazł `...zip.package(1).json` bez joinu dużej paczki.
+- realny probe transportowo przemianowanej nazwy załącznika pamięci (`..._memory.zip(1).001`) poprawnie odnalazł odpowiadający `...zip.package(1).json` bez joinu dużej paczki.
 
 Dodatkowo na czystej, zweryfikowanej paczce systemowej v54 (`SHA-256 9f9c5b84e78180fa7cf951960c8d424ea96039892d5919e4d3890c3c0df02955`) nałożono wyłącznie 9 plików v55 i wykonano końcowy lokalny gate:
 
