@@ -3,13 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.57 converges agent/host/backend runbooks with the real run.py
-# dispatch and protects runtime, memory, identity-canon and turn/finalization
-# lineage as one software continuity contract without turning host prompts or
-# language backends into alternate sources of runtime identity.
-DISTRIBUTION_VERSION = "16.3.25.5.57"
-PACKAGE_VERSION = "16.3.25.5.57"
-PACKAGE_RELEASE_NAME = "agent-runtime-identity-continuity-convergence"
+# v16.3.25.5.58 keeps daemon-owned ChatGPT phase-1 host requests authoritative
+# across transport presentation/recovery paths. The host reuses a persisted
+# pending request instead of reminting the same turn, preventing false
+# pending_host_request_conflict failures while preserving fail-closed replay
+# and binding checks for genuinely different contracts.
+DISTRIBUTION_VERSION = "16.3.25.5.58"
+PACKAGE_VERSION = "16.3.25.5.58"
+PACKAGE_RELEASE_NAME = "pending-host-request-continuity-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
