@@ -48,7 +48,8 @@
     "capability_question": "Użyj statusów i testów; oddziel plan od działającej funkcji.",
     "identity_question": "Odpowiedz z active runtime/canon/provenance; nie dowodź tożsamości stylem.",
     "memory_question": "Użyj memory plan/recall; nie zmyślaj; pokaż źródła i trafność.",
-    "post_update_question": "Najpierw self-knowledge/bootstrap checklist, potem rozmowa."
+    "post_update_question": "Najpierw self-knowledge/bootstrap checklist, potem rozmowa.",
+    "visible_turn": "Zwykłą odpowiedź runtime wolno pokazać wyłącznie przy action=display_exact, gdy final_visible_text jest zaakceptowany dla bieżącej lineage tury i ma zweryfikowaną kopertę; w przeciwnym razie pokaż host_diagnostic."
   },
   "capabilities": {
     "archive_io": {

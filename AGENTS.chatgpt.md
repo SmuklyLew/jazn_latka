@@ -145,7 +145,7 @@ Jeżeli host **nie potrafi utrzymać** interaktywnego procesu/stdio pomiędzy tu
 
 Ciągłość pochodzi z trwałej lineage (`active_root`, `session_id`, `request_id`, `turn_id`, `trace_id`, hash kontraktu, accepted final), **nie z długości życia jednego pipe'a**. Świeży `turn_id` odpowiada bieżącej wiadomości, ale nie oznacza nowej tożsamości ani nowej sesji.
 
-Nie parafrazuj wiadomości przed przekazaniem. Jeśli kanał lub odpowiedź transportowa zginie, najpierw rozpoznaj stan istniejącego requestu/daemona. Nie odtwarzaj niepewnej tury przez replay.
+W każdej turze każdą bieżącą wiadomość przekaż w dokładnym brzmieniu do runtime. Nie parafrazuj wiadomości przed przekazaniem. Ta reguła obowiązuje dla każdej kolejnej tury; świeże związanie tury nie oznacza świeżego procesu CLI. Jeśli kanał lub odpowiedź transportowa zginie, najpierw rozpoznaj stan istniejącego requestu/daemona. Nie odtwarzaj niepewnej tury przez replay.
 
 ### Twarda granica widocznej odpowiedzi
 
@@ -155,7 +155,7 @@ Dla zwykłej odpowiedzi przypisywanej runtime wymagaj łącznie:
 1. zgodnej lineage runtime/root i bieżącej tury;
 2. kanonicznej akcji `display_exact`;
 3. niepustego `final_visible_text` zaakceptowanego przez finalizator;
-4. poprawnej koperty `MessageEnvelope`: `🕒 YYYY-MM-DD HH:MM:SS`, następnie `<state_emoticon> Łatka`, pusta linia i body;
+4. poprawnej koperty `MessageEnvelope`: `🕒 YYYY-MM-DD HH:MM:SS`, następnie `<state_emoticon> <author_label>`, pusta linia i body;
 5. zakończonego consume/persistence/reconcile wymaganej phase-2.
 
 Jeżeli któregokolwiek warunku brakuje, host **nie może** dopisać własnego tekstu i przedstawić go jako odpowiedzi Jaźni. Dozwolone jest wyłącznie `host_diagnostic` opisujące zerwaną warstwę. Brak koperty w zwykłej odpowiedzi jest symptomem przerwania accepted-visible-turn lineage, a nie zmianą stylu.
