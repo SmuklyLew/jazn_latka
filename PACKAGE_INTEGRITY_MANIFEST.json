@@ -3,8 +3,8 @@
   "version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
   "runtime_version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
   "package_version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
-  "generated_at_utc": "2026-09-10T20:47:26+00:00",
-  "updated_at_utc": "2026-09-10T20:47:26+00:00",
+  "generated_at_utc": "2026-09-10T20:48:55+00:00",
+  "updated_at_utc": "2026-09-10T20:48:55+00:00",
   "start_file": "run.py",
   "file_count": 1312,
   "static_file_count": 1312,
@@ -100,15 +100,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": ".github/workflows/fix-v60-agent-boundary-literals.yml",
-      "size_bytes": 3066,
-      "sha256": "f3f4e5a1fd6b631a28d6f98fd95a8b14ae04c8e3c4093f390dfab85e84895faf",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": ".github/workflows/javascript-node24-contract.yml",
       "size_bytes": 2709,
       "sha256": "a20b92e717a98e9680cda5724f663f8f4e819c1fb2097e983241248ed35c28e7",
@@ -191,8 +182,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 14048,
-      "sha256": "da953f671ddb442d5844d88debb952f6c8e3496e6b6edc1c2773823f001b144b",
+      "size_bytes": 14198,
+      "sha256": "163a456ce12c5c40899d9404d6c316d17a0ba8f3a2c17a89abd5590e6ba0ceb2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -255,7 +246,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3009,
-      "sha256": "a7adcb6404d81becbbfa0c3326b7c0b1b28b9148b34d7923cea273ba1b2799b5",
+      "sha256": "098a0c537e876c4f16deeefce02efc89f0f110dba21cba1dd55a0db3b24ffa8f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1891,6 +1882,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_60_POST_FIX_CI.md",
+      "size_bytes": 1222,
+      "sha256": "101bade769db8a59e4cda33568c3f4f3979efc51c1de05b3bb4bc7a8a43b1909",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1910,8 +1910,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5143,
-      "sha256": "0c8d65df727babc6d32c5db5275228177c4e6e39160b17f02fa2d020e2aa5dde",
+      "size_bytes": 5114,
+      "sha256": "d2964deea193346c12b9f647d74979b852b86210045415bb209db982ba829251",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
