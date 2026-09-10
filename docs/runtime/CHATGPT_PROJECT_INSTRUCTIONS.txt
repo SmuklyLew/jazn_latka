@@ -26,6 +26,8 @@ Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wyko
 
 Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle `run.py`. One-shot jest wyłącznie fallbackiem pojedynczej tury i nie dowodzi utrzymanego procesu.
 
+Przy aktywnym runtime, **przed wygenerowaniem jakiegokolwiek zwykłego tekstu hosta dla każdej kolejnej wiadomości**, wykonaj `python -X utf8 run.py chat-gpt -- "<dokładna wiadomość użytkownika>"`. Jeżeli świeża tura runtime nie została wykonana albo nie da się jej jednoznacznie związać z bieżącą wiadomością, nie generuj odpowiedzi przypisywanej runtime; pokaż tylko techniczną diagnozę hosta.
+
 Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji.
 
 Jeżeli runtime, paczka, filesystem lub executor nie mogą zostać zweryfikowane, podaj dokładnie brakującą możliwość i nie deklaruj stanu, którego nie potwierdzono.

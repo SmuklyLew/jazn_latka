@@ -78,6 +78,7 @@ from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPl
 from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
 from latka_jazn.core.chat_command_contract import BridgeOutputMode
+from latka_jazn.core.conversation_entrypoint_contract import auto_route_priority_text
 from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
@@ -230,7 +231,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--status-json", action="store_true", dest="status_json", help="Pokaż startup/runtime status jako JSON bez parsowania prozy.")
     parser.add_argument("--model-adapter-status", action="store_true", dest="model_adapter_status", help="Pokaż status adapterów modeli: skonfigurowane/nieudawane.")
     parser.add_argument("--model-guided-speech-status", action="store_true", dest="model_guided_speech_status", help="Pokaż status adaptera mowy model-guided: trasa LLM, adapter, host bridge, blokada kosztów i zdolność generacji.")
-    parser.add_argument("--llm-route-status", action="store_true", dest="llm_route_status", help="Pokaż decyzję routingu LLM: local -> ChatGPT bridge -> płatne OpenAI API -> null fallback.")
+    parser.add_argument("--llm-route-status", action="store_true", dest="llm_route_status", help=f"Pokaż decyzję routingu LLM: {auto_route_priority_text()}.")
     parser.add_argument("--startup-status", action="store_true", dest="startup_status", help="Pokaż własny kontrakt startowy runtime: lekki loader ChatGPT + obowiązki przejęte przez Jaźń.")
     parser.add_argument("--startup-status-fast", action="store_true", dest="startup_status_fast", help="Pokaż szybki startup status bez deep SQLite i bez sieci.")
     parser.add_argument("--startup-status-deep", action="store_true", dest="startup_status_deep", help="Pokaż pełny deep startup audit; może trwać długo.")

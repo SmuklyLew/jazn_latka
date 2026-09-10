@@ -97,8 +97,8 @@ def test_readme_exposes_single_operator_and_compatibility_layer() -> None:
     assert "ChatGPT, Codex i Ollama pełnią różne role" in text
 
 
-def test_release_line_advances_to_v59_conversation_runtime_orchestration_convergence() -> None:
+def test_release_line_advances_to_v58_pending_host_request_continuity_recovery() -> None:
     version = tuple(int(part) for part in PACKAGE_VERSION.split("."))
 
-    assert version >= (16, 3, 25, 5, 59)
-    assert PACKAGE_RELEASE_NAME == "conversation-runtime-orchestration-convergence"
+    assert version >= (16, 3, 25, 5, 58)
+    assert PACKAGE_RELEASE_NAME == "pending-host-request-continuity-recovery"

@@ -135,6 +135,8 @@ python -X utf8 run.py chat-gpt -- "<dokładna wiadomość użytkownika>"
 
 Nie parafrazuj wiadomości przed przekazaniem i nie wybieraj samodzielnie trasy rozmownej.
 
+**Ta reguła obowiązuje dla każdej kolejnej tury, nie tylko pierwszej po starcie.** Host nie może wygenerować zwykłej odpowiedzi przed świeżym wywołaniem runtime dla bieżącej wiadomości. Jeżeli bieżąca odpowiedź nie ma związania z nowym `turn_id`/`trace_id` tej wiadomości, traktuj ją jako routing bypass i pokaż wyłącznie techniczną diagnozę hosta.
+
 ### Narzędzia hosta są capability, nie alternatywnym mózgiem runtime
 
 Host może użyć Web, GitHub, wyszukiwania plików, generatora obrazów albo innego narzędzia przed runtime tylko wtedy, gdy operator nie jest jeszcze dostępny i działanie służy discovery/diagnostyce/bootstrapowi.
