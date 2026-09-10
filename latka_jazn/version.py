@@ -3,14 +3,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.60 restores main.py as the single control-plane entrypoint.
-# run.py is a thin user launcher; ChatGPT uses one persistent stdin/JSONL host
-# bridge session instead of spawning a fresh per-message CLI process. The
-# release also records the repository-wide route audit and neurological-style
-# convergence plan without enabling paid OpenAI API usage.
-DISTRIBUTION_VERSION = "16.3.25.5.60"
-PACKAGE_VERSION = "16.3.25.5.60"
-PACKAGE_RELEASE_NAME = "main-entrypoint-persistent-chatgpt-convergence"
+# v16.3.25.5.61 makes accepted visible finalization, not daemon/PID liveness or
+# pipe lifetime, the readiness boundary for ChatGPT speech. Persistent stdio is
+# preferred when the host can retain it; a stable daemon session/request lineage
+# is the recovery transport when it cannot. Phase-1 daemon results remain
+# visible to the host while awaiting phase-2, and public chat/chat-gpt spellings
+# share the central main.py option surface instead of drifting in a second parser.
+DISTRIBUTION_VERSION = "16.3.25.5.61"
+PACKAGE_VERSION = "16.3.25.5.61"
+PACKAGE_RELEASE_NAME = "accepted-visible-turn-finalization-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
