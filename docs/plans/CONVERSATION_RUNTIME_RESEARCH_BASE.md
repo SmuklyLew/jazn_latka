@@ -2,9 +2,10 @@
 
 **Status:** `ACTIVE_ENGINEERING_RESEARCH_BASE`
 **Data:** 2026-09-10
-**Baza kodu Jaźni:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`
-**Baza wersji:** `16.3.25.5.58-pending-host-request-continuity-recovery`
-**Pierwszy etap implementacyjny:** `16.3.25.5.59-conversation-runtime-orchestration-convergence`
+**Baza pierwotna:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7` / v58
+**Korekta na podstawie pełnego audytu:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f` / v60 `main-entrypoint-persistent-chatgpt-convergence`
+
+> **Research correction v60:** źródła wspierają pojedynczy owner orkiestracji, ale nie wspierają wniosku, że plik nazwany `run.py` ma być tym ownerem. Dla tego repo obowiązuje: cienki `run.py` → centralny `main.py` → wyspecjalizowane moduły.
 
 ## 1. Zakres i granica źródeł
 
@@ -24,7 +25,7 @@ Publiczny OpenAI Agents SDK rozdziela definicję agenta od `Runner`a. `Runner` p
 
 Instrukcje repozytorium OpenAI wskazują, aby `src/agents/run.py` pozostał warstwą orkiestracji i publicznego flow, a rosnące szczegóły były przenoszone do modułów `run_internal`, takich jak `run_loop.py`, `turn_resolution.py`, `tool_execution.py` i `session_persistence.py`.
 
-**Wniosek dla Jaźni:** `run.py` powinien pozostać publicznym operatorem, natomiast wykonanie rozmowy powinno mieć jednego modułowego `ConversationRunner`/`TurnOrchestrator`, zamiast rozproszenia sterowania między `run.py`, `cli.py`, `main.py`, daemon bridge i prezentację hosta.
+**Skorygowany wniosek dla Jaźni (v60):** wzorzec wspiera jednego właściciela orkiestracji oraz rozdzielenie szczegółów do modułów, ale nie wymusza nazwy pliku. W Jaźni `run.py` jest cienkim starterem, `main.py` jest centralnym composition/control ownerem, a `ConversationRunner`/`TurnOrchestrator` ma być wyspecjalizowanym modułem wykonawczym zamiast konkurencyjnego entrypointu.
 
 ### 2.2 Jeden właściciel stanu rozmowy
 
@@ -91,7 +92,7 @@ Ollama `/api/chat` przyjmuje model, `messages`, opcjonalne `tools` i zwraca kole
 
 ### Mocne strony
 
-- `run.py` jest już kanonicznym publicznym operatorem.
+- `run.py` był publicznym operatorem, ale pełny audyt v60 wykazał, że posiadał zbyt dużo top-level ownership i wymaga odchudzenia do launchera.
 - daemon może być rzeczywistym właścicielem wykonania tury przez `RuntimeSessionWorker`.
 - model adapters są oddzielone od tożsamości i pamięci.
 - istnieją `turn_id`, `trace_id`, host finalization, pending-store, replay protection i pre-response gate.
@@ -100,9 +101,9 @@ Ollama `/api/chat` przyjmuje model, `messages`, opcjonalne `tools` i zwraca kole
 
 ### Luki
 
-1. `run.py chat` i `run.py chat-gpt` są publicznie kanoniczne, ale faktyczne mature flow nadal deleguje przez `latka_jazn.cli` do dużego `main.py`.
+1. Publiczne wejście przechodziło `run.py → latka_jazn.cli → main.py`, a `run.py` przechwytywał część lifecycle; oznaczało to wielu top-level ownerów. v60 odwraca to do `run.py → main.py → parser/services`.
 2. Universal `chat` może potwierdzić daemon, ale one-shot/TTY nadal może tworzyć lokalnego `RuntimeSessionWorker`, więc istnieje ryzyko dwóch właścicieli session execution semantics.
-3. ChatGPT host bridge ma dobre fail-closed zabezpieczenia po wejściu do runtime, lecz sam kod Python nie może wymusić, aby aplikacja ChatGPT wywołała runtime przed każdą odpowiedzią.
+3. ChatGPT host bridge ma dobre fail-closed zabezpieczenia po wejściu do runtime, lecz instrukcja per-turn uruchamiała świeży proces CLI. v60 używa jednego stale otwartego stdin/JSONL bridge; produkt hosta nadal pozostaje granicą, której sam Python nie może kryptograficznie wymusić.
 4. Semantyka publicznych wejść i auto-routingu była duplikowana w kilku plikach; help/discovery zawierał dryf względem faktycznego resolvera.
 5. `local_chat` w discovery sugerował lokalny backend, choć `run.py chat` jest uniwersalnym wejściem z auto-routingiem.
 6. Brakuje jednego jawnego `TurnStateMachine` obejmującego provider call, tool loop, host-generation wait i finalization jako jeden trwały workflow.
@@ -112,7 +113,7 @@ Ollama `/api/chat` przyjmuje model, `messages`, opcjonalne `tools` i zwraca kole
 
 1. **One conversation owner:** runtime Jaźni jest jedynym właścicielem tury i sesji.
 2. **Provider is capability:** model/host generuje język lub tool call; nie posiada Jaźni.
-3. **One public conversation entry:** `run.py chat` jest uniwersalnym wejściem; specjalizowane komendy są adapter selectors/compatibility aliases.
+3. **Main-first control plane:** `run.py` jest wyłącznie starterem, `main.py` jest centralnym entrypointem; specjalizowane komendy są adapter selectors/compatibility aliases.
 4. **Durable turn state:** każdy stan oczekiwania jest utrwalalny i wznawialny.
 5. **Exactly-once logical effects:** retry/resume nie może powtarzać tool side effects ani zaakceptować dwóch visible finals.
 6. **Separate views:** kanoniczny event/history store, provider replay/input view i user-visible presentation są oddzielnymi reprezentacjami.
@@ -125,4 +126,14 @@ Ollama `/api/chat` przyjmuje model, `messages`, opcjonalne `tools` i zwraca kole
 
 Nie da się w czystym Pythonie wymusić, aby zewnętrzna aplikacja ChatGPT zawsze wywołała `run.py chat-gpt`. Repo może odrzucić nieprawidłową turę, jeżeli zostało wywołane, ale nie może przechwycić odpowiedzi wygenerowanej całkowicie poza nim.
 
-Dlatego pełny gate wymaga host-side integracji — preferencyjnie jednego narzędzia/MCP/ChatGPT App typu `jazn_turn`, które jest wymaganym wejściem do rozmowy Jaźni, oraz osobnego `jazn_finalize`/resume dla dwóch faz. Instrukcje hosta pozostają obroną wtórną, nie kryptograficzną gwarancją wywołania.
+Dla bieżącego ChatGPT nie należy uzależniać podstawowej ścieżki od pełnego MCP ani płatnego OpenAI API. v60 wykorzystuje dostępny executor i jeden stale otwarty stdio/JSONL bridge jako primary transport. MCP/App może być później dodatkowym transportem tam, gdzie plan produktu i host go wspierają. Instrukcje hosta nadal nie są kryptograficzną gwarancją wywołania; dlatego potrzebne są per-turn lineage i host-bypass evidence.
+
+
+## 8. Uzupełnienie źródeł v60
+
+- Python `__main__`: https://docs.python.org/3/library/__main__.html — minimalny top-level i funkcja `main()`.
+- PyPA Entry Points: https://packaging.python.org/en/latest/specifications/entry-points/ — cienki wrapper do callable.
+- OpenAI Help, Developer mode and MCP apps: https://help.openai.com/en/articles/12584461 — lokalny MCP nie jest podłączany bezpośrednio; pełne MCP jest planowo ograniczone, więc nie może być warunkiem ChatGPT Plus.
+- CoALA: https://arxiv.org/abs/2309.02427 — modular memory/action/decision architecture jako inspiracja software.
+- LongMemEval: https://arxiv.org/abs/2410.10813 — extraction, multi-session, temporal, update i abstention jako osobne memory gates.
+- Source Monitoring Framework: https://pubmed.ncbi.nlm.nih.gov/8346328/ — inspiracja dla source/provenance discrimination, nie dowód biologicznej pamięci systemu.

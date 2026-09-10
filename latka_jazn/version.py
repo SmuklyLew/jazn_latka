@@ -3,14 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.59 establishes one public conversation-entrypoint contract shared
-# by CLI discovery, runtime-environment classification and LLM routing. It also
-# hardens the ChatGPT host runbook so every visible turn requires a fresh
-# runtime invocation before host text, preventing documentation/control-plane
-# drift from silently bypassing the active Jaźń turn.
-DISTRIBUTION_VERSION = "16.3.25.5.59"
-PACKAGE_VERSION = "16.3.25.5.59"
-PACKAGE_RELEASE_NAME = "conversation-runtime-orchestration-convergence"
+# v16.3.25.5.60 restores main.py as the single control-plane entrypoint.
+# run.py is a thin user launcher; ChatGPT uses one persistent stdin/JSONL host
+# bridge session instead of spawning a fresh per-message CLI process. The
+# release also records the repository-wide route audit and neurological-style
+# convergence plan without enabling paid OpenAI API usage.
+DISTRIBUTION_VERSION = "16.3.25.5.60"
+PACKAGE_VERSION = "16.3.25.5.60"
+PACKAGE_RELEASE_NAME = "main-entrypoint-persistent-chatgpt-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

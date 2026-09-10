@@ -71,13 +71,14 @@ def discover_runtime_bridges(
         "chatgpt_bridge": {
             **chatgpt,
             "command": "python -X utf8 run.py chat-gpt --session-id <id>",
-            "one_shot_command": 'python -X utf8 run.py chat-gpt -- "Cześć Łatko"',
             "canonical_command": "run.py chat-gpt",
             "legacy_aliases": ["--chat-gpt-final-only", "--chat-gpt --final-only"],
-            "one_shot_prefers_live_daemon": True,
-            "daemon_fast_path_env": "JAZN_CHATGPT_PREFER_DAEMON=0 wyłącza preferencję daemonu",
+            "transport": "persistent_stdio_jsonl",
+            "per_message_cli_required": False,
+            "persistent_bridge_process_required_when_host_supports_it": True,
             "requires_api_key": False,
-            "meaning": "kanoniczny most dla hosta ChatGPT; run.py jest publicznym operatorem, one-shot wypisuje final_visible_text i preferuje żywy daemon, stdin JSONL zostaje dla narzędzi; nie wykonuje żądania OpenAI API",
+            "uses_openai_api": False,
+            "meaning": "kanoniczny most dla hosta ChatGPT: run.py tylko startuje centralny main.py, a jedna otwarta sesja stdin/JSONL przenosi kolejne tury i phase-2; nie wykonuje żądania OpenAI API",
         },
         "openai_bridge": {
             "command": "python main.py --chat-open-ai --session-id <id>",

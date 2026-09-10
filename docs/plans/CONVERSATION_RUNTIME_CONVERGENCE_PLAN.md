@@ -3,8 +3,10 @@
 **Status:** `ACTIVE_IMPLEMENTATION_PLAN`
 **Data:** 2026-09-10
 **Cel:** jeden profesjonalny runtime rozmowy niezależny od dostawcy LLM
-**Baza:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`, v58
-**Pierwszy etap:** v59 `conversation-runtime-orchestration-convergence`
+**Baza pierwotna:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`, v58
+**Korekta architektoniczna:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f` → v60 `main-entrypoint-persistent-chatgpt-convergence`
+
+> **Supersession note v60:** wcześniejsze sformułowania nadające `run.py` ownership orkiestracji są zastąpione. `run.py` jest cienkim starterem użytkownika; `main.py` jest jedynym centralnym control plane. `ConversationRunner` pozostaje docelowym modułem wykonawczym komponowanym przez `main.py`.
 
 ## 1. Definicja celu
 
@@ -13,7 +15,10 @@ Po migracji użytkownik zawsze rozpoczyna turę w Jaźni. ChatGPT, OpenAI Respon
 Docelowy przepływ:
 
 ```text
-run.py chat
+run.py (thin launcher)
+    │
+    ▼
+main.py (central control plane)
     │
     ▼
 ConversationRunner
@@ -307,15 +312,21 @@ Raw private content nie trafia do telemetry domyślnie.
 
 **Exit gate:** brak dryfu route semantics, loader ≤ 5000 znaków, regression tests green.
 
-### Etap 1 — wydzielenie `ConversationRunner`
-- utworzyć `latka_jazn/core/conversation_runner.py`;
-- przenieść orchestration helpers z `main.py`, bez zmiany behavior;
-- `run.py/cli.py` kompozycja, `main.py` shim;
-- compatibility snapshot tests.
+### Etap 1 — v60: main-first control plane + persistent ChatGPT bridge
+- `run.py` odchudzić do cienkiego launchera;
+- przenieść top-level preflight/dependency/lifecycle/finalization ownership do `main.py`;
+- `latka_jazn.cli` pozostawić parserem/service layer, bez ponownego importu control plane w kanonicznej trasie;
+- uruchamiać jeden trwały `chat-gpt` stdin/JSONL na sesję executora;
+- phase-2 zwracać tym samym kanałem;
+- per-message CLI pozostawić tylko jako recovery/compatibility;
+- dodać parity/snapshot/multi-turn tests.
+
+**Exit gate:** `run.py` nie posiada domenowego dispatchu; 10+ tur ChatGPT przechodzi jednym bridge processem; każda tura ma fresh lineage i zaakceptowany final.
 
 **Exit gate:** stare i nowe wejścia produkują równoważny canonical turn contract.
 
-### Etap 2 — single daemon/session execution owner
+### Etap 2 — wydzielenie `ConversationRunner` + single daemon/session execution owner
+- utworzyć `latka_jazn/core/conversation_runner.py` i przenieść orchestration helpers z `main.py` bez zmiany behavior;
 - skierować `run.py chat` one-shot i TTY przez ten sam runtime execution service co `chat-gpt`;
 - usunąć sytuację, w której `chat` tylko sprawdza daemon, a następnie tworzy niezależny lokalny worker;
 - jawny fallback one-shot tylko gdy policy na niego zezwala i z innym ownership state.
@@ -353,14 +364,15 @@ Raw private content nie trafia do telemetry domyślnie.
 
 **Exit gate:** ablation potwierdza, że wyłączenie modułu usuwa tylko jego bounded effect.
 
-### Etap 7 — ChatGPT MCP/App hard gate
-- `jazn_turn` + resume/finalize contract;
-- exact input binding;
+### Etap 7 — ChatGPT host hard gate bez zależności od płatnego API
+- primary: trwały executor/stdin-JSONL bridge na całą sesję;
+- exact input binding + resume/finalize contract;
 - per-turn host attestations;
 - produktowy test wieloturowy;
-- host bypass telemetry.
+- host bypass telemetry;
+- MCP/App może być opcjonalnym transportem tylko tam, gdzie plan produktu go wspiera; nie jest wymaganiem dla ChatGPT Plus/local executor.
 
-**Exit gate:** 10/10 kolejnych tur w prawdziwym hoście mają świeże runtime lineage; jedna goła odpowiedź hosta = FAIL.
+**Exit gate:** 10/10 kolejnych tur w prawdziwym hoście mają świeże runtime lineage; jedna goła odpowiedź hosta = FAIL; zero niejawnych żądań płatnego OpenAI API.
 
 ### Etap 8 — streaming/cancellation parity
 - stream events jako widok, nie drugi state owner;
@@ -407,7 +419,7 @@ Nigdy: rename/remove przed dowodem równoważności.
 ## 14. Definition of Done całej przebudowy
 
 Przebudowa jest zakończona dopiero gdy:
-- `run.py chat` jest jedynym canonical conversation orchestration entry;
+- `run.py` jest cienkim starterem, a `main.py` jedynym canonical conversation control-plane entry;
 - daemon/runtime jest jedynym session/turn owner w persistent mode;
 - wszystkie modele są adapterami;
 - tool loop jest runtime-owned i idempotentny;
@@ -415,6 +427,6 @@ Przebudowa jest zakończona dopiero gdy:
 - ChatGPT host E2E nie potrafi wyświetlić runtime-attributed tekstu bez świeżego turn lineage;
 - header/final envelope pochodzi wyłącznie z finalizer;
 - streaming i non-stream mają parity;
-- `main.py` nie posiada konkurencyjnego canonical flow;
+- `latka_jazn.cli` i compatibility aliases nie posiadają konkurencyjnego top-level flow;
 - pełne testy Windows/Linux, package smoke, doctor i release hardening przechodzą;
 - dokumentacja odpowiada rzeczywistemu dispatchowi.

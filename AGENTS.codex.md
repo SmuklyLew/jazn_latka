@@ -29,14 +29,13 @@ Zmiana kodu, testu, promptu, dokumentacji albo modelu nie jest sama w sobie akty
 Dla zmian dotyczących wykonania zachowuj kanoniczny przebieg:
 
 ```text
-run.py
--> własny fast-path / bootstrap / lifecycle / finalization
--> latka_jazn.cli.main()
--> main.py tylko przez kontrolowane ścieżki zgodnościowe
+run.py                 # cienki starter użytkownika
+-> main.py              # jedyny centralny control plane
+-> latka_jazn.cli       # parser/usługi komend
 -> moduły runtime
 ```
 
-Nie wprowadzaj nowego publicznego operatora równoległego do `run.py`, jeżeli zadanie nie wymaga jawnej migracji kontraktu. Nie kieruj użytkownika do bezpośredniego `main.py`, gdy istnieje ścieżka przez `run.py`.
+Nie dodawaj logiki domenowej, lifecycle ani drugiego parsera do `run.py`. Użytkownik może startować system przez `run.py`, ale wszystkie komendy i rozmowa muszą wejść do `main.py` z tym samym argv.
 
 Jeżeli modyfikujesz `run.py`, `latka_jazn/cli.py` albo `main.py`, sprawdź po zmianie:
 - czy publiczne komendy nadal mają jednego właściciela;
@@ -90,7 +89,7 @@ Przy zmianach tożsamości i pamięci zachowaj source/lineage zamiast „naprawi
 - Każda aktualizacja albo patch systemu Jaźni jest zmianą wydaniową i musi w tym samym zestawie zmian podnieść numer wersji w `latka_jazn/version.py`; patch z niezmienioną wersją jest niedozwolony.
 - Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`.
 - `pyproject.toml` jest kanonicznym źródłem bezpośrednich i opcjonalnych zależności Pythona. Nowa zależność musi spełniać politykę cross-platform, testów i zweryfikowanego offline wheelhouse z `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`.
-- JavaScript jest opcjonalną capability narzędziową: Pythonowy `run.py` pozostaje kanonicznym operatorem, brak Node.js nie może blokować runtime, a bieżącą linią testowaną w CI jest Node.js 24 LTS. Kod projektu używa ESM pod `tools/javascript/`, śledzi `package-lock.json`, instaluje stan CI przez `npm ci` i nie commituj `node_modules/`.
+- JavaScript jest opcjonalną capability narzędziową: Pythonowy `run.py` pozostaje cienkim starterem użytkownika, a `main.py` kanonicznym centralnym operatorem, brak Node.js nie może blokować runtime, a bieżącą linią testowaną w CI jest Node.js 24 LTS. Kod projektu używa ESM pod `tools/javascript/`, śledzi `package-lock.json`, instaluje stan CI przez `npm ci` i nie commituj `node_modules/`.
 - Zewnętrzne GitHub Actions przypinaj wyłącznie do pełnych 40-znakowych SHA. Przed zmianą SHA sprawdź upstreamowe źródło/tag i `action.yml`.
 
 Po zmianie śledzonych plików statycznych synchronizuj metadane wyłącznie kanonicznym narzędziem:
@@ -123,7 +122,7 @@ git diff --check
 Sprawdź także:
 - czy router wskazuje wyłącznie istniejące pliki;
 - czy komendy opisane w instrukcjach istnieją w bieżącym `run.py`/CLI;
-- czy `run.py` pozostaje jedynym publicznym operatorem;
+- czy `run.py` pozostaje cienkim publicznym starterem, a `main.py` jedynym centralnym control plane;
 - czy niestandardowe runbooki nie są mylnie opisane jako automatycznie odkrywane przez host;
 - czy runbook Ollamy nie jest wstrzykiwany jako prompt modelu.
 
