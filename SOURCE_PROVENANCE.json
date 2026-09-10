@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "270d704831224a7ba346fd3b9bb46bd698a482f4",
-    "base_version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
+    "base_commit": "06d7270340682fe06d395051f5273c00515f3849",
+    "base_version": "16.3.25.5.61-accepted-visible-turn-finalization-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "06d7270340682fe06d395051f5273c00515f3849",
