@@ -526,6 +526,74 @@ def chatgpt_result_has_displayable_host_final(result: dict[str, Any]) -> bool:
         return False
     if str(finalization.get("trace_id") or "") != str(bridge.get("trace_id") or ""):
         return False
+
+    # ``accepted`` is necessary but not sufficient. A visible host final must
+    # also be the exact runtime-persisted MessageEnvelope for the same turn.
+    # Speech readiness is bound to persistence evidence, not to a phase label
+    # or a live daemon/PID.
+    capture = json_object(result.get("host_visible_reply_capture"))
+    if not capture:
+        return False
+    if capture.get("envelope_present_in_final") is False:
+        return False
+    if str(capture.get("final_visible_text") or "") != final_text:
+        return False
+    capture_hash = str(capture.get("final_text_sha256") or "").strip().lower()
+    if capture_hash:
+        if not re.fullmatch(r"[0-9a-f]{64}", capture_hash):
+            return False
+        if capture_hash != expected_hash:
+            return False
+    if str(capture.get("turn_id") or "") != str(bridge.get("turn_id") or ""):
+        return False
+    if str(capture.get("trace_id") or "") != str(bridge.get("trace_id") or ""):
+        return False
+
+    authority_receipt = json_object(bridge.get("turn_authority_receipt"))
+    authority_validation = json_object(bridge.get("turn_authority_validation"))
+    if bridge.get("turn_authority_required") is True and authority_validation.get("ok") is not True:
+        return False
+    receipt_final_hash = str(authority_receipt.get("final_visible_text_sha256") or "").strip().lower()
+    if receipt_final_hash and receipt_final_hash != expected_hash:
+        return False
+
+    timestamp_header = str(
+        capture.get("timestamp_header") or bridge.get("timestamp_header") or ""
+    ).strip()
+    state_emoticon = str(
+        capture.get("state_emoticon") or bridge.get("state_emoticon") or ""
+    ).strip()
+    author_label = str(
+        capture.get("author_label")
+        or bridge.get("author_label")
+        or authority_receipt.get("author_label")
+        or ""
+    ).strip()
+    if not timestamp_header or not author_label:
+        return False
+    lines = final_text.splitlines()
+    if len(lines) < 4 or lines[0] != timestamp_header or lines[2] != "":
+        return False
+    if state_emoticon:
+        if lines[1] != f"{state_emoticon} {author_label}":
+            return False
+    else:
+        # Compatibility for old deterministic test doubles that persisted the
+        # full envelope but returned only text/turn/trace in their capture.
+        # Production captures include state_emoticon and are checked exactly.
+        suffix = f" {author_label}"
+        if not lines[1].endswith(suffix) or not lines[1][:-len(suffix)].strip():
+            return False
+
+    for field in ("timestamp_header", "state_emoticon", "author_label", "author_source"):
+        bridge_value = str(bridge.get(field) or "").strip()
+        capture_value = str(capture.get(field) or "").strip()
+        if bridge_value and capture_value and capture_value != bridge_value:
+            return False
+
+    consumption = json_object(result.get("host_request_consumption"))
+    if consumption and str(consumption.get("state") or "") != "consumed":
+        return False
     return True
 
 
@@ -922,6 +990,11 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "type": "chatgpt_host_presentation",
         "action": action,
         "phase": phase,
+        "accepted_visible_turn_ready": action == "display_exact",
+        "visible_turn_readiness": (
+            "accepted_final_visible_text" if action == "display_exact"
+            else "not_ready"
+        ),
         "turn_id": bridge.get("turn_id"),
         "trace_id": bridge.get("trace_id"),
         "author_source": (

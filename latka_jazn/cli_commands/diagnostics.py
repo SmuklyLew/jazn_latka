@@ -311,9 +311,29 @@ def status_payload(
             },
         },
     )
+    chatgpt_visible_turn_readiness = {
+        "scope": "per_turn",
+        "status": "accepted_final_required_per_turn",
+        "ready": None,
+        "accepted_visible_turn_required": True,
+        "visible_turn_readiness": "accepted_final_visible_text_only",
+        "daemon_liveness_sufficient": False,
+        "requires": [
+            "verified_runtime_turn_lineage",
+            "accepted_host_or_runtime_finalization",
+            "verified_message_envelope",
+            "display_exact",
+        ],
+        "truth_boundary": (
+            "PID, heartbeat, endpoint and runtime_core_ready prove liveness/readiness of the "
+            "runtime substrate only. They never authorize a future/current visible ChatGPT turn; "
+            "that authority is recomputed for each turn after finalization."
+        ),
+    }
     capability_readiness = {
         "runtime_core_ready": runtime_core_ready,
         "runtime_ready": runtime_core_ready,
+        "chatgpt_visible_turn_readiness": chatgpt_visible_turn_readiness,
         "nlp_core_ready": bool(nlp_probe.get("core_ready")),
         "nlp_core_probe_executed": bool(nlp_probe.get("core_probe_executed")),
         "nlp_enhanced_ready": bool(nlp_probe.get("enhanced_ready")),
@@ -374,6 +394,7 @@ def status_payload(
         "runtime_write_ready": runtime_write_ready,
         "runtime_write_ready_source": runtime_write_ready_source,
         "capability_readiness": capability_readiness,
+        "chatgpt_visible_turn_readiness": chatgpt_visible_turn_readiness,
         "endpoint_probe_requested": bool(probe_endpoint),
         "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
         "activation_truth_gate_eligible": bool(probe_endpoint),

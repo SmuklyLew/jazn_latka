@@ -324,6 +324,17 @@ def main(
         if legacy_handler is None:
             return _legacy_main(legacy_args)
         return _legacy_main(legacy_args, handler=legacy_handler)
+    # ``chat`` and ``chat-gpt`` are canonical public spellings, but their
+    # option surface is intentionally owned by the central main.py parser.
+    # Dispatch before the service parser so --session-id / --daemon-result do
+    # not drift into a second parser implementation.
+    if args and args[0] in {"chat", "chat-gpt"}:
+        return dispatch_legacy(
+            _legacy_args_with_canonical_root(
+                lifecycle.legacy_args(args[0], args[1:])
+            )
+        )
+
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
