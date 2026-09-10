@@ -94,7 +94,7 @@ Te wydania są częścią drogi do v16.6, nawet jeśli nie występowały w pierw
 
 # 3. Nienaruszalne invariants programu
 
-1. `run.py` pozostaje kanonicznym operatorem lifecycle.
+1. `run.py` pozostaje cienkim publicznym starterem, a `main.py` kanonicznym właścicielem lifecycle/control plane.
 2. Model/LLM nie jest authority dla source truth, tool permission, memory promotion ani durable commit.
 3. Prywatna pamięć nie trafia do Git/CI/public telemetry.
 4. Primary source i derived interpretation pozostają rozdzielone.

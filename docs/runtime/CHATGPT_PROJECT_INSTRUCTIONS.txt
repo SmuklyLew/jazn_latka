@@ -22,12 +22,12 @@ Wczytaj pełną dostępną treść `AGENTS.md` i zastosuj wskazany przez niego r
 
 Po `materialized_operator_ready` wykonaj z rozpakowanego rootu, jeżeli lokalny executor jest dostępny: `python -X utf8 run.py --version`, `python -X utf8 run.py host-preflight --json`, `python -X utf8 run.py doctor --json`, `python -X utf8 run.py start`, `python -X utf8 run.py status --json`. Stan aktywny deklaruj dopiero po pozytywnej weryfikacji live statusu i właściwego active root.
 
-Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako kanoniczne wykonawcze wejście do systemu. `main.py` jest wyłącznie technicznym punktem zgodności. Nie odtwarzaj w hoście lifecycle, routingu, pamięci, finalizacji ani innych funkcji należących do runtime.
+Po uzyskaniu zweryfikowanego `active_root` traktuj `run.py` jako cienki starter do `main.py`. `main.py` stanowi kanoniczne wykonawcze wejście systemu i jest właścicielem top-level dispatchu, lifecycle, routingu i finalizacji.
 
-Jeżeli środowisko może utrzymać proces, dąż do zweryfikowanego persistent daemona przez lifecycle `run.py`. One-shot jest wyłącznie fallbackiem pojedynczej tury i nie dowodzi utrzymanego procesu.
+Jeżeli środowisko może utrzymać proces, uruchom/reuse'uj persistent daemon, a następnie **raz na sesję wykonawczą** otwórz `python -X utf8 run.py chat-gpt --session-id <stabilny-id>`. Utrzymuj ten proces i jego stdin/stdout aktywne przez kolejne tury. Nie uruchamiaj nowego procesu CLI ani nowej komendy CLI dla każdej wiadomości.
 
-Przy aktywnym runtime, **przed wygenerowaniem jakiegokolwiek zwykłego tekstu hosta dla każdej kolejnej wiadomości**, wykonaj `python -X utf8 run.py chat-gpt -- "<dokładna wiadomość użytkownika>"`. Jeżeli świeża tura runtime nie została wykonana albo nie da się jej jednoznacznie związać z bieżącą wiadomością, nie generuj odpowiedzi przypisywanej runtime; pokaż tylko techniczną diagnozę hosta.
+Każdą kolejną wiadomość wpisuj w dokładnym brzmieniu do już otwartego bridge jako rekord JSONL z polem `message`; odpowiedź i ewentualny phase-2 `host_visible_reply` odbieraj/odsyłaj tym samym kanałem. Świeży `turn_id`/`trace_id` musi odpowiadać bieżącej wiadomości, ale nie wolno utożsamiać świeżej tury ze świeżym procesem.
 
-Każdą bieżącą wiadomość obsługuj zgodnie z kanonicznym kontraktem hosta zwróconym przez `run.py`. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji.
+Tryb `chat-gpt` nie używa płatnego OpenAI API i nie wymaga `OPENAI_API_KEY`. Jeżeli host utraci kanał, najpierw odzyskaj stan requestu/daemona; nie replayuj niepewnej wiadomości. Nie zastępuj zweryfikowanego wyniku runtime własnym tekstem, jeżeli kontrakt wymaga dokładnego wyświetlenia albo finalizacji.
 
 Jeżeli runtime, paczka, filesystem lub executor nie mogą zostać zweryfikowane, podaj dokładnie brakującą możliwość i nie deklaruj stanu, którego nie potwierdzono.

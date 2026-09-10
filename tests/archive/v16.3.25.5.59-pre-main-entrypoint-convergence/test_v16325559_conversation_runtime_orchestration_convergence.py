@@ -141,14 +141,13 @@ def test_v59_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text
     runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
     assert len(loader) <= 5000
-    assert "raz na sesję wykonawczą" in loader
-    assert "python -X utf8 run.py chat-gpt --session-id" in loader
-    assert "Nie uruchamiaj nowego procesu CLI" in loader
-    assert "Każdą kolejną wiadomość" in loader
+    assert "przed wygenerowaniem jakiegokolwiek zwykłego tekstu hosta" in loader
+    assert 'run.py chat-gpt -- "<dokładna wiadomość użytkownika>"' in loader
+    assert "dla każdej kolejnej wiadomości" in loader
     assert "Ta reguła obowiązuje dla każdej kolejnej tury" in runbook
-    assert "świeże związanie tury nie oznacza świeżego procesu CLI" in runbook
+    assert "routing bypass" in runbook
 
 
-def test_release_identity_supersedes_v59_with_main_entrypoint_convergence() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 60)
-    assert PACKAGE_RELEASE_NAME == "main-entrypoint-persistent-chatgpt-convergence"
+def test_v59_release_identity_marks_conversation_orchestration_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.59"
+    assert PACKAGE_RELEASE_NAME == "conversation-runtime-orchestration-convergence"

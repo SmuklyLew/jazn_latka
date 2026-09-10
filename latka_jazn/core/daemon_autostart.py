@@ -50,11 +50,11 @@ RUNTIME_TURN_COMMANDS = {
     "direct_message",
 }
 
-# ChatGPT has an explicit, verified one-shot runtime path in AGENTS.chatgpt.md.
-# The host should reuse a live daemon when one already exists, but inability to
-# create a background process must not block the canonical one-shot bridge.
-# Explicit --ensure-daemon / JAZN_ENSURE_DAEMON still override this default and
-# remain fail-closed through the normal policy order below.
+# ChatGPT normally keeps one long-lived stdin/JSONL bridge open and reuses a
+# verified live daemon. These one-shot commands are compatibility/recovery
+# fallbacks for hosts that lost the bridge; they are not the canonical ChatGPT
+# conversation lifecycle. Explicit --ensure-daemon / JAZN_ENSURE_DAEMON still
+# override fallback behavior and remain fail-closed through the policy below.
 VERIFIED_ONE_SHOT_FALLBACK_COMMANDS = {
     "--chat-gpt",
     "--chat-gpt-final-only",
@@ -496,7 +496,7 @@ def daemon_autostart_policy_status(env: Mapping[str, str] | None = None) -> dict
         "degraded_turn_blocking_reasons": sorted(DEGRADED_TURN_BLOCKING_REASONS),
         "truth_boundary": (
             "Autostart jest kontraktem liveness dla tras rozmowy, nie dowodem świadomości ani zgodą na start przy komendach status/stop. "
-            "Kanoniczny --chat-gpt może ponownie użyć zweryfikowanego żywego daemonu albo wykonać zweryfikowaną turę one-shot; jawne wymaganie daemonu pozostaje fail-closed. "
+            "Kanoniczny --chat-gpt utrzymuje jeden proces mostu stdin/JSONL i ponownie używa zweryfikowanego żywego daemonu; one-shot jest wyłącznie kontrolowanym fallbackiem recovery/compatibility. Jawne wymaganie daemonu pozostaje fail-closed. "
             "active_degraded dopuszcza turę tylko wtedy, gdy status_daemon jawnie potwierdza zgodność endpointu i świeży heartbeat; nieznane degradacje są fail-closed."
         ),
     }

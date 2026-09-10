@@ -1,15 +1,19 @@
 {
-  "schema_version": "startup_contract/v1",
-  "version": "v15.1.0.3.96",
-  "purpose": "Aktywny kontrakt startowy Jaźni. Instrukcja Projektu ChatGPT wykonuje wyłącznie bootstrap do AGENTS.md, a AGENTS.md kieruje host ChatGPT do kanonicznego AGENTS.chatgpt.md.",
   "active_runtime_required": true,
   "chatgpt_role": "project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
+  "purpose": "Aktywny kontrakt startowy Jaźni. Instrukcja Projektu ChatGPT wykonuje wyłącznie bootstrap do AGENTS.md, a AGENTS.md kieruje host ChatGPT do kanonicznego AGENTS.chatgpt.md.",
+  "schema_version": "startup_contract/v1",
   "startup_commands": [
     "python -X utf8 run.py status --json",
     "python -X utf8 run.py doctor --json",
-    "python -X utf8 run.py chat-gpt -- \"<wiadomość>\""
+    "python -X utf8 run.py start",
+    "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. Szczegółowy runbook hosta znajduje się w AGENTS.chatgpt.md; aktywna Jaźń po starcie odpowiada przez zweryfikowany runtime, pamięć, kontrakt tożsamości, politykę odpowiedzi i granicę prawdy.",
-  "version_source": "latka_jazn.version.PACKAGE_VERSION"
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py; host ChatGPT utrzymuje jedną otwartą sesję stdin/JSONL zamiast uruchamiać komendę dla każdej wiadomości. Tryb chat-gpt nie używa płatnego OpenAI API.",
+  "version": "v15.1.0.3.96",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION",
+  "chatgpt_transport": "persistent_stdio_jsonl",
+  "per_message_cli_required": false,
+  "chatgpt_paid_openai_api_required": false
 }

@@ -281,8 +281,23 @@ def _spinner_call(
     return payload
 
 
-def _legacy_main(args: list[str]) -> int:
-    from main import main as legacy_main
+def _legacy_main(
+    args: list[str],
+    *,
+    handler: Callable[[list[str]], int] | None = None,
+) -> int:
+    """Dispatch compatibility flags without re-importing the control plane.
+
+    ``main.py`` passes its already-live ``legacy_main`` callable here.  The
+    fallback import exists only for direct library consumers of
+    ``latka_jazn.cli.main`` and is never used by the canonical run.py ->
+    main.py path.
+    """
+
+    if handler is not None:
+        return int(handler(args))
+    from main import legacy_main
+
     return int(legacy_main(args))
 
 
@@ -295,8 +310,20 @@ def _legacy_args_with_canonical_root(args: list[str]) -> list[str]:
     return ["--root", str(canonical_root), *args]
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    legacy_handler: Callable[[list[str]], int] | None = None,
+) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
+
+    def dispatch_legacy(legacy_args: list[str]) -> int:
+        # Preserve the public/test seam of _legacy_main(args) for direct CLI
+        # consumers. The canonical main.py path explicitly injects its live
+        # handler and therefore avoids a second control-plane import.
+        if legacy_handler is None:
+            return _legacy_main(legacy_args)
+        return _legacy_main(legacy_args, handler=legacy_handler)
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
@@ -305,9 +332,9 @@ def main(argv: list[str] | None = None) -> int:
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
-        return _legacy_main(_legacy_args_with_canonical_root(args))
+        return dispatch_legacy(_legacy_args_with_canonical_root(args))
     if args and args[0] not in known and args[0] not in {"--version", "--help", "-h"}:
-        return _legacy_main(_legacy_args_with_canonical_root(args))
+        return dispatch_legacy(_legacy_args_with_canonical_root(args))
 
     parser = build_parser()
     ns = parser.parse_args(args)
@@ -317,7 +344,7 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(ns.root).resolve()
 
     if ns.command == "memory-plan":
-        return _legacy_main([
+        return dispatch_legacy([
             "--root",
             str(root),
             "--memory-plan",
@@ -424,10 +451,10 @@ def main(argv: list[str] | None = None) -> int:
         _emit(payload, as_json=ns.as_json)
         return 0
     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
-        return _legacy_main(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
+        return dispatch_legacy(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
     if ns.command == "restart":
-        _legacy_main(["--root", str(root), "--daemon-stop"])
-        started = _legacy_main(["--root", str(root), "--daemon-start"])
+        dispatch_legacy(["--root", str(root), "--daemon-stop"])
+        started = dispatch_legacy(["--root", str(root), "--daemon-start"])
         if started != 0:
             return started
         payload = diagnostics.status_payload(root, probe_endpoint=True)

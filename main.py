@@ -22,6 +22,111 @@ def _configure_stdio_utf8() -> None:
             reconfigure(encoding="utf-8")
 
 
+# ``main.py`` is the single control-plane entrypoint. ``run.py`` is only a thin
+# user launcher and forwards its original argv here unchanged. Keep the
+# dependency-free/version and host-preflight gates before importing the full
+# runtime graph so portable/offline bootstrap semantics remain intact.
+_ACTIVATION_COMMANDS = {
+    "start",
+    "restart",
+    "reload",
+    "chat",
+    "chat-gpt",
+    "chat-ollama",
+    "runtime-bootstrap",
+    "__daemon-run-hotfix",
+}
+
+
+def _requested_command(argv: list[str]) -> str:
+    return str(argv[0]).strip() if argv else "chat"
+
+
+def _version_fast_path_requested(argv: list[str]) -> bool:
+    return argv == ["--version"]
+
+
+def _bootstrap_entrypoint_environment(argv: list[str]) -> None:
+    from latka_jazn.dependencies.runtime import (
+        DependencyStudioError,
+        handoff_to_managed_python,
+        prepare_entrypoint_environment,
+    )
+
+    root = Path(__file__).resolve().parent
+    command = _requested_command(argv)
+    try:
+        result = prepare_entrypoint_environment(root, auto_install=True)
+    except DependencyStudioError as exc:
+        result = {
+            "ok": False,
+            "state": "dependency_bootstrap_error",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "reexec_python": None,
+        }
+
+    target = str(result.get("reexec_python") or "").strip()
+    if target:
+        exit_code = handoff_to_managed_python(
+            target,
+            [str(Path(__file__).resolve()), *argv],
+            replace_process=True,
+        )
+        raise SystemExit(exit_code)
+
+    if result.get("ok") is True:
+        return
+
+    os.environ["JAZN_DEPENDENCY_BOOTSTRAP_ERROR"] = json.dumps(
+        result, ensure_ascii=False, sort_keys=True, default=str
+    )
+    if command not in _ACTIVATION_COMMANDS:
+        return
+
+    payload = {
+        "ok": False,
+        "error_code": "required_python_dependencies_not_ready",
+        "command": command,
+        "dependency_bootstrap": result,
+        "recovery_hint": (
+            "Uruchom tools/Start-JaznDependencyStudio.ps1 audit, następnie download/verify/install -Offline. "
+            "Automatyczny bootstrap runtime nigdy nie pobiera pakietów z sieci."
+        ),
+        "truth_boundary": (
+            "Runtime activation is blocked because required core+archive Python dependencies are not verified. "
+            "Diagnostic/operator commands remain available."
+        ),
+    }
+    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), file=sys.stderr)
+    raise SystemExit(78)
+
+
+if __name__ == "__main__" and _version_fast_path_requested(sys.argv[1:]):
+    _configure_stdio_utf8()
+    print(PACKAGE_VERSION_FULL)
+    raise SystemExit(0)
+
+if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-preflight":
+    from latka_jazn.bootstrap.chatgpt_host_preflight import run_host_preflight_cli
+
+    _configure_stdio_utf8()
+    raise SystemExit(run_host_preflight_cli(sys.argv[2:]))
+
+if __name__ == "__main__":
+    _bootstrap_entrypoint_environment(list(sys.argv[1:]))
+
+# Install runtime-wide compatibility overlays before any import can transitively
+# load runtime_daemon/chat_command_contract. This was previously owned by
+# run.py; centralizing it here keeps every direct or wrapped main.py execution
+# on the same system graph.
+from latka_jazn.core.runtime_daemon_lifecycle_hotfix import install_runtime_daemon_lifecycle_hotfix
+from latka_jazn.core.turn_authority_runtime_overlay import install_turn_authority_runtime_overlay
+
+install_runtime_daemon_lifecycle_hotfix()
+install_turn_authority_runtime_overlay()
+
+
 from latka_jazn.config import JaznConfig
 from latka_jazn.bootstrap.chatgpt_recovery import (
     DEFAULT_CHATGPT_PARTS_DIR,
@@ -1081,7 +1186,9 @@ def _build_memory_plan_payload(cfg: JaznConfig, text: str) -> dict[str, Any]:
     }
 
 
-def main(argv: list[str] | None = None) -> int:
+def legacy_main(argv: list[str] | None = None) -> int:
+    """Execute the mature flag-based runtime implementation behind the central dispatcher."""
+
     _configure_stdio_utf8()
     argv = list(sys.argv[1:] if argv is None else argv)
     parser = _build_parser()
@@ -2016,7 +2123,7 @@ def main(argv: list[str] | None = None) -> int:
                     "response_source": "runtime.process_turn + final_response_contract",
                     "required_visible_fields": ["timestamp_header", "active_root", "start_file", "runtime_answer_quality", "fallback_classification", "response_source", "one_shot_or_chat_loop_limit"],
                     "must_show_when_user_asks_about_runtime_files_timestamp_preview_or_fallback": True,
-                    "one_shot_or_chat_loop_limit": "--runtime-preview i --dev-preview są jednorazowymi wywołaniami; stałą pętlę daje dopiero python main.py --chat.",
+                    "one_shot_or_chat_loop_limit": "--runtime-preview i --dev-preview są jednorazowymi wywołaniami diagnostycznymi; stała rozmowa używa run.py chat albo jednego otwartego run.py chat-gpt z JSONL.",
                 },
                 "active_extraction_cache_status": build_active_runtime_status(engine.config.root),
                 "startup_summary": build_startup_summary(engine.config),
@@ -2041,7 +2148,7 @@ def main(argv: list[str] | None = None) -> int:
                 "runtime_response_status": envelope_dict.get("runtime_response_status"),
                 "full_payload_written_to": str(ns.runtime_preview_output) if ns.runtime_preview_output else None,
                 "dev_preview_command": "python main.py --dev-preview <tekst>",
-                "truth_boundary": "To jest krótki podgląd diagnostyczny jednej tury runtime. Domyślnie preview nie zapisuje zwykłej pamięci rozmownej; zapis wymaga jawnego --preview-persist. Nie traktuj samego --runtime-preview jako rozmowy z Łatką; do stałej rozmowy służy --chat.",
+                "truth_boundary": "To jest krótki podgląd diagnostyczny jednej tury runtime. Domyślnie preview nie zapisuje zwykłej pamięci rozmownej; zapis wymaga jawnego --preview-persist. Nie traktuj samego --runtime-preview jako rozmowy z Łatką; do stałej rozmowy służy run.py chat, a host ChatGPT utrzymuje jeden otwarty run.py chat-gpt z JSONL.",
             }
             payload_json = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
             if ns.runtime_preview_output:
@@ -2059,9 +2166,11 @@ def main(argv: list[str] | None = None) -> int:
     if ns.chat_gpt:
         cfg = apply_chatgpt_cli_settings(config or JaznConfig())
         bridge_text = _message_from_remainder(ns.message)
-        # Current release: --chat-gpt is the single public ChatGPT bridge.
-        # One-shot usage returns a compact action-first host packet.
-        # Full stdin mode remains JSONL for tools and multi-line phase-2 exchange.
+        # --chat-gpt is the public ChatGPT bridge. The canonical host mode keeps this
+        # process open and exchanges JSONL records over the same stdin/stdout
+        # stream for every phase-1/phase-2 turn. A message supplied after ``--``
+        # is retained only as a compatibility/recovery one-shot, never as the
+        # normal ChatGPT conversation lifecycle.
         output_mode = _bridge_text_output_mode(ns, bridge_text)
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-gpt")
         if daemon_exit is not None:
@@ -2228,6 +2337,116 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         engine.shutdown()
     return 0
+
+
+def _normalize_operator_argv(argv: list[str]) -> list[str]:
+    """Preserve stable user subcommands while keeping legacy flag aliases internal."""
+
+    if argv and argv[0] == "chat-ollama":
+        return ["--chat-ollama", *argv[1:]]
+    return list(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Central Jaźń control plane used by both ``run.py`` and direct execution.
+
+    ``run.py`` never owns a runtime command. It forwards argv here. The central
+    dispatcher keeps lifecycle/finalization fast paths that must run before the
+    compatibility CLI and delegates ordinary command parsing only after those
+    invariants are installed.
+    """
+
+    _configure_stdio_utf8()
+    args = list(sys.argv[1:] if argv is None else argv)
+    if not args:
+        args = ["chat"]
+    command = _requested_command(args)
+
+    if command == "host-preflight":
+        from latka_jazn.bootstrap.chatgpt_host_preflight import run_host_preflight_cli
+
+        return int(run_host_preflight_cli(args[1:]))
+
+    if command in {"status", "doctor"}:
+        from latka_jazn.cli_commands.cognitive_status_overlay import install_cognitive_status_overlay
+
+        install_cognitive_status_overlay()
+
+    if command == "__daemon-run-hotfix":
+        return int(legacy_main(args[1:]))
+
+    if command in {"restart", "reload"}:
+        from latka_jazn.config import JaznConfig
+        from latka_jazn.core.runtime_lifecycle import reload_daemon, restart_daemon
+
+        parser = argparse.ArgumentParser(prog=f"run.py {command}", allow_abbrev=False)
+        parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent)
+        if command == "reload":
+            parser.add_argument("--target-root", type=Path, required=True)
+        parser.add_argument("--daemon-host", default="127.0.0.1")
+        parser.add_argument("--daemon-port", type=int, default=8787)
+        parser.add_argument("--startup-timeout", type=float, default=12.0)
+        parser.add_argument("--stop-timeout", type=float, default=5.0)
+        parser.add_argument("--json", action="store_true")
+        ns = parser.parse_args(args[1:])
+        cfg = JaznConfig(root=ns.root.resolve())
+        if command == "restart":
+            payload = restart_daemon(
+                cfg,
+                host=ns.daemon_host,
+                port=ns.daemon_port,
+                startup_timeout=ns.startup_timeout,
+                stop_timeout=ns.stop_timeout,
+            )
+        else:
+            payload = reload_daemon(
+                cfg,
+                target_root=ns.target_root.resolve(),
+                host=ns.daemon_host,
+                port=ns.daemon_port,
+                startup_timeout=ns.startup_timeout,
+                stop_timeout=ns.stop_timeout,
+            )
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0 if payload.get("ok") else 1
+
+    if command == "runtime-bootstrap":
+        from latka_jazn.bootstrap.runtime_bootstrap_v50 import bootstrap_and_reload
+        from latka_jazn.cli import build_parser as build_operator_parser
+
+        ns = build_operator_parser().parse_args(args)
+        payload = bootstrap_and_reload(
+            operator_root=Path(__file__).resolve().parent,
+            parts_dir=ns.parts_dir,
+            destination=ns.destination,
+            zip_name=ns.zip_name,
+            memory_zip_name=ns.memory_zip_name,
+            no_auto_memory=bool(ns.no_auto_memory),
+            work_dir=ns.work_dir,
+            time_budget_seconds=float(ns.time_budget_seconds),
+            no_crc=bool(ns.no_crc),
+            force_reextract=bool(ns.force_reextract),
+            no_start_daemon=bool(ns.no_start_daemon),
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return int(payload.get("exit_code", 0 if payload.get("ok") else 1))
+
+    if command == "host-finalize":
+        from latka_jazn.cli_commands.host import run_host_finalize_cli
+
+        return int(
+            run_host_finalize_cli(
+                args[1:],
+                default_root=Path(__file__).resolve().parent,
+            )
+        )
+
+    # ``latka_jazn.cli`` remains a command-parser/service layer; it is no longer
+    # the top-level owner. Compatibility flag execution returns explicitly to
+    # ``legacy_main`` rather than recursively re-entering this dispatcher.
+    from latka_jazn.cli import main as command_service_main
+
+    return int(command_service_main(_normalize_operator_argv(args), legacy_handler=legacy_main))
 
 
 if __name__ == "__main__":

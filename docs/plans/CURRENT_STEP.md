@@ -1,88 +1,70 @@
 # Jaźń — CURRENT STEP
 
 **Status:** `CANONICAL_CURRENT_STEP`  
-**Stan:** 2026-09-07  
-**Baza:** `master @ e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`  
-**Branch:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
+**Stan:** 2026-09-10
+**Baza:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f` / `16.3.25.5.59-conversation-runtime-orchestration-convergence`
+**Branch:** `upgrade/v16.3.25.5.60-main-entrypoint-chatgpt-live-convergence`
+**Target:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
 
-## 1. Stan programu
+## 1. Bieżący krok — main-first + persistent ChatGPT
 
-```text
-Memory Rebuild v4 tool/protocol      MERGED / PR #208 / #189 closed
-16.3.25.5.x hardening                MERGED do .38
-PR #231 docs convergence             MERGED
-planning rewrite Memory + Affect     IN_PROGRESS on this branch
-final private memory #59             OPEN / NOT ACCEPTED
-attachment + multimodal ingress      OPEN
-Polish NLP evidence                  OPEN
-canonical Affect Engine              PLAN READY / NOT IMPLEMENTED
-v16.6 evidence gate                  FUTURE
-v17 consolidation                    FUTURE_CONDITIONAL
-```
+Najwyższy priorytet to usunięcie błędu ownership wykrytego w prawdziwej rozmowie ChatGPT: żywy daemon/PID nie gwarantował, że każda wiadomość hosta przechodzi przez runtime, ponieważ aktywna instrukcja kazała uruchamiać świeże `run.py chat-gpt -- <message>` dla każdej tury.
 
-## 2. Bieżący krok — planning truth closure
-
-Ta zmiana:
-
-- zachowuje stan po PR #231 w `only_to_check`;
-- usuwa stare compatibility pointery z aktywnego `docs/plans/`;
-- ustanawia jedną roadmapę v16.3.25.4→v17;
-- przepisuje Memory Restore i Affect Plan jako sprzężone, ale osobne authority;
-- dodaje research/evidence base;
-- synchronizuje current-state metadata;
-- podnosi wersję zgodnie z repo policy;
-- nie zmienia runtime behavior.
-
-Exit: w `docs/plans/` pozostaje tylko aktywna warstwa kanoniczna, a historyczne plany są wyłącznie w `only_to_check/` lub `docs/archive/`.
-
-## 3. Co wolno rozpocząć po merge dokumentacji
-
-### A0 — Affect inventory / shadow baseline
-
-Dozwolone bez visible behavior change:
+Bieżąca migracja:
 
 ```text
-call/import graph
-writers/readers
-legacy affect authorities
-persistence/finalization points
-behavioral fixtures
-latency baseline
-role/debt classification
-shadow observability
+run.py                   thin user launcher
+  ↓
+main.py                  single central control plane
+  ↓
+Conversation/runtime services
+  ↓
+one persistent ChatGPT stdin/JSONL bridge per executor session
+  ↓
+persistent daemon/session owner
 ```
 
-Jeszcze nie: canonical appraisal cutover, memory reranking, resonance ani usuwanie legacy modules bez ablation.
+## 2. Zakres v60
 
-### P0 — attachment ingress inventory
+- odchudzić `run.py` do launchera;
+- przenieść centralny top-level dispatch/lifecycle/recovery/finalization do `main.py`;
+- zachować `latka_jazn.cli` jako parser/service layer bez drugiego control-plane importu w kanonicznej trasie;
+- utrzymywać jeden `chat-gpt` process i ten sam stdin/stdout przez kolejne tury;
+- prowadzić phase-2 host candidate/finalization tym samym kanałem;
+- nie używać płatnego OpenAI API w trasie ChatGPT;
+- traktować MCP jako transport opcjonalny, nie requirement dla bieżącego hosta/Plus;
+- zaktualizować aktywne AGENTS/runbook/loader/help/discovery;
+- dodać command-parity, persistent multi-turn, reconnect/idempotency i no-paid-API tests;
+- wykonać compileall, Pyright, deterministic tests, CI i canonical manifest sync.
 
-Fresh-master audit host/capability/attachment surfaces może przygotować implementation branch.
-
-## 4. Kolejność produktu
-
-1. **P0 attachment/multimodal ingress** — provenance, safe staging, capability routing, no auto-memory, E2E.
-2. **P1 evidence-aware Polish NLP** — normalization, lexical/resource provenance, ambiguity/OOV, negation/quotation/fiction i contextual evidence.
-3. **M0–M2 final private restore** — source freeze → Test00–04 → final DB → package → attach; gates `VERIFIED`, `ATTACHABLE`.
-4. **M3 frozen Recall baseline** — bez affective rerank; candidate `RETRIEVABLE`.
-5. **A1–A4 canonical affect** — appraisal SHADOW → dynamics/persistence → canonical cutover → affect snapshot linkage.
-6. **M4 measured retrieval fixes** tylko jeśli baseline tego wymaga.
-7. **A5–A7 memory↔affect** — rerank SHADOW → A/B → one-pass resonance.
-8. **M5 review + restart** — manual L2/L3 + memory identity continuity; `ACCEPTED_CANDIDATE`.
-9. **v16.6 gate** — pełny evidence package.
-10. **v17** — dopiero po v16.6 PASS.
-
-## 5. Zależności twarde
+## 3. Exit gate v60
 
 ```text
-canonical semantic affect requires Polish NLP evidence
-active affective rerank requires frozen Memory Recall baseline
-resonance requires MemoryUseGate PASS
-memory ACCEPTED requires source/restart/false-memory evidence
-v17 requires accepted memory + canonical affect evidence
+run.py thin                              PASS required
+main.py single control owner             PASS required
+no per-message CLI in active ChatGPT docs PASS required
+persistent JSONL 10+ turns               PASS required
+same-channel phase2                      PASS required
+reconnect without duplicate turn/final  PASS required
+paid OpenAI API not required/auto-used   PASS required
+runtime lineage on every visible turn    PASS required
+Linux + Windows CI                       PASS required
+package integrity after canonical sync   PASS required
 ```
 
-## 6. Przed każdym implementation branch
+Dokumentacja, branch, PID lub pojedynczy test nie certyfikują samodzielnie tego gate.
 
-Fresh master, obowiązujące `AGENTS*`, restore point, inventory rzeczywistego kodu, hypothesis + acceptance tests, legalny version bump, najmniejszy kompletny zakres, A/B/ablation dla retrieval/kognicji i zero osłabienia truth/source/privacy gates.
+## 4. Następny krok po v60
 
-> Aktualnie domykamy jedną kanoniczną dokumentację Memory↔Affect. Po jej merge legalne są Affect A0 i przygotowanie attachment/NLP; aktywna integracja affect z recall dopiero po finalnej pamięci i zamrożonym baseline.
+Dopiero po v60 można bezpiecznie wykonać kolejną część `CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md`:
+
+1. wydzielić `ConversationRunner` z dużego `main.py`, pozostawiając `main.py` composition ownerem;
+2. ujednolicić daemon/session execution owner;
+3. utrwalić pełny `TurnStateMachine`;
+4. podłączyć memory/affect/NLP/tool policy przez typed lifecycle events;
+5. wykonać source-aware memory i causal/ablation evidence;
+6. utrzymać szerszą roadmapę Memory/Affect/attachment/NLP bez naruszania jej gates.
+
+## 5. Granica naukowa
+
+„Neurologiczny” oznacza funkcjonalne połączenia software: ingress, routing, working state, memory, salience/affect, decision, action, source monitoring, finalization i autonomic lifecycle. Nie oznacza biologicznego układu nerwowego ani dowodu świadomości.

@@ -390,18 +390,10 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
         "def main(argv=None):\n    return 0\n", encoding="utf-8"
     )
     (root / "latka_jazn" / "version.py").write_text(
-        'PACKAGE_VERSION = "fixture"\n'
-        'PACKAGE_RELEASE_NAME = ""\n'
-        'PACKAGE_VERSION_FULL = PACKAGE_VERSION\n'
-        'def schema_version(name, version=None):\n    return f"{name}/fixture"\n',
+        'PACKAGE_VERSION = "fixture"\nPACKAGE_RELEASE_NAME = ""\nPACKAGE_VERSION_FULL = PACKAGE_VERSION\n',
         encoding="utf-8",
     )
     shutil.copy2(Path(__file__).parents[1] / "run.py", root / "run.py")
-    # v60 contract: run.py is a thin user launcher; dependency activation gates
-    # are owned by the central main.py control plane. The minimal entrypoint
-    # fixture therefore needs both files and must still fail closed before the
-    # heavy runtime graph is imported.
-    shutil.copy2(Path(__file__).parents[1] / "main.py", root / "main.py")
 
     completed = subprocess.run(
         [sys.executable, str(root / "run.py"), "chat"],

@@ -1,26 +1,38 @@
 # Current project state
 
-**Snapshot date:** 2026-09-09
+**Snapshot date:** 2026-09-10
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `e0c6731c851928568a7c23e5f9101d1e95bdd7f8`
-**Current master version:** `16.3.25.5.55-archive-extraction-convergence`
-**Update target:** `16.3.25.5.56-local-runtime-preflight-convergence`
+**Current master at documentation baseline:** `2bb162a118e56b8a757ae20a925e0a7d1295487f`
+**Current master version:** `16.3.25.5.59-conversation-runtime-orchestration-convergence`
+**Update target:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
 ## Runtime / release foundations
 
-- `run.py` pozostaje canonical lifecycle/operator surface.
+- `run.py` jest publicznym cienkim starterem; centralny lifecycle/operator control plane należy do `main.py`.
 - `AGENTS.md` jest routerem do właściwych runbooków.
 - persistent-runtime, subject-root, host-finalization i host/executor truth foundations są częścią bieżącej linii.
 - package/distribution/generator/dependency/plugin/CI hardening jest obecny do `.38`.
 - `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
 
+
+## Conversation control-plane v60
+
+**Status:** `IN_PROGRESS / PRE-CI` on `upgrade/v16.3.25.5.60-main-entrypoint-chatgpt-live-convergence`.
+
+- `run.py` is being reduced to a thin user launcher.
+- `main.py` is the single central control plane for top-level dispatch/lifecycle/recovery/finalization.
+- ChatGPT uses one persistent stdin/JSONL bridge per available executor session instead of a new CLI process per message.
+- `chat-gpt` does not require or silently invoke the paid OpenAI API.
+- MCP remains optional because it cannot be assumed for the user's ChatGPT plan/local host path.
+- Acceptance requires per-turn lineage, same-channel phase-2, reconnect idempotency and Windows/Linux CI; a live PID alone is insufficient.
+
 ## Local runtime preflight
 
 **Status:** `P0 DEPLOYMENT/PREFLIGHT OVERLAY`.
 
-- `run.py` remains canonical; `main.py` remains compatibility/implementation.
+- `run.py` remains the thin user launcher; `main.py` is the central control-plane/implementation entrypoint.
 - ChatGPT-host is explicitly separated from API access.
 - Ollama remains a local no-`OPENAI_API_KEY` backend.
 - `.56` does not claim canonical Affect/Memory convergence.

@@ -32,33 +32,30 @@ Instrukcje projektu ChatGPT są wyłącznie cienkim loaderem prowadzącym do lok
 
 Nie wpisuj numeru aktualnej wersji ręcznie w dokumentach operacyjnych jako drugiego źródła prawdy. Gdy potrzebny jest snapshot historyczny, zapisuj go jawnie z datą i SHA.
 
-## Kanoniczny operator i dispatch
+## Starter użytkownika i centralny dispatch
 
-Publicznym operatorem jest wyłącznie `run.py`. Nie należy upraszczać architektury do `run.py -> main.py`, ponieważ część krytycznych ścieżek kończy się wcześniej, a ogólny dispatch trafia najpierw do modułowego CLI.
+`run.py` jest publicznym **cienkim starterem**, natomiast `main.py` jest jedynym centralnym control plane systemu. Starter nie implementuje lifecycle, routingu ani komend; przekazuje argv do `main.py`.
 
 ```text
 run.py
-├─ --version                         -> dependency-free fast path
-├─ host-preflight                    -> host preflight przed dependency bootstrap
-├─ dependency bootstrap / reexec     -> zweryfikowane środowisko Pythona
-├─ status / doctor                   -> readiness overlay + CLI
-├─ restart / reload                  -> runtime_lifecycle
-├─ runtime-bootstrap                 -> bootstrap_and_reload
-├─ host-finalize                     -> phase-2 finalization
-├─ turn-authority overlay
-└─ latka_jazn.cli.main()
-   └─ main.py tylko dla kontrolowanych ścieżek zgodnościowych
-      └─ właściwe moduły runtime / sesja / adapter modelu
+├─ --version                  -> dependency-free fast path startera
+└─ main.py                    -> centralny control plane
+   ├─ host-preflight / dependency bootstrap
+   ├─ lifecycle + runtime overlays
+   ├─ restart / reload / runtime-bootstrap / host-finalize
+   ├─ latka_jazn.cli          -> parser i usługi komend
+   └─ runtime / memory / cognition / affect / host bridges
 ```
 
-`main.py` jest technicznym punktem zgodności, nie drugim canonical entrypointem. Dzięki temu lifecycle, finalizacja i publiczny kontrakt operatora pozostają w jednym miejscu nawet wtedy, gdy dojrzała implementacja konkretnej komendy nadal znajduje się za warstwą legacy.
+Domyślne `python -X utf8 run.py` prowadzi do kanonicznej rozmowy. `python -X utf8 run.py <komenda> ...` przekazuje tę samą komendę do `main.py`. Bezpośrednie `main.py` pozostaje możliwe dla testów/integracji, ale użytkownik nie musi znać jego flag zgodnościowych.
 
 ## Architektura w skrócie
 
 ```text
 użytkownik
   -> host / ingress
-  -> run.py / canonical operator
+  -> run.py / thin launcher
+  -> main.py / central control plane
   -> pre-response + capability + authority gates
   -> zweryfikowany runtime Jaźni
   -> task/identity/self-state context
@@ -98,14 +95,15 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py start
 python -X utf8 run.py status --json
 python -X utf8 run.py stop
-python -X utf8 run.py chat -- "wiadomość"
-python -X utf8 run.py chat-gpt -- "wiadomość"
+python -X utf8 run.py                 # domyślna rozmowa
+python -X utf8 run.py chat
+python -X utf8 run.py chat-gpt --session-id <stable-session-id>
 python -X utf8 run.py chat-ollama
 ```
 
-Na Windows można również użyć `JAZN.cmd`; aktywacja `.venv` nie jest warunkiem kontraktu runtime. `main.py --...` pozostaje techniczną ścieżką zgodnościową, a publicznym operatorem jest `run.py`.
+Na Windows można również użyć `JAZN.cmd`; aktywacja `.venv` nie jest warunkiem kontraktu runtime. `run.py` jest starterem użytkownika, a `main.py` centralnym właścicielem sterowania.
 
-`run.py chat` jest kanonicznym **uniwersalnym wejściem rozmowy**. W trybie auto wybór warstwy językowej ma jedną kolejność: potwierdzony host ChatGPT → dostępna Ollama → jawnie dopuszczone płatne OpenAI API → `null_fallback`. `run.py chat-gpt` i `run.py chat-ollama` pozostają wyspecjalizowanymi wejściami/adapterami; nie są osobnymi właścicielami pamięci, sesji ani tożsamości Jaźni.
+`run.py chat` jest publicznym starterem **uniwersalnej rozmowy**, która po wejściu do `main.py` pozostaje własnością runtime. W trybie auto wybór warstwy językowej ma jedną kolejność: potwierdzony host ChatGPT → dostępna Ollama → jawnie dopuszczone płatne OpenAI API → `null_fallback`. `run.py chat-gpt` i `run.py chat-ollama` pozostają wyspecjalizowanymi wejściami/adapterami; nie są osobnymi właścicielami pamięci, sesji ani tożsamości Jaźni.
 
 ## Dokumentacja
 

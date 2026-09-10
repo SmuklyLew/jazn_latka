@@ -9,8 +9,8 @@ ChatGPT oraz lokalnych backendów LLM takich jak Ollama.
 
 Struktura ma służyć działającemu runtime, a nie estetyce drzewa.
 
-`run.py` pozostaje kanonicznym publicznym operatorem i musi działać bezpośrednio
-z poprawnie rozpakowanego rootu systemu. Z tego powodu projekt świadomie
+`run.py` pozostaje publicznym, cienkim starterem użytkownika i musi działać bezpośrednio
+z poprawnie rozpakowanego rootu systemu. Centralny control plane należy do `main.py`. Z tego powodu projekt świadomie
 pozostaje przy flat-layout dla pakietu `latka_jazn/`: przeniesienie całego kodu
 do `src/` wymagałoby instalacji pakietu albo manipulacji `sys.path`, co
 osłabiałoby kontrakt portable/offline runtime.
@@ -22,8 +22,8 @@ innego szablonu projektu.
 
 ```text
 /
-├─ run.py                         # publiczny operator Jaźni
-├─ main.py                        # compatibility/implementation entrypoint
+├─ run.py                         # cienki starter użytkownika
+├─ main.py                        # centralny control plane / główny entrypoint
 ├─ AGENTS*.md                     # routing i runbooki hostów/agentów
 ├─ pyproject.toml                 # kanoniczne deklaracje zależności Pythona
 ├─ requirements.txt               # compatibility/cache marker, nie drugie źródło deps
@@ -52,12 +52,13 @@ oddzielone od statycznego kodu i manifestu paczki.
 
 ## 3. Publiczne entrypointy
 
+- `run.py` przekazuje każdą komendę do centralnego `main.py`;
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
+- domyślna rozmowa: `python -X utf8 run.py`;
 - uniwersalna rozmowa i auto-routing: `python -X utf8 run.py chat ...`;
-- wyspecjalizowany host ChatGPT: `python -X utf8 run.py chat-gpt ...`;
+- persistent host ChatGPT: `python -X utf8 run.py chat-gpt --session-id <id>` i jeden otwarty stdin/JSONL bridge;
 - wyspecjalizowany backend Ollama: `python -X utf8 run.py chat-ollama ...`;
-- `main.py --...` pozostaje kompatybilnością dla istniejących integracji, a nie
-  drugim równorzędnym operatorem.
+- logika komend, lifecycle i routingu nie może być implementowana w `run.py`.
 
 Warstwa modelu nie jest właścicielem tożsamości, pamięci, provenance,
 uprawnień ani finalizacji. Te granice pozostają w runtime Jaźni.
@@ -87,8 +88,7 @@ nie wpisuje się ręcznie.
 
 ChatGPT w Projekcie jest hostem/runtime executor channel, a nie pakietem Python
 instalowanym przez Jaźń. Nie dodawaj `openai` SDK jako zależności tylko po to,
-aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta korzysta z
-`run.py chat-gpt` albo zatwierdzonego transportu MCP dostępnego w danym hoście.
+aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta korzysta z jednej utrzymywanej sesji `run.py chat-gpt`/stdin JSONL. Nie wymaga `OPENAI_API_KEY`; MCP jest opcjonalnym transportem hosta, nie warunkiem działania na ChatGPT.
 
 Instrukcje Projektu pozostają cienkim loaderem. Dostęp do terminala, plików,
 sieci i innych narzędzi jest capability hosta i musi być wykrywany, a nie

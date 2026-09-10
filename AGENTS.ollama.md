@@ -25,20 +25,17 @@ Publicznym wejściem operatorskim jest `run.py`:
 python -X utf8 run.py chat-ollama
 ```
 
-Bieżący przebieg zgodnościowy jest następujący:
+Bieżący przebieg jest następujący:
 
 ```text
 run.py chat-ollama
--> run.py _normalize_operator_argv()
--> --chat-ollama
--> latka_jazn.cli
--> kontrolowana ścieżka zgodnościowa
--> main.py implementacja chat-ollama
+-> main.py chat-ollama
+-> centralny dispatch / latka_jazn.cli jako parser-usługa
 -> runtime session / model adapter
 -> Ollama API
 ```
 
-`main.py --chat-ollama` pozostaje techniczną ścieżką zgodnościową, nie drugim równorzędnym operatorem.
+`run.py` nie tłumaczy już komendy Ollamy samodzielnie; centralne mapowanie i routing należą do `main.py`.
 
 Można jawnie wskazać model i endpoint:
 
@@ -102,6 +99,6 @@ Raportuj oddzielnie stan daemona systemu, stan adaptera, dostępność endpointu
 
 ## 6. Windows i proces daemona
 
-Domyślnie daemon może działać z ukrytą konsolą, a stdout/stderr i audyt uruchomień trafiają do host-level `workspace_runtime/daemon/`. Jawna konsola diagnostyczna nie zmienia kontraktu lifecycle: `run.py start` pozostaje właścicielem procesu.
+Domyślnie daemon może działać z ukrytą konsolą, a stdout/stderr i audyt uruchomień trafiają do host-level `workspace_runtime/daemon/`. Jawna konsola diagnostyczna nie zmienia kontraktu lifecycle: `run.py start` jest publicznym starterem, a `main.py` pozostaje właścicielem lifecycle procesu.
 
 Nie uruchamiaj Ollamy ani modelu jako substytutu brakującego persistent daemona Jaźni. Backend językowy i lifecycle systemu są oddzielnymi capability.

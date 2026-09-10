@@ -12,29 +12,30 @@ Nie jest runbookiem konkretnego hosta, promptem osobowości ani źródłem danyc
 - Instrukcje platformy lub projektu nie zastępują zweryfikowanego stanu runtime.
 - Nie przenoś danych prywatnych do instrukcji agenta ani do repozytorium bez jawnego procesu przeglądu.
 
-## 2. Zasada wykonawcza: runtime-first
+## 2. Zasada wykonawcza: main-first control plane
 
-`run.py` jest kanonicznym operatorem i publicznym wykonawczym wejściem do systemu Jaźni.
+`run.py` jest publicznym, cienkim starterem użytkownika. Nie jest właścicielem komend, lifecycle, routingu ani finalizacji. `main.py` jest jedynym centralnym punktem sterowania systemu Jaźni.
 
-Rzeczywisty przebieg operatora ma być rozumiany tak:
+Rzeczywisty przebieg ma być rozumiany tak:
 
 ```text
-run.py
-├─ własne fast-path / preflight / lifecycle / bootstrap / finalization
-└─ latka_jazn.cli.main()
-   └─ kontrolowane ścieżki zgodnościowe do main.py, tylko tam gdzie CLI je deleguje
+run.py                         # cienki launcher / --version fast-path
+└─ main.py                     # jedyny centralny control plane
+   ├─ preflight / dependency bootstrap / lifecycle / finalization
+   ├─ latka_jazn.cli           # parser i usługi komend, nie top-level owner
+   └─ runtime / memory / cognition / affect / host bridges
 ```
 
-`main.py` nie jest drugim równorzędnym operatorem. Jest technicznym punktem zgodności dla dojrzałych ścieżek, których implementacja nie została jeszcze w pełni przeniesiona pod modułowy CLI.
+Domyślne `python -X utf8 run.py` przekazuje sterowanie do `main.py` i uruchamia kanoniczną rozmowę. `python -X utf8 run.py <komenda> ...` przekazuje tę samą komendę i argumenty do centralnego dispatchu `main.py`.
 
 Po znalezieniu i zweryfikowaniu `active_root`:
-- używaj `run.py` dla każdej operacji udostępnionej przez kanoniczny CLI;
-- nie rekonstruuj w hoście lifecycle, routingu, pamięci, finalizacji, truth gate ani modelu tożsamości;
-- nie uruchamiaj `main.py` bezpośrednio, jeżeli równoważna ścieżka istnieje przez `run.py`;
-- w środowisku zdolnym utrzymać proces dąż do zweryfikowanego persistent daemona przez `run.py start`;
-- one-shot jest fallbackiem pojedynczej tury i nie dowodzi utrzymanego procesu.
+- użytkownik może nadal używać `run.py` jako wygodnego startera;
+- nie dodawaj do `run.py` implementacji komend ani drugiego parsera domenowego;
+- host nie rekonstruuje lifecycle, routingu, pamięci, finalizacji, truth gate ani modelu tożsamości;
+- w środowisku zdolnym utrzymać proces dąż do zweryfikowanego persistent daemona i stałego kanału rozmowy;
+- one-shot może pozostać technicznym fallbackiem/testem, ale nie jest kanonicznym modelem aktywnej rozmowy ChatGPT.
 
-Jeżeli `run.py` nie jest jeszcze dostępny, host może wykonać wyłącznie minimalne discovery i bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego operatora. Po jego uzyskaniu sterowanie techniczne wraca do runtime.
+Jeżeli starter nie jest jeszcze dostępny, host może wykonać wyłącznie minimalne discovery i bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego `main.py`/`run.py`. Po jego uzyskaniu sterowanie techniczne należy do `main.py` i runtime.
 
 ## 3. Ciągłość systemu i granica tożsamości
 
@@ -75,9 +76,9 @@ Dla Projektu ChatGPT instrukcja projektu ma być cienkim loaderem prowadzącym d
 - wersja: `latka_jazn/version.py`
 - integralność paczki: `PACKAGE_INTEGRITY_MANIFEST.json`
 - pochodzenie wydania: `SOURCE_PROVENANCE.json`
-- operator: `run.py`
-- główny dispatcher operatora: `latka_jazn/cli.py`
-- techniczny punkt zgodności: `main.py`
+- starter użytkownika: `run.py`
+- centralny control plane i główny dispatcher: `main.py`
+- parser/usługi komend: `latka_jazn/cli.py`
 - układ repozytorium i polityka zależności: `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`
 - założenia tożsamości i ciągłości: `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`
 - aktywny runtime: zweryfikowany `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` i wskazany `active_root`
