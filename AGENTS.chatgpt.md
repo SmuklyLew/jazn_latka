@@ -136,6 +136,8 @@ Proces pozostaje otwarty. `main.py` utrzymuje JSONL/stdin bridge oraz `RuntimeSe
 
 Dla każdej następnej wiadomości użytkownika każdą bieżącą wiadomość przekaż w dokładnym brzmieniu przez już otwarty persistent bridge.
 
+Nie parafrazuj wiadomości przed przekazaniem.
+
 Dla każdej następnej wiadomości użytkownika:
 - **nie uruchamiaj nowej komendy CLI**;
 - zapisz dokładny tekst jako następny rekord do już otwartego stdin bridge (preferowany JSONL z polem `message`, aby bezstratnie przenosić wieloliniowy tekst);
