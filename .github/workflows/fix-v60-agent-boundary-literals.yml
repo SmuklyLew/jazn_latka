@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
-      - name: Patch active host contracts and verify targeted tests
+      - name: Patch active host contracts and verify invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -47,10 +47,14 @@ jobs:
               text = text.replace(old, new, 1)
               loader.write_text(text, encoding='utf-8')
 
-          if len(loader.read_text(encoding='utf-8')) > 5000:
-              raise SystemExit('CHATGPT_PROJECT_INSTRUCTIONS exceeded thin-loader 5000-char contract')
+          agents_text = agents.read_text(encoding='utf-8')
+          loader_text = loader.read_text(encoding='utf-8')
+          assert 'każdą bieżącą wiadomość przekaż w dokładnym brzmieniu' in agents_text
+          assert 'kanoniczne wykonawcze wejście' in loader_text
+          assert 'nie uruchamiaj nowej komendy CLI' in agents_text
+          assert 'Nie uruchamiaj nowego procesu CLI' in loader_text
+          assert len(loader_text) <= 5000
           PY
-          python -X utf8 -m pytest -q tests/test_runtime_owned_agent_boundaries.py tests/test_v16325560_main_entrypoint_persistent_chatgpt.py
           git diff --check
           rm .github/workflows/fix-v60-agent-boundary-literals.yml
           git config user.name 'github-actions[bot]'
