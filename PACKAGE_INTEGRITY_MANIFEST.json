@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
-  "runtime_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
-  "package_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
-  "generated_at_utc": "2026-09-09T21:41:36+00:00",
-  "updated_at_utc": "2026-09-09T21:41:36+00:00",
+  "version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+  "runtime_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+  "package_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+  "generated_at_utc": "2026-09-10T07:33:35+00:00",
+  "updated_at_utc": "2026-09-10T07:33:35+00:00",
   "start_file": "run.py",
-  "file_count": 1295,
-  "static_file_count": 1295,
+  "file_count": 1297,
+  "static_file_count": 1297,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "a5fc24d04419e70fc88b7944b071091dcdd7ebce70974d7bf7ea2db15f938c73",
+      "size_bytes": 2967,
+      "sha256": "6f96b0424a6daf9ad29348f64fe69ee9adc28a1c08d2877b7ee2476ef941f4b2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7742,8 +7742,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6720,
-      "sha256": "581af453aec23764c7c4c851645d1ca6e9133cb3a6ccd3892739854e8e0e5e7b",
+      "size_bytes": 6779,
+      "sha256": "3d2696bbce910fe8c33a8c29c7d9509589eacc2519a421edeab2a6f9d4f78ece",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7850,8 +7850,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 124496,
-      "sha256": "c4d8c054477b582b908e701b5907b542a62f25c334c9ae96d7f20ce12c71b8c7",
+      "size_bytes": 122632,
+      "sha256": "c1a95f273b16315bc5e6a083d8b1281985de5bcb1f73a3e542bb780e2a6f111b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8194,6 +8194,15 @@
       "path": "tests/archive/test_v16325555_archive_extraction_convergence_v16_3_25_5_55.py",
       "size_bytes": 9042,
       "sha256": "cae6a78419cf0cdcf5a7106ebf04190277d44ce9178d41c49811fc3382ffbb56",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325557_agent_runtime_identity_continuity_convergence_source_v16325557.py",
+      "size_bytes": 3789,
+      "sha256": "c07f985d4107904a6caacea88be7b0b5d9b6e8271c00aa5fba430e7b7c764909",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11126,8 +11135,17 @@
     },
     {
       "path": "tests/test_v16325557_agent_runtime_identity_continuity_convergence.py",
-      "size_bytes": 3789,
-      "sha256": "c07f985d4107904a6caacea88be7b0b5d9b6e8271c00aa5fba430e7b7c764909",
+      "size_bytes": 3802,
+      "sha256": "85d565caf7e4048bf9fc36ec9beb0ae3e38b5260d19173a5a1bd8ea96290c2ae",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325558_pending_host_request_continuity.py",
+      "size_bytes": 7864,
+      "sha256": "07a8d5201fe0ff690801887f2f23e6c2c35c7a54b634ab53911a3dcaf55ed816",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12107,11 +12125,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
+  "release_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
-    "package_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence",
-    "release_version": "16.3.25.5.57-agent-runtime-identity-continuity-convergence"
+    "runtime_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+    "package_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+    "release_version": "16.3.25.5.58-pending-host-request-continuity-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
