@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "74bc67437702dd07488e4e7f07893d1a7fec1dd7",
-    "base_version": "16.3.25.5.58-pending-host-request-continuity-recovery",
+    "base_commit": "bb9fa359137b4d90c9617d87c2a9609a78cc71af",
+    "base_version": "16.3.25.5.59-conversation-runtime-orchestration-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "bb9fa359137b4d90c9617d87c2a9609a78cc71af",
