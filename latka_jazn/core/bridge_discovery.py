@@ -74,11 +74,24 @@ def discover_runtime_bridges(
             "canonical_command": "run.py chat-gpt",
             "legacy_aliases": ["--chat-gpt-final-only", "--chat-gpt --final-only"],
             "transport": "persistent_stdio_jsonl",
+            "transport_selection": "capability_negotiated",
+            "fallback_transport": "daemon_bound_transactional_turns",
             "per_message_cli_required": False,
             "persistent_bridge_process_required_when_host_supports_it": True,
+            "persistent_bridge_process_required_when_host_cannot_retain_it": False,
+            "daemon_transactional_resume_supported": True,
+            "pipe_lifetime_is_identity": False,
+            "accepted_visible_turn_required": True,
+            "visible_turn_readiness": "accepted_final_visible_text_only",
             "requires_api_key": False,
             "uses_openai_api": False,
-            "meaning": "kanoniczny most dla hosta ChatGPT: run.py tylko startuje centralny main.py, a jedna otwarta sesja stdin/JSONL przenosi kolejne tury i phase-2; nie wykonuje żądania OpenAI API",
+            "meaning": (
+                "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
+                "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage, "
+                "a host wznawia ten sam request_id i finalizuje phase-2 bez replayu wiadomości. Żywotność pipe'a "
+                "nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; widoczna może być tylko zaakceptowana "
+                "final_visible_text. Tryb nie wykonuje żądania OpenAI API."
+            ),
         },
         "openai_bridge": {
             "command": "python main.py --chat-open-ai --session-id <id>",

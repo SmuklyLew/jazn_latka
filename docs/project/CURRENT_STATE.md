@@ -2,9 +2,9 @@
 
 **Snapshot date:** 2026-09-10
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `2bb162a118e56b8a757ae20a925e0a7d1295487f`
-**Current master version:** `16.3.25.5.59-conversation-runtime-orchestration-convergence`
-**Update target:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
+**Current master at documentation baseline:** `270d704831224a7ba346fd3b9bb46bd698a482f4`
+**Current master version:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
+**Update target:** `16.3.25.5.61-accepted-visible-turn-finalization-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
@@ -17,16 +17,19 @@ Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `la
 - `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
 
 
-## Conversation control-plane v60
+## Conversation control-plane v60 / accepted-visible-turn v61
 
-**Status:** `IN_PROGRESS / PRE-CI` on `upgrade/v16.3.25.5.60-main-entrypoint-chatgpt-live-convergence`.
+**v60:** `ON MASTER`.  
+**v61 hotfix:** `IMPLEMENTED LOCALLY / BRANCH PRE-CI` on `fix/v16.3.25.5.61-accepted-visible-turn-finalization-convergence`.
 
-- `run.py` is being reduced to a thin user launcher.
-- `main.py` is the single central control plane for top-level dispatch/lifecycle/recovery/finalization.
-- ChatGPT uses one persistent stdin/JSONL bridge per available executor session instead of a new CLI process per message.
-- `chat-gpt` does not require or silently invoke the paid OpenAI API.
-- MCP remains optional because it cannot be assumed for the user's ChatGPT plan/local host path.
-- Acceptance requires per-turn lineage, same-channel phase-2, reconnect idempotency and Windows/Linux CI; a live PID alone is insufficient.
+- `run.py` remains a thin launcher and `main.py` the single central control plane.
+- v60 persistent stdio remains the preferred ChatGPT transport when the host can retain an interactive process.
+- v61 adds capability-negotiated fallback `daemon_bound_transactional_turns`: stable `session_id`, durable `request_id`, poll/resume and phase-2 finalization without replay.
+- daemon `phase_result_ready=true` now takes precedence over `done=false`, so a valid phase-1 waiting for host finalization is not hidden behind an endless `poll_runtime`.
+- `run.py chat-gpt --session-id ...` now uses the central `main.py` option surface instead of drifting through a second incomplete argparse surface.
+- host preflight can run without a fabricated JSON input contract and still reports runtime/package state conservatively.
+- every ordinary visible ChatGPT turn is gated by `accepted_visible_turn_ready`: daemon/PID/heartbeat liveness is insufficient; `display_exact` requires accepted finalization and the verified `MessageEnvelope`.
+- missing accepted finalization/envelope is a host diagnostic condition, never permission to imitate Łatka.
 
 ## Local runtime preflight
 

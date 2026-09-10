@@ -272,12 +272,37 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
         description="Classify host execution surfaces and attachment materialization without fabricating runtime state.",
         allow_abbrev=False,
     )
-    parser.add_argument("--input", required=True, help="JSON contract path or '-' for stdin")
+    parser.add_argument(
+        "--input",
+        help=(
+            "Optional JSON contract path or '-' for stdin. When omitted, "
+            "classify the already-created local Python process as the single "
+            "observed executor surface without inventing package/runtime state."
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="Pretty-print JSON output")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     try:
-        payload = _json_object_from_file(args.input)
+        if args.input:
+            payload = _json_object_from_file(args.input)
+        else:
+            # Reaching this code is bounded evidence that the current local
+            # Python executor created a process and can observe the project
+            # filesystem. It is not evidence of package/runtime readiness.
+            payload = {
+                "package_required": False,
+                "executor_observations": [
+                    {
+                        "surface": "current_local_python_process",
+                        "process_created": True,
+                        "command_completed": True,
+                        "returncode": 0,
+                        "filesystem_probe_succeeded": True,
+                    }
+                ],
+                "attachment_reports": [],
+            }
         package_required = _optional_bool(payload, "package_required", False)
         observations = _executor_observations_from_payload(payload)
         attachments = _attachment_reports_from_payload(payload)

@@ -107,8 +107,8 @@ def test_readme_exposes_thin_launcher_and_central_main() -> None:
     assert "ChatGPT, Codex i Ollama pełnią różne role" in text
 
 
-def test_release_line_advances_to_v61_accepted_visible_turn_convergence() -> None:
+def test_release_line_advances_to_v60_main_entrypoint_convergence() -> None:
     version = tuple(int(part) for part in PACKAGE_VERSION.split("."))
 
-    assert version >= (16, 3, 25, 5, 61)
-    assert PACKAGE_RELEASE_NAME == "accepted-visible-turn-finalization-convergence"
+    assert version >= (16, 3, 25, 5, 60)
+    assert PACKAGE_RELEASE_NAME == "main-entrypoint-persistent-chatgpt-convergence"

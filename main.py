@@ -671,7 +671,14 @@ def _prepare_chatgpt_daemon_presentation(
             ),
         }
         return outer
-    if outer.get("done") is True and isinstance(raw_result, dict):
+    # A daemon turn that reached host-visible phase-1 is intentionally not
+    # terminal yet: it waits for host-visible phase-2 finalization. Treat
+    # phase_result_ready as a deliverable runtime result before the generic
+    # done=false polling branch, otherwise generate_then_finalize is hidden.
+    if (
+        (outer.get("done") is True or outer.get("phase_result_ready") is True)
+        and isinstance(raw_result, dict)
+    ):
         result = dict(raw_result)
         result["daemon_job"] = outer
     elif outer.get("error_code") == "daemon_chat_pending" or outer.get("done") is False:

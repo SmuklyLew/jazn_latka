@@ -2,8 +2,8 @@
 
 **Status:** `ACTIVE_ARCHITECTURE_CONTRACT`
 **Data:** 2026-09-10
-**Linia:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
-**Baza kodu:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f`
+**Linia:** `16.3.25.5.61-accepted-visible-turn-finalization-convergence`
+**Baza kodu:** `master @ 270d704831224a7ba346fd3b9bb46bd698a482f4`
 
 ## 1. Decyzja architektoniczna
 
@@ -140,6 +140,7 @@ Jest parserem/service layer. Nie może wymuszać ponownego importu `main.py` w k
 6. Phase-2 wraca tym samym kanałem, jeśli kanał żyje.
 7. Utrata kanału nie zezwala na ślepy replay; najpierw resume/poll istniejącego requestu.
 8. Co najwyżej jeden accepted visible final na revision.
+   Dla aktywnego kanonu koperta widocznej odpowiedzi ma postać: `🕒 YYYY-MM-DD HH:MM:SS`, potem `<state_emoticon> Łatka`, pusta linia i body. Sam żywy daemon/PID nie autoryzuje tej koperty.
 9. Następna tura nie jest przyjmowana przed wymaganym commit/finalization poprzedniej.
 10. Runtime voice nie może zostać przypisana tekstowi wygenerowanemu całkowicie poza tym lineage.
 

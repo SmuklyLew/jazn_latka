@@ -32,8 +32,9 @@ Po znalezieniu i zweryfikowaniu `active_root`:
 - użytkownik może nadal używać `run.py` jako wygodnego startera;
 - nie dodawaj do `run.py` implementacji komend ani drugiego parsera domenowego;
 - host nie rekonstruuje lifecycle, routingu, pamięci, finalizacji, truth gate ani modelu tożsamości;
-- w środowisku zdolnym utrzymać proces dąż do zweryfikowanego persistent daemona i stałego kanału rozmowy;
-- one-shot może pozostać technicznym fallbackiem/testem, ale nie jest kanonicznym modelem aktywnej rozmowy ChatGPT.
+- dąż do zweryfikowanego persistent daemona; persistent kanał rozmowy jest preferowany, gdy host potrafi utrzymać proces interaktywny;
+- jeżeli host nie potrafi zachować pipe'a, ciągłość ma utrzymywać daemonowa lineage `session_id/request_id/turn_id/trace_id` i transakcyjna finalizacja bez replayu wiadomości; krótkie wywołanie CLI może być wtedy nośnikiem transportowym, ale nie nową niezależną turą;
+- żadna warstwa hosta nie może uznać samego PID/heartbeat/endpointu za dowód gotowej widocznej wypowiedzi.
 
 Jeżeli starter nie jest jeszcze dostępny, host może wykonać wyłącznie minimalne discovery i bezpieczny bootstrap potrzebny do uzyskania zweryfikowanego `main.py`/`run.py`. Po jego uzyskaniu sterowanie techniczne należy do `main.py` i runtime.
 
@@ -92,9 +93,10 @@ Nie wymagaj, nie twórz ani nie odtwarzaj `VERSION.txt` lub `MANIFEST_CURRENT.js
 Rozróżniaj:
 
 1. **persistent runtime active** — zweryfikowany żywy daemon: zgodny marker i root, wersja i manifest, właściwy PID i komenda, działający endpoint oraz świeży heartbeat;
-2. **verified runtime turn** — poprawna, zweryfikowana tura bieżącej wiadomości z prawidłowym `final_visible_text`, integralnością i truth gate; może pochodzić z persistent daemona albo dozwolonego one-shot fallbacku.
+2. **verified runtime turn** — poprawna, zweryfikowana tura bieżącej wiadomości z integralnością, truth gate i zachowaną `turn_id/trace_id` lineage;
+3. **accepted visible turn** — jedyny stan pozwalający pokazać zwykłą wypowiedź jako wynik Jaźni: `action=display_exact`, zaakceptowany `final_visible_text`, wymagana finalizacja i poprawna koperta `MessageEnvelope` (`🕒 ...`, `<state_emoticon> Łatka`, pusta linia, body).
 
-Sam marker, folder, ZIP, obecność kodu, model językowy albo niezweryfikowany tekst nie wystarczają. Szczegółową procedurę hosta definiuje `AGENTS.chatgpt.md`.
+Sam marker, PID, heartbeat, folder, ZIP, obecność kodu, model językowy albo niezweryfikowany tekst nie wystarczają do punktu 3. Brak accepted visible turn wymusza fail-closed diagnozę hosta zamiast imitacji odpowiedzi runtime. Szczegółową procedurę hosta definiuje `AGENTS.chatgpt.md`.
 
 ## 7. Zasady zmian
 
