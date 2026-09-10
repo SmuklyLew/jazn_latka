@@ -3,11 +3,11 @@
   "version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
   "runtime_version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
   "package_version": "16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence",
-  "generated_at_utc": "2026-09-10T20:27:45+00:00",
-  "updated_at_utc": "2026-09-10T20:27:45+00:00",
+  "generated_at_utc": "2026-09-10T20:41:38+00:00",
+  "updated_at_utc": "2026-09-10T20:41:38+00:00",
   "start_file": "run.py",
-  "file_count": 1303,
-  "static_file_count": 1303,
+  "file_count": 1311,
+  "static_file_count": 1311,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -246,7 +246,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3009,
-      "sha256": "4a831dce37ad8750251ee3f322980487d6a5854aa650b66bad18e4ee68317346",
+      "sha256": "19b30a007b54bf24da411023e56a9b47b5ff457316c3565578143a5959da4d6c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -256,6 +256,15 @@
       "path": "docs/README.md",
       "size_bytes": 3307,
       "sha256": "3b2dd551735e3b4985694e7493858d471989f879f4928467fc6dbafdb48be77c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/architecture/MAIN_ENTRYPOINT_AND_PERSISTENT_CHATGPT_BRIDGE.md",
+      "size_bytes": 9011,
+      "sha256": "f145dee69a3c51c5e2f88f561e564cd4134dadff530ccc92f4b5981f6666b2ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1858,6 +1867,15 @@
       "path": "docs/reports/JAZN_V16_3_25_5_57_AGENT_RUNTIME_IDENTITY_CONTINUITY_CONVERGENCE.md",
       "size_bytes": 8576,
       "sha256": "08dbddff51c51adb2572ce8c9a678a0710b4fdb53d53905dbe08a11b84b97ac3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_60_FULL_REPOSITORY_ROUTE_AUDIT.md",
+      "size_bytes": 9463,
+      "sha256": "3a848cd1cc37bfee47d5eec550dc700f86a4988990c41da48c27089fbbc0fbac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8920,6 +8938,51 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.59-pre-main-entrypoint-convergence/test_dependency_studio_v1632539.py",
+      "size_bytes": 18368,
+      "sha256": "42895aa14c1ed2d811fb40872e3fe0b19ec06622d13eea6a3e99cf7dab339fc9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.59-pre-main-entrypoint-convergence/test_release_hardening_active_contracts.py",
+      "size_bytes": 11918,
+      "sha256": "b19f2d00604ce23bdfa7345185a496f4ca53a105b0495d63d51fc39146a1e768",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.59-pre-main-entrypoint-convergence/test_repository_layout_dependency_operator_v16325529.py",
+      "size_bytes": 2786,
+      "sha256": "5fdd48ad41f5dd8d91c20863f8254885db3248d508dff8ddd197e975a245e5ad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.59-pre-main-entrypoint-convergence/test_v16325557_agent_runtime_identity_continuity_convergence.py",
+      "size_bytes": 3814,
+      "sha256": "4777853d65ffd09e4473bff437ed690dc6ba3a8cbde9004532009d7da38989b8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.59-pre-main-entrypoint-convergence/test_v16325559_conversation_runtime_orchestration_convergence.py",
+      "size_bytes": 5602,
+      "sha256": "25a45338856e2eeff8bc5aac594ff186a09edfbd2acf12aec4b64887da24d852",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.6-pack-generator-v89-distribution/test_jazn_pack_generator_v89_distribution.py",
       "size_bytes": 2876,
       "sha256": "e35d8e0991022985266b1a60e86c8b50d15036f14a81a57d582612c4170b0b0f",
@@ -11200,6 +11263,15 @@
       "path": "tests/test_v16325559_conversation_runtime_orchestration_convergence.py",
       "size_bytes": 5696,
       "sha256": "6455c184c91c28f9da1793ff489ae0e8a387fc0d7ec035a0f82ba703a6dc65c1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325560_main_entrypoint_persistent_chatgpt.py",
+      "size_bytes": 4452,
+      "sha256": "5e3630ef44e1ebc66d9ea342dc7ee6689d24c342f0b7f9e172ff0fdd7ffcff97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
