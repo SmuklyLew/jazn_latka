@@ -72,7 +72,12 @@ def test_v59_universal_chat_detects_chatgpt_visible_host_before_terminal_default
 
 
 def test_v59_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
-    config = JaznConfig(root=tmp_path)
+    config = JaznConfig(
+        root=tmp_path,
+        llm_route_mode="auto",
+        allow_paid_openai_api=False,
+        local_model_name="",
+    )
 
     chatgpt = build_llm_route_status(
         config,

@@ -303,13 +303,9 @@ def apply_ollama_cli_settings(
     normalized_model = str(model or "").strip()
     if normalized_model:
         config.local_model_name = normalized_model
-        os.environ["JAZN_OLLAMA_MODEL"] = normalized_model
-        os.environ["JAZN_LOCAL_LLM_MODEL"] = normalized_model
     if api_base:
         normalized_api_base = str(api_base).strip().rstrip("/")
         config.local_model_api_base = normalized_api_base
-        os.environ["JAZN_OLLAMA_BASE_URL"] = normalized_api_base
-        os.environ["JAZN_LOCAL_LLM_BASE_URL"] = normalized_api_base
     if timeout_seconds is not None:
         config.model_timeout_seconds = float(timeout_seconds)
     if max_output_tokens is not None:
@@ -344,7 +340,14 @@ def resolve_ollama_cli_settings(
     from latka_jazn.core.llm_route_resolver import probe_ollama
 
     probe_timeout = min(max(float(getattr(config, "model_timeout_seconds", 45.0)), 0.1), 2.0)
-    probe = probe_ollama(config, os.environ, timeout_seconds=probe_timeout)
+    probe_env = dict(os.environ)
+    if str(getattr(config, "local_model_name", "") or "").strip():
+        probe_env["JAZN_OLLAMA_MODEL"] = str(config.local_model_name).strip()
+        probe_env["JAZN_LOCAL_LLM_MODEL"] = str(config.local_model_name).strip()
+    if str(getattr(config, "local_model_api_base", "") or "").strip():
+        probe_env["JAZN_OLLAMA_BASE_URL"] = str(config.local_model_api_base).strip().rstrip("/")
+        probe_env["JAZN_LOCAL_LLM_BASE_URL"] = str(config.local_model_api_base).strip().rstrip("/")
+    probe = probe_ollama(config, probe_env, timeout_seconds=probe_timeout)
     selected_model = str(probe.get("model") or "").strip()
     if selected_model:
         config.local_model_name = selected_model

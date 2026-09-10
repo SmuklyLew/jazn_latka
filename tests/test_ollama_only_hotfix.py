@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -77,6 +78,35 @@ def test_apply_ollama_cli_settings_applies_timeout_and_token_limit(
     assert cfg.local_model_api_base == "http://127.0.0.1:11434"
     assert cfg.model_timeout_seconds == 123.5
     assert cfg.model_max_output_tokens == 321
+
+
+def test_apply_ollama_cli_settings_does_not_mutate_process_environment(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    ambient = {
+        "JAZN_OLLAMA_MODEL": "ambient-model",
+        "JAZN_LOCAL_LLM_MODEL": "ambient-local-model",
+        "JAZN_OLLAMA_BASE_URL": "http://127.0.0.1:11435",
+        "JAZN_LOCAL_LLM_BASE_URL": "http://127.0.0.1:11436",
+    }
+    for name, value in ambient.items():
+        monkeypatch.setenv(name, value)
+
+    cfg = JaznConfig(
+        root=tmp_path,
+        local_model_name="",
+        local_model_api_base="http://127.0.0.1:11434",
+    )
+    apply_ollama_cli_settings(
+        cfg,
+        model="explicit-model",
+        api_base="http://127.0.0.1:11434/",
+    )
+
+    assert cfg.local_model_name == "explicit-model"
+    assert cfg.local_model_api_base == "http://127.0.0.1:11434"
+    assert {name: os.environ.get(name) for name in ambient} == ambient
 
 
 def test_active_repository_has_no_removed_local_backend_integration() -> None:
