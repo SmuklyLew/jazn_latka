@@ -98,11 +98,14 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py start
 python -X utf8 run.py status --json
 python -X utf8 run.py stop
+python -X utf8 run.py chat -- "wiadomość"
 python -X utf8 run.py chat-gpt -- "wiadomość"
 python -X utf8 run.py chat-ollama
 ```
 
 Na Windows można również użyć `JAZN.cmd`; aktywacja `.venv` nie jest warunkiem kontraktu runtime. `main.py --...` pozostaje techniczną ścieżką zgodnościową, a publicznym operatorem jest `run.py`.
+
+`run.py chat` jest kanonicznym **uniwersalnym wejściem rozmowy**. W trybie auto wybór warstwy językowej ma jedną kolejność: potwierdzony host ChatGPT → dostępna Ollama → jawnie dopuszczone płatne OpenAI API → `null_fallback`. `run.py chat-gpt` i `run.py chat-ollama` pozostają wyspecjalizowanymi wejściami/adapterami; nie są osobnymi właścicielami pamięci, sesji ani tożsamości Jaźni.
 
 ## Dokumentacja
 

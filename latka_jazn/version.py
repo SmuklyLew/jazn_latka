@@ -3,14 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.58 keeps daemon-owned ChatGPT phase-1 host requests authoritative
-# across transport presentation/recovery paths. The host reuses a persisted
-# pending request instead of reminting the same turn, preventing false
-# pending_host_request_conflict failures while preserving fail-closed replay
-# and binding checks for genuinely different contracts.
-DISTRIBUTION_VERSION = "16.3.25.5.58"
-PACKAGE_VERSION = "16.3.25.5.58"
-PACKAGE_RELEASE_NAME = "pending-host-request-continuity-recovery"
+# v16.3.25.5.59 establishes one public conversation-entrypoint contract shared
+# by CLI discovery, runtime-environment classification and LLM routing. It also
+# hardens the ChatGPT host runbook so every visible turn requires a fresh
+# runtime invocation before host text, preventing documentation/control-plane
+# drift from silently bypassing the active Jaźń turn.
+DISTRIBUTION_VERSION = "16.3.25.5.59"
+PACKAGE_VERSION = "16.3.25.5.59"
+PACKAGE_RELEASE_NAME = "conversation-runtime-orchestration-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

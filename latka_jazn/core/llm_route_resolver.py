@@ -15,12 +15,18 @@ from latka_jazn.core.runtime_environment import (
     detect_runtime_environment,
 )
 from latka_jazn.version import schema_version
+from latka_jazn.core.conversation_entrypoint_contract import (
+    ROUTE_CHATGPT_HOST,
+    ROUTE_NULL_FALLBACK,
+    ROUTE_OLLAMA_LOCAL,
+    ROUTE_OPENAI_PAID as CONTRACT_ROUTE_OPENAI_PAID,
+)
 
 LLM_ROUTE_AUTO = "auto"
-ROUTE_LOCAL = "ollama_local"
-ROUTE_CHATGPT_BRIDGE = "chatgpt_host_bridge"
-ROUTE_OPENAI_PAID = "openai_api_paid"
-ROUTE_NULL = "null_fallback"
+ROUTE_LOCAL = ROUTE_OLLAMA_LOCAL
+ROUTE_CHATGPT_BRIDGE = ROUTE_CHATGPT_HOST
+ROUTE_OPENAI_PAID = CONTRACT_ROUTE_OPENAI_PAID
+ROUTE_NULL = ROUTE_NULL_FALLBACK
 
 _ALLOWED_MODES = {"auto", "local", "chatgpt_bridge", "openai_api", "none"}
 

@@ -53,13 +53,16 @@ oddzielone od statycznego kodu i manifestu paczki.
 ## 3. Publiczne entrypointy
 
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
-- ChatGPT: `python -X utf8 run.py chat-gpt ...`;
-- Ollama: `python -X utf8 run.py chat-ollama ...`;
+- uniwersalna rozmowa i auto-routing: `python -X utf8 run.py chat ...`;
+- wyspecjalizowany host ChatGPT: `python -X utf8 run.py chat-gpt ...`;
+- wyspecjalizowany backend Ollama: `python -X utf8 run.py chat-ollama ...`;
 - `main.py --...` pozostaje kompatybilnością dla istniejących integracji, a nie
   drugim równorzędnym operatorem.
 
 Warstwa modelu nie jest właścicielem tożsamości, pamięci, provenance,
 uprawnień ani finalizacji. Te granice pozostają w runtime Jaźni.
+
+`run.py chat` nie oznacza „lokalny model”. Jest kontraktem wyboru kanału językowego; w trybie `auto` priorytet wynosi: potwierdzony host ChatGPT → dostępna lokalna Ollama → jawnie dopuszczone płatne OpenAI API → prawdomówny `null_fallback`. Tę kolejność definiuje wspólny kontrakt kodu, nie osobne opisy w help/discovery.
 
 ## 4. Polityka zależności: stdlib/host-first
 

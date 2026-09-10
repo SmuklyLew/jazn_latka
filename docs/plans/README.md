@@ -1,10 +1,10 @@
 # Jaźń — kanoniczna mapa planów v16.3.25.4 → v17
 
 **Status:** `CANONICAL_PLANNING_INDEX`  
-**Aktualizacja:** 2026-09-09
-**Baza przebudowy dokumentacji:** `master @ e0c6731c851928568a7c23e5f9101d1e95bdd7f8`
-**Baza wersji:** `16.3.25.5.55-archive-extraction-convergence`
-**Linia tej aktualizacji:** `16.3.25.5.56-local-runtime-preflight-convergence`
+**Aktualizacja:** 2026-09-10
+**Baza przebudowy dokumentacji:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`
+**Baza wersji:** `16.3.25.5.58-pending-host-request-continuity-recovery`
+**Linia tej aktualizacji:** `16.3.25.5.59-conversation-runtime-orchestration-convergence`
 
 Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowadzącego od dostarczonego `v16.3.25.4 Memory Rebuild v4` do warunkowego `v17`.
 
@@ -18,6 +18,9 @@ Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowa
 | [`LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md`](LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md) | kanoniczny plan finalnego restore, weryfikacji, attach, Recall i acceptance pamięci |
 | [`AFFECT_ENGINE_CONVERGENCE_PLAN.md`](AFFECT_ENGINE_CONVERGENCE_PLAN.md) | kanoniczny plan Emotion Engine / appraisal / affect / feeling / regulacji i integracji z pamięcią |
 | [`RESEARCH_EVIDENCE_BASE.md`](RESEARCH_EVIDENCE_BASE.md) | źródła naukowe i inżynierskie oraz jawne granice tego, co wspierają |
+| [`CONVERSATION_RUNTIME_RESEARCH_BASE.md`](CONVERSATION_RUNTIME_RESEARCH_BASE.md) | baza porównawcza OpenAI Agents SDK, Gemini CLI/ADK i Ollama dla przebudowy rozmowy |
+| [`CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md`](CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md) | kanoniczny etapowy plan single-owner ConversationRunner / TurnStateMachine / provider adapters |
+| [`CONVERSATION_RUNTIME_TEST_AND_MIGRATION_MATRIX.md`](CONVERSATION_RUNTIME_TEST_AND_MIGRATION_MATRIX.md) | acceptance, crash/recovery, concurrency, provider i host-E2E gates przebudowy rozmowy |
 | [`V17_PLUS_SYSTEM_EVALUATION.md`](V17_PLUS_SYSTEM_EVALUATION.md) | gate wejścia i measured consolidation po zamknięciu v16 |
 | [`only_to_check/`](only_to_check/) | komplet historycznych planów, statusów, pointerów i snapshotów wyłącznie do porównań |
 

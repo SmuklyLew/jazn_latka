@@ -9,6 +9,10 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.version import schema_version
+from latka_jazn.core.conversation_entrypoint_contract import (
+    AUTO_ROUTE_PRIORITY,
+    conversation_entrypoint_contract,
+)
 
 
 OLLAMA_TRUTH_BOUNDARY = (
@@ -35,6 +39,8 @@ def discover_runtime_bridges(
     marker_path = active_runtime_marker_path(root)
     marker = _read_json(marker_path)
     daemon = status_daemon(config, host=host, port=port, probe_endpoint=False)
+    conversation = conversation_entrypoint_contract("--chat").to_dict()
+    chatgpt = conversation_entrypoint_contract("--chat-gpt").to_dict()
     return {
         "schema_version": schema_version("runtime_bridge_discovery"),
         "active_root": str(root),
@@ -42,12 +48,28 @@ def discover_runtime_bridges(
         "marker_found": marker is not None,
         "marker": marker or {},
         "daemon_status": daemon,
+        "conversation": {
+            **conversation,
+            "command": "python -X utf8 run.py chat --session-id <id>",
+            "one_shot_command": 'python -X utf8 run.py chat -- "Cześć Łatko"',
+            "backend_selection": "auto",
+            "route_priority": list(AUTO_ROUTE_PRIORITY),
+            "meaning": (
+                "kanoniczne uniwersalne wejście do rozmowy; runtime wybiera dostępny backend językowy, "
+                "ale pozostaje właścicielem sesji, tury, pamięci, narzędzi i finalizacji"
+            ),
+        },
         "local_chat": {
             "command": "python -X utf8 run.py chat --session-id <id>",
             "compatibility_command": "python main.py --chat --session-id <id>",
-            "meaning": "lokalna żywa pętla rozmowy; jeden JaznEngine do /exit, Ctrl+D albo EOF",
+            "compatibility_alias_of": "conversation",
+            "meaning": (
+                "terminalna prezentacja kanonicznego run.py chat; nazwa local_chat jest zachowana "
+                "wyłącznie dla zgodności starszych konsumentów discovery"
+            ),
         },
         "chatgpt_bridge": {
+            **chatgpt,
             "command": "python -X utf8 run.py chat-gpt --session-id <id>",
             "one_shot_command": 'python -X utf8 run.py chat-gpt -- "Cześć Łatko"',
             "canonical_command": "run.py chat-gpt",

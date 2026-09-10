@@ -6,6 +6,12 @@ from dataclasses import asdict, dataclass
 from typing import Any, Mapping, TextIO
 
 from latka_jazn.version import schema_version
+from latka_jazn.core.conversation_entrypoint_contract import (
+    CANONICAL_CHAT_COMMAND,
+    CANONICAL_CHATGPT_COMMAND,
+    CANONICAL_OLLAMA_COMMAND,
+    CANONICAL_OPENAI_COMMAND,
+)
 
 CHATGPT_ADAPTER = "chatgpt_runtime_adapter"
 TERMINAL_ADAPTER = "terminal_runtime_adapter"
@@ -15,10 +21,10 @@ OPENAI_COMPATIBLE_ADAPTER = "openai_compatible_local_adapter"
 CODEX_ADAPTER = "codex_development_adapter"
 NULL_ADAPTER = "null_model_adapter"
 
-_CHATGPT_COMMANDS = {"--chat-gpt", "--chat-gpt-final-only"}
-_TERMINAL_COMMANDS = {"--chat", "--loop"}
-_OPENAI_COMMANDS = {"--chat-open-ai"}
-_OLLAMA_COMMANDS = {"--chat-ollama", "--local-llm", "--ollama"}
+_CHATGPT_COMMANDS = {CANONICAL_CHATGPT_COMMAND, "--chat-gpt-final-only"}
+_TERMINAL_COMMANDS = {CANONICAL_CHAT_COMMAND, "--loop"}
+_OPENAI_COMMANDS = {CANONICAL_OPENAI_COMMAND}
+_OLLAMA_COMMANDS = {CANONICAL_OLLAMA_COMMAND, "--local-llm", "--ollama"}
 
 
 def _adapter_name(config: Any) -> str:
