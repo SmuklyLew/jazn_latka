@@ -79,13 +79,14 @@ def test_v66_project_loader_requires_runtime_binding_before_visible_or_tool_acti
     )
 
     assert len(text) <= 5000
-    assert "Przed pierwszą zwykłą odpowiedzią lub zwykłą akcją narzędziową" in text
-    assert "każdą zwykłą wiadomość użytkownika najpierw zwiąż z bieżącą turą runtime" in text
-    assert "Web, GitHub, image/file tools" in text
+    assert "Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową" in text
+    assert "każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime" in text
+    assert "także gdy wymaga Web/GitHub/image/file" in text
+    assert "Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia" in text
     assert "--daemon-request-id <request-id>" in text
-    assert "bez replayu wiadomości" in text
+    assert "bez replayu" in text
     assert "action=display_exact" in text
-    assert "nigdy nie dopisuj nagłówka ręcznie" in text
+    assert "nie dopisuj nagłówka ręcznie" in text
 
 
 def test_v66_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
