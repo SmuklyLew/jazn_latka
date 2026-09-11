@@ -14,7 +14,7 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "0b1f52d2ca75770e22139c5a0ffc09bc60dfdf5f",
+    "base_commit": "78a6d4ffb6194ff763562d3c75f2b2db81351bb6",
     "base_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
