@@ -12,7 +12,11 @@ from latka_jazn.core.chat_command_contract import (
     chat_gpt_contract,
     persist_chatgpt_host_visible_reply,
 )
-from latka_jazn.core.chatgpt_host_pending_store import host_request_lifecycle_state
+from latka_jazn.core.chatgpt_host_pending_store import (
+    HostRequestStoreError,
+    host_request_lifecycle_state,
+    mark_daemon_finalization_notification,
+)
 from latka_jazn.core.host_action_evidence import host_action_evidence_scope
 
 
@@ -257,9 +261,32 @@ def finalize_payload(args: Any) -> dict[str, Any]:
     persisted["accepted"] = accepted
     persisted["daemon_job_lifecycle"] = notification
     persisted["host_finalization_lifecycle_complete"] = accepted
-    if accepted and notification.get("ok") is not True:
-        persisted["host_finalization_lifecycle_complete"] = False
-        persisted["host_finalization_recovery_required"] = True
+    if accepted:
+        delivered = notification.get("ok") is True
+        try:
+            persisted["turn_settlement"] = mark_daemon_finalization_notification(
+                root,
+                turn_id=str(args.turn_id),
+                request_contract_hash=host_request_contract_hash,
+                delivered=delivered,
+                error=(
+                    None
+                    if delivered
+                    else str(
+                        notification.get("error_code")
+                        or notification.get("error")
+                        or "daemon_finalization_notification_failed"
+                    )
+                ),
+            )
+        except HostRequestStoreError as exc:
+            persisted["turn_settlement_notification_recording"] = {
+                "ok": False,
+                "error": str(exc),
+            }
+        if not delivered:
+            persisted["host_finalization_lifecycle_complete"] = False
+            persisted["host_finalization_recovery_required"] = True
     return persisted
 
 

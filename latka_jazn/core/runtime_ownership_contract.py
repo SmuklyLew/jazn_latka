@@ -30,6 +30,7 @@ def build_runtime_ownership_contract(
         "host_diagnostic wolno stosować tylko po technicznym odrzuceniu truth gate, integralności albo finalizacji, nie jako zamiennik epistemicznej ostrożności.",
         "Narzędzia hosta wolno uruchamiać tylko wewnątrz runtime-owned turn; ich wynik wraca jako evidence/action result i wymaga ponownej finalizacji runtime przed widocznym tekstem.",
         "Brak poprawnego turn_authority_receipt dla tury wymagającej bindingu blokuje przypisanie widocznego tekstu Łatce.",
+        "Po trwałym związaniu phase-1 durable host-request store jest jedynym settlement authority; daemon job jest projekcją wykonawczą i musi reconciliować ten sam request/turn/trace/hash zamiast tworzyć drugi terminalny stan.",
     ])
     host_contract["voice_continuity_policy"] = {
         "external_tools_do_not_transfer_voice": True,
@@ -71,6 +72,8 @@ def build_runtime_ownership_contract(
             "turn_authority": [
                 "latka_jazn/core/turn_pipeline_contract.py",
                 "latka_jazn/core/turn_authority.py",
+                "latka_jazn/core/turn_settlement.py",
+                "latka_jazn/core/chatgpt_host_pending_store.py",
                 "latka_jazn/core/chatgpt_host_pre_response_gate.py",
             ],
         },

@@ -111,4 +111,4 @@ def test_release_line_advances_to_v61_accepted_visible_turn_convergence() -> Non
     version = tuple(int(part) for part in PACKAGE_VERSION.split("."))
 
     assert version >= (16, 3, 25, 5, 61)
-    assert PACKAGE_RELEASE_NAME == "turn-settlement-authority-convergence"
+    assert PACKAGE_RELEASE_NAME == "accepted-visible-turn-finalization-convergence"

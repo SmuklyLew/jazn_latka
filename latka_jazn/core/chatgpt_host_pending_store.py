@@ -533,8 +533,24 @@ def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_h
     record = _read(claimed_path)
     if str(record.get("request_contract_hash") or "") != str(request_contract_hash or "").strip().lower():
         raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    binding_value = record.get("binding")
+    binding = binding_value if isinstance(binding_value, Mapping) else {}
+    daemon_request_id = str(binding.get("daemon_request_id") or "").strip()
     record["state"] = "consumed"
     record["consumed_at_utc"] = _utc_now().isoformat()
+    # The durable consumed record is the settlement authority for a host-finalized
+    # turn.  Daemon notification is an idempotent projection/outbox delivery, not
+    # a second source of truth.  This prevents a lost ACK from manufacturing a
+    # second terminal state for the same logical turn.
+    record["settlement_authority"] = "durable_host_request_store"
+    record["daemon_finalization_notification_state"] = (
+        "pending" if daemon_request_id else "not_applicable"
+    )
+    record["daemon_finalization_notification_attempts"] = int(
+        record.get("daemon_finalization_notification_attempts") or 0
+    )
+    record["daemon_finalization_notification_last_at_utc"] = None
+    record["daemon_finalization_notification_error"] = None
     consumed_path = _path(root, "consumed", turn_id)
     _atomic_write(claimed_path, record)
     consumed_path.parent.mkdir(parents=True, exist_ok=True)
@@ -560,25 +576,134 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
     }
 
 
+def _host_request_lifecycle_payload(record: Mapping[str, Any], *, state: str) -> dict[str, Any]:
+    return {
+        "found": True,
+        "state": str(record.get("state") or state),
+        "request_contract_hash": str(record.get("request_contract_hash") or ""),
+        "binding": dict(record.get("binding") or {}),
+        "generation_context": dict(record.get("generation_context") or {}),
+        "created_at_utc": record.get("created_at_utc"),
+        "expires_at_utc": record.get("expires_at_utc"),
+        "claimed_at_utc": record.get("claimed_at_utc"),
+        "consumed_at_utc": record.get("consumed_at_utc"),
+        "expired_at_utc": record.get("expired_at_utc"),
+        "expiration_reason": record.get("expiration_reason"),
+        "indeterminate_at_utc": record.get("indeterminate_at_utc"),
+        "persistence_error": record.get("persistence_error"),
+        "settlement_authority": str(
+            record.get("settlement_authority") or "durable_host_request_store"
+        ),
+        "daemon_finalization_notification_state": record.get(
+            "daemon_finalization_notification_state"
+        ),
+        "daemon_finalization_notification_attempts": int(
+            record.get("daemon_finalization_notification_attempts") or 0
+        ),
+        "daemon_finalization_notification_last_at_utc": record.get(
+            "daemon_finalization_notification_last_at_utc"
+        ),
+        "daemon_finalization_notification_error": record.get(
+            "daemon_finalization_notification_error"
+        ),
+    }
+
+
 def host_request_lifecycle_state(root: Path, *, turn_id: str) -> dict[str, Any]:
-    """Read one host request's durable state without exposing its token."""
+    """Read one host request's durable settlement state without exposing its token."""
 
     cleanup_expired_host_requests(root)
     for state in ("consumed", "expired", "claimed", "pending"):
         path = _path(root, state, turn_id)
         if not path.is_file():
             continue
-        record = _read(path)
+        return _host_request_lifecycle_payload(_read(path), state=state)
+    return {
+        "found": False,
+        "state": "missing",
+        "binding": {},
+        "generation_context": {},
+        "settlement_authority": "durable_host_request_store",
+    }
+
+
+def host_request_lifecycle_by_daemon_request_id(
+    root: Path,
+    *,
+    daemon_request_id: str,
+) -> dict[str, Any]:
+    """Resolve exactly one durable host settlement by daemon request lineage.
+
+    The daemon request id is part of the immutable phase-1 binding.  Recovery
+    must fail closed if more than one durable record claims the same daemon job.
+    """
+
+    requested = str(daemon_request_id or "").strip()
+    if not requested:
+        raise HostRequestStoreError("daemon_request_id_missing")
+    if len(requested) > 256:
+        raise HostRequestStoreError("daemon_request_id_too_large")
+    cleanup_expired_host_requests(root)
+    matches: list[tuple[str, dict[str, Any]]] = []
+    for state in ("consumed", "expired", "claimed", "pending"):
+        directory = _store_root(root) / state
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("*.json")):
+            record = _read(path)
+            binding_value = record.get("binding")
+            binding = binding_value if isinstance(binding_value, Mapping) else {}
+            generation_value = record.get("generation_context")
+            generation = (
+                generation_value if isinstance(generation_value, Mapping) else {}
+            )
+            bound_request_id = str(
+                binding.get("daemon_request_id")
+                or generation.get("daemon_request_id")
+                or ""
+            ).strip()
+            if hmac.compare_digest(bound_request_id, requested):
+                matches.append((state, record))
+    if not matches:
         return {
-            "found": True,
-            "state": str(record.get("state") or state),
-            "request_contract_hash": str(record.get("request_contract_hash") or ""),
-            "binding": dict(record.get("binding") or {}),
-            "created_at_utc": record.get("created_at_utc"),
-            "expires_at_utc": record.get("expires_at_utc"),
-            "claimed_at_utc": record.get("claimed_at_utc"),
-            "consumed_at_utc": record.get("consumed_at_utc"),
-            "expired_at_utc": record.get("expired_at_utc"),
-            "expiration_reason": record.get("expiration_reason"),
+            "found": False,
+            "state": "missing",
+            "binding": {},
+            "generation_context": {},
+            "settlement_authority": "durable_host_request_store",
         }
-    return {"found": False, "state": "missing", "binding": {}}
+    if len(matches) != 1:
+        raise HostRequestStoreError("daemon_request_binding_ambiguous")
+    state, record = matches[0]
+    return _host_request_lifecycle_payload(record, state=state)
+
+
+def mark_daemon_finalization_notification(
+    root: Path,
+    *,
+    turn_id: str,
+    request_contract_hash: str,
+    delivered: bool,
+    error: str | None = None,
+) -> dict[str, Any]:
+    """Record outbox delivery status without changing the canonical consumed state."""
+
+    path = _path(root, "consumed", turn_id)
+    record = _read(path)
+    expected = str(record.get("request_contract_hash") or "")
+    supplied = str(request_contract_hash or "").strip().lower()
+    if not hmac.compare_digest(expected, supplied):
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    record["settlement_authority"] = "durable_host_request_store"
+    record["daemon_finalization_notification_attempts"] = int(
+        record.get("daemon_finalization_notification_attempts") or 0
+    ) + 1
+    record["daemon_finalization_notification_last_at_utc"] = _utc_now().isoformat()
+    record["daemon_finalization_notification_state"] = (
+        "delivered" if delivered else "pending_retry"
+    )
+    record["daemon_finalization_notification_error"] = None if delivered else str(
+        error or "daemon_finalization_notification_failed"
+    )
+    _atomic_write(path, record)
+    return _host_request_lifecycle_payload(record, state="consumed")

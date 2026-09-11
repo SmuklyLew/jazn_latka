@@ -3,15 +3,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.61 makes accepted visible finalization, not daemon/PID liveness or
-# pipe lifetime, the readiness boundary for ChatGPT speech. Persistent stdio is
-# preferred when the host can retain it; a stable daemon session/request lineage
-# is the recovery transport when it cannot. Phase-1 daemon results remain
-# visible to the host while awaiting phase-2, and public chat/chat-gpt spellings
-# share the central main.py option surface instead of drifting in a second parser.
-DISTRIBUTION_VERSION = "16.3.25.5.61"
-PACKAGE_VERSION = "16.3.25.5.61"
-PACKAGE_RELEASE_NAME = "accepted-visible-turn-finalization-convergence"
+# v16.3.25.5.62 makes one durable host-request settlement authoritative after
+# phase-1 binding. Daemon job state becomes an execution/supervision projection
+# that can reconcile a bounded runtime_turn_not_accepted recovery without
+# creating a second terminal truth. Reconstructed phase-1 candidates use the
+# same RuntimeAnswerValidator gate as native contexts, and host-visible output
+# remains blocked until daemon settlement is confirmed.
+DISTRIBUTION_VERSION = "16.3.25.5.62"
+PACKAGE_VERSION = "16.3.25.5.62"
+PACKAGE_RELEASE_NAME = "turn-settlement-authority-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

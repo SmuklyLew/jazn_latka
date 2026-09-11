@@ -66,7 +66,7 @@ def test_host_finalization_advances_durable_task_state(tmp_path: Path, monkeypat
 
     import latka_jazn.core.engine as engine_module
     monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
-    body = "Rozpoczynam pracę od źródeł."
+    body = 'Z pamięci odpowiadam na tę samą turę; trop pozostaje ograniczony do tej finalizacji. Źródło i indeks mają tu wyłącznie status kontraktowy; granica prawdy: to nie pełne potwierdzenie. Nie będę zastępować tej odpowiedzi aktualizacją.'
     payload = {
         "type": "host_visible_reply",
         "turn_id": bridge["turn_id"], "trace_id": bridge["trace_id"],
@@ -109,7 +109,7 @@ def test_delayed_finalizer_does_not_overwrite_newer_session_state(tmp_path: Path
 
     import latka_jazn.core.engine as engine_module
     monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
-    body = "Stara finalizacja."
+    body = 'Z pamięci odpowiadam na tę samą turę; trop pozostaje ograniczony do tej finalizacji. Źródło i indeks mają tu wyłącznie status kontraktowy; granica prawdy: to nie pełne potwierdzenie. Nie będę zastępować tej odpowiedzi aktualizacją.'
     payload = {
         "type": "host_visible_reply", "turn_id": bridge["turn_id"], "trace_id": bridge["trace_id"],
         "host_request_contract_hash": bridge["host_request_contract_hash"], "timestamp_header": bridge["timestamp_header"],
