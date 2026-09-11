@@ -16,7 +16,7 @@ MANIFEST_SCHEMA_VERSION = schema_version("host_tool_capability_manifest")
 CATALOG_SCHEMA_VERSION = schema_version("host_tool_catalog")
 MAX_HOST_TOOLS = 128
 MAX_MANIFEST_BYTES = 256 * 1024
-_TOOL_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
+_TOOL_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 
 
 class HostToolAvailability(str, Enum):
@@ -191,7 +191,7 @@ def _decode_manifest_text(text: str, *, source: str) -> tuple[dict[str, Any] | N
         return None, [f"host_tool_manifest_too_large:{source}"]
     try:
         value = json.loads(text)
-    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+    except (TypeError, ValueError) as exc:
         return None, [f"host_tool_manifest_invalid_json:{source}:{type(exc).__name__}"]
     if not isinstance(value, dict):
         return None, [f"host_tool_manifest_root_not_object:{source}"]
@@ -205,7 +205,7 @@ def load_host_tool_capability_manifest(
 ) -> tuple[dict[str, Any] | None, str, list[str], bool]:
     """Load a host-declared capability manifest without pretending local introspection.
 
-    Built-in ChatGPT tools live outside the Jaźń Python process.  The runtime can
+    Built-in ChatGPT tools live outside the Jaźń Python process. The runtime can
     therefore validate a host declaration and later bind observed tool evidence,
     but it cannot discover the host tool namespace by inspecting local modules.
     """
@@ -289,7 +289,8 @@ def _manifest_tool_entries(manifest: Mapping[str, Any]) -> tuple[list[dict[str, 
             operations = [str(value) for value in operations_raw if str(value).strip()]
         else:
             operations = []
-        annotations = dict(item.get("annotations")) if isinstance(item.get("annotations"), Mapping) else {}
+        annotations_raw = item.get("annotations")
+        annotations = dict(annotations_raw) if isinstance(annotations_raw, Mapping) else {}
         entries.append(
             {
                 "name": name,
@@ -338,13 +339,18 @@ def build_host_tool_capability_snapshot(
         env=env,
     )
     manifest_entries: list[dict[str, Any]] = []
-    errors = list(manifest_errors)
+    manifest_validation_errors = list(manifest_errors)
     if manifest_value is not None:
+        observed_manifest_schema = str(manifest_value.get("schema_version") or "").strip()
+        if observed_manifest_schema and observed_manifest_schema != MANIFEST_SCHEMA_VERSION:
+            manifest_validation_errors.append(
+                f"unsupported_host_tool_manifest_schema:{observed_manifest_schema}"
+            )
         manifest_entries, entry_errors = _manifest_tool_entries(manifest_value)
-        errors.extend(entry_errors)
+        manifest_validation_errors.extend(entry_errors)
 
     observation_map, observation_errors = _observation_index(observations)
-    errors.extend(observation_errors)
+    errors = [*manifest_validation_errors, *observation_errors]
 
     descriptors: dict[str, HostToolDescriptor] = dict(_CATALOG_BY_NAME)
     states: dict[str, HostToolAvailability] = {
@@ -382,9 +388,9 @@ def build_host_tool_capability_snapshot(
         else:
             states.setdefault(name, HostToolAvailability.UNKNOWN)
 
-    explicit_manifest_invalid = bool(manifest_supplied and errors and manifest_value is None)
+    manifest_invalid = bool(manifest_supplied and manifest_validation_errors)
     strict_availability = bool(manifest_supplied)
-    if explicit_manifest_invalid:
+    if manifest_invalid:
         policy_candidates: list[str] = []
     elif strict_availability:
         policy_candidates = sorted(
