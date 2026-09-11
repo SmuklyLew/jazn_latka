@@ -70,10 +70,10 @@ def test_phase_result_ready_is_not_hidden_behind_poll_runtime(monkeypatch, tmp_p
 
 
 def test_chat_gpt_public_spelling_uses_central_option_surface() -> None:
-    observed: dict[str, object] = {}
+    observed_args: list[str] = []
 
     def fake_legacy(args: list[str]) -> int:
-        observed["args"] = list(args)
+        observed_args[:] = args
         return 23
 
     rc = cli_module.main(
@@ -88,9 +88,8 @@ def test_chat_gpt_public_spelling_uses_central_option_surface() -> None:
     )
 
     assert rc == 23
-    args = list(observed["args"])
-    assert args[0:2] == ["--root", str(ROOT)]
-    assert args[2:] == [
+    assert observed_args[0:2] == ["--root", str(ROOT)]
+    assert observed_args[2:] == [
         "--chat-gpt",
         "--session-id",
         "stable-session",
