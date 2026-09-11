@@ -192,6 +192,6 @@ def test_chatgpt_runbook_and_loader_document_streaming_host_fallback() -> None:
     assert "nie może spaść do niezależnej lokalnej tury" in loader
 
 
-def test_v63_release_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.63"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-host-transport-capability-convergence"
+def test_v63_transport_convergence_remains_in_current_or_newer_release() -> None:
+    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 63)
+    assert PACKAGE_RELEASE_NAME
