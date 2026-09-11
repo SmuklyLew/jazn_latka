@@ -62,9 +62,10 @@ _root_list.py
 # Local packaging helper scripts
 /split_zip_sha.py
 
-# Codex/editor local state
+# Codex/editor local state. Keep only the shared type-checker parity settings.
 .codex/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 
 # Backups/temp
 /backups/
