@@ -56,7 +56,7 @@ oddzielone od statycznego kodu i manifestu paczki.
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
 - domyślna rozmowa: `python -X utf8 run.py`;
 - uniwersalna rozmowa i auto-routing: `python -X utf8 run.py chat ...`;
-- persistent host ChatGPT: `python -X utf8 run.py chat-gpt --session-id <id>` i jeden otwarty stdin/JSONL bridge;
+- host ChatGPT: preferowany `python -X utf8 run.py chat-gpt --session-id <id>` z jednym otwartym stdin/JSONL bridge; jeżeli host nie utrzymuje persistent stdio, krótkie procesy `chat-gpt` są dozwolone wyłącznie jako transport `daemon_bound_transactional_turns` z prealokowanym `request_id`, bez lokalnego replayu;
 - wyspecjalizowany backend Ollama: `python -X utf8 run.py chat-ollama ...`;
 - logika komend, lifecycle i routingu nie może być implementowana w `run.py`.
 
@@ -88,7 +88,7 @@ nie wpisuje się ręcznie.
 
 ChatGPT w Projekcie jest hostem/runtime executor channel, a nie pakietem Python
 instalowanym przez Jaźń. Nie dodawaj `openai` SDK jako zależności tylko po to,
-aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta korzysta z jednej utrzymywanej sesji `run.py chat-gpt`/stdin JSONL. Nie wymaga `OPENAI_API_KEY`; MCP jest opcjonalnym transportem hosta, nie warunkiem działania na ChatGPT.
+aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta preferuje jedną utrzymywaną sesję `run.py chat-gpt`/stdin JSONL. Gdy host nie udostępnia persistent/streaming stdio, ten sam publiczny entrypoint pracuje przez krótkie procesy CLI związane z trwałym daemonem: host prealokuje unikalny `request_id`, zachowuje stabilny `session_id`, polluje/resume'uje ten sam request i nigdy nie zamienia niepewnego transportu na niezależną lokalną turę. Nie wymaga `OPENAI_API_KEY`; MCP jest opcjonalnym transportem hosta, nie warunkiem działania na ChatGPT.
 
 Instrukcje Projektu pozostają cienkim loaderem. Dostęp do terminala, plików,
 sieci i innych narzędzi jest capability hosta i musi być wykrywany, a nie

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-"""Install v16.3.25.5.49 turn-authority invariants at the canonical operator boundary.
+"""Install turn-authority invariants at the canonical operator boundary.
 
-This compatibility overlay deliberately wraps stable public contracts instead of
-forking the large legacy bridge/engine modules.  ``run.py`` installs it before
-``latka_jazn.cli`` imports the legacy aggregate entrypoint, so all ChatGPT host
-turns use the same authority, identity and tool-evidence rules.
+The overlay deliberately wraps stable public contracts instead of forking the
+large bridge/engine/control-plane modules.  Besides authority, identity and
+tool-evidence gates it owns one transport invariant: after a daemon submit may
+have crossed the process boundary, the host must preserve the preallocated
+request id and poll the same job instead of replaying the user message.
 """
 
 from typing import Any, Mapping
@@ -48,9 +49,68 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
     from latka_jazn.core import chat_command_contract as bridge
     from latka_jazn.core import chatgpt_host_pending_store as pending_store
     from latka_jazn.core import host_response_candidate_guard as candidate_guard
+    from latka_jazn.core import runtime_daemon
 
     if getattr(bridge, "_turn_authority_runtime_overlay_installed", False):
         return {"installed": True, "already_installed": True, "schema_version": _OVERLAY_VERSION}
+
+    original_daemon_submit = runtime_daemon.chat_daemon_submit
+    original_chat_daemon = runtime_daemon.chat_daemon
+
+    def daemon_submit_with_authority(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        try:
+            request_id = runtime_daemon.normalize_daemon_request_id(kwargs.get("request_id"))
+        except ValueError:
+            raise
+        kwargs["request_id"] = request_id
+        try:
+            payload = original_daemon_submit(*args, **kwargs)
+        except Exception as exc:
+            payload = {
+                "ok": False,
+                "accepted": False,
+                "done": False,
+                "error_code": "daemon_chat_submit_failed",
+                "error": f"{type(exc).__name__}: {exc}",
+                "request_id": request_id,
+            }
+        if isinstance(payload, dict) and payload.get("error_code") == "daemon_chat_submit_failed":
+            payload = dict(payload)
+            payload["request_id"] = str(payload.get("request_id") or request_id)
+            payload["submit_outcome_authoritative"] = False
+            payload["safe_recovery"] = "poll_same_request_id_before_any_retry"
+        return payload
+
+    def chat_daemon_with_authority(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        request_id = runtime_daemon.normalize_daemon_request_id(kwargs.get("request_id"))
+        kwargs["request_id"] = request_id
+        try:
+            payload = original_chat_daemon(*args, **kwargs)
+        except Exception as exc:
+            payload = {
+                "ok": False,
+                "accepted": None,
+                "done": False,
+                "error_code": "daemon_chat_pending",
+                "error": f"{type(exc).__name__}: {exc}",
+                "request_id": request_id,
+                "client_wait_status": "submit_outcome_unknown",
+            }
+        if isinstance(payload, dict) and payload.get("error_code") == "daemon_chat_submit_failed":
+            payload = dict(payload)
+            payload.update({
+                "accepted": None,
+                "done": False,
+                "error_code": "daemon_chat_pending",
+                "request_id": str(payload.get("request_id") or request_id),
+                "client_wait_status": "submit_outcome_unknown",
+                "submit_outcome_authoritative": False,
+                "safe_recovery": "poll_same_request_id_before_any_retry",
+            })
+        return payload
+
+    runtime_daemon.chat_daemon_submit = daemon_submit_with_authority
+    runtime_daemon.chat_daemon = chat_daemon_with_authority
 
     original_binding = pending_store.canonical_host_request_binding
     original_build_context = candidate_guard.build_host_generation_context

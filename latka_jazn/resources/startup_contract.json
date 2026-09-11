@@ -2,8 +2,12 @@
   "accepted_visible_turn_required": true,
   "active_runtime_required": true,
   "chatgpt_fallback_transport": "daemon_bound_transactional_turns",
+  "chatgpt_local_turn_fallback_after_verified_daemon_submit": false,
+  "chatgpt_nonstreaming_resume_command": "python -X utf8 run.py chat-gpt --session-id <stable-session-id> --daemon-result <same-request-id>",
+  "chatgpt_nonstreaming_turn_command": "python -X utf8 run.py chat-gpt --session-id <stable-session-id> --daemon-request-id <unique-turn-request-id> -- \"<exact-user-message>\"",
   "chatgpt_paid_openai_api_required": false,
   "chatgpt_pipe_lifetime_is_identity": false,
+  "chatgpt_request_id_preallocated_before_process_spawn": true,
   "chatgpt_role": "project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md",
   "chatgpt_transport": "persistent_stdio_jsonl",
   "chatgpt_transport_selection": "capability_negotiated",
@@ -17,7 +21,7 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host zachowuje stable session_id i wznawia ten sam daemon request_id bez replayu. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API.",
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API.",
   "version": "v15.1.0.3.96",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only"

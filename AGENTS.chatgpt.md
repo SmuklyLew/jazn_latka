@@ -47,7 +47,7 @@ main.py
 
 Przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
-Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError` albo `TransportTimeoutError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował:
+Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` albo `StreamingExecNotEnabledContainerError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował. `StreamingExecNotEnabledContainerError` na powierzchni sesji interaktywnej oznacza brak persistent/streaming exec tej powierzchni; nie jest dowodem braku zwykłego one-shot executora ani błędem kodu Jaźni:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
 - runtime pozostaje `unverified`;
@@ -135,10 +135,17 @@ python -X utf8 run.py chat-gpt --session-id <stabilny-id-sesji>
 
 W tej ścieżce proces pozostaje otwarty. `main.py` utrzymuje JSONL/stdin bridge oraz `RuntimeSessionWorker`; daemon pozostaje niezależnym, trwałym właścicielem runtime. Dla każdej kolejnej wiadomości użytkownika **nie uruchamiaj nowej komendy CLI**: przekaż dokładny tekst do tego samego otwartego kanału i wykonaj phase-2 przez ten sam otwarty kanał. W tej zdolnej do persistent stdio ścieżce host zachowuje **ten sam otwarty kanał** przez kolejne tury.
 
-Jeżeli host **nie potrafi utrzymać** interaktywnego procesu/stdio pomiędzy turami, brak trwałego pipe'a nie może automatycznie wyłączać Jaźni. Użyj wtedy transportu `daemon_bound_transactional_turns` przez ten sam publiczny `run.py chat-gpt`:
+Jeżeli host **nie potrafi utrzymać** interaktywnego procesu/stdio pomiędzy turami, brak trwałego pipe'a nie może automatycznie wyłączać Jaźni. Użyj wtedy transportu `daemon_bound_transactional_turns` przez ten sam publiczny `run.py chat-gpt`. Krótki proces CLI jest tylko nośnikiem transportowym do trwałego daemonu, a nie nową sesją runtime:
+
+```bash
+python -X utf8 run.py chat-gpt --session-id <stabilny-id> --daemon-request-id <unikalny-request-id-tury> -- "<dokładna wiadomość użytkownika>"
+```
+
 - zachowaj jeden stabilny `session_id` dla logicznej rozmowy;
+- **przed utworzeniem procesu** przydziel jeden unikalny `request_id` bieżącej turze i przekaż go przez `--daemon-request-id`; dzięki temu utrata odpowiedzi CLI nie gubi tożsamości requestu;
+- po tym, jak transport wybrał zweryfikowany daemon, błąd submit/poll **nie może** przełączyć wiadomości do lokalnego `RuntimeSessionWorker`; wynik ma być `poll_runtime` dla tego samego requestu albo fail-closed `host_diagnostic`;
 - pierwsze przyjęcie wiadomości musi zwrócić i utrwalić `request_id`, `turn_id`, `trace_id` i, gdy wymagany, `host_request_contract_hash`;
-- gdy runtime zwraca `poll_runtime`, pobieraj **ten sam** `request_id` przez `--daemon-result`; nie wysyłaj ponownie wiadomości;
+- gdy runtime zwraca `poll_runtime`, pobieraj **ten sam** `request_id` przez `python -X utf8 run.py chat-gpt --session-id <ten-sam-id> --daemon-result <request-id>`; nie wysyłaj ponownie wiadomości;
 - `phase_result_ready=true` oznacza, że phase-1 jest gotowa nawet gdy `done=false`, ponieważ job może prawidłowo oczekiwać na host-visible phase-2;
 - gdy runtime zwraca `generate_then_finalize`, wykonaj host generation z przekazanego kontraktu, a następnie kanoniczne `host-finalize`/równoważną phase-2 z tym samym bindingiem;
 - dopiero `action=display_exact` po zaakceptowanej finalizacji upoważnia host do zwykłej widocznej odpowiedzi.

@@ -3,15 +3,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.62 makes one durable host-request settlement authoritative after
-# phase-1 binding. Daemon job state becomes an execution/supervision projection
-# that can reconcile a bounded runtime_turn_not_accepted recovery without
-# creating a second terminal truth. Reconstructed phase-1 candidates use the
-# same RuntimeAnswerValidator gate as native contexts, and host-visible output
-# remains blocked until daemon settlement is confirmed.
-DISTRIBUTION_VERSION = "16.3.25.5.62"
-PACKAGE_VERSION = "16.3.25.5.62"
-PACKAGE_RELEASE_NAME = "turn-settlement-authority-convergence"
+# v16.3.25.5.63 makes ChatGPT host transport capability-negotiated end to end.
+# Persistent stdin/stdout remains preferred, but hosts without streaming exec
+# use daemon-bound transactional one-shot processes with a request_id allocated
+# before submit. Once a verified daemon route owns a turn, transport ambiguity
+# can only poll/recover that same request or fail closed; it may never create an
+# unrelated local one-shot turn.
+DISTRIBUTION_VERSION = "16.3.25.5.63"
+PACKAGE_VERSION = "16.3.25.5.63"
+PACKAGE_RELEASE_NAME = "chatgpt-host-transport-capability-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
