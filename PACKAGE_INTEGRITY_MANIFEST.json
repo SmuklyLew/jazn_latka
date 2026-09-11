@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
-  "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
-  "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
-  "generated_at_utc": "2026-09-11T21:24:09+00:00",
-  "updated_at_utc": "2026-09-11T21:24:09+00:00",
+  "version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+  "runtime_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+  "package_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+  "generated_at_utc": "2026-09-11T21:58:28+00:00",
+  "updated_at_utc": "2026-09-11T21:58:28+00:00",
   "start_file": "run.py",
-  "file_count": 1337,
-  "static_file_count": 1337,
+  "file_count": 1340,
+  "static_file_count": 1340,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -146,8 +146,8 @@
     },
     {
       "path": ".github/workflows/pyright-active-tree-audit.yml",
-      "size_bytes": 2678,
-      "sha256": "fbc631d1bc8f395073f82224f1db60f7e2bffce01abfac294b4e3b0def0f969c",
+      "size_bytes": 2778,
+      "sha256": "1329c62d0f9d11aed403c05ca27ff52ba7a7460eba923e564be8732ecadd4a91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -173,8 +173,17 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2179,
-      "sha256": "62c87aa974fb581b0310fc972792c392cd552d49ecb8cffb406ed99add632b96",
+      "size_bytes": 2255,
+      "sha256": "11f7454dabc64de5a4de93611fb17eff3cbb3ff7fbbc92ea1dc6ddb336190db5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".vscode/settings.json",
+      "size_bytes": 110,
+      "sha256": "ae82c4753d2fdccbdb9df7902de9587a9b3235b3d4b6fca7a80d1d06635b6cf0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +254,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "c78614b768d0137bea5a00a8db788527bbe06655fe6dfaea0e115038d8663bc1",
+      "size_bytes": 3005,
+      "sha256": "70202f7f87ba2a4d4e6661b1e19f5083e651842b55aa566662b0c433e1e2dbd7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1936,6 +1945,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_66_CHATGPT_LOADER_PYLANCE_STATIC_GATE_CONVERGENCE.md",
+      "size_bytes": 5012,
+      "sha256": "fbde1c882458baf63fd5762a647d393db1e39ad2f4a9e9d76197b87edc9aee2f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1955,8 +1973,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 4708,
-      "sha256": "7fd33440bed69a2314aa3e4a7def6fa122ed90c45fe0fd9cafea6b4d2c5de95b",
+      "size_bytes": 4451,
+      "sha256": "487cb67c02921bf0d92922db9381977c6cad0b7d608f2b75d08448add11b5db9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7877,8 +7895,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6728,
-      "sha256": "c592edeefe4133efdd240f7b81f75926cb4f193da86ddf2b58ff1dd0fa7f999c",
+      "size_bytes": 6669,
+      "sha256": "de0d514ef40fd5bf348965f4ce2c96ad8b3a0c5e70cdaadc1c688d7b5c1aa845",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11512,6 +11530,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325566_chatgpt_loader_pylance_static_gate.py",
+      "size_bytes": 3926,
+      "sha256": "cc263bd8f5ade22377118a3845172556a3f368e26092bb26fbf9fe2656d3ad08",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_v1634_complex_dialogue_memory_routing.py",
       "size_bytes": 17706,
       "sha256": "49d9d287a2284e37e5e573015bf69089bbaef0d309a3d4d8aef25a53afb788c1",
@@ -12485,11 +12512,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "release_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
-    "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
-    "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence"
+    "runtime_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+    "package_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+    "release_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
