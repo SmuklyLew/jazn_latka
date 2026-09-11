@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
-  "runtime_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
-  "package_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
-  "generated_at_utc": "2026-09-11T17:45:58+00:00",
-  "updated_at_utc": "2026-09-11T17:45:58+00:00",
+  "version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "generated_at_utc": "2026-09-11T21:19:19+00:00",
+  "updated_at_utc": "2026-09-11T21:19:19+00:00",
   "start_file": "run.py",
-  "file_count": 1328,
-  "static_file_count": 1328,
+  "file_count": 1337,
+  "static_file_count": 1337,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "bb8c580671e8c9dfb2f7adab4b728c458f47d650cbd1e12a5490000b6796d316",
+      "size_bytes": 2984,
+      "sha256": "6aef47b8ff0832bf2ea0e5a8c2568af0edd4e7ddb25df96ec610fa1a73e7296e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1162,6 +1162,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/HOST_CAPABILITY_HANDSHAKE_PLAN.md",
+      "size_bytes": 13442,
+      "sha256": "bb0d70e76cc98d8a9ef5a8081000dd299edb60c5a1c3216469a21335229c726f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md",
       "size_bytes": 12877,
       "sha256": "80aed1afec7d90b410013e97734a754a0cc65d4a3520782811c4098a779228ab",
@@ -1909,6 +1918,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_64_VISIBLE_TURN_TTY_HOST_ROUTE_CONVERGENCE.md",
+      "size_bytes": 4368,
+      "sha256": "8fd1deacfa20f6dced00b93fb5cea649573c90ed602d092aa7747dad3777b075",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_65_HOST_TOOL_CAPABILITY_DISCOVERY_CONVERGENCE.md",
+      "size_bytes": 6568,
+      "sha256": "271ed48ef68871463553045ac5498f0d56286a439f6c46ec7a133270b2264f22",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -1928,8 +1955,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 3891,
-      "sha256": "267b542b3918dff8fde28a4806a275cc19069f5f9788a1d12ddb3a21bd791fea",
+      "size_bytes": 4708,
+      "sha256": "7fd33440bed69a2314aa3e4a7def6fa122ed90c45fe0fd9cafea6b4d2c5de95b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2468,8 +2495,8 @@
     },
     {
       "path": "latka_jazn/core/bridge_discovery.py",
-      "size_bytes": 7235,
-      "sha256": "f69fa56b2458f968f3fdfa22195d1a10a97ab1bd4a77d59e87fee6c29ee4366d",
+      "size_bytes": 8650,
+      "sha256": "a9c577919b6e9ce7e50fd1a67dde948273e6dd407c90f7cd57d93bdeaaeb2842",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3250,6 +3277,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_media_resources.py",
+      "size_bytes": 6247,
+      "sha256": "a3c41801c42ae57c6c85ac6f3029a1b9685697388337e87f61fa52da4b0ea50f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_regeneration_policy.py",
       "size_bytes": 1603,
       "sha256": "df524f7ea0f69fe7a8d7e94779fd0fb8bd83bef58ba675e95e5e23755606d9d7",
@@ -3268,9 +3304,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_tool_capabilities.py",
+      "size_bytes": 21510,
+      "sha256": "3c39d8801a408eb90f469603bb32f3c8dc3e96256f730fbaeb42b08239d90045",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_tool_turn_policy.py",
-      "size_bytes": 3945,
-      "sha256": "b3007b27d78faca4b78e16f1ee2ed5c7de29ca692f3b036c04bb52927fd09370",
+      "size_bytes": 7497,
+      "sha256": "46196a8e1132145c20fd45034a2cc13945331c0303f1377fb3cd0273ee6f050c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3854,8 +3899,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_chat.py",
-      "size_bytes": 12797,
-      "sha256": "a56080ae5611e9f95baab8cc732d160e03e216d3c2a7dcc83b8f32d8a909ae44",
+      "size_bytes": 13334,
+      "sha256": "913eccc4135f15b88c12f78a1bea2c2999cd84a0655c82c0717f227b82dadc67",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3881,8 +3926,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_environment.py",
-      "size_bytes": 9583,
-      "sha256": "099ce7478e7f26216e401684bc7bd668de4cd9ba65cdf3d9007296d14154a366",
+      "size_bytes": 11860,
+      "sha256": "8d133bcd4157b1ac84a1497ce11c3c3edab64deee315a10e001d28a382510f76",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7832,8 +7877,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6855,
-      "sha256": "ee383d4765bffccf2578919e0c553c329d641be75bb7b27bf682213ac9fcfa32",
+      "size_bytes": 6728,
+      "sha256": "c592edeefe4133efdd240f7b81f75926cb4f193da86ddf2b58ff1dd0fa7f999c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8347,6 +8392,15 @@
       "path": "tests/archive/test_v16325561_accepted_visible_turn_finalization_convergence__pre_v62.py",
       "size_bytes": 8650,
       "sha256": "08a7d59426cb379e60041f0b54d1d7d1768102ed862bdc9cfd79143dddaad506",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325564_visible_turn_tty_host_route_convergence__pre_v65.py",
+      "size_bytes": 4990,
+      "sha256": "ebc1854a0cb95ed25557580cb2d7428fe06d09882144c8637837b0fdf4a8edce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11423,8 +11477,35 @@
     },
     {
       "path": "tests/test_v16325563_chatgpt_nonstreaming_host_transport.py",
-      "size_bytes": 7190,
-      "sha256": "5e54fe25fa1a79bdc91a3d2158266efa5dc91c333f7e75f0c488a6391fa9eac2",
+      "size_bytes": 7224,
+      "sha256": "ae365d8b12a7f6a53aaa130b49b03beec47bd2e11222c3ad5ad4ba94d9fd4981",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325564_visible_turn_tty_host_route_convergence.py",
+      "size_bytes": 5014,
+      "sha256": "0262c7e41c2debd0730013d026193b5be5d4d11e06180586f0bc3813d7d960da",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325565_host_tool_capability_discovery_convergence.py",
+      "size_bytes": 6971,
+      "sha256": "c92ae357937d76827ddc1ee67782959dbf7150620a6f7e1175f98f4feb703add",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325565_host_tool_capability_manifest_failclosed.py",
+      "size_bytes": 2005,
+      "sha256": "1891b4bddb372deea46bcfa1b5cf1fc087d3769250e897887362077550b8b78f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12404,11 +12485,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
+  "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
-    "package_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence",
-    "release_version": "16.3.25.5.63-chatgpt-host-transport-capability-convergence"
+    "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+    "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+    "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
