@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "bed6ce28685f843d17030a57b552fa5ae92b9d14",
-    "base_version": "16.3.25.5.61-accepted-visible-turn-finalization-convergence",
+    "base_commit": "80614363d5fa0c4071e954fda031b55f9449a955",
+    "base_version": "16.3.25.5.62-turn-settlement-authority-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "80614363d5fa0c4071e954fda031b55f9449a955",
