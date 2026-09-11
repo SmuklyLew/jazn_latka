@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "5c24cdd59b3d97922ae6851d1879cc24eef7fcb6",
+  "base_merge_commit": "1913e6a3ac988becd629247b86f82c67d1d5a618",
   "base_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-  "commit_date": "2026-09-11T23:58:28+02:00",
+  "commit_date": "2026-09-12T00:05:56+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-11T21:58:28+00:00",
+  "generated_at_utc": "2026-09-11T22:05:56+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "df96e09e05bd5f0adfa3a8b827d92b5ae8f87e63",
+  "git_tree_sha": "dd776eb1c17a828bba58e432ba4c46987846fbe7",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "5c24cdd59b3d97922ae6851d1879cc24eef7fcb6",
+    "source_commit": "1913e6a3ac988becd629247b86f82c67d1d5a618",
     "source_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "5c24cdd59b3d97922ae6851d1879cc24eef7fcb6",
+  "source_commit": "1913e6a3ac988becd629247b86f82c67d1d5a618",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
   "tag": null,
