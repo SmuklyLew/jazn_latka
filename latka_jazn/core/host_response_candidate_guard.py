@@ -315,8 +315,11 @@ def evaluate_host_response_candidate(
         detected_intent=detected_intent,
         template_origin=template_origin,
     )
-    compatibility_context = str(contract.get("context_origin") or "") == "phase1_reconstructed_compatibility"
-    if not runtime_validation.accepted and not compatibility_context:
+    # Reconstructed phase-1 context is a recovery transport, not a weaker truth
+    # boundary.  The same RuntimeAnswerValidator rules apply to native and
+    # reconstructed contexts; otherwise the most failure-prone path would have
+    # the weakest candidate gate.
+    if not runtime_validation.accepted:
         reason = str(runtime_validation.mismatch_reason or "runtime_answer_validation_failed")
         if reason not in violations:
             violations.append(reason)
@@ -351,7 +354,7 @@ def evaluate_host_response_candidate(
         "template_origin": template_origin,
         "candidate_evaluation": candidate_evaluation.to_dict(),
         "runtime_validation": runtime_validation.to_dict(),
-        "runtime_validation_enforced": not compatibility_context,
+        "runtime_validation_enforced": True,
         "context_origin": contract.get("context_origin"),
         "context_sha256": str(contract.get("context_sha256") or ""),
         "source_origin": "chatgpt_host_finalizer",

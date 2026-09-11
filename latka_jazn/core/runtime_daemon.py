@@ -722,6 +722,7 @@ class DaemonChatJob:
     no_carryover: bool
     client: str
     request_fingerprint: str | None = None
+    user_text_sha256: str | None = None
     created_at_utc: str = field(default_factory=utc_now_iso)
     started_at_utc: str | None = None
     completed_at_utc: str | None = None
@@ -752,6 +753,10 @@ class DaemonChatJob:
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
     active_session_worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
+
+    def __post_init__(self) -> None:
+        if not str(self.user_text_sha256 or "").strip() and self.user_text:
+            self.user_text_sha256 = hashlib.sha256(self.user_text.encode("utf-8")).hexdigest()
 
     def terminal(self) -> bool:
         return self.status in DAEMON_CHAT_JOB_TERMINAL_STATES
@@ -784,7 +789,7 @@ class DaemonChatJob:
             "client": self.client,
             "input_field": self.input_field,
             "user_text": self.user_text,
-            "user_text_sha256": hashlib.sha256(self.user_text.encode("utf-8")).hexdigest(),
+            "user_text_sha256": str(self.user_text_sha256 or hashlib.sha256(self.user_text.encode("utf-8")).hexdigest()),
             "error": self.error,
             "last_heartbeat_at_utc": self.last_heartbeat_at_utc,
             "execution_timeout_seconds": self.execution_timeout_seconds,
@@ -1152,18 +1157,29 @@ class JaznDaemonServer(ThreadingHTTPServer):
     def _persist_chat_jobs_locked_unsafe(self) -> None:
         recoverable = []
         for job in self.chat_jobs.values():
-            if job.terminal():
+            result_value = job.result if isinstance(job.result, dict) else {}
+            result_error_code = str(result_value.get("error_code") or "")
+            recoverable_terminal_rejection = bool(
+                job.status == "failed"
+                and str(job.error or result_error_code) == "runtime_turn_not_accepted"
+            )
+            if job.terminal() and not recoverable_terminal_rejection:
                 continue
             recoverable.append({
                 "request_id": job.request_id,
                 "request_fingerprint": job.request_fingerprint,
+                "user_text_sha256": job.user_text_sha256,
                 "input_field": job.input_field,
                 "session_id": job.session_id,
                 "no_carryover": job.no_carryover,
                 "client": job.client,
                 "created_at_utc": job.created_at_utc,
                 "started_at_utc": job.started_at_utc,
+                "completed_at_utc": job.completed_at_utc,
                 "status": job.status,
+                "error": job.error,
+                "result_error_code": result_error_code or None,
+                "recovery_disposition": job.recovery_disposition,
                 "last_heartbeat_at_utc": job.last_heartbeat_at_utc,
                 "execution_timeout_seconds": job.execution_timeout_seconds,
                 "timeout_profile": job.timeout_profile,
@@ -1241,8 +1257,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for raw in jobs:
             if not isinstance(raw, dict) or str(raw.get("status")) not in {
                 "accepted", "queued", "running", "starting", DAEMON_CHAT_JOB_HOST_PENDING_STATE,
-                DAEMON_CHAT_JOB_HOST_WAIT_STATE,
+                DAEMON_CHAT_JOB_HOST_WAIT_STATE, "failed",
             }:
+                continue
+            if str(raw.get("status") or "") == "failed" and str(
+                raw.get("error") or raw.get("result_error_code") or ""
+            ) != "runtime_turn_not_accepted":
                 continue
             request_id = str(raw.get("request_id") or "").strip()
             request_fingerprint = str(raw.get("request_fingerprint") or "").strip()
@@ -1257,17 +1277,26 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 no_carryover=bool(raw.get("no_carryover")),
                 client=str(raw.get("client") or "daemon_http"),
                 request_fingerprint=request_fingerprint,
+                user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or utc_now_iso()),
                 started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
-                completed_at_utc=None if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE else utc_now_iso(),
+                completed_at_utc=(
+                    None
+                    if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    else str(raw.get("completed_at_utc") or utc_now_iso())
+                ),
                 status=(
                     DAEMON_CHAT_JOB_HOST_PENDING_STATE
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    else "failed"
+                    if previous_status == "failed"
                     else "recovered_after_restart"
                 ),
                 error=(
                     None
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    else "runtime_turn_not_accepted"
+                    if previous_status == "failed"
                     else "interrupted daemon job recovered without automatic replay"
                 ),
                 last_heartbeat_at_utc=str(raw.get("last_heartbeat_at_utc")) if raw.get("last_heartbeat_at_utc") else None,
@@ -1276,6 +1305,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 recovery_disposition=(
                     "host_finalization_pending_recovered"
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    else "durable_host_settlement_recovery_pending"
+                    if previous_status == "failed"
                     else "failed_without_replay"
                 ),
                 result=(
@@ -1287,6 +1318,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         "automatic_replay_performed": False,
                     }
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    else {
+                        "ok": False,
+                        "error_code": "runtime_turn_not_accepted",
+                        "request_id": request_id,
+                        "recovery_disposition": "durable_host_settlement_recovery_pending",
+                        "automatic_replay_performed": False,
+                    }
+                    if previous_status == "failed"
                     else {
                         "ok": False,
                         "error_code": "recovered_after_restart",
@@ -1318,6 +1357,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self.chat_jobs[request_id] = recovered
             if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE:
                 self.state.chat_job_pending_count += 1
+                self._reconcile_host_finalization_job_locked(recovered)
+            elif previous_status == "failed":
+                self.state.chat_job_failed_count += 1
                 self._reconcile_host_finalization_job_locked(recovered)
             else:
                 self.state.chat_job_recovered_count += 1
@@ -1692,6 +1734,18 @@ class JaznDaemonServer(ThreadingHTTPServer):
         normalized = str(session_id or "").strip()
         if not normalized:
             return None
+        # Before admitting a successor turn, give any bounded
+        # runtime_turn_not_accepted predecessor one chance to reconcile against
+        # the durable host settlement.  This closes the window where a failed
+        # daemon projection would otherwise let the next turn pass while the
+        # same logical turn is still pending/consumed in the host store.
+        for candidate in list(self.chat_jobs.values()):
+            if (
+                candidate.session_id == normalized
+                and candidate.request_id != exclude_request_id
+                and candidate.status in {"failed", DAEMON_CHAT_JOB_HOST_PENDING_STATE}
+            ):
+                self._reconcile_host_finalization_job_locked(candidate)
         candidates = [
             job
             for job in self.chat_jobs.values()
@@ -2065,9 +2119,125 @@ class JaznDaemonServer(ThreadingHTTPServer):
         else:
             self.state.chat_job_host_finalization_rejected_count += 1
 
-    def _reconcile_host_finalization_job_locked(self, job: DaemonChatJob) -> bool:
-        if job.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE or not job.host_turn_id:
+    @staticmethod
+    def _job_execution_error_code(job: DaemonChatJob) -> str:
+        result = job.result if isinstance(job.result, dict) else {}
+        return str(result.get("error_code") or job.error or "").strip()
+
+    def _adopt_durable_host_settlement_locked(self, job: DaemonChatJob) -> bool:
+        """Rebind one recoverable daemon rejection to its durable phase-1 settlement.
+
+        ``runtime_turn_not_accepted`` may be followed by a source-controlled
+        host-recovery path that has already persisted the exact same daemon
+        request lineage.  In that bounded case the durable host-request record
+        is the settlement authority; arbitrary worker/process failures remain
+        terminal and are never rewritten by this recovery path.
+        """
+
+        from latka_jazn.core.turn_settlement import (
+            execution_failure_allows_durable_settlement_recovery,
+            resolve_durable_turn_settlement,
+        )
+
+        if job.status != "failed":
             return False
+        error_code = self._job_execution_error_code(job)
+        if not execution_failure_allows_durable_settlement_recovery(error_code):
+            return False
+        settlement = resolve_durable_turn_settlement(
+            self.config.root,
+            daemon_request_id=job.request_id,
+            expected_user_text_sha256=job.user_text_sha256,
+            expected_user_text=job.user_text if job.user_text else None,
+        )
+        if settlement.get("valid") is not True:
+            return False
+        binding_value = settlement.get("binding")
+        binding = binding_value if isinstance(binding_value, dict) else {}
+        supplied = {
+            "turn_id": str(binding.get("turn_id") or ""),
+            "trace_id": str(binding.get("trace_id") or ""),
+            "request_contract_hash": str(
+                settlement.get("request_contract_hash") or ""
+            ).strip().lower(),
+        }
+        current = {
+            "turn_id": str(job.host_turn_id or ""),
+            "trace_id": str(job.host_trace_id or ""),
+            "request_contract_hash": str(job.host_request_contract_hash or ""),
+        }
+        if any(current[key] and current[key] != supplied[key] for key in current):
+            return False
+
+        job.host_turn_id = supplied["turn_id"] or None
+        job.host_trace_id = supplied["trace_id"] or None
+        job.host_request_contract_hash = supplied["request_contract_hash"] or None
+        generation_value = settlement.get("generation_context")
+        generation = generation_value if isinstance(generation_value, dict) else {}
+        job.host_request_expires_at_utc = str(
+            generation.get("expires_at_utc") or job.host_request_expires_at_utc or ""
+        ) or None
+        job.completed_at_utc = None
+        job.error = None
+        job.status = DAEMON_CHAT_JOB_HOST_PENDING_STATE
+        job.phase_result_ready_at_utc = job.phase_result_ready_at_utc or utc_now_iso()
+        job.host_finalization_reason = "durable_host_settlement_rebound_after_runtime_rejection"
+        job.recovery_disposition = "durable_host_settlement_rebound_after_runtime_rejection"
+        self.state.chat_job_failed_count = max(0, self.state.chat_job_failed_count - 1)
+        self.state.chat_job_pending_count += 1
+
+        bridge = {**binding}
+        bridge.update({
+            "schema_version": schema_version("chatgpt_host_bridge_turn"),
+            "phase": "host_visible_generation_requested",
+            "status": "durable_host_settlement_recovered",
+            "pending_request_persisted": True,
+            "host_must_generate_visible_reply": True,
+            "host_reply_finalization_required": True,
+            "host_request_contract_hash": supplied["request_contract_hash"],
+            "daemon_request_id": job.request_id,
+            "host_generation_policy": generation.get("host_generation_policy") or {},
+            "host_generation_rules": generation.get("host_generation_rules") or [],
+            "host_generation_context": generation.get("host_generation_context") or {},
+            "runtime_summary": generation.get("runtime_summary") or {},
+            "session_continuity_commit": generation.get("session_continuity_commit") or {},
+        })
+        job.result = {
+            "ok": True,
+            "host_finalization_pending": True,
+            "execution_state": DAEMON_CHAT_JOB_HOST_PENDING_STATE,
+            "request_id": job.request_id,
+            "chatgpt_host_bridge": bridge,
+            "recovery_disposition": job.recovery_disposition,
+            "settlement_authority": settlement.get("authority"),
+            "schema_version": DAEMON_SCHEMA_VERSION,
+        }
+
+        state = str(settlement.get("state") or "")
+        if state == "consumed":
+            self._terminalize_host_finalization_locked(
+                job, status="completed", reason="host_visible_reply_finalized"
+            )
+        elif state == "expired":
+            self._terminalize_host_finalization_locked(
+                job, status="host_finalization_expired", reason="host_request_expired"
+            )
+        elif state == "indeterminate":
+            self._terminalize_host_finalization_locked(
+                job,
+                status="host_finalization_rejected",
+                reason="host_request_persistence_indeterminate",
+            )
+        return True
+
+    def _reconcile_host_finalization_job_locked(self, job: DaemonChatJob) -> bool:
+        changed = False
+        if job.status == "failed":
+            changed = self._adopt_durable_host_settlement_locked(job)
+            if job.terminal():
+                return changed
+        if job.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE or not job.host_turn_id:
+            return changed
         try:
             from latka_jazn.core.chatgpt_host_pending_store import host_request_lifecycle_state
 
@@ -2104,7 +2274,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 reason="host_request_persistence_indeterminate",
             )
             return True
-        return False
+        return changed
 
     def note_host_finalization(
         self,
@@ -2121,6 +2291,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
             job = self.chat_jobs.get(str(request_id))
             if job is None:
                 return None, {"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}
+            if job.status == "failed":
+                self._reconcile_host_finalization_job_locked(job)
             expected = {
                 "turn_id": str(job.host_turn_id or ""),
                 "trace_id": str(job.host_trace_id or ""),

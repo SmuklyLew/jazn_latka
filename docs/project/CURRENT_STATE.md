@@ -1,10 +1,10 @@
 # Current project state
 
-**Snapshot date:** 2026-09-10
+**Snapshot date:** 2026-09-11
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `270d704831224a7ba346fd3b9bb46bd698a482f4`
-**Current master version:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
-**Update target:** `16.3.25.5.61-accepted-visible-turn-finalization-convergence`
+**Current master at documentation baseline:** `bed6ce28685f843d17030a57b552fa5ae92b9d14`
+**Current master version:** `16.3.25.5.61-accepted-visible-turn-finalization-convergence`
+**Update target:** `16.3.25.5.62-turn-settlement-authority-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
@@ -19,8 +19,9 @@ Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `la
 
 ## Conversation control-plane v60 / accepted-visible-turn v61
 
-**v60:** `ON MASTER`.  
-**v61 hotfix:** `IMPLEMENTED LOCALLY / BRANCH PRE-CI` on `fix/v16.3.25.5.61-accepted-visible-turn-finalization-convergence`.
+**v60:** `ON MASTER` as historical control-plane foundation.
+**v61:** `ON MASTER` via PR #253.
+**v62:** `IMPLEMENTATION CANDIDATE` — single durable turn-settlement authority, bounded daemon rebind after `runtime_turn_not_accepted`, strict reconstructed-context validation.
 
 - `run.py` remains a thin launcher and `main.py` the single central control plane.
 - v60 persistent stdio remains the preferred ChatGPT transport when the host can retain an interactive process.

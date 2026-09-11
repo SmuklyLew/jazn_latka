@@ -221,6 +221,8 @@ Podobny styl odpowiedzi nie może naprawić zerwanej lineage technicznej. Host n
 
 Jeżeli truth gate, integralność albo finalizator blokuje odpowiedź, przejdź do `host_diagnostic`. To samo obowiązuje, gdy nie ma zaakceptowanego `final_visible_text` albo jego zweryfikowanej koperty; żywy daemon nie daje prawa do imitowania wyniku runtime.
 
+Po trwałym zapisaniu phase-1 z `daemon_request_id` jego durable host-request record jest kanonicznym **turn settlement authority**. `DaemonChatJob` pozostaje projekcją wykonania/supervision i musi reconciliować dokładnie ten sam `request_id/turn_id/trace_id/host_request_contract_hash`. `runtime_turn_not_accepted` wolno odzyskać bez replayu tylko wtedy, gdy istnieje dokładnie jeden zgodny durable record; innych błędów workera/procesu nie wolno w ten sposób przepisywać na sukces. Reconstructed phase-1 nie ma słabszego validatora niż native phase-1.
+
 Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych lokalnych kroków. Jeżeli executor nie utworzył procesu, raportuj `host_executor_unavailable` i pozostaw stan filesystemu/paczki jako `unknown`.
 
 Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący executor został odzyskany.

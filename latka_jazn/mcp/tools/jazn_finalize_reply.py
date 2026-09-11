@@ -8,6 +8,7 @@ from latka_jazn.core.chat_command_contract import command_contract, persist_chat
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     issue_continuation_token,
+    mark_daemon_finalization_notification,
     resolve_continuation_token,
 )
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
@@ -273,6 +274,35 @@ def run(
         reason="host_visible_reply_finalized",
         terminal=True,
     )
+    delivered = lifecycle.get("ok") is True
+    try:
+        settlement = mark_daemon_finalization_notification(
+            runtime_root,
+            turn_id=str(binding["turn_id"]),
+            request_contract_hash=request_contract_hash,
+            delivered=delivered,
+            error=(
+                None
+                if delivered
+                else str(
+                    lifecycle.get("error_code")
+                    or lifecycle.get("error")
+                    or "daemon_finalization_notification_failed"
+                )
+            ),
+        )
+    except HostRequestStoreError as exc:
+        settlement = {"ok": False, "error": str(exc)}
+    if not delivered:
+        return _error(
+            "host_finalization_lifecycle_incomplete",
+            turn_id=binding["turn_id"],
+            trace_id=binding["trace_id"],
+            host_request_contract_hash=request_contract_hash,
+            daemon_job_lifecycle=lifecycle,
+            turn_settlement=settlement,
+            recovery_required=True,
+        )
     return {
         "content": [{"type": "text", "text": final_visible_text}],
         "structuredContent": {
@@ -290,6 +320,7 @@ def run(
             "host_visible_finalization": persisted.get("host_visible_finalization"),
             "host_request_consumption": persisted.get("host_request_consumption"),
             "daemon_job_lifecycle": lifecycle,
+            "turn_settlement": settlement,
         },
         "_meta": {
             "transport": "authenticated_private_mcp",
