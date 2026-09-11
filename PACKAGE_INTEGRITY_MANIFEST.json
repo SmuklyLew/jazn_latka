@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
-  "runtime_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
-  "package_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
-  "generated_at_utc": "2026-09-11T20:44:42+00:00",
-  "updated_at_utc": "2026-09-11T20:44:42+00:00",
+  "version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+  "generated_at_utc": "2026-09-11T21:04:26+00:00",
+  "updated_at_utc": "2026-09-11T21:04:26+00:00",
   "start_file": "run.py",
-  "file_count": 1330,
-  "static_file_count": 1330,
+  "file_count": 1335,
+  "static_file_count": 1335,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -245,8 +245,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2966,
-      "sha256": "58a75b9eee0778103c95ff957b544f8c2f65ea1a8318a4cf1fa8f047636941bc",
+      "size_bytes": 2984,
+      "sha256": "8b49f46ec11f7c9161fa06786e4c3c4a24b708333340a0508d136b149c350f63",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1918,6 +1918,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_65_HOST_TOOL_CAPABILITY_DISCOVERY_CONVERGENCE.md",
+      "size_bytes": 6568,
+      "sha256": "271ed48ef68871463553045ac5498f0d56286a439f6c46ec7a133270b2264f22",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4120,
       "sha256": "6e5c4c2e0b4aedaa6696a54befb0a0e108cd26f108a6794c51cce2864d2b20dd",
@@ -2477,8 +2486,8 @@
     },
     {
       "path": "latka_jazn/core/bridge_discovery.py",
-      "size_bytes": 7235,
-      "sha256": "f69fa56b2458f968f3fdfa22195d1a10a97ab1bd4a77d59e87fee6c29ee4366d",
+      "size_bytes": 8650,
+      "sha256": "a9c577919b6e9ce7e50fd1a67dde948273e6dd407c90f7cd57d93bdeaaeb2842",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3259,6 +3268,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_media_resources.py",
+      "size_bytes": 6247,
+      "sha256": "a3c41801c42ae57c6c85ac6f3029a1b9685697388337e87f61fa52da4b0ea50f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_regeneration_policy.py",
       "size_bytes": 1603,
       "sha256": "df524f7ea0f69fe7a8d7e94779fd0fb8bd83bef58ba675e95e5e23755606d9d7",
@@ -3277,9 +3295,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_tool_capabilities.py",
+      "size_bytes": 21130,
+      "sha256": "a41dfdbf669b62691b225f8865ffa47425393c493c79360cc624479ed4e971f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_tool_turn_policy.py",
-      "size_bytes": 5394,
-      "sha256": "0ac01bccdd8d208f80d892c58b424a97cdeac70d9ad756b4c849c53ff9e455dd",
+      "size_bytes": 7497,
+      "sha256": "46196a8e1132145c20fd45034a2cc13945331c0303f1377fb3cd0273ee6f050c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7841,8 +7868,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6806,
-      "sha256": "c48fe1b9c8568963cfddfe1e3b7d5b8b81cb190d54ab43e8bd36fc4d9b5036bd",
+      "size_bytes": 6728,
+      "sha256": "c592edeefe4133efdd240f7b81f75926cb4f193da86ddf2b58ff1dd0fa7f999c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8356,6 +8383,15 @@
       "path": "tests/archive/test_v16325561_accepted_visible_turn_finalization_convergence__pre_v62.py",
       "size_bytes": 8650,
       "sha256": "08a7d59426cb379e60041f0b54d1d7d1768102ed862bdc9cfd79143dddaad506",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325564_visible_turn_tty_host_route_convergence__pre_v65.py",
+      "size_bytes": 4990,
+      "sha256": "ebc1854a0cb95ed25557580cb2d7428fe06d09882144c8637837b0fdf4a8edce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11441,8 +11477,17 @@
     },
     {
       "path": "tests/test_v16325564_visible_turn_tty_host_route_convergence.py",
-      "size_bytes": 4990,
-      "sha256": "ebc1854a0cb95ed25557580cb2d7428fe06d09882144c8637837b0fdf4a8edce",
+      "size_bytes": 5014,
+      "sha256": "0262c7e41c2debd0730013d026193b5be5d4d11e06180586f0bc3813d7d960da",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v16325565_host_tool_capability_discovery_convergence.py",
+      "size_bytes": 6971,
+      "sha256": "c92ae357937d76827ddc1ee67782959dbf7150620a6f7e1175f98f4feb703add",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12422,11 +12467,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
+  "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
-    "package_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence",
-    "release_version": "16.3.25.5.64-visible-turn-tty-host-route-convergence"
+    "runtime_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+    "package_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+    "release_version": "16.3.25.5.65-host-tool-capability-discovery-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
