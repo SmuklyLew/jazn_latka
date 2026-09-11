@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "4c9790ac9fe6780234e9d6b57011d0c7e9bf9b1a",
-    "base_version": "16.3.25.5.65-host-tool-capability-discovery-convergence",
+    "base_commit": "1913e6a3ac988becd629247b86f82c67d1d5a618",
+    "base_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "1913e6a3ac988becd629247b86f82c67d1d5a618",
