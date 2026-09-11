@@ -164,6 +164,6 @@ def test_v65_bridge_discovery_exposes_host_tool_snapshot(tmp_path: Path, monkeyp
     )
 
 
-def test_v65_release_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.65"
-    assert PACKAGE_RELEASE_NAME == "host-tool-capability-discovery-convergence"
+def test_v65_release_identity_remains_regression_floor() -> None:
+    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 65)
+    assert PACKAGE_RELEASE_NAME
