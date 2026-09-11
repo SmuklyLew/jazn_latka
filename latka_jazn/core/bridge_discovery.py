@@ -6,6 +6,7 @@ import json
 
 from latka_jazn.bridge_secure_gateway import SecureGatewayPolicy
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.version import schema_version
@@ -41,6 +42,7 @@ def discover_runtime_bridges(
     daemon = status_daemon(config, host=host, port=port, probe_endpoint=False)
     conversation = conversation_entrypoint_contract("--chat").to_dict()
     chatgpt = conversation_entrypoint_contract("--chat-gpt").to_dict()
+    host_tool_capabilities = build_host_tool_capability_snapshot()
     return {
         "schema_version": schema_version("runtime_bridge_discovery"),
         "active_root": str(root),
@@ -48,6 +50,7 @@ def discover_runtime_bridges(
         "marker_found": marker is not None,
         "marker": marker or {},
         "daemon_status": daemon,
+        "host_tool_capabilities": host_tool_capabilities,
         "conversation": {
             **conversation,
             "command": "python -X utf8 run.py chat --session-id <id>",
@@ -98,12 +101,28 @@ def discover_runtime_bridges(
             "visible_turn_readiness": "accepted_final_visible_text_only",
             "requires_api_key": False,
             "uses_openai_api": False,
+            "host_tool_capability_discovery": {
+                "snapshot_status": host_tool_capabilities.get("status"),
+                "manifest_present": host_tool_capabilities.get("manifest_present"),
+                "manifest_source": host_tool_capabilities.get("manifest_source"),
+                "verified_tools": list(host_tool_capabilities.get("verified_tools") or []),
+                "advertised_tools": list(host_tool_capabilities.get("advertised_tools") or []),
+                "capability_confirmation_required_for_tools": list(
+                    host_tool_capabilities.get("capability_confirmation_required_for_tools") or []
+                ),
+                "probe_policy": "automatic_probe_read_only_only; mutating/private probes forbidden",
+                "manifest_env": [
+                    "JAZN_HOST_TOOL_CAPABILITIES_JSON",
+                    "JAZN_HOST_TOOL_CAPABILITIES_FILE",
+                ],
+            },
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage, "
                 "a host wznawia ten sam request_id i finalizuje phase-2 bez replayu wiadomości. Żywotność pipe'a "
                 "nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; widoczna może być tylko zaakceptowana "
-                "final_visible_text. Tryb nie wykonuje żądania OpenAI API."
+                "final_visible_text. Tryb nie wykonuje żądania OpenAI API. Hostowe narzędzia są odkrywane "
+                "przez jawny manifest/obserwacje hosta, a nie przez TTY, PID lub lokalny import."
             ),
         },
         "openai_bridge": {
@@ -142,6 +161,7 @@ def discover_runtime_bridges(
             "truth_boundary": "MCP is a transport to the local runtime; it is not identity, memory, or proof that the daemon is active.",
         },
         "truth_boundary": (
-            "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root."
+            "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root. "
+            "Host-tool discovery jest osobnym kontraktem capability i nie dowodzi runtime readiness ani accepted visible turn."
         ),
     }

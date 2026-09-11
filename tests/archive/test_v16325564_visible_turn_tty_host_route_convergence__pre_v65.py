@@ -111,6 +111,6 @@ def test_v64_chatgpt_loader_binds_tool_results_back_to_same_turn() -> None:
     assert "Nie utożsamiaj TTY z rozmową ani trwałością" in loader
 
 
-def test_v64_release_identity_remains_regression_floor() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 64)
-    assert PACKAGE_RELEASE_NAME
+def test_v64_release_identity() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.64"
+    assert PACKAGE_RELEASE_NAME == "visible-turn-tty-host-route-convergence"
