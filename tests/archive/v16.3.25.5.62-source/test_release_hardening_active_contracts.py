@@ -61,8 +61,7 @@ def test_active_bootstrap_contract_has_only_canonical_release_sources_and_comman
         "run python -X utf8 run.py status --json",
         "run python -X utf8 run.py doctor --json",
         "run python -X utf8 run.py start when daemon is not already active",
-        "open one persistent python -X utf8 run.py chat-gpt --session-id <stable-session-id> bridge and reuse its stdin/stdout across turns when the host supports persistent stdio",
-        "when persistent stdio is unavailable, keep the same session_id and use daemon-bound transactional one-shot chat-gpt calls with a unique --daemon-request-id allocated before spawn; poll/resume the same request and never replay it as a local turn",
+        "open one persistent python -X utf8 run.py chat-gpt --session-id <stable-session-id> bridge and reuse its stdin/stdout across turns",
     ]
     active_text = path.read_text(encoding="utf-8")
     assert "VERSION.txt" not in active_text

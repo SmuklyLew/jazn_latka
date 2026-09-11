@@ -234,5 +234,5 @@ def test_machine_readable_contracts_require_accepted_visible_turn() -> None:
 
 
 def test_v61_release_identity() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 62)
-    assert PACKAGE_RELEASE_NAME
+    assert PACKAGE_VERSION == "16.3.25.5.62"
+    assert PACKAGE_RELEASE_NAME == "turn-settlement-authority-convergence"

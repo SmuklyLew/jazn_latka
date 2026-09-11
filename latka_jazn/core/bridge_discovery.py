@@ -77,6 +77,19 @@ def discover_runtime_bridges(
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
             "per_message_cli_required": False,
+            "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
+            "persistent_stdio_required": False,
+            "nonstreaming_turn_command": (
+                'python -X utf8 run.py chat-gpt --session-id <stable-session-id> '
+                '--daemon-request-id <unique-turn-request-id> -- "<exact-user-message>"'
+            ),
+            "nonstreaming_resume_command": (
+                "python -X utf8 run.py chat-gpt --session-id <stable-session-id> "
+                "--daemon-result <same-request-id>"
+            ),
+            "request_id_preallocated_before_process_spawn": True,
+            "ambiguous_transport_policy": "poll_same_request_id_never_local_replay",
+            "local_turn_fallback_after_verified_daemon_submit": False,
             "persistent_bridge_process_required_when_host_supports_it": True,
             "persistent_bridge_process_required_when_host_cannot_retain_it": False,
             "daemon_transactional_resume_supported": True,

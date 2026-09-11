@@ -151,4 +151,4 @@ def test_v59_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text
 
 def test_release_identity_supersedes_v60_with_accepted_visible_turn_convergence() -> None:
     assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 61)
-    assert PACKAGE_RELEASE_NAME
+    assert PACKAGE_RELEASE_NAME == "turn-settlement-authority-convergence"
