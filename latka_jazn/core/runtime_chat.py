@@ -24,7 +24,11 @@ class RuntimeChatLifecycle:
     shutdown_when_loop_exits: bool
     truth_boundary: str
     stdin_is_tty: bool
+    io_surface: str
+    terminal_ui_mode: str
+    tty_controls_enabled: bool
     process_persistence: str
+    process_persistence_inferred_from_tty: bool
     background_process_claim_allowed: bool
     exit_reason: str = "running"
     session_id: str | None = None
@@ -71,7 +75,8 @@ class LatkaRuntimeShell(cmd.Cmd):
             stdin_is_tty = bool(input_stream.isatty())
         except Exception:
             stdin_is_tty = False
-        process_persistence = "persistent_terminal" if stdin_is_tty else "ephemeral_stdin_pipe"
+        io_surface = "terminal_tty" if stdin_is_tty else "redirected_stdin_stream"
+        terminal_ui_mode = "interactive_terminal" if stdin_is_tty else "redirected_stream"
         self.lifecycle = RuntimeChatLifecycle(
             mode="persistent_chat_loop",
             engine_reused_between_turns=True,
@@ -79,10 +84,15 @@ class LatkaRuntimeShell(cmd.Cmd):
             truth_boundary=(
                 "runtime trwa tylko tak długo, jak działa ten proces Pythona; "
                 "po /exit, EOF albo zamknięciu stdin silnik zostaje zamknięty. "
-                "EOF nie jest awarią Jaźni, tylko końcem strumienia wejścia."
+                "TTY opisuje wyłącznie powierzchnię terminala i nie jest dowodem trwałości procesu. "
+                "Długowieczny pipe może utrzymywać ten sam proces, a TTY może zostać zamknięty natychmiast."
             ),
             stdin_is_tty=stdin_is_tty,
-            process_persistence=process_persistence,
+            io_surface=io_surface,
+            terminal_ui_mode=terminal_ui_mode,
+            tty_controls_enabled=stdin_is_tty,
+            process_persistence="process_lifetime_bound",
+            process_persistence_inferred_from_tty=False,
             background_process_claim_allowed=False,
             session_id=self.session_id,
             no_carryover=no_carryover,
@@ -192,7 +202,7 @@ class LatkaRuntimeShell(cmd.Cmd):
                     lambda: self.engine.process_turn(
                         text,
                         client_context={
-                            "client": "cli_persistent_chat",
+                            "client": "cli_persistent_chat_loop",
                             "persistent_chat": True,
                             "lifecycle": "persistent_chat_loop",
                             "preview_phase": "same_pipeline_as_one_shot_process_turn",
@@ -200,7 +210,7 @@ class LatkaRuntimeShell(cmd.Cmd):
                             "no_carryover": bool(self.no_carryover and not self._last_user_text),
                             "previous_user_text": self._last_user_text,
                             "previous_visible_text": self._last_visible_text,
-                        },
+                      },
                     ),
                     command="--chat",
                     timeout_seconds=runtime_turn_timeout_seconds(getattr(self.engine, "config", None)),

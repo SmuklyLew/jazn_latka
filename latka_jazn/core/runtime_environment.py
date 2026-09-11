@@ -96,6 +96,11 @@ class RuntimeEnvironmentStatus:
     detection_basis: list[str]
     stdin_isatty: bool | None
     stdout_isatty: bool | None
+    io_surface: str
+    terminal_ui_mode: str
+    tty_controls_enabled: bool
+    tty_required_for_transport: bool
+    process_persistence_inferred_from_tty: bool
     is_chatgpt_host_bridge: bool
     is_terminal_chat_loop: bool
     uses_openai_api: bool
@@ -116,7 +121,40 @@ class RuntimeEnvironmentStatus:
         payload["selected_backend_adapter"] = self.effective_runtime_adapter
         payload["selection_scope"] = "effective_runtime_channel"
         payload["host_bridge_external_generation_required"] = bool(self.is_chatgpt_host_bridge)
+        payload["tty_semantics"] = (
+            "isatty describes whether a stdio stream is attached to a terminal device. "
+            "It does not prove a human is present, does not prove process persistence, and is not required "
+            "for the ChatGPT host bridge or daemon-bound transactional turns."
+        )
         return payload
+
+
+def _classify_io_surface(
+    *,
+    visible_adapter: str | None,
+    stdin_isatty: bool | None,
+    stdout_isatty: bool | None,
+) -> tuple[str, str, bool]:
+    """Classify presentation independently from transport persistence.
+
+    ``isatty()`` is evidence about a terminal device only.  A long-lived pipe,
+    JSONL bridge, graphical host, daemon HTTP request, or other machine channel
+    can be fully conversational while both stdio streams are non-TTY.
+    """
+
+    if visible_adapter == CHATGPT_ADAPTER:
+        return "chatgpt_host_bridge", "host_managed_graphical_or_tool_channel", False
+    if visible_adapter == TERMINAL_ADAPTER:
+        if stdin_isatty is True and stdout_isatty is True:
+            return "terminal_tty", "interactive_terminal", True
+        if stdin_isatty is True or stdout_isatty is True:
+            return "terminal_mixed_stdio", "mixed_terminal_streams", False
+        return "terminal_redirected_stdio", "redirected_stream", False
+    if visible_adapter in {OPENAI_ADAPTER, OLLAMA_ADAPTER, OPENAI_COMPATIBLE_ADAPTER}:
+        return "programmatic_model_channel", "machine_stream", False
+    if stdin_isatty is True and stdout_isatty is True:
+        return "unbound_terminal_tty", "interactive_terminal", True
+    return "unbound_stdio", "machine_or_redirected_stream", False
 
 
 def detect_runtime_environment(
@@ -211,6 +249,14 @@ def detect_runtime_environment(
     if not basis:
         basis.append("config.model_adapter_default")
 
+    stdin_isatty = _stream_isatty(stdin if stdin is not None else sys.stdin)
+    stdout_isatty = _stream_isatty(stdout if stdout is not None else sys.stdout)
+    io_surface, terminal_ui_mode, tty_controls_enabled = _classify_io_surface(
+        visible_adapter=visible,
+        stdin_isatty=stdin_isatty,
+        stdout_isatty=stdout_isatty,
+    )
+
     return RuntimeEnvironmentStatus(
         explicit_command=explicit,
         selected_backend_adapter=selected,
@@ -218,8 +264,13 @@ def detect_runtime_environment(
         effective_runtime_adapter=effective,
         environment_host=host,
         detection_basis=basis,
-        stdin_isatty=_stream_isatty(stdin if stdin is not None else sys.stdin),
-        stdout_isatty=_stream_isatty(stdout if stdout is not None else sys.stdout),
+        stdin_isatty=stdin_isatty,
+        stdout_isatty=stdout_isatty,
+        io_surface=io_surface,
+        terminal_ui_mode=terminal_ui_mode,
+        tty_controls_enabled=tty_controls_enabled,
+        tty_required_for_transport=False,
+        process_persistence_inferred_from_tty=False,
         is_chatgpt_host_bridge=visible == CHATGPT_ADAPTER,
         is_terminal_chat_loop=visible == TERMINAL_ADAPTER,
         uses_openai_api=uses_openai,

@@ -8,6 +8,21 @@ from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("host_tool_turn_policy")
 KNOWN_HOST_TOOLS = frozenset({"web.run", "GitHub", "image_gen", "file_search"})
+_URL_RE = re.compile(r"(?:https?://|www\.)\S+", flags=re.IGNORECASE)
+_MEDIA_LOOKUP_TOKENS = (
+    "youtube",
+    "youtu.be",
+    "spotify",
+    "soundcloud",
+    "bandcamp",
+    "apple music",
+    "muzyk",
+    "piosenk",
+    "utwor",
+    "posluch",
+    "audio",
+    "teledysk",
+)
 
 
 def _fold(value: str) -> str:
@@ -25,6 +40,10 @@ class HostToolTurnPolicy:
     tool_results_cannot_be_voice_source: bool = True
     finalization_required_after_tool_use: bool = True
     tool_output_may_be_visible_without_runtime_finalization: bool = False
+    tool_result_is_intermediate: bool = True
+    same_turn_resume_required: bool = True
+    accepted_visible_turn_required: bool = True
+    message_envelope_required: bool = True
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
         "Narzędzia hosta są zdolnościami podporządkowanymi jednej turze runtime. "
@@ -47,10 +66,17 @@ def build_host_tool_turn_policy(
     source_policy = str(plan.get("source_policy") or "")
     allowed: list[str] = []
     required: list[str] = []
+    user_has_url = bool(_URL_RE.search(str(user_text or "")))
+    media_lookup = any(token in folded for token in _MEDIA_LOOKUP_TOKENS)
 
-    if source_policy == "requires_external_web" or any(token in folded for token in ("web", "sieci", "wyszuk", "research", "zrod")):
+    if (
+        source_policy == "requires_external_web"
+        or user_has_url
+        or media_lookup
+        or any(token in folded for token in ("web", "sieci", "wyszuk", "research", "zrod"))
+    ):
         allowed.append("web.run")
-        if source_policy == "requires_external_web":
+        if source_policy == "requires_external_web" or user_has_url:
             required.append("web.run")
     if any(token in folded for token in ("github", "repo", "branch", "commit", "push", "pull request", " pr ")):
         allowed.append("GitHub")
@@ -92,4 +118,14 @@ def validate_tool_evidence_against_policy(
         violations.append("runtime_turn_ownership_missing")
     if contract.get("tool_results_cannot_be_voice_source") is not True:
         violations.append("tool_voice_boundary_missing")
+    if observed and contract.get("finalization_required_after_tool_use") is not True:
+        violations.append("tool_finalization_requirement_missing")
+    if observed and contract.get("same_turn_resume_required") is not True:
+        violations.append("tool_same_turn_resume_requirement_missing")
+    if observed and contract.get("tool_output_may_be_visible_without_runtime_finalization") is not False:
+        violations.append("tool_output_visibility_boundary_missing")
+    if observed and contract.get("accepted_visible_turn_required") is not True:
+        violations.append("accepted_visible_turn_requirement_missing")
+    if observed and contract.get("message_envelope_required") is not True:
+        violations.append("message_envelope_requirement_missing")
     return violations

@@ -3,15 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.63 makes ChatGPT host transport capability-negotiated end to end.
-# Persistent stdin/stdout remains preferred, but hosts without streaming exec
-# use daemon-bound transactional one-shot processes with a request_id allocated
-# before submit. Once a verified daemon route owns a turn, transport ambiguity
-# can only poll/recover that same request or fail closed; it may never create an
-# unrelated local one-shot turn.
-DISTRIBUTION_VERSION = "16.3.25.5.63"
-PACKAGE_VERSION = "16.3.25.5.63"
-PACKAGE_RELEASE_NAME = "chatgpt-host-transport-capability-convergence"
+# v16.3.25.5.64 converges visible-turn continuity across host-tool use and
+# separates terminal/TTY presentation capability from transport persistence.
+# A ChatGPT graphical/tool host is valid with non-TTY stdio; host-tool results
+# remain intermediate evidence bound to the same runtime turn and may become
+# visible only after accepted phase-2 finalization and MessageEnvelope output.
+DISTRIBUTION_VERSION = "16.3.25.5.64"
+PACKAGE_VERSION = "16.3.25.5.64"
+PACKAGE_RELEASE_NAME = "visible-turn-tty-host-route-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
