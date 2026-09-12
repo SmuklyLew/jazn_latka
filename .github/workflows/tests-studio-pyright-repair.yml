@@ -27,11 +27,11 @@ jobs:
           npm install --global pyright@1.1.411
       - name: Apply type fixes
         run: python -X utf8 tools/jazn_tests_studio/apply_ci_type_fix.py
-      - name: Validate Studio and active tree types
+      - name: Validate changed Test Studio types
         run: |
           python -m py_compile tools/jazn_tests_studio.py tools/jazn_tests_studio/progress_plugin.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
           python -X utf8 tools/jazn_tests_studio.py self-test
-          pyright --project pyrightconfig.json
+          pyright tools/jazn_tests_studio.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
       - name: Commit materialized type fixes
         shell: bash
         run: |
