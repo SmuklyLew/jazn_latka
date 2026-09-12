@@ -56,7 +56,7 @@ jobs:
 
       - name: Compile active Python
         shell: pwsh
-        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+        run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
       - name: Re-run exact PowerShell failure surface
         shell: pwsh
@@ -64,13 +64,13 @@ jobs:
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=25
           -m "not live_model and not live_mcp"
-          tests/test_archive_io_v1638.py
-          tests/test_pack_generator_archive_io_v1638.py
+          tests/test_archive_io.py
+          tests/test_pack_generator_archive_io.py
           tests/test_readiness_contract.py
           tests/test_release_completion.py
-          tests/test_release_metadata_semantics_v163253.py
+          tests/test_release_metadata_semantics.py
           tests/test_runtime_stability_wake_state.py
-          tests/test_v16324_offline_provenance_readiness.py
+          tests/test_offline_provenance_readiness.py
 
       - name: Full deterministic suite in PowerShell
         shell: pwsh
