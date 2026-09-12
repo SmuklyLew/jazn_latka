@@ -5,6 +5,8 @@ from pathlib import Path
 from threading import Event
 from typing import Any
 
+from latka_jazn.tools.application_shell import DiagnosticsHub
+
 from .constants import DEFAULT_COMPRESSION_LEVEL, DEFAULT_PART_SIZE_MIB, GENERATOR_TITLE, GENERATOR_VERSION
 from .models import ContentMode, PackRequest, ProgressEvent, TransportMode
 from .service import config_report, pack, plan_pack, unpack_package, verify_package
@@ -112,41 +114,64 @@ def run_unpack_form() -> dict[str, Any]:
 
 def run_settings_form() -> dict[str, Any]:
     settings = load_settings()
-    settings["ui_mode"] = _choice("Domyślny interfejs", ("text", "tui", "studio"), str(settings["ui_mode"]))
+    settings["ui_mode"] = _choice("Domyślny interfejs", ("text", "tui", "window"), str(settings["ui_mode"]))
     settings["output_root"] = _ask("Domyślny folder wynikowy", str(settings.get("output_root") or ""))
     settings["part_size_mib"] = int(_ask("Domyślny rozmiar części MiB", str(settings["part_size_mib"])))
     settings["compression_level"] = int(_ask("Domyślny poziom kompresji 0..9", str(settings["compression_level"])))
     settings["remember_last_paths"] = _yes_no("Zapamiętywać ostatnie ścieżki?", bool(settings["remember_last_paths"]))
+    settings["splash_enabled"] = _yes_no("Pokazywać ekran startowy w terminalu?", bool(settings.get("splash_enabled", True)))
+    settings["diagnostics_enabled"] = _yes_no("Zapisywać diagnostykę/log aplikacji?", bool(settings.get("diagnostics_enabled", True)))
+    settings["log_level"] = _choice("Minimalny poziom logu", ("DEBUG", "INFO", "WARNING", "ERROR"), str(settings.get("log_level") or "INFO"))
     return save_settings(settings)
 
 
-def run_text_ui() -> int:
+def run_text_ui(diagnostics: DiagnosticsHub | None = None) -> int:
+    """Professional plain-terminal interface over the same packer core."""
     while True:
         print(f"\n{GENERATOR_TITLE} v{GENERATOR_VERSION}")
         print("=" * 72)
+        print("STRONA GŁÓWNA")
         print("1. Pakowanie")
         print("2. Rozpakowywanie")
         print("3. Weryfikacja paczki")
         print("4. Ustawienia")
         print("5. Konfiguracja")
+        print("6. Diagnostyka / log")
         print("0. Wyjście")
         command = input("\nWybór: ").strip()
+        if command == "0":
+            if diagnostics is not None:
+                diagnostics.record("INFO", "Zamknięto interfejs tekstowy")
+            return 0
         try:
             if command == "1":
+                if diagnostics is not None:
+                    diagnostics.record("INFO", "Rozpoczęto formularz pakowania")
                 result = run_pack_form()
             elif command == "2":
+                if diagnostics is not None:
+                    diagnostics.record("INFO", "Rozpoczęto formularz rozpakowania")
                 result = run_unpack_form()
             elif command == "3":
+                if diagnostics is not None:
+                    diagnostics.record("INFO", "Rozpoczęto formularz weryfikacji")
                 result = run_verify_form()
             elif command == "4":
                 result = run_settings_form()
             elif command == "5":
                 result = config_report()
-            elif command == "0":
-                return 0
+            elif command == "6":
+                if diagnostics is None:
+                    result = {"ok": True, "diagnostics": "Diagnostyka nie została podłączona do tej sesji."}
+                else:
+                    result = {"ok": True, "log_path": str(diagnostics.log_path), "events": diagnostics.snapshot()[-100:]}
             else:
                 continue
-            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True, default=str))
+        except KeyboardInterrupt:
+            raise
         except Exception as exc:
+            if diagnostics is not None:
+                diagnostics.exception(exc, context="Błąd operacji interfejsu tekstowego Pack Generator")
             print(f"\nBŁĄD: {type(exc).__name__}: {exc}")
-        input("\nEnter — powrót...")
+        input("\nEnter — powrót do strony głównej...")
