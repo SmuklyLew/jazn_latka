@@ -1,0 +1,10 @@
+{
+  "schema": "jazn_test_branch_snapshot/v4",
+  "base_version": "16.3.25.5.66",
+  "base_commit": "9a714a53c6e358904ac2e42cffc34f0e510445c9",
+  "base_active_tests_tree_sha": "d8d23d50d2971e0e1d333626b7fdc07b83d6eb34",
+  "active_test_file_count": 275,
+  "snapshot_source": "source",
+  "active_scope": "conftest.py + top-level test_*.py from base tests/",
+  "evidence": "Every source entry reuses the exact Git blob from the base commit; historical tests/archive is preserved separately and is not duplicated inside this active-test snapshot."
+}

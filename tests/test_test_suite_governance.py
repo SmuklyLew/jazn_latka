@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import ast
-import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,11 +59,15 @@ def test_snapshot_manifest_is_byte_exact():
     assert snapshots, "expected at least one test branch snapshot"
     manifest_path = snapshots[-1]
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    base = manifest_path.parent
-    for item in manifest["files"]:
-        data = (base / item["path"]).read_bytes()
-        assert len(data) == item["size"]
-        assert hashlib.sha256(data).hexdigest() == item["sha256"]
+    source = manifest_path.parent / manifest["snapshot_source"]
+    assert source.is_dir(), f"missing snapshot source tree: {source}"
+    files = [source / "conftest.py", *sorted(source.glob("test_*.py"))]
+    files = [path for path in files if path.is_file()]
+    assert len(files) == manifest["active_test_file_count"]
+    rel = source.relative_to(ROOT).as_posix()
+    proc = subprocess.run(["git", "rev-parse", f"HEAD:{rel}"], cwd=ROOT, text=True, capture_output=True, check=False)
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip() == manifest["base_active_tests_tree_sha"]
 
 
 def test_studio_settings_keep_runtime_state_out_of_source_contracts():

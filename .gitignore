@@ -107,6 +107,9 @@ CHECKPOINTS/
 branch_*/
 branches/
 
+# Versioned test snapshots are source evidence, not local branch workspaces.
+!tests/archive/branches/
+!tests/archive/branches/**
 
 # Python packaging metadata
 *.egg-info/
