@@ -1,0 +1,270 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from latka_jazn.version import DISTRIBUTION_VERSION
+
+ROOT = Path(__file__).resolve().parents[1]
+STALE_PACKAGE_VERSION = "v" + ".".join(("15", "1", "0", "3", "90"))
+
+
+def load_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture()
+def generator():
+    return load_module("jazn_pack_generator_regression", ROOT / "tools" / "jazn_pack_generator.py")
+
+
+@pytest.fixture()
+def rebuild():
+    return load_module("jazn_version_rebuild_regression", ROOT / "tools" / "jazn_version_rebuild.py")
+
+
+def version_info(generator):
+    return generator.VersionInfo(
+        version_file=Path("latka_jazn/version.py"),
+        package_version="v15.1.0.3.99",
+        release_name="Memory Sqlite Pipeline",
+        full_version="v15.1.0.3.99-Memory Sqlite Pipeline",
+        filename_version="15.1.0.3.99-Memory-Sqlite-Pipeline",
+    )
+
+
+def provenance_payload(version: str = "v15.1.0.3.99-Memory Sqlite Pipeline") -> dict[str, object]:
+    return {
+        "schema_version": "source_provenance/v15.1.0.3.99",
+        "base_version": version,
+        "runtime_version": version,
+        "update_version": version,
+        "version_source": "latka_jazn/version.py",
+    }
+
+
+def test_pack_options_always_build_canonical_system_metadata_when_source_write_is_disabled(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    generator,
+) -> None:
+    calls: list[bool] = []
+    dummy = generator.PackPlan(
+        root=tmp_path / "source",
+        profile="system",
+        version=version_info(generator),
+        entries=[],
+    )
+
+    def fake_build_plan(*_args, **kwargs):
+        calls.append(bool(kwargs.get("synchronize_release_metadata")))
+        return dummy
+
+    monkeypatch.setattr(generator, "build_plan", fake_build_plan)
+    options = generator.PackOptions(
+        source=tmp_path / "source",
+        out_dir=tmp_path / "out",
+        profile="system",
+        update_source_manifest=False,
+    )
+
+    assert generator.build_plans_for_options(options) == [dummy]
+    assert calls == [True]
+
+
+def test_stale_provenance_is_rejected_even_when_hashes_are_otherwise_valid(generator) -> None:
+    payload = provenance_payload(f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline")
+    with pytest.raises(generator.PackError, match="nie odpowiada version.py"):
+        generator.validate_release_provenance_payload(
+            payload,
+            version_info(generator),
+            context="test",
+        )
+
+
+def test_system_package_rejects_noncanonical_source_provenance_entry(tmp_path: Path, generator) -> None:
+    version = version_info(generator)
+    stale = generator.virtual_entry(
+        generator.SOURCE_PROVENANCE,
+        json.dumps(provenance_payload()).encode("utf-8"),
+        "static_project_file",
+    )
+    # Symuluje historyczny plan: SOURCE_PROVENANCE pochodził z dysku, a nie z
+    # kanonicznego wirtualnego kontraktu wydania.
+    stale = generator.PlanEntry(
+        relative=stale.relative,
+        source=tmp_path / generator.SOURCE_PROVENANCE,
+        size_bytes=stale.size_bytes,
+        sha256=stale.sha256,
+        classification=stale.classification,
+        mtime_ns=0,
+        virtual_bytes=None,
+    )
+    manifest = generator.virtual_entry(
+        generator.PACKAGE_INTEGRITY_MANIFEST,
+        b"{}\n",
+        "package_integrity_manifest",
+    )
+    plan = generator.PackPlan(
+        root=tmp_path,
+        profile="system",
+        version=version,
+        entries=[stale, manifest],
+    )
+
+    with pytest.raises(generator.PackError, match="Odmowa pakowania"):
+        generator.validate_system_plan_release_metadata(plan)
+
+
+def test_system_package_accepts_matching_virtual_release_metadata(tmp_path: Path, generator) -> None:
+    version = version_info(generator)
+    provenance = generator.virtual_entry(
+        generator.SOURCE_PROVENANCE,
+        (json.dumps(provenance_payload(), ensure_ascii=False) + "\n").encode("utf-8"),
+        "static_project_file",
+    )
+    manifest = generator.virtual_entry(
+        generator.PACKAGE_INTEGRITY_MANIFEST,
+        b"{}\n",
+        "package_integrity_manifest",
+    )
+    plan = generator.PackPlan(
+        root=tmp_path,
+        profile="system",
+        version=version,
+        entries=[provenance, manifest],
+    )
+    generator.validate_system_plan_release_metadata(plan)
+
+
+def make_rebuild_fixture(root: Path, rebuild: Any) -> Any:
+    (root / "latka_jazn").mkdir(parents=True)
+    (root / "latka_jazn" / "version.py").write_text(
+        f'DISTRIBUTION_VERSION = {DISTRIBUTION_VERSION!r}\n'
+        'PACKAGE_VERSION = "v15.1.0.3.99"\n'
+        'PACKAGE_RELEASE_NAME = "Memory Sqlite Pipeline"\n',
+        encoding="utf-8",
+    )
+    (root / "run.py").write_text("pass\n", encoding="utf-8")
+    (root / "pyproject.toml").write_text(
+        '[project]\ndynamic = ["version"]\n'
+        '[tool.setuptools.dynamic]\nversion = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}\n',
+        encoding="utf-8",
+    )
+    version = rebuild.read_version(root)
+    (root / rebuild.PROVENANCE_PATH).write_text(
+        json.dumps(
+            {
+                "schema_version": f"source_provenance/{version.package}",
+                "base_version": version.full,
+                "runtime_version": version.full,
+                "update_version": version.full,
+                "version_source": "latka_jazn/version.py",
+            }
+        ) + "\n",
+        encoding="utf-8",
+    )
+    (root / rebuild.MANIFEST_PATH).write_text(
+        json.dumps(
+            {
+                "schema_version": f"package_integrity_manifest/{version.package}",
+                "version": version.full,
+                "runtime_version": version.full,
+                "package_version": version.full,
+            }
+        ) + "\n",
+        encoding="utf-8",
+    )
+    return version
+
+
+def init_git(root: Path) -> None:
+    for command in (
+        ["git", "init", "-q"],
+        ["git", "config", "user.name", "Version Rebuild Test"],
+        ["git", "config", "user.email", "version-rebuild@example.invalid"],
+        ["git", "add", "."],
+        ["git", "commit", "-qm", "fixture"],
+    ):
+        subprocess.run(command, cwd=root, check=True, capture_output=True)
+
+
+def test_version_rebuild_metadata_check_includes_base_version(tmp_path: Path, rebuild) -> None:
+    version = make_rebuild_fixture(tmp_path, rebuild)
+    payload = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
+    payload["base_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
+    (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(payload), encoding="utf-8")
+
+    assert rebuild.metadata_current(tmp_path, rebuild.PROVENANCE_PATH, version) is False
+
+
+def test_version_rebuild_streams_subprocess_output(tmp_path: Path, rebuild) -> None:
+    lines: list[str] = []
+    result = rebuild.command_streaming(
+        [sys.executable, "-c", "print('etap 1'); print('etap 2')"],
+        tmp_path,
+        timeout=10,
+        on_output=lines.append,
+    )
+    assert result.returncode == 0
+    assert lines == ["etap 1", "etap 2"]
+    assert "etap 1" in result.stdout
+
+
+def test_version_rebuild_guides_user_through_commit_and_sync(tmp_path: Path, rebuild) -> None:
+    version = make_rebuild_fixture(tmp_path, rebuild)
+    init_git(tmp_path)
+    assert "Możesz uruchomić generator paczek" in rebuild.workflow_guidance(tmp_path, version)
+
+    version_path = tmp_path / rebuild.VERSION_PATH
+    version_path.write_text(version_path.read_text(encoding="utf-8") + "# zmiana\n", encoding="utf-8")
+    assert "zatwierdź latka_jazn/version.py" in rebuild.workflow_guidance(tmp_path, version)
+
+    subprocess.run(["git", "checkout", "--", str(rebuild.VERSION_PATH)], cwd=tmp_path, check=True)
+    provenance = json.loads((tmp_path / rebuild.PROVENANCE_PATH).read_text(encoding="utf-8"))
+    provenance["runtime_version"] = f"{STALE_PACKAGE_VERSION}-Memory Sqlite Pipeline"
+    (tmp_path / rebuild.PROVENANCE_PATH).write_text(json.dumps(provenance), encoding="utf-8")
+    subprocess.run(["git", "add", str(rebuild.PROVENANCE_PATH)], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-qm", "stale metadata fixture"], cwd=tmp_path, check=True)
+    assert "Synchronizuj metadane" in rebuild.workflow_guidance(tmp_path, version)
+
+
+def test_version_rebuild_repeated_sync_accepts_current_metadata_only_changes(
+    tmp_path: Path,
+    rebuild,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    version = make_rebuild_fixture(tmp_path, rebuild)
+    init_git(tmp_path)
+    # Stan typowy po udanej synchronizacji: oba pliki są semantycznie aktualne,
+    # ale jeszcze nie zostały zatwierdzone w Git.
+    provenance_path = tmp_path / rebuild.PROVENANCE_PATH
+    provenance_path.write_text(provenance_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    def unexpected_command(*_args, **_kwargs):
+        raise AssertionError("kanoniczna synchronizacja nie powinna być uruchamiana ponownie")
+
+    monkeypatch.setattr(rebuild, "command_streaming", unexpected_command)
+    progress: list[tuple[int, str]] = []
+    output = rebuild.sync_metadata(
+        tmp_path,
+        sys.executable,
+        "master",
+        progress=lambda value, message: progress.append((value, message)),
+    )
+
+    assert "już aktualne" in output
+    assert progress[-1][0] == 100
+    assert "czekają na commit" in progress[-1][1]
+    assert "Zatwierdź SOURCE_PROVENANCE.json" in rebuild.workflow_guidance(tmp_path, version)

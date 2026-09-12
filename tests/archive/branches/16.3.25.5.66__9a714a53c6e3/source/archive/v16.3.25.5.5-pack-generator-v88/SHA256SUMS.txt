@@ -1,0 +1,1 @@
+470b3c0195f3b950834df06b3d0fe96b1e5c36f89542fd05187ceddf59a97511  test_jazn_pack_generator_v88_studio_portability.py

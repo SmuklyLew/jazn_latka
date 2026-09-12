@@ -1,0 +1,9 @@
+{
+  "schema": "jazn_test_contract_migration/v1",
+  "base_version": "16.3.25.5.66",
+  "base_commit": "9a714a53c6e358904ac2e42cffc34f0e510445c9",
+  "target_version": "16.3.25.5.67",
+  "target_release": "stable-test-contracts",
+  "snapshot": "tests/archive/branches/16.3.25.5.66__9a714a53c6e3",
+  "policy": "one durable test identity per purpose; release history lives in Git and byte-exact snapshots"
+}

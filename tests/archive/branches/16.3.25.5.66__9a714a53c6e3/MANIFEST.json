@@ -1,0 +1,10 @@
+{
+  "schema": "jazn_test_branch_snapshot/v3",
+  "base_version": "16.3.25.5.66",
+  "base_commit": "9a714a53c6e358904ac2e42cffc34f0e510445c9",
+  "base_tests_tree_sha": "68f6914a815db37b27203fa4a3bcd5655ec938e6",
+  "active_test_file_count": 275,
+  "snapshot_source": "source",
+  "active_scope": "source/conftest.py + source/test_*.py",
+  "evidence": "snapshot_source is the exact tests/ Git tree object from base_commit; nested historical archive content is preserved unchanged as part of that tree"
+}
