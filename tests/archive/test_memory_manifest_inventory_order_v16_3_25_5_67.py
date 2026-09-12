@@ -3,8 +3,7 @@ from latka_jazn.tools.memory_rebuild_app.run_manifest import RunManifest
 
 def test_checkpoint_preserves_non_alphabetical_inventory_order(tmp_path):
     identity = dict(run_id="order", tool_version="1", system_version="1", base_commit="a" * 40)
-    manifest = RunManifest.begin(run_id=identity["run_id"], tool_version=identity["tool_version"],
-                                 system_version=identity["system_version"], base_commit=identity["base_commit"]).with_sources((
+    manifest = RunManifest.begin(**identity).with_sources((
         {"path": "z.json", "role": "journal", "sha256": "b" * 64},
         {"path": "a.json", "role": "conversation", "sha256": "a" * 64},
     ))
