@@ -21,14 +21,14 @@ def _load_generator():
 
 def test_prompt_toolkit_dashboard_is_retired_in_clean_rewrite() -> None:
     generator = _load_generator()
-    assert generator.UI_MODE_CHOICES == ("text", "tui", "studio")
+    assert generator.UI_MODE_CHOICES == ("text", "tui", "window")
     assert not hasattr(generator, "cursor_dashboard")
     assert not hasattr(generator, "_dashboard_available")
     tui = (ROOT / "tools" / "jazn_pack_generator_app" / "ui_tui.py").read_text(encoding="utf-8")
     assert "prompt_toolkit" not in tui
 
 
-def test_native_studio_is_separate_from_small_public_launcher() -> None:
+def test_native_window_is_separate_from_small_public_launcher() -> None:
     generator = _load_generator()
     launcher = GENERATOR_PATH.read_text(encoding="utf-8")
     studio = (ROOT / "tools" / "jazn_pack_generator_app" / "ui_studio.py").read_text(encoding="utf-8")
