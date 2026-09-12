@@ -6,6 +6,7 @@ from typing import Any
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.engine import JaznEngine
+from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
@@ -148,6 +149,7 @@ class JaznRuntimeSession:
         self.engine = JaznEngine(self.config)
         self.transactional_memory_install_status = install_runtime_memory(self.engine)
         self.state_store = RuntimeSessionStateStore(self.config.root)
+        self.conversation_state_store = ConversationStateStore(self.config.root)
         self.state = self.state_store.load_or_create(
             session_id=session_id,
             source_client=source_client,
@@ -265,12 +267,27 @@ class JaznRuntimeSession:
             previous_visible_text or getattr(self.state, "last_visible_text", None) or ""
         ).strip() or None
         turn_scoped_no_carryover = bool(self.no_carryover and not current_previous_user)
+        conversation_history = (
+            {
+                "schema_version": "conversation_context_projection/v1",
+                "session_id": self.state.session_id,
+                "turns": [],
+                "total_turn_count": 0,
+                "selected_turn_count": 0,
+                "omitted_turn_count": 0,
+                "compaction_mode": "disabled_for_no_carryover",
+            }
+            if turn_scoped_no_carryover
+            else self.conversation_state_store.load_context_projection(self.state.session_id)
+        )
         ctx = {
             "client": client,
             "lifecycle": lifecycle,
             "session_id": self.state.session_id,
             "no_carryover": turn_scoped_no_carryover,
             "request_id": turn_context.request_id,
+            "trace_id": turn_context.trace_id,
+            "conversation_history": conversation_history,
             "_turn_context": turn_context,
             "wake_state_runtime": self._wake_state_runtime_payload(),
         }
@@ -432,6 +449,13 @@ class JaznRuntimeSession:
 
             result["transactional_memory"] = self._transactional_memory_status_payload()
             result["wake_state_runtime"] = self._wake_state_runtime_payload()
+            conversation_state_status: dict[str, Any] = {
+                "ok": False,
+                "status": "not_committed",
+                "session_id": self.state.session_id,
+                "turn_id": turn_context.turn_id,
+                "trace_id": turn_context.trace_id,
+            }
 
             if answer_ok:
                 _update_runtime_session_state(
@@ -461,6 +485,28 @@ class JaznRuntimeSession:
                         "error": str(exc),
                         "persistence_degraded": True,
                     }
+                    result["persistence_degraded"] = True
+                    result["persistence_state"] = "degraded"
+                try:
+                    conversation_state_status = self.conversation_state_store.append_finalized_turn(
+                        session_id=self.state.session_id,
+                        turn_id=turn_context.turn_id,
+                        trace_id=turn_context.trace_id,
+                        user_text=user_text,
+                        assistant_text=str(result.get("final_visible_text") or ""),
+                        source=client,
+                    )
+                except Exception as exc:
+                    conversation_state_status = {
+                        "ok": False,
+                        "status": "conversation_state_commit_exception",
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                        "session_id": self.state.session_id,
+                        "turn_id": turn_context.turn_id,
+                        "trace_id": turn_context.trace_id,
+                    }
+                if conversation_state_status.get("ok") is not True:
                     result["persistence_degraded"] = True
                     result["persistence_state"] = "degraded"
             else:
@@ -503,6 +549,7 @@ class JaznRuntimeSession:
                         "persistence_degraded": False,
                         "intermediate_state": host_pending,
                     }
+            result["conversation_state_persistence"] = dict(conversation_state_status)
             result["session_persistence"] = dict(save_status)
             result["session_persistence_ok"] = bool(save_status.get("saved"))
             result["session"] = self.state.to_dict()
