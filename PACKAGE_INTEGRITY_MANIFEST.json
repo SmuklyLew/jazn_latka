@@ -3,11 +3,11 @@
   "version": "16.3.25.5.68-tests-studio-live-progress",
   "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
   "package_version": "16.3.25.5.68-tests-studio-live-progress",
-  "generated_at_utc": "2026-09-12T12:17:42+00:00",
-  "updated_at_utc": "2026-09-12T12:17:42+00:00",
+  "generated_at_utc": "2026-09-12T12:20:42+00:00",
+  "updated_at_utc": "2026-09-12T12:20:42+00:00",
   "start_file": "run.py",
-  "file_count": 1630,
-  "static_file_count": 1630,
+  "file_count": 1628,
+  "static_file_count": 1628,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -181,15 +181,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": ".github/workflows/tests-studio-pyright-repair.yml",
-      "size_bytes": 2536,
-      "sha256": "efceace9bcc6773de433a68abcfead8375325d0659dd8e4f515238be02fb8d62",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": ".gitignore",
       "size_bytes": 2384,
       "sha256": "03e6cb7e7498e9a96591e2b5996ad214f25eeb15ee3e3df1f38d7ad0fcb8ae19",
@@ -273,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2864,
-      "sha256": "92d2e5f5a40d5ac2e4feba0af9f08fd070c348dab9c245574b829a807f1c7ff2",
+      "sha256": "ac271e7418d3e0684df787bd2381c8d5af1aea9992e83e7fa828af91358afe8e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14492,8 +14483,8 @@
     },
     {
       "path": "tools/jazn_tests_studio.py",
-      "size_bytes": 36014,
-      "sha256": "327eaca348fc855c537c1a857d878fefc47c53462db4753fa0d92c44c7e6db8c",
+      "size_bytes": 36052,
+      "sha256": "ba242b1cd76297745163f848970583a75d9d591fb92a3b16d089e5feac3036ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14511,7 +14502,7 @@
     {
       "path": "tools/jazn_tests_studio/README.md",
       "size_bytes": 257,
-      "sha256": "a25bc865de6a9d9841d1af31afa67c4782443a60841006bcd4cb2b3743789d20",
+      "sha256": "3d1b605a0db7b43f80cbc4e6056bdacabca3b8342221b74df4e7cc449a357655",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14520,16 +14511,7 @@
     {
       "path": "tools/jazn_tests_studio/__init__.py",
       "size_bytes": 49,
-      "sha256": "f20a74d4f4e057804a6cfd98b7a422512e49bccdfd1bb17bd68f06ac8c2de0ec",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tools/jazn_tests_studio/apply_ci_type_fix.py",
-      "size_bytes": 1857,
-      "sha256": "2f8253c4b63f456182d430bffa5f9abc9488dda5e9cf671c4c8148275d80c184",
+      "sha256": "8638abb566b33e6ade711d3ce5ee7d5485366cecc5d11dcc8eea4ea0c2903186",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14537,8 +14519,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/migrate_stable_test_contracts.py",
-      "size_bytes": 24815,
-      "sha256": "a35651a2716a0edc5b89e60a5f9fa21aa2eaf0c1607fce11b80ee26956545fdb",
+      "size_bytes": 24846,
+      "sha256": "bb04e88f8b1a3d6d6ae53e1a278271e51d3d41568e0519482ffaa5f407dc234e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14556,7 +14538,7 @@
     {
       "path": "tools/jazn_tests_studio/settings.json",
       "size_bytes": 374,
-      "sha256": "29ca6602e457e7f6c2750b727cd39a7d0cc7c10a39710a83fa417341d7c671f1",
+      "sha256": "63575b539231db6f6bfd0cb8b6d6a796d6ac3b701d619db5a2a574a985b3e45b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
