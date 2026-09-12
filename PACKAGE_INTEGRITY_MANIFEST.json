@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-  "runtime_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-  "package_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-  "generated_at_utc": "2026-09-12T16:28:32+00:00",
-  "updated_at_utc": "2026-09-12T16:28:32+00:00",
+  "version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+  "runtime_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+  "package_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+  "generated_at_utc": "2026-09-12T16:31:59+00:00",
+  "updated_at_utc": "2026-09-12T16:31:59+00:00",
   "start_file": "run.py",
-  "file_count": 1644,
-  "static_file_count": 1644,
+  "file_count": 1645,
+  "static_file_count": 1645,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -67,6 +67,15 @@
       "path": ".gitattributes",
       "size_bytes": 1081,
       "sha256": "812f683152b6091fe6291fa76fc10c1e75733cf5585c82937d7b05c2b9f7ea2d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/conversation-final-convergence.yml",
+      "size_bytes": 4415,
+      "sha256": "f28f3947d0d5af28dc05b00fcc6b9bfa0eea60bbda21c2b78217d38fb08211da",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -264,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3037,
-      "sha256": "a014ddf95cc589b8b9dc62c6a40e55b37d1f922a0a18cc9806cfc5481057d0dd",
+      "sha256": "ddc25913c105f7adccc4c83a4fb82f2083c19d206adfb7f62be1eeb2a62c134e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7976,8 +7985,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5662,
-      "sha256": "c2461055ad15bcdcc33f818e7013d23cbe24e623bdc9afda4a741ce2b3fd90ad",
+      "size_bytes": 5687,
+      "sha256": "a0de1efd037e9dfbb1b188abb2c12502bc79cc4df7474ebcef3837b562c019a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15248,11 +15257,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
+  "release_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-    "package_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-    "release_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate"
+    "runtime_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+    "package_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+    "release_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage"
   },
   "legacy_aliases": {
     "version": "release_version"

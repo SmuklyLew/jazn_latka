@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3eefd65a2e587ec8777dd80b99528551c88ca7e7",
-  "base_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
-  "commit_date": "2026-09-12T18:28:32+02:00",
+  "base_merge_commit": "1938f8afd7e5409680aa12a238e16250a409b86d",
+  "base_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
+  "commit_date": "2026-09-12T18:31:59+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-12T16:28:32+00:00",
+  "generated_at_utc": "2026-09-12T16:31:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a259cbb9a7d6107193d2b81865a30d0b2900171a",
+  "git_tree_sha": "bb02a0e770d15c8c0a82c7b5318fbcb45d4da258",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.68-tests-studio-live-progress",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "3eefd65a2e587ec8777dd80b99528551c88ca7e7",
-    "source_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate"
+    "source_commit": "1938f8afd7e5409680aa12a238e16250a409b86d",
+    "source_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
+  "release_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
+  "runtime_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "3eefd65a2e587ec8777dd80b99528551c88ca7e7",
+  "source_commit": "1938f8afd7e5409680aa12a238e16250a409b86d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
+  "source_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.72-conversation-runtime-nlp-final-convergence-static-gate",
+  "update_version": "16.3.25.5.73-conversation-runtime-nlp-final-convergence-ci-coverage",
   "version_source": "latka_jazn/version.py"
 }
