@@ -14,7 +14,7 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "6a379323f63654b0b2079e630275b7f758e757ab",
+    "base_commit": "9a60654578a2d9e7302005845b38d72fb120f501",
     "base_version": "16.3.25.5.67-stable-test-contracts",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
