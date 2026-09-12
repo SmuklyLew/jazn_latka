@@ -23,24 +23,55 @@ class ShellSettings:
         return _normalized(payload, defaults)
 
 
+def _coerce_bool(value: Any, fallback: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in {0, 1}:
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on", "tak"}:
+            return True
+        if normalized in {"0", "false", "no", "off", "nie"}:
+            return False
+    return fallback
+
+
+def _coerce_int(value: Any, fallback: int) -> int:
+    try:
+        if isinstance(value, bool):
+            raise ValueError
+        return int(value)
+    except (TypeError, ValueError, OverflowError):
+        return fallback
+
+
 def _normalized(payload: dict[str, Any], defaults: ShellSettings | None = None) -> ShellSettings:
-    base = asdict(defaults or ShellSettings())
+    fallback = defaults or ShellSettings()
+    base = asdict(fallback)
     for key in tuple(base):
         if key in payload:
             base[key] = payload[key]
-    mode = str(base["ui_mode"] or "window").lower()
+
+    mode = str(base["ui_mode"] or fallback.ui_mode).strip().lower()
     if mode == "studio":
         mode = "window"
     if mode not in {"text", "tui", "window"}:
-        mode = "window"
-    level = str(base["log_level"] or "INFO").upper()
+        mode = fallback.ui_mode if fallback.ui_mode in {"text", "tui", "window"} else "window"
+
+    level = str(base["log_level"] or fallback.log_level).strip().upper()
     if level not in {"DEBUG", "INFO", "WARNING", "ERROR"}:
-        level = "INFO"
+        fallback_level = str(fallback.log_level or "INFO").upper()
+        level = fallback_level if fallback_level in {"DEBUG", "INFO", "WARNING", "ERROR"} else "INFO"
+
+    diagnostics_limit = _coerce_int(base["diagnostics_limit"], fallback.diagnostics_limit)
+    diagnostics_limit = max(50, min(5000, diagnostics_limit))
+
     return ShellSettings(
         ui_mode=mode,
-        splash_enabled=bool(base["splash_enabled"]),
-        diagnostics_enabled=bool(base["diagnostics_enabled"]),
-        diagnostics_limit=max(50, min(5000, int(base["diagnostics_limit"]))),
+        splash_enabled=_coerce_bool(base["splash_enabled"], fallback.splash_enabled),
+        diagnostics_enabled=_coerce_bool(base["diagnostics_enabled"], fallback.diagnostics_enabled),
+        diagnostics_limit=diagnostics_limit,
         log_level=level,
     )
 
