@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
-  "runtime_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
-  "package_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
-  "generated_at_utc": "2026-09-12T22:06:00+00:00",
-  "updated_at_utc": "2026-09-12T22:06:00+00:00",
+  "version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+  "runtime_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+  "package_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+  "generated_at_utc": "2026-09-12T22:08:09+00:00",
+  "updated_at_utc": "2026-09-12T22:08:09+00:00",
   "start_file": "run.py",
-  "file_count": 1654,
-  "static_file_count": 1654,
+  "file_count": 1655,
+  "static_file_count": 1655,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3016,
-      "sha256": "fcbdfccbb97262e34852dce1a50250abf24fe3be294efcbd503cb2afc0a56115",
+      "size_bytes": 2962,
+      "sha256": "978187a1dbccaf682a8d5707fe528aa92b3bf9575c0151254ef16c6dfdeb2685",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1183,6 +1183,15 @@
       "path": "docs/plans/HOST_CAPABILITY_HANDSHAKE_PLAN.md",
       "size_bytes": 13442,
       "sha256": "bb0d70e76cc98d8a9ef5a8081000dd299edb60c5a1c3216469a21335229c726f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_STUDIO_PAMIECI_MASTER_CONTINUATION.md",
+      "size_bytes": 4605,
+      "sha256": "92a5b01b51a9c72d18b3bbb58fa3ec9d7996dcf60a0d902915a29940a61c9b86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8021,8 +8030,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6594,
-      "sha256": "4054d56748d3f0fb9d5d1d5977424aec0d0a2143d863d4540afc5305d878893f",
+      "size_bytes": 6577,
+      "sha256": "917f7c75f0542227fdd151cb75ac208dcb6e0bf920c9b8cb2a0eaebda66c0139",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15338,11 +15347,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+  "release_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
-    "package_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
-    "release_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci"
+    "runtime_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+    "package_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+    "release_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
