@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
-  "runtime_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
-  "package_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
-  "generated_at_utc": "2026-09-12T16:47:55+00:00",
-  "updated_at_utc": "2026-09-12T16:47:55+00:00",
+  "version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+  "runtime_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+  "package_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+  "generated_at_utc": "2026-09-12T17:03:42+00:00",
+  "updated_at_utc": "2026-09-12T17:03:42+00:00",
   "start_file": "run.py",
   "file_count": 1648,
   "static_file_count": 1648,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "696a340c13f5a77c9709cc62214c80c9ca5624ece55350a07561539924f9ec7f",
+      "size_bytes": 2995,
+      "sha256": "f317f22c9642284ea7e101f2e52b805334080f4c2357c2f374f5084d3c45dcbe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7976,8 +7976,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6607,
-      "sha256": "5f6bec14da10f87714563ba8ddb41479f6e6ac1dc714a77016c33899c46b2144",
+      "size_bytes": 6594,
+      "sha256": "4054d56748d3f0fb9d5d1d5977424aec0d0a2143d863d4540afc5305d878893f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14708,8 +14708,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/ui_text.py",
-      "size_bytes": 5304,
-      "sha256": "e5fded6b62e5be25d9b2b08803f758ca5b29242fd13ecd340844d006f96d63e4",
+      "size_bytes": 5523,
+      "sha256": "4d2fc5e2bc4efb36ae9fd1b5208e614e8f53d6822c6070de1add3385557cfc9c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15284,11 +15284,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+  "release_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
-    "package_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
-    "release_version": "16.3.25.5.69-conversation-state-trace-memory-finalization"
+    "runtime_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+    "package_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
+    "release_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci"
   },
   "legacy_aliases": {
     "version": "release_version"
