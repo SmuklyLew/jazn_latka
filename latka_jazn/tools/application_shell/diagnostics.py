@@ -28,6 +28,7 @@ class DiagnosticsHub:
         self.minimum_level = str(minimum_level or "INFO").upper()
         self._records: deque[dict[str, Any]] = deque(maxlen=self.limit)
         self._lock = threading.Lock()
+        self._write_lock = threading.Lock()
         self.log_path = self.state_dir / "runtime" / f"{self.app_id}.jsonl"
 
     def reconfigure(
@@ -42,9 +43,13 @@ class DiagnosticsHub:
             if enabled is not None:
                 self.enabled = bool(enabled)
             if minimum_level is not None:
-                self.minimum_level = str(minimum_level or "INFO").upper()
+                level = str(minimum_level or "INFO").upper()
+                self.minimum_level = level if level in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"} else "INFO"
             if limit is not None:
-                normalized = max(50, min(5000, int(limit)))
+                try:
+                    normalized = max(50, min(5000, int(limit)))
+                except (TypeError, ValueError, OverflowError):
+                    normalized = self.limit
                 if normalized != self.limit:
                     rows = list(self._records)[-normalized:]
                     self.limit = normalized
@@ -59,16 +64,19 @@ class DiagnosticsHub:
             "details": details,
         }
         levels = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
-        threshold = levels.get(self.minimum_level, 20)
-        if levels.get(level_name, 20) < threshold:
-            return record
         with self._lock:
+            threshold = levels.get(self.minimum_level, 20)
+            enabled = self.enabled
+            if levels.get(level_name, 20) < threshold:
+                return record
             self._records.append(record)
-        if self.enabled:
+        if enabled:
             try:
                 self.log_path.parent.mkdir(parents=True, exist_ok=True)
-                with self.log_path.open("a", encoding="utf-8") as handle:
-                    handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                line = json.dumps(record, ensure_ascii=False, default=str) + "\n"
+                with self._write_lock:
+                    with self.log_path.open("a", encoding="utf-8") as handle:
+                        handle.write(line)
             except OSError:
                 pass
         return record
