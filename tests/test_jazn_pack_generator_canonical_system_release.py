@@ -60,45 +60,22 @@ def test_duplicate_zip_member_fails_closed(tmp_path: Path) -> None:
     path = tmp_path / "duplicate.zip"
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("run.py", b"one")
-        archive.writestr("run.py", b"two")
+        with pytest.warns(UserWarning, match="Duplicate name"):
+            archive.writestr("run.py", b"two")
     with pytest.raises(PackSafetyError, match="Duplikat"):
         generator.verify_package(path)
 
 
 @pytest.mark.integration
 def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Path) -> None:
-    # Release packaging requires a clean committed source. CI materializes
-    # metadata in the caller checkout, so use the exact HEAD in a local clone.
     source_root = tmp_path / "release-source"
-    head = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
-        check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    subprocess.run(
-        ["git", "clone", "-c", "core.longpaths=true", "--shared", "--no-checkout", str(ROOT), str(source_root)],
-        check=True, capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(source_root), "checkout", "--detach", head],
-        check=True, capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(source_root), "remote", "set-url", "origin",
-         "https://github.com/SmuklyLew/jazn_latka.git"],
-        check=True, capture_output=True,
-    )
-    assert subprocess.run(
-        ["git", "-C", str(source_root), "status", "--porcelain"],
-        check=True, capture_output=True,
-    ).stdout == b""
-    result = generator.run_pack_request(
-        source=source_root,
-        out_dir=tmp_path / "packages",
-        content="system",
-        compression_level=0,
-    )
-    manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
-    verification = manifest["verification"]
+    head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+    subprocess.run(["git", "clone", "-c", "core.longpaths=true", "--shared", "--no-checkout", str(ROOT), str(source_root)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(source_root), "checkout", "--detach", head], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(source_root), "remote", "set-url", "origin", "https://github.com/SmuklyLew/jazn_latka.git"], check=True, capture_output=True)
+    assert subprocess.run(["git", "-C", str(source_root), "status", "--porcelain"], check=True, capture_output=True).stdout == b""
+    result = generator.run_pack_request(source=source_root, out_dir=tmp_path / "packages", content="system", compression_level=0)
+    manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8")); verification = manifest["verification"]
     assert manifest["generator_version"] == "10.1.86.0.114"
     assert manifest["source"]["source_basis"] == "canonical_release"
     assert manifest["source"]["staging_mode"] == "canonical-release-staging"
@@ -106,13 +83,8 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
     assert verification["system_extract_reverify"]["ok"] is True
     assert verification["system_extract_reverify"]["package_integrity"]["ok"] is True
     assert verification["system_extract_reverify"]["source_provenance"]["status"] == "verified_export_without_git_history"
-
     archive_path = Path(result["logical_archive"])
-    committed_run = subprocess.run(
-        ["git", "-C", str(source_root), "show", "HEAD:run.py"],
-        check=True,
-        capture_output=True,
-    ).stdout
+    committed_run = subprocess.run(["git", "-C", str(source_root), "show", "HEAD:run.py"], check=True, capture_output=True).stdout
     with zipfile.ZipFile(archive_path, "r") as archive:
         assert archive.read("run.py") == committed_run
         assert "PACKAGE_INTEGRITY_MANIFEST.json" in archive.namelist()
