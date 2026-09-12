@@ -36,21 +36,21 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
-      - "tests/test_v16323_host_pre_response_gate.py"
-      - "tests/test_v163251_host_finalization_gate.py"
-      - "tests/test_v163252_live_voice_readiness.py"
-      - "tests/test_v16323_persistent_runtime_lifecycle_transport.py"
-      - "tests/test_v16323_active_memory_recall_e2e.py"
-      - "tests/test_v16322_active_runtime_subject_root.py"
-      - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
-      - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
-      - "tests/test_v1637_host_finalization_recovery.py"
+      - "tests/test_host_pre_response_gate.py"
+      - "tests/test_host_finalization_gate.py"
+      - "tests/test_live_voice_readiness.py"
+      - "tests/test_persistent_runtime_lifecycle_transport.py"
+      - "tests/test_active_memory_recall_e2e.py"
+      - "tests/test_active_runtime_subject_root.py"
+      - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_persistent_runtime_e2e_hardening.py"
+      - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
-      - "tests/test_v1607_host_finalization_lifecycle.py"
+      - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
-      - "tests/test_v1631_host_finalization_provenance_polish_nlp.py"
+      - "tests/test_host_finalization_provenance_polish_nlp.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
   push:
     branches:
@@ -91,21 +91,21 @@ on:
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
       - "latka_jazn/version.py"
-      - "tests/test_v16323_host_pre_response_gate.py"
-      - "tests/test_v163251_host_finalization_gate.py"
-      - "tests/test_v163252_live_voice_readiness.py"
-      - "tests/test_v16323_persistent_runtime_lifecycle_transport.py"
-      - "tests/test_v16323_active_memory_recall_e2e.py"
-      - "tests/test_v16322_active_runtime_subject_root.py"
-      - "tests/test_v16321_chatgpt_runtime_fallback_hardening.py"
-      - "tests/test_v1636_persistent_runtime_e2e_hardening.py"
-      - "tests/test_v1637_host_finalization_recovery.py"
+      - "tests/test_host_pre_response_gate.py"
+      - "tests/test_host_finalization_gate.py"
+      - "tests/test_live_voice_readiness.py"
+      - "tests/test_persistent_runtime_lifecycle_transport.py"
+      - "tests/test_active_memory_recall_e2e.py"
+      - "tests/test_active_runtime_subject_root.py"
+      - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_persistent_runtime_e2e_hardening.py"
+      - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
-      - "tests/test_v1607_host_finalization_lifecycle.py"
+      - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
-      - "tests/test_v1631_host_finalization_provenance_polish_nlp.py"
+      - "tests/test_host_finalization_provenance_polish_nlp.py"
       - ".github/workflows/persistent-runtime-e2e.yml"
 
 permissions:
@@ -153,17 +153,17 @@ jobs:
       - name: Compile runtime, gate, and regression paths
         run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
 
-      - name: v16.3.23 host gate and persistent lifecycle E2E
+      - name: Host gate and persistent lifecycle E2E
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
-          tests/test_v16323_host_pre_response_gate.py
-          tests/test_v16323_persistent_runtime_lifecycle_transport.py
-          tests/test_v16323_active_memory_recall_e2e.py
-          tests/test_v16322_active_runtime_subject_root.py
-          tests/test_v16321_chatgpt_runtime_fallback_hardening.py
-          tests/test_v1636_persistent_runtime_e2e_hardening.py
-          tests/test_v1637_host_finalization_recovery.py
+          tests/test_host_pre_response_gate.py
+          tests/test_persistent_runtime_lifecycle_transport.py
+          tests/test_active_memory_recall_e2e.py
+          tests/test_active_runtime_subject_root.py
+          tests/test_chatgpt_runtime_fallback_hardening.py
+          tests/test_persistent_runtime_e2e_hardening.py
+          tests/test_host_finalization_recovery.py
 
       - name: Daemon identity, security, atomicity, and timeout matrix
         run: >-
@@ -172,16 +172,16 @@ jobs:
           tests/test_runtime_daemon_security_contract.py
           tests/test_runtime_stability_daemon_status.py
           tests/test_memory_recall_timeout_hardening.py
-          tests/test_v163252_live_voice_readiness.py
+          tests/test_live_voice_readiness.py
 
       - name: Presentation and finalization fail-closed matrix
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
           tests/test_chatgpt_mcp_two_phase_protocol.py
-          tests/test_v1607_host_finalization_lifecycle.py
-          tests/test_v1631_host_finalization_provenance_polish_nlp.py
-          tests/test_v163251_host_finalization_gate.py
+          tests/test_host_finalization_lifecycle.py
+          tests/test_host_finalization_provenance_polish_nlp.py
+          tests/test_host_finalization_gate.py
 
       - name: Clean checkout guard
         if: always()
