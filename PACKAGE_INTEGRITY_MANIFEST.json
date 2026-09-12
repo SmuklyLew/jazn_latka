@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.68-tests-studio-live-progress",
-  "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
-  "package_version": "16.3.25.5.68-tests-studio-live-progress",
-  "generated_at_utc": "2026-09-12T16:46:26+00:00",
-  "updated_at_utc": "2026-09-12T16:46:26+00:00",
+  "version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+  "runtime_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+  "package_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+  "generated_at_utc": "2026-09-12T16:47:55+00:00",
+  "updated_at_utc": "2026-09-12T16:47:55+00:00",
   "start_file": "run.py",
-  "file_count": 1647,
-  "static_file_count": 1647,
+  "file_count": 1648,
+  "static_file_count": 1648,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2864,
-      "sha256": "d44083537991775d158e2afad08f2f79e94007827c112030a2136b425dd43b49",
+      "size_bytes": 2977,
+      "sha256": "696a340c13f5a77c9709cc62214c80c9ca5624ece55350a07561539924f9ec7f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7976,8 +7976,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6591,
-      "sha256": "c047381878ef9c3a63645fe615129c5de27fbae938de3de1619f4a1ff79ce789",
+      "size_bytes": 6607,
+      "sha256": "5f6bec14da10f87714563ba8ddb41479f6e6ac1dc714a77016c33899c46b2144",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12313,6 +12313,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_conversation_state_restart_continuity.py",
+      "size_bytes": 1208,
+      "sha256": "b0443c4ebbe67dd066575fe77a58d2bfe93916cf101903f6ad4b2743c9840c17",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_conversation_state_store.py",
       "size_bytes": 3018,
       "sha256": "a35462bb3ddb62ae7de28637a17a5a46a9cb6ace4ed68e7e675192aed445e8a3",
@@ -15275,11 +15284,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.68-tests-studio-live-progress",
+  "release_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
-    "package_version": "16.3.25.5.68-tests-studio-live-progress",
-    "release_version": "16.3.25.5.68-tests-studio-live-progress"
+    "runtime_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+    "package_version": "16.3.25.5.69-conversation-state-trace-memory-finalization",
+    "release_version": "16.3.25.5.69-conversation-state-trace-memory-finalization"
   },
   "legacy_aliases": {
     "version": "release_version"
