@@ -38,7 +38,7 @@ Po odzyskaniu executora host nadal musi:
 - `AGENTS.chatgpt.md` — pełny kontrakt rozróżnienia pre-process host failure od błędu lokalnej komendy/filesystemu.
 - `docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt` — ten sam fail-closed kontrakt w minimalnym loaderze Projektu ChatGPT.
 - `latka_jazn/version.py` — wersja `16.3.25.5.31-chatgpt-host-executor-truth-boundary`.
-- `tests/test_chatgpt_host_executor_truth_boundary_v16325531.py` — testy regresyjne kontraktu i wersji.
+- `tests/test_chatgpt_host_executor_truth_boundary.py` — testy regresyjne kontraktu i wersji.
 
 ## Źródła zewnętrzne
 

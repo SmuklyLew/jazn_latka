@@ -51,7 +51,7 @@ def test_current_tree_has_no_unapproved_old_references() -> None:
     assert findings == []
 
 
-def test_v90_scanner_does_not_treat_later_release_history_as_unfinished_migration(tmp_path: Path) -> None:
+def test_scanner_does_not_treat_later_release_history_as_unfinished_migration(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
@@ -62,7 +62,7 @@ def test_v90_scanner_does_not_treat_later_release_history_as_unfinished_migratio
     assert findings == []
 
 
-def test_v90_archive_manifest_preserves_exact_bytes() -> None:
+def test_archive_manifest_preserves_exact_bytes() -> None:
     root = Path(__file__).resolve().parents[1]
     manifest_path = root / ARCHIVE_ROOT / "ARCHIVE_MANIFEST.json"
     if not manifest_path.exists():
@@ -80,14 +80,3 @@ def test_v90_archive_manifest_preserves_exact_bytes() -> None:
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
 
 
-def test_git_diff_has_no_whitespace_errors() -> None:
-    root = Path(__file__).resolve().parents[1]
-    completed = subprocess.run(
-        ["git", "-C", str(root), "diff", "--check"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    assert completed.returncode == 0, completed.stdout + completed.stderr

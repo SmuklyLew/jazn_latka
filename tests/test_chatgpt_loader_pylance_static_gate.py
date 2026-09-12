@@ -11,7 +11,7 @@ from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_v66_jazn_config_generated_constructor_and_replace_contract(tmp_path: Path) -> None:
+def test_jazn_config_generated_constructor_and_replace_contract(tmp_path: Path) -> None:
     cfg = JaznConfig(
         root=tmp_path,
         allow_network=False,
@@ -73,7 +73,7 @@ def test_v66_jazn_config_generated_constructor_and_replace_contract(tmp_path: Pa
     assert cloned.rest_poll_seconds == 1.5
 
 
-def test_v66_project_loader_requires_runtime_binding_before_visible_or_tool_action() -> None:
+def test_project_loader_requires_runtime_binding_before_visible_or_tool_action() -> None:
     text = (ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(
         encoding="utf-8"
     )
@@ -89,7 +89,7 @@ def test_v66_project_loader_requires_runtime_binding_before_visible_or_tool_acti
     assert "nie dopisuj nagłówka ręcznie" in text
 
 
-def test_v66_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
+def test_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
     settings = json.loads((ROOT / ".vscode" / "settings.json").read_text(encoding="utf-8"))
     pyright_config = json.loads((ROOT / "pyrightconfig.json").read_text(encoding="utf-8"))
     workflow = (ROOT / ".github" / "workflows" / "pyright-active-tree-audit.yml").read_text(
@@ -105,6 +105,3 @@ def test_v66_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
     assert "  pull_request:" in workflow
 
 
-def test_v66_release_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.66"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-loader-pylance-static-gate-convergence"

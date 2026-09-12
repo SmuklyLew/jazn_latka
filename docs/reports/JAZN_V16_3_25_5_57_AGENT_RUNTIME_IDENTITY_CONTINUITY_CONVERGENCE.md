@@ -157,7 +157,7 @@ Loader został skrócony do:
 
 ## 6. Regresje
 
-Dodano `tests/test_v16325557_agent_runtime_identity_continuity_convergence.py`, który blokuje m.in.:
+Dodano `tests/test_agent_runtime_identity_continuity_convergence.py`, który blokuje m.in.:
 
 - dokumentację przedstawiającą `main.py` jako równorzędny operator;
 - brak `latka_jazn.cli` w mapie wykonania;

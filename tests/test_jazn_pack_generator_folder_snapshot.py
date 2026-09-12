@@ -24,7 +24,7 @@ def _root(tmp_path: Path, *, attributes: bytes | None = None) -> Path:
     return root
 
 
-def test_v101860114_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserved(tmp_path: Path) -> None:
+def test_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserved(tmp_path: Path) -> None:
     root = _root(tmp_path)
     memory = tmp_path / "memory"
     memory.mkdir()
@@ -55,7 +55,7 @@ def test_v101860114_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserv
     assert manifest["verification"]["system_extract_reverify"] == "not_applicable"
 
 
-def test_v101860114_memory_snapshot_does_not_require_gitattributes(tmp_path: Path) -> None:
+def test_memory_snapshot_does_not_require_gitattributes(tmp_path: Path) -> None:
     root = _root(tmp_path)
     memory = tmp_path / "memory"
     memory.mkdir()
@@ -69,7 +69,7 @@ def test_v101860114_memory_snapshot_does_not_require_gitattributes(tmp_path: Pat
     assert result["ok"] is True
 
 
-def test_v101860114_system_plan_excludes_archive_local_settings_and_secrets(tmp_path: Path) -> None:
+def test_system_plan_excludes_archive_local_settings_and_secrets(tmp_path: Path) -> None:
     root = _root(tmp_path)
     (root / ".archives").mkdir()
     (root / ".archives" / "historical.py").write_text("OLD = True\n", encoding="utf-8")
@@ -93,7 +93,7 @@ def test_v101860114_system_plan_excludes_archive_local_settings_and_secrets(tmp_
     assert not any(name.startswith(".archives/") for name in names)
 
 
-def test_v101860114_memory_split_is_one_logical_zip_cut_into_binary_transport_parts(tmp_path: Path) -> None:
+def test_memory_split_is_one_logical_zip_cut_into_binary_transport_parts(tmp_path: Path) -> None:
     root = _root(tmp_path)
     memory = tmp_path / "memory"
     memory.mkdir()
@@ -123,7 +123,7 @@ def test_v101860114_memory_split_is_one_logical_zip_cut_into_binary_transport_pa
         assert handle.testzip() is None
 
 
-def test_v101860114_verify_rehashes_memory_members_from_zip(tmp_path: Path) -> None:
+def test_verify_rehashes_memory_members_from_zip(tmp_path: Path) -> None:
     root = _root(tmp_path)
     memory = tmp_path / "memory"
     memory.mkdir()

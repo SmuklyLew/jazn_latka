@@ -1,0 +1,12 @@
+{
+  "schema": "jazn_tests_studio_settings/v2",
+  "app_name": "Jaźń - Studio testów",
+  "active_tests": "tests",
+  "archive_branches": "tests/archive/branches",
+  "contract_catalog": "tools/jazn_tests_studio/test_contracts.json",
+  "reviews": "tools/jazn_tests_studio/reviews.json",
+  "exclude_from_run_all": [
+    "tests/archive"
+  ],
+  "default_timeout_seconds": 1800
+}

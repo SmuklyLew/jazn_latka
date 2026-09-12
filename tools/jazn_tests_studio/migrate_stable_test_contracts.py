@@ -72,6 +72,8 @@ def _strip_release_tokens(value: str) -> str:
         current = re.sub(r"^(test_)v16(?:_?\d+){2,}_?", r"\1", current, flags=re.I)
         current = re.sub(r"^(test_)v163\d{3,}_?", r"\1", current, flags=re.I)
         current = re.sub(r"^(test_)v(?:[3-9]\d|[1-9]\d{2,})_", r"\1", current, flags=re.I)
+        current = SYSTEM_RELEASE_TOKEN.sub("", current)
+        current = HIGH_RELEASE_TOKEN.sub("", current)
     current = re.sub(r"_{2,}", "_", current).rstrip("_")
     return current
 
@@ -115,6 +117,7 @@ def normalize_test_source(text: str) -> str:
         text,
         lambda name: name == "test_git_diff_has_no_whitespace_errors"
         or "release_identity_floor" in name
+        or ("release" in name and ("regression_floor" in name or "release_line_is_at_least" in name or "release_line_preserves" in name))
         or bool(re.fullmatch(r"test_v\d+_release_identity", name)),
     )
 

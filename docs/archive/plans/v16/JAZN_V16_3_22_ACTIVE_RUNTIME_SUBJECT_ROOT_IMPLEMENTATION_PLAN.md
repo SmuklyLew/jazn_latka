@@ -184,7 +184,7 @@ To jest bezpośrednia luka regresyjna.
 - `daemon_autostart.py`;
 - `version.py`.
 
-Jednak lista testów uruchamianych przez workflow jest jawna i obecnie nie zawiera przyszłego `tests/test_v16322_active_runtime_subject_root.py`.
+Jednak lista testów uruchamianych przez workflow jest jawna i obecnie nie zawiera przyszłego `tests/test_active_runtime_subject_root.py`.
 
 Nowy test musi zostać dopisany zarówno do `paths`, jak i do `compileall`/`pytest` tego workflow, jeżeli ma być częścią specjalistycznego persistent E2E gate.
 
@@ -483,7 +483,7 @@ Branch nie może dziedziczyć przypadkowych zmian z dokumentacyjnego brancha roa
 Preferowany:
 
 ```text
-tests/test_v16322_active_runtime_subject_root.py
+tests/test_active_runtime_subject_root.py
 ```
 
 ## 10.2. Fixture A/B
@@ -789,7 +789,7 @@ Nie edytować historycznych `.archives`.
 Dodać nowy test do `paths` dla `pull_request` i `push`:
 
 ```text
-tests/test_v16322_active_runtime_subject_root.py
+tests/test_active_runtime_subject_root.py
 ```
 
 Dodać go do:
@@ -828,9 +828,9 @@ Minimalny zestaw po implementacji:
 
 ```bash
 python -X utf8 -m pytest -q \
-  tests/test_v16322_active_runtime_subject_root.py \
+  tests/test_active_runtime_subject_root.py \
   tests/test_runtime_stability_daemon_status.py \
-  tests/test_v16321_chatgpt_runtime_fallback_hardening.py
+  tests/test_chatgpt_runtime_fallback_hardening.py
 ```
 
 Na Windows użyć składni odpowiedniej dla PowerShell albo jednej linii.
@@ -919,7 +919,7 @@ git status --short
 git diff --stat
 git diff --check
 git diff -- latka_jazn/core/runtime_daemon.py
-git diff -- tests/test_v16322_active_runtime_subject_root.py
+git diff -- tests/test_active_runtime_subject_root.py
 git diff -- .github/workflows/persistent-runtime-e2e.yml
 git diff -- latka_jazn/version.py
 ```

@@ -92,7 +92,7 @@ Naprawiono trzy P1:
 - `latka_jazn/memory/runtime_persistence.py` — platformowo stabilne klucze raportu duplikatów;
 - `latka_jazn/tools/package_export.py` — wykluczenie historycznych `.archives/` z release package;
 - `latka_jazn/version.py` — bump do 16.3.22;
-- `tests/test_v16322_active_runtime_subject_root.py` — nowa matryca A/B;
+- `tests/test_active_runtime_subject_root.py` — nowa matryca A/B;
 - istniejące testy statusu i aktywne asercje wersji;
 - `.github/workflows/persistent-runtime-e2e.yml` — nowy test w path filters, compileall i pytest dla Windows/Ubuntu.
 

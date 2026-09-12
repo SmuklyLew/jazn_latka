@@ -115,7 +115,7 @@ Architectural rules:
 
 ### Tests, archive and metadata
 
-- Added `tests/test_dependency_cross_target_materialization_v16325517.py`.
+- Added `tests/test_dependency_cross_target_materialization.py`.
 - Updated active generator, dependency, distribution and runtime-smoke tests
   shown by `git diff --name-status 635e967..HEAD`.
 - Added byte-for-byte pre-change snapshots under
@@ -135,11 +135,11 @@ Changed paths relative to base, grouped without omitting tracked scope:
   `wheelhouse_bootstrap.py`,
   `latka_jazn/packaging/dependency_package_contract.py`,
   `latka_jazn/tools/release_readiness.py`, `latka_jazn/version.py`;
-- active tests: `test_dependency_cross_target_materialization_v16325517.py`,
-  `test_dependency_studio_v1632539.py`,
-  `test_dependency_unpacked_wheel_bootstrap_v1632555.py`,
+- active tests: `test_dependency_cross_target_materialization.py`,
+  `test_dependency_studio.py`,
+  `test_dependency_unpacked_wheel_bootstrap.py`,
   `test_independent_memory_package_contract_v2.py`, the nine active
-  `test_jazn_pack_generator*.py` files, `test_package_distribution_v163255.py`
+  `test_jazn_pack_generator*.py` files, `test_package_distribution.py`
   and `test_runtime_stability_package_smoke.py`;
 - generator: public launcher, builder, source-set metadata, four new active
   modules and seven `R100` archived modules;
@@ -166,14 +166,14 @@ Exact retained commands and results:
 - `python -X utf8 tools/build_jazn_pack_generator_bundle.py --check` — PASS;
   `bundle_fresh=true`.
 - `python -X utf8 -m compileall -q latka_jazn tools/pack_generator_sources tools/build_jazn_pack_generator_bundle.py tools/jazn_pack_generator.py` — PASS.
-- `cmd.exe /d /c "python -X utf8 -m pytest -q -p no:cacheprovider --basetemp .pytest-tmp\\subprocess-probe tests\\test_jazn_pack_generator_two_file_bundle_v88.py"`
+- `cmd.exe /d /c "python -X utf8 -m pytest -q -p no:cacheprovider --basetemp .pytest-tmp\\subprocess-probe tests\\test_jazn_pack_generator_two_file_bundle.py"`
   — PASS, `4 passed`.
-- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-targeted tests\\test_jazn_pack_generator_two_file_bundle_v88.py tests\\test_dependency_cross_target_materialization_v16325517.py tests\\test_dependency_studio_v1632539.py tests\\test_dependency_unpacked_wheel_bootstrap_v1632555.py tests\\test_package_distribution_v163255.py"`
+- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-targeted tests\\test_jazn_pack_generator_two_file_bundle.py tests\\test_dependency_cross_target_materialization.py tests\\test_dependency_studio.py tests\\test_dependency_unpacked_wheel_bootstrap.py tests\\test_package_distribution.py"`
   — PASS, `46 passed`; one expected corrupt/duplicate-ZIP warning.
-- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-distribution tests\\test_jazn_pack_generator_v89_distribution.py tests\\test_jazn_pack_generator_v88_studio_portability.py tests\\test_jazn_pack_generator_v88_import_isolation.py tests\\test_jazn_pack_generator_v84_contract.py tests\\test_jazn_pack_generator_v82_dashboard.py tests\\test_jazn_pack_generator_v82_contract.py tests\\test_jazn_pack_generator_v16311_profiles.py tests\\test_jazn_pack_generator_v1001_public_api_contract.py tests\\test_jazn_pack_generator_two_file_bundle_v88.py tests\\test_dependency_wheelhouse_override_v1632555.py tests\\test_dependency_unpacked_wheel_bootstrap_v1632555.py tests\\test_dependency_studio_v1632539.py tests\\test_dependency_studio_repeated_profiles_v1632554.py tests\\test_dependency_cross_target_materialization_v16325517.py tests\\test_package_distribution_v163255.py tests\\test_package_distribution_cleanroom_prestart_contract_v1632553.py tests\\test_package_distribution_cleanroom_doctor_semantics_v1632555.py tests\\test_package_distribution_cleanroom_activation_observability_v1632555.py"`
+- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-distribution tests\\test_jazn_pack_generator_distribution.py tests\\test_jazn_pack_generator_studio_portability.py tests\\test_jazn_pack_generator_import_isolation.py tests\\test_jazn_pack_generator_contract.py tests\\test_jazn_pack_generator_dashboard.py tests\\test_jazn_pack_generator_v82_contract.py tests\\test_jazn_pack_generator_profiles.py tests\\test_jazn_pack_generator_public_api_contract.py tests\\test_jazn_pack_generator_two_file_bundle.py tests\\test_dependency_wheelhouse_override.py tests\\test_dependency_unpacked_wheel_bootstrap.py tests\\test_dependency_studio.py tests\\test_dependency_studio_repeated_profiles.py tests\\test_dependency_cross_target_materialization.py tests\\test_package_distribution.py tests\\test_package_distribution_cleanroom_prestart_contract.py tests\\test_package_distribution_cleanroom_doctor_semantics.py tests\\test_package_distribution_cleanroom_activation_observability.py"`
   — PASS, `95 passed`, `1 skipped` because optional `prompt_toolkit` dashboard
   dependencies were unavailable; one expected duplicate-ZIP warning.
-- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-dependency-extra tests\\test_dependency_sidecar_absence_classification_v1632555.py tests\\test_dependency_inventory_name_normalization_v1632551.py tests\\test_dependency_host_workspace_v1632555.py"`
+- `cmd.exe /d /c "python -X utf8 -m pytest -q -ra --tb=short -p no:cacheprovider --basetemp .pytest-tmp\\final-dependency-extra tests\\test_dependency_sidecar_absence_classification.py tests\\test_dependency_inventory_name_normalization.py tests\\test_dependency_host_workspace.py"`
   — PASS, `6 passed`.
 - `python -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json --no-progress`
   — PASS before checkpoint docs.

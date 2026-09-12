@@ -43,16 +43,16 @@ without changing the runtime package contract:
 - `docs/runtime/JAZN_PACK_GENERATOR_V87_STUDIO_PORTABILITY.md` and
   `docs/runtime/JAZN_PACK_GENERATOR_V89_CROSS_PLATFORM_STUDIO.md` — historical
   generator designs;
-- `tests/test_jazn_pack_generator_two_file_bundle_v88.py`;
-- `tests/test_jazn_pack_generator_v1001_public_api_contract.py`;
-- `tests/test_jazn_pack_generator_v16311_profiles.py`;
+- `tests/test_jazn_pack_generator_two_file_bundle.py`;
+- `tests/test_jazn_pack_generator_public_api_contract.py`;
+- `tests/test_jazn_pack_generator_profiles.py`;
 - `tests/test_jazn_pack_generator_v82_contract.py`;
-- `tests/test_jazn_pack_generator_v82_dashboard.py`;
-- `tests/test_jazn_pack_generator_v84_contract.py`;
-- `tests/test_jazn_pack_generator_v88_import_isolation.py`;
-- `tests/test_jazn_pack_generator_v88_studio_portability.py`;
-- `tests/test_jazn_pack_generator_v89_distribution.py`;
-- `tests/test_pack_generator_archive_io_v1638.py`;
+- `tests/test_jazn_pack_generator_dashboard.py`;
+- `tests/test_jazn_pack_generator_contract.py`;
+- `tests/test_jazn_pack_generator_import_isolation.py`;
+- `tests/test_jazn_pack_generator_studio_portability.py`;
+- `tests/test_jazn_pack_generator_distribution.py`;
+- `tests/test_pack_generator_archive_io.py`;
 - `tests/test_package_generator_release_version.py`;
 - every `tests/archive/**/test_jazn_pack_generator*.py` snapshot — immutable
   historical test evidence, not active collection.
@@ -139,20 +139,20 @@ These files define or verify a contract crossed by generated packages:
 - `docs/runtime/JAZN_PACKAGE_DISTRIBUTION_CONVERGENCE_V163255.md` — historical
   predecessor contract;
 - `docs/runtime/JAZN_PACK_GENERATOR_V101860_CROSS_TARGET.md` — current contract;
-- `tests/test_dependency_cross_target_materialization_v16325517.py`;
-- `tests/test_dependency_host_workspace_v1632555.py`;
-- `tests/test_dependency_inventory_name_normalization_v1632551.py`;
-- `tests/test_dependency_sidecar_absence_classification_v1632555.py`;
-- `tests/test_dependency_studio_repeated_profiles_v1632554.py`;
-- `tests/test_dependency_studio_v1632539.py`;
-- `tests/test_dependency_unpacked_wheel_bootstrap_v1632555.py`;
-- `tests/test_dependency_wheelhouse_override_v1632555.py`;
+- `tests/test_dependency_cross_target_materialization.py`;
+- `tests/test_dependency_host_workspace.py`;
+- `tests/test_dependency_inventory_name_normalization.py`;
+- `tests/test_dependency_sidecar_absence_classification.py`;
+- `tests/test_dependency_studio_repeated_profiles.py`;
+- `tests/test_dependency_studio.py`;
+- `tests/test_dependency_unpacked_wheel_bootstrap.py`;
+- `tests/test_dependency_wheelhouse_override.py`;
 - `tests/test_independent_memory_package_contract_v2.py`;
-- `tests/test_package_distribution_cleanroom_activation_observability_v1632555.py`;
-- `tests/test_package_distribution_cleanroom_doctor_semantics_v1632555.py`;
-- `tests/test_package_distribution_cleanroom_prestart_contract_v1632553.py`;
-- `tests/test_package_distribution_v163255.py`;
-- `tests/test_python_runtime_bundle_v16325515.py`;
+- `tests/test_package_distribution_cleanroom_activation_observability.py`;
+- `tests/test_package_distribution_cleanroom_doctor_semantics.py`;
+- `tests/test_package_distribution_cleanroom_prestart_contract.py`;
+- `tests/test_package_distribution.py`;
+- `tests/test_python_runtime_bundle.py`;
 - `tests/test_single_source_version_manifest_contract.py` and the canonical
   release-metadata checks that prevent generator work from drifting package
   identity.

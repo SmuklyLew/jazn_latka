@@ -36,7 +36,7 @@ Nie jest to część v16.0.2, ponieważ wymaga osobnego kontraktu serializacji s
 
 ## Testy regresyjne
 
-Dodano `tests/test_v1602_runtime_turn_liveness.py`, obejmujący:
+Dodano `tests/test_runtime_turn_liveness.py`, obejmujący:
 
 - dopuszczenie pamięci dla pytań o doświadczenie/wspomnienie,
 - odrzucenie rozmownych wypełniaczy przez planer pamięci,

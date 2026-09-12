@@ -52,7 +52,7 @@ def _manifest_file(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def test_generator_v101860111_archives_memory_without_distribution_job(tmp_path: Path) -> None:
+def test_generator_archives_memory_without_distribution_job(tmp_path: Path) -> None:
     generator = _load_generator()
     assert generator.GENERATOR_VERSION == "10.1.86.0.114"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"

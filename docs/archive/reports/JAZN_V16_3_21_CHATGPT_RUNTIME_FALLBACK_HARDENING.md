@@ -34,7 +34,7 @@ Nie zmieniono `runtime_daemon.py`, procesu worker, markerów, heartbeat, pamięc
 
 ## Pokrycie regresji
 
-Nowy `tests/test_v16321_chatgpt_runtime_fallback_hardening.py` sprawdza:
+Nowy `tests/test_chatgpt_runtime_fallback_hardening.py` sprawdza:
 
 - domyślny `--chat-gpt` dopuszcza zweryfikowany fallback one-shot;
 - zwykły `--chat` nadal wymaga daemonu;

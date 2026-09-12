@@ -53,7 +53,7 @@ Runtime diagnostics expose separate capability readiness dimensions for process,
 
 ## Regression coverage
 
-New `tests/test_cognitive_truth_memory_integration_v15421.py` covers eight integration/truth defects:
+New `tests/test_cognitive_truth_memory_integration.py` covers eight integration/truth defects:
 
 1. immutable recovery vs runtime write ownership;
 2. multi-record normalized RestReplay;

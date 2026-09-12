@@ -86,7 +86,7 @@ Dodano również jednoznaczne stwierdzenie, że kod Jaźni nie może naprawić n
 
 ### Testy
 
-Dodano `tests/test_v16325554_chatgpt_sandbox_bootstrap_hardening.py`, obejmujący:
+Dodano `tests/test_chatgpt_sandbox_bootstrap_hardening.py`, obejmujący:
 
 - pojedynczy ZIP z explicit SHA bez lokalnego sidecara;
 - poprawny top-level wrapper paczki;

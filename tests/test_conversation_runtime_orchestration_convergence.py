@@ -23,7 +23,7 @@ from latka_jazn.core.runtime_environment import (
 from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
-def test_v59_canonical_auto_route_priority_is_shared_and_truthful() -> None:
+def test_canonical_auto_route_priority_is_shared_and_truthful() -> None:
     assert AUTO_ROUTE_PRIORITY == (
         ROUTE_CHATGPT_HOST,
         ROUTE_OLLAMA_LOCAL,
@@ -35,7 +35,7 @@ def test_v59_canonical_auto_route_priority_is_shared_and_truthful() -> None:
     )
 
 
-def test_v59_universal_chat_contract_keeps_runtime_as_owner() -> None:
+def test_universal_chat_contract_keeps_runtime_as_owner() -> None:
     contract = conversation_entrypoint_contract(CANONICAL_CHAT_COMMAND)
 
     assert contract.role == "universal_conversation"
@@ -47,7 +47,7 @@ def test_v59_universal_chat_contract_keeps_runtime_as_owner() -> None:
     assert "własnością runtime" in contract.truth_boundary
 
 
-def test_v59_chatgpt_entrypoint_is_host_bridge_not_openai_api() -> None:
+def test_chatgpt_entrypoint_is_host_bridge_not_openai_api() -> None:
     contract = conversation_entrypoint_contract(CANONICAL_CHATGPT_COMMAND)
 
     assert contract.role == "chatgpt_host_bridge"
@@ -57,7 +57,7 @@ def test_v59_chatgpt_entrypoint_is_host_bridge_not_openai_api() -> None:
     assert contract.host_finalization_policy == "two_phase_action_first"
 
 
-def test_v59_universal_chat_detects_chatgpt_visible_host_before_terminal_default(tmp_path: Path) -> None:
+def test_universal_chat_detects_chatgpt_visible_host_before_terminal_default(tmp_path: Path) -> None:
     config = JaznConfig(root=tmp_path)
     environment = detect_runtime_environment(
         config,
@@ -71,7 +71,7 @@ def test_v59_universal_chat_detects_chatgpt_visible_host_before_terminal_default
     assert environment.environment_host == "chatgpt_env_marker"
 
 
-def test_v59_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
+def test_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
     config = JaznConfig(
         root=tmp_path,
         llm_route_mode="auto",
@@ -116,7 +116,7 @@ def test_v59_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> No
     assert fallback.selected_route == ROUTE_NULL_FALLBACK
 
 
-def test_v59_bridge_discovery_exposes_universal_conversation_and_legacy_alias(
+def test_bridge_discovery_exposes_universal_conversation_and_legacy_alias(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -135,7 +135,7 @@ def test_v59_bridge_discovery_exposes_universal_conversation_and_legacy_alias(
     assert payload["chatgpt_bridge"]["uses_openai_api"] is False
 
 
-def test_v59_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text() -> None:
+def test_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text() -> None:
     root = Path(__file__).resolve().parents[1]
     loader = (root / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
     runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
@@ -149,6 +149,6 @@ def test_v59_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text
     assert "świeże związanie tury nie oznacza świeżego procesu CLI" in runbook
 
 
-def test_release_identity_supersedes_v60_with_accepted_visible_turn_convergence() -> None:
+def test_release_identity_supersedes_with_accepted_visible_turn_convergence() -> None:
     assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 61)
     assert PACKAGE_RELEASE_NAME

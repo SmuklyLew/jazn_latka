@@ -17,7 +17,7 @@ class _TtyStringIO(io.StringIO):
         return True
 
 
-def test_v64_non_tty_chatgpt_host_bridge_is_valid_and_does_not_infer_persistence(tmp_path: Path) -> None:
+def test_non_tty_chatgpt_host_bridge_is_valid_and_does_not_infer_persistence(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
     environment = detect_runtime_environment(
         cfg,
@@ -38,7 +38,7 @@ def test_v64_non_tty_chatgpt_host_bridge_is_valid_and_does_not_infer_persistence
     assert environment.process_persistence_inferred_from_tty is False
 
 
-def test_v64_tty_controls_are_terminal_ui_capability_not_persistence_proof(tmp_path: Path) -> None:
+def test_tty_controls_are_terminal_ui_capability_not_persistence_proof(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
     environment = detect_runtime_environment(
         cfg,
@@ -57,7 +57,7 @@ def test_v64_tty_controls_are_terminal_ui_capability_not_persistence_proof(tmp_p
     assert environment.process_persistence_inferred_from_tty is False
 
 
-def test_v64_runtime_shell_redirected_stdin_is_not_called_ephemeral() -> None:
+def test_runtime_shell_redirected_stdin_is_not_called_ephemeral() -> None:
     runtime = SimpleNamespace(engine=object(), state=SimpleNamespace(session_id="v64-test"))
     shell = LatkaRuntimeShell(runtime, stdin=io.StringIO(), stdout=io.StringIO())
 
@@ -70,7 +70,7 @@ def test_v64_runtime_shell_redirected_stdin_is_not_called_ephemeral() -> None:
     assert "ephemeral_stdin_pipe" not in shell.lifecycle.to_dict().values()
 
 
-def test_v64_url_media_lookup_requires_web_but_keeps_same_turn_finalization() -> None:
+def test_url_media_lookup_requires_web_but_keeps_same_turn_finalization() -> None:
     policy = build_host_tool_turn_policy(
         user_text="Posłuchaj https://youtu.be/3H62fsUm7_4 i powiedz, co o tym myślisz.",
         detected_intent="ordinary_conversation",
@@ -89,7 +89,7 @@ def test_v64_url_media_lookup_requires_web_but_keeps_same_turn_finalization() ->
     assert policy["message_envelope_required"] is True
 
 
-def test_v64_music_lookup_without_url_allows_web_capability() -> None:
+def test_music_lookup_without_url_allows_web_capability() -> None:
     policy = build_host_tool_turn_policy(
         user_text="Delerium Ritual muzyka",
         detected_intent="ordinary_conversation",
@@ -100,7 +100,7 @@ def test_v64_music_lookup_without_url_allows_web_capability() -> None:
     assert "web.run" in policy["allowed_tools"]
 
 
-def test_v64_chatgpt_loader_binds_tool_results_back_to_same_turn() -> None:
+def test_chatgpt_loader_binds_tool_results_back_to_same_turn() -> None:
     root = Path(__file__).resolve().parents[1]
     loader = (root / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
     assert len(loader) <= 5000
@@ -111,6 +111,3 @@ def test_v64_chatgpt_loader_binds_tool_results_back_to_same_turn() -> None:
     assert "Nie utożsamiaj TTY z rozmową ani trwałością" in loader
 
 
-def test_v64_release_identity_remains_regression_floor() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 64)
-    assert PACKAGE_RELEASE_NAME

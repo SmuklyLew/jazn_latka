@@ -26,7 +26,7 @@ def _root(tmp_path: Path) -> Path:
     return root
 
 
-def test_v101860114_system_plan_excludes_memory_boundary(tmp_path: Path) -> None:
+def test_system_plan_excludes_memory_boundary(tmp_path: Path) -> None:
     module = generator()
     root = _root(tmp_path)
     plan = module.plan_pack(module.PackRequest(source_root=root, output_root=tmp_path / "out", content=module.ContentMode.SYSTEM))
@@ -38,7 +38,7 @@ def test_v101860114_system_plan_excludes_memory_boundary(tmp_path: Path) -> None
     assert "package_distribution" not in Path(module_file).read_text(encoding="utf-8")
 
 
-def test_v101860114_memory_only_and_split_join_roundtrip(tmp_path: Path) -> None:
+def test_memory_only_and_split_join_roundtrip(tmp_path: Path) -> None:
     module = generator()
     root = _root(tmp_path)
     memory = tmp_path / "private-memory"
@@ -57,7 +57,7 @@ def test_v101860114_memory_only_and_split_join_roundtrip(tmp_path: Path) -> None
         assert "memory/a.bin" in archive.namelist()
 
 
-def test_v101860114_system_plus_memory_plan_has_only_selected_external_memory(tmp_path: Path) -> None:
+def test_system_plus_memory_plan_has_only_selected_external_memory(tmp_path: Path) -> None:
     module = generator()
     root = _root(tmp_path)
     memory = tmp_path / "private-memory"

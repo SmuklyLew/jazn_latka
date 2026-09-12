@@ -34,7 +34,7 @@ Nie zmienia kontraktu prawdy ani nie traktuje samej obecności plików pamięci 
 
 ## Testy regresyjne
 
-Dodano `tests/test_v16310_host_memory_root_regressions.py`, który obejmuje:
+Dodano `tests/test_host_memory_root_regressions.py`, który obejmuje:
 
 - normalizację legacy `memory/` w shard manifestach;
 - odrzucenie `../` dla ścieżki manifestu;

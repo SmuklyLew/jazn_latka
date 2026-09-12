@@ -8,7 +8,7 @@
       "evidence_paths": [
         "latka_jazn/core/update_coverage_audit.py",
         "latka_jazn/core/handlers/post_update_coverage_audit_handler.py",
-        "tests/test_semantic_routing_completion_v96.py"
+        "tests/test_semantic_routing_completion.py"
       ]
     },
     {
@@ -32,7 +32,7 @@
       "id": "cli_daemon_mcp_contract_e2e",
       "description": "Contract-level end-to-end test spans daemon presentation and both private MCP phases.",
       "evidence_paths": [
-        "tests/test_chatgpt_mcp_end_to_end_v96.py"
+        "tests/test_chatgpt_mcp_end_to_end.py"
       ]
     },
     {

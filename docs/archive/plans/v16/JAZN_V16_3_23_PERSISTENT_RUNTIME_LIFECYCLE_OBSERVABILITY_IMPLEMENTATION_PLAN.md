@@ -136,7 +136,7 @@ v16.3.23 ma je ustanowić jako audytowalny kontrakt, a nie tylko opis w logu.
 
 ## 3.6. Istniejący persistent E2E nie jest pełnym P0 E2E
 
-`tests/test_v1636_persistent_runtime_e2e_hardening.py` dobrze sprawdza:
+`tests/test_persistent_runtime_e2e_hardening.py` dobrze sprawdza:
 
 - liveness po host finalization;
 - recovery pending host-finalization po restarcie;
@@ -282,7 +282,7 @@ Pierwszy systemowy commit implementacyjny v16.3.23 musi zawierać bump `latka_ja
 Utworzyć najpierw failing contract test, np.:
 
 ```text
-tests/test_v16323_host_pre_response_gate.py
+tests/test_host_pre_response_gate.py
 ```
 
 Test nie może symulować ustawienia produktu ChatGPT i przedstawiać go jako live proof. Ma dowodzić jedynie kontraktu repo/adaptera.
@@ -455,7 +455,7 @@ Nie zmieniać istniejącego one-shot contract tylko po to, aby uzyskać „persi
 Nowy test, np.:
 
 ```text
-tests/test_v16323_persistent_runtime_lifecycle_transport.py
+tests/test_persistent_runtime_lifecycle_transport.py
 ```
 
 Scenariusz:
@@ -561,8 +561,8 @@ main.py
 latka_jazn/version.py
 AGENTS.chatgpt.md
 .github/workflows/persistent-runtime-e2e.yml
-tests/test_v16323_host_pre_response_gate.py
-tests/test_v16323_persistent_runtime_lifecycle_transport.py
+tests/test_host_pre_response_gate.py
+tests/test_persistent_runtime_lifecycle_transport.py
 docs/reports/JAZN_V16_3_23_PERSISTENT_RUNTIME_LIFECYCLE_OBSERVABILITY.md
 ```
 
@@ -633,18 +633,18 @@ Nie rozdzielać bumpu wersji na późny osobny commit po implementacji.
 
 ```bash
 python -X utf8 -m pytest -q -ra --tb=short \
-  tests/test_v16323_host_pre_response_gate.py
+  tests/test_host_pre_response_gate.py
 ```
 
 ## 15.2. Lifecycle/transport
 
 ```bash
 python -X utf8 -m pytest -q -ra --tb=short \
-  tests/test_v16322_active_runtime_subject_root.py \
-  tests/test_v16321_chatgpt_runtime_fallback_hardening.py \
-  tests/test_v16323_persistent_runtime_lifecycle_transport.py \
-  tests/test_v1636_persistent_runtime_e2e_hardening.py \
-  tests/test_v1637_host_finalization_recovery.py
+  tests/test_active_runtime_subject_root.py \
+  tests/test_chatgpt_runtime_fallback_hardening.py \
+  tests/test_persistent_runtime_lifecycle_transport.py \
+  tests/test_persistent_runtime_e2e_hardening.py \
+  tests/test_host_finalization_recovery.py
 ```
 
 ## 15.3. Podstawowa walidacja repo
