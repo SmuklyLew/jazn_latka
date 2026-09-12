@@ -8,7 +8,7 @@ import pytest
 def generator():
     return importlib.import_module("tools.jazn_pack_generator")
 
-def test_v101860111_exposes_three_real_ui_modes() -> None:
+def test_exposes_three_real_ui_modes() -> None:
     module = generator()
     assert module.GENERATOR_VERSION == "10.1.86.0.114"
     assert module.UI_MODE_CHOICES == ("text", "tui", "studio")
@@ -16,12 +16,12 @@ def test_v101860111_exposes_three_real_ui_modes() -> None:
     assert callable(module.run_terminal_tui)
     assert callable(module.run_studio_ui)
 
-def test_v101860111_rejects_windows_reserved_member_name() -> None:
+def test_rejects_windows_reserved_member_name() -> None:
     from tools.jazn_pack_generator_app.archive import validate_archive_member_name
     with pytest.raises(Exception, match="zarezerwowana"):
         validate_archive_member_name("docs/CON.txt")
 
-def test_v101860111_standard_zip_uses_deflate_and_unicode_names(tmp_path: Path) -> None:
+def test_standard_zip_uses_deflate_and_unicode_names(tmp_path: Path) -> None:
     module = generator()
     root = tmp_path / "root"
     (root / "latka_jazn").mkdir(parents=True)

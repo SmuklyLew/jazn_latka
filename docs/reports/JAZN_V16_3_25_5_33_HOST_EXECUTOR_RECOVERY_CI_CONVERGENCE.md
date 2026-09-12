@@ -10,9 +10,9 @@ Kod wykonawczy v32 pozostaje bez zmian: awaria narzędzia hosta przed utworzenie
 
 Raport JUnit z `release-hardening` wskazał dokładnie trzy błędy:
 
-1. `tests/test_chatgpt_host_executor_truth_boundary_v16325531.py` wymagał dosłownej, starszej frazy loadera v31;
+1. `tests/test_chatgpt_host_executor_truth_boundary.py` wymagał dosłownej, starszej frazy loadera v31;
 2. ten sam test przypinał `PACKAGE_VERSION == 16.3.25.5.31`;
-3. `tests/test_github_actions_node24_convergence_v16325530.py` przypinał globalny `PACKAGE_VERSION_FULL` do wydania v30.
+3. `tests/test_github_actions_node24_convergence.py` przypinał globalny `PACKAGE_VERSION_FULL` do wydania v30.
 
 Nie były to regresje lifecycle ani nowego kontraktu executora. W tym samym runie przechodziły compileall, Pyright, semantic route audit, cognitive architecture audit i clean-checkout guard. Persistent-runtime E2E przeszedł na Ubuntu i Windows, a package cleanroom przeszedł Linux/Windows dla Python 3.12/3.13/3.14.
 
@@ -20,8 +20,8 @@ Nie były to regresje lifecycle ani nowego kontraktu executora. W tym samym runi
 
 Zgodnie z `AGENTS.md`, przed zmianą istniejących zatwierdzonych testów ich poprzednie treści zostały zachowane w:
 
-- `tests/archive/test_chatgpt_host_executor_truth_boundary_v16325531.py`;
-- `tests/archive/test_github_actions_node24_convergence_v16325530.py`.
+- `tests/archive/test_chatgpt_host_executor_truth_boundary.py`;
+- `tests/archive/test_github_actions_node24_convergence.py`.
 
 Aktywne testy nadal sprawdzają właściwe, trwałe kontrakty:
 

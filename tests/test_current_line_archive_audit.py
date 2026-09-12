@@ -17,7 +17,7 @@ from latka_jazn.version_contract import LEGACY_CURRENT_LINE_VERSION, V90_MIGRATI
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_v90_archive_audit_uses_fixed_migration_boundary() -> None:
+def test_archive_audit_uses_fixed_migration_boundary() -> None:
     post_v90_historical = "v" + ".".join(("15", "1", "0", "3", "96"))
     assert _is_old_package_version(LEGACY_CURRENT_LINE_VERSION) is True
     assert _is_old_package_version(V90_MIGRATION_TARGET_VERSION) is False

@@ -6,7 +6,7 @@ from latka_jazn.core.host_tool_capabilities import (
 )
 
 
-def test_v65_unsupported_manifest_schema_fails_closed_for_policy_candidates() -> None:
+def test_unsupported_manifest_schema_fails_closed_for_policy_candidates() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {
             "schema_version": "host_tool_capability_manifest/v999",
@@ -23,7 +23,7 @@ def test_v65_unsupported_manifest_schema_fails_closed_for_policy_candidates() ->
     assert resolved["unavailable_requested_tools"] == ["web.run"]
 
 
-def test_v65_duplicate_manifest_tool_fails_closed_instead_of_partially_authorizing() -> None:
+def test_duplicate_manifest_tool_fails_closed_instead_of_partially_authorizing() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {
             "schema_version": "host_tool_capability_manifest/v1",
@@ -40,7 +40,7 @@ def test_v65_duplicate_manifest_tool_fails_closed_instead_of_partially_authorizi
     assert "duplicate_host_tool:web.run" in snapshot["errors"]
 
 
-def test_v65_invalid_manifest_tool_name_is_rejected_fail_closed() -> None:
+def test_invalid_manifest_tool_name_is_rejected_fail_closed() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {
             "schema_version": "host_tool_capability_manifest/v1",

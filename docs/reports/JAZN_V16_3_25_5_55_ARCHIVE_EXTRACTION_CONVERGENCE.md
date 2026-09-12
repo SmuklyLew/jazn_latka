@@ -92,7 +92,7 @@ ZIP nadal jest stdlib-first i nie potrzebuje opcjonalnego dependency. Standalone
 
 ## Testy regresji v55
 
-Nowy `tests/test_v16325555_archive_extraction_convergence.py` sprawdza m.in.:
+Nowy `tests/test_archive_extraction_convergence.py` sprawdza m.in.:
 
 - pełny roundtrip split ZIP po rename `...(1).001` + `...package(1).json`;
 - direct use przemianowanego sidecara;
@@ -115,7 +115,7 @@ Na lokalnym workspace zmienione moduły archiwów są bajtowo oparte o te same b
 Dodatkowo na czystej, zweryfikowanej paczce systemowej v54 (`SHA-256 9f9c5b84e78180fa7cf951960c8d424ea96039892d5919e4d3890c3c0df02955`) nałożono wyłącznie 9 plików v55 i wykonano końcowy lokalny gate:
 
 - `compileall` — PASS;
-- `tests/test_v16325555_archive_extraction_convergence.py` — 10 passed;
+- `tests/test_archive_extraction_convergence.py` — 10 passed;
 - rozszerzony gate archive/capability/dependency/plugin/resource-limit — 49 passed, 2 deselected;
 - pełny deterministyczny pytest został rozpoczęty, ale lokalny interpreter nie ma opcjonalnych backendów `py7zr` ani `pyzipper`, a `rarfile` ma wersję 4.2. Pierwsze failures były jednoznacznie środowiskowe (`py7zr_not_installed`, `pyzipper_not_installed`), nie błędami v55;
 - Pyright nie jest zainstalowany w tym sandboxie; jego gate pozostaje obowiązkiem CI;

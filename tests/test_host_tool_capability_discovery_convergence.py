@@ -16,7 +16,7 @@ from latka_jazn.core.host_tool_turn_policy import (
 from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION
 
 
-def test_v65_missing_host_manifest_does_not_claim_tool_verification() -> None:
+def test_missing_host_manifest_does_not_claim_tool_verification() -> None:
     snapshot = build_host_tool_capability_snapshot(env={})
 
     assert snapshot["status"] == "host_manifest_missing"
@@ -29,7 +29,7 @@ def test_v65_missing_host_manifest_does_not_claim_tool_verification() -> None:
     assert snapshot["discovery_contract"]["mutating_or_private_data_probe_for_capability_only"] is False
 
 
-def test_v65_explicit_host_manifest_filters_turn_tools_fail_closed() -> None:
+def test_explicit_host_manifest_filters_turn_tools_fail_closed() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {
             "schema_version": "host_tool_capability_manifest/v1",
@@ -53,7 +53,7 @@ def test_v65_explicit_host_manifest_filters_turn_tools_fail_closed() -> None:
     assert resolved["unavailable_requested_tools"] == ["GitHub"]
 
 
-def test_v65_successful_real_tool_evidence_upgrades_advertised_to_verified() -> None:
+def test_successful_real_tool_evidence_upgrades_advertised_to_verified() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {"tools": [{"name": "web.run", "available": True}]},
         env={},
@@ -72,7 +72,7 @@ def test_v65_successful_real_tool_evidence_upgrades_advertised_to_verified() -> 
     assert snapshot["capability_confirmation_required_for_tools"] == []
 
 
-def test_v65_mutating_and_private_tools_are_never_auto_probed_for_discovery() -> None:
+def test_mutating_and_private_tools_are_never_auto_probed_for_discovery() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {
             "tools": [
@@ -93,7 +93,7 @@ def test_v65_mutating_and_private_tools_are_never_auto_probed_for_discovery() ->
     assert probes["automations"]["automatic_probe_allowed"] is False
 
 
-def test_v65_unknown_host_extension_defaults_to_no_automatic_probe() -> None:
+def test_unknown_host_extension_defaults_to_no_automatic_probe() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {"tools": [{"name": "custom.weather.lookup", "available": True}]},
         env={},
@@ -107,7 +107,7 @@ def test_v65_unknown_host_extension_defaults_to_no_automatic_probe() -> None:
     assert probe["automatic_probe_allowed"] is False
 
 
-def test_v65_media_resource_catalog_expands_lookup_beyond_original_tokens() -> None:
+def test_media_resource_catalog_expands_lookup_beyond_original_tokens() -> None:
     deezer = detect_media_lookup("Sprawdź https://www.deezer.com/track/3135556 i ten remiks.")
     tidal = detect_media_lookup("Posłuchaj proszę wersji live na https://tidal.com/browse/track/123")
     metadata = detect_media_lookup("Znajdź wydanie w MusicBrainz albo Discogs.")
@@ -122,7 +122,7 @@ def test_v65_media_resource_catalog_expands_lookup_beyond_original_tokens() -> N
     assert deezer["playback_or_hearing_claim_allowed"] is False
 
 
-def test_v65_required_web_tool_unavailable_is_explicit_policy_violation() -> None:
+def test_required_web_tool_unavailable_is_explicit_policy_violation() -> None:
     snapshot = build_host_tool_capability_snapshot(
         {"tools": [{"name": "web.run", "available": False}]},
         env={},
@@ -142,7 +142,7 @@ def test_v65_required_web_tool_unavailable_is_explicit_policy_violation() -> Non
     assert "required_host_tool_unavailable:web.run" in violations
 
 
-def test_v65_bridge_discovery_exposes_host_tool_snapshot(tmp_path: Path, monkeypatch) -> None:
+def test_bridge_discovery_exposes_host_tool_snapshot(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         bridge_discovery,
         "status_daemon",
@@ -164,6 +164,3 @@ def test_v65_bridge_discovery_exposes_host_tool_snapshot(tmp_path: Path, monkeyp
     )
 
 
-def test_v65_release_identity_remains_regression_floor() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 65)
-    assert PACKAGE_RELEASE_NAME

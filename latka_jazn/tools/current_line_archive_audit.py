@@ -30,7 +30,7 @@ APPROVED_LEGACY_SOURCE_PATHS = {
     "docs/templates/memory_sqlite_test_04/source-manifest.template.json",
     "docs/tools/MEMORY_SQLITE_TEST_04.md",
     "latka_jazn/tools/memory_sqlite_test04.py",
-    "tests/test_v1601_memory_transport_generator.py",
+    "tests/test_memory_transport_generator.py",
 }
 APPROVED_HISTORICAL_REFERENCE_PATHS = {
     "docs/project/system-evaluation/JAZN_V16_6_TO_V17_PLUS_SYSTEM_EVALUATION.md",

@@ -86,7 +86,7 @@ class _FakeRecoveryGateway:
         raise AssertionError("resume must never resubmit user text through chat()")
 
 
-def test_v1637_recovery_fixture_keeps_historical_runtime_contract() -> None:
+def test_recovery_fixture_keeps_historical_runtime_contract() -> None:
     bridge = _bridge()
     assert bridge["runtime_version"] == V1637_RECOVERY_RUNTIME_VERSION
     assert bridge["phase"] == "host_visible_generation_requested"

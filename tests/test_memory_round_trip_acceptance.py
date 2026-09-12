@@ -192,7 +192,7 @@ def _anchor_snapshot(state: DialogueTaskState) -> dict[str, Any]:
     }
 
 
-def test_v1630_source_backed_temporal_recall_survives_dialogue_and_restart_round_trip(
+def test_source_backed_temporal_recall_survives_dialogue_and_restart_round_trip(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

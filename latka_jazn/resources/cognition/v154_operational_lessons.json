@@ -24,7 +24,7 @@
       "observed_failure": "The command was classified as a generic contextual continuation and fell through to fallback.",
       "root_cause": "A bare connective marker dominated classification while the router had no safe contextual-continuation mapping and no structured task state.",
       "repair_rule": "Resolve active task/referent before loose ellipsis classification; unresolved continuation must use ordinary dialogue, not an unsafe fallback action.",
-      "regression_test_id": "tests/test_dialogue_task_state_v154.py",
+      "regression_test_id": "tests/test_dialogue_task_state.py",
       "applicability_terms": [
         "zrób to",
         "zacznij teraz",
@@ -40,7 +40,7 @@
       "observed_failure": "Architecture audits could be fully green while KnowledgeFabric/Lexical Intelligence were not on the ordinary turn path and Dream generation had no eligible local model.",
       "root_cause": "Presence-based audit checks and isolated probes were treated as sufficient evidence of end-to-end capability.",
       "repair_rule": "Use evidence levels present -> constructible -> callable -> reachable_from_turn -> effect_observed -> persistence_verified -> live_verified; presence alone is present_unverified.",
-      "regression_test_id": "tests/test_cognitive_truth_memory_integration_v15421.py",
+      "regression_test_id": "tests/test_cognitive_truth_memory_integration.py",
       "applicability_terms": [
         "capability",
         "audit",

@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 
-def test_v101860111_launcher_is_small_source_launcher_not_embedded_bundle() -> None:
+def test_launcher_is_small_source_launcher_not_embedded_bundle() -> None:
     launcher = (ROOT / "tools/jazn_pack_generator.py").read_text(encoding="utf-8")
     assert "_BUNDLED_MODULES" not in launcher
     assert "b85decode" not in launcher
@@ -16,7 +16,7 @@ def test_v101860111_launcher_is_small_source_launcher_not_embedded_bundle() -> N
     assert (ROOT / "tools/jazn_pack_generator_app/service.py").is_file()
     assert (ROOT / "tools/jazn_pack_generator_app/ui_studio.py").is_file()
 
-def test_v101860111_source_layout_validator_passes() -> None:
+def test_source_layout_validator_passes() -> None:
     result = subprocess.run(
         [sys.executable, "-X", "utf8", str(ROOT / "tools/build_jazn_pack_generator_bundle.py"), "--check"],
         cwd=ROOT, capture_output=True, text=True
@@ -24,7 +24,7 @@ def test_v101860111_source_layout_validator_passes() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "source_layout_valid=true" in result.stdout
 
-def test_v101860111_settings_live_with_tool_app() -> None:
+def test_settings_live_with_tool_app() -> None:
     module = importlib.import_module("tools.jazn_pack_generator")
     path = Path(module.load_settings.__module__.replace(".", "/"))
     del path

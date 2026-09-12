@@ -112,7 +112,7 @@ def test_nlp_audit_uses_version_independent_contract_file() -> None:
     assert layer.implemented_by == ["tests/test_nlp_capability_contract.py"]
 
 
-def test_v154_nlp_audit_exposes_structured_dialogue_and_lexical_layers() -> None:
+def test_nlp_audit_exposes_structured_dialogue_and_lexical_layers() -> None:
     root = Path(__file__).resolve().parents[1]
     report = NLPCapabilityAudit(root).audit()
     dialogue = next(item for item in report.layers if item.layer == "dialogue_context_and_ellipsis")

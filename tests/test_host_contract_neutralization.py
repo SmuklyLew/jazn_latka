@@ -87,7 +87,3 @@ def test_codex_runbook_checks_actual_custom_instruction_limit() -> None:
     assert "<= 8000" not in text
 
 
-def test_release_line_preserves_host_contract_neutralization_floor() -> None:
-    version = tuple(int(part) for part in PACKAGE_VERSION.split("."))
-    assert version >= (16, 3, 25, 5, 40)
-    assert PACKAGE_RELEASE_NAME

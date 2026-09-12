@@ -19,7 +19,7 @@ def replace_exact(path: str, old: str, new: str, *, expected: int = 1) -> None:
 
 
 # Preserve the integer type while constructing the wheel fixture.
-path = "tests/test_dependency_unpacked_wheel_bootstrap_v1632555.py"
+path = "tests/test_dependency_unpacked_wheel_bootstrap.py"
 replace_exact(
     path,
     "    files: list[dict[str, object]] = []\n    resolved: list[dict[str, object]] = []\n    for wheel in (packaging_wheel, demo_wheel):\n        metadata = wheel_metadata(wheel)\n        row = {\n            \"filename\": wheel.name,\n            \"size_bytes\": wheel.stat().st_size,",
@@ -43,7 +43,7 @@ replace_exact(
 )
 
 # Keep the shared Windows-safe helper and remove the duplicate declaration.
-path = "tests/test_release_metadata_semantics_v163253.py"
+path = "tests/test_release_metadata_semantics.py"
 replace_exact(
     path,
     '\n\ndef _remove_git_metadata(root: Path) -> None:\n'

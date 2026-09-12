@@ -234,7 +234,7 @@ def test_presenter_delegates_slot_plan_to_semantic_selector() -> None:
     assert plan["slots"]["user_utterance"]["evidence_id"] != plan["slots"]["latka_utterance"]["evidence_id"]
 
 
-def test_v1635_files_are_not_private_memory_payloads() -> None:
+def test_files_are_not_private_memory_payloads() -> None:
     # This regression protects the branch hardening layer from accidentally
     # coupling its code contract to private memory databases.
     root = Path(__file__).resolve().parents[1]

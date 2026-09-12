@@ -79,7 +79,7 @@ Aktualizacja nie dodaje nowej zależności, nie uruchamia sieci z runtime, nie d
 
 ## Testy regresyjne
 
-Nowy `tests/test_chatgpt_host_executor_recovery_v16325532.py` sprawdza:
+Nowy `tests/test_chatgpt_host_executor_recovery.py` sprawdza:
 
 - `ClientError` przed procesem pozostawia filesystem/paczkę jako `unknown` i runtime jako `unverified`;
 - dokładnie jedną alternatywną próbę;
