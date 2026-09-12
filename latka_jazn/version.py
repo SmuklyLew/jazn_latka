@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.68 keeps stable purpose-based test identities and makes Jaźń Test Studio
-# non-blocking with live pytest progress, per-test outcomes, cancellation, and scrollable views.
-DISTRIBUTION_VERSION = "16.3.25.5.68"
-PACKAGE_VERSION = "16.3.25.5.68"
-PACKAGE_RELEASE_NAME = "tests-studio-live-progress"
+# v16.3.25.5.70 preserves the conversation-state/finalization update and fixes
+# the Test Studio live-event callback contract so Pyright sees an explicit None return.
+DISTRIBUTION_VERSION = "16.3.25.5.70"
+PACKAGE_VERSION = "16.3.25.5.70"
+PACKAGE_RELEASE_NAME = "conversation-state-trace-memory-finalization-ci"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

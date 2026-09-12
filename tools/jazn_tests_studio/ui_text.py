@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 import json
 from pathlib import Path
+from typing import Any
 
 from latka_jazn.tools.application_shell import DiagnosticsHub
 
@@ -58,6 +59,10 @@ def _settings(root: Path) -> None:
         print("Zapisano.")
 
 
+def _record_pytest_event(diagnostics: DiagnosticsHub, event: dict[str, Any]) -> None:
+    diagnostics.record("DEBUG", "pytest", event=event.get("type"))
+
+
 def run_text_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
     print_home(root)
     print(
@@ -97,7 +102,11 @@ def run_text_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
             continue
         if raw == "run-all":
             diagnostics.record("INFO", "Uruchamiam cały aktywny zestaw testów")
-            result = run_pytest(root, live=True, on_event=lambda event: diagnostics.record("DEBUG", "pytest", event=event.get("type")))
+            result = run_pytest(
+                root,
+                live=True,
+                on_event=lambda event: _record_pytest_event(diagnostics, event),
+            )
             diagnostics.record("INFO" if result.get("ok") else "ERROR", "Zakończono cały zestaw testów", result=result)
             print(json.dumps(result, indent=2, ensure_ascii=False))
             continue

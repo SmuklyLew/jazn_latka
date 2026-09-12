@@ -10,6 +10,7 @@ import time
 import uuid
 import json
 import os
+import hashlib
 
 from latka_jazn.core.json_types import json_object
 
@@ -80,12 +81,15 @@ class TurnExecutionContext:
         request_id: str,
         turn_id: str,
         session_id: str,
+        trace_id: str,
         timeout_seconds: float,
         audit_db_path: Path | None,
     ) -> None:
         self.request_id = request_id
         self.turn_id = turn_id
         self.session_id = session_id
+        self.trace_id = trace_id
+        self.root_span_id = hashlib.sha256(f"{trace_id}:root".encode("utf-8")).hexdigest()[:16]
         self.timeout_seconds = max(0.001, float(timeout_seconds))
         self.audit_db_path = Path(audit_db_path) if audit_db_path else None
         self.created_at_utc = _utc_now()
@@ -112,13 +116,16 @@ class TurnExecutionContext:
         request_id: str | None = None,
         turn_id: str | None = None,
         session_id: str | None = None,
+        trace_id: str | None = None,
         timeout_seconds: float = 45.0,
         audit_db_path: Path | None = None,
     ) -> "TurnExecutionContext":
+        resolved_request_id = str(request_id or uuid.uuid4())
         return cls(
-            request_id=str(request_id or uuid.uuid4()),
+            request_id=resolved_request_id,
             turn_id=str(turn_id or uuid.uuid4()),
             session_id=str(session_id or "runtime-session"),
+            trace_id=str(trace_id or resolved_request_id),
             timeout_seconds=timeout_seconds,
             audit_db_path=audit_db_path,
         )
@@ -155,8 +162,14 @@ class TurnExecutionContext:
         with self._lock:
             now_utc = _utc_now()
             now_mono = time.monotonic()
+            span_id = hashlib.sha256(
+                f"{self.trace_id}:{name}:{len(self._stages)}".encode("utf-8")
+            ).hexdigest()[:16]
             self._stages[name] = {
                 "started_at": now_utc,
+                "trace_id": self.trace_id,
+                "span_id": span_id,
+                "parent_span_id": self.root_span_id,
                 "completed_at": None,
                 "duration_ms": None,
                 "status": "running",
@@ -206,9 +219,15 @@ class TurnExecutionContext:
         with self._lock:
             now_mono = time.monotonic()
             duration = max(0.0, now_mono - started_monotonic)
+            span_id = hashlib.sha256(
+                f"{self.trace_id}:{name}:interval".encode("utf-8")
+            ).hexdigest()[:16]
             self._stages[name] = {
                 "started_at": None,
                 "completed_at": _utc_now(),
+                "trace_id": self.trace_id,
+                "span_id": span_id,
+                "parent_span_id": self.root_span_id,
                 "duration_ms": round(duration * 1000.0, 3),
                 "status": status,
                 "cancelled": self._cancelled,
@@ -485,6 +504,8 @@ class TurnExecutionContext:
                 "schema_version": "turn_execution_context/v1",
                 "request_id": self.request_id,
                 "turn_id": self.turn_id,
+                "trace_id": self.trace_id,
+                "root_span_id": self.root_span_id,
                 "session_id": self.session_id,
                 "created_at_utc": self.created_at_utc,
                 "timeout_seconds": self.timeout_seconds,
@@ -546,7 +567,7 @@ class TurnExecutionContext:
                     source="TurnExecutionContext",
                     actor="runtime",
                     tags=["technical_audit", "non_canonical"],
-                    trace_id=self.request_id,
+                    trace_id=self.trace_id,
                     turn_id=self.turn_id,
                 )
             self.complete_stage("audit_persistence", status="completed")
@@ -556,7 +577,7 @@ class TurnExecutionContext:
                 source="TurnExecutionContext",
                 actor="runtime",
                 tags=["turn_telemetry", "non_canonical"],
-                trace_id=self.request_id,
+                trace_id=self.trace_id,
                 turn_id=self.turn_id,
             )
             with self._lock:
