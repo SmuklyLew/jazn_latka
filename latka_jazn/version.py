@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.69 adds durable accepted-turn conversation state, bounded non-destructive
-# model context projection, explicit trace/span telemetry and host phase-2 conversation commit.
-DISTRIBUTION_VERSION = "16.3.25.5.69"
-PACKAGE_VERSION = "16.3.25.5.69"
-PACKAGE_RELEASE_NAME = "conversation-state-trace-memory-finalization"
+# v16.3.25.5.70 preserves the conversation-state/finalization update and fixes
+# the Test Studio live-event callback contract so Pyright sees an explicit None return.
+DISTRIBUTION_VERSION = "16.3.25.5.70"
+PACKAGE_VERSION = "16.3.25.5.70"
+PACKAGE_RELEASE_NAME = "conversation-state-trace-memory-finalization-ci"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
