@@ -37,7 +37,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
-      - name: Harden embedded release-token normalization
+      - name: Harden stable-purpose migration rules
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -49,7 +49,14 @@ jobs:
               if needle not in text:
                   raise SystemExit('normalization patch anchor not found')
               text = text.replace(needle, replacement, 1)
-              p.write_text(text, encoding='utf-8')
+
+          old = '        or "release_identity_floor" in name\n        or bool(re.fullmatch(r"test_v\\d+_release_identity", name)),\n'
+          new = '        or "release_identity_floor" in name\n        or ("release" in name and ("regression_floor" in name or "release_line_is_at_least" in name or "release_line_preserves" in name))\n        or bool(re.fullmatch(r"test_v\\d+_release_identity", name)),\n'
+          if '"release_line_is_at_least" in name' not in text:
+              if old not in text:
+                  raise SystemExit('release-floor patch anchor not found')
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
           PY
       - name: Apply stable-contract migration
         run: python -X utf8 tools/jazn_tests_studio/migrate_stable_test_contracts.py --apply
@@ -65,6 +72,11 @@ jobs:
       - name: Commit migrated suite
         shell: bash
         run: |
+          # Existing workflow files may reference renamed tests. The default
+          # GITHUB_TOKEN is not allowed to update workflow files, so keep them
+          # byte-identical here. They are updated separately through the
+          # authorized GitHub connector after this migration commit lands.
+          git restore --source=HEAD -- .github/workflows
           if git diff --quiet && git diff --cached --quiet; then
             echo 'No migration changes to commit.'
             exit 0
