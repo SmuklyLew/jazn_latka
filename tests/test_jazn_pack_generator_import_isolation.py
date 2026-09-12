@@ -23,8 +23,8 @@ sys.modules[name] = module
 spec.loader.exec_module(module)
 public = importlib.import_module("tools.jazn_pack_generator")
 assert public.GENERATOR_VERSION == "10.1.86.0.114"
-assert public.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
-assert public.UI_MODE_CHOICES == ("text", "tui", "studio")
+assert public.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v2"
+assert public.UI_MODE_CHOICES == ("text", "tui", "window")
 """
     result = subprocess.run([sys.executable, "-X", "utf8", "-c", script], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
