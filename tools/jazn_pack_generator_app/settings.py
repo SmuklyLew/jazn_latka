@@ -35,6 +35,10 @@ def default_settings() -> dict[str, Any]:
         "part_size_mib": DEFAULT_PART_SIZE_MIB,
         "compression_level": DEFAULT_COMPRESSION_LEVEL,
         "remember_last_paths": True,
+        "splash_enabled": True,
+        "diagnostics_enabled": True,
+        "diagnostics_limit": 500,
+        "log_level": "INFO",
     }
 
 
@@ -43,11 +47,20 @@ def _normalized(payload: dict[str, Any]) -> dict[str, Any]:
     result.update({key: value for key, value in payload.items() if key in result})
     result["schema_version"] = SETTINGS_SCHEMA
     result["generator_version"] = GENERATOR_VERSION
-    if str(result["ui_mode"]) not in UI_MODE_CHOICES:
-        result["ui_mode"] = DEFAULT_UI_MODE
+    ui_mode = str(result["ui_mode"] or DEFAULT_UI_MODE).strip().lower()
+    if ui_mode in {"studio", "gui", "windows", "win"}:
+        ui_mode = "window"
+    if ui_mode not in {"text", "tui", "window"}:
+        ui_mode = DEFAULT_UI_MODE
+    result["ui_mode"] = ui_mode
     result["part_size_mib"] = max(1, int(result["part_size_mib"]))
     result["compression_level"] = min(9, max(0, int(result["compression_level"])))
     result["remember_last_paths"] = bool(result["remember_last_paths"])
+    result["splash_enabled"] = bool(result["splash_enabled"])
+    result["diagnostics_enabled"] = bool(result["diagnostics_enabled"])
+    result["diagnostics_limit"] = max(50, min(5000, int(result["diagnostics_limit"])))
+    level = str(result["log_level"] or "INFO").upper()
+    result["log_level"] = level if level in {"DEBUG", "INFO", "WARNING", "ERROR"} else "INFO"
     return result
 
 

@@ -1,17 +1,20 @@
 from __future__ import annotations
 
-"""Compatibility entrypoint for the single canonical Memory Rebuild Studio.
+"""Compatibility entrypoint for the canonical Memory Rebuild interactive shell.
 
-The public ``run_studio_v24`` name remains available for CLI/API compatibility,
-but it no longer owns a menu and never starts the retired Memory Rebuild UI.
+The public ``run_studio_v24`` name remains available for CLI/API compatibility.
+Text and TUI now share the same application shell contract as the window mode:
+home, operations, settings and diagnostics over the canonical Memory Rebuild CLI.
 """
 
 from pathlib import Path
 import os
 
+from latka_jazn.tools.application_shell import build_diagnostics, run_text_studio, run_tui_studio
+
 from .project_store import ProjectStore
 from .settings import load_tool_settings, resolve_settings_path
-from .studio import run_studio
+from .ui_window import build_studio_spec
 from .unified_memory import CANONICAL_DATABASE_NAME
 
 
@@ -41,17 +44,19 @@ def run_studio_v24(
     settings_path: str | Path | None = None,
 ) -> int:
     root = Path(tool_root or Path.cwd()).expanduser().resolve()
-    database = _default_database(project_root, project)
     resolved_settings = resolve_settings_path(settings_path, tool_root=root)
     load_tool_settings(resolved_settings, tool_root=root, create=True)
-    return run_studio(
-        database=database,
-        project_root=project_root,
+    spec = build_studio_spec(tool_root=root)
+    diagnostics = build_diagnostics(spec)
+    diagnostics.record(
+        "INFO",
+        "Uruchomiono Memory Rebuild interaktywnie",
+        mode="text" if text_ui else "tui",
+        project_root=str(project_root) if project_root else None,
         project=project,
-        tool_root=root,
-        settings_path=resolved_settings,
-        text_ui=text_ui,
+        database=str(_default_database(project_root, project)),
     )
+    return run_text_studio(spec, diagnostics) if text_ui else run_tui_studio(spec, diagnostics)
 
 
 __all__ = ["run_studio_v24"]

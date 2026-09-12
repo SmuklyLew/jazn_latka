@@ -6,6 +6,12 @@ from pathlib import Path
 import sys
 from typing import Any, Sequence
 
+from latka_jazn.tools.application_shell import (
+    CommandItem, CommandStudioSpec, TerminalSplash, build_diagnostics, load_command_studio_settings, normalize_ui_mode,
+    run_guarded, run_text_studio, run_tui_studio, run_window_studio,
+)
+from latka_jazn.version import PACKAGE_VERSION
+
 from latka_jazn.dependencies.runtime import (
     DependencyStudioError,
     activation_profile_names,
@@ -50,7 +56,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--json", action="store_true", dest="as_json")
     parser.add_argument("--wheelhouse-root", type=Path)
     parser.add_argument("--timeout-seconds", type=int, default=1800)
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--ui", choices=("text", "tui", "window", "studio"), help="Interaktywny interfejs operatorski.")
+    parser.add_argument("--no-splash", action="store_true", help="Pomiń terminalowy ekran startowy.")
+    sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("audit", allow_abbrev=False)
 
@@ -85,12 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _latest_verified_bundle(
-    root: Path,
-    *,
-    profiles: Sequence[str],
-    wheelhouse_root: Path | None,
-) -> Path:
+def _latest_verified_bundle(root: Path, *, profiles: Sequence[str], wheelhouse_root: Path | None) -> Path:
     bundles = discover_bundles(
         root,
         wheelhouse_root=wheelhouse_root,
@@ -102,104 +105,44 @@ def _latest_verified_bundle(
     for item in bundles:
         if (item.get("verification") or {}).get("ok") is True:
             return Path(str(item["bundle_dir"]))
-    raise DependencyStudioError(
-        "No verified wheelhouse bundle matches the current Python/platform and requested profiles"
-    )
+    raise DependencyStudioError("No verified wheelhouse bundle matches the current Python/platform and requested profiles")
 
 
 def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     root = Path(ns.root).resolve()
     wheelhouse = Path(ns.wheelhouse_root).resolve() if ns.wheelhouse_root else None
-
     if ns.command == "audit":
         payload = audit_project_dependencies(root)
         unresolved = payload.get("undeclared_or_unmapped_external_imports") or {}
-        payload["ok"] = bool(payload.get("ok") and not unresolved)
-        payload["command"] = "audit"
+        payload["ok"] = bool(payload.get("ok") and not unresolved); payload["command"] = "audit"
         return (0 if payload["ok"] else 3), payload
-
     if ns.command in {"download", "update"}:
         profiles = _profile_list(ns.profile, default=activation_profile_names(root))
-        payload = download_bundle(
-            root,
-            profile_names=profiles,
-            python_version=ns.python_version,
-            platform_alias=ns.platform,
-            python_executable=ns.python_executable,
-            wheelhouse_root=wheelhouse,
-            lock_file=ns.lock_file,
-            timeout_seconds=ns.timeout_seconds,
-            dry_run=bool(ns.dry_run),
-        )
-        if isinstance(payload.get("command"), list):
-            payload["pip_command"] = payload.pop("command")
+        payload = download_bundle(root, profile_names=profiles, python_version=ns.python_version, platform_alias=ns.platform, python_executable=ns.python_executable, wheelhouse_root=wheelhouse, lock_file=ns.lock_file, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run))
+        if isinstance(payload.get("command"), list): payload["pip_command"] = payload.pop("command")
         payload["command"] = ns.command
         if ns.command == "update":
-            if payload.get("state") == "bundle_downloaded":
-                payload["state"] = "updated_bundle_created"
-            elif payload.get("state") == "bundle_reused":
-                payload["state"] = "no_dependency_changes"
+            if payload.get("state") == "bundle_downloaded": payload["state"] = "updated_bundle_created"
+            elif payload.get("state") == "bundle_reused": payload["state"] = "no_dependency_changes"
         return (0 if payload.get("ok") else 4), payload
-
     if ns.command == "verify":
         if ns.bundle:
-            payload = verify_bundle(ns.bundle)
-            payload["command"] = "verify"
-            return (0 if payload.get("ok") else 5), payload
+            payload = verify_bundle(ns.bundle); payload["command"] = "verify"; return (0 if payload.get("ok") else 5), payload
         profiles = _profile_list(ns.profile, default=[])
-        bundles = discover_bundles(
-            root,
-            wheelhouse_root=wheelhouse,
-            required_profiles=profiles,
-            python_version=ns.python_version,
-            platform_alias=ns.platform,
-            verify=True,
-        )
+        bundles = discover_bundles(root, wheelhouse_root=wheelhouse, required_profiles=profiles, python_version=ns.python_version, platform_alias=ns.platform, verify=True)
         ok = bool(bundles) and all((item.get("verification") or {}).get("ok") is True for item in bundles)
-        payload = {
-            "command": "verify",
-            "ok": ok,
-            "wheelhouse_root": str(wheelhouse or default_wheelhouse_root(root)),
-            "bundle_count": len(bundles),
-            "bundles": bundles,
-        }
-        return (0 if ok else 5), payload
-
+        return (0 if ok else 5), {"command":"verify","ok":ok,"wheelhouse_root":str(wheelhouse or default_wheelhouse_root(root)),"bundle_count":len(bundles),"bundles":bundles}
     if ns.command == "install":
-        if not ns.offline:
-            raise DependencyStudioError(
-                "Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse."
-            )
+        if not ns.offline: raise DependencyStudioError("Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse.")
         profiles = _profile_list(ns.profile, default=activation_profile_names(root))
-        bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(
-            root,
-            profiles=profiles,
-            wheelhouse_root=wheelhouse,
-        )
-        payload = install_bundle(
-            root,
-            bundle,
-            python_executable=ns.python_executable,
-            environments_root=ns.environment_root,
-            offline=True,
-            timeout_seconds=ns.timeout_seconds,
-            dry_run=bool(ns.dry_run),
-        )
-        payload["command"] = "install"
+        bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(root, profiles=profiles, wheelhouse_root=wheelhouse)
+        payload = install_bundle(root, bundle, python_executable=ns.python_executable, environments_root=ns.environment_root, offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run)); payload["command"] = "install"
         return (0 if payload.get("ok") else 6), payload
-
     if ns.command == "benchmark":
-        payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse)
-        payload["command"] = "benchmark"
-        return (0 if payload.get("ok") else 7), payload
-
+        payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload
     if ns.command == "gc":
-        if ns.dry_run and ns.apply:
-            raise DependencyStudioError("Choose either --dry-run or --apply, not both")
-        payload = dependency_environment_gc(root, dry_run=not bool(ns.apply))
-        payload["command"] = "gc"
-        return 0, payload
-
+        if ns.dry_run and ns.apply: raise DependencyStudioError("Choose either --dry-run or --apply, not both")
+        payload = dependency_environment_gc(root, dry_run=not bool(ns.apply)); payload["command"] = "gc"; return 0, payload
     raise DependencyStudioError(f"Unsupported command: {ns.command}")
 
 
@@ -208,65 +151,55 @@ def _human(payload: dict[str, Any]) -> str:
     lines = [f"Jaźń Dependency Studio — {command}", f"Status: {'OK' if payload.get('ok') else 'BLOCKED'}"]
     if command == "audit":
         activation = payload.get("activation") or {}
-        lines.extend([
-            f"Runtime dependencies: {'ready' if activation.get('required_ready') else 'missing/incompatible'}",
-            f"External imports: {payload.get('external_import_count')}",
-            f"Declared distributions: {payload.get('declared_distribution_count')}",
-            f"Unmapped imports: {len(payload.get('undeclared_or_unmapped_external_imports') or {})}",
-            f"Wheelhouse: {payload.get('wheelhouse_root')}",
-        ])
+        lines.extend([f"Runtime dependencies: {'ready' if activation.get('required_ready') else 'missing/incompatible'}", f"External imports: {payload.get('external_import_count')}", f"Declared distributions: {payload.get('declared_distribution_count')}", f"Unmapped imports: {len(payload.get('undeclared_or_unmapped_external_imports') or {})}", f"Wheelhouse: {payload.get('wheelhouse_root')}"])
     elif command in {"download", "update"}:
-        if payload.get("dry_run"):
-            lines.append("Dry run — no network/download performed.")
-            lines.append("Command: " + " ".join(str(item) for item in payload.get("pip_command") or []))
-        else:
-            lines.extend([
-                f"Bundle: {payload.get('bundle_dir')}",
-                f"State: {payload.get('state')}",
-                f"Wheels: {(payload.get('verification') or {}).get('wheel_count')}",
-            ])
+        if payload.get("dry_run"): lines += ["Dry run — no network/download performed.", "Command: " + " ".join(str(item) for item in payload.get("pip_command") or [])]
+        else: lines += [f"Bundle: {payload.get('bundle_dir')}", f"State: {payload.get('state')}", f"Wheels: {(payload.get('verification') or {}).get('wheel_count')}"]
     elif command == "verify":
         lines.append(f"Bundles: {payload.get('bundle_count', 1)}")
-        if payload.get("errors"):
-            lines.append(f"Errors: {len(payload.get('errors') or [])}")
-    elif command == "install":
-        lines.extend([
-            f"Environment: {payload.get('environment_root')}",
-            f"Python: {payload.get('python_executable')}",
-            "Mode: offline / --no-index / verified wheelhouse",
-        ])
-    elif command == "benchmark":
-        lines.extend([
-            f"Dependency probe: {payload.get('activation_probe_seconds')} s",
-            f"Wheelhouse verify: {payload.get('wheelhouse_verify_seconds')} s",
-            f"Verified bundles: {payload.get('verified_bundle_count')}",
-        ])
-    elif command == "gc":
-        lines.extend([
-            f"Mode: {'dry-run' if payload.get('dry_run') else 'apply'}",
-            f"Candidates: {len(payload.get('gc_candidates') or [])}",
-            f"Removed: {len(payload.get('removed') or [])}",
-        ])
+        if payload.get("errors"): lines.append(f"Errors: {len(payload.get('errors') or [])}")
+    elif command == "install": lines += [f"Environment: {payload.get('environment_root')}", f"Python: {payload.get('python_executable')}", "Mode: offline / --no-index / verified wheelhouse"]
+    elif command == "benchmark": lines += [f"Dependency probe: {payload.get('activation_probe_seconds')} s", f"Wheelhouse verify: {payload.get('wheelhouse_verify_seconds')} s", f"Verified bundles: {payload.get('verified_bundle_count')}"]
+    elif command == "gc": lines += [f"Mode: {'dry-run' if payload.get('dry_run') else 'apply'}", f"Candidates: {len(payload.get('gc_candidates') or [])}", f"Removed: {len(payload.get('removed') or [])}"]
     return "\n".join(lines)
 
 
+def _studio_spec(root: Path) -> CommandStudioSpec:
+    return CommandStudioSpec(
+        app_id="jazn-dependency-studio", app_name="Jaźń Dependency Studio", version=PACKAGE_VERSION,
+        description="Zarządzanie wersjonowanymi wheelhouse, audyt zależności, weryfikacja i jawnie offline instalowane środowiska Pythona.",
+        command_prefix=(sys.executable, "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio"),
+        commands=(
+            CommandItem("audit", "Audyt zależności", "Sprawdź deklaracje, importy i gotowość aktywacyjnych profili."),
+            CommandItem("verify", "Weryfikacja wheelhouse", "Zweryfikuj wskazany bundle lub zgodne bundle w lokalnym magazynie.", "--profile core"),
+            CommandItem("download", "Pobierz bundle", "Utwórz zweryfikowany wheelhouse dla wybranych profili.", "--profile core --dry-run"),
+            CommandItem("update", "Aktualizuj bundle", "Sprawdź i utwórz nowy bundle zależności, jeśli jest potrzebny.", "--profile core --dry-run"),
+            CommandItem("install", "Instalacja offline", "Zainstaluj wyłącznie ze zweryfikowanego lokalnego wheelhouse.", "--profile core --offline --dry-run"),
+            CommandItem("benchmark", "Benchmark", "Zmierz koszt probe zależności i weryfikacji wheelhouse."),
+            CommandItem("gc", "Porządkowanie środowisk", "Pokaż lub usuń bezpieczne kandydaty do GC.", "--dry-run"),
+        ),
+        state_dir=Path.home() / ".jazn" / "tools" / "dependency_studio", working_dir=root,
+        default_ui="window" if sys.platform.startswith("win") else "tui",
+    )
+
+
+def _run_studio(root: Path, requested_ui: str | None, *, no_splash: bool) -> int:
+    spec = _studio_spec(root); diagnostics = build_diagnostics(spec); settings = load_command_studio_settings(spec); mode = normalize_ui_mode(requested_ui, default=settings.ui_mode)
+    def action() -> int:
+        if mode == "window": return run_window_studio(spec, diagnostics)
+        with TerminalSplash(spec.app_name, enabled=settings.splash_enabled and not no_splash) as splash:
+            splash.step("Wczytywanie profili zależności"); activation_profile_names(root); splash.step(f"Uruchamianie interfejsu {mode}")
+        return run_tui_studio(spec, diagnostics) if mode == "tui" else run_text_studio(spec, diagnostics)
+    return run_guarded(action, diagnostics, app_name=spec.app_name)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = build_parser()
-    ns = parser.parse_args(list(argv) if argv is not None else None)
-    try:
-        exit_code, payload = execute(ns)
-    except DependencyStudioError as exc:
-        payload = {
-            "ok": False,
-            "command": ns.command,
-            "error_type": type(exc).__name__,
-            "error": str(exc),
-        }
-        exit_code = 2
-    if ns.as_json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str))
-    else:
-        print(_human(payload))
+    parser = build_parser(); ns = parser.parse_args(list(argv) if argv is not None else None)
+    if ns.ui or ns.command is None: return _run_studio(Path(ns.root).resolve(), ns.ui, no_splash=bool(ns.no_splash))
+    try: exit_code, payload = execute(ns)
+    except KeyboardInterrupt: payload = {"ok": False, "command": ns.command, "status": "cancelled"}; exit_code = 130
+    except DependencyStudioError as exc: payload = {"ok": False, "command": ns.command, "error_type": type(exc).__name__, "error": str(exc)}; exit_code = 2
+    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str) if ns.as_json else _human(payload))
     return exit_code
 
 

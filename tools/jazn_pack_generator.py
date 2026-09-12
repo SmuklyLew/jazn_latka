@@ -21,6 +21,12 @@ from pathlib import Path
 import sys
 from typing import Any, Sequence
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from latka_jazn.tools.application_shell import DiagnosticsHub, TerminalSplash, normalize_ui_mode, run_guarded
+
 try:
     from .jazn_pack_generator_app import (
         CONTENT_CHOICES,
@@ -35,6 +41,7 @@ try:
         join_parts,
         load_settings,
         save_settings,
+        settings_path,
         pack,
         plan_pack,
         unpack_package,
@@ -60,6 +67,7 @@ except ImportError:
         join_parts,
         load_settings,
         save_settings,
+        settings_path,
         pack,
         plan_pack,
         unpack_package,
@@ -118,7 +126,7 @@ def _parser() -> argparse.ArgumentParser:
         description=f"{GENERATOR_TITLE} v{GENERATOR_VERSION}",
         allow_abbrev=False,
     )
-    parser.add_argument("--ui", choices=UI_MODE_CHOICES, help="Uruchom wybrany interfejs.")
+    parser.add_argument("--ui", choices=(*UI_MODE_CHOICES, "studio"), help="Uruchom wybrany interfejs; studio = zgodnościowy alias window.")
     sub = parser.add_subparsers(dest="command")
 
     pack_cmd = sub.add_parser("pack", allow_abbrev=False, help="Spakuj SYSTEM/MEMORY.")
@@ -149,22 +157,45 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _run_ui(mode: str) -> int:
-    if mode == "text":
-        return run_text_ui()
-    if mode == "tui":
-        return run_terminal_tui()
-    if mode == "studio":
-        return run_studio_ui()
-    raise ValueError(mode)
+def _run_ui(mode: str, diagnostics: DiagnosticsHub) -> int:
+    canonical = normalize_ui_mode(mode, default="window")
+    if canonical == "text":
+        return run_text_ui(diagnostics)
+    if canonical == "tui":
+        return run_terminal_tui(diagnostics)
+    if canonical == "window":
+        return run_studio_ui(diagnostics)
+    raise ValueError(canonical)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(list(sys.argv[1:] if argv is None else argv))
-    try:
-        if args.ui:
-            return _run_ui(args.ui)
+    settings = load_settings()
+    diagnostics = DiagnosticsHub(
+        "jazn-pack-generator",
+        settings_path().parent,
+        enabled=bool(settings.get("diagnostics_enabled", True)),
+        limit=int(settings.get("diagnostics_limit", 500)),
+        minimum_level=str(settings.get("log_level") or "INFO"),
+    )
+    diagnostics.record("INFO", "Start aplikacji", version=GENERATOR_VERSION, command=args.command, ui=args.ui)
 
+    if args.ui or args.command is None:
+        mode = args.ui or str(settings.get("ui_mode") or "window")
+
+        def run_interface() -> int:
+            canonical = normalize_ui_mode(mode, default="window")
+            if canonical == "window":
+                return _run_ui(canonical, diagnostics)
+            with TerminalSplash(GENERATOR_TITLE, enabled=bool(settings.get("splash_enabled", True))) as splash:
+                splash.step("Wczytywanie konfiguracji")
+                config_report()
+                splash.step(f"Uruchamianie interfejsu {canonical}")
+            return _run_ui(canonical, diagnostics)
+
+        return run_guarded(run_interface, diagnostics, app_name=GENERATOR_TITLE)
+
+    try:
         if args.command == "pack":
             request = _request_from_args(args)
             if args.plan_only:
@@ -190,16 +221,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "config":
             payload = config_report()
         else:
-            settings = load_settings()
-            mode = str(settings.get("ui_mode") or "studio")
-            return _run_ui(mode)
+            raise ValueError(f"Nieobsługiwana komenda: {args.command}")
 
+        diagnostics.record("INFO", "Zakończono komendę", command=args.command, ok=True)
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
+    except KeyboardInterrupt:
+        diagnostics.record("WARNING", "Przerwano komendę przez Ctrl+C", command=args.command)
+        print(json.dumps({"ok": False, "status": "cancelled", "exit_code": 130}, ensure_ascii=False, indent=2), file=sys.stderr)
+        return 130
     except Exception as exc:
+        diagnostics.exception(exc, context=f"Błąd komendy Pack Generator: {args.command}")
         print(
             json.dumps(
-                {"ok": False, "error": f"{type(exc).__name__}: {exc}"},
+                {"ok": False, "error": f"{type(exc).__name__}: {exc}", "diagnostics": str(diagnostics.log_path)},
                 ensure_ascii=False,
                 indent=2,
             ),
