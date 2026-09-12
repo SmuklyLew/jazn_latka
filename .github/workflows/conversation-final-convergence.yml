@@ -1,0 +1,132 @@
+name: conversation-final-convergence
+
+on:
+  push:
+    branches:
+      - "upgrade/**"
+      - "fix/**"
+      - "hotfix/**"
+      - master
+    paths:
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/core/conversation_runtime_convergence.py"
+      - "latka_jazn/core/turn_authority_runtime_overlay.py"
+      - "latka_jazn/core/model_context_compiler.py"
+      - "latka_jazn/core/dialogue_task_state.py"
+      - "latka_jazn/core/reasoning_orchestrator.py"
+      - "latka_jazn/core/nlg_planner.py"
+      - "latka_jazn/nlp/**"
+      - "latka_jazn/nlp_reasoning/**"
+      - "latka_jazn/memory/**"
+      - "latka_jazn/version.py"
+      - "tests/test_v16325569_conversation_runtime_nlp_final_convergence.py"
+      - ".github/workflows/conversation-final-convergence.yml"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/core/conversation_runtime_convergence.py"
+      - "latka_jazn/core/turn_authority_runtime_overlay.py"
+      - "latka_jazn/core/model_context_compiler.py"
+      - "latka_jazn/core/dialogue_task_state.py"
+      - "latka_jazn/core/reasoning_orchestrator.py"
+      - "latka_jazn/core/nlg_planner.py"
+      - "latka_jazn/nlp/**"
+      - "latka_jazn/nlp_reasoning/**"
+      - "latka_jazn/memory/**"
+      - "latka_jazn/version.py"
+      - "tests/test_v16325569_conversation_runtime_nlp_final_convergence.py"
+      - ".github/workflows/conversation-final-convergence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  conversation_final_convergence:
+    name: conversation final convergence (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JAZN_NETWORK_TIME_FIRST: "0"
+      JAZN_NETWORK_TIME_IN_TURN: "0"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Compile conversation runtime
+        run: >-
+          python -X utf8 -m compileall -q
+          latka_jazn/core/conversation_runtime_convergence.py
+          latka_jazn/core/turn_authority_runtime_overlay.py
+          latka_jazn/core/runtime_session.py
+          latka_jazn/core/runtime_daemon.py
+          latka_jazn/core/model_context_compiler.py
+          latka_jazn/core/dialogue_task_state.py
+          latka_jazn/core/reasoning_orchestrator.py
+          latka_jazn/core/nlg_planner.py
+          latka_jazn/nlp
+          latka_jazn/nlp_reasoning
+          tests/test_v16325569_conversation_runtime_nlp_final_convergence.py
+          main.py run.py
+
+      - name: Doctor readiness gate
+        run: python -X utf8 run.py doctor --json
+
+      - name: Conversation, NLP, memory-context, reasoning and finalization gates
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_v16325569_conversation_runtime_nlp_final_convergence.py
+          tests/test_dialogue_task_state_v154.py
+          tests/test_reasoning_orchestrator_v154.py
+          tests/test_lexical_intelligence_v154.py
+          tests/test_host_finalization_provenance_polish_nlp.py
+          tests/test_memory_recall_timeout_hardening.py
+          tests/test_host_finalization_gate.py
+
+      - name: Release package smoke
+        if: matrix.os == 'ubuntu-latest'
+        run: python -X utf8 run.py package-smoke --profile release --json
+
+      - name: Clean checkout guard
+        if: always()
+        shell: bash
+        run: |
+          git diff --check
+          git diff --exit-code
+          status="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$status" ]; then
+            echo "Unexpected worktree changes after final convergence gate:"
+            printf '%s\n' "$status"
+            exit 1
+          fi

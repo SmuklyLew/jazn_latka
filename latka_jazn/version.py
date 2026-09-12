@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.72 closes the active-tree static diagnostics for conversation
-# state validation and Jaźń Tests Studio live-event callback typing.
-DISTRIBUTION_VERSION = "16.3.25.5.72"
-PACKAGE_VERSION = "16.3.25.5.72"
-PACKAGE_RELEASE_NAME = "conversation-runtime-nlp-final-convergence-static-gate"
+# v16.3.25.5.73 adds explicit cross-platform final-convergence execution for
+# ConversationRunner, doctor readiness, NLP/reasoning/finalization and release package smoke.
+DISTRIBUTION_VERSION = "16.3.25.5.73"
+PACKAGE_VERSION = "16.3.25.5.73"
+PACKAGE_RELEASE_NAME = "conversation-runtime-nlp-final-convergence-ci-coverage"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
