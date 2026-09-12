@@ -1,0 +1,44 @@
+name: Test Studio Pyright repair
+
+on:
+  push:
+    branches:
+      - fix/v16.3.25.5.68-tests-studio-live-progress
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[type-fix-final]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+        with:
+          fetch-depth: 0
+          ref: fix/v16.3.25.5.68-tests-studio-live-progress
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        with:
+          python-version: '3.12'
+      - name: Install validation tools
+        run: |
+          python -m pip install -e . pytest
+          npm install --global pyright@1.1.411
+      - name: Apply type fixes
+        run: python -X utf8 tools/jazn_tests_studio/apply_ci_type_fix.py
+      - name: Validate Studio and active tree types
+        run: |
+          python -m py_compile tools/jazn_tests_studio.py tools/jazn_tests_studio/progress_plugin.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
+          python -X utf8 tools/jazn_tests_studio.py self-test
+          pyright --project pyrightconfig.json
+      - name: Commit materialized type fixes
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -- .github/workflows/persistent-runtime-e2e.yml
+          git add tools/jazn_tests_studio.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
+          git rm tools/jazn_tests_studio/apply_ci_type_fix.py
+          git commit -m 'fix: satisfy Test Studio Pyright contracts [type-fix-final]'
+          git push origin HEAD:fix/v16.3.25.5.68-tests-studio-live-progress
