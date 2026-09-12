@@ -3,11 +3,11 @@
   "version": "16.3.25.5.68-tests-studio-live-progress",
   "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
   "package_version": "16.3.25.5.68-tests-studio-live-progress",
-  "generated_at_utc": "2026-09-12T11:37:11+00:00",
-  "updated_at_utc": "2026-09-12T11:37:11+00:00",
+  "generated_at_utc": "2026-09-12T11:39:37+00:00",
+  "updated_at_utc": "2026-09-12T11:39:37+00:00",
   "start_file": "run.py",
-  "file_count": 1628,
-  "static_file_count": 1628,
+  "file_count": 1630,
+  "static_file_count": 1630,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -181,6 +181,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/tests-studio-pyright-repair.yml",
+      "size_bytes": 1820,
+      "sha256": "157343b1ae0df33e2efc8f2cbdc0ab14649c7c4c367442eb7e31ed76ab6cb180",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".gitignore",
       "size_bytes": 2384,
       "sha256": "03e6cb7e7498e9a96591e2b5996ad214f25eeb15ee3e3df1f38d7ad0fcb8ae19",
@@ -264,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2864,
-      "sha256": "8d60ff6c673e62166f560d29953d914debf3db1e143a9990185d158362145a82",
+      "sha256": "6a33126ba3a7797be518d46b9eba8dd0a403994dd3f45007e2ec9c8954e18ba9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14512,6 +14521,15 @@
       "path": "tools/jazn_tests_studio/__init__.py",
       "size_bytes": 49,
       "sha256": "f20a74d4f4e057804a6cfd98b7a422512e49bccdfd1bb17bd68f06ac8c2de0ec",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_tests_studio/apply_ci_type_fix.py",
+      "size_bytes": 1221,
+      "sha256": "1c9e33171cca9c01c880ffc549fddc7cd20ddf0150c19ff68ab19b53663a3288",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
