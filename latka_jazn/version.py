@@ -78,115 +78,99 @@ def release_version_marker(component: str, *, version: str = PACKAGE_VERSION_FUL
 
 
 def schema_version(component: str, *, version: str | None = None) -> str:
-    """Backward-compatible bridge for historical callers.
+    """Compatibility API for schema callers.
 
-    - `schema_version(component)` returns the true stable contract identifier.
-    - `schema_version(component, version=...)` preserves the legacy runtime-coupled
-      marker shape for existing migrations/tests, but new schema consumers should
-      use `contract_schema_version()` or `runtime_version_marker()` explicitly.
+    New/default calls return stable contract schema identifiers. Passing an
+    explicit ``version`` preserves the historical runtime-coupled behavior for
+    callers that truly need a runtime marker; new code should call
+    ``runtime_version_marker`` directly for that purpose.
     """
 
-    if version is None:
-        return contract_schema_version(component)
-    return runtime_version_marker(component, version=version)
-
-
-def component_schema_version(component: str) -> str:
-    """Compatibility alias for the current stable contract schema identifier."""
-
+    if version is not None:
+        return runtime_version_marker(component, version=version)
     return contract_schema_version(component)
 
 
-def schema_version_is_current(
-    component: str,
-    value: str | None,
-    *,
-    expected_major: int | None = None,
-) -> bool:
-    """Return True only for the current stable schema of `component`."""
-
-    if not value:
-        return False
-    return str(value).strip() == contract_schema_version(component, major=expected_major)
-
-
-def classify_schema_version(
-    component: str,
-    value: str | None,
-    *,
-    expected_major: int | None = None,
-) -> str:
-    """Classify a serialized schema version without conflating it with runtime release identity."""
+def schema_contract_metadata(component: str) -> dict[str, Any]:
+    """Describe the current schema and supported explicit migration paths."""
 
     name = _component_name(component)
-    current = contract_schema_version(name, major=expected_major)
-    if value is None or not str(value).strip():
-        return "legacy_unversioned" if name in _LEGACY_UNVERSIONED_SCHEMA_COMPONENTS else "missing"
-    normalized = str(value).strip()
-    if normalized == current:
-        return "current"
-    if normalized.startswith(f"{name}/v"):
-        return "other_contract_schema"
-    if normalized.startswith(f"{name}/") and _LEGACY_RUNTIME_SCHEMA_SUFFIX_RE.match(
-        normalized[len(name) + 1 :]
-    ):
-        return "legacy_runtime_coupled"
-    return "foreign_or_invalid"
-
-
-def schema_compatibility(
-    component: str,
-    value: str | None,
-    *,
-    expected_major: int | None = None,
-) -> dict[str, Any]:
-    """Return explicit migration/compatibility semantics for schema-bearing documents."""
-
-    name = _component_name(component)
-    current = contract_schema_version(name, major=expected_major)
-    classification = classify_schema_version(name, value, expected_major=expected_major)
-    migratable = classification in {"legacy_unversioned", "legacy_runtime_coupled"}
+    current = contract_schema_version(name)
+    accepts_unversioned = name in _LEGACY_UNVERSIONED_SCHEMA_COMPONENTS
     return {
         "component": name,
-        "observed": value,
-        "current": current,
-        "classification": classification,
-        "current_schema": classification == "current",
-        "migration_required": migratable,
-        "accepted_for_migration": migratable,
+        "current_schema_version": current,
+        "accepted_schema_versions": [current],
+        "compatibility_policy": "explicit_current_plus_bounded_legacy_migrations",
+        "legacy_runtime_coupled_schema": {
+            "accepted": True,
+            "pattern": f"{name}/<runtime-version>",
+            "migration_target": current,
+        },
+        "legacy_unversioned_schema": {
+            "accepted": accepts_unversioned,
+            "pattern": None,
+            "migration_target": current if accepts_unversioned else None,
+        },
     }
 
 
-def is_legacy_runtime_schema_marker(component: str, value: str | None) -> bool:
-    """Return True only for the historical `component/<runtime-version>` marker shape."""
+def schema_version_compatibility(component: str, value: str | None) -> dict[str, Any]:
+    """Classify a serialized schema identifier without conflating it with release versioning."""
 
-    return classify_schema_version(component, value) == "legacy_runtime_coupled"
+    name = _component_name(component)
+    current = contract_schema_version(name)
+    candidate = str(value or "").strip()
+    if candidate == current:
+        return {
+            "compatible": True,
+            "migration_required": False,
+            "kind": "current_contract_schema",
+            "current_schema_version": current,
+            "observed_schema_version": candidate,
+        }
+
+    if not candidate and name in _LEGACY_UNVERSIONED_SCHEMA_COMPONENTS:
+        return {
+            "compatible": True,
+            "migration_required": True,
+            "kind": "legacy_unversioned_schema",
+            "current_schema_version": current,
+            "observed_schema_version": None,
+        }
+
+    prefix = f"{name}/"
+    suffix = candidate[len(prefix):] if candidate.startswith(prefix) else ""
+    if suffix and _LEGACY_RUNTIME_SCHEMA_SUFFIX_RE.fullmatch(suffix):
+        return {
+            "compatible": True,
+            "migration_required": True,
+            "kind": "legacy_runtime_coupled_schema",
+            "current_schema_version": current,
+            "observed_schema_version": candidate,
+        }
+
+    return {
+        "compatible": False,
+        "migration_required": False,
+        "kind": "unsupported_schema",
+        "current_schema_version": current,
+        "observed_schema_version": candidate or None,
+    }
 
 
-def source_provenance_schema_version() -> str:
-    return contract_schema_version("source_provenance")
+def version_number(version: str = PACKAGE_VERSION) -> str:
+    value = str(version or PACKAGE_VERSION).strip().split("-", 1)[0].lstrip("v")
+    return value or PACKAGE_VERSION.lstrip("v")
 
 
-def package_integrity_manifest_schema_version() -> str:
-    return contract_schema_version("package_integrity_manifest")
+def active_line(component: str) -> str:
+    return runtime_version_marker(component, version=PACKAGE_VERSION)
 
 
-__all__ = [
-    "DISTRIBUTION_VERSION",
-    "PACKAGE_VERSION",
-    "PACKAGE_RELEASE_NAME",
-    "PACKAGE_VERSION_FULL",
-    "RUNTIME_CONTRACT_VERSION",
-    "RUNTIME_CONTRACT_VERSION_FULL",
-    "classify_schema_version",
-    "component_schema_version",
-    "contract_schema_version",
-    "is_legacy_runtime_schema_marker",
-    "package_integrity_manifest_schema_version",
-    "release_version_marker",
-    "runtime_version_marker",
-    "schema_compatibility",
-    "schema_version",
-    "schema_version_is_current",
-    "source_provenance_schema_version",
-]
+def version_slug(version: str = PACKAGE_VERSION) -> str:
+    return "v" + version_number(version).replace(".", "_")
+
+
+def generation_mode(prefix: str, *, version: str = PACKAGE_VERSION) -> str:
+    return f"{prefix}_{version_slug(version)}"
