@@ -31,6 +31,7 @@ _MODEL_CONTEXT_KEYS = (
     "operational_thought_frame",
     "voice_source_contract",
     "full_canon_model_context",
+    "conversation_history",
     "allowed_memory_items",
     "forbidden_claims",
     "required_truth_boundaries",
