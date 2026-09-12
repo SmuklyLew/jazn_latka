@@ -320,7 +320,7 @@ def build_contract_catalog(root: Path) -> dict[str, object]:
             elif isinstance(n, ast.ImportFrom) and (n.module or "").startswith("latka_jazn"):
                 imports.add(n.module or "")
 
-        def add_node(node: ast.AST, prefix: str = "") -> None:
+        def add_node(node: ast.FunctionDef | ast.AsyncFunctionDef, prefix: str = "") -> None:
             name = getattr(node, "name", "")
             if not name.startswith("test_"):
                 return
@@ -371,10 +371,10 @@ def build_contract_catalog(root: Path) -> dict[str, object]:
 def write_studio_support(root: Path, catalog: dict[str, object]) -> None:
     studio = root / "tools" / "jazn_tests_studio"
     studio.mkdir(parents=True, exist_ok=True)
-    (studio / "__init__.py").write_text('"""Support files for Jaźń - Studio testów."""\n', encoding="utf-8")
+    (studio / "__init__.py").write_text('"""Support files for Jaźń - Studio Testów."""\n', encoding="utf-8")
     settings = {
         "schema": "jazn_tests_studio_settings/v2",
-        "app_name": "Jaźń - Studio testów",
+        "app_name": "Jaźń - Studio Testów",
         "active_tests": "tests",
         "archive_branches": "tests/archive/branches",
         "contract_catalog": "tools/jazn_tests_studio/test_contracts.json",
@@ -386,7 +386,7 @@ def write_studio_support(root: Path, catalog: dict[str, object]) -> None:
     (studio / "test_contracts.json").write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (studio / ".gitignore").write_text("reviews.json\n*.tmp\nruntime/\n", encoding="utf-8")
     (studio / "README.md").write_text(
-        "# Jaźń - Studio testów\n\n"
+        "# Jaźń - Studio Testów\n\n"
         "Centralne metadane narzędzia testowego. `test_contracts.json` opisuje aktywne kontrakty testowe; "
         "`settings.json` definiuje ścieżki i politykę uruchamiania. `reviews.json` jest lokalnym stanem operatora i nie jest commitowany.\n",
         encoding="utf-8",

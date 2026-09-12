@@ -11,9 +11,9 @@ import sys
 import tempfile
 import threading
 import time
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
-APP_NAME = "Jaźń - Studio testów"
+APP_NAME = "Jaźń - Studio Testów"
 APP_VERSION = "1.2.0"
 VALID_REVIEW = {"current", "review_required", "obsolete", "incompatible"}
 EVENT_MARKER = "JAZN_TEST_STUDIO_EVENT "
@@ -486,7 +486,7 @@ def studio_ui(root: Path) -> None:
     notebook.add(expectations, text="Oczekiwania")
     notebook.add(results, text="Wyniki")
 
-    def text_with_scrollbars(parent, *, wrap: str = "none"):
+    def text_with_scrollbars(parent, *, wrap: Literal["none", "char", "word"] = "none"): 
         frame = ttk.Frame(parent)
         frame.pack(fill="both", expand=True, padx=8, pady=8)
         frame.rowconfigure(0, weight=1)

@@ -1,1 +1,1 @@
-"""Support files for Jaźń - Studio testów."""
+"""Support files for Jaźń - Studio Testów."""
