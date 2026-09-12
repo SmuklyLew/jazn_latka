@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.67",
-  "active_definition_count": 1506,
+  "active_definition_count": 1522,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -888,6 +888,114 @@
       "description_source": "source_identity",
       "line": 110
     },
+    "tests/test_application_shell.py::test_normalize_ui_mode_uses_three_canonical_modes": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_normalize_ui_mode_uses_three_canonical_modes",
+      "purpose": "Normalize ui mode uses three canonical modes",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_application_shell.py::test_shell_settings_round_trip_and_normalization": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_shell_settings_round_trip_and_normalization",
+      "purpose": "Shell settings round trip and normalization",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_application_shell.py::test_shell_settings_invalid_values_fall_back_without_crashing": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_shell_settings_invalid_values_fall_back_without_crashing",
+      "purpose": "Shell settings invalid values fall back without crashing",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_application_shell.py::test_diagnostics_reconfigure_is_live_and_bounded": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_diagnostics_reconfigure_is_live_and_bounded",
+      "purpose": "Diagnostics reconfigure is live and bounded",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_application_shell.py::test_diagnostics_jsonl_writes_remain_valid_under_threads": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_diagnostics_jsonl_writes_remain_valid_under_threads",
+      "purpose": "Diagnostics jsonl writes remain valid under threads",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_application_shell.py::test_terminal_splash_context_is_safe_without_tty": {
+      "path": "tests/test_application_shell.py",
+      "name": "test_terminal_splash_context_is_safe_without_tty",
+      "purpose": "Terminal splash context is safe without tty",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
     "tests/test_archive_capabilities.py::test_archive_report_separates_knowledge_from_executable_support": {
       "path": "tests/test_archive_capabilities.py",
       "name": "test_archive_report_separates_knowledge_from_executable_support",
@@ -1428,7 +1536,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 15
+      "line": 16
     },
     "tests/test_archived_test_policy.py::test_repository_pytest_config_excludes_archive_by_default": {
       "path": "tests/test_archived_test_policy.py",
@@ -6905,6 +7013,40 @@
       "description_source": "source_identity",
       "line": 127
     },
+    "tests/test_conversation_model_context_continuity.py::test_model_context_carries_bounded_durable_conversation_projection": {
+      "path": "tests/test_conversation_model_context_continuity.py",
+      "name": "test_model_context_carries_bounded_durable_conversation_projection",
+      "purpose": "Model context carries bounded durable conversation projection",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_conversation_model_context_continuity.py::test_model_context_history_is_sanitized_and_bounded": {
+      "path": "tests/test_conversation_model_context_continuity.py",
+      "name": "test_model_context_history_is_sanitized_and_bounded",
+      "purpose": "Model context history is sanitized and bounded",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_canonical_auto_route_priority_is_shared_and_truthful": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
       "name": "test_canonical_auto_route_priority_is_shared_and_truthful",
@@ -7099,6 +7241,74 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 152
+    },
+    "tests/test_conversation_state_restart_continuity.py::test_conversation_state_survives_store_recreation": {
+      "path": "tests/test_conversation_state_restart_continuity.py",
+      "name": "test_conversation_state_survives_store_recreation",
+      "purpose": "Conversation state survives store recreation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_conversation_state_store.py::test_finalized_turn_commit_is_idempotent_and_hash_bound": {
+      "path": "tests/test_conversation_state_store.py",
+      "name": "test_finalized_turn_commit_is_idempotent_and_hash_bound",
+      "purpose": "Finalized turn commit is idempotent and hash bound",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_conversation_state_store.py::test_same_turn_with_different_visible_text_fails_closed": {
+      "path": "tests/test_conversation_state_store.py",
+      "name": "test_same_turn_with_different_visible_text_fails_closed",
+      "purpose": "Same turn with different visible text fails closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_conversation_state_store.py::test_bounded_projection_keeps_all_accepted_turns_on_disk": {
+      "path": "tests/test_conversation_state_store.py",
+      "name": "test_bounded_projection_keeps_all_accepted_turns_on_disk",
+      "purpose": "Bounded projection keeps all accepted turns on disk",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_creative_material_route_precedence.py::test_structured_song_is_removed_from_control_text_not_from_original": {
       "path": "tests/test_creative_material_route_precedence.py",
@@ -10926,6 +11136,50 @@
       "description_source": "source_identity",
       "line": 224
     },
+    "tests/test_host_finalized_conversation_state.py::test_host_phase_two_commits_full_turn_idempotently": {
+      "path": "tests/test_host_finalized_conversation_state.py",
+      "name": "test_host_phase_two_commits_full_turn_idempotently",
+      "purpose": "Host phase two commits full turn idempotently",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_host_finalized_conversation_state.py::test_host_phase_two_rejects_modified_phase_one_commit": {
+      "path": "tests/test_host_finalized_conversation_state.py",
+      "name": "test_host_phase_two_rejects_modified_phase_one_commit",
+      "purpose": "Host phase two rejects modified phase one commit",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
     "tests/test_host_finalized_session_continuity.py::test_host_finalization_advances_durable_task_state": {
       "path": "tests/test_host_finalized_session_continuity.py",
       "name": "test_host_finalization_advances_durable_task_state",
@@ -12484,7 +12738,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 70
     },
     "tests/test_jazn_pack_generator_contract.py::test_generator_identity_and_small_public_launcher": {
       "path": "tests/test_jazn_pack_generator_contract.py",
@@ -12614,10 +12868,10 @@
       "description_source": "source_identity",
       "line": 22
     },
-    "tests/test_jazn_pack_generator_dashboard.py::test_native_studio_is_separate_from_small_public_launcher": {
+    "tests/test_jazn_pack_generator_dashboard.py::test_native_window_is_separate_from_small_public_launcher": {
       "path": "tests/test_jazn_pack_generator_dashboard.py",
-      "name": "test_native_studio_is_separate_from_small_public_launcher",
-      "purpose": "Native studio is separate from small public launcher",
+      "name": "test_native_window_is_separate_from_small_public_launcher",
+      "purpose": "Native window is separate from small public launcher",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
@@ -12852,13 +13106,13 @@
       "path": "tests/test_jazn_pack_generator_public_api_contract.py",
       "name": "test_public_launcher_exports_new_archiver_contract",
       "purpose": "Public launcher exports new archiver contract",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -12878,7 +13132,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 19
+      "line": 20
     },
     "tests/test_jazn_pack_generator_public_api_contract.py::test_cli_parser_disables_abbreviations": {
       "path": "tests/test_jazn_pack_generator_public_api_contract.py",
@@ -12893,7 +13147,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 27
+      "line": 28
     },
     "tests/test_jazn_pack_generator_studio_portability.py::test_exposes_three_real_ui_modes": {
       "path": "tests/test_jazn_pack_generator_studio_portability.py",
@@ -31972,7 +32226,9 @@
       "purpose": "Active test files use stable purpose names",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
@@ -31987,7 +32243,9 @@
       "purpose": "Active test functions use stable purpose names",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
@@ -32002,7 +32260,9 @@
       "purpose": "Contract catalog covers every active definition",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -32015,11 +32275,13 @@
       "path": "tests/test_test_suite_governance.py",
       "name": "test_snapshot_manifest_is_byte_exact",
       "purpose": "Snapshot manifest is byte exact",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -32033,6 +32295,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -32041,7 +32304,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 73
     },
     "tests/test_turn_atomicity.py::test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits": {
       "path": "tests/test_turn_atomicity.py",
@@ -32514,6 +32777,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_turn_trace_span_context.py::test_turn_execution_exposes_explicit_trace_and_stage_spans": {
+      "path": "tests/test_turn_trace_span_context.py",
+      "name": "test_turn_execution_exposes_explicit_trace_and_stage_spans",
+      "purpose": "Turn execution exposes explicit trace and stage spans",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_turn_trace_span_context.py::test_trace_defaults_to_request_id_for_backward_compatibility": {
+      "path": "tests/test_turn_trace_span_context.py",
+      "name": "test_trace_defaults_to_request_id_for_backward_compatibility",
+      "purpose": "Trace defaults to request id for backward compatibility",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
