@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,8 @@ from latka_jazn.archive import (
 
 
 def test_encrypted_7z_requires_password_and_roundtrips(tmp_path: Path) -> None:
+    if importlib.util.find_spec("py7zr") is None:
+        pytest.skip("optional archive dependency py7zr is not installed")
     service = ArchiveExtractionService(ArchiveSecurityLimits(require_free_space=False))
     archive = tmp_path / "encrypted.7z"
     password = "fixture-7z-password"
