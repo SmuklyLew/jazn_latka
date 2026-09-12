@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "55c8206ddcdf9b31b854b3d890ae06eb07ac50be",
-    "base_version": "16.3.25.5.68-tests-studio-live-progress",
+    "base_commit": "1b189fce7ff58bd3bfd133537bf90f86b978643d",
+    "base_version": "16.3.25.5.70-conversation-state-trace-memory-finalization-ci",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "1b189fce7ff58bd3bfd133537bf90f86b978643d",
