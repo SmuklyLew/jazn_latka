@@ -121,3 +121,4 @@ PACKAGE_INTEGRITY_MANIFEST.json
 
 # Local pytest integration workspaces
 /.pytest-p1b/
+tools/jazn_pack_generator_app/runtime/jazn-pack-generator.jsonl
