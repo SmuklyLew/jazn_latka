@@ -137,6 +137,8 @@ def test_aes_zip_roundtrip_and_auto_detection(tmp_path: Path) -> None:
 
 
 def test_7z_roundtrip(tmp_path: Path) -> None:
+    if importlib.util.find_spec("py7zr") is None:
+        pytest.skip("optional archive dependency py7zr is not installed")
     service = _service()
     archive = tmp_path / "sample.7z"
     service.create_archive(

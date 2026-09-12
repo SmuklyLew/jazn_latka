@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.67 converges tests on stable purpose-based identities, branch snapshots,
-# explicit Test Studio contracts, and governance that prevents release-coupled test duplication.
-DISTRIBUTION_VERSION = "16.3.25.5.67"
-PACKAGE_VERSION = "16.3.25.5.67"
-PACKAGE_RELEASE_NAME = "stable-test-contracts"
+# v16.3.25.5.68 keeps stable purpose-based test identities and makes Jaźń Test Studio
+# non-blocking with live pytest progress, per-test outcomes, cancellation, and scrollable views.
+DISTRIBUTION_VERSION = "16.3.25.5.68"
+PACKAGE_VERSION = "16.3.25.5.68"
+PACKAGE_RELEASE_NAME = "tests-studio-live-progress"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

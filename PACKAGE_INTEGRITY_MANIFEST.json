@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.67-stable-test-contracts",
-  "runtime_version": "16.3.25.5.67-stable-test-contracts",
-  "package_version": "16.3.25.5.67-stable-test-contracts",
-  "generated_at_utc": "2026-09-12T10:52:21+00:00",
-  "updated_at_utc": "2026-09-12T10:52:21+00:00",
+  "version": "16.3.25.5.68-tests-studio-live-progress",
+  "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
+  "package_version": "16.3.25.5.68-tests-studio-live-progress",
+  "generated_at_utc": "2026-09-12T12:21:04+00:00",
+  "updated_at_utc": "2026-09-12T12:21:04+00:00",
   "start_file": "run.py",
-  "file_count": 1627,
-  "static_file_count": 1627,
+  "file_count": 1628,
+  "static_file_count": 1628,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -128,8 +128,8 @@
     },
     {
       "path": ".github/workflows/persistent-runtime-e2e.yml",
-      "size_bytes": 7740,
-      "sha256": "391c8adc8dc65b5a69958692115cd33f0fbdadaf3beb95b226b2ab289bb94671",
+      "size_bytes": 7706,
+      "sha256": "ecbad2e8170ca0fdbea002f8a2dd1d49d9325df3e84c5cd51c5a5ceec2a1afdd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -173,8 +173,8 @@
     },
     {
       "path": ".github/workflows/stable-test-contracts.yml",
-      "size_bytes": 5206,
-      "sha256": "d7d58b509d8e1dd5cc1ef8869b0ccc9e98dba7d8b0e2476689c57448c2c89f08",
+      "size_bytes": 1576,
+      "sha256": "2353e4b78066639259b624a582e13d7ead54dd135b7483870170ac9aff76a7ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2834,
-      "sha256": "635d3fc9f329a530cf2d6c3b6750262d05a7f29eb3aa16524315082959edb2d1",
+      "size_bytes": 2864,
+      "sha256": "00d380458b781029497b37a612f8b1f2f9df2eaba1ec7c21eb505266942252ab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7904,8 +7904,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6584,
-      "sha256": "3819442b06725da1a23e423e85f61448498bf844592cf34469cc2c80a7e195f0",
+      "size_bytes": 6591,
+      "sha256": "c047381878ef9c3a63645fe615129c5de27fbae938de3de1619f4a1ff79ce789",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11792,8 +11792,8 @@
     },
     {
       "path": "tests/test_archive_io.py",
-      "size_bytes": 5816,
-      "sha256": "551cf139846fb2a436219340cb421e935817db42e21e8c7c6ba0bc7a4eea76a4",
+      "size_bytes": 5940,
+      "sha256": "6557622ff4a306754221c1bb7e2a470dce77c10f6c0c23e7017db17e68733b32",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11801,8 +11801,8 @@
     },
     {
       "path": "tests/test_archive_io_7z_encryption.py",
-      "size_bytes": 1125,
-      "sha256": "eb8e20834cf2acc5c29602530951595bae2881f443cf31092faa05f56e4d3e77",
+      "size_bytes": 1271,
+      "sha256": "2358d3cd64704ce4ed26964804925c079583b807b8308ceb2ce30e0f0973f0fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14483,8 +14483,8 @@
     },
     {
       "path": "tools/jazn_tests_studio.py",
-      "size_bytes": 16485,
-      "sha256": "53e135de7efe15d33711f8e68332e4fcfd4e8280debc8fff54975cf1972004c4",
+      "size_bytes": 36052,
+      "sha256": "ba242b1cd76297745163f848970583a75d9d591fb92a3b16d089e5feac3036ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14502,7 +14502,7 @@
     {
       "path": "tools/jazn_tests_studio/README.md",
       "size_bytes": 257,
-      "sha256": "a25bc865de6a9d9841d1af31afa67c4782443a60841006bcd4cb2b3743789d20",
+      "sha256": "3d1b605a0db7b43f80cbc4e6056bdacabca3b8342221b74df4e7cc449a357655",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14511,7 +14511,7 @@
     {
       "path": "tools/jazn_tests_studio/__init__.py",
       "size_bytes": 49,
-      "sha256": "f20a74d4f4e057804a6cfd98b7a422512e49bccdfd1bb17bd68f06ac8c2de0ec",
+      "sha256": "8638abb566b33e6ade711d3ce5ee7d5485366cecc5d11dcc8eea4ea0c2903186",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14519,8 +14519,17 @@
     },
     {
       "path": "tools/jazn_tests_studio/migrate_stable_test_contracts.py",
-      "size_bytes": 24815,
-      "sha256": "a35651a2716a0edc5b89e60a5f9fa21aa2eaf0c1607fce11b80ee26956545fdb",
+      "size_bytes": 24846,
+      "sha256": "bb04e88f8b1a3d6d6ae53e1a278271e51d3d41568e0519482ffaa5f407dc234e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_tests_studio/progress_plugin.py",
+      "size_bytes": 1770,
+      "sha256": "6aef50ff9abcf86ae0f3d5b24469ae6d2f6c73702489d57ac722ee44862c345b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14529,7 +14538,7 @@
     {
       "path": "tools/jazn_tests_studio/settings.json",
       "size_bytes": 374,
-      "sha256": "29ca6602e457e7f6c2750b727cd39a7d0cc7c10a39710a83fa417341d7c671f1",
+      "sha256": "63575b539231db6f6bfd0cb8b6d6a796d6ac3b701d619db5a2a574a985b3e45b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15095,11 +15104,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.67-stable-test-contracts",
+  "release_version": "16.3.25.5.68-tests-studio-live-progress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.67-stable-test-contracts",
-    "package_version": "16.3.25.5.67-stable-test-contracts",
-    "release_version": "16.3.25.5.67-stable-test-contracts"
+    "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
+    "package_version": "16.3.25.5.68-tests-studio-live-progress",
+    "release_version": "16.3.25.5.68-tests-studio-live-progress"
   },
   "legacy_aliases": {
     "version": "release_version"
