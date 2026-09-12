@@ -131,6 +131,17 @@ def _state(value: ConversationTurnState | str) -> ConversationTurnState:
     return ConversationTurnState(str(value))
 
 
+def _event_seq(value: Any) -> int:
+    """Parse a persisted event sequence without weakening static/runtime checks."""
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        return int(value)
+    raise TypeError(f"unsupported event sequence type: {type(value).__name__}")
+
+
 @dataclass(slots=True)
 class ConversationTransition:
     event_seq: int
@@ -219,7 +230,7 @@ def validate_turn_state_contract(
         for expected_seq, item in enumerate(transitions):
             row = _mapping(item)
             try:
-                seq = int(row.get("event_seq"))
+                seq = _event_seq(row.get("event_seq"))
             except (TypeError, ValueError):
                 errors.append("invalid:event_seq")
                 continue
