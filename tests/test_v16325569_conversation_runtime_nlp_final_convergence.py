@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -57,11 +58,18 @@ def test_host_finalized_state_has_single_accepted_visible_terminal() -> None:
     assert validation["ok"] is True
     assert validation["visible_commit_ready"] is True
     assert state["state"] == "visible_committed"
-    assert [item["state_after"] for item in state["transitions"]].count("visible_committed") == 1
+    transitions = state.get("transitions")
+    assert isinstance(transitions, list)
+    visible_states = [
+        str(item.get("state_after") or "")
+        for item in transitions
+        if isinstance(item, dict)
+    ]
+    assert visible_states.count("visible_committed") == 1
 
 
 def test_linguistic_frame_binds_nlp_memory_task_state_and_runtime_ownership() -> None:
-    model_context = {
+    model_context: dict[str, Any] = {
         "user_text": "Przypomnij mi naszą rozmowę",
         "nlg_plan": {
             "answer_kind": "natural_dialogue",
@@ -85,7 +93,9 @@ def test_linguistic_frame_binds_nlp_memory_task_state_and_runtime_ownership() ->
         route="self_memory_recall",
     )
     assert validate_linguistic_turn_frame(frame)["ok"] is True
-    assert frame["dialogue_task_state"]["active_goal"] == "memory_recall"
+    task_state = frame.get("dialogue_task_state")
+    assert isinstance(task_state, dict)
+    assert task_state.get("active_goal") == "memory_recall"
     assert frame["allowed_memory_item_ids"] == ["memory-1"]
     assert frame["runtime_owns_session_state"] is True
     assert frame["runtime_owns_memory"] is True
@@ -109,17 +119,17 @@ def test_turn_ledger_persists_only_lineage_hashes_and_state(tmp_path: Path) -> N
     status = ConversationTurnLedger(tmp_path).append(state)
     assert status["ok"] is True
     text = (tmp_path / "workspace_runtime" / "conversation_turn_state.jsonl").read_text(encoding="utf-8")
-    record = json.loads(text)
+    record: dict[str, Any] = json.loads(text)
     assert secret_text not in text
     assert record["input_sha256"] == exact_input_sha256(secret_text)
     assert record["state"] == "visible_committed"
 
 
-def test_runner_install_converges_runtime_session_and_daemon_factory(monkeypatch) -> None:
+def test_runner_install_converges_runtime_session_and_daemon_factory(monkeypatch: pytest.MonkeyPatch) -> None:
     from latka_jazn.core import runtime_session as runtime_session_module
 
     class FakeServer:
-        def __init__(self, *, session_factory=object):
+        def __init__(self, *, session_factory: object = object) -> None:
             self.session_factory = session_factory
 
     fake_daemon = SimpleNamespace(
@@ -133,10 +143,13 @@ def test_runner_install_converges_runtime_session_and_daemon_factory(monkeypatch
     assert status["installed"] is True
     assert runtime_session_module.JaznRuntimeSession is ConversationRunner
     assert fake_daemon.JaznRuntimeSession is ConversationRunner
-    assert FakeServer.__init__.__kwdefaults__["session_factory"] is ConversationRunner
+    kwdefaults = getattr(FakeServer.__init__, "__kwdefaults__", None)
+    assert isinstance(kwdefaults, dict)
+    assert kwdefaults.get("session_factory") is ConversationRunner
     assert status["spawn_pickleable"] is True
 
 
 def test_release_identity_marks_final_conversation_runtime_nlp_convergence() -> None:
-    assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 69)
+    version_parts = tuple(int(part) for part in PACKAGE_VERSION.split("."))
+    assert version_parts >= (16, 3, 25, 5, 70)
     assert "conversation-runtime" in PACKAGE_RELEASE_NAME
