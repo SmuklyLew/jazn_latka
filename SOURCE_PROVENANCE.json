@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "12c063a659aaf5d5edfb9ff7da8d7bdc22a74925",
+  "base_merge_commit": "2d6b44c64e518ff82d7e5f07aa99b41b51eb287b",
   "base_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
-  "commit_date": "2026-09-12T23:01:28+02:00",
+  "commit_date": "2026-09-12T23:11:40+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-12T21:01:28+00:00",
+  "generated_at_utc": "2026-09-12T21:11:40+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "552e7ac28102977dfe6e8e08ae8171950f7c21bb",
+  "git_tree_sha": "a427d012718d8ee5d80ccac971b2fdbf83728868",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "12c063a659aaf5d5edfb9ff7da8d7bdc22a74925",
+    "source_commit": "2d6b44c64e518ff82d7e5f07aa99b41b51eb287b",
     "source_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "12c063a659aaf5d5edfb9ff7da8d7bdc22a74925",
+  "source_commit": "2d6b44c64e518ff82d7e5f07aa99b41b51eb287b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
   "tag": null,
