@@ -151,7 +151,7 @@ jobs:
           python -m pip install -e . pytest
 
       - name: Compile runtime, gate, and regression paths
-        run: python -X utf8 -m compileall -q -x 'tests/archive/' latka_jazn tests main.py run.py
+        run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
       - name: Host gate and persistent lifecycle E2E
         run: >-
