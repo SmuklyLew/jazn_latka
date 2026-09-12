@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "155fd367fc2b7b778017d766eebfded71dc0c23f",
+  "base_merge_commit": "9673900789508fb9cdebcb57746bdedd0015a9be",
   "base_version": "16.3.25.5.67-stable-test-contracts",
-  "commit_date": "2026-09-12T10:38:09Z",
+  "commit_date": "2026-09-12T12:40:13+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-12T10:38:09+00:00",
+  "generated_at_utc": "2026-09-12T10:40:13+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "72acae0e8a2b2de29efad542d45fda177f657672",
+  "git_tree_sha": "209dc95a0fa99b304bf3f9066eb6946efbb1eaa2",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "155fd367fc2b7b778017d766eebfded71dc0c23f",
+    "source_commit": "9673900789508fb9cdebcb57746bdedd0015a9be",
     "source_version": "16.3.25.5.67-stable-test-contracts"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "155fd367fc2b7b778017d766eebfded71dc0c23f",
+  "source_commit": "9673900789508fb9cdebcb57746bdedd0015a9be",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.67-stable-test-contracts",
   "tag": null,
