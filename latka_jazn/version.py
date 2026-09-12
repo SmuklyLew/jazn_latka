@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.70 preserves the conversation-state/finalization update and fixes
-# the Test Studio live-event callback contract so Pyright sees an explicit None return.
-DISTRIBUTION_VERSION = "16.3.25.5.70"
-PACKAGE_VERSION = "16.3.25.5.70"
-PACKAGE_RELEASE_NAME = "conversation-state-trace-memory-finalization-ci"
+# v16.3.25.5.71 rebases the source-aware Jaźń Memory Studio onto the current
+# v16.3.25.5.70 runtime line while preserving the newer host/finalization code.
+DISTRIBUTION_VERSION = "16.3.25.5.71"
+PACKAGE_VERSION = "16.3.25.5.71"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-master-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

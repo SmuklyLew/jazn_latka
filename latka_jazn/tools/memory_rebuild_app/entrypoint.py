@@ -104,6 +104,9 @@ def main(argv: Sequence[str] | None = None, *, entrypoint: str | Path | None = N
     if args[0] == "--version":
         print(TOOL_VERSION)
         return 0
+    if args[0] == "memory-studio":
+        from .memory_studio import main as memory_studio_main
+        return memory_studio_main(args[1:])
     if args[0] == STAGE4_COMMAND:
         from latka_jazn.tools.memory_rebuild_stage4_v16 import main as stage4_main
         return int(stage4_main(args))
