@@ -1,4 +1,4 @@
-name: Test Studio Pyright repair
+name: Test Studio finalizer
 
 on:
   push:
@@ -9,10 +9,10 @@ permissions:
   contents: write
 
 jobs:
-  apply-and-validate:
-    if: ${{ !contains(github.event.head_commit.message, '[type-fix-final]') }}
+  finalize-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[studio-final]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
@@ -23,22 +23,34 @@ jobs:
           python-version: '3.12'
       - name: Install validation tools
         run: |
+          python -m pip install --upgrade pip
           python -m pip install -e . pytest
           npm install --global pyright@1.1.411
-      - name: Apply type fixes
+      - name: Materialize final Test Studio fixes
         run: python -X utf8 tools/jazn_tests_studio/apply_ci_type_fix.py
-      - name: Validate changed Test Studio types
+      - name: Validate Test Studio implementation
         run: |
           python -m py_compile tools/jazn_tests_studio.py tools/jazn_tests_studio/progress_plugin.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
           python -X utf8 tools/jazn_tests_studio.py self-test
           pyright tools/jazn_tests_studio.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
-      - name: Commit materialized type fixes
+          python -X utf8 tools/github_actions_node24_audit.py --root . --json
+          python -m pytest -q tests/test_test_suite_governance.py
+      - name: Run full active test suite
+        run: python -X utf8 -m pytest -q tests --ignore=tests/archive
+      - name: Commit final materialized update
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git checkout -- .github/workflows/persistent-runtime-e2e.yml
-          git add tools/jazn_tests_studio.py tools/jazn_tests_studio/migrate_stable_test_contracts.py
+          git add tools/jazn_tests_studio.py \
+                  tools/jazn_tests_studio/migrate_stable_test_contracts.py \
+                  tools/jazn_tests_studio/README.md \
+                  tools/jazn_tests_studio/__init__.py \
+                  tools/jazn_tests_studio/settings.json \
+                  .github/workflows/persistent-runtime-e2e.yml
           git rm tools/jazn_tests_studio/apply_ci_type_fix.py
-          git commit -m 'fix: satisfy Test Studio Pyright contracts [type-fix-final]'
+          git rm .github/workflows/tests-studio-pyright-repair.yml
+          git commit -m 'fix: finalize Jaźń - Studio Testów live progress [studio-final]'
+          git fetch origin fix/v16.3.25.5.68-tests-studio-live-progress
+          git rebase origin/fix/v16.3.25.5.68-tests-studio-live-progress
           git push origin HEAD:fix/v16.3.25.5.68-tests-studio-live-progress

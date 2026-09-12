@@ -12,10 +12,23 @@ def replace(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new), encoding="utf-8")
 
 
+def replace_title(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    old = "Jaźń - Studio testów"
+    new = "Jaźń - Studio Testów"
+    if old in text:
+        path.write_text(text.replace(old, new), encoding="utf-8")
+
+
 replace(
     ROOT / "tools" / "jazn_tests_studio.py",
     "from typing import Any, Callable\n",
     "from typing import Any, Callable, Literal\n",
+)
+replace(
+    ROOT / "tools" / "jazn_tests_studio.py",
+    'APP_NAME = "Jaźń - Studio testów"',
+    'APP_NAME = "Jaźń - Studio Testów"',
 )
 replace(
     ROOT / "tools" / "jazn_tests_studio.py",
@@ -27,6 +40,13 @@ replace(
     'def add_node(node: ast.AST, prefix: str = "") -> None:',
     'def add_node(node: ast.FunctionDef | ast.AsyncFunctionDef, prefix: str = "") -> None:',
 )
+for relative in (
+    "tools/jazn_tests_studio/README.md",
+    "tools/jazn_tests_studio/__init__.py",
+    "tools/jazn_tests_studio/settings.json",
+    "tools/jazn_tests_studio/migrate_stable_test_contracts.py",
+):
+    replace_title(ROOT / relative)
 replace(
     ROOT / ".github" / "workflows" / "persistent-runtime-e2e.yml",
     "run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py",
