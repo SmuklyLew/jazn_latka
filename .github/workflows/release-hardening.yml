@@ -204,7 +204,7 @@ jobs:
           --json
 
       - name: Compile all active Python
-        run: python -X utf8 -m compileall -q latka_jazn tests main.py run.py
+        run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
       - name: Static type audit
         run: pyright latka_jazn main.py run.py
@@ -215,10 +215,10 @@ jobs:
       - name: Static type audit for regression test and pack-generator contracts
         run: >-
           pyright
-          tests/test_chatgpt_mcp_end_to_end_v96.py
-          tests/test_dialogue_task_state_v154.py
-          tests/test_host_finalized_session_continuity_v154.py
-          tests/test_memory_cloud_sync_v155.py
+          tests/test_chatgpt_mcp_end_to_end.py
+          tests/test_dialogue_task_state.py
+          tests/test_host_finalized_session_continuity.py
+          tests/test_memory_cloud_sync.py
           tests/test_memory_recall_timeout_hardening.py
           tools/jazn_pack_generator.py
 
@@ -302,23 +302,23 @@ jobs:
           -q -ra --tb=short
           --junitxml="${{ runner.temp }}/pytest-windows.xml"
           tests/test_release_workflow_hardening.py
-          tests/test_runtime_stability_rest_cycle_v1542.py
-          tests/test_rest_cycle_controller_v1542.py
-          tests/test_rest_cycle_store_v1542.py
-          tests/test_wake_rest_continuity_v1542.py
-          tests/test_cognitive_truth_memory_integration_v15421.py
+          tests/test_runtime_stability_rest_cycle.py
+          tests/test_rest_cycle_controller.py
+          tests/test_rest_cycle_store.py
+          tests/test_wake_rest_continuity.py
+          tests/test_cognitive_truth_memory_integration.py
           tests/test_startup_stability.py
           tests/test_runtime_stability_package_smoke.py
           tests/test_release_hardening_safe_paths.py
           tests/test_zip_resource_limits.py
           tests/test_shard_manifest_fail_closed.py
-          tests/test_dialogue_task_state_v154.py
-          tests/test_host_finalized_session_continuity_v154.py
-          tests/test_reasoning_orchestrator_v154.py
-          tests/test_knowledge_fabric_v154.py
-          tests/test_lexical_intelligence_v154.py
-          tests/test_operational_learning_memory_v154.py
-          tests/test_external_dictionary_v154.py
+          tests/test_dialogue_task_state.py
+          tests/test_host_finalized_session_continuity.py
+          tests/test_reasoning_orchestrator.py
+          tests/test_knowledge_fabric.py
+          tests/test_lexical_intelligence.py
+          tests/test_operational_learning_memory.py
+          tests/test_external_dictionary.py
 
       - name: Upload Windows pytest report on failure
         if: failure()
