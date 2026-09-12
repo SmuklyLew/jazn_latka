@@ -12,6 +12,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
+from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.host_visible_finalization import (
     HostVisibleFinalizationContract,
     finalize_host_visible_text,
@@ -653,9 +654,26 @@ def _build_session_continuity_commit(
         turn_count_before = max(0, int(provenance.get("continuity_turn_count") or 0))
     except (TypeError, ValueError):
         turn_count_before = 0
+    trace = json_object(result.get("trace"))
+    runtime_turn = json_object(result.get("runtime_turn_contract"))
+    final_contract = json_object(result.get("final_response_contract"))
+    turn_id = str(
+        trace.get("turn_id")
+        or runtime_turn.get("turn_id")
+        or final_contract.get("turn_id")
+        or ""
+    ).strip()
+    trace_id = str(
+        trace.get("trace_id")
+        or runtime_turn.get("trace_id")
+        or final_contract.get("trace_id")
+        or ""
+    ).strip()
     return {
         "schema_version": schema_version("host_finalized_session_continuity_commit"),
         "session_id": session_id,
+        "turn_id": turn_id,
+        "trace_id": trace_id,
         "source_client": str(session_snapshot.get("source_client") or "chatgpt_host"),
         "user_text": str(user_text or ""),
         "detected_intent": str(detected_intent or "unknown"),
@@ -740,6 +758,62 @@ def _commit_host_finalized_session_continuity(
         "task_state_persisted": bool(task_state),
         "save_status": save_status,
     }
+
+
+def _commit_host_finalized_conversation_state(
+    *,
+    config: JaznConfig,
+    pending: dict[str, Any],
+    binding: dict[str, Any],
+    final_visible_text: str,
+) -> dict[str, Any]:
+    """Persist one accepted host-finalized turn into durable session history.
+
+    The phase-1 continuity payload is hash-bound into the pending host request,
+    so phase-2 cannot substitute another user message or session.  The
+    conversation store is per-turn and idempotent, which makes retry/recovery
+    safe after an indeterminate transport outcome.
+    """
+    generation_context = json_object(pending.get("generation_context"))
+    commit = json_object(generation_context.get("session_continuity_commit"))
+    expected_commit_hash = str(binding.get("session_continuity_commit_sha256") or "").strip().lower()
+    if not commit or not expected_commit_hash:
+        return {
+            "ok": False,
+            "status": "not_bound_by_phase_one",
+            "backward_compatible": True,
+        }
+    calculated_commit_hash = _canonical_mapping_sha256(commit)
+    if calculated_commit_hash != expected_commit_hash:
+        return {
+            "ok": False,
+            "status": "conversation_commit_hash_mismatch",
+            "expected_sha256": expected_commit_hash,
+            "calculated_sha256": calculated_commit_hash,
+        }
+    session_id = str(commit.get("session_id") or "").strip()
+    turn_id = str(binding.get("turn_id") or commit.get("turn_id") or "").strip()
+    trace_id = str(binding.get("trace_id") or commit.get("trace_id") or "").strip()
+    if not session_id:
+        return {"ok": False, "status": "conversation_session_id_missing"}
+    if not turn_id:
+        return {"ok": False, "status": "conversation_turn_id_missing"}
+    if not trace_id:
+        return {"ok": False, "status": "conversation_trace_id_missing"}
+    commit_turn_id = str(commit.get("turn_id") or "").strip()
+    commit_trace_id = str(commit.get("trace_id") or "").strip()
+    if commit_turn_id and commit_turn_id != turn_id:
+        return {"ok": False, "status": "conversation_turn_binding_mismatch"}
+    if commit_trace_id and commit_trace_id != trace_id:
+        return {"ok": False, "status": "conversation_trace_binding_mismatch"}
+    return ConversationStateStore(config.root).append_finalized_turn(
+        session_id=session_id,
+        turn_id=turn_id,
+        trace_id=trace_id,
+        user_text=str(commit.get("user_text") or ""),
+        assistant_text=final_visible_text,
+        source="chatgpt_host_visible_reply",
+    )
 
 
 def build_chatgpt_host_bridge_turn_contract(
@@ -1300,6 +1374,20 @@ def persist_chatgpt_host_visible_reply(
         finally:
             engine.shutdown()
         try:
+            conversation_state = _commit_host_finalized_conversation_state(
+                config=config,
+                pending=pending,
+                binding=binding,
+                final_visible_text=reply["final_text"],
+            )
+        except Exception as conversation_exc:
+            conversation_state = {
+                "ok": False,
+                "status": "conversation_commit_exception",
+                "error_type": type(conversation_exc).__name__,
+                "error": str(conversation_exc),
+            }
+        try:
             session_continuity = _commit_host_finalized_session_continuity(
                 config=config,
                 pending=pending,
@@ -1377,6 +1465,7 @@ def persist_chatgpt_host_visible_reply(
         "host_visible_reply_capture": capture,
         "host_response_candidate_validation": semantic_validation,
         "host_request_consumption": consumed,
+        "conversation_state_persistence": conversation_state,
         "session_continuity_persistence": session_continuity,
     }
     return result, []
