@@ -1,0 +1,13 @@
+{"time": "2026-09-12T15:17:30.683171+00:00", "level": "INFO", "message": "Start aplikacji", "details": {"version": "10.1.86.0.114", "command": null, "ui": null}}
+{"time": "2026-09-12T15:17:30.754720+00:00", "level": "INFO", "message": "Uruchomiono okno Pack Generator", "details": {"version": "10.1.86.0.114"}}
+{"time": "2026-09-12T15:17:40.819140+00:00", "level": "INFO", "message": "Zamknięto okno Pack Generator", "details": {}}
+{"time": "2026-09-12T16:14:32.701864+00:00", "level": "INFO", "message": "Start aplikacji", "details": {"version": "10.1.86.0.114", "command": null, "ui": null}}
+{"time": "2026-09-12T16:14:32.771918+00:00", "level": "INFO", "message": "Uruchomiono okno Pack Generator", "details": {"version": "10.1.86.0.114"}}
+{"time": "2026-09-12T16:15:00.313078+00:00", "level": "INFO", "message": "Uruchomiono operację Pack Generator", "details": {"worker": "jazn-pack-worker"}}
+{"time": "2026-09-12T16:16:20.008251+00:00", "level": "INFO", "message": "Zapisano ustawienia Pack Generator", "details": {"settings": {"schema_version": "jazn_pack_generator_settings/v1", "generator_version": "10.1.86.0.114", "ui_mode": "window", "source_root": "", "memory_root": "", "output_root": "D:/.AI/jazn_packages", "part_size_mib": 450, "compression_level": 6, "remember_last_paths": true, "splash_enabled": true, "diagnostics_enabled": true, "diagnostics_limit": 500, "log_level": "DEBUG"}}}
+{"time": "2026-09-12T16:17:39.413244+00:00", "level": "INFO", "message": "Operacja Pack Generator zakończona", "details": {}}
+{"time": "2026-09-12T16:19:35.952944+00:00", "level": "INFO", "message": "Uruchomiono operację Pack Generator", "details": {"worker": "jazn-pack-worker"}}
+{"time": "2026-09-12T16:22:53.087090+00:00", "level": "ERROR", "message": "Błąd Pack Generator", "details": {"error": "PackSafetyError: Wynik już istnieje: D:\\.AI\\jazn_packages\\jazn_latka_v16.3.25.5.68-tests-studio-live-progress.memory. Włącz overwrite, aby zastąpić."}}
+{"time": "2026-09-12T16:25:13.195143+00:00", "level": "INFO", "message": "Uruchomiono operację Pack Generator", "details": {"worker": "jazn-pack-worker"}}
+{"time": "2026-09-12T16:28:26.030842+00:00", "level": "ERROR", "message": "Błąd Pack Generator", "details": {"error": "PackSafetyError: Wynik już istnieje: D:\\.AI\\jazn_packages\\jazn_latka_v16.3.25.5.68-tests-studio-live-progress.memory. Włącz overwrite, aby zastąpić."}}
+{"time": "2026-09-12T16:31:44.261331+00:00", "level": "INFO", "message": "Zamknięto okno Pack Generator", "details": {}}
