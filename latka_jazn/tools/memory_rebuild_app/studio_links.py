@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 import json
+import hashlib
 import re
 import sqlite3
 
@@ -35,7 +36,7 @@ def link_entry(con: sqlite3.Connection, entry: dict[str, Any], *, window_seconds
     stamp, time_status = parse_source_time(raw_time)
     mid = entry.get('message_id') or entry.get('source_message_id')
     cid = entry.get('conversation_id')
-    text = str(entry.get('content') or entry.get('treść') or entry.get('tekst') or entry.get('analiza') or '')
+    text = str(entry.get('content') or entry.get('treść') or entry.get('tresc') or entry.get('tekst') or entry.get('analiza') or '')
     active = "m.sha IN (SELECT sha FROM files WHERE details NOT LIKE '%\"error\"%')"
     params: list[Any] = []
     where = [active, "m.role IN ('user','assistant')"]
@@ -73,7 +74,8 @@ def link_entry(con: sqlite3.Connection, entry: dict[str, Any], *, window_seconds
 
 
 def correlate_file(catalog: Path, source: Path, *, window_seconds: int = 300) -> dict[str, Any]:
-    value = json.loads(source.read_text(encoding='utf-8-sig'))
+    source_bytes = source.read_bytes()
+    value = json.loads(source_bytes.decode('utf-8-sig'))
     if isinstance(value, dict):
         value = next((value[k] for k in ('entries', 'wpisy', 'dziennik', 'analizy')
                       if isinstance(value.get(k), list)), list(value.values()) if all(isinstance(v, dict) for v in value.values()) else [value])
@@ -87,7 +89,8 @@ def correlate_file(catalog: Path, source: Path, *, window_seconds: int = 300) ->
                    for i, row in enumerate(value) if isinstance(row, dict)]
     finally:
         con.close()
-    return {'source': str(source), 'entries': len(results), 'results': results,
+    return {'source': str(source), 'source_sha256': hashlib.sha256(source_bytes).hexdigest(),
+            'source_size_bytes': len(source_bytes), 'entries': len(results), 'results': results,
             'time_correlated': sum(r['status'] == 'time_correlated' for r in results)}
 
 
