@@ -3,11 +3,11 @@
   "version": "16.3.25.5.68-tests-studio-live-progress",
   "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
   "package_version": "16.3.25.5.68-tests-studio-live-progress",
-  "generated_at_utc": "2026-09-12T14:54:52+00:00",
-  "updated_at_utc": "2026-09-12T14:54:52+00:00",
+  "generated_at_utc": "2026-09-12T14:56:28+00:00",
+  "updated_at_utc": "2026-09-12T14:56:28+00:00",
   "start_file": "run.py",
-  "file_count": 1641,
-  "static_file_count": 1641,
+  "file_count": 1642,
+  "static_file_count": 1642,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -264,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2869,
-      "sha256": "90fe5439f949272b7e53394f9d894a07a345268c63451b9aba0e7b7a5054a7c7",
+      "sha256": "d49c3c9de6351850236dc7400a926cf1c65b552c313d4492a9d549b8d0f6827a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11836,6 +11836,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_application_shell.py",
+      "size_bytes": 1979,
+      "sha256": "0a5e24f6318f26f5a1248d4315a21a107645da7bb86954a0c740a48e4c584c04",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_archive_capabilities.py",
       "size_bytes": 5633,
       "sha256": "406f8ee1e0533fb329633da5357037db68d5e590fc5398e391e69d03f4c5d9a2",
@@ -12720,7 +12729,7 @@
     {
       "path": "tests/test_jazn_pack_generator_dashboard.py",
       "size_bytes": 1382,
-      "sha256": "665ceac8dcb7fd92545c4cebdd89ea1896ab0c9244418d2f6a30522a62469050",
+      "sha256": "81c3e05871766ccf80200254a7afd2ea72476ed96b60633115e678f421033ea7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12747,7 +12756,7 @@
     {
       "path": "tests/test_jazn_pack_generator_import_isolation.py",
       "size_bytes": 1085,
-      "sha256": "876274012be7c93f6661bd3ce7dcd8e97b22942132969f247af8eedb3dce46ed",
+      "sha256": "2edccb39193e0b3669b33ff65f3ec2764a29041046167be7d40d7ceb92cd2b84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12764,8 +12773,8 @@
     },
     {
       "path": "tests/test_jazn_pack_generator_public_api_contract.py",
-      "size_bytes": 1407,
-      "sha256": "5ba0252ab5f7e743e281e8516002dd0639780114f95296a2009ef81b7612a79d",
+      "size_bytes": 1481,
+      "sha256": "499f1a10a762aa68c5291de1218ff0cdc173b628fff37c33ff4fa2a87c959827",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
