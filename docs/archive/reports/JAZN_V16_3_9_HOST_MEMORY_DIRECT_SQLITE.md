@@ -61,7 +61,7 @@ Dalsze odchudzenie dużych historycznych `events.payload_json` do content-addres
 
 ## Walidacja
 
-Dodano regresje `tests/test_host_memory_direct_sqlite.py` dla:
+Dodano regresje `tests/test_v1639_host_memory_direct_sqlite.py` dla:
 
 - host-level default memory root;
 - legacy fallback przed migracją;

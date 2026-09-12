@@ -13,7 +13,7 @@ Do gałęzi wchodzą wszystkie elementy zweryfikowanego patcha SHA-256 `23f89cf8
 - jawny `daemon_turn_execution_timeout` w host bridge,
 - diagnostyka `last_terminal_job` i `process_liveness` w daemonie,
 - rozszerzenie listy dozwolonych historycznych referencji migratora,
-- testy regresyjne `test_runtime_turn_liveness.py`,
+- testy regresyjne `test_v1602_runtime_turn_liveness.py`,
 - aktualizacja testu kontraktu wydania.
 
 Transport `.jazn_upgrade_transport/v1602-runtime-turn-liveness/` i tymczasowy workflow `apply-v1602-runtime-turn-liveness.yml` są usuwane po materializacji zmian.

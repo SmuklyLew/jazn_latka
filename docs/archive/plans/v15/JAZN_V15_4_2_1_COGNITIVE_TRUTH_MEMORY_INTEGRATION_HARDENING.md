@@ -293,13 +293,13 @@ The release adds a verified operational lesson for false-green capability report
 - expected behavior: require behavioral reachability/effect evidence;
 - root cause: presence-based audit semantics;
 - repair rule: distinguish presence, integration and live verification;
-- regression: `tests/test_cognitive_truth_memory_integration.py`.
+- regression: `tests/test_cognitive_truth_memory_integration_v15421.py`.
 
 ## 15. Test matrix
 
 ### New dedicated tests
 
-`tests/test_cognitive_truth_memory_integration.py` verifies:
+`tests/test_cognitive_truth_memory_integration_v15421.py` verifies:
 
 1. recovered snapshot is not the runtime write target;
 2. RestReplay reads multiple individual normalized records;

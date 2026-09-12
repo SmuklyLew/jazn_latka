@@ -122,7 +122,7 @@ Historyczne kopie w `.archives` oraz dokumenty archiwalne nie są migrowane prze
 
 ## Testy regresyjne dodane w branchu
 
-`tests/test_release_metadata_semantics.py` sprawdza:
+`tests/test_release_metadata_semantics_v163253.py` sprawdza:
 
 1. niezależność schema ID od `PACKAGE_VERSION`;
 2. jawne runtime/release markers;
