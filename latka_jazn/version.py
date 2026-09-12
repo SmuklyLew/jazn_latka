@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.70 converges the conversation runtime on one ConversationRunner,
-# an explicit turn-state contract and a bounded NLP/context frame shared by language routes.
-DISTRIBUTION_VERSION = "16.3.25.5.70"
-PACKAGE_VERSION = "16.3.25.5.70"
-PACKAGE_RELEASE_NAME = "conversation-runtime-nlp-final-convergence-pyright-fix"
+# v16.3.25.5.71 converges the conversation runtime on one ConversationRunner,
+# explicit turn-state lineage, bounded NLP/context frames, and static-safe runtime installation.
+DISTRIBUTION_VERSION = "16.3.25.5.71"
+PACKAGE_VERSION = "16.3.25.5.71"
+PACKAGE_RELEASE_NAME = "conversation-runtime-nlp-final-convergence-static-typing"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -2,11 +2,10 @@ from __future__ import annotations
 
 """Canonical conversation-runtime convergence layer.
 
-The module strengthens the existing ``JaznRuntimeSession`` owner with one
-persisted turn-state contract and one normalized linguistic/context frame shared
-by every language route.  It does not create a launcher, parser, alternate
-session owner or model identity source: ``main.py`` remains the composition and
-control-plane owner and providers remain language executors.
+This module adds explicit turn-state lineage and a normalized linguistic frame
+without introducing another launcher, parser, memory owner, model identity, or
+finalization owner. ``main.py`` remains the composition/control plane and model
+providers remain language executors.
 """
 
 from dataclasses import asdict, dataclass, field
@@ -16,7 +15,7 @@ import json
 import os
 from pathlib import Path
 import threading
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping
 
 from latka_jazn.core.runtime_session import JaznRuntimeSession as _BaseRuntimeSession
 from latka_jazn.version import schema_version
@@ -47,18 +46,6 @@ class ConversationTurnState(StrEnum):
     HOST_FINALIZATION_EXPIRED = "host_finalization_expired"
     PROVIDER_UNAVAILABLE = "provider_unavailable"
 
-
-TERMINAL_STATES = frozenset(
-    {
-        ConversationTurnState.VISIBLE_COMMITTED,
-        ConversationTurnState.REJECTED,
-        ConversationTurnState.TIMED_OUT,
-        ConversationTurnState.CANCELLED,
-        ConversationTurnState.INDETERMINATE,
-        ConversationTurnState.HOST_FINALIZATION_EXPIRED,
-        ConversationTurnState.PROVIDER_UNAVAILABLE,
-    }
-)
 
 _ALLOWED_TRANSITIONS: dict[ConversationTurnState, frozenset[ConversationTurnState]] = {
     ConversationTurnState.RECEIVED: frozenset({ConversationTurnState.ADMITTED, ConversationTurnState.REJECTED}),
@@ -119,7 +106,9 @@ _ALLOWED_TRANSITIONS: dict[ConversationTurnState, frozenset[ConversationTurnStat
 
 
 def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+    if not isinstance(value, Mapping):
+        return {}
+    return {str(key): item for key, item in value.items()}
 
 
 def _canonical_json(value: Any) -> str:
@@ -133,12 +122,13 @@ def _sha256(value: Any) -> str:
 
 def exact_input_sha256(user_text: str) -> str:
     """Hash exact user text without collapsing whitespace or case."""
-
     return _sha256(str(user_text))
 
 
 def _state(value: ConversationTurnState | str) -> ConversationTurnState:
-    return value if isinstance(value, ConversationTurnState) else ConversationTurnState(str(value))
+    if isinstance(value, ConversationTurnState):
+        return value
+    return ConversationTurnState(str(value))
 
 
 @dataclass(slots=True)
@@ -148,9 +138,6 @@ class ConversationTransition:
     state_after: str
     reason: str
     owner: str = "jazn_runtime"
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 @dataclass(slots=True)
@@ -168,7 +155,7 @@ class ConversationTurnStateContract:
     contract_sha256: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
+        payload: dict[str, Any] = asdict(self)
         unsigned = dict(payload)
         unsigned["contract_sha256"] = None
         payload["contract_sha256"] = _sha256(unsigned)
@@ -176,12 +163,7 @@ class ConversationTurnStateContract:
 
 
 def new_turn_state_contract(
-    *,
-    session_id: str,
-    request_id: str,
-    turn_id: str,
-    trace_id: str,
-    user_text: str,
+    *, session_id: str, request_id: str, turn_id: str, trace_id: str, user_text: str
 ) -> ConversationTurnStateContract:
     contract = ConversationTurnStateContract(
         session_id=str(session_id or ""),
@@ -191,12 +173,7 @@ def new_turn_state_contract(
         input_sha256=exact_input_sha256(user_text),
     )
     contract.transitions.append(
-        ConversationTransition(
-            event_seq=0,
-            state_before=None,
-            state_after=ConversationTurnState.RECEIVED.value,
-            reason="exact_user_input_received",
-        )
+        ConversationTransition(0, None, ConversationTurnState.RECEIVED.value, "exact_user_input_received")
     )
     return contract
 
@@ -204,8 +181,7 @@ def new_turn_state_contract(
 def advance_turn_state(
     contract: ConversationTurnStateContract,
     state_after: ConversationTurnState | str,
-    *,
-    reason: str,
+    *, reason: str,
 ) -> ConversationTurnStateContract:
     current = _state(contract.state)
     target = _state(state_after)
@@ -213,20 +189,17 @@ def advance_turn_state(
         raise ValueError(f"invalid conversation turn transition: {current.value} -> {target.value}")
     contract.event_seq += 1
     contract.transitions.append(
-        ConversationTransition(
-            event_seq=contract.event_seq,
-            state_before=current.value,
-            state_after=target.value,
-            reason=str(reason or "state_transition"),
-        )
+        ConversationTransition(contract.event_seq, current.value, target.value, str(reason or "state_transition"))
     )
     contract.state = target.value
     contract.contract_sha256 = None
     return contract
 
 
-def validate_turn_state_contract(value: Mapping[str, Any] | ConversationTurnStateContract) -> dict[str, Any]:
-    data = value.to_dict() if isinstance(value, ConversationTurnStateContract) else dict(value)
+def validate_turn_state_contract(
+    value: Mapping[str, Any] | ConversationTurnStateContract,
+) -> dict[str, Any]:
+    data = value.to_dict() if isinstance(value, ConversationTurnStateContract) else _mapping(value)
     errors: list[str] = []
     for key in ("session_id", "request_id", "turn_id", "trace_id", "input_sha256", "state"):
         if not str(data.get(key) or "").strip():
@@ -239,12 +212,11 @@ def validate_turn_state_contract(value: Mapping[str, Any] | ConversationTurnStat
     except ValueError:
         errors.append("invalid:state")
     transitions = data.get("transitions")
+    previous: ConversationTurnState | None = None
     if not isinstance(transitions, list) or not transitions:
         errors.append("missing:transitions")
     else:
-        previous: ConversationTurnState | None = None
-        expected_seq = 0
-        for item in transitions:
+        for expected_seq, item in enumerate(transitions):
             row = _mapping(item)
             try:
                 seq = int(row.get("event_seq"))
@@ -253,7 +225,6 @@ def validate_turn_state_contract(value: Mapping[str, Any] | ConversationTurnStat
                 continue
             if seq != expected_seq:
                 errors.append("invalid:event_seq_order")
-            expected_seq += 1
             try:
                 after = _state(str(row.get("state_after") or ""))
             except ValueError:
@@ -292,13 +263,9 @@ def _advance_sequence(
 
 
 def build_runtime_result_turn_state(
-    result: Mapping[str, Any],
-    *,
-    user_text: str,
-    session_id: str,
-    request_id: str | None,
+    result: Mapping[str, Any], *, user_text: str, session_id: str, request_id: str | None
 ) -> dict[str, Any]:
-    payload = dict(result)
+    payload = _mapping(result)
     trace = _mapping(payload.get("trace"))
     runtime_turn = _mapping(payload.get("runtime_turn_contract"))
     final_contract = _mapping(payload.get("final_response_contract"))
@@ -320,7 +287,11 @@ def build_runtime_result_turn_state(
         ],
     )
     if payload.get("host_finalization_pending") is True:
-        advance_turn_state(contract, ConversationTurnState.HOST_GENERATION_PENDING, reason="external_host_language_generation_required")
+        advance_turn_state(
+            contract,
+            ConversationTurnState.HOST_GENERATION_PENDING,
+            reason="external_host_language_generation_required",
+        )
     elif (
         payload.get("answer_ok") is True
         or (payload.get("ok") is True and payload.get("execution_state") == "final_visible_answer")
@@ -334,17 +305,16 @@ def build_runtime_result_turn_state(
             ],
         )
     else:
-        advance_turn_state(contract, ConversationTurnState.REJECTED, reason=str(payload.get("execution_state") or "runtime_turn_rejected"))
+        advance_turn_state(
+            contract,
+            ConversationTurnState.REJECTED,
+            reason=str(payload.get("execution_state") or "runtime_turn_rejected"),
+        )
     return contract.to_dict()
 
 
 def build_host_finalized_turn_state(
-    *,
-    session_id: str,
-    request_id: str,
-    turn_id: str,
-    trace_id: str,
-    user_text_sha256: str,
+    *, session_id: str, request_id: str, turn_id: str, trace_id: str, user_text_sha256: str
 ) -> dict[str, Any]:
     contract = ConversationTurnStateContract(
         session_id=str(session_id or ""),
@@ -372,18 +342,22 @@ def build_host_finalized_turn_state(
 
 
 def build_linguistic_turn_frame(
-    model_context: Mapping[str, Any],
-    *,
-    detected_intent: str,
-    route: str,
+    model_context: Mapping[str, Any], *, detected_intent: str, route: str
 ) -> dict[str, Any]:
-    context = dict(model_context)
+    context = _mapping(model_context)
     nlg_plan = _mapping(context.get("nlg_plan"))
     thought = _mapping(context.get("operational_thought_frame"))
     full_canon = _mapping(context.get("full_canon_model_context"))
-    memory_items = [dict(item) for item in context.get("allowed_memory_items") or [] if isinstance(item, Mapping)]
+    raw_items = context.get("allowed_memory_items")
+    memory_items = raw_items if isinstance(raw_items, list) else []
     task_state = _mapping(thought.get("dialogue_task_state") or context.get("dialogue_task_state"))
-    frame = {
+    item_ids: list[str] = []
+    for item in memory_items:
+        row = _mapping(item)
+        item_id = str(row.get("item_id") or "")
+        if item_id:
+            item_ids.append(item_id)
+    frame: dict[str, Any] = {
         "schema_version": LINGUISTIC_FRAME_SCHEMA_VERSION,
         "exact_user_text_sha256": exact_input_sha256(str(context.get("user_text") or "")),
         "detected_intent": str(detected_intent or "unknown"),
@@ -392,7 +366,7 @@ def build_linguistic_turn_frame(
         "memory_policy": str(nlg_plan.get("memory_policy") or "none"),
         "source_policy": str(nlg_plan.get("source_policy") or "runtime_only"),
         "dialogue_task_state": task_state,
-        "allowed_memory_item_ids": [str(item.get("item_id") or "") for item in memory_items if str(item.get("item_id") or "")],
+        "allowed_memory_item_ids": item_ids,
         "required_truth_boundaries": list(context.get("required_truth_boundaries") or []),
         "forbidden_claims": list(context.get("forbidden_claims") or []),
         "output_instructions": list(context.get("output_instructions") or []),
@@ -407,7 +381,7 @@ def build_linguistic_turn_frame(
 
 
 def validate_linguistic_turn_frame(value: Mapping[str, Any]) -> dict[str, Any]:
-    frame = dict(value)
+    frame = _mapping(value)
     errors: list[str] = []
     for key in ("exact_user_text_sha256", "detected_intent", "route", "answer_kind", "frame_sha256"):
         if not str(frame.get(key) or "").strip():
@@ -435,12 +409,7 @@ def validate_linguistic_turn_frame(value: Mapping[str, Any]) -> dict[str, Any]:
 
 
 class ConversationTurnLedger:
-    """Append-only, content-free turn-state ledger for restart diagnostics.
-
-    Only lineage, hashes and state are written. Raw user/model content is
-    deliberately excluded. A write failure is evidence, never a fabricated
-    successful finalization.
-    """
+    """Append-only, content-free state ledger for restart diagnostics."""
 
     _lock = threading.Lock()
 
@@ -451,7 +420,7 @@ class ConversationTurnLedger:
         validation = validate_turn_state_contract(contract)
         if validation.get("ok") is not True:
             return {"ok": False, "written": False, "errors": validation.get("errors") or []}
-        record = {
+        record: dict[str, Any] = {
             "schema_version": LEDGER_SCHEMA_VERSION,
             "session_id": contract.get("session_id"),
             "request_id": contract.get("request_id"),
@@ -472,12 +441,7 @@ class ConversationTurnLedger:
                     handle.flush()
                     os.fsync(handle.fileno())
         except OSError as exc:
-            return {
-                "ok": False,
-                "written": False,
-                "error_code": type(exc).__name__,
-                "error": str(exc),
-            }
+            return {"ok": False, "written": False, "error_code": type(exc).__name__, "error": str(exc)}
         return {"ok": True, "written": True, "path": str(self.path), "record_sha256": _sha256(record)}
 
 
@@ -488,12 +452,13 @@ class ConversationRunner(_BaseRuntimeSession):
 
     def process_user_text(self, user_text: str, **kwargs: Any) -> dict[str, Any]:
         result = super().process_user_text(user_text, **kwargs)
-        request_id = kwargs.get("request_id")
+        request_id_value = kwargs.get("request_id")
+        request_id = str(request_id_value) if request_id_value else None
         contract = build_runtime_result_turn_state(
             result,
             user_text=user_text,
             session_id=str(getattr(self.state, "session_id", "") or ""),
-            request_id=str(request_id or "") or None,
+            request_id=request_id,
         )
         validation = validate_turn_state_contract(contract)
         result["conversation_turn_state"] = contract
@@ -520,12 +485,12 @@ _INSTALLED = False
 
 
 def install_conversation_runner_class(*, runtime_daemon_module: Any | None = None) -> dict[str, Any]:
-    """Install ``ConversationRunner`` into existing canonical worker factories."""
-
+    """Install ConversationRunner into the existing canonical worker factories."""
     global _INSTALLED
     from latka_jazn.core import runtime_session as runtime_session_module
 
-    if _INSTALLED and runtime_session_module.JaznRuntimeSession is ConversationRunner:
+    current = getattr(runtime_session_module, "JaznRuntimeSession", None)
+    if _INSTALLED and current is ConversationRunner:
         return {
             "schema_version": SCHEMA_VERSION,
             "installed": True,
@@ -533,12 +498,13 @@ def install_conversation_runner_class(*, runtime_daemon_module: Any | None = Non
             "runner": ConversationRunner.__name__,
         }
 
-    runtime_session_module.JaznRuntimeSession = ConversationRunner
+    setattr(runtime_session_module, "JaznRuntimeSession", ConversationRunner)
     if runtime_daemon_module is not None:
-        runtime_daemon_module.JaznRuntimeSession = ConversationRunner
-        initializer = getattr(runtime_daemon_module.JaznDaemonServer, "__init__", None)
+        setattr(runtime_daemon_module, "JaznRuntimeSession", ConversationRunner)
+        server_type = getattr(runtime_daemon_module, "JaznDaemonServer", None)
+        initializer = getattr(server_type, "__init__", None)
         kwdefaults = getattr(initializer, "__kwdefaults__", None)
-        if isinstance(kwdefaults, MutableMapping) and "session_factory" in kwdefaults:
+        if isinstance(kwdefaults, dict) and "session_factory" in kwdefaults:
             kwdefaults["session_factory"] = ConversationRunner
     _INSTALLED = True
     return {
