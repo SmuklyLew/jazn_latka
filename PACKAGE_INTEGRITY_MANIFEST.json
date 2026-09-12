@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
-  "runtime_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
-  "package_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
-  "generated_at_utc": "2026-09-12T16:18:40+00:00",
-  "updated_at_utc": "2026-09-12T16:18:40+00:00",
+  "version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
+  "runtime_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
+  "package_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
+  "generated_at_utc": "2026-09-12T16:21:46+00:00",
+  "updated_at_utc": "2026-09-12T16:21:46+00:00",
   "start_file": "run.py",
   "file_count": 1644,
   "static_file_count": 1644,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2965,
-      "sha256": "ca8cb44844854535ebe7b1f1785e6561f0b99fe7b6ae1fd3cb7b0add8a30253b",
+      "size_bytes": 3037,
+      "sha256": "590982c0cff4d204d2c04e09cbdce29537b939867a4d119dc1b02daa941f9cff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7976,8 +7976,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6593,
-      "sha256": "b8e81d00e2c4087743887019b9ef6c0dadc09099789ad7539fd5092c38152e4d",
+      "size_bytes": 5687,
+      "sha256": "976e1d47f7782fe2169a1b755f76a584fecb15a0676269c80b77987c4176a812",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14195,8 +14195,8 @@
     },
     {
       "path": "tests/test_v16325569_conversation_runtime_nlp_final_convergence.py",
-      "size_bytes": 5386,
-      "sha256": "3dec97234defa3314ef5ff914e16e879b719b87e7ecde7574209570521c917c7",
+      "size_bytes": 5861,
+      "sha256": "41d79e4226bfc1d6709948e58a9cdf46f123fc553dc68554402129dee9475a66",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15248,11 +15248,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+  "release_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
-    "package_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
-    "release_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence"
+    "runtime_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
+    "package_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix",
+    "release_version": "16.3.25.5.70-conversation-runtime-nlp-final-convergence-pyright-fix"
   },
   "legacy_aliases": {
     "version": "release_version"
