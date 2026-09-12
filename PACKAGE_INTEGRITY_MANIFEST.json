@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-  "runtime_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-  "package_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-  "generated_at_utc": "2026-09-11T22:05:56+00:00",
-  "updated_at_utc": "2026-09-11T22:05:56+00:00",
+  "version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
+  "runtime_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
+  "package_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
+  "generated_at_utc": "2026-09-12T11:06:26+00:00",
+  "updated_at_utc": "2026-09-12T11:06:26+00:00",
   "start_file": "run.py",
-  "file_count": 1340,
-  "static_file_count": 1340,
+  "file_count": 1348,
+  "static_file_count": 1348,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -254,8 +254,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3009,
-      "sha256": "6582b3cb1cda17939ebc459a36436bee70616a1ae3cfc0473ef39b4abb87e763",
+      "size_bytes": 2925,
+      "sha256": "26f782ba77711bbc634c8c0586b670095022cd6a09ca12a1f640218661454daf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2110,6 +2110,15 @@
       "path": "docs/tools/JAZN_PYTHON_RUNTIME_BUNDLE.md",
       "size_bytes": 7648,
       "sha256": "bbb18c1599744f962ba7903957b4853210c6c78d54dbc16d1fb9a02eaa802c69",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/tools/JAZN_STUDIO_PAMIECI.md",
+      "size_bytes": 5136,
+      "sha256": "b474ac06c9aeb4e019135a06917485c8f9bd5a49e6c043a1f3b7a0205f525a6d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7031,8 +7040,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/adapters/music_analysis.py",
-      "size_bytes": 3684,
-      "sha256": "99e31d054037bd64087a598bc6e4cf6b122cbebf18461cf66420ff7fa31dd453",
+      "size_bytes": 3948,
+      "sha256": "a75991732bc366fc6cb1dc55a630adf4d30ac19b14d218b4db6b4cf42e7b5bf1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7148,8 +7157,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/entrypoint.py",
-      "size_bytes": 4587,
-      "sha256": "cc9fc581c708494884a171b8f1c22cc2d7461c2dc70abd69e08c73633e32a8d8",
+      "size_bytes": 4728,
+      "sha256": "6d44e522ac66e6f6dbe72fd41abf3bac7c4a18f02266ac46109642fa321c88fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7213,6 +7222,15 @@
       "path": "latka_jazn/tools/memory_rebuild_app/layout.py",
       "size_bytes": 2358,
       "sha256": "7c9faf38b86244c538c42e9611c7a32c2493b869b456f3bb23ef744c73946bbe",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/memory_rebuild_app/memory_studio.py",
+      "size_bytes": 16905,
+      "sha256": "180ccca31a967e36b7a94779aab3ec79466092d809fe8399d5188bbb491b1abe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7453,9 +7471,36 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/memory_rebuild_app/studio_audit.py",
+      "size_bytes": 16390,
+      "sha256": "8de3e3d75bd25517226a58b284c3ac6db64a7ed877d7a86f08b5fe80a27a6063",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_rebuild_app/studio_dialogs.py",
       "size_bytes": 5598,
       "sha256": "6beb01a8cf3f669eb0c61c3b2120460e8e7b594c24b6b6b5d966211a3205e8e9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/memory_rebuild_app/studio_links.py",
+      "size_bytes": 6226,
+      "sha256": "33927113b720b80a666b8f8767b3d2c3ec630e95b747241dbb8ddb60ba1d821e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/memory_rebuild_app/studio_repair.py",
+      "size_bytes": 1068,
+      "sha256": "90cf8bcd26ab90e4b10de10b46333f9a7bed765acd67dece50eb233e917f5479",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7895,8 +7940,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6669,
-      "sha256": "de0d514ef40fd5bf348965f4ce2c96ad8b3a0c5e70cdaadc1c688d7b5c1aa845",
+      "size_bytes": 6493,
+      "sha256": "29bf1a502007fb004669b24dbdd2d84ea4d0321fbf806e8f23e04790a05fb551",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8419,6 +8464,15 @@
       "path": "tests/archive/test_v16325564_visible_turn_tty_host_route_convergence__pre_v65.py",
       "size_bytes": 4990,
       "sha256": "ebc1854a0cb95ed25557580cb2d7428fe06d09882144c8637837b0fdf4a8edce",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_v16325566_chatgpt_loader_pylance_static_gate_v16_3_25_5_66.py",
+      "size_bytes": 3995,
+      "sha256": "92e28f62473c36a7cd8d987498bf446488856e0a8248e60b50313571dd146118",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9742,6 +9796,15 @@
       "path": "tests/test_independent_memory_package_contract_v2.py",
       "size_bytes": 9501,
       "sha256": "b007ce4d7ef0ef5cd6e68e12545bf9a6d1e7197e56a2536832dd9bd239b59ae5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jazn_memory_studio.py",
+      "size_bytes": 9510,
+      "sha256": "62cc011e6d34dbe2f6352eba2d1e1e5b791927845325e89dcfa3ee6599aff2f8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11531,8 +11594,8 @@
     },
     {
       "path": "tests/test_v16325566_chatgpt_loader_pylance_static_gate.py",
-      "size_bytes": 3995,
-      "sha256": "92e28f62473c36a7cd8d987498bf446488856e0a8248e60b50313571dd146118",
+      "size_bytes": 3981,
+      "sha256": "45691a436417400d351712f2703c4b09c4810ce4e9df5326e5a91bdaafa6439b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11803,6 +11866,15 @@
       "path": "tools/jazn_archive.py",
       "size_bytes": 4740,
       "sha256": "46cff926b2b6e432a53a097d61c18fb05253805dd1b5f57852fd491821dc3543",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_memory_studio.py",
+      "size_bytes": 346,
+      "sha256": "a6c4357ee30e4c72b0e5fa5127bc9da23231e3902df18526f658c61f20d2087a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12512,11 +12584,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
+  "release_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-    "package_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence",
-    "release_version": "16.3.25.5.66-chatgpt-loader-pylance-static-gate-convergence"
+    "runtime_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
+    "package_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit",
+    "release_version": "16.3.25.5.67-jazn-studio-pamieci-source-audit"
   },
   "legacy_aliases": {
     "version": "release_version"
