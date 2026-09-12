@@ -3,12 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.66 hardens the ChatGPT project loader so ordinary replies and
-# host-tool actions are bound to the current runtime turn before visible output,
-# and converges VS Code/Pylance diagnostics with the canonical full-tree Pyright gate.
-DISTRIBUTION_VERSION = "16.3.25.5.66"
-PACKAGE_VERSION = "16.3.25.5.66"
-PACKAGE_RELEASE_NAME = "chatgpt-loader-pylance-static-gate-convergence"
+# Source-aware Memory Studio with staged validation and temporal evidence links.
+DISTRIBUTION_VERSION = "16.3.25.5.67"
+PACKAGE_VERSION = "16.3.25.5.67"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-source-audit"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

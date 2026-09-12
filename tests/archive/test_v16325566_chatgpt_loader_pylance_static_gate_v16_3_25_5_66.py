@@ -106,5 +106,5 @@ def test_v66_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
 
 
 def test_v66_release_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.67"
-    assert PACKAGE_RELEASE_NAME == "jazn-studio-pamieci-source-audit"
+    assert PACKAGE_VERSION == "16.3.25.5.66"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-loader-pylance-static-gate-convergence"
