@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.67-stable-test-contracts",
-  "runtime_version": "16.3.25.5.67-stable-test-contracts",
-  "package_version": "16.3.25.5.67-stable-test-contracts",
-  "generated_at_utc": "2026-09-12T11:27:14+00:00",
-  "updated_at_utc": "2026-09-12T11:27:14+00:00",
+  "version": "16.3.25.5.68-tests-studio-live-progress",
+  "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
+  "package_version": "16.3.25.5.68-tests-studio-live-progress",
+  "generated_at_utc": "2026-09-12T11:35:52+00:00",
+  "updated_at_utc": "2026-09-12T11:35:52+00:00",
   "start_file": "run.py",
   "file_count": 1628,
   "static_file_count": 1628,
@@ -128,8 +128,8 @@
     },
     {
       "path": ".github/workflows/persistent-runtime-e2e.yml",
-      "size_bytes": 7740,
-      "sha256": "391c8adc8dc65b5a69958692115cd33f0fbdadaf3beb95b226b2ab289bb94671",
+      "size_bytes": 7506,
+      "sha256": "aca8e318bc58b17fb1c1036e6685dde6832543c601a461c6e5d2f2baa7c67057",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2834,
-      "sha256": "3bf3208ac8244b2a4061d035841ca80d1b203688040a8487e28fcc34c9bec6c5",
+      "size_bytes": 2864,
+      "sha256": "b2d6b65a91c0bbdbe80638ada94b146204506f356ff9dad23b96319284cb2187",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7904,8 +7904,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6584,
-      "sha256": "3819442b06725da1a23e423e85f61448498bf844592cf34469cc2c80a7e195f0",
+      "size_bytes": 6591,
+      "sha256": "c047381878ef9c3a63645fe615129c5de27fbae938de3de1619f4a1ff79ce789",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15104,11 +15104,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.67-stable-test-contracts",
+  "release_version": "16.3.25.5.68-tests-studio-live-progress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.67-stable-test-contracts",
-    "package_version": "16.3.25.5.67-stable-test-contracts",
-    "release_version": "16.3.25.5.67-stable-test-contracts"
+    "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
+    "package_version": "16.3.25.5.68-tests-studio-live-progress",
+    "release_version": "16.3.25.5.68-tests-studio-live-progress"
   },
   "legacy_aliases": {
     "version": "release_version"
