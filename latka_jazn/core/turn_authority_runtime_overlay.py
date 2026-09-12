@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-"""Install turn-authority invariants at the canonical operator boundary.
+"""Install turn-authority and canonical conversation-runtime invariants.
 
-The overlay deliberately wraps stable public contracts instead of forking the
-large bridge/engine/control-plane modules.  Besides authority, identity and
-tool-evidence gates it owns one transport invariant: after a daemon submit may
-have crossed the process boundary, the host must preserve the preallocated
-request id and poll the same job instead of replaying the user message.
+The overlay wraps stable public contracts instead of forking the large
+bridge/engine/control-plane modules.  Besides authority, identity and
+host-tool-evidence gates it installs the single ConversationRunner and preserves
+one transport invariant: after a daemon submit may have crossed the process
+boundary, the host must poll the preallocated request id instead of replaying the
+user message.
 """
 
 from typing import Any, Mapping
@@ -46,13 +47,33 @@ def _identity_hash_from_context(value: Any) -> str:
 
 
 def install_turn_authority_runtime_overlay() -> dict[str, Any]:
+    # runtime_daemon is already imported by the lifecycle hotfix in main.py.
+    # Install the canonical runner before chat_command_contract is imported so
+    # every worker/finalization path observes the same session class.
+    from latka_jazn.core import runtime_daemon
+    from latka_jazn.core.conversation_runtime_convergence import (
+        ConversationTurnLedger,
+        build_host_finalized_turn_state,
+        build_linguistic_turn_frame,
+        build_runtime_result_turn_state,
+        install_conversation_runner_class,
+        validate_linguistic_turn_frame,
+        validate_turn_state_contract,
+    )
+
+    runner_install = install_conversation_runner_class(runtime_daemon_module=runtime_daemon)
+
     from latka_jazn.core import chat_command_contract as bridge
     from latka_jazn.core import chatgpt_host_pending_store as pending_store
     from latka_jazn.core import host_response_candidate_guard as candidate_guard
-    from latka_jazn.core import runtime_daemon
 
     if getattr(bridge, "_turn_authority_runtime_overlay_installed", False):
-        return {"installed": True, "already_installed": True, "schema_version": _OVERLAY_VERSION}
+        return {
+            "installed": True,
+            "already_installed": True,
+            "schema_version": _OVERLAY_VERSION,
+            "conversation_runner": runner_install,
+        }
 
     original_daemon_submit = runtime_daemon.chat_daemon_submit
     original_chat_daemon = runtime_daemon.chat_daemon
@@ -125,6 +146,10 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         digest = str(value.get("identity_canon_sha256") or "").strip().lower()
         if len(digest) == 64:
             result["identity_canon_sha256"] = digest
+        state = _mapping(value.get("conversation_turn_state"))
+        state_digest = str(state.get("contract_sha256") or "").strip().lower()
+        if len(state_digest) == 64:
+            result["conversation_turn_state_sha256"] = state_digest
         return result
 
     pending_store.canonical_host_request_binding = canonical_binding_with_identity
@@ -149,13 +174,24 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
             route=route,
             nlg_plan=plan,
         )
+        linguistic_frame = build_linguistic_turn_frame(
+            _mapping(payload.get("model_context")),
+            detected_intent=detected_intent,
+            route=route,
+        )
+        linguistic_validation = validate_linguistic_turn_frame(linguistic_frame)
         payload["host_tool_turn_policy"] = policy
+        payload["linguistic_turn_frame"] = linguistic_frame
+        payload["linguistic_turn_frame_validation"] = linguistic_validation
         generation = _mapping(payload.get("generation_contract"))
         generation.update({
             "all_host_tools_are_subordinate_to_runtime_turn": True,
             "tool_results_cannot_become_identity_or_voice_source": True,
             "runtime_finalization_required_after_host_tool_use": True,
             "host_tool_turn_policy_path": "host_tool_turn_policy",
+            "conversation_runner_required": True,
+            "runtime_turn_state_machine_required": True,
+            "linguistic_turn_frame_path": "linguistic_turn_frame",
         })
         payload["generation_contract"] = generation
         unsigned = dict(payload)
@@ -169,6 +205,7 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         result = original_evaluate_host_candidate(**kwargs)
         context = _mapping(kwargs.get("host_generation_context"))
         tool_policy = _mapping(context.get("host_tool_turn_policy"))
+        linguistic_validation = _mapping(context.get("linguistic_turn_frame_validation"))
         evidence = kwargs.get("external_tool_evidence")
         evidence_list = list(evidence) if isinstance(evidence, list) else []
         violations = [str(item) for item in result.get("violations") or []]
@@ -176,6 +213,8 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
             item for item in validate_tool_evidence_against_policy(evidence_list, tool_policy)
             if item not in violations
         )
+        if linguistic_validation.get("ok") is not True:
+            violations.append("linguistic_turn_frame_invalid")
         model_context = _mapping(context.get("model_context"))
         full_canon = _mapping(model_context.get("full_canon_model_context"))
         identity = evaluate_identity_response(
@@ -189,6 +228,7 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
                 violations.append(item)
         result["identity_response_evaluation"] = identity.to_dict()
         result["host_tool_turn_policy"] = tool_policy
+        result["linguistic_turn_frame_validation"] = linguistic_validation
         result["violations"] = violations
         result["accepted"] = bool(result.get("accepted") is True and identity.accepted and not violations)
         return result
@@ -209,6 +249,44 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         value["turn_authority_required"] = True
         requires_host = value.get("phase") == "host_visible_generation_requested"
         runtime_final = value.get("phase") == "runtime_final_available"
+
+        state = _mapping(result.get("conversation_turn_state"))
+        if not state:
+            session = _mapping(result.get("session"))
+            state = build_runtime_result_turn_state(
+                result,
+                user_text=user_text,
+                session_id=str(
+                    session.get("session_id")
+                    or chat_bridge_meta.get("session_id")
+                    or value.get("session_id")
+                    or "compat-session"
+                ),
+                request_id=str(
+                    chat_bridge_meta.get("daemon_request_id")
+                    or chat_bridge_meta.get("request_id")
+                    or value.get("daemon_request_id")
+                    or value.get("turn_id")
+                    or ""
+                ) or None,
+            )
+        state_validation = validate_turn_state_contract(state)
+        value["conversation_turn_state"] = state
+        value["conversation_turn_state_validation"] = state_validation
+        expected_state = "host_generation_pending" if requires_host else "visible_committed" if runtime_final else None
+        if (
+            state_validation.get("ok") is not True
+            or (expected_state is not None and str(state.get("state") or "") != expected_state)
+        ):
+            value.update({
+                "phase": "host_diagnostic_required",
+                "status": "conversation_turn_state_invalid",
+                "host_must_generate_visible_reply": False,
+                "host_reply_finalization_required": False,
+                "diagnostic_reason": "conversation_turn_state_invalid",
+            })
+            return value
+
         value["turn_pipeline_contract"] = build_turn_pipeline_contract(
             turn_id=str(value.get("turn_id") or ""),
             trace_id=str(value.get("trace_id") or ""),
@@ -273,13 +351,16 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         host_bridge = _mapping(response.get("chatgpt_host_bridge"))
         validation = _mapping(presentation.get("turn_authority_validation")) or _mapping(host_bridge.get("turn_authority_validation"))
         receipt = _mapping(presentation.get("turn_authority_receipt")) or _mapping(host_bridge.get("turn_authority_receipt"))
+        state_validation = _mapping(presentation.get("conversation_turn_state_validation")) or _mapping(host_bridge.get("conversation_turn_state_validation"))
         telemetry["authorship_verified"] = bool(
             presentation.get("action") == "display_exact"
             and validation.get("ok") is True
+            and state_validation.get("visible_commit_ready") is True
             and str(telemetry.get("visible_output_source") or "") in {"runtime_exact", "runtime_finalized"}
         )
         telemetry["turn_authority_receipt_sha256"] = receipt.get("receipt_sha256")
         telemetry["turn_authority_validation"] = validation or None
+        telemetry["conversation_turn_state_validation"] = state_validation or None
         return telemetry
 
     bridge.build_host_pre_response_gate_telemetry = gate_with_authority
@@ -299,17 +380,28 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
                 expected_identity_canon_sha256=str(host_bridge.get("identity_canon_sha256") or receipt.get("identity_canon_sha256") or ""),
                 expected_visible_output_source=source or None,
             )
+        state = _mapping(host_bridge.get("conversation_turn_state")) or _mapping(payload.get("conversation_turn_state"))
+        state_validation = validate_turn_state_contract(state) if state else {}
         required = bool(host_bridge.get("turn_authority_required"))
-        if packet.get("action") == "display_exact" and required and validation.get("ok") is not True:
+        if packet.get("action") == "display_exact" and required and (
+            validation.get("ok") is not True
+            or state_validation.get("visible_commit_ready") is not True
+        ):
             packet.update({
                 "action": "host_diagnostic",
                 "final_visible_text": None,
-                "diagnostic_reason": "turn_authority_receipt_invalid_or_missing",
+                "diagnostic_reason": "accepted_visible_turn_lineage_invalid_or_missing",
                 "must_not_claim_runtime_voice": True,
             })
         packet["turn_authority_receipt"] = receipt or None
         packet["turn_authority_validation"] = validation or None
-        packet["authorship_verified"] = bool(packet.get("action") == "display_exact" and validation.get("ok") is True)
+        packet["conversation_turn_state"] = state or None
+        packet["conversation_turn_state_validation"] = state_validation or None
+        packet["authorship_verified"] = bool(
+            packet.get("action") == "display_exact"
+            and validation.get("ok") is True
+            and state_validation.get("visible_commit_ready") is True
+        )
         return packet
 
     bridge.build_chatgpt_host_presentation_packet = presentation_with_authority
@@ -359,8 +451,41 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
             expected_identity_canon_sha256=identity_hash,
             expected_visible_output_source="runtime_finalized",
         )
-        if validation.get("ok") is not True or pipeline_validation.get("ok") is not True:
+        result_session = _mapping(result.get("session"))
+        payload_session = _mapping(payload.get("session"))
+        session_id = str(
+            result_session.get("session_id")
+            or payload_session.get("session_id")
+            or payload.get("session_id")
+            or host_bridge.get("session_id")
+            or "host-finalized-session"
+        )
+        request_id = str(
+            binding.get("daemon_request_id")
+            or payload.get("daemon_request_id")
+            or payload.get("request_id")
+            or binding.get("turn_id")
+            or turn_id
+        )
+        final_state = build_host_finalized_turn_state(
+            session_id=session_id,
+            request_id=request_id,
+            turn_id=str(binding.get("turn_id") or turn_id),
+            trace_id=str(binding.get("trace_id") or host_bridge.get("trace_id") or ""),
+            user_text_sha256=str(binding.get("user_text_sha256") or ""),
+        )
+        state_validation = validate_turn_state_contract(final_state)
+        if (
+            validation.get("ok") is not True
+            or pipeline_validation.get("ok") is not True
+            or state_validation.get("visible_commit_ready") is not True
+        ):
             return None, ["turn_authority:post_finalize_binding_invalid"]
+        ledger = (
+            ConversationTurnLedger(config.root).append(final_state)
+            if config is not None
+            else {"ok": False, "written": False, "error_code": "runtime_root_unavailable"}
+        )
         host_bridge.update({
             "identity_canon_sha256": identity_hash,
             "turn_authority_required": True,
@@ -368,15 +493,25 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
             "turn_authority_validation": validation,
             "turn_pipeline_contract": pipeline,
             "turn_pipeline_validation": pipeline_validation,
+            "conversation_turn_state": final_state,
+            "conversation_turn_state_validation": state_validation,
         })
         result["chatgpt_host_bridge"] = host_bridge
         result["turn_authority_receipt"] = receipt
         result["turn_authority_validation"] = validation
         result["turn_pipeline_contract"] = pipeline
         result["turn_pipeline_validation"] = pipeline_validation
+        result["conversation_turn_state"] = final_state
+        result["conversation_turn_state_validation"] = state_validation
+        result["conversation_turn_ledger"] = ledger
         return result, []
 
     bridge.persist_chatgpt_host_visible_reply = persist_with_authority
     setattr(bridge, "_turn_authority_runtime_overlay_installed", True)
     setattr(bridge, "_turn_authority_runtime_overlay_version", _OVERLAY_VERSION)
-    return {"installed": True, "already_installed": False, "schema_version": _OVERLAY_VERSION}
+    return {
+        "installed": True,
+        "already_installed": False,
+        "schema_version": _OVERLAY_VERSION,
+        "conversation_runner": runner_install,
+    }
