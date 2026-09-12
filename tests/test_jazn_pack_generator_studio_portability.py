@@ -11,7 +11,7 @@ def generator():
 def test_exposes_three_real_ui_modes() -> None:
     module = generator()
     assert module.GENERATOR_VERSION == "10.1.86.0.114"
-    assert module.UI_MODE_CHOICES == ("text", "tui", "studio")
+    assert module.UI_MODE_CHOICES == ("text", "tui", "window")
     assert callable(module.run_text_ui)
     assert callable(module.run_terminal_tui)
     assert callable(module.run_studio_ui)
