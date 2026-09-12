@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.68-tests-studio-live-progress",
-  "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
-  "package_version": "16.3.25.5.68-tests-studio-live-progress",
-  "generated_at_utc": "2026-09-12T15:04:17+00:00",
-  "updated_at_utc": "2026-09-12T15:04:17+00:00",
+  "version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+  "runtime_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+  "package_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+  "generated_at_utc": "2026-09-12T16:18:40+00:00",
+  "updated_at_utc": "2026-09-12T16:18:40+00:00",
   "start_file": "run.py",
-  "file_count": 1642,
-  "static_file_count": 1642,
+  "file_count": 1644,
+  "static_file_count": 1644,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2869,
-      "sha256": "cd6438ab5ddeb9174c47a9fb609cb19d1388c975c62b99837bd6fc165dbbc2ea",
+      "size_bytes": 2965,
+      "sha256": "ca8cb44844854535ebe7b1f1785e6561f0b99fe7b6ae1fd3cb7b0add8a30253b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2863,6 +2863,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/conversation_runtime_convergence.py",
+      "size_bytes": 21648,
+      "sha256": "88a7b38a70d759af1498e3ae0807c0efabe12ae0260b6ccefd42f70f23c674fe",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/current_turn_grounding.py",
       "size_bytes": 4576,
       "sha256": "89cb9e7ba2f7293291ecdcc54b91c408c5bd8f7ecf59dc224af3ec57bd0b45f8",
@@ -4322,8 +4331,8 @@
     },
     {
       "path": "latka_jazn/core/turn_authority_runtime_overlay.py",
-      "size_bytes": 19334,
-      "sha256": "35e6402e2ab38497543e8cafa4ba4d60cfa66795ab383912ee4a756fa9156b5a",
+      "size_bytes": 25473,
+      "sha256": "2c97e4a40648bd09202e7c1a752eafeae2ae0106cc25e85c1882d9fa6c29810b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7967,8 +7976,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6591,
-      "sha256": "c047381878ef9c3a63645fe615129c5de27fbae938de3de1619f4a1ff79ce789",
+      "size_bytes": 6593,
+      "sha256": "b8e81d00e2c4087743887019b9ef6c0dadc09099789ad7539fd5092c38152e4d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14185,6 +14194,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v16325569_conversation_runtime_nlp_final_convergence.py",
+      "size_bytes": 5386,
+      "sha256": "3dec97234defa3314ef5ff914e16e879b719b87e7ecde7574209570521c917c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -15230,11 +15248,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.68-tests-studio-live-progress",
+  "release_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.68-tests-studio-live-progress",
-    "package_version": "16.3.25.5.68-tests-studio-live-progress",
-    "release_version": "16.3.25.5.68-tests-studio-live-progress"
+    "runtime_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+    "package_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence",
+    "release_version": "16.3.25.5.69-conversation-runtime-nlp-final-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
