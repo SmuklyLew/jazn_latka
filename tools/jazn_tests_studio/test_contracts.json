@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.73",
-  "active_definition_count": 1540,
+  "active_definition_count": 1544,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -5040,6 +5040,90 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 161
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_jsonl_chatgpt_ingress_routes_every_ordinary_line_through_gate": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_jsonl_chatgpt_ingress_routes_every_ordinary_line_through_gate",
+      "purpose": "Jsonl chatgpt ingress routes every ordinary line through gate",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_mcp_visible_reply_entrypoint_calls_gate_before_gateway_directly": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_mcp_visible_reply_entrypoint_calls_gate_before_gateway_directly",
+      "purpose": "Mcp visible reply entrypoint calls gate before gateway directly",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_daemon_fast_path_routes_exact_user_text_through_gate_before_submit": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_daemon_fast_path_routes_exact_user_text_through_gate_before_submit",
+      "purpose": "Daemon fast path routes exact user text through gate before submit",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_gate_telemetry_distinguishes_daemon_transport_from_bound_host_route": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_gate_telemetry_distinguishes_daemon_transport_from_bound_host_route",
+      "purpose": "Gate telemetry distinguishes daemon transport from bound host route",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 168
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
