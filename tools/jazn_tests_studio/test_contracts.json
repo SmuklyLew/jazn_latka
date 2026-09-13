@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.74",
-  "active_definition_count": 1545,
+  "system_version": "16.3.25.5.74.1.001",
+  "active_definition_count": 1549,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2752,6 +2752,76 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 98
+    },
+    "tests/test_chatgpt_handoff_outcome_contract.py::test_boolean_handoff_capability_remains_backward_compatible": {
+      "path": "tests/test_chatgpt_handoff_outcome_contract.py",
+      "name": "test_boolean_handoff_capability_remains_backward_compatible",
+      "purpose": "Boolean handoff capability remains backward compatible",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_chatgpt_handoff_outcome_contract.py::test_declined_handoff_is_not_requested_again": {
+      "path": "tests/test_chatgpt_handoff_outcome_contract.py",
+      "name": "test_declined_handoff_is_not_requested_again",
+      "purpose": "Declined handoff is not requested again",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_chatgpt_handoff_outcome_contract.py::test_declined_handoff_can_probe_one_distinct_local_alternative": {
+      "path": "tests/test_chatgpt_handoff_outcome_contract.py",
+      "name": "test_declined_handoff_can_probe_one_distinct_local_alternative",
+      "purpose": "Declined handoff can probe one distinct local alternative",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_chatgpt_handoff_outcome_contract.py::test_remote_runtime_wins_after_handoff_decline": {
+      "path": "tests/test_chatgpt_handoff_outcome_contract.py",
+      "name": "test_remote_runtime_wins_after_handoff_decline",
+      "purpose": "Remote runtime wins after handoff decline",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_chatgpt_host_bridge_helper_boundaries.py::test_loader_uses_the_top_level_packet_when_nested_bridge_is_not_an_object": {
       "path": "tests/test_chatgpt_host_bridge_helper_boundaries.py",
