@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "5c4db661268f4361f6792ac57e9c1884a126c08c",
-    "base_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+    "base_commit": "2b982cb4f0c10a1b5d4cf85eefd33c1fadf7c499",
+    "base_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "2b982cb4f0c10a1b5d4cf85eefd33c1fadf7c499",
