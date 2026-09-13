@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74",
-  "active_definition_count": 1544,
+  "active_definition_count": 1545,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -5041,30 +5041,71 @@
       "description_source": "source_identity",
       "line": 161
     },
-    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_jsonl_chatgpt_ingress_routes_every_ordinary_line_through_gate": {
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_existing_host_packet_builder_is_now_a_current_turn_gate": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
-      "name": "test_jsonl_chatgpt_ingress_routes_every_ordinary_line_through_gate",
-      "purpose": "Jsonl chatgpt ingress routes every ordinary line through gate",
+      "name": "test_existing_host_packet_builder_is_now_a_current_turn_gate",
+      "purpose": "Existing host packet builder is now a current turn gate",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "host"
+      ],
       "markers": [],
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.chatgpt_host_pre_response_gate",
         "latka_jazn.mcp.tools"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 42
+      "line": 45
     },
-    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_mcp_visible_reply_entrypoint_calls_gate_before_gateway_directly": {
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_each_consecutive_packet_requires_its_own_turn_binding": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
-      "name": "test_mcp_visible_reply_entrypoint_calls_gate_before_gateway_directly",
-      "purpose": "Mcp visible reply entrypoint calls gate before gateway directly",
+      "name": "test_each_consecutive_packet_requires_its_own_turn_binding",
+      "purpose": "Each consecutive packet requires its own turn binding",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_runtime_action_without_current_turn_digest_fails_closed_before_render": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_runtime_action_without_current_turn_digest_fails_closed_before_render",
+      "purpose": "Runtime action without current turn digest fails closed before render",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_mcp_visible_reply_entrypoint_calls_canonical_gate_before_gateway_directly": {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "name": "test_mcp_visible_reply_entrypoint_calls_canonical_gate_before_gateway_directly",
+      "purpose": "Mcp visible reply entrypoint calls canonical gate before gateway directly",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
@@ -5074,56 +5115,34 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.chatgpt_host_pre_response_gate",
         "latka_jazn.mcp.tools"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 89
     },
-    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_daemon_fast_path_routes_exact_user_text_through_gate_before_submit": {
+    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_daemon_liveness_is_not_host_route_binding_without_gate_evidence": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
-      "name": "test_daemon_fast_path_routes_exact_user_text_through_gate_before_submit",
-      "purpose": "Daemon fast path routes exact user text through gate before submit",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
-        "latka_jazn.core.chatgpt_host_pre_response_gate",
-        "latka_jazn.mcp.tools"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 111
-    },
-    "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_gate_telemetry_distinguishes_daemon_transport_from_bound_host_route": {
-      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
-      "name": "test_gate_telemetry_distinguishes_daemon_transport_from_bound_host_route",
-      "purpose": "Gate telemetry distinguishes daemon transport from bound host route",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_daemon_liveness_is_not_host_route_binding_without_gate_evidence",
+      "purpose": "Daemon liveness is not host route binding without gate evidence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.chatgpt_host_pre_response_gate",
         "latka_jazn.mcp.tools"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 168
+      "line": 133
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
