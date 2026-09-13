@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.74 makes the canonical ChatGPT pre-response gate a production
-# invariant across persistent JSONL, daemon fast-path, and MCP visible-reply
-# ingress.  Runtime liveness is no longer conflated with current-turn host-route
-# binding evidence.
-DISTRIBUTION_VERSION = "16.3.25.5.74"
-PACKAGE_VERSION = "16.3.25.5.74"
-PACKAGE_RELEASE_NAME = "chatgpt-turn-ingress-gate-convergence"
+# v16.3.25.5.74.1.001 hardens ChatGPT host handoff outcome semantics without
+# consuming the planned 16.3.25.5.75 line. Availability, pending consent,
+# acceptance, and refusal are tracked separately so a declined handoff cannot
+# be mistaken for a failed Jaźń runtime or be re-requested automatically.
+DISTRIBUTION_VERSION = "16.3.25.5.74.1.001"
+PACKAGE_VERSION = "16.3.25.5.74.1.001"
+PACKAGE_RELEASE_NAME = "host-handoff-outcome-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
