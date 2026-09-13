@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
-  "runtime_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
-  "package_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
-  "generated_at_utc": "2026-09-13T20:06:42+00:00",
-  "updated_at_utc": "2026-09-13T20:06:42+00:00",
+  "version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+  "runtime_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+  "package_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+  "generated_at_utc": "2026-09-13T20:23:48+00:00",
+  "updated_at_utc": "2026-09-13T20:23:48+00:00",
   "start_file": "run.py",
   "file_count": 1664,
   "static_file_count": 1664,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2953,
-      "sha256": "357de5bac8a4efbf95c89997ae9b95e73510c1b5acec170f6f43d948feee419a",
+      "size_bytes": 2952,
+      "sha256": "64eeb8f53d3b99645aa07773adc0a3cedd752c858d1756ddecb8959736d3b45a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8048,8 +8048,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6670,
-      "sha256": "83ce61e69a60d045e3f32fdcbb803babe751d14cc3e9a65bb48a5faf36622141",
+      "size_bytes": 6728,
+      "sha256": "8197a79291b86bfad6f94d3bf72c098a98183d1dfbc03153996077e2bbbfdb03",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15428,11 +15428,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
+  "release_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
-    "package_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
-    "release_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence"
+    "runtime_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+    "package_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+    "release_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
