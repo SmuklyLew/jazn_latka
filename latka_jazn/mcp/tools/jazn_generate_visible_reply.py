@@ -5,12 +5,9 @@ from typing import Any, Protocol, cast
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.core.chatgpt_host_pre_response_gate import (
     build_host_pre_response_gate_telemetry,
+    run_host_pre_response_gate,
 )
-from latka_jazn.core.memory_intent_contract import analyze_memory_intent
-from latka_jazn.core.memory_recall_observability import (
-    correlate_memory_recall_transport,
-    memory_recall_truth_boundary_violation,
-)
+from latka_jazn.core.memory_recall_observability import correlate_memory_recall_transport
 
 
 class HostRuntimeGateway(Protocol):
@@ -86,6 +83,7 @@ def _diagnostic_gate_telemetry(
         requested_runtime_root=str(requested_runtime_root or ""),
         runtime_turn_invoked=runtime_turn_invoked,
         visible_output_source="host_diagnostic",
+        turn_ingress_gate_enforced=True,
     )
     if telemetry["fallback_reason"] == "runtime_transport_not_reported":
         telemetry["fallback_reason"] = reason
@@ -111,63 +109,49 @@ def run(
     message: str,
     session_id: str | None = None,
 ) -> dict[str, Any]:
+    """Route one MCP-visible ChatGPT message through the canonical ingress gate.
+
+    The MCP transport is only a carrier.  The exact user message must cross the
+    same host pre-response gate as the persistent JSONL bridge before any
+    runtime-owned text can become visible.
+    """
+
     requested_runtime_root = getattr(gateway, "runtime_root", None)
-    try:
-        response = gateway.chat(message, session_id=session_id)
-    except GatewayError as exc:
-        reason = f"runtime_unavailable:{exc}"
+    gate_result = run_host_pre_response_gate(
+        message,
+        invoke_runtime=lambda exact_text: gateway.chat(exact_text, session_id=session_id),
+        requested_runtime_root=str(requested_runtime_root or ""),
+    )
+    gate_telemetry = _object_or_none(gate_result.get("host_pre_response_gate")) or {}
+    memory_observability = _object_or_none(gate_result.get("memory_recall_observability")) or {}
+
+    if str(gate_result.get("action") or "") == "host_diagnostic":
+        reason = str(gate_result.get("diagnostic_reason") or "runtime_host_diagnostic_required")
         return _tool_error(
             reason,
-            gate_telemetry=_diagnostic_gate_telemetry(
-                reason=reason,
-                message=message,
-                requested_runtime_root=requested_runtime_root,
-                runtime_turn_invoked=True,
-            ),
+            gate_telemetry=gate_telemetry,
+            memory_recall_observability=memory_observability,
         )
-    presentation = _presentation_from(response)
-    action = str(presentation.get("action") or "host_diagnostic")
+
+    response = _object_or_none(gate_result.get("runtime_response")) or {}
+    presentation = _object_or_none(gate_result.get("runtime_presentation")) or _presentation_from(response)
+    action = str(gate_result.get("action") or presentation.get("action") or "host_diagnostic")
     turn_id = presentation.get("turn_id")
     trace_id = presentation.get("trace_id")
-    gate_telemetry = build_host_pre_response_gate_telemetry(
-        presentation=presentation,
-        response=response,
-        user_text=message,
-        requested_runtime_root=str(requested_runtime_root or ""),
-        runtime_turn_invoked=True,
-    )
-    memory_observability = _memory_recall_observability(
-        presentation,
-        response,
-        gate_telemetry,
-    )
+    if not memory_observability:
+        memory_observability = _memory_recall_observability(
+            presentation,
+            response,
+            gate_telemetry,
+        )
     bridge = (
         _object_or_none(presentation.get("chatgpt_host_bridge"))
         or _object_or_none(response.get("chatgpt_host_bridge"))
         or {}
     )
-    memory_violation = memory_recall_truth_boundary_violation(
-        memory_observability,
-        recall_required=analyze_memory_intent(message).content_requested,
-        expected_turn_id=str(turn_id or bridge.get("turn_id") or "") or None,
-        expected_trace_id=str(trace_id or bridge.get("trace_id") or "") or None,
-    )
-    if memory_violation is not None:
-        return _tool_error(
-            memory_violation,
-            response=response,
-            gate_telemetry=_diagnostic_gate_telemetry(
-                reason=memory_violation,
-                message=message,
-                requested_runtime_root=requested_runtime_root,
-                runtime_turn_invoked=True,
-                response=response,
-            ),
-            memory_recall_observability=memory_observability,
-        )
 
     if action == "display_exact":
-        final_text = str(presentation.get("final_visible_text") or response.get("final_visible_text") or "")
+        final_text = str(gate_result.get("visible_text") or "")
         checks = _object_or_none(presentation.get("runtime_checks")) or {}
         integrity = _object_or_none(response.get("final_visible_integrity"))
         if integrity is None:
@@ -201,15 +185,21 @@ def run(
                 "turn_id": turn_id,
                 "trace_id": trace_id,
                 "must_display_exactly": True,
-                "visible_output_source": gate_telemetry["visible_output_source"],
+                "visible_output_source": gate_telemetry.get("visible_output_source"),
                 "host_pre_response_gate": gate_telemetry,
+                "turn_ingress_gate_enforced": True,
+                "host_route_bound": bool(gate_telemetry.get("host_route_bound")),
                 **(
                     {"memory_recall_observability": memory_observability}
                     if memory_observability
                     else {}
                 ),
             },
-            "_meta": {"transport": "secure_loopback_gateway", "phase": presentation.get("phase")},
+            "_meta": {
+                "transport": "secure_loopback_gateway",
+                "phase": presentation.get("phase"),
+                "ingress_gate": "chatgpt_host_pre_response_gate",
+            },
             "isError": False,
         }
 
@@ -252,6 +242,8 @@ def run(
                 "must_not_display_intermediate": True,
                 "visible_output_source": None,
                 "host_pre_response_gate": gate_telemetry,
+                "turn_ingress_gate_enforced": True,
+                "host_route_bound": bool(gate_telemetry.get("host_route_bound")),
                 **(
                     {"memory_recall_observability": memory_observability}
                     if memory_observability
@@ -262,6 +254,7 @@ def run(
                 "transport": "secure_loopback_gateway",
                 "phase": presentation.get("phase"),
                 "runtime_response_redacted": True,
+                "ingress_gate": "chatgpt_host_pre_response_gate",
             },
             "isError": False,
         }
@@ -293,31 +286,26 @@ def run(
                 "trace_id": trace_id,
                 "visible_output_source": None,
                 "host_pre_response_gate": gate_telemetry,
+                "turn_ingress_gate_enforced": True,
+                "host_route_bound": bool(gate_telemetry.get("host_route_bound")),
                 **(
                     {"memory_recall_observability": memory_observability}
                     if memory_observability
                     else {}
                 ),
             },
-            "_meta": {"transport": "secure_loopback_gateway"},
+            "_meta": {
+                "transport": "secure_loopback_gateway",
+                "ingress_gate": "chatgpt_host_pre_response_gate",
+            },
             "isError": False,
         }
 
-    diagnostic_bridge = _object_or_none(presentation.get("chatgpt_host_bridge")) or {}
-    reason = str(
-        presentation.get("reason")
-        or presentation.get("diagnostic_reason")
-        or diagnostic_bridge.get("diagnostic_reason")
-        or "runtime_host_diagnostic_required"
-    )
+    # The canonical gate should make this branch unreachable for unknown actions,
+    # but keep a fail-closed boundary in case a future gate contract expands.
     return _tool_error(
-        reason,
+        "unsupported_gate_action",
         response=response,
-        gate_telemetry=_diagnostic_gate_telemetry(
-            reason=reason,
-            message=message,
-            requested_runtime_root=requested_runtime_root,
-            runtime_turn_invoked=True,
-            response=response,
-        ),
+        gate_telemetry=gate_telemetry,
+        memory_recall_observability=memory_observability,
     )
