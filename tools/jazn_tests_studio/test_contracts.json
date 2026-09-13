@@ -12919,13 +12919,13 @@
       "path": "tests/test_jazn_pack_generator_contract.py",
       "name": "test_configuration_reports_only_archiver_scope",
       "purpose": "Configuration reports only archiver scope",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -12945,7 +12945,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 119
     },
     "tests/test_jazn_pack_generator_dashboard.py::test_prompt_toolkit_dashboard_is_retired_in_clean_rewrite": {
       "path": "tests/test_jazn_pack_generator_dashboard.py",
