@@ -3,11 +3,11 @@
   "version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
   "runtime_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
   "package_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
-  "generated_at_utc": "2026-09-13T20:28:02+00:00",
-  "updated_at_utc": "2026-09-13T20:28:02+00:00",
+  "generated_at_utc": "2026-09-13T20:30:21+00:00",
+  "updated_at_utc": "2026-09-13T20:30:21+00:00",
   "start_file": "run.py",
-  "file_count": 1665,
-  "static_file_count": 1665,
+  "file_count": 1674,
+  "static_file_count": 1674,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -264,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2952,
-      "sha256": "d507126d1a1ee5dd9750dabd7e26264c221ee3d6d3058258e970cac3c42c05ae",
+      "sha256": "484804e6201261368622d0123c4e8d2d51800d86692828f56e8f7ad1b726fe22",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2728,9 +2728,90 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/chatgpt_host_capability_snapshot.py",
+      "size_bytes": 1928,
+      "sha256": "09fe656f6dfca65641ce6b326c9d2f4d37c078f1672894305a9839922347946c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_aggregate.py",
+      "size_bytes": 3903,
+      "sha256": "d35c425528680c2e7d37a0904190828705e30a6d62cccf942af671b847ddfa5a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py",
+      "size_bytes": 2784,
+      "sha256": "ee0719778bd52db73fc348c4baca34fd69b5e66fa6c449a712d6fd8f0c02b504",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_classify.py",
+      "size_bytes": 2494,
+      "sha256": "6026ef82abbe96bc0d2545a2128a35212cba8b5ebc86afa91cc583c1387e1c90",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/chatgpt_host_executor_contract.py",
-      "size_bytes": 19526,
-      "sha256": "2873997b85fd90f9cbb72cd196d4d9cff0c8115d054e2e5854c7f9ff79d5de8e",
+      "size_bytes": 1349,
+      "sha256": "2df79753c854ce24da166130ab235c464ea215bef0d4b30594ddea70fcbae57e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_decision.py",
+      "size_bytes": 1676,
+      "sha256": "3563c0fe7746aca12515a827af4b25852105b4bc06d17d84bbc08eb947f58489",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_enums.py",
+      "size_bytes": 1496,
+      "sha256": "883091f1e0f99b66654950ecb53215427425f246481f8ee17fca6cab62f5867a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_failure_policy.py",
+      "size_bytes": 3206,
+      "sha256": "8b545aa14cdd5c1a067c2b0a8b60060fcf439339459ab9c91a9097c7e17318ff",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_observation.py",
+      "size_bytes": 2610,
+      "sha256": "59faee11e4dd94649ed3d866e9726c8939d15e82c71f9e56a7d3c42ca0e03ebd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/chatgpt_host_executor_route_policy.py",
+      "size_bytes": 3233,
+      "sha256": "707405badc5b18b5cd55800388b8c99f445f5026b4d996cf8ce7879beb19b53a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
