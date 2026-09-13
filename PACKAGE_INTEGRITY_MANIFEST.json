@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-  "runtime_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-  "package_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-  "generated_at_utc": "2026-09-13T13:50:01+00:00",
-  "updated_at_utc": "2026-09-13T13:50:01+00:00",
+  "version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+  "runtime_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+  "package_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+  "generated_at_utc": "2026-09-13T13:53:44+00:00",
+  "updated_at_utc": "2026-09-13T13:53:44+00:00",
   "start_file": "run.py",
-  "file_count": 1653,
-  "static_file_count": 1653,
+  "file_count": 1657,
+  "static_file_count": 1657,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3037,
-      "sha256": "30a8a2cc90c33a094c4742ae1c32ce8247866e195e942df8647701f64a706d86",
+      "size_bytes": 3001,
+      "sha256": "376e8c4daa7bccf1c49c9eee739a690e94c6c458e8948b08d16295cce90448f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2531,8 +2531,8 @@
     },
     {
       "path": "latka_jazn/core/bridge_discovery.py",
-      "size_bytes": 8650,
-      "sha256": "a9c577919b6e9ce7e50fd1a67dde948273e6dd407c90f7cd57d93bdeaaeb2842",
+      "size_bytes": 9842,
+      "sha256": "31011a598d70a90db5fa413d07a42b5d07afa70f824100cd62839f92562a81c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4711,6 +4711,15 @@
       "path": "latka_jazn/mcp/tools/jazn_status.py",
       "size_bytes": 596,
       "sha256": "8b0499474f19217470be8430879dd76a4428b484bb546ff3a547ff51583c37db",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/mcp/tunnel_bootstrap.py",
+      "size_bytes": 5150,
+      "sha256": "d940d85b93e8be766ea7b504e8c78c8f42750c5289693954a534c902660cff07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7994,8 +8003,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6611,
-      "sha256": "fef4e6332232fadc0cb24017f0351530b33cafa02b989a81743a8252df931b34",
+      "size_bytes": 6678,
+      "sha256": "93ba0dfebb7050fa14d55c3dff22d91e0269605cea323ddd19e88dcfc6462e4e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13510,6 +13519,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
+      "size_bytes": 2718,
+      "sha256": "256246d549f81065e0426a7ff1398794d9a129c3ec1d7d0145689068c2578707",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_pack_generator_v2_runtime_loader.py",
       "size_bytes": 4879,
       "sha256": "4ad3a9f453aee5727bfbf58729c8584188e5fb617bd3cb3d76cd2d47e9a5e03e",
@@ -14131,6 +14149,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
+      "size_bytes": 4384,
+      "sha256": "ccb90749c2b3018f7f8d7dd64ff5adf4bb3dd3df8ccbbeb6655588776013d1e2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_secure_mcp_tunnel_contract.py",
+      "size_bytes": 2782,
+      "sha256": "dcc759395eaedaaba24dfe9a6edb803323a98b777e0c55bdcda3590803d84938",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_semantic_routing_completion.py",
       "size_bytes": 5777,
       "sha256": "239d967b3d87fe0ba21f72eb61c199acd2635a89707a278ecd242bd08915aa63",
@@ -14564,8 +14600,8 @@
     },
     {
       "path": "tools/jazn_pack_generator_app/manifest.py",
-      "size_bytes": 7171,
-      "sha256": "93dfcacefab0b600d1112ad51d66ea2d6d6f3e492cd5ca3362b68f6a9f4c408b",
+      "size_bytes": 8659,
+      "sha256": "9fac55b5b248a13074addbd383475b6c531d2f6df432e4fcd482872729f2b6dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15329,11 +15365,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
+  "release_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-    "package_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-    "release_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence"
+    "runtime_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+    "package_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+    "release_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
