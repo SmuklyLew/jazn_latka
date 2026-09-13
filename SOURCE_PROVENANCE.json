@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "6d1afde08f7e8142517977290e98b01d1b41f384",
-    "base_version": "16.3.25.5.74-chatgpt-turn-ingress-gate-convergence",
+    "base_commit": "97b200a9d638168ef718a4ebcd4dea5f57a88848",
+    "base_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "97b200a9d638168ef718a4ebcd4dea5f57a88848",
