@@ -3,11 +3,11 @@
   "version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "runtime_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "package_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
-  "generated_at_utc": "2026-09-13T19:47:53+00:00",
-  "updated_at_utc": "2026-09-13T19:47:53+00:00",
+  "generated_at_utc": "2026-09-13T19:48:19+00:00",
+  "updated_at_utc": "2026-09-13T19:48:19+00:00",
   "start_file": "run.py",
-  "file_count": 1661,
-  "static_file_count": 1661,
+  "file_count": 1662,
+  "static_file_count": 1662,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "ada19c1d896c2202c58f6ca026f473452541d6ef73eaafb63b0db2b4859484c4",
+      "size_bytes": 2990,
+      "sha256": "d4516a8c56d00eef291904085deac26a77617e789f6f09f12f4eda2c433234dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12259,6 +12259,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
+      "size_bytes": 7021,
+      "sha256": "af9b5506c9d2f0dfd935609c6679c68870c6091ea9cc8c013756d8df5b671927",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_cli_canonical_root.py",
       "size_bytes": 939,
       "sha256": "114c882b538b70859d32ba51b4c815b09425d14e75d75013a107e0688059071f",
@@ -14816,8 +14825,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1433914,
-      "sha256": "2b05e9e41c1337ae480513d7f784c1ad36f9ac4b38bf32b4b5c56f061ebab1e8",
+      "size_bytes": 1437548,
+      "sha256": "a15a79a8cfcf12a0911d317e8a27e66e8aa60df88fade9017b3bba6fa09a4d97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
