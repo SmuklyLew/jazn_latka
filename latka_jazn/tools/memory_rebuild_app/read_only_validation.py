@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any, Iterable
 import hashlib
@@ -149,12 +149,22 @@ def _fts_smoke_queries(con: sqlite3.Connection, table: str) -> dict[str, Any]:
     text = _fts_source_sample(con, table)
     if not text:
         return {"ok": False, "row_count": rows, "query": None, "matches": 0, "status": "source_text_missing"}
-    token = None
-    for part in text.replace("\n", " ").split():
-        candidate = "".join(ch for ch in part if ch.isalnum() or ch == "_")
-        if len(candidate) >= 3:
-            token = candidate
-            break
+    # Derive a query from source text using SQLite's actual tokenizer. Removing
+    # punctuation by hand concatenates JSON keys/values into nonexistent terms.
+    # This isolated database never reads the tested index or mutates its source.
+    with closing(sqlite3.connect(":memory:")) as tokenizer:
+        tokenizer.execute(
+            "CREATE VIRTUAL TABLE source_probe USING fts5(text, "
+            "tokenize='unicode61 remove_diacritics 2')"
+        )
+        tokenizer.execute("INSERT INTO source_probe VALUES(?)", (text,))
+        tokenizer.execute(
+            "CREATE VIRTUAL TABLE source_terms USING fts5vocab(source_probe, 'instance')"
+        )
+        first = tokenizer.execute(
+            "SELECT term FROM source_terms ORDER BY offset LIMIT 1"
+        ).fetchone()
+        token = str(first[0]) if first else None
     if not token:
         return {"ok": False, "row_count": rows, "query": None, "matches": 0, "status": "no_query_token"}
     query = token.replace('"', '""')

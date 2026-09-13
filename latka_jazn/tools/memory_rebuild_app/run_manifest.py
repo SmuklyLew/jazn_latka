@@ -303,11 +303,20 @@ class RunManifest:
             }
             for item in self.source_bundle_inventory
         ]
+        # Inventory order survives sorted JSON serialization of mapping keys.
+        ordered_keys = list(dict.fromkeys(
+            str(item.get("relative_path") or item.get("path") or index)
+            for index, item in enumerate(self.source_bundle_inventory, start=1)
+        ))
+        role_keys = [k for k in ordered_keys if k in self.source_roles]
+        role_keys += sorted(set(self.source_roles) - set(role_keys))
+        digest_keys = [k for k in ordered_keys if k in self.source_sha256]
+        digest_keys += sorted(set(self.source_sha256) - set(digest_keys))
         value["source_roles"] = {
-            str(index): role for index, role in enumerate(self.source_roles.values(), start=1)
+            str(index): role for index, role in enumerate((self.source_roles[k] for k in role_keys), start=1)
         }
         value["source_sha256"] = {
-            str(index): digest for index, digest in enumerate(self.source_sha256.values(), start=1)
+            str(index): digest for index, digest in enumerate((self.source_sha256[k] for k in digest_keys), start=1)
         }
         return value
 
