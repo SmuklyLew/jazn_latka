@@ -3,13 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.73 adds a verified OpenAI Secure MCP Tunnel stdio target that
-# binds remote ChatGPT transport to the existing persistent Jaźń daemon without
-# moving identity, memory, turn authority or visible-reply finalization into the
-# tunnel layer.
-DISTRIBUTION_VERSION = "16.3.25.5.73"
-PACKAGE_VERSION = "16.3.25.5.73"
-PACKAGE_RELEASE_NAME = "secure-mcp-tunnel-runtime-bridge-convergence"
+# v16.3.25.5.75 converges Jaźń Memory Studio and its FTS validation fix onto
+# the v16.3.25.5.73 Secure MCP/runtime line. Test03 determinism remains a
+# fail-closed acceptance gate until normal/reverse batch imports reconcile.
+DISTRIBUTION_VERSION = "16.3.25.5.75"
+PACKAGE_VERSION = "16.3.25.5.75"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-master73-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
