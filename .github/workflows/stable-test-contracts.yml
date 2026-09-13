@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+      - "update/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "upgrade/**"
     paths:
       - tests/**
       - tools/jazn_tests_studio.py
@@ -24,6 +28,51 @@ permissions:
   contents: read
 
 jobs:
+  sync_catalog:
+    name: Synchronize Test Studio catalog
+    if: github.event_name == 'push' && github.ref_name != 'master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        with:
+          python-version: '3.12'
+      - name: Synchronize active Test Studio contracts
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
+      - name: Commit catalog update when required
+        shell: bash
+        run: |
+          if git diff --quiet -- tools/jazn_tests_studio/test_contracts.json; then
+            echo "Test Studio contract catalog is already synchronized."
+            exit 0
+          fi
+          dirty_paths="$(
+            git status --porcelain --untracked-files=all |
+              sed -E 's/^.. //' |
+              sed -E 's/^"//; s/"$//' |
+              sort -u
+          )"
+          unexpected_paths="$(
+            printf '%s\n' "$dirty_paths" |
+              grep -Ev '^tools/jazn_tests_studio/test_contracts\.json$' || true
+          )"
+          if [ -n "$unexpected_paths" ]; then
+            echo "Refusing catalog commit because unrelated paths are dirty:" >&2
+            printf '%s\n' "$unexpected_paths" >&2
+            exit 2
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/jazn_tests_studio/test_contracts.json
+          git commit -m "test: synchronize Test Studio contract catalog"
+          git push origin "HEAD:${GITHUB_REF#refs/heads/}"
+
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -40,11 +89,14 @@ jobs:
         run: |
           python -m py_compile tools/jazn_tests_studio.py
           python -m py_compile tools/jazn_tests_studio/progress_plugin.py
+          python -m py_compile tools/jazn_tests_studio/sync_contract_catalog.py
       - name: Test live Test Studio runner
         run: python -X utf8 tools/jazn_tests_studio.py self-test
       - name: Audit GitHub Actions Node24 pins
         run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
       - name: Collect active suite
         run: python -m pytest --collect-only -q tests --ignore=tests/archive
+      - name: Verify deterministic Test Studio catalog
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
       - name: Test governance
         run: python -m pytest -q tests/test_test_suite_governance.py
