@@ -13,7 +13,7 @@ import uuid
 from .archive import create_zip, safe_extract_zip, sha256_file, verify_zip, verify_zip_member_hashes
 from .constants import GENERATOR_TITLE, GENERATOR_VERSION
 from .errors import PackIntegrityError, PackSafetyError, PackValidationError
-from .manifest import build_manifest, write_manifest
+from .manifest import build_manifest, validate_system_bootstrap_contract, write_manifest
 from .models import ContentMode, PackPlan, PackRequest, PackResult, ProgressEvent, TransportMode
 from .scanner import build_pack_plan
 from .settings import settings_path
@@ -96,6 +96,7 @@ def pack(
     cancel_event: Event | None = None,
 ) -> PackResult:
     plan = plan_pack(request)
+    validate_system_bootstrap_contract(plan)
     disk_preflight(plan)
     output_root = plan.request.output_root
     final_name = plan.package_basename[:-4]
@@ -307,8 +308,8 @@ def config_report() -> dict[str, Any]:
         "python": sys.version,
         "platform": sys.platform,
         "settings_path": str(settings_path()),
-        "features": {"zip": True, "zip64": True, "split_transport": True, "sha256": True, "crc": True, "safe_extract": True, "text_ui": True, "terminal_tui": True, "studio_gui": tkinter_ok},
+        "features": {"zip": True, "zip64": True, "split_transport": True, "sha256": True, "crc": True, "safe_extract": True, "host_bootstrap_contract": True, "text_ui": True, "terminal_tui": True, "studio_gui": tkinter_ok},
         "tkinter_error": tkinter_error,
-        "scope": "folder-snapshot:memory;canonical-release:system-system+memory;single-or-binary-split",
-        "not_in_scope": ["dependency-bundle", "wheelhouse", "python-runtime", "target-platform"],
+        "scope": "folder-snapshot:memory;canonical-release:system-system+memory;single-or-binary-split;host-bootstrap-contract",
+        "not_in_scope": ["dependency-bundle", "wheelhouse", "python-runtime", "target-platform", "grant-host-executor", "remote-runtime-hosting"],
     }

@@ -11,6 +11,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from latka_jazn.core.chatgpt_host_executor_contract import (
     HostCapabilitySnapshot,
     HostEnvironmentState,
+    HostExecutionRoute,
     HostExecutorObservation,
     HostFilesystemState,
     HostRecoveryAction,
@@ -43,7 +44,10 @@ class ChatGptHostPreflightDecision:
     package_state: HostPackageMaterializationState
     runtime_state: str
     bootstrap_allowed: bool
+    remote_runtime_allowed: bool
+    handoff_required: bool
     next_action: HostRecoveryAction
+    execution_route: HostExecutionRoute
     reason_code: str
     canonical_resume_entrypoint: str | None
     capability_snapshot: HostCapabilitySnapshot
@@ -57,7 +61,11 @@ class ChatGptHostPreflightDecision:
             "package_state": self.package_state.value,
             "runtime_state": self.runtime_state,
             "bootstrap_allowed": self.bootstrap_allowed,
+            "local_bootstrap_allowed": self.bootstrap_allowed,
+            "remote_runtime_allowed": self.remote_runtime_allowed,
+            "handoff_required": self.handoff_required,
             "next_action": self.next_action.value,
+            "execution_route": self.execution_route.value,
             "reason_code": self.reason_code,
             "canonical_resume_entrypoint": self.canonical_resume_entrypoint,
             "capability_snapshot": self.capability_snapshot.to_dict(),
@@ -94,13 +102,12 @@ def plan_chatgpt_host_preflight(
     attachment_reports: Iterable[AttachmentMaterializationReport] = (),
     package_required: bool = False,
 ) -> ChatGptHostPreflightDecision:
-    """Compose executor and attachment truth without crossing evidence boundaries.
+    """Compose local executor, host route, and attachment truth independently.
 
-    Host execution capability and attachment readiness are deliberately
-    independent. A broken ``python_tool`` bridge can yield a degraded but
-    usable environment when a terminal succeeds. Conversely, an observed
-    filesystem does not make a still-growing or hash-invalid package safe to
-    bootstrap.
+    A package cannot manufacture host execution privileges. When the current
+    ChatGPT surface cannot create a local process, the safe next step can still
+    be an explicitly advertised remote-runtime transport or a host handoff to
+    an execution-capable surface. Neither route proves that a runtime is active.
     """
 
     capability = aggregate_host_executor_observations(executor_observations)
@@ -119,39 +126,63 @@ def plan_chatgpt_host_preflight(
         HostPackageMaterializationState.INVALID,
     }
 
+    remote_runtime_allowed = False
+    handoff_required = False
+
     if capability.next_action is HostRecoveryAction.PROBE_ALTERNATIVE_ONCE:
         bootstrap_allowed = False
         next_action = HostRecoveryAction.PROBE_ALTERNATIVE_ONCE
+        execution_route = HostExecutionRoute.NONE
         reason_code = "executor_alternative_probe_pending"
         resume = None
     elif capability.next_action is HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND:
         bootstrap_allowed = False
         next_action = HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND
+        execution_route = HostExecutionRoute.LOCAL_EXECUTOR
         reason_code = "executor_command_requires_diagnosis"
+        resume = None
+    elif capability.execution_route is HostExecutionRoute.REMOTE_RUNTIME:
+        bootstrap_allowed = False
+        remote_runtime_allowed = True
+        next_action = HostRecoveryAction.USE_REMOTE_RUNTIME_TRANSPORT
+        execution_route = HostExecutionRoute.REMOTE_RUNTIME
+        reason_code = "local_executor_unavailable_remote_runtime_transport_available"
+        resume = None
+    elif capability.execution_route is HostExecutionRoute.HOST_HANDOFF:
+        bootstrap_allowed = False
+        handoff_required = True
+        next_action = HostRecoveryAction.REQUEST_EXECUTION_HANDOFF
+        execution_route = HostExecutionRoute.HOST_HANDOFF
+        reason_code = "local_executor_unavailable_execution_handoff_required"
         resume = None
     elif not execution_usable:
         bootstrap_allowed = False
         next_action = capability.next_action
+        execution_route = capability.execution_route
         reason_code = "no_usable_execution_surface"
         resume = None
     elif not filesystem_observed:
         bootstrap_allowed = False
         next_action = HostRecoveryAction.RESUME_CANONICAL_DISCOVERY
+        execution_route = HostExecutionRoute.LOCAL_EXECUTOR
         reason_code = "filesystem_not_observed_yet"
         resume = "run.py"
     elif package_required and package_state is HostPackageMaterializationState.UNKNOWN:
         bootstrap_allowed = False
         next_action = HostRecoveryAction.RESUME_CANONICAL_DISCOVERY
+        execution_route = HostExecutionRoute.LOCAL_EXECUTOR
         reason_code = "required_package_not_observed"
         resume = "run.py"
     elif not package_gate_ok:
         bootstrap_allowed = False
         next_action = HostRecoveryAction.RESUME_CANONICAL_DISCOVERY
+        execution_route = HostExecutionRoute.LOCAL_EXECUTOR
         reason_code = f"attachment_package_{package_state.value}"
         resume = "run.py"
     else:
         bootstrap_allowed = True
         next_action = HostRecoveryAction.RESUME_CANONICAL_DISCOVERY
+        execution_route = HostExecutionRoute.LOCAL_EXECUTOR
         reason_code = (
             "host_degraded_package_ready"
             if capability.environment_state is HostEnvironmentState.DEGRADED
@@ -166,7 +197,10 @@ def plan_chatgpt_host_preflight(
         package_state=package_state,
         runtime_state="unverified",
         bootstrap_allowed=bootstrap_allowed,
+        remote_runtime_allowed=remote_runtime_allowed,
+        handoff_required=handoff_required,
         next_action=next_action,
+        execution_route=execution_route,
         reason_code=reason_code,
         canonical_resume_entrypoint=resume,
         capability_snapshot=capability,
@@ -222,6 +256,12 @@ def _executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorO
         alternative_probe_count=int(_optional_int(item, "alternative_probe_count", 0) or 0),
         filesystem_probe_succeeded=_optional_bool(item, "filesystem_probe_succeeded", None),
         surface=str(item.get("surface") or "default"),
+        remote_runtime_transport_available=bool(
+            _optional_bool(item, "remote_runtime_transport_available", False)
+        ),
+        execution_handoff_available=bool(
+            _optional_bool(item, "execution_handoff_available", False)
+        ),
     )
 
 
@@ -269,7 +309,10 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(
         prog="run.py host-preflight",
-        description="Classify host execution surfaces and attachment materialization without fabricating runtime state.",
+        description=(
+            "Classify local host execution surfaces, explicit alternate execution routes, and attachment "
+            "materialization without fabricating runtime state."
+        ),
         allow_abbrev=False,
     )
     parser.add_argument(
@@ -287,9 +330,6 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
         if args.input:
             payload = _json_object_from_file(args.input)
         else:
-            # Reaching this code is bounded evidence that the current local
-            # Python executor created a process and can observe the project
-            # filesystem. It is not evidence of package/runtime readiness.
             payload = {
                 "package_required": False,
                 "executor_observations": [

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""Jaźń Pack Generator v10.1.86.0.114.
+r"""Jaźń Pack Generator v10.1.86.0.115.
 
 Public launcher for the Jaźń package archiver.
 
@@ -8,7 +8,8 @@ Primary contract:
 - runnable SYSTEM bytes come from canonical release staging, never mutable checkout EOL bytes,
 - MEMORY remains a byte-exact selected-folder snapshot,
 - one ordinary logical ZIP is created and verified before optional binary split transport,
-- SYSTEM is safely extracted and its embedded integrity/provenance contracts are reverified before publication.
+- SYSTEM is safely extracted and its embedded integrity/provenance contracts are reverified before publication,
+- SYSTEM publishes an explicit host-bootstrap contract and never claims that package bytes grant host execution privileges.
 
 The generator has one core and three interfaces: text, terminal TUI and Studio GUI.
 It does not build wheelhouses, dependency bundles or Python runtimes; those belong to Dependency Studio.

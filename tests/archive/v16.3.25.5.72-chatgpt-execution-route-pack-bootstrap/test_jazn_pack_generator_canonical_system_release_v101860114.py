@@ -105,15 +105,9 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
     )
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
     verification = manifest["verification"]
-    bootstrap = manifest["host_bootstrap"]
-    assert manifest["generator_version"] == "10.1.86.0.115"
+    assert manifest["generator_version"] == "10.1.86.0.114"
     assert manifest["source"]["source_basis"] == "canonical_release"
     assert manifest["source"]["staging_mode"] == "canonical-release-staging"
-    assert bootstrap["schema_version"] == "jazn_host_bootstrap_contract/v1"
-    assert bootstrap["active_system_root_eligible"] is True
-    assert bootstrap["missing_required_members"] == []
-    assert bootstrap["package_can_create_host_executor"] is False
-    assert bootstrap["host_capability_negotiation_required"] is True
     assert verification["eol_policy"] == "canonical_git_blobs_fail_closed"
     assert verification["system_extract_reverify"]["ok"] is True
     assert verification["system_extract_reverify"]["package_integrity"]["ok"] is True
@@ -127,6 +121,5 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
     ).stdout
     with zipfile.ZipFile(archive_path, "r") as archive:
         assert archive.read("run.py") == committed_run
-        assert "CHATGPT_BOOTSTRAP.py" in archive.namelist()
         assert "PACKAGE_INTEGRITY_MANIFEST.json" in archive.namelist()
         assert archive.testzip() is None
