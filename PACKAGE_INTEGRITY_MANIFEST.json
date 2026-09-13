@@ -3,8 +3,8 @@
   "version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "runtime_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "package_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
-  "generated_at_utc": "2026-09-13T14:33:17+00:00",
-  "updated_at_utc": "2026-09-13T14:33:17+00:00",
+  "generated_at_utc": "2026-09-13T14:33:40+00:00",
+  "updated_at_utc": "2026-09-13T14:33:40+00:00",
   "start_file": "run.py",
   "file_count": 1660,
   "static_file_count": 1660,
@@ -264,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3001,
-      "sha256": "840f58cd0b343e7085984bfb8316d1ee9728e7349b60edac566a017ed66308d2",
+      "sha256": "4a45b313905ed720728c51c3d41d8ca13c2f64b51cf76151d48368b0a7afb97d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13728,7 +13728,7 @@
     {
       "path": "tests/test_python_runtime_bundle.py",
       "size_bytes": 9664,
-      "sha256": "83d9e371a560756c2d5a796e7409bfd3b24284111409d1cf18d4ee8ddd219bc9",
+      "sha256": "0c8a1ec17659be9a3daaf29ffcb53dee5c7d3e3e57b6b7e9a815afe83b49a177",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
