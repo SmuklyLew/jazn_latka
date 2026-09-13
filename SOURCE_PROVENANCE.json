@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "feaf2a633c690656d30ccda4d53b4ea860a54f63",
+  "base_merge_commit": "87f7e67628f1cf9ad7ff2038219b7b4ed3789800",
   "base_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
-  "commit_date": "2026-09-13T15:53:44+02:00",
+  "commit_date": "2026-09-13T15:55:13+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-13T13:53:44+00:00",
+  "generated_at_utc": "2026-09-13T13:55:13+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8791900b8c5d686ebd6e23c999accbfcaad8a8b1",
+  "git_tree_sha": "5321f3085d3d8ab867c65c5ddb09f2243dda96f2",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "feaf2a633c690656d30ccda4d53b4ea860a54f63",
+    "source_commit": "87f7e67628f1cf9ad7ff2038219b7b4ed3789800",
     "source_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "feaf2a633c690656d30ccda4d53b4ea860a54f63",
+  "source_commit": "87f7e67628f1cf9ad7ff2038219b7b4ed3789800",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "tag": null,
