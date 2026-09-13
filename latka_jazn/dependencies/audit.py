@@ -50,11 +50,35 @@ def _tool_local_import_names(root: Path) -> set[str]:
     return names
 
 
+def _project_local_import_names(root: Path) -> set[str]:
+    """Return import roots provided by this checkout, including namespace packages.
+
+    A top-level directory does not need ``__init__.py`` to be importable: Python
+    supports implicit namespace packages (PEP 420).  The dependency audit must
+    therefore classify a repository directory containing Python modules as a
+    local import root instead of inventing an external distribution for it.
+    """
+
+    names: set[str] = set()
+    for child in root.iterdir():
+        if child.name.startswith("."):
+            continue
+        if child.is_file() and child.suffix == ".py":
+            names.add(child.stem)
+            continue
+        if not child.is_dir():
+            continue
+        if (child / "__init__.py").is_file() or any(path.is_file() for path in child.rglob("*.py")):
+            names.add(child.name)
+    return names
+
+
 def scan_external_imports(root: Path | str) -> dict[str, Any]:
     project_root = Path(root).resolve()
     imports: dict[str, list[str]] = {}
     parse_errors: list[dict[str, str]] = []
     stdlib = set(getattr(sys, "stdlib_module_names", set()))
+    project_local_imports = _project_local_import_names(project_root)
     tool_local_imports = _tool_local_import_names(project_root)
     tools_root = project_root / "tools"
     for path in _iter_python_files(project_root):
@@ -70,7 +94,7 @@ def scan_external_imports(root: Path | str) -> dict[str, Any]:
             elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
                 names = [node.module.split(".", 1)[0]]
             for name in names:
-                if not name or name in stdlib or name in {"latka_jazn", "main", "run", "__future__"}:
+                if not name or name in stdlib or name in project_local_imports or name == "__future__":
                     continue
                 if tools_root in path.parents and name in tool_local_imports:
                     continue
@@ -116,7 +140,7 @@ def audit_project_dependencies(root: Path | str) -> dict[str, Any]:
         "mapped_external_imports": mapped, "undeclared_or_unmapped_external_imports": unresolved,
         "source_parse_errors": report["parse_errors"], "activation": dependency_activation_status(project_root),
         "wheelhouse_root": str(default_wheelhouse_root(project_root)), "environment_marker": str(environment_marker_path(project_root)),
-        "truth_boundary": "AST audit compares candidate external imports with declarations. Dynamic imports/plugins may need explicit mappings and are not guessed.",
+        "truth_boundary": "AST audit compares candidate external imports with declarations. Local modules and namespace packages are excluded; dynamic imports/plugins may need explicit mappings and are not guessed.",
     }
 
 
