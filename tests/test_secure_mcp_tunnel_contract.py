@@ -27,7 +27,7 @@ def test_secure_tunnel_plan_targets_verified_stdio_bootstrap_without_public_list
     assert plan["inbound_public_port_required"] is False
     assert plan["remote_runtime_transport_bundled"] is False
     assert plan["package_contains_tunnel_target"] is True
-    assert plan["stdio_mcp_argv"][-3:] == ["--root", str(tmp_path.resolve())][-3:]
+    assert plan["stdio_mcp_argv"][-2:] == ["--root", str(tmp_path.resolve())]
     assert "latka_jazn/mcp/tunnel_bootstrap.py" in plan["stdio_mcp_command"].replace("\\", "/")
     assert plan["init_argv"][:4] == ["tunnel-client", "init", "--sample", "sample_mcp_stdio_local"]
     assert "tun_test" in plan["init_argv"]
