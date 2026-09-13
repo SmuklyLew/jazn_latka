@@ -12,7 +12,7 @@ from latka_jazn.core.chatgpt_host_executor_contract import (
 
 def _failed(
     *,
-    state: HostHandoffState | str = HostHandoffState.UNKNOWN,
+    state: HostHandoffState = HostHandoffState.UNKNOWN,
     handoff_available: bool = False,
     alternative_available: bool = False,
     alternative_probe_count: int = 0,
@@ -50,7 +50,7 @@ def test_declined_handoff_is_not_requested_again() -> None:
 
 def test_declined_handoff_can_probe_one_distinct_local_alternative() -> None:
     decision = classify_host_executor_observation(
-        _failed(state="declined", alternative_available=True)
+        _failed(state=HostHandoffState.DECLINED, alternative_available=True)
     )
     assert decision.next_action is HostRecoveryAction.PROBE_ALTERNATIVE_ONCE
     assert decision.execution_route is HostExecutionRoute.NONE
@@ -61,7 +61,7 @@ def test_declined_handoff_can_probe_one_distinct_local_alternative() -> None:
 
 def test_remote_runtime_wins_after_handoff_decline() -> None:
     decision = classify_host_executor_observation(
-        _failed(state="declined", remote_available=True)
+        _failed(state=HostHandoffState.DECLINED, remote_available=True)
     )
     assert decision.next_action is HostRecoveryAction.USE_REMOTE_RUNTIME_TRANSPORT
     assert decision.execution_route is HostExecutionRoute.REMOTE_RUNTIME
