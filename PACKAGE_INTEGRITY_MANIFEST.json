@@ -3,11 +3,11 @@
   "version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
   "runtime_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
   "package_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
-  "generated_at_utc": "2026-09-13T20:33:26+00:00",
-  "updated_at_utc": "2026-09-13T20:33:26+00:00",
+  "generated_at_utc": "2026-09-13T20:35:29+00:00",
+  "updated_at_utc": "2026-09-13T20:35:29+00:00",
   "start_file": "run.py",
-  "file_count": 1684,
-  "static_file_count": 1684,
+  "file_count": 1687,
+  "static_file_count": 1687,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2947,
-      "sha256": "8e7270209e7d0453fd2075b2e1fd72b9a2457a90b41983296840f5d756d34152",
+      "size_bytes": 2952,
+      "sha256": "a606a89d4e22c62a4b41f404410bdf30d25aba1aec71cea132c5519828fcb545",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1990,6 +1990,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_74_1_001_HOST_HANDOFF_OUTCOME_CONVERGENCE.md",
+      "size_bytes": 3218,
+      "sha256": "6c69922eca72de95f59c487699d57e255e172ed497555076b25f2077a1cfc01b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
@@ -2369,8 +2378,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_host_preflight_cli.py",
-      "size_bytes": 2393,
-      "sha256": "821147cf239d8d0b3af1ad46382044ff102d51acc921f25d96ff47772f52ce94",
+      "size_bytes": 2421,
+      "sha256": "9b10fd36e749e8bfaf1da7aa61ffc6d04d3f9af20085d2e490482d061439b2e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2378,8 +2387,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py",
-      "size_bytes": 2992,
-      "sha256": "f6245f7a665f46728001d06ed30672d34a9c3a1e8290960d6fd0bc849ae72ac0",
+      "size_bytes": 3130,
+      "sha256": "571f4f43b10c0a58d2900dd2edb23b44417184160713fae5b851ec3c55ca0905",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2811,7 +2820,7 @@
     {
       "path": "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py",
       "size_bytes": 2784,
-      "sha256": "ee0719778bd52db73fc348c4baca34fd69b5e66fa6c449a712d6fd8f0c02b504",
+      "sha256": "53b1692d3bb79501523ff58c05860d41278fdabc68c06b20f12a9e6711490d33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2864,8 +2873,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_executor_observation.py",
-      "size_bytes": 2610,
-      "sha256": "59faee11e4dd94649ed3d866e9726c8939d15e82c71f9e56a7d3c42ca0e03ebd",
+      "size_bytes": 2604,
+      "sha256": "80b4aac05ce8eb05eb7a9b4650c0d10d7dbb478220ef578fd66e842c67e82abe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12277,9 +12286,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_handoff_cross_surface.py",
+      "size_bytes": 1153,
+      "sha256": "7e3a8f896d7ffbe3b77a85c2578bf42a8328c5c7e970937c202fbe5c105a3ce1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_handoff_outcome_contract.py",
-      "size_bytes": 2739,
-      "sha256": "a1e09db81139d837cdfb569d0e49c9ed6559e7f424faa1a9945ed5893a1edd0d",
+      "size_bytes": 2763,
+      "sha256": "bd9e635b445348c0e3cfb5537d4eb4efa0cc22470d6f04c7fd44a174929b1288",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12298,6 +12316,15 @@
       "path": "tests/test_chatgpt_handoff_preflight.py",
       "size_bytes": 2437,
       "sha256": "89c972a6d2ed79af28a986cd77140334704993425b5f9900ef2a0399062674fd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_handoff_preflight_parse.py",
+      "size_bytes": 1029,
+      "sha256": "1999b9584232f1e334f33df0d05195861c10369787cb265f21b0fab4284d290c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15023,8 +15050,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1446274,
-      "sha256": "91ae701cf02d844b43fd9f3de29e3941cf0a29cd00512ca9be905b1f5be653bc",
+      "size_bytes": 1448663,
+      "sha256": "1e67983a065eaa2edf1122c1a8ac7e03bdaeb2a4cdd9f959d9db32d99d7ccb86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
