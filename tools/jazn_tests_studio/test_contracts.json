@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.67",
-  "active_definition_count": 1522,
+  "active_definition_count": 1534,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33729,6 +33729,282 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jazn_memory_studio.py::test_inventory_duplicates_titles_and_cache": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_inventory_duplicates_titles_and_cache",
+      "purpose": "Inventory duplicates titles and cache",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_jazn_memory_studio.py::test_conflicts_preserved_and_missing_sources_removed": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_conflicts_preserved_and_missing_sources_removed",
+      "purpose": "Conflicts preserved and missing sources removed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_jazn_memory_studio.py::test_time_links_require_unambiguous_time_and_identity": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_time_links_require_unambiguous_time_and_identity",
+      "purpose": "Time links require unambiguous time and identity",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_jazn_memory_studio.py::test_create_update_backup_and_failed_source_preserves_target": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_create_update_backup_and_failed_source_preserves_target",
+      "purpose": "Create update backup and failed source preserves target",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_jazn_memory_studio.py::test_stage_resume_does_not_repeat_previous_test": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_stage_resume_does_not_repeat_previous_test",
+      "purpose": "Stage resume does not repeat previous test",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_jazn_memory_studio.py::test_paths_and_lossy_html_fail_closed": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_paths_and_lossy_html_fail_closed",
+      "purpose": "Paths and lossy html fail closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_jazn_memory_studio.py::test_embedded_json_repair_preserves_original_and_music_entries": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_embedded_json_repair_preserves_original_and_music_entries",
+      "purpose": "Embedded json repair preserves original and music entries",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_jazn_memory_studio.py::test_repair_does_not_change_strings_or_guess_other_syntax": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_repair_does_not_change_strings_or_guess_other_syntax",
+      "purpose": "Repair does not change strings or guess other syntax",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
+    },
+    "tests/test_jazn_memory_studio.py::test_complete_studio_pipeline_exports_verified_database": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_complete_studio_pipeline_exports_verified_database",
+      "purpose": "Complete studio pipeline exports verified database",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
+    },
+    "tests/test_jazn_memory_studio.py::test_raw_html_matching_json_does_not_decode_author_entities_twice": {
+      "path": "tests/test_jazn_memory_studio.py",
+      "name": "test_raw_html_matching_json_does_not_decode_author_entities_twice",
+      "purpose": "Raw html matching json does not decode author entities twice",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.memory_studio",
+        "latka_jazn.tools.memory_rebuild_app.studio_audit",
+        "latka_jazn.tools.memory_rebuild_app.studio_links",
+        "latka_jazn.tools.memory_rebuild_app.studio_repair"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 201
+    },
+    "tests/test_memory_manifest_inventory_order.py::test_checkpoint_preserves_non_alphabetical_inventory_order": {
+      "path": "tests/test_memory_manifest_inventory_order.py",
+      "name": "test_checkpoint_preserves_non_alphabetical_inventory_order",
+      "purpose": "Checkpoint preserves non alphabetical inventory order",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.run_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 4
+    },
+    "tests/test_memory_studio_correlation_fields.py::test_ascii_journal_content_and_source_bytes_are_traceable": {
+      "path": "tests/test_memory_studio_correlation_fields.py",
+      "name": "test_ascii_journal_content_and_source_bytes_are_traceable",
+      "purpose": "Ascii journal content and source bytes are traceable",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.studio_links"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
     }
   }
 }
