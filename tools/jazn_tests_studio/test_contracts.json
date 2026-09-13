@@ -13241,7 +13241,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 29
     },
     "tests/test_jazn_pack_generator_studio_portability.py::test_exposes_three_real_ui_modes": {
       "path": "tests/test_jazn_pack_generator_studio_portability.py",
