@@ -3,11 +3,11 @@
   "version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
   "runtime_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
   "package_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-  "generated_at_utc": "2026-09-12T22:08:09+00:00",
-  "updated_at_utc": "2026-09-12T22:08:09+00:00",
+  "generated_at_utc": "2026-09-13T11:48:57+00:00",
+  "updated_at_utc": "2026-09-13T11:48:57+00:00",
   "start_file": "run.py",
-  "file_count": 1655,
-  "static_file_count": 1655,
+  "file_count": 1658,
+  "static_file_count": 1658,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -264,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2962,
-      "sha256": "978187a1dbccaf682a8d5707fe528aa92b3bf9575c0151254ef16c6dfdeb2685",
+      "sha256": "65c97834599ff44cf96a817c222ecafeb320236f324d9484c75e6bd179175952",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12808,6 +12808,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_memory_studio.py",
+      "size_bytes": 9510,
+      "sha256": "62cc011e6d34dbe2f6352eba2d1e1e5b791927845325e89dcfa3ee6599aff2f8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_pack_generator_canonical_system_release.py",
       "size_bytes": 5458,
       "sha256": "9e0a57cc9947271fd27083c452988a68468b16181ced4b9d63a0d80138a64390",
@@ -13063,6 +13072,15 @@
       "path": "tests/test_memory_large_validation.py",
       "size_bytes": 9534,
       "sha256": "ce505af3f40d988d34ab3a671cb8ab50c33a7cf5aac71ed1503ce5d3660d1715",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_manifest_inventory_order.py",
+      "size_bytes": 839,
+      "sha256": "1c91abbbc20ca911d18b49da47b12bf400643e286fe7f753a4b36a77e1d440f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13342,6 +13360,15 @@
       "path": "tests/test_memory_sqlite_test04.py",
       "size_bytes": 31371,
       "sha256": "c035764848031e03f75266c2d663fc8ac45ac50e8f53509c2db6dd250e209b90",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_studio_correlation_fields.py",
+      "size_bytes": 1265,
+      "sha256": "6b7ac897b7c8a75b103f7370852942f5586672e07423e04167a943123e57dc8f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14762,8 +14789,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1418975,
-      "sha256": "5131af51788fa37669ae87e1c5e9952b46f0872078556a9e046ec8d38b7a8bdf",
+      "size_bytes": 1430754,
+      "sha256": "dd8a6bb0f215d70636c32f0662e915f5eb728ba2d24e7c55f739cd459b2dd688",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
