@@ -6,6 +6,7 @@ import sys
 from typing import Any, Mapping
 
 from latka_jazn.core.chatgpt_host_executor_contract import HostExecutorObservation
+from latka_jazn.core.chatgpt_host_handoff_state import normalize_handoff_state
 
 
 def json_object_from_file(path_value: str) -> dict[str, Any]:
@@ -42,6 +43,7 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
     process_created = optional_bool(item, "process_created", None)
     if process_created is None:
         raise ValueError("process_created_is_required")
+    handoff_state = normalize_handoff_state(str(item.get("execution_handoff_state") or "unknown"))
     return HostExecutorObservation(
         process_created=process_created,
         command_completed=bool(optional_bool(item, "command_completed", False)),
@@ -53,7 +55,7 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
         surface=str(item.get("surface") or "default"),
         remote_runtime_transport_available=bool(optional_bool(item, "remote_runtime_transport_available", False)),
         execution_handoff_available=bool(optional_bool(item, "execution_handoff_available", False)),
-        execution_handoff_state=str(item.get("execution_handoff_state") or "unknown"),
+        execution_handoff_state=handoff_state,
     )
 
 
