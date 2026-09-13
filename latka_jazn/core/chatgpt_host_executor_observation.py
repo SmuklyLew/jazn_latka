@@ -33,7 +33,7 @@ class HostExecutorObservation:
     surface: str = "default"
     remote_runtime_transport_available: bool = False
     execution_handoff_available: bool = False
-    execution_handoff_state: HostHandoffState | str = HostHandoffState.UNKNOWN
+    execution_handoff_state: HostHandoffState = HostHandoffState.UNKNOWN
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "surface", _normalized_surface(self.surface))
