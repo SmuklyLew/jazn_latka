@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from typing import Sequence
 
 from latka_jazn.bootstrap.chatgpt_host_preflight_attachments_parse import attachment_reports_from_payload
@@ -47,7 +48,7 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
             "error_code": "invalid_host_preflight_input",
             "error_type": type(exc).__name__,
             "error": str(exc),
-        }, ensure_ascii=False, indent=2 if args.json else None, sort_keys=True))
+        }, ensure_ascii=False, indent=2 if args.json else None, sort_keys=True), file=sys.stderr)
         return 2
 
     result = decision.to_dict()
