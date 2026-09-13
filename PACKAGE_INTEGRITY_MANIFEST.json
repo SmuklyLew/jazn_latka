@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-  "runtime_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-  "package_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-  "generated_at_utc": "2026-09-13T11:48:57+00:00",
-  "updated_at_utc": "2026-09-13T11:48:57+00:00",
+  "version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
+  "runtime_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
+  "package_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
+  "generated_at_utc": "2026-09-13T17:10:08+00:00",
+  "updated_at_utc": "2026-09-13T17:10:08+00:00",
   "start_file": "run.py",
-  "file_count": 1658,
-  "static_file_count": 1658,
+  "file_count": 1659,
+  "static_file_count": 1659,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "65c97834599ff44cf96a817c222ecafeb320236f324d9484c75e6bd179175952",
+      "size_bytes": 2932,
+      "sha256": "42e6950b3f9e5feed39ef2d81b8b86b70e47101cfa8c5d2d978df4aeb2696d58",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1190,8 +1190,8 @@
     },
     {
       "path": "docs/plans/JAZN_STUDIO_PAMIECI_MASTER_CONTINUATION.md",
-      "size_bytes": 4605,
-      "sha256": "92a5b01b51a9c72d18b3bbb58fa3ec9d7996dcf60a0d902915a29940a61c9b86",
+      "size_bytes": 6238,
+      "sha256": "aad8cee0aeea087f8d193158d3f299a4d65ca730b919d76b03a2bae5dba85c59",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7364,8 +7364,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/read_only_validation.py",
-      "size_bytes": 19576,
-      "sha256": "b35bacdb78ba8924dc78c62c064405b826507dd6129aaf5e910a54646e2a1a34",
+      "size_bytes": 20196,
+      "sha256": "6c2a535c56fe5fbc8b3af719a5de166b8eaee9d5067a48e68aa19a8af96faac1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8030,8 +8030,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "917f7c75f0542227fdd151cb75ac208dcb6e0bf920c9b8cb2a0eaebda66c0139",
+      "size_bytes": 6491,
+      "sha256": "fa262d45adb5abd06d26609f5f103c6703887cda55d6544c10a19457dd90f997",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13060,6 +13060,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_fts_source_tokenization.py",
+      "size_bytes": 1761,
+      "sha256": "c3c807c50c0d5fb2d082581d6314425a072bba4ef35e11a4acad2b61b6bf35f2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_intent_temporal_planner.py",
       "size_bytes": 11660,
       "sha256": "280cce0bdcce89cd6013616cfb2b0c65006b70abf437d22c6cb42a9bd6f16b2b",
@@ -14789,8 +14798,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1430754,
-      "sha256": "dd8a6bb0f215d70636c32f0662e915f5eb728ba2d24e7c55f739cd459b2dd688",
+      "size_bytes": 1432406,
+      "sha256": "9b502a2a2792c647fd7126a952b7fe909d42e97030d2163fccff26ffdec657a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15374,11 +15383,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
+  "release_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-    "package_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence",
-    "release_version": "16.3.25.5.71-jazn-studio-pamieci-master-convergence"
+    "runtime_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
+    "package_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix",
+    "release_version": "16.3.25.5.74-jazn-studio-pamieci-fts-probe-fix"
   },
   "legacy_aliases": {
     "version": "release_version"
