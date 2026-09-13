@@ -1,4 +1,4 @@
-# Jaźń Pack Generator 10.1.86.0.114
+# Jaźń Pack Generator 10.1.86.0.115
 
 Active implementation of `tools/jazn_pack_generator.py`.
 
@@ -18,6 +18,22 @@ Content modes remain `system`, `memory` and `system+memory`.
 
 It intentionally does **not** build dependency wheelhouses, Python runtimes or
 platform-specific distributions.
+
+## Host bootstrap contract
+
+SYSTEM and SYSTEM+MEMORY packages now publish `host_bootstrap` using
+`jazn_host_bootstrap_contract/v1`. Before publication the generator requires the
+canonical bootstrap members (`CHATGPT_BOOTSTRAP.py`, `run.py`, `main.py`, host
+runbooks, version and integrity/provenance files).
+
+This contract is deliberately fail-closed about execution capability:
+
+- package completeness does not prove that ChatGPT can create a local process;
+- a ZIP cannot grant a host executor or filesystem permission;
+- local bootstrap requires a host-supplied process execution capability;
+- an external remote-runtime transport and a host execution handoff are separate
+  host capabilities and must be advertised/verified independently;
+- MEMORY is data only and never becomes the active SYSTEM root.
 
 ## Interfaces
 
@@ -53,16 +69,16 @@ SYSTEM packages.
 - SYSTEM ZIPs are safely extracted into a fresh clean-room and their embedded package-integrity/provenance contracts are reverified before publication.
 - Duplicate members, path traversal, symlinks and case-fold collisions fail closed.
 - Manifest schema `jazn_pack_generator_package/v2` records SHA-256 for every
-  packaged file.
+  packaged file and includes the additive host bootstrap contract.
 - The verifier reads members back from ZIP and requires their SHA-256 to match
   the actual source/staging bytes.
 - Split packages have logical and per-part SHA-256 sidecars.
 - Extraction is staged and committed only after preflight.
 
-## EOL policy in 10.1.86.0.114
+## EOL policy in 10.1.86.0.115
 
 For SYSTEM, `.gitattributes` defines checkout behavior but the working tree is not the release byte source. Git text can be LF in the index and CRLF in the working directory; `create_release_staging()` reads canonical Git blobs, so any working-tree EOL drift is bypassed rather than accepted into a runnable release.
 
 For MEMORY, `.gitattributes` remains diagnostic only and snapshot bytes are preserved exactly.
 
-See `docs/runtime/JAZN_PACK_GENERATOR_V101860114_CANONICAL_SYSTEM_RELEASE.md`.
+See `docs/runtime/JAZN_PACK_GENERATOR_V101860114_CANONICAL_SYSTEM_RELEASE.md` for the canonical-release foundation and the v16.3.25.5.72 report for the host bootstrap extension.
