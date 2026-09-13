@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.67",
-  "active_definition_count": 1534,
+  "system_version": "16.3.25.5.74",
+  "active_definition_count": 1536,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -34005,6 +34005,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_memory_fts_source_tokenization.py::test_source_punctuation_uses_real_fts_tokens": {
+      "path": "tests/test_memory_fts_source_tokenization.py",
+      "name": "test_source_punctuation_uses_real_fts_tokens",
+      "purpose": "A healthy source index must match tokens without concatenating punctuation boundaries.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.read_only_validation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 28
+    },
+    "tests/test_memory_fts_source_tokenization.py::test_source_probe_detects_index_without_source_terms": {
+      "path": "tests/test_memory_fts_source_tokenization.py",
+      "name": "test_source_probe_detects_index_without_source_terms",
+      "purpose": "A populated index missing the source evidence must still fail the source probe.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.read_only_validation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 41
     }
   }
 }

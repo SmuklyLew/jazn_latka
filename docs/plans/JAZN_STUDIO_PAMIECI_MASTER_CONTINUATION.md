@@ -79,3 +79,28 @@ Nie commitować prywatnych eksportów, baz SQLite/WAL/SHM, konfiguracji operator
 ## Granica deklaracji
 
 Ten branch jest bazą kontynuacyjną po konwergencji ze współczesnym master. Samo przeniesienie kodu nie jest jeszcze deklaracją pełnego release candidate ani ukończenia prywatnej rekonstrukcji pamięci.
+
+
+## Checkpoint po Test03 i poprawce FTS — 2026-09-13
+
+Nowszy stan zastępuje historyczną listę niezakończonych etapów powyżej.
+Test00, Test01 i Test02 zostały zaliczone; zachować ich oryginalne dowody i nie
+powtarzać tych etapów. Test03 na linii .71 zakończył się FAIL: kolejność importu
+zmienia wybór bieżącej rewizji i liczbę powtórzeń historycznych wariantów.
+Obie bazy i autentyczny raport FAIL pozostają prywatnymi dowodami diagnostycznymi.
+Benchmark 13 przypadków jest zamrożony i niewykonany; Test04 i Final czekają.
+
+Wersja .74 naprawia osobny fałszywy błąd próby FTS: próbka JSON nie może sklejać
+klucza i wartości w jeden token. Walidator korzysta z tokenizera SQLite w osobnej
+bazie w pamięci, a badana baza pozostaje tylko do odczytu. Test indeksu bez
+wymaganych treści nadal zawodzi. Podstawa kontraktu: [SQLite FTS5](https://www.sqlite.org/fts5.html).
+Nowe testy odtworzyły trzy porażki przed poprawką; po poprawce zestaw ukierunkowany
+(testy tokenizacji, protokołu i katalogu kontraktów) zaliczył 29 testów.
+Pełny zestaw, Pyright i package-smoke dla .74 pozostają NOT RUN na żądaną pauzę.
+
+To checkpoint, nie gotowe wydanie. Problem zależności rewizji od kolejności
+importu nie został jeszcze naprawiony. Nie osłabiać Test03 ani nie zmieniać
+benchmarku, aby uzyskać PASS. Prywatny operator kontynuacji ma ochronę wersji
+oraz commita; zmiany silnika wymagają jawnej nowej proweniencji kontynuacji,
+a nie podmiany starych dowodów PASS. Szczegóły wykonania i lokalizacje prywatnych
+artefaktów znajdują się w najnowszej sekcji prywatnego RESUME_STATE.md.

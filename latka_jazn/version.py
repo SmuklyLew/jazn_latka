@@ -3,11 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.71 rebases the source-aware Jaźń Memory Studio onto the current
-# v16.3.25.5.70 runtime line while preserving the newer host/finalization code.
-DISTRIBUTION_VERSION = "16.3.25.5.71"
-PACKAGE_VERSION = "16.3.25.5.71"
-PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-master-convergence"
+# v16.3.25.5.74 fixes source-derived FTS probe tokenization in Memory Studio.
+DISTRIBUTION_VERSION = "16.3.25.5.74"
+PACKAGE_VERSION = "16.3.25.5.74"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-fts-probe-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
