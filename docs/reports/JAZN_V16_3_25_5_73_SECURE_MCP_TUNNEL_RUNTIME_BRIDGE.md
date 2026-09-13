@@ -101,6 +101,16 @@ Dodano nowe, aktywne testy bez modyfikowania historycznych snapshotów:
 
 Pełny wynik testów i CI jest evidence GitHub Actions dla PR; nie jest deklarowany przed faktycznym zakończeniem workflow.
 
+### Test Studio governance
+
+Pierwszy CI wykazał, że nowe aktywne testy nie miały jeszcze rekordów `purpose`/`expected` w `tools/jazn_tests_studio/test_contracts.json`. Gate nie został osłabiony. Dodano `tools/jazn_tests_studio/sync_contract_catalog.py`, który korzysta z istniejącego deterministycznego AST buildera `build_contract_catalog()` i stempluje bieżący `PACKAGE_VERSION`.
+
+Workflow `stable-test-contracts.yml`:
+
+- na branchach aktualizacyjnych synchronizuje wyłącznie `test_contracts.json` i odmawia auto-commitu przy jakimkolwiek innym dirty path;
+- na walidacji wykonuje `sync_contract_catalog.py --check` przed właściwym governance testem;
+- utrzymuje zasadę, że każdy aktywny test ma jawny, niepusty kontrakt celu i oczekiwania.
+
 ## Model bezpieczeństwa
 
 - port daemonu 8787 pozostaje loopback-only;
