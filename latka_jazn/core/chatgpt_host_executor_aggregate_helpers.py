@@ -18,8 +18,8 @@ def aggregate_handoff(items: tuple[HostExecutorObservation, ...]) -> HostHandoff
     for state in (
         HostHandoffState.ACCEPTED,
         HostHandoffState.REQUESTED,
-        HostHandoffState.AVAILABLE,
         HostHandoffState.DECLINED,
+        HostHandoffState.AVAILABLE,
         HostHandoffState.UNAVAILABLE,
     ):
         if state in states:
