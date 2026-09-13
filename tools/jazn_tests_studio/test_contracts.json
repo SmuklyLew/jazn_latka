@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.67",
-  "active_definition_count": 1522,
+  "system_version": "16.3.25.5.73",
+  "active_definition_count": 1540,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2658,6 +2658,100 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 66
+    },
+    "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
+      "path": "tests/test_chatgpt_execution_route_contract.py",
+      "name": "test_local_executor_failure_can_select_explicit_remote_runtime_route",
+      "purpose": "Local executor failure can select explicit remote runtime route",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_request_execution_handoff_without_claiming_recovery": {
+      "path": "tests/test_chatgpt_execution_route_contract.py",
+      "name": "test_local_executor_failure_can_request_execution_handoff_without_claiming_recovery",
+      "purpose": "Local executor failure can request execution handoff without claiming recovery",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_chatgpt_execution_route_contract.py::test_aggregate_prefers_verified_local_executor_over_external_routes": {
+      "path": "tests/test_chatgpt_execution_route_contract.py",
+      "name": "test_aggregate_prefers_verified_local_executor_over_external_routes",
+      "purpose": "Aggregate prefers verified local executor over external routes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_chatgpt_execution_route_contract.py::test_remote_runtime_preflight_does_not_require_or_invent_local_filesystem": {
+      "path": "tests/test_chatgpt_execution_route_contract.py",
+      "name": "test_remote_runtime_preflight_does_not_require_or_invent_local_filesystem",
+      "purpose": "Remote runtime preflight does not require or invent local filesystem",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_chatgpt_execution_route_contract.py::test_handoff_preflight_is_explicit_and_fail_closed": {
+      "path": "tests/test_chatgpt_execution_route_contract.py",
+      "name": "test_handoff_preflight_is_explicit_and_fail_closed",
+      "purpose": "Handoff preflight is explicit and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
     },
     "tests/test_chatgpt_host_bridge_helper_boundaries.py::test_loader_uses_the_top_level_packet_when_nested_bridge_is_not_an_object": {
       "path": "tests/test_chatgpt_host_bridge_helper_boundaries.py",
@@ -12724,7 +12818,7 @@
       "path": "tests/test_jazn_pack_generator_canonical_system_release.py",
       "name": "test_system_package_uses_canonical_release_and_extract_reverify",
       "purpose": "System package uses canonical release and extract reverify",
-      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "package",
@@ -12733,7 +12827,7 @@
       "markers": [
         "integration"
       ],
-      "assertion_count": 11,
+      "assertion_count": 17,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -12825,13 +12919,13 @@
       "path": "tests/test_jazn_pack_generator_contract.py",
       "name": "test_configuration_reports_only_archiver_scope",
       "purpose": "Configuration reports only archiver scope",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -12851,7 +12945,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 119
     },
     "tests/test_jazn_pack_generator_dashboard.py::test_prompt_toolkit_dashboard_is_retired_in_clean_rewrite": {
       "path": "tests/test_jazn_pack_generator_dashboard.py",
@@ -13147,7 +13241,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 29
     },
     "tests/test_jazn_pack_generator_studio_portability.py::test_exposes_three_real_ui_modes": {
       "path": "tests/test_jazn_pack_generator_studio_portability.py",
@@ -21535,6 +21629,97 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 75
+    },
+    "tests/test_pack_generator_host_bootstrap_contract.py::test_system_manifest_declares_host_bootstrap_truth_boundary": {
+      "path": "tests/test_pack_generator_host_bootstrap_contract.py",
+      "name": "test_system_manifest_declares_host_bootstrap_truth_boundary",
+      "purpose": "System manifest declares host bootstrap truth boundary",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_pack_generator_host_bootstrap_contract.py::test_incomplete_system_package_fails_before_publication": {
+      "path": "tests/test_pack_generator_host_bootstrap_contract.py",
+      "name": "test_incomplete_system_package_fails_before_publication",
+      "purpose": "Incomplete system package fails before publication",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "PackValidationError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_pack_generator_host_bootstrap_contract.py::test_memory_package_is_data_only_and_never_execution_capability": {
+      "path": "tests/test_pack_generator_host_bootstrap_contract.py",
+      "name": "test_memory_package_is_data_only_and_never_execution_capability",
+      "purpose": "Memory package is data only and never execution capability",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host",
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_pack_generator_secure_mcp_bridge_contract.py::test_system_package_can_bundle_local_secure_mcp_target_without_claiming_remote_control_plane": {
+      "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
+      "name": "test_system_package_can_bundle_local_secure_mcp_target_without_claiming_remote_control_plane",
+      "purpose": "System package can bundle local secure mcp target without claiming remote control plane",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_pack_generator_secure_mcp_bridge_contract.py::test_incomplete_secure_mcp_target_is_not_advertised_as_bundled": {
+      "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
+      "name": "test_incomplete_secure_mcp_target_is_not_advertised_as_bundled",
+      "purpose": "Incomplete secure mcp target is not advertised as bundled",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_pack_generator_v2_runtime_loader.py::test_generator_v2_direct_zip_adapts_to_verified_single_transport_volume": {
       "path": "tests/test_pack_generator_v2_runtime_loader.py",
@@ -30594,6 +30779,173 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 137
+    },
+    "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_reuses_verified_active_subject_root": {
+      "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
+      "name": "test_ensure_tunnel_runtime_reuses_verified_active_subject_root",
+      "purpose": "Ensure tunnel runtime reuses verified active subject root",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_fails_closed_without_daemon_identity": {
+      "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
+      "name": "test_ensure_tunnel_runtime_fails_closed_without_daemon_identity",
+      "purpose": "Ensure tunnel runtime fails closed without daemon identity",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "TunnelBootstrapError"
+      ],
+      "targets": [
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_secure_mcp_tunnel_bootstrap.py::test_main_delegates_protocol_to_existing_mcp_server_only_after_runtime_ready": {
+      "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
+      "name": "test_main_delegates_protocol_to_existing_mcp_server_only_after_runtime_ready",
+      "purpose": "Main delegates protocol to existing mcp server only after runtime ready",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_secure_mcp_tunnel_bootstrap.py::test_main_never_starts_mcp_protocol_after_failed_runtime_bootstrap": {
+      "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
+      "name": "test_main_never_starts_mcp_protocol_after_failed_runtime_bootstrap",
+      "purpose": "Main never starts mcp protocol after failed runtime bootstrap",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_secure_mcp_tunnel_contract.py::test_secure_tunnel_plan_targets_verified_stdio_bootstrap_without_public_listener": {
+      "path": "tests/test_secure_mcp_tunnel_contract.py",
+      "name": "test_secure_tunnel_plan_targets_verified_stdio_bootstrap_without_public_listener",
+      "purpose": "Secure tunnel plan targets verified stdio bootstrap without public listener",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_secure_mcp_tunnel_contract.py::test_command_quoting_is_platform_specific_but_argv_preserving": {
+      "path": "tests/test_secure_mcp_tunnel_contract.py",
+      "name": "test_command_quoting_is_platform_specific_but_argv_preserving",
+      "purpose": "Command quoting is platform specific but argv preserving",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_secure_mcp_tunnel_contract.py::test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields": {
+      "path": "tests/test_secure_mcp_tunnel_contract.py",
+      "name": "test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields",
+      "purpose": "Remote runtime route requires all managed tunnel readiness fields",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_secure_mcp_tunnel_contract.py::test_unknown_tunnel_status_fails_closed": {
+      "path": "tests/test_secure_mcp_tunnel_contract.py",
+      "name": "test_unknown_tunnel_status_fails_closed",
+      "purpose": "Unknown tunnel status fails closed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
     },
     "tests/test_semantic_routing_completion.py::test_semantic_routing_completion_release_contract_tracks_current_version": {
       "path": "tests/test_semantic_routing_completion.py",

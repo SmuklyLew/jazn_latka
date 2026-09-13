@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "fc69f5a629f478badc98fc08601db5c148f16723",
-  "base_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
-  "commit_date": "2026-09-13T15:02:36+02:00",
+  "base_merge_commit": "b48883fbb2cfdabd6f33913c6ee503cda2ad6d73",
+  "base_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
+  "commit_date": "2026-09-13T16:48:53+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-13T13:02:36+00:00",
+  "generated_at_utc": "2026-09-13T14:48:53+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a539ae9c90c6411e4c6ac5b4aa23ca4199e1bdf5",
+  "git_tree_sha": "fa46a9c9445337c494f982ac0afa94c5604d5665",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "fc69f5a629f478badc98fc08601db5c148f16723",
+    "base_commit": "cb9e978585b41cdfaf148c95edb6e22cd4763ab5",
     "base_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "fc69f5a629f478badc98fc08601db5c148f16723",
-    "source_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence"
+    "source_commit": "b48883fbb2cfdabd6f33913c6ee503cda2ad6d73",
+    "source_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
+  "release_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
+  "runtime_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "fc69f5a629f478badc98fc08601db5c148f16723",
+  "source_commit": "b48883fbb2cfdabd6f33913c6ee503cda2ad6d73",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
+  "source_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.72-chatgpt-execution-route-pack-bootstrap-convergence",
+  "update_version": "16.3.25.5.73-secure-mcp-tunnel-runtime-bridge-convergence",
   "version_source": "latka_jazn/version.py"
 }
