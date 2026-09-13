@@ -37,7 +37,7 @@ def _root(tmp_path: Path, *, quotes: str = '"') -> Path:
 
 def test_generator_identity_and_small_public_launcher() -> None:
     generator = _load_generator()
-    assert generator.GENERATOR_VERSION == "10.1.86.0.114"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.115"
     assert generator.GENERATOR_TITLE == "Jaźń Pack Generator"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
     source = GENERATOR_PATH.read_text(encoding="utf-8")
@@ -105,12 +105,14 @@ def test_configuration_reports_only_archiver_scope() -> None:
     generator = _load_generator()
     payload = generator.config_report()
     assert payload["ok"] is True
-    assert payload["generator_version"] == "10.1.86.0.114"
+    assert payload["generator_version"] == "10.1.86.0.115"
     assert payload["features"]["zip"] is True
     assert payload["features"]["zip64"] is True
     assert payload["features"]["split_transport"] is True
+    assert payload["features"]["host_bootstrap_contract"] is True
     assert set(payload["not_in_scope"]) == {
-        "dependency-bundle", "wheelhouse", "python-runtime", "target-platform"
+        "dependency-bundle", "wheelhouse", "python-runtime", "target-platform",
+        "grant-host-executor", "remote-runtime-hosting",
     }
 
 
@@ -129,7 +131,7 @@ def test_settings_are_json_and_versioned(monkeypatch: pytest.MonkeyPatch, tmp_pa
         }
     )
     assert saved["schema_version"] == "jazn_pack_generator_settings/v1"
-    assert saved["generator_version"] == "10.1.86.0.114"
+    assert saved["generator_version"] == "10.1.86.0.115"
     payload = json.loads(settings_path.read_text(encoding="utf-8"))
     assert payload["ui_mode"] == "tui"
     assert payload["part_size_mib"] == 480
