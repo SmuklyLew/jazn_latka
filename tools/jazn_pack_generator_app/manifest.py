@@ -15,13 +15,18 @@ from .errors import PackValidationError
 from .models import PackPlan
 
 
+SECURE_MCP_SERVER_MEMBER = "latka_jazn/mcp/server.py"
+SECURE_MCP_TUNNEL_BOOTSTRAP_MEMBER = "latka_jazn/mcp/tunnel_bootstrap.py"
+SECURE_MCP_TUNNEL_CONTRACT_MEMBER = "latka_jazn/mcp/secure_tunnel.py"
+
+
 def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
     """Describe what the package can prove about host bootstrap capability.
 
     The contract deliberately separates package completeness from host execution
-    privileges. A SYSTEM ZIP can contain a complete bootstrap operator without
-    being able to create a process in ChatGPT. Remote runtime access and host
-    handoff are external capabilities and are never inferred from package bytes.
+    privileges. A SYSTEM ZIP can contain a complete bootstrap operator and a
+    verified local Secure MCP Tunnel target without being able to create a
+    process in ChatGPT or supply OpenAI's external tunnel control plane.
     """
 
     if plan.request.content.value == "memory":
@@ -43,6 +48,12 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
     }
     required = list(SYSTEM_BOOTSTRAP_REQUIRED_FILES)
     missing = [path for path in required if path not in packaged_files]
+    secure_mcp_members = [
+        SECURE_MCP_SERVER_MEMBER,
+        SECURE_MCP_TUNNEL_BOOTSTRAP_MEMBER,
+        SECURE_MCP_TUNNEL_CONTRACT_MEMBER,
+    ]
+    secure_mcp_target_bundled = all(path in packaged_files for path in secure_mcp_members)
     return {
         "schema_version": HOST_BOOTSTRAP_CONTRACT_SCHEMA,
         "applicable": True,
@@ -55,7 +66,19 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "missing_required_members": missing,
         "local_bootstrap_requires_process_creation": True,
         "package_can_create_host_executor": False,
+        # The OpenAI tunnel client/control plane is deliberately external.  The
+        # SYSTEM package only carries the local stdio target that the tunnel may
+        # launch after host capability/authentication has been established.
         "remote_runtime_transport_bundled": False,
+        "secure_mcp_tunnel_target_bundled": secure_mcp_target_bundled,
+        "secure_mcp_tunnel_target_members": secure_mcp_members,
+        "remote_runtime_transport_external": "openai_secure_mcp_tunnel",
+        "remote_runtime_readiness_requires": [
+            "external_tunnel_client",
+            "authenticated_tunnel_control_plane",
+            "process_running_healthy_ready",
+            "explicit_chatgpt_connector_or_app_capability",
+        ],
         "host_capability_negotiation_required": True,
         "supported_execution_routes": [
             "local_executor",
@@ -63,9 +86,11 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "host_handoff",
         ],
         "truth_boundary": (
-            "Package completeness proves only that a local operator can be materialized after a host has supplied "
-            "filesystem and process execution. The ZIP cannot grant ChatGPT a local executor. A remote runtime "
-            "transport or execution handoff must be explicitly supplied and verified by the host."
+            "Package completeness proves that a local operator can be materialized after a host has supplied "
+            "filesystem/process execution. When present, the Secure MCP files prove only that the package contains "
+            "the local stdio target for OpenAI Secure MCP Tunnel. The ZIP cannot grant ChatGPT a local executor, "
+            "authenticate the external tunnel control plane, publish a connector, or prove a remote runtime route. "
+            "Remote transport or execution handoff must be explicitly supplied and verified by the host."
         ),
     }
 
@@ -152,7 +177,8 @@ def build_manifest(
                 "verified export without Git. Checkout EOL conversion is therefore not a release source. The completed "
                 "ZIP is safely extracted to a fresh clean-room and its embedded PACKAGE_INTEGRITY_MANIFEST.json and "
                 "SOURCE_PROVENANCE.json are reverified before publication. Package completeness is independent from "
-                "host execution capability: the ZIP cannot grant ChatGPT a local executor. MEMORY content, when "
+                "host execution capability: the ZIP cannot grant ChatGPT a local executor. A packaged Secure MCP target "
+                "does not bundle or authenticate the external OpenAI tunnel control plane. MEMORY content, when "
                 "requested, remains a byte-exact filesystem snapshot outside the protected static SYSTEM inventory. "
                 "Split mode cuts one already-verified logical ZIP into binary transport parts."
             )
