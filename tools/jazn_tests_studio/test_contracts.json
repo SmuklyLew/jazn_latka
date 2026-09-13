@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74.1.001",
-  "active_definition_count": 1555,
+  "active_definition_count": 1556,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2752,6 +2752,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 98
+    },
+    "tests/test_chatgpt_handoff_cross_surface.py::test_explicit_decline_suppresses_other_unaccepted_handoff_offer": {
+      "path": "tests/test_chatgpt_handoff_cross_surface.py",
+      "name": "test_explicit_decline_suppresses_other_unaccepted_handoff_offer",
+      "purpose": "Explicit decline suppresses other unaccepted handoff offer",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
     },
     "tests/test_chatgpt_handoff_outcome_contract.py::test_boolean_handoff_capability_remains_backward_compatible": {
       "path": "tests/test_chatgpt_handoff_outcome_contract.py",
