@@ -12569,7 +12569,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 350
+      "line": 356
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",
