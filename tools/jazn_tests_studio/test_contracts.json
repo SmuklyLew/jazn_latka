@@ -423,7 +423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 300
+      "line": 306
     },
     "tests/test_active_memory_recall_e2e.py::test_active_transport_lost_between_turns_is_fail_closed": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -457,7 +457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 315
+      "line": 321
     },
     "tests/test_active_memory_recall_e2e.py::test_blocked_runtime_disclosure_keeps_phase_one_pending_for_finalization": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -492,7 +492,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 330
+      "line": 336
     },
     "tests/test_active_memory_recall_e2e.py::test_valid_grounded_recall_is_correlated_and_legally_visible": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -526,7 +526,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 378
     },
     "tests/test_active_memory_recall_e2e.py::test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -560,7 +560,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 475
+      "line": 481
     },
     "tests/test_active_runtime_subject_root.py::test_wrong_non_empty_capability_token_is_fail_closed_before_mutation": {
       "path": "tests/test_active_runtime_subject_root.py",
