@@ -191,9 +191,7 @@ def test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped() -> None:
 def test_mcp_dispatch_propagates_request_id_to_gateway(tmp_path: Path) -> None:
     observed: dict[str, Any] = {}
 
-    class Gateway:
-        runtime_root = tmp_path
-
+    class Gateway(SecureHostRuntimeGateway):
         def chat(
             self,
             message: str,
@@ -220,7 +218,13 @@ def test_mcp_dispatch_propagates_request_id_to_gateway(tmp_path: Path) -> None:
 
     server = object.__new__(JaznMcpServer)
     server.root = tmp_path
-    server.gateway = Gateway()
+    server.gateway = Gateway(
+        GatewayConfig(
+            runtime_root=tmp_path,
+            daemon_url="http://127.0.0.1:8787",
+            daemon_token="test-token",
+        )
+    )
 
     result = server._dispatch(
         "jazn_generate_visible_reply",
