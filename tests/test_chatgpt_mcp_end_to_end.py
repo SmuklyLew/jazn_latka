@@ -84,7 +84,13 @@ class FakeGateway:
         self.root = root
         self.response = response
 
-    def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
+    def chat(
+        self,
+        message: str,
+        *,
+        session_id: str | None = None,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
         return self.response
 
     def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
