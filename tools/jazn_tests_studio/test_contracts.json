@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.75",
-  "active_definition_count": 1572,
+  "active_definition_count": 1574,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14614,6 +14614,48 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_memory_batch_reconstruction.py::test_batch_reconstruction_is_order_and_location_independent": {
+      "path": "tests/test_memory_batch_reconstruction.py",
+      "name": "test_batch_reconstruction_is_order_and_location_independent",
+      "purpose": "A closed source union yields identical revision identities, links and semantic state.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 44
+    },
+    "tests/test_memory_batch_reconstruction.py::test_explicit_incremental_import_keeps_revision_sequence": {
+      "path": "tests/test_memory_batch_reconstruction.py",
+      "name": "test_explicit_incremental_import_keeps_revision_sequence",
+      "purpose": "Explicit later imports still create revisions, while an identical repeat links evidence.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 62
     },
     "tests/test_memory_cloud_gateway.py::test_http_gateway_round_trips_encrypted_events_and_status": {
       "path": "tests/test_memory_cloud_gateway.py",
