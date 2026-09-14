@@ -5574,7 +5574,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 133
+      "line": 139
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
