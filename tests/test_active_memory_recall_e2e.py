@@ -271,7 +271,13 @@ def test_canonical_visible_reply_tool_cannot_substitute_host_context_for_recall(
     class Gateway:
         runtime_root = "/runtime_A"
 
-        def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
+        def chat(
+            self,
+            message: str,
+            *,
+            session_id: str | None = None,
+            request_id: str | None = None,
+        ) -> dict[str, Any]:
             assert message == "Co pamiętasz jako pierwsze?"
             return response
 
