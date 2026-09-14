@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-  "runtime_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-  "package_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-  "generated_at_utc": "2026-09-14T18:11:56+00:00",
-  "updated_at_utc": "2026-09-14T18:11:56+00:00",
+  "version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
+  "runtime_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
+  "package_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
+  "generated_at_utc": "2026-09-14T18:23:36+00:00",
+  "updated_at_utc": "2026-09-14T18:23:36+00:00",
   "start_file": "run.py",
-  "file_count": 1701,
-  "static_file_count": 1701,
+  "file_count": 1704,
+  "static_file_count": 1704,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -263,8 +263,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2965,
-      "sha256": "2318fbe507204a708200a220004ccef697f5f75bdc570121e79fbc314de52a06",
+      "size_bytes": 2959,
+      "sha256": "0b61b4cf6439c700780100ac8b6e293670c3efc894f1e92bbe8df9325d9a9e36",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1219,6 +1219,15 @@
       "path": "docs/plans/JAZN_STUDIO_PAMIECI_MASTER73_CODEX_CONTINUATION.md",
       "size_bytes": 15865,
       "sha256": "3ab5fb5d1cf3bff9187d2f3ab4b710f6ee7154ff908dbbd2b8da6502be655a35",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_STUDIO_PAMIECI_V76_BATCH_CHECKPOINT.md",
+      "size_bytes": 4490,
+      "sha256": "0b2d028af5ada7e6fc07167fa5ca4324dbe7c2636c997562e2bad67724212507",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7417,6 +7426,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/memory_rebuild_app/batch_plan.py",
+      "size_bytes": 4666,
+      "sha256": "cfd74f01c264b6d59f632d22e2dcf5e8ff96a460867c71af42c86ff34b5ae8bf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_rebuild_app/candidate_editor.py",
       "size_bytes": 6545,
       "sha256": "443cdc32ecb3220fb71399a6fe13de109d60a14b6cf4757362954d32d2b2d881",
@@ -7544,8 +7562,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/l0_store.py",
-      "size_bytes": 8284,
-      "sha256": "bebd6c254337f1a302732fa7a69340ee26d1c15b1fc5d17fec3a01801578a58a",
+      "size_bytes": 9695,
+      "sha256": "f2cd40ecd10e15422539a593757b5661cf0d0bda907a9d7fc58abdc6032c83a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7562,8 +7580,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/memory_studio.py",
-      "size_bytes": 16905,
-      "sha256": "180ccca31a967e36b7a94779aab3ec79466092d809fe8399d5188bbb491b1abe",
+      "size_bytes": 16948,
+      "sha256": "14d33710957622604fac54884ce006975a38e8c3a63bd58cc9e8be59235edd26",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7607,8 +7625,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/protocol_engine.py",
-      "size_bytes": 57335,
-      "sha256": "df270eafffea6cf1097fc74f1013febe4100c0ec56f810cfebe6d268b0235f6b",
+      "size_bytes": 57349,
+      "sha256": "373e991b8e14d990746ebd963c418336c7553094a95dd1ecfe60dba63597b4c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7922,8 +7940,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/unified_core.py",
-      "size_bytes": 11974,
-      "sha256": "95200d7a6d66b2fb103fbb457455b049e6e596b52266ad0f033ea944b7014eb4",
+      "size_bytes": 16430,
+      "sha256": "77bce2bc28dd67413f81b6b9238930c01ffe95c40b3a8e2d342b8c6fc002aa02",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8282,8 +8300,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "9140c1728d1b72757ce6f5f5230d686bef0de57a73eb3c02b58d31e95c0f2283",
+      "size_bytes": 6501,
+      "sha256": "be39211f2f535b333a8a617fba32ab8703c1703fca37d1ca378d71d1998a7bec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13330,6 +13348,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_batch_plan_contract.py",
+      "size_bytes": 4502,
+      "sha256": "09638ad40364c104f2de044e19fb079f5781c855f7aff126307ba52d5ab85988",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_batch_reconstruction.py",
       "size_bytes": 3511,
       "sha256": "35c137a3cb3e814b909a1a0bb84ae2bb320c59e0b6196acc88b2fc894bba84b7",
@@ -15176,8 +15203,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1463888,
-      "sha256": "776ff8a1208d418780581182a0706f6075822dd4eddc09132fc65e90ecfac4e5",
+      "size_bytes": 1467706,
+      "sha256": "766e95602b51427bbe93836fc0b123df2c1981489f8ea91aefbfda322c993b07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15761,11 +15788,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
+  "release_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-    "package_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-    "release_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence"
+    "runtime_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
+    "package_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch",
+    "release_version": "16.3.25.5.76-jazn-studio-pamieci-deterministic-batch"
   },
   "legacy_aliases": {
     "version": "release_version"
