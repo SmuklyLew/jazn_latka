@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "9d38a294c0479078e75b6385c8d46561c5d055c7",
-    "base_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
+    "base_commit": "26b80037eff697ba74dd3beead5b0ba55631c3bb",
+    "base_version": "16.3.25.5.74.2.001-chatgpt-transport-mcp-idempotency",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "26b80037eff697ba74dd3beead5b0ba55631c3bb",
