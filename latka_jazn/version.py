@@ -3,9 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.75 converges Jaźń Memory Studio and its FTS validation fix onto
-# the v16.3.25.5.73 Secure MCP/runtime line. Test03 determinism remains a
-# fail-closed acceptance gate until normal/reverse batch imports reconcile.
+# The .75 Studio line includes current-master host handoff/ingress contracts.
+# Batch reconstruction repair is a later system change, not part of this merge.
 DISTRIBUTION_VERSION = "16.3.25.5.75"
 PACKAGE_VERSION = "16.3.25.5.75"
 PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-master73-convergence"
