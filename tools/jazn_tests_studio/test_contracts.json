@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.74.1.001",
-  "active_definition_count": 1558,
+  "system_version": "16.3.25.5.74.2.001",
+  "active_definition_count": 1566,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -423,7 +423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 300
+      "line": 306
     },
     "tests/test_active_memory_recall_e2e.py::test_active_transport_lost_between_turns_is_fail_closed": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -457,7 +457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 315
+      "line": 321
     },
     "tests/test_active_memory_recall_e2e.py::test_blocked_runtime_disclosure_keeps_phase_one_pending_for_finalization": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -492,7 +492,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 330
+      "line": 336
     },
     "tests/test_active_memory_recall_e2e.py::test_valid_grounded_recall_is_correlated_and_legally_visible": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -526,7 +526,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 378
     },
     "tests/test_active_memory_recall_e2e.py::test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -560,7 +560,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 475
+      "line": 481
     },
     "tests/test_active_runtime_subject_root.py::test_wrong_non_empty_capability_token_is_fail_closed_before_mutation": {
       "path": "tests/test_active_runtime_subject_root.py",
@@ -4138,7 +4138,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 128
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_forbidden_host_voice_gets_one_retry_then_fails_closed": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4165,7 +4165,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 165
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4192,7 +4192,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 197
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_retry_preserves_memory_context_and_web_run_provenance": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4219,7 +4219,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 231
+      "line": 237
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -5272,6 +5272,207 @@
       "description_source": "source_identity",
       "line": 161
     },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_daemon_submit_transport_timeout_preserves_preallocated_request_id": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_daemon_submit_transport_timeout_preserves_preallocated_request_id",
+      "purpose": "Daemon submit transport timeout preserves preallocated request id",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request",
+      "purpose": "Secure mcp gateway transport timeout becomes poll same request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn",
+      "purpose": "Secure mcp gateway pending ack is poll not new turn",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall",
+      "purpose": "Memory recall pending transport is not misclassified as missing recall",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_resume_transport_timeout_keeps_existing_daemon_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_resume_transport_timeout_keeps_existing_daemon_request",
+      "purpose": "Resume transport timeout keeps existing daemon request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 144
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped",
+      "purpose": "Mcp jsonrpc request identity is stable and subject scoped",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 164
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_dispatch_propagates_request_id_to_gateway": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_dispatch_propagates_request_id_to_gateway",
+      "purpose": "Mcp dispatch propagates request id to gateway",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 191
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume",
+      "purpose": "Chatgpt loader contract names transport timeout and idempotent resume",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 244
+    },
     "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_existing_host_packet_builder_is_now_a_current_turn_gate": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
       "name": "test_existing_host_packet_builder_is_now_a_current_turn_gate",
@@ -5373,7 +5574,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 133
+      "line": 139
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
@@ -12368,7 +12569,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 350
+      "line": 356
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",

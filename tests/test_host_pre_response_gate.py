@@ -325,7 +325,13 @@ def test_canonical_mcp_entrypoint_emits_gate_telemetry_for_exact_runtime_output(
     class Gateway:
         runtime_root = "/runtime_A"
 
-        def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
+        def chat(
+            self,
+            message: str,
+            *,
+            session_id: str | None = None,
+            request_id: str | None = None,
+        ) -> dict[str, Any]:
             assert message == "Hej."
             assert session_id == "v16323"
             return response
@@ -351,7 +357,13 @@ def test_canonical_mcp_entrypoint_returns_diagnostic_when_runtime_is_unavailable
     class Gateway:
         runtime_root = "/runtime_A"
 
-        def chat(self, _message: str, *, session_id: str | None = None) -> dict[str, Any]:
+        def chat(
+            self,
+            _message: str,
+            *,
+            session_id: str | None = None,
+            request_id: str | None = None,
+        ) -> dict[str, Any]:
             raise GatewayError("daemon_unavailable")
 
         def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:

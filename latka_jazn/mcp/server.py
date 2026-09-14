@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import sys
 from typing import Any
+import uuid
 
 from latka_jazn.bridge.auth_policy import AuthPolicy
 from latka_jazn.bridge.secure_host_runtime_gateway import (
@@ -274,6 +275,32 @@ class JaznMcpServer:
             str(request_id).strip() if request_id is not None else None,
         )
 
+    @staticmethod
+    def _daemon_request_id(
+        name: str,
+        *,
+        explicit_request_id: str | None,
+        metadata: dict[str, Any],
+        subject: str,
+    ) -> str | None:
+        """Allocate the side-effect identity before MCP dispatch.
+
+        An explicit tool request_id wins. Otherwise the JSON-RPC request id is
+        transformed into a daemon-safe id and namespaced by authenticated MCP
+        subject. Only when neither exists do we mint one UUID for this ingress.
+        """
+
+        if name != "jazn_generate_visible_reply":
+            return explicit_request_id
+        explicit = str(explicit_request_id or "").strip()
+        if explicit:
+            return explicit
+        transport_id = metadata.get("transport_request_id")
+        if transport_id is not None and str(transport_id).strip():
+            material = f"{subject}\0{transport_id}".encode("utf-8")
+            return "mcp-" + hashlib.sha256(material).hexdigest()[:48]
+        return "mcp-" + uuid.uuid4().hex
+
     def _request_identity(
         self,
         name: str,
@@ -404,7 +431,13 @@ class JaznMcpServer:
             )
         )
 
-    def _dispatch(self, name: str, args: dict[str, Any]) -> dict[str, Any]:
+    def _dispatch(
+        self,
+        name: str,
+        args: dict[str, Any],
+        *,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
         if name == "jazn_status":
             return jazn_status.run(self.gateway)
         if name == "jazn_generate_visible_reply":
@@ -412,6 +445,7 @@ class JaznMcpServer:
                 self.gateway,
                 message=str(args["message"]),
                 session_id=args.get("session_id"),
+                request_id=request_id,
             )
         if name == "jazn_resume_visible_reply":
             return jazn_resume_visible_reply.run(
@@ -442,6 +476,12 @@ class JaznMcpServer:
         subject = self._authorize(name, args, metadata)
         approval_state = self._approval_state(name, metadata)
         explicit_key, request_id = self._control_fields(args, metadata)
+        request_id = self._daemon_request_id(
+            name,
+            explicit_request_id=request_id,
+            metadata=metadata,
+            subject=subject,
+        )
         turn_id, trace_id, contract_hash = self._request_identity(
             name,
             args,
@@ -501,7 +541,14 @@ class JaznMcpServer:
                     audit_id=audit_id,
                 )
             if decision.state == "replay":
-                stored = decision.result or _tool_error("idempotency_result_unavailable")
+                if decision.result is None and name == "jazn_generate_visible_reply" and request_id:
+                    stored = jazn_resume_visible_reply.run(
+                        root=self.root,
+                        gateway=self.gateway,
+                        daemon_request_id=request_id,
+                    )
+                else:
+                    stored = decision.result or _tool_error("idempotency_result_unavailable")
                 replay_audit_id = self._append_mcp_audit(
                     name=name,
                     subject=subject,
@@ -523,7 +570,7 @@ class JaznMcpServer:
                 )
 
         try:
-            result = self._dispatch(name, args)
+            result = self._dispatch(name, args, request_id=request_id)
         except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
             result = _tool_error(f"{type(exc).__name__}:{exc}")
 
@@ -553,6 +600,7 @@ class JaznMcpServer:
                 "host_bridge_audit_id": host_audit_id,
                 "turn_id": (result.get("structuredContent") or {}).get("turn_id") or turn_id,
                 "trace_id": (result.get("structuredContent") or {}).get("trace_id") or trace_id,
+                "daemon_request_id": request_id if name == "jazn_generate_visible_reply" else None,
             },
         )
         result = self._augment_result(
@@ -589,10 +637,13 @@ class JaznMcpServer:
                 result = {"tools": TOOL_DEFINITIONS}
             elif method == "tools/call":
                 params = dict(request_value.get("params") or {})
+                metadata = dict(params.get("_meta") or {})
+                if request_id is not None:
+                    metadata.setdefault("transport_request_id", str(request_id))
                 result = self.call_tool(
                     str(params.get("name") or ""),
                     dict(params.get("arguments") or {}),
-                    dict(params.get("_meta") or {}),
+                    metadata,
                 )
             else:
                 return {

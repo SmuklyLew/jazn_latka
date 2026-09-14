@@ -32,9 +32,10 @@ def run_host_pre_response_gate(
 ) -> dict[str, Any]:
     """Run one exact host turn through the canonical runtime presentation path.
 
-    The callback invoke_runtime must be the existing run.py chat-gpt or MCP
-    equivalent. The optional finalizer consumes its existing two-phase contract.
-    Candidate text is intentionally never included in the returned object.
+    Pending transport is handled before content-level recall validation.  A
+    `poll_runtime` packet contains no memory answer yet, so treating missing
+    recall observability as a memory failure at that stage would incorrectly
+    convert a healthy long-running recall turn into a host diagnostic.
     """
 
     exact_user_text = str(user_text)
@@ -72,6 +73,39 @@ def run_host_pre_response_gate(
     presentation = _presentation_from(runtime_response)
     action = str(presentation.get("action") or "")
     memory_recall_observability = _memory_recall_from(presentation, runtime_response)
+
+    # Transport state precedes semantic/content validation. No runtime-owned
+    # answer is visible while the request is pending, therefore there is
+    # nothing yet to validate against the recall truth boundary. The same
+    # request id must be resumed and only its completed phase is checked below.
+    if action == "poll_runtime":
+        telemetry = build_host_pre_response_gate_telemetry(
+            presentation=presentation,
+            response=runtime_response,
+            user_text=exact_user_text,
+            requested_runtime_root=requested_runtime_root,
+            runtime_turn_invoked=True,
+            turn_ingress_gate_enforced=True,
+            visible_output_source=None,
+        )
+        result = {
+            "ok": True,
+            "action": "poll_runtime",
+            "visible_text": "",
+            "visible_output_source": None,
+            "host_pre_response_gate": telemetry,
+            "turn_ingress_gate_enforced": True,
+            "host_route_bound": bool(telemetry.get("host_route_bound")),
+            "runtime_presentation": presentation,
+            "runtime_response": runtime_response,
+        }
+        if memory_recall_observability:
+            result["memory_recall_observability"] = memory_recall_observability
+        return _attach_voice_e2e_verification(
+            result,
+            exact_user_text=exact_user_text,
+        )
+
     recall_required = analyze_memory_intent(exact_user_text).content_requested
     memory_violation = memory_recall_truth_boundary_violation(
         memory_recall_observability,
@@ -239,34 +273,6 @@ def run_host_pre_response_gate(
             result,
             exact_user_text=exact_user_text,
             requested_runtime_root=requested_runtime_root,
-        )
-
-    if action == "poll_runtime":
-        telemetry = build_host_pre_response_gate_telemetry(
-            presentation=presentation,
-            response=runtime_response,
-            user_text=exact_user_text,
-            requested_runtime_root=requested_runtime_root,
-            runtime_turn_invoked=True,
-            turn_ingress_gate_enforced=True,
-            visible_output_source=None,
-        )
-        result = {
-            "ok": True,
-            "action": "poll_runtime",
-            "visible_text": "",
-            "visible_output_source": None,
-            "host_pre_response_gate": telemetry,
-            "turn_ingress_gate_enforced": True,
-            "host_route_bound": bool(telemetry.get("host_route_bound")),
-            "runtime_presentation": presentation,
-            "runtime_response": runtime_response,
-        }
-        if memory_recall_observability:
-            result["memory_recall_observability"] = memory_recall_observability
-        return _attach_voice_e2e_verification(
-            result,
-            exact_user_text=exact_user_text,
         )
 
     if action == "host_diagnostic":
