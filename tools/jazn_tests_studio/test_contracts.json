@@ -4138,7 +4138,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 128
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_forbidden_host_voice_gets_one_retry_then_fails_closed": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4165,7 +4165,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 165
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4192,7 +4192,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 197
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_retry_preserves_memory_context_and_web_run_provenance": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4219,7 +4219,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 231
+      "line": 237
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
