@@ -3,13 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.74.1.001 hardens ChatGPT host handoff outcome semantics without
-# consuming the planned 16.3.25.5.75 line. Availability, pending consent,
-# acceptance, and refusal are tracked separately so a declined handoff cannot
-# be mistaken for a failed Jaźń runtime or be re-requested automatically.
-DISTRIBUTION_VERSION = "16.3.25.5.74.1.001"
-PACKAGE_VERSION = "16.3.25.5.74.1.001"
-PACKAGE_RELEASE_NAME = "host-handoff-outcome-convergence"
+# v16.3.25.5.74.2.001 hardens ChatGPT/daemon/MCP transport lineage without
+# consuming the active Jaźń Studio Pamięci v16.3.25.5.75 line. A request id is
+# allocated before the side-effect boundary, transport ambiguity resumes the
+# same daemon request, and pending memory-recall turns remain pending instead of
+# being misclassified as missing-memory failures.
+DISTRIBUTION_VERSION = "16.3.25.5.74.2.001"
+PACKAGE_VERSION = "16.3.25.5.74.2.001"
+PACKAGE_RELEASE_NAME = "chatgpt-transport-mcp-idempotency"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
@@ -75,7 +76,7 @@ def release_version_marker(component: str, *, version: str = PACKAGE_VERSION_FUL
     name = _component_name(component)
     value = str(version or PACKAGE_VERSION_FULL).strip()
     if not value:
-        raise ValueError("release version marker requires a non-empty version")
+        raise ValueError("runtime version marker requires a non-empty version")
     return f"{name}/{value}"
 
 

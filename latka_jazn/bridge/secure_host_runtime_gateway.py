@@ -9,7 +9,11 @@ from urllib import error, parse, request
 
 from latka_jazn.bridge.auth_policy import AuthPolicy, SlidingWindowRateLimiter
 from latka_jazn.core.chatgpt_host_pending_store import issue_continuation_token
-from latka_jazn.core.runtime_daemon import DAEMON_AUTH_HEADER, read_daemon_auth_token
+from latka_jazn.core.runtime_daemon import (
+    DAEMON_AUTH_HEADER,
+    normalize_daemon_request_id,
+    read_daemon_auth_token,
+)
 from latka_jazn.core.runtime_root import find_runtime_root
 from latka_jazn.version import schema_version
 
@@ -51,6 +55,92 @@ class GatewayConfig:
                 raise GatewayError("daemon_host_must_be_loopback")
         if self.runtime_root is not None:
             self.runtime_root = Path(self.runtime_root).expanduser().resolve()
+
+
+def _poll_runtime_presentation(
+    request_id: str,
+    *,
+    transport_error: str | None = None,
+    submit_outcome_authoritative: bool | None = None,
+) -> dict[str, Any]:
+    presentation: dict[str, Any] = {
+        "type": "chatgpt_host_presentation",
+        "action": "poll_runtime",
+        "phase": "runtime_result_pending",
+        "status": "runtime_result_pending",
+        "daemon_request_id": request_id,
+        "request_id": request_id,
+        "poll_command": "jazn_resume_visible_reply",
+        "resume_tool": "jazn_resume_visible_reply",
+        "host_must_poll_runtime": True,
+        "host_must_generate_visible_reply": False,
+        "host_reply_finalization_required": False,
+        "must_not_resubmit_user_message": True,
+        "must_not_claim_runtime_voice": True,
+        "must_not_claim_latka_voice": True,
+        "submit_outcome_authoritative": submit_outcome_authoritative,
+        "safe_recovery": "poll_same_request_id_never_replay_user_message",
+        "truth_boundary": (
+            "The daemon request id was allocated before the side-effect boundary. "
+            "Transport ambiguity must resume/poll this exact request and must never create a second user turn."
+        ),
+    }
+    if transport_error:
+        presentation["transport_error"] = transport_error
+    return presentation
+
+
+def _normalize_chat_transport_response(
+    value: dict[str, Any],
+    *,
+    request_id: str,
+) -> dict[str, Any]:
+    """Normalize daemon transport envelopes without inventing a runtime result."""
+
+    result = dict(value)
+    result.setdefault("request_id", request_id)
+    nested = result.get("chatgpt_host_presentation")
+    if isinstance(nested, dict) and nested.get("action"):
+        return result
+    if result.get("action"):
+        return result
+
+    # The daemon transport can wrap a phase-ready runtime payload in `result`.
+    # Unwrap only when that nested payload already owns a host presentation;
+    # keep the outer job envelope as evidence instead of manufacturing content.
+    nested_result = result.get("result")
+    if isinstance(nested_result, dict):
+        nested_presentation = nested_result.get("chatgpt_host_presentation")
+        if (
+            isinstance(nested_presentation, dict)
+            and nested_presentation.get("action")
+        ) or nested_result.get("action"):
+            unwrapped = dict(nested_result)
+            unwrapped.setdefault("request_id", request_id)
+            unwrapped.setdefault("daemon_job", result)
+            return unwrapped
+
+    accepted = result.get("accepted")
+    job_status = str(result.get("job_status") or result.get("status") or "").strip()
+    pending = bool(
+        accepted is not False
+        and result.get("phase_result_ready") is not True
+        and (
+            result.get("done") is False
+            or job_status in {
+                "queued",
+                "running",
+                "awaiting_host_finalization",
+                "waiting_for_host_finalization",
+            }
+        )
+    )
+    if pending:
+        result["chatgpt_host_presentation"] = _poll_runtime_presentation(
+            request_id,
+            submit_outcome_authoritative=True if accepted is True else None,
+        )
+    return result
 
 
 class SecureHostRuntimeGateway:
@@ -143,11 +233,54 @@ class SecureHostRuntimeGateway:
             "runtime_root": str(self.runtime_root),
         }
 
-    def chat(self, message: str, *, session_id: str | None = None) -> dict[str, Any]:
-        payload: dict[str, Any] = {"message": str(message), "client": "secure_mcp_gateway"}
+    def chat(
+        self,
+        message: str,
+        *,
+        session_id: str | None = None,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Submit one MCP-carried turn with a request id fixed before POST.
+
+        Once `/chat` may have crossed the daemon boundary, a lost response is an
+        ambiguous outcome. It is converted to `poll_runtime` for the same id;
+        this method never retries the message under a new id and never falls
+        back to an independent local turn.
+        """
+
+        try:
+            daemon_request_id = normalize_daemon_request_id(request_id)
+        except ValueError as exc:
+            raise GatewayError(str(exc)) from exc
+        payload: dict[str, Any] = {
+            "message": str(message),
+            "client": "secure_mcp_gateway",
+            "request_id": daemon_request_id,
+        }
         if session_id:
             payload["session_id"] = session_id
-        return self._http_json("POST", "/chat", payload)
+        try:
+            value = self._http_json("POST", "/chat", payload)
+        except GatewayError as exc:
+            reason = str(exc)
+            if not reason.startswith("daemon_unavailable:"):
+                raise
+            return {
+                "ok": False,
+                "accepted": None,
+                "done": False,
+                "error_code": "daemon_chat_submit_outcome_unknown",
+                "request_id": daemon_request_id,
+                "submit_outcome_authoritative": False,
+                "safe_recovery": "poll_same_request_id_before_any_retry",
+                "transport_error": reason,
+                "chatgpt_host_presentation": _poll_runtime_presentation(
+                    daemon_request_id,
+                    transport_error=reason,
+                    submit_outcome_authoritative=False,
+                ),
+            }
+        return _normalize_chat_transport_response(value, request_id=daemon_request_id)
 
     def result(self, request_id: str) -> dict[str, Any]:
         """Poll one existing daemon job without replaying the user turn."""

@@ -51,6 +51,37 @@ def _tool_error(reason: str, *, response: dict[str, Any] | None = None) -> dict[
     }
 
 
+def _poll_same_request(
+    request_id: str,
+    *,
+    transport_error: str | None = None,
+) -> dict[str, Any]:
+    structured: dict[str, Any] = {
+        "ok": True,
+        "action": "poll_runtime",
+        "request_id": request_id,
+        "daemon_request_id": request_id,
+        "resume_tool": "jazn_resume_visible_reply",
+        "must_not_resubmit_user_message": True,
+        "recovered_existing_request": True,
+        "poll_transport_outcome_authoritative": transport_error is None,
+    }
+    if transport_error:
+        structured["poll_transport_error"] = transport_error
+    return {
+        "content": [{
+            "type": "text",
+            "text": "The existing runtime request is still unresolved. Poll this same request again; do not resubmit the user message.",
+        }],
+        "structuredContent": structured,
+        "_meta": {
+            "transport": "secure_loopback_gateway",
+            "recovery": "existing_daemon_request",
+        },
+        "isError": False,
+    }
+
+
 def _display_exact(
     runtime_result: dict[str, Any],
     presentation: dict[str, Any],
@@ -160,7 +191,10 @@ def run(
     try:
         envelope = gateway.result(request_id)
     except GatewayError as exc:
-        return _tool_error(f"runtime_poll_failed:{exc}")
+        reason = str(exc)
+        if reason.startswith("daemon_unavailable:"):
+            return _poll_same_request(request_id, transport_error=reason)
+        return _tool_error(f"runtime_poll_failed:{reason}")
 
     runtime_result = _runtime_result_from(envelope)
     presentation = _presentation_from(runtime_result)
@@ -169,32 +203,13 @@ def run(
     if action == "display_exact":
         return _display_exact(runtime_result, presentation)
 
-    status = str(envelope.get("status") or "").strip()
+    status = str(envelope.get("status") or envelope.get("job_status") or "").strip()
     if action == "poll_runtime" or (
         not action
         and status in {"queued", "running"}
         and _object_or_none(envelope.get("result")) is None
     ):
-        return {
-            "content": [{
-                "type": "text",
-                "text": "The existing runtime request is still in progress. Poll this same request again; do not resubmit the user message.",
-            }],
-            "structuredContent": {
-                "ok": True,
-                "action": "poll_runtime",
-                "request_id": request_id,
-                "daemon_request_id": request_id,
-                "resume_tool": "jazn_resume_visible_reply",
-                "must_not_resubmit_user_message": True,
-                "recovered_existing_request": True,
-            },
-            "_meta": {
-                "transport": "secure_loopback_gateway",
-                "recovery": "existing_daemon_request",
-            },
-            "isError": False,
-        }
+        return _poll_same_request(request_id)
 
     if action != "generate_then_finalize":
         reason = str(
