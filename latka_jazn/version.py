@@ -3,11 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# The .75 Studio line includes current-master host handoff/ingress contracts.
-# Batch reconstruction repair is a later system change, not part of this merge.
-DISTRIBUTION_VERSION = "16.3.25.5.75"
-PACKAGE_VERSION = "16.3.25.5.75"
-PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-master73-convergence"
+# Deterministic closed-union reconstruction retains current-master host contracts.
+DISTRIBUTION_VERSION = "16.3.25.5.76"
+PACKAGE_VERSION = "16.3.25.5.76"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-deterministic-batch"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

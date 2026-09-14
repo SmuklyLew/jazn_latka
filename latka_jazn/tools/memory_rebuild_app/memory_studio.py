@@ -175,7 +175,7 @@ class MemoryStudio:
             snapshot_database(target, backup)
             snapshot_database(backup, staging)
         store = UnifiedMemoryDatabase(staging)
-        imported = store.import_sources(sources, full_validation=True)
+        imported = store.import_sources(sources, full_validation=True, mode="incremental" if update else "batch")
         if not imported.get('ok'):
             raise ValueError(f'Import nie przeszedł walidacji; zachowano staging: {staging}')
         validation = store.validate(full=True)

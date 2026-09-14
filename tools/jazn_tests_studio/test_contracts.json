@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.75",
-  "active_definition_count": 1574,
+  "system_version": "16.3.25.5.76",
+  "active_definition_count": 1578,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14614,6 +14614,92 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_memory_batch_plan_contract.py::test_crossed_record_chronology_and_repeated_historical_variant": {
+      "path": "tests/test_memory_batch_plan_contract.py",
+      "name": "test_crossed_record_chronology_and_repeated_historical_variant",
+      "purpose": "Crossed record chronology and repeated historical variant",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_memory_batch_plan_contract.py::test_unresolved_chronology_has_stable_provenance_and_one_adapter_prepare": {
+      "path": "tests/test_memory_batch_plan_contract.py",
+      "name": "test_unresolved_chronology_has_stable_provenance_and_one_adapter_prepare",
+      "purpose": "Unresolved chronology has stable provenance and one adapter prepare",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_memory_batch_plan_contract.py::test_batch_prepare_failure_leaves_destination_absent": {
+      "path": "tests/test_memory_batch_plan_contract.py",
+      "name": "test_batch_prepare_failure_leaves_destination_absent",
+      "purpose": "Batch prepare failure leaves destination absent",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_memory_batch_plan_contract.py::test_explicit_batch_refuses_populated_database_and_incremental_still_updates": {
+      "path": "tests/test_memory_batch_plan_contract.py",
+      "name": "test_explicit_batch_refuses_populated_database_and_incremental_still_updates",
+      "purpose": "Explicit batch refuses populated database and incremental still updates",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
     },
     "tests/test_memory_batch_reconstruction.py::test_batch_reconstruction_is_order_and_location_independent": {
       "path": "tests/test_memory_batch_reconstruction.py",

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 import hashlib
 import sqlite3
 import uuid
 
-from .intermediate import PreparedSource, canonical_json
+from .intermediate import IntermediateRecord, PreparedSource, canonical_json
+from .batch_plan import BatchPlan, source_key
 from .l0_evidence import persist_record_metadata
 from .schema_l0 import L0_SCHEMA_VERSION, ensure_l0_schema_extensions
 from .sqlite_utils import ClosingSQLiteConnection
@@ -47,40 +48,63 @@ class UnifiedL0Store:
                 connection.close()
 
     def ingest(self, prepared: PreparedSource, *, dry_run: bool = False) -> dict[str, Any]:
+        return self._ingest_entries(
+            [prepared], ((prepared, record) for record in prepared.iter_records()),
+            dry_run=dry_run, batch=False,
+        )
+
+    def ingest_batch(self, plan: BatchPlan) -> dict[str, Any]:
+        return self._ingest_entries(
+            [plan.sources[key] for key in sorted(plan.sources)], plan.iter_entries(),
+            dry_run=False, batch=True,
+        )
+
+    def _ingest_entries(
+        self, sources: list[PreparedSource],
+        entries: Iterable[tuple[PreparedSource, IntermediateRecord]],
+        *, dry_run: bool, batch: bool,
+    ) -> dict[str, Any]:
         now = utc_now()
-        source_id = str(uuid.uuid5(
-            uuid.NAMESPACE_URL,
-            f"jazn-l0-source:{prepared.adapter_id}:{prepared.source_sha256}:{prepared.source_member or ''}",
-        ))
+        source_ids = {
+            source_key(item): str(uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"jazn-l0-source:{item.adapter_id}:{item.source_sha256}:{item.source_member or ''}",
+            )) for item in sources
+        }
         counters = {"seen": 0, "inserted": 0, "new_revisions": 0, "linked_existing": 0}
         with self._connect() as con:
             self.ensure_schema(con)
             con.commit()
             con.execute("BEGIN IMMEDIATE")
-            previous_source = con.execute(
-                "SELECT source_id FROM memory_l0_sources WHERE adapter_id=? AND source_sha256=? AND source_member=?",
-                (prepared.adapter_id, prepared.source_sha256, prepared.source_member or ""),
-            ).fetchone()
-            if previous_source is None:
-                con.execute(
-                    """INSERT INTO memory_l0_sources(
-                       source_id,adapter_id,source_kind,source_sha256,source_name,source_member,
-                       first_imported_at_utc,last_seen_at_utc,metadata_json
-                       ) VALUES(?,?,?,?,?,?,?,?,?)""",
-                    (
-                        source_id, prepared.adapter_id, prepared.source_kind, prepared.source_sha256,
-                        prepared.source_name, prepared.source_member or "", now, now,
-                        canonical_json(dict(prepared.metadata)),
-                    ),
-                )
-            else:
-                source_id = str(previous_source["source_id"])
-                con.execute(
-                    "UPDATE memory_l0_sources SET last_seen_at_utc=? WHERE source_id=?",
-                    (now, source_id),
-                )
+            if batch and con.execute("SELECT 1 FROM memory_l0_records LIMIT 1").fetchone():
+                raise ValueError("Batch reconstruction requires an empty L0 store; use incremental update")
+            for prepared in sources:
+                source_id = source_ids[source_key(prepared)]
+                previous_source = con.execute(
+                    "SELECT source_id FROM memory_l0_sources WHERE adapter_id=? AND source_sha256=? AND source_member=?",
+                    (prepared.adapter_id, prepared.source_sha256, prepared.source_member or ""),
+                ).fetchone()
+                if previous_source is None:
+                    con.execute(
+                        """INSERT INTO memory_l0_sources(
+                           source_id,adapter_id,source_kind,source_sha256,source_name,source_member,
+                           first_imported_at_utc,last_seen_at_utc,metadata_json
+                           ) VALUES(?,?,?,?,?,?,?,?,?)""",
+                        (
+                            source_id, prepared.adapter_id, prepared.source_kind, prepared.source_sha256,
+                            prepared.source_name, prepared.source_member or "", now, now,
+                            canonical_json(dict(prepared.metadata)),
+                        ),
+                    )
+                else:
+                    source_id = str(previous_source["source_id"])
+                    con.execute(
+                        "UPDATE memory_l0_sources SET last_seen_at_utc=? WHERE source_id=?",
+                        (now, source_id),
+                    )
 
-            for record in prepared.iter_records():
+            for prepared, record in entries:
+                source_id = source_ids[source_key(prepared)]
                 counters["seen"] += 1
                 current = con.execute(
                     """SELECT record_id,revision,content_sha256 FROM memory_l0_records
@@ -150,10 +174,11 @@ class UnifiedL0Store:
         return {
             "ok": True,
             "status": "planned" if dry_run else "imported",
-            "adapter_id": prepared.adapter_id,
-            "source_kind": prepared.source_kind,
-            "source_sha256": prepared.source_sha256,
-            "source_name": prepared.source_name,
+            "adapter_id": sources[0].adapter_id if len(sources) == 1 else "batch",
+            "source_kind": sources[0].source_kind if len(sources) == 1 else "mixed",
+            "source_sha256": sources[0].source_sha256 if len(sources) == 1 else None,
+            "source_name": sources[0].source_name if len(sources) == 1 else None,
+            "import_mode": "batch_reconstruction" if batch else "incremental",
             "schema_version": L0_SCHEMA_VERSION,
             "visibility_classification": True,
             "attachment_catalog": True,

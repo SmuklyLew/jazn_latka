@@ -693,7 +693,7 @@ class ProtocolEngine:
         target.parent.mkdir(parents=True, exist_ok=True)
         store = UnifiedMemoryDatabase(target, settings=self.settings)
         initialized = store.initialize()
-        imported = store.import_sources(sources, dry_run=False, full_validation=False)
+        imported = store.import_sources(sources, dry_run=False, full_validation=False, mode="batch")
         validation = self.validate_test01(target)
         return {"initialized": initialized, "import": imported, "validation": validation}
 
