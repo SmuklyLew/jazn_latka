@@ -3,11 +3,11 @@
   "version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
   "runtime_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
   "package_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
-  "generated_at_utc": "2026-09-14T18:07:12+00:00",
-  "updated_at_utc": "2026-09-14T18:07:12+00:00",
+  "generated_at_utc": "2026-09-14T18:11:56+00:00",
+  "updated_at_utc": "2026-09-14T18:11:56+00:00",
   "start_file": "run.py",
-  "file_count": 1700,
-  "static_file_count": 1700,
+  "file_count": 1701,
+  "static_file_count": 1701,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -264,7 +264,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2965,
-      "sha256": "074d79764be850ab7eb500fd94036a1e8cacac65ede5ef22bfe9d13c4eb7740a",
+      "sha256": "2318fbe507204a708200a220004ccef697f5f75bdc570121e79fbc314de52a06",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13330,6 +13330,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_batch_reconstruction.py",
+      "size_bytes": 3511,
+      "sha256": "35c137a3cb3e814b909a1a0bb84ae2bb320c59e0b6196acc88b2fc894bba84b7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_cloud_gateway.py",
       "size_bytes": 8420,
       "sha256": "fc2088405616bae8fe9d87b977f5b9d8a7d809eb34479f185d12c9590430e882",
@@ -15167,8 +15176,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1462088,
-      "sha256": "5621cb83de116f793d2c2ce7ca89a21d90fc95968941fcd789927bc350fdd8cc",
+      "size_bytes": 1463888,
+      "sha256": "776ff8a1208d418780581182a0706f6075822dd4eddc09132fc65e90ecfac4e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
