@@ -1,5 +1,5 @@
 {
-  "base_branch": "origin/master",
+  "base_branch": "master",
   "base_merge_commit": "8d8f7169527be99a71ca575c7a306e334bfb69ef",
   "base_version": "16.3.25.5.75-jazn-studio-pamieci-master73-convergence",
   "commit_date": "2026-09-14T20:07:12+02:00",
@@ -13,7 +13,7 @@
     "update_version": "release_version"
   },
   "lineage": {
-    "base_branch": "origin/master",
+    "base_branch": "master",
     "base_commit": "9d38a294c0479078e75b6385c8d46561c5d055c7",
     "base_version": "16.3.25.5.74.1.001-host-handoff-outcome-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
