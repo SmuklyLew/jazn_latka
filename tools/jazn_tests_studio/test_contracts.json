@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.74.1.001",
-  "active_definition_count": 1558,
+  "system_version": "16.3.25.5.74.2.001",
+  "active_definition_count": 1566,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -5271,6 +5271,207 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 161
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_daemon_submit_transport_timeout_preserves_preallocated_request_id": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_daemon_submit_transport_timeout_preserves_preallocated_request_id",
+      "purpose": "Daemon submit transport timeout preserves preallocated request id",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request",
+      "purpose": "Secure mcp gateway transport timeout becomes poll same request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn",
+      "purpose": "Secure mcp gateway pending ack is poll not new turn",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall",
+      "purpose": "Memory recall pending transport is not misclassified as missing recall",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_resume_transport_timeout_keeps_existing_daemon_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_resume_transport_timeout_keeps_existing_daemon_request",
+      "purpose": "Resume transport timeout keeps existing daemon request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 144
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped",
+      "purpose": "Mcp jsonrpc request identity is stable and subject scoped",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 164
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_dispatch_propagates_request_id_to_gateway": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_dispatch_propagates_request_id_to_gateway",
+      "purpose": "Mcp dispatch propagates request id to gateway",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 191
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume",
+      "purpose": "Chatgpt loader contract names transport timeout and idempotent resume",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 240
     },
     "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_existing_host_packet_builder_is_now_a_current_turn_gate": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
