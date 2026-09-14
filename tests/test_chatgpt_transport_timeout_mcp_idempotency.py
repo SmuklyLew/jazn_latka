@@ -213,7 +213,7 @@ def test_mcp_dispatch_propagates_request_id_to_gateway(tmp_path: Path) -> None:
                 },
             }
 
-        def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:
+        def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
             raise AssertionError("continuation is not used for poll_runtime")
 
     server = object.__new__(JaznMcpServer)
