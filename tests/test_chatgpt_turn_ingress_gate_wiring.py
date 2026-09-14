@@ -112,7 +112,13 @@ def test_mcp_visible_reply_entrypoint_calls_canonical_gate_before_gateway_direct
     class Gateway:
         runtime_root = "/runtime"
 
-        def chat(self, _message: str, *, session_id: str | None = None) -> dict[str, Any]:
+        def chat(
+            self,
+            _message: str,
+            *,
+            session_id: str | None = None,
+            request_id: str | None = None,
+        ) -> dict[str, Any]:
             raise AssertionError("gateway.chat must be owned by the canonical ingress gate callback")
 
         def issue_continuation(self, _response: dict[str, Any]) -> dict[str, Any]:
