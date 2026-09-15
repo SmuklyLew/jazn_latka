@@ -66,6 +66,14 @@ class RuntimeWriteAccessStatus:
         return asdict(self)
 
 
+def _strip_memory_prefix(value: str | Path) -> Path:
+    path = Path(value)
+    parts = path.parts
+    if parts and parts[0].casefold() == "memory":
+        return Path(*parts[1:])
+    return path
+
+
 def _relative_or_none(root: Path, path: Path | None) -> str | None:
     if path is None:
         return None
@@ -154,20 +162,23 @@ def ensure_runtime_write_v1(config: JaznConfig) -> RuntimeWriteAccessStatus:
     finally:
         audit.close()
 
+    # Historical config values are transport/logical names rooted at "memory/...".
+    # The selected storage root may now be workspace_runtime/core_state/memory_runtime,
+    # so strip the legacy prefix explicitly before constructing shard manifests.
     ensure_manifest(
         root,
-        config.conversation_shard_manifest_name,
+        _strip_memory_prefix(config.conversation_shard_manifest_name).as_posix(),
         logical_database="chat_context",
         role="canonical_runtime_conversation_memory",
-        default_db_path=config.memory_db_name,
+        default_db_path=_strip_memory_prefix(config.memory_db_name).as_posix(),
         max_file_bytes=config.max_sqlite_file_bytes,
     )
     ensure_manifest(
         root,
-        config.audit_shard_manifest_name,
+        _strip_memory_prefix(config.audit_shard_manifest_name).as_posix(),
         logical_database="chat_context_audit",
         role="canonical_realtime_audit",
-        default_db_path=config.audit_db_name,
+        default_db_path=_strip_memory_prefix(config.audit_db_name).as_posix(),
         max_file_bytes=config.max_sqlite_file_bytes,
     )
     transactional = initialize_transactional_memory_store(
