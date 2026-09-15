@@ -22116,14 +22116,14 @@
       "path": "tests/test_optional_memory_attach_convergence.py",
       "name": "test_system_only_runtime_uses_core_state_without_materializing_private_memory",
       "purpose": "System only runtime uses core state without materializing private memory",
-      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 10,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -22163,7 +22163,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 99
+      "line": 100
     },
     "tests/test_optional_memory_attach_convergence.py::test_required_memory_mode_is_explicit_fail_closed_policy": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22189,20 +22189,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 119
     },
-    "tests/test_optional_memory_attach_convergence.py::test_memory_mode_off_ignores_existing_memory_for_runtime_writes": {
+    "tests/test_optional_memory_attach_convergence.py::test_memory_mode_off_ignores_existing_memory_for_writes_and_recall": {
       "path": "tests/test_optional_memory_attach_convergence.py",
-      "name": "test_memory_mode_off_ignores_existing_memory_for_runtime_writes",
-      "purpose": "Memory mode off ignores existing memory for runtime writes",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "name": "test_memory_mode_off_ignores_existing_memory_for_writes_and_recall",
+      "purpose": "Memory mode off ignores existing memory for writes and recall",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
       "tags": [
-        "memory",
-        "runtime"
+        "memory"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -22216,7 +22215,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 138
     },
     "tests/test_optional_memory_attach_convergence.py::test_runtime_writers_do_not_make_core_state_look_like_attached_memory": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22243,7 +22242,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 163
     },
     "tests/test_optional_memory_attach_convergence.py::test_existing_external_memory_switches_runtime_storage_back_to_memory_root": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22270,7 +22269,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 183
+      "line": 188
     },
     "tests/test_optional_memory_attach_convergence.py::test_generator_declares_system_memory_as_optional_and_attachable": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22296,7 +22295,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 203
+      "line": 208
     },
     "tests/test_optional_memory_attach_convergence.py::test_generator_declares_memory_package_data_only": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22323,7 +22322,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 217
+      "line": 222
     },
     "tests/test_optional_memory_attach_convergence.py::test_root_memory_attachment_contract_matches_runtime_policy": {
       "path": "tests/test_optional_memory_attach_convergence.py",
@@ -22350,7 +22349,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 225
+      "line": 230
     },
     "tests/test_pack_generator_archive_io.py::test_parser_exposes_only_zip_and_split_transport_scope": {
       "path": "tests/test_pack_generator_archive_io.py",
