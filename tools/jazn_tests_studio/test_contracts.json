@@ -11649,11 +11649,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 90
     },
     "tests/test_host_finalization_recovery.py::test_resume_tool_is_private_read_only_and_has_no_message_input": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11671,11 +11672,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 97
     },
     "tests/test_host_finalization_recovery.py::test_resume_reuses_same_pending_contract_and_same_hmac_token": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11693,11 +11695,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 110
     },
     "tests/test_host_finalization_recovery.py::test_resume_fails_closed_after_pending_record_is_claimed": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11715,11 +11718,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 140
     },
     "tests/test_host_finalization_recovery.py::test_lost_finalization_response_recovers_display_exact_without_replay": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11737,11 +11741,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 166
+      "line": 167
     },
     "tests/test_host_finalization_recovery.py::test_gateway_result_polls_chat_result_only": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11759,11 +11764,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 225
     },
     "tests/test_host_finalized_conversation_state.py::test_host_phase_two_commits_full_turn_idempotently": {
       "path": "tests/test_host_finalized_conversation_state.py",
