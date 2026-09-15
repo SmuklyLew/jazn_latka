@@ -3,17 +3,17 @@ from __future__ import annotations
 """Transport resilience primitives for Jaźń host/runtime boundaries.
 
 The module deliberately separates retry, circuit-breaker and operation identity
-concerns.  It never retries a side-effecting operation unless the caller marks
-that operation as safe to repeat.  This is important for ChatGPT transport
+concerns. It never retries a side-effecting operation unless the caller marks
+that operation as safe to repeat. This is important for ChatGPT transport
 ambiguity: a timeout after submission is not evidence that the daemon did not
 receive the request.
 """
 
+from collections import deque
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from threading import RLock
 from typing import Any, Callable, TypeVar
-from collections import deque
 import json
 import os
 import random
@@ -56,10 +56,10 @@ class RetryBudgetSnapshot:
 
 
 class RetryBudget:
-    """Process-wide style retry budget for one dependency instance.
+    """Aggregate retry budget for one dependency instance.
 
     Per-request retry limits alone do not prevent a retry storm when many turns
-    fail at once.  This budget limits aggregate retry attempts over a rolling
+    fail at once. This budget limits aggregate retry attempts over a rolling
     time window.
     """
 
@@ -126,7 +126,7 @@ class CircuitBreakerSnapshot:
 class CircuitBreaker:
     """Small durable CLOSED/OPEN/HALF_OPEN circuit breaker.
 
-    Persistence is optional.  When enabled, only health metadata is stored; no
+    Persistence is optional. When enabled, only health metadata is stored; no
     request payload or user text is written to the breaker state file.
     """
 
@@ -177,7 +177,7 @@ class CircuitBreaker:
         self._last_failure = str(payload.get("last_failure") or "") or None
         raw_success = payload.get("last_success_at_epoch")
         self._last_success_at_epoch = float(raw_success) if raw_success is not None else None
-        # Never inherit a half-open probe lease across process restart.
+        # A half-open lease is process-local and must never survive a restart.
         if self._state == "half_open":
             self._half_open_probe_inflight = False
 
@@ -242,6 +242,16 @@ class CircuitBreaker:
             self._half_open_probe_inflight = False
             self._persist()
 
+    def record_non_transient_response(self) -> None:
+        """Release a half-open probe when the dependency answered authoritatively.
+
+        Validation errors, authentication rejections and other non-transient
+        application responses prove that the transport path itself worked. They
+        must not open a transport circuit.
+        """
+
+        self.record_success()
+
     def snapshot(self) -> CircuitBreakerSnapshot:
         now = self._clock()
         with self._lock:
@@ -303,9 +313,9 @@ class TransportSupervisor:
     ) -> T:
         """Execute one protected call.
 
-        `retry_safe=False` means one and only one transport attempt.  This is the
-        required setting for side effects whose submission outcome may be
-        ambiguous.  Safe read-only polls may use the bounded retry policy.
+        ``retry_safe=False`` means one and only one transport attempt. This is
+        mandatory for side effects whose submission outcome may be ambiguous.
+        Safe read-only polls may use the bounded retry policy.
         """
 
         attempts = self.retry_policy.max_attempts if retry_safe else 1
@@ -316,8 +326,11 @@ class TransportSupervisor:
                 result = operation()
             except BaseException as exc:
                 last_exc = exc
-                self.breaker.record_failure(f"{type(exc).__name__}:{exc}")
                 transient = bool(self._transient_error(exc))
+                if transient:
+                    self.breaker.record_failure(f"{type(exc).__name__}:{exc}")
+                else:
+                    self.breaker.record_non_transient_response()
                 can_retry = (
                     retry_safe
                     and transient
