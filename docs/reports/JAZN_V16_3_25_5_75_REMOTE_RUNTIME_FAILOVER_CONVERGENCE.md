@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.75.1 — remote runtime failover CI convergence
+# Jaźń v16.3.25.5.75.2 — remote runtime failover strict-gate convergence
 
 ## Cel
 
@@ -29,7 +29,7 @@ Aktualizacja została zweryfikowana względem bieżących oficjalnych źródeł 
 - ChatGPT Work i Codex jako execution-capable desktop surfaces:
   https://help.openai.com/en/articles/20001275
 
-Oficjalny `tunnel-client` rozróżnia foreground `run` od długotrwałego managed runtime. Dla długotrwałego procesu zaleca `tunnel-client runtimes connect`, a następnie `tunnel-client runtimes status <alias> --json`. Sukces trasy jest raportowany dopiero z bieżących pól `process_running`, `healthy` i `ready`.
+Oficjalny `tunnel-client` rozróżnia foreground `run` od długotrwałego managed runtime. Dla długotrwałego procesu zaleca `tunnel-client runtimes connect`, a następnie `tunnel-client runtimes status <alias> --json`. Sukces managed transportu jest raportowany dopiero z bieżących pól `process_running`, `healthy` i `ready`.
 
 ## Zmiany implementacyjne
 
@@ -52,9 +52,9 @@ Nowe pola planu:
 
 Klucz runtime nie jest osadzany w argv ani repo. Plan przekazuje wyłącznie bezpieczną referencję środowiskową `env:CONTROL_PLANE_API_KEY`.
 
-### Dwa niezależne poziomy readiness
+### Dwa niezależne poziomy readiness — strict gate
 
-`classify_tunnel_runtime_status()` pozostaje klasyfikatorem samego managed transportu. Wymaga:
+`classify_tunnel_runtime_status()` klasyfikuje wyłącznie managed transport. Wymaga:
 
 ```text
 process_running = true
@@ -62,13 +62,23 @@ healthy = true
 ready = true
 ```
 
-Nowy `classify_remote_runtime_failover()` dodaje obowiązkową drugą bramę:
+Nawet przy wszystkich trzech polach `true` ten classifier **nie może już ustawić** `remote_runtime_transport_available=true`. Zwraca wtedy:
+
+```text
+tunnel_transport_ready = true
+remote_runtime_transport_available = false
+execution_route = none
+next_action = verify_chatgpt_connector_capability
+reason_code = secure_mcp_tunnel_ready_connector_unverified
+```
+
+Dopiero `classify_remote_runtime_failover()` dodaje obowiązkową drugą bramę:
 
 ```text
 host_connector_capability_available = true
 ```
 
-Dopiero łączne spełnienie obu warstw może ustawić:
+Tylko łączne spełnienie obu warstw może ustawić:
 
 ```text
 remote_runtime_transport_available = true
@@ -77,6 +87,8 @@ next_action = use_remote_runtime_transport
 ```
 
 Jeżeli managed tunnel jest zdrowy, ale capability ChatGPT nie została jawnie potwierdzona, wynik pozostaje fail-closed z `reason_code=chatgpt_connector_capability_not_verified`.
+
+Dzięki temu żaden konsument starego klasyfikatora nie może przypadkowo potraktować samej gotowości tunelu jako prawa bieżącego hosta do użycia trasy zdalnej.
 
 ### `latka_jazn/core/bridge_discovery.py`
 
@@ -140,6 +152,8 @@ Sprawdza:
 - obowiązkowy connector capability gate;
 - publikację klasyfikatora failoveru i polityki ChatGPT bridge.
 
+Ponadto aktywny `tests/test_secure_mcp_tunnel_contract.py` został zmieniony tak, aby zdrowy managed tunnel nigdy sam nie autoryzował remote route. Jego poprzednia wersja została zachowana w `tests/archive/v16.3.25.5.74.2.002-optional-memory-attach-convergence/` zgodnie z polityką archiwizacji zmienianych testów.
+
 ## CI convergence po pierwszym przebiegu
 
 Pierwszy pełny `release-hardening` po v75 ujawnił dwie niezależne niespójności obecnego drzewa, niezwiązane z kodem failoveru, ale blokujące poprawny release:
@@ -153,7 +167,7 @@ Te poprawki nie zmieniają granicy SYSTEM/MEMORY ani semantyki zdalnego failover
 
 Ta aktualizacja nie twierdzi, że Python lub ZIP może nadać kontu ChatGPT brakującą funkcję produktu.
 
-Aktualna dokumentacja OpenAI ogranicza custom MCP/Developer Mode zależnie od planu i workspace. Full MCP jest obecnie dostępne dla Business i Enterprise/Edu; Pro może łączyć MCP z uprawnieniami read/fetch. Zwykły osobisty Plus nie otrzymuje przez kod Jaźni możliwości tworzenia arbitrary custom MCP app. Dlatego:
+Aktualna dokumentacja OpenAI wskazuje pełne MCP i developer mode dla Business oraz Enterprise/Edu. Pro może łączyć custom MCP z uprawnieniami read/fetch. Osobisty Plus nie jest wymieniony jako plan z arbitrary custom MCP/developer mode w tym kontrakcie produktu. Dlatego:
 
 - kod Jaźni może przygotować, zarządzać i prawidłowo sklasyfikować Secure MCP Tunnel;
 - nie może sam włączyć connector/app capability w powierzchni ChatGPT, która jej nie udostępnia;
@@ -164,7 +178,7 @@ Na powierzchniach bez custom MCP właściwą alternatywą pozostaje jawny host h
 
 ## Wersja
 
-`16.3.25.5.75.1-remote-runtime-failover-ci-convergence`
+`16.3.25.5.75.2-remote-runtime-failover-strict-gate`
 
 ## Walidacja
 
@@ -175,4 +189,4 @@ W pierwszym przebiegu CI:
 - release-hardening na Windows wykonał 89 testów, z czego 88 przeszło, a jeden ujawnił opisany wyżej stale optional-memory expectation;
 - Ubuntu przeszedł `compileall` i Pyright (`0 errors`, 1 istniejące ostrzeżenie), po czym zatrzymał się na opisanym wyżej stale generator-version validatorze.
 
-Po poprawkach v75.1 wymagany jest ponowny pełny przebieg GitHub Actions. Release candidate może zostać zadeklarowany dopiero po rzeczywistym zielonym CI, synchronizacji kanonicznych metadanych release i sprawdzeniu braku konfliktu z bieżącym `master`.
+Po poprawkach v75.1 drugi przebieg potwierdził zielony full active-tree Pyright oraz zielone dependency-contract jobs na Windows/Linux dla obsługiwanych wersji Pythona, zanim strict-gate v75.2 dodał ostatnią korektę semantyki readiness. Po v75.2 wymagany jest najnowszy pełny przebieg GitHub Actions. Release candidate może zostać zadeklarowany dopiero po rzeczywistym zielonym CI, synchronizacji kanonicznych metadanych release i sprawdzeniu braku konfliktu z bieżącym `master`.
