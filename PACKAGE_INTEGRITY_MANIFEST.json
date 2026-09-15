@@ -3,11 +3,11 @@
   "version": "16.3.25.5.77-professional-llm-turn-runtime",
   "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
   "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "generated_at_utc": "2026-09-15T21:59:46+00:00",
-  "updated_at_utc": "2026-09-15T21:59:46+00:00",
+  "generated_at_utc": "2026-09-15T22:02:41+00:00",
+  "updated_at_utc": "2026-09-15T22:02:41+00:00",
   "start_file": "run.py",
-  "file_count": 1729,
-  "static_file_count": 1729,
+  "file_count": 1730,
+  "static_file_count": 1730,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2903,
-      "sha256": "e230211a72ad5b7021dffdff7da720a6fdeabd9c7b18cd7897b55d12d78e6697",
+      "size_bytes": 2898,
+      "sha256": "633fb959c7bb856edce584c5d035f716a915b7ff4bbec72de5cb2cca1caed72b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14005,6 +14005,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_model_request_policy.py",
+      "size_bytes": 4488,
+      "sha256": "8fead6739f637a038a3409d607eed1d44a2a603e804ae14de1c2500a9ec6e06d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_nlp_capability_contract.py",
       "size_bytes": 5264,
       "sha256": "ed04b22623f46e42e456b6b3ad64a0fd8fb31916e0f673c20a2177d84ed16b79",
@@ -15428,8 +15437,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1500593,
-      "sha256": "5169149b7974035e6db4062eae42aec4404fb5bbc33ce9e1445b7e36bddb10b4",
+      "size_bytes": 1507687,
+      "sha256": "1f0422916083e8e6354abd205063b7a8a36790adadc2cb0d17833e1365bf0660",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
