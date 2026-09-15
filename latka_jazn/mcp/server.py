@@ -3,18 +3,21 @@ from __future__ import annotations
 """MCP 2025-11-25 negotiation and typed Jaźń turn-runtime convergence.
 
 The byte-exact v76 server remains the implementation owner for tool execution,
-authentication, audit, idempotency and finalization.  This module owns protocol
+authentication, audit, idempotency and finalization. This module owns protocol
 negotiation plus the transport-facing typed turn contract used by ChatGPT.
 """
 
 import argparse
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
 
-from latka_jazn.mcp.server_legacy_v76 import *  # noqa: F401,F403
+from latka_jazn.mcp import server_legacy_v76 as _legacy
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
+    READ_ONLY_TOOLS,
     TASK_EXTENSION_ID,
+    TOOL_DEFINITIONS,
 )
 from latka_jazn.mcp.turn_runtime_adapter import McpTurnRuntimeAdapter
 from latka_jazn.runtime.turn_runtime import TURN_RUNTIME_CAPABILITY
@@ -26,6 +29,17 @@ MCP_SUPPORTED_PROTOCOL_VERSIONS = (
     MCP_PROTOCOL_VERSION_LATEST,
     MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION,
 )
+
+
+def __getattr__(name: str) -> Any:
+    """Preserve runtime compatibility for non-canonical legacy module exports.
+
+    New code should import the explicit public names from this module. The
+    fallback exists only so older integrations that reached through
+    ``latka_jazn.mcp.server`` do not break during the convergence release.
+    """
+
+    return getattr(_legacy, name)
 
 
 class JaznMcpServer(_V76JaznMcpServer):
@@ -45,18 +59,6 @@ class JaznMcpServer(_V76JaznMcpServer):
             return candidate
         return MCP_PROTOCOL_VERSION_LATEST
 
-    def _client_supports_tasks(self, metadata: Mapping[str, Any]) -> bool:
-        # Jaźń's existing task adapter predates standard MCP 2025-11-25 Tasks.
-        # Keep it only as a bounded legacy extension on the protocol where it
-        # was introduced; never advertise partial standard-Tasks support.
-        if self.negotiated_protocol_version != MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
-            return False
-        capabilities = metadata.get("io.modelcontextprotocol/clientCapabilities")
-        if not isinstance(capabilities, Mapping):
-            return False
-        extensions = capabilities.get("extensions")
-        return isinstance(extensions, Mapping) and TASK_EXTENSION_ID in extensions
-
     def _server_capabilities(self, protocol_version: str | None = None) -> dict[str, Any]:
         resolved = protocol_version or self.negotiated_protocol_version or MCP_PROTOCOL_VERSION_LATEST
         capabilities: dict[str, Any] = {
@@ -68,6 +70,48 @@ class JaznMcpServer(_V76JaznMcpServer):
         if resolved == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
             capabilities["extensions"] = {TASK_EXTENSION_ID: {}}
         return capabilities
+
+    def _prepare_legacy_dispatch(self, request_value: dict[str, Any]) -> dict[str, Any]:
+        """Remove the pre-standard task extension on modern MCP sessions.
+
+        v76 may wrap a pending generate call as its historical task extension
+        when the client sends that extension in ``_meta``. For a negotiated
+        2025-11-25 session that would look like partial standard Tasks support,
+        so the modern facade suppresses the old extension before dispatch.
+        Legacy 2025-06-18 sessions are passed byte-for-byte to the old server.
+        """
+
+        if self.negotiated_protocol_version == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
+            return request_value
+        if request_value.get("method") != "tools/call":
+            return request_value
+
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return request_value
+        metadata = params.get("_meta")
+        if not isinstance(metadata, Mapping):
+            return request_value
+        client_capabilities = metadata.get("io.modelcontextprotocol/clientCapabilities")
+        if not isinstance(client_capabilities, Mapping):
+            return request_value
+        extensions = client_capabilities.get("extensions")
+        if not isinstance(extensions, Mapping) or TASK_EXTENSION_ID not in extensions:
+            return request_value
+
+        prepared = deepcopy(request_value)
+        prepared_params = dict(prepared.get("params") or {})
+        prepared_meta = dict(prepared_params.get("_meta") or {})
+        prepared_client_capabilities = dict(
+            prepared_meta.get("io.modelcontextprotocol/clientCapabilities") or {}
+        )
+        prepared_extensions = dict(prepared_client_capabilities.get("extensions") or {})
+        prepared_extensions.pop(TASK_EXTENSION_ID, None)
+        prepared_client_capabilities["extensions"] = prepared_extensions
+        prepared_meta["io.modelcontextprotocol/clientCapabilities"] = prepared_client_capabilities
+        prepared_params["_meta"] = prepared_meta
+        prepared["params"] = prepared_params
+        return prepared
 
     def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None:
         method = request_value.get("method")
@@ -117,7 +161,7 @@ class JaznMcpServer(_V76JaznMcpServer):
             }
 
         # MCP 2025-11-25 Tasks are experimental and have a complete standardized
-        # lifecycle (list/get/result/cancel plus capability negotiation).  The
+        # lifecycle (list/get/result/cancel plus capability negotiation). The
         # preserved v76 adapter is intentionally not presented as that standard.
         if method in {"tasks/get", "tasks/list", "tasks/result", "tasks/cancel", "tasks/update"} and (
             self.negotiated_protocol_version != MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION
@@ -128,7 +172,8 @@ class JaznMcpServer(_V76JaznMcpServer):
                 "error": {"code": -32601, "message": "Method not found"},
             }
 
-        response = super().handle(request_value)
+        dispatched_request = self._prepare_legacy_dispatch(request_value)
+        response = super().handle(dispatched_request)
         return self.turn_runtime.decorate_call_response(request_value, response)
 
 
