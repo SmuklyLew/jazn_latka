@@ -27514,14 +27514,14 @@
       "path": "tests/test_runtime_memory_install.py",
       "name": "test_install_is_idempotent_and_blocks_only_legacy_write",
       "purpose": "Install is idempotent and blocks only legacy write",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.memory_tier_store",
@@ -27531,7 +27531,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 57
     },
     "tests/test_runtime_memory_install.py::test_bound_session_context_is_used_until_reset": {
       "path": "tests/test_runtime_memory_install.py",
@@ -27554,7 +27554,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 72
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_project_instructions_are_thin_loader_to_agents_router": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
