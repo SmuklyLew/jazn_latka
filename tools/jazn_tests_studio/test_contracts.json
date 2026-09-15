@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.74.2.002",
-  "active_definition_count": 1588,
+  "system_version": "16.3.25.5.75.2",
+  "active_definition_count": 1593,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1831,6 +1831,24 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 63
+    },
+    "tests/test_bridge_discovery_remote_failover_contract.py::test_bridge_discovery_publishes_managed_remote_failover_contract": {
+      "path": "tests/test_bridge_discovery_remote_failover_contract.py",
+      "name": "test_bridge_discovery_publishes_managed_remote_failover_contract",
+      "purpose": "Bridge discovery publishes managed remote failover contract",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_capability_status_boundaries.py::test_model_adapter_status_rejects_a_non_object_nested_contract": {
       "path": "tests/test_capability_status_boundaries.py",
@@ -31680,6 +31698,88 @@
       "description_source": "source_identity",
       "line": 137
     },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_managed_runtime_is_preferred_long_lived_supervision": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_managed_runtime_is_preferred_long_lived_supervision",
+      "purpose": "Managed runtime is preferred long lived supervision",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability",
+      "purpose": "Remote failover requires tunnel and explicit chatgpt connector capability",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready",
+      "purpose": "Remote failover fails closed when managed tunnel is not ready",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_runtime_alias_must_be_stable_and_whitespace_free": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_runtime_alias_must_be_stable_and_whitespace_free",
+      "purpose": "Runtime alias must be stable and whitespace free",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
     "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_reuses_verified_active_subject_root": {
       "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
       "name": "test_ensure_tunnel_runtime_reuses_verified_active_subject_root",
@@ -31806,19 +31906,19 @@
       "description_source": "source_identity",
       "line": 38
     },
-    "tests/test_secure_mcp_tunnel_contract.py::test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields": {
+    "tests/test_secure_mcp_tunnel_contract.py::test_managed_tunnel_readiness_never_claims_host_route_by_itself": {
       "path": "tests/test_secure_mcp_tunnel_contract.py",
-      "name": "test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields",
-      "purpose": "Remote runtime route requires all managed tunnel readiness fields",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "name": "test_managed_tunnel_readiness_never_claims_host_route_by_itself",
+      "purpose": "Managed tunnel readiness never claims host route by itself",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
       "tags": [
+        "host",
         "mcp",
-        "repository",
-        "runtime"
+        "repository"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
@@ -31831,21 +31931,21 @@
       "path": "tests/test_secure_mcp_tunnel_contract.py",
       "name": "test_unknown_tunnel_status_fails_closed",
       "purpose": "Unknown tunnel status fails closed",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 65
     },
     "tests/test_semantic_routing_completion.py::test_semantic_routing_completion_release_contract_tracks_current_version": {
       "path": "tests/test_semantic_routing_completion.py",
@@ -32104,11 +32204,11 @@
       "path": "tests/test_shard_manifest_fail_closed.py",
       "name": "test_missing_manifest_keeps_single_database_compatibility",
       "purpose": "Missing manifest keeps single database compatibility",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -32136,7 +32236,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 46
     },
     "tests/test_shard_manifest_fail_closed.py::test_path_escape_is_rejected_for_read_and_write": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32156,7 +32256,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 56
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_active_shard_and_duplicate_ids_are_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32176,7 +32276,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 67
     },
     "tests/test_shard_manifest_fail_closed.py::test_role_mismatch_is_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32196,7 +32296,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 82
     },
     "tests/test_shard_manifest_fail_closed.py::test_manager_creates_valid_manifest_only_when_missing": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32214,7 +32314,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 93
     },
     "tests/test_sidecar_migration_contract.py::test_legacy_mixed_audit_sidecar_is_copied_without_mutating_source": {
       "path": "tests/test_sidecar_migration_contract.py",

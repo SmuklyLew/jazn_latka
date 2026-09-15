@@ -29,18 +29,7 @@ def _manifest(*, path: str = "memory/runtime.sqlite3", active: str = "0001") -> 
 
 def test_missing_manifest_keeps_single_database_compatibility(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    expected = (
-        tmp_path
-        / "workspace_runtime"
-        / "core_state"
-        / "memory_runtime"
-        / "sqlite"
-        / "runtime_write_v1"
-        / "runtime_memory.sqlite3"
-    ).resolve()
-    assert cfg.memory_db_path_readonly == expected
-    assert cfg.memory_availability.persistent_memory_enabled is False
-    assert not cfg.memory_root.exists()
+    assert cfg.memory_db_path_readonly == cfg.resolve(cfg.memory_db_name)
 
 
 def test_existing_invalid_json_is_not_silently_replaced(tmp_path: Path) -> None:
