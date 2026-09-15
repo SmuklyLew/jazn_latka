@@ -234,8 +234,8 @@ def build_secure_mcp_tunnel_plan(
 def classify_tunnel_runtime_status(payload: Mapping[str, Any] | None) -> dict[str, Any]:
     """Classify managed tunnel process/health/readiness evidence only.
 
-    This function intentionally does not claim that ChatGPT can use the tunnel.
-    Host connector/app capability is a separate gate handled by
+    A healthy tunnel is necessary but deliberately insufficient for a usable
+    ChatGPT remote route. Host connector/app capability is a separate gate in
     ``classify_remote_runtime_failover``.
     """
 
@@ -249,14 +249,17 @@ def classify_tunnel_runtime_status(payload: Mapping[str, Any] | None) -> dict[st
         "healthy": observations["healthy"],
         "ready": observations["ready"],
         "tunnel_transport_ready": ready,
-        "remote_runtime_transport_available": ready,
-        "execution_route": "remote_runtime" if ready else "none",
-        "next_action": "use_remote_runtime_transport" if ready else "keep_remote_runtime_unverified",
-        "reason_code": "secure_mcp_tunnel_ready" if ready else "secure_mcp_tunnel_not_fully_ready",
+        "remote_runtime_transport_available": False,
+        "execution_route": "none",
+        "next_action": (
+            "verify_chatgpt_connector_capability" if ready else "keep_remote_runtime_unverified"
+        ),
+        "reason_code": "secure_mcp_tunnel_ready_connector_unverified" if ready else "secure_mcp_tunnel_not_fully_ready",
         "truth_boundary": (
             "Tunnel readiness proves the managed transport process and its health/readiness only. "
-            "A host-usable failover route additionally requires explicit ChatGPT connector/app capability evidence, "
-            "and an accepted Jaźń visible turn still requires its own finalization evidence."
+            "It never proves a host-usable remote route by itself. A host-usable failover route additionally "
+            "requires explicit ChatGPT connector/app capability evidence, and an accepted Jaźń visible turn still "
+            "requires its own finalization evidence."
         ),
     }
 
@@ -268,9 +271,10 @@ def classify_remote_runtime_failover(
 ) -> dict[str, Any]:
     """Combine managed tunnel readiness with host connector capability evidence.
 
-    The route fails closed unless both sides are explicitly verified.  This is
-    the evidence that may safely populate HostExecutorObservation's
-    ``remote_runtime_transport_available`` field after a local executor failure.
+    The route fails closed unless both sides are explicitly verified. This is
+    the only classifier in this module whose positive result may safely populate
+    HostExecutorObservation's ``remote_runtime_transport_available`` field after
+    a local executor failure.
     """
 
     tunnel = classify_tunnel_runtime_status(payload)
