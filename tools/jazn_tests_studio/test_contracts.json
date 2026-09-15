@@ -32204,11 +32204,11 @@
       "path": "tests/test_shard_manifest_fail_closed.py",
       "name": "test_missing_manifest_keeps_single_database_compatibility",
       "purpose": "Missing manifest keeps single database compatibility",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -32236,7 +32236,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 46
     },
     "tests/test_shard_manifest_fail_closed.py::test_path_escape_is_rejected_for_read_and_write": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32256,7 +32256,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 56
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_active_shard_and_duplicate_ids_are_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32276,7 +32276,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 67
     },
     "tests/test_shard_manifest_fail_closed.py::test_role_mismatch_is_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32296,7 +32296,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 82
     },
     "tests/test_shard_manifest_fail_closed.py::test_manager_creates_valid_manifest_only_when_missing": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32314,7 +32314,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 93
     },
     "tests/test_sidecar_migration_contract.py::test_legacy_mixed_audit_sidecar_is_copied_without_mutating_source": {
       "path": "tests/test_sidecar_migration_contract.py",
