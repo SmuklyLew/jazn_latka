@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74.2.002",
-  "active_definition_count": 1588,
+  "active_definition_count": 1592,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31679,6 +31679,88 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 137
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_managed_runtime_is_preferred_long_lived_supervision": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_managed_runtime_is_preferred_long_lived_supervision",
+      "purpose": "Managed runtime is preferred long lived supervision",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability",
+      "purpose": "Remote failover requires tunnel and explicit chatgpt connector capability",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready",
+      "purpose": "Remote failover fails closed when managed tunnel is not ready",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_runtime_alias_must_be_stable_and_whitespace_free": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_runtime_alias_must_be_stable_and_whitespace_free",
+      "purpose": "Runtime alias must be stable and whitespace free",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
     },
     "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_reuses_verified_active_subject_root": {
       "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
