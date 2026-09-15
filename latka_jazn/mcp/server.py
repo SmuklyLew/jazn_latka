@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-"""MCP 2025-11-25 negotiation shim over the byte-exact v76 server.
+"""MCP 2025-11-25 negotiation and typed Jaźń turn-runtime convergence.
 
-The v76 implementation remains preserved as ``server_legacy_v76`` so the
-release patch stays auditable.  This module narrows only protocol negotiation
-and the legacy Tasks compatibility surface; tool execution, auth, audit,
-idempotency and Jaźń finalization remain owned by the preserved server.
+The byte-exact v76 server remains the implementation owner for tool execution,
+authentication, audit, idempotency and finalization.  This module owns protocol
+negotiation plus the transport-facing typed turn contract used by ChatGPT.
 """
 
 import argparse
@@ -17,6 +16,8 @@ from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
     TASK_EXTENSION_ID,
 )
+from latka_jazn.mcp.turn_runtime_adapter import McpTurnRuntimeAdapter
+from latka_jazn.runtime.turn_runtime import TURN_RUNTIME_CAPABILITY
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
 MCP_PROTOCOL_VERSION_LATEST = "2025-11-25"
@@ -28,13 +29,14 @@ MCP_SUPPORTED_PROTOCOL_VERSIONS = (
 
 
 class JaznMcpServer(_V76JaznMcpServer):
-    """v76.1 protocol/capability convergence without changing tool semantics."""
+    """Modern protocol facade over the single canonical Jaźń runtime."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.negotiated_protocol_version: str | None = None
         self.client_capabilities: dict[str, Any] = {}
         self.client_initialized = False
+        self.turn_runtime = McpTurnRuntimeAdapter()
 
     @staticmethod
     def _negotiate_protocol_version(requested: Any) -> str:
@@ -57,7 +59,12 @@ class JaznMcpServer(_V76JaznMcpServer):
 
     def _server_capabilities(self, protocol_version: str | None = None) -> dict[str, Any]:
         resolved = protocol_version or self.negotiated_protocol_version or MCP_PROTOCOL_VERSION_LATEST
-        capabilities: dict[str, Any] = {"tools": {"listChanged": False}}
+        capabilities: dict[str, Any] = {
+            "tools": {"listChanged": False},
+            "experimental": {
+                TURN_RUNTIME_CAPABILITY: self.turn_runtime.capability_descriptor(),
+            },
+        }
         if resolved == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
             capabilities["extensions"] = {TASK_EXTENSION_ID: {}}
         return capabilities
@@ -91,16 +98,28 @@ class JaznMcpServer(_V76JaznMcpServer):
                 "result": {
                     "protocolVersion": negotiated,
                     "capabilities": self._server_capabilities(negotiated),
-                    "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
+                    "serverInfo": {
+                        "name": "jazn-private-mcp",
+                        "version": PACKAGE_VERSION_FULL,
+                        "description": (
+                            "Private Jaźń MCP bridge with stable request identity, "
+                            "typed turn phases and fail-closed visible-output finalization."
+                        ),
+                    },
                     "instructions": (
-                        "Use jazn_generate_visible_reply once per new user turn with a stable request_id; "
-                        "resume pending work with jazn_resume_visible_reply using the same daemon_request_id; "
-                        "finalize generate_then_finalize responses with jazn_finalize_reply."
+                        "Use jazn_generate_visible_reply exactly once for a new user turn with a stable request_id. "
+                        "If action=poll_runtime, call jazn_resume_visible_reply with the same daemon_request_id and "
+                        "never replay the user message. If action=generate_then_finalize, generate only from the "
+                        "returned host contract and finish with jazn_finalize_reply. Display Jaźń output only when "
+                        "the returned action is display_exact."
                     ),
                 },
             }
 
-        if method in {"tasks/get", "tasks/cancel", "tasks/update"} and (
+        # MCP 2025-11-25 Tasks are experimental and have a complete standardized
+        # lifecycle (list/get/result/cancel plus capability negotiation).  The
+        # preserved v76 adapter is intentionally not presented as that standard.
+        if method in {"tasks/get", "tasks/list", "tasks/result", "tasks/cancel", "tasks/update"} and (
             self.negotiated_protocol_version != MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION
         ):
             return {
@@ -109,7 +128,8 @@ class JaznMcpServer(_V76JaznMcpServer):
                 "error": {"code": -32601, "message": "Method not found"},
             }
 
-        return super().handle(request_value)
+        response = super().handle(request_value)
+        return self.turn_runtime.decorate_call_response(request_value, response)
 
 
 def main(argv: list[str] | None = None) -> int:
