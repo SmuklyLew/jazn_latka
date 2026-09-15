@@ -15,8 +15,7 @@ import os
 from pathlib import Path
 import signal
 import threading
-import time
-from typing import Any, Callable
+from typing import Any
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon_lifecycle_hotfix import install_runtime_daemon_lifecycle_hotfix
@@ -261,23 +260,13 @@ def run_supervisor(
     check_interval_seconds: float = DEFAULT_SUPERVISOR_CHECK_INTERVAL_SECONDS,
     startup_timeout_seconds: float = DEFAULT_SUPERVISOR_STARTUP_TIMEOUT_SECONDS,
     stop_event: threading.Event | None = None,
-    sleep: Callable[[float], None] = time.sleep,
 ) -> int:
     runtime_root = Path(root).expanduser().resolve()
-    claimed, existing_pid = _claim_supervisor_pid(runtime_root)
+    claimed, _existing_pid = _claim_supervisor_pid(runtime_root)
     if not claimed:
-        _write_json_atomic(
-            supervisor_state_path(runtime_root),
-            {
-                "schema_version": SUPERVISOR_SCHEMA_VERSION,
-                "package_version": PACKAGE_VERSION_FULL,
-                "state": "duplicate_supervisor_rejected",
-                "root": str(runtime_root),
-                "supervisor_pid": os.getpid(),
-                "existing_supervisor_pid": existing_pid,
-                "heartbeat_at_utc": utc_now_iso(),
-            },
-        )
+        # A duplicate start must never overwrite the live supervisor's shared
+        # state file.  The PID contract is sufficient evidence for the caller;
+        # the existing supervisor remains the only owner of state.json.
         return 41
 
     event = stop_event or threading.Event()
