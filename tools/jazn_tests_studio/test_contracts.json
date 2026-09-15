@@ -9028,13 +9028,13 @@
       "path": "tests/test_diagnostics_memory_status.py",
       "name": "test_transactional_memory_startup_initializer_creates_valid_store",
       "purpose": "Transactional memory startup initializer creates valid store",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands",
@@ -9066,7 +9066,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 57
     },
     "tests/test_diagnostics_rest_nlp_readiness.py::test_status_binds_rest_ready_and_executes_fast_nlp_probe": {
       "path": "tests/test_diagnostics_rest_nlp_readiness.py",
