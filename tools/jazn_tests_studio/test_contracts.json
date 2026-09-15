@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.75.2",
-  "active_definition_count": 1593,
+  "system_version": "16.3.25.5.76.0",
+  "active_definition_count": 1604,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1831,6 +1831,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 63
+    },
+    "tests/test_bounded_host_race_regressions_v16325576.py::test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns": {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "name": "test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns",
+      "purpose": "Submit does not clobber worker state if worker advances before popen returns",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_bounded_host_race_regressions_v16325576.py::test_duplicate_supervisor_start_does_not_overwrite_live_owner_state": {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "name": "test_duplicate_supervisor_start_does_not_overwrite_live_owner_state",
+      "purpose": "Duplicate supervisor start does not overwrite live owner state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_bridge_discovery_remote_failover_contract.py::test_bridge_discovery_publishes_managed_remote_failover_contract": {
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
@@ -12310,6 +12350,137 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 172
+    },
+    "tests/test_host_operations_v16325576.py::test_host_operation_target_is_canonical_and_root_override_is_rejected": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_host_operation_target_is_canonical_and_root_override_is_rejected",
+      "purpose": "Host operation target is canonical and root override is rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_host_operations_v16325576.py::test_runtime_bootstrap_operation_requires_explicit_source_and_destination": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_runtime_bootstrap_operation_requires_explicit_source_and_destination",
+      "purpose": "Runtime bootstrap operation requires explicit source and destination",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_host_operations_v16325576.py::test_submit_is_idempotent_and_conflicting_reuse_fails_closed": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_submit_is_idempotent_and_conflicting_reuse_fails_closed",
+      "purpose": "Submit is idempotent and conflicting reuse fails closed",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_host_operations_v16325576.py::test_status_is_pollable_without_waiting_for_target_completion": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_status_is_pollable_without_waiting_for_target_completion",
+      "purpose": "Status is pollable without waiting for target completion",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
+    "tests/test_host_operations_v16325576.py::test_posix_detachment_uses_new_session": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_posix_detachment_uses_new_session",
+      "purpose": "Posix detachment uses new session",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_host_operations_v16325576.py::test_cli_exposes_bounded_operation_and_supervisor_commands": {
+      "path": "tests/test_host_operations_v16325576.py",
+      "name": "test_cli_exposes_bounded_operation_and_supervisor_commands",
+      "purpose": "Cli exposes bounded operation and supervisor commands",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
     },
     "tests/test_host_package_freeze.py::test_resolved_package_part_is_frozen_independently_from_host_upload": {
       "path": "tests/test_host_package_freeze.py",
@@ -31371,6 +31542,64 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 459
+    },
+    "tests/test_runtime_supervisor_v16325576.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
+      "path": "tests/test_runtime_supervisor_v16325576.py",
+      "name": "test_supervisor_backoff_is_bounded_and_increases_before_cap",
+      "purpose": "Supervisor backoff is bounded and increases before cap",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_runtime_supervisor_v16325576.py::test_windows_supervisor_plan_matches_task_scheduler_recovery_contract": {
+      "path": "tests/test_runtime_supervisor_v16325576.py",
+      "name": "test_windows_supervisor_plan_matches_task_scheduler_recovery_contract",
+      "purpose": "Windows supervisor plan matches task scheduler recovery contract",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_runtime_supervisor_v16325576.py::test_supervisor_status_fails_closed_without_live_pid": {
+      "path": "tests/test_runtime_supervisor_v16325576.py",
+      "name": "test_supervisor_status_fails_closed_without_live_pid",
+      "purpose": "Supervisor status fails closed without live pid",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
     },
     "tests/test_runtime_turn_liveness.py::test_memory_experience_policy_allows_grounded_memory_content": {
       "path": "tests/test_runtime_turn_liveness.py",

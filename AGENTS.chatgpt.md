@@ -98,9 +98,18 @@ Jeżeli zweryfikowany operator już istnieje, nową paczkę materializuj jego ko
 python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT> --json
 ```
 
+W hoście o krótkim lub niestabilnym budżecie jednego wywołania nie trzymaj procesu ChatGPT przez cały `runtime-bootstrap`. Po zweryfikowaniu istniejącego operatora prealokuj stabilny `operation_id` i użyj durable operation:
+
+```bash
+python -X utf8 run.py host-op-submit --operation-id <bootstrap-id> --kind runtime-bootstrap -- --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT>
+python -X utf8 run.py host-op-status --operation-id <ten-sam-bootstrap-id> --json
+```
+
+Jeżeli odpowiedź submit zginęła po utworzeniu procesu, nie twórz nowego `operation_id`. Polluj ten sam identyfikator; ponowny submit z tym samym ID i tym samym fingerprintem jest idempotentny, a inna treść pod tym samym ID ma zostać odrzucona jako konflikt.
+
 Nie pobieraj repozytorium lub release z GitHuba jako automatycznego substytutu brakującego lokalnego runtime.
 
-## 4. Preflight i persistent daemon
+## 4. Preflight, bounded host operations i persistent daemon
 
 Po uzyskaniu startera użyj publicznych komend; wszystkie są przekazywane do `main.py`:
 
@@ -112,14 +121,33 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py status --json
 ```
 
-Snapshot nie potwierdza procesu. Jeżeli prerekwizyty aktywacji są gotowe, a daemon jest nieaktywny:
+Snapshot nie potwierdza procesu. Lokalny operator bez ciasnego budżetu hosta może nadal wykonać synchroniczny start:
 
 ```bash
 python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
+Host ChatGPT lub inna powierzchnia, która może utracić transport zanim `start_daemon()` zakończy readiness, powinna zamiast tego prealokować `operation_id` i wykonać tylko krótki submit:
+
+```bash
+python -X utf8 run.py host-op-submit --operation-id <start-id> --kind daemon-start --json
+python -X utf8 run.py host-op-status --operation-id <ten-sam-start-id> --json
+```
+
+`accepted=true` albo `status=running` dowodzi wyłącznie przyjęcia operacji i ewentualnie utworzenia workera. Nie jest dowodem aktywnego daemona. Dopiero po `status=completed` wykonaj kanoniczny `run.py status --json` i zastosuj pełne kryteria runtime readiness.
+
+Długowieczny lokalny supervisor jest osobną warstwą od daemona i od tunelu. Uruchamia się go przez kanoniczny control plane:
+
+```bash
+python -X utf8 run.py supervisor-plan --json
+python -X utf8 run.py host-op-submit --operation-id <supervisor-id> --kind supervisor-start --json
+python -X utf8 run.py supervisor-status --json
+```
+
+Supervisor w steady state używa taniego `/live`; pełny `status_daemon()` oraz integralność/provenance/start opłaca dopiero podczas recovery. Nie jest alternatywnym lifecycle: recovery nadal wywołuje kanoniczny `start_daemon()`. Na Windows plan może być własnością Task Scheduler z `StartWhenAvailable=true`, `MultipleInstancesPolicy=IgnoreNew`, `ExecutionTimeLimit=PT0S` i `RestartOnFailure`; prawdziwy Windows Service wymaga rzeczywistego hosta Service Control Manager i nie może być imitowany przez zwykły proces Pythona.
+
+Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem. Żywy supervisor nie jest dowodem żywego daemona.
 
 Po udanym starcie nie zatrzymuj daemona po każdej wiadomości.
 
@@ -134,6 +162,8 @@ Transakcyjne przełączenie na nowszy root:
 ```bash
 python -X utf8 run.py reload --root <CURRENT_OPERATOR_ROOT> --target-root <NEW_VERSIONED_ROOT> --json
 ```
+
+`restart`/`reload` pozostają synchronicznymi, transakcyjnymi operacjami lifecycle z rollbackiem i nie mogą być semantycznie zastąpione samym krótkim submit. Durable host operation służy transportowi długiej operacji poza życie pojedynczego wywołania hosta; nie osłabia atomowości właściwego lifecycle.
 
 Nie zastępuj lifecycle ręcznym `kill`, własnym `subprocess.Popen`, edycją markera ani luźnym `stop` + `start`.
 

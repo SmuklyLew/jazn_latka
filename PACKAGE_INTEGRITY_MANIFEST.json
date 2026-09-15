@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
-  "runtime_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
-  "package_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
-  "generated_at_utc": "2026-09-15T15:02:47+00:00",
-  "updated_at_utc": "2026-09-15T15:02:47+00:00",
+  "version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
+  "runtime_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
+  "package_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
+  "generated_at_utc": "2026-09-15T17:21:50+00:00",
+  "updated_at_utc": "2026-09-15T17:21:50+00:00",
   "start_file": "run.py",
-  "file_count": 1705,
-  "static_file_count": 1705,
+  "file_count": 1711,
+  "static_file_count": 1711,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -173,8 +173,8 @@
     },
     {
       "path": ".github/workflows/stable-test-contracts.yml",
-      "size_bytes": 3702,
-      "sha256": "73f920502c97902310efa354476c14bca6662b962349373934896e041ea518d9",
+      "size_bytes": 4267,
+      "sha256": "0f6f0b6d86eb7153d2a775b651a15669f78c9bc0f99622a88539a9de2e4f5534",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 20489,
-      "sha256": "1a8db1167286726ad5821616dcecab818c154873342718b4bd989de4286de788",
+      "size_bytes": 23179,
+      "sha256": "d081cbe51c922c0e9e8da27cc4be56a283cb114031bd03c2af1f205cc40fdaea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2946,
-      "sha256": "ee4fbc28a7f84f4ac053e1d52ced191c438a2a958092fb0dbfa051c765790c2c",
+      "size_bytes": 2976,
+      "sha256": "40ae2ae74e30a8ac5235c66d7d0afdf825916e1121f4b6dbd8cfd1b86af9576d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2026,6 +2026,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_76_PERSISTENT_SUPERVISOR_BOUNDED_HOST_CALLS.md",
+      "size_bytes": 10091,
+      "sha256": "097d18dea3fde7970d71b35a2072ee2604fd14c4b224a17faccb47f0ca6a3916",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
@@ -2522,8 +2531,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 33532,
-      "sha256": "b921f42deb8043823f569fb77115c6c29761b300c9a7d695a736a74c69d0f26b",
+      "size_bytes": 35679,
+      "sha256": "aacb7c3330d0d8f473fe300ca7040b7a915c58913936d5dcc786735d5ae0599a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2675,8 +2684,8 @@
     },
     {
       "path": "latka_jazn/core/bridge_discovery.py",
-      "size_bytes": 10650,
-      "sha256": "882802cac924840c97f9d91b018ac7bb7ca33ed57f095868cbf9706db83eb3ca",
+      "size_bytes": 13201,
+      "sha256": "5570b15f59103062b69f63769d6628d1074b1b22265635e4a0f44e340c77be07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3583,6 +3592,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_operations.py",
+      "size_bytes": 17739,
+      "sha256": "ed4c85f6a7ad750ea21bf8b7b65566495fe7208b1dbcab903b71cb524d7b8101",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_regeneration_policy.py",
       "size_bytes": 1603,
       "sha256": "df524f7ea0f69fe7a8d7e94779fd0fb8bd83bef58ba675e95e5e23755606d9d7",
@@ -4306,6 +4324,15 @@
       "path": "latka_jazn/core/runtime_status.py",
       "size_bytes": 10737,
       "sha256": "9554e4a2a9108d93effb9bd6e06f6bc359f8c9e2d60ce983970e0b87bd0aa647",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/runtime_supervisor.py",
+      "size_bytes": 14654,
+      "sha256": "2fc876479f7bfa4be572d6552f420b691e0ca8a23fd7442b08bb65c6982e39b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8300,8 +8327,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6723,
-      "sha256": "4ac0b9f3ca0e7bcb94f73b29841c6c3a2f4d5d87b64a7b41bf6d5705029ed24a",
+      "size_bytes": 6719,
+      "sha256": "8265922111277129bd54c12622e3db5f7235f08db335ac04733e2ee3eb0f0097",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12277,6 +12304,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "size_bytes": 2388,
+      "sha256": "34ac19d9679dc26c3e35572aa1906f7df5e038608e294f356df07787d5157d57",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
       "size_bytes": 2062,
       "sha256": "2598548e3b6c8d4becc39d7f47596b50733e672970f16218f7f234cf07fe3187",
@@ -13099,6 +13135,15 @@
       "path": "tests/test_host_memory_root_regressions.py",
       "size_bytes": 6921,
       "sha256": "a4c06b8891080dda7e4d519f4f80a8d001b90db4f76e16d08c8ed169c6c4e49a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_host_operations_v16325576.py",
+      "size_bytes": 4297,
+      "sha256": "4535a7987e0f7b21695b102a94be4813b0abb3951ad4d85386fc91e53312f1ca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14527,6 +14572,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_supervisor_v16325576.py",
+      "size_bytes": 1834,
+      "sha256": "06db48ffeb9bb8c80426580ac5999fed8405bd85076c921b47b0b971c874a5d2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_turn_liveness.py",
       "size_bytes": 3474,
       "sha256": "3263329a612fd459e1bc168a7341c383c4b1128a6fb8e0d0ddd00eb05d79fc9f",
@@ -15212,8 +15266,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1484528,
-      "sha256": "7e6642238096a6643ecf0b5c3d9e15d1de4a649ec81fe25e774fdc4db317c070",
+      "size_bytes": 1493491,
+      "sha256": "97dc9cae8d07e83984e65b9d838d5d96c0b54943c64ba4b281b0d179478aa205",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15797,11 +15851,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
+  "release_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
-    "package_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
-    "release_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate"
+    "runtime_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
+    "package_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
+    "release_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls"
   },
   "legacy_aliases": {
     "version": "release_version"
