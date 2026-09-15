@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-  "runtime_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-  "package_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-  "generated_at_utc": "2026-09-15T14:42:57+00:00",
-  "updated_at_utc": "2026-09-15T14:42:57+00:00",
+  "version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "runtime_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "package_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "generated_at_utc": "2026-09-15T14:44:25+00:00",
+  "updated_at_utc": "2026-09-15T14:44:25+00:00",
   "start_file": "run.py",
-  "file_count": 1700,
-  "static_file_count": 1700,
+  "file_count": 1701,
+  "static_file_count": 1701,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2967,
-      "sha256": "dec525b8e9acea2a98c7fd0cc5b145543266d6430b094baa1947171a85dcadad",
+      "size_bytes": 2937,
+      "sha256": "74bab7e5a768d8c1b6ecde9d1c85009a2d13f02a72f700cd9808a48ef286ecef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2117,8 +2117,8 @@
     },
     {
       "path": "docs/runtime/SECURE_MCP_TUNNEL_REMOTE_RUNTIME.md",
-      "size_bytes": 5885,
-      "sha256": "475877c09f80d14eb4821e3f34c60425d51337cb559b643efdef6184eaaaabdf",
+      "size_bytes": 8439,
+      "sha256": "298bb75b6f2130bd785e389684ccd990b56edded604332048ce5fb291a0a2aca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8291,8 +8291,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6721,
-      "sha256": "f5af390d2a8919a5650ad87e108ff819d02b4c70418b83da55c482a178a02607",
+      "size_bytes": 6720,
+      "sha256": "73ba57742a9c097089df3d684a2cccd74f679b571b87bd187a06b9d1ce279d18",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14518,6 +14518,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "size_bytes": 3410,
+      "sha256": "1ccb59a00991618f11e3e3d0da059c8918b79c344a62533f806abdd88a7691e3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
       "size_bytes": 4384,
       "sha256": "ccb90749c2b3018f7f8d7dd64ff5adf4bb3dd3df8ccbbeb6655588776013d1e2",
@@ -15167,8 +15176,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1480437,
-      "sha256": "207235179cc54904a3eeb3c874abfff344e0c328d8c32b2da0ed37c4b8115c2a",
+      "size_bytes": 1483740,
+      "sha256": "216da5cd0165c1c2d3cb7baf33f6c55fa3e0062fe22c55544161ee29a1e14710",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15752,11 +15761,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
+  "release_version": "16.3.25.5.75-remote-runtime-failover-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-    "package_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-    "release_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence"
+    "runtime_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+    "package_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+    "release_version": "16.3.25.5.75-remote-runtime-failover-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
