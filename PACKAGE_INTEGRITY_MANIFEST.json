@@ -3,11 +3,11 @@
   "version": "16.3.25.5.74.2.001-chatgpt-transport-mcp-idempotency",
   "runtime_version": "16.3.25.5.74.2.001-chatgpt-transport-mcp-idempotency",
   "package_version": "16.3.25.5.74.2.001-chatgpt-transport-mcp-idempotency",
-  "generated_at_utc": "2026-09-14T23:15:14+00:00",
-  "updated_at_utc": "2026-09-14T23:15:14+00:00",
+  "generated_at_utc": "2026-09-15T10:28:21+00:00",
+  "updated_at_utc": "2026-09-15T10:28:21+00:00",
   "start_file": "run.py",
-  "file_count": 1689,
-  "static_file_count": 1689,
+  "file_count": 1691,
+  "static_file_count": 1691,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -253,6 +253,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "MEMORY_ATTACHMENT_CONTRACT.json",
+      "size_bytes": 2247,
+      "sha256": "434e3449eea80e0ae61e725c163423e995c57ced8c95fc45c249c3b7ae1d5e91",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "README.md",
       "size_bytes": 8442,
       "sha256": "e1b207a2f86181eb130f81c18352429b86a94d8383f062689aa49583093950db",
@@ -264,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2960,
-      "sha256": "3f2739747f78c62d1be6ee7bcfab0c71d45b8d623f445a1a4949d1adba319508",
+      "sha256": "d3c7affa4b5b6ce9a19ca67a361792c4cc96d17bd0cf7105ce847e018c1029cb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4963,6 +4972,15 @@
       "path": "latka_jazn/memory/auto_memory_update.py",
       "size_bytes": 31362,
       "sha256": "959590f088184cb4773aef3244fc4a2ed73019e9eab7868fbb148882a9d471a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/availability.py",
+      "size_bytes": 7627,
+      "sha256": "87b1c0958f596e4b5b219541084fad270bde16251222d053479d88fccc8f12a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14852,8 +14870,8 @@
     },
     {
       "path": "tools/jazn_pack_generator_app/constants.py",
-      "size_bytes": 1947,
-      "sha256": "31d77b9d5490a9e579aa603081af6f71f0a4901f224c367e2e16175c7b039b31",
+      "size_bytes": 2059,
+      "sha256": "789250452856c6de1a70d639376da3b7b3a66554c5a614a6875de375cc91c28f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
