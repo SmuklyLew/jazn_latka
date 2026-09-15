@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "da958d147f5c25b799477b03027af17be84d6bf0",
-    "base_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
+    "base_commit": "89194a5bb01cceb42cd1d5632b24e8247136923a",
+    "base_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "89194a5bb01cceb42cd1d5632b24e8247136923a",
