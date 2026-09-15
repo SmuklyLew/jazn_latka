@@ -11,6 +11,7 @@ import re
 import unicodedata
 import uuid
 
+from latka_jazn.memory.availability import runtime_memory_storage_root
 from latka_jazn.memory.dziennik import DziennikRawJournal
 from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.store import MemoryStore
@@ -176,15 +177,23 @@ class RuntimeMemoryWriter:
       procedury, audyty prawdy i afekt;
     - nie dublować tych samych wspomnień przy wielokrotnym uruchomieniu lub update;
     - zachować granicę prawdy: wspomnienia symboliczne nie stają się faktami biologicznymi.
+
+    W SYSTEM-only mode ta sama mechanika zapisuje wyłącznie operacyjny core state.
+    Nie materializuje kanonicznego host-level MEMORY i nie staje się źródłem recall.
+    Po dołączeniu zweryfikowanej MEMORY resolver automatycznie wraca do jej rootu.
     """
 
     def __init__(self, root: Path, *, version: str, store: MemoryStore | None = None, timezone_name: str = DEFAULT_TIMEZONE) -> None:
         self.root = Path(root).expanduser().resolve()
-        self.memory_root = resolve_memory_root(self.root)
+        self.memory_root = runtime_memory_storage_root(self.root)
         self.version = version
         self.store = store
         self.timezone = resolve_timezone(timezone_name)
-        self.journal = DziennikRawJournal(self.root, timezone=timezone_name)
+        self.journal = DziennikRawJournal(
+            self.root,
+            timezone=timezone_name,
+            storage_root=self.memory_root,
+        )
         self.layers = {
             "episodic": JsonlLayerAppender(self.memory_root, "layered/episodic.jsonl"),
             "reflections": JsonlLayerAppender(self.memory_root, "layered/reflections.jsonl"),
@@ -491,7 +500,8 @@ class RuntimeMemoryWriter:
 def scan_runtime_duplicates(root: Path) -> dict[str, Any]:
     """Audyt duplikatów po fingerprint/dedupe_key w dzienniku i JSONL.
 
-    Zwraca tylko raport; nie usuwa wpisów automatycznie.
+    Zwraca tylko raport; nie usuwa wpisów automatycznie. Audyt dotyczy wyłącznie
+    prawdziwego persistent-memory root, a nie SYSTEM-only core state.
     """
 
     runtime_root = Path(root).expanduser().resolve()
