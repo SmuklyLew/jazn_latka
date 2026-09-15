@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.75 — remote runtime failover convergence
+# Jaźń v16.3.25.5.75.1 — remote runtime failover CI convergence
 
 ## Cel
 
@@ -140,13 +140,20 @@ Sprawdza:
 - obowiązkowy connector capability gate;
 - publikację klasyfikatora failoveru i polityki ChatGPT bridge.
 
-Nowe testy są aktywnymi testami, więc zgodnie z polityką repozytorium nie wymagają historycznego snapshotu poprzedniej wersji.
+## CI convergence po pierwszym przebiegu
+
+Pierwszy pełny `release-hardening` po v75 ujawnił dwie niezależne niespójności obecnego drzewa, niezwiązane z kodem failoveru, ale blokujące poprawny release:
+
+1. `tests/test_shard_manifest_fail_closed.py::test_missing_manifest_keeps_single_database_compatibility` nadal oczekiwał historycznej ścieżki `workspace_runtime/memory/...`, podczas gdy obowiązujący kontrakt optional-memory celowo kieruje operacyjną bazę fallback do `workspace_runtime/core_state/memory_runtime/...` i nie traktuje jej jako persistent recall memory. Aktywny test został skorygowany do aktualnego kontraktu, a jego poprzednia wersja została zachowana w `tests/archive/v16.3.25.5.74.2.002-optional-memory-attach-convergence/`.
+2. `tools/build_jazn_pack_generator_bundle.py --check` nadal miał `EXPECTED_GENERATOR_VERSION=10.1.86.0.115`, mimo że kanoniczny `tools/jazn_pack_generator_app/constants.py` ma `GENERATOR_VERSION=10.1.86.0.116`. Walidator został zsynchronizowany do `.116`; generator nie został cofnięty ani osłabiony.
+
+Te poprawki nie zmieniają granicy SYSTEM/MEMORY ani semantyki zdalnego failoveru. Domykają test/release drift ujawniony przez obowiązkowe CI.
 
 ## Granica produktu ChatGPT
 
 Ta aktualizacja nie twierdzi, że Python lub ZIP może nadać kontu ChatGPT brakującą funkcję produktu.
 
-Aktualna dokumentacja OpenAI ogranicza custom MCP/Developer Mode zależnie od planu i workspace. Full MCP jest obecnie dostępne dla Business i Enterprise/Edu; Pro może łączyć MCP z uprawnieniami read/fetch. Zwykły osobisty Plus nie otrzymuje przez kod Jaźni możliwości tworzenia custom MCP app. Dlatego:
+Aktualna dokumentacja OpenAI ogranicza custom MCP/Developer Mode zależnie od planu i workspace. Full MCP jest obecnie dostępne dla Business i Enterprise/Edu; Pro może łączyć MCP z uprawnieniami read/fetch. Zwykły osobisty Plus nie otrzymuje przez kod Jaźni możliwości tworzenia arbitrary custom MCP app. Dlatego:
 
 - kod Jaźni może przygotować, zarządzać i prawidłowo sklasyfikować Secure MCP Tunnel;
 - nie może sam włączyć connector/app capability w powierzchni ChatGPT, która jej nie udostępnia;
@@ -157,10 +164,15 @@ Na powierzchniach bez custom MCP właściwą alternatywą pozostaje jawny host h
 
 ## Wersja
 
-`16.3.25.5.75-remote-runtime-failover-convergence`
+`16.3.25.5.75.1-remote-runtime-failover-ci-convergence`
 
 ## Walidacja
 
 Lokalna walidacja wymaga działającego executora. W trakcie implementacji dwie niezależne powierzchnie wykonawcze hosta ChatGPT zwróciły `TransportTimeoutError` przed uzyskaniem dowodu wykonania komendy. Zgodnie z kontraktem nie raportowano przez to `pytest`, `compileall`, `doctor` ani `package-smoke` jako wykonanych lokalnie.
 
-Branch podlega obowiązkowym GitHub Actions. Release candidate może zostać zadeklarowany dopiero po rzeczywistym zielonym CI, synchronizacji kanonicznych metadanych release i sprawdzeniu braku konfliktu z bieżącym `master`.
+W pierwszym przebiegu CI:
+- kanoniczny full active-tree Pyright audit zakończył właściwy krok analizatora z `0 errors`;
+- release-hardening na Windows wykonał 89 testów, z czego 88 przeszło, a jeden ujawnił opisany wyżej stale optional-memory expectation;
+- Ubuntu przeszedł `compileall` i Pyright (`0 errors`, 1 istniejące ostrzeżenie), po czym zatrzymał się na opisanym wyżej stale generator-version validatorze.
+
+Po poprawkach v75.1 wymagany jest ponowny pełny przebieg GitHub Actions. Release candidate może zostać zadeklarowany dopiero po rzeczywistym zielonym CI, synchronizacji kanonicznych metadanych release i sprawdzeniu braku konfliktu z bieżącym `master`.
