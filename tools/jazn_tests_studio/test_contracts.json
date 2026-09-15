@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74.2.002",
-  "active_definition_count": 1566,
+  "active_definition_count": 1575,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -22111,6 +22111,246 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_system_only_runtime_uses_core_state_without_materializing_private_memory": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_system_only_runtime_uses_core_state_without_materializing_private_memory",
+      "purpose": "System only runtime uses core state without materializing private memory",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_transactional_memory_is_skipped_when_memory_is_optional_and_absent": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_transactional_memory_is_skipped_when_memory_is_optional_and_absent",
+      "purpose": "Transactional memory is skipped when memory is optional and absent",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_required_memory_mode_is_explicit_fail_closed_policy": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_required_memory_mode_is_explicit_fail_closed_policy",
+      "purpose": "Required memory mode is explicit fail closed policy",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_memory_mode_off_ignores_existing_memory_for_runtime_writes": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_memory_mode_off_ignores_existing_memory_for_runtime_writes",
+      "purpose": "Memory mode off ignores existing memory for runtime writes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 137
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_runtime_writers_do_not_make_core_state_look_like_attached_memory": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_runtime_writers_do_not_make_core_state_look_like_attached_memory",
+      "purpose": "Runtime writers do not make core state look like attached memory",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_existing_external_memory_switches_runtime_storage_back_to_memory_root": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_existing_external_memory_switches_runtime_storage_back_to_memory_root",
+      "purpose": "Existing external memory switches runtime storage back to memory root",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 183
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_generator_declares_system_memory_as_optional_and_attachable": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_generator_declares_system_memory_as_optional_and_attachable",
+      "purpose": "Generator declares system memory as optional and attachable",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 203
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_generator_declares_memory_package_data_only": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_generator_declares_memory_package_data_only",
+      "purpose": "Generator declares memory package data only",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 217
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_root_memory_attachment_contract_matches_runtime_policy": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_root_memory_attachment_contract_matches_runtime_policy",
+      "purpose": "Root memory attachment contract matches runtime policy",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 225
     },
     "tests/test_pack_generator_archive_io.py::test_parser_exposes_only_zip_and_split_transport_scope": {
       "path": "tests/test_pack_generator_archive_io.py",
