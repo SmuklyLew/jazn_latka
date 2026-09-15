@@ -3,11 +3,11 @@
   "version": "16.3.25.5.77-professional-llm-turn-runtime",
   "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
   "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "generated_at_utc": "2026-09-15T22:02:41+00:00",
-  "updated_at_utc": "2026-09-15T22:02:41+00:00",
+  "generated_at_utc": "2026-09-15T22:08:05+00:00",
+  "updated_at_utc": "2026-09-15T22:08:05+00:00",
   "start_file": "run.py",
-  "file_count": 1730,
-  "static_file_count": 1730,
+  "file_count": 1731,
+  "static_file_count": 1731,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2898,
-      "sha256": "633fb959c7bb856edce584c5d035f716a915b7ff4bbec72de5cb2cca1caed72b",
+      "sha256": "937476ffe74ea4d0cd3b012e2fa99063d0a92827e09561cba71c73a112d0a9ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4952,8 +4952,8 @@
     },
     {
       "path": "latka_jazn/mcp/server.py",
-      "size_bytes": 8950,
-      "sha256": "b7af9af877765d21cdbb7998359da448ab6439fd6a9386b214feea4db1a86949",
+      "size_bytes": 17219,
+      "sha256": "ac25eb04748c17fb5594da365dbba3e198bde38e4415616ec1e81e54ed0db4ee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13564,6 +13564,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "size_bytes": 5978,
+      "sha256": "644319c6ebc6de45bdf7f6fc991702504e860927b7f5920c6566aa4a05b5bba9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_attach_preflight_version.py",
       "size_bytes": 911,
       "sha256": "5de1090653c5410c98775a17a54fb1630eba2cfbbe3fad28627384727dfd7281",
@@ -15437,8 +15446,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1507687,
-      "sha256": "1f0422916083e8e6354abd205063b7a8a36790adadc2cb0d17833e1365bf0660",
+      "size_bytes": 1513948,
+      "sha256": "08275c143c9c1387431e15df112160195e2a28543014fb819736387dd98b2735",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
