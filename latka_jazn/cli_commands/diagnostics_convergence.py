@@ -3,8 +3,8 @@ from __future__ import annotations
 """Converge legacy diagnostics onto the optional-MEMORY readiness contract.
 
 The historical diagnostics module exposed ``transactional_memory_ready`` and
-then accidentally used it as a prerequisite for ``runtime_core_ready``.  That
-made a valid SYSTEM-only installation look broken.  This module keeps the
+then accidentally used it as a prerequisite for ``runtime_core_ready``. That
+made a valid SYSTEM-only installation look broken. This module keeps the
 transactional-memory diagnostic intact while projecting the canonical v16.3
 contract: persistent MEMORY is an optional capability unless the operator
 explicitly selects ``JAZN_MEMORY_MODE=required``.
@@ -14,7 +14,7 @@ from copy import deepcopy
 from functools import wraps
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable
+from typing import Any
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.readiness import evaluate_system_readiness_profile
@@ -27,6 +27,30 @@ _INSTALL_MARKER = "_optional_memory_diagnostics_convergence_installed"
 
 def _mapping(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
+
+
+def _canonical_raw_memory_status(cfg: JaznConfig) -> dict[str, Any]:
+    raw = cfg.memory_root / "raw"
+    chat = raw / "chat.html"
+    enabled = cfg.memory_availability.persistent_memory_enabled
+    return {
+        "schema_version": schema_version("raw_memory_startup_status"),
+        "memory_root": str(cfg.memory_root),
+        "persistent_memory_enabled": enabled,
+        "chat_html_present": bool(enabled and chat.is_file()),
+        "chat_html_size_bytes": chat.stat().st_size if enabled and chat.is_file() else None,
+        "status": (
+            "raw_available"
+            if enabled and chat.is_file()
+            else "memory_disabled_by_policy"
+            if cfg.memory_mode == "off"
+            else "raw_missing"
+        ),
+        "truth_boundary": (
+            "Raw-memory startup status is resolved from the canonical external MEMORY root. "
+            "SYSTEM core_state is never treated as autobiographical raw memory."
+        ),
+    }
 
 
 def apply_status_convergence(
@@ -73,6 +97,11 @@ def apply_status_convergence(
     result["memory_availability"] = memory_dict
     result["transactional_memory_required_for_core_runtime"] = False
     result["persistent_memory_required_for_core_runtime"] = memory.persistent_memory_required
+
+    startup = _mapping(result.get("startup"))
+    startup["raw_memory_status"] = _canonical_raw_memory_status(cfg)
+    startup["memory_availability"] = memory_dict
+    result["startup"] = startup
 
     blocking_reasons: list[str] = []
     if not process_ok:
@@ -201,12 +230,7 @@ def apply_status_convergence(
 
 
 def install(module: ModuleType) -> None:
-    """Install once on the canonical diagnostics module.
-
-    This compatibility hook is deliberately localized at the package boundary so
-    old call sites importing ``cli_commands.diagnostics`` receive the corrected
-    readiness semantics without duplicating the large historical doctor module.
-    """
+    """Install once on the canonical diagnostics module."""
 
     if getattr(module, _INSTALL_MARKER, False):
         return
