@@ -224,10 +224,11 @@ def test_mcp_task_handle_is_durable_and_poll_resumes_same_daemon_request(
     request_id = str(uuid.uuid4())
 
     class FakeGateway:
-        def result(self, value: str) -> dict[str, Any]:
-            assert value == request_id
+        def result(self, request_id: str) -> dict[str, Any]:
+            assert request_id == outer_request_id
             return {}
 
+    outer_request_id = request_id
     adapter = McpTaskResumeAdapter(root=runtime_root, gateway=FakeGateway())
     created = adapter.create_from_pending_result(_pending_tool_result(request_id))
     assert created is not None
