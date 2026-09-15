@@ -12,6 +12,16 @@ from latka_jazn.model_adapters.base import ModelAdapterRequest
 from latka_jazn.version import schema_version
 
 
+def _prompt_cache_key_for_full_canon(full_canon: dict[str, Any]) -> str | None:
+    digest = str(full_canon.get("immutable_canon_sha256") or "").strip().lower()
+    if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+        return None
+    # Keep this identifier short, deterministic and free of user/session text.
+    # It groups requests sharing the same immutable runtime canon while the
+    # adapter keeps dynamic turn context and the user message near the end.
+    return f"jazn-canon-{digest[:48]}"
+
+
 @dataclass(slots=True)
 class RuntimeTurnContract:
     """One truth-bearing contract shared by every visible turn entry point."""
@@ -112,6 +122,7 @@ class RuntimeTurnContract:
             max_output_tokens = None
         if max_output_tokens is not None:
             max_output_tokens = max(64, min(4096, max_output_tokens))
+        prompt_cache_key = _prompt_cache_key_for_full_canon(full_canon)
         return ModelAdapterRequest(
             prompt=str(user_text if user_text is not None else context.get("user_message") or ""),
             session_id=str(context.get("session_id") or self.turn_id),
@@ -125,6 +136,9 @@ class RuntimeTurnContract:
                 "full_canon_schema_version": str(full_canon.get("schema_version") or ""),
                 "cognitive_control_enforced": max_output_tokens is not None,
                 "cognitive_generation_limit_enforced": max_output_tokens is not None,
+                "prompt_cache_key_source": "immutable_canon_sha256" if prompt_cache_key else "unavailable",
+                "prompt_cache_key_contains_user_text": False,
             },
+            prompt_cache_key=prompt_cache_key,
             max_output_tokens=max_output_tokens,
         )
