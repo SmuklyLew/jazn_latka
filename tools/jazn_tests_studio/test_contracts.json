@@ -33726,7 +33726,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 274
+      "line": 275
     },
     "tests/test_turn_atomicity.py::test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits": {
       "path": "tests/test_turn_atomicity.py",
