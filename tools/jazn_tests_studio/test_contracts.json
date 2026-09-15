@@ -31906,19 +31906,19 @@
       "description_source": "source_identity",
       "line": 38
     },
-    "tests/test_secure_mcp_tunnel_contract.py::test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields": {
+    "tests/test_secure_mcp_tunnel_contract.py::test_managed_tunnel_readiness_never_claims_host_route_by_itself": {
       "path": "tests/test_secure_mcp_tunnel_contract.py",
-      "name": "test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields",
-      "purpose": "Remote runtime route requires all managed tunnel readiness fields",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "name": "test_managed_tunnel_readiness_never_claims_host_route_by_itself",
+      "purpose": "Managed tunnel readiness never claims host route by itself",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
       "tags": [
+        "host",
         "mcp",
-        "repository",
-        "runtime"
+        "repository"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
@@ -31931,21 +31931,21 @@
       "path": "tests/test_secure_mcp_tunnel_contract.py",
       "name": "test_unknown_tunnel_status_fails_closed",
       "purpose": "Unknown tunnel status fails closed",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 65
     },
     "tests/test_semantic_routing_completion.py::test_semantic_routing_completion_release_contract_tracks_current_version": {
       "path": "tests/test_semantic_routing_completion.py",
