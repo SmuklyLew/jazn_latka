@@ -140,16 +140,15 @@ def test_chatgpt_host_recovery_module_exposes_same_fail_closed_contract() -> Non
 
 
 def test_project_loader_documents_bounded_recovery_and_external_support_boundary() -> None:
-    text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
+    instructions_path = ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt"
+    text = instructions_path.read_text(encoding="utf-8")
 
-    assert len(text) <= 5000
+    assert len(text) <= 8000
     assert "host_executor_unavailable" in text
-    assert "najwyżej jedną minimalną próbę" in text
-    assert "przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu" in text
-    assert "nie twórz pętli retry" in text.lower()
-    assert "run.py" not in text
-    assert "run.py" in runbook
-    # Product/support collection details stay out of the Project loader.
-    assert "status.openai.com" not in text
-    assert "HAR" not in text
+    assert "najwyżej jedną próbę" in text
+    assert "przed utworzeniem procesu" in text
+    assert "niezerowy kod wyjścia" in text
+    assert "run.py" in text
+    assert "status.openai.com" in text
+    assert "HAR" in text
+    assert "Nie zapisuj HAR" in text

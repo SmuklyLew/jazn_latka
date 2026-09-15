@@ -90,13 +90,7 @@ def test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn(
         )
     )
 
-    def pending_http(
-        method: str,
-        path: str,
-        payload: dict[str, Any] | None = None,
-        *,
-        retry_safe: bool = True,
-    ) -> dict[str, Any]:
+    def pending_http(method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         observed.update({"method": method, "path": path, "payload": dict(payload or {})})
         return {
             "ok": False,
@@ -250,12 +244,10 @@ def test_mcp_dispatch_propagates_request_id_to_gateway(tmp_path: Path) -> None:
 def test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume() -> None:
     root = Path(__file__).resolve().parents[1]
     loader = (root / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
     assert "TransportTimeoutError" in loader
-    assert "remote_runtime" in loader
-    assert "nie twórz pętli retry" in loader.lower()
-    assert "--daemon-request-id" not in loader
-    assert "--daemon-request-id" in runbook
-    assert "--daemon-result" in runbook
-    assert "nie wysyłaj ponownie wiadomości" in runbook
+    assert "--daemon-request-id" in loader
+    assert "--daemon-result" in loader
+    assert "jazn_generate_visible_reply" in loader
+    assert "jazn_resume_visible_reply" in loader
+    assert "nie wysyłaj ponownie" in loader

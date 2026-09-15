@@ -5,6 +5,8 @@ import re
 import unicodedata
 from typing import Any
 
+from latka_jazn.nlp.control_text import extract_intent_control_text
+
 
 def _fold(text: str) -> str:
     normalized = unicodedata.normalize("NFKD", text or "")
@@ -34,13 +36,11 @@ class QuestionComponent:
 
 @dataclass(frozen=True, slots=True)
 class UtteranceComponentReport:
-    # Backwards-compatible high-level labels used by the existing validator.
     components: tuple[str, ...]
     negated_actions: tuple[str, ...]
     compound: bool
     explicit_execution: bool
     diagnostic_only: bool
-    # v16.3.4: meaningful clauses/questions with per-component semantics.
     question_components: tuple[QuestionComponent, ...] = ()
     semantic_intents: tuple[str, ...] = ()
     required_source_types: tuple[str, ...] = ()
@@ -93,9 +93,6 @@ _DIAGNOSTIC_MARKERS = (
     "sprawdz", "przeanalizuj", "audyt", "znajdz bledy", "co jest zle", "co trzeba naprawic", "tylko opisz"
 )
 
-# Clauses that are semantically coupled to a preceding question are deliberately
-# retained as one component. We split only at strong sentence/question boundaries,
-# then at a small set of unmistakable multi-question conjunctions.
 _STRONG_SPLIT = re.compile(
     r"(?<=[?])\s+|(?<=[!.])\s+(?=(?:czy|co|jak|jaki|jaka|jakie|kiedy|dlaczego|czemu|skad|które|ktore|ile|czego|kto|[A-ZĄĆĘŁŃÓŚŹŻ0-9])\b)",
     re.IGNORECASE,
@@ -115,9 +112,6 @@ def _split_meaningful_components(text: str) -> list[str]:
         sentence = _clean(sentence)
         if not sentence:
             continue
-        # Multiple '?' in one punctuation-less copy or clauses like
-        # "... i co konkretnie pamiętasz" are independent only when the right
-        # side starts with an interrogative phrase.
         chunks = re.split(
             r"\s+(?:i|oraz|a)\s+(?=(?:czy|co|jak|jaki|jaka|jakie|kiedy|dlaczego|skad|które|ktore|czego|kto)\b)",
             sentence,
@@ -216,7 +210,6 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         slots.extend(("system_gap", "technical_evidence"))
         sources.extend(("source_code", "documentation", "runtime_status"))
 
-    # Slot-level autobiographical questions.
     if _contains_any(folded, ("co powiedzialem ja", "co mowilem ja", "co ja powiedzialem")):
         slots.append("user_utterance")
     if _contains_any(folded, ("co odpowiedzialas ty", "co ty odpowiedzialas", "co odpowiedzialas")):
@@ -226,7 +219,6 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
     if _contains_any(folded, ("dlaczego", "czemu")) and preference:
         slots.append("preference_reason")
 
-    # Plain capability question without an actual content request.
     memory_required = any(name in intents for name in ("memory_recall", "self_preference", "self_origin", "self_introspection", "identity_continuity"))
     if intents == ["memory_capability"]:
         memory_required = False
@@ -267,6 +259,7 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
 
 
 def analyse_utterance(text: str) -> UtteranceComponentReport:
+    text = extract_intent_control_text(text).control_text
     folded = re.sub(r"\s+", " ", _fold(text)).strip()
     components: list[str] = []
     for name, patterns in _COMPONENT_PATTERNS:
@@ -308,13 +301,8 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
     semantic_intents = tuple(dict.fromkeys(intent for component in meaningful for intent in component.semantic_intents))
     required_sources = tuple(dict.fromkeys(source for component in meaningful for source in component.required_source_types))
     response_slots = tuple(dict.fromkeys(slot for component in meaningful for slot in component.requested_slots))
-    # Compound is about independent goals/questions, not just keyword density.
     semantic_goal_count = sum(1 for component in meaningful if component.semantic_intents)
     compound = semantic_goal_count >= 2 or len({intent for intent in semantic_intents if intent not in {"provenance", "evidence_gap"}}) >= 2
-    # Preserve generic multi-question capability/identity contracts even when
-    # the specialized semantic layer does not assign an autobiographical label.
-    # Keyword density inside one clause is not enough: a single recall directive
-    # may legitimately mention history/provenance/module terms while remaining one goal.
     if len(components) >= 2 and len(raw_questions) >= 2:
         compound = True
     capability_only = bool(semantic_intents) and set(semantic_intents) <= {"memory_capability", "provenance"}

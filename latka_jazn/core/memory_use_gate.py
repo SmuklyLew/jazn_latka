@@ -9,6 +9,7 @@ from latka_jazn.core.memory_intent_contract import (
 )
 from latka_jazn.core.self_question_memory_gate import SelfQuestionMemoryGate
 from latka_jazn.nlp.utterance_components import analyse_utterance
+from latka_jazn.nlp.control_text import extract_intent_control_text
 
 SCHEMA_VERSION = "memory_use_gate/v2"
 
@@ -54,9 +55,10 @@ class MemoryUseGate:
 
     def decide(self, user_text: str, *, detected_intent: str | None = None) -> MemoryUseDecision:
         intent = detected_intent or "unknown"
-        semantics = analyze_memory_intent(user_text)
-        component_report = analyse_utterance(user_text)
-        self_gate = SelfQuestionMemoryGate().decide(user_text, detected_intent=intent)
+        intent_text = extract_intent_control_text(user_text).control_text
+        semantics = analyze_memory_intent(intent_text)
+        component_report = analyse_utterance(intent_text)
+        self_gate = SelfQuestionMemoryGate().decide(intent_text, detected_intent=intent)
         if intent == "compound_dialogue_question":
             memory_components = [
                 component

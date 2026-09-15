@@ -147,18 +147,15 @@ def test_chatgpt_loader_supports_transport_truth_and_single_zip_recovery() -> No
     loader = (ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(
         encoding="utf-8"
     )
-    runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
     assert len(loader) <= 5000
     assert "TransportTimeoutError" in loader
-    assert "z zaufanym SHA-256" in loader
-    assert "rozmiarem gdy jest znany" in loader
-    assert "CHATGPT_BOOTSTRAP.py" in loader
+    assert "--expected-sha256" in loader
+    assert "--expected-size-bytes" in loader
+    assert "Lokalny sidecar nie jest wymagany" in loader
     assert "materialized_operator_ready" in loader
-    assert "--expected-sha256" not in loader
-    assert "--expected-sha256" in runbook
-    assert "--expected-size-bytes" in runbook
-    assert "run.py host-preflight --json" in runbook
+    assert "run.py host-preflight --json" in loader
+
 
 def test_chatgpt_runbook_does_not_blame_zip_for_host_transport_failure() -> None:
     runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")

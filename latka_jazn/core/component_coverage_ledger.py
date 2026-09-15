@@ -6,6 +6,7 @@ import unicodedata
 from typing import Any
 
 from latka_jazn.nlp.utterance_components import QuestionComponent, analyse_utterance
+from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.version import schema_version
 
 
@@ -123,7 +124,8 @@ def build_component_coverage_ledger(
     `compound=True` flag.
     """
 
-    report = analyse_utterance(user_text)
+    control_text = extract_intent_control_text(user_text).control_text
+    report = analyse_utterance(control_text)
     components = list(report.question_components)
     folded_body = _fold(body)
     records: list[ComponentCoverageRecord] = []
@@ -148,9 +150,6 @@ def build_component_coverage_ledger(
                 missing.append(intent)
 
         gap_declared = _matches_any(folded_body, _GAP_MARKERS)
-        # A generic "brak danych" cannot silently satisfy every component.  It
-        # must be tied either to a component anchor or to a component whose own
-        # semantic contract explicitly asks for an evidence gap.
         gap_applies = bool(
             gap_declared
             and (

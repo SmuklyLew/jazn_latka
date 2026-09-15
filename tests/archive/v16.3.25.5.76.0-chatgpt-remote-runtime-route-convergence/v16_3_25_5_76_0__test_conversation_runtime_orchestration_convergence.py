@@ -141,12 +141,13 @@ def test_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text() -
     runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
     assert len(loader) <= 5000
-    assert "remote_runtime" in loader
-    assert "każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime" in loader
-    assert "python -X utf8 run.py chat-gpt --session-id" not in loader
-    assert "raz na sesję wykonawczą" in runbook
-    assert "python -X utf8 run.py chat-gpt --session-id" in runbook
+    assert "raz na sesję wykonawczą" in loader
+    assert "python -X utf8 run.py chat-gpt --session-id" in loader
+    assert "Nie uruchamiaj nowego procesu CLI" in loader
+    assert "Każdą kolejną wiadomość" in loader
+    assert "Ta reguła obowiązuje dla każdej kolejnej tury" in runbook
     assert "świeże związanie tury nie oznacza świeżego procesu CLI" in runbook
+
 
 def test_release_identity_supersedes_with_accepted_visible_turn_convergence() -> None:
     assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 61)

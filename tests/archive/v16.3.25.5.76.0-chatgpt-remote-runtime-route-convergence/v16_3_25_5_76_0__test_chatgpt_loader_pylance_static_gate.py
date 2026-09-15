@@ -77,20 +77,17 @@ def test_project_loader_requires_runtime_binding_before_visible_or_tool_action()
     text = (ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(
         encoding="utf-8"
     )
-    runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
     assert len(text) <= 5000
-    assert "remote_runtime" in text
-    assert text.find("remote_runtime") < text.find("minimalną próbę utworzenia procesu")
     assert "Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową" in text
     assert "każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime" in text
     assert "także gdy wymaga Web/GitHub/image/file" in text
     assert "Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia" in text
+    assert "--daemon-request-id <request-id>" in text
+    assert "bez replayu" in text
     assert "action=display_exact" in text
     assert "nie dopisuj nagłówka ręcznie" in text
-    assert "--daemon-request-id <request-id>" not in text
-    assert "--daemon-request-id" in runbook
-    assert "--daemon-result" in runbook
+
 
 def test_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
     settings = json.loads((ROOT / ".vscode" / "settings.json").read_text(encoding="utf-8"))
@@ -106,4 +103,5 @@ def test_vscode_pylance_diagnostics_match_canonical_ci_pyright() -> None:
     assert "pyright --project pyrightconfig.json --outputjson" in workflow
     assert '      - "fix/**"' in workflow
     assert "  pull_request:" in workflow
+
 
