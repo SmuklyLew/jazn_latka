@@ -35,9 +35,11 @@ def _daemon_core_ready(daemon: dict[str, Any]) -> bool:
         return True
     if daemon.get("system_fully_ready") is True:
         return True
+    nested_value = daemon.get("runtime_daemon")
+    nested = dict(nested_value) if isinstance(nested_value, dict) else {}
     active = str(
         daemon.get("active_state")
-        or (daemon.get("runtime_daemon") or {}).get("active_state")
+        or nested.get("active_state")
         or ""
     ).strip().lower()
     return active in {"active", "active_trusted", "running", "ready"}
@@ -63,7 +65,8 @@ def build_capability_matrix(
 ) -> dict[str, Any]:
     root = Path(runtime_root).expanduser().resolve()
     gateway = dict(gateway_status or {})
-    daemon = gateway.get("daemon") if isinstance(gateway.get("daemon"), dict) else {}
+    daemon_value = gateway.get("daemon")
+    daemon: dict[str, Any] = dict(daemon_value) if isinstance(daemon_value, dict) else {}
     daemon_reachable = gateway.get("daemon_reachable") is True
     auth_configured = gateway.get("daemon_auth_configured") is True
     core_ready = bool(daemon_reachable and _daemon_core_ready(daemon))
@@ -100,6 +103,7 @@ def build_capability_matrix(
                 "selected_source_count": int(recall.get("selected_source_count") or 0),
             }
 
+    finalization_ready = bool(daemon_reachable and _daemon_finalization_ready(daemon))
     components = {
         "runtime_core": CapabilityState(
             status="ready" if core_ready else "unavailable",
@@ -145,12 +149,12 @@ def build_capability_matrix(
             evidence=recall_evidence,
         ),
         "host_finalization": CapabilityState(
-            status="ready" if daemon_reachable and _daemon_finalization_ready(daemon) else "degraded",
-            available=bool(daemon_reachable and _daemon_finalization_ready(daemon)),
+            status="ready" if finalization_ready else "degraded",
+            available=finalization_ready,
             required_for_dialogue=False,
             reason=(
                 "daemon_finalization_ready"
-                if daemon_reachable and _daemon_finalization_ready(daemon)
+                if finalization_ready
                 else "finalization_not_verified"
             ),
             evidence={
