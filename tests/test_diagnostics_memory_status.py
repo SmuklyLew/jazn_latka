@@ -34,17 +34,25 @@ def test_transactional_memory_diagnostic_reports_missing_then_ready_without_writ
 
 
 
-def test_transactional_memory_startup_initializer_creates_valid_store(tmp_path: Path) -> None:
+def test_transactional_memory_startup_initializer_creates_valid_store(tmp_path: Path, monkeypatch) -> None:
+    memory_root = tmp_path / "attached-memory"
+    (memory_root / "raw").mkdir(parents=True)
+    (memory_root / "raw" / "chat.html").write_text("attached", encoding="utf-8")
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory_root))
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+
     database = resolve_memory_tier_database_path(tmp_path)
     assert database.exists() is False
 
     initialized = initialize_transactional_memory_store(tmp_path)
 
     assert initialized["ok"] is True
+    assert initialized["persistent_memory_enabled"] is True
     assert initialized["database_path"] == str(database)
     assert initialized["validation"]["ok"] is True
     assert database.is_file()
     assert diagnostics._transactional_memory_status(JaznConfig(root=tmp_path))["ready"] is True
+
 
 def test_status_and_doctor_expose_separate_transactional_memory_subsystem(tmp_path: Path, monkeypatch) -> None:
     cfg = JaznConfig(root=tmp_path)
