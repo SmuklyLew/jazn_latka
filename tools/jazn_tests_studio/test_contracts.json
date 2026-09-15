@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74.2.002",
-  "active_definition_count": 1575,
+  "active_definition_count": 1583,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33431,6 +33431,182 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 73
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_retry_budget_is_aggregate_and_recovers_after_window",
+      "purpose": "Retry budget is aggregate and recovers after window",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_circuit_breaker_opens_half_opens_and_recovers_durably": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_circuit_breaker_opens_half_opens_and_recovers_durably",
+      "purpose": "Circuit breaker opens half opens and recovers durably",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "CircuitOpenError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_transport_supervisor_never_retries_ambiguous_side_effect": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_transport_supervisor_never_retries_ambiguous_side_effect",
+      "purpose": "Transport supervisor never retries ambiguous side effect",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_transport_supervisor_retries_safe_read_once_then_succeeds": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_transport_supervisor_retries_safe_read_once_then_succeeds",
+      "purpose": "Transport supervisor retries safe read once then succeeds",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_operation_registry_survives_restart_without_storing_payload": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_operation_registry_survives_restart_without_storing_payload",
+      "purpose": "Operation registry survives restart without storing payload",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "OperationConflictError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_gateway_timeout_records_unknown_outcome_and_second_call_only_polls": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_gateway_timeout_records_unknown_outcome_and_second_call_only_polls",
+      "purpose": "Gateway timeout records unknown outcome and second call only polls",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 163
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_mcp_task_handle_is_durable_and_poll_resumes_same_daemon_request": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_mcp_task_handle_is_durable_and_poll_resumes_same_daemon_request",
+      "purpose": "Mcp task handle is durable and poll resumes same daemon request",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 217
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_capability_matrix_keeps_system_only_dialogue_ready": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_capability_matrix_keeps_system_only_dialogue_ready",
+      "purpose": "Capability matrix keeps system only dialogue ready",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 274
     },
     "tests/test_turn_atomicity.py::test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits": {
       "path": "tests/test_turn_atomicity.py",
