@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.76.0 separates short host/executor interactions from long-running
-# lifecycle work. Durable idempotent host operations and a persistent local
-# supervisor let accepted work continue outside one ChatGPT executor call while
-# retaining the v75.2 strict remote-runtime connector gate.
-DISTRIBUTION_VERSION = "16.3.25.5.76.0"
-PACKAGE_VERSION = "16.3.25.5.76.0"
-PACKAGE_RELEASE_NAME = "persistent-supervisor-bounded-host-calls"
+# v16.3.25.5.76.1 converges ChatGPT ingress on remote-first routing when an
+# authenticated connector/runtime capability has already been verified, keeps
+# quoted evidence out of active intent/finalization parsing, and negotiates MCP
+# protocol versions without claiming standard Tasks before their full contract exists.
+DISTRIBUTION_VERSION = "16.3.25.5.76.1"
+PACKAGE_VERSION = "16.3.25.5.76.1"
+PACKAGE_RELEASE_NAME = "chatgpt-remote-runtime-route-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

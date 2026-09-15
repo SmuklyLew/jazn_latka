@@ -20,21 +20,15 @@ def test_system_package_profile_contains_standalone_chatgpt_bootstrap() -> None:
 
 
 def test_chatgpt_project_loader_is_thin_and_exposes_no_operator_recovery() -> None:
-    text = (ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(
-        encoding="utf-8"
-    )
-    runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
+    path = ROOT / "docs" / "runtime" / "CHATGPT_PROJECT_INSTRUCTIONS.txt"
+    text = path.read_text(encoding="utf-8")
 
     assert len(text) <= 5000
     assert "host_executor_unavailable" in text
     assert "CHATGPT_BOOTSTRAP.py" in text
     assert "materialized_operator_ready" in text
     assert "surowe `extractall()` bez walidacji jest zabronione" in text
-    assert "run.py host-preflight --json" not in text
-    assert "run.py doctor --json" not in text
-    assert "run.py start" not in text
-    assert "run.py status --json" not in text
-    assert "run.py host-preflight --json" in runbook
-    assert "run.py doctor --json" in runbook
-    assert "run.py start" in runbook
-    assert "run.py status --json" in runbook
+    assert "run.py host-preflight --json" in text
+    assert "run.py doctor --json" in text
+    assert "run.py start" in text
+    assert "run.py status --json" in text

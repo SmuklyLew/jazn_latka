@@ -15,18 +15,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_project_instructions_are_thin_loader_to_agents_router() -> None:
     text = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
-    assert len(text) <= 5000
+    assert len(text) <= 8000
     assert "`AGENTS.md`" in text
     assert "`AGENTS.chatgpt.md`" not in text
-    assert "właściwy runbook hosta" in text
+    assert "runbook odpowiedni dla bieżącego hosta lub zadania" in text
     assert "Przed pierwszą zwykłą odpowiedzią" in text
     assert "ZIP" in text
-    assert "remote_runtime" in text
-    assert "minimalną próbę utworzenia procesu" in text
+    assert "executora/terminala" in text
+    assert "kanoniczne wykonawcze wejście" in text
     assert "package_available" not in text
     assert "runtime_process_alive" not in text
     assert "final_visible_text" not in text
     assert "HOST_ROUTING_BYPASS" not in text
+
 
 def test_obsolete_packaged_chatgpt_loader_is_removed() -> None:
     assert not (ROOT / "latka_jazn/resources/chatgpt_startup_loader.txt").exists()

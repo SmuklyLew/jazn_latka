@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from latka_jazn.nlp.utterance_components import analyse_utterance
+from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("typed_memory_source_policy")
@@ -228,8 +229,6 @@ def classify_semantic_source_type(
     metadata: dict[str, Any] | None = None,
 ) -> str:
     blob = _blob(item_type, source, source_layer, grounding, path, metadata)
-    # Explicit diagnostic provenance always wins; it must never become an
-    # autobiographical memory just because it contains a personal keyword.
     if _has(blob, _DIAGNOSTIC_MARKERS):
         return DIAGNOSTIC_SOURCE_TYPE
     if _has(blob, _JOURNAL_MARKERS):
@@ -242,10 +241,6 @@ def classify_semantic_source_type(
         return "current_state"
     if _has(blob, _INFERENCE_MARKERS):
         return "inference"
-    # Transactional memory sources intentionally contain the word ``runtime``
-    # (for example ``runtime_write_v2:working``).  Their specific active-memory
-    # identity must win over the generic technical-runtime marker or every valid
-    # L1/L2 hit is suppressed from autobiographical recall.
     if _has(blob, _ACTIVE_MEMORY_MARKERS):
         return "active_memory"
     if _has(blob, _RUNTIME_MARKERS):
@@ -256,7 +251,6 @@ def classify_semantic_source_type(
         return "documentation"
     if _has(blob, _CODE_MARKERS):
         return "source_code"
-    # A source file extension is stronger evidence than an untyped generic label.
     if path:
         suffix = Path(str(path)).suffix.lower()
         if suffix == ".py":
@@ -291,7 +285,8 @@ def provenance_label_for_source_type(semantic_source_type: str) -> str:
 
 
 def build_typed_source_policy(user_text: str) -> TypedMemorySourcePolicy:
-    report = analyse_utterance(user_text)
+    intent_text = extract_intent_control_text(user_text).control_text
+    report = analyse_utterance(intent_text)
     semantic_intents = tuple(dict.fromkeys(report.semantic_intents))
     autobiographical = any(
         intent in {

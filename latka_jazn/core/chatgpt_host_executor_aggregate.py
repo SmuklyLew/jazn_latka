@@ -17,7 +17,10 @@ from latka_jazn.core.chatgpt_host_executor_enums import (
     HostRecoveryAction,
 )
 from latka_jazn.core.chatgpt_host_executor_observation import HostExecutorObservation
-from latka_jazn.core.chatgpt_host_executor_route_policy import resolve_external_route
+from latka_jazn.core.chatgpt_host_executor_route_policy import (
+    resolve_external_route,
+    resolve_verified_remote_route,
+)
 from latka_jazn.core.chatgpt_host_handoff_state import HostHandoffState
 from latka_jazn.version import schema_version
 
@@ -66,7 +69,10 @@ def aggregate_host_executor_observations(
         else HostFilesystemState.UNKNOWN
     )
 
-    if available:
+    verified_remote = any(item.remote_runtime_transport_available for item in items)
+    if verified_remote and available:
+        route = resolve_verified_remote_route()
+    elif available:
         route = resolve_local_route(
             degraded=bool(failed or unknown),
             has_success=any(pair[1].next_action is HostRecoveryAction.RESUME_CANONICAL_DISCOVERY for pair in available),

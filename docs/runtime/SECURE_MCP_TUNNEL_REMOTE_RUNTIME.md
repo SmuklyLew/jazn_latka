@@ -148,6 +148,14 @@ Jeżeli tunel jest gotowy, ale ChatGPT nie udostępnia odpowiadającego connecto
 
 To nadal nie jest zgoda na pokazanie odpowiedzi. Każda wiadomość przechodzi dalej przez istniejący kontrakt tury i finalizacji.
 
+## Kolejność hosta i negocjacja MCP od v16.3.25.5.76.1
+
+Jeżeli host ma już zweryfikowaną trasę `remote_runtime`, agregator capability wybiera ją przed lokalnym bootstrapem. Lokalny executor pozostaje trasą bootstrap/recovery, ale nie może przejąć zwykłej tury tylko dlatego, że jest chwilowo dostępny, gdy równocześnie istnieje mocniejszy, jawnie zweryfikowany connector do persistent runtime.
+
+Serwer MCP negocjuje obecnie jawnie wersje `2025-11-25` i `2025-06-18`. Nieznana wersja klienta nie jest bezwarunkowo echo-wana; serwer odpowiada najnowszą wspieraną wersją. Dla `2025-11-25` serwer reklamuje standardowe `tools`, ale **nie reklamuje standardowego MCP Tasks**, dopóki nie implementuje kompletnego kontraktu `tasks/list`, `tasks/get`, `tasks/result`, `tasks/cancel`, standardowych obiektów task i semantyki terminalnego anulowania. Istniejący `jazn_resume_visible_reply` pozostaje kanoniczną, idempotentną ścieżką trwałego poll/resume. Starszy adapter `io.modelcontextprotocol/tasks` pozostaje ograniczonym compatibility path wyłącznie dla negocjowanego `2025-06-18`; nie jest deklaracją zgodności z Tasks 2025-11-25.
+
+`poll_runtime` jest stanem bez widocznego tekstu runtime. Może więc zachować trwałe wiązanie przez `daemon_request_id` zanim runtime nada `turn_id/trace_id`. `generate_then_finalize` i `display_exact` nadal wymagają silnego związania bieżącej tury i nie dziedziczą tego wyjątku.
+
 ## Zachowanie przy awarii
 
 - daemon nieaktywny i start nieudany -> MCP nie startuje;
@@ -163,7 +171,7 @@ To nadal nie jest zgoda na pokazanie odpowiedzi. Każda wiadomość przechodzi d
 
 Kod Jaźni nie może sam włączyć custom MCP/app na koncie ChatGPT ani zmienić uprawnień planu. Według aktualnej dokumentacji OpenAI pełna obsługa MCP jest dostępna w Business i Enterprise/Edu; Pro ma ograniczony dostęp read/fetch w Developer Mode. Osobisty Plus nie otrzymuje przez sam kod Jaźni prawa do utworzenia custom MCP app.
 
-Dlatego wersja 16.3.25.5.75 naprawia **mechanizm systemowy i truth boundary**, ale nie udaje, że paczka Python może zmienić funkcje produktu ChatGPT. Jeśli bieżąca powierzchnia nie ma custom MCP/app, poprawną alternatywą jest host handoff do powierzchni, która rzeczywiście posiada executor, np. lokalny Work/Codex w aplikacji desktopowej, jeżeli jest dostępny na koncie i otrzymał wymagane uprawnienia.
+Dlatego linia 16.3.25.5.75–76.1 naprawia **mechanizm systemowy i truth boundary**, ale nie udaje, że paczka Python może zmienić funkcje produktu ChatGPT. Jeśli bieżąca powierzchnia nie ma custom MCP/app, poprawną alternatywą jest host handoff do powierzchni, która rzeczywiście posiada executor, np. lokalny Work/Codex w aplikacji desktopowej, jeżeli jest dostępny na koncie i otrzymał wymagane uprawnienia.
 
 ## Źródła zewnętrzne
 
@@ -172,3 +180,5 @@ Dlatego wersja 16.3.25.5.75 naprawia **mechanizm systemowy i truth boundary**, a
 - OpenAI tunnel-client — runtime flows: https://github.com/openai/tunnel-client/blob/master/plugins/tunnel-mcp/skills/tunnel-mcp/references/runtime-flows.md
 - OpenAI tunnel-client — permissions and ChatGPT connector setup: https://github.com/openai/tunnel-client/blob/master/docs/permissions.md
 - OpenAI Help — ChatGPT Work and Codex: https://help.openai.com/en/articles/20001275
+- Model Context Protocol 2025-11-25 — Lifecycle/version & capability negotiation: https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
+- Model Context Protocol 2025-11-25 — Tasks: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks

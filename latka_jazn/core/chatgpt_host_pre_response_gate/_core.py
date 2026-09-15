@@ -205,16 +205,19 @@ def build_host_pre_response_gate_telemetry(
     runtime_turn_id = presentation_map.get("turn_id") or bridge.get("turn_id")
     trace_id = presentation_map.get("trace_id") or bridge.get("trace_id")
     digest_bound = bool(user_text) or bool(re.fullmatch(r"[0-9a-f]{64}", supplied_digest))
-    binding_complete = bool(runtime_turn_invoked and runtime_turn_id and trace_id and digest_bound)
+    strong_binding_complete = bool(runtime_turn_invoked and runtime_turn_id and trace_id and digest_bound)
+    poll_binding_complete = bool(
+        action == "poll_runtime"
+        and runtime_turn_invoked
+        and str(bridge.get("daemon_request_id") or presentation_map.get("daemon_request_id") or "").strip()
+        and str(bridge.get("poll_command") or presentation_map.get("poll_command") or "").strip()
+    )
+    route_binding_complete = poll_binding_complete if action == "poll_runtime" else strong_binding_complete
     if turn_ingress_gate_enforced is None:
-        # Production host packets already cross this function immediately before
-        # rendering. Treat that boundary as the canonical ingress gate only when
-        # it carries cryptographic/current-turn binding evidence. This keeps old
-        # callers safe without requiring a second, parallel ChatGPT dispatcher.
-        turn_ingress_gate_enforced = binding_complete
+        turn_ingress_gate_enforced = route_binding_complete
     host_route_bound = bool(
         turn_ingress_gate_enforced
-        and binding_complete
+        and route_binding_complete
         and not bypass_detected
         and action in {"display_exact", "generate_then_finalize", "poll_runtime"}
     )
@@ -222,9 +225,6 @@ def build_host_pre_response_gate_telemetry(
         presentation["turn_ingress_gate_enforced"] = bool(turn_ingress_gate_enforced)
         presentation["host_route_bound"] = host_route_bound
     if action in {"display_exact", "generate_then_finalize", "poll_runtime"} and not host_route_bound:
-        # A live daemon or a syntactically valid presentation is not enough. If
-        # the current user turn cannot be bound here, downgrade the packet before
-        # any caller can render runtime-owned text.
         bypass_detected = True
         bypass_reason = bypass_reason or "current_turn_runtime_binding_unverified"
         action = "host_diagnostic"
@@ -321,6 +321,4 @@ def _diagnostic_result(
         exact_user_text=user_text,
     )
 
-# Internal export surface used by the runner module after the v74 split.
-# Single-underscore helpers are intentionally included; double-underscore names are not.
 __all__ = [name for name in globals() if not name.startswith("__")]

@@ -67,11 +67,10 @@ def test_aggregate_prefers_verified_local_executor_over_external_routes() -> Non
         ]
     )
 
-    assert snapshot.environment_state is HostEnvironmentState.REMOTE_CAPABLE
-    assert snapshot.execution_route is HostExecutionRoute.REMOTE_RUNTIME
-    assert snapshot.next_action is HostRecoveryAction.USE_REMOTE_RUNTIME_TRANSPORT
-    assert snapshot.reason_code == "verified_remote_runtime_route_preferred"
-    assert snapshot.canonical_resume_entrypoint is None
+    assert snapshot.environment_state is HostEnvironmentState.DEGRADED
+    assert snapshot.execution_route is HostExecutionRoute.LOCAL_EXECUTOR
+    assert snapshot.next_action is HostRecoveryAction.RESUME_CANONICAL_DISCOVERY
+    assert snapshot.canonical_resume_entrypoint == "run.py"
 
 
 def test_remote_runtime_preflight_does_not_require_or_invent_local_filesystem() -> None:
@@ -93,7 +92,7 @@ def test_remote_runtime_preflight_does_not_require_or_invent_local_filesystem() 
     assert decision.remote_runtime_allowed is True
     assert decision.handoff_required is False
     assert decision.filesystem_state is HostFilesystemState.UNKNOWN
-    assert decision.reason_code == "local_executor_unavailable_remote_runtime_route_available"
+    assert decision.reason_code == "local_executor_unavailable_remote_runtime_transport_available"
 
 
 def test_handoff_preflight_is_explicit_and_fail_closed() -> None:
