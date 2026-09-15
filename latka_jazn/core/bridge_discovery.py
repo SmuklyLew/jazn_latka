@@ -83,6 +83,7 @@ def discover_runtime_bridges(
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
             "remote_transport": "openai_secure_mcp_tunnel_when_host_connector_available",
+            "remote_failover_policy": "managed_tunnel_ready_plus_explicit_host_connector_capability",
             "per_message_cli_required": False,
             "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
             "persistent_stdio_required": False,
@@ -123,10 +124,10 @@ def discover_runtime_bridges(
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage. "
-                "Jeżeli host ma jawnie skonfigurowany OpenAI Secure MCP Tunnel, ten sam runtime może być osiągany "
-                "zdalnie przez prywatny MCP bez tworzenia procesu przez bieżącą powierzchnię czatu. Żywotność pipe'a "
-                "ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; widoczna może być tylko "
-                "zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
+                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany OpenAI Secure MCP Tunnel oraz connector/app "
+                "capability, ten sam runtime może być osiągany zdalnie bez tworzenia procesu przez bieżącą powierzchnię "
+                "czatu. Żywotność pipe'a ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
+                "widoczna może być tylko zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
             ),
         },
         "openai_bridge": {
@@ -155,13 +156,20 @@ def discover_runtime_bridges(
         },
         "secure_gateway_scaffold": SecureGatewayPolicy().to_dict(),
         "secure_mcp": {
-            "status": "implemented_secure_tunnel_stdio_target",
+            "status": "implemented_secure_tunnel_managed_runtime_target",
             "server_command": secure_tunnel_plan["stdio_mcp_command"],
             "local_transport": "stdio",
             "remote_transport": "openai_secure_mcp_tunnel",
             "tunnel_client": tunnel_client,
             "tunnel_plan": secure_tunnel_plan,
+            "preferred_supervision": secure_tunnel_plan["preferred_supervision"],
+            "managed_connect_argv": secure_tunnel_plan["managed_connect_argv"],
+            "managed_status_argv": secure_tunnel_plan["managed_status_argv"],
+            "managed_stop_argv": secure_tunnel_plan["managed_stop_argv"],
             "managed_readiness_fields": ["process_running", "healthy", "ready"],
+            "managed_tunnel_readiness_is_host_route_readiness": False,
+            "host_connector_capability_required": True,
+            "remote_failover_classifier": "classify_remote_runtime_failover",
             "remote_runtime_route_evidence": "all_managed_readiness_fields_true_plus_host_connector_capability",
             "public_ingress_enabled": False,
             "package_contains_tunnel_target": True,
@@ -174,8 +182,9 @@ def discover_runtime_bridges(
             "turn_owner": "jazn_persistent_runtime",
             "truth_boundary": (
                 "Secure MCP Tunnel is an authenticated transport to the local runtime; it is not identity, memory, "
-                "turn authority or proof that a visible reply was accepted. The SYSTEM package contains the local "
-                "stdio target but does not bundle/authenticate OpenAI's external tunnel control plane."
+                "turn authority or proof that a visible reply was accepted. Managed tunnel readiness alone does not "
+                "prove that the current ChatGPT surface exposes the corresponding connector/app capability. The SYSTEM "
+                "package contains the local stdio target but does not bundle/authenticate OpenAI's external tunnel control plane."
             ),
         },
         "truth_boundary": (
