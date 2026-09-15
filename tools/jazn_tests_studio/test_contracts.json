@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.77",
-  "active_definition_count": 1621,
+  "active_definition_count": 1629,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14752,6 +14752,158 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 58
+    },
+    "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension",
+      "purpose": "Server discover exposes modern and legacy versions without tasks extension",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_tools_list_is_stamped_cacheable_and_deterministic": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_tools_list_is_stamped_cacheable_and_deterministic",
+      "purpose": "Modern tools list is stamped cacheable and deterministic",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_request_missing_required_meta_fails_invalid_params": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_request_missing_required_meta_fails_invalid_params",
+      "purpose": "Modern request missing required meta fails invalid params",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_mcp_modern_protocol.py::test_unsupported_modern_protocol_reports_requested_and_supported_versions": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_unsupported_modern_protocol_reports_requested_and_supported_versions",
+      "purpose": "Unsupported modern protocol reports requested and supported versions",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_mcp_modern_protocol.py::test_initialize_never_negotiates_the_handshake_free_modern_revision": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_initialize_never_negotiates_the_handshake_free_modern_revision",
+      "purpose": "Initialize never negotiates the handshake free modern revision",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation",
+      "purpose": "Modern tasks methods are not claimed without current extension implementation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_requests_do_not_mutate_legacy_connection_capabilities": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_requests_do_not_mutate_legacy_connection_capabilities",
+      "purpose": "Modern requests do not mutate legacy connection capabilities",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_dispatch_strips_historical_task_extension_before_legacy_tool_execution": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_dispatch_strips_historical_task_extension_before_legacy_tool_execution",
+      "purpose": "Modern dispatch strips historical task extension before legacy tool execution",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",
