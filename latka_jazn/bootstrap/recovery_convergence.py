@@ -3,9 +3,9 @@ from __future__ import annotations
 """Converge ChatGPT recovery onto SYSTEM-first / optional-MEMORY semantics.
 
 Historical recovery correctly validated MEMORY fail-closed but also promoted
-that validation into a core activation prerequisite.  The v16.3 contract keeps
+that validation into a core activation prerequisite. The v16.3 contract keeps
 validation fail-closed *for memory use* while allowing a verified SYSTEM to
-start without it.  Explicit ``memory_mode=required`` remains blocking.
+start without it. Explicit ``memory_mode=required`` remains blocking.
 """
 
 from functools import wraps
@@ -140,6 +140,22 @@ def converge_recovery_result(
     report["persistent_memory_required_for_core_runtime"] = memory.persistent_memory_required
     report["transactional_memory_required_for_core_runtime"] = False
 
+    # Required mode is intentionally fail-closed and must prevent daemon
+    # activation when no valid persistent memory source satisfies the policy.
+    if memory.persistent_memory_required and not memory.required_satisfied:
+        report["recovery_convergence"] = {
+            "schema_version": SCHEMA_VERSION,
+            "optional_memory_contract_applied": True,
+            "required_memory_blocked_before_daemon_activation": True,
+        }
+        result.ok = False
+        result.state = "required_memory_missing"
+        result.truth_boundary = (
+            "Required memory mode is an explicit operator policy. Missing/invalid persistent MEMORY blocks activation; "
+            "optional/off modes remain independent from MEMORY readiness."
+        )
+        return result
+
     state = str(getattr(result, "state", "") or "")
     profile = str(report.get("effective_profile") or "").strip().lower()
     optional_attach_failure = bool(
@@ -214,8 +230,6 @@ def converge_recovery_result(
             result.state = "active"
     elif not start_runtime_daemon and installation_ok and memory_policy_ok:
         result.state = "installed_inactive"
-    elif memory.persistent_memory_required and not memory.required_satisfied:
-        result.state = "required_memory_missing"
     result.truth_boundary = (
         "A verified SYSTEM can be installed and activated without private MEMORY in optional/off modes. "
         "MEMORY validation remains fail-closed for recall and persistence. Required mode makes the explicit "
