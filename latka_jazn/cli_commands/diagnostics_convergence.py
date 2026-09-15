@@ -80,10 +80,6 @@ def apply_status_convergence(
     transactional = _mapping(result.get("transactional_memory"))
     transactional_ready = transactional.get("ready") is True
 
-    # The runtime core needs operational write state, not autobiographical
-    # persistence. In required mode the explicit operator policy must be
-    # satisfied, but a particular L1/L2/L3 implementation remains a separate
-    # capability so legacy/native/read-only memory can still be attached.
     runtime_core_ready = bool(
         process_ok
         and runtime_write_ready
@@ -240,7 +236,8 @@ def install(module: ModuleType) -> None:
 
     @wraps(original)
     def converged(root: Path, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        raw = original(root, *args, **kwargs)
+        raw_value = original(root, *args, **kwargs)
+        raw = _mapping(raw_value)
         return apply_status_convergence(raw, root=root)
 
     setattr(module, "status_payload", converged)
