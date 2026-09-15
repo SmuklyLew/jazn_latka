@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.75.2 makes remote-route availability strictly fail-closed:
-# managed tunnel readiness is transport evidence only, while only the combined
-# tunnel + explicit ChatGPT connector capability gate may authorize remote
-# runtime failover. It also retains the v75.1 release-CI convergence repairs.
-DISTRIBUTION_VERSION = "16.3.25.5.75.2"
-PACKAGE_VERSION = "16.3.25.5.75.2"
-PACKAGE_RELEASE_NAME = "remote-runtime-failover-strict-gate"
+# v16.3.25.5.76.0 separates short host/executor interactions from long-running
+# lifecycle work. Durable idempotent host operations and a persistent local
+# supervisor let accepted work continue outside one ChatGPT executor call while
+# retaining the v75.2 strict remote-runtime connector gate.
+DISTRIBUTION_VERSION = "16.3.25.5.76.0"
+PACKAGE_VERSION = "16.3.25.5.76.0"
+PACKAGE_RELEASE_NAME = "persistent-supervisor-bounded-host-calls"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
