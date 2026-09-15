@@ -21446,11 +21446,11 @@
       "path": "tests/test_model_request_policy.py",
       "name": "test_prompt_cache_key_is_derived_only_from_immutable_canon_hash",
       "purpose": "Prompt cache key is derived only from immutable canon hash",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_turn_contract",
@@ -21478,7 +21478,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_model_request_policy.py::test_prompt_cache_key_rejects_unbounded_or_user_shaped_value": {
       "path": "tests/test_model_request_policy.py",
@@ -21499,7 +21499,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 53
+      "line": 54
     },
     "tests/test_model_request_policy.py::test_allowed_tools_restricts_declared_tool_universe_without_removing_definitions": {
       "path": "tests/test_model_request_policy.py",
@@ -21518,7 +21518,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 63
     },
     "tests/test_model_request_policy.py::test_allowed_tools_can_require_one_of_runtime_authorized_subset": {
       "path": "tests/test_model_request_policy.py",
@@ -21539,7 +21539,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 82
     },
     "tests/test_model_request_policy.py::test_unknown_runtime_allowed_tool_fails_closed": {
       "path": "tests/test_model_request_policy.py",
@@ -21562,7 +21562,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 94
     },
     "tests/test_model_request_policy.py::test_allowed_tools_cannot_be_combined_with_independent_explicit_choice": {
       "path": "tests/test_model_request_policy.py",
@@ -21583,7 +21583,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 104
     },
     "tests/test_model_request_policy.py::test_allowed_tools_without_declared_tools_fails_closed": {
       "path": "tests/test_model_request_policy.py",
@@ -21604,7 +21604,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 114
+      "line": 115
     },
     "tests/test_nlp_capability_contract.py::test_compound_question_preserves_all_components": {
       "path": "tests/test_nlp_capability_contract.py",
