@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.74.2.002",
-  "active_definition_count": 1583,
+  "active_definition_count": 1588,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24906,6 +24906,126 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 147
+    },
+    "tests/test_readiness_recovery_convergence.py::test_system_only_status_is_core_ready_without_transactional_memory": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_system_only_status_is_core_ready_without_transactional_memory",
+      "purpose": "System only status is core ready without transactional memory",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_readiness_recovery_convergence.py::test_required_memory_mode_blocks_core_without_starting_fake_readiness": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_required_memory_mode_blocks_core_without_starting_fake_readiness",
+      "purpose": "Required memory mode blocks core without starting fake readiness",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_readiness_recovery_convergence.py::test_optional_memory_attach_failure_degrades_but_starts_verified_system": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_optional_memory_attach_failure_degrades_but_starts_verified_system",
+      "purpose": "Optional memory attach failure degrades but starts verified system",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_readiness_recovery_convergence.py::test_required_memory_missing_stays_fail_closed_before_daemon_start": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_required_memory_missing_stays_fail_closed_before_daemon_start",
+      "purpose": "Required memory missing stays fail closed before daemon start",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 172
+    },
+    "tests/test_readiness_recovery_convergence.py::test_package_import_paths_remain_importable": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_package_import_paths_remain_importable",
+      "purpose": "Package import paths remain importable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 201
     },
     "tests/test_reasoning_generation_pipeline.py::test_reasoning_plan_requires_identity_and_turn_authority": {
       "path": "tests/test_reasoning_generation_pipeline.py",
