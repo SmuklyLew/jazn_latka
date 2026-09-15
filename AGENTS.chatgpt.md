@@ -43,17 +43,29 @@ main.py
 
 `run.py` nie może posiadać własnej implementacji `start`, `restart`, `reload`, `runtime-bootstrap`, `host-finalize`, routingu rozmowy ani logiki pamięci. Wyjątkiem jest minimalny dependency-free `--version` fast path startera.
 
-## 2. Granica executora
+## 2. Granica executora i zdalny failover
 
-Przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
+Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego OpenAI Secure MCP Tunnel, a niezależne aktualne evidence managed runtime potwierdza łącznie `process_running=true`, `healthy=true` i `ready=true`, użyj zdalnej trasy bez wykonywania lokalnego probe executora. Sam fakt obecności connectora, plików MCP, tunelu w Platform albo starego statusu nie wystarcza. Host-usable remote route wymaga jednocześnie pełnego managed tunnel readiness oraz jawnej capability bieżącej powierzchni ChatGPT; odpowiada temu `classify_remote_runtime_failover()`.
+
+Jeżeli takiej gotowej zdalnej trasy nie ma, przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
 Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` albo `StreamingExecNotEnabledContainerError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował. `StreamingExecNotEnabledContainerError` na powierzchni sesji interaktywnej oznacza brak persistent/streaming exec tej powierzchni; nie jest dowodem braku zwykłego one-shot executora ani błędem kodu Jaźni:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
-- runtime pozostaje `unverified`;
+- runtime pozostaje `unverified` dla tej lokalnej trasy;
 - nie twierdź, że `/mnt/data` nie istnieje, paczki brakuje ani że `run.py` jest nieobecny.
 
-Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu. Globalne `host_executor_unavailable` wolno zadeklarować dopiero wtedy, gdy żadna objęta tym ograniczonym probingiem powierzchnia nie utworzy procesu.
+Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu.
+
+Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
+
+1. managed Secure MCP Tunnel musi mieć `process_running=true`, `healthy=true`, `ready=true`;
+2. bieżący host ChatGPT musi jawnie udostępniać odpowiadającą temu tunelowi connector/app capability;
+3. jeżeli oba warunki są spełnione, ustaw `execution_route=remote_runtime` i `next_action=use_remote_runtime_transport`;
+4. jeżeli zdalna trasa nie jest zweryfikowana, ale host jawnie oferuje execution handoff, użyj `host_handoff` zgodnie z kontraktem handoff;
+5. dopiero gdy żadna dozwolona lokalna powierzchnia nie utworzyła procesu, zdalny failover nie jest zweryfikowany i handoff nie jest dostępny/zaakceptowany, zakończ fail-closed techniczną diagnozą hosta.
+
+Gotowość zdalnej trasy nie jest dowodem aktywnej tury ani prawa do wypowiedzi. Po przejściu na `remote_runtime` każda wiadomość nadal musi wejść do tego samego persistent runtime i przejść istniejący kontrakt request/turn/finalization; widoczna odpowiedź nadal wymaga `display_exact` po zaakceptowanej finalizacji.
 
 Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
 
@@ -230,9 +242,9 @@ Jeżeli truth gate, integralność albo finalizator blokuje odpowiedź, przejdź
 
 Po trwałym zapisaniu phase-1 z `daemon_request_id` jego durable host-request record jest kanonicznym **turn settlement authority**. `DaemonChatJob` pozostaje projekcją wykonania/supervision i musi reconciliować dokładnie ten sam `request_id/turn_id/trace_id/host_request_contract_hash`. `runtime_turn_not_accepted` wolno odzyskać bez replayu tylko wtedy, gdy istnieje dokładnie jeden zgodny durable record; innych błędów workera/procesu nie wolno w ten sposób przepisywać na sukces. Reconstructed phase-1 nie ma słabszego validatora niż native phase-1.
 
-Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych lokalnych kroków. Jeżeli executor nie utworzył procesu, raportuj `host_executor_unavailable` i pozostaw stan filesystemu/paczki jako `unknown`.
+Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych kroków, w tym wcześniej zweryfikowanej zdalnej trasy albo jawnego host handoff, jeżeli te capability są faktycznie dostępne. Jeżeli lokalny executor nie utworzył procesu i nie ma zweryfikowanego remote runtime/handoff, raportuj `host_executor_unavailable` dla lokalnej trasy i pozostaw stan filesystemu/paczki jako `unknown`.
 
-Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący executor został odzyskany.
+Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne, zdalny failover i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący lokalny executor został odzyskany.
 
 ## 9. Repozytorium i źródła zewnętrzne
 
