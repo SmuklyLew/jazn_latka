@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.75",
-  "active_definition_count": 1592,
+  "active_definition_count": 1593,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1831,6 +1831,24 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 63
+    },
+    "tests/test_bridge_discovery_remote_failover_contract.py::test_bridge_discovery_publishes_managed_remote_failover_contract": {
+      "path": "tests/test_bridge_discovery_remote_failover_contract.py",
+      "name": "test_bridge_discovery_publishes_managed_remote_failover_contract",
+      "purpose": "Bridge discovery publishes managed remote failover contract",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_capability_status_boundaries.py::test_model_adapter_status_rejects_a_non_object_nested_contract": {
       "path": "tests/test_capability_status_boundaries.py",
