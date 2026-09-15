@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "6fafed16ea95ec1a8573ad91d3a1ea126d316205",
-  "base_version": "16.3.25.5.75-remote-runtime-failover-convergence",
-  "commit_date": "2026-09-15T16:56:59+02:00",
+  "base_merge_commit": "abb327583f4fca0eaf442f50ed218520ba104380",
+  "base_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence",
+  "commit_date": "2026-09-15T16:58:34+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-15T14:56:59+00:00",
+  "generated_at_utc": "2026-09-15T14:58:34+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a12dce0634942db1ccb4661a1416bd8d04d6ac6c",
+  "git_tree_sha": "4b00ba5e3a323b066d549b01030ae2ea2f01659a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "6fafed16ea95ec1a8573ad91d3a1ea126d316205",
-    "source_version": "16.3.25.5.75-remote-runtime-failover-convergence"
+    "source_commit": "abb327583f4fca0eaf442f50ed218520ba104380",
+    "source_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "release_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "runtime_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "6fafed16ea95ec1a8573ad91d3a1ea126d316205",
+  "source_commit": "abb327583f4fca0eaf442f50ed218520ba104380",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "source_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.75-remote-runtime-failover-convergence",
+  "update_version": "16.3.25.5.75.1-remote-runtime-failover-ci-convergence",
   "version_source": "latka_jazn/version.py"
 }
