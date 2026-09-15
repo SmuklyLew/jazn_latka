@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.76.0",
-  "active_definition_count": 1602,
+  "active_definition_count": 1604,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1831,6 +1831,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 63
+    },
+    "tests/test_bounded_host_race_regressions_v16325576.py::test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns": {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "name": "test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns",
+      "purpose": "Submit does not clobber worker state if worker advances before popen returns",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_bounded_host_race_regressions_v16325576.py::test_duplicate_supervisor_start_does_not_overwrite_live_owner_state": {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "name": "test_duplicate_supervisor_start_does_not_overwrite_live_owner_state",
+      "purpose": "Duplicate supervisor start does not overwrite live owner state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_bridge_discovery_remote_failover_contract.py::test_bridge_discovery_publishes_managed_remote_failover_contract": {
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
