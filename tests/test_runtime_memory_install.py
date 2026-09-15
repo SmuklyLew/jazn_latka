@@ -41,6 +41,12 @@ class FakeLayeredMemory:
 
 
 def fake_engine(root: Path):
+    # This fixture tests the persistent-memory installation path, so make the
+    # legacy-compatible memory root explicitly present. SYSTEM-only behavior is
+    # covered separately by test_optional_memory_attach_convergence.py.
+    raw = root / "memory" / "raw"
+    raw.mkdir(parents=True, exist_ok=True)
+    (raw / "chat.html").write_text("test memory payload", encoding="utf-8")
     return SimpleNamespace(
         config=SimpleNamespace(root=root),
         runtime_memory=FakeClassifier(),
@@ -53,6 +59,7 @@ def test_install_is_idempotent_and_blocks_only_legacy_write(tmp_path: Path) -> N
     first = install_runtime_memory(engine)
     second = install_runtime_memory(engine)
     assert first.installed is True
+    assert first.persistent_memory_enabled is True
     assert second.installed is False
     assert isinstance(engine.runtime_memory, RuntimeMemoryCoordinator)
     assert isinstance(engine.layered_memory, LegacyLayeredMemoryReadOnlyAdapter)
