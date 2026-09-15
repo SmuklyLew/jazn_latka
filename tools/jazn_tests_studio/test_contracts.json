@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.76.0",
+  "system_version": "16.3.25.5.76.1",
   "active_definition_count": 1604,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -2651,13 +2651,13 @@
       "path": "tests/test_chatgpt_bootstrap_package_contract.py",
       "name": "test_chatgpt_project_loader_is_thin_and_exposes_no_operator_recovery",
       "purpose": "Chatgpt project loader is thin and exposes no operator recovery",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 13,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -2759,11 +2759,11 @@
       "path": "tests/test_chatgpt_execution_route_contract.py",
       "name": "test_aggregate_prefers_verified_local_executor_over_external_routes",
       "purpose": "Aggregate prefers verified local executor over external routes",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -2791,7 +2791,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 77
     },
     "tests/test_chatgpt_execution_route_contract.py::test_handoff_preflight_is_explicit_and_fail_closed": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
@@ -2809,7 +2809,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 99
     },
     "tests/test_chatgpt_handoff_cross_surface.py::test_explicit_decline_suppresses_other_unaccepted_handoff_offer": {
       "path": "tests/test_chatgpt_handoff_cross_surface.py",
@@ -4138,13 +4138,13 @@
       "path": "tests/test_chatgpt_loader_pylance_static_gate.py",
       "name": "test_project_loader_requires_runtime_binding_before_visible_or_tool_action",
       "purpose": "Project loader requires runtime binding before visible or tool action",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -4170,7 +4170,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 95
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_daemon_presentation_and_private_mcp_complete_two_phase_reply": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4636,13 +4636,13 @@
       "path": "tests/test_chatgpt_nonstreaming_host_transport.py",
       "name": "test_chatgpt_runbook_and_loader_document_streaming_host_fallback",
       "purpose": "Chatgpt runbook and loader document streaming host fallback",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -5170,11 +5170,11 @@
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
       "name": "test_chatgpt_loader_supports_transport_truth_and_single_zip_recovery",
       "purpose": "Chatgpt loader supports transport truth and single zip recovery",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -5196,7 +5196,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 160
+      "line": 163
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -5429,7 +5429,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 121
     },
     "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_resume_transport_timeout_keeps_existing_daemon_request": {
       "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
@@ -5454,7 +5454,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 144
+      "line": 150
     },
     "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped": {
       "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
@@ -5479,7 +5479,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 164
+      "line": 170
     },
     "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_dispatch_propagates_request_id_to_gateway": {
       "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
@@ -5504,20 +5504,20 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 197
     },
     "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume": {
       "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
       "name": "test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume",
       "purpose": "Chatgpt loader contract names transport timeout and idempotent resume",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bridge.secure_host_runtime_gateway",
@@ -5529,7 +5529,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 244
+      "line": 250
     },
     "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_existing_host_packet_builder_is_now_a_current_turn_gate": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
@@ -7927,7 +7927,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 152
+      "line": 151
     },
     "tests/test_conversation_state_restart_continuity.py::test_conversation_state_survives_store_recreation": {
       "path": "tests/test_conversation_state_restart_continuity.py",
@@ -10952,7 +10952,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 55
     },
     "tests/test_host_contract_neutralization.py::test_chatgpt_runbook_uses_neutral_canonical_host_fields": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -10972,7 +10972,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 66
     },
     "tests/test_host_contract_neutralization.py::test_ollama_runbook_is_integration_contract_not_model_prompt": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -10992,7 +10992,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 76
     },
     "tests/test_host_contract_neutralization.py::test_codex_runbook_checks_actual_custom_instruction_limit": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -11012,7 +11012,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_host_finalization_evidence_binding.py::test_meta_examples_and_code_do_not_become_epistemic_self_claims": {
       "path": "tests/test_host_finalization_evidence_binding.py",
@@ -27917,7 +27917,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 31
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_runbook_routes_every_current_message_through_runtime_without_host_reclassification": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27942,7 +27942,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 37
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_runbook_uses_current_execution_environment_for_local_bootstrap": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27966,7 +27966,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 45
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_runtime_owns_routing_identity_voice_memory_and_finalization": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27991,7 +27991,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 53
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_presence_identity_and_health_check_remain_separate_runtime_intents": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -28015,7 +28015,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 70
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_identity_continuity_handler_uses_runtime_owned_contract": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -28039,7 +28039,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 81
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_direct_voice_handler_uses_runtime_owned_contract": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -28063,7 +28063,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 92
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_bridge_exports_runtime_owned_host_generation_policy": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -28088,7 +28088,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 102
     },
     "tests/test_runtime_package_loader_contract.py::test_current_package_sidecar_is_discovered_and_independent_volumes_extract": {
       "path": "tests/test_runtime_package_loader_contract.py",
