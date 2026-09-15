@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.74.2.002 makes private MEMORY an optional, separately attachable
-# capability of a complete SYSTEM runtime. SYSTEM-only operation keeps mutable
-# core state outside workspace_runtime/memory, while verified MEMORY can be
-# attached/reused later without repackaging the code release.
-DISTRIBUTION_VERSION = "16.3.25.5.74.2.002"
-PACKAGE_VERSION = "16.3.25.5.74.2.002"
-PACKAGE_RELEASE_NAME = "optional-memory-attach-convergence"
+# v16.3.25.5.75 hardens ChatGPT remote-runtime failover around the official
+# OpenAI Secure MCP Tunnel managed-runtime lifecycle. Long-lived tunnel
+# supervision uses runtimes connect/status evidence, while host-usable failover
+# remains gated on an explicitly available ChatGPT connector/app capability.
+DISTRIBUTION_VERSION = "16.3.25.5.75"
+PACKAGE_VERSION = "16.3.25.5.75"
+PACKAGE_RELEASE_NAME = "remote-runtime-failover-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
