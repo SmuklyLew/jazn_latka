@@ -3,8 +3,8 @@
   "version": "16.3.25.5.77-professional-llm-turn-runtime",
   "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
   "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "generated_at_utc": "2026-09-15T21:53:14+00:00",
-  "updated_at_utc": "2026-09-15T21:53:14+00:00",
+  "generated_at_utc": "2026-09-15T21:56:40+00:00",
+  "updated_at_utc": "2026-09-15T21:56:40+00:00",
   "start_file": "run.py",
   "file_count": 1729,
   "static_file_count": 1729,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2903,
-      "sha256": "924626c92a46cc1a4186fc9e2a8514d0289c1bea7ffe6c8ef408a3ed5b6b92cd",
+      "size_bytes": 2898,
+      "sha256": "344b59a7bc74ca84462983b0e0528ec28e11270a2aea4d54035ad8e447578500",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12457,7 +12457,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "path": "tests/test_bounded_host_race_regressions.py",
       "size_bytes": 2388,
       "sha256": "34ac19d9679dc26c3e35572aa1906f7df5e038608e294f356df07787d5157d57",
       "mutable_runtime": false,
@@ -13294,7 +13294,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_host_operations_v16325576.py",
+      "path": "tests/test_host_operations.py",
       "size_bytes": 4297,
       "sha256": "4535a7987e0f7b21695b102a94be4813b0abb3951ad4d85386fc91e53312f1ca",
       "mutable_runtime": false,
@@ -14293,6 +14293,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_professional_turn_runtime.py",
+      "size_bytes": 6658,
+      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_provenance_retrieval_ci_closure.py",
       "size_bytes": 6104,
       "sha256": "0504b37743eb5910a6c3dc77bba0914582820ef25d1e6ec530b8a3ff729cc896",
@@ -14725,7 +14734,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_runtime_supervisor_v16325576.py",
+      "path": "tests/test_runtime_supervisor.py",
       "size_bytes": 1834,
       "sha256": "06db48ffeb9bb8c80426580ac5999fed8405bd85076c921b47b0b971c874a5d2",
       "mutable_runtime": false,
@@ -14944,15 +14953,6 @@
       "path": "tests/test_turn_trace_span_context.py",
       "size_bytes": 1261,
       "sha256": "18e7d9db6dda98b62008b77b44aac5703289416aab737449944ace0450490e6e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v16325577_professional_turn_runtime.py",
-      "size_bytes": 6658,
-      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15428,8 +15428,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1500993,
-      "sha256": "2187bff713c05f63badd669276bdf273c5707fd47b15609a7df2d23012799b63",
+      "size_bytes": 1500593,
+      "sha256": "5169149b7974035e6db4062eae42aec4404fb5bbc33ce9e1445b7e36bddb10b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
