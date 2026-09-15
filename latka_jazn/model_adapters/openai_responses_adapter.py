@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ DEFAULT_EXECUTION_INSTRUCTIONS = (
     "zażądać wywołania narzędzia; narzędzie wykonuje runtime po autoryzacji, a wynik musi wrócić "
     "do kolejnej tury. Nie ujawniaj ukrytego toku rozumowania. Zwróć naturalną odpowiedź po polsku."
 )
+_PROMPT_CACHE_KEY_RE = re.compile(r"^[A-Za-z0-9._:-]{1,64}$")
 
 
 class OpenaiResponsesAdapter:
@@ -85,6 +87,8 @@ class OpenaiResponsesAdapter:
                 "supports_responses_api": True,
                 "supports_tool_requests": True,
                 "supports_structured_output": True,
+                "supports_prompt_cache_key": True,
+                "supports_allowed_tools": True,
                 "conversation_state_contract": (
                     "previous_response_id zapewnia ciągłość transportu Responses API, nie tożsamość ani pamięć runtime"
                 ),
@@ -136,26 +140,96 @@ class OpenaiResponsesAdapter:
             return self._response(status="adapter_error")
 
     def _build_payload(self, request: ModelAdapterRequest) -> dict[str, Any]:
-        context = json.dumps(request.system_context or {}, ensure_ascii=False, separators=(",", ":"))
+        context_value = dict(request.system_context or {})
+        full_canon = context_value.pop("full_canon_model_context", None)
+        input_sections: list[str] = []
+        if isinstance(full_canon, dict) and full_canon:
+            input_sections.append(
+                "STABILNY_KANON_JAZNI_JSON:\n"
+                + json.dumps(full_canon, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            )
+        input_sections.append(
+            "DYNAMICZNY_KONTEKST_TURY_JSON:\n"
+            + json.dumps(context_value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        )
+        input_sections.append("AKTUALNA_WIADOMOSC_UZYTKOWNIKA:\n" + str(request.prompt or ""))
         payload: dict[str, Any] = {
             "model": self.model,
             "store": False,
             "max_output_tokens": request.max_output_tokens or self.max_output_tokens,
             "instructions": request.instructions or DEFAULT_EXECUTION_INSTRUCTIONS,
-            "input": f"{request.prompt}\n\nKONTEKST_JAZNI_JSON:\n{context}",
+            "input": "\n\n".join(input_sections),
             "metadata": {"runtime_adapter": self.name, **{str(k): str(v) for k, v in request.metadata.items() if v is not None}},
         }
+        if request.prompt_cache_key:
+            payload["prompt_cache_key"] = self._validated_prompt_cache_key(request.prompt_cache_key)
         if request.reasoning_effort:
             payload["reasoning"] = {"effort": str(request.reasoning_effort)}
         if request.response_schema:
             schema = dict(request.response_schema)
             name = str(schema.pop("name", "jazn_structured_response"))
             payload["text"] = {"format": {"type": "json_schema", "name": name, "schema": schema, "strict": True}}
+        if request.allowed_tool_names and not request.tools:
+            raise ValueError("allowed_tool_names_require_declared_tools")
         if request.tools:
             payload["tools"] = list(request.tools)
-            payload["tool_choice"] = request.tool_choice or "auto"
+            if request.allowed_tool_names:
+                payload["tool_choice"] = self._allowed_tools_choice(
+                    request.tools,
+                    request.allowed_tool_names,
+                    request.tool_choice,
+                )
+            else:
+                payload["tool_choice"] = request.tool_choice or "auto"
             payload["parallel_tool_calls"] = bool(request.parallel_tool_calls)
         return payload
+
+    @staticmethod
+    def _validated_prompt_cache_key(value: str) -> str:
+        key = str(value or "").strip()
+        if not _PROMPT_CACHE_KEY_RE.fullmatch(key):
+            raise ValueError("prompt_cache_key_invalid")
+        return key
+
+    @staticmethod
+    def _tool_name(tool: dict[str, Any]) -> str:
+        direct = str(tool.get("name") or "").strip()
+        if direct:
+            return direct
+        function = tool.get("function")
+        if isinstance(function, dict):
+            return str(function.get("name") or "").strip()
+        return ""
+
+    @classmethod
+    def _allowed_tools_choice(
+        cls,
+        tools: list[dict[str, Any]],
+        allowed_tool_names: list[str],
+        requested_choice: str | dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        requested = list(dict.fromkeys(str(item).strip() for item in allowed_tool_names if str(item).strip()))
+        if not requested:
+            raise ValueError("allowed_tool_names_empty")
+        available = {cls._tool_name(tool): tool for tool in tools if cls._tool_name(tool)}
+        missing = [name for name in requested if name not in available]
+        if missing:
+            raise ValueError("allowed_tool_not_declared:" + ",".join(missing))
+        if isinstance(requested_choice, dict):
+            raise ValueError("allowed_tools_conflict_with_explicit_tool_choice")
+        if requested_choice not in {None, "auto", "required"}:
+            raise ValueError("allowed_tools_require_auto_or_required_mode")
+        selected: list[dict[str, str]] = []
+        for name in requested:
+            tool_type = str(available[name].get("type") or "function")
+            if tool_type != "function":
+                raise ValueError(f"allowed_tool_type_unsupported:{name}:{tool_type}")
+            selected.append({"type": "function", "name": name})
+        return {
+            "type": "allowed_tools",
+            "mode": "required" if requested_choice == "required" else "auto",
+            "tools": selected,
+        }
 
     @staticmethod
     def _extract_tool_calls(data: dict[str, Any]) -> list[dict[str, Any]]:
@@ -199,7 +273,13 @@ class OpenaiResponsesAdapter:
             last_probe_error=self._last_probe_error,
             can_attempt_model_guided_speech=configured,
             can_generate_model_guided_speech=bool(configured and self._last_generation_succeeded),
-            capabilities={"responses": True, "tool_requests": True, "structured_output": True},
+            capabilities={
+                "responses": True,
+                "tool_requests": True,
+                "structured_output": True,
+                "prompt_cache_key": True,
+                "allowed_tools": True,
+            },
         )
 
     def _response(
