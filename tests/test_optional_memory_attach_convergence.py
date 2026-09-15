@@ -94,6 +94,7 @@ def test_system_only_runtime_uses_core_state_without_materializing_private_memor
     assert not cfg.memory_root.exists()
     assert _is_under(cfg.memory_db_path_readonly, workspace / "core_state" / "memory_runtime")
     assert _is_under(cfg.audit_db_path_readonly, workspace / "core_state" / "memory_runtime")
+    assert not (workspace / "core_state" / "memory_runtime" / "memory").exists()
 
 
 def test_transactional_memory_is_skipped_when_memory_is_optional_and_absent(
@@ -134,7 +135,7 @@ def test_required_memory_mode_is_explicit_fail_closed_policy(
     assert transactional["error"] == "persistent_memory_required_missing"
 
 
-def test_memory_mode_off_ignores_existing_memory_for_runtime_writes(
+def test_memory_mode_off_ignores_existing_memory_for_writes_and_recall(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -148,11 +149,15 @@ def test_memory_mode_off_ignores_existing_memory_for_runtime_writes(
 
     availability = build_memory_availability_status(root)
     storage = runtime_memory_storage_root(root)
+    readiness = LivingMemoryGateway(root, discovery_cache_seconds=0).readiness()
 
     assert availability.persistent_memory_present is True
     assert availability.persistent_memory_enabled is False
     assert availability.status == "disabled_by_policy"
     assert _is_under(storage, workspace / "core_state")
+    assert readiness["status"] == "disabled_by_policy"
+    assert readiness["memory_search_ready"] is False
+    assert readiness["source_count"] == 0
 
 
 def test_runtime_writers_do_not_make_core_state_look_like_attached_memory(
