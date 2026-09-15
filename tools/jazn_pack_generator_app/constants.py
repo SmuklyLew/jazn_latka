@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-GENERATOR_VERSION = "10.1.86.0.115"
+GENERATOR_VERSION = "10.1.86.0.116"
 GENERATOR_TITLE = "Jaźń Pack Generator"
 SETTINGS_SCHEMA = "jazn_pack_generator_settings/v1"
 PACKAGE_MANIFEST_SCHEMA = "jazn_pack_generator_package/v2"
-HOST_BOOTSTRAP_CONTRACT_SCHEMA = "jazn_host_bootstrap_contract/v1"
+HOST_BOOTSTRAP_CONTRACT_SCHEMA = "jazn_host_bootstrap_contract/v2"
+MEMORY_ATTACHMENT_CONTRACT_SCHEMA = "jazn_memory_attachment_contract/v1"
 
 DEFAULT_PART_SIZE_MIB = 450
 DEFAULT_COMPRESSION_LEVEL = 6
@@ -20,6 +21,7 @@ SYSTEM_BOOTSTRAP_REQUIRED_FILES = (
     "main.py",
     "AGENTS.md",
     "AGENTS.chatgpt.md",
+    "MEMORY_ATTACHMENT_CONTRACT.json",
     "latka_jazn/version.py",
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json",

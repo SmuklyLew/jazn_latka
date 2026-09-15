@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 import os
 
+from latka_jazn.memory.availability import build_memory_availability_status
 from latka_jazn.memory.memory_root import legacy_memory_root, memory_path, resolve_memory_root
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.runtime_memory import RuntimeMemoryCoordinator
@@ -23,11 +24,14 @@ class RuntimeMemoryInstallStatus:
     database_path: str
     legacy_classifier_type: str
     layered_fanout_blocked: bool
+    persistent_memory_enabled: bool = True
+    memory_state: str = "persistent_memory_present"
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
-        "Instalacja zastępuje zapis fan-out koordynatorem L1/L2. "
-        "Jeżeli zweryfikowana natywna memory_jazn.sqlite3 zawiera transactional schema, "
-        "ten sam plik jest używany do zapisu i recall. L2 nie promuje automatycznie L3."
+        "RuntimeMemoryCoordinator keeps one stable interface with or without private MEMORY. "
+        "When persistent memory is absent/disabled, persistence is fail-closed and no L1/L2/L3 database is created. "
+        "When verified MEMORY is present, installation replaces legacy fan-out with transactional L1/L2; L2 never "
+        "auto-promotes to L3."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,8 +56,9 @@ class LegacyLayeredMemoryReadOnlyAdapter:
             "schema_version": SCHEMA_VERSION,
             "automatic_l3": False,
             "truth_boundary": (
-                "Legacy LayeredMemory fan-out is disabled. The raw turn remains in the event ledger; "
-                "selected memory enters L1/L2 through RuntimeMemoryCoordinator."
+                "Legacy LayeredMemory fan-out is disabled. With persistent MEMORY attached, selected memory enters "
+                "L1/L2 through RuntimeMemoryCoordinator. Without MEMORY, core dialogue continues and no private-memory "
+                "promotion is attempted."
             ),
         }
 
@@ -66,7 +71,7 @@ def _strip_memory_prefix(path: Path) -> Path:
 
 
 def _configured_tier_path(runtime_root: Path, configured: str | Path) -> Path:
-    """Map historical version-local tier paths into the selected memory root."""
+    """Map historical version-local tier paths into the selected persistent memory root."""
 
     candidate = Path(configured).expanduser()
     selected_root = resolve_memory_root(runtime_root)
@@ -87,6 +92,9 @@ def _configured_tier_path(runtime_root: Path, configured: str | Path) -> Path:
 
 
 def _native_unified_tier_path(runtime_root: Path) -> Path | None:
+    availability = build_memory_availability_status(runtime_root)
+    if not availability.persistent_memory_enabled:
+        return None
     canonical = memory_path(runtime_root, Path("sqlite") / CANONICAL_DATABASE_NAME)
     probe = probe_unified_memory_database(canonical)
     if probe.get("memory_search_ready") is True:
@@ -99,12 +107,12 @@ def resolve_memory_tier_database_path(
     *,
     configured: str | Path | None = None,
 ) -> Path:
-    """Resolve the canonical L1/L2/L3 store.
+    """Resolve the canonical persistent L1/L2/L3 store without creating it.
 
-    A verified native unified ``memory_jazn.sqlite3`` is preferred for the
-    default layout so conversational recall and transactional L1/L2/L3 do not
-    diverge into two SQLite worlds. Explicit custom tier locations remain
-    supported and are resolved under the host-level memory root.
+    A verified native unified ``memory_jazn.sqlite3`` is preferred when persistent
+    MEMORY is present. In SYSTEM-only mode this returns the future canonical
+    MEMORY path only as an identity; callers must consult memory availability
+    before opening it for writes.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -133,27 +141,42 @@ def resolve_memory_tier_database_path(
 
 
 def initialize_transactional_memory_store(root: str | Path, *, configured: str | Path | None = None) -> dict[str, Any]:
-    """Create and validate the canonical transactional L1/L2/L3 store.
+    """Create/validate transactional memory only when persistent MEMORY is enabled."""
 
-    Daemon readiness includes this store, so startup must not defer its creation
-    until the first conversational session. The helper returns a JSON-ready
-    status for startup diagnostics.
-    """
-    database_path = resolve_memory_tier_database_path(root, configured=configured)
+    runtime_root = Path(root).expanduser().resolve()
+    availability = build_memory_availability_status(runtime_root)
+    database_path = resolve_memory_tier_database_path(runtime_root, configured=configured)
+    if not availability.persistent_memory_enabled:
+        required_missing = bool(availability.persistent_memory_required and not availability.required_satisfied)
+        return {
+            "ok": not required_missing,
+            "status": availability.status,
+            "skipped": True,
+            "database_path": str(database_path),
+            "persistent_memory_enabled": False,
+            "error": "persistent_memory_required_missing" if required_missing else None,
+            "memory_availability": availability.to_dict(),
+        }
     try:
         with MemoryTierStore(database_path) as store:
             validation = store.validate(full=False)
     except (OSError, RuntimeError, ValueError) as exc:
         return {
             "ok": False,
+            "status": "transactional_memory_initialization_failed",
             "database_path": str(database_path),
+            "persistent_memory_enabled": True,
             "error": f"{type(exc).__name__}: {exc}",
             "validation": {},
+            "memory_availability": availability.to_dict(),
         }
     return {
         "ok": validation.get("ok") is True,
+        "status": "ready" if validation.get("ok") is True else "validation_failed",
         "database_path": str(database_path),
+        "persistent_memory_enabled": True,
         "validation": validation,
+        "memory_availability": availability.to_dict(),
     }
 
 
@@ -166,6 +189,10 @@ def _tier_database_path(engine: Any) -> Path:
 
 
 def install_runtime_memory(engine: Any) -> RuntimeMemoryInstallStatus:
+    availability = build_memory_availability_status(
+        engine.config.root,
+        mode=getattr(engine.config, "memory_mode", None),
+    )
     current = getattr(engine, "runtime_memory", None)
     if isinstance(current, RuntimeMemoryCoordinator):
         layered = getattr(engine, "layered_memory", None)
@@ -174,6 +201,8 @@ def install_runtime_memory(engine: Any) -> RuntimeMemoryInstallStatus:
             database_path=str(current.database_path),
             legacy_classifier_type=type(current.classifier).__name__,
             layered_fanout_blocked=isinstance(layered, LegacyLayeredMemoryReadOnlyAdapter),
+            persistent_memory_enabled=current.persistence_enabled,
+            memory_state=availability.status,
         )
     if current is None:
         raise RuntimeError("engine has no runtime memory classifier")
@@ -183,6 +212,8 @@ def install_runtime_memory(engine: Any) -> RuntimeMemoryInstallStatus:
     engine.runtime_memory = RuntimeMemoryCoordinator(
         database_path,
         classifier=current,
+        persistence_enabled=availability.persistent_memory_enabled,
+        disabled_reason=availability.status,
     )
     layered = getattr(engine, "layered_memory", None)
     if layered is not None and not isinstance(layered, LegacyLayeredMemoryReadOnlyAdapter):
@@ -192,4 +223,6 @@ def install_runtime_memory(engine: Any) -> RuntimeMemoryInstallStatus:
         database_path=str(database_path),
         legacy_classifier_type=type(current).__name__,
         layered_fanout_blocked=isinstance(getattr(engine, "layered_memory", None), LegacyLayeredMemoryReadOnlyAdapter),
+        persistent_memory_enabled=availability.persistent_memory_enabled,
+        memory_state=availability.status,
     )

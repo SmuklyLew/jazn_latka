@@ -3,14 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.74.2.001 hardens ChatGPT/daemon/MCP transport lineage without
-# consuming the active Jaźń Studio Pamięci v16.3.25.5.75 line. A request id is
-# allocated before the side-effect boundary, transport ambiguity resumes the
-# same daemon request, and pending memory-recall turns remain pending instead of
-# being misclassified as missing-memory failures.
-DISTRIBUTION_VERSION = "16.3.25.5.74.2.001"
-PACKAGE_VERSION = "16.3.25.5.74.2.001"
-PACKAGE_RELEASE_NAME = "chatgpt-transport-mcp-idempotency"
+# v16.3.25.5.74.2.002 makes private MEMORY an optional, separately attachable
+# capability of a complete SYSTEM runtime. SYSTEM-only operation keeps mutable
+# core state outside workspace_runtime/memory, while verified MEMORY can be
+# attached/reused later without repackaging the code release.
+DISTRIBUTION_VERSION = "16.3.25.5.74.2.002"
+PACKAGE_VERSION = "16.3.25.5.74.2.002"
+PACKAGE_RELEASE_NAME = "optional-memory-attach-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

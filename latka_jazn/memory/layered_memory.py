@@ -7,7 +7,7 @@ from typing import Callable
 import json, uuid
 from latka_jazn.core.truth_boundary import TruthBoundary
 from latka_jazn.core.uncertainty_model import UncertaintyModel
-from latka_jazn.memory.memory_root import resolve_memory_root
+from latka_jazn.memory.availability import runtime_memory_storage_root
 from latka_jazn.memory.store import MemoryStore
 
 @dataclass(slots=True)
@@ -61,11 +61,15 @@ class LayeredMemory:
 
     Nie zastępuje surowej pamięci. Dodaje jawne etykiety: skąd to wiem, czy to fakt,
     czy scena symboliczna, jaki ma sens dla Łatki i czy wolno tym budować tożsamość.
+
+    Gdy prywatna MEMORY nie jest dołączona, zapis roboczy trafia wyłącznie do
+    ``workspace_runtime/core_state/memory_runtime``. Taki zapis jest stanem
+    operacyjnym i nie jest źródłem autobiograficznego recall.
     """
     def __init__(self, store: MemoryStore, root: Path) -> None:
         self.store = store
         self.root = root
-        self.memory_root = resolve_memory_root(root)
+        self.memory_root = runtime_memory_storage_root(root)
         self.truth = TruthBoundary()
         self.uncertainty = UncertaintyModel()
         self._ensure_jsonl_files()

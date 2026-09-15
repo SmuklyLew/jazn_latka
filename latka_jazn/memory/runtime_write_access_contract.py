@@ -9,7 +9,6 @@ from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.config import JaznConfig
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, runtime_sqlite_capabilities
 from latka_jazn.db.shard_manifest import ensure_manifest
-from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.memory.store import MemoryStore
 from latka_jazn.version import schema_version
@@ -53,16 +52,26 @@ class RuntimeWriteAccessStatus:
         "osuwanie_glosu_Latki_w_trzecia_osobe_lub_techniczny_loader",
         "status_initialized_false_mimo_spojnych_baz",
         "mieszanie_biezacego_trybu_z_historia_zapisow",
+        "runtime_write_nie_moze_materializowac_opcjonalnej_memory",
     ])
     truth_boundary: str = (
-        "runtime_write_v1 jest bieżącą lokalną warstwą zapisu runtime. Pole writes_enabled opisuje bieżące "
-        "zezwolenie tej operacji/procesu, write_capable opisuje sprawność techniczną baz, a writes_observed "
-        "potwierdza historyczne rekordy. Warstwa nie jest archiwum pełnych eksportów ChatGPT, repozytorium Git "
-        "ani materiałem do publikacji."
+        "runtime_write_v1 jest bieżącą lokalną warstwą operacyjnego zapisu runtime. W SYSTEM-only mode żyje pod "
+        "workspace_runtime/core_state i nie jest autobiograficzną MEMORY ani źródłem recall. Po dołączeniu persistent "
+        "MEMORY ten sam kontrakt może pisać do jej kanonicznego runtime-write store. Pole writes_enabled opisuje bieżące "
+        "zezwolenie tej operacji/procesu, write_capable opisuje sprawność techniczną baz, a writes_observed potwierdza "
+        "historyczne rekordy."
     )
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+def _strip_memory_prefix(value: str | Path) -> Path:
+    path = Path(value)
+    parts = path.parts
+    if parts and parts[0].casefold() == "memory":
+        return Path(*parts[1:])
+    return path
 
 
 def _relative_or_none(root: Path, path: Path | None) -> str | None:
@@ -121,15 +130,16 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
 
 
 def ensure_runtime_write_v1(config: JaznConfig) -> RuntimeWriteAccessStatus:
-    """Create a clean runtime_write_v1 store only when explicitly requested."""
-    root = resolve_memory_root(config.root)
+    """Create clean runtime operational stores without forcing persistent MEMORY."""
+    root = config.runtime_memory_storage_root
     memory_path = Path(config.memory_db_path)
     audit_path = Path(config.audit_db_path)
 
     store = MemoryStore(memory_path)
     try:
         store.set_meta("runtime_write_access_contract", SCHEMA_VERSION)
-        store.set_meta("runtime_write_source", "clean_runtime_write_v1_initialized_after_pack_exclusion")
+        store.set_meta("runtime_write_source", "operational_runtime_store_optional_memory_boundary")
+        store.set_meta("persistent_memory_enabled", str(config.memory_availability.persistent_memory_enabled).lower())
     finally:
         store.close()
 
@@ -141,29 +151,34 @@ def ensure_runtime_write_v1(config: JaznConfig) -> RuntimeWriteAccessStatus:
                 "schema_version": SCHEMA_VERSION,
                 "memory_db": _relative_or_none(root, memory_path),
                 "audit_db": _relative_or_none(root, audit_path),
-                "reason": "clean runtime_write_v1 recreated after excluding stale runtime_write shards from release pack",
+                "persistent_memory_enabled": config.memory_availability.persistent_memory_enabled,
+                "memory_state": config.memory_availability.status,
+                "reason": "runtime operational store initialized independently from persistent MEMORY readiness",
             },
             source="RuntimeWriteAccessContract",
             actor="system",
-            tags=["runtime_write", "init", "clean_store"],
+            tags=["runtime_write", "init", "clean_store", "optional_memory_boundary"],
         )
     finally:
         audit.close()
 
+    # Historical config values are transport/logical names rooted at "memory/...".
+    # The selected storage root may now be workspace_runtime/core_state/memory_runtime,
+    # so strip the legacy prefix explicitly before constructing shard manifests.
     ensure_manifest(
         root,
-        config.conversation_shard_manifest_name,
+        _strip_memory_prefix(config.conversation_shard_manifest_name).as_posix(),
         logical_database="chat_context",
         role="canonical_runtime_conversation_memory",
-        default_db_path=config.memory_db_name,
+        default_db_path=_strip_memory_prefix(config.memory_db_name).as_posix(),
         max_file_bytes=config.max_sqlite_file_bytes,
     )
     ensure_manifest(
         root,
-        config.audit_shard_manifest_name,
+        _strip_memory_prefix(config.audit_shard_manifest_name).as_posix(),
         logical_database="chat_context_audit",
         role="canonical_realtime_audit",
-        default_db_path=config.audit_db_name,
+        default_db_path=_strip_memory_prefix(config.audit_db_name).as_posix(),
         max_file_bytes=config.max_sqlite_file_bytes,
     )
     transactional = initialize_transactional_memory_store(
@@ -184,7 +199,7 @@ def build_runtime_write_access_status(
     writes_enabled: bool | None = None,
     deep_verify: bool = True,
 ) -> RuntimeWriteAccessStatus:
-    root = resolve_memory_root(config.root)
+    root = config.runtime_memory_storage_root
     if initialize:
         return ensure_runtime_write_v1(config)
 

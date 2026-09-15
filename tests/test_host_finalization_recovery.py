@@ -14,6 +14,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
 )
 from latka_jazn.mcp.server import READ_ONLY_TOOLS, TOOL_DEFINITIONS
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
+from latka_jazn.runtime.operation_registry import OperationRegistry
 
 
 REQUEST_ID = "request-v1637-recovery"
@@ -223,18 +224,21 @@ def test_lost_finalization_response_recovers_display_exact_without_replay(tmp_pa
 
 def test_gateway_result_polls_chat_result_only(monkeypatch, tmp_path: Path) -> None:
     gateway = object.__new__(SecureHostRuntimeGateway)
-    calls: list[tuple[str, str, dict[str, Any] | None]] = []
+    gateway.operations = OperationRegistry(tmp_path)
+    calls: list[tuple[str, str, dict[str, Any] | None, bool]] = []
 
     def fake_http_json(
         method: str,
         path: str,
         payload: dict[str, Any] | None = None,
+        *,
+        retry_safe: bool = False,
     ) -> dict[str, Any]:
-        calls.append((method, path, payload))
+        calls.append((method, path, payload, retry_safe))
         return {"request_id": REQUEST_ID, "status": "running"}
 
     monkeypatch.setattr(gateway, "_http_json", fake_http_json)
     result = gateway.result(REQUEST_ID)
 
     assert result["request_id"] == REQUEST_ID
-    assert calls == [("GET", f"/chat-result?request_id={REQUEST_ID}", None)]
+    assert calls == [("GET", f"/chat-result?request_id={REQUEST_ID}", None, True)]

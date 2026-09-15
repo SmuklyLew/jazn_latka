@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 import hashlib, json, time
 
-from latka_jazn.memory.memory_root import resolve_memory_root
+from latka_jazn.memory.availability import runtime_memory_storage_root
 
 SCHEMA_VERSION = "requirements_ledger/v1"
 
@@ -32,7 +32,7 @@ class RequirementLedgerEntry:
 class RequirementsLedger:
     def __init__(self, root: Path) -> None:
         self.root = Path(root).expanduser().resolve()
-        self.memory_root = resolve_memory_root(self.root)
+        self.memory_root = runtime_memory_storage_root(self.root)
         self.path = self.memory_root / "layered" / "requirements_ledger_current_line.jsonl"
         self.path.parent.mkdir(parents=True, exist_ok=True)
 

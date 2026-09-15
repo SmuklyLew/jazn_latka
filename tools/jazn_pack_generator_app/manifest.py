@@ -8,6 +8,7 @@ from typing import Any
 from .constants import (
     GENERATOR_VERSION,
     HOST_BOOTSTRAP_CONTRACT_SCHEMA,
+    MEMORY_ATTACHMENT_CONTRACT_SCHEMA,
     PACKAGE_MANIFEST_SCHEMA,
     SYSTEM_BOOTSTRAP_REQUIRED_FILES,
 )
@@ -18,6 +19,47 @@ from .models import PackPlan
 SECURE_MCP_SERVER_MEMBER = "latka_jazn/mcp/server.py"
 SECURE_MCP_TUNNEL_BOOTSTRAP_MEMBER = "latka_jazn/mcp/tunnel_bootstrap.py"
 SECURE_MCP_TUNNEL_CONTRACT_MEMBER = "latka_jazn/mcp/secure_tunnel.py"
+MEMORY_ATTACHMENT_CONTRACT_MEMBER = "MEMORY_ATTACHMENT_CONTRACT.json"
+
+
+def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
+    """Describe MEMORY as a separable runtime capability, never an implicit dependency."""
+
+    content = plan.request.content.value
+    carries_system = content in {"system", "system+memory"}
+    carries_memory = content in {"memory", "system+memory"}
+    return {
+        "schema_version": MEMORY_ATTACHMENT_CONTRACT_SCHEMA,
+        "package_content": content,
+        "system_present": carries_system,
+        "memory_present_in_this_package": carries_memory,
+        "persistent_memory_required_for_core_runtime": False,
+        "ordinary_dialogue_without_persistent_memory": True,
+        "recall_without_verified_persistent_memory": False,
+        "external_memory_attach_supported": carries_system,
+        "memory_package_profile": "memory",
+        "memory_package_is_active_root": False,
+        "canonical_memory_root": "workspace_runtime/memory",
+        "operational_core_state_root": "workspace_runtime/core_state",
+        "memory_root_env": "JAZN_MEMORY_ROOT",
+        "memory_mode_env": "JAZN_MEMORY_MODE",
+        "default_memory_mode": "optional",
+        "supported_memory_modes": ["optional", "required", "off"],
+        "attach_requires_inactive_daemon": True,
+        "attach_entrypoint": "run.py memory-attach",
+        "auto_attach_entrypoint": "run.py runtime-bootstrap",
+        "post_attach_restart_required": True,
+        "legacy_transport_repack_supported": True,
+        "bootstrap_contract_member": (
+            MEMORY_ATTACHMENT_CONTRACT_MEMBER if carries_system else None
+        ),
+        "truth_boundary": (
+            "The SYSTEM/MEMORY package boundary prevents private mutable data from becoming a release dependency. "
+            "A SYSTEM-only package remains a complete core runtime. MEMORY may be absent, attached later from a "
+            "separate verified package, or explicitly required by operator policy. Core operational SQLite under "
+            "workspace_runtime/core_state is not recall evidence."
+        ),
+    }
 
 
 def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
@@ -29,6 +71,7 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
     process in ChatGPT or supply OpenAI's external tunnel control plane.
     """
 
+    memory_attachment = build_memory_attachment_contract(plan)
     if plan.request.content.value == "memory":
         return {
             "schema_version": HOST_BOOTSTRAP_CONTRACT_SCHEMA,
@@ -36,8 +79,10 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "content_role": "memory_data_only",
             "active_system_root_eligible": False,
             "package_can_create_host_executor": False,
+            "memory_attachment": memory_attachment,
             "truth_boundary": (
-                "MEMORY is data only and never becomes the system active_root or an execution capability."
+                "MEMORY is data only and never becomes the system active_root or an execution capability. "
+                "It is consumed only through a separately verified SYSTEM memory-attach pipeline."
             ),
         }
 
@@ -62,6 +107,8 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "bootstrap_member": "CHATGPT_BOOTSTRAP.py",
         "entrypoint": "run.py",
         "control_plane": "main.py",
+        "memory_attachment_contract_member": MEMORY_ATTACHMENT_CONTRACT_MEMBER,
+        "memory_attachment": memory_attachment,
         "required_members": required,
         "missing_required_members": missing,
         "local_bootstrap_requires_process_creation": True,
@@ -90,6 +137,7 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "filesystem/process execution. When present, the Secure MCP files prove only that the package contains "
             "the local stdio target for OpenAI Secure MCP Tunnel. The ZIP cannot grant ChatGPT a local executor, "
             "authenticate the external tunnel control plane, publish a connector, or prove a remote runtime route. "
+            "Private MEMORY is an independent optional capability and is not required for core runtime readiness. "
             "Remote transport or execution handoff must be explicitly supplied and verified by the host."
         ),
     }
@@ -120,6 +168,7 @@ def build_manifest(
     source_sha256: dict[str, str],
 ) -> dict[str, Any]:
     host_bootstrap = validate_system_bootstrap_contract(plan)
+    memory_attachment = build_memory_attachment_contract(plan)
     return {
         "schema_version": PACKAGE_MANIFEST_SCHEMA,
         "generator": "tools/jazn_pack_generator.py",
@@ -128,7 +177,10 @@ def build_manifest(
         "package_version": plan.package_version,
         "content": plan.request.content.value,
         "source_root": str(plan.request.source_root),
+        # This field describes the source selected while generating this package.
+        # A null value on SYSTEM never means that runtime memory is forbidden.
         "memory_root": str(plan.request.memory_root) if plan.request.memory_root else None,
+        "memory_attachment": memory_attachment,
         "archive": {
             "logical_filename": logical_filename,
             "logical_sha256": logical_sha256,
@@ -177,16 +229,18 @@ def build_manifest(
                 "verified export without Git. Checkout EOL conversion is therefore not a release source. The completed "
                 "ZIP is safely extracted to a fresh clean-room and its embedded PACKAGE_INTEGRITY_MANIFEST.json and "
                 "SOURCE_PROVENANCE.json are reverified before publication. Package completeness is independent from "
-                "host execution capability: the ZIP cannot grant ChatGPT a local executor. A packaged Secure MCP target "
-                "does not bundle or authenticate the external OpenAI tunnel control plane. MEMORY content, when "
-                "requested, remains a byte-exact filesystem snapshot outside the protected static SYSTEM inventory. "
-                "Split mode cuts one already-verified logical ZIP into binary transport parts."
+                "host execution capability and from private MEMORY readiness. A SYSTEM-only package is a complete core "
+                "runtime; a verified MEMORY package may be attached separately later. A packaged Secure MCP target does "
+                "not bundle or authenticate the external OpenAI tunnel control plane. MEMORY content, when requested, "
+                "remains a byte-exact filesystem snapshot outside the protected static SYSTEM inventory. Split mode cuts "
+                "one already-verified logical ZIP into binary transport parts."
             )
             if plan.request.content.value != "memory"
             else (
                 "MEMORY packages preserve the actual selected memory bytes. .gitattributes is diagnostic only for "
                 "folder snapshots. Per-file SHA-256 is rechecked against ZIP members; split mode cuts one logical ZIP "
-                "into binary transport parts. MEMORY is data only and never grants execution capability."
+                "into binary transport parts. MEMORY is data only, never grants execution capability, and is attached "
+                "to a separately verified SYSTEM through the canonical memory-attach pipeline."
             )
         ),
     }

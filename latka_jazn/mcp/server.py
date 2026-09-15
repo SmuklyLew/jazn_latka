@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
-from typing import Any
+from typing import Any, Mapping
 import uuid
 
 from latka_jazn.bridge.auth_policy import AuthPolicy
@@ -15,6 +15,8 @@ from latka_jazn.bridge.secure_host_runtime_gateway import (
     GatewayError,
     SecureHostRuntimeGateway,
 )
+from latka_jazn.config import JaznConfig
+from latka_jazn.mcp.task_resume import McpTaskResumeAdapter, TASK_EXTENSION_ID
 from latka_jazn.mcp.tools import (
     jazn_audit_lookup,
     jazn_finalize_reply,
@@ -28,8 +30,6 @@ from latka_jazn.runtime.mcp_tool_audit import McpToolAuditEvent, McpToolAuditSto
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("jazn_mcp_server")
-# Generation is idempotent. Finalization is intentionally one-shot and is guarded
-# by the runtime pending-request store rather than by replaying a cached MCP result.
 IDEMPOTENT_SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply"}
 READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup", "jazn_resume_visible_reply"}
 DENIED_APPROVAL_STATES = {"denied", "rejected", "not_approved"}
@@ -226,6 +226,15 @@ def _tool_error(reason: str, **details: Any) -> dict[str, Any]:
     }
 
 
+def _result_action(result: Mapping[str, Any] | None) -> str:
+    if not isinstance(result, Mapping):
+        return ""
+    structured = result.get("structuredContent")
+    if isinstance(structured, Mapping):
+        return str(structured.get("action") or "").strip()
+    return ""
+
+
 class JaznMcpServer:
     def __init__(
         self,
@@ -246,10 +255,14 @@ class JaznMcpServer:
             GatewayConfig(daemon_url=daemon_url, runtime_root=self.root),
             auth_policy=auth,
         )
-        self.audit_database = self.root / "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
+        config = JaznConfig(root=self.root)
+        # Audit/idempotency state is operational core state in SYSTEM-only mode;
+        # it must not materialize or impersonate private persistent MEMORY.
+        self.audit_database = config.audit_db_path
         self.idempotency = IdempotencyStore(self.audit_database)
         self.host_audit = HostBridgeAuditStore(self.audit_database)
         self.mcp_audit = McpToolAuditStore(self.audit_database)
+        self.task_resume = McpTaskResumeAdapter(root=self.root, gateway=self.gateway)
 
     def _authorize(self, name: str, arguments: dict[str, Any], meta: dict[str, Any]) -> str:
         token = arguments.pop("auth_token", None) or meta.get("authorization") or meta.get("token")
@@ -283,12 +296,7 @@ class JaznMcpServer:
         metadata: dict[str, Any],
         subject: str,
     ) -> str | None:
-        """Allocate the side-effect identity before MCP dispatch.
-
-        An explicit tool request_id wins. Otherwise the JSON-RPC request id is
-        transformed into a daemon-safe id and namespaced by authenticated MCP
-        subject. Only when neither exists do we mint one UUID for this ingress.
-        """
+        """Allocate the side-effect identity before MCP dispatch."""
 
         if name != "jazn_generate_visible_reply":
             return explicit_request_id
@@ -541,14 +549,22 @@ class JaznMcpServer:
                     audit_id=audit_id,
                 )
             if decision.state == "replay":
-                if decision.result is None and name == "jazn_generate_visible_reply" and request_id:
+                cached = decision.result
+                # A cached poll_runtime is not a terminal tool result. Recover
+                # the same daemon request rather than replaying stale pending
+                # output forever.
+                if (
+                    name == "jazn_generate_visible_reply"
+                    and request_id
+                    and (cached is None or _result_action(cached) == "poll_runtime")
+                ):
                     stored = jazn_resume_visible_reply.run(
                         root=self.root,
                         gateway=self.gateway,
                         daemon_request_id=request_id,
                     )
                 else:
-                    stored = decision.result or _tool_error("idempotency_result_unavailable")
+                    stored = cached or _tool_error("idempotency_result_unavailable")
                 replay_audit_id = self._append_mcp_audit(
                     name=name,
                     subject=subject,
@@ -619,6 +635,20 @@ class JaznMcpServer:
             self.idempotency.finalize(key, result, state="error" if is_error else "completed")
         return result
 
+    @staticmethod
+    def _client_supports_tasks(metadata: Mapping[str, Any]) -> bool:
+        capabilities = metadata.get("io.modelcontextprotocol/clientCapabilities")
+        if not isinstance(capabilities, Mapping):
+            return False
+        extensions = capabilities.get("extensions")
+        return isinstance(extensions, Mapping) and TASK_EXTENSION_ID in extensions
+
+    def _server_capabilities(self) -> dict[str, Any]:
+        return {
+            "tools": {"listChanged": False},
+            "extensions": {TASK_EXTENSION_ID: {}},
+        }
+
     def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None:
         method = request_value.get("method")
         request_id = request_value.get("id")
@@ -630,7 +660,12 @@ class JaznMcpServer:
                     "protocolVersion": request_value.get("params", {}).get(
                         "protocolVersion", "2025-06-18"
                     ),
-                    "capabilities": {"tools": {"listChanged": False}},
+                    "capabilities": self._server_capabilities(),
+                    "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
+                }
+            elif method == "server/discover":
+                result = {
+                    "capabilities": self._server_capabilities(),
                     "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
                 }
             elif method == "tools/list":
@@ -640,10 +675,28 @@ class JaznMcpServer:
                 metadata = dict(params.get("_meta") or {})
                 if request_id is not None:
                     metadata.setdefault("transport_request_id", str(request_id))
+                tool_name = str(params.get("name") or "")
                 result = self.call_tool(
-                    str(params.get("name") or ""),
+                    tool_name,
                     dict(params.get("arguments") or {}),
                     metadata,
+                )
+                if tool_name == "jazn_generate_visible_reply" and self._client_supports_tasks(metadata):
+                    task_result = self.task_resume.create_from_pending_result(result)
+                    if task_result is not None:
+                        result = task_result
+            elif method == "tasks/get":
+                params = dict(request_value.get("params") or {})
+                result = self.task_resume.get(str(params.get("taskId") or ""))
+            elif method == "tasks/cancel":
+                params = dict(request_value.get("params") or {})
+                result = self.task_resume.cancel(str(params.get("taskId") or ""))
+            elif method == "tasks/update":
+                params = dict(request_value.get("params") or {})
+                responses = params.get("inputResponses")
+                result = self.task_resume.update_input(
+                    str(params.get("taskId") or ""),
+                    responses if isinstance(responses, Mapping) else None,
                 )
             else:
                 return {
@@ -652,7 +705,7 @@ class JaznMcpServer:
                     "error": {"code": -32601, "message": "Method not found"},
                 }
             return {"jsonrpc": "2.0", "id": request_id, "result": result}
-        except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
+        except (GatewayError, KeyError, TypeError, ValueError, PermissionError, RuntimeError) as exc:
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
@@ -682,7 +735,7 @@ class JaznMcpServer:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v15.")
+    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v16.")
     parser.add_argument("--root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--daemon-url", default="http://127.0.0.1:8787")
     parser.add_argument("--allow-unauthenticated-local-test", action="store_true")

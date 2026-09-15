@@ -1,0 +1,38 @@
+{
+  "schema_version": "jazn_memory_attachment_contract/v1",
+  "system_memory_boundary": "separate_optional_capability",
+  "system_package_contains_private_memory": false,
+  "persistent_memory_required_for_core_runtime": false,
+  "ordinary_dialogue_without_persistent_memory": true,
+  "recall_without_verified_persistent_memory": false,
+  "external_memory_attach_supported": true,
+  "memory_package_profile": "memory",
+  "memory_package_is_active_root": false,
+  "canonical_memory_root": "workspace_runtime/memory",
+  "memory_root_env": "JAZN_MEMORY_ROOT",
+  "memory_mode_env": "JAZN_MEMORY_MODE",
+  "memory_modes": [
+    "optional",
+    "required",
+    "off"
+  ],
+  "default_memory_mode": "optional",
+  "operational_core_state_root": "workspace_runtime/core_state",
+  "attach_requires_inactive_daemon": true,
+  "attach_entrypoint": "run.py memory-attach",
+  "auto_attach_entrypoint": "run.py runtime-bootstrap",
+  "post_attach_restart_required": true,
+  "legacy_transport_repack_supported": true,
+  "sqlite_policy": {
+    "attach_verifies_sqlite": true,
+    "active_database_snapshot_method": "sqlite_online_backup_api",
+    "wal_must_not_be_detached_from_database": true
+  },
+  "host_guidance": {
+    "system_only": "A verified SYSTEM package may start and serve ordinary dialogue without private MEMORY. Do not create or claim autobiographical recall merely because core operational SQLite exists.",
+    "memory_available_separately": "When a verified MEMORY package is separately available, attach it through the canonical memory-attach/runtime-bootstrap pipeline while the daemon is inactive, then restart and re-evaluate recall readiness.",
+    "memory_missing": "Treat MEMORY as absent_optional in the default mode. Core runtime readiness remains independent; recall and continuity claims remain disabled.",
+    "memory_invalid": "Keep core runtime available, fail memory readiness closed, and do not use the invalid memory source for recall."
+  },
+  "truth_boundary": "SYSTEM is executable code plus runtime contracts. MEMORY is mutable private data and may be attached, replaced or absent independently. Operational core state under workspace_runtime/core_state is not autobiographical memory and must never be used as recall evidence."
+}

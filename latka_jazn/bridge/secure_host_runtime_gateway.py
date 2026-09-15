@@ -14,7 +14,19 @@ from latka_jazn.core.runtime_daemon import (
     normalize_daemon_request_id,
     read_daemon_auth_token,
 )
-from latka_jazn.core.runtime_root import find_runtime_root
+from latka_jazn.core.runtime_root import find_runtime_root, workspace_runtime_path
+from latka_jazn.runtime.capability_matrix import build_capability_matrix
+from latka_jazn.runtime.operation_registry import (
+    OperationConflictError,
+    OperationRegistry,
+)
+from latka_jazn.runtime.resilience import (
+    CircuitBreaker,
+    CircuitOpenError,
+    RetryBudget,
+    RetryPolicy,
+    TransportSupervisor,
+)
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("secure_host_runtime_gateway")
@@ -39,6 +51,10 @@ class GatewayConfig:
         "jazn_audit_lookup",
     )
     public_ingress_enabled: bool = False
+    transport_retry_attempts: int = 2
+    transport_retry_budget_per_minute: int = 30
+    transport_circuit_failure_threshold: int = 3
+    transport_circuit_recovery_seconds: float = 2.0
     schema_version: str = SCHEMA_VERSION
 
     def validate(self) -> None:
@@ -55,6 +71,16 @@ class GatewayConfig:
                 raise GatewayError("daemon_host_must_be_loopback")
         if self.runtime_root is not None:
             self.runtime_root = Path(self.runtime_root).expanduser().resolve()
+        if self.timeout_seconds <= 0:
+            raise GatewayError("timeout_seconds_must_be_positive")
+        if self.transport_retry_attempts < 1:
+            raise GatewayError("transport_retry_attempts_must_be_positive")
+        if self.transport_retry_budget_per_minute < 0:
+            raise GatewayError("transport_retry_budget_must_be_non_negative")
+        if self.transport_circuit_failure_threshold < 1:
+            raise GatewayError("transport_circuit_failure_threshold_must_be_positive")
+        if self.transport_circuit_recovery_seconds <= 0:
+            raise GatewayError("transport_circuit_recovery_seconds_must_be_positive")
 
 
 def _poll_runtime_presentation(
@@ -105,9 +131,6 @@ def _normalize_chat_transport_response(
     if result.get("action"):
         return result
 
-    # The daemon transport can wrap a phase-ready runtime payload in `result`.
-    # Unwrap only when that nested payload already owns a host presentation;
-    # keep the outer job envelope as evidence instead of manufacturing content.
     nested_result = result.get("result")
     if isinstance(nested_result, dict):
         nested_presentation = nested_result.get("chatgpt_host_presentation")
@@ -143,6 +166,40 @@ def _normalize_chat_transport_response(
     return result
 
 
+def _presentation_action(value: dict[str, Any]) -> str:
+    presentation = value.get("chatgpt_host_presentation")
+    if isinstance(presentation, dict):
+        action = str(presentation.get("action") or "").strip()
+        if action:
+            return action
+    action = str(value.get("action") or "").strip()
+    if action:
+        return action
+    nested = value.get("result")
+    if isinstance(nested, dict):
+        return _presentation_action(nested)
+    return ""
+
+
+def _operation_state(value: dict[str, Any]) -> tuple[str, str]:
+    action = _presentation_action(value)
+    status = str(value.get("job_status") or value.get("status") or "").strip().lower()
+    if action == "display_exact":
+        return "completed", action
+    if action == "generate_then_finalize" or status in {
+        "awaiting_host_finalization",
+        "waiting_for_host_finalization",
+    }:
+        return "awaiting_host_finalization", action or status
+    if action == "poll_runtime" or status in {"queued", "running"}:
+        return "working", action or status
+    if action == "host_diagnostic" or value.get("accepted") is False or status in {"failed", "cancelled"}:
+        return "failed", action or status or "host_diagnostic"
+    if value.get("done") is True:
+        return "completed", status or "done"
+    return "working", action or status or "unknown_pending"
+
+
 class SecureHostRuntimeGateway:
     def __init__(
         self,
@@ -156,6 +213,31 @@ class SecureHostRuntimeGateway:
         self.auth_policy = auth_policy or AuthPolicy()
         self.rate_limiter = rate_limiter or SlidingWindowRateLimiter()
         self.runtime_root = self.config.runtime_root or find_runtime_root(Path(__file__))
+        workspace = workspace_runtime_path(self.runtime_root)
+        breaker = CircuitBreaker(
+            "daemon_loopback",
+            failure_threshold=self.config.transport_circuit_failure_threshold,
+            recovery_timeout_seconds=self.config.transport_circuit_recovery_seconds,
+            state_path=workspace / "resilience" / "daemon_loopback_circuit.json",
+        )
+        self.transport_supervisor = TransportSupervisor(
+            breaker=breaker,
+            retry_budget=RetryBudget(
+                allowed_retries=self.config.transport_retry_budget_per_minute,
+                window_seconds=60.0,
+            ),
+            retry_policy=RetryPolicy(
+                max_attempts=self.config.transport_retry_attempts,
+                base_delay_seconds=0.05,
+                max_delay_seconds=0.5,
+                jitter_fraction=0.25,
+            ),
+            transient_error=lambda exc: (
+                isinstance(exc, GatewayError)
+                and str(exc).startswith("daemon_unavailable:")
+            ),
+        )
+        self.operations = OperationRegistry(self.runtime_root)
 
     def authorize(self, *, tool_name: str, token: str | None, subject: str) -> None:
         if tool_name not in self.config.allowed_tools:
@@ -175,7 +257,12 @@ class SecureHostRuntimeGateway:
             raise GatewayError("daemon_auth_token_unavailable")
         return token
 
-    def _http_json(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _http_json_once(
+        self,
+        method: str,
+        path: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         body = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
         if body is not None and len(body) > self.config.max_request_bytes:
             raise GatewayError("request_too_large")
@@ -212,16 +299,33 @@ class SecureHostRuntimeGateway:
             raise GatewayError("daemon_response_not_object")
         return value
 
+    def _http_json(
+        self,
+        method: str,
+        path: str,
+        payload: dict[str, Any] | None = None,
+        *,
+        retry_safe: bool | None = None,
+    ) -> dict[str, Any]:
+        safe = method.upper() == "GET" if retry_safe is None else bool(retry_safe)
+        try:
+            return self.transport_supervisor.execute(
+                lambda: self._http_json_once(method, path, payload),
+                retry_safe=safe,
+            )
+        except CircuitOpenError as exc:
+            raise GatewayError(f"daemon_unavailable:{type(exc).__name__}:{exc}") from exc
+
     def status(self) -> dict[str, Any]:
         try:
-            daemon = self._http_json("GET", "/status")
+            daemon = self._http_json("GET", "/status", retry_safe=True)
             reachable = True
             error_text = None
         except GatewayError as exc:
             daemon = {}
             reachable = False
             error_text = str(exc)
-        return {
+        base = {
             "schema_version": SCHEMA_VERSION,
             "gateway_ok": reachable,
             "daemon_reachable": reachable,
@@ -231,7 +335,44 @@ class SecureHostRuntimeGateway:
             "public_ingress_enabled": False,
             "transport": "loopback_only_authenticated",
             "runtime_root": str(self.runtime_root),
+            "transport_resilience": asdict(self.transport_supervisor.snapshot()),
         }
+        try:
+            base["capability_matrix"] = build_capability_matrix(
+                self.runtime_root,
+                gateway_status=base,
+                mcp_tasks_supported=True,
+            )
+        except Exception as exc:
+            base["capability_matrix"] = {
+                "conversation_ready": False,
+                "error": f"capability_matrix_probe_failed:{type(exc).__name__}:{exc}",
+            }
+        return base
+
+    def _resume_existing_operation(self, request_id: str) -> dict[str, Any]:
+        try:
+            value = self.result(request_id)
+        except GatewayError as exc:
+            reason = str(exc)
+            if not reason.startswith("daemon_unavailable:"):
+                raise
+            return {
+                "ok": False,
+                "accepted": None,
+                "done": False,
+                "error_code": "daemon_chat_resume_outcome_unknown",
+                "request_id": request_id,
+                "submit_outcome_authoritative": False,
+                "safe_recovery": "poll_same_request_id_before_any_retry",
+                "transport_error": reason,
+                "chatgpt_host_presentation": _poll_runtime_presentation(
+                    request_id,
+                    transport_error=reason,
+                    submit_outcome_authoritative=False,
+                ),
+            }
+        return _normalize_chat_transport_response(value, request_id=request_id)
 
     def chat(
         self,
@@ -240,12 +381,11 @@ class SecureHostRuntimeGateway:
         session_id: str | None = None,
         request_id: str | None = None,
     ) -> dict[str, Any]:
-        """Submit one MCP-carried turn with a request id fixed before POST.
+        """Submit one turn with durable identity and ambiguity-safe recovery.
 
-        Once `/chat` may have crossed the daemon boundary, a lost response is an
-        ambiguous outcome. It is converted to `poll_runtime` for the same id;
-        this method never retries the message under a new id and never falls
-        back to an independent local turn.
+        The operation record is persisted before the POST boundary.  Any later
+        process restart or transport timeout resumes the same request id instead
+        of replaying the user message.
         """
 
         try:
@@ -259,12 +399,45 @@ class SecureHostRuntimeGateway:
         }
         if session_id:
             payload["session_id"] = session_id
+
         try:
-            value = self._http_json("POST", "/chat", payload)
+            record = self.operations.claim(
+                operation_id=daemon_request_id,
+                operation_kind="chat_turn",
+                payload=payload,
+                relation={"session_id": str(session_id or "")},
+            )
+        except OperationConflictError as exc:
+            raise GatewayError(str(exc)) from exc
+
+        if record.state != "registered":
+            return self._resume_existing_operation(daemon_request_id)
+
+        # Persist the side-effect boundary before opening the socket.  A crash at
+        # any later point is therefore recovered by polling, never by replay.
+        self.operations.transition(
+            daemon_request_id,
+            "submitted",
+            increment_attempt=True,
+        )
+        try:
+            value = self._http_json("POST", "/chat", payload, retry_safe=False)
         except GatewayError as exc:
             reason = str(exc)
             if not reason.startswith("daemon_unavailable:"):
+                self.operations.transition(
+                    daemon_request_id,
+                    "failed",
+                    last_error=reason,
+                    result_status="submit_rejected",
+                )
                 raise
+            self.operations.transition(
+                daemon_request_id,
+                "outcome_unknown",
+                last_error=reason,
+                result_status="submit_transport_ambiguous",
+            )
             return {
                 "ok": False,
                 "accepted": None,
@@ -280,7 +453,16 @@ class SecureHostRuntimeGateway:
                     submit_outcome_authoritative=False,
                 ),
             }
-        return _normalize_chat_transport_response(value, request_id=daemon_request_id)
+
+        normalized = _normalize_chat_transport_response(value, request_id=daemon_request_id)
+        state, result_status = _operation_state(normalized)
+        self.operations.transition(
+            daemon_request_id,
+            state,
+            result=normalized,
+            result_status=result_status,
+        )
+        return normalized
 
     def result(self, request_id: str) -> dict[str, Any]:
         """Poll one existing daemon job without replaying the user turn."""
@@ -291,7 +473,20 @@ class SecureHostRuntimeGateway:
         if len(normalized) > 256:
             raise GatewayError("daemon_request_id_too_large")
         query = parse.urlencode({"request_id": normalized})
-        return self._http_json("GET", f"/chat-result?{query}")
+        value = self._http_json("GET", f"/chat-result?{query}", retry_safe=True)
+        record = self.operations.get(normalized)
+        if record is not None:
+            state, result_status = _operation_state(value)
+            try:
+                self.operations.transition(
+                    normalized,
+                    state,
+                    result=value,
+                    result_status=result_status,
+                )
+            except OperationConflictError:
+                pass
+        return value
 
     def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
         presentation = response.get("chatgpt_host_presentation")
@@ -338,16 +533,57 @@ class SecureHostRuntimeGateway:
         ).strip()
         if not request_id:
             return {"ok": True, "not_applicable": True, "reason": "one_shot_without_daemon_job"}
-        return self._http_json(
-            "POST",
-            "/chat-finalization",
-            {
-                "request_id": request_id,
-                "turn_id": str(binding.get("turn_id") or ""),
-                "trace_id": str(binding.get("trace_id") or ""),
-                "request_contract_hash": str(pending.get("request_contract_hash") or ""),
-                "outcome": str(outcome),
-                "reason": str(reason),
-                "terminal": bool(terminal),
-            },
+        payload = {
+            "request_id": request_id,
+            "turn_id": str(binding.get("turn_id") or ""),
+            "trace_id": str(binding.get("trace_id") or ""),
+            "request_contract_hash": str(pending.get("request_contract_hash") or ""),
+            "outcome": str(outcome),
+            "reason": str(reason),
+            "terminal": bool(terminal),
+        }
+        operation_id = "host-finalization:" + request_id
+        try:
+            record = self.operations.claim(
+                operation_id=operation_id,
+                operation_kind="host_finalization",
+                payload=payload,
+                relation={"daemon_request_id": request_id},
+            )
+        except OperationConflictError as exc:
+            raise GatewayError(str(exc)) from exc
+        if record.state == "completed":
+            return {"ok": True, "replayed_operation": True, "request_id": request_id}
+        if record.state == "registered":
+            self.operations.transition(operation_id, "submitted", increment_attempt=True)
+        try:
+            value = self._http_json(
+                "POST",
+                "/chat-finalization",
+                payload,
+                retry_safe=False,
+            )
+        except GatewayError as exc:
+            reason_text = str(exc)
+            if reason_text.startswith("daemon_unavailable:"):
+                self.operations.transition(
+                    operation_id,
+                    "outcome_unknown",
+                    last_error=reason_text,
+                    result_status="finalization_transport_ambiguous",
+                )
+            else:
+                self.operations.transition(
+                    operation_id,
+                    "failed",
+                    last_error=reason_text,
+                    result_status="finalization_rejected",
+                )
+            raise
+        self.operations.transition(
+            operation_id,
+            "completed",
+            result=value,
+            result_status="finalization_reported",
         )
+        return value

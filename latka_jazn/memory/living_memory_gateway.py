@@ -24,6 +24,7 @@ from latka_jazn.memory._living_memory_gateway_impl import (
     LivingMemoryGateway as _LivingMemoryGateway,
     LivingMemoryHit,
 )
+from latka_jazn.memory.availability import memory_mode
 from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.memory_tier_reader import probe_memory_tier_database_readonly
 from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
@@ -118,6 +119,14 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         return result
 
     def discover(self) -> list[dict[str, Any]]:
+        # MEMORY mode is a process policy, not only a write policy.  When the
+        # operator chooses ``off`` no persistent source (active root, env source,
+        # registry source or transactional tier) may become recall evidence.
+        if memory_mode() == "off":
+            self._discovery_cache = []
+            self._discovery_cached_at = time.monotonic()
+            return []
+
         direct_database = (
             self.root
             if self.root.is_file() and self.root.suffix.casefold() in {".sqlite3", ".sqlite", ".db"}
@@ -366,7 +375,7 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         elif legacy:
             status = "ready_legacy_compatibility_only"
         else:
-            status = "no_ready_memory_source"
+            status = "disabled_by_policy" if memory_mode() == "off" else "no_ready_memory_source"
         memory_ready = selected is not None or tier is not None
         selected_source_count = 0
         if selected is not None:
@@ -389,10 +398,10 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             "source_count": len(sources),
             "sources": sources,
             "truth_boundary": (
-                "memory_search_ready wymaga jawnie zaufanego źródła i poprawnej próby read-only. "
-                "Zweryfikowana natywna baza unified może być jednocześnie transactional L1/L2/L3, "
-                "co usuwa drugi niewidoczny świat pamięci. Układ pięciu baz pozostaje wyłącznie "
-                "zgodnością read-only, a sidecary i wake-state są warstwami pochodnymi."
+                "memory_search_ready wymaga jawnie zaufanego źródła, włączonej polityki MEMORY i poprawnej próby read-only. "
+                "Zweryfikowana natywna baza unified może być jednocześnie transactional L1/L2/L3, co usuwa drugi "
+                "niewidoczny świat pamięci. Układ pięciu baz pozostaje wyłącznie zgodnością read-only, a sidecary i "
+                "wake-state są warstwami pochodnymi. MEMORY mode=off blokuje wszystkie źródła recall."
             ),
         }
 

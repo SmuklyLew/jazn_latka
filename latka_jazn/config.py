@@ -12,6 +12,12 @@ from latka_jazn.core.runtime_root import (
     workspace_runtime_path,
 )
 from latka_jazn.version import PACKAGE_VERSION, version_number
+from latka_jazn.memory.availability import (
+    build_memory_availability_status,
+    memory_mode as resolve_memory_mode,
+    runtime_memory_storage_path,
+    runtime_memory_storage_root,
+)
 from latka_jazn.memory.memory_root import memory_path, resolve_memory_root
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES, DEFAULT_SYNC_BATCH_WIRE_BYTES
 from latka_jazn.core.timestamp_policy import (
@@ -91,6 +97,7 @@ class JaznConfig:
     root: Path = field(default_factory=_default_runtime_root)
     timezone: str = TIMESTAMP_TIMEZONE
     timestamp_format: str = "🕒 %Y-%m-%d %H:%M:%S"
+    memory_mode: str = field(default_factory=lambda: os.environ.get("JAZN_MEMORY_MODE", "optional").strip().lower() or "optional")
     memory_db_name: str = field(default_factory=lambda: os.environ.get("JAZN_RUNTIME_MEMORY_DB", "memory/sqlite/runtime_write_v1/runtime_memory.sqlite3").strip())
     audit_db_name: str = field(default_factory=lambda: os.environ.get("JAZN_AUDIT_DB", "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3").strip())
     recovered_memory_db_name: str = field(default_factory=lambda: os.environ.get(
@@ -221,6 +228,7 @@ class JaznConfig:
 
     def __post_init__(self) -> None:
         self.root = Path(self.root).expanduser().resolve()
+        self.memory_mode = resolve_memory_mode(self.memory_mode)
 
     def _path_under_runtime_root(self, relative: str | Path) -> Path:
         path = Path(relative)
@@ -236,9 +244,20 @@ class JaznConfig:
     def _path_under_memory_root(self, relative: str | Path) -> Path:
         return memory_path(self.root, relative)
 
+    def _path_under_runtime_memory_storage(self, relative: str | Path) -> Path:
+        return runtime_memory_storage_path(self.root, relative, mode=self.memory_mode)
+
     @property
     def memory_root(self) -> Path:
         return resolve_memory_root(self.root)
+
+    @property
+    def memory_availability(self):
+        return build_memory_availability_status(self.root, mode=self.memory_mode)
+
+    @property
+    def runtime_memory_storage_root(self) -> Path:
+        return runtime_memory_storage_root(self.root, mode=self.memory_mode)
 
     @property
     def runtime_workspace_dir(self) -> Path:
@@ -285,9 +304,9 @@ class JaznConfig:
     ) -> Path:
         from .db.shard_manifest import SQLiteShardManager
 
-        memory_root = self.memory_root
+        storage_root = self.runtime_memory_storage_root
         return SQLiteShardManager(
-            memory_root,
+            storage_root,
             _strip_memory_prefix(manifest_name),
             logical_database=logical_database,
             role=role,
@@ -303,23 +322,23 @@ class JaznConfig:
         logical_database: str | None = None,
         role: str | None = None,
     ) -> Path:
-        """Resolve an active shard without mutating an existing manifest."""
-        memory_root = self.memory_root
+        """Resolve an operational runtime shard without fabricating persistent MEMORY."""
+        storage_root = self.runtime_memory_storage_root
         manifest_relative = _strip_memory_prefix(manifest_name)
-        manifest_path = memory_root / manifest_relative
+        manifest_path = storage_root / manifest_relative
         if not manifest_path.exists():
-            return self._path_under_memory_root(default_db_name)
+            return self._path_under_runtime_memory_storage(default_db_name)
         from .db.shard_manifest import SQLiteShardManager
 
         manager = SQLiteShardManager(
-            memory_root,
+            storage_root,
             manifest_relative,
             logical_database=logical_database or Path(default_db_name).stem,
             role=role or logical_database or Path(default_db_name).stem,
             default_db_path=_strip_memory_prefix(default_db_name),
             max_file_bytes=self.max_sqlite_file_bytes,
         )
-        return manager.load_existing().active_path(memory_root)
+        return manager.load_existing().active_path(storage_root)
 
     @property
     def recovered_memory_db_path(self) -> Path:
@@ -331,15 +350,18 @@ class JaznConfig:
 
     @property
     def memory_tier_db_path(self) -> Path:
+        # Transactional L1/L2/L3 is persistent MEMORY, never core operational state.
         return self._path_under_memory_root(self.memory_tier_db_name)
 
     @property
     def rest_cycle_db_path(self) -> Path:
-        return self._path_under_memory_root(self.rest_cycle_db_name)
+        # Rest scheduler bookkeeping is operational; with MEMORY absent it belongs
+        # to core state so it cannot accidentally materialize workspace_runtime/memory.
+        return self._path_under_runtime_memory_storage(self.rest_cycle_db_name)
 
     @property
     def runtime_write_db_path(self) -> Path:
-        """Mutable runtime-write database. Never aliases the immutable recovery snapshot."""
+        """Mutable runtime write database; core-only mode stores it outside persistent MEMORY."""
         return self._active_shard_path(
             self.conversation_shard_manifest_name,
             "chat_context",
@@ -359,18 +381,26 @@ class JaznConfig:
 
     @property
     def normalization_source_db_path(self) -> Path:
-        """Immutable source for normalization when recovery exists; otherwise current runtime memory."""
+        """Return only a persistent-memory source; never normalize core operational SQLite."""
         recovered = self.recovered_memory_db_path
-        return recovered if recovered.is_file() else self.runtime_write_db_path_readonly
+        if recovered.is_file():
+            return recovered
+        if self.memory_availability.persistent_memory_enabled:
+            return self.runtime_write_db_path_readonly
+        return recovered
 
     @property
     def memory_db_path(self) -> Path:
-        """Backward-compatible mutable memory path used by writers."""
+        """Backward-compatible mutable runtime store path.
+
+        In SYSTEM-only mode this is operational core state, not autobiographical
+        recall memory. ``memory_availability`` is authoritative for that distinction.
+        """
         return self.runtime_write_db_path
 
     @property
     def memory_db_path_readonly(self) -> Path:
-        """Backward-compatible read-only view of the mutable runtime-write database."""
+        """Backward-compatible read-only view of the mutable runtime store."""
         return self.runtime_write_db_path_readonly
 
     @property
