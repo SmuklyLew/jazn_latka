@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "92d0dd470b4b69c53d96ede4a3a3ac2ef05ba659",
+  "base_merge_commit": "e3b688a8b4368f4d96f660e7effe51c82fad2b8d",
   "base_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
-  "commit_date": "2026-09-15T19:18:08+02:00",
+  "commit_date": "2026-09-15T19:21:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-15T17:18:08+00:00",
+  "generated_at_utc": "2026-09-15T17:21:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c04fd4fe8b550a809e7f6561ac9467f63689226a",
+  "git_tree_sha": "6d034ad2c5d3ef52853e8ff86653c4525b3073bc",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "92d0dd470b4b69c53d96ede4a3a3ac2ef05ba659",
+    "source_commit": "e3b688a8b4368f4d96f660e7effe51c82fad2b8d",
     "source_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "92d0dd470b4b69c53d96ede4a3a3ac2ef05ba659",
+  "source_commit": "e3b688a8b4368f4d96f660e7effe51c82fad2b8d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
   "tag": null,

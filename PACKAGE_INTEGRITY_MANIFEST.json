@@ -3,11 +3,11 @@
   "version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
   "runtime_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
   "package_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
-  "generated_at_utc": "2026-09-15T17:18:08+00:00",
-  "updated_at_utc": "2026-09-15T17:18:08+00:00",
+  "generated_at_utc": "2026-09-15T17:21:10+00:00",
+  "updated_at_utc": "2026-09-15T17:21:10+00:00",
   "start_file": "run.py",
-  "file_count": 1709,
-  "static_file_count": 1709,
+  "file_count": 1710,
+  "static_file_count": 1710,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -173,8 +173,8 @@
     },
     {
       "path": ".github/workflows/stable-test-contracts.yml",
-      "size_bytes": 3702,
-      "sha256": "73f920502c97902310efa354476c14bca6662b962349373934896e041ea518d9",
+      "size_bytes": 4267,
+      "sha256": "0f6f0b6d86eb7153d2a775b651a15669f78c9bc0f99622a88539a9de2e4f5534",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "aa039e195e8e3c4bfff8a5b40128ed97f425639ad97eb7b8652e56922b92edce",
+      "sha256": "b41b06338fac6561bd88b7a96be7f2148ce73d78ac3ce7d39cacbf0517a2c916",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3584,8 +3584,8 @@
     },
     {
       "path": "latka_jazn/core/host_operations.py",
-      "size_bytes": 17179,
-      "sha256": "c648d7d432c6dac70b6f4861b7efa82eb1116359ab36c9077c6c5bb4c3025c20",
+      "size_bytes": 17739,
+      "sha256": "ed4c85f6a7ad750ea21bf8b7b65566495fe7208b1dbcab903b71cb524d7b8101",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12295,6 +12295,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_bounded_host_race_regressions_v16325576.py",
+      "size_bytes": 2388,
+      "sha256": "34ac19d9679dc26c3e35572aa1906f7df5e038608e294f356df07787d5157d57",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
       "size_bytes": 2062,
       "sha256": "2598548e3b6c8d4becc39d7f47596b50733e672970f16218f7f234cf07fe3187",
@@ -15248,8 +15257,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1491799,
-      "sha256": "dadd22d93303c0d635606eaef440a48eb0afca861fe3832dd84157ff5aacc895",
+      "size_bytes": 1493491,
+      "sha256": "97dc9cae8d07e83984e65b9d838d5d96c0b54943c64ba4b281b0d179478aa205",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
