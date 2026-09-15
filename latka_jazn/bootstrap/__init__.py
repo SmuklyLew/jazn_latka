@@ -4,9 +4,9 @@ from __future__ import annotations
 
 ``chatgpt_recovery`` depends on the runtime daemon. Importing it eagerly from
 this package initializer creates a cycle when ``runtime_daemon`` reaches
-``runtime_status -> bootstrap.contract_loader`` during its own import.  Keep
+``runtime_status -> bootstrap.contract_loader`` during its own import. Keep
 package initialization side-effect-light and wrap only the recovery submodule
-loader.  The convergence overlay is installed after that submodule has fully
+loader. The convergence overlay is installed after that submodule has fully
 executed, so direct ``latka_jazn.bootstrap.chatgpt_recovery`` imports and
 package-level imports receive the same behavior without observing a partially
 initialized daemon module.
@@ -35,7 +35,8 @@ class _ConvergingLoader(importlib.abc.Loader):
     def create_module(self, spec: Any) -> ModuleType | None:
         create = getattr(self._wrapped, "create_module", None)
         if callable(create):
-            return create(spec)
+            created = create(spec)
+            return created if isinstance(created, ModuleType) else None
         return None
 
     def exec_module(self, module: ModuleType) -> None:
