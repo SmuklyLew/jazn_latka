@@ -24,6 +24,7 @@ def _function_tool(name: str) -> dict:
 def test_prompt_cache_key_is_derived_only_from_immutable_canon_hash() -> None:
     digest = "a" * 64
     key = _prompt_cache_key_for_full_canon({"immutable_canon_sha256": digest})
+    assert key is not None
     assert key == "jazn-canon-" + "a" * 48
     assert len(key) <= 64
     assert _prompt_cache_key_for_full_canon({"immutable_canon_sha256": "not-a-hash"}) is None
