@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.76.1",
-  "active_definition_count": 1604,
+  "system_version": "16.3.25.5.77",
+  "active_definition_count": 1613,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -34568,6 +34568,189 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_remote_runtime_is_preferred_only_when_fully_verified": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_remote_runtime_is_preferred_only_when_fully_verified",
+      "purpose": "Remote runtime is preferred only when fully verified",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_route_falls_back_to_handoff_then_fail_closed": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_route_falls_back_to_handoff_then_fail_closed",
+      "purpose": "Route falls back to handoff then fail closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_turn_identity_is_stable_and_w3c_compatible": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_turn_identity_is_stable_and_w3c_compatible",
+      "purpose": "Turn identity is stable and w3c compatible",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_phase_transition_table_rejects_terminal_reentry": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_phase_transition_table_rejects_terminal_reentry",
+      "purpose": "Phase transition table rejects terminal reentry",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_poll_runtime_requires_same_request_id_and_no_replay_guard": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_poll_runtime_requires_same_request_id_and_no_replay_guard",
+      "purpose": "Poll runtime requires same request id and no replay guard",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_generate_then_finalize_requires_bound_contract": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_generate_then_finalize_requires_bound_contract",
+      "purpose": "Generate then finalize requires bound contract",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_display_exact_is_the_only_visible_success_action": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_display_exact_is_the_only_visible_success_action",
+      "purpose": "Display exact is the only visible success action",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_mcp_adapter_converts_request_mismatch_to_host_diagnostic": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_mcp_adapter_converts_request_mismatch_to_host_diagnostic",
+      "purpose": "Mcp adapter converts request mismatch to host diagnostic",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
+    },
+    "tests/test_v16325577_professional_turn_runtime.py::test_mcp_adapter_attaches_retry_and_trace_metadata": {
+      "path": "tests/test_v16325577_professional_turn_runtime.py",
+      "name": "test_mcp_adapter_attaches_retry_and_trace_metadata",
+      "purpose": "Mcp adapter attaches retry and trace metadata",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 168
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
