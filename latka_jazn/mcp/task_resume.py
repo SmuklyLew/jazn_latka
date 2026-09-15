@@ -3,7 +3,7 @@ from __future__ import annotations
 """Durable MCP Tasks adapter for long-running Jaźń turns.
 
 The adapter implements the poll-oriented core of ``io.modelcontextprotocol/tasks``
-without changing the canonical Jaźń turn/finalization contract.  A daemon turn
+without changing the canonical Jaźń turn/finalization contract. A daemon turn
 that is still pending becomes a durable task handle; subsequent ``tasks/get``
 requests poll the same daemon request id and never replay the user message.
 """
@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
 from typing import Any, Mapping, Protocol
+import hashlib
 import json
 import os
 import secrets
@@ -80,45 +81,32 @@ class McpTaskStore:
     def __init__(self, runtime_root: Path | str) -> None:
         self.runtime_root = Path(runtime_root).expanduser().resolve()
         self.root = workspace_runtime_path(self.runtime_root) / "mcp_tasks"
+        self.index_root = self.root / "by_daemon_request"
         self._lock = RLock()
+
+    @staticmethod
+    def _digest(value: str) -> str:
+        return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
     def _path(self, task_id: str) -> Path:
         value = str(task_id or "").strip()
         if not value or len(value) > 256:
             raise ValueError("invalid_task_id")
-        # task ids are generated from URL-safe entropy, but hash filenames keep
-        # path handling fail-closed even if a future external id is accepted.
-        import hashlib
+        return self.root / (self._digest(value) + ".json")
 
-        return self.root / (hashlib.sha256(value.encode("utf-8")).hexdigest() + ".json")
+    def _index_path(self, daemon_request_id: str) -> Path:
+        value = str(daemon_request_id or "").strip()
+        if not value or len(value) > 256:
+            raise ValueError("invalid_daemon_request_id")
+        return self.index_root / (self._digest(value) + ".json")
 
-    def _read(self, task_id: str) -> McpTaskRecord | None:
-        path = self._path(task_id)
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            return None
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            raise RuntimeError(f"mcp_task_store_read_failed:{type(exc).__name__}") from exc
-        if not isinstance(payload, dict):
-            raise RuntimeError("mcp_task_record_not_object")
-        filtered = {key: value for key, value in payload.items() if key in McpTaskRecord.__dataclass_fields__}
-        record = McpTaskRecord(**filtered)
-        if record.status not in VALID_TASK_STATES:
-            raise RuntimeError("mcp_task_record_invalid_status")
-        return record
-
-    def get(self, task_id: str) -> McpTaskRecord | None:
-        with self._lock:
-            return self._read(task_id)
-
-    def _write(self, record: McpTaskRecord) -> McpTaskRecord:
-        path = self._path(record.task_id)
+    @staticmethod
+    def _atomic_json(path: Path, payload: Mapping[str, Any]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
         try:
             with tmp.open("w", encoding="utf-8", newline="\n") as handle:
-                json.dump(record.to_storage_dict(), handle, ensure_ascii=False, sort_keys=True, indent=2)
+                json.dump(dict(payload), handle, ensure_ascii=False, sort_keys=True, indent=2)
                 handle.write("\n")
                 handle.flush()
                 os.fsync(handle.fileno())
@@ -136,9 +124,59 @@ class McpTaskStore:
                 tmp.unlink(missing_ok=True)
             except OSError:
                 pass
+
+    def _read(self, task_id: str) -> McpTaskRecord | None:
+        path = self._path(task_id)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"mcp_task_store_read_failed:{type(exc).__name__}") from exc
+        if not isinstance(payload, dict):
+            raise RuntimeError("mcp_task_record_not_object")
+        filtered = {key: value for key, value in payload.items() if key in McpTaskRecord.__dataclass_fields__}
+        record = McpTaskRecord(**filtered)
+        if record.status not in VALID_TASK_STATES:
+            raise RuntimeError("mcp_task_record_invalid_status")
         return record
 
-    def create(
+    def _find_by_request(self, daemon_request_id: str) -> McpTaskRecord | None:
+        index_path = self._index_path(daemon_request_id)
+        try:
+            payload = json.loads(index_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"mcp_task_index_read_failed:{type(exc).__name__}") from exc
+        task_id = str(payload.get("task_id") or "").strip() if isinstance(payload, dict) else ""
+        if not task_id:
+            raise RuntimeError("mcp_task_index_invalid")
+        record = self._read(task_id)
+        if record is None:
+            raise RuntimeError("mcp_task_index_dangling")
+        if record.daemon_request_id != str(daemon_request_id):
+            raise RuntimeError("mcp_task_index_request_mismatch")
+        return record
+
+    def get(self, task_id: str) -> McpTaskRecord | None:
+        with self._lock:
+            return self._read(task_id)
+
+    def _write(self, record: McpTaskRecord) -> McpTaskRecord:
+        self._atomic_json(self._path(record.task_id), record.to_storage_dict())
+        self._atomic_json(
+            self._index_path(record.daemon_request_id),
+            {
+                "schema_version": SCHEMA_VERSION,
+                "task_id": record.task_id,
+                "daemon_request_id_sha256": self._digest(record.daemon_request_id),
+                "updated_at_utc": record.last_updated_at,
+            },
+        )
+        return record
+
+    def create_or_get(
         self,
         *,
         daemon_request_id: str,
@@ -149,20 +187,23 @@ class McpTaskStore:
         request_id = str(daemon_request_id or "").strip()
         if not request_id:
             raise ValueError("daemon_request_id_required")
-        now = datetime.now(timezone.utc).isoformat()
-        task_id = "jazn-task-" + secrets.token_urlsafe(32)
-        record = McpTaskRecord(
-            task_id=task_id,
-            daemon_request_id=request_id,
-            status="working",
-            created_at=now,
-            last_updated_at=now,
-            ttl_ms=ttl_ms,
-            poll_interval_ms=max(100, int(poll_interval_ms)),
-            status_message=status_message,
-        )
         with self._lock:
-            # The response is returned only after this durable write succeeds.
+            existing = self._find_by_request(request_id)
+            if existing is not None:
+                return existing
+            now = datetime.now(timezone.utc).isoformat()
+            record = McpTaskRecord(
+                task_id="jazn-task-" + secrets.token_urlsafe(32),
+                daemon_request_id=request_id,
+                status="working",
+                created_at=now,
+                last_updated_at=now,
+                ttl_ms=ttl_ms,
+                poll_interval_ms=max(100, int(poll_interval_ms)),
+                status_message=status_message,
+            )
+            # CreateTaskResult is returned only after both task and lookup index
+            # are durably published. A repeated lost response reuses this task.
             return self._write(record)
 
     def update(
@@ -193,16 +234,19 @@ class McpTaskStore:
                 record.status_message = str(status_message)[:1024]
             return self._write(record)
 
-    def cancel(self, task_id: str) -> McpTaskRecord:
+    def request_cancel(self, task_id: str) -> McpTaskRecord:
         record = self.get(task_id)
         if record is None:
             raise KeyError("unknown_task")
         if record.terminal:
             return record
+        # MCP cancellation is cooperative. This adapter has no daemon cancel
+        # primitive yet, so it records the intent without falsely claiming that
+        # the underlying runtime turn stopped.
         return self.update(
             task_id,
-            status="cancelled",
-            status_message="Cancellation recorded by the MCP task adapter; daemon cancellation is cooperative and not implied.",
+            status="working",
+            status_message="Cancellation requested; underlying Jaźń turn has no verified cancellation acknowledgement yet.",
         )
 
 
@@ -239,7 +283,7 @@ class McpTaskResumeAdapter:
         request_id = self.pending_daemon_request_id(tool_result)
         if not request_id:
             return None
-        record = self.store.create(
+        record = self.store.create_or_get(
             daemon_request_id=request_id,
             ttl_ms=self.ttl_ms,
             poll_interval_ms=self.poll_interval_ms,
@@ -290,26 +334,28 @@ class McpTaskResumeAdapter:
         return completed.to_task_result()
 
     def cancel(self, task_id: str) -> dict[str, Any]:
-        return self.store.cancel(task_id).to_task_result()
+        self.store.request_cancel(task_id)
+        # MCP CancelTaskResult is an empty acknowledgement with resultType=complete.
+        return {"resultType": "complete"}
 
     def update_input(self, task_id: str, input_responses: Mapping[str, Any] | None = None) -> dict[str, Any]:
         record = self.store.get(task_id)
         if record is None:
             raise KeyError("unknown_task")
-        # Jaźń host turns currently do not surface MCP task inputRequests. Keep
-        # the method for protocol completeness without inventing an input flow.
-        if record.status != "input_required":
-            return record.to_task_result()
-        working = self.store.update(
-            task_id,
-            status="working",
-            status_message=(
-                "Input responses acknowledged by the task adapter; the underlying Jaźń turn remains authoritative."
-                if input_responses
-                else "No input responses supplied."
-            ),
-        )
-        return working.to_task_result()
+        # Jaźń host turns currently do not surface task inputRequests. Do not
+        # invent a multi-round-trip contract; acknowledge only if the task was
+        # already in input_required state.
+        if record.status == "input_required":
+            self.store.update(
+                task_id,
+                status="working",
+                status_message=(
+                    "Input responses acknowledged by the task adapter; the underlying Jaźń turn remains authoritative."
+                    if input_responses
+                    else "No input responses supplied."
+                ),
+            )
+        return {"resultType": "complete"}
 
 
 __all__ = [
