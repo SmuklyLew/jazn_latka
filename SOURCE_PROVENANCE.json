@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "575103617fe5d827b42f4fee1590dc5264508e2a",
-    "base_version": "16.3.25.5.75.2-remote-runtime-failover-strict-gate",
+    "base_commit": "2a53f060827467c97f78d04b00e879f345c2514c",
+    "base_version": "16.3.25.5.76.0-persistent-supervisor-bounded-host-calls",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "2a53f060827467c97f78d04b00e879f345c2514c",
