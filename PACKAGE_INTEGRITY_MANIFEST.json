@@ -3,11 +3,11 @@
   "version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
   "runtime_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
   "package_version": "16.3.25.5.74.2.002-optional-memory-attach-convergence",
-  "generated_at_utc": "2026-09-15T13:36:00+00:00",
-  "updated_at_utc": "2026-09-15T13:36:00+00:00",
+  "generated_at_utc": "2026-09-15T13:37:44+00:00",
+  "updated_at_utc": "2026-09-15T13:37:44+00:00",
   "start_file": "run.py",
-  "file_count": 1693,
-  "static_file_count": 1693,
+  "file_count": 1696,
+  "static_file_count": 1696,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "c8f9d0e70d81d4d4895c2a20a2de8713d229aef25d92739dfd2e03e468c7e33a",
+      "sha256": "f087dd1bdbefc8e56424038922c898354a4a56ee98d2b8ac9ac11f2039b7f979",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4888,6 +4888,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/mcp/task_resume.py",
+      "size_bytes": 11976,
+      "sha256": "09075ff48fbcdfaab2739b8b3d8f0ccaf5b20a877e3bcbd51cbf267f9f2b3af1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/mcp/tools/__init__.py",
       "size_bytes": 52,
       "sha256": "87dec2600f9b57e2c9cab7ea297f4848ba1fe19fda5bd6c5a0e42fe187aa4216",
@@ -7003,6 +7012,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/runtime/capability_matrix.py",
+      "size_bytes": 8098,
+      "sha256": "1a12b892dab69d89635be83c2d0acafee618b7ff3fef22653532ae67741e9fb2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/runtime/host_bridge_audit.py",
       "size_bytes": 4811,
       "sha256": "a1203e7a195cac4cfbe9c59bec6f2124964c2a640e8b62cc171c2ceda067a02c",
@@ -7024,6 +7042,15 @@
       "path": "latka_jazn/runtime/mcp_tool_audit.py",
       "size_bytes": 4220,
       "sha256": "e17879b18e785e50b36db069a104d172444a87f86d10ddba4c49cc49bba3951b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/runtime/operation_registry.py",
+      "size_bytes": 7764,
+      "sha256": "8fbf89be4e91b38a57b52611bc7f4647f0ab2f262e13a03d57e29fbb528e07f7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
