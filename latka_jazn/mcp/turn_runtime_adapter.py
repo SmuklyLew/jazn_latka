@@ -33,20 +33,33 @@ def _identity_request_id(
     result: Mapping[str, Any],
     jsonrpc_request_id: Any,
 ) -> str:
-    structured = _mapping(result.get("structuredContent"))
-    explicit = str(
-        structured.get("daemon_request_id")
-        or structured.get("request_id")
-        or arguments.get("request_id")
-        or metadata.get("request_id")
-        or ""
-    ).strip()
+    """Resolve the caller-side expected identity before trusting result fields.
+
+    The result may be transport-corrupted or inconsistent; therefore an explicit
+    caller request id (or resume daemon id) must win over the observed response.
+    """
+
+    explicit = str(arguments.get("request_id") or metadata.get("request_id") or "").strip()
     if explicit:
         return explicit
+    if tool_name == "jazn_resume_visible_reply":
+        resumed = str(arguments.get("daemon_request_id") or "").strip()
+        if resumed:
+            return resumed
     if tool_name == "jazn_finalize_reply":
         token = str(arguments.get("continuation_token") or "")
         if token:
             return "finalize-" + hashlib.sha256(token.encode("utf-8")).hexdigest()[:48]
+
+    structured = _mapping(result.get("structuredContent"))
+    observed = str(
+        structured.get("daemon_request_id")
+        or structured.get("request_id")
+        or ""
+    ).strip()
+    if observed:
+        return observed
+
     transport = str(jsonrpc_request_id if jsonrpc_request_id is not None else "").strip()
     if transport:
         return "mcp-transport-" + hashlib.sha256(transport.encode("utf-8")).hexdigest()[:40]
