@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Durable, idempotent host operations for short-lived executor surfaces.
 
-The caller performs only a bounded submit/status interaction.  Long-running
+The caller performs only a bounded submit/status interaction. Long-running
 canonical Jaźń commands execute in a detached worker and keep their own durable
-operation record under ``workspace_runtime``.  This module deliberately does
+operation record under ``workspace_runtime``. This module deliberately does
 not replace lifecycle logic: the worker always re-enters the public ``run.py``
 control plane.
 """
@@ -292,19 +292,16 @@ def submit_host_operation(
         result["ok"] = False
         return result
 
-    record.update(
-        {
-            "status": "accepted",
-            "phase": "worker_spawned",
-            "worker_pid": int(proc.pid),
-            "updated_at_utc": utc_now_iso(),
-        }
-    )
-    _write_json_atomic(record_path, record)
-    result = _public_snapshot(record, created=True)
+    # Do not write the parent's stale pre-spawn snapshot back here. The worker
+    # owns all durable state transitions after successful process creation and
+    # may already have advanced the record to running/completed before Popen
+    # returns to this process. A parent write here would be a lost-update race.
+    latest = read_host_operation(runtime_root, normalized_id) or record
+    result = _public_snapshot(latest, created=True)
     result.update(
         {
             "ok": True,
+            "spawned_worker_pid": int(proc.pid),
             "next_action": "poll_host_operation",
             "status_command": (
                 f"python -X utf8 run.py host-op-status --root {json.dumps(str(runtime_root))} "
@@ -359,6 +356,16 @@ def run_host_operation_worker(root: Path, *, operation_id: str) -> int:
         return 31
     if str(record.get("status") or "") in TERMINAL_OPERATION_STATES:
         return 0
+
+    # From this point forward the detached worker is the only writer for this
+    # operation record. Persist its PID before spawning the canonical target so
+    # a host timeout can be recovered by polling the same operation id.
+    record = _worker_update(
+        runtime_root,
+        normalized_id,
+        worker_pid=os.getpid(),
+        phase="worker_running",
+    )
     target_value = record.get("target_argv")
     if not isinstance(target_value, list) or not target_value:
         _worker_update(
@@ -409,7 +416,7 @@ def run_host_operation_worker(root: Path, *, operation_id: str) -> int:
                 started_at_utc=utc_now_iso(),
             )
             if kind == "supervisor-start":
-                # The supervisor is intentionally the long-lived owner.  The
+                # The supervisor is intentionally the long-lived owner. The
                 # operation worker only proves process creation and then exits.
                 try:
                     returncode = proc.wait(timeout=0.25)
