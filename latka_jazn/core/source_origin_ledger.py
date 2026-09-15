@@ -6,7 +6,7 @@ from typing import Any
 from datetime import datetime, timezone
 import hashlib, json, time
 
-from latka_jazn.memory.memory_root import resolve_memory_root
+from latka_jazn.memory.availability import runtime_memory_storage_root
 
 SCHEMA_VERSION = "source_origin_ledger/v1"
 
@@ -60,7 +60,7 @@ class SourceOriginEntry:
 class SourceOriginLedger:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.path = resolve_memory_root(root) / "layered" / "source_origin_ledger_current_line.jsonl"
+        self.path = runtime_memory_storage_root(root) / "layered" / "source_origin_ledger_current_line.jsonl"
         self.path.parent.mkdir(parents=True, exist_ok=True)
     @staticmethod
     def _sha(text: str) -> str:
