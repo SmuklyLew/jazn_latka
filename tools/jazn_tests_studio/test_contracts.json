@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.77",
-  "active_definition_count": 1629,
+  "system_version": "16.3.25.5.78",
+  "active_definition_count": 1633,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24747,6 +24747,46 @@
       "path": "tests/test_professional_turn_runtime.py",
       "name": "test_remote_runtime_is_preferred_only_when_fully_verified",
       "purpose": "Remote runtime is preferred only when fully verified",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_professional_turn_runtime.py::test_ordinary_chat_does_not_assume_or_probe_local_executor": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_ordinary_chat_does_not_assume_or_probe_local_executor",
+      "purpose": "Ordinary chat does not assume or probe local executor",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_professional_turn_runtime.py::test_local_executor_breaker_blocks_route_without_changing_capability_truth": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_local_executor_breaker_blocks_route_without_changing_capability_truth",
+      "purpose": "Local executor breaker blocks route without changing capability truth",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
@@ -24761,7 +24801,47 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 105
+    },
+    "tests/test_professional_turn_runtime.py::test_transport_timeout_pre_spawn_does_not_invent_root_cause": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_transport_timeout_pre_spawn_does_not_invent_root_cause",
+      "purpose": "Transport timeout pre spawn does not invent root cause",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
+    },
+    "tests/test_professional_turn_runtime.py::test_explicit_http_auth_and_rate_limit_failures_are_stronger_observations": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_explicit_http_auth_and_rate_limit_failures_are_stronger_observations",
+      "purpose": "Explicit http auth and rate limit failures are stronger observations",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
     },
     "tests/test_professional_turn_runtime.py::test_route_falls_back_to_handoff_then_fail_closed": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24781,7 +24861,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 143
     },
     "tests/test_professional_turn_runtime.py::test_turn_identity_is_stable_and_w3c_compatible": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24801,7 +24881,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 152
     },
     "tests/test_professional_turn_runtime.py::test_phase_transition_table_rejects_terminal_reentry": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24821,7 +24901,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 161
     },
     "tests/test_professional_turn_runtime.py::test_poll_runtime_requires_same_request_id_and_no_replay_guard": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24841,7 +24921,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 80
+      "line": 168
     },
     "tests/test_professional_turn_runtime.py::test_generate_then_finalize_requires_bound_contract": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24861,7 +24941,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 95
+      "line": 183
     },
     "tests/test_professional_turn_runtime.py::test_display_exact_is_the_only_visible_success_action": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24881,7 +24961,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 209
     },
     "tests/test_professional_turn_runtime.py::test_mcp_adapter_converts_request_mismatch_to_host_diagnostic": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24903,7 +24983,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 145
+      "line": 233
     },
     "tests/test_professional_turn_runtime.py::test_mcp_adapter_attaches_retry_and_trace_metadata": {
       "path": "tests/test_professional_turn_runtime.py",
@@ -24924,7 +25004,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 168
+      "line": 256
     },
     "tests/test_provenance_retrieval_ci_closure.py::test_archive_sha_is_cryptographically_bound_to_extracted_import": {
       "path": "tests/test_provenance_retrieval_ci_closure.py",
