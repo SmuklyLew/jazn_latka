@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.78",
-  "active_definition_count": 1633,
+  "active_definition_count": 1640,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14752,6 +14752,151 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 58
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev",
+      "purpose": "Public gateway fails closed without oauth outside explicit loopback dev",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_public_gateway_never_allows_non_loopback_daemon_target": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_public_gateway_never_allows_non_loopback_daemon_target",
+      "purpose": "Public gateway never allows non loopback daemon target",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_official_sdk_exposes_only_minimal_public_tool_surface": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_official_sdk_exposes_only_minimal_public_tool_surface",
+      "purpose": "Official sdk exposes only minimal public tool surface",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_generate_forwards_stable_request_id_through_private_backend_token": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_generate_forwards_stable_request_id_through_private_backend_token",
+      "purpose": "Generate forwards stable request id through private backend token",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_public_status_is_redacted_even_when_backend_status_is_private": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_public_status_is_redacted_even_when_backend_status_is_private",
+      "purpose": "Public status is redacted even when backend status is private",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 167
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_http_app_contains_mcp_liveness_and_readiness_routes": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_http_app_contains_mcp_liveness_and_readiness_routes",
+      "purpose": "Http app contains mcp liveness and readiness routes",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 181
+    },
+    "tests/test_mcp_http_gateway_v78.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "name": "test_generate_rate_limit_is_operation_specific_and_fail_closed",
+      "purpose": "Generate rate limit is operation specific and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 191
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
       "path": "tests/test_mcp_modern_protocol.py",
