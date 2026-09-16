@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "1db522fd20a39e0a5f89fa4f476766946fca1027",
-    "base_version": "16.3.25.5.76.1-chatgpt-remote-runtime-route-convergence",
+    "base_commit": "6e1de547d0d928f857e1d307da519308939b981d",
+    "base_version": "16.3.25.5.77-professional-llm-turn-runtime",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "6e1de547d0d928f857e1d307da519308939b981d",
