@@ -2,14 +2,8 @@ from __future__ import annotations
 
 from latka_jazn.mcp.turn_runtime_adapter import McpTurnRuntimeAdapter
 from latka_jazn.runtime.turn_runtime import (
-    Availability,
     ExecutionRoute,
-    FailureKind,
-    FailureObservation,
-    FailureStage,
-    HostSurface,
     ProfessionalTurnRuntime,
-    RemoteTransport,
     RouteEvidence,
     TurnIdentity,
     TurnPhase,
@@ -32,37 +26,23 @@ def _poll_result(request_id: str) -> dict:
     }
 
 
-def _verified_remote_evidence(*, local: bool = False) -> RouteEvidence:
-    return RouteEvidence(
-        host_surface=HostSurface.ORDINARY_CHAT,
-        local_executor_state=(Availability.AVAILABLE if local else Availability.UNKNOWN),
-        local_executor_capability_explicit=local,
-        remote_transport=RemoteTransport.PUBLIC_STREAMABLE_HTTP,
-        remote_endpoint_configured=True,
-        remote_auth_ready=True,
-        remote_protocol_compatible=True,
-        remote_process_running=True,
-        remote_healthy=True,
-        remote_ready=True,
-        host_connector_capability_available=True,
-    )
-
-
 def test_remote_runtime_is_preferred_only_when_fully_verified() -> None:
     runtime = ProfessionalTurnRuntime()
-    decision = runtime.choose_route(_verified_remote_evidence(local=True))
+    decision = runtime.choose_route(
+        RouteEvidence(
+            local_executor_available=True,
+            remote_process_running=True,
+            remote_healthy=True,
+            remote_ready=True,
+            host_connector_capability_available=True,
+        )
+    )
     assert decision.execution_route is ExecutionRoute.REMOTE_RUNTIME
     assert decision.remote_runtime_verified is True
-    assert decision.remote_transport is RemoteTransport.PUBLIC_STREAMABLE_HTTP
 
     no_connector = runtime.choose_route(
         RouteEvidence(
-            host_surface=HostSurface.CODEX,
-            local_executor_state=Availability.AVAILABLE,
-            remote_transport=RemoteTransport.PUBLIC_STREAMABLE_HTTP,
-            remote_endpoint_configured=True,
-            remote_auth_ready=True,
-            remote_protocol_compatible=True,
+            local_executor_available=True,
             remote_process_running=True,
             remote_healthy=True,
             remote_ready=True,
@@ -70,74 +50,6 @@ def test_remote_runtime_is_preferred_only_when_fully_verified() -> None:
         )
     )
     assert no_connector.execution_route is ExecutionRoute.LOCAL_EXECUTOR
-
-
-def test_ordinary_chat_does_not_assume_or_probe_local_executor() -> None:
-    runtime = ProfessionalTurnRuntime()
-    decision = runtime.choose_route(
-        RouteEvidence(
-            host_surface=HostSurface.ORDINARY_CHAT,
-            local_executor_state=Availability.UNKNOWN,
-        )
-    )
-    assert decision.execution_route is ExecutionRoute.UNAVAILABLE
-    assert decision.local_executor_available is False
-
-    unproven_available = runtime.choose_route(
-        RouteEvidence(
-            host_surface=HostSurface.ORDINARY_CHAT,
-            local_executor_state=Availability.AVAILABLE,
-            local_executor_capability_explicit=False,
-        )
-    )
-    assert unproven_available.execution_route is ExecutionRoute.UNAVAILABLE
-
-    proven_available = runtime.choose_route(
-        RouteEvidence(
-            host_surface=HostSurface.ORDINARY_CHAT,
-            local_executor_state=Availability.AVAILABLE,
-            local_executor_capability_explicit=True,
-        )
-    )
-    assert proven_available.execution_route is ExecutionRoute.LOCAL_EXECUTOR
-
-
-def test_local_executor_breaker_blocks_route_without_changing_capability_truth() -> None:
-    runtime = ProfessionalTurnRuntime()
-    evidence = RouteEvidence(
-        host_surface=HostSurface.CODEX,
-        local_executor_state=Availability.AVAILABLE,
-        local_executor_capability_explicit=True,
-        local_executor_breaker_open=True,
-        host_handoff_available=True,
-    )
-    decision = runtime.choose_route(evidence)
-    assert evidence.local_executor_state is Availability.AVAILABLE
-    assert evidence.verified_local_executor is False
-    assert decision.execution_route is ExecutionRoute.HOST_HANDOFF
-
-
-def test_transport_timeout_pre_spawn_does_not_invent_root_cause() -> None:
-    observation = FailureObservation.from_error(
-        "TransportTimeoutError",
-        stage=FailureStage.PRE_SPAWN,
-    )
-    assert observation.confirmed_kind is FailureKind.UNKNOWN
-    assert observation.root_cause_confirmed is False
-    assert "scheduler" in observation.candidate_domains
-    assert "quota_or_entitlement" in observation.candidate_domains
-
-
-def test_explicit_http_auth_and_rate_limit_failures_are_stronger_observations() -> None:
-    unauthorized = FailureObservation.from_error("401", stage=FailureStage.AUTH)
-    forbidden = FailureObservation.from_error("403", stage=FailureStage.AUTH)
-    limited = FailureObservation.from_error("429", stage=FailureStage.REMOTE_SUBMIT)
-    assert unauthorized.confirmed_kind is FailureKind.AUTHENTICATION_FAILED
-    assert forbidden.confirmed_kind is FailureKind.AUTHORIZATION_FAILED
-    assert limited.confirmed_kind is FailureKind.RATE_LIMITED
-    assert unauthorized.root_cause_confirmed is True
-    assert forbidden.root_cause_confirmed is True
-    assert limited.root_cause_confirmed is True
 
 
 def test_route_falls_back_to_handoff_then_fail_closed() -> None:

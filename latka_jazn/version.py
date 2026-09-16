@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.77 introduces one typed conversation-turn runtime for ChatGPT/MCP
-# transport: remote-first verified routing, strict request identity, W3C-compatible
-# trace correlation, legal phase transitions and fail-closed visible-output gates.
-DISTRIBUTION_VERSION = "16.3.25.5.77"
-PACKAGE_VERSION = "16.3.25.5.77"
-PACKAGE_RELEASE_NAME = "professional-llm-turn-runtime"
+# v16.3.25.5.78 decouples ordinary ChatGPT from host-executor lifecycle:
+# tri-state route evidence, explicit host/transport axes, failure observations
+# that do not invent root causes, and remote-runtime ingress as the preferred
+# path whenever its endpoint/auth/protocol/process/readiness are verified.
+DISTRIBUTION_VERSION = "16.3.25.5.78"
+PACKAGE_VERSION = "16.3.25.5.78"
+PACKAGE_RELEASE_NAME = "executor-independent-runtime-ingress"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

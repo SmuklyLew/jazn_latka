@@ -3,9 +3,15 @@ from __future__ import annotations
 """Typed conversation-turn runtime shared by MCP and ChatGPT host bridges.
 
 This module does not own the Jaźń daemon lifecycle and does not create a second
-conversation runtime.  It gives transport-facing code one strict vocabulary for
-route selection, request identity, phase transitions, retry semantics and
-visible-output directives.
+conversation runtime. It gives transport-facing code one strict vocabulary for
+route selection, request identity, phase transitions, failure observations,
+retry semantics and visible-output directives.
+
+v78 deliberately separates three axes which older host code tended to conflate:
+where execution happens (``ExecutionRoute``), which host surface is asking for
+it (``HostSurface``), and how a verified remote runtime is reached
+(``RemoteTransport``). Availability is tri-state/four-state rather than a bool
+so "not probed" can never silently become "unavailable".
 """
 
 from dataclasses import asdict, dataclass
@@ -27,6 +33,54 @@ class ExecutionRoute(str, Enum):
     LOCAL_EXECUTOR = "local_executor"
     HOST_HANDOFF = "host_handoff"
     UNAVAILABLE = "unavailable"
+
+
+class HostSurface(str, Enum):
+    ORDINARY_CHAT = "ordinary_chat"
+    CHATGPT_WORK = "chatgpt_work"
+    CODEX = "codex"
+    LOCAL_CLI = "local_cli"
+    API = "api"
+    UNKNOWN = "unknown"
+
+
+class RemoteTransport(str, Enum):
+    NONE = "none"
+    PUBLIC_STREAMABLE_HTTP = "public_streamable_http"
+    OPENAI_SECURE_MCP_TUNNEL = "openai_secure_mcp_tunnel"
+
+
+class Availability(str, Enum):
+    UNKNOWN = "unknown"
+    AVAILABLE = "available"
+    DEGRADED = "degraded"
+    UNAVAILABLE = "unavailable"
+
+
+class FailureStage(str, Enum):
+    PRE_SPAWN = "pre_spawn"
+    POST_SPAWN = "post_spawn"
+    REMOTE_CONNECT = "remote_connect"
+    REMOTE_SUBMIT = "remote_submit"
+    REMOTE_POLL = "remote_poll"
+    AUTH = "auth"
+    READY_CHECK = "ready_check"
+    UNKNOWN = "unknown"
+
+
+class FailureKind(str, Enum):
+    TRANSPORT_TIMEOUT = "transport_timeout"
+    RPC_UNAVAILABLE = "rpc_unavailable"
+    GATEWAY_UNAVAILABLE = "gateway_unavailable"
+    SCHEDULER_UNAVAILABLE = "scheduler_unavailable"
+    QUOTA_OR_ENTITLEMENT = "quota_or_entitlement"
+    RATE_LIMITED = "rate_limited"
+    SPAWN_REJECTED = "spawn_rejected"
+    PROCESS_STARTED_UNFINISHED = "process_started_unfinished"
+    FILESYSTEM_UNAVAILABLE = "filesystem_unavailable"
+    AUTHENTICATION_FAILED = "authentication_failed"
+    AUTHORIZATION_FAILED = "authorization_failed"
+    UNKNOWN = "unknown"
 
 
 class TurnAction(str, Enum):
@@ -76,6 +130,70 @@ class TurnProtocolViolation(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class FailureObservation:
+    """What was actually observed, without upgrading hypotheses to root causes."""
+
+    observed_error_code: str
+    stage: FailureStage
+    confirmed_kind: FailureKind = FailureKind.UNKNOWN
+    root_cause_confirmed: bool = False
+    candidate_domains: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["stage"] = self.stage.value
+        payload["confirmed_kind"] = self.confirmed_kind.value
+        return payload
+
+    @classmethod
+    def from_error(
+        cls,
+        error_code: str,
+        *,
+        stage: FailureStage = FailureStage.UNKNOWN,
+    ) -> "FailureObservation":
+        code = str(error_code or "").strip() or "UnknownError"
+        normalized = code.lower()
+
+        if "transporttimeouterror" in normalized or normalized == "transport_timeout":
+            if stage is FailureStage.PRE_SPAWN:
+                return cls(
+                    observed_error_code=code,
+                    stage=stage,
+                    confirmed_kind=FailureKind.UNKNOWN,
+                    root_cause_confirmed=False,
+                    candidate_domains=(
+                        "host_rpc",
+                        "gateway",
+                        "runtime_provisioning",
+                        "scheduler",
+                        "quota_or_entitlement",
+                    ),
+                )
+            return cls(
+                observed_error_code=code,
+                stage=stage,
+                confirmed_kind=FailureKind.TRANSPORT_TIMEOUT,
+                root_cause_confirmed=False,
+                candidate_domains=("transport", "gateway", "remote_runtime"),
+            )
+
+        if normalized in {"401", "http_401", "authentication_failed"}:
+            return cls(code, stage, FailureKind.AUTHENTICATION_FAILED, True, ("authentication",))
+        if normalized in {"403", "http_403", "authorization_failed"}:
+            return cls(code, stage, FailureKind.AUTHORIZATION_FAILED, True, ("authorization", "entitlement"))
+        if normalized in {"429", "http_429", "rate_limited"}:
+            return cls(code, stage, FailureKind.RATE_LIMITED, True, ("rate_limit",))
+
+        return cls(
+            observed_error_code=code,
+            stage=stage,
+            confirmed_kind=FailureKind.UNKNOWN,
+            root_cause_confirmed=False,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class TurnIdentity:
     request_id: str
     session_id: str | None
@@ -114,7 +232,7 @@ class TurnIdentity:
 
     @property
     def traceparent(self) -> str:
-        # W3C Trace Context v00 wire shape.  No user text or PII is embedded.
+        # W3C Trace Context v00 wire shape. No user text or PII is embedded.
         return f"00-{self.transport_trace_id}-{self.transport_span_id}-01"
 
     def to_dict(self) -> dict[str, Any]:
@@ -125,21 +243,46 @@ class TurnIdentity:
 
 @dataclass(frozen=True, slots=True)
 class RouteEvidence:
-    local_executor_available: bool = False
+    host_surface: HostSurface = HostSurface.UNKNOWN
+
+    local_executor_state: Availability = Availability.UNKNOWN
+    local_executor_capability_explicit: bool = False
+    local_executor_breaker_open: bool = False
+
+    remote_transport: RemoteTransport = RemoteTransport.NONE
+    remote_endpoint_configured: bool = False
+    remote_auth_ready: bool = False
+    remote_protocol_compatible: bool = False
+
     remote_process_running: bool = False
     remote_healthy: bool = False
     remote_ready: bool = False
+
     host_connector_capability_available: bool = False
     host_handoff_available: bool = False
 
     @property
     def verified_remote_runtime(self) -> bool:
         return bool(
-            self.remote_process_running
+            self.remote_transport is not RemoteTransport.NONE
+            and self.remote_endpoint_configured
+            and self.remote_auth_ready
+            and self.remote_protocol_compatible
+            and self.remote_process_running
             and self.remote_healthy
             and self.remote_ready
             and self.host_connector_capability_available
         )
+
+    @property
+    def verified_local_executor(self) -> bool:
+        if self.local_executor_state is not Availability.AVAILABLE:
+            return False
+        if self.local_executor_breaker_open:
+            return False
+        if self.host_surface is HostSurface.ORDINARY_CHAT:
+            return self.local_executor_capability_explicit
+        return True
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +292,8 @@ class RouteDecision:
     remote_runtime_verified: bool
     local_executor_available: bool
     host_handoff_available: bool
+    host_surface: HostSurface = HostSurface.UNKNOWN
+    remote_transport: RemoteTransport = RemoteTransport.NONE
 
     @property
     def executable(self) -> bool:
@@ -157,6 +302,8 @@ class RouteDecision:
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         payload["execution_route"] = self.execution_route.value
+        payload["host_surface"] = self.host_surface.value
+        payload["remote_transport"] = self.remote_transport.value
         payload["executable"] = self.executable
         return payload
 
@@ -184,7 +331,7 @@ class TurnDirective:
 class ProfessionalTurnRuntime:
     """One strict transport policy around the existing Jaźń runtime.
 
-    The class is intentionally model-agnostic.  LLM generation remains behind
+    The class is intentionally model-agnostic. LLM generation remains behind
     Jaźń's existing engine/model adapters while this layer keeps host transport
     semantics deterministic and fail-closed.
     """
@@ -196,24 +343,30 @@ class ProfessionalTurnRuntime:
                 execution_route=ExecutionRoute.REMOTE_RUNTIME,
                 reason_code="verified_remote_runtime_preferred",
                 remote_runtime_verified=True,
-                local_executor_available=evidence.local_executor_available,
+                local_executor_available=evidence.verified_local_executor,
                 host_handoff_available=evidence.host_handoff_available,
+                host_surface=evidence.host_surface,
+                remote_transport=evidence.remote_transport,
             )
-        if evidence.local_executor_available:
+        if evidence.verified_local_executor:
             return RouteDecision(
                 execution_route=ExecutionRoute.LOCAL_EXECUTOR,
-                reason_code="local_executor_available_remote_unverified",
+                reason_code="verified_local_executor_remote_unavailable",
                 remote_runtime_verified=False,
                 local_executor_available=True,
                 host_handoff_available=evidence.host_handoff_available,
+                host_surface=evidence.host_surface,
+                remote_transport=evidence.remote_transport,
             )
         if evidence.host_handoff_available:
             return RouteDecision(
                 execution_route=ExecutionRoute.HOST_HANDOFF,
-                reason_code="host_handoff_available_after_runtime_routes_unavailable",
+                reason_code="verified_routes_unavailable_host_handoff_available",
                 remote_runtime_verified=False,
                 local_executor_available=False,
                 host_handoff_available=True,
+                host_surface=evidence.host_surface,
+                remote_transport=evidence.remote_transport,
             )
         return RouteDecision(
             execution_route=ExecutionRoute.UNAVAILABLE,
@@ -221,6 +374,8 @@ class ProfessionalTurnRuntime:
             remote_runtime_verified=False,
             local_executor_available=False,
             host_handoff_available=False,
+            host_surface=evidence.host_surface,
+            remote_transport=evidence.remote_transport,
         )
 
     @staticmethod
@@ -440,6 +595,8 @@ class ProfessionalTurnRuntime:
             "packageVersion": PACKAGE_VERSION_FULL,
             "stableRequestIdentity": True,
             "remoteRuntimePreferredWhenVerified": True,
+            "availabilitySemantics": "tri_state_plus_degraded",
+            "ordinaryChatBlindLocalProbe": False,
             "transportAmbiguityRecovery": "resume_same_request_id_never_replay",
             "visibleOutputGate": "display_exact_after_runtime_or_host_finalization",
             "traceContext": "w3c-traceparent-compatible-transport-correlation",
@@ -453,8 +610,14 @@ def valid_w3c_trace_id(value: str) -> bool:
 
 
 __all__ = [
+    "Availability",
     "ExecutionRoute",
+    "FailureKind",
+    "FailureObservation",
+    "FailureStage",
+    "HostSurface",
     "ProfessionalTurnRuntime",
+    "RemoteTransport",
     "RouteDecision",
     "RouteEvidence",
     "SCHEMA_VERSION",
