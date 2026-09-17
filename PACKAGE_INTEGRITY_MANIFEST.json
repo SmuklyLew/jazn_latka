@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "generated_at_utc": "2026-09-15T22:08:29+00:00",
-  "updated_at_utc": "2026-09-15T22:08:29+00:00",
+  "version": "16.3.25.5.78-executor-independent-runtime-ingress",
+  "runtime_version": "16.3.25.5.78-executor-independent-runtime-ingress",
+  "package_version": "16.3.25.5.78-executor-independent-runtime-ingress",
+  "generated_at_utc": "2026-09-17T12:45:06+00:00",
+  "updated_at_utc": "2026-09-17T12:45:06+00:00",
   "start_file": "run.py",
-  "file_count": 1731,
-  "static_file_count": 1731,
+  "file_count": 1734,
+  "static_file_count": 1734,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2890,
-      "sha256": "ed4cb9dc91b9b12d1481daf1d804ee0c4d2e72cfaeacd157b28278f2a9e3c01c",
+      "size_bytes": 2932,
+      "sha256": "7893529984df7bd783467708d9c430fa2fcae4b10e60b39b9ecb41a4622bb077",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4942,6 +4942,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/mcp/http_gateway.py",
+      "size_bytes": 21319,
+      "sha256": "ae413a0b580b4ea13a97bfd91dc7a0ee78046d5c33c19eaf5a1d859cfe35f14b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/mcp/secure_tunnel.py",
       "size_bytes": 11935,
       "sha256": "fabd83e0f5ce371e251709539ac047c23f8afde20e6e01efb6b1760cea2d89a4",
@@ -7157,8 +7166,8 @@
     },
     {
       "path": "latka_jazn/runtime/turn_runtime.py",
-      "size_bytes": 16906,
-      "sha256": "24f6a89320a2c42685267fb72647b2a2d567f44e388df37e5dc915639f4c9946",
+      "size_bytes": 22885,
+      "sha256": "e21072966e8c8cae1543540428bdea3bc93ff8b169bd9e4a69702990aab211dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8372,8 +8381,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6655,
-      "sha256": "daec013a8697d6447aeb534341066304db2357946efe4b152dff5d1fd361b907",
+      "size_bytes": 6721,
+      "sha256": "9078c7c8a0b24ab3fb17ef3599110f9e26131bebdbab8cf34513c7d25d99e448",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8489,8 +8498,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2131,
-      "sha256": "03c16ae04151e3676d3765899bfb874d0ef8f7ceba7f28cf78e1ca9b76eb1285",
+      "size_bytes": 2279,
+      "sha256": "c1926d7cc11934b0313c733f7b6e9a43f2d4346af4b970c8cd3cc20ca86c0dab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12322,6 +12331,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.77-professional-llm-turn-runtime/test_professional_turn_runtime.py",
+      "size_bytes": 6658,
+      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13564,6 +13582,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_http_gateway_v78.py",
+      "size_bytes": 7804,
+      "sha256": "280c40d8036db5287fe7c3c9f257ab3e4fbca727a532ec1ecbc4fa154ec2538f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_modern_protocol.py",
       "size_bytes": 5978,
       "sha256": "644319c6ebc6de45bdf7f6fc991702504e860927b7f5920c6566aa4a05b5bba9",
@@ -14312,8 +14339,8 @@
     },
     {
       "path": "tests/test_professional_turn_runtime.py",
-      "size_bytes": 6658,
-      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
+      "size_bytes": 10345,
+      "sha256": "af852f5853c0c98981efac55eb9ed6d9621eef9fb2ca74ff0fabbfd3a0ce17d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15446,8 +15473,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1513948,
-      "sha256": "08275c143c9c1387431e15df112160195e2a28543014fb819736387dd98b2735",
+      "size_bytes": 1522884,
+      "sha256": "c937f01130f19f1a81307a0eb69345ce52c4a26027d1524a7b57cdbc79f3d74e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16031,11 +16058,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.77-professional-llm-turn-runtime",
+  "release_version": "16.3.25.5.78-executor-independent-runtime-ingress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
-    "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-    "release_version": "16.3.25.5.77-professional-llm-turn-runtime"
+    "runtime_version": "16.3.25.5.78-executor-independent-runtime-ingress",
+    "package_version": "16.3.25.5.78-executor-independent-runtime-ingress",
+    "release_version": "16.3.25.5.78-executor-independent-runtime-ingress"
   },
   "legacy_aliases": {
     "version": "release_version"
