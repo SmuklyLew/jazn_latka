@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.78-executor-independent-runtime-ingress",
-  "runtime_version": "16.3.25.5.78-executor-independent-runtime-ingress",
-  "package_version": "16.3.25.5.78-executor-independent-runtime-ingress",
-  "generated_at_utc": "2026-09-17T12:50:40+00:00",
-  "updated_at_utc": "2026-09-17T12:50:40+00:00",
+  "version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+  "runtime_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+  "package_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+  "generated_at_utc": "2026-09-17T12:53:36+00:00",
+  "updated_at_utc": "2026-09-17T12:53:36+00:00",
   "start_file": "run.py",
   "file_count": 1735,
   "static_file_count": 1735,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "45a32fce840586f5048033ad4f1af87bac27169c35665dac3d781a4c04bba7e6",
+      "size_bytes": 2939,
+      "sha256": "5d07a2647c3aff7316c9647122122e9c67b2e679192e6ff685ab34880c2b28c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8381,8 +8381,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6721,
-      "sha256": "9078c7c8a0b24ab3fb17ef3599110f9e26131bebdbab8cf34513c7d25d99e448",
+      "size_bytes": 6745,
+      "sha256": "23a21697db74446ef2e2682b0e0de649e896de7a3cb9453ffb7f376826aeed53",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15482,8 +15482,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1522828,
-      "sha256": "644b7eecb60d77d40a427fcb2067fa256149142162813a0ad679f3528fa75fb4",
+      "size_bytes": 1522830,
+      "sha256": "d45ea981b4f56e21fa389d752995c4e93801303639fc2d37d24eed2240acb421",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16067,11 +16067,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.78-executor-independent-runtime-ingress",
+  "release_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.78-executor-independent-runtime-ingress",
-    "package_version": "16.3.25.5.78-executor-independent-runtime-ingress",
-    "release_version": "16.3.25.5.78-executor-independent-runtime-ingress"
+    "runtime_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+    "package_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+    "release_version": "16.3.25.5.78.1-executor-independent-runtime-ingress"
   },
   "legacy_aliases": {
     "version": "release_version"
