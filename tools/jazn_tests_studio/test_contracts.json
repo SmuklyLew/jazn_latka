@@ -32045,7 +32045,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 341
+      "line": 342
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32073,7 +32073,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 360
+      "line": 362
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32103,7 +32103,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 375
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32130,7 +32130,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 378
+      "line": 381
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32157,7 +32157,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 393
+      "line": 396
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32184,7 +32184,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 404
+      "line": 407
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32211,7 +32211,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 418
+      "line": 421
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32238,7 +32238,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 445
+      "line": 448
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -32265,7 +32265,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 459
+      "line": 462
     },
     "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
       "path": "tests/test_runtime_supervisor.py",
