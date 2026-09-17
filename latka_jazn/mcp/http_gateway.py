@@ -31,7 +31,7 @@ from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.transport_security import TransportSecuritySettings
-from mcp.types import CallToolResult, TextContent, ToolAnnotations
+from mcp.types import CallToolResult, ContentBlock, TextContent, ToolAnnotations
 
 from latka_jazn.core.runtime_root import find_runtime_root
 from latka_jazn.mcp.server import JaznMcpServer
@@ -160,8 +160,8 @@ class _Principal:
     scopes: frozenset[str]
 
 
-def _text_blocks(value: Mapping[str, Any]) -> list[TextContent]:
-    result: list[TextContent] = []
+def _text_blocks(value: Mapping[str, Any]) -> list[ContentBlock]:
+    result: list[ContentBlock] = []
     raw_content = value.get("content")
     if isinstance(raw_content, list):
         for item in raw_content:

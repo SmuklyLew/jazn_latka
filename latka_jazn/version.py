@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.78.1 keeps the v78 executor-independent runtime architecture and
-# converges its CI/dependency/test contracts: direct MCP HTTP dependencies are
-# declared, active-tree Pyright installs that capability, MCP tests use a stable
-# purpose name, and wake-state fixtures seed persistent MEMORY rather than core state.
-DISTRIBUTION_VERSION = "16.3.25.5.78.1"
-PACKAGE_VERSION = "16.3.25.5.78.1"
+# v16.3.25.5.78.2 keeps the executor-independent v78 architecture and fixes
+# the remaining MCP CI contracts: Dependency Studio sees one direct Starlette
+# requirement across supported Python versions and Pyright receives the SDK's
+# general ContentBlock type rather than an invariant list[TextContent].
+DISTRIBUTION_VERSION = "16.3.25.5.78.2"
+PACKAGE_VERSION = "16.3.25.5.78.2"
 PACKAGE_RELEASE_NAME = "executor-independent-runtime-ingress"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
