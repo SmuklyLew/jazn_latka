@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
-  "runtime_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
-  "package_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
-  "generated_at_utc": "2026-09-17T12:53:36+00:00",
-  "updated_at_utc": "2026-09-17T12:53:36+00:00",
+  "version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "runtime_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "package_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "generated_at_utc": "2026-09-17T13:03:54+00:00",
+  "updated_at_utc": "2026-09-17T13:03:54+00:00",
   "start_file": "run.py",
   "file_count": 1735,
   "static_file_count": 1735,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "5d07a2647c3aff7316c9647122122e9c67b2e679192e6ff685ab34880c2b28c6",
+      "size_bytes": 2944,
+      "sha256": "69e48147cdaf60295cd220bd693e10cf75bbf39b301f9f3773a91da6b7159210",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4943,8 +4943,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 21319,
-      "sha256": "ae413a0b580b4ea13a97bfd91dc7a0ee78046d5c33c19eaf5a1d859cfe35f14b",
+      "size_bytes": 21335,
+      "sha256": "40b59811af4982f70d33bc353e00a0ec3958f8384072566278fbb561ea9ec9e4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8381,8 +8381,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6745,
-      "sha256": "23a21697db74446ef2e2682b0e0de649e896de7a3cb9453ffb7f376826aeed53",
+      "size_bytes": 6724,
+      "sha256": "44c9939ae5f70afb35d1ac09511f900252a1a044d7e03728fdc0fe65f7bc79b5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8498,8 +8498,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2279,
-      "sha256": "c1926d7cc11934b0313c733f7b6e9a43f2d4346af4b970c8cd3cc20ca86c0dab",
+      "size_bytes": 2204,
+      "sha256": "8967705efc37c09d8b1b1bbcb2c0f0d0d7a72fd7322c6dc02d37d9789d6490c7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15483,7 +15483,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1522830,
-      "sha256": "d45ea981b4f56e21fa389d752995c4e93801303639fc2d37d24eed2240acb421",
+      "sha256": "3e89c057e17102b088d62a68e913bc75e9bd636694adde14fe8bec3ac991b39e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16067,11 +16067,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
+  "release_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
-    "package_version": "16.3.25.5.78.1-executor-independent-runtime-ingress",
-    "release_version": "16.3.25.5.78.1-executor-independent-runtime-ingress"
+    "runtime_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+    "package_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+    "release_version": "16.3.25.5.78.2-executor-independent-runtime-ingress"
   },
   "legacy_aliases": {
     "version": "release_version"
