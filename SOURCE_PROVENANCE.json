@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "da8d27f601760d71bb8565347a3156b759d19d07",
-    "base_version": "16.3.25.5.77-professional-llm-turn-runtime",
+    "base_commit": "7261631abf5f2f0a63a1575a14a5fc43b9bb97de",
+    "base_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "7261631abf5f2f0a63a1575a14a5fc43b9bb97de",
