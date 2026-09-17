@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-  "generated_at_utc": "2026-09-15T22:08:29+00:00",
-  "updated_at_utc": "2026-09-15T22:08:29+00:00",
+  "version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "runtime_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "package_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+  "generated_at_utc": "2026-09-17T13:03:54+00:00",
+  "updated_at_utc": "2026-09-17T13:03:54+00:00",
   "start_file": "run.py",
-  "file_count": 1731,
-  "static_file_count": 1731,
+  "file_count": 1735,
+  "static_file_count": 1735,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -146,8 +146,8 @@
     },
     {
       "path": ".github/workflows/pyright-active-tree-audit.yml",
-      "size_bytes": 2778,
-      "sha256": "1329c62d0f9d11aed403c05ca27ff52ba7a7460eba923e564be8732ecadd4a91",
+      "size_bytes": 2787,
+      "sha256": "9808834e6e9e7163810ac00de19dd7dc2c72cefe80b55760d64195d395dcf6f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2890,
-      "sha256": "ed4cb9dc91b9b12d1481daf1d804ee0c4d2e72cfaeacd157b28278f2a9e3c01c",
+      "size_bytes": 2944,
+      "sha256": "69e48147cdaf60295cd220bd693e10cf75bbf39b301f9f3773a91da6b7159210",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4942,6 +4942,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/mcp/http_gateway.py",
+      "size_bytes": 21335,
+      "sha256": "40b59811af4982f70d33bc353e00a0ec3958f8384072566278fbb561ea9ec9e4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/mcp/secure_tunnel.py",
       "size_bytes": 11935,
       "sha256": "fabd83e0f5ce371e251709539ac047c23f8afde20e6e01efb6b1760cea2d89a4",
@@ -7157,8 +7166,8 @@
     },
     {
       "path": "latka_jazn/runtime/turn_runtime.py",
-      "size_bytes": 16906,
-      "sha256": "24f6a89320a2c42685267fb72647b2a2d567f44e388df37e5dc915639f4c9946",
+      "size_bytes": 22885,
+      "sha256": "e21072966e8c8cae1543540428bdea3bc93ff8b169bd9e4a69702990aab211dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8372,8 +8381,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6655,
-      "sha256": "daec013a8697d6447aeb534341066304db2357946efe4b152dff5d1fd361b907",
+      "size_bytes": 6724,
+      "sha256": "44c9939ae5f70afb35d1ac09511f900252a1a044d7e03728fdc0fe65f7bc79b5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8489,8 +8498,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2131,
-      "sha256": "03c16ae04151e3676d3765899bfb874d0ef8f7ceba7f28cf78e1ca9b76eb1285",
+      "size_bytes": 2204,
+      "sha256": "8967705efc37c09d8b1b1bbcb2c0f0d0d7a72fd7322c6dc02d37d9789d6490c7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12322,6 +12331,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.77-professional-llm-turn-runtime/test_professional_turn_runtime.py",
+      "size_bytes": 6658,
+      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.77-professional-llm-turn-runtime/test_runtime_stability_wake_state.py",
+      "size_bytes": 21780,
+      "sha256": "6c7cd19e1554b11248e72ae6f1000ec6393e6ecb36a8e5c1331ec4b5735e2ab1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13564,6 +13591,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_http_gateway.py",
+      "size_bytes": 7804,
+      "sha256": "280c40d8036db5287fe7c3c9f257ab3e4fbca727a532ec1ecbc4fa154ec2538f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_modern_protocol.py",
       "size_bytes": 5978,
       "sha256": "644319c6ebc6de45bdf7f6fc991702504e860927b7f5920c6566aa4a05b5bba9",
@@ -14312,8 +14348,8 @@
     },
     {
       "path": "tests/test_professional_turn_runtime.py",
-      "size_bytes": 6658,
-      "sha256": "f7cc05e0900393fcbfdef38392f24135bc5282dbafd606415492e53a0e626beb",
+      "size_bytes": 10345,
+      "sha256": "af852f5853c0c98981efac55eb9ed6d9621eef9fb2ca74ff0fabbfd3a0ce17d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14744,8 +14780,8 @@
     },
     {
       "path": "tests/test_runtime_stability_wake_state.py",
-      "size_bytes": 21780,
-      "sha256": "6c7cd19e1554b11248e72ae6f1000ec6393e6ecb36a8e5c1331ec4b5735e2ab1",
+      "size_bytes": 21847,
+      "sha256": "c7b9a11da4e64fac890e3ca6715d9fe30fa0bef5f49c71b06a9baedfd21d717a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15446,8 +15482,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1513948,
-      "sha256": "08275c143c9c1387431e15df112160195e2a28543014fb819736387dd98b2735",
+      "size_bytes": 1522830,
+      "sha256": "3e89c057e17102b088d62a68e913bc75e9bd636694adde14fe8bec3ac991b39e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16031,11 +16067,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.77-professional-llm-turn-runtime",
+  "release_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.77-professional-llm-turn-runtime",
-    "package_version": "16.3.25.5.77-professional-llm-turn-runtime",
-    "release_version": "16.3.25.5.77-professional-llm-turn-runtime"
+    "runtime_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+    "package_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
+    "release_version": "16.3.25.5.78.2-executor-independent-runtime-ingress"
   },
   "legacy_aliases": {
     "version": "release_version"

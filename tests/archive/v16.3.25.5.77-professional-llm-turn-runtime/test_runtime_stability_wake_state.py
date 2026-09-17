@@ -288,15 +288,14 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
     runtime_root = tmp_path / "isolated-runtime"
     create_system_smoke_staging(ROOT, runtime_root)
     cfg = JaznConfig(root=runtime_root, allow_network=False, network_time_first=False)
-    memory_source = cfg.normalization_source_db_path
-    memory_source.parent.mkdir(parents=True, exist_ok=True)
-    _source(memory_source)
+    cfg.memory_db_path_readonly.parent.mkdir(parents=True, exist_ok=True)
+    _source(cfg.memory_db_path_readonly)
     initialized = build_runtime_write_access_status(cfg, initialize=True, writes_enabled=True).to_dict()
     assert initialized["ok"] is True
     sidecar = MemoryNormalizationSidecar(
         runtime_root,
-        source_db_path=memory_source,
-        sidecar_db_path=cfg.normalization_sidecar_db_path,
+        source_db_path=cfg.memory_db_path_readonly,
+        sidecar_db_path=cfg.audit_db_path_readonly,
         runtime_version=cfg.version,
     )
     prepared = sidecar.prepare(deep_verify=True).to_dict()
@@ -348,9 +347,8 @@ def test_memory_prepare_cli_dry_run_exit_codes_follow_data_status(capsys, tmp_pa
     assert missing_payload["status"] == "source_missing"
 
     cfg = JaznConfig(root=tmp_path)
-    memory_source = cfg.normalization_source_db_path
-    memory_source.parent.mkdir(parents=True, exist_ok=True)
-    _source(memory_source)
+    cfg.memory_db_path_readonly.parent.mkdir(parents=True, exist_ok=True)
+    _source(cfg.memory_db_path_readonly)
     ok_code = cli.main([
         "memory-prepare", "--root", str(tmp_path), "--dry-run", "--deep-verify", "--json",
     ])
@@ -361,9 +359,8 @@ def test_memory_prepare_cli_dry_run_exit_codes_follow_data_status(capsys, tmp_pa
 
 def test_memory_prepare_cli_validation_failure_is_exit_one(capsys, tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    memory_source = cfg.normalization_source_db_path
-    memory_source.parent.mkdir(parents=True, exist_ok=True)
-    memory_source.write_bytes(b"not sqlite")
+    cfg.memory_db_path_readonly.parent.mkdir(parents=True, exist_ok=True)
+    cfg.memory_db_path_readonly.write_bytes(b"not sqlite")
     code = cli.main([
         "memory-prepare", "--root", str(tmp_path), "--dry-run", "--deep-verify", "--json",
     ])
