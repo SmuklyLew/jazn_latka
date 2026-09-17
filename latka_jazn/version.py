@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.78 decouples ordinary ChatGPT from host-executor lifecycle:
-# tri-state route evidence, explicit host/transport axes, failure observations
-# that do not invent root causes, and remote-runtime ingress as the preferred
-# path whenever its endpoint/auth/protocol/process/readiness are verified.
-DISTRIBUTION_VERSION = "16.3.25.5.78"
-PACKAGE_VERSION = "16.3.25.5.78"
+# v16.3.25.5.78.1 keeps the v78 executor-independent runtime architecture and
+# converges its CI/dependency/test contracts: direct MCP HTTP dependencies are
+# declared, active-tree Pyright installs that capability, MCP tests use a stable
+# purpose name, and wake-state fixtures seed persistent MEMORY rather than core state.
+DISTRIBUTION_VERSION = "16.3.25.5.78.1"
+PACKAGE_VERSION = "16.3.25.5.78.1"
 PACKAGE_RELEASE_NAME = "executor-independent-runtime-ingress"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
