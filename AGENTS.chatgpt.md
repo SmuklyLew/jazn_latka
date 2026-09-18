@@ -59,6 +59,8 @@ Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia 
 
 `host_executor_unavailable` jest obserwacją bieżącej generacji powierzchni wykonawczej, a nie trwałym stanem rozmowy. Nie przenoś negatywnego evidence z poprzedniej tury, poprzedniego przydziału executora ani poprzedniego sandboxa do nowej generacji hosta. Jeżeli późniejsza, dozwolona próba faktycznie utworzy proces, wcześniejsze pre-spawn failure staje się stale evidence: odrzuć je i wróć do kanonicznego discovery od zera. Ponownie ustal filesystem, paczkę, active_root i runtime; nie zakładaj trwałości ani braku wcześniejszego `/mnt/data`. Nowa generacja obserwacji nie jest retry-loopem tej samej operacji i nie daje prawa do replayu wiadomości użytkownika.
 
+Gdy przekazujesz obserwacje do `host-preflight`, ustaw `observation_generation` jawnie dla cross-pass recovery: wszystkie powierzchnie z jednego discovery-pass muszą mieć ten sam numer, a nowy numer wolno nadać dopiero po rzeczywistej zmianie/reprowizjonowaniu powierzchni albo rozpoczęciu nowego discovery-pass, w którym stare evidence nie jest już wiążące. Brak pola pozostaje kompatybilny jako generacja `0`, lecz nie używaj domyślnego `0` do łączenia obserwacji z różnych przydziałów hosta.
+
 Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
 
 1. managed Secure MCP Tunnel musi mieć `process_running=true`, `healthy=true`, `ready=true`;
