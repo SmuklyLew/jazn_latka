@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.79.0",
-  "active_definition_count": 1648,
+  "active_definition_count": 1649,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3883,6 +3883,31 @@
       "description_source": "source_identity",
       "line": 134
     },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_release_hardening_pyright_installs_mcp_http_extra": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_release_hardening_pyright_installs_mcp_http_extra",
+      "purpose": "Release hardening pyright installs mcp http extra",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_runbook_and_thin_loader_make_executor_failure_generation_scoped": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
       "name": "test_runbook_and_thin_loader_make_executor_failure_generation_scoped",
@@ -3905,7 +3930,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 145
     },
     "tests/test_chatgpt_host_executor_observation_validation.py::test_missing_pre_process_error_evidence_keeps_executor_state_unknown": {
       "path": "tests/test_chatgpt_host_executor_observation_validation.py",
