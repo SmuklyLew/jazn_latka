@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.78.2 keeps the executor-independent v78 architecture and fixes
-# the remaining MCP CI contracts: Dependency Studio sees one direct Starlette
-# requirement across supported Python versions and Pyright receives the SDK's
-# general ContentBlock type rather than an invariant list[TextContent].
-DISTRIBUTION_VERSION = "16.3.25.5.78.2"
-PACKAGE_VERSION = "16.3.25.5.78.2"
-PACKAGE_RELEASE_NAME = "executor-independent-runtime-ingress"
+# v16.3.25.5.79.0 keeps executor-independent ingress and hardens recovery
+# across ephemeral ChatGPT executor generations. Pre-spawn failure evidence is
+# generation-scoped, and durable host operation ids are preallocated through a
+# canonical UTC-safe generator that cannot emit local-offset '+' characters.
+DISTRIBUTION_VERSION = "16.3.25.5.79.0"
+PACKAGE_VERSION = "16.3.25.5.79.0"
+PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

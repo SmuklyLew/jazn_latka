@@ -34,6 +34,7 @@ class HostExecutorObservation:
     remote_runtime_transport_available: bool = False
     execution_handoff_available: bool = False
     execution_handoff_state: HostHandoffState = HostHandoffState.UNKNOWN
+    observation_generation: int = 0
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "surface", _normalized_surface(self.surface))
@@ -48,6 +49,8 @@ class HostExecutorObservation:
 
         if self.alternative_probe_count < 0:
             raise ValueError("alternative_probe_count_must_be_non_negative")
+        if self.observation_generation < 0:
+            raise ValueError("observation_generation_must_be_non_negative")
         if self.command_completed and not self.process_created:
             raise ValueError("command_completed_requires_process_created")
         if self.returncode is not None and not self.command_completed:

@@ -16,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import sys
 from typing import Any, Mapping, Sequence
@@ -38,6 +39,27 @@ def normalize_operation_id(value: str) -> str:
     if not HOST_OPERATION_ID_RE.fullmatch(candidate):
         raise ValueError("operation_id_contains_unsafe_characters_or_invalid_length")
     return candidate
+
+
+def generate_operation_id(
+    kind: str,
+    *,
+    now: datetime | None = None,
+    entropy: str | None = None,
+) -> str:
+    """Create a preallocatable UTC operation id accepted by the durable host gate."""
+
+    normalized_kind = str(kind or "").strip().lower()
+    if normalized_kind not in SUPPORTED_OPERATION_KINDS:
+        raise ValueError(f"unsupported_host_operation_kind:{normalized_kind}")
+    stamp = now or datetime.now(timezone.utc)
+    if stamp.tzinfo is None or stamp.utcoffset() is None:
+        raise ValueError("operation_id_timestamp_must_be_timezone_aware")
+    utc_stamp = stamp.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    token = str(entropy or secrets.token_hex(6)).strip().lower()
+    if not re.fullmatch(r"[a-f0-9]{8,32}", token):
+        raise ValueError("operation_id_entropy_invalid")
+    return normalize_operation_id(f"{normalized_kind}-{utc_stamp}-{token}")
 
 
 def host_operations_dir(root: Path) -> Path:

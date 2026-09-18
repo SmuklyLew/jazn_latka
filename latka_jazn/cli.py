@@ -88,6 +88,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     child.add_argument("--no-start-daemon", action="store_true")
 
+    child = sub.add_parser("host-op-id", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument(
+        "--kind",
+        required=True,
+        choices=("daemon-start", "runtime-bootstrap", "supervisor-start"),
+    )
+
     child = sub.add_parser("host-op-submit", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--operation-id", required=True)
@@ -358,7 +366,7 @@ def main(
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
-        "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
+        "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
         "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
@@ -382,6 +390,23 @@ def main(
             "--memory-plan",
             *list(ns.message),
         ])
+
+    if ns.command == "host-op-id":
+        from latka_jazn.core.host_operations import generate_operation_id
+
+        operation_id = generate_operation_id(ns.kind)
+        _emit(
+            {
+                "ok": True,
+                "operation_id": operation_id,
+                "kind": ns.kind,
+                "preallocated": True,
+                "side_effecting_submit_performed": False,
+                "reuse_policy": "retain_this_id_before_submit_and_resume_or_poll_the_same_id_after_ambiguous_transport",
+            },
+            as_json=True,
+        )
+        return 0
 
     if ns.command == "host-op-submit":
         from latka_jazn.core.host_operations import submit_host_operation

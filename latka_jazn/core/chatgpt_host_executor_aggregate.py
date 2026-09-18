@@ -31,8 +31,8 @@ CAPABILITY_SCHEMA_VERSION = schema_version("chatgpt_host_capability_snapshot")
 def aggregate_host_executor_observations(
     observations: Iterable[HostExecutorObservation],
 ) -> HostCapabilitySnapshot:
-    items = tuple(observations)
-    if not items:
+    raw_items = tuple(observations)
+    if not raw_items:
         return HostCapabilitySnapshot(
             CAPABILITY_SCHEMA_VERSION,
             HostEnvironmentState.UNKNOWN,
@@ -50,6 +50,11 @@ def aggregate_host_executor_observations(
             (),
             HostHandoffState.UNKNOWN,
         )
+
+    latest_generation = max(item.observation_generation for item in raw_items)
+    items = tuple(
+        item for item in raw_items if item.observation_generation == latest_generation
+    )
 
     seen: set[str] = set()
     classified = []
