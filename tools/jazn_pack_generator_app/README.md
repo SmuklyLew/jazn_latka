@@ -1,4 +1,4 @@
-# Jaźń Pack Generator 10.1.86.0.115
+# Jaźń Pack Generator 10.1.86.0.116
 
 Active implementation of `tools/jazn_pack_generator.py`.
 
@@ -22,7 +22,7 @@ platform-specific distributions.
 ## Host bootstrap contract
 
 SYSTEM and SYSTEM+MEMORY packages now publish `host_bootstrap` using
-`jazn_host_bootstrap_contract/v1`. Before publication the generator requires the
+`jazn_host_bootstrap_contract/v2`. Before publication the generator requires the
 canonical bootstrap members (`CHATGPT_BOOTSTRAP.py`, `run.py`, `main.py`, host
 runbooks, version and integrity/provenance files).
 
@@ -75,7 +75,7 @@ SYSTEM packages.
 - Split packages have logical and per-part SHA-256 sidecars.
 - Extraction is staged and committed only after preflight.
 
-## EOL policy in 10.1.86.0.115
+## EOL policy in 10.1.86.0.116
 
 For SYSTEM, `.gitattributes` defines checkout behavior but the working tree is not the release byte source. Git text can be LF in the index and CRLF in the working directory; `create_release_staging()` reads canonical Git blobs, so any working-tree EOL drift is bypassed rather than accepted into a runnable release.
 
