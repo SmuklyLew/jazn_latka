@@ -171,7 +171,8 @@ def discover_memory_validation_targets(
     runtime_root = Path(root).expanduser().resolve()
     config = JaznConfig(root=runtime_root)
     memory_root = config.memory_root.resolve()
-    trusted_roots = (runtime_root, memory_root)
+    operational_root = config.runtime_memory_storage_root.resolve()
+    trusted_roots = tuple(dict.fromkeys((runtime_root, memory_root, operational_root)))
     targets = _known_targets(config)
     targets.extend(
         _manifest_targets(
@@ -188,8 +189,13 @@ def discover_memory_validation_targets(
         )
     )
     if include_all_sqlite:
-        sqlite_root = memory_root / "sqlite"
-        if sqlite_root.is_dir():
+        discovery_roots = [("memory_root", memory_root)]
+        if operational_root != memory_root:
+            discovery_roots.append(("runtime_memory_storage_root", operational_root))
+        for source_name, storage_root in discovery_roots:
+            sqlite_root = storage_root / "sqlite"
+            if not sqlite_root.is_dir():
+                continue
             for path in sqlite_root.rglob("*"):
                 if not path.is_file() or path.suffix.lower() not in SQLITE_SUFFIXES:
                     continue
@@ -199,7 +205,7 @@ def discover_memory_validation_targets(
                     MemoryValidationTarget(
                         role="discovered_sqlite",
                         path=str(path.resolve()),
-                        source="memory_root/sqlite recursive discovery",
+                        source=f"{source_name}/sqlite recursive discovery",
                         required=False,
                     )
                 )

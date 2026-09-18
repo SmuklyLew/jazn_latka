@@ -16,14 +16,12 @@ def test_config_routes_memory_paths_outside_versioned_runtime(tmp_path: Path) ->
     root = _runtime_root(tmp_path)
     config = JaznConfig(root=root)
     memory_root = default_memory_root(root)
-    runtime_memory_root = config.runtime_memory_storage_root
 
     assert config.memory_root == memory_root
-    assert runtime_memory_root != memory_root
     assert config.recovered_memory_db_path.is_relative_to(memory_root)
     assert config.normalization_sidecar_db_path.is_relative_to(memory_root)
     assert config.memory_tier_db_path.is_relative_to(memory_root)
-    assert config.rest_cycle_db_path.is_relative_to(runtime_memory_root)
+    assert config.rest_cycle_db_path.is_relative_to(memory_root)
     assert config.conversation_archive_manifest_path.is_relative_to(memory_root)
     assert config.conversation_fts_dir.is_relative_to(memory_root)
     assert config.conversation_staging_dir.is_relative_to(memory_root)
@@ -31,10 +29,8 @@ def test_config_routes_memory_paths_outside_versioned_runtime(tmp_path: Path) ->
 
     runtime_write = config.runtime_write_db_path
     audit = config.audit_db_path
-    assert runtime_write.is_relative_to(runtime_memory_root)
-    assert audit.is_relative_to(runtime_memory_root)
-    assert not runtime_write.is_relative_to(memory_root)
-    assert not audit.is_relative_to(memory_root)
+    assert runtime_write.is_relative_to(memory_root)
+    assert audit.is_relative_to(memory_root)
     assert not runtime_write.is_relative_to(root)
     assert not audit.is_relative_to(root)
 

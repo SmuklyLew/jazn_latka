@@ -57,6 +57,10 @@ Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiej
 
 Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu.
 
+`host_executor_unavailable` jest obserwacją bieżącej generacji powierzchni wykonawczej, a nie trwałym stanem rozmowy. Nie przenoś negatywnego evidence z poprzedniej tury, poprzedniego przydziału executora ani poprzedniego sandboxa do nowej generacji hosta. Jeżeli późniejsza, dozwolona próba faktycznie utworzy proces, wcześniejsze pre-spawn failure staje się stale evidence: odrzuć je i wróć do kanonicznego discovery od zera. Ponownie ustal filesystem, paczkę, active_root i runtime; nie zakładaj trwałości ani braku wcześniejszego `/mnt/data`. Nowa generacja obserwacji nie jest retry-loopem tej samej operacji i nie daje prawa do replayu wiadomości użytkownika.
+
+Gdy przekazujesz obserwacje do `host-preflight`, ustaw `observation_generation` jawnie dla cross-pass recovery: wszystkie powierzchnie z jednego discovery-pass muszą mieć ten sam numer, a nowy numer wolno nadać dopiero po rzeczywistej zmianie/reprowizjonowaniu powierzchni albo rozpoczęciu nowego discovery-pass, w którym stare evidence nie jest już wiążące. Brak pola pozostaje kompatybilny jako generacja `0`, lecz nie używaj domyślnego `0` do łączenia obserwacji z różnych przydziałów hosta.
+
 Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
 
 1. managed Secure MCP Tunnel musi mieć `process_running=true`, `healthy=true`, `ready=true`;
@@ -98,7 +102,13 @@ Jeżeli zweryfikowany operator już istnieje, nową paczkę materializuj jego ko
 python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT> --json
 ```
 
-W hoście o krótkim lub niestabilnym budżecie jednego wywołania nie trzymaj procesu ChatGPT przez cały `runtime-bootstrap`. Po zweryfikowaniu istniejącego operatora prealokuj stabilny `operation_id` i użyj durable operation:
+W hoście o krótkim lub niestabilnym budżecie jednego wywołania nie trzymaj procesu ChatGPT przez cały `runtime-bootstrap`. Po zweryfikowaniu istniejącego operatora prealokuj stabilny `operation_id` kanonicznym generatorem i zachowaj go przed submit:
+
+```bash
+python -X utf8 run.py host-op-id --kind runtime-bootstrap --json
+```
+
+Nie buduj `operation_id` bezpośrednio z lokalnego ISO-8601 zawierającego offset `+HH:MM`; znak `+` nie należy do bezpiecznego alfabetu durable operation. Następnie użyj zwróconego identyfikatora w durable operation:
 
 ```bash
 python -X utf8 run.py host-op-submit --operation-id <bootstrap-id> --kind runtime-bootstrap -- --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT>
@@ -128,7 +138,13 @@ python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Host ChatGPT lub inna powierzchnia, która może utracić transport zanim `start_daemon()` zakończy readiness, powinna zamiast tego prealokować `operation_id` i wykonać tylko krótki submit:
+Host ChatGPT lub inna powierzchnia, która może utracić transport zanim `start_daemon()` zakończy readiness, powinna zamiast tego prealokować `operation_id` kanonicznym generatorem:
+
+```bash
+python -X utf8 run.py host-op-id --kind daemon-start --json
+```
+
+Zachowaj zwrócony identyfikator przed submit i wykonaj tylko krótki submit:
 
 ```bash
 python -X utf8 run.py host-op-submit --operation-id <start-id> --kind daemon-start --json

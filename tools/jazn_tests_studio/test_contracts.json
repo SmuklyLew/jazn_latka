@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.78.2",
-  "active_definition_count": 1640,
+  "system_version": "16.3.25.5.79.3",
+  "active_definition_count": 1649,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3711,6 +3711,227 @@
       "description_source": "source_identity",
       "line": 355
     },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset",
+      "purpose": "Canonical operation id is utc safe and never contains plus offset",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy",
+      "purpose": "Canonical operation id rejects naive timestamp and bad entropy",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_cli_exposes_preallocation_without_side_effecting_submit": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_cli_exposes_preallocation_without_side_effecting_submit",
+      "purpose": "Cli exposes preallocation without side effecting submit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_executor_generation_supersedes_stale_pre_spawn_failure": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_newer_executor_generation_supersedes_stale_pre_spawn_failure",
+      "purpose": "Newer executor generation supersedes stale pre spawn failure",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_failure_does_not_inherit_old_success_from_previous_generation": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_newer_failure_does_not_inherit_old_success_from_previous_generation",
+      "purpose": "Newer failure does not inherit old success from previous generation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_preflight_parser_preserves_observation_generation": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_preflight_parser_preserves_observation_generation",
+      "purpose": "Preflight parser preserves observation generation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_negative_observation_generation_is_rejected": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_negative_observation_generation_is_rejected",
+      "purpose": "Negative observation generation is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_release_hardening_pyright_installs_mcp_http_extra": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_release_hardening_pyright_installs_mcp_http_extra",
+      "purpose": "Release hardening pyright installs mcp http extra",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_runbook_and_thin_loader_make_executor_failure_generation_scoped": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_runbook_and_thin_loader_make_executor_failure_generation_scoped",
+      "purpose": "Runbook and thin loader make executor failure generation scoped",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
+    },
     "tests/test_chatgpt_host_executor_observation_validation.py::test_missing_pre_process_error_evidence_keeps_executor_state_unknown": {
       "path": "tests/test_chatgpt_host_executor_observation_validation.py",
       "name": "test_missing_pre_process_error_evidence_keeps_executor_state_unknown",
@@ -7409,14 +7630,14 @@
       "path": "tests/test_config_memory_root.py",
       "name": "test_config_routes_memory_paths_outside_versioned_runtime",
       "purpose": "Config routes memory paths outside versioned runtime",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -7444,7 +7665,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 42
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
@@ -12040,7 +12261,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 69
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_creates_fresh_host_parent_and_restores_no_legacy": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12064,7 +12285,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 88
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_moves_existing_legacy_memory_to_backup": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12088,7 +12309,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_host_memory_direct_sqlite.py::test_gateway_deduplicates_native_unified_and_transactional_same_file": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12112,7 +12333,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 137
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12141,7 +12362,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_rejects_manifest_path_escape": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12172,7 +12393,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 79
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_memory_writer_keeps_all_file_layers_in_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12202,7 +12423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 93
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_duplicate_scan_reads_canonical_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12232,7 +12453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 109
     },
     "tests/test_host_memory_root_regressions.py::test_supporting_memory_components_share_canonical_host_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12261,7 +12482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 126
     },
     "tests/test_host_memory_root_regressions.py::test_conversation_archive_uses_host_memory_sqlite_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12291,7 +12512,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 143
     },
     "tests/test_host_memory_root_regressions.py::test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12320,7 +12541,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 156
     },
     "tests/test_host_memory_root_regressions.py::test_polish_understanding_reads_private_lexicon_from_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12349,7 +12570,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 173
     },
     "tests/test_host_operations.py::test_host_operation_target_is_canonical_and_root_override_is_rejected": {
       "path": "tests/test_host_operations.py",
@@ -14841,7 +15062,7 @@
       "path": "tests/test_mcp_http_gateway.py",
       "name": "test_public_status_is_redacted_even_when_backend_status_is_private",
       "purpose": "Public status is redacted even when backend status is private",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -14849,7 +15070,7 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
@@ -14875,7 +15096,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 181
+      "line": 185
     },
     "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -14896,7 +15117,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 195
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -16189,7 +16410,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 69
     },
     "tests/test_memory_large_validation.py::test_validation_detects_foreign_key_corruption": {
       "path": "tests/test_memory_large_validation.py",
@@ -16213,7 +16434,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_memory_large_validation.py::test_validation_reports_incomplete_wal_sidecars": {
       "path": "tests/test_memory_large_validation.py",
@@ -16237,7 +16458,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 109
     },
     "tests/test_memory_large_validation.py::test_recursive_discovery_stays_under_trusted_memory_root_and_deduplicates": {
       "path": "tests/test_memory_large_validation.py",
@@ -16261,7 +16482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 124
     },
     "tests/test_memory_large_validation.py::test_report_output_is_written_under_runtime_root": {
       "path": "tests/test_memory_large_validation.py",
@@ -16286,7 +16507,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 144
     },
     "tests/test_memory_large_validation.py::test_canonical_sidecar_path_and_health_contract": {
       "path": "tests/test_memory_large_validation.py",
@@ -16310,7 +16531,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 157
     },
     "tests/test_memory_large_validation.py::test_health_validator_rejects_missing_requested_wake_state_fields": {
       "path": "tests/test_memory_large_validation.py",
@@ -16334,7 +16555,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 227
     },
     "tests/test_memory_large_validation.py::test_explicit_normalization_sidecar_override_is_preserved": {
       "path": "tests/test_memory_large_validation.py",
@@ -16358,7 +16579,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 243
+      "line": 246
     },
     "tests/test_memory_promotion_and_offline_rest.py::test_promotion_gate_forbids_automatic_l3": {
       "path": "tests/test_memory_promotion_and_offline_rest.py",

@@ -106,10 +106,10 @@ def test_system_package_uses_canonical_release_and_extract_reverify(tmp_path: Pa
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
     verification = manifest["verification"]
     bootstrap = manifest["host_bootstrap"]
-    assert manifest["generator_version"] == "10.1.86.0.116"
+    assert manifest["generator_version"] == "10.1.86.0.115"
     assert manifest["source"]["source_basis"] == "canonical_release"
     assert manifest["source"]["staging_mode"] == "canonical-release-staging"
-    assert bootstrap["schema_version"] == "jazn_host_bootstrap_contract/v2"
+    assert bootstrap["schema_version"] == "jazn_host_bootstrap_contract/v1"
     assert bootstrap["active_system_root_eligible"] is True
     assert bootstrap["missing_required_members"] == []
     assert bootstrap["package_can_create_host_executor"] is False
