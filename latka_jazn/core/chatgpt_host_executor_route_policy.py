@@ -21,6 +21,23 @@ class HostAggregateRouteDecision:
     resume: str | None = None
 
 
+def resolve_verified_remote_route() -> HostAggregateRouteDecision:
+    """Prefer an already verified remote runtime over local bootstrap surfaces.
+
+    ``remote_runtime_transport_available`` is only set after the managed tunnel
+    and the current host connector/app capability have both been verified. Once
+    that stronger route exists, ordinary ChatGPT turns must not be coupled back
+    to a local executor probe.
+    """
+
+    return HostAggregateRouteDecision(
+        HostEnvironmentState.REMOTE_CAPABLE,
+        HostExecutionRoute.REMOTE_RUNTIME,
+        HostRecoveryAction.USE_REMOTE_RUNTIME_TRANSPORT,
+        "verified_remote_runtime_route_preferred",
+    )
+
+
 def resolve_external_route(
     *,
     remote: bool,

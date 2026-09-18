@@ -42,18 +42,21 @@ def test_command_quoting_is_platform_specific_but_argv_preserving() -> None:
     assert quote_command(argv, platform="linux") == shlex.join(argv)
 
 
-def test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields() -> None:
+def test_managed_tunnel_readiness_never_claims_host_route_by_itself() -> None:
     ready = classify_tunnel_runtime_status(
         {"process_running": True, "healthy": True, "ready": True}
     )
-    assert ready["remote_runtime_transport_available"] is True
-    assert ready["execution_route"] == "remote_runtime"
-    assert ready["next_action"] == "use_remote_runtime_transport"
+    assert ready["tunnel_transport_ready"] is True
+    assert ready["remote_runtime_transport_available"] is False
+    assert ready["execution_route"] == "none"
+    assert ready["next_action"] == "verify_chatgpt_connector_capability"
+    assert ready["reason_code"] == "secure_mcp_tunnel_ready_connector_unverified"
 
     for missing in ("process_running", "healthy", "ready"):
         payload = {"process_running": True, "healthy": True, "ready": True}
         payload[missing] = False
         blocked = classify_tunnel_runtime_status(payload)
+        assert blocked["tunnel_transport_ready"] is False
         assert blocked["remote_runtime_transport_available"] is False
         assert blocked["execution_route"] == "none"
         assert blocked["reason_code"] == "secure_mcp_tunnel_not_fully_ready"
@@ -64,4 +67,5 @@ def test_unknown_tunnel_status_fails_closed() -> None:
     assert status["process_running"] is False
     assert status["healthy"] is False
     assert status["ready"] is False
+    assert status["tunnel_transport_ready"] is False
     assert status["remote_runtime_transport_available"] is False

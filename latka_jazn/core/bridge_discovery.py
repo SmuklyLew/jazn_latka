@@ -6,6 +6,7 @@ import json
 
 from latka_jazn.bridge_secure_gateway import SecureGatewayPolicy
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.host_operations import SUPPORTED_OPERATION_KINDS
 from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
@@ -83,6 +84,7 @@ def discover_runtime_bridges(
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
             "remote_transport": "openai_secure_mcp_tunnel_when_host_connector_available",
+            "remote_failover_policy": "managed_tunnel_ready_plus_explicit_host_connector_capability",
             "per_message_cli_required": False,
             "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
             "persistent_stdio_required": False,
@@ -123,10 +125,10 @@ def discover_runtime_bridges(
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage. "
-                "Jeżeli host ma jawnie skonfigurowany OpenAI Secure MCP Tunnel, ten sam runtime może być osiągany "
-                "zdalnie przez prywatny MCP bez tworzenia procesu przez bieżącą powierzchnię czatu. Żywotność pipe'a "
-                "ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; widoczna może być tylko "
-                "zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
+                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany OpenAI Secure MCP Tunnel oraz connector/app "
+                "capability, ten sam runtime może być osiągany zdalnie bez tworzenia procesu przez bieżącą powierzchnię "
+                "czatu. Żywotność pipe'a ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
+                "widoczna może być tylko zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
             ),
         },
         "openai_bridge": {
@@ -149,19 +151,70 @@ def discover_runtime_bridges(
         },
         "daemon": {
             "start": "python -X utf8 run.py start",
+            "bounded_start_submit": (
+                "python -X utf8 run.py host-op-submit --operation-id <preallocated-id> "
+                "--kind daemon-start --json"
+            ),
+            "bounded_start_status": (
+                "python -X utf8 run.py host-op-status --operation-id <same-id> --json"
+            ),
             "status": "python -X utf8 run.py status --json",
             "stop": "python -X utf8 run.py stop",
             "active_state_contract": "active_trusted / active_degraded / inactive",
+            "bounded_host_policy": "submit_fast_then_poll_same_operation_id",
+        },
+        "host_operations": {
+            "supported_kinds": sorted(SUPPORTED_OPERATION_KINDS),
+            "submit": (
+                "python -X utf8 run.py host-op-submit --operation-id <preallocated-id> "
+                "--kind <kind> -- [canonical-command-options]"
+            ),
+            "status": "python -X utf8 run.py host-op-status --operation-id <same-id> --json",
+            "operation_id_preallocated_before_process_spawn": True,
+            "idempotent_retry": "reuse_same_operation_id",
+            "ambiguous_transport_policy": "poll_same_operation_id_never_submit_new_id",
+            "worker_transport": "detached_local_process",
+            "long_running_work_owner": "detached_operation_worker_or_persistent_supervisor",
+            "truth_boundary": (
+                "operation accepted/running is not daemon readiness or Jaźń turn readiness. "
+                "The worker re-enters canonical run.py; it does not implement an alternate lifecycle."
+            ),
+        },
+        "runtime_supervisor": {
+            "run": "python -X utf8 run.py supervisor-run",
+            "status": "python -X utf8 run.py supervisor-status --json",
+            "plan": "python -X utf8 run.py supervisor-plan --json",
+            "bounded_start": (
+                "python -X utf8 run.py host-op-submit --operation-id <preallocated-id> "
+                "--kind supervisor-start --json"
+            ),
+            "steady_state_probe": "/live",
+            "full_status_and_integrity_paid_only_during_recovery": True,
+            "restart_backoff": "bounded_exponential_with_deterministic_jitter",
+            "windows_task_scheduler_contract": {
+                "StartWhenAvailable": True,
+                "MultipleInstancesPolicy": "IgnoreNew",
+                "ExecutionTimeLimit": "PT0S",
+                "RestartOnFailure": {"Count": 3, "Interval": "PT1M"},
+            },
+            "windows_service_truth_boundary": "requires_real_scm_service_host_not_plain_python_emulation",
         },
         "secure_gateway_scaffold": SecureGatewayPolicy().to_dict(),
         "secure_mcp": {
-            "status": "implemented_secure_tunnel_stdio_target",
+            "status": "implemented_secure_tunnel_managed_runtime_target",
             "server_command": secure_tunnel_plan["stdio_mcp_command"],
             "local_transport": "stdio",
             "remote_transport": "openai_secure_mcp_tunnel",
             "tunnel_client": tunnel_client,
             "tunnel_plan": secure_tunnel_plan,
+            "preferred_supervision": secure_tunnel_plan["preferred_supervision"],
+            "managed_connect_argv": secure_tunnel_plan["managed_connect_argv"],
+            "managed_status_argv": secure_tunnel_plan["managed_status_argv"],
+            "managed_stop_argv": secure_tunnel_plan["managed_stop_argv"],
             "managed_readiness_fields": ["process_running", "healthy", "ready"],
+            "managed_tunnel_readiness_is_host_route_readiness": False,
+            "host_connector_capability_required": True,
+            "remote_failover_classifier": "classify_remote_runtime_failover",
             "remote_runtime_route_evidence": "all_managed_readiness_fields_true_plus_host_connector_capability",
             "public_ingress_enabled": False,
             "package_contains_tunnel_target": True,
@@ -174,12 +227,14 @@ def discover_runtime_bridges(
             "turn_owner": "jazn_persistent_runtime",
             "truth_boundary": (
                 "Secure MCP Tunnel is an authenticated transport to the local runtime; it is not identity, memory, "
-                "turn authority or proof that a visible reply was accepted. The SYSTEM package contains the local "
-                "stdio target but does not bundle/authenticate OpenAI's external tunnel control plane."
+                "turn authority or proof that a visible reply was accepted. Managed tunnel readiness alone does not "
+                "prove that the current ChatGPT surface exposes the corresponding connector/app capability. The SYSTEM "
+                "package contains the local stdio target but does not bundle/authenticate OpenAI's external tunnel control plane."
             ),
         },
         "truth_boundary": (
             "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root. "
-            "Host-tool discovery i Secure MCP Tunnel są osobnymi kontraktami capability i nie dowodzą runtime readiness ani accepted visible turn."
+            "Durable host operations, local supervisor, host-tool discovery and Secure MCP Tunnel are separate capability contracts; "
+            "none alone proves runtime readiness or an accepted visible turn."
         ),
     }

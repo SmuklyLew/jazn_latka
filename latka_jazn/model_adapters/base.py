@@ -37,12 +37,15 @@ class ModelAdapterRequest:
     response_schema: dict[str, Any] | None = None
     tools: list[dict[str, Any]] = field(default_factory=list)
     tool_choice: str | dict[str, Any] | None = None
+    allowed_tool_names: list[str] = field(default_factory=list)
     parallel_tool_calls: bool = False
     previous_response_id: str | None = None
+    prompt_cache_key: str | None = None
     max_output_tokens: int | None = None
     truth_boundary: str = (
         "Request jest zbudowany przez runtime. Adapter nie jest źródłem tożsamości, "
-        "pamięci, czasu ani prawdy Jaźni. Model może poprosić o narzędzie, ale go nie wykonuje."
+        "pamięci, czasu ani prawdy Jaźni. Model może poprosić o narzędzie, ale go nie wykonuje. "
+        "Lista allowed_tool_names jest decyzją runtime i nie może być rozszerzona przez model."
     )
     schema_version: str = SCHEMA_VERSION
 

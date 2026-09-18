@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Deterministic closed-union reconstruction retains current-master host contracts.
-DISTRIBUTION_VERSION = "16.3.25.5.76"
-PACKAGE_VERSION = "16.3.25.5.76"
-PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-deterministic-batch"
+# Studio batch reconstruction and current-master host contracts converge here.
+DISTRIBUTION_VERSION = "16.3.25.5.80"
+PACKAGE_VERSION = "16.3.25.5.80"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-current-master-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
@@ -72,7 +72,7 @@ def release_version_marker(component: str, *, version: str = PACKAGE_VERSION_FUL
     name = _component_name(component)
     value = str(version or PACKAGE_VERSION_FULL).strip()
     if not value:
-        raise ValueError("release version marker requires a non-empty version")
+        raise ValueError("runtime version marker requires a non-empty version")
     return f"{name}/{value}"
 
 

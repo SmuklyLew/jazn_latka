@@ -183,14 +183,14 @@ def test_bridge_discovery_exposes_nonstreaming_daemon_bound_transport(tmp_path: 
 
 def test_chatgpt_runbook_and_loader_document_streaming_host_fallback() -> None:
     root = Path(__file__).resolve().parents[1]
-    runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
     loader = (root / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
+    runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
 
+    assert "StreamingExecNotEnabledContainerError" in loader
     assert "StreamingExecNotEnabledContainerError" in runbook
+    assert "--daemon-request-id" not in loader
     assert "--daemon-request-id" in runbook
-    assert "--daemon-request-id" in loader
-    assert "nie może spaść do niezależnej lokalnej tury" in loader
-
+    assert "nie może** przełączyć wiadomości do lokalnego `RuntimeSessionWorker`" in runbook
 
 def test_transport_convergence_remains_in_current_or_newer_release() -> None:
     assert tuple(int(part) for part in PACKAGE_VERSION.split(".")) >= (16, 3, 25, 5, 63)

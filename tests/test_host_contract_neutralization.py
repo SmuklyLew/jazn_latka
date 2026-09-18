@@ -33,6 +33,9 @@ def test_generate_then_finalize_exposes_neutral_preserve_contract_with_legacy_al
             "host_must_generate_visible_reply": True,
             "pending_request_persisted": True,
             "host_request_contract_hash": "0" * 64,
+            "turn_id": "turn-neutral-contract",
+            "trace_id": "trace-neutral-contract",
+            "user_text_sha256": "1" * 64,
             "host_generation_policy": {
                 "voice_continuity_policy": {
                     "active_runtime_first_person_voice_required": True,
@@ -85,5 +88,4 @@ def test_codex_runbook_checks_actual_custom_instruction_limit() -> None:
 
     assert "<= 5000" in text
     assert "<= 8000" not in text
-
 

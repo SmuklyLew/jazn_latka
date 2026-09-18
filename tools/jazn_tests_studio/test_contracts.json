@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.76",
-  "active_definition_count": 1578,
+  "system_version": "16.3.25.5.80",
+  "active_definition_count": 1669,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -423,7 +423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 300
+      "line": 306
     },
     "tests/test_active_memory_recall_e2e.py::test_active_transport_lost_between_turns_is_fail_closed": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -457,7 +457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 315
+      "line": 321
     },
     "tests/test_active_memory_recall_e2e.py::test_blocked_runtime_disclosure_keeps_phase_one_pending_for_finalization": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -492,7 +492,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 330
+      "line": 336
     },
     "tests/test_active_memory_recall_e2e.py::test_valid_grounded_recall_is_correlated_and_legally_visible": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -526,7 +526,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 378
     },
     "tests/test_active_memory_recall_e2e.py::test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -560,7 +560,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 475
+      "line": 481
     },
     "tests/test_active_runtime_subject_root.py::test_wrong_non_empty_capability_token_is_fail_closed_before_mutation": {
       "path": "tests/test_active_runtime_subject_root.py",
@@ -1832,6 +1832,64 @@
       "description_source": "source_identity",
       "line": 63
     },
+    "tests/test_bounded_host_race_regressions.py::test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns": {
+      "path": "tests/test_bounded_host_race_regressions.py",
+      "name": "test_submit_does_not_clobber_worker_state_if_worker_advances_before_popen_returns",
+      "purpose": "Submit does not clobber worker state if worker advances before popen returns",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_bounded_host_race_regressions.py::test_duplicate_supervisor_start_does_not_overwrite_live_owner_state": {
+      "path": "tests/test_bounded_host_race_regressions.py",
+      "name": "test_duplicate_supervisor_start_does_not_overwrite_live_owner_state",
+      "purpose": "Duplicate supervisor start does not overwrite live owner state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_bridge_discovery_remote_failover_contract.py::test_bridge_discovery_publishes_managed_remote_failover_contract": {
+      "path": "tests/test_bridge_discovery_remote_failover_contract.py",
+      "name": "test_bridge_discovery_publishes_managed_remote_failover_contract",
+      "purpose": "Bridge discovery publishes managed remote failover contract",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
     "tests/test_capability_status_boundaries.py::test_model_adapter_status_rejects_a_non_object_nested_contract": {
       "path": "tests/test_capability_status_boundaries.py",
       "name": "test_model_adapter_status_rejects_a_non_object_nested_contract",
@@ -2593,13 +2651,13 @@
       "path": "tests/test_chatgpt_bootstrap_package_contract.py",
       "name": "test_chatgpt_project_loader_is_thin_and_exposes_no_operator_recovery",
       "purpose": "Chatgpt project loader is thin and exposes no operator recovery",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 13,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -2701,11 +2759,11 @@
       "path": "tests/test_chatgpt_execution_route_contract.py",
       "name": "test_aggregate_prefers_verified_local_executor_over_external_routes",
       "purpose": "Aggregate prefers verified local executor over external routes",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -2733,7 +2791,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 77
     },
     "tests/test_chatgpt_execution_route_contract.py::test_handoff_preflight_is_explicit_and_fail_closed": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
@@ -2751,7 +2809,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 99
     },
     "tests/test_chatgpt_handoff_cross_surface.py::test_explicit_decline_suppresses_other_unaccepted_handoff_offer": {
       "path": "tests/test_chatgpt_handoff_cross_surface.py",
@@ -3653,6 +3711,227 @@
       "description_source": "source_identity",
       "line": 355
     },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset",
+      "purpose": "Canonical operation id is utc safe and never contains plus offset",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy",
+      "purpose": "Canonical operation id rejects naive timestamp and bad entropy",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_cli_exposes_preallocation_without_side_effecting_submit": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_cli_exposes_preallocation_without_side_effecting_submit",
+      "purpose": "Cli exposes preallocation without side effecting submit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_executor_generation_supersedes_stale_pre_spawn_failure": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_newer_executor_generation_supersedes_stale_pre_spawn_failure",
+      "purpose": "Newer executor generation supersedes stale pre spawn failure",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_failure_does_not_inherit_old_success_from_previous_generation": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_newer_failure_does_not_inherit_old_success_from_previous_generation",
+      "purpose": "Newer failure does not inherit old success from previous generation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_preflight_parser_preserves_observation_generation": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_preflight_parser_preserves_observation_generation",
+      "purpose": "Preflight parser preserves observation generation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_negative_observation_generation_is_rejected": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_negative_observation_generation_is_rejected",
+      "purpose": "Negative observation generation is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_release_hardening_pyright_installs_mcp_http_extra": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_release_hardening_pyright_installs_mcp_http_extra",
+      "purpose": "Release hardening pyright installs mcp http extra",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_runbook_and_thin_loader_make_executor_failure_generation_scoped": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_runbook_and_thin_loader_make_executor_failure_generation_scoped",
+      "purpose": "Runbook and thin loader make executor failure generation scoped",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
+    },
     "tests/test_chatgpt_host_executor_observation_validation.py::test_missing_pre_process_error_evidence_keeps_executor_state_unknown": {
       "path": "tests/test_chatgpt_host_executor_observation_validation.py",
       "name": "test_missing_pre_process_error_evidence_keeps_executor_state_unknown",
@@ -4080,13 +4359,13 @@
       "path": "tests/test_chatgpt_loader_pylance_static_gate.py",
       "name": "test_project_loader_requires_runtime_binding_before_visible_or_tool_action",
       "purpose": "Project loader requires runtime binding before visible or tool action",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -4112,7 +4391,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 95
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_daemon_presentation_and_private_mcp_complete_two_phase_reply": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4138,7 +4417,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 128
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_forbidden_host_voice_gets_one_retry_then_fails_closed": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4165,7 +4444,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 165
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4192,7 +4471,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 197
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_retry_preserves_memory_context_and_web_run_provenance": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -4219,7 +4498,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 231
+      "line": 237
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -4578,13 +4857,13 @@
       "path": "tests/test_chatgpt_nonstreaming_host_transport.py",
       "name": "test_chatgpt_runbook_and_loader_document_streaming_host_fallback",
       "purpose": "Chatgpt runbook and loader document streaming host fallback",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -5112,11 +5391,11 @@
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
       "name": "test_chatgpt_loader_supports_transport_truth_and_single_zip_recovery",
       "purpose": "Chatgpt loader supports transport truth and single zip recovery",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -5138,7 +5417,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 160
+      "line": 163
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -5272,6 +5551,207 @@
       "description_source": "source_identity",
       "line": 161
     },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_daemon_submit_transport_timeout_preserves_preallocated_request_id": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_daemon_submit_transport_timeout_preserves_preallocated_request_id",
+      "purpose": "Daemon submit transport timeout preserves preallocated request id",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_transport_timeout_becomes_poll_same_request",
+      "purpose": "Secure mcp gateway transport timeout becomes poll same request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_secure_mcp_gateway_pending_ack_is_poll_not_new_turn",
+      "purpose": "Secure mcp gateway pending ack is poll not new turn",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_memory_recall_pending_transport_is_not_misclassified_as_missing_recall",
+      "purpose": "Memory recall pending transport is not misclassified as missing recall",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_resume_transport_timeout_keeps_existing_daemon_request": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_resume_transport_timeout_keeps_existing_daemon_request",
+      "purpose": "Resume transport timeout keeps existing daemon request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_jsonrpc_request_identity_is_stable_and_subject_scoped",
+      "purpose": "Mcp jsonrpc request identity is stable and subject scoped",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 170
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_mcp_dispatch_propagates_request_id_to_gateway": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_mcp_dispatch_propagates_request_id_to_gateway",
+      "purpose": "Mcp dispatch propagates request id to gateway",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 197
+    },
+    "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume": {
+      "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
+      "name": "test_chatgpt_loader_contract_names_transport_timeout_and_idempotent_resume",
+      "purpose": "Chatgpt loader contract names transport timeout and idempotent resume",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 250
+    },
     "tests/test_chatgpt_turn_ingress_gate_wiring.py::test_existing_host_packet_builder_is_now_a_current_turn_gate": {
       "path": "tests/test_chatgpt_turn_ingress_gate_wiring.py",
       "name": "test_existing_host_packet_builder_is_now_a_current_turn_gate",
@@ -5373,7 +5853,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 133
+      "line": 139
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
@@ -7150,14 +7630,14 @@
       "path": "tests/test_config_memory_root.py",
       "name": "test_config_routes_memory_paths_outside_versioned_runtime",
       "purpose": "Config routes memory paths outside versioned runtime",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -7185,7 +7665,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 42
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
@@ -7668,7 +8148,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 152
+      "line": 151
     },
     "tests/test_conversation_state_restart_continuity.py::test_conversation_state_survives_store_recreation": {
       "path": "tests/test_conversation_state_restart_continuity.py",
@@ -8827,13 +9307,13 @@
       "path": "tests/test_diagnostics_memory_status.py",
       "name": "test_transactional_memory_startup_initializer_creates_valid_store",
       "purpose": "Transactional memory startup initializer creates valid store",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands",
@@ -8865,7 +9345,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 57
     },
     "tests/test_diagnostics_rest_nlp_readiness.py::test_status_binds_rest_ready_and_executes_fast_nlp_probe": {
       "path": "tests/test_diagnostics_rest_nlp_readiness.py",
@@ -10693,7 +11173,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 55
     },
     "tests/test_host_contract_neutralization.py::test_chatgpt_runbook_uses_neutral_canonical_host_fields": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -10713,7 +11193,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 66
     },
     "tests/test_host_contract_neutralization.py::test_ollama_runbook_is_integration_contract_not_model_prompt": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -10733,7 +11213,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 76
     },
     "tests/test_host_contract_neutralization.py::test_codex_runbook_checks_actual_custom_instruction_limit": {
       "path": "tests/test_host_contract_neutralization.py",
@@ -10753,7 +11233,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_host_finalization_evidence_binding.py::test_meta_examples_and_code_do_not_become_epistemic_self_claims": {
       "path": "tests/test_host_finalization_evidence_binding.py",
@@ -11448,11 +11928,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 90
     },
     "tests/test_host_finalization_recovery.py::test_resume_tool_is_private_read_only_and_has_no_message_input": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11470,11 +11951,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 97
     },
     "tests/test_host_finalization_recovery.py::test_resume_reuses_same_pending_contract_and_same_hmac_token": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11492,11 +11974,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 110
     },
     "tests/test_host_finalization_recovery.py::test_resume_fails_closed_after_pending_record_is_claimed": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11514,11 +11997,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 140
     },
     "tests/test_host_finalization_recovery.py::test_lost_finalization_response_recovers_display_exact_without_replay": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11536,11 +12020,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 166
+      "line": 167
     },
     "tests/test_host_finalization_recovery.py::test_gateway_result_polls_chat_result_only": {
       "path": "tests/test_host_finalization_recovery.py",
@@ -11558,11 +12043,12 @@
         "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.mcp.server",
-        "latka_jazn.mcp.tools"
+        "latka_jazn.mcp.tools",
+        "latka_jazn.runtime.operation_registry"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 225
     },
     "tests/test_host_finalized_conversation_state.py::test_host_phase_two_commits_full_turn_idempotently": {
       "path": "tests/test_host_finalized_conversation_state.py",
@@ -11775,7 +12261,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 69
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_creates_fresh_host_parent_and_restores_no_legacy": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -11799,7 +12285,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 88
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_moves_existing_legacy_memory_to_backup": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -11823,7 +12309,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_host_memory_direct_sqlite.py::test_gateway_deduplicates_native_unified_and_transactional_same_file": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -11847,7 +12333,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 137
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -11876,7 +12362,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_rejects_manifest_path_escape": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -11907,7 +12393,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 79
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_memory_writer_keeps_all_file_layers_in_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -11937,7 +12423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 93
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_duplicate_scan_reads_canonical_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -11967,7 +12453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 109
     },
     "tests/test_host_memory_root_regressions.py::test_supporting_memory_components_share_canonical_host_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -11996,7 +12482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 126
     },
     "tests/test_host_memory_root_regressions.py::test_conversation_archive_uses_host_memory_sqlite_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12026,7 +12512,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 143
     },
     "tests/test_host_memory_root_regressions.py::test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12055,7 +12541,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 156
     },
     "tests/test_host_memory_root_regressions.py::test_polish_understanding_reads_private_lexicon_from_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12084,7 +12570,138 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 173
+    },
+    "tests/test_host_operations.py::test_host_operation_target_is_canonical_and_root_override_is_rejected": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_host_operation_target_is_canonical_and_root_override_is_rejected",
+      "purpose": "Host operation target is canonical and root override is rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_host_operations.py::test_runtime_bootstrap_operation_requires_explicit_source_and_destination": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_runtime_bootstrap_operation_requires_explicit_source_and_destination",
+      "purpose": "Runtime bootstrap operation requires explicit source and destination",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_host_operations.py::test_submit_is_idempotent_and_conflicting_reuse_fails_closed": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_submit_is_idempotent_and_conflicting_reuse_fails_closed",
+      "purpose": "Submit is idempotent and conflicting reuse fails closed",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_host_operations.py::test_status_is_pollable_without_waiting_for_target_completion": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_status_is_pollable_without_waiting_for_target_completion",
+      "purpose": "Status is pollable without waiting for target completion",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
+    "tests/test_host_operations.py::test_posix_detachment_uses_new_session": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_posix_detachment_uses_new_session",
+      "purpose": "Posix detachment uses new session",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_host_operations.py::test_cli_exposes_bounded_operation_and_supervisor_commands": {
+      "path": "tests/test_host_operations.py",
+      "name": "test_cli_exposes_bounded_operation_and_supervisor_commands",
+      "purpose": "Cli exposes bounded operation and supervisor commands",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
     },
     "tests/test_host_package_freeze.py::test_resolved_package_part_is_frozen_independently_from_host_upload": {
       "path": "tests/test_host_package_freeze.py",
@@ -12368,7 +12985,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 350
+      "line": 356
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",
@@ -14595,6 +15212,303 @@
       "description_source": "source_identity",
       "line": 58
     },
+    "tests/test_mcp_http_gateway.py::test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev",
+      "purpose": "Public gateway fails closed without oauth outside explicit loopback dev",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_mcp_http_gateway.py::test_public_gateway_never_allows_non_loopback_daemon_target": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_public_gateway_never_allows_non_loopback_daemon_target",
+      "purpose": "Public gateway never allows non loopback daemon target",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_mcp_http_gateway.py::test_official_sdk_exposes_only_minimal_public_tool_surface": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_official_sdk_exposes_only_minimal_public_tool_surface",
+      "purpose": "Official sdk exposes only minimal public tool surface",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
+    },
+    "tests/test_mcp_http_gateway.py::test_generate_forwards_stable_request_id_through_private_backend_token": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_generate_forwards_stable_request_id_through_private_backend_token",
+      "purpose": "Generate forwards stable request id through private backend token",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
+    },
+    "tests/test_mcp_http_gateway.py::test_public_status_is_redacted_even_when_backend_status_is_private": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_public_status_is_redacted_even_when_backend_status_is_private",
+      "purpose": "Public status is redacted even when backend status is private",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 167
+    },
+    "tests/test_mcp_http_gateway.py::test_http_app_contains_mcp_liveness_and_readiness_routes": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_http_app_contains_mcp_liveness_and_readiness_routes",
+      "purpose": "Http app contains mcp liveness and readiness routes",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 185
+    },
+    "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_generate_rate_limit_is_operation_specific_and_fail_closed",
+      "purpose": "Generate rate limit is operation specific and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 195
+    },
+    "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension",
+      "purpose": "Server discover exposes modern and legacy versions without tasks extension",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_tools_list_is_stamped_cacheable_and_deterministic": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_tools_list_is_stamped_cacheable_and_deterministic",
+      "purpose": "Modern tools list is stamped cacheable and deterministic",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_request_missing_required_meta_fails_invalid_params": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_request_missing_required_meta_fails_invalid_params",
+      "purpose": "Modern request missing required meta fails invalid params",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_mcp_modern_protocol.py::test_unsupported_modern_protocol_reports_requested_and_supported_versions": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_unsupported_modern_protocol_reports_requested_and_supported_versions",
+      "purpose": "Unsupported modern protocol reports requested and supported versions",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_mcp_modern_protocol.py::test_initialize_never_negotiates_the_handshake_free_modern_revision": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_initialize_never_negotiates_the_handshake_free_modern_revision",
+      "purpose": "Initialize never negotiates the handshake free modern revision",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation",
+      "purpose": "Modern tasks methods are not claimed without current extension implementation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_requests_do_not_mutate_legacy_connection_capabilities": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_requests_do_not_mutate_legacy_connection_capabilities",
+      "purpose": "Modern requests do not mutate legacy connection capabilities",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_dispatch_strips_historical_task_extension_before_legacy_tool_execution": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_dispatch_strips_historical_task_extension_before_legacy_tool_execution",
+      "purpose": "Modern dispatch strips historical task extension before legacy tool execution",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
+    },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",
       "name": "test_memory_attach_rejects_verified_preflight_without_runtime_version",
@@ -15902,7 +16816,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 69
     },
     "tests/test_memory_large_validation.py::test_validation_detects_foreign_key_corruption": {
       "path": "tests/test_memory_large_validation.py",
@@ -15926,7 +16840,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_memory_large_validation.py::test_validation_reports_incomplete_wal_sidecars": {
       "path": "tests/test_memory_large_validation.py",
@@ -15950,7 +16864,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 109
     },
     "tests/test_memory_large_validation.py::test_recursive_discovery_stays_under_trusted_memory_root_and_deduplicates": {
       "path": "tests/test_memory_large_validation.py",
@@ -15974,7 +16888,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 124
     },
     "tests/test_memory_large_validation.py::test_report_output_is_written_under_runtime_root": {
       "path": "tests/test_memory_large_validation.py",
@@ -15999,7 +16913,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 144
     },
     "tests/test_memory_large_validation.py::test_canonical_sidecar_path_and_health_contract": {
       "path": "tests/test_memory_large_validation.py",
@@ -16023,7 +16937,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 157
     },
     "tests/test_memory_large_validation.py::test_health_validator_rejects_missing_requested_wake_state_fields": {
       "path": "tests/test_memory_large_validation.py",
@@ -16047,7 +16961,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 227
     },
     "tests/test_memory_large_validation.py::test_explicit_normalization_sidecar_override_is_preserved": {
       "path": "tests/test_memory_large_validation.py",
@@ -16071,7 +16985,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 243
+      "line": 246
     },
     "tests/test_memory_manifest_inventory_order.py::test_checkpoint_preserves_non_alphabetical_inventory_order": {
       "path": "tests/test_memory_manifest_inventory_order.py",
@@ -21490,6 +22404,170 @@
       "description_source": "source_identity",
       "line": 12
     },
+    "tests/test_model_request_policy.py::test_prompt_cache_key_is_derived_only_from_immutable_canon_hash": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_prompt_cache_key_is_derived_only_from_immutable_canon_hash",
+      "purpose": "Prompt cache key is derived only from immutable canon hash",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_model_request_policy.py::test_responses_payload_keeps_stable_canon_before_dynamic_turn_and_user_text_last": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_responses_payload_keeps_stable_canon_before_dynamic_turn_and_user_text_last",
+      "purpose": "Responses payload keeps stable canon before dynamic turn and user text last",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_model_request_policy.py::test_prompt_cache_key_rejects_unbounded_or_user_shaped_value": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_prompt_cache_key_rejects_unbounded_or_user_shaped_value",
+      "purpose": "Prompt cache key rejects unbounded or user shaped value",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_model_request_policy.py::test_allowed_tools_restricts_declared_tool_universe_without_removing_definitions": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_allowed_tools_restricts_declared_tool_universe_without_removing_definitions",
+      "purpose": "Allowed tools restricts declared tool universe without removing definitions",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_model_request_policy.py::test_allowed_tools_can_require_one_of_runtime_authorized_subset": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_allowed_tools_can_require_one_of_runtime_authorized_subset",
+      "purpose": "Allowed tools can require one of runtime authorized subset",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_model_request_policy.py::test_unknown_runtime_allowed_tool_fails_closed": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_unknown_runtime_allowed_tool_fails_closed",
+      "purpose": "Unknown runtime allowed tool fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_model_request_policy.py::test_allowed_tools_cannot_be_combined_with_independent_explicit_choice": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_allowed_tools_cannot_be_combined_with_independent_explicit_choice",
+      "purpose": "Allowed tools cannot be combined with independent explicit choice",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_model_request_policy.py::test_allowed_tools_without_declared_tools_fails_closed": {
+      "path": "tests/test_model_request_policy.py",
+      "name": "test_allowed_tools_without_declared_tools_fails_closed",
+      "purpose": "Allowed tools without declared tools fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_turn_contract",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
+    },
     "tests/test_nlp_capability_contract.py::test_compound_question_preserves_all_components": {
       "path": "tests/test_nlp_capability_contract.py",
       "name": "test_compound_question_preserves_all_components",
@@ -22354,6 +23432,245 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_system_only_runtime_uses_core_state_without_materializing_private_memory": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_system_only_runtime_uses_core_state_without_materializing_private_memory",
+      "purpose": "System only runtime uses core state without materializing private memory",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_transactional_memory_is_skipped_when_memory_is_optional_and_absent": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_transactional_memory_is_skipped_when_memory_is_optional_and_absent",
+      "purpose": "Transactional memory is skipped when memory is optional and absent",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_required_memory_mode_is_explicit_fail_closed_policy": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_required_memory_mode_is_explicit_fail_closed_policy",
+      "purpose": "Required memory mode is explicit fail closed policy",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_memory_mode_off_ignores_existing_memory_for_writes_and_recall": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_memory_mode_off_ignores_existing_memory_for_writes_and_recall",
+      "purpose": "Memory mode off ignores existing memory for writes and recall",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_runtime_writers_do_not_make_core_state_look_like_attached_memory": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_runtime_writers_do_not_make_core_state_look_like_attached_memory",
+      "purpose": "Runtime writers do not make core state look like attached memory",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 163
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_existing_external_memory_switches_runtime_storage_back_to_memory_root": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_existing_external_memory_switches_runtime_storage_back_to_memory_root",
+      "purpose": "Existing external memory switches runtime storage back to memory root",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 188
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_generator_declares_system_memory_as_optional_and_attachable": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_generator_declares_system_memory_as_optional_and_attachable",
+      "purpose": "Generator declares system memory as optional and attachable",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 208
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_generator_declares_memory_package_data_only": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_generator_declares_memory_package_data_only",
+      "purpose": "Generator declares memory package data only",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 222
+    },
+    "tests/test_optional_memory_attach_convergence.py::test_root_memory_attachment_contract_matches_runtime_policy": {
+      "path": "tests/test_optional_memory_attach_convergence.py",
+      "name": "test_root_memory_attachment_contract_matches_runtime_policy",
+      "purpose": "Root memory attachment contract matches runtime policy",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.layered_memory",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.runtime_persistence",
+        "latka_jazn.memory.runtime_write_access_contract",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 230
     },
     "tests/test_pack_generator_archive_io.py::test_parser_exposes_only_zip_and_split_transport_scope": {
       "path": "tests/test_pack_generator_archive_io.py",
@@ -24236,6 +25553,269 @@
       "description_source": "source_identity",
       "line": 28
     },
+    "tests/test_professional_turn_runtime.py::test_remote_runtime_is_preferred_only_when_fully_verified": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_remote_runtime_is_preferred_only_when_fully_verified",
+      "purpose": "Remote runtime is preferred only when fully verified",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_professional_turn_runtime.py::test_ordinary_chat_does_not_assume_or_probe_local_executor": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_ordinary_chat_does_not_assume_or_probe_local_executor",
+      "purpose": "Ordinary chat does not assume or probe local executor",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_professional_turn_runtime.py::test_local_executor_breaker_blocks_route_without_changing_capability_truth": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_local_executor_breaker_blocks_route_without_changing_capability_truth",
+      "purpose": "Local executor breaker blocks route without changing capability truth",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_professional_turn_runtime.py::test_transport_timeout_pre_spawn_does_not_invent_root_cause": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_transport_timeout_pre_spawn_does_not_invent_root_cause",
+      "purpose": "Transport timeout pre spawn does not invent root cause",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
+    },
+    "tests/test_professional_turn_runtime.py::test_explicit_http_auth_and_rate_limit_failures_are_stronger_observations": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_explicit_http_auth_and_rate_limit_failures_are_stronger_observations",
+      "purpose": "Explicit http auth and rate limit failures are stronger observations",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_professional_turn_runtime.py::test_route_falls_back_to_handoff_then_fail_closed": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_route_falls_back_to_handoff_then_fail_closed",
+      "purpose": "Route falls back to handoff then fail closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
+    },
+    "tests/test_professional_turn_runtime.py::test_turn_identity_is_stable_and_w3c_compatible": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_turn_identity_is_stable_and_w3c_compatible",
+      "purpose": "Turn identity is stable and w3c compatible",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
+    },
+    "tests/test_professional_turn_runtime.py::test_phase_transition_table_rejects_terminal_reentry": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_phase_transition_table_rejects_terminal_reentry",
+      "purpose": "Phase transition table rejects terminal reentry",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
+    },
+    "tests/test_professional_turn_runtime.py::test_poll_runtime_requires_same_request_id_and_no_replay_guard": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_poll_runtime_requires_same_request_id_and_no_replay_guard",
+      "purpose": "Poll runtime requires same request id and no replay guard",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 168
+    },
+    "tests/test_professional_turn_runtime.py::test_generate_then_finalize_requires_bound_contract": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_generate_then_finalize_requires_bound_contract",
+      "purpose": "Generate then finalize requires bound contract",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 183
+    },
+    "tests/test_professional_turn_runtime.py::test_display_exact_is_the_only_visible_success_action": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_display_exact_is_the_only_visible_success_action",
+      "purpose": "Display exact is the only visible success action",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 209
+    },
+    "tests/test_professional_turn_runtime.py::test_mcp_adapter_converts_request_mismatch_to_host_diagnostic": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_mcp_adapter_converts_request_mismatch_to_host_diagnostic",
+      "purpose": "Mcp adapter converts request mismatch to host diagnostic",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 233
+    },
+    "tests/test_professional_turn_runtime.py::test_mcp_adapter_attaches_retry_and_trace_metadata": {
+      "path": "tests/test_professional_turn_runtime.py",
+      "name": "test_mcp_adapter_attaches_retry_and_trace_metadata",
+      "purpose": "Mcp adapter attaches retry and trace metadata",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.turn_runtime_adapter",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 256
+    },
     "tests/test_provenance_retrieval_ci_closure.py::test_archive_sha_is_cryptographically_bound_to_extracted_import": {
       "path": "tests/test_provenance_retrieval_ci_closure.py",
       "name": "test_archive_sha_is_cryptographically_bound_to_extracted_import",
@@ -24910,6 +26490,126 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 147
+    },
+    "tests/test_readiness_recovery_convergence.py::test_system_only_status_is_core_ready_without_transactional_memory": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_system_only_status_is_core_ready_without_transactional_memory",
+      "purpose": "System only status is core ready without transactional memory",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_readiness_recovery_convergence.py::test_required_memory_mode_blocks_core_without_starting_fake_readiness": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_required_memory_mode_blocks_core_without_starting_fake_readiness",
+      "purpose": "Required memory mode blocks core without starting fake readiness",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_readiness_recovery_convergence.py::test_optional_memory_attach_failure_degrades_but_starts_verified_system": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_optional_memory_attach_failure_degrades_but_starts_verified_system",
+      "purpose": "Optional memory attach failure degrades but starts verified system",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_readiness_recovery_convergence.py::test_required_memory_missing_stays_fail_closed_before_daemon_start": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_required_memory_missing_stays_fail_closed_before_daemon_start",
+      "purpose": "Required memory missing stays fail closed before daemon start",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 172
+    },
+    "tests/test_readiness_recovery_convergence.py::test_package_import_paths_remain_importable": {
+      "path": "tests/test_readiness_recovery_convergence.py",
+      "name": "test_package_import_paths_remain_importable",
+      "purpose": "Package import paths remain importable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.bootstrap.contract_loader",
+        "latka_jazn.bootstrap.recovery_convergence",
+        "latka_jazn.cli_commands",
+        "latka_jazn.cli_commands.audit",
+        "latka_jazn.cli_commands.diagnostics_convergence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 201
     },
     "tests/test_reasoning_generation_pipeline.py::test_reasoning_plan_requires_identity_and_turn_authority": {
       "path": "tests/test_reasoning_generation_pipeline.py",
@@ -27517,14 +29217,14 @@
       "path": "tests/test_runtime_memory_install.py",
       "name": "test_install_is_idempotent_and_blocks_only_legacy_write",
       "purpose": "Install is idempotent and blocks only legacy write",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.memory_tier_store",
@@ -27534,7 +29234,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 57
     },
     "tests/test_runtime_memory_install.py::test_bound_session_context_is_used_until_reset": {
       "path": "tests/test_runtime_memory_install.py",
@@ -27557,7 +29257,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 72
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_project_instructions_are_thin_loader_to_agents_router": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27606,7 +29306,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 31
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_runbook_routes_every_current_message_through_runtime_without_host_reclassification": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27631,7 +29331,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 37
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_runbook_uses_current_execution_environment_for_local_bootstrap": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27655,7 +29355,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 45
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_runtime_owns_routing_identity_voice_memory_and_finalization": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27680,7 +29380,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 53
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_presence_identity_and_health_check_remain_separate_runtime_intents": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27704,7 +29404,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 70
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_identity_continuity_handler_uses_runtime_owned_contract": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27728,7 +29428,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 81
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_direct_voice_handler_uses_runtime_owned_contract": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27752,7 +29452,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 92
     },
     "tests/test_runtime_owned_agent_boundaries.py::test_chatgpt_bridge_exports_runtime_owned_host_generation_policy": {
       "path": "tests/test_runtime_owned_agent_boundaries.py",
@@ -27777,7 +29477,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 102
     },
     "tests/test_runtime_package_loader_contract.py::test_current_package_sidecar_is_discovered_and_independent_volumes_extract": {
       "path": "tests/test_runtime_package_loader_contract.py",
@@ -31010,7 +32710,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 341
+      "line": 342
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31038,7 +32738,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 360
+      "line": 362
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31068,7 +32768,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 375
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31095,7 +32795,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 378
+      "line": 381
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31122,7 +32822,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 393
+      "line": 396
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31149,7 +32849,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 404
+      "line": 407
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31176,7 +32876,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 418
+      "line": 421
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31203,7 +32903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 445
+      "line": 448
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -31230,7 +32930,65 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 459
+      "line": 462
+    },
+    "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
+      "path": "tests/test_runtime_supervisor.py",
+      "name": "test_supervisor_backoff_is_bounded_and_increases_before_cap",
+      "purpose": "Supervisor backoff is bounded and increases before cap",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_runtime_supervisor.py::test_windows_supervisor_plan_matches_task_scheduler_recovery_contract": {
+      "path": "tests/test_runtime_supervisor.py",
+      "name": "test_windows_supervisor_plan_matches_task_scheduler_recovery_contract",
+      "purpose": "Windows supervisor plan matches task scheduler recovery contract",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_runtime_supervisor.py::test_supervisor_status_fails_closed_without_live_pid": {
+      "path": "tests/test_runtime_supervisor.py",
+      "name": "test_supervisor_status_fails_closed_without_live_pid",
+      "purpose": "Supervisor status fails closed without live pid",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_supervisor"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
     },
     "tests/test_runtime_turn_liveness.py::test_memory_experience_policy_allows_grounded_memory_content": {
       "path": "tests/test_runtime_turn_liveness.py",
@@ -31558,6 +33316,88 @@
       "description_source": "source_identity",
       "line": 137
     },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_managed_runtime_is_preferred_long_lived_supervision": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_managed_runtime_is_preferred_long_lived_supervision",
+      "purpose": "Managed runtime is preferred long lived supervision",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability",
+      "purpose": "Remote failover requires tunnel and explicit chatgpt connector capability",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready",
+      "purpose": "Remote failover fails closed when managed tunnel is not ready",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_runtime_alias_must_be_stable_and_whitespace_free": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_runtime_alias_must_be_stable_and_whitespace_free",
+      "purpose": "Runtime alias must be stable and whitespace free",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
     "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_reuses_verified_active_subject_root": {
       "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
       "name": "test_ensure_tunnel_runtime_reuses_verified_active_subject_root",
@@ -31684,19 +33524,19 @@
       "description_source": "source_identity",
       "line": 38
     },
-    "tests/test_secure_mcp_tunnel_contract.py::test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields": {
+    "tests/test_secure_mcp_tunnel_contract.py::test_managed_tunnel_readiness_never_claims_host_route_by_itself": {
       "path": "tests/test_secure_mcp_tunnel_contract.py",
-      "name": "test_remote_runtime_route_requires_all_managed_tunnel_readiness_fields",
-      "purpose": "Remote runtime route requires all managed tunnel readiness fields",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "name": "test_managed_tunnel_readiness_never_claims_host_route_by_itself",
+      "purpose": "Managed tunnel readiness never claims host route by itself",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
       "tags": [
+        "host",
         "mcp",
-        "repository",
-        "runtime"
+        "repository"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
@@ -31709,21 +33549,21 @@
       "path": "tests/test_secure_mcp_tunnel_contract.py",
       "name": "test_unknown_tunnel_status_fails_closed",
       "purpose": "Unknown tunnel status fails closed",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 65
     },
     "tests/test_semantic_routing_completion.py::test_semantic_routing_completion_release_contract_tracks_current_version": {
       "path": "tests/test_semantic_routing_completion.py",
@@ -31982,11 +33822,11 @@
       "path": "tests/test_shard_manifest_fail_closed.py",
       "name": "test_missing_manifest_keeps_single_database_compatibility",
       "purpose": "Missing manifest keeps single database compatibility",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -32014,7 +33854,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 46
     },
     "tests/test_shard_manifest_fail_closed.py::test_path_escape_is_rejected_for_read_and_write": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32034,7 +33874,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 56
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_active_shard_and_duplicate_ids_are_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32054,7 +33894,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 67
     },
     "tests/test_shard_manifest_fail_closed.py::test_role_mismatch_is_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32074,7 +33914,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 82
     },
     "tests/test_shard_manifest_fail_closed.py::test_manager_creates_valid_manifest_only_when_missing": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -32092,7 +33932,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 93
     },
     "tests/test_sidecar_migration_contract.py::test_legacy_mixed_audit_sidecar_is_copied_without_mutating_source": {
       "path": "tests/test_sidecar_migration_contract.py",
@@ -33435,6 +35275,182 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 73
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_retry_budget_is_aggregate_and_recovers_after_window",
+      "purpose": "Retry budget is aggregate and recovers after window",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_circuit_breaker_opens_half_opens_and_recovers_durably": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_circuit_breaker_opens_half_opens_and_recovers_durably",
+      "purpose": "Circuit breaker opens half opens and recovers durably",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "CircuitOpenError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_transport_supervisor_never_retries_ambiguous_side_effect": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_transport_supervisor_never_retries_ambiguous_side_effect",
+      "purpose": "Transport supervisor never retries ambiguous side effect",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_transport_supervisor_retries_safe_read_once_then_succeeds": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_transport_supervisor_retries_safe_read_once_then_succeeds",
+      "purpose": "Transport supervisor retries safe read once then succeeds",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_operation_registry_survives_restart_without_storing_payload": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_operation_registry_survives_restart_without_storing_payload",
+      "purpose": "Operation registry survives restart without storing payload",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "OperationConflictError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_gateway_timeout_records_unknown_outcome_and_second_call_only_polls": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_gateway_timeout_records_unknown_outcome_and_second_call_only_polls",
+      "purpose": "Gateway timeout records unknown outcome and second call only polls",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 163
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_mcp_task_handle_is_durable_and_poll_resumes_same_daemon_request": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_mcp_task_handle_is_durable_and_poll_resumes_same_daemon_request",
+      "purpose": "Mcp task handle is durable and poll resumes same daemon request",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 217
+    },
+    "tests/test_transport_resilience_fault_injection.py::test_capability_matrix_keeps_system_only_dialogue_ready": {
+      "path": "tests/test_transport_resilience_fault_injection.py",
+      "name": "test_capability_matrix_keeps_system_only_dialogue_ready",
+      "purpose": "Capability matrix keeps system only dialogue ready",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.runtime.capability_matrix",
+        "latka_jazn.runtime.operation_registry",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 275
     },
     "tests/test_turn_atomicity.py::test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits": {
       "path": "tests/test_turn_atomicity.py",

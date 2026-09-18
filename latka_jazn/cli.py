@@ -88,6 +88,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     child.add_argument("--no-start-daemon", action="store_true")
 
+    child = sub.add_parser("host-op-id", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument(
+        "--kind",
+        required=True,
+        choices=("daemon-start", "runtime-bootstrap", "supervisor-start"),
+    )
+
+    child = sub.add_parser("host-op-submit", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--operation-id", required=True)
+    child.add_argument(
+        "--kind",
+        required=True,
+        choices=("daemon-start", "runtime-bootstrap", "supervisor-start"),
+    )
+    child.add_argument("remainder", nargs=argparse.REMAINDER)
+
+    child = sub.add_parser("host-op-status", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--operation-id", required=True)
+
+    child = sub.add_parser("supervisor-run", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--daemon-host", default="127.0.0.1")
+    child.add_argument("--daemon-port", type=int, default=8787)
+    child.add_argument("--check-interval-seconds", type=float, default=5.0)
+    child.add_argument("--daemon-start-timeout", type=float, default=12.0)
+
+    for name in ("supervisor-status", "supervisor-plan"):
+        child = sub.add_parser(name, allow_abbrev=False)
+        _add_common(child)
+
     child = sub.add_parser("memory-repack-legacy", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--parts-dir", type=Path, required=True)
@@ -318,16 +351,10 @@ def main(
     args = list(sys.argv[1:] if argv is None else argv)
 
     def dispatch_legacy(legacy_args: list[str]) -> int:
-        # Preserve the public/test seam of _legacy_main(args) for direct CLI
-        # consumers. The canonical main.py path explicitly injects its live
-        # handler and therefore avoids a second control-plane import.
         if legacy_handler is None:
             return _legacy_main(legacy_args)
         return _legacy_main(legacy_args, handler=legacy_handler)
-    # ``chat`` and ``chat-gpt`` are canonical public spellings, but their
-    # option surface is intentionally owned by the central main.py parser.
-    # Dispatch before the service parser so --session-id / --daemon-result do
-    # not drift into a second parser implementation.
+
     if args and args[0] in {"chat", "chat-gpt"}:
         return dispatch_legacy(
             _legacy_args_with_canonical_root(
@@ -338,7 +365,9 @@ def main(
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
-        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap", "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+        "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
+        "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
+        "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
@@ -361,6 +390,65 @@ def main(
             "--memory-plan",
             *list(ns.message),
         ])
+
+    if ns.command == "host-op-id":
+        from latka_jazn.core.host_operations import generate_operation_id
+
+        operation_id = generate_operation_id(ns.kind)
+        _emit(
+            {
+                "ok": True,
+                "operation_id": operation_id,
+                "kind": ns.kind,
+                "preallocated": True,
+                "side_effecting_submit_performed": False,
+                "reuse_policy": "retain_this_id_before_submit_and_resume_or_poll_the_same_id_after_ambiguous_transport",
+            },
+            as_json=True,
+        )
+        return 0
+
+    if ns.command == "host-op-submit":
+        from latka_jazn.core.host_operations import submit_host_operation
+
+        payload = submit_host_operation(
+            root,
+            operation_id=ns.operation_id,
+            kind=ns.kind,
+            remainder=list(ns.remainder),
+        )
+        _emit(payload, as_json=True)
+        return 0 if payload.get("accepted") is True else 2
+
+    if ns.command == "host-op-status":
+        from latka_jazn.core.host_operations import host_operation_status
+
+        payload = host_operation_status(root, operation_id=ns.operation_id)
+        _emit(payload, as_json=True)
+        return 0 if payload.get("found") is True else 2
+
+    if ns.command in {"supervisor-run", "supervisor-status", "supervisor-plan"}:
+        from latka_jazn.core.runtime_supervisor import (
+            run_supervisor,
+            supervisor_installation_plan,
+            supervisor_status,
+        )
+
+        if ns.command == "supervisor-run":
+            return run_supervisor(
+                root,
+                host=ns.daemon_host,
+                port=ns.daemon_port,
+                check_interval_seconds=ns.check_interval_seconds,
+                startup_timeout_seconds=ns.daemon_start_timeout,
+            )
+        payload = (
+            supervisor_status(root)
+            if ns.command == "supervisor-status"
+            else supervisor_installation_plan(root, python_executable=sys.executable)
+        )
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok", True) else 1
 
     if ns.command == "runtime-bootstrap":
         from latka_jazn.bootstrap.chatgpt_recovery import recover_chatgpt_runtime

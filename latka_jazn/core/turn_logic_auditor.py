@@ -5,7 +5,7 @@ from typing import Any, Callable
 import hashlib, json, re
 from datetime import datetime, timezone
 
-from latka_jazn.memory.memory_root import resolve_memory_root
+from latka_jazn.memory.availability import runtime_memory_storage_root
 
 SCHEMA_VERSION = "turn_logic_auditor/v1"
 
@@ -99,7 +99,7 @@ class TurnLogicAuditor:
     def append(self, audit: TurnLogicAudit) -> Path | None:
         if not self.root:
             return None
-        path = resolve_memory_root(self.root) / "layered" / "turn_logic_audit.jsonl"
+        path = runtime_memory_storage_root(self.root) / "layered" / "turn_logic_audit.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = audit.to_dict() | {"written_at_utc": datetime.now(timezone.utc).isoformat(), "audit_sha256": hashlib.sha256(json.dumps(audit.to_dict(), ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()}
         with path.open("a", encoding="utf-8") as f:

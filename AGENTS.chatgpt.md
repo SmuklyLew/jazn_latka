@@ -43,17 +43,33 @@ main.py
 
 `run.py` nie może posiadać własnej implementacji `start`, `restart`, `reload`, `runtime-bootstrap`, `host-finalize`, routingu rozmowy ani logiki pamięci. Wyjątkiem jest minimalny dependency-free `--version` fast path startera.
 
-## 2. Granica executora
+## 2. Granica executora i zdalny failover
 
-Przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
+Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego OpenAI Secure MCP Tunnel, a niezależne aktualne evidence managed runtime potwierdza łącznie `process_running=true`, `healthy=true` i `ready=true`, użyj zdalnej trasy bez wykonywania lokalnego probe executora. Sam fakt obecności connectora, plików MCP, tunelu w Platform albo starego statusu nie wystarcza. Host-usable remote route wymaga jednocześnie pełnego managed tunnel readiness oraz jawnej capability bieżącej powierzchni ChatGPT; odpowiada temu `classify_remote_runtime_failover()`.
+
+Jeżeli takiej gotowej zdalnej trasy nie ma, przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
 Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` albo `StreamingExecNotEnabledContainerError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował. `StreamingExecNotEnabledContainerError` na powierzchni sesji interaktywnej oznacza brak persistent/streaming exec tej powierzchni; nie jest dowodem braku zwykłego one-shot executora ani błędem kodu Jaźni:
 - `filesystem_state = unknown`;
 - `package_state = unknown`;
-- runtime pozostaje `unverified`;
+- runtime pozostaje `unverified` dla tej lokalnej trasy;
 - nie twierdź, że `/mnt/data` nie istnieje, paczki brakuje ani że `run.py` jest nieobecny.
 
-Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu. Globalne `host_executor_unavailable` wolno zadeklarować dopiero wtedy, gdy żadna objęta tym ograniczonym probingiem powierzchnia nie utworzy procesu.
+Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza, wolno wykonać na niej najwyżej jedną próbę rozróżniającą. Nie ponawiaj tej samej powierzchni w pętli, nie zapętlaj retry między narzędziami i nie twórz własnego backoffu.
+
+`host_executor_unavailable` jest obserwacją bieżącej generacji powierzchni wykonawczej, a nie trwałym stanem rozmowy. Nie przenoś negatywnego evidence z poprzedniej tury, poprzedniego przydziału executora ani poprzedniego sandboxa do nowej generacji hosta. Jeżeli późniejsza, dozwolona próba faktycznie utworzy proces, wcześniejsze pre-spawn failure staje się stale evidence: odrzuć je i wróć do kanonicznego discovery od zera. Ponownie ustal filesystem, paczkę, active_root i runtime; nie zakładaj trwałości ani braku wcześniejszego `/mnt/data`. Nowa generacja obserwacji nie jest retry-loopem tej samej operacji i nie daje prawa do replayu wiadomości użytkownika.
+
+Gdy przekazujesz obserwacje do `host-preflight`, ustaw `observation_generation` jawnie dla cross-pass recovery: wszystkie powierzchnie z jednego discovery-pass muszą mieć ten sam numer, a nowy numer wolno nadać dopiero po rzeczywistej zmianie/reprowizjonowaniu powierzchni albo rozpoczęciu nowego discovery-pass, w którym stare evidence nie jest już wiążące. Brak pola pozostaje kompatybilny jako generacja `0`, lecz nie używaj domyślnego `0` do łączenia obserwacji z różnych przydziałów hosta.
+
+Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
+
+1. managed Secure MCP Tunnel musi mieć `process_running=true`, `healthy=true`, `ready=true`;
+2. bieżący host ChatGPT musi jawnie udostępniać odpowiadającą temu tunelowi connector/app capability;
+3. jeżeli oba warunki są spełnione, ustaw `execution_route=remote_runtime` i `next_action=use_remote_runtime_transport`;
+4. jeżeli zdalna trasa nie jest zweryfikowana, ale host jawnie oferuje execution handoff, użyj `host_handoff` zgodnie z kontraktem handoff;
+5. dopiero gdy żadna dozwolona lokalna powierzchnia nie utworzyła procesu, zdalny failover nie jest zweryfikowany i handoff nie jest dostępny/zaakceptowany, zakończ fail-closed techniczną diagnozą hosta.
+
+Gotowość zdalnej trasy nie jest dowodem aktywnej tury ani prawa do wypowiedzi. Po przejściu na `remote_runtime` każda wiadomość nadal musi wejść do tego samego persistent runtime i przejść istniejący kontrakt request/turn/finalization; widoczna odpowiedź nadal wymaga `display_exact` po zaakceptowanej finalizacji.
 
 Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
 
@@ -86,9 +102,24 @@ Jeżeli zweryfikowany operator już istnieje, nową paczkę materializuj jego ko
 python -X utf8 run.py runtime-bootstrap --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT> --json
 ```
 
+W hoście o krótkim lub niestabilnym budżecie jednego wywołania nie trzymaj procesu ChatGPT przez cały `runtime-bootstrap`. Po zweryfikowaniu istniejącego operatora prealokuj stabilny `operation_id` kanonicznym generatorem i zachowaj go przed submit:
+
+```bash
+python -X utf8 run.py host-op-id --kind runtime-bootstrap --json
+```
+
+Nie buduj `operation_id` bezpośrednio z lokalnego ISO-8601 zawierającego offset `+HH:MM`; znak `+` nie należy do bezpiecznego alfabetu durable operation. Następnie użyj zwróconego identyfikatora w durable operation:
+
+```bash
+python -X utf8 run.py host-op-submit --operation-id <bootstrap-id> --kind runtime-bootstrap -- --parts-dir <LOCAL_PACKAGE_DIR> --destination <NEW_VERSIONED_ACTIVE_ROOT>
+python -X utf8 run.py host-op-status --operation-id <ten-sam-bootstrap-id> --json
+```
+
+Jeżeli odpowiedź submit zginęła po utworzeniu procesu, nie twórz nowego `operation_id`. Polluj ten sam identyfikator; ponowny submit z tym samym ID i tym samym fingerprintem jest idempotentny, a inna treść pod tym samym ID ma zostać odrzucona jako konflikt.
+
 Nie pobieraj repozytorium lub release z GitHuba jako automatycznego substytutu brakującego lokalnego runtime.
 
-## 4. Preflight i persistent daemon
+## 4. Preflight, bounded host operations i persistent daemon
 
 Po uzyskaniu startera użyj publicznych komend; wszystkie są przekazywane do `main.py`:
 
@@ -100,14 +131,39 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py status --json
 ```
 
-Snapshot nie potwierdza procesu. Jeżeli prerekwizyty aktywacji są gotowe, a daemon jest nieaktywny:
+Snapshot nie potwierdza procesu. Lokalny operator bez ciasnego budżetu hosta może nadal wykonać synchroniczny start:
 
 ```bash
 python -X utf8 run.py start
 python -X utf8 run.py status --json
 ```
 
-Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem.
+Host ChatGPT lub inna powierzchnia, która może utracić transport zanim `start_daemon()` zakończy readiness, powinna zamiast tego prealokować `operation_id` kanonicznym generatorem:
+
+```bash
+python -X utf8 run.py host-op-id --kind daemon-start --json
+```
+
+Zachowaj zwrócony identyfikator przed submit i wykonaj tylko krótki submit:
+
+```bash
+python -X utf8 run.py host-op-submit --operation-id <start-id> --kind daemon-start --json
+python -X utf8 run.py host-op-status --operation-id <ten-sam-start-id> --json
+```
+
+`accepted=true` albo `status=running` dowodzi wyłącznie przyjęcia operacji i ewentualnie utworzenia workera. Nie jest dowodem aktywnego daemona. Dopiero po `status=completed` wykonaj kanoniczny `run.py status --json` i zastosuj pełne kryteria runtime readiness.
+
+Długowieczny lokalny supervisor jest osobną warstwą od daemona i od tunelu. Uruchamia się go przez kanoniczny control plane:
+
+```bash
+python -X utf8 run.py supervisor-plan --json
+python -X utf8 run.py host-op-submit --operation-id <supervisor-id> --kind supervisor-start --json
+python -X utf8 run.py supervisor-status --json
+```
+
+Supervisor w steady state używa taniego `/live`; pełny `status_daemon()` oraz integralność/provenance/start opłaca dopiero podczas recovery. Nie jest alternatywnym lifecycle: recovery nadal wywołuje kanoniczny `start_daemon()`. Na Windows plan może być własnością Task Scheduler z `StartWhenAvailable=true`, `MultipleInstancesPolicy=IgnoreNew`, `ExecutionTimeLimit=PT0S` i `RestartOnFailure`; prawdziwy Windows Service wymaga rzeczywistego hosta Service Control Manager i nie może być imitowany przez zwykły proces Pythona.
+
+Persistent runtime jest potwierdzony dopiero przez zgodny marker i root, wersję/manifest, właściwy PID i fingerprint procesu, działający endpoint oraz świeży heartbeat. One-shot dowodzi wyłącznie wykonania danej tury; one-shot nie jest persistent procesem. Żywy supervisor nie jest dowodem żywego daemona.
 
 Po udanym starcie nie zatrzymuj daemona po każdej wiadomości.
 
@@ -122,6 +178,8 @@ Transakcyjne przełączenie na nowszy root:
 ```bash
 python -X utf8 run.py reload --root <CURRENT_OPERATOR_ROOT> --target-root <NEW_VERSIONED_ROOT> --json
 ```
+
+`restart`/`reload` pozostają synchronicznymi, transakcyjnymi operacjami lifecycle z rollbackiem i nie mogą być semantycznie zastąpione samym krótkim submit. Durable host operation służy transportowi długiej operacji poza życie pojedynczego wywołania hosta; nie osłabia atomowości właściwego lifecycle.
 
 Nie zastępuj lifecycle ręcznym `kill`, własnym `subprocess.Popen`, edycją markera ani luźnym `stop` + `start`.
 
@@ -230,9 +288,9 @@ Jeżeli truth gate, integralność albo finalizator blokuje odpowiedź, przejdź
 
 Po trwałym zapisaniu phase-1 z `daemon_request_id` jego durable host-request record jest kanonicznym **turn settlement authority**. `DaemonChatJob` pozostaje projekcją wykonania/supervision i musi reconciliować dokładnie ten sam `request_id/turn_id/trace_id/host_request_contract_hash`. `runtime_turn_not_accepted` wolno odzyskać bez replayu tylko wtedy, gdy istnieje dokładnie jeden zgodny durable record; innych błędów workera/procesu nie wolno w ten sposób przepisywać na sukces. Reconstructed phase-1 nie ma słabszego validatora niż native phase-1.
 
-Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych lokalnych kroków. Jeżeli executor nie utworzył procesu, raportuj `host_executor_unavailable` i pozostaw stan filesystemu/paczki jako `unknown`.
+Zdanie o nieuruchomionym runtime wolno podać dopiero po wykonaniu wszystkich rzeczywiście dostępnych kroków, w tym wcześniej zweryfikowanej zdalnej trasy albo jawnego host handoff, jeżeli te capability są faktycznie dostępne. Jeżeli lokalny executor nie utworzył procesu i nie ma zweryfikowanego remote runtime/handoff, raportuj `host_executor_unavailable` dla lokalnej trasy i pozostaw stan filesystemu/paczki jako `unknown`.
 
-Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący executor został odzyskany.
+Jeżeli objaw dotyczy hostowej warstwy control plane/executor i proces lokalny nie został utworzony, kod Jaźni nie może naprawić samej awarii platformy. W takim stanie wolno naprawiać kontrakty diagnostyczne, zdalny failover i przyszły bootstrap, ale nie wolno przedstawiać tych zmian jako dowodu, że bieżący lokalny executor został odzyskany.
 
 ## 9. Repozytorium i źródła zewnętrzne
 

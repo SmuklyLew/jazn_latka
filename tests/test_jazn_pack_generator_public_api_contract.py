@@ -13,7 +13,7 @@ def test_public_launcher_exports_new_archiver_contract() -> None:
     }
     missing = sorted(name for name in required if not hasattr(generator, name))
     assert missing == []
-    assert generator.GENERATOR_VERSION == "10.1.86.0.115"
+    assert generator.GENERATOR_VERSION == "10.1.86.0.116"
     assert generator.SETTINGS_SCHEMA == "jazn_pack_generator_settings/v1"
     assert generator.UI_MODE_CHOICES == ("text", "tui", "window")
 

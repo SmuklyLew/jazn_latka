@@ -103,11 +103,11 @@ def test_music_lookup_without_url_allows_web_capability() -> None:
 def test_chatgpt_loader_binds_tool_results_back_to_same_turn() -> None:
     root = Path(__file__).resolve().parents[1]
     loader = (root / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
+    runbook = (root / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
+
     assert len(loader) <= 5000
     assert "każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime" in loader
-    assert "Wynik narzędzia jest pośrednim evidence" in loader
+    assert "Wyniki narzędzi są evidence tej samej tury" in loader
     assert "action=display_exact" in loader
     assert "MessageEnvelope" in loader
-    assert "Nie utożsamiaj TTY z rozmową ani trwałością" in loader
-
-
+    assert "świeże związanie tury nie oznacza świeżego procesu CLI" in runbook

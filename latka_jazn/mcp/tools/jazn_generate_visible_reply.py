@@ -11,14 +11,16 @@ from latka_jazn.core.memory_recall_observability import correlate_memory_recall_
 
 
 class HostRuntimeGateway(Protocol):
-    """Structural contract required by the visible-reply MCP tool.
+    """Structural contract required by the visible-reply MCP tool."""
 
-    Keeping the tool bound to the minimal behavior it actually uses allows
-    secure production gateways and deterministic test doubles to share the
-    same static contract without weakening the concrete gateway itself.
-    """
-
-    def chat(self, message: str, /, *, session_id: str | None = None) -> dict[str, Any]: ...
+    def chat(
+        self,
+        message: str,
+        /,
+        *,
+        session_id: str | None = None,
+        request_id: str | None = None,
+    ) -> dict[str, Any]: ...
 
     def issue_continuation(self, response: dict[str, Any], /) -> dict[str, Any]: ...
 
@@ -108,18 +110,31 @@ def run(
     *,
     message: str,
     session_id: str | None = None,
+    request_id: str | None = None,
 ) -> dict[str, Any]:
     """Route one MCP-visible ChatGPT message through the canonical ingress gate.
 
-    The MCP transport is only a carrier.  The exact user message must cross the
-    same host pre-response gate as the persistent JSONL bridge before any
-    runtime-owned text can become visible.
+    `request_id` is the daemon-side side-effect identity allocated by the MCP
+    server before dispatch. It is propagated unchanged through the gateway so a
+    lost transport response can only be resumed, never recreated as a new turn.
+    Direct legacy/test callers that omit the id retain the historical gateway
+    call shape; production MCP always allocates the id before this function.
     """
 
     requested_runtime_root = getattr(gateway, "runtime_root", None)
+
+    def invoke_runtime(exact_text: str) -> dict[str, Any]:
+        if request_id is None:
+            return gateway.chat(exact_text, session_id=session_id)
+        return gateway.chat(
+            exact_text,
+            session_id=session_id,
+            request_id=request_id,
+        )
+
     gate_result = run_host_pre_response_gate(
         message,
-        invoke_runtime=lambda exact_text: gateway.chat(exact_text, session_id=session_id),
+        invoke_runtime=invoke_runtime,
         requested_runtime_root=str(requested_runtime_root or ""),
     )
     gate_telemetry = _object_or_none(gate_result.get("host_pre_response_gate")) or {}
@@ -237,7 +252,7 @@ def run(
                 "host_generation_policy": host_policy,
                 "host_generation_context": _object_or_none(bridge.get("host_generation_context")) or {},
                 "host_generation_rules": list(bridge.get("host_generation_rules") or []),
-                "daemon_request_id": bridge.get("daemon_request_id"),
+                "daemon_request_id": bridge.get("daemon_request_id") or request_id,
                 "finalization_tool": "jazn_finalize_reply",
                 "must_not_display_intermediate": True,
                 "visible_output_source": None,
@@ -260,9 +275,14 @@ def run(
         }
 
     if action == "poll_runtime":
-        request_id = presentation.get("daemon_request_id") or presentation.get("request_id")
-        poll_command = presentation.get("poll_command")
-        if not request_id or not poll_command:
+        daemon_request_id = (
+            presentation.get("daemon_request_id")
+            or presentation.get("request_id")
+            or response.get("request_id")
+            or request_id
+        )
+        poll_command = presentation.get("poll_command") or "jazn_resume_visible_reply"
+        if not daemon_request_id:
             reason = "poll_contract_missing"
             return _tool_error(
                 reason,
@@ -280,8 +300,12 @@ def run(
             "structuredContent": {
                 "ok": True,
                 "action": "poll_runtime",
-                "request_id": request_id,
+                "request_id": daemon_request_id,
+                "daemon_request_id": daemon_request_id,
                 "poll_command": poll_command,
+                "resume_tool": "jazn_resume_visible_reply",
+                "must_not_resubmit_user_message": True,
+                "submit_outcome_authoritative": presentation.get("submit_outcome_authoritative"),
                 "turn_id": turn_id,
                 "trace_id": trace_id,
                 "visible_output_source": None,
@@ -297,12 +321,11 @@ def run(
             "_meta": {
                 "transport": "secure_loopback_gateway",
                 "ingress_gate": "chatgpt_host_pre_response_gate",
+                "recovery": "same_daemon_request_id",
             },
             "isError": False,
         }
 
-    # The canonical gate should make this branch unreachable for unknown actions,
-    # but keep a fail-closed boundary in case a future gate contract expands.
     return _tool_error(
         "unsupported_gate_action",
         response=response,

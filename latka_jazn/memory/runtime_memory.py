@@ -64,6 +64,10 @@ class RuntimeMemoryCoordinator:
     The existing classifier may still determine whether a turn is important, but
     persistence is limited to one L1 record and one optional L2 candidate in one
     SQLite transaction. L3 is impossible through this API.
+
+    SYSTEM-only runtime installs the same coordinator with persistence disabled.
+    That preserves one stable runtime interface while guaranteeing that an absent
+    private MEMORY package is not silently materialized as a transactional DB.
     """
 
     def __init__(
@@ -73,11 +77,15 @@ class RuntimeMemoryCoordinator:
         classifier: CandidateClassifier,
         working_budget: WorkingMemoryBudget | None = None,
         short_term_policy: ShortTermMemoryPolicy | None = None,
+        persistence_enabled: bool = True,
+        disabled_reason: str = "persistent_memory_absent_optional",
     ) -> None:
         self.database_path = Path(database_path).expanduser().resolve()
         self.classifier = classifier
         self.working_budget = working_budget or WorkingMemoryBudget()
         self.short_term_policy = short_term_policy or ShortTermMemoryPolicy()
+        self.persistence_enabled = bool(persistence_enabled)
+        self.disabled_reason = str(disabled_reason or "persistent_memory_disabled")
         self._write_context: ContextVar[RuntimeMemoryWriteContext | None] = ContextVar(
             f"runtime_memory_context_{id(self)}", default=None
         )
@@ -130,6 +138,14 @@ class RuntimeMemoryCoordinator:
         fingerprint = self.candidate_fingerprint(candidate)
         if not force and not accepted:
             return RuntimePersistenceResult(False, fingerprint, candidate.kind, reason, [])
+        if not self.persistence_enabled:
+            return RuntimePersistenceResult(
+                False,
+                fingerprint,
+                candidate.kind,
+                self.disabled_reason,
+                [],
+            )
 
         write_context = context or self.current_context() or RuntimeMemoryWriteContext()
         now = datetime.now(timezone.utc)

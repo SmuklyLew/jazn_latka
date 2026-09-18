@@ -58,6 +58,7 @@ def test_source_origin_ledger_uses_selected_memory_root(tmp_path: Path) -> None:
     root = _runtime_root(tmp_path)
     canonical = default_memory_root(root)
     canonical.mkdir(parents=True)
+    (canonical / "MEMORY_PACKAGE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
 
     ledger = SourceOriginLedger(root)
 

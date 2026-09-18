@@ -53,22 +53,22 @@ def test_chatgpt_runbook_requires_one_persistent_bridge() -> None:
 
 def test_chatgpt_project_instructions_remain_thin_loader() -> None:
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
+    runbook = _read("AGENTS.chatgpt.md")
 
     assert text.startswith("# LOADER SYSTEMU JAŹNI\n")
     assert len(text) <= 5000
     assert "`AGENTS.md`" in text
     assert "`AGENTS.chatgpt.md`" not in text
-    assert "runbook odpowiedni dla bieżącego hosta lub zadania" in text
-    assert "run.py" in text
-    assert "main.py" in text
-    assert "raz na sesję wykonawczą" in text
-    assert "Nie uruchamiaj nowego procesu CLI" in text
-    assert "OPENAI_API_KEY" in text
+    assert "właściwy runbook hosta" in text
+    assert "remote_runtime" in text
+    assert "run.py" not in text
+    assert "main.py" not in text
+    assert "raz na sesję wykonawczą" in runbook
+    assert "run.py" in runbook
     assert "persona" not in text.lower()
     assert "osobowo" not in text.lower()
     assert "tożsamo" not in text.lower()
     assert "Łatka" not in text
-
 
 def test_codex_runbook_declares_main_first_boundary() -> None:
     text = _read("AGENTS.codex.md")

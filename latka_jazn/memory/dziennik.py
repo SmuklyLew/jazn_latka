@@ -33,6 +33,11 @@ class DziennikRawJournal:
     ale przy zmianie wersji systemu Jaźni ten plik również musi otrzymać wpis.
     Aktywna ścieżka jest rozwiązywana przez wspólny host-level memory root.
 
+    ``storage_root`` jest jawnym wyjątkiem dla SYSTEM-only runtime: pozwala
+    zapisać operacyjny dziennik pod ``workspace_runtime/core_state`` bez
+    materializowania ani podszywania się pod prywatną MEMORY. Taki dziennik nie
+    jest źródłem recall dopóki nie zostanie jawnie promowany/importowany.
+
     Adapter zachowuje istniejący schemat:
     {
       "meta": {...},
@@ -42,9 +47,31 @@ class DziennikRawJournal:
     }
     """
 
-    def __init__(self, root: Path, *, rel_path: str = "memory/raw/dziennik.json", timezone: str = "Europe/Warsaw") -> None:
+    def __init__(
+        self,
+        root: Path,
+        *,
+        rel_path: str = "memory/raw/dziennik.json",
+        timezone: str = "Europe/Warsaw",
+        storage_root: Path | None = None,
+    ) -> None:
         self.root = Path(root).expanduser().resolve()
-        self.path = memory_path(self.root, rel_path)
+        if storage_root is None:
+            self.path = memory_path(self.root, rel_path)
+        else:
+            base = Path(storage_root).expanduser().resolve()
+            relative = Path(rel_path)
+            parts = relative.parts
+            if parts and parts[0].casefold() == "memory":
+                relative = Path(*parts[1:])
+            if relative.is_absolute():
+                raise ValueError("journal relative path must not be absolute")
+            target = (base / relative).resolve()
+            try:
+                target.relative_to(base)
+            except ValueError as exc:
+                raise ValueError("journal path escapes storage root") from exc
+            self.path = target
         self.timezone = resolve_timezone(timezone)
 
     def _now(self) -> datetime:

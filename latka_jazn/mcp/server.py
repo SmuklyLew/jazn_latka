@@ -1,637 +1,420 @@
 from __future__ import annotations
 
+"""Dual-era MCP facade for the canonical Jaźń runtime.
+
+The byte-exact v76 server remains the implementation owner for tool execution,
+authentication, audit, idempotency and host finalization. This module owns MCP
+version/era negotiation plus the transport-facing typed turn contract.
+
+MCP 2026-07-28 is stateless at the protocol layer: every request carries its
+protocol version and client capabilities in ``params._meta`` and servers expose
+``server/discover`` instead of relying on ``initialize``. Older MCP revisions
+continue to use the legacy initialize/initialized handshake. Both paths dispatch
+to the same Jaźń runtime and tool implementations.
+"""
+
 import argparse
 from copy import deepcopy
-import hashlib
-import json
 from pathlib import Path
-import sys
-from typing import Any
+from typing import Any, Mapping
 
-from latka_jazn.bridge.auth_policy import AuthPolicy
-from latka_jazn.bridge.secure_host_runtime_gateway import (
-    GatewayConfig,
-    GatewayError,
-    SecureHostRuntimeGateway,
+from latka_jazn.mcp import server_legacy_v76 as _legacy
+from latka_jazn.mcp.server_legacy_v76 import (
+    JaznMcpServer as _V76JaznMcpServer,
+    READ_ONLY_TOOLS,
+    TASK_EXTENSION_ID,
+    TOOL_DEFINITIONS,
 )
-from latka_jazn.mcp.tools import (
-    jazn_audit_lookup,
-    jazn_finalize_reply,
-    jazn_generate_visible_reply,
-    jazn_resume_visible_reply,
-    jazn_status,
+from latka_jazn.mcp.turn_runtime_adapter import McpTurnRuntimeAdapter
+from latka_jazn.runtime.turn_runtime import TURN_RUNTIME_CAPABILITY
+from latka_jazn.version import PACKAGE_VERSION_FULL
+
+MCP_PROTOCOL_VERSION_MODERN = "2026-07-28"
+MCP_PROTOCOL_VERSION_LATEST_LEGACY = "2025-11-25"
+MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION = "2025-06-18"
+# Compatibility alias retained for callers that imported the old constant.
+MCP_PROTOCOL_VERSION_LATEST = MCP_PROTOCOL_VERSION_MODERN
+MCP_SUPPORTED_PROTOCOL_VERSIONS = (
+    MCP_PROTOCOL_VERSION_MODERN,
+    MCP_PROTOCOL_VERSION_LATEST_LEGACY,
+    MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION,
 )
-from latka_jazn.runtime.host_bridge_audit import HostBridgeAuditEvent, HostBridgeAuditStore
-from latka_jazn.runtime.idempotency import IdempotencyStore, build_idempotency_key, payload_hash
-from latka_jazn.runtime.mcp_tool_audit import McpToolAuditEvent, McpToolAuditStore
-from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+MCP_SUPPORTED_LEGACY_PROTOCOL_VERSIONS = (
+    MCP_PROTOCOL_VERSION_LATEST_LEGACY,
+    MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION,
+)
 
-SCHEMA_VERSION = schema_version("jazn_mcp_server")
-# Generation is idempotent. Finalization is intentionally one-shot and is guarded
-# by the runtime pending-request store rather than by replaying a cached MCP result.
-IDEMPOTENT_SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply"}
-READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup", "jazn_resume_visible_reply"}
-DENIED_APPROVAL_STATES = {"denied", "rejected", "not_approved"}
+META_PROTOCOL_VERSION = "io.modelcontextprotocol/protocolVersion"
+META_CLIENT_INFO = "io.modelcontextprotocol/clientInfo"
+META_CLIENT_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
+META_SERVER_INFO = "io.modelcontextprotocol/serverInfo"
 
+UNSUPPORTED_PROTOCOL_VERSION = -32022
+INVALID_PARAMS = -32602
+METHOD_NOT_FOUND = -32601
+MODERN_DISCOVERY_TTL_MS = 5 * 60 * 1000
+MODERN_TOOL_LIST_TTL_MS = 5 * 60 * 1000
 
-def _object_schema(
-    properties: dict[str, Any],
-    *,
-    required: list[str] | None = None,
-) -> dict[str, Any]:
-    return {
-        "type": "object",
-        "properties": properties,
-        "required": list(required or []),
-        "additionalProperties": False,
+_TASK_METHODS = frozenset(
+    {
+        "tasks/get",
+        "tasks/update",
+        "tasks/cancel",
+        # Historical draft/core methods are also rejected on modern MCP.
+        "tasks/list",
+        "tasks/result",
     }
+)
 
 
-TOOL_DEFINITIONS = [
-    {
-        "name": "jazn_generate_visible_reply",
-        "title": "Start a validated Jaźń turn",
-        "description": (
-            "Send the exact user message to the private Jaźń runtime. Returns exactly one action: "
-            "display_exact, generate_then_finalize, poll_runtime, or a fail-closed diagnostic."
-        ),
-        "inputSchema": _object_schema(
-            {
-                "message": {"type": "string", "minLength": 1},
-                "session_id": {"type": "string", "minLength": 1, "maxLength": 128},
-                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
-            },
-            required=["message"],
-        ),
-        "annotations": {
-            "readOnlyHint": False,
-            "destructiveHint": False,
-            "openWorldHint": False,
-            "idempotentHint": True,
-        },
-    },
-    {
-        "name": "jazn_resume_visible_reply",
-        "title": "Resume an existing Jaźń host-finalization turn",
-        "description": (
-            "Poll and resume one existing daemon request without resubmitting the user message. "
-            "If phase 1 is still pending, returns the same HMAC-bound continuation and the persisted "
-            "host generation contract; consumed, claimed, expired, mismatched, or ambiguous records fail closed."
-        ),
-        "inputSchema": _object_schema(
-            {
-                "daemon_request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "turn_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "host_request_contract_hash": {
-                    "type": "string",
-                    "pattern": "^[0-9a-fA-F]{64}$",
-                },
-                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
-            },
-            required=["daemon_request_id"],
-        ),
-        "annotations": {
-            "readOnlyHint": True,
-            "destructiveHint": False,
-            "openWorldHint": False,
-            "idempotentHint": True,
-        },
-        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
-    },
-    {
-        "name": "jazn_status",
-        "title": "Read Jaźń runtime status",
-        "description": "Read authenticated private runtime/gateway status without mutation.",
-        "inputSchema": _object_schema(
-            {
-                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
-            }
-        ),
-        "annotations": {
-            "readOnlyHint": True,
-            "destructiveHint": False,
-            "openWorldHint": False,
-            "idempotentHint": True,
-        },
-        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
-    },
-    {
-        "name": "jazn_finalize_reply",
-        "title": "Finalize a host-visible Jaźń reply",
-        "description": (
-            "Consume one opaque continuation token and atomically validate, persist, and return the exact "
-            "runtime-approved visible text. Immutable turn, author, timestamp, and contract fields are loaded "
-            "server-side and cannot be supplied by the host."
-        ),
-        "inputSchema": _object_schema(
-            {
-                "continuation_token": {
-                    "type": "string",
-                    "minLength": 20,
-                    "maxLength": 256,
-                    "pattern": "^jct1\\.[A-Za-z0-9_-]+$",
-                },
-                "final_text": {"type": "string", "minLength": 1, "maxLength": 2097152},
-                "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
-                "used_memory_item_ids": {
-                    "type": "array",
-                    "items": {"type": "string", "minLength": 1, "maxLength": 256},
-                    "maxItems": 8,
-                },
-                "external_tool_evidence": {
-                    "type": "array",
-                    "maxItems": 8,
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": False,
-                        "properties": {
-                            "tool": {"type": "string", "enum": ["GitHub", "web.run"]},
-                            "operation": {"type": "string", "minLength": 1, "maxLength": 64},
-                            "source_refs": {
-                                "type": "array",
-                                "items": {"type": "string", "minLength": 1, "maxLength": 128},
-                                "maxItems": 16,
-                            },
-                            "source_urls": {
-                                "type": "array",
-                                "items": {"type": "string", "minLength": 8, "maxLength": 2048},
-                                "maxItems": 16,
-                            },
-                        },
-                        "required": ["tool", "operation"],
-                    },
-                },
-                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
-            },
-            required=["continuation_token", "final_text", "final_text_sha256"],
-        ),
-        "annotations": {
-            "readOnlyHint": False,
-            "destructiveHint": False,
-            "openWorldHint": False,
-            "idempotentHint": False,
-        },
-    },
-    {
-        "name": "jazn_audit_lookup",
-        "title": "Read redacted Jaźń audit",
-        "description": "Read redacted audit evidence for one turn.",
-        "inputSchema": _object_schema(
-            {
-                "turn_id": {"type": "string", "minLength": 1},
-                "trace_id": {"type": "string", "minLength": 1},
-                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
-                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
-            },
-            required=["turn_id"],
-        ),
-        "annotations": {
-            "readOnlyHint": True,
-            "destructiveHint": False,
-            "openWorldHint": False,
-            "idempotentHint": True,
-        },
-        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
-    },
-]
+def __getattr__(name: str) -> Any:
+    """Preserve runtime compatibility for non-canonical legacy module exports."""
+
+    return getattr(_legacy, name)
 
 
-def _tool_contract_hash(tool_name: str) -> str:
-    raw = json.dumps(
-        {
-            "tool_name": tool_name,
-            "server_schema": SCHEMA_VERSION,
-            "runtime_version": PACKAGE_VERSION_FULL,
-        },
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+class JaznMcpServer(_V76JaznMcpServer):
+    """Protocol facade over one canonical Jaźń runtime and tool surface."""
 
-
-def _tool_error(reason: str, **details: Any) -> dict[str, Any]:
-    structured: dict[str, Any] = {"ok": False, "reason": reason, "action": "host_diagnostic"}
-    structured.update(details)
-    return {
-        "content": [{"type": "text", "text": f"Jaźń MCP tool failed safely: {reason}."}],
-        "structuredContent": structured,
-        "_meta": {},
-        "isError": True,
-    }
-
-
-class JaznMcpServer:
-    def __init__(
-        self,
-        *,
-        root: Path,
-        daemon_url: str = "http://127.0.0.1:8787",
-        token: str | None = None,
-        allow_unauthenticated_local_test: bool = False,
-        trust_stdio_parent: bool = False,
-    ) -> None:
-        self.root = root.resolve()
-        auth = AuthPolicy(
-            token,
-            allow_unauthenticated_local_test=allow_unauthenticated_local_test,
-            trust_stdio_parent=trust_stdio_parent,
-        )
-        self.gateway = SecureHostRuntimeGateway(
-            GatewayConfig(daemon_url=daemon_url, runtime_root=self.root),
-            auth_policy=auth,
-        )
-        self.audit_database = self.root / "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
-        self.idempotency = IdempotencyStore(self.audit_database)
-        self.host_audit = HostBridgeAuditStore(self.audit_database)
-        self.mcp_audit = McpToolAuditStore(self.audit_database)
-
-    def _authorize(self, name: str, arguments: dict[str, Any], meta: dict[str, Any]) -> str:
-        token = arguments.pop("auth_token", None) or meta.get("authorization") or meta.get("token")
-        subject = str(meta.get("openai/subject") or meta.get("subject") or "mcp-client")
-        self.gateway.authorize(tool_name=name, token=token, subject=subject)
-        return subject
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # These fields belong only to the legacy handshake path. Modern 2026
+        # requests never read them; their capabilities are validated per request.
+        self.negotiated_protocol_version: str | None = None
+        self.client_capabilities: dict[str, Any] = {}
+        self.client_initialized = False
+        self.turn_runtime = McpTurnRuntimeAdapter()
 
     @staticmethod
-    def _approval_state(name: str, metadata: dict[str, Any]) -> str:
-        declared = str(metadata.get("approval_state") or "").strip().lower()
-        if declared:
-            return declared
-        if name in READ_ONLY_TOOLS:
-            return "not_required_read_only"
-        return "host_managed_authenticated"
-
-    @staticmethod
-    def _control_fields(args: dict[str, Any], metadata: dict[str, Any]) -> tuple[str | None, str | None]:
-        explicit_key = args.pop("idempotency_key", None) or metadata.get("idempotency_key")
-        request_id = args.pop("request_id", None) or metadata.get("request_id")
-        return (
-            str(explicit_key).strip() if explicit_key is not None else None,
-            str(request_id).strip() if request_id is not None else None,
-        )
-
-    def _request_identity(
-        self,
-        name: str,
-        args: dict[str, Any],
-        *,
-        subject: str,
-        request_id: str | None,
-    ) -> tuple[str, str, str]:
-        if name == "jazn_finalize_reply":
-            token_digest = hashlib.sha256(str(args["continuation_token"]).encode("utf-8")).hexdigest()
-            return token_digest, token_digest, token_digest
-        if name == "jazn_generate_visible_reply":
-            if request_id:
-                identity = request_id
-            else:
-                material = json.dumps(
-                    {
-                        "message": str(args.get("message") or ""),
-                        "session_id": str(args.get("session_id") or ""),
-                        "subject": subject,
-                    },
-                    ensure_ascii=False,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                )
-                identity = hashlib.sha256(material.encode("utf-8")).hexdigest()
-            return identity, identity, _tool_contract_hash(name)
-        if name == "jazn_resume_visible_reply":
-            identity = str(args["daemon_request_id"])
-            return identity, identity, _tool_contract_hash(name)
-        if name == "jazn_audit_lookup":
-            turn_id = str(args["turn_id"])
-            trace_id = str(args.get("trace_id") or turn_id)
-            return turn_id, trace_id, _tool_contract_hash(name)
-        identity = request_id or f"{subject}:{name}"
-        return identity, identity, _tool_contract_hash(name)
-
-    @staticmethod
-    def _augment_result(
-        result: dict[str, Any],
-        *,
-        idempotency_key: str,
-        idempotency_state: str,
-        approval_state: str,
-        audit_id: str,
-        host_bridge_audit_id: str | None = None,
-        replay_audit_id: str | None = None,
-    ) -> dict[str, Any]:
-        value = deepcopy(result)
-        structured = dict(value.get("structuredContent") or {})
-        structured.update(
-            {
-                "idempotency_key": idempotency_key,
-                "idempotency_state": idempotency_state,
-                "approval_state": approval_state,
-                "audit_id": audit_id,
-            }
-        )
-        if host_bridge_audit_id:
-            structured["host_bridge_audit_id"] = host_bridge_audit_id
-        if replay_audit_id:
-            structured["replay_audit_id"] = replay_audit_id
-        value["structuredContent"] = structured
-        meta = dict(value.get("_meta") or {})
-        meta["mcp_invocation"] = {
-            "idempotency_key": idempotency_key,
-            "idempotency_state": idempotency_state,
-            "approval_state": approval_state,
-            "audit_id": audit_id,
+    def _server_info() -> dict[str, str]:
+        return {
+            "name": "jazn-private-mcp",
+            "version": PACKAGE_VERSION_FULL,
         }
-        value["_meta"] = meta
-        return value
 
-    def _append_mcp_audit(
-        self,
-        *,
-        name: str,
-        subject: str,
-        key: str,
-        payload_digest: str,
-        approval_state: str,
-        outcome: str,
-        metadata: dict[str, Any] | None = None,
-    ) -> str:
-        return self.mcp_audit.append(
-            McpToolAuditEvent(
-                tool_name=name,
-                subject=subject,
-                idempotency_key=key,
-                payload_hash=payload_digest,
-                approval_state=approval_state,
-                outcome=outcome,
-                metadata=dict(metadata or {}),
-            )
+    @staticmethod
+    def _instructions() -> str:
+        return (
+            "Use jazn_generate_visible_reply exactly once for a new user turn with a stable request_id. "
+            "If action=poll_runtime, call jazn_resume_visible_reply with the same daemon_request_id and "
+            "never replay the user message. If action=generate_then_finalize, generate only from the "
+            "returned host contract and finish with jazn_finalize_reply. Display Jaźń output only when "
+            "the returned action is display_exact."
         )
 
-    def _append_host_audit(
-        self,
+    @staticmethod
+    def _negotiate_legacy_protocol_version(requested: Any) -> str:
+        """Negotiate only initialize-capable MCP revisions.
+
+        A client that sends ``initialize`` while preferring 2026-07-28 is using
+        the legacy negotiation path, so the server counter-offers the newest
+        initialize-capable revision instead of pretending the modern era still
+        has a handshake.
+        """
+
+        candidate = str(requested or "").strip()
+        if candidate in MCP_SUPPORTED_LEGACY_PROTOCOL_VERSIONS:
+            return candidate
+        return MCP_PROTOCOL_VERSION_LATEST_LEGACY
+
+    # Compatibility alias used by existing callers/tests.
+    _negotiate_protocol_version = _negotiate_legacy_protocol_version
+
+    def _server_capabilities(self, protocol_version: str | None = None) -> dict[str, Any]:
+        resolved = (
+            protocol_version
+            or self.negotiated_protocol_version
+            or MCP_PROTOCOL_VERSION_LATEST_LEGACY
+        )
+        capabilities: dict[str, Any] = {
+            "tools": {"listChanged": False},
+            "experimental": {
+                TURN_RUNTIME_CAPABILITY: self.turn_runtime.capability_descriptor(),
+            },
+        }
+        # The v76 task adapter is retained only for its original legacy route.
+        # We deliberately do NOT advertise io.modelcontextprotocol/tasks for
+        # modern MCP 2026-07-28 because that extension has its own current
+        # contract and lifecycle which is not yet fully implemented here.
+        if resolved == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
+            capabilities["extensions"] = {TASK_EXTENSION_ID: {}}
+        return capabilities
+
+    @staticmethod
+    def _request_meta(request_value: Mapping[str, Any]) -> Mapping[str, Any]:
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return {}
+        metadata = params.get("_meta")
+        return metadata if isinstance(metadata, Mapping) else {}
+
+    @classmethod
+    def _is_modern_request(cls, request_value: Mapping[str, Any]) -> bool:
+        if request_value.get("method") == "server/discover":
+            return True
+        metadata = cls._request_meta(request_value)
+        return META_PROTOCOL_VERSION in metadata
+
+    @staticmethod
+    def _jsonrpc_error(
+        request_id: Any,
         *,
-        event_type: str,
-        turn_id: str,
-        trace_id: str,
-        key: str,
-        contract_hash: str,
-        payload_digest: str,
-        result: dict[str, Any] | None,
-        approval_state: str,
-    ) -> str:
-        structured = dict((result or {}).get("structuredContent") or {})
-        actual_turn_id = str(structured.get("turn_id") or turn_id)
-        actual_trace_id = str(structured.get("trace_id") or trace_id)
-        return self.host_audit.append(
-            HostBridgeAuditEvent(
-                event_type=event_type,
-                turn_id=actual_turn_id,
-                trace_id=actual_trace_id,
-                idempotency_key=key,
-                contract_hash=str(structured.get("host_request_contract_hash") or contract_hash),
-                payload_hash=payload_digest,
-                final_hash=structured.get("final_text_sha256"),
-                metadata={
-                    "tool_name": "jazn_finalize_reply",
-                    "approval_state": approval_state,
-                    "accepted": structured.get("accepted"),
-                    "state": structured.get("state"),
-                    "opaque_identity_used_before_resolution": actual_turn_id == turn_id,
+        code: int,
+        message: str,
+        data: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        error: dict[str, Any] = {"code": code, "message": message}
+        if data is not None:
+            error["data"] = dict(data)
+        return {"jsonrpc": "2.0", "id": request_id, "error": error}
+
+    @classmethod
+    def _validate_modern_request(
+        cls,
+        request_value: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        request_id = request_value.get("id")
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: modern MCP requests require params._meta",
+                data={"missing": ["params._meta"]},
+            )
+        metadata = params.get("_meta")
+        if not isinstance(metadata, Mapping):
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: modern MCP requests require params._meta",
+                data={"missing": ["params._meta"]},
+            )
+
+        missing: list[str] = []
+        if META_PROTOCOL_VERSION not in metadata:
+            missing.append(META_PROTOCOL_VERSION)
+        if META_CLIENT_CAPABILITIES not in metadata:
+            missing.append(META_CLIENT_CAPABILITIES)
+        if missing:
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: required modern MCP metadata is missing",
+                data={"missing": missing},
+            )
+
+        requested = metadata.get(META_PROTOCOL_VERSION)
+        if not isinstance(requested, str) or not requested.strip():
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: protocolVersion must be a non-empty string",
+                data={"field": META_PROTOCOL_VERSION},
+            )
+        if requested != MCP_PROTOCOL_VERSION_MODERN:
+            return cls._jsonrpc_error(
+                request_id,
+                code=UNSUPPORTED_PROTOCOL_VERSION,
+                message="Unsupported protocol version",
+                data={
+                    "supported": list(MCP_SUPPORTED_PROTOCOL_VERSIONS),
+                    "requested": requested,
                 },
             )
-        )
 
-    def _dispatch(self, name: str, args: dict[str, Any]) -> dict[str, Any]:
-        if name == "jazn_status":
-            return jazn_status.run(self.gateway)
-        if name == "jazn_generate_visible_reply":
-            return jazn_generate_visible_reply.run(
-                self.gateway,
-                message=str(args["message"]),
-                session_id=args.get("session_id"),
+        client_capabilities = metadata.get(META_CLIENT_CAPABILITIES)
+        if not isinstance(client_capabilities, Mapping):
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: clientCapabilities must be an object",
+                data={"field": META_CLIENT_CAPABILITIES},
             )
-        if name == "jazn_resume_visible_reply":
-            return jazn_resume_visible_reply.run(
-                root=self.root,
-                gateway=self.gateway,
-                daemon_request_id=str(args["daemon_request_id"]),
-                turn_id=args.get("turn_id"),
-                host_request_contract_hash=args.get("host_request_contract_hash"),
+        client_info = metadata.get(META_CLIENT_INFO)
+        if client_info is not None and not isinstance(client_info, Mapping):
+            return cls._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message="Invalid params: clientInfo must be an object when supplied",
+                data={"field": META_CLIENT_INFO},
             )
-        if name == "jazn_finalize_reply":
-            return jazn_finalize_reply.run(root=self.root, lifecycle_gateway=self.gateway, **args)
-        if name == "jazn_audit_lookup":
-            return jazn_audit_lookup.run(
-                audit_database=self.audit_database,
-                turn_id=str(args["turn_id"]),
-                trace_id=args.get("trace_id"),
-            )
-        raise GatewayError("tool_not_allowlisted")
+        return None
 
-    def call_tool(
+    def _discover_result(self) -> dict[str, Any]:
+        return {
+            "resultType": "complete",
+            "supportedVersions": list(MCP_SUPPORTED_PROTOCOL_VERSIONS),
+            "capabilities": self._server_capabilities(MCP_PROTOCOL_VERSION_MODERN),
+            "instructions": self._instructions(),
+            "ttlMs": MODERN_DISCOVERY_TTL_MS,
+            "cacheScope": "public",
+            "_meta": {META_SERVER_INFO: self._server_info()},
+        }
+
+    def _prepare_legacy_dispatch(
         self,
-        name: str,
-        arguments: dict[str, Any],
-        meta: dict[str, Any] | None = None,
+        request_value: dict[str, Any],
+        *,
+        modern: bool,
     ) -> dict[str, Any]:
-        args = dict(arguments or {})
-        metadata = dict(meta or {})
-        subject = self._authorize(name, args, metadata)
-        approval_state = self._approval_state(name, metadata)
-        explicit_key, request_id = self._control_fields(args, metadata)
-        turn_id, trace_id, contract_hash = self._request_identity(
-            name,
-            args,
-            subject=subject,
-            request_id=request_id,
-        )
-        key = explicit_key or build_idempotency_key(
-            turn_id=turn_id,
-            trace_id=trace_id,
-            operation=f"mcp:{name}",
-            contract_hash=contract_hash,
-        )
-        if len(key) > 512:
-            raise ValueError("idempotency_key_too_large")
-        payload_digest = payload_hash(args)
+        """Suppress the historical task extension outside its legacy route."""
 
-        if approval_state in DENIED_APPROVAL_STATES:
-            audit_id = self._append_mcp_audit(
-                name=name,
-                subject=subject,
-                key=key,
-                payload_digest=payload_digest,
-                approval_state=approval_state,
-                outcome="approval_rejected",
-            )
-            return self._augment_result(
-                _tool_error("approval_rejected"),
-                idempotency_key=key,
-                idempotency_state="not_executed",
-                approval_state=approval_state,
-                audit_id=audit_id,
-            )
+        if (
+            not modern
+            and self.negotiated_protocol_version
+            == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION
+        ):
+            return request_value
+        if request_value.get("method") != "tools/call":
+            return request_value
 
-        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
-            decision = self.idempotency.claim(
-                idempotency_key=key,
-                payload_hash_value=payload_digest,
-                operation=f"mcp:{name}",
-                turn_id=turn_id,
-                trace_id=trace_id,
-                contract_hash=contract_hash,
-            )
-            if decision.state == "conflict":
-                audit_id = self._append_mcp_audit(
-                    name=name,
-                    subject=subject,
-                    key=key,
-                    payload_digest=payload_digest,
-                    approval_state=approval_state,
-                    outcome="conflict",
-                )
-                return self._augment_result(
-                    _tool_error("idempotency_conflict"),
-                    idempotency_key=key,
-                    idempotency_state="conflict",
-                    approval_state=approval_state,
-                    audit_id=audit_id,
-                )
-            if decision.state == "replay":
-                stored = decision.result or _tool_error("idempotency_result_unavailable")
-                replay_audit_id = self._append_mcp_audit(
-                    name=name,
-                    subject=subject,
-                    key=key,
-                    payload_digest=payload_digest,
-                    approval_state=approval_state,
-                    outcome="replay",
-                )
-                original_audit_id = str(
-                    (stored.get("structuredContent") or {}).get("audit_id") or replay_audit_id
-                )
-                return self._augment_result(
-                    stored,
-                    idempotency_key=key,
-                    idempotency_state="replay",
-                    approval_state=approval_state,
-                    audit_id=original_audit_id,
-                    replay_audit_id=replay_audit_id,
-                )
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return request_value
+        metadata = params.get("_meta")
+        if not isinstance(metadata, Mapping):
+            return request_value
+        client_capabilities = metadata.get(META_CLIENT_CAPABILITIES)
+        if not isinstance(client_capabilities, Mapping):
+            return request_value
+        extensions = client_capabilities.get("extensions")
+        if not isinstance(extensions, Mapping) or TASK_EXTENSION_ID not in extensions:
+            return request_value
 
-        try:
-            result = self._dispatch(name, args)
-        except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
-            result = _tool_error(f"{type(exc).__name__}:{exc}")
-
-        is_error = bool(result.get("isError"))
-        host_audit_id = None
-        if name == "jazn_finalize_reply":
-            state = str((result.get("structuredContent") or {}).get("state") or "reject")
-            event_type = state if state in {"accept", "repair", "reject"} else "reject"
-            host_audit_id = self._append_host_audit(
-                event_type=event_type,
-                turn_id=turn_id,
-                trace_id=trace_id,
-                key=key,
-                contract_hash=contract_hash,
-                payload_digest=payload_digest,
-                result=result,
-                approval_state=approval_state,
-            )
-        audit_id = self._append_mcp_audit(
-            name=name,
-            subject=subject,
-            key=key,
-            payload_digest=payload_digest,
-            approval_state=approval_state,
-            outcome="error" if is_error else "completed",
-            metadata={
-                "host_bridge_audit_id": host_audit_id,
-                "turn_id": (result.get("structuredContent") or {}).get("turn_id") or turn_id,
-                "trace_id": (result.get("structuredContent") or {}).get("trace_id") or trace_id,
-            },
+        prepared = deepcopy(request_value)
+        prepared_params = dict(prepared.get("params") or {})
+        prepared_meta = dict(prepared_params.get("_meta") or {})
+        prepared_client_capabilities = dict(
+            prepared_meta.get(META_CLIENT_CAPABILITIES) or {}
         )
-        result = self._augment_result(
-            result,
-            idempotency_key=key,
-            idempotency_state=(
-                "completed"
-                if name in IDEMPOTENT_SIDE_EFFECT_TOOLS
-                else "one_shot" if name == "jazn_finalize_reply" else "read_only"
-            ),
-            approval_state=approval_state,
-            audit_id=audit_id,
-            host_bridge_audit_id=host_audit_id,
-        )
-        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
-            self.idempotency.finalize(key, result, state="error" if is_error else "completed")
-        return result
+        prepared_extensions = dict(prepared_client_capabilities.get("extensions") or {})
+        prepared_extensions.pop(TASK_EXTENSION_ID, None)
+        prepared_client_capabilities["extensions"] = prepared_extensions
+        prepared_meta[META_CLIENT_CAPABILITIES] = prepared_client_capabilities
+        prepared_params["_meta"] = prepared_meta
+        prepared["params"] = prepared_params
+        return prepared
+
+    @classmethod
+    def _stamp_modern_response(
+        cls,
+        request_value: Mapping[str, Any],
+        response: dict[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        if response is None or "error" in response:
+            return response
+        raw_result = response.get("result")
+        if not isinstance(raw_result, Mapping):
+            return response
+
+        result = dict(raw_result)
+        result.setdefault("resultType", "complete")
+        metadata = dict(result.get("_meta") or {})
+        metadata[META_SERVER_INFO] = cls._server_info()
+        result["_meta"] = metadata
+
+        if request_value.get("method") == "tools/list":
+            tools = result.get("tools")
+            if isinstance(tools, list):
+                result["tools"] = sorted(
+                    tools,
+                    key=lambda item: (
+                        str(item.get("name") or "") if isinstance(item, Mapping) else ""
+                    ),
+                )
+            result.setdefault("ttlMs", MODERN_TOOL_LIST_TTL_MS)
+            result.setdefault("cacheScope", "public")
+
+        stamped = dict(response)
+        stamped["result"] = result
+        return stamped
 
     def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None:
         method = request_value.get("method")
         request_id = request_value.get("id")
+
+        # Legacy era: initialize/initialized remain supported for existing MCP
+        # clients and OpenAI tunnel deployments that have not migrated yet.
         if method == "notifications/initialized":
+            self.client_initialized = True
             return None
-        try:
-            if method == "initialize":
-                result: dict[str, Any] = {
-                    "protocolVersion": request_value.get("params", {}).get(
-                        "protocolVersion", "2025-06-18"
-                    ),
-                    "capabilities": {"tools": {"listChanged": False}},
-                    "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
-                }
-            elif method == "tools/list":
-                result = {"tools": TOOL_DEFINITIONS}
-            elif method == "tools/call":
-                params = dict(request_value.get("params") or {})
-                result = self.call_tool(
-                    str(params.get("name") or ""),
-                    dict(params.get("arguments") or {}),
-                    dict(params.get("_meta") or {}),
+
+        if method == "initialize":
+            params = request_value.get("params") or {}
+            if not isinstance(params, Mapping):
+                return self._jsonrpc_error(
+                    request_id,
+                    code=INVALID_PARAMS,
+                    message="initialize params must be an object",
                 )
-            else:
-                return {
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "error": {"code": -32601, "message": "Method not found"},
-                }
-            return {"jsonrpc": "2.0", "id": request_id, "result": result}
-        except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
+            negotiated = self._negotiate_legacy_protocol_version(
+                params.get("protocolVersion")
+            )
+            client_capabilities = params.get("capabilities")
+            self.client_capabilities = (
+                dict(client_capabilities)
+                if isinstance(client_capabilities, Mapping)
+                else {}
+            )
+            self.negotiated_protocol_version = negotiated
+            self.client_initialized = False
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
-                "error": {"code": -32001, "message": str(exc)},
+                "result": {
+                    "protocolVersion": negotiated,
+                    "capabilities": self._server_capabilities(negotiated),
+                    "serverInfo": self._server_info(),
+                    "instructions": self._instructions(),
+                },
             }
 
-    def serve_stdio(self) -> int:
-        for line in sys.stdin:
-            raw = line.strip()
-            if not raw:
-                continue
-            try:
-                request_value = json.loads(raw)
-                if not isinstance(request_value, dict):
-                    raise ValueError("request must be an object")
-                response = self.handle(request_value)
-            except Exception as exc:
-                response = {
+        modern = self._is_modern_request(request_value)
+        if modern:
+            validation_error = self._validate_modern_request(request_value)
+            if validation_error is not None:
+                return validation_error
+            if method == "server/discover":
+                return {
                     "jsonrpc": "2.0",
-                    "id": None,
-                    "error": {"code": -32700, "message": f"Parse error: {exc}"},
+                    "id": request_id,
+                    "result": self._discover_result(),
                 }
-            if response is not None:
-                sys.stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":")) + "\n")
-                sys.stdout.flush()
-        return 0
+            # Tasks are an extension in the 2026 era. The current v76 adapter
+            # is deliberately not advertised as that extension until its full
+            # contemporary contract is implemented and tested.
+            if method in _TASK_METHODS:
+                return self._jsonrpc_error(
+                    request_id,
+                    code=METHOD_NOT_FOUND,
+                    message="Method not found",
+                )
+
+        # 2025-11-25 also had an experimental task shape. We do not claim it.
+        if method in _TASK_METHODS and (
+            self.negotiated_protocol_version
+            != MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION
+        ):
+            return self._jsonrpc_error(
+                request_id,
+                code=METHOD_NOT_FOUND,
+                message="Method not found",
+            )
+
+        dispatched_request = self._prepare_legacy_dispatch(
+            request_value,
+            modern=modern,
+        )
+        response = super().handle(dispatched_request)
+        response = self.turn_runtime.decorate_call_response(request_value, response)
+        if modern:
+            response = self._stamp_modern_response(request_value, response)
+        return response
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v15.")
+    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v16.")
     parser.add_argument("--root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--daemon-url", default="http://127.0.0.1:8787")
     parser.add_argument("--allow-unauthenticated-local-test", action="store_true")
