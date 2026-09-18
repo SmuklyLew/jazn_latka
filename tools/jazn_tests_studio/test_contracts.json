@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.79.0",
-  "active_definition_count": 1647,
+  "active_definition_count": 1648,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3724,6 +3724,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3732,7 +3733,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 47
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3749,6 +3750,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3757,7 +3759,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 60
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_cli_exposes_preallocation_without_side_effecting_submit": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3772,6 +3774,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3780,7 +3783,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 76
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_executor_generation_supersedes_stale_pre_spawn_failure": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3795,6 +3798,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3803,7 +3807,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 83
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_newer_failure_does_not_inherit_old_success_from_previous_generation": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3818,6 +3822,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3826,7 +3831,31 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 98
+    },
+    "tests/test_chatgpt_host_executor_epoch_recovery.py::test_preflight_parser_preserves_observation_generation": {
+      "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
+      "name": "test_preflight_parser_preserves_observation_generation",
+      "purpose": "Preflight parser preserves observation generation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_negative_observation_generation_is_rejected": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3843,6 +3872,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3851,7 +3881,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 134
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_runbook_and_thin_loader_make_executor_failure_generation_scoped": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
@@ -3866,6 +3896,7 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
         "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_executor_aggregate",
         "latka_jazn.core.chatgpt_host_executor_enums",
@@ -3874,7 +3905,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 139
     },
     "tests/test_chatgpt_host_executor_observation_validation.py::test_missing_pre_process_error_evidence_keeps_executor_state_unknown": {
       "path": "tests/test_chatgpt_host_executor_observation_validation.py",
