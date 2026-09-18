@@ -44,6 +44,7 @@ Nowy test `tests/test_chatgpt_host_executor_epoch_recovery.py` pokrywa:
 - stary success -> nowy failure bez dziedziczenia poprzedniej dostępności;
 - odrzucenie ujemnej generacji;
 - zachowanie `observation_generation` przez produkcyjny parser host-preflight;
+- zgodność środowiska `release-hardening` z kanonicznym audytem Pyright przez instalację extra `mcp-http` przed analizą aktywnego drzewa;
 - kontrakty runbooka i cienkiego loadera.
 
 Metadane `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` nie są edytowane ręcznie. Zgodnie z runbookiem muszą zostać zsynchronizowane przez kanoniczny workflow repozytorium.
