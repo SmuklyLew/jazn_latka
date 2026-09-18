@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.78.2",
-  "active_definition_count": 1640,
+  "system_version": "16.3.25.5.79.0",
+  "active_definition_count": 1647,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -35292,6 +35292,171 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset",
+      "purpose": "Canonical operation id is utc safe and never contains plus offset",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_canonical_operation_id_rejects_naive_timestamp_and_bad_entropy",
+      "purpose": "Canonical operation id rejects naive timestamp and bad entropy",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_cli_exposes_preallocation_without_side_effecting_submit": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_cli_exposes_preallocation_without_side_effecting_submit",
+      "purpose": "Cli exposes preallocation without side effecting submit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_newer_executor_generation_supersedes_stale_pre_spawn_failure": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_newer_executor_generation_supersedes_stale_pre_spawn_failure",
+      "purpose": "Newer executor generation supersedes stale pre spawn failure",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_newer_failure_does_not_inherit_old_success_from_previous_generation": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_newer_failure_does_not_inherit_old_success_from_previous_generation",
+      "purpose": "Newer failure does not inherit old success from previous generation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_negative_observation_generation_is_rejected": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_negative_observation_generation_is_rejected",
+      "purpose": "Negative observation generation is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
+    },
+    "tests/test_v16325579_host_executor_epoch_recovery.py::test_runbook_and_thin_loader_make_executor_failure_generation_scoped": {
+      "path": "tests/test_v16325579_host_executor_epoch_recovery.py",
+      "name": "test_runbook_and_thin_loader_make_executor_failure_generation_scoped",
+      "purpose": "Runbook and thin loader make executor failure generation scoped",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_executor_aggregate",
+        "latka_jazn.core.chatgpt_host_executor_enums",
+        "latka_jazn.core.chatgpt_host_executor_observation",
+        "latka_jazn.core.host_operations"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
