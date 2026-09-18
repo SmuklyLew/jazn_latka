@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from latka_jazn.cli import build_parser
+from latka_jazn.bootstrap.chatgpt_host_preflight_parse import executor_observation_from_mapping
 from latka_jazn.core.chatgpt_host_executor_aggregate import (
     aggregate_host_executor_observations,
 )
@@ -107,6 +108,27 @@ def test_newer_failure_does_not_inherit_old_success_from_previous_generation() -
     assert len(snapshot.surfaces) == 1
     assert snapshot.surfaces[0]["observation_generation"] == 2
     assert snapshot.surfaces[0]["executor_state"] == "host_executor_unavailable"
+
+
+def test_preflight_parser_preserves_observation_generation() -> None:
+    parsed = executor_observation_from_mapping(
+        {
+            "process_created": False,
+            "error_class": "TransportTimeoutError",
+            "surface": "primary",
+            "observation_generation": 7,
+        }
+    )
+    defaulted = executor_observation_from_mapping(
+        {
+            "process_created": False,
+            "error_class": "TransportTimeoutError",
+            "surface": "primary",
+        }
+    )
+
+    assert parsed.observation_generation == 7
+    assert defaulted.observation_generation == 0
 
 
 def test_negative_observation_generation_is_rejected() -> None:
