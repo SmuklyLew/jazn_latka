@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.79.1",
+  "system_version": "16.3.25.5.79.2",
   "active_definition_count": 1649,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -16410,7 +16410,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 69
     },
     "tests/test_memory_large_validation.py::test_validation_detects_foreign_key_corruption": {
       "path": "tests/test_memory_large_validation.py",
@@ -16434,7 +16434,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_memory_large_validation.py::test_validation_reports_incomplete_wal_sidecars": {
       "path": "tests/test_memory_large_validation.py",
@@ -16458,7 +16458,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 109
     },
     "tests/test_memory_large_validation.py::test_recursive_discovery_stays_under_trusted_memory_root_and_deduplicates": {
       "path": "tests/test_memory_large_validation.py",
@@ -16482,7 +16482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 124
     },
     "tests/test_memory_large_validation.py::test_report_output_is_written_under_runtime_root": {
       "path": "tests/test_memory_large_validation.py",
@@ -16507,7 +16507,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 144
     },
     "tests/test_memory_large_validation.py::test_canonical_sidecar_path_and_health_contract": {
       "path": "tests/test_memory_large_validation.py",
@@ -16531,7 +16531,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 157
     },
     "tests/test_memory_large_validation.py::test_health_validator_rejects_missing_requested_wake_state_fields": {
       "path": "tests/test_memory_large_validation.py",
@@ -16555,7 +16555,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 227
     },
     "tests/test_memory_large_validation.py::test_explicit_normalization_sidecar_override_is_preserved": {
       "path": "tests/test_memory_large_validation.py",
@@ -16579,7 +16579,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 243
+      "line": 246
     },
     "tests/test_memory_promotion_and_offline_rest.py::test_promotion_gate_forbids_automatic_l3": {
       "path": "tests/test_memory_promotion_and_offline_rest.py",
