@@ -26,7 +26,6 @@ def _runtime_root(tmp_path: Path) -> Path:
 def _canonical_memory(root: Path) -> Path:
     memory = default_memory_root(root)
     memory.mkdir(parents=True, exist_ok=True)
-    (memory / "MEMORY_PACKAGE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
     return memory
 
 

@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.79.0 keeps executor-independent ingress and hardens recovery
-# across ephemeral ChatGPT executor generations. Pre-spawn failure evidence is
-# generation-scoped, and durable host operation ids are preallocated through a
-# canonical UTC-safe generator that cannot emit local-offset '+' characters.
-DISTRIBUTION_VERSION = "16.3.25.5.79.0"
-PACKAGE_VERSION = "16.3.25.5.79.0"
-PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery"
+# v16.3.25.5.79.1 keeps executor-epoch recovery and converges the release
+# contracts exposed by full CI: optional MEMORY vs operational core state,
+# large-memory validation trust roots, cognitive recovery separation, and the
+# canonical Pack Generator 10.1.86.0.116 contract.
+DISTRIBUTION_VERSION = "16.3.25.5.79.1"
+PACKAGE_VERSION = "16.3.25.5.79.1"
+PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery-ci-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

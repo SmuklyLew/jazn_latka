@@ -123,6 +123,32 @@ def _conversation_regressions(root: Path) -> list[dict[str, Any]]:
 
 
 
+
+def _runtime_recovery_separation_probe(root: Path) -> bool:
+    """Verify recovery snapshots stay distinct from mutable runtime-write state."""
+
+    try:
+        config = JaznConfig(root=root)
+        recovered = config.recovered_memory_db_path.resolve()
+        runtime_write = config.runtime_write_db_path_readonly.resolve()
+        normalization_source = config.normalization_source_db_path.resolve()
+        memory_root = config.memory_root.resolve()
+        operational_root = config.runtime_memory_storage_root.resolve()
+        availability = config.memory_availability
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+    if recovered == runtime_write:
+        return False
+    if availability.persistent_memory_enabled:
+        return normalization_source in {recovered, runtime_write}
+    return (
+        normalization_source == recovered
+        and operational_root != memory_root
+        and runtime_write.is_relative_to(operational_root)
+        and recovered.is_relative_to(memory_root)
+    )
+
 def _source_integration_checks(root: Path) -> dict[str, bool]:
     """Verify runtime reachability markers, not merely file presence."""
     try:
@@ -152,11 +178,7 @@ def _source_integration_checks(root: Path) -> dict[str, bool]:
         "rest_replay_reads_normalized_sources": (
             "normalized_memory_items" in replay and "normalization_runs" in replay and "_normalized_candidates" in replay
         ),
-        "runtime_write_split_from_recovery": (
-            "def runtime_write_db_path" in config
-            and "return self.runtime_write_db_path" in config
-            and "recovered if recovered.is_file() else self.runtime_write_db_path_readonly" in config
-        ),
+        "runtime_write_split_from_recovery": _runtime_recovery_separation_probe(root),
         "homeostasis_generation_limit_enforced": (
             "control_effects" in turn_contract and "max_output_tokens=max_output_tokens" in turn_contract
         ),
