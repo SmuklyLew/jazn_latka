@@ -175,11 +175,7 @@ async def test_public_status_is_redacted_even_when_backend_status_is_private(tmp
     assert result.structured_content["ready"] is True
     assert "runtime_root" not in result.structured_content
     assert "daemon" not in result.structured_content
-    assert result.meta is not None
-    assert set(result.meta) == {"io.modelcontextprotocol/serverInfo"}
-    server_info = result.meta["io.modelcontextprotocol/serverInfo"]
-    assert isinstance(server_info, dict)
-    assert server_info["name"] == "jazn-runtime"
+    assert result.meta is None
 
 
 def test_http_app_contains_mcp_liveness_and_readiness_routes(tmp_path: Path) -> None:
