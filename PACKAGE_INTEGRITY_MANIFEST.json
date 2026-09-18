@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
-  "runtime_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
-  "package_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
-  "generated_at_utc": "2026-09-18T13:56:35+00:00",
-  "updated_at_utc": "2026-09-18T13:56:35+00:00",
+  "version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+  "runtime_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+  "package_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+  "generated_at_utc": "2026-09-18T14:03:31+00:00",
+  "updated_at_utc": "2026-09-18T14:03:31+00:00",
   "start_file": "run.py",
-  "file_count": 1773,
-  "static_file_count": 1773,
+  "file_count": 1777,
+  "static_file_count": 1777,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3008,
-      "sha256": "2133134e2e570f5088ca7d673072dfcbd9dacf071dd44e227ddfb53881ed3a9a",
+      "size_bytes": 2978,
+      "sha256": "be968abb4b7f3e9c931fbc5e09e49f18e3f79539bf8892196bd36308b7bfe5bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1228,6 +1228,15 @@
       "path": "docs/plans/JAZN_STUDIO_PAMIECI_MASTER73_CODEX_CONTINUATION.md",
       "size_bytes": 15865,
       "sha256": "3ab5fb5d1cf3bff9187d2f3ab4b710f6ee7154ff908dbbd2b8da6502be655a35",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_STUDIO_PAMIECI_TEST04_REF_CHECKPOINT.md",
+      "size_bytes": 1620,
+      "sha256": "9c81f9a79fd77b9959adaf0dbe106cd13d6cee4959c462b2e4036692d30f0f49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2315,8 +2324,8 @@
     },
     {
       "path": "docs/tools/MEMORY_SQLITE_TEST_04.md",
-      "size_bytes": 18930,
-      "sha256": "394728aaa14970d61ddf578de1523c189e3c42c6d14551425bcf1ec4c35d8d7f",
+      "size_bytes": 19428,
+      "sha256": "fe8ed6a206597fad325ccd1782c7613064ebfd1554580f6560470a9e0fb5ee7f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8327,8 +8336,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_sqlite_test04.py",
-      "size_bytes": 107145,
-      "sha256": "73f7045aeec30d4ead5a3343a370825a1fd31e18ef2ff0cfe49d3c5ca4d897cb",
+      "size_bytes": 108613,
+      "sha256": "c5e2e3fcc4adf66f043f7ae9b8f10fc11bb44f247bdd5d6f179d0ea674e023a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8516,8 +8525,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6505,
-      "sha256": "0fe8bd426023b63465acff02582e7e8e3c8b3136ec0aa0b44ed245eca51bedc7",
+      "size_bytes": 6502,
+      "sha256": "83635a0ad6bfaafeb6763311c947062054032d2abc27ba40b912062359475be3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11200,6 +11209,24 @@
       "path": "tests/archive/branches/16.3.25.5.66__9a714a53c6e3/source/test_zip_resource_limits.py",
       "size_bytes": 2885,
       "sha256": "cdaf6bb1700d65063c590a43b83d4a460ada26e01085d6aedd73acf5c888d369",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.80__052ad40ebf53/MANIFEST.json",
+      "size_bytes": 389,
+      "sha256": "713ae3e8f2b3fce5924f3dc01a8d6fe59290f23fe5f6e715785262255d08593d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.80__052ad40ebf53/test_memory_sqlite_test04.py",
+      "size_bytes": 31371,
+      "sha256": "c035764848031e03f75266c2d663fc8ac45ac50e8f53509c2db6dd250e209b90",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14285,8 +14312,8 @@
     },
     {
       "path": "tests/test_memory_sqlite_test04.py",
-      "size_bytes": 31371,
-      "sha256": "c035764848031e03f75266c2d663fc8ac45ac50e8f53509c2db6dd250e209b90",
+      "size_bytes": 31844,
+      "sha256": "6145071b70842c46008dc3058d67e0a027a60782b834fede634c2228cef5a6ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14314,6 +14341,15 @@
       "path": "tests/test_memory_sync_runtime_lease.py",
       "size_bytes": 5323,
       "sha256": "fbaa7245dd4ed0d354ed23b31be1711684db01cbe2da93dea7b9ff2d4329cde6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "size_bytes": 4491,
+      "sha256": "9792d3b598e52acad3130e6b5715b02baae32145424dcd56e533dee8f3e7db56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15437,8 +15473,8 @@
     },
     {
       "path": "tools/Invoke-JaznMemorySqliteTest04.ps1",
-      "size_bytes": 6124,
-      "sha256": "d8363be6aa2c82280c164a24a591a685e49748149ce2c3e708833a7262c83902",
+      "size_bytes": 6670,
+      "sha256": "db1578bba2fbcfda65ec070b77f2df75836162dc6e3fcd8e969787d7e8632abc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15824,8 +15860,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1551492,
-      "sha256": "9e83cad62c88a9045112826e3b37b16fd30bc71fa2e93db37bb0df77cd330e83",
+      "size_bytes": 1557278,
+      "sha256": "58ceebac270168e5b5935b670d81c10de48751fb933b19c03551d68f654fbe5c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16409,11 +16445,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
+  "release_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
-    "package_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence",
-    "release_version": "16.3.25.5.80-jazn-studio-pamieci-current-master-convergence"
+    "runtime_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+    "package_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+    "release_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract"
   },
   "legacy_aliases": {
     "version": "release_version"
