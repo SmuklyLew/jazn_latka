@@ -1,0 +1,904 @@
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from types import SimpleNamespace
+import os
+import threading
+import pytest
+
+from latka_jazn.config import JaznConfig
+from latka_jazn.core import runtime_daemon
+
+
+_TEST_SYNC_GUARD_SECONDS = 5.0
+_TEST_EXECUTION_TIMEOUT_SECONDS = 0.25
+_TEST_CLIENT_WAIT_TIMEOUT_SECONDS = 0.10
+_TEST_CLIENT_POLL_INTERVAL_SECONDS = 0.02
+
+
+def _await_event(event: threading.Event, *, label: str) -> None:
+    """Wait on state, not scheduler timing; timeout is only a deadlock guard."""
+
+    assert event.wait(_TEST_SYNC_GUARD_SECONDS), f"timed out waiting for {label}"
+
+
+def _join_thread(thread: threading.Thread, *, label: str) -> None:
+    thread.join(timeout=_TEST_SYNC_GUARD_SECONDS)
+    assert not thread.is_alive(), f"{label} did not terminate"
+
+
+@pytest.fixture(autouse=True)
+def _verified_source_provenance(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {
+                "status": "verified_export_without_git_history",
+                "limitations": ["test fixture without Git history"],
+            }
+        ),
+    )
+
+
+class _FakeSession:
+    execution_count = 0
+    slow_started = threading.Event()
+    release_slow = threading.Event()
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.execution_count = 0
+        cls.slow_started = threading.Event()
+        cls.release_slow = threading.Event()
+
+    def __init__(self, _config, **_kwargs) -> None:
+        self.state = SimpleNamespace(session_id=_kwargs.get("session_id"))
+
+    def process_user_text(self, user_text: str, **_kwargs) -> dict:
+        type(self).execution_count += 1
+        if user_text == "slow":
+            type(self).slow_started.set()
+            if not type(self).release_slow.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while fake slow session was blocked")
+        return {"ok": True, "final_visible_text": user_text, "execution_ordinal": type(self).execution_count}
+
+    def close(self) -> None:
+        return
+
+
+class _BlockingSession:
+    instance_count = 0
+    writes: list[str] = []
+    slow_started = threading.Event()
+    release_slow = threading.Event()
+    slow_finished = threading.Event()
+
+    def __init__(self, _config, **kwargs) -> None:
+        type(self).instance_count += 1
+        self.instance_id = type(self).instance_count
+        self.state = SimpleNamespace(session_id=kwargs.get("session_id"))
+
+    @staticmethod
+    def _successful_result() -> dict:
+        return {
+            "ok": True,
+            "final_visible_text": "[czas] Działam.",
+            "final_visible_integrity": {"valid": True, "consensus": True},
+            "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+            "runtime_truth_gate": {"ok": True, "normal_response_allowed": True},
+            "normal_response_blocked": False,
+        }
+
+    def process_user_text(self, user_text: str, *, _turn_context, **_kwargs) -> dict:
+        result = self._successful_result()
+        result["instance_id"] = self.instance_id
+        if user_text == "slow":
+            _turn_context.stage_semantic_write(
+                data_type="truth_audit",
+                stage="candidate_persistence_staging",
+                commit=lambda: self.writes.append("late-write"),
+            )
+            self.slow_started.set()
+            if not self.release_slow.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while blocking session was held")
+            _turn_context.commit_if_allowed(result, job_status="completed")
+            self.slow_finished.set()
+        return result
+
+    def close(self) -> None:
+        return
+
+
+def _test_server(tmp_path: Path, *, execution_timeout: float = 1.0) -> runtime_daemon.JaznDaemonServer:
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_FakeSession,
+        execution_timeout_seconds=execution_timeout,
+    )
+    server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
+    return server
+
+
+def _iso(age_seconds: int = 0) -> str:
+    return (datetime.now(timezone.utc) - timedelta(seconds=age_seconds)).isoformat()
+
+
+def _marker(root: Path, *, pid: int = 1234, age: int = 0) -> dict:
+    return {
+        "pid": pid,
+        "active_root": str(root.resolve()),
+        "last_heartbeat_at_utc": _iso(age),
+        "heartbeat_interval_seconds": 10,
+        "timestamp_contract": {"trusted": False, "source": "local_machine"},
+    }
+
+
+def _ping(root: Path, *, pid: int = 1234, age: int = 0, trusted: bool = False) -> dict:
+    return {
+        "daemon_pid": pid,
+        "runtime_process_active": True,
+        "active_root": str(root.resolve()),
+        "last_heartbeat_at_utc": _iso(age),
+        "heartbeat_interval_seconds": 10,
+        "timestamp_trusted": trusted,
+        "timestamp_contract": {"trusted": trusted, "source": "test_network" if trusted else "local_machine"},
+    }
+
+
+def _install(monkeypatch, root: Path, marker: dict, ping: dict | None, *, pid_alive: bool = True) -> None:
+    monkeypatch.setattr(runtime_daemon, "resolve_active_runtime_marker_path", lambda *_args, **_kwargs: root / "marker.json")
+    monkeypatch.setattr(runtime_daemon, "read_json_file", lambda _path: marker)
+    monkeypatch.setattr(
+        runtime_daemon,
+        "resolve_active_runtime_root",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            root=root.resolve(),
+            marker_found=True,
+            marker_valid=True,
+            source="marker",
+            error=None,
+        ),
+    )
+    monkeypatch.setattr(runtime_daemon, "pid_is_alive", lambda _pid: pid_alive)
+    monkeypatch.setattr(runtime_daemon, "_probe_daemon_status", lambda *_args, **_kwargs: (ping, None if ping else "timeout", "/ready" if ping else None))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+
+
+def test_healthy_daemon_is_active_trusted_even_with_local_time(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, trusted=False))
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+    assert result["active_state"] == "active_trusted"
+    assert result["readiness_state"] == "ready"
+    assert result["time_trust_state"] == "local_machine_unverified"
+
+
+def test_live_endpoint_is_not_trusted_when_current_package_hashes_fail(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, trusted=True))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {
+            "ok": False,
+            "errors": [{"code": "sha256_mismatch", "path": "main.py"}],
+        },
+    )
+
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+
+    assert result["active_state"] == "inactive"
+    assert result["ok"] is False
+    assert result["process_state"] == "active"
+    assert result["package_integrity_verified"] is False
+    assert result["active_state_reason"] == "package_integrity_verification_failed"
+
+
+def test_live_endpoint_is_not_trusted_when_source_provenance_is_invalid(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, trusted=True))
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+
+    assert result["active_state"] == "inactive"
+    assert result["ok"] is False
+    assert result["process_state"] == "active"
+    assert result["source_provenance_verified"] is False
+    assert result["active_state_reason"] == "source_provenance_not_verified"
+
+
+def test_snapshot_does_not_probe_or_claim_live_verification(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    marker = _marker(root)
+    _install(monkeypatch, root, marker, None)
+    monkeypatch.setattr(runtime_daemon, "_probe_daemon_status", lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("HTTP called")))
+    result = runtime_daemon.status_daemon(JaznConfig(root=root), probe_endpoint=False)
+    assert result["endpoint_probe_performed"] is False
+    assert result["observation_state"] == "endpoint_not_probed"
+    assert result["active_state"] == "active_unverified"
+    assert result["process_identity_confirmed"] is False
+
+
+def test_pid_and_root_mismatches_fail_closed(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), _ping(root, pid=9999))
+    assert runtime_daemon.status_daemon(JaznConfig(root=root))["active_state_reason"] == "endpoint_pid_mismatch"
+
+    wrong = tmp_path / "other"
+    wrong.mkdir()
+    _install(monkeypatch, root, _marker(root), _ping(wrong))
+    assert runtime_daemon.status_daemon(JaznConfig(root=root))["active_state_reason"] == "endpoint_runtime_root_mismatch"
+
+
+def test_stale_heartbeat_is_degraded(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root, age=300), _ping(root, age=300))
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+    assert result["active_state"] == "active_degraded"
+    assert result["heartbeat_state"] == "stale"
+
+
+def test_endpoint_timeout_with_fresh_marker_is_degraded(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), None)
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+    assert result["active_state"] == "active_degraded"
+    assert result["active_state_reason"] == "fresh_marker_and_live_pid_endpoint_unreachable"
+
+
+def test_dead_pid_is_inactive(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path.resolve()
+    _install(monkeypatch, root, _marker(root), None, pid_alive=False)
+    result = runtime_daemon.status_daemon(JaznConfig(root=root))
+    assert result["active_state"] == "inactive"
+    assert result["process_state"] == "dead"
+
+
+def test_probe_retries_and_third_attempt_can_succeed(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_http(_method: str, url: str, *, timeout: float) -> dict:
+        calls.append(url)
+        if len(calls) < 3:
+            raise TimeoutError("temporary")
+        return {"runtime_process_active": True}
+
+    monkeypatch.setattr(runtime_daemon, "http_json", fake_http)
+    monkeypatch.setattr(runtime_daemon.time, "sleep", lambda _seconds: None)
+    payload, error, endpoint = runtime_daemon._probe_daemon_status("127.0.0.1", 8787)
+    assert error is None
+    assert endpoint == "/live"
+    assert payload is not None
+    assert payload["endpoint_probe_attempt"] == 3
+    assert len(calls) == 3
+
+
+def test_chat_result_retries_same_request_id_without_resubmitting(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_http(method: str, url: str, **_kwargs) -> dict:
+        calls.append(f"{method} {url}")
+        if len(calls) < 3:
+            raise TimeoutError("temporary result read timeout")
+        return {"ok": True, "done": True, "request_id": "stable-request"}
+
+    monkeypatch.setattr(runtime_daemon, "http_json", fake_http)
+    monkeypatch.setattr(runtime_daemon.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(runtime_daemon, "read_daemon_auth_token", lambda _root: "token")
+
+    result = runtime_daemon.chat_daemon_result(
+        JaznConfig(root=tmp_path),
+        "stable-request",
+        host="127.0.0.1",
+        port=8787,
+    )
+
+    assert result["done"] is True
+    assert result["result_probe_attempt"] == 3
+    assert len(calls) == 3
+    assert all(call.startswith("GET ") for call in calls)
+    assert all("/chat-result/stable-request" in call for call in calls)
+
+
+def test_liveness_payload_does_not_touch_readiness_dependencies(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    server = _test_server(tmp_path)
+    try:
+        def readiness_dependency_called(*_args, **_kwargs):
+            raise AssertionError("liveness must not touch readiness dependencies")
+
+        monkeypatch.setattr(
+            runtime_daemon,
+            "build_runtime_write_access_status",
+            readiness_dependency_called,
+        )
+        monkeypatch.setattr(server, "chat_job_summary", readiness_dependency_called)
+        monkeypatch.setattr(server, "rest_cycle_status", readiness_dependency_called)
+        monkeypatch.setattr(server, "memory_sync_status", readiness_dependency_called)
+
+        payload = server.liveness_status_payload(endpoint="/live")
+
+        assert payload["ok"] is True
+        assert payload["liveness_ok"] is True
+        assert payload["runtime_process_active"] is True
+        assert "runtime_write_access_status" not in payload
+        assert "daemon_chat_jobs" not in payload
+    finally:
+        server.close_sessions()
+
+
+def test_windows_pid_probe_distinguishes_live_and_missing_process() -> None:
+    assert runtime_daemon.pid_is_alive(os.getpid()) is True
+    assert runtime_daemon.pid_is_alive(2_147_483_647) is False
+
+
+def test_lazy_worker_state_is_explicit_before_first_job(tmp_path: Path) -> None:
+    server = _test_server(tmp_path)
+    try:
+        summary = server.chat_job_summary()
+        assert summary["worker_alive"] is False
+        assert summary["worker_state"] == "not_started_lazy"
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
+def test_client_wait_timeout_then_poll_completes_once_with_same_request_id(tmp_path: Path) -> None:
+    _FakeSession.reset()
+    server = _test_server(tmp_path)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    port = int(server.server_address[1])
+    request_id = "isolated-client-timeout"
+    try:
+        pending = runtime_daemon.chat_daemon(
+            server.config,
+            "slow",
+            host="127.0.0.1",
+            port=port,
+            request_id=request_id,
+            timeout=_TEST_CLIENT_WAIT_TIMEOUT_SECONDS,
+            poll_interval=_TEST_CLIENT_POLL_INTERVAL_SECONDS,
+        )
+        assert pending["error_code"] == "daemon_chat_pending"
+        assert pending["client_wait_status"] == "client_wait_timeout"
+        assert pending["execution_failed"] is False
+        assert pending["request_id"] == request_id
+        _await_event(_FakeSession.slow_started, label="slow daemon request start")
+
+        replay = runtime_daemon.chat_daemon_submit(
+            server.config,
+            "slow",
+            host="127.0.0.1",
+            port=port,
+            request_id=request_id,
+        )
+        assert replay["request_id"] == request_id
+        assert replay["idempotent_replay"] is True
+
+        _FakeSession.release_slow.set()
+        job = server.get_chat_job(request_id)
+        assert job is not None
+        _await_event(job.done_event, label="slow daemon request completion")
+        completed = runtime_daemon.chat_daemon_result(
+            server.config, request_id, host="127.0.0.1", port=port
+        )
+        assert completed.get("done") is True, {
+            "completed": completed,
+            "server_thread_alive": thread.is_alive(),
+            "job_status": job.status,
+            "http_workers_available": getattr(server._http_worker_slots, "_value", None),
+        }
+        assert completed["job_status"] == "completed"
+        assert completed["request_id"] == request_id
+        assert _FakeSession.execution_count == 1
+        summary = server.chat_job_summary()
+        assert summary["completed"] == 1
+        assert summary["failed"] == 0
+    finally:
+        _FakeSession.release_slow.set()
+        server.shutdown()
+        server.close_sessions()
+        server.server_close()
+        _join_thread(thread, label="daemon HTTP server thread")
+
+
+def test_execution_timeout_is_terminal_and_worker_accepts_next_job(tmp_path: Path) -> None:
+    _FakeSession.reset()
+    server = _test_server(tmp_path, execution_timeout=_TEST_EXECUTION_TIMEOUT_SECONDS)
+    try:
+        slow, created, error = server.submit_chat_job(
+            user_text="slow", input_field="test", session_id="slow-session",
+            no_carryover=False, client="isolated-test", request_id="execution-timeout",
+        )
+        assert created is True and error is None and slow is not None
+        _await_event(_FakeSession.slow_started, label="timed-out session start")
+        _await_event(slow.done_event, label="execution timeout terminal state")
+        assert slow.status == "execution_timeout"
+        assert slow.result is not None
+        assert slow.result["error_code"] == "execution_timeout"
+
+        fast, created, error = server.submit_chat_job(
+            user_text="fast", input_field="test", session_id="fast-session",
+            no_carryover=False, client="isolated-test", request_id="after-timeout",
+        )
+        assert created is True and error is None and fast is not None
+        _await_event(fast.done_event, label="post-timeout fast job completion")
+        assert fast.status == "completed"
+        assert server.chat_job_summary()["worker_state"] == "alive"
+    finally:
+        _FakeSession.release_slow.set()
+        server.close_sessions()
+        server.server_close()
+
+
+def test_execution_timeout_replaces_poisoned_session_worker_for_same_session(tmp_path: Path) -> None:
+    _BlockingSession.instance_count = 0
+    _BlockingSession.writes = []
+    _BlockingSession.slow_started = threading.Event()
+    _BlockingSession.release_slow = threading.Event()
+    _BlockingSession.slow_finished = threading.Event()
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_BlockingSession,
+        execution_timeout_seconds=_TEST_EXECUTION_TIMEOUT_SECONDS,
+    )
+    server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
+    try:
+        slow, created, error = server.submit_chat_job(
+            user_text="slow", input_field="test", session_id="same-session",
+            no_carryover=False, client="isolated-test", request_id="replace-timeout",
+        )
+        assert created is True and error is None and slow is not None
+        _await_event(_BlockingSession.slow_started, label="blocking session start")
+        _await_event(slow.done_event, label="blocking session timeout")
+        assert slow.status == "execution_timeout"
+
+        fast, created, error = server.submit_chat_job(
+            user_text="fast", input_field="test", session_id="same-session",
+            no_carryover=False, client="isolated-test", request_id="replace-next",
+        )
+        assert created is True and error is None and fast is not None
+        _await_event(fast.done_event, label="replacement session completion")
+        assert fast.status == "completed"
+        assert fast.result is not None
+        assert fast.result["instance_id"] >= 2
+
+        _BlockingSession.release_slow.set()
+        _await_event(_BlockingSession.slow_finished, label="retired blocking session completion")
+        assert _BlockingSession.writes == []
+        summary = server.chat_job_summary()
+        assert summary["execution_timeout"] == 1
+        assert summary["completed"] == 1
+        assert summary["worker_state"] == "alive"
+    finally:
+        _BlockingSession.release_slow.set()
+        server.close_sessions()
+        server.server_close()
+
+
+def test_restart_recovers_nonterminal_job_without_double_execution(tmp_path: Path) -> None:
+    _FakeSession.execution_count = 0
+    first = _test_server(tmp_path)
+    first.start_chat_worker = lambda: None  # type: ignore[method-assign]
+    job, created, error = first.submit_chat_job(
+        user_text="slow", input_field="test", session_id="restart-session",
+        no_carryover=False, client="isolated-test", request_id="restart-request",
+    )
+    assert created is True and error is None and job is not None
+    assert job.status == "queued"
+    first.server_close()
+
+    second = _test_server(tmp_path)
+    try:
+        recovered = second.get_chat_job("restart-request")
+        assert recovered is not None
+        assert recovered.status == "recovered_after_restart"
+        assert recovered.recovery_disposition == "failed_without_replay"
+        assert recovered.result is not None
+        assert recovered.result["automatic_replay_performed"] is False
+
+        replay, created, error = second.submit_chat_job(
+            user_text="slow", input_field="test", session_id="restart-session",
+            no_carryover=False, client="isolated-test", request_id="restart-request",
+        )
+        assert error is None
+        assert created is False
+        assert replay is recovered
+        assert _FakeSession.execution_count == 0
+    finally:
+        second.close_sessions()
+        second.server_close()
+
+
+def test_daemon_job_snapshot_carries_transient_exact_user_text_binding() -> None:
+    user_text = "Pierwsza dokładna wiadomość użytkownika."
+    job = runtime_daemon.DaemonChatJob(
+        request_id="binding-request",
+        user_text=user_text,
+        input_field="message",
+        session_id="binding-session",
+        no_carryover=False,
+        client="isolated-test",
+    )
+    snapshot = job.snapshot()
+    assert snapshot["user_text"] == user_text
+    assert snapshot["user_text_sha256"] == runtime_daemon.hashlib.sha256(
+        user_text.encode("utf-8")
+    ).hexdigest()
+    assert snapshot["input_field"] == "message"
+
+
+def test_start_daemon_rejects_invalid_source_provenance_before_side_effects(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("endpoint probe must not run before provenance gate")
+        ),
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "source_provenance_not_verified"
+    assert not (tmp_path / "memory").exists()
+
+
+def test_low_level_daemon_entrypoint_cannot_bypass_provenance_gate(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "read_source_provenance",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            to_dict=lambda: {"status": "invalid", "limitations": ["bad source"]}
+        ),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("memory initialization must not run before provenance gate")
+        ),
+    )
+
+    exit_code = runtime_daemon.run_daemon(JaznConfig(root=tmp_path), port=0)
+    diagnostic = capsys.readouterr().err
+
+    assert exit_code == 3
+    assert '"error_code": "source_provenance_not_verified"' in diagnostic
+    assert not (tmp_path / "memory").exists()
+
+
+def test_start_daemon_reports_unwritable_runtime_workspace_without_traceback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    blocked_parent = tmp_path / "not-a-directory"
+    blocked_parent.write_text("blocked", encoding="utf-8")
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "daemon_log_dir",
+        lambda _root: blocked_parent / "daemon",
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_workspace_unwritable"
+
+
+def test_start_daemon_reports_log_open_permission_failure_without_traceback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    log_dir = tmp_path / "external-runtime-state" / "daemon"
+    original_open = Path.open
+
+    def blocked_log_open(path: Path, *args, **kwargs):
+        if path == log_dir / "stdout.log":
+            raise PermissionError(13, "host denied daemon log write", str(path))
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(runtime_daemon, "daemon_log_dir", lambda _root: log_dir)
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("memory initialization must follow the workspace write preflight")
+        ),
+    )
+    monkeypatch.setattr(Path, "open", blocked_log_open)
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_workspace_unwritable"
+    assert result["stdout_log"] == str(log_dir / "stdout.log")
+
+
+def test_start_daemon_reports_unwritable_memory_root_before_spawning(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        runtime_daemon,
+        "_probe_daemon_status",
+        lambda *_args, **_kwargs: (None, None, None),
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "verify_package_integrity_manifest",
+        lambda _root: {"ok": True, "errors": []},
+    )
+    monkeypatch.setattr(
+        runtime_daemon,
+        "build_runtime_write_access_status",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            PermissionError(13, "host denied memory write")
+        ),
+    )
+
+    result = runtime_daemon.start_daemon(JaznConfig(root=tmp_path), startup_timeout=0.1)
+
+    assert result["ok"] is False
+    assert result["started"] is False
+    assert result["error_code"] == "runtime_memory_root_unwritable"
+    assert "runtime-bootstrap" in result["recovery_hint"]
+
+
+def test_watchdog_terminalizes_orchestration_stall_and_replaces_queue_worker(tmp_path: Path) -> None:
+    """A stall before RuntimeSessionWorker._call must not poison the daemon queue.
+
+    This reproduces the production failure where a job remained ``running``
+    beyond its execution deadline because the normal per-session timeout owner
+    was never reached.  The daemon-level watchdog must terminalize that job and
+    allow a fresh queue worker to process later requests.
+    """
+
+    _FakeSession.reset()
+    server = _test_server(tmp_path, execution_timeout=_TEST_EXECUTION_TIMEOUT_SECONDS)
+    original_get_session = server.get_session
+    stalled = threading.Event()
+    release = threading.Event()
+    stalled_finished = threading.Event()
+
+    def blocking_get_session(session_id, *, no_carryover=False, client="daemon_http"):
+        if session_id == "orchestration-stall":
+            stalled.set()
+            if not release.wait(_TEST_SYNC_GUARD_SECONDS):
+                raise RuntimeError("test guard expired while orchestration was stalled")
+            stalled_finished.set()
+        return original_get_session(session_id, no_carryover=no_carryover, client=client)
+
+    server.get_session = blocking_get_session  # type: ignore[method-assign]
+    try:
+        slow, created, error = server.submit_chat_job(
+            user_text="fast",
+            input_field="test",
+            session_id="orchestration-stall",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="orchestration-stall-request",
+        )
+        assert created is True and error is None and slow is not None
+        _await_event(stalled, label="orchestration stall start")
+        _await_event(slow.done_event, label="orchestration watchdog timeout")
+        assert slow.status == "execution_timeout"
+        assert slow.result is not None
+        assert slow.result["error_code"] == "execution_timeout"
+        assert slow.recovery_disposition == "watchdog_terminalized_without_replay"
+
+        fast, created, error = server.submit_chat_job(
+            user_text="fast",
+            input_field="test",
+            session_id="after-orchestration-stall",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="after-orchestration-stall-request",
+        )
+        assert created is True and error is None and fast is not None
+        _await_event(fast.done_event, label="post-watchdog fast job completion")
+        assert fast.status == "completed"
+
+        release.set()
+        _await_event(stalled_finished, label="stalled orchestration release")
+        assert slow.status == "execution_timeout"
+        assert slow.result is not None
+        assert slow.result["error_code"] == "execution_timeout"
+        summary = server.chat_job_summary()
+        assert summary["execution_timeout"] == 1
+        assert summary["completed"] == 1
+        assert summary["watchdog_alive"] is True
+        assert summary["worker_generation"] >= 2
+    finally:
+        release.set()
+        server.close_sessions()
+        server.server_close()
+
+
+def test_daemon_default_execution_budget_is_distinct_from_one_shot_runtime(tmp_path: Path) -> None:
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    config = JaznConfig(root=root)
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=config,
+        marker_path=marker,
+        session_factory=_FakeSession,
+    )
+    try:
+        assert config.runtime_turn_timeout_seconds == 45.0
+        assert config.daemon_chat_execution_timeout_seconds == 180.0
+        assert config.deep_recall_turn_timeout_seconds == 600.0
+        assert server.execution_timeout_seconds == 180.0
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
+def test_daemon_start_command_propagates_execution_timeout(tmp_path: Path) -> None:
+    (tmp_path / "main.py").write_text("", encoding="utf-8")
+    cmd = runtime_daemon.build_daemon_start_command(
+        tmp_path,
+        execution_timeout_seconds=321.0,
+    )
+    idx = cmd.index("--daemon-chat-timeout")
+    assert cmd[idx + 1] == "321.0"
+
+class _SqliteFailureThenSuccessSession:
+    attempts = 0
+    instance_count = 0
+
+    def __init__(self, _config, **kwargs) -> None:
+        import sqlite3
+
+        type(self).instance_count += 1
+        self.instance_id = type(self).instance_count
+        self._sqlite3 = sqlite3
+        self.state = SimpleNamespace(session_id=kwargs.get("session_id"))
+
+    def process_user_text(self, user_text: str, **_kwargs) -> dict:
+        type(self).attempts += 1
+        if type(self).attempts == 1:
+            raise self._sqlite3.DatabaseError("database disk image is malformed")
+        return {
+            "ok": True,
+            "final_visible_text": user_text,
+            "instance_id": self.instance_id,
+        }
+
+    def close(self) -> None:
+        return
+
+
+def test_sqlite_database_error_fails_only_one_job_and_worker_recovers(tmp_path: Path) -> None:
+    _SqliteFailureThenSuccessSession.attempts = 0
+    _SqliteFailureThenSuccessSession.instance_count = 0
+    root = tmp_path.resolve()
+    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=root),
+        marker_path=marker,
+        session_factory=_SqliteFailureThenSuccessSession,
+        execution_timeout_seconds=1.0,
+    )
+    server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
+    try:
+        failed, created, error = server.submit_chat_job(
+            user_text="first",
+            input_field="test",
+            session_id="sqlite-session",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="sqlite-failure",
+        )
+        assert created is True and error is None and failed is not None
+        _await_event(failed.done_event, label="SQLite failure job completion")
+        assert failed.status == "failed"
+        assert failed.result is not None
+        assert failed.result["error_code"] == "runtime_sqlite_error"
+        assert failed.result["recovery_disposition"] == "session_retired_no_automatic_database_recovery"
+        assert failed.result["sqlite"]["exception_type"] == "DatabaseError"
+        assert server.chat_job_summary()["worker_state"] == "alive"
+
+        succeeded, created, error = server.submit_chat_job(
+            user_text="second",
+            input_field="test",
+            session_id="sqlite-session",
+            no_carryover=False,
+            client="isolated-test",
+            request_id="sqlite-recovery",
+        )
+        assert created is True and error is None and succeeded is not None
+        _await_event(succeeded.done_event, label="SQLite recovery job completion")
+        assert succeeded.status == "completed"
+        assert succeeded.result is not None
+        assert succeeded.result["instance_id"] >= 2
+        assert server.chat_job_summary()["worker_state"] == "alive"
+    finally:
+        server.close_sessions()
+        server.server_close()
