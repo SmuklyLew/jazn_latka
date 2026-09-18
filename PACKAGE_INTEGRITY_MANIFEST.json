@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
-  "runtime_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
-  "package_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
-  "generated_at_utc": "2026-09-18T12:12:52+00:00",
-  "updated_at_utc": "2026-09-18T12:12:52+00:00",
+  "version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "runtime_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "package_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "generated_at_utc": "2026-09-18T12:18:58+00:00",
+  "updated_at_utc": "2026-09-18T12:18:58+00:00",
   "start_file": "run.py",
-  "file_count": 1751,
-  "static_file_count": 1751,
+  "file_count": 1753,
+  "static_file_count": 1753,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2995,
-      "sha256": "64b3186cd8a5bd7de556466f4841f853913ad28d544ecf7ca21d6c3a47e449a4",
+      "sha256": "1c95a23b0b65f8eb734e3e4e52aab0bb73c36b66b6dc65adc73e32e9511eeb23",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2056,6 +2056,15 @@
       "path": "docs/reports/JAZN_V16_3_25_5_79_1_CI_CONVERGENCE.md",
       "size_bytes": 1313,
       "sha256": "8e67d3dad103f06814ac2b4bd3ed434daca3c9aa01c3fed9b657e6f0458c567b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_79_2_MEMORY_VALIDATION_FIXTURE_CONVERGENCE.md",
+      "size_bytes": 1131,
+      "sha256": "29ff8b050a4bbc2818e31c3f3e46e188f2753a9964cad7578be7717fb79c4cac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8399,8 +8408,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6705,
-      "sha256": "7c92d4536e71d05b49025ceeba3f86ac81d36441873fdf9ad0613c9bd82d616a",
+      "size_bytes": 6631,
+      "sha256": "47fb9e7bbbc2fdc64b0d9444e2c35e348acfb8324fe3afeff0ca293818e3fe6f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12484,6 +12493,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence/test_memory_large_validation.py",
+      "size_bytes": 9534,
+      "sha256": "ce505af3f40d988d34ab3a671cb8ab50c33a7cf5aac71ed1503ce5d3660d1715",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13826,8 +13844,8 @@
     },
     {
       "path": "tests/test_memory_large_validation.py",
-      "size_bytes": 9534,
-      "sha256": "ce505af3f40d988d34ab3a671cb8ab50c33a7cf5aac71ed1503ce5d3660d1715",
+      "size_bytes": 9736,
+      "sha256": "b8cd6d103d0a40507887c1ecf4c47aff66832959aef9202b2a23653ec70c9310",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15627,7 +15645,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1532445,
-      "sha256": "9bad16e9d5f8a0cdad6524da00914ac337debef09c58bf397252d18035820273",
+      "sha256": "a76dde738d26b85bbeebf9bd1b22452f23cc4f9e125a3f753bd55593562a6ea0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16211,11 +16229,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
+  "release_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
-    "package_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence",
-    "release_version": "16.3.25.5.79.1-host-executor-epoch-recovery-ci-convergence"
+    "runtime_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+    "package_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+    "release_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
