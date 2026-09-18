@@ -14,6 +14,7 @@ Zmiana usuwa dwa praktyczne problemy ujawnione 18 września 2026:
 - `HostExecutorObservation.observation_generation` identyfikuje logiczną generację hostowej powierzchni wykonawczej;
 - agregacja wybiera wyłącznie najwyższą zaobserwowaną generację i nie miesza starego failure/success z nową powierzchnią;
 - diagnostyka per-surface publikuje `observation_generation`;
+- produkcyjny parser `chatgpt_host_preflight_parse.py` przenosi `observation_generation` z hostowego JSON do `HostExecutorObservation`, z kompatybilnym domyślnym `0`;
 - `generate_operation_id()` tworzy identyfikator w UTC, z dozwolonego alfabetu, z entropią hex;
 - publiczne `run.py host-op-id --kind ... --json` pozwala prealokować identyfikator przed side-effecting submit;
 - `AGENTS.chatgpt.md` i cienki loader jawnie mówią, że `host_executor_unavailable` nie jest stanem sticky między generacjami hosta;
@@ -35,13 +36,14 @@ Executor-independent ingress z v78 pozostaje preferowaną długoterminową tras�
 
 ## Testy regresji
 
-Nowy test `tests/test_v16325579_host_executor_epoch_recovery.py` pokrywa:
+Nowy test `tests/test_chatgpt_host_executor_epoch_recovery.py` pokrywa:
 - bezpieczny UTC `operation_id` i brak `+`;
 - odrzucenie naive datetime i złej entropii;
 - obecność publicznego `host-op-id`;
 - stale failure -> nowy success bez fałszywego degraded/sticky state;
 - stary success -> nowy failure bez dziedziczenia poprzedniej dostępności;
 - odrzucenie ujemnej generacji;
+- zachowanie `observation_generation` przez produkcyjny parser host-preflight;
 - kontrakty runbooka i cienkiego loadera.
 
 Metadane `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` nie są edytowane ręcznie. Zgodnie z runbookiem muszą zostać zsynchronizowane przez kanoniczny workflow repozytorium.
