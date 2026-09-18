@@ -136,6 +136,12 @@ def test_negative_observation_generation_is_rejected() -> None:
         _pre_spawn_failure(generation=-1)
 
 
+def test_release_hardening_pyright_installs_mcp_http_extra() -> None:
+    workflow = (ROOT / ".github/workflows/release-hardening.yml").read_text(encoding="utf-8")
+
+    assert 'python -m pip install -e ".[memory-rebuild-ui,archive,mcp-http]" pytest' in workflow
+
+
 def test_runbook_and_thin_loader_make_executor_failure_generation_scoped() -> None:
     runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
     loader = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(encoding="utf-8")
