@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "821ae2a318f0399ca8e33f602a3342162f23ed7d",
-  "base_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
-  "commit_date": "2026-09-18T14:18:58+02:00",
+  "base_merge_commit": "613261a502fa8c79085cca8800acae2588c10cc8",
+  "base_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
+  "commit_date": "2026-09-18T14:35:22+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-18T12:18:58+00:00",
+  "generated_at_utc": "2026-09-18T12:35:22+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "2fdd882bd74b382cf4ddaa963fac326cb8246c62",
+  "git_tree_sha": "ed3952a71a2c6471cb2c2be18495be946dd6b222",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.78.2-executor-independent-runtime-ingress",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "821ae2a318f0399ca8e33f602a3342162f23ed7d",
-    "source_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence"
+    "source_commit": "613261a502fa8c79085cca8800acae2588c10cc8",
+    "source_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "release_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "runtime_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "821ae2a318f0399ca8e33f602a3342162f23ed7d",
+  "source_commit": "613261a502fa8c79085cca8800acae2588c10cc8",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "source_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.79.2-host-executor-epoch-recovery-ci-convergence",
+  "update_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
   "version_source": "latka_jazn/version.py"
 }
