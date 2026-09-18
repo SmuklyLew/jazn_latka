@@ -56,6 +56,7 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
         remote_runtime_transport_available=bool(optional_bool(item, "remote_runtime_transport_available", False)),
         execution_handoff_available=bool(optional_bool(item, "execution_handoff_available", False)),
         execution_handoff_state=handoff_state,
+        observation_generation=int(optional_int(item, "observation_generation", 0) or 0),
     )
 
 
