@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.79.2",
+  "system_version": "16.3.25.5.79.3",
   "active_definition_count": 1649,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -15062,7 +15062,7 @@
       "path": "tests/test_mcp_http_gateway.py",
       "name": "test_public_status_is_redacted_even_when_backend_status_is_private",
       "purpose": "Public status is redacted even when backend status is private",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -15070,7 +15070,7 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
@@ -15096,7 +15096,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 181
+      "line": 185
     },
     "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15117,7 +15117,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 191
+      "line": 195
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
       "path": "tests/test_mcp_modern_protocol.py",
