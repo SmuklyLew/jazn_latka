@@ -48,9 +48,6 @@ def _source(path: Path, rows: int = 2000) -> None:
 
 def _prepared_root(tmp_path: Path) -> Path:
     root = tmp_path / "runtime"
-    memory_root = root.parent / "workspace_runtime" / "memory"
-    memory_root.mkdir(parents=True, exist_ok=True)
-    (memory_root / "MEMORY_PACKAGE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
     cfg = JaznConfig(root=root)
     _source(cfg.memory_db_path_readonly)
     sidecar = MemoryNormalizationSidecar(

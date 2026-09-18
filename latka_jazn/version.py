@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.79.1 keeps executor-epoch recovery and converges the release
-# contracts exposed by full CI: optional MEMORY vs operational core state,
-# large-memory validation trust roots, cognitive recovery separation, and the
-# canonical Pack Generator 10.1.86.0.116 contract.
-DISTRIBUTION_VERSION = "16.3.25.5.79.1"
-PACKAGE_VERSION = "16.3.25.5.79.1"
+# v16.3.25.5.79.2 keeps v79 executor-epoch recovery and v79.1 CI
+# convergence, while making the large-memory validation fixture explicitly
+# model attached persistent MEMORY from the beginning of setup.
+DISTRIBUTION_VERSION = "16.3.25.5.79.2"
+PACKAGE_VERSION = "16.3.25.5.79.2"
 PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery-ci-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
