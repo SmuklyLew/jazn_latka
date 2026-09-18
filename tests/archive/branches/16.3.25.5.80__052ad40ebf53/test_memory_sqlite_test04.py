@@ -14,6 +14,7 @@ from latka_jazn.tools.memory_restore import (
     MemoryRestoreOrchestrator,
 )
 from latka_jazn.tools.memory_sqlite_test04 import (
+    EXPECTED_BRANCH,
     MULTI_TURN_SCHEMA,
     PROTOCOL_SCHEMA,
     REQUIRED_REPORTS,
@@ -43,7 +44,6 @@ from latka_jazn.tools.memory_sqlite_test04 import (
 )
 
 
-TEST_BRANCH = "test/synthetic-memory-acceptance"
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "Invoke-JaznMemorySqliteTest04.ps1"
 DOC = ROOT / "docs" / "tools" / "MEMORY_SQLITE_TEST_04.md"
@@ -236,11 +236,7 @@ def test_powershell_operator_has_fail_closed_contract() -> None:
         "$AllowDirty",
     ):
         assert parameter in text
-    assert "$ExpectedBranch" in text
-    assert "$ExpectedRef" in text
-    assert "--expected-branch" in text
-    assert "--expected-ref" in text
-    assert "feature/memory-sqlite-test-04" not in text
+    assert EXPECTED_BRANCH in text
     assert "latka_jazn.tools.memory_sqlite_test04" in text
     assert "approve-l3-manifest-sha" not in text.casefold()
     assert "force-push" not in text.casefold()
@@ -285,7 +281,6 @@ def test_wrong_branch_is_rejected_before_workspace_write(
     )
     protocol = Test04Protocol(
         ProtocolRequest(
-            expected_branch=TEST_BRANCH,
             root=repo,
             source_manifest=manifest,
             target_root=target,
@@ -313,7 +308,6 @@ def test_explicit_baselines_cannot_conflict_with_private_manifest(
         legacy=manifest_legacy,
     )
     request = ProtocolRequest(
-            expected_branch=TEST_BRANCH,
         root=ROOT,
         source_manifest=manifest,
         target_root=tmp_path / "target",
@@ -336,7 +330,7 @@ def test_plan_only_is_cumulative_exact_and_does_not_create_target(
     monkeypatch.setattr(
         "latka_jazn.tools.memory_sqlite_test04.repository_preflight",
         lambda *_args, **_kwargs: {
-            "branch": TEST_BRANCH,
+            "branch": EXPECTED_BRANCH,
             "head": "a" * 40,
             "status_short": [],
             "tracked_status_short": [],
@@ -350,7 +344,6 @@ def test_plan_only_is_cumulative_exact_and_does_not_create_target(
     )
     protocol = Test04Protocol(
         ProtocolRequest(
-            expected_branch=TEST_BRANCH,
             root=repo,
             source_manifest=manifest,
             target_root=target,
@@ -631,7 +624,7 @@ def test_protocol_requires_and_runs_html_dry_run_before_plan(
     monkeypatch.setattr(
         "latka_jazn.tools.memory_sqlite_test04.repository_preflight",
         lambda *_args, **_kwargs: {
-            "branch": TEST_BRANCH,
+            "branch": EXPECTED_BRANCH,
             "head": "b" * 40,
             "status_short": [],
             "tracked_status_short": [],
@@ -648,7 +641,6 @@ def test_protocol_requires_and_runs_html_dry_run_before_plan(
     blocked_repo.mkdir()
     blocked = Test04Protocol(
         ProtocolRequest(
-            expected_branch=TEST_BRANCH,
             root=blocked_repo,
             source_manifest=manifest_path,
             target_root=tmp_path / "target-blocked",
@@ -665,7 +657,6 @@ def test_protocol_requires_and_runs_html_dry_run_before_plan(
     ready_repo.mkdir()
     ready = Test04Protocol(
         ProtocolRequest(
-            expected_branch=TEST_BRANCH,
             root=ready_repo,
             source_manifest=manifest_path,
             target_root=tmp_path / "target-ready",
@@ -852,7 +843,6 @@ def test_recall_requires_real_case_and_restart_requires_explicit_execution(
     with pytest.raises(Test04Error, match="restart-daemon requires"):
         validate_request(
             ProtocolRequest(
-            expected_branch=TEST_BRANCH,
                 root=tmp_path,
                 source_manifest=manifest,
                 target_root=tmp_path.parent / "outside-target",
@@ -923,7 +913,6 @@ def test_first_rebuild_targets_only_external_developer_root(
     target = tmp_path / "external-target"
     protocol = Test04Protocol(
         ProtocolRequest(
-            expected_branch=TEST_BRANCH,
             root=repo,
             source_manifest=manifest_path,
             target_root=target,

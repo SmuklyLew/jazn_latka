@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.80",
-  "active_definition_count": 1669,
+  "system_version": "16.3.25.5.80.1",
+  "active_definition_count": 1676,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21196,13 +21196,13 @@
       "path": "tests/test_memory_sqlite_test04.py",
       "name": "test_powershell_operator_has_fail_closed_contract",
       "purpose": "Powershell operator has fail closed contract",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
@@ -21232,7 +21232,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 245
+      "line": 249
     },
     "tests/test_memory_sqlite_test04.py::test_wrong_branch_is_rejected_before_workspace_write": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21255,7 +21255,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 264
+      "line": 268
     },
     "tests/test_memory_sqlite_test04.py::test_explicit_baselines_cannot_conflict_with_private_manifest": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21278,7 +21278,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 297
+      "line": 302
     },
     "tests/test_memory_sqlite_test04.py::test_plan_only_is_cumulative_exact_and_does_not_create_target": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21299,7 +21299,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 322
+      "line": 328
     },
     "tests/test_memory_sqlite_test04.py::test_manifest_order_never_uses_file_size_and_same_sha_is_deduplicated": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21320,7 +21320,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 382
+      "line": 389
     },
     "tests/test_memory_sqlite_test04.py::test_shared_metadata_numbered_members_and_html_contract": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21341,7 +21341,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 412
+      "line": 419
     },
     "tests/test_memory_sqlite_test04.py::test_zip_traversal_symlink_duplicates_case_collisions_and_corruption_block": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21362,7 +21362,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 470
+      "line": 477
     },
     "tests/test_memory_sqlite_test04.py::test_html_only_source_uses_existing_dry_run_without_target_write": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21383,7 +21383,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 510
+      "line": 517
     },
     "tests/test_memory_sqlite_test04.py::test_html_only_source_rejects_non_html_file": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21404,7 +21404,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 558
+      "line": 565
     },
     "tests/test_memory_sqlite_test04.py::test_acceptance_requires_html_dry_run_when_html_is_declared": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21425,7 +21425,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 583
+      "line": 590
     },
     "tests/test_memory_sqlite_test04.py::test_protocol_requires_and_runs_html_dry_run_before_plan": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21446,7 +21446,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 601
+      "line": 608
     },
     "tests/test_memory_sqlite_test04.py::test_source_change_after_plan_blocks_execution": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21469,7 +21469,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 676
+      "line": 685
     },
     "tests/test_memory_sqlite_test04.py::test_first_import_error_stops_following_source": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21490,7 +21490,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 692
+      "line": 701
     },
     "tests/test_memory_sqlite_test04.py::test_same_target_idempotence_and_two_fresh_rebuild_fingerprints": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21511,7 +21511,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 724
+      "line": 733
     },
     "tests/test_memory_sqlite_test04.py::test_full_validation_and_l2_l3_stay_unpromoted": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21532,7 +21532,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 751
+      "line": 760
     },
     "tests/test_memory_sqlite_test04.py::test_sanitized_reports_contain_no_private_paths_names_queries_or_terms": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21553,7 +21553,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 776
+      "line": 785
     },
     "tests/test_memory_sqlite_test04.py::test_recall_requires_real_case_and_restart_requires_explicit_execution": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21576,7 +21576,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 826
+      "line": 835
     },
     "tests/test_memory_sqlite_test04.py::test_multi_turn_naturalness_requires_manual_complete_review": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21599,7 +21599,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 856
+      "line": 866
     },
     "tests/test_memory_sqlite_test04.py::test_first_rebuild_targets_only_external_developer_root": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21620,7 +21620,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 907
+      "line": 917
     },
     "tests/test_memory_sqlite_test04.py::test_documentation_preserves_truth_boundary_and_cleanup_contract": {
       "path": "tests/test_memory_sqlite_test04.py",
@@ -21641,7 +21641,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 938
+      "line": 949
     },
     "tests/test_memory_studio_correlation_fields.py::test_ascii_journal_content_and_source_bytes_are_traceable": {
       "path": "tests/test_memory_studio_correlation_fields.py",
@@ -21847,6 +21847,158 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 114
+    },
+    "tests/test_memory_test04_repository_contract.py::test_missing_expectation_fails_before_git_or_writes": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_missing_expectation_fails_before_git_or_writes",
+      "purpose": "Missing expectation fails before git or writes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "Test04Error"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_memory_test04_repository_contract.py::test_explicit_branch_and_ref_are_both_required_to_match": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_explicit_branch_and_ref_are_both_required_to_match",
+      "purpose": "Explicit branch and ref are both required to match",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "Test04Error"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_memory_test04_repository_contract.py::test_ref_rejects_stale_commit_and_accepts_explicit_detached_head": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_ref_rejects_stale_commit_and_accepts_explicit_detached_head",
+      "purpose": "Ref rejects stale commit and accepts explicit detached head",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "Test04Error"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_memory_test04_repository_contract.py::test_explicit_ref_does_not_bypass_dirty_tree_gate": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_explicit_ref_does_not_bypass_dirty_tree_gate",
+      "purpose": "Explicit ref does not bypass dirty tree gate",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "Test04Error"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_memory_test04_repository_contract.py::test_invalid_expectation_is_rejected": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_invalid_expectation_is_rejected",
+      "purpose": "Invalid expectation is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "Test04Error"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_memory_test04_repository_contract.py::test_parser_and_request_preserve_explicit_expectations": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_parser_and_request_preserve_explicit_expectations",
+      "purpose": "Parser and request preserve explicit expectations",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_memory_test04_repository_contract.py::test_powershell_missing_expectation_fails_before_creating_workspace": {
+      "path": "tests/test_memory_test04_repository_contract.py",
+      "name": "test_powershell_missing_expectation_fails_before_creating_workspace",
+      "purpose": "Powershell missing expectation fails before creating workspace",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_sqlite_test04"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
     },
     "tests/test_memory_tier_fts5_rank.py::test_probe_reports_fts5_and_direct_rank_search": {
       "path": "tests/test_memory_tier_fts5_rank.py",
