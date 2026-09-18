@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.79.0",
+  "system_version": "16.3.25.5.79.1",
   "active_definition_count": 1649,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -7630,14 +7630,14 @@
       "path": "tests/test_config_memory_root.py",
       "name": "test_config_routes_memory_paths_outside_versioned_runtime",
       "purpose": "Config routes memory paths outside versioned runtime",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -7665,7 +7665,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 42
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
@@ -12261,7 +12261,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 69
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_creates_fresh_host_parent_and_restores_no_legacy": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12285,7 +12285,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 88
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_moves_existing_legacy_memory_to_backup": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12309,7 +12309,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_host_memory_direct_sqlite.py::test_gateway_deduplicates_native_unified_and_transactional_same_file": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -12333,7 +12333,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 137
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12362,7 +12362,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_rejects_manifest_path_escape": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12393,7 +12393,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 79
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_memory_writer_keeps_all_file_layers_in_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12423,7 +12423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 93
     },
     "tests/test_host_memory_root_regressions.py::test_runtime_duplicate_scan_reads_canonical_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12453,7 +12453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 109
     },
     "tests/test_host_memory_root_regressions.py::test_supporting_memory_components_share_canonical_host_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12482,7 +12482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 126
     },
     "tests/test_host_memory_root_regressions.py::test_conversation_archive_uses_host_memory_sqlite_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12512,7 +12512,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 143
     },
     "tests/test_host_memory_root_regressions.py::test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12541,7 +12541,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 156
     },
     "tests/test_host_memory_root_regressions.py::test_polish_understanding_reads_private_lexicon_from_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -12570,7 +12570,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 173
     },
     "tests/test_host_operations.py::test_host_operation_target_is_canonical_and_root_override_is_rejected": {
       "path": "tests/test_host_operations.py",
