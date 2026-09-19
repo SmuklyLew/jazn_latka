@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-  "runtime_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-  "package_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-  "generated_at_utc": "2026-09-19T14:45:37+00:00",
-  "updated_at_utc": "2026-09-19T14:45:37+00:00",
+  "version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
+  "runtime_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
+  "package_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
+  "generated_at_utc": "2026-09-19T14:50:58+00:00",
+  "updated_at_utc": "2026-09-19T14:50:58+00:00",
   "start_file": "run.py",
-  "file_count": 2093,
-  "static_file_count": 2093,
+  "file_count": 2094,
+  "static_file_count": 2094,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2978,
-      "sha256": "47407261474d80abb4d15e6a9106b8c99240874949608597ef96bbf5218f9b8a",
+      "size_bytes": 3008,
+      "sha256": "d3a7d9258a84938b90a82e254586774e10e09467be756e8960fa2ed20ee45d7f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1228,6 +1228,15 @@
       "path": "docs/plans/JAZN_STUDIO_PAMIECI_MASTER73_CODEX_CONTINUATION.md",
       "size_bytes": 15865,
       "sha256": "3ab5fb5d1cf3bff9187d2f3ab4b710f6ee7154ff908dbbd2b8da6502be655a35",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_STUDIO_PAMIECI_NATIVE_IDENTITY_CHECKPOINT.md",
+      "size_bytes": 3248,
+      "sha256": "846313b0ece148c2fc7d4d72fbafdffe290de48144262505c132a47c680011b6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7436,8 +7445,8 @@
     },
     {
       "path": "latka_jazn/tools/chat_export_store.py",
-      "size_bytes": 24672,
-      "sha256": "e506e89453e02125fcb10e0928f69a6d19601a478b8a343f107e38636081406d",
+      "size_bytes": 25454,
+      "sha256": "db84f2fd514a673c2da7da7341eeab730a7704eedca88d40a6721bc5c0d40f34",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7571,8 +7580,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/adapters/chatgpt_json.py",
-      "size_bytes": 1601,
-      "sha256": "4406aae9f87f4b8e395aa943606649e223dea28c8c343d5e0beb63f96086d60e",
+      "size_bytes": 2149,
+      "sha256": "fd05e0dd0a8e164d2951bc8df74a72dd2db0aedd30e9132ec66d517c4bd945d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8534,8 +8543,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6502,
-      "sha256": "83635a0ad6bfaafeb6763311c947062054032d2abc27ba40b912062359475be3",
+      "size_bytes": 6507,
+      "sha256": "be66be8185b2ceb427b90cde11835c5c9f8f477169a6bca0d7f1786680622aeb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18705,7 +18714,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1558149,
-      "sha256": "a9810dcdd5850dac970deb8f6d9c2be78c76f6c72c36ecd29bb87be96a087f42",
+      "sha256": "ccead5a060d54b1d89a6a85261c9adb298800e1cbab1520f819d8350a2180e6d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19289,11 +19298,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
+  "release_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-    "package_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-    "release_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract"
+    "runtime_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
+    "package_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
+    "release_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity"
   },
   "legacy_aliases": {
     "version": "release_version"
