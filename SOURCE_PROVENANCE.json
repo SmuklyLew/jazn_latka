@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "397fdcb14c6cb10c9e9b0785351eac84c5a765b8",
+  "base_merge_commit": "0083b07f9fb5f1e89aed2d19fa7c037fab1944ed",
   "base_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
-  "commit_date": "2026-09-19T16:50:58+02:00",
+  "commit_date": "2026-09-19T16:58:11+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-19T14:50:58+00:00",
+  "generated_at_utc": "2026-09-19T14:58:11+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "bb011433b1ca48eb7585474422951ee5ea5e727f",
+  "git_tree_sha": "01db800e2d4331be9f0959126146a6d18da8d9e9",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "397fdcb14c6cb10c9e9b0785351eac84c5a765b8",
+    "source_commit": "0083b07f9fb5f1e89aed2d19fa7c037fab1944ed",
     "source_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "397fdcb14c6cb10c9e9b0785351eac84c5a765b8",
+  "source_commit": "0083b07f9fb5f1e89aed2d19fa7c037fab1944ed",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.80.2-jazn-studio-pamieci-native-conflict-identity",
   "tag": null,
