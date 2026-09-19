@@ -55,7 +55,7 @@ Test 04:
 
 ## Wymagania
 
-1. Branch musi być dokładnie `feature/memory-sqlite-test-04`.
+1. Podaj jawnie `-ExpectedBranch` lub `-ExpectedRef` (Python: `--expected-branch` / `--expected-ref`). Branch musi odpowiadać oczekiwanej nazwie, a ref wskazywać dokładnie HEAD. Przy podaniu obu obowiązują oba warunki. Brak oczekiwania blokuje wykonanie przed zapisem; nazwa historycznego brancha nie jest domyślna.
 2. Domyślnie śledzony worktree musi być czysty.
 3. `TargetRoot` musi leżeć poza repozytorium.
 4. Prywatny manifest musi mieć schemat
@@ -74,6 +74,7 @@ ani zakazu zapisu prywatnych danych do Git.
 ```powershell
 & ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
   -Root . `
+  -ExpectedBranch "NAZWA_ZATWIERDZONEJ_LINII" `
   -WriteTemplates
 ```
 
@@ -199,6 +200,7 @@ Faza wymaga jawnej flagi:
 ```powershell
 & ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
   -Root . `
+  -ExpectedBranch "NAZWA_ZATWIERDZONEJ_LINII" `
   -SourceManifest ".\workspace_runtime\memory_sqlite_test_04\source-manifest.private.json" `
   -TargetRoot "D:\PRIVATE\jazn_memory_test_04" `
   -PlanOnly `
@@ -221,6 +223,7 @@ Wybierz nieistniejący `TargetRoot`:
 ```powershell
 & ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
   -Root . `
+  -ExpectedBranch "NAZWA_ZATWIERDZONEJ_LINII" `
   -SourceManifest ".\workspace_runtime\memory_sqlite_test_04\source-manifest.private.json" `
   -TargetRoot "D:\PRIVATE\jazn_memory_test_04" `
   -PlanOnly
@@ -243,6 +246,7 @@ Przygotuj prywatne przypadki recall bez wpisów szablonowych, następnie:
 ```powershell
 & ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
   -Root . `
+  -ExpectedBranch "NAZWA_ZATWIERDZONEJ_LINII" `
   -SourceManifest ".\workspace_runtime\memory_sqlite_test_04\source-manifest.private.json" `
   -TargetRoot "D:\PRIVATE\jazn_memory_test_04" `
   -RecallCases ".\workspace_runtime\memory_sqlite_test_04\recall-cases.private.json" `
@@ -410,6 +414,7 @@ Wynik można dołączyć przy wznowieniu:
 ```powershell
 & ".\tools\Invoke-JaznMemorySqliteTest04.ps1" `
   -Root . `
+  -ExpectedBranch "NAZWA_ZATWIERDZONEJ_LINII" `
   -SourceManifest ".\workspace_runtime\memory_sqlite_test_04\source-manifest.private.json" `
   -TargetRoot "D:\PRIVATE\jazn_memory_test_04" `
   -RecallCases ".\workspace_runtime\memory_sqlite_test_04\recall-cases.private.json" `

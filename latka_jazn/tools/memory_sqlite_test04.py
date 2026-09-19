@@ -43,7 +43,6 @@ from latka_jazn.tools.memory_validation import (
 from latka_jazn.version import schema_version
 
 
-EXPECTED_BRANCH = "feature/memory-sqlite-test-04"
 SOURCE_MANIFEST_SCHEMA = "jazn_memory_sqlite_test04_sources/v1"
 RECALL_SCHEMA = "jazn_private_recall_cases/v1"
 MULTI_TURN_SCHEMA = "jazn_memory_sqlite_test04_multi_turn_review/v1"
@@ -165,6 +164,8 @@ class ProtocolRequest:
     restart_timeout_seconds: int = 90
     resume: bool = False
     allow_dirty: bool = False
+    expected_branch: str | None = None
+    expected_ref: str | None = None
 
     def normalized(self) -> "ProtocolRequest":
         return ProtocolRequest(
@@ -206,6 +207,8 @@ class ProtocolRequest:
             restart_timeout_seconds=max(5, int(self.restart_timeout_seconds)),
             resume=bool(self.resume),
             allow_dirty=bool(self.allow_dirty),
+            expected_branch=self.expected_branch,
+            expected_ref=self.expected_ref,
         )
 
 
@@ -290,15 +293,26 @@ def _git(root: Path, *arguments: str, allow_failure: bool = False) -> str:
 def repository_preflight(
     root: Path,
     *,
-    expected_branch: str = EXPECTED_BRANCH,
+    expected_branch: str | None = None,
+    expected_ref: str | None = None,
     allow_dirty: bool = False,
 ) -> dict[str, Any]:
+    if not (expected_branch or expected_ref):
+        raise Test04Error("explicit expected_branch or expected_ref is required")
+    for label, value in (("expected_branch", expected_branch), ("expected_ref", expected_ref)):
+        if value is not None and (not value.strip() or value != value.strip() or value.startswith("-")):
+            raise Test04Error(f"invalid {label}")
     branch = _git(root, "branch", "--show-current").strip()
-    if branch != expected_branch:
+    if expected_branch is not None and branch != expected_branch:
         raise Test04Error(
             f"wrong branch: expected {expected_branch!r}, got {branch!r}"
         )
     head = _git(root, "rev-parse", "HEAD").strip()
+    resolved_ref = None
+    if expected_ref is not None:
+        resolved_ref = _git(root, "rev-parse", "--verify", "--end-of-options", f"{expected_ref}^{{commit}}").strip()
+        if resolved_ref != head:
+            raise Test04Error(f"wrong ref: expected {expected_ref!r} at {resolved_ref}, got HEAD {head}")
     status = [
         line
         for line in _git(root, "status", "--porcelain=v1").splitlines()
@@ -321,6 +335,9 @@ def repository_preflight(
     return {
         "branch": branch,
         "head": head,
+        "expected_branch": expected_branch,
+        "expected_ref": expected_ref,
+        "resolved_expected_ref": resolved_ref,
         "status_short": status,
         "tracked_status_short": tracked_status,
         "allow_dirty": bool(allow_dirty),
@@ -2115,6 +2132,8 @@ class Test04Protocol:
     def execute(self) -> tuple[int, dict[str, Any]]:
         git = repository_preflight(
             self.request.root,
+            expected_branch=self.request.expected_branch,
+            expected_ref=self.request.expected_ref,
             allow_dirty=self.request.allow_dirty,
         )
         recall_payload = (
@@ -2769,6 +2788,8 @@ def build_parser() -> argparse.ArgumentParser:
         allow_abbrev=False,
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--expected-branch", help="Explicit expected branch name; checked before any writes.")
+    parser.add_argument("--expected-ref", help="Explicit Git ref/commit that must resolve to HEAD.")
     parser.add_argument("--source-manifest", type=Path)
     parser.add_argument("--target-root", type=Path)
     parser.add_argument("--baseline-test03-root", type=Path)
@@ -2796,7 +2817,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         root = args.root.expanduser().resolve()
         if args.write_templates:
-            repository_preflight(root, allow_dirty=bool(args.allow_dirty))
+            repository_preflight(root, expected_branch=args.expected_branch, expected_ref=args.expected_ref, allow_dirty=bool(args.allow_dirty))
             paths = write_templates(root)
             payload = {
                 "ok": True,
@@ -2828,6 +2849,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             restart_timeout_seconds=args.restart_timeout_seconds,
             resume=args.resume,
             allow_dirty=args.allow_dirty,
+            expected_branch=args.expected_branch,
+            expected_ref=args.expected_ref,
         )
         code, payload = Test04Protocol(request).execute()
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
@@ -2867,7 +2890,6 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "EXPECTED_BRANCH",
     "MULTI_TURN_SCHEMA",
     "PROTOCOL_SCHEMA",
     "ProtocolRequest",

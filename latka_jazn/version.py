@@ -3,13 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.79.3 keeps v79 executor-epoch recovery and CI
-# convergence, and aligns the MCP HTTP redaction contract with MCP 2026-07-28:
-# protocol-owned serverInfo metadata is public while backend-private metadata
-# must remain redacted.
-DISTRIBUTION_VERSION = "16.3.25.5.79.3"
-PACKAGE_VERSION = "16.3.25.5.79.3"
-PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery-ci-convergence"
+# Studio batch reconstruction and current-master host contracts converge here.
+DISTRIBUTION_VERSION = "16.3.25.5.80.2"
+PACKAGE_VERSION = "16.3.25.5.80.2"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-native-conflict-identity"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

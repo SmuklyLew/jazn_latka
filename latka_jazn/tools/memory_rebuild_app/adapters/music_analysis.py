@@ -14,6 +14,8 @@ def _analysis_rows(path: Path) -> Iterator[dict[str, Any]]:
     value = json.loads(path.read_text(encoding="utf-8-sig"))
     if isinstance(value, dict) and isinstance(value.get("analizy"), list):
         source = value["analizy"]
+    elif isinstance(value, dict) and isinstance(value.get("entries"), list):
+        source = value["entries"]
     elif isinstance(value, list):
         source = value
     elif isinstance(value, dict) and value and all(isinstance(item, dict) for item in value.values()):
@@ -36,6 +38,8 @@ def _text(raw: dict[str, Any]) -> tuple[str, str]:
     fields = (
         "analiza", "analysis", "opis", "description", "tekst", "lyrics", "summary",
         "interpretacja", "motywy", "emocje", "wnioski", "notes",
+        "lustro_emocji_latki", "refleksja_latki", "moje_odczucia_latki",
+        "notatka_introspekcyjna", "podsumowanie", "zwiazek_z_ksiazka",
     )
     fragments = [f"{name}: {raw[name]}" for name in fields if raw.get(name) not in (None, "", [], {})]
     return title, "\n".join(fragments) if fragments else canonical_json(raw)
@@ -58,7 +62,7 @@ class MusicAnalysisAdapter:
                 logical_key = stable_key(
                     "music-analysis",
                     raw,
-                    ("id", "analysis_id", "uuid", "_source_key", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
+                    ("id", "analysis_id", "uuid", "_source_key", "numer", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
                 )
                 source_id = str(raw.get("id") or raw.get("analysis_id") or raw.get("uuid") or logical_key)
                 event = str(raw.get("timestamp") or raw.get("data") or raw.get("date") or "").strip() or None

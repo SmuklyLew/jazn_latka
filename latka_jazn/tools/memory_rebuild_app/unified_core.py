@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Literal
 import os
 import sqlite3
 import tempfile
@@ -19,6 +19,7 @@ from .attachment_support import install_attachment_metadata_support
 from .html_import import import_chat_html
 from .intermediate import PreparedSource
 from .l0_store import UnifiedL0Store
+from .batch_plan import BatchPlan, source_key
 from .unified_contracts import UnifiedMixinHost
 from .read_only_validation import read_only_stats, validate_existing_database
 from .selective_import import import_selected_conversations
@@ -207,7 +208,7 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             dry_run=dry_run,
         )
 
-    def _preview_import_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
+    def _preview_import_sources(self, sources: list[str | Path], *, full_validation: bool, mode: Literal["auto", "batch", "incremental"]) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="jazn-memory-plan-") as temporary_root:
             preview_path = Path(temporary_root) / CANONICAL_DATABASE_NAME
             preview = type(self)(
@@ -219,7 +220,7 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 self.backup(preview_path)
             else:
                 preview.initialize()
-            payload = preview.import_sources(sources, dry_run=False, full_validation=full_validation)
+            payload = preview.import_sources(sources, dry_run=False, full_validation=full_validation, mode=mode)
             payload["dry_run"] = True
             payload["status"] = "plan_only"
             payload["database"] = str(self.path)
@@ -229,10 +230,22 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 result["status"] = "planned"
             return payload
 
-    def import_sources(self, sources: Iterable[str | Path], *, dry_run: bool = False, full_validation: bool = True) -> dict[str, Any]:
+    def import_sources(self, sources: Iterable[str | Path], *, dry_run: bool = False, full_validation: bool = True, mode: Literal["auto", "batch", "incremental"] = "auto") -> dict[str, Any]:
         source_list = list(sources)
+        if mode not in {"auto", "batch", "incremental"}:
+            raise ValueError(f"Unknown import mode: {mode}")
         if dry_run:
-            return self._preview_import_sources(source_list, full_validation=full_validation)
+            return self._preview_import_sources(source_list, full_validation=full_validation, mode=mode)
+        # Compatibility for existing callers: a populated database is an update.
+        # Studio and the protocol select their intended mode explicitly.
+        populated = False
+        if self.schema_ready():
+            with self.connect(read_only=True) as con:
+                populated = con.execute("SELECT 1 FROM memory_l0_sources LIMIT 1").fetchone() is not None
+        if mode == "batch" or (mode == "auto" and not populated):
+            if populated:
+                raise ValueError("Batch reconstruction requires an empty database; use incremental update")
+            return self._reconstruct_sources(source_list, full_validation=full_validation)
         results: list[dict[str, Any]] = []
         errors: list[dict[str, str]] = []
         for source in source_list:
@@ -243,9 +256,65 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 break
         validation = self.validate(full=full_validation) if self.path.exists() else {"ok": not errors}
         return {
-            "ok": not errors and bool(validation.get("ok")), "database": str(self.path), "dry_run": False,
+            "ok": not errors and all(item["report"].get("ok") for item in results) and bool(validation.get("ok")), "database": str(self.path), "dry_run": False,
+            "import_mode": "incremental",
             "results": results, "errors": errors, "validation": validation,
             "automatic_l2": False, "automatic_l3": False,
+        }
+
+    def _reconstruct_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
+        results: list[dict[str, Any]] = []
+        errors: list[dict[str, str]] = []
+        source_path = ""
+        with tempfile.TemporaryDirectory(prefix="jazn-memory-batch-") as temporary_root:
+            plan = BatchPlan(Path(temporary_root) / "plan.sqlite3")
+            prepared_paths: dict[tuple[str, str, str], tuple[Path, SourceProbe]] = {}
+            locators: list[dict[str, Any]] = []
+            try:
+                for source in sources:
+                    path = Path(source).expanduser().resolve()
+                    source_path = str(path)
+                    if not path.exists():
+                        raise FileNotFoundError(path)
+                    probe = (SourceProbe(str(path), "chat", 0.99, ("directory_chat_export",))
+                             if path.is_dir() else probe_source(path))
+                    adapter = self.adapter_registry.select(path, probe)
+                    prepared = adapter.prepare(path, probe, self.settings)
+                    plan.add(prepared)
+                    prepared_paths.setdefault(source_key(prepared), (path, probe))
+                    locators.append({"source": str(path), "source_name": prepared.source_name,
+                                     "adapter_id": prepared.adapter_id,
+                                     "source_sha256": prepared.source_sha256,
+                                     "source_member": prepared.source_member})
+                plan.seal()
+                # No destination mutation until every adapter and record is prepared.
+                self.ensure_initialized()
+                for key in sorted(plan.sources):
+                    prepared = plan.sources[key]
+                    path, probe = prepared_paths[key]
+                    source_path = str(path)
+                    native = self._native_projection(prepared, path, dry_run=False, full_validation=full_validation)
+                    if not native.get("ok", True):
+                        raise ValueError(f"Native projection failed: {prepared.adapter_id}")
+                    results.append(UnifiedImportResult(str(path), prepared.source_kind, "imported", {
+                        "ok": True, "adapter_id": prepared.adapter_id, "source_probe": probe.to_dict(),
+                        "native_projection": native, "automatic_l2": False,
+                        "automatic_l3": False, "automatic_activation": False,
+                    }).to_dict())
+                common = UnifiedL0Store(self.path).ingest_batch(plan)
+                for result in results:
+                    result["report"]["intermediate_model"] = common
+            except Exception as exc:
+                errors.append({"source": source_path, "error_type": type(exc).__name__, "error": str(exc)})
+            finally:
+                plan.close()
+        validation = self.validate(full=full_validation) if self.path.exists() else {"ok": not errors}
+        return {
+            "ok": not errors and bool(validation.get("ok")), "database": str(self.path),
+            "dry_run": False, "import_mode": "batch_reconstruction",
+            "results": results, "errors": errors, "validation": validation,
+            "source_locators": locators,
+            "automatic_l2": False, "automatic_l3": False, "automatic_activation": False,
         }
 
     def stats(self) -> dict[str, int]:

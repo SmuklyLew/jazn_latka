@@ -1,0 +1,8 @@
+{
+  "schema": "jazn_test_snapshot/v1",
+  "base_version": "16.3.25.5.80",
+  "base_commit": "052ad40ebf53587a789c1d897570c64d18a80102",
+  "source": "tests/test_memory_sqlite_test04.py",
+  "sha256": "c035764848031e03f75266c2d663fc8ac45ac50e8f53509c2db6dd250e209b90",
+  "reason": "Replace historical branch fixture with explicit expected branch/ref contract; preserve all other assertions."
+}
