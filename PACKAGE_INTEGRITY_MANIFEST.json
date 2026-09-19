@@ -3,11 +3,11 @@
   "version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
   "runtime_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
   "package_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-  "generated_at_utc": "2026-09-18T14:18:25+00:00",
-  "updated_at_utc": "2026-09-18T14:18:25+00:00",
+  "generated_at_utc": "2026-09-19T14:45:37+00:00",
+  "updated_at_utc": "2026-09-19T14:45:37+00:00",
   "start_file": "run.py",
-  "file_count": 2092,
-  "static_file_count": 2092,
+  "file_count": 2093,
+  "static_file_count": 2093,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2978,
-      "sha256": "1d851dea8dfdc99f210ad3c35d8b4162b0ded3fae810e97a20bd7535df2947f4",
+      "sha256": "47407261474d80abb4d15e6a9106b8c99240874949608597ef96bbf5218f9b8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16876,6 +16876,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_native_batch_reconstruction.py",
+      "size_bytes": 2651,
+      "sha256": "79b6801aa62e75234bff73535edb26deed55c798b538ebbdb7dd74a23e6d54c3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_promotion_and_offline_rest.py",
       "size_bytes": 3644,
       "sha256": "a8da4311b258a2055d7435257978e6e82e68221b0d8dfb6318bf5b2991d1de02",
@@ -18695,8 +18704,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1557278,
-      "sha256": "58ceebac270168e5b5935b670d81c10de48751fb933b19c03551d68f654fbe5c",
+      "size_bytes": 1558149,
+      "sha256": "a9810dcdd5850dac970deb8f6d9c2be78c76f6c72c36ecd29bb87be96a087f42",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

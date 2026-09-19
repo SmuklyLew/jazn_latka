@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "f7d9784dd0a08fa05e7396a50b49965522461ede",
+  "base_merge_commit": "7fb7921c5f64ffeaa72f59c478e97dff0abc0591",
   "base_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
-  "commit_date": "2026-09-18T16:18:25+02:00",
+  "commit_date": "2026-09-19T16:45:37+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-18T14:18:25+00:00",
+  "generated_at_utc": "2026-09-19T14:45:37+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "50bd24748752d03089cc1877098ee7a6ab23587b",
+  "git_tree_sha": "0a7ea6faccc0cd1232911c197100abb2228bf7e0",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "f7d9784dd0a08fa05e7396a50b49965522461ede",
+    "source_commit": "7fb7921c5f64ffeaa72f59c478e97dff0abc0591",
     "source_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "f7d9784dd0a08fa05e7396a50b49965522461ede",
+  "source_commit": "7fb7921c5f64ffeaa72f59c478e97dff0abc0591",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.80.1-jazn-studio-pamieci-test04-ref-contract",
   "tag": null,
