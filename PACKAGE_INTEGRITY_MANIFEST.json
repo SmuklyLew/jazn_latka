@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-  "runtime_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-  "package_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-  "generated_at_utc": "2026-09-20T06:56:40+00:00",
-  "updated_at_utc": "2026-09-20T06:56:40+00:00",
+  "version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+  "runtime_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+  "package_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+  "generated_at_utc": "2026-09-20T06:59:38+00:00",
+  "updated_at_utc": "2026-09-20T06:59:38+00:00",
   "start_file": "run.py",
-  "file_count": 2098,
-  "static_file_count": 2098,
+  "file_count": 2099,
+  "static_file_count": 2099,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "f32e2ce1c8be193b72ded75986d1bc7d04b4407f83503d1932dc6d967dc80286",
+      "size_bytes": 2984,
+      "sha256": "2d6f56d074f1a55a0e1fa6e6f42934478a8c49cc24a58085449dc14b2e5cdeda",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1282,6 +1282,15 @@
       "path": "docs/plans/JAZN_STUDIO_PAMIECI_V80_3_SOURCE_VALIDATION.md",
       "size_bytes": 3260,
       "sha256": "14af5a587a2f19b2d5832099d736d9baefc408492a4415e83f82e651e8d62107",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_STUDIO_PAMIECI_V80_4_TEST03_ACCEPTANCE.md",
+      "size_bytes": 2995,
+      "sha256": "c5d9ec3ae0c31025d5dbf5eb55e031b13995d6cdb633f7deb6c8e926591cb7c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7886,8 +7895,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/protocol_engine.py",
-      "size_bytes": 57349,
-      "sha256": "373e991b8e14d990746ebd963c418336c7553094a95dd1ecfe60dba63597b4c2",
+      "size_bytes": 58263,
+      "sha256": "fd6eac7daab15ee7680865dea2f88c05bd2988be919182aca7283036b01ddaac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8561,8 +8570,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6506,
-      "sha256": "a713645a4fa31d2e1f03ce80119ecbc9ab6096fbab0dc83ed95b4cb657c0ca11",
+      "size_bytes": 6503,
+      "sha256": "32549a5bc969cb56731106daaa3ece3165b94318d5267f4356bf5907fc0c6b2f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18750,7 +18759,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1559855,
-      "sha256": "d73d0154b6309351f272661873ae746adad15ebfdb9f8762a23771ccff429653",
+      "sha256": "440409219fc9250290387d79375d27c8b8592652517c6b08414eafa6211fd749",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19334,11 +19343,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
+  "release_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-    "package_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-    "release_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation"
+    "runtime_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+    "package_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+    "release_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success"
   },
   "legacy_aliases": {
     "version": "release_version"
