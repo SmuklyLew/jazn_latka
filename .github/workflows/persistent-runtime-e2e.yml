@@ -64,6 +64,7 @@ on:
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
       - "tests/test_mcp_modern_protocol.py"
       - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
       - "tests/test_mcp_remote_runtime.py"
       - "tests/test_mcp_http_tasks_bridge.py"
       - "tests/test_mcp_http_resources.py"
@@ -140,6 +141,7 @@ on:
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
       - "tests/test_mcp_modern_protocol.py"
       - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
       - "tests/test_mcp_remote_runtime.py"
       - "tests/test_mcp_http_tasks_bridge.py"
       - "tests/test_mcp_http_resources.py"
@@ -201,6 +203,7 @@ jobs:
           -q -ra --tb=short --durations=20
           tests/test_mcp_modern_protocol.py
           tests/test_mcp_task_registry.py
+          tests/test_mcp_task_input_fail_closed.py
           tests/test_mcp_remote_runtime.py
           tests/test_mcp_http_tasks_bridge.py
           tests/test_mcp_http_resources.py
