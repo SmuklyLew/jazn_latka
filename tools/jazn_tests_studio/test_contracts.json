@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1665,
+  "active_definition_count": 1666,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23661,19 +23661,19 @@
       "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
       "name": "test_system_package_can_bundle_local_secure_mcp_target_without_claiming_remote_control_plane",
       "purpose": "System package can bundle local secure mcp target without claiming remote control plane",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "mcp",
         "package"
       ],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 45
     },
     "tests/test_pack_generator_secure_mcp_bridge_contract.py::test_incomplete_secure_mcp_target_is_not_advertised_as_bundled": {
       "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
@@ -23690,7 +23690,25 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 72
+    },
+    "tests/test_pack_generator_secure_mcp_bridge_contract.py::test_system_package_can_bundle_public_streamable_http_implementation_without_claiming_route_ready": {
+      "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
+      "name": "test_system_package_can_bundle_public_streamable_http_implementation_without_claiming_route_ready",
+      "purpose": "System package can bundle public streamable http implementation without claiming route ready",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
     },
     "tests/test_pack_generator_v2_runtime_loader.py::test_generator_v2_direct_zip_adapts_to_verified_single_transport_volume": {
       "path": "tests/test_pack_generator_v2_runtime_loader.py",
