@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1673,
+  "active_definition_count": 1675,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15677,6 +15677,47 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_mcp_task_input_fail_closed.py::test_task_input_update_never_mutates_outstanding_requests_without_runtime_transport": {
+      "path": "tests/test_mcp_task_input_fail_closed.py",
+      "name": "test_task_input_update_never_mutates_outstanding_requests_without_runtime_transport",
+      "purpose": "Task input update never mutates outstanding requests without runtime transport",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_mcp_task_input_fail_closed.py::test_task_update_outside_input_required_is_ack_only_and_does_not_rewrite_state": {
+      "path": "tests/test_mcp_task_input_fail_closed.py",
+      "name": "test_task_update_outside_input_required_is_ack_only_and_does_not_rewrite_state",
+      "purpose": "Task update outside input required is ack only and does not rewrite state",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
     },
     "tests/test_mcp_task_registry.py::test_task_registry_is_sqlite_durable_and_idempotent": {
       "path": "tests/test_mcp_task_registry.py",
