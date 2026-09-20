@@ -45,7 +45,12 @@ main.py
 
 ## 2. Granica executora i zdalny failover
 
-Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego OpenAI Secure MCP Tunnel, a niezależne aktualne evidence managed runtime potwierdza łącznie `process_running=true`, `healthy=true` i `ready=true`, użyj zdalnej trasy bez wykonywania lokalnego probe executora. Sam fakt obecności connectora, plików MCP, tunelu w Platform albo starego statusu nie wystarcza. Host-usable remote route wymaga jednocześnie pełnego managed tunnel readiness oraz jawnej capability bieżącej powierzchni ChatGPT; odpowiada temu `classify_remote_runtime_failover()`.
+Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego zdalnego runtime Jaźni, preferuj tę trasę bez wykonywania lokalnego probe executora, ale tylko po zweryfikowaniu właściwego transportu. Dopuszczalne są dwie równorzędne warstwy transportowe do **tego samego** persistent runtime:
+
+- publiczny MCP 2026-07-28 Streamable HTTP: skonfigurowany endpoint HTTPS, zweryfikowane uwierzytelnienie, zgodność protokołu, `/healthz` live, `/readyz` ready oraz jawna capability aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_public_streamable_http_failover()`;
+- OpenAI Secure MCP Tunnel: `process_running=true`, `healthy=true`, `ready=true` oraz jawna capability odpowiadającej aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_remote_runtime_failover()`.
+
+Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego statusu nie wystarcza. Żadna z tych tras nie jest drugim runtime i żadna nie daje prawa do pokazania tekstu bez accepted-turn/finalization lineage.
 
 Jeżeli takiej gotowej zdalnej trasy nie ma, przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
@@ -63,11 +68,11 @@ Gdy przekazujesz obserwacje do `host-preflight`, ustaw `observation_generation` 
 
 Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
 
-1. managed Secure MCP Tunnel musi mieć `process_running=true`, `healthy=true`, `ready=true`;
-2. bieżący host ChatGPT musi jawnie udostępniać odpowiadającą temu tunelowi connector/app capability;
-3. jeżeli oba warunki są spełnione, ustaw `execution_route=remote_runtime` i `next_action=use_remote_runtime_transport`;
+1. sprawdź publiczny Streamable HTTP tylko wtedy, gdy istnieje skonfigurowany endpoint; pozytywna klasyfikacja wymaga jednocześnie auth, zgodności MCP 2026-07-28, `/healthz`, `/readyz` i capability bieżącego hosta;
+2. sprawdź Secure MCP Tunnel tylko wtedy, gdy jest skonfigurowany; pozytywna klasyfikacja wymaga `process_running=true`, `healthy=true`, `ready=true` i capability bieżącego hosta;
+3. jeżeli którakolwiek z tych tras jest pozytywnie zweryfikowana, ustaw `execution_route=remote_runtime` i `next_action=use_remote_runtime_transport`, zachowując typ rzeczywistego transportu w evidence;
 4. jeżeli zdalna trasa nie jest zweryfikowana, ale host jawnie oferuje execution handoff, użyj `host_handoff` zgodnie z kontraktem handoff;
-5. dopiero gdy żadna dozwolona lokalna powierzchnia nie utworzyła procesu, zdalny failover nie jest zweryfikowany i handoff nie jest dostępny/zaakceptowany, zakończ fail-closed techniczną diagnozą hosta.
+5. dopiero gdy żadna dozwolona lokalna powierzchnia nie utworzyła procesu, żadna zdalna trasa nie jest zweryfikowana i handoff nie jest dostępny/zaakceptowany, zakończ fail-closed techniczną diagnozą hosta.
 
 Gotowość zdalnej trasy nie jest dowodem aktywnej tury ani prawa do wypowiedzi. Po przejściu na `remote_runtime` każda wiadomość nadal musi wejść do tego samego persistent runtime i przejść istniejący kontrakt request/turn/finalization; widoczna odpowiedź nadal wymaga `display_exact` po zaakceptowanej finalizacji.
 

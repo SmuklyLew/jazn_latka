@@ -19,6 +19,10 @@ from .models import PackPlan
 SECURE_MCP_SERVER_MEMBER = "latka_jazn/mcp/server.py"
 SECURE_MCP_TUNNEL_BOOTSTRAP_MEMBER = "latka_jazn/mcp/tunnel_bootstrap.py"
 SECURE_MCP_TUNNEL_CONTRACT_MEMBER = "latka_jazn/mcp/secure_tunnel.py"
+PUBLIC_MCP_HTTP_GATEWAY_MEMBER = "latka_jazn/mcp/http_gateway.py"
+PUBLIC_MCP_HTTP_TASKS_BRIDGE_MEMBER = "latka_jazn/mcp/http_tasks_bridge.py"
+PUBLIC_MCP_REMOTE_RUNTIME_MEMBER = "latka_jazn/mcp/remote_runtime.py"
+PUBLIC_MCP_TASK_RESUME_MEMBER = "latka_jazn/mcp/task_resume.py"
 MEMORY_ATTACHMENT_CONTRACT_MEMBER = "MEMORY_ATTACHMENT_CONTRACT.json"
 
 
@@ -99,6 +103,16 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         SECURE_MCP_TUNNEL_CONTRACT_MEMBER,
     ]
     secure_mcp_target_bundled = all(path in packaged_files for path in secure_mcp_members)
+    public_mcp_members = [
+        SECURE_MCP_SERVER_MEMBER,
+        PUBLIC_MCP_HTTP_GATEWAY_MEMBER,
+        PUBLIC_MCP_HTTP_TASKS_BRIDGE_MEMBER,
+        PUBLIC_MCP_REMOTE_RUNTIME_MEMBER,
+        PUBLIC_MCP_TASK_RESUME_MEMBER,
+    ]
+    public_streamable_http_ingress_bundled = all(
+        path in packaged_files for path in public_mcp_members
+    )
     return {
         "schema_version": HOST_BOOTSTRAP_CONTRACT_SCHEMA,
         "applicable": True,
@@ -117,15 +131,38 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         # SYSTEM package only carries the local stdio target that the tunnel may
         # launch after host capability/authentication has been established.
         "remote_runtime_transport_bundled": False,
+        "remote_runtime_route_ready_from_package_alone": False,
+        "public_streamable_http_ingress_bundled": public_streamable_http_ingress_bundled,
+        "public_streamable_http_ingress_members": public_mcp_members,
+        "public_streamable_http_protocol_revision": "2026-07-28",
+        "public_streamable_http_tasks_extension": "io.modelcontextprotocol/tasks",
+        "public_streamable_http_requires_https_deployment": True,
+        "public_streamable_http_requires_oauth_or_equivalent_verified_auth": True,
         "secure_mcp_tunnel_target_bundled": secure_mcp_target_bundled,
         "secure_mcp_tunnel_target_members": secure_mcp_members,
         "remote_runtime_transport_external": "openai_secure_mcp_tunnel",
         "remote_runtime_readiness_requires": [
-            "external_tunnel_client",
-            "authenticated_tunnel_control_plane",
-            "process_running_healthy_ready",
+            "one_verified_remote_transport",
+            "authenticated_remote_ingress",
+            "runtime_health_and_readiness",
             "explicit_chatgpt_connector_or_app_capability",
         ],
+        "remote_runtime_readiness_requires_any_route": {
+            "public_streamable_http": [
+                "public_https_endpoint",
+                "verified_oauth_or_equivalent_auth",
+                "mcp_2026_07_28_protocol_compatibility",
+                "gateway_healthz_live",
+                "runtime_readyz_ready",
+                "explicit_chatgpt_connector_or_app_capability",
+            ],
+            "openai_secure_mcp_tunnel": [
+                "external_tunnel_client",
+                "authenticated_tunnel_control_plane",
+                "process_running_healthy_ready",
+                "explicit_chatgpt_connector_or_app_capability",
+            ],
+        },
         "host_capability_negotiation_required": True,
         "supported_execution_routes": [
             "local_executor",
@@ -135,8 +172,11 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "truth_boundary": (
             "Package completeness proves that a local operator can be materialized after a host has supplied "
             "filesystem/process execution. When present, the Secure MCP files prove only that the package contains "
-            "the local stdio target for OpenAI Secure MCP Tunnel. The ZIP cannot grant ChatGPT a local executor, "
-            "authenticate the external tunnel control plane, publish a connector, or prove a remote runtime route. "
+            "the local stdio target for OpenAI Secure MCP Tunnel. The public Streamable HTTP implementation, when "
+            "present, proves only that the code for an MCP 2026-07-28 HTTPS ingress is bundled; it does not prove that "
+            "a public endpoint is deployed, authenticated, healthy, reachable, or registered with the current ChatGPT "
+            "host. The ZIP cannot grant ChatGPT a local executor, authenticate an external control plane, publish an "
+            "app/connector, or prove a usable remote runtime route. "
             "Private MEMORY is an independent optional capability and is not required for core runtime readiness. "
             "Remote transport or execution handoff must be explicitly supplied and verified by the host."
         ),
