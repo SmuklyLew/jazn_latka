@@ -148,13 +148,38 @@ Jeżeli tunel jest gotowy, ale ChatGPT nie udostępnia odpowiadającego connecto
 
 To nadal nie jest zgoda na pokazanie odpowiedzi. Każda wiadomość przechodzi dalej przez istniejący kontrakt tury i finalizacji.
 
-## Kolejność hosta i negocjacja MCP od v16.3.25.5.76.1
+## Kolejność hosta i negocjacja MCP od v16.3.25.5.81
 
-Jeżeli host ma już zweryfikowaną trasę `remote_runtime`, agregator capability wybiera ją przed lokalnym bootstrapem. Lokalny executor pozostaje trasą bootstrap/recovery, ale nie może przejąć zwykłej tury tylko dlatego, że jest chwilowo dostępny, gdy równocześnie istnieje mocniejszy, jawnie zweryfikowany connector do persistent runtime.
+Secure MCP Tunnel pozostaje jedną z dwóch zdalnych tras transportowych do tego
+samego persistent runtime. Drugą jest publiczny, uwierzytelniony Streamable HTTP
+MCP. Host nie wybiera trasy na podstawie samej obecności plików, URL-a albo
+procesu: dodatni wynik musi pochodzić z właściwego klasyfikatora evidence.
 
-Serwer MCP negocjuje obecnie jawnie wersje `2025-11-25` i `2025-06-18`. Nieznana wersja klienta nie jest bezwarunkowo echo-wana; serwer odpowiada najnowszą wspieraną wersją. Dla `2025-11-25` serwer reklamuje standardowe `tools`, ale **nie reklamuje standardowego MCP Tasks**, dopóki nie implementuje kompletnego kontraktu `tasks/list`, `tasks/get`, `tasks/result`, `tasks/cancel`, standardowych obiektów task i semantyki terminalnego anulowania. Istniejący `jazn_resume_visible_reply` pozostaje kanoniczną, idempotentną ścieżką trwałego poll/resume. Starszy adapter `io.modelcontextprotocol/tasks` pozostaje ograniczonym compatibility path wyłącznie dla negocjowanego `2025-06-18`; nie jest deklaracją zgodności z Tasks 2025-11-25.
+Dla tunelu obowiązuje `classify_remote_runtime_failover()`. Dla publicznego
+Streamable HTTP obowiązuje `classify_public_streamable_http_failover()`.
+Dodatnie evidence z jednej z tych tras może dopiero ustawić
+`remote_runtime_transport_available=true`; wejście JSON do `host-preflight`
+nie może już samodzielnie wymusić tej wartości gołym booleanem.
 
-`poll_runtime` jest stanem bez widocznego tekstu runtime. Może więc zachować trwałe wiązanie przez `daemon_request_id` zanim runtime nada `turn_id/trace_id`. `generate_then_finalize` i `display_exact` nadal wymagają silnego związania bieżącej tury i nie dziedziczą tego wyjątku.
+Nowoczesna powierzchnia MCP jest implementowana dla rewizji `2026-07-28`.
+`io.modelcontextprotocol/tasks` jest oficjalną extension capability. Jaźń
+implementuje trwałe `tasks/get`, `tasks/update` i `tasks/cancel` oraz
+`resultType="task"` dla asynchronicznego `jazn_generate_visible_reply`.
+`tasks/list` i `tasks/result` nie należą do tej ścieżki. Task jest tworzony
+trwale przed zwróceniem handle i zachowuje ten sam `daemon_request_id`, więc
+utrata odpowiedzi transportowej prowadzi do poll/resume istniejącego requestu,
+a nie do replayu wiadomości.
+
+Paczka używa oficjalnego MCP Python SDK v2 dla rdzenia Streamable HTTP. Ponieważ
+przypięta wersja SDK nie dostarcza jeszcze SEP-2663 Tasks, wąski
+`ModernTasksHttpBridge` przechwytuje wyłącznie brakującą powierzchnię Tasks;
+pozostałe requesty pozostają własnością SDK. Bridge dziedziczy te same granice
+uwierzytelnienia, scope, limitów, nagłówków MCP i maksymalnych rozmiarów wejścia.
+
+`poll_runtime` jest stanem bez widocznego tekstu runtime. Może zachować trwałe
+wiązanie przez `daemon_request_id` zanim runtime nada pełną lineage.
+`generate_then_finalize` i `display_exact` nadal wymagają pełnego związania
+bieżącej tury i zaakceptowanej finalizacji.
 
 ## Zachowanie przy awarii
 
@@ -167,11 +192,19 @@ Serwer MCP negocjuje obecnie jawnie wersje `2025-11-25` i `2025-06-18`. Nieznana
 - transport przerwany po submit -> wznowienie istniejącego requestu, nigdy replay wiadomości jako nowej tury;
 - finalizacja odrzucona -> host pokazuje diagnostykę, nie własną imitację odpowiedzi Jaźni.
 
-## Ograniczenia planu i powierzchni ChatGPT
+## Ograniczenia powierzchni ChatGPT
 
-Kod Jaźni nie może sam włączyć custom MCP/app na koncie ChatGPT ani zmienić uprawnień planu. Według aktualnej dokumentacji OpenAI pełna obsługa MCP jest dostępna w Business i Enterprise/Edu; Pro ma ograniczony dostęp read/fetch w Developer Mode. Osobisty Plus nie otrzymuje przez sam kod Jaźni prawa do utworzenia custom MCP app.
+Kod Jaźni nie może sam nadać bieżącej powierzchni ChatGPT capability aplikacji,
+konektora, zdalnego MCP ani lokalnego executora. Te możliwości są właściwością
+hosta i jego aktualnej konfiguracji. Dlatego pozytywna klasyfikacja zdalnej
+trasy zawsze wymaga jawnego evidence capability bieżącego hosta, a nie samego
+stanu serwera po stronie Jaźni.
 
-Dlatego linia 16.3.25.5.75–76.1 naprawia **mechanizm systemowy i truth boundary**, ale nie udaje, że paczka Python może zmienić funkcje produktu ChatGPT. Jeśli bieżąca powierzchnia nie ma custom MCP/app, poprawną alternatywą jest host handoff do powierzchni, która rzeczywiście posiada executor, np. lokalny Work/Codex w aplikacji desktopowej, jeżeli jest dostępny na koncie i otrzymał wymagane uprawnienia.
+Jeżeli host nie udostępnia żadnej zweryfikowanej zdalnej capability i lokalny
+executor nie utworzył procesu, właściwym wynikiem pozostaje fail-closed
+`host_executor_unavailable` dla tej powierzchni albo jawny host handoff, jeśli
+host rzeczywiście go oferuje. Kod runtime nie może imitować brakującej funkcji
+produktu.
 
 ## Źródła zewnętrzne
 
@@ -180,5 +213,6 @@ Dlatego linia 16.3.25.5.75–76.1 naprawia **mechanizm systemowy i truth boundar
 - OpenAI tunnel-client — runtime flows: https://github.com/openai/tunnel-client/blob/master/plugins/tunnel-mcp/skills/tunnel-mcp/references/runtime-flows.md
 - OpenAI tunnel-client — permissions and ChatGPT connector setup: https://github.com/openai/tunnel-client/blob/master/docs/permissions.md
 - OpenAI Help — ChatGPT Work and Codex: https://help.openai.com/en/articles/20001275
-- Model Context Protocol 2025-11-25 — Lifecycle/version & capability negotiation: https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
-- Model Context Protocol 2025-11-25 — Tasks: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks
+- Model Context Protocol — SEP-2663 Tasks extension: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2663-tasks-extension.md
+- Model Context Protocol — SEP-2243 HTTP standardization: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2243-http-standardization.md
+- MCP Python SDK v2.2.0 release notes: https://github.com/modelcontextprotocol/python-sdk/releases/tag/v2.2.0

@@ -30,6 +30,11 @@ on:
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
       - "latka_jazn/mcp/http_gateway.py"
@@ -51,6 +56,7 @@ on:
       - "tests/test_active_memory_recall_e2e.py"
       - "tests/test_active_runtime_subject_root.py"
       - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
@@ -100,6 +106,11 @@ on:
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
       - "latka_jazn/mcp/http_gateway.py"
@@ -121,6 +132,7 @@ on:
       - "tests/test_active_memory_recall_e2e.py"
       - "tests/test_active_runtime_subject_root.py"
       - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
@@ -204,6 +216,7 @@ jobs:
           tests/test_active_memory_recall_e2e.py
           tests/test_active_runtime_subject_root.py
           tests/test_chatgpt_runtime_fallback_hardening.py
+          tests/test_chatgpt_remote_runtime_evidence.py
           tests/test_persistent_runtime_e2e_hardening.py
           tests/test_host_finalization_recovery.py
 
