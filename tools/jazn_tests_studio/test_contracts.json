@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1656,
+  "active_definition_count": 1661,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15118,6 +15118,106 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 195
+    },
+    "tests/test_mcp_http_tasks_bridge_v81.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
+      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+      "name": "test_tasks_extension_is_advertised_when_protocol_backend_is_available",
+      "purpose": "Tasks extension is advertised when protocol backend is available",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
+    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private": {
+      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+      "name": "test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private",
+      "purpose": "Task capable generate is intercepted and keeps internal auth private",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_http_bridge_rejects_mcp_name_mismatch": {
+      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+      "name": "test_task_http_bridge_rejects_mcp_name_mismatch",
+      "purpose": "Task http bridge rejects mcp name mismatch",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 170
+    },
+    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_http_bridge_routes_all_task_methods": {
+      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+      "name": "test_task_http_bridge_routes_all_task_methods",
+      "purpose": "Task http bridge routes all task methods",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 191
+    },
+    "tests/test_mcp_http_tasks_bridge_v81.py::test_loopback_dev_principal_contains_explicit_task_scopes": {
+      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+      "name": "test_loopback_dev_principal_contains_explicit_task_scopes",
+      "purpose": "Loopback dev principal contains explicit task scopes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 225
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_tasks_and_resources": {
       "path": "tests/test_mcp_modern_protocol.py",
