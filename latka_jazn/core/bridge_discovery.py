@@ -93,7 +93,9 @@ def discover_runtime_bridges(
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
             "remote_transport": "verified_public_streamable_http_or_openai_secure_mcp_tunnel",
-            "remote_failover_policy": "managed_tunnel_ready_plus_explicit_host_connector_capability",
+            "remote_failover_policy": (
+                "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
+            ),
             "per_message_cli_required": False,
             "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
             "persistent_stdio_required": False,
@@ -134,9 +136,10 @@ def discover_runtime_bridges(
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage. "
-                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany OpenAI Secure MCP Tunnel oraz connector/app "
-                "capability, ten sam runtime może być osiągany zdalnie bez tworzenia procesu przez bieżącą powierzchnię "
-                "czatu. Żywotność pipe'a ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
+                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany publiczny Streamable HTTP MCP albo OpenAI "
+                "Secure MCP Tunnel oraz odpowiadającą connector/app capability, ten sam runtime może być osiągany "
+                "zdalnie bez tworzenia procesu przez bieżącą powierzchnię czatu. Żywotność pipe'a, listenera ani "
+                "tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
                 "widoczna może być tylko zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
             ),
         },
@@ -263,7 +266,7 @@ def discover_runtime_bridges(
         },
         "truth_boundary": (
             "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root. "
-            "Durable host operations, local supervisor, host-tool discovery and Secure MCP Tunnel are separate capability contracts; "
-            "none alone proves runtime readiness or an accepted visible turn."
+            "Durable host operations, local supervisor, host-tool discovery, public Streamable HTTP and Secure MCP Tunnel "
+            "are separate capability contracts; none alone proves runtime readiness or an accepted visible turn."
         ),
     }

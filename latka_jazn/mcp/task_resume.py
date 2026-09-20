@@ -560,22 +560,12 @@ class McpTaskResumeAdapter:
         if record.status != "input_required":
             return {"resultType": "complete"}
 
-        responses = dict(input_responses or {})
-        outstanding = dict(record.input_requests or {})
-        for key in responses:
-            outstanding.pop(str(key), None)
-        if outstanding:
-            self.store.update(
-                task_id,
-                status="input_required",
-                input_requests=outstanding,
-                request_state=record.request_state,
-                status_message="Waiting for remaining task input responses.",
-            )
-            return {"resultType": "complete"}
-
-        # Current Jaźń visible-turn tools do not emit input_required yet.
-        # Fail closed rather than pretending the runtime consumed answers.
+        # The current Jaźń visible-turn runtime has no transport that can consume
+        # task inputResponses. Never delete/acknowledge even a partial set only
+        # in the adapter: that would make tasks/get claim progress the runtime
+        # never observed. Preserve the exact outstanding snapshot and fail
+        # closed until a real runtime-input channel exists.
+        _ = dict(input_responses or {})
         raise RuntimeError("task_input_runtime_transport_not_implemented")
 
 
