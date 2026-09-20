@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.80.2",
-  "active_definition_count": 1677,
+  "active_definition_count": 1678,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15656,6 +15656,28 @@
       "status": "current",
       "description_source": "native_docstring",
       "line": 62
+    },
+    "tests/test_memory_batch_source_mutation.py::test_batch_refuses_source_changed_after_preparation": {
+      "path": "tests/test_memory_batch_source_mutation.py",
+      "name": "test_batch_refuses_source_changed_after_preparation",
+      "purpose": "Batch refuses source changed after preparation",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.batch_plan",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
     },
     "tests/test_memory_cloud_gateway.py::test_http_gateway_round_trips_encrypted_events_and_status": {
       "path": "tests/test_memory_cloud_gateway.py",
