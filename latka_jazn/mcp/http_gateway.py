@@ -27,6 +27,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from mcp.server import MCPServer
+from mcp.server.extension import Extension
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import TokenVerifier
 from mcp.server.auth.settings import AuthSettings
@@ -34,7 +35,8 @@ from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import CallToolResult, ContentBlock, TextContent, ToolAnnotations
 
 from latka_jazn.core.runtime_root import find_runtime_root
-from latka_jazn.mcp.server import JaznMcpServer
+from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
+from latka_jazn.mcp.server import JaznMcpServer, TASK_EXTENSION_ID
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
 MCP_PROTOCOL_VERSION = "2026-07-28"
@@ -48,6 +50,9 @@ SCOPE_TURN_SUBMIT = "jazn:turn:submit"
 SCOPE_TURN_READ = "jazn:turn:read"
 SCOPE_TURN_FINALIZE = "jazn:turn:finalize"
 SCOPE_STATUS_READ = "jazn:status:read"
+SCOPE_TASK_READ = "jazn:task:read"
+SCOPE_TASK_UPDATE = "jazn:task:update"
+SCOPE_TASK_CANCEL = "jazn:task:cancel"
 
 _PUBLIC_TOOLS = frozenset(
     {
@@ -88,6 +93,16 @@ class PublicIngressBackend(Protocol):
         *,
         meta: dict[str, Any] | None = None,
     ) -> dict[str, Any]: ...
+
+
+class ModernProtocolBackend(Protocol):
+    def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None: ...
+
+
+class _TasksCapabilityExtension(Extension):
+    """Advertise the official Tasks extension while Jaźń owns its durable store."""
+
+    identifier = TASK_EXTENSION_ID
 
 
 @dataclass(frozen=True, slots=True)
@@ -216,16 +231,24 @@ class PublicMcpGateway:
         *,
         token_verifier: TokenVerifier | None = None,
         backend: PublicIngressBackend | None = None,
+        protocol_backend: ModernProtocolBackend | None = None,
     ) -> None:
         config.validate(token_verifier_configured=token_verifier is not None)
         self.config = config
         self._rate_limiter = _PublicRateLimiter()
         self._internal_token = secrets.token_urlsafe(48)
-        self._backend: PublicIngressBackend = backend or JaznMcpServer(
-            root=config.root,
-            daemon_url=config.daemon_url,
-            token=self._internal_token,
-        )
+        if backend is None:
+            private_server = JaznMcpServer(
+                root=config.root,
+                daemon_url=config.daemon_url,
+                token=self._internal_token,
+            )
+            self._backend: PublicIngressBackend = private_server
+            self._protocol_backend: ModernProtocolBackend | None = private_server
+        else:
+            self._backend = backend
+            self._protocol_backend = protocol_backend
+        self._token_verifier = token_verifier
 
         auth = None
         if token_verifier is not None:
@@ -253,6 +276,11 @@ class PublicMcpGateway:
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
             auth=auth,
+            extensions=(
+                [_TasksCapabilityExtension()]
+                if self._protocol_backend is not None
+                else None
+            ),
         )
         self._register_tools()
         self._register_routes()
@@ -263,7 +291,13 @@ class PublicMcpGateway:
             if self.config.loopback_host and self.config.allow_unauthenticated_loopback_dev:
                 return _Principal(
                     subject="loopback-development",
-                    scopes=frozenset(_TOOL_SCOPES.values()) | {SCOPE_CONNECT},
+                    scopes=frozenset(_TOOL_SCOPES.values())
+                    | {
+                        SCOPE_CONNECT,
+                        SCOPE_TASK_READ,
+                        SCOPE_TASK_UPDATE,
+                        SCOPE_TASK_CANCEL,
+                    },
                 )
             return None
         subject = str(token.subject or token.client_id or "oauth-client").strip() or "oauth-client"
@@ -384,8 +418,8 @@ class PublicMcpGateway:
                 "jazn_finalize_reply",
                 {
                     "continuation_token": continuation_token,
-                    "final_visible_text": final_visible_text,
-                    "final_visible_text_sha256": final_visible_text_sha256.lower(),
+                    "final_text": final_visible_text,
+                    "final_text_sha256": final_visible_text_sha256.lower(),
                 },
             )
 
@@ -451,17 +485,27 @@ class PublicMcpGateway:
                 status_code=200 if ready else 503,
             )
 
-    def transport_security(self) -> TransportSecuritySettings | None:
-        if not self.config.allowed_hosts:
-            return None
+    def transport_security(self) -> TransportSecuritySettings:
+        if self.config.allowed_hosts:
+            return TransportSecuritySettings(
+                enable_dns_rebinding_protection=True,
+                allowed_hosts=list(self.config.allowed_hosts),
+                allowed_origins=list(self.config.allowed_origins),
+            )
+        # Match the official SDK's localhost default explicitly so the Tasks
+        # bridge and the SDK core enforce the same DNS-rebinding boundary.
         return TransportSecuritySettings(
             enable_dns_rebinding_protection=True,
-            allowed_hosts=list(self.config.allowed_hosts),
-            allowed_origins=list(self.config.allowed_origins),
+            allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
+            allowed_origins=[
+                "http://127.0.0.1:*",
+                "http://localhost:*",
+                "http://[::1]:*",
+            ],
         )
 
     def asgi_app(self):
-        return self.mcp.streamable_http_app(
+        sdk_app = self.mcp.streamable_http_app(
             host=self.config.host,
             streamable_http_path=self.config.streamable_http_path,
             json_response=True,
@@ -469,17 +513,40 @@ class PublicMcpGateway:
             max_request_body_size=self.config.max_request_body_size,
             transport_security=self.transport_security(),
         )
+        if self._protocol_backend is None:
+            return sdk_app
+        return ModernTasksHttpBridge(
+            sdk_app,
+            protocol_backend=self._protocol_backend,
+            internal_token=self._internal_token,
+            token_verifier=self._token_verifier,
+            resource_server_url=self.config.oauth_resource_server_url,
+            allow_unauthenticated_loopback_dev=(
+                self.config.loopback_host
+                and self.config.allow_unauthenticated_loopback_dev
+            ),
+            transport_security=self.transport_security(),
+            max_request_body_size=self.config.max_request_body_size,
+            required_base_scopes=tuple(self.config.oauth_required_scopes),
+            operation_scopes={
+                "jazn_generate_visible_reply": SCOPE_TURN_SUBMIT,
+                "tasks/get": SCOPE_TASK_READ,
+                "tasks/update": SCOPE_TASK_UPDATE,
+                "tasks/cancel": SCOPE_TASK_CANCEL,
+            },
+            public_tool_names=_PUBLIC_TOOLS,
+        )
 
     def run(self) -> None:
-        self.mcp.run(
-            transport="streamable-http",
+        # MCPServer.run() cannot host the Tasks bridge because SDK v2.2.0 does
+        # not implement SEP-2663. Use uvicorn over the composed ASGI app.
+        import uvicorn
+
+        uvicorn.run(
+            self.asgi_app(),
             host=self.config.host,
             port=self.config.port,
-            streamable_http_path=self.config.streamable_http_path,
-            json_response=True,
-            stateless_http=True,
-            max_request_body_size=self.config.max_request_body_size,
-            transport_security=self.transport_security(),
+            log_level="info",
         )
 
 
@@ -497,6 +564,7 @@ def build_public_mcp_gateway(
     allowed_origins: tuple[str, ...] = (),
     allow_unauthenticated_loopback_dev: bool = False,
     backend: PublicIngressBackend | None = None,
+    protocol_backend: ModernProtocolBackend | None = None,
 ) -> PublicMcpGateway:
     resolved_root = (root or find_runtime_root(Path(__file__))).resolve()
     config = PublicMcpGatewayConfig(
@@ -515,6 +583,7 @@ def build_public_mcp_gateway(
         config,
         token_verifier=token_verifier,
         backend=backend,
+        protocol_backend=protocol_backend,
     )
 
 
@@ -553,12 +622,16 @@ __all__ = [
     "HEALTH_PATH",
     "MCP_PATH",
     "MCP_PROTOCOL_VERSION",
+    "ModernProtocolBackend",
     "PublicIngressBackend",
     "PublicMcpGateway",
     "PublicMcpGatewayConfig",
     "READINESS_PATH",
     "SCOPE_CONNECT",
     "SCOPE_STATUS_READ",
+    "SCOPE_TASK_CANCEL",
+    "SCOPE_TASK_READ",
+    "SCOPE_TASK_UPDATE",
     "SCOPE_TURN_FINALIZE",
     "SCOPE_TURN_READ",
     "SCOPE_TURN_SUBMIT",
