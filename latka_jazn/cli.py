@@ -55,6 +55,20 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--daemon-port", type=int, default=8787)
     child.add_argument("--daemon-marker-output", type=Path)
 
+    child = sub.add_parser("mcp-http", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--host", default="127.0.0.1")
+    child.add_argument("--port", type=int, default=8080)
+    child.add_argument("--daemon-url", default="http://127.0.0.1:8787")
+    child.add_argument(
+        "--loopback-dev",
+        action="store_true",
+        help=(
+            "Jawnie zezwól na lokalny, nieuwierzytelniony tryb developerski. "
+            "Produkcja musi wstrzyknąć TokenVerifier przez build_public_mcp_gateway()."
+        ),
+    )
+
     child = sub.add_parser("package-smoke", allow_abbrev=False)
     _add_common(child)
     child.add_argument(
@@ -363,7 +377,7 @@ def main(
         )
 
     known = {
-        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt",
+        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
@@ -548,6 +562,42 @@ def main(
     if ns.command == "bridge-discovery":
         payload = diagnostics.bridge_payload(root)
         _emit(payload, as_json=ns.as_json)
+        return 0
+    if ns.command == "mcp-http":
+        if not ns.loopback_dev:
+            _emit(
+                {
+                    "ok": False,
+                    "reason": "mcp_http_cli_requires_explicit_loopback_dev",
+                    "production_entrypoint": "latka_jazn.mcp.http_gateway.build_public_mcp_gateway",
+                    "truth_boundary": (
+                        "The built-in CLI never creates an unauthenticated public MCP listener. "
+                        "Production must inject an OAuth TokenVerifier and resource-server settings."
+                    ),
+                },
+                as_json=True,
+            )
+            return 2
+        from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
+
+        gateway = build_public_mcp_gateway(
+            root=root,
+            daemon_url=str(ns.daemon_url),
+            host=str(ns.host),
+            port=int(ns.port),
+            allow_unauthenticated_loopback_dev=True,
+        )
+        if not gateway.config.loopback_host:
+            _emit(
+                {
+                    "ok": False,
+                    "reason": "mcp_http_cli_loopback_dev_only",
+                    "host": str(ns.host),
+                },
+                as_json=True,
+            )
+            return 2
+        gateway.run()
         return 0
     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
         return dispatch_legacy(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])

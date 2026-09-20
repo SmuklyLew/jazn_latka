@@ -42,6 +42,7 @@ mcp-http = [
   "mcp==2.2.0",
   "pydantic>=2.7",
   "starlette>=0.48.0",
+  "uvicorn>=0.31.1,<1",
 ]
 memory-rebuild-ui = [
   "prompt-toolkit>=3.0.52,<4",
