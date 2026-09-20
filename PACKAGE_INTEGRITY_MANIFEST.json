@@ -3,11 +3,11 @@
   "version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
   "runtime_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
   "package_version": "16.3.25.5.80.3-jazn-studio-pamieci-batch-source-validation",
-  "generated_at_utc": "2026-09-20T06:41:30+00:00",
-  "updated_at_utc": "2026-09-20T06:41:30+00:00",
+  "generated_at_utc": "2026-09-20T06:56:40+00:00",
+  "updated_at_utc": "2026-09-20T06:56:40+00:00",
   "start_file": "run.py",
-  "file_count": 2097,
-  "static_file_count": 2097,
+  "file_count": 2098,
+  "static_file_count": 2098,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3002,
-      "sha256": "3597b2eaf9e1681ca76adfa218a7abc6d80342ffd269a220f2ccc1fa6775bca8",
+      "sha256": "f32e2ce1c8be193b72ded75986d1bc7d04b4407f83503d1932dc6d967dc80286",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17605,6 +17605,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_protocol_test03_failed_build_regression.py",
+      "size_bytes": 1609,
+      "sha256": "ae264ca22c139b57f868164ab89f15f899f0d8ca68757d92a7e25a760fc9a2db",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_provenance_retrieval_ci_closure.py",
       "size_bytes": 6104,
       "sha256": "0504b37743eb5910a6c3dc77bba0914582820ef25d1e6ec530b8a3ff729cc896",
@@ -18740,8 +18749,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1559006,
-      "sha256": "18345fa56ee394bbd2179751aa94a921b778bb16e793b47197ecbe5e5c109ffb",
+      "size_bytes": 1559855,
+      "sha256": "d73d0154b6309351f272661873ae746adad15ebfdb9f8762a23771ccff429653",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
