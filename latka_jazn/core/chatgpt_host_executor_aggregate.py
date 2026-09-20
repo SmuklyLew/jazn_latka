@@ -49,6 +49,7 @@ def aggregate_host_executor_observations(
             False,
             (),
             HostHandoffState.UNKNOWN,
+            (),
         )
 
     latest_generation = max(item.observation_generation for item in raw_items)
@@ -109,4 +110,13 @@ def aggregate_host_executor_observations(
         any(item.execution_handoff_available for item in items),
         tuple(surface_payload(*pair) for pair in classified),
         aggregate_handoff(items),
+        tuple(
+            sorted(
+                {
+                    item.remote_runtime_transport
+                    for item in items
+                    if item.remote_runtime_transport_available
+                }
+            )
+        ),
     )
