@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.79.3",
-  "active_definition_count": 1649,
+  "system_version": "16.3.25.5.81",
+  "active_definition_count": 1656,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15119,17 +15119,17 @@
       "description_source": "source_identity",
       "line": 195
     },
-    "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension": {
+    "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_tasks_and_resources": {
       "path": "tests/test_mcp_modern_protocol.py",
-      "name": "test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension",
-      "purpose": "Server discover exposes modern and legacy versions without tasks extension",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
+      "name": "test_server_discover_exposes_modern_tasks_and_resources",
+      "purpose": "Server discover exposes modern tasks and resources",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.server"
@@ -15155,7 +15155,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 56
     },
     "tests/test_mcp_modern_protocol.py::test_modern_request_missing_required_meta_fails_invalid_params": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -15174,7 +15174,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 70
     },
     "tests/test_mcp_modern_protocol.py::test_unsupported_modern_protocol_reports_requested_and_supported_versions": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -15193,7 +15193,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 86
     },
     "tests/test_mcp_modern_protocol.py::test_initialize_never_negotiates_the_handshake_free_modern_revision": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -15212,26 +15212,64 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 101
+      "line": 102
     },
-    "tests/test_mcp_modern_protocol.py::test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation": {
+    "tests/test_mcp_modern_protocol.py::test_modern_tasks_require_per_request_extension_capability": {
       "path": "tests/test_mcp_modern_protocol.py",
-      "name": "test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation",
-      "purpose": "Modern tasks methods are not claimed without current extension implementation",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_modern_tasks_require_per_request_extension_capability",
+      "purpose": "Modern tasks require per request extension capability",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.server"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 122
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_task_methods_dispatch_when_extension_is_declared": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_task_methods_dispatch_when_extension_is_declared",
+      "purpose": "Modern task methods dispatch when extension is declared",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_mcp_modern_protocol.py::test_modern_resources_list_and_templates_are_stateless": {
+      "path": "tests/test_mcp_modern_protocol.py",
+      "name": "test_modern_resources_list_and_templates_are_stateless",
+      "purpose": "Modern resources list and templates are stateless",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
     },
     "tests/test_mcp_modern_protocol.py::test_modern_requests_do_not_mutate_legacy_connection_capabilities": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -15250,7 +15288,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 172
     },
     "tests/test_mcp_modern_protocol.py::test_modern_dispatch_strips_historical_task_extension_before_legacy_tool_execution": {
       "path": "tests/test_mcp_modern_protocol.py",
@@ -15269,7 +15307,105 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 147
+      "line": 190
+    },
+    "tests/test_mcp_remote_runtime_v81.py::test_public_streamable_http_route_requires_all_independent_evidence": {
+      "path": "tests/test_mcp_remote_runtime_v81.py",
+      "name": "test_public_streamable_http_route_requires_all_independent_evidence",
+      "purpose": "Public streamable http route requires all independent evidence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.remote_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_mcp_remote_runtime_v81.py::test_public_streamable_http_is_preferred_when_verified": {
+      "path": "tests/test_mcp_remote_runtime_v81.py",
+      "name": "test_public_streamable_http_is_preferred_when_verified",
+      "purpose": "Public streamable http is preferred when verified",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.remote_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_mcp_task_registry_v81.py::test_v81_task_registry_is_sqlite_durable_and_idempotent": {
+      "path": "tests/test_mcp_task_registry_v81.py",
+      "name": "test_v81_task_registry_is_sqlite_durable_and_idempotent",
+      "purpose": "V81 task registry is sqlite durable and idempotent",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_mcp_task_registry_v81.py::test_v81_task_cancel_is_intent_until_runtime_acknowledges": {
+      "path": "tests/test_mcp_task_registry_v81.py",
+      "name": "test_v81_task_cancel_is_intent_until_runtime_acknowledges",
+      "purpose": "V81 task cancel is intent until runtime acknowledges",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_mcp_task_registry_v81.py::test_v81_task_registry_survives_new_store_instance": {
+      "path": "tests/test_mcp_task_registry_v81.py",
+      "name": "test_v81_task_registry_survives_new_store_instance",
+      "purpose": "V81 task registry survives new store instance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",
