@@ -961,6 +961,22 @@ class ProtocolEngine:
             {"name": "branch_union_not_blocking", "passed": not bool(union.get("requires_projection_resolution"))},
             {"name": "normal_reverse_semantic_reconciliation", "passed": reconciled},
         ]
+        # Equal partial/empty snapshots are not evidence of successful builds.
+        # Require explicit success from both independent reconstruction paths.
+        details = dict(payload.get("details") or payload)
+        for suffix in ("a", "b"):
+            build = dict(details.get(f"build_{suffix}") or {})
+            for stage in ("initialized", "import", "validation"):
+                result = dict(build.get(stage) or {})
+                checks.append({
+                    "name": f"build_{suffix}_{stage}_succeeded",
+                    "passed": result.get("ok") is True and not result.get("errors"),
+                })
+            projection = dict(details.get(f"projection_{suffix}") or {})
+            checks.append({
+                "name": f"projection_{suffix}_preserves_l0",
+                "passed": projection.get("ok") is True and projection.get("raw_l0_unchanged") is True,
+            })
         return {"ok": all(item["passed"] for item in checks), "checks": checks, "blockers": [item["name"] for item in checks if not item["passed"]]}
 
     def run_test04(
