@@ -20,6 +20,9 @@ pakowania i CI, a nie pojedynczy adapter:
   powierzchnia SEP-2663 Tasks, bez przejmowania pozostałego routingu SDK;
 - `latka_jazn/mcp/remote_runtime.py` i `latka_jazn/mcp/secure_tunnel.py` —
   niezależne fail-closed classifiers transportów;
+- `latka_jazn/resources/dependencies/profiles.json` — osobny profil
+  `mcp-http` do zweryfikowanego offline wheelhouse bez podnoszenia tej
+  capability do obowiązkowego core;
 - `latka_jazn/bootstrap/chatgpt_host_preflight_parse.py` oraz host capability
   aggregation — dodatnia zdalna trasa musi być wyprowadzona z pełnego evidence,
   nie z gołego boola;

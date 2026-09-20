@@ -51,6 +51,24 @@ python -X utf8 run.py mcp-http --loopback-dev
 jest wyłącznie jawnym trybem developerskim na loopback i nie jest ścieżką
 publikacji Internetowej.
 
+
+Zależności SDK/HTTP są capability opcjonalną, a nie częścią minimalnego core.
+Dependency Studio ma osobny profil `mcp-http`, dzięki czemu można przygotować
+zweryfikowany wheelhouse bez promowania publicznego ingressu do obowiązkowych
+zależności zwykłego lokalnego runtime:
+
+```bash
+python -X utf8 -m latka_jazn.tools.dependency_studio --json \
+  download --profile mcp-http --platform current --python-version <major.minor>
+python -X utf8 -m latka_jazn.tools.dependency_studio --json \
+  verify --profile mcp-http --platform current --python-version <major.minor>
+```
+
+Instalacja pozostaje jawnie offline i wymaga zweryfikowanego bundle. Profil
+`mcp-http` nie należy do `activation_profiles` ani domyślnego
+`release_profiles`: brak tej capability nie może blokować lokalnej Jaźni,
+Ollamy ani Secure MCP Tunnel stdio.
+
 ## 3. Narzędzia, resources i scope
 
 Publiczna warstwa eksponuje tylko bounded surface:

@@ -43,6 +43,7 @@ on:
       - "latka_jazn/mcp/task_resume.py"
       - "latka_jazn/runtime/capability_matrix.py"
       - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
       - "tools/jazn_pack_generator_app/manifest.py"
       - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
@@ -65,6 +66,7 @@ on:
       - "tests/test_mcp_modern_protocol.py"
       - "tests/test_mcp_task_registry.py"
       - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
       - "tests/test_mcp_remote_runtime.py"
       - "tests/test_mcp_http_tasks_bridge.py"
       - "tests/test_mcp_http_resources.py"
@@ -120,6 +122,7 @@ on:
       - "latka_jazn/mcp/task_resume.py"
       - "latka_jazn/runtime/capability_matrix.py"
       - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
       - "tools/jazn_pack_generator_app/manifest.py"
       - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
@@ -142,6 +145,7 @@ on:
       - "tests/test_mcp_modern_protocol.py"
       - "tests/test_mcp_task_registry.py"
       - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
       - "tests/test_mcp_remote_runtime.py"
       - "tests/test_mcp_http_tasks_bridge.py"
       - "tests/test_mcp_http_resources.py"
@@ -204,6 +208,7 @@ jobs:
           tests/test_mcp_modern_protocol.py
           tests/test_mcp_task_registry.py
           tests/test_mcp_task_input_fail_closed.py
+          tests/test_mcp_http_dependency_profile.py
           tests/test_mcp_remote_runtime.py
           tests/test_mcp_http_tasks_bridge.py
           tests/test_mcp_http_resources.py
