@@ -3,13 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.79.3 keeps v79 executor-epoch recovery and CI
-# convergence, and aligns the MCP HTTP redaction contract with MCP 2026-07-28:
-# protocol-owned serverInfo metadata is public while backend-private metadata
-# must remain redacted.
-DISTRIBUTION_VERSION = "16.3.25.5.79.3"
-PACKAGE_VERSION = "16.3.25.5.79.3"
-PACKAGE_RELEASE_NAME = "host-executor-epoch-recovery-ci-convergence"
+# v16.3.25.5.81 promotes MCP 2026-07-28 remote-runtime ingress:
+# modern Tasks are durable across reconnects and read-only runtime/memory/task
+# resources are available without leaking local paths or private memory contents.
+DISTRIBUTION_VERSION = "16.3.25.5.81"
+PACKAGE_VERSION = "16.3.25.5.81"
+PACKAGE_RELEASE_NAME = "persistent-remote-mcp-runtime"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

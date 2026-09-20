@@ -14,6 +14,7 @@ to the same Jaźń runtime and tool implementations.
 """
 
 import argparse
+import json
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
@@ -50,21 +51,15 @@ META_CLIENT_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
 META_SERVER_INFO = "io.modelcontextprotocol/serverInfo"
 
 UNSUPPORTED_PROTOCOL_VERSION = -32022
+MISSING_REQUIRED_CLIENT_CAPABILITY = -32003
 INVALID_PARAMS = -32602
 METHOD_NOT_FOUND = -32601
+INTERNAL_ERROR = -32603
 MODERN_DISCOVERY_TTL_MS = 5 * 60 * 1000
 MODERN_TOOL_LIST_TTL_MS = 5 * 60 * 1000
 
-_TASK_METHODS = frozenset(
-    {
-        "tasks/get",
-        "tasks/update",
-        "tasks/cancel",
-        # Historical draft/core methods are also rejected on modern MCP.
-        "tasks/list",
-        "tasks/result",
-    }
-)
+_CURRENT_TASK_METHODS = frozenset({"tasks/get", "tasks/update", "tasks/cancel"})
+_REMOVED_TASK_METHODS = frozenset({"tasks/list", "tasks/result"})
 
 
 def __getattr__(name: str) -> Any:
@@ -128,15 +123,15 @@ class JaznMcpServer(_V76JaznMcpServer):
         )
         capabilities: dict[str, Any] = {
             "tools": {"listChanged": False},
+            "resources": {"subscribe": False, "listChanged": False},
             "experimental": {
                 TURN_RUNTIME_CAPABILITY: self.turn_runtime.capability_descriptor(),
             },
         }
-        # The v76 task adapter is retained only for its original legacy route.
-        # We deliberately do NOT advertise io.modelcontextprotocol/tasks for
-        # modern MCP 2026-07-28 because that extension has its own current
-        # contract and lifecycle which is not yet fully implemented here.
-        if resolved == MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION:
+        if resolved in {
+            MCP_PROTOCOL_VERSION_MODERN,
+            MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION,
+        }:
             capabilities["extensions"] = {TASK_EXTENSION_ID: {}}
         return capabilities
 
@@ -154,6 +149,24 @@ class JaznMcpServer(_V76JaznMcpServer):
             return True
         metadata = cls._request_meta(request_value)
         return META_PROTOCOL_VERSION in metadata
+
+    @classmethod
+    def _client_supports_modern_tasks(cls, request_value: Mapping[str, Any]) -> bool:
+        metadata = cls._request_meta(request_value)
+        client_capabilities = metadata.get(META_CLIENT_CAPABILITIES)
+        if not isinstance(client_capabilities, Mapping):
+            return False
+        extensions = client_capabilities.get("extensions")
+        return isinstance(extensions, Mapping) and TASK_EXTENSION_ID in extensions
+
+    @classmethod
+    def _missing_task_capability_error(cls, request_id: Any) -> dict[str, Any]:
+        return cls._jsonrpc_error(
+            request_id,
+            code=MISSING_REQUIRED_CLIENT_CAPABILITY,
+            message="Missing required client capability",
+            data={"requiredCapabilities": {"extensions": {TASK_EXTENSION_ID: {}}}},
+        )
 
     @staticmethod
     def _jsonrpc_error(
@@ -251,6 +264,144 @@ class JaznMcpServer(_V76JaznMcpServer):
             "cacheScope": "public",
             "_meta": {META_SERVER_INFO: self._server_info()},
         }
+
+    def _redacted_runtime_resource(self) -> dict[str, Any]:
+        raw = self._dispatch("jazn_status", {}, request_id=None)
+        structured = raw.get("structuredContent")
+        status = dict(structured) if isinstance(structured, Mapping) else {}
+        capability = status.get("capability_matrix")
+        capability_map = dict(capability) if isinstance(capability, Mapping) else {}
+        return {
+            "ready": capability_map.get("conversation_ready") is True,
+            "ordinary_dialogue_allowed": capability_map.get("ordinary_dialogue_allowed") is True,
+            "daemon_reachable": status.get("daemon_reachable") is True,
+            "package_version": PACKAGE_VERSION_FULL,
+            "protocol_version": MCP_PROTOCOL_VERSION_MODERN,
+            "transport": "persistent_runtime",
+        }
+
+    def _redacted_memory_resource(self) -> dict[str, Any]:
+        raw = self._dispatch("jazn_status", {}, request_id=None)
+        structured = raw.get("structuredContent")
+        status = dict(structured) if isinstance(structured, Mapping) else {}
+        capability = status.get("capability_matrix")
+        capability_map = dict(capability) if isinstance(capability, Mapping) else {}
+        components = capability_map.get("components")
+        components_map = dict(components) if isinstance(components, Mapping) else {}
+        persistent = components_map.get("persistent_memory")
+        recall = components_map.get("recall")
+        persistent_map = dict(persistent) if isinstance(persistent, Mapping) else {}
+        recall_map = dict(recall) if isinstance(recall, Mapping) else {}
+        return {
+            "persistent_memory": {
+                "status": persistent_map.get("status"),
+                "available": persistent_map.get("available") is True,
+                "required_for_dialogue": persistent_map.get("required_for_dialogue") is True,
+                "reason": persistent_map.get("reason"),
+            },
+            "recall": {
+                "status": recall_map.get("status"),
+                "available": recall_map.get("available") is True,
+                "reason": recall_map.get("reason"),
+            },
+            "package_version": PACKAGE_VERSION_FULL,
+        }
+
+    @staticmethod
+    def _modern_resources_list() -> dict[str, Any]:
+        return {
+            "resources": [
+                {
+                    "uri": "jazn://runtime/status",
+                    "name": "Jaźń runtime status",
+                    "description": "Redacted persistent runtime readiness without local paths or process secrets.",
+                    "mimeType": "application/json",
+                },
+                {
+                    "uri": "jazn://memory/status",
+                    "name": "Jaźń memory status",
+                    "description": "Redacted persistent-memory and recall readiness.",
+                    "mimeType": "application/json",
+                },
+            ]
+        }
+
+    @staticmethod
+    def _modern_resource_templates_list() -> dict[str, Any]:
+        return {
+            "resourceTemplates": [
+                {
+                    "uriTemplate": "jazn://task/{taskId}",
+                    "name": "Jaźń task status",
+                    "description": "Read one known durable task by opaque task id.",
+                    "mimeType": "application/json",
+                }
+            ]
+        }
+
+    def _modern_resource_read(self, request_value: Mapping[str, Any]) -> dict[str, Any]:
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            raise ValueError("resource_params_required")
+        uri = str(params.get("uri") or "").strip()
+        if uri == "jazn://runtime/status":
+            payload = self._redacted_runtime_resource()
+        elif uri == "jazn://memory/status":
+            payload = self._redacted_memory_resource()
+        elif uri.startswith("jazn://task/"):
+            task_id = uri.removeprefix("jazn://task/").strip()
+            record = self.task_resume.store.get(task_id)
+            if record is None:
+                raise KeyError("unknown_task")
+            payload = {"task": record.to_task_result()}
+        else:
+            raise KeyError("unknown_resource")
+        return {
+            "contents": [
+                {
+                    "uri": uri,
+                    "mimeType": "application/json",
+                    "text": json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                }
+            ]
+        }
+
+    def _modern_task_dispatch(self, request_value: Mapping[str, Any]) -> dict[str, Any]:
+        request_id = request_value.get("id")
+        if not self._client_supports_modern_tasks(request_value):
+            return self._missing_task_capability_error(request_id)
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return self._jsonrpc_error(request_id, code=INVALID_PARAMS, message="Invalid params")
+        task_id = str(params.get("taskId") or "").strip()
+        if not task_id:
+            return self._jsonrpc_error(request_id, code=INVALID_PARAMS, message="taskId is required")
+        method = str(request_value.get("method") or "")
+        try:
+            if method == "tasks/get":
+                result = self.task_resume.get(task_id)
+            elif method == "tasks/cancel":
+                result = self.task_resume.cancel(task_id)
+            elif method == "tasks/update":
+                raw_responses = params.get("inputResponses")
+                if not isinstance(raw_responses, Mapping):
+                    return self._jsonrpc_error(
+                        request_id,
+                        code=INVALID_PARAMS,
+                        message="inputResponses must be an object",
+                    )
+                result = self.task_resume.update_input(task_id, raw_responses)
+            else:
+                return self._jsonrpc_error(request_id, code=METHOD_NOT_FOUND, message="Method not found")
+        except KeyError:
+            return self._jsonrpc_error(request_id, code=INVALID_PARAMS, message="Unknown taskId")
+        except (RuntimeError, TypeError, ValueError) as exc:
+            return self._jsonrpc_error(
+                request_id,
+                code=INTERNAL_ERROR,
+                message=f"Task operation failed: {type(exc).__name__}:{exc}",
+            )
+        return {"jsonrpc": "2.0", "id": request_id, "result": result}
 
     def _prepare_legacy_dispatch(
         self,
@@ -381,18 +532,38 @@ class JaznMcpServer(_V76JaznMcpServer):
                     "id": request_id,
                     "result": self._discover_result(),
                 }
-            # Tasks are an extension in the 2026 era. The current v76 adapter
-            # is deliberately not advertised as that extension until its full
-            # contemporary contract is implemented and tested.
-            if method in _TASK_METHODS:
+            if method in _CURRENT_TASK_METHODS:
+                response = self._modern_task_dispatch(request_value)
+                return self._stamp_modern_response(request_value, response)
+            if method in _REMOVED_TASK_METHODS:
                 return self._jsonrpc_error(
                     request_id,
                     code=METHOD_NOT_FOUND,
                     message="Method not found",
                 )
+            if method == "resources/list":
+                response = {"jsonrpc": "2.0", "id": request_id, "result": self._modern_resources_list()}
+                return self._stamp_modern_response(request_value, response)
+            if method == "resources/templates/list":
+                response = {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": self._modern_resource_templates_list(),
+                }
+                return self._stamp_modern_response(request_value, response)
+            if method == "resources/read":
+                try:
+                    result = self._modern_resource_read(request_value)
+                except (KeyError, TypeError, ValueError) as exc:
+                    return self._jsonrpc_error(
+                        request_id,
+                        code=INVALID_PARAMS,
+                        message=f"Resource read failed: {exc}",
+                    )
+                response = {"jsonrpc": "2.0", "id": request_id, "result": result}
+                return self._stamp_modern_response(request_value, response)
 
-        # 2025-11-25 also had an experimental task shape. We do not claim it.
-        if method in _TASK_METHODS and (
+        if method in (_CURRENT_TASK_METHODS | _REMOVED_TASK_METHODS) and (
             self.negotiated_protocol_version
             != MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION
         ):
@@ -408,6 +579,21 @@ class JaznMcpServer(_V76JaznMcpServer):
         )
         response = super().handle(dispatched_request)
         response = self.turn_runtime.decorate_call_response(request_value, response)
+        if (
+            modern
+            and method == "tools/call"
+            and self._client_supports_modern_tasks(request_value)
+            and response is not None
+            and "error" not in response
+        ):
+            params = request_value.get("params")
+            raw_result = response.get("result")
+            tool_name = str(params.get("name") or "") if isinstance(params, Mapping) else ""
+            if tool_name == "jazn_generate_visible_reply" and isinstance(raw_result, Mapping):
+                task_result = self.task_resume.create_from_pending_result(raw_result)
+                if task_result is not None:
+                    response = dict(response)
+                    response["result"] = task_result
         if modern:
             response = self._stamp_modern_response(request_value, response)
         return response
