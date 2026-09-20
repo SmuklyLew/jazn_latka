@@ -116,7 +116,7 @@ def _gateway(tmp_path: Path, protocol: _ProtocolBackend):
 def test_tasks_extension_is_advertised_when_protocol_backend_is_available(tmp_path: Path) -> None:
     protocol = _ProtocolBackend()
     gateway = _gateway(tmp_path, protocol)
-    with TestClient(gateway.asgi_app()) as client:
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1") as client:
         response = client.post(
             "/mcp",
             headers={
@@ -152,7 +152,7 @@ def test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private(tm
             "_meta": _meta(),
         },
     }
-    with TestClient(gateway.asgi_app()) as client:
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1") as client:
         response = client.post(
             "/mcp",
             headers=_headers("tools/call", "jazn_generate_visible_reply"),
@@ -176,7 +176,7 @@ def test_task_http_bridge_rejects_mcp_name_mismatch(tmp_path: Path) -> None:
         "method": "tasks/get",
         "params": {"taskId": "jazn-task-test", "_meta": _meta()},
     }
-    with TestClient(gateway.asgi_app()) as client:
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1") as client:
         response = client.post(
             "/mcp",
             headers=_headers("tasks/get", "wrong-task"),
@@ -191,7 +191,7 @@ def test_task_http_bridge_rejects_mcp_name_mismatch(tmp_path: Path) -> None:
 def test_task_http_bridge_routes_all_task_methods(tmp_path: Path) -> None:
     protocol = _ProtocolBackend()
     gateway = _gateway(tmp_path, protocol)
-    with TestClient(gateway.asgi_app()) as client:
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1") as client:
         for request_id, method in enumerate(
             ("tasks/get", "tasks/update", "tasks/cancel"),
             start=10,

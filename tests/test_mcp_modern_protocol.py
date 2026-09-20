@@ -126,7 +126,7 @@ def test_modern_tasks_require_per_request_extension_capability(tmp_path: Path) -
             _modern_request(method, request_id=index, params={"taskId": "missing"})
         )
         assert response is not None
-        assert response["error"]["code"] == -32003
+        assert response["error"]["code"] == -32021
         assert TASK_EXTENSION_ID in response["error"]["data"]["requiredCapabilities"]["extensions"]
 
 

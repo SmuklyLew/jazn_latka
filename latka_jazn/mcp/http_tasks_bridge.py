@@ -124,6 +124,12 @@ def _expected_mcp_name(request_value: Mapping[str, Any]) -> str | None:
 class ModernTasksHttpBridge:
     """Narrow ASGI interceptor for the Tasks extension missing from SDK v2.2.0."""
 
+    @property
+    def routes(self) -> Any:
+        """Expose wrapped Starlette routes for diagnostics without owning routing."""
+
+        return getattr(self.app, "routes", ())
+
     def __init__(
         self,
         app: ASGIApp,
