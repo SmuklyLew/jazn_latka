@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.80.3",
-  "active_definition_count": 1678,
+  "active_definition_count": 1679,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26011,6 +26011,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 256
+    },
+    "tests/test_protocol_test03_failed_build_regression.py::test_test03_rejects_failed_build_even_when_snapshots_match": {
+      "path": "tests/test_protocol_test03_failed_build_regression.py",
+      "name": "test_test03_rejects_failed_build_even_when_snapshots_match",
+      "purpose": "Test03 rejects failed build even when snapshots match",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.protocol_engine",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
     },
     "tests/test_provenance_retrieval_ci_closure.py::test_archive_sha_is_cryptographically_bound_to_extracted_import": {
       "path": "tests/test_provenance_retrieval_ci_closure.py",
