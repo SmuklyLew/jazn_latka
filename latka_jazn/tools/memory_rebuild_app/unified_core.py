@@ -8,7 +8,7 @@ import tempfile
 
 from latka_jazn.memory.memory_tier_core_store import MemoryTierCoreStore
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
-from latka_jazn.tools.chat_export_reader import probe_json_source_kind, sha256_file
+from latka_jazn.tools.chat_export_reader import ChatExportReader, probe_json_source_kind, sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
 from latka_jazn.tools.memory_rebuild_experience import ExperienceStore
@@ -262,6 +262,22 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             "automatic_l2": False, "automatic_l3": False,
         }
 
+    @staticmethod
+    def _verify_batch_source(prepared: PreparedSource, path: Path) -> None:
+        """Revalidate the adapter's content identity, never timestamps or locators.
+
+        Directory exports use the same member-aware digest as their adapter.
+        This detects changed input at phase boundaries; it does not lock a live
+        external writer. Operators must supply closed/offline source exports.
+        """
+        if path.is_dir():
+            with ChatExportReader(path, verify_crc=False) as reader:
+                current_sha256 = reader.info.sha256
+        else:
+            current_sha256 = sha256_file(path)
+        if current_sha256 != prepared.source_sha256:
+            raise ValueError(f"Batch source changed since preparation: {path}")
+
     def _reconstruct_sources(self, sources: list[str | Path], *, full_validation: bool) -> dict[str, Any]:
         results: list[dict[str, Any]] = []
         errors: list[dict[str, str]] = []
@@ -280,20 +296,27 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                              if path.is_dir() else probe_source(path))
                     adapter = self.adapter_registry.select(path, probe)
                     prepared = adapter.prepare(path, probe, self.settings)
+                    self._verify_batch_source(prepared, path)
                     plan.add(prepared)
+                    self._verify_batch_source(prepared, path)
                     prepared_paths.setdefault(source_key(prepared), (path, probe))
                     locators.append({"source": str(path), "source_name": prepared.source_name,
                                      "adapter_id": prepared.adapter_id,
                                      "source_sha256": prepared.source_sha256,
                                      "source_member": prepared.source_member})
                 plan.seal()
+                for key, (path, _) in prepared_paths.items():
+                    source_path = str(path)
+                    self._verify_batch_source(plan.sources[key], path)
                 # No destination mutation until every adapter and record is prepared.
                 self.ensure_initialized()
                 for key in sorted(plan.sources):
                     prepared = plan.sources[key]
                     path, probe = prepared_paths[key]
                     source_path = str(path)
+                    self._verify_batch_source(prepared, path)
                     native = self._native_projection(prepared, path, dry_run=False, full_validation=full_validation)
+                    self._verify_batch_source(prepared, path)
                     if not native.get("ok", True):
                         raise ValueError(f"Native projection failed: {prepared.adapter_id}")
                     results.append(UnifiedImportResult(str(path), prepared.source_kind, "imported", {
@@ -301,6 +324,9 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                         "native_projection": native, "automatic_l2": False,
                         "automatic_l3": False, "automatic_activation": False,
                     }).to_dict())
+                for key, (path, _) in prepared_paths.items():
+                    source_path = str(path)
+                    self._verify_batch_source(plan.sources[key], path)
                 common = UnifiedL0Store(self.path).ingest_batch(plan)
                 for result in results:
                     result["report"]["intermediate_model"] = common
