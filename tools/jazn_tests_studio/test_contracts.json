@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1671,
+  "active_definition_count": 1673,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15407,6 +15407,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 225
+    },
+    "tests/test_mcp_http_tasks_bridge.py::test_task_capable_generate_rejects_oversized_message_before_backend": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
+      "name": "test_task_capable_generate_rejects_oversized_message_before_backend",
+      "purpose": "Task capable generate rejects oversized message before backend",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 239
+    },
+    "tests/test_mcp_http_tasks_bridge.py::test_task_capable_generate_shares_public_rate_limit": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
+      "name": "test_task_capable_generate_shares_public_rate_limit",
+      "purpose": "Task capable generate shares public rate limit",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 267
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_tasks_and_resources": {
       "path": "tests/test_mcp_modern_protocol.py",
