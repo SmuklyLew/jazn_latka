@@ -51,7 +51,7 @@ META_CLIENT_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
 META_SERVER_INFO = "io.modelcontextprotocol/serverInfo"
 
 UNSUPPORTED_PROTOCOL_VERSION = -32022
-MISSING_REQUIRED_CLIENT_CAPABILITY = -32003
+MISSING_REQUIRED_CLIENT_CAPABILITY = -32021
 INVALID_PARAMS = -32602
 METHOD_NOT_FOUND = -32601
 INTERNAL_ERROR = -32603
@@ -465,7 +465,8 @@ class JaznMcpServer(_V76JaznMcpServer):
         metadata[META_SERVER_INFO] = cls._server_info()
         result["_meta"] = metadata
 
-        if request_value.get("method") == "tools/list":
+        method = str(request_value.get("method") or "")
+        if method == "tools/list":
             tools = result.get("tools")
             if isinstance(tools, list):
                 result["tools"] = sorted(
@@ -474,8 +475,14 @@ class JaznMcpServer(_V76JaznMcpServer):
                         str(item.get("name") or "") if isinstance(item, Mapping) else ""
                     ),
                 )
+        if method in {
+            "tools/list",
+            "resources/list",
+            "resources/read",
+            "resources/templates/list",
+        }:
             result.setdefault("ttlMs", MODERN_TOOL_LIST_TTL_MS)
-            result.setdefault("cacheScope", "public")
+            result.setdefault("cacheScope", "private" if method == "resources/read" else "public")
 
         stamped = dict(response)
         stamped["result"] = result

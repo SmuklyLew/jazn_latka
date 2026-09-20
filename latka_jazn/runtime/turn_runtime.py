@@ -600,7 +600,13 @@ class ProfessionalTurnRuntime:
             "transportAmbiguityRecovery": "resume_same_request_id_never_replay",
             "visibleOutputGate": "display_exact_after_runtime_or_host_finalization",
             "traceContext": "w3c-traceparent-compatible-transport-correlation",
-            "standardMcpTasksClaimed": False,
+            "standardMcpTasksClaimed": True,
+            "mcpProtocolRevision": "2026-07-28",
+            "taskContinuity": "durable_sqlite_poll_same_request_id",
+            "remoteTransports": [
+                RemoteTransport.PUBLIC_STREAMABLE_HTTP.value,
+                RemoteTransport.OPENAI_SECURE_MCP_TUNNEL.value,
+            ],
         }
 
 

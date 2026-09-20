@@ -167,15 +167,25 @@ def build_capability_matrix(
             available=bool(mcp_tasks_supported),
             required_for_dialogue=False,
             reason="io.modelcontextprotocol/tasks" if mcp_tasks_supported else "extension_disabled",
-            evidence={"extension": "io.modelcontextprotocol/tasks"},
+            evidence={
+                "extension": "io.modelcontextprotocol/tasks",
+                "protocol_revision": "2026-07-28",
+                "persistence": "workspace_runtime/mcp_tasks.sqlite3",
+                "recovery": "poll_same_request_id_never_replay_user_message",
+            },
         ),
         "remote_transport": CapabilityState(
             status="external_unverified",
             available=False,
             required_for_dialogue=False,
-            reason="secure_mcp_tunnel_is_external_and_requires_independent_health_evidence",
+            reason="remote_mcp_route_requires_independent_transport_and_host_capability_evidence",
             evidence={
                 "local_package_can_prove_remote_route": False,
+                "supported_transports": [
+                    "public_streamable_http",
+                    "openai_secure_mcp_tunnel",
+                ],
+                "protocol_revision": "2026-07-28",
                 "expected_health_surfaces": ["/healthz", "/readyz", "/health/mcp", "/metrics"],
             },
         ),
