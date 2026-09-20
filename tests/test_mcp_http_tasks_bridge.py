@@ -234,3 +234,81 @@ def test_loopback_dev_principal_contains_explicit_task_scopes(tmp_path: Path) ->
         SCOPE_TASK_UPDATE,
         SCOPE_TASK_CANCEL,
     }.issubset(principal.scopes)
+
+
+def test_task_capable_generate_rejects_oversized_message_before_backend(tmp_path: Path) -> None:
+    protocol = _ProtocolBackend()
+    gateway = _gateway(tmp_path, protocol)
+    body = {
+        "jsonrpc": "2.0",
+        "id": 40,
+        "method": "tools/call",
+        "params": {
+            "name": "jazn_generate_visible_reply",
+            "arguments": {
+                "request_id": "req-oversized",
+                "message": "x" * 262_145,
+            },
+            "_meta": _meta(),
+        },
+    }
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1:8080") as client:
+        response = client.post(
+            "/mcp",
+            headers=_headers("tools/call", "jazn_generate_visible_reply"),
+            content=json.dumps(body),
+        )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == -32602
+    assert protocol.requests == []
+
+
+def test_task_capable_generate_shares_public_rate_limit(tmp_path: Path) -> None:
+    protocol = _ProtocolBackend()
+    gateway = _gateway(tmp_path, protocol)
+    with TestClient(gateway.asgi_app(), base_url="http://127.0.0.1:8080") as client:
+        for index in range(10):
+            body = {
+                "jsonrpc": "2.0",
+                "id": 50 + index,
+                "method": "tools/call",
+                "params": {
+                    "name": "jazn_generate_visible_reply",
+                    "arguments": {
+                        "request_id": f"req-rate-{index}",
+                        "message": "hello",
+                    },
+                    "_meta": _meta(),
+                },
+            }
+            response = client.post(
+                "/mcp",
+                headers=_headers("tools/call", "jazn_generate_visible_reply"),
+                content=json.dumps(body),
+            )
+            assert response.status_code == 200
+
+        blocked = client.post(
+            "/mcp",
+            headers=_headers("tools/call", "jazn_generate_visible_reply"),
+            content=json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 99,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "jazn_generate_visible_reply",
+                        "arguments": {
+                            "request_id": "req-rate-blocked",
+                            "message": "hello",
+                        },
+                        "_meta": _meta(),
+                    },
+                }
+            ),
+        )
+
+    assert blocked.status_code == 429
+    assert blocked.json()["error"]["code"] == -32029
+    assert len(protocol.requests) == 10

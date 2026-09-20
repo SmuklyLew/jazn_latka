@@ -21,7 +21,7 @@ from pathlib import Path
 import secrets
 import threading
 import time
-from typing import Annotated, Any, Mapping, Protocol
+from typing import Annotated, Any, Callable, Mapping, Protocol
 
 from pydantic import AnyHttpUrl, Field
 from starlette.requests import Request
@@ -72,11 +72,14 @@ _TOOL_SCOPES = {
     "jazn_status": SCOPE_STATUS_READ,
 }
 
-_TOOL_RATE_LIMITS_PER_MINUTE = {
+_OPERATION_RATE_LIMITS_PER_MINUTE = {
     "jazn_generate_visible_reply": 10,
     "jazn_finalize_reply": 30,
     "jazn_resume_visible_reply": 120,
     "jazn_status": 120,
+    "tasks/get": 180,
+    "tasks/update": 60,
+    "tasks/cancel": 30,
 }
 
 RequestId = Annotated[str, Field(min_length=1, max_length=256)]
@@ -157,10 +160,10 @@ class _PublicRateLimiter:
         self._events: dict[tuple[str, str], deque[float]] = defaultdict(deque)
         self._lock = threading.Lock()
 
-    def allow(self, *, subject: str, tool_name: str) -> bool:
-        limit = int(_TOOL_RATE_LIMITS_PER_MINUTE[tool_name])
+    def allow(self, *, subject: str, operation_name: str) -> bool:
+        limit = int(_OPERATION_RATE_LIMITS_PER_MINUTE[operation_name])
         now = time.monotonic()
-        key = (subject, tool_name)
+        key = (subject, operation_name)
         with self._lock:
             queue = self._events[key]
             while queue and now - queue[0] >= 60.0:
@@ -321,7 +324,7 @@ class PublicMcpGateway:
         required_scope = _TOOL_SCOPES[tool_name]
         if required_scope not in principal.scopes:
             return _public_error("insufficient_scope", request_id=request_id)
-        if not self._rate_limiter.allow(subject=principal.subject, tool_name=tool_name):
+        if not self._rate_limiter.allow(subject=principal.subject, operation_name=tool_name):
             return _public_error("rate_limit_exceeded", request_id=request_id)
 
         value = self._backend.call_tool(
@@ -438,7 +441,7 @@ class PublicMcpGateway:
                 return _public_error("authenticated_principal_required")
             if SCOPE_STATUS_READ not in principal.scopes:
                 return _public_error("insufficient_scope")
-            if not self._rate_limiter.allow(subject=principal.subject, tool_name="jazn_status"):
+            if not self._rate_limiter.allow(subject=principal.subject, operation_name="jazn_status"):
                 return _public_error("rate_limit_exceeded")
             status = self._status_snapshot()
             ready = _runtime_ready(status)
@@ -629,6 +632,10 @@ class PublicMcpGateway:
                 "tasks/cancel": SCOPE_TASK_CANCEL,
             },
             public_tool_names=_PUBLIC_TOOLS,
+            admission=lambda subject, operation: self._rate_limiter.allow(
+                subject=subject,
+                operation_name=operation,
+            ),
         )
 
     def run(self) -> None:

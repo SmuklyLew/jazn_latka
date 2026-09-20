@@ -20,7 +20,7 @@ import base64
 import binascii
 import json
 from dataclasses import dataclass
-from typing import Any, Mapping, Protocol
+from typing import Any, Callable, Mapping, Protocol
 
 from pydantic import AnyHttpUrl
 from starlette.requests import HTTPConnection, Request
@@ -42,6 +42,7 @@ META_CLIENT_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
 HEADER_MISMATCH = -32020
 INVALID_PARAMS = -32602
 INTERNAL_ERROR = -32603
+RATE_LIMITED = -32029
 
 _TASK_METHODS = frozenset({"tasks/get", "tasks/update", "tasks/cancel"})
 _BASE64_PREFIX = "=?base64?"
@@ -144,6 +145,7 @@ class ModernTasksHttpBridge:
         required_base_scopes: tuple[str, ...],
         operation_scopes: Mapping[str, str],
         public_tool_names: frozenset[str],
+        admission: Callable[[str, str], bool],
     ) -> None:
         self.app = app
         self.protocol_backend = protocol_backend
@@ -160,6 +162,7 @@ class ModernTasksHttpBridge:
             str(key): str(value) for key, value in operation_scopes.items()
         }
         self.public_tool_names = frozenset(str(item) for item in public_tool_names)
+        self.admission = admission
 
     async def _principal(self, scope: Scope) -> _Principal | None:
         if self.token_verifier is None:
@@ -206,6 +209,56 @@ class ModernTasksHttpBridge:
             return method
         params = request_value.get("params")
         return str(params.get("name") or "") if isinstance(params, Mapping) else ""
+
+    @staticmethod
+    def _validate_generate_arguments(
+        request_value: Mapping[str, Any],
+    ) -> str | None:
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return "tools/call params must be an object"
+        arguments = params.get("arguments")
+        if not isinstance(arguments, Mapping):
+            return "jazn_generate_visible_reply arguments must be an object"
+        unexpected = sorted(
+            str(key)
+            for key in arguments
+            if str(key) not in {"request_id", "message", "session_id"}
+        )
+        if unexpected:
+            return "unsupported public generate arguments: " + ", ".join(unexpected)
+
+        request_id = arguments.get("request_id")
+        if not isinstance(request_id, str) or not request_id.strip():
+            return "request_id must be a non-empty string"
+        if len(request_id) > 256:
+            return "request_id exceeds 256 characters"
+
+        message = arguments.get("message")
+        if not isinstance(message, str) or not message:
+            return "message must be a non-empty string"
+        if len(message) > 262_144:
+            return "message exceeds 262144 characters"
+
+        session_id = arguments.get("session_id")
+        if session_id is not None:
+            if not isinstance(session_id, str):
+                return "session_id must be a string"
+            if len(session_id) > 128:
+                return "session_id exceeds 128 characters"
+        return None
+
+    @staticmethod
+    def _validate_task_id(request_value: Mapping[str, Any]) -> str | None:
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return "task params must be an object"
+        task_id = params.get("taskId")
+        if not isinstance(task_id, str) or not task_id.strip():
+            return "taskId must be a non-empty string"
+        if len(task_id) > 256:
+            return "taskId exceeds 256 characters"
+        return None
 
     def _validate_standard_headers(
         self,
@@ -411,6 +464,39 @@ class ModernTasksHttpBridge:
                 media_type="application/json",
                 headers={"WWW-Authenticate": "Bearer error=\"insufficient_scope\""},
             )(scope, receive, send)
+            return
+
+        validation_error: str | None = None
+        if operation == "jazn_generate_visible_reply":
+            validation_error = self._validate_generate_arguments(request_value)
+        elif operation in _TASK_METHODS:
+            validation_error = self._validate_task_id(request_value)
+        if validation_error is not None:
+            await self._send_json(
+                scope,
+                receive,
+                send,
+                _jsonrpc_error(
+                    request_value.get("id"),
+                    code=INVALID_PARAMS,
+                    message=validation_error,
+                ),
+                status_code=400,
+            )
+            return
+
+        if not self.admission(principal.subject, operation):
+            await self._send_json(
+                scope,
+                receive,
+                send,
+                _jsonrpc_error(
+                    request_value.get("id"),
+                    code=RATE_LIMITED,
+                    message="Rate limit exceeded",
+                ),
+                status_code=429,
+            )
             return
 
         if operation == "jazn_generate_visible_reply":

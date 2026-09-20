@@ -395,7 +395,13 @@ class JaznMcpServer(_V76JaznMcpServer):
                 return self._jsonrpc_error(request_id, code=METHOD_NOT_FOUND, message="Method not found")
         except KeyError:
             return self._jsonrpc_error(request_id, code=INVALID_PARAMS, message="Unknown taskId")
-        except (RuntimeError, TypeError, ValueError) as exc:
+        except (TypeError, ValueError) as exc:
+            return self._jsonrpc_error(
+                request_id,
+                code=INVALID_PARAMS,
+                message=f"Invalid task params: {type(exc).__name__}:{exc}",
+            )
+        except RuntimeError as exc:
             return self._jsonrpc_error(
                 request_id,
                 code=INTERNAL_ERROR,
