@@ -14974,8 +14974,8 @@
       "description_source": "source_identity",
       "line": 58
     },
-    "tests/test_mcp_cli_v81.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
-      "path": "tests/test_mcp_cli_v81.py",
+    "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
+      "path": "tests/test_mcp_http_cli.py",
       "name": "test_mcp_http_cli_is_explicitly_loopback_dev_only",
       "purpose": "Mcp http cli is explicitly loopback dev only",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -14993,8 +14993,8 @@
       "description_source": "source_identity",
       "line": 8
     },
-    "tests/test_mcp_cli_v81.py::test_mcp_http_parser_exposes_canonical_operator_command": {
-      "path": "tests/test_mcp_cli_v81.py",
+    "tests/test_mcp_http_cli.py::test_mcp_http_parser_exposes_canonical_operator_command": {
+      "path": "tests/test_mcp_http_cli.py",
       "name": "test_mcp_http_parser_exposes_canonical_operator_command",
       "purpose": "Mcp http parser exposes canonical operator command",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15157,8 +15157,8 @@
       "description_source": "source_identity",
       "line": 195
     },
-    "tests/test_mcp_http_resources_v81.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
-      "path": "tests/test_mcp_http_resources_v81.py",
+    "tests/test_mcp_http_resources.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
+      "path": "tests/test_mcp_http_resources.py",
       "name": "test_http_gateway_exposes_redacted_runtime_and_memory_resources",
       "purpose": "Http gateway exposes redacted runtime and memory resources",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15179,10 +15179,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 75
     },
-    "tests/test_mcp_http_resources_v81.py::test_http_gateway_task_resource_reads_same_durable_registry": {
-      "path": "tests/test_mcp_http_resources_v81.py",
+    "tests/test_mcp_http_resources.py::test_http_gateway_task_resource_reads_same_durable_registry": {
+      "path": "tests/test_mcp_http_resources.py",
       "name": "test_http_gateway_task_resource_reads_same_durable_registry",
       "purpose": "Http gateway task resource reads same durable registry",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15201,10 +15201,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 96
     },
-    "tests/test_mcp_http_tasks_bridge_v81.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
-      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+    "tests/test_mcp_http_tasks_bridge.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
       "name": "test_tasks_extension_is_advertised_when_protocol_backend_is_available",
       "purpose": "Tasks extension is advertised when protocol backend is available",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15223,8 +15223,8 @@
       "description_source": "source_identity",
       "line": 116
     },
-    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private": {
-      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+    "tests/test_mcp_http_tasks_bridge.py::test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
       "name": "test_task_capable_generate_is_intercepted_and_keeps_internal_auth_private",
       "purpose": "Task capable generate is intercepted and keeps internal auth private",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15243,8 +15243,8 @@
       "description_source": "source_identity",
       "line": 139
     },
-    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_http_bridge_rejects_mcp_name_mismatch": {
-      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+    "tests/test_mcp_http_tasks_bridge.py::test_task_http_bridge_rejects_mcp_name_mismatch": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
       "name": "test_task_http_bridge_rejects_mcp_name_mismatch",
       "purpose": "Task http bridge rejects mcp name mismatch",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15263,8 +15263,8 @@
       "description_source": "source_identity",
       "line": 170
     },
-    "tests/test_mcp_http_tasks_bridge_v81.py::test_task_http_bridge_routes_all_task_methods": {
-      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+    "tests/test_mcp_http_tasks_bridge.py::test_task_http_bridge_routes_all_task_methods": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
       "name": "test_task_http_bridge_routes_all_task_methods",
       "purpose": "Task http bridge routes all task methods",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15283,8 +15283,8 @@
       "description_source": "source_identity",
       "line": 191
     },
-    "tests/test_mcp_http_tasks_bridge_v81.py::test_loopback_dev_principal_contains_explicit_task_scopes": {
-      "path": "tests/test_mcp_http_tasks_bridge_v81.py",
+    "tests/test_mcp_http_tasks_bridge.py::test_loopback_dev_principal_contains_explicit_task_scopes": {
+      "path": "tests/test_mcp_http_tasks_bridge.py",
       "name": "test_loopback_dev_principal_contains_explicit_task_scopes",
       "purpose": "Loopback dev principal contains explicit task scopes",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15493,8 +15493,8 @@
       "description_source": "source_identity",
       "line": 190
     },
-    "tests/test_mcp_remote_runtime_v81.py::test_public_streamable_http_route_requires_all_independent_evidence": {
-      "path": "tests/test_mcp_remote_runtime_v81.py",
+    "tests/test_mcp_remote_runtime.py::test_public_streamable_http_route_requires_all_independent_evidence": {
+      "path": "tests/test_mcp_remote_runtime.py",
       "name": "test_public_streamable_http_route_requires_all_independent_evidence",
       "purpose": "Public streamable http route requires all independent evidence",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15513,8 +15513,8 @@
       "description_source": "source_identity",
       "line": 9
     },
-    "tests/test_mcp_remote_runtime_v81.py::test_public_streamable_http_is_preferred_when_verified": {
-      "path": "tests/test_mcp_remote_runtime_v81.py",
+    "tests/test_mcp_remote_runtime.py::test_public_streamable_http_is_preferred_when_verified": {
+      "path": "tests/test_mcp_remote_runtime.py",
       "name": "test_public_streamable_http_is_preferred_when_verified",
       "purpose": "Public streamable http is preferred when verified",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -15533,10 +15533,10 @@
       "description_source": "source_identity",
       "line": 33
     },
-    "tests/test_mcp_task_registry_v81.py::test_v81_task_registry_is_sqlite_durable_and_idempotent": {
-      "path": "tests/test_mcp_task_registry_v81.py",
-      "name": "test_v81_task_registry_is_sqlite_durable_and_idempotent",
-      "purpose": "V81 task registry is sqlite durable and idempotent",
+    "tests/test_mcp_task_registry.py::test_task_registry_is_sqlite_durable_and_idempotent": {
+      "path": "tests/test_mcp_task_registry.py",
+      "name": "test_task_registry_is_sqlite_durable_and_idempotent",
+      "purpose": "Task registry is sqlite durable and idempotent",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -15552,10 +15552,10 @@
       "description_source": "source_identity",
       "line": 9
     },
-    "tests/test_mcp_task_registry_v81.py::test_v81_task_cancel_is_intent_until_runtime_acknowledges": {
-      "path": "tests/test_mcp_task_registry_v81.py",
-      "name": "test_v81_task_cancel_is_intent_until_runtime_acknowledges",
-      "purpose": "V81 task cancel is intent until runtime acknowledges",
+    "tests/test_mcp_task_registry.py::test_task_cancel_is_intent_until_runtime_acknowledges": {
+      "path": "tests/test_mcp_task_registry.py",
+      "name": "test_task_cancel_is_intent_until_runtime_acknowledges",
+      "purpose": "Task cancel is intent until runtime acknowledges",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
@@ -15572,10 +15572,10 @@
       "description_source": "source_identity",
       "line": 30
     },
-    "tests/test_mcp_task_registry_v81.py::test_v81_task_registry_survives_new_store_instance": {
-      "path": "tests/test_mcp_task_registry_v81.py",
-      "name": "test_v81_task_registry_survives_new_store_instance",
-      "purpose": "V81 task registry survives new store instance",
+    "tests/test_mcp_task_registry.py::test_task_registry_survives_new_store_instance": {
+      "path": "tests/test_mcp_task_registry.py",
+      "name": "test_task_registry_survives_new_store_instance",
+      "purpose": "Task registry survives new store instance",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
