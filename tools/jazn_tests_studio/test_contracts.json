@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1661,
+  "active_definition_count": 1665,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14974,6 +14974,44 @@
       "description_source": "source_identity",
       "line": 58
     },
+    "tests/test_mcp_cli_v81.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
+      "path": "tests/test_mcp_cli_v81.py",
+      "name": "test_mcp_http_cli_is_explicitly_loopback_dev_only",
+      "purpose": "Mcp http cli is explicitly loopback dev only",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_mcp_cli_v81.py::test_mcp_http_parser_exposes_canonical_operator_command": {
+      "path": "tests/test_mcp_cli_v81.py",
+      "name": "test_mcp_http_parser_exposes_canonical_operator_command",
+      "purpose": "Mcp http parser exposes canonical operator command",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
     "tests/test_mcp_http_gateway.py::test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev": {
       "path": "tests/test_mcp_http_gateway.py",
       "name": "test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev",
@@ -15118,6 +15156,52 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 195
+    },
+    "tests/test_mcp_http_resources_v81.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
+      "path": "tests/test_mcp_http_resources_v81.py",
+      "name": "test_http_gateway_exposes_redacted_runtime_and_memory_resources",
+      "purpose": "Http gateway exposes redacted runtime and memory resources",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "memory",
+        "runtime"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_mcp_http_resources_v81.py::test_http_gateway_task_resource_reads_same_durable_registry": {
+      "path": "tests/test_mcp_http_resources_v81.py",
+      "name": "test_http_gateway_task_resource_reads_same_durable_registry",
+      "purpose": "Http gateway task resource reads same durable registry",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
     },
     "tests/test_mcp_http_tasks_bridge_v81.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
       "path": "tests/test_mcp_http_tasks_bridge_v81.py",
