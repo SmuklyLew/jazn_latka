@@ -1876,11 +1876,11 @@
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
       "name": "test_bridge_discovery_publishes_managed_remote_failover_contract",
       "purpose": "Bridge discovery publishes managed remote failover contract",
-      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 10,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
