@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.81",
-  "active_definition_count": 1675,
+  "active_definition_count": 1676,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15116,6 +15116,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 15
+    },
+    "tests/test_mcp_http_dependency_profile.py::test_mcp_http_profile_maps_public_ingress_dependencies_without_promoting_core": {
+      "path": "tests/test_mcp_http_dependency_profile.py",
+      "name": "test_mcp_http_profile_maps_public_ingress_dependencies_without_promoting_core",
+      "purpose": "Mcp http profile maps public ingress dependencies without promoting core",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
     },
     "tests/test_mcp_http_gateway.py::test_public_gateway_fails_closed_without_oauth_outside_explicit_loopback_dev": {
       "path": "tests/test_mcp_http_gateway.py",
