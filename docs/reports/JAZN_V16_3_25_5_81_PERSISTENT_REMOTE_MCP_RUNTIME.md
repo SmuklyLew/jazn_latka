@@ -30,7 +30,11 @@ pakowania i CI, a nie pojedynczy adapter:
 - generator SYSTEM — deklaruje bundling kodu bez udawania gotowego deploymentu;
 - `AGENTS.chatgpt.md` — host preferuje już zweryfikowany remote runtime, lecz
   zachowuje accepted-visible-turn boundary;
-- `persistent-runtime-e2e` — Windows/Linux obejmuje nową architekturę.
+- `persistent-runtime-e2e` — Windows/Linux obejmuje nową architekturę;
+- mutujące joby `release-hardening/manifest_sync` i
+  `Stable test contracts/sync_catalog` współdzielą jeden branch-level
+  concurrency gate, więc nie ścigają się już przy automatycznych commitach
+  metadanych i katalogu testów.
 
 ## Tasks i trwałość
 
