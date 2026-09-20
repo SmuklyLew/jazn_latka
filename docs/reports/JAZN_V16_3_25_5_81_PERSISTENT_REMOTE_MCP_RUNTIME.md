@@ -38,6 +38,9 @@ pakowania i CI, a nie pojedynczy adapter:
   `Stable test contracts/sync_catalog` współdzielą jeden branch-level
   concurrency gate, więc nie ścigają się już przy automatycznych commitach
   metadanych i katalogu testów.
+- dependency matrix instaluje `.[mcp-http]` na Windows/Linux dla Pythona
+  3.12, 3.13 i 3.14 oraz waliduje profil `mcp-http` w Dependency Studio,
+  żeby optional public ingress nie był deklaracją bez cross-platform evidence.
 
 ## Tasks i trwałość
 
