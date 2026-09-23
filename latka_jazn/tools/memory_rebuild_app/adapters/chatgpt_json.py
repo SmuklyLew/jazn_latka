@@ -25,6 +25,17 @@ class ChatGptJsonAdapter:
         with ChatExportReader(path) as reader:
             info = reader.info
 
+        # Reader members are transport locators. Only archive/directory-relative
+        # members belong to semantic identity; a standalone JSON is the document.
+        def semantic_member(member: str | None) -> str | None:
+            if member is None or info.source_kind == "json":
+                return None
+            if info.source_kind == "directory":
+                return Path(member).relative_to(path).as_posix()
+            return member
+
+        members = [semantic_member(member) or "$document" for member in info.conversation_members]
+
         def records():
             with ChatExportReader(path) as source:
                 yield from conversation_records(source.iter_graphs())
@@ -34,13 +45,13 @@ class ChatGptJsonAdapter:
             source_kind="chatgpt_conversation",
             source_sha256=info.sha256,
             source_name=path.name,
-            source_member=info.conversations_member,
+            source_member=semantic_member(info.conversations_member),
             metadata={
                 "source_kind": info.source_kind,
                 "size_bytes": info.size_bytes,
                 "crc_checked": info.crc_checked,
                 "crc_ok": info.crc_ok,
-                "conversation_members": list(info.conversation_members),
+                "conversation_members": members,
             },
             record_factory=records,
             native_projection="chatgpt",

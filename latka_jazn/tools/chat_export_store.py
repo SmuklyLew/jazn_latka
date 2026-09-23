@@ -515,12 +515,26 @@ class ChatExportArchiveStore:
         }
 
     def _record_conflict(self, import_id: str, graph: ConversationGraph, plan: ConversationPlan) -> None:
+        source = self.con.execute(
+            "SELECT sha256 FROM import_sources WHERE import_id=?", (import_id,),
+        ).fetchone()
+        if source is None:
+            raise ValueError("Conflict requires a registered source import")
+        # Identity belongs to source evidence and both sides of the comparison,
+        # never to the local path, import session UUID or wall-clock time.
+        identity = json.dumps({
+            "source_sha256": str(source[0]),
+            "incoming_raw_tree_sha256": graph.raw_tree_sha256,
+            "plan": plan.to_dict(),
+        }, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        conflict_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "jazn-chat-conflict/v1:" + identity))
         self.con.execute(
             """INSERT INTO import_conflicts(
                conflict_id,import_id,conversation_id,changed_node_ids_json,added_node_ids_json,
-               missing_node_ids_json,details_json,created_at_utc) VALUES(?,?,?,?,?,?,?,?)""",
+               missing_node_ids_json,details_json,created_at_utc) VALUES(?,?,?,?,?,?,?,?)
+               ON CONFLICT(conflict_id) DO NOTHING""",
             (
-                str(uuid.uuid4()), import_id, graph.conversation_id,
+                conflict_id, import_id, graph.conversation_id,
                 json.dumps(list(plan.changed_node_ids), ensure_ascii=False),
                 json.dumps(list(plan.added_node_ids), ensure_ascii=False),
                 json.dumps(list(plan.missing_from_incoming_node_ids), ensure_ascii=False),

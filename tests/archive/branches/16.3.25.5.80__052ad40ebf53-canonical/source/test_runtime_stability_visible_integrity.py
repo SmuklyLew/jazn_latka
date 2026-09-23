@@ -1,0 +1,273 @@
+from __future__ import annotations
+
+from latka_jazn.version import PACKAGE_VERSION
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+import hashlib
+
+from latka_jazn.core.final_response_contract import FinalResponseContract
+from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate, evaluate_final_response_contract
+from latka_jazn.core.timestamp_policy import timestamp_runtime_policy
+from latka_jazn.core.visible_integrity import validate_visible_text
+from latka_jazn.core.session_provenance import repair_final_visible_integrity
+from latka_jazn.core.visible_integrity import (
+    enforce_integrity_consensus,
+    evaluate_origin_truth,
+    validate_result_integrity,
+)
+
+SAMPLE = datetime.now(timezone.utc).astimezone(ZoneInfo("Europe/Warsaw")).replace(microsecond=0)
+HEADER = f"🕒 {SAMPLE:%Y-%m-%d %H:%M:%S}"
+SAMPLE_ISO = SAMPLE.isoformat()
+BODY = "Działam."
+VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
+
+
+def _decision(*, classification: str = "rule_handler_response") -> dict:
+    return {
+        "fallback_classification": classification,
+        "route": "presence",
+        "handler_name": "presence_handler",
+        "handler_result": {
+            "handler_name": "presence_handler",
+            "body": BODY,
+            "required_components": ["presence"],
+            "satisfied_components": ["presence"],
+            "missing_components": [],
+        },
+        "final_answer_validation": {"accepted": True, "must_regenerate": False},
+        "template_origin": {},
+        "runtime_provenance": {
+            "handler_name": "presence_handler",
+            "source_origin_detail": "presence_handler",
+            "response_generation_mode": "runtime_dynamic",
+            "exact_runtime_text": BODY,
+            "runtime_text_hash": hashlib.sha256(BODY.encode()).hexdigest(),
+            "visible_answer_text": VISIBLE,
+            "visible_answer_hash": hashlib.sha256(VISIBLE.encode()).hexdigest(),
+        },
+        "timestamp_contract": {
+            "trusted": False,
+            "source": "local_machine",
+            "sample_iso": SAMPLE_ISO,
+            "allow_degraded_local_visible": True,
+            "timezone": "Europe/Warsaw",
+            "max_age_seconds": 86400,
+        },
+        "author_id": "latka_runtime",
+        "author_label": "Łatka",
+        "author_source": "jazn_runtime",
+        "voice_source_contract": {
+            "speaking_identity": "Łatka",
+            "active_source": "jazn_runtime",
+        },
+    }
+
+
+def _result(decision: dict | None = None) -> dict:
+    decision = decision or _decision()
+    contract = FinalResponseContract.build(
+        turn_id="t1", trace_id="x1", runtime_version=PACKAGE_VERSION,
+        timestamp_header=HEADER, timezone="Europe/Warsaw", state_emoticon="🌿",
+        body=BODY, conversation_decision=decision,
+    ).to_dict()
+    return {
+        "trace": {"timestamp_header": HEADER},
+        "conversation_decision": decision,
+        "final_response_contract": contract,
+        "final_visible_text": VISIBLE,
+        "runtime_provenance": decision.get("runtime_provenance"),
+        "exact_runtime_text": BODY,
+    }
+
+
+def test_valid_rule_handler_has_runtime_owned_origin() -> None:
+    result = _result()
+    integrity = validate_result_integrity(result)
+    assert integrity["valid"] is True
+    assert integrity["origin_truth_valid"] is True
+    assert result["final_response_contract"]["final_visible_integrity"]["valid"] is True
+
+
+def test_host_generation_is_valid_only_after_finalization() -> None:
+    decision = _decision(classification="not_fallback")
+    decision["handler_result"] = {}
+    decision["chatgpt_host_visible_bridge"] = {"accepted": True}
+    decision["host_visible_finalization"] = {
+        "accepted": True,
+        "final_visible_text": VISIBLE,
+        "final_text_sha256": hashlib.sha256(VISIBLE.encode()).hexdigest(),
+    }
+    valid, errors = evaluate_origin_truth(decision, body=BODY, final_visible_text=VISIBLE, timestamp_header=HEADER)
+    assert valid is True, errors
+    decision.pop("host_visible_finalization")
+    valid, errors = evaluate_origin_truth(decision, body=BODY, final_visible_text=VISIBLE, timestamp_header=HEADER)
+    assert valid is False
+    assert "not_fallback_without_provenance" in errors
+
+
+def test_text_changed_after_hash_is_rejected() -> None:
+    result = _result()
+    result["final_visible_text"] += " zmiana"
+    integrity = validate_result_integrity(result)
+    assert integrity["valid"] is False
+    assert "visible_text_hash_mismatch" in integrity["errors"]
+
+
+def test_stale_timestamp_is_rejected() -> None:
+    decision = _decision()
+    decision["timestamp_contract"]["sample_iso"] = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+    result = _result(decision)
+    integrity = validate_result_integrity(result)
+    assert integrity["valid"] is False
+    assert "timestamp_stale" in integrity["errors"]
+
+
+def test_not_fallback_without_provenance_and_technical_fallback_are_rejected() -> None:
+    decision = _decision(classification="not_fallback")
+    decision["handler_result"] = {}
+    decision["runtime_provenance"] = {}
+    valid, errors = evaluate_origin_truth(decision, body=BODY, final_visible_text=VISIBLE, timestamp_header=HEADER)
+    assert valid is False
+    assert "runtime_provenance_missing" in errors
+
+    decision = _decision(classification="technical_fallback")
+    valid, errors = evaluate_origin_truth(decision, body=BODY, final_visible_text=VISIBLE, timestamp_header=HEADER)
+    assert valid is False
+    assert "classified_fallback" in errors
+
+
+def test_missing_contract_and_missing_visible_text_fail_closed() -> None:
+    gate = evaluate_final_response_contract(None)
+    assert gate.ok is False
+    assert gate.error_code == "runtime_not_started"
+
+    result = _result()
+    result["final_visible_text"] = ""
+    updated, gate_payload = apply_runtime_truth_gate(result)
+    assert gate_payload["ok"] is False
+    assert updated["error_code"] == "final_visible_text_required"
+
+
+def test_runtime_truth_gate_cannot_promote_invalid_contract() -> None:
+    result = _result()
+    contract = result["final_response_contract"]
+    contract["final_visible_integrity"]["valid"] = False
+    contract["final_visible_integrity"]["origin_truth_valid"] = False
+    gate = evaluate_final_response_contract(contract)
+    assert gate.ok is False
+    assert gate.final_visible_integrity_valid is False
+    assert gate.final_visible_origin_valid is False
+
+
+def test_non_object_truth_gate_contract_fails_closed() -> None:
+    updated, gate_payload = apply_runtime_truth_gate(
+        {
+            "final_response_contract": ["invalid", "shape"],
+            "final_visible_text": "tekst bez kontraktu",
+            "conversation_decision": ["invalid", "shape"],
+        }
+    )
+
+    assert gate_payload["ok"] is False
+    assert gate_payload["error_code"] == "runtime_not_started"
+    assert updated["normal_response_blocked"] is True
+    assert updated["conversation_decision"]["normal_response_allowed"] is False
+
+
+def test_consensus_mismatch_blocks_normal_response() -> None:
+    result = _result()
+    result["final_visible_integrity"] = {"valid": True}
+    result["final_response_contract"]["final_visible_integrity"]["valid"] = False
+    result["runtime_truth_gate"] = {"final_visible_integrity_valid": True, "ok": True}
+    result["session_provenance"] = {"final_visible_integrity_valid": True}
+    updated, consensus = enforce_integrity_consensus(result)
+    assert consensus["mismatch"] is True
+    assert updated["error_code"] == "integrity_consensus_mismatch"
+    assert updated["normal_response_blocked"] is True
+    assert updated["final_visible_integrity"]["valid"] is False
+    assert updated["final_response_contract"]["final_visible_integrity"]["valid"] is False
+    assert updated["runtime_truth_gate"]["final_visible_integrity_valid"] is False
+    assert updated["session_provenance"]["final_visible_integrity_valid"] is False
+
+
+def test_non_object_provenance_layers_fail_closed() -> None:
+    result = _result()
+    result["runtime_provenance"] = ["invalid", "shape"]
+    result["conversation_decision"]["runtime_provenance"] = ["invalid", "shape"]
+
+    integrity = validate_result_integrity(result)
+
+    assert integrity["valid"] is False
+    assert "visible_answer_text_missing" in integrity["errors"]
+    assert "visible_answer_hash_missing" in integrity["errors"]
+
+
+def test_non_object_integrity_repair_layers_are_not_used_as_evidence() -> None:
+    source = {
+        "final_visible_text": "niezweryfikowany tekst",
+        "trace": ["invalid"],
+        "final_response_contract": ["invalid"],
+        "runtime_provenance": ["invalid"],
+    }
+
+    repaired, audit = repair_final_visible_integrity(source)
+
+    assert repaired["final_visible_text"] == "niezweryfikowany tekst"
+    assert audit == []
+
+
+def test_non_object_consensus_layers_cannot_be_promoted() -> None:
+    updated, consensus = enforce_integrity_consensus(
+        {
+            "final_response_contract": ["invalid"],
+            "final_visible_integrity": ["invalid"],
+            "runtime_truth_gate": ["invalid"],
+            "session_provenance": ["invalid"],
+        }
+    )
+
+    assert consensus["valid"] is False
+    assert updated["final_visible_integrity"]["valid"] is False
+    assert updated["final_response_contract"]["final_visible_integrity"]["valid"] is False
+
+
+def test_default_policy_accepts_fresh_local_os_time_without_network_trust() -> None:
+    policy = timestamp_runtime_policy()
+    assert policy["require_trusted_in_final_visible"] is False
+    assert policy["local_fallback_allowed_default"] is True
+    assert policy["allow_degraded_local_visible"] is True
+
+    result = _result()
+    integrity = validate_result_integrity(result)
+    gate = evaluate_final_response_contract(result["final_response_contract"])
+
+    assert integrity["valid"] is True
+    assert integrity["timestamp_local_os_source"] is True
+    assert integrity["timestamp_degraded_visible_ok"] is True
+    assert gate.ok is True
+    assert gate.normal_response_allowed is True
+    assert gate.error_code is None
+    assert gate.errors == []
+    assert set(gate.degradations) == {"timestamp_untrusted", "timestamp_source_not_network"}
+    assert gate.timestamp_degraded is True
+
+
+def test_untrusted_non_os_timestamp_cannot_use_local_fallback_exception() -> None:
+    contract = dict(_decision()["timestamp_contract"])
+    contract["source"] = "manual_unverified"
+    integrity = validate_visible_text(
+        HEADER,
+        VISIBLE,
+        timestamp_contract=contract,
+        validation_passed=True,
+        origin_truth_valid=True,
+        author_label="Łatka",
+        state_emoticon="🌿",
+        expected_body=BODY,
+    )
+
+    assert integrity["timestamp_local_os_source"] is False
+    assert integrity["timestamp_trust_ok"] is False
+    assert integrity["valid"] is False
+    assert "timestamp_trust_invalid" in integrity["errors"]

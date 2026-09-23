@@ -1,6 +1,8 @@
 ﻿[CmdletBinding(PositionalBinding = $false)]
 param(
     [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$ExpectedBranch,
+    [string]$ExpectedRef,
     [string]$SourceManifest,
     [string]$TargetRoot,
     [string]$BaselineTest03Root,
@@ -27,7 +29,6 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$ExpectedBranch = "feature/memory-sqlite-test-04"
 $Root = [System.IO.Path]::GetFullPath($Root)
 
 function Resolve-PrivatePath {
@@ -39,6 +40,9 @@ function Resolve-PrivatePath {
 }
 
 function Assert-ParameterContract {
+    if ([string]::IsNullOrWhiteSpace($ExpectedBranch) -and [string]::IsNullOrWhiteSpace($ExpectedRef)) {
+        throw "Podaj jawnie -ExpectedBranch lub -ExpectedRef przed wykonaniem Test04."
+    }
     $executionFlags = @(
         [bool]$RunRebuild,
         [bool]$RunIdempotence,
@@ -85,7 +89,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Nie udalo sie odczytac biezacego brancha Git."
 }
 $branch = ([string]($branchOutput | Select-Object -First 1)).Trim()
-if ($branch -ne $ExpectedBranch) {
+if (-not [string]::IsNullOrWhiteSpace($ExpectedBranch) -and $branch -ne $ExpectedBranch) {
     throw "Niewlasciwy branch. Oczekiwano '$ExpectedBranch', otrzymano '$branch'. Nie zapisano plikow."
 }
 
@@ -97,6 +101,14 @@ $arguments = New-Object "System.Collections.Generic.List[string]"
 [void]$arguments.Add("--root")
 [void]$arguments.Add($Root)
 [void]$arguments.Add("--json")
+if (-not [string]::IsNullOrWhiteSpace($ExpectedBranch)) {
+    [void]$arguments.Add("--expected-branch")
+    [void]$arguments.Add($ExpectedBranch)
+}
+if (-not [string]::IsNullOrWhiteSpace($ExpectedRef)) {
+    [void]$arguments.Add("--expected-ref")
+    [void]$arguments.Add($ExpectedRef)
+}
 
 if ($WriteTemplates) {
     [void]$arguments.Add("--write-templates")
