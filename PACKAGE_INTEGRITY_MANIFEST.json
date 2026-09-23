@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
-  "runtime_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
-  "package_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
-  "generated_at_utc": "2026-09-23T18:54:56+00:00",
-  "updated_at_utc": "2026-09-23T18:54:56+00:00",
+  "version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
+  "runtime_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
+  "package_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
+  "generated_at_utc": "2026-09-23T22:04:04+00:00",
+  "updated_at_utc": "2026-09-23T22:04:04+00:00",
   "start_file": "run.py",
-  "file_count": 2102,
-  "static_file_count": 2102,
+  "file_count": 2103,
+  "static_file_count": 2103,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2984,
-      "sha256": "2646b58cf028696f01043b108510382e155e5d03645efc86a1750c79c405280a",
+      "size_bytes": 3014,
+      "sha256": "ebf5132b2dabae0330f9288815f840aeb2d3f62be60f4b63ea933fe00b4a56f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7679,8 +7679,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/adapters/music_analysis.py",
-      "size_bytes": 3948,
-      "sha256": "a75991732bc366fc6cb1dc55a630adf4d30ac19b14d218b4db6b4cf42e7b5bf1",
+      "size_bytes": 4284,
+      "sha256": "300e9223d67a9b19a70fb2e69998eb2e94024e59bb8e32c088f380d2a2ed3048",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8210,8 +8210,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/typed_api.py",
-      "size_bytes": 12646,
-      "sha256": "62998b45179eed4fd0ab29c5076cac886af38a7df3744a16d69d563f26d64660",
+      "size_bytes": 15532,
+      "sha256": "04a02b643a4c910c054c7a27fc1eeeb76086d2adc3ec624c951f42994dd1d2d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8282,8 +8282,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_common.py",
-      "size_bytes": 3921,
-      "sha256": "b85791fb9958a4f0110f1932f993acc2b08ac9bb04e7012626e21c197f0fde9a",
+      "size_bytes": 5213,
+      "sha256": "6f91796c050c2160d53d9809f5d73a914c3fadea917e259318ca0aa27ac70715",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8318,8 +8318,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_journal_reader.py",
-      "size_bytes": 13120,
-      "sha256": "58018e2725d10391a404298418526aa4964a74b0d66cb549710d0f682a0d8a5b",
+      "size_bytes": 13372,
+      "sha256": "fa30daf73c0363f8a7074001e0759686c949131376604d53d647d900388d1852",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8597,8 +8597,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6503,
-      "sha256": "32549a5bc969cb56731106daaa3ece3165b94318d5267f4356bf5907fc0c6b2f",
+      "size_bytes": 6508,
+      "sha256": "9b555e5a875996231856a0e217f5cc9ae02f1a4573ae314557b73f752bd1140b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17074,6 +17074,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_rebuild_recall_polish_structured.py",
+      "size_bytes": 4885,
+      "sha256": "afb82846591ce49aa18217c453ef3d4ee3fb73f1897b2474fc653fa566ed5cc8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_rebuild_recall_subsystem.py",
       "size_bytes": 6101,
       "sha256": "84c9c9e449776693071e6b259aded3a3359c67f0d91e236928bcbbecd4ff0bfd",
@@ -19370,11 +19379,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
+  "release_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
-    "package_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success",
-    "release_version": "16.3.25.5.80.4-jazn-studio-pamieci-test03-build-success"
+    "runtime_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
+    "package_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence",
+    "release_version": "16.3.25.5.80.5-jazn-studio-pamieci-test04-recall-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
