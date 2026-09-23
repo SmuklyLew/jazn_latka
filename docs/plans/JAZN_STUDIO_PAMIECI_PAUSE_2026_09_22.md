@@ -87,3 +87,11 @@ Po odnowieniu limitu najpierw odczytać ten raport, AGENTS.md i AGENTS.codex.md,
 ## BRANCH/HEAD
 
 Branch wymieniony w STAN pozostaje jedyną linią pracy. Baza master: `affabf5618934bd8efb39b0b1d074f7529116643`. HEAD wszystkich zakończonych testów i ostatniego potwierdzonego pushu przed raportem: `0667e80722433c97a6e4934aefc4bb237c850e47`. Nowy commit raportu i osobny commit metadanych tworzą checkpoint; dokładne local/remote SHA i pusty git status należy potwierdzić po pushu i zapisać w odpowiedzi oraz lokalnym receipt. Nie przepisywać istniejących commitów.
+
+## DOMKNIĘCIE CHECKPOINTU 2026-09-23
+
+Run 35761451052: COMPLETED / SUCCESS. Job windows-powershell-regressions zakończony 2026-09-22T17:58:18Z. Full deterministic suite in PowerShell: SUCCESS (17:37:52Z–17:54:44Z); package smoke, upload i clean checkout guard: SUCCESS. Powyższe IN_PROGRESS opisuje wcześniejszy moment obserwacji, nie wynik końcowy. Nie ponawiano lokalnych testów ani nie rozpoczęto prywatnego chaina; wszystkie jego etapy pozostają NOT RUN.
+
+Nowe commity po poprzednim checkpointcie 84cd7bd7: 0667e80722433c97a6e4934aefc4bb237c850e47 (odzyskane metadane), 638faf8537b519e1d23883a3b043b550247f5d5b (raport pauzy), 149a35a8 (kanoniczne metadane raportu), następnie niniejsze domknięcie i jego osobny commit metadanych. Finalne local/remote SHA oraz czystość zapisane zostaną po pushu w RESUME_STATE.md poza Git i odpowiedzi użytkownikowi. Master/merge-base nadal affabf5618934bd8efb39b0b1d074f7529116643. Bez zmian kodu, wersji ani testowanego drzewa kodu .80.4.
+
+Pierwszy krok po wznowieniu: sprawdzić fetch/status/local i remote HEAD oraz CI nowego checkpointu. Run 35761451052 ma już potwierdzony SUCCESS, nie wymaga restartu. Dopiero po potwierdzeniu wymaganych CI końcowego HEAD można przygotować świeżą konfigurację i audyt prywatnych źródeł. Obecnie zatrzymać pracę po pushu i weryfikacji. Logi końcowej synchronizacji: metadata-pause-final-v80-4-write.json oraz metadata-pause-final-v80-4-check.json w katalogu evidence poza Git.
