@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any, Iterator
 import json
 
+from latka_jazn.tools.memory_rebuild_common import searchable_field_lines
+
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
 from ..source_detection import SourceProbe
@@ -36,12 +38,22 @@ def _text(raw: dict[str, Any]) -> tuple[str, str]:
         or raw.get("nazwa") or raw.get("_source_key") or "Analiza utworu"
     ).strip()
     fields = (
+        "wykonawca", "artist", "autor",
         "analiza", "analysis", "opis", "description", "tekst", "lyrics", "summary",
         "interpretacja", "motywy", "emocje", "wnioski", "notes",
         "lustro_emocji_latki", "refleksja_latki", "moje_odczucia_latki",
         "notatka_introspekcyjna", "podsumowanie", "zwiazek_z_ksiazka",
     )
-    fragments = [f"{name}: {raw[name]}" for name in fields if raw.get(name) not in (None, "", [], {})]
+    excluded = (
+        "id", "analysis_id", "uuid", "_source_key", "importance",
+        "timestamp", "data", "date",
+        "tytuł", "tytul", "title", "utwór", "utwor", "song", "nazwa",
+    )
+    fragments = searchable_field_lines(
+        raw,
+        preferred_fields=fields,
+        excluded_fields=excluded,
+    )
     return title, "\n".join(fragments) if fragments else canonical_json(raw)
 
 

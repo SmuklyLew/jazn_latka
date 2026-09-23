@@ -11,6 +11,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Sequence
 import json
+import math
 import sqlite3
 
 from latka_jazn.tools.memory_rebuild_common import fts_queries
@@ -121,32 +122,61 @@ class TypedMemoryAPI:
     @staticmethod
     def _score(rank: Any) -> float:
         try:
-            return 1.0 / (1.0 + abs(float(rank)))
+            value = max(-60.0, min(60.0, float(rank)))
+            # SQLite FTS5 BM25 assigns better matches numerically lower values.
+            # A decreasing logistic transform preserves that ordering while
+            # keeping the public score in the validated 0..1 range.
+            return 1.0 / (1.0 + math.exp(value))
         except (TypeError, ValueError):
             return 0.0
 
     def _l0_hits(self, con: sqlite3.Connection, query: RecallQuery) -> list[RecallHit]:
-        rows: Sequence[sqlite3.Row] = ()
+        candidate_limit = max(query.limit * 8, 64)
+        rows_by_record: dict[str, sqlite3.Row] = {}
+        rank_by_record: dict[str, float] = {}
+
+        general_sql = """SELECT r.*,s.adapter_id,s.source_sha256,
+                                bm25(memory_l0_fts,0.0,5.0,1.0,0.25) AS lexical_rank
+                         FROM memory_l0_fts
+                         JOIN memory_l0_records r ON r.rowid=memory_l0_fts.rowid
+                         JOIN memory_l0_sources s ON s.source_id=r.source_id
+                         WHERE memory_l0_fts MATCH ? AND r.is_current_revision=1
+                           AND r.memory_eligible=1
+                           AND (? IS NULL OR COALESCE(r.event_time_end,r.event_time_start)>=?)
+                           AND (? IS NULL OR COALESCE(r.event_time_start,r.event_time_end)<=?)
+                         ORDER BY lexical_rank LIMIT ?"""
+        structured_sql = general_sql.replace(
+            "AND r.memory_eligible=1",
+            "AND r.memory_eligible=1 AND r.record_kind<>'conversation_message'",
+        )
+
         for expression in fts_queries(query.text):
-            rows = con.execute(
-                """SELECT r.*,s.adapter_id,s.source_sha256,bm25(memory_l0_fts) AS lexical_rank
-                   FROM memory_l0_fts
-                   JOIN memory_l0_records r ON r.rowid=memory_l0_fts.rowid
-                   JOIN memory_l0_sources s ON s.source_id=r.source_id
-                   WHERE memory_l0_fts MATCH ? AND r.is_current_revision=1
-                      AND r.memory_eligible=1
-                     AND (? IS NULL OR COALESCE(r.event_time_end,r.event_time_start)>=?)
-                     AND (? IS NULL OR COALESCE(r.event_time_start,r.event_time_end)<=?)
-                   ORDER BY lexical_rank LIMIT ?""",
-                (
-                    expression,
-                    query.temporal_start, query.temporal_start,
-                    query.temporal_end, query.temporal_end,
-                    max(query.limit * 4, query.limit),
-                ),
-            ).fetchall()
-            if rows:
-                break
+            for statement in (general_sql, structured_sql):
+                fetched = con.execute(
+                    statement,
+                    (
+                        expression,
+                        query.temporal_start, query.temporal_start,
+                        query.temporal_end, query.temporal_end,
+                        candidate_limit,
+                    ),
+                ).fetchall()
+                for row in fetched:
+                    record_id = str(row["record_id"])
+                    try:
+                        lexical_rank = float(row["lexical_rank"])
+                    except (TypeError, ValueError):
+                        lexical_rank = 0.0
+                    previous = rank_by_record.get(record_id)
+                    if previous is None or lexical_rank < previous:
+                        rank_by_record[record_id] = lexical_rank
+                        rows_by_record[record_id] = row
+
+        rows = sorted(
+            rows_by_record.values(),
+            key=lambda row: (float(row["lexical_rank"]), str(row["record_id"])),
+        )
+
         result: list[RecallHit] = []
         for row in rows:
             try:
@@ -293,7 +323,33 @@ class TypedMemoryAPI:
                 hits.extend(self._active_hits(con, query))
             hits = self._rerank_embeddings(con, query, hits)
         hits.sort(key=lambda item: (-item.score, item.citation.event_time_start or "", item.record_id))
-        selected = tuple(hits[:query.limit])
+        selected_list = list(hits[:query.limit])
+        if MemoryLayer.L0 in query.layers and query.limit >= 5:
+            structured = [
+                item for item in hits
+                if item.layer is MemoryLayer.L0 and item.record_kind != "conversation_message"
+            ]
+            reserve = min(2, max(1, query.limit // 10), len(structured))
+            selected_structured = sum(
+                1 for item in selected_list if item.layer is MemoryLayer.L0
+                and item.record_kind != "conversation_message"
+            )
+            if selected_structured < reserve:
+                selected_ids = {item.record_id for item in selected_list}
+                needed = reserve - selected_structured
+                additions = [item for item in structured if item.record_id not in selected_ids][:needed]
+                if additions:
+                    removable = [
+                        index for index in range(len(selected_list) - 1, -1, -1)
+                        if selected_list[index].layer is MemoryLayer.L0
+                        and selected_list[index].record_kind == "conversation_message"
+                    ]
+                    for addition, index in zip(additions, removable):
+                        selected_list[index] = addition
+                    selected_list.sort(
+                        key=lambda item: (-item.score, item.citation.event_time_start or "", item.record_id)
+                    )
+        selected = tuple(selected_list[:query.limit])
         if not selected:
             return RecallResponse(
                 status=RecallStatus.UNKNOWN,

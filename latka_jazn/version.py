@@ -4,9 +4,9 @@ import re
 from typing import Any
 
 # Studio batch reconstruction and current-master host contracts converge here.
-DISTRIBUTION_VERSION = "16.3.25.5.80.4"
-PACKAGE_VERSION = "16.3.25.5.80.4"
-PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-test03-build-success"
+DISTRIBUTION_VERSION = "16.3.25.5.80.5"
+PACKAGE_VERSION = "16.3.25.5.80.5"
+PACKAGE_RELEASE_NAME = "jazn-studio-pamieci-test04-recall-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

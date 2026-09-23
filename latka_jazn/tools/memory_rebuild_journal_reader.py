@@ -10,7 +10,7 @@ import unicodedata
 
 from latka_jazn.tools.chat_export_reader import sha256_file
 from latka_jazn.tools.memory_rebuild_common import (
-    CONTENT_FIELDS, FANOUT_FIELDS, bounded, canonical_json, norm, schema_version, sha_text,
+    CONTENT_FIELDS, FANOUT_FIELDS, bounded, canonical_json, norm, schema_version, searchable_field_lines, sha_text,
 )
 
 CLASSIFICATION_SCHEMA_VERSION = schema_version("journal_classification")
@@ -261,7 +261,14 @@ class JournalReader:
 
     @staticmethod
     def _item_from_raw(raw: dict[str, Any]) -> JournalItem:
-        lines = [f"{key}: {norm(raw.get(key))}" for key in CONTENT_FIELDS if norm(raw.get(key))]
+        lines = searchable_field_lines(
+            raw,
+            preferred_fields=CONTENT_FIELDS,
+            excluded_fields=(
+                "id", "entry_id", "uuid", "importance", "ważność", "waznosc",
+                "event_time_start", "event_time_end", "timestamp", "datetime", "data",
+            ),
+        )
         content = "\n".join(lines) or canonical_json(raw)
         content_hash = sha_text(content)
         explicit = norm(raw.get("id") or raw.get("entry_id") or raw.get("uuid"))

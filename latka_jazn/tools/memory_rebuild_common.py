@@ -79,13 +79,52 @@ def bounded(value: Any, default: float) -> float:
     return max(0.0, min(1.0, number))
 
 
+_FTS_POLISH_SUFFIXES = (
+    "owego", "owej", "owymi", "owych", "ami", "ach", "ego", "emu",
+    "ie", "ą", "ę", "a", "e", "i", "o", "u", "y",
+)
+
+
+def _fts_token_root(token: str) -> str:
+    value = token.casefold()
+    if len(value) < 5:
+        return value
+    for suffix in _FTS_POLISH_SUFFIXES:
+        if value.endswith(suffix) and len(value) - len(suffix) >= 4:
+            return value[:-len(suffix)]
+    return value[:-1]
+
+
+def searchable_field_lines(
+    raw: dict[str, Any],
+    *,
+    preferred_fields: tuple[str, ...] = (),
+    excluded_fields: tuple[str, ...] = (),
+) -> tuple[str, ...]:
+    excluded = set(excluded_fields)
+    ordered = [*preferred_fields, *sorted((str(key) for key in raw), key=str.casefold)]
+    lines: list[str] = []
+    seen: set[str] = set()
+    for key in ordered:
+        if key in seen or key in excluded or key not in raw:
+            continue
+        seen.add(key)
+        text = norm(raw.get(key))
+        if text:
+            lines.append(f"{key}: {text}")
+    return tuple(lines)
+
+
 def fts_queries(query: str) -> tuple[str, ...]:
     tokens = re.findall(r"[\wąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+", query, flags=re.UNICODE)
     if not tokens:
         return (query.strip(),)
     exact = " ".join(tokens)
-    prefix = " ".join(f"{token[:-1] if len(token) >= 5 else token}*" for token in tokens)
-    return (exact, prefix) if exact != prefix else (exact,)
+    conservative = " ".join(f"{token[:-1] if len(token) >= 5 else token}*" for token in tokens)
+    roots = [_fts_token_root(token) for token in tokens]
+    rooted = " ".join(f"{root}*" if len(root) >= 4 else root for root in roots)
+    relaxed = " OR ".join(f"{root}*" if len(root) >= 4 else root for root in roots)
+    return tuple(dict.fromkeys(item for item in (exact, conservative, rooted, relaxed) if item))
 
 
 def sqlite_check(con: sqlite3.Connection, *, full: bool) -> dict[str, Any]:
