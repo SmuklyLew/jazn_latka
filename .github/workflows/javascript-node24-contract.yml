@@ -86,6 +86,9 @@ jobs:
           npm run --prefix tools/javascript probe
           npm run --prefix tools/javascript test
 
+      - name: Validate Runtime Console Python boundary
+        run: python -X utf8 -m pytest -q -ra --tb=short tests/test_runtime_console.py
+
       - name: Validate Jaźń optional JavaScript capability boundary
         run: >-
           python -X utf8 -m latka_jazn.tools.javascript_runtime
