@@ -3,8 +3,8 @@
   "version": "16.3.25.5.82-turn-memory-continuity-convergence",
   "runtime_version": "16.3.25.5.82-turn-memory-continuity-convergence",
   "package_version": "16.3.25.5.82-turn-memory-continuity-convergence",
-  "generated_at_utc": "2026-09-24T18:16:51+00:00",
-  "updated_at_utc": "2026-09-24T18:16:51+00:00",
+  "generated_at_utc": "2026-09-24T18:19:47+00:00",
+  "updated_at_utc": "2026-09-24T18:19:47+00:00",
   "start_file": "run.py",
   "file_count": 1774,
   "static_file_count": 1774,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2931,
-      "sha256": "830764cc2d5f699fb09326832cb858c20de8686e44cda867e389c6e4622a5337",
+      "size_bytes": 2936,
+      "sha256": "8e6271d26d931575b49abb6a2152c7f0caefa7549f42a337621f9d123ce6afc6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4304,8 +4304,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 232192,
-      "sha256": "52ec308c4fafed901167335a8263ab01a930aab02b2a8d88cb769d6cfe6fde65",
+      "size_bytes": 232176,
+      "sha256": "6b36383d00afc4192025ef4127acf4180cece72734d8dcb6f68b7a1de63e7ac8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13024,6 +13024,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_memory_maintenance_contract.py",
+      "size_bytes": 1036,
+      "sha256": "66129758013f2b27d1240c688cb971e7949803f66b529ee1e22896a4b615ff4c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_nonstreaming_host_transport.py",
       "size_bytes": 7311,
       "sha256": "bcf9a08a8816552246853d7272f16596daa2424a487d2cdeb64268efefc8c15e",
@@ -13783,6 +13792,15 @@
       "path": "tests/test_legacy_fanout_migration.py",
       "size_bytes": 3578,
       "sha256": "8987eb75cc6a1646fb555b0b277172b7b92211c4058f4bacdcfa330a6f35fcb3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_legacy_memory_recovery_root.py",
+      "size_bytes": 1739,
+      "sha256": "9d20f02736f9fb83c194ec727646eb9b9f99090a9b459d40e4b9c004f4d5ef55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15340,24 +15358,6 @@
       "path": "tests/test_turn_trace_span_context.py",
       "size_bytes": 1261,
       "sha256": "18e7d9db6dda98b62008b77b44aac5703289416aab737449944ace0450490e6e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v16325582_chatgpt_maintenance_contract.py",
-      "size_bytes": 1036,
-      "sha256": "66129758013f2b27d1240c688cb971e7949803f66b529ee1e22896a4b615ff4c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v16325582_memory_recovery_root.py",
-      "size_bytes": 1739,
-      "sha256": "9d20f02736f9fb83c194ec727646eb9b9f99090a9b459d40e4b9c004f4d5ef55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
