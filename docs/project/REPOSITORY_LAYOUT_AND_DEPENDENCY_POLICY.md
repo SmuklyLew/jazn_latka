@@ -107,12 +107,20 @@ jest dowodem aktywnego runtime Jaźni.
 ## 7. JavaScript i Node.js
 
 JavaScript jest od wersji `16.3.25.5.30` jawnie obsługiwaną **opcjonalną
-capability narzędziową**, a nie drugim rdzeniem runtime. Python i `run.py`
-pozostają kanoniczną ścieżką startu systemu; brak `node` w środowisku nie może
-blokować Jaźni.
+capability narzędziową**, a od v16.3.25.5.83 także warstwą prezentacyjną lokalnego
+Runtime Console. Nie jest drugim rdzeniem runtime. Python i `run.py` pozostają
+kanoniczną ścieżką startu systemu; brak `node` w środowisku nie może blokować
+Jaźni ani przeglądarkowej konsoli.
 
-Bieżąca linia testowana przez CI to **Node.js 24 LTS**. Kod JavaScript projektu
-używa ESM i jest izolowany pod `tools/javascript/`. Capability hosta można
+Granica odpowiedzialności jest jawna: Python pozostaje właścicielem lifecycle,
+pamięci/SQLite, routingu, cognition, identity i turn/finalization authority.
+JavaScript może renderować bounded projections dostarczone przez Python i
+utrzymywać klienta UI, ale nie może bezpośrednio otwierać baz runtime ani tworzyć
+równoległego źródła stanu. Kod browser ESM należący do SYSTEM może znajdować się
+pod `latka_jazn/resources/runtime_console/`; Node/ESM tooling i niezależne testy
+pozostają pod `tools/javascript/`.
+
+Bieżąca linia testowana przez CI to **Node.js 24 LTS**. Capability hosta można
 sprawdzić bez instalowania czegokolwiek:
 
 ```text
