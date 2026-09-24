@@ -1884,12 +1884,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
             or not predecessor.host_request_contract_hash
         ):
             return False
-        try:
-            from latka_jazn.core.chatgpt_host_pending_store import (
-                HostRequestStoreError,
-                abandon_pending_host_request,
-            )
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError,
+            abandon_pending_host_request,
+        )
 
+        try:
             lifecycle = abandon_pending_host_request(
                 self.config.root,
                 turn_id=predecessor.host_turn_id,
