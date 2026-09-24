@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "affabf5618934bd8efb39b0b1d074f7529116643",
-    "base_version": "16.3.25.5.79.3-host-executor-epoch-recovery-ci-convergence",
+    "base_commit": "375e9eeaf5be9fc4e24c5732666fec83f0b8d7f1",
+    "base_version": "16.3.25.5.82-turn-memory-continuity-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "375e9eeaf5be9fc4e24c5732666fec83f0b8d7f1",
