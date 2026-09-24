@@ -32,6 +32,8 @@ class HostExecutorObservation:
     filesystem_probe_succeeded: bool | None = None
     surface: str = "default"
     remote_runtime_transport_available: bool = False
+    remote_runtime_transport: str = "none"
+    remote_runtime_reason_code: str | None = None
     execution_handoff_available: bool = False
     execution_handoff_state: HostHandoffState = HostHandoffState.UNKNOWN
     observation_generation: int = 0
@@ -46,6 +48,24 @@ class HostExecutorObservation:
         elif state in HANDOFF_ACTIVE_STATES:
             object.__setattr__(self, "execution_handoff_available", True)
         object.__setattr__(self, "execution_handoff_state", state)
+
+        remote_transport = str(self.remote_runtime_transport or "none").strip().lower()
+        allowed_remote_transports = {
+            "none",
+            "public_streamable_http",
+            "openai_secure_mcp_tunnel",
+            "verified_remote_unspecified",
+        }
+        if remote_transport not in allowed_remote_transports:
+            raise ValueError(f"invalid_remote_runtime_transport:{remote_transport!r}")
+        if self.remote_runtime_transport_available and remote_transport == "none":
+            # Direct in-process callers from older code already mean "verified"
+            # when setting the boolean. Preserve compatibility while making the
+            # untrusted JSON parser require concrete evidence and a transport.
+            remote_transport = "verified_remote_unspecified"
+        object.__setattr__(self, "remote_runtime_transport", remote_transport)
+        reason = str(self.remote_runtime_reason_code or "").strip() or None
+        object.__setattr__(self, "remote_runtime_reason_code", reason)
 
         if self.alternative_probe_count < 0:
             raise ValueError("alternative_probe_count_must_be_non_negative")

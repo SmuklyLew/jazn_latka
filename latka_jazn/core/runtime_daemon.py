@@ -650,6 +650,7 @@ class DaemonRuntimeState:
     chat_job_host_finalization_gate_released_count: int = 0
     chat_job_host_finalization_gate_failed_count: int = 0
     chat_job_host_finalization_gate_timeout_count: int = 0
+    chat_job_host_finalization_gate_abandoned_count: int = 0
     chat_job_pending_count: int = 0
     chat_job_queued_count: int = 0
     chat_job_running_count: int = 0
@@ -698,6 +699,7 @@ class DaemonRuntimeState:
             "host_finalization_gate_released_total": self.chat_job_host_finalization_gate_released_count,
             "host_finalization_gate_failed_total": self.chat_job_host_finalization_gate_failed_count,
             "host_finalization_gate_timeout_total": self.chat_job_host_finalization_gate_timeout_count,
+            "host_finalization_gate_abandoned_total": self.chat_job_host_finalization_gate_abandoned_count,
             "terminal_failure_total": (
                 self.chat_job_failed_count
                 + self.chat_job_execution_timeout_count
@@ -1510,6 +1512,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_finalization_gate_released_total": self.state.chat_job_host_finalization_gate_released_count,
                 "host_finalization_gate_failed_total": self.state.chat_job_host_finalization_gate_failed_count,
                 "host_finalization_gate_timeout_total": self.state.chat_job_host_finalization_gate_timeout_count,
+                "host_finalization_gate_abandoned_total": self.state.chat_job_host_finalization_gate_abandoned_count,
                 "host_finalization_gate_timeout_seconds": max(
                     0.0,
                     _env_float_value(
@@ -1830,6 +1833,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         job: DaemonChatJob,
         *,
         predecessor: DaemonChatJob,
+        release_state: str = "released",
+        recovery_disposition: str | None = None,
     ) -> None:
         now = utc_now_iso()
         started = _parse_iso_utc(job.host_finalization_gate_wait_started_at_utc)
@@ -1839,7 +1844,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 (datetime.now(timezone.utc) - started).total_seconds(),
             )
         job.host_finalization_gate_settled_at_utc = now
-        job.host_finalization_gate_state = "released"
+        job.host_finalization_gate_state = str(release_state or "released")
+        if recovery_disposition:
+            job.recovery_disposition = str(recovery_disposition)
         job.previous_runtime_turn_id = job.previous_runtime_turn_id or predecessor.host_turn_id
         job.previous_trace_id = job.previous_trace_id or predecessor.host_trace_id
         job.status = "queued"
@@ -1854,6 +1861,77 @@ class JaznDaemonServer(ThreadingHTTPServer):
             )
             return
         self.state.chat_job_host_finalization_gate_released_count += 1
+
+    def _abandon_unclaimed_host_predecessor_locked(
+        self,
+        predecessor: DaemonChatJob,
+        *,
+        source: str,
+    ) -> bool:
+        """Expire one stale *pending* phase-1 request without racing phase-2.
+
+        A successor user turn is already queued behind this predecessor. Once
+        the bounded gate elapses, leaving an unclaimed pending request in place
+        would permanently wedge every later turn. The durable host-request
+        store remains settlement authority: only a still-pending record may be
+        atomically moved to expired. Claimed/consumed/indeterminate requests
+        are not rewritten by this recovery path.
+        """
+
+        if (
+            predecessor.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE
+            or not predecessor.host_turn_id
+            or not predecessor.host_request_contract_hash
+        ):
+            return False
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError,
+            abandon_pending_host_request,
+        )
+
+        try:
+            lifecycle = abandon_pending_host_request(
+                self.config.root,
+                turn_id=predecessor.host_turn_id,
+                request_contract_hash=predecessor.host_request_contract_hash,
+                reason="successor_gate_timeout_superseded_unclaimed_phase1",
+            )
+        except (HostRequestStoreError, OSError, RuntimeError, ValueError, TypeError) as exc:
+            append_daemon_process_event(
+                self.config.root,
+                "host_finalization_abandon_failed",
+                request_id=predecessor.request_id,
+                source=source,
+                error=f"{type(exc).__name__}: {exc}",
+            )
+            return False
+
+        state = str(lifecycle.get("state") or "")
+        if state == "consumed":
+            return self._reconcile_host_finalization_job_locked(predecessor) and predecessor.terminal()
+        if state != "expired":
+            return False
+
+        reason = str(
+            lifecycle.get("expiration_reason")
+            or "successor_gate_timeout_superseded_unclaimed_phase1"
+        )
+        self._terminalize_host_finalization_locked(
+            predecessor,
+            status="host_finalization_expired",
+            reason=reason,
+        )
+        predecessor.recovery_disposition = "superseded_by_successor_after_finalization_gate_timeout"
+        append_daemon_process_event(
+            self.config.root,
+            "host_finalization_abandoned_for_successor",
+            request_id=predecessor.request_id,
+            turn_id=predecessor.host_turn_id,
+            trace_id=predecessor.host_trace_id,
+            source=source,
+            reason=reason,
+        )
+        return True
 
     def _advance_host_finalization_waiters_locked(self, *, source: str) -> bool:
         changed = False
@@ -1901,16 +1979,31 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     )
                     job.host_finalization_gate_wait_seconds = elapsed
                     if elapsed >= timeout_seconds:
-                        self._fail_host_finalization_waiter_locked(
-                            job,
-                            error_code="host_finalization_timed_out",
-                            reason=(
-                                "previous turn remained awaiting_host_finalization beyond "
-                                f"{timeout_seconds:.3g}s"
-                            ),
-                            predecessor=predecessor,
-                        )
-                        changed = True
+                        if self._abandon_unclaimed_host_predecessor_locked(
+                            predecessor, source=source
+                        ):
+                            self.state.chat_job_host_finalization_gate_timeout_count += 1
+                            self.state.chat_job_host_finalization_gate_abandoned_count += 1
+                            self._promote_host_finalization_waiter_locked(
+                                job,
+                                predecessor=predecessor,
+                                release_state="released_after_predecessor_abandoned",
+                                recovery_disposition=(
+                                    "predecessor_unclaimed_host_finalization_superseded_after_gate_timeout"
+                                ),
+                            )
+                            changed = True
+                        else:
+                            self._fail_host_finalization_waiter_locked(
+                                job,
+                                error_code="host_finalization_timed_out",
+                                reason=(
+                                    "previous turn remained awaiting_host_finalization beyond "
+                                    f"{timeout_seconds:.3g}s"
+                                ),
+                                predecessor=predecessor,
+                            )
+                            changed = True
                 continue
 
             if predecessor.status in {"host_finalization_expired", "host_finalization_rejected"}:

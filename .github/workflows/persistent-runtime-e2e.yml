@@ -30,8 +30,22 @@ on:
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/http_tasks_bridge.py"
+      - "latka_jazn/mcp/remote_runtime.py"
+      - "latka_jazn/mcp/task_resume.py"
+      - "latka_jazn/runtime/capability_matrix.py"
+      - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
+      - "tools/jazn_pack_generator_app/manifest.py"
+      - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
@@ -43,11 +57,21 @@ on:
       - "tests/test_active_memory_recall_e2e.py"
       - "tests/test_active_runtime_subject_root.py"
       - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
+      - "tests/test_mcp_modern_protocol.py"
+      - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
+      - "tests/test_mcp_remote_runtime.py"
+      - "tests/test_mcp_http_tasks_bridge.py"
+      - "tests/test_mcp_http_resources.py"
+      - "tests/test_mcp_http_cli.py"
+      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
       - "tests/test_host_finalization_provenance_polish_nlp.py"
@@ -85,8 +109,22 @@ on:
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/http_tasks_bridge.py"
+      - "latka_jazn/mcp/remote_runtime.py"
+      - "latka_jazn/mcp/task_resume.py"
+      - "latka_jazn/runtime/capability_matrix.py"
+      - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
+      - "tools/jazn_pack_generator_app/manifest.py"
+      - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
       - "latka_jazn/db/runtime_sqlite.py"
@@ -98,11 +136,21 @@ on:
       - "tests/test_active_memory_recall_e2e.py"
       - "tests/test_active_runtime_subject_root.py"
       - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
+      - "tests/test_mcp_modern_protocol.py"
+      - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
+      - "tests/test_mcp_remote_runtime.py"
+      - "tests/test_mcp_http_tasks_bridge.py"
+      - "tests/test_mcp_http_resources.py"
+      - "tests/test_mcp_http_cli.py"
+      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
       - "tests/test_host_finalization_provenance_polish_nlp.py"
@@ -148,10 +196,24 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e . pytest
+          python -m pip install -e ".[mcp-http]" pytest
 
       - name: Compile runtime, gate, and regression paths
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
+
+      - name: MCP 2026 remote ingress, Tasks, resources, and package contract
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_mcp_modern_protocol.py
+          tests/test_mcp_task_registry.py
+          tests/test_mcp_task_input_fail_closed.py
+          tests/test_mcp_http_dependency_profile.py
+          tests/test_mcp_remote_runtime.py
+          tests/test_mcp_http_tasks_bridge.py
+          tests/test_mcp_http_resources.py
+          tests/test_mcp_http_cli.py
+          tests/test_pack_generator_secure_mcp_bridge_contract.py
 
       - name: Host gate and persistent lifecycle E2E
         run: >-
@@ -162,6 +224,7 @@ jobs:
           tests/test_active_memory_recall_e2e.py
           tests/test_active_runtime_subject_root.py
           tests/test_chatgpt_runtime_fallback_hardening.py
+          tests/test_chatgpt_remote_runtime_evidence.py
           tests/test_persistent_runtime_e2e_hardening.py
           tests/test_host_finalization_recovery.py
 

@@ -10,6 +10,7 @@ from latka_jazn.core.host_operations import SUPPORTED_OPERATION_KINDS
 from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
+from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover
 from latka_jazn.mcp.secure_tunnel import build_secure_mcp_tunnel_plan, tunnel_client_executable_status
 from latka_jazn.version import schema_version
 from latka_jazn.core.conversation_entrypoint_contract import (
@@ -47,6 +48,14 @@ def discover_runtime_bridges(
     host_tool_capabilities = build_host_tool_capability_snapshot()
     secure_tunnel_plan = build_secure_mcp_tunnel_plan(root).to_dict()
     tunnel_client = tunnel_client_executable_status()
+    public_mcp_unverified = classify_public_streamable_http_failover(
+        endpoint_configured=False,
+        auth_ready=False,
+        protocol_compatible=True,
+        health_payload=None,
+        readiness_payload=None,
+        host_connector_capability_available=None,
+    )
     return {
         "schema_version": schema_version("runtime_bridge_discovery"),
         "active_root": str(root),
@@ -83,8 +92,10 @@ def discover_runtime_bridges(
             "transport": "persistent_stdio_jsonl",
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
-            "remote_transport": "openai_secure_mcp_tunnel_when_host_connector_available",
-            "remote_failover_policy": "managed_tunnel_ready_plus_explicit_host_connector_capability",
+            "remote_transport": "verified_public_streamable_http_or_openai_secure_mcp_tunnel",
+            "remote_failover_policy": (
+                "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
+            ),
             "per_message_cli_required": False,
             "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
             "persistent_stdio_required": False,
@@ -125,9 +136,10 @@ def discover_runtime_bridges(
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage. "
-                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany OpenAI Secure MCP Tunnel oraz connector/app "
-                "capability, ten sam runtime może być osiągany zdalnie bez tworzenia procesu przez bieżącą powierzchnię "
-                "czatu. Żywotność pipe'a ani tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
+                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany publiczny Streamable HTTP MCP albo OpenAI "
+                "Secure MCP Tunnel oraz odpowiadającą connector/app capability, ten sam runtime może być osiągany "
+                "zdalnie bez tworzenia procesu przez bieżącą powierzchnię czatu. Żywotność pipe'a, listenera ani "
+                "tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
                 "widoczna może być tylko zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
             ),
         },
@@ -200,6 +212,26 @@ def discover_runtime_bridges(
             "windows_service_truth_boundary": "requires_real_scm_service_host_not_plain_python_emulation",
         },
         "secure_gateway_scaffold": SecureGatewayPolicy().to_dict(),
+        "public_streamable_mcp": {
+            "status": "implemented_transport_requires_deployment_evidence",
+            "protocol_revision": "2026-07-28",
+            "path": "/mcp",
+            "health_path": "/healthz",
+            "readiness_path": "/readyz",
+            "stateless_core": True,
+            "tasks_extension": "io.modelcontextprotocol/tasks",
+            "task_registry": "workspace_runtime/mcp_tasks.sqlite3",
+            "requires_auth_outside_loopback_development": True,
+            "remote_failover_classifier": "classify_public_streamable_http_failover",
+            "current_unverified_example": public_mcp_unverified,
+            "host_connector_capability_required": True,
+            "truth_boundary": (
+                "The native Streamable HTTP implementation is a transport to the same persistent runtime. "
+                "A package-local server, configured endpoint or successful /healthz alone never proves a usable "
+                "ChatGPT route; auth, MCP protocol compatibility, /readyz and current host connector/app capability "
+                "must all be verified independently."
+            ),
+        },
         "secure_mcp": {
             "status": "implemented_secure_tunnel_managed_runtime_target",
             "server_command": secure_tunnel_plan["stdio_mcp_command"],
@@ -234,7 +266,7 @@ def discover_runtime_bridges(
         },
         "truth_boundary": (
             "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root. "
-            "Durable host operations, local supervisor, host-tool discovery and Secure MCP Tunnel are separate capability contracts; "
-            "none alone proves runtime readiness or an accepted visible turn."
+            "Durable host operations, local supervisor, host-tool discovery, public Streamable HTTP and Secure MCP Tunnel "
+            "are separate capability contracts; none alone proves runtime readiness or an accepted visible turn."
         ),
     }

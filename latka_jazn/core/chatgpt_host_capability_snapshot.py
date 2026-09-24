@@ -29,6 +29,7 @@ class HostCapabilitySnapshot:
     execution_handoff_available: bool
     surfaces: tuple[dict[str, Any], ...]
     execution_handoff_state: HostHandoffState = HostHandoffState.UNKNOWN
+    remote_runtime_transports: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -44,6 +45,7 @@ class HostCapabilitySnapshot:
             "retry_budget_remaining": self.retry_budget_remaining,
             "canonical_resume_entrypoint": self.canonical_resume_entrypoint,
             "remote_runtime_transport_available": self.remote_runtime_transport_available,
+            "remote_runtime_transports": list(self.remote_runtime_transports),
             "execution_handoff_available": self.execution_handoff_available,
             "execution_handoff_state": self.execution_handoff_state.value,
             "surfaces": [dict(item) for item in self.surfaces],

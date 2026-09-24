@@ -23,6 +23,9 @@ concurrency:
 
 jobs:
   manifest_sync:
+    concurrency:
+      group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -409,13 +412,16 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e ".[mcp-http]"
       - name: Validate native target contract and resolution command
         shell: bash
         run: |
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json audit
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json download \
             --profile core --profile archive --platform current \
+            --python-version "${{ matrix.python }}" --dry-run
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json download \
+            --profile mcp-http --platform current \
             --python-version "${{ matrix.python }}" --dry-run
 
   finalization:

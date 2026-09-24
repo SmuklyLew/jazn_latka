@@ -37,7 +37,7 @@ def _modern_request(method: str, *, request_id: int = 1, params: dict[str, Any] 
     }
 
 
-def test_server_discover_exposes_modern_tasks_and_resources(tmp_path: Path) -> None:
+def test_server_discover_exposes_modern_and_legacy_versions_without_tasks_extension(tmp_path: Path) -> None:
     server = _server(tmp_path)
     response = server.handle(_modern_request("server/discover", request_id=10))
 
@@ -46,8 +46,7 @@ def test_server_discover_exposes_modern_tasks_and_resources(tmp_path: Path) -> N
     assert result["resultType"] == "complete"
     assert result["supportedVersions"] == list(MCP_SUPPORTED_PROTOCOL_VERSIONS)
     assert result["capabilities"]["tools"]["listChanged"] is False
-    assert result["capabilities"]["resources"]["listChanged"] is False
-    assert TASK_EXTENSION_ID in result["capabilities"].get("extensions", {})
+    assert TASK_EXTENSION_ID not in result["capabilities"].get("extensions", {})
     assert result["_meta"][META_SERVER_INFO]["name"] == "jazn-private-mcp"
     assert result["ttlMs"] > 0
     assert result["cacheScope"] == "public"
@@ -119,54 +118,12 @@ def test_initialize_never_negotiates_the_handshake_free_modern_revision(tmp_path
     assert response["result"]["protocolVersion"] != MCP_PROTOCOL_VERSION_MODERN
 
 
-def test_modern_tasks_require_per_request_extension_capability(tmp_path: Path) -> None:
+def test_modern_tasks_methods_are_not_claimed_without_current_extension_implementation(tmp_path: Path) -> None:
     server = _server(tmp_path)
     for index, method in enumerate(("tasks/get", "tasks/update", "tasks/cancel"), start=20):
-        response = server.handle(
-            _modern_request(method, request_id=index, params={"taskId": "missing"})
-        )
+        response = server.handle(_modern_request(method, request_id=index))
         assert response is not None
-        assert response["error"]["code"] == -32021
-        assert TASK_EXTENSION_ID in response["error"]["data"]["requiredCapabilities"]["extensions"]
-
-
-def test_modern_task_methods_dispatch_when_extension_is_declared(tmp_path: Path) -> None:
-    server = _server(tmp_path)
-    server.task_resume.get = lambda task_id: {
-        "resultType": "complete",
-        "taskId": task_id,
-        "status": "working",
-        "createdAt": "2026-09-20T00:00:00+00:00",
-        "lastUpdatedAt": "2026-09-20T00:00:00+00:00",
-        "ttlMs": 3600000,
-        "pollIntervalMs": 750,
-    }
-    response = server.handle(
-        _modern_request(
-            "tasks/get",
-            request_id=25,
-            params={
-                "taskId": "jazn-task-test",
-                "_meta": _modern_meta(
-                    capabilities={"extensions": {TASK_EXTENSION_ID: {}}}
-                ),
-            },
-        )
-    )
-    assert response is not None
-    assert response["result"]["resultType"] == "complete"
-    assert response["result"]["taskId"] == "jazn-task-test"
-
-
-def test_modern_resources_list_and_templates_are_stateless(tmp_path: Path) -> None:
-    server = _server(tmp_path)
-    listing = server.handle(_modern_request("resources/list", request_id=26))
-    templates = server.handle(_modern_request("resources/templates/list", request_id=27))
-
-    assert listing is not None and templates is not None
-    uris = {item["uri"] for item in listing["result"]["resources"]}
-    assert uris == {"jazn://runtime/status", "jazn://memory/status"}
-    assert templates["result"]["resourceTemplates"][0]["uriTemplate"] == "jazn://task/{taskId}"
+        assert response["error"]["code"] == -32601
 
 
 def test_modern_requests_do_not_mutate_legacy_connection_capabilities(tmp_path: Path) -> None:

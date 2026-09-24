@@ -33,11 +33,16 @@
       "includes": [
         "core",
         "archive",
+        "mcp-http",
         "studio",
         "memory-cloud",
         "memory-cloud-server",
         "polish-nlp"
       ]
+    },
+    "mcp-http": {
+      "kind": "host_transport_optional",
+      "source_optional_group": "mcp-http"
     }
   },
   "import_name_overrides": {

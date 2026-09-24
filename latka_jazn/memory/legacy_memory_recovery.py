@@ -264,8 +264,11 @@ class LegacyMemoryRecovery:
         output_path: str | Path | None = None,
     ) -> None:
         self.root = Path(root).expanduser().resolve()
-        self.memory_root = self.root / "memory"
         cfg = JaznConfig(root=self.root)
+        # Persistent MEMORY is host state and may live outside the versioned
+        # active_root. Recovery must use the same canonical resolver as the
+        # rest of the runtime instead of re-introducing <active_root>/memory.
+        self.memory_root = cfg.memory_root
         self.output_path = Path(output_path).expanduser().resolve() if output_path else cfg.recovered_memory_db_path
         self.manifest_path = self.output_path.with_suffix(self.output_path.suffix + ".recovery.json")
         self.archive_manifest = self.memory_root / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3"

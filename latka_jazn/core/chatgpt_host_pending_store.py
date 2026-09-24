@@ -301,6 +301,63 @@ def cleanup_expired_host_requests(root: Path, *, now: datetime | None = None) ->
     return counts
 
 
+def abandon_pending_host_request(
+    root: Path,
+    *,
+    turn_id: str,
+    request_contract_hash: str,
+    reason: str,
+) -> dict[str, Any]:
+    """Atomically terminalize one *unclaimed* phase-1 request as expired.
+
+    This is the bounded supersession path used when a newer user turn has
+    waited for the previous host-finalization gate and that previous request is
+    still merely pending. A claimed request may already be committing phase 2,
+    so it is never cancelled here. Consumed/expired records are returned
+    idempotently and replay protection remains authoritative.
+    """
+
+    cleanup_expired_host_requests(root)
+    supplied_hash = str(request_contract_hash or "").strip().lower()
+    if not supplied_hash:
+        raise HostRequestStoreError("host_request_contract_hash_missing")
+
+    consumed_path = _path(root, "consumed", turn_id)
+    expired_path = _path(root, "expired", turn_id)
+    claimed_path = _path(root, "claimed", turn_id)
+    pending_path = _path(root, "pending", turn_id)
+    for state, path in (("consumed", consumed_path), ("expired", expired_path), ("claimed", claimed_path)):
+        if not path.is_file():
+            continue
+        record = _read(path)
+        expected = str(record.get("request_contract_hash") or "").strip().lower()
+        if not hmac.compare_digest(expected, supplied_hash):
+            raise HostRequestStoreError("host_request_contract_hash_mismatch")
+        return _host_request_lifecycle_payload(record, state=state)
+
+    record = _read(pending_path)
+    expected = str(record.get("request_contract_hash") or "").strip().lower()
+    if not hmac.compare_digest(expected, supplied_hash):
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+
+    # Move first: directory/state is the atomic authority. If a concurrent
+    # finalizer claimed the request, the source disappears and we re-read its
+    # authoritative lifecycle instead of manufacturing a second terminal state.
+    expired_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        _replace_path(pending_path, expired_path)
+    except FileNotFoundError:
+        return host_request_lifecycle_state(root, turn_id=turn_id)
+
+    record["state"] = "expired"
+    record["expired_at_utc"] = _utc_now().isoformat()
+    record["expiration_reason"] = str(reason or "host_finalization_abandoned")[:160]
+    record["settlement_authority"] = "durable_host_request_store"
+    record["abandoned_for_successor"] = True
+    _atomic_write(expired_path, record)
+    return _host_request_lifecycle_payload(record, state="expired")
+
+
 def persist_pending_host_request(
     root: Path,
     bridge: Mapping[str, Any],
@@ -577,9 +634,18 @@ def host_request_store_status(root: Path) -> dict[str, Any]:
 
 
 def _host_request_lifecycle_payload(record: Mapping[str, Any], *, state: str) -> dict[str, Any]:
+    # Directory placement is the atomic durable lifecycle authority. The only
+    # intentional in-directory substate is ``indeterminate`` under ``claimed``
+    # after phase-2 persistence crossed an ambiguous side-effect boundary.
+    recorded_state = str(record.get("state") or "").strip()
+    effective_state = (
+        "indeterminate"
+        if state == "claimed" and recorded_state == "indeterminate"
+        else state
+    )
     return {
         "found": True,
-        "state": str(record.get("state") or state),
+        "state": effective_state,
         "request_contract_hash": str(record.get("request_contract_hash") or ""),
         "binding": dict(record.get("binding") or {}),
         "generation_context": dict(record.get("generation_context") or {}),

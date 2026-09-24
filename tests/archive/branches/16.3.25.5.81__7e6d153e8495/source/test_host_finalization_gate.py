@@ -8,7 +8,6 @@ import time
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core import runtime_daemon
-from latka_jazn.core.chatgpt_host_pending_store import claim_pending_host_request
 
 
 SAMPLE_ISO = datetime(2026, 8, 29, 12, 0, tzinfo=timezone.utc).isoformat()
@@ -197,7 +196,7 @@ def test_two_rapid_successors_do_not_overtake_each_other(tmp_path: Path) -> None
         server.server_close()
 
 
-def test_waiting_turn_supersedes_stale_unclaimed_finalization_after_bounded_gate(
+def test_waiting_turn_times_out_fail_closed_without_execution(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -208,59 +207,19 @@ def test_waiting_turn_supersedes_stale_unclaimed_finalization_after_bounded_gate
         _wait_status(first, "awaiting_host_finalization")
         second = _submit(server, "issue185-timeout-2")
         _wait_status(second, "waiting_for_host_finalization")
-
-        # A newer user turn is not allowed to run concurrently, but an unclaimed
-        # predecessor may not wedge the session forever. After the bounded gate
-        # the durable phase-1 record is terminalized as expired and the same
-        # daemon executes the already-submitted successor exactly once.
-        _wait_status(first, "host_finalization_expired")
-        _wait_status(second, "awaiting_host_finalization")
-        assert first.host_finalization_reason == "successor_gate_timeout_superseded_unclaimed_phase1"
-        assert second.previous_request_id == first.request_id
-        assert second.recovery_disposition == (
-            "predecessor_unclaimed_host_finalization_superseded_after_gate_timeout"
-        )
-        assert second.host_finalization_gate_state == "released_after_predecessor_abandoned"
-        assert _CountingHostPendingSession.calls == ["issue185-timeout-1", "issue185-timeout-2"]
-        summary = server.chat_job_summary()
-        assert summary["host_finalization_gate_timeout_total"] == 1
-        assert summary["host_finalization_gate_abandoned_total"] == 1
-
-        _accept(server, second)
-        third = _submit(server, "issue185-timeout-3")
-        _wait_status(third, "awaiting_host_finalization")
-        assert _CountingHostPendingSession.calls[-1] == "issue185-timeout-3"
-    finally:
-        server.close_sessions()
-        server.server_close()
-
-
-def test_claimed_predecessor_is_never_abandoned_by_successor_gate(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    monkeypatch.setenv("JAZN_DAEMON_HOST_FINALIZATION_GATE_SECONDS", "0.15")
-    server = _server(tmp_path)
-    try:
-        first = _submit(server, "issue185-claimed-1")
-        _wait_status(first, "awaiting_host_finalization")
-        claim_pending_host_request(
-            server.config.root,
-            turn_id=str(first.host_turn_id),
-            request_contract_hash=str(first.host_request_contract_hash),
-        )
-
-        second = _submit(server, "issue185-claimed-2")
-        _wait_status(second, "waiting_for_host_finalization")
         assert second.done_event.wait(3.0)
         assert second.status == "failed"
         assert second.result is not None
         assert second.result["error_code"] == "host_finalization_timed_out"
-        assert first.status == "awaiting_host_finalization"
-        assert _CountingHostPendingSession.calls == ["issue185-claimed-1"]
-        summary = server.chat_job_summary()
-        assert summary["host_finalization_gate_timeout_total"] == 1
-        assert summary["host_finalization_gate_abandoned_total"] == 0
+        assert second.result["previous_request_id"] == first.request_id
+        assert second.result["retryable"] is True
+        assert _CountingHostPendingSession.calls == ["issue185-timeout-1"]
+        assert server.chat_job_summary()["host_finalization_gate_timeout_total"] == 1
+
+        _accept(server, first)
+        third = _submit(server, "issue185-timeout-3")
+        _wait_status(third, "awaiting_host_finalization")
+        assert _CountingHostPendingSession.calls[-1] == "issue185-timeout-3"
     finally:
         server.close_sessions()
         server.server_close()

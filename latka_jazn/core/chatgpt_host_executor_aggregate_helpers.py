@@ -70,6 +70,8 @@ def surface_payload(
         error_class=observation.error_class,
         process_created=observation.process_created,
         remote_runtime_transport_available=observation.remote_runtime_transport_available,
+        remote_runtime_transport=observation.remote_runtime_transport,
+        remote_runtime_reason_code=observation.remote_runtime_reason_code,
         execution_handoff_available=observation.execution_handoff_available,
         execution_handoff_state=observation.execution_handoff_state.value,
         observation_generation=observation.observation_generation,
