@@ -12,8 +12,11 @@ on:
     paths:
       - ".github/workflows/**"
       - "latka_jazn/tools/javascript_runtime.py"
+      - "latka_jazn/tools/runtime_console.py"
+      - "latka_jazn/resources/runtime_console/**"
       - "tools/github_actions_node24_audit.py"
       - "tools/javascript/**"
+      - "tests/test_runtime_console.py"
       - "tests/test_github_actions_node24_convergence_v16325530.py"
       - "latka_jazn/version.py"
   pull_request:
@@ -22,8 +25,11 @@ on:
     paths:
       - ".github/workflows/**"
       - "latka_jazn/tools/javascript_runtime.py"
+      - "latka_jazn/tools/runtime_console.py"
+      - "latka_jazn/resources/runtime_console/**"
       - "tools/github_actions_node24_audit.py"
       - "tools/javascript/**"
+      - "tests/test_runtime_console.py"
       - "tests/test_github_actions_node24_convergence_v16325530.py"
       - "latka_jazn/version.py"
   workflow_dispatch:
@@ -73,11 +79,12 @@ jobs:
         shell: bash
         run: npm ci --prefix tools/javascript --ignore-scripts --no-audit --no-fund
 
-      - name: Validate JavaScript syntax and ESM runtime contract
+      - name: Validate JavaScript syntax, ESM runtime, and Runtime Console contract
         shell: bash
         run: |
           npm run --prefix tools/javascript check
           npm run --prefix tools/javascript probe
+          npm run --prefix tools/javascript test
 
       - name: Validate Jaźń optional JavaScript capability boundary
         run: >-
