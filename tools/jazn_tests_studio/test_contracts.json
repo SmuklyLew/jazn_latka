@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.83",
-  "active_definition_count": 1686,
+  "active_definition_count": 1687,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28966,6 +28966,27 @@
       "description_source": "source_identity",
       "line": 130
     },
+    "tests/test_runtime_console.py::test_runtime_console_assets_are_in_system_package_profile": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_assets_are_in_system_package_profile",
+      "purpose": "Runtime console assets are in system package profile",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "package",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
     "tests/test_runtime_console.py::test_runtime_console_cli_parser_is_explicit": {
       "path": "tests/test_runtime_console.py",
       "name": "test_runtime_console_cli_parser_is_explicit",
@@ -28984,7 +29005,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 158
     },
     "tests/test_runtime_daemon_security_contract.py::test_chat_requires_capability_token": {
       "path": "tests/test_runtime_daemon_security_contract.py",
