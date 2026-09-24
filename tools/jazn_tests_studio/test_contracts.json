@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.82",
-  "active_definition_count": 1681,
+  "active_definition_count": 1686,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28881,6 +28881,110 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 38
+    },
+    "tests/test_runtime_console.py::test_runtime_console_is_loopback_only": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_is_loopback_only",
+      "purpose": "Runtime console is loopback only",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "RuntimeConsoleError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_runtime_console.py::test_runtime_console_overview_is_bounded_and_read_only": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_overview_is_bounded_and_read_only",
+      "purpose": "Runtime console overview is bounded and read only",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_runtime_console.py::test_runtime_console_serves_strict_headers_and_rejects_mutation": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_serves_strict_headers_and_rejects_mutation",
+      "purpose": "Runtime console serves strict headers and rejects mutation",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "HTTPError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_runtime_console.py::test_runtime_console_assets_avoid_inline_script_and_dom_html_injection": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_assets_avoid_inline_script_and_dom_html_injection",
+      "purpose": "Runtime console assets avoid inline script and dom html injection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 130
+    },
+    "tests/test_runtime_console.py::test_runtime_console_cli_parser_is_explicit": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_cli_parser_is_explicit",
+      "purpose": "Runtime console cli parser is explicit",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
     },
     "tests/test_runtime_daemon_security_contract.py::test_chat_requires_capability_token": {
       "path": "tests/test_runtime_daemon_security_contract.py",
