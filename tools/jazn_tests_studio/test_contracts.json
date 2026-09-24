@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.81",
-  "active_definition_count": 1676,
+  "system_version": "16.3.25.5.82",
+  "active_definition_count": 1681,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11547,11 +11547,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 143
     },
     "tests/test_host_finalization_gate.py::test_two_rapid_successors_do_not_overtake_each_other": {
       "path": "tests/test_host_finalization_gate.py",
@@ -11567,31 +11568,54 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 170
+      "line": 171
     },
-    "tests/test_host_finalization_gate.py::test_waiting_turn_times_out_fail_closed_without_execution": {
+    "tests/test_host_finalization_gate.py::test_waiting_turn_supersedes_stale_unclaimed_finalization_after_bounded_gate": {
       "path": "tests/test_host_finalization_gate.py",
-      "name": "test_waiting_turn_times_out_fail_closed_without_execution",
-      "purpose": "Waiting turn times out fail closed without execution",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_waiting_turn_supersedes_stale_unclaimed_finalization_after_bounded_gate",
+      "purpose": "Waiting turn supersedes stale unclaimed finalization after bounded gate",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 199
+      "line": 200
+    },
+    "tests/test_host_finalization_gate.py::test_claimed_predecessor_is_never_abandoned_by_successor_gate": {
+      "path": "tests/test_host_finalization_gate.py",
+      "name": "test_claimed_predecessor_is_never_abandoned_by_successor_gate",
+      "purpose": "Claimed predecessor is never abandoned by successor gate",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 238
     },
     "tests/test_host_finalization_gate.py::test_terminal_finalization_failure_fails_waiter_without_execution": {
       "path": "tests/test_host_finalization_gate.py",
@@ -11607,11 +11631,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 228
+      "line": 269
     },
     "tests/test_host_finalization_gate.py::test_duplicate_accepted_ack_is_idempotent_and_late_ack_cannot_touch_new_turn": {
       "path": "tests/test_host_finalization_gate.py",
@@ -11627,11 +11652,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 259
+      "line": 300
     },
     "tests/test_host_finalization_gate.py::test_restart_recovers_predecessor_but_never_replays_waiting_successor": {
       "path": "tests/test_host_finalization_gate.py",
@@ -11647,11 +11673,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
-        "latka_jazn.core"
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 306
+      "line": 347
     },
     "tests/test_host_finalization_lifecycle.py::test_phase_one_waits_without_terminal_failure_and_phase_two_completes": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -36052,6 +36079,81 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_v16325582_chatgpt_maintenance_contract.py::test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window": {
+      "path": "tests/test_v16325582_chatgpt_maintenance_contract.py",
+      "name": "test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window",
+      "purpose": "Chatgpt runbook keeps memory attach and recovery in one maintenance window",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
+    "tests/test_v16325582_chatgpt_maintenance_contract.py::test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance": {
+      "path": "tests/test_v16325582_chatgpt_maintenance_contract.py",
+      "name": "test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance",
+      "purpose": "Chatgpt runbook preserves turn lineage across memory maintenance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_v16325582_memory_recovery_root.py::test_legacy_memory_recovery_uses_canonical_host_memory_root": {
+      "path": "tests/test_v16325582_memory_recovery_root.py",
+      "name": "test_legacy_memory_recovery_uses_canonical_host_memory_root",
+      "purpose": "Legacy memory recovery uses canonical host memory root",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.legacy_memory_recovery",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_v16325582_memory_recovery_root.py::test_legacy_memory_recovery_respects_explicit_memory_root_env": {
+      "path": "tests/test_v16325582_memory_recovery_root.py",
+      "name": "test_legacy_memory_recovery_respects_explicit_memory_root_env",
+      "purpose": "Legacy memory recovery respects explicit memory root env",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.legacy_memory_recovery",
+        "latka_jazn.memory.memory_root"
       ],
       "status": "current",
       "description_source": "source_identity",
