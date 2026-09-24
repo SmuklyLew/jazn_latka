@@ -1,5 +1,6 @@
 name: javascript-node24-contract
 
+# v83 invariant: validate browser ESM and the Python read-only authority boundary on both Windows and Ubuntu.
 on:
   push:
     branches:
