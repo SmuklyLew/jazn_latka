@@ -4769,6 +4769,40 @@
       "description_source": "source_identity",
       "line": 304
     },
+    "tests/test_chatgpt_memory_maintenance_contract.py::test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window": {
+      "path": "tests/test_chatgpt_memory_maintenance_contract.py",
+      "name": "test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window",
+      "purpose": "Chatgpt runbook keeps memory attach and recovery in one maintenance window",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
+    "tests/test_chatgpt_memory_maintenance_contract.py::test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance": {
+      "path": "tests/test_chatgpt_memory_maintenance_contract.py",
+      "name": "test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance",
+      "purpose": "Chatgpt runbook preserves turn lineage across memory maintenance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
     "tests/test_chatgpt_nonstreaming_host_transport.py::test_submit_transport_failure_preserves_request_id_when_status_probe_also_fails": {
       "path": "tests/test_chatgpt_nonstreaming_host_transport.py",
       "name": "test_submit_transport_failure_preserves_request_id_when_status_probe_also_fails",
@@ -14503,6 +14537,47 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 48
+    },
+    "tests/test_legacy_memory_recovery_root.py::test_legacy_memory_recovery_uses_canonical_host_memory_root": {
+      "path": "tests/test_legacy_memory_recovery_root.py",
+      "name": "test_legacy_memory_recovery_uses_canonical_host_memory_root",
+      "purpose": "Legacy memory recovery uses canonical host memory root",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.legacy_memory_recovery",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_legacy_memory_recovery_root.py::test_legacy_memory_recovery_respects_explicit_memory_root_env": {
+      "path": "tests/test_legacy_memory_recovery_root.py",
+      "name": "test_legacy_memory_recovery_respects_explicit_memory_root_env",
+      "purpose": "Legacy memory recovery respects explicit memory root env",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.legacy_memory_recovery",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_lexical_intelligence.py::test_plwordnet_local_index_is_read_only_and_returns_relations": {
       "path": "tests/test_lexical_intelligence.py",
@@ -36079,81 +36154,6 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.turn_execution"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 29
-    },
-    "tests/test_v16325582_chatgpt_maintenance_contract.py::test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window": {
-      "path": "tests/test_v16325582_chatgpt_maintenance_contract.py",
-      "name": "test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window",
-      "purpose": "Chatgpt runbook keeps memory attach and recovery in one maintenance window",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 7,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 7
-    },
-    "tests/test_v16325582_chatgpt_maintenance_contract.py::test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance": {
-      "path": "tests/test_v16325582_chatgpt_maintenance_contract.py",
-      "name": "test_chatgpt_runbook_preserves_turn_lineage_across_memory_maintenance",
-      "purpose": "Chatgpt runbook preserves turn lineage across memory maintenance",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 18
-    },
-    "tests/test_v16325582_memory_recovery_root.py::test_legacy_memory_recovery_uses_canonical_host_memory_root": {
-      "path": "tests/test_v16325582_memory_recovery_root.py",
-      "name": "test_legacy_memory_recovery_uses_canonical_host_memory_root",
-      "purpose": "Legacy memory recovery uses canonical host memory root",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host",
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.memory.legacy_memory_recovery",
-        "latka_jazn.memory.memory_root"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 9
-    },
-    "tests/test_v16325582_memory_recovery_root.py::test_legacy_memory_recovery_respects_explicit_memory_root_env": {
-      "path": "tests/test_v16325582_memory_recovery_root.py",
-      "name": "test_legacy_memory_recovery_respects_explicit_memory_root_env",
-      "purpose": "Legacy memory recovery respects explicit memory root env",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.memory.legacy_memory_recovery",
-        "latka_jazn.memory.memory_root"
       ],
       "status": "current",
       "description_source": "source_identity",
