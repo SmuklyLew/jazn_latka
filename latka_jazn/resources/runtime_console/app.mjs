@@ -82,5 +82,5 @@ events.addEventListener("runtime", (event) => {
     renderConnection(lastOverview ?? {}, "degraded");
   }
 });
-events.addEventListener("open", () => renderConnection(lastOverview ?? {}, "ready"));
+events.addEventListener("open", () => renderConnection(lastOverview ?? {}));
 events.addEventListener("error", () => renderConnection(lastOverview ?? {}, "degraded"));
