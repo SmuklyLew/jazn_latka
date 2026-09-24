@@ -3,6 +3,7 @@ import { connectionState, formatValue, rowsForOverview, valueState } from "./mod
 const byId = (id) => document.getElementById(id);
 const refreshButton = byId("refresh");
 let lastOverview = null;
+let streamState = "connecting";
 
 function renderRows(target, rows) {
   target.replaceChildren();
@@ -16,17 +17,24 @@ function renderRows(target, rows) {
   }
 }
 
-function renderConnection(snapshot, forcedState = null) {
-  const state = forcedState ?? connectionState(snapshot);
+function renderConnection(snapshot) {
+  const state = connectionState(snapshot);
   const dot = byId("connection-dot");
   dot.className = `dot ${state}`;
-  const labels = {
-    ready: "połączenie live",
-    degraded: "połączenie zdegradowane",
+  const runtimeLabels = {
+    ready: "runtime live",
+    degraded: "runtime zdegradowany",
     down: "runtime niedostępny",
-    unknown: "stan połączenia nieznany",
+    unknown: "stan runtime nieznany",
   };
-  byId("connection-label").textContent = labels[state] ?? labels.unknown;
+  const streamLabels = {
+    connecting: "SSE: łączenie",
+    connected: "SSE: połączony",
+    reconnecting: "SSE: ponawianie",
+  };
+  const runtimeLabel = runtimeLabels[state] ?? runtimeLabels.unknown;
+  const streamLabel = streamLabels[streamState] ?? streamLabels.connecting;
+  byId("connection-label").textContent = `${runtimeLabel} · ${streamLabel}`;
 }
 
 function renderLive(snapshot) {
@@ -64,7 +72,7 @@ async function refreshOverview() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     renderOverview(await response.json());
   } catch (error) {
-    renderConnection(lastOverview ?? {}, "degraded");
+    renderConnection(lastOverview ?? {});
     byId("truth-boundary").textContent = `Błąd odczytu overview: ${error}`;
   } finally {
     refreshButton.disabled = false;
@@ -82,5 +90,11 @@ events.addEventListener("runtime", (event) => {
     renderConnection(lastOverview ?? {}, "degraded");
   }
 });
-events.addEventListener("open", () => renderConnection(lastOverview ?? {}));
-events.addEventListener("error", () => renderConnection(lastOverview ?? {}, "degraded"));
+events.addEventListener("open", () => {
+  streamState = "connected";
+  renderConnection(lastOverview ?? {});
+});
+events.addEventListener("error", () => {
+  streamState = "reconnecting";
+  renderConnection(lastOverview ?? {});
+});
