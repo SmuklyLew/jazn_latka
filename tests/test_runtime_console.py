@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import threading
+import subprocess
+import sys
 import urllib.error
 import urllib.request
 
@@ -153,6 +155,33 @@ def test_runtime_console_assets_are_in_system_package_profile() -> None:
         entry == "latka_jazn/resources/runtime_console/**"
         for entry in system.get("excludes", [])
     )
+
+
+def test_public_run_py_routes_runtime_console_through_control_plane() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-X",
+            "utf8",
+            str(ROOT / "run.py"),
+            "runtime-console",
+            "--host",
+            "0.0.0.0",
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=15,
+    )
+    assert completed.returncode == 2
+    assert completed.stderr == ""
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is False
+    assert payload["error_type"] == "RuntimeConsoleError"
+    assert "runtime_console_loopback_only" in payload["error"]
 
 
 def test_runtime_console_cli_parser_is_explicit() -> None:
