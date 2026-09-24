@@ -75,6 +75,9 @@ jobs:
       - name: Audit every active external GitHub Action pin
         run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
 
+      - name: Install Python Runtime Console test environment
+        run: python -m pip install --disable-pip-version-check -e . pytest
+
       - name: Install frozen JavaScript tooling state
         shell: bash
         run: npm ci --prefix tools/javascript --ignore-scripts --no-audit --no-fund
