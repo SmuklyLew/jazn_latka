@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.82 closes stale host-finalization wedges and aligns recovery
-# with the canonical host-level MEMORY root while preserving the v81 MCP
-# 2026-07-28 persistent remote-runtime ingress and durable request identity.
-DISTRIBUTION_VERSION = "16.3.25.5.82"
-PACKAGE_VERSION = "16.3.25.5.82"
-PACKAGE_RELEASE_NAME = "turn-memory-continuity-convergence"
+# v16.3.25.5.83 adds a local read-only JavaScript Runtime Console while
+# preserving Python as the sole runtime/lifecycle/memory/turn authority.
+# Browser ESM is presentation-only; Node.js remains an optional CI/tooling capability.
+DISTRIBUTION_VERSION = "16.3.25.5.83"
+PACKAGE_VERSION = "16.3.25.5.83"
+PACKAGE_RELEASE_NAME = "javascript-runtime-console-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
