@@ -4,6 +4,11 @@ Ten katalog jest opcjonalną warstwą narzędziową Jaźni. Nie zastępuje Pytho
 rdzenia, `run.py`, pamięci, routingu ani lifecycle i nie jest wymagany do startu
 portable/offline runtime.
 
+Kod przeglądarkowy należący do aktywnego SYSTEM może żyć pod
+`latka_jazn/resources/runtime_console/`, aby był pakowany przez istniejący profil
+`latka_jazn/**`. Node w tym katalogu służy do niezależnych testów i audytu ESM;
+nie staje się wymaganiem uruchomieniowym Runtime Console ani samej Jaźni.
+
 ## Kontrakt
 
 - CI-tested runtime: Node.js 24 LTS.
@@ -21,6 +26,7 @@ portable/offline runtime.
 npm ci --prefix tools/javascript --ignore-scripts --no-audit --no-fund
 npm run --prefix tools/javascript check
 npm run --prefix tools/javascript probe
+npm run --prefix tools/javascript test
 python -X utf8 -m latka_jazn.tools.javascript_runtime --require-node24 --json
 ```
 
