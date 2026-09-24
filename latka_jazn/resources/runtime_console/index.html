@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jaźń Runtime Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">lokalna powierzchnia operatorska</p>
+      <h1>Jaźń Runtime Console</h1>
+    </div>
+    <div class="connection">
+      <span id="connection-dot" class="dot unknown" aria-hidden="true"></span>
+      <span id="connection-label">łączenie…</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h2 id="runtime-state">stan nieznany</h2>
+        <p id="runtime-version">—</p>
+      </div>
+      <button id="refresh" type="button">Odśwież pełny status</button>
+    </section>
+
+    <section class="grid" aria-label="Stan systemu">
+      <article class="card">
+        <h3>Runtime</h3>
+        <dl id="runtime-card"></dl>
+      </article>
+      <article class="card">
+        <h3>Pamięć</h3>
+        <dl id="memory-card"></dl>
+      </article>
+      <article class="card">
+        <h3>Widoczna tura</h3>
+        <dl id="turn-card"></dl>
+      </article>
+      <article class="card">
+        <h3>NLP i rest</h3>
+        <dl id="capability-card"></dl>
+      </article>
+    </section>
+
+    <section class="card detail">
+      <div class="card-heading">
+        <h3>Ostatni odczyt</h3>
+        <span id="generated-at">—</span>
+      </div>
+      <p id="truth-boundary" class="truth"></p>
+      <details>
+        <summary>Bounded JSON</summary>
+        <pre id="raw-json"></pre>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    JavaScript renderuje stan. Python runtime pozostaje jedynym źródłem autorytatywnych danych.
+  </footer>
+
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>
