@@ -137,6 +137,24 @@ def test_runtime_console_assets_avoid_inline_script_and_dom_html_injection() -> 
     assert "textContent" in app
 
 
+def test_runtime_console_assets_are_in_system_package_profile() -> None:
+    assets = ROOT / "latka_jazn" / "resources" / "runtime_console"
+    expected = {"index.html", "styles.css", "model.mjs", "app.mjs"}
+    assert expected == {path.name for path in assets.iterdir() if path.is_file()}
+
+    profiles = json.loads(
+        (ROOT / "latka_jazn" / "resources" / "zip_package_profiles.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    system = next(item for item in profiles["profiles"] if item["name"] == "system")
+    assert "latka_jazn/**" in system["includes"]
+    assert not any(
+        entry == "latka_jazn/resources/runtime_console/**"
+        for entry in system.get("excludes", [])
+    )
+
+
 def test_runtime_console_cli_parser_is_explicit() -> None:
     from latka_jazn.cli import build_parser
 
