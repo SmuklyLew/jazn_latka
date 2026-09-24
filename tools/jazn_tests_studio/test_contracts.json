@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.83",
-  "active_definition_count": 1687,
+  "active_definition_count": 1688,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28889,6 +28889,7 @@
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -28902,7 +28903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 17
+      "line": 19
     },
     "tests/test_runtime_console.py::test_runtime_console_overview_is_bounded_and_read_only": {
       "path": "tests/test_runtime_console.py",
@@ -28911,6 +28912,7 @@
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -28922,7 +28924,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 25
+      "line": 27
     },
     "tests/test_runtime_console.py::test_runtime_console_serves_strict_headers_and_rejects_mutation": {
       "path": "tests/test_runtime_console.py",
@@ -28931,6 +28933,7 @@
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -28944,7 +28947,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 85
     },
     "tests/test_runtime_console.py::test_runtime_console_assets_avoid_inline_script_and_dom_html_injection": {
       "path": "tests/test_runtime_console.py",
@@ -28953,6 +28956,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -28964,7 +28968,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 132
     },
     "tests/test_runtime_console.py::test_runtime_console_assets_are_in_system_package_profile": {
       "path": "tests/test_runtime_console.py",
@@ -28974,6 +28978,7 @@
       "category": "integration",
       "tags": [
         "package",
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -28985,15 +28990,16 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 142
     },
-    "tests/test_runtime_console.py::test_runtime_console_cli_parser_is_explicit": {
+    "tests/test_runtime_console.py::test_public_run_py_routes_runtime_console_through_control_plane": {
       "path": "tests/test_runtime_console.py",
-      "name": "test_runtime_console_cli_parser_is_explicit",
-      "purpose": "Runtime console cli parser is explicit",
+      "name": "test_public_run_py_routes_runtime_console_through_control_plane",
+      "purpose": "Public run py routes runtime console through control plane",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -29005,7 +29011,28 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 160
+    },
+    "tests/test_runtime_console.py::test_runtime_console_cli_parser_is_explicit": {
+      "path": "tests/test_runtime_console.py",
+      "name": "test_runtime_console_cli_parser_is_explicit",
+      "purpose": "Runtime console cli parser is explicit",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 187
     },
     "tests/test_runtime_daemon_security_contract.py::test_chat_requires_capability_token": {
       "path": "tests/test_runtime_daemon_security_contract.py",
