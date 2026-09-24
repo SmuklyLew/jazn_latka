@@ -55,6 +55,14 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--daemon-port", type=int, default=8787)
     child.add_argument("--daemon-marker-output", type=Path)
 
+    child = sub.add_parser("runtime-console", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--host", default="127.0.0.1")
+    child.add_argument("--port", type=int, default=8765)
+    child.add_argument("--daemon-host", default="127.0.0.1")
+    child.add_argument("--daemon-port", type=int, default=8787)
+    child.add_argument("--open-browser", action="store_true")
+
     child = sub.add_parser("mcp-http", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--host", default="127.0.0.1")
@@ -377,7 +385,7 @@ def main(
         )
 
     known = {
-        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http",
+        "status", "runtime-console", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http",
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
@@ -533,6 +541,34 @@ def main(
         )
         _emit(result.to_dict(), as_json=True)
         return int(result.exit_code)
+
+    if ns.command == "runtime-console":
+        from latka_jazn.tools.runtime_console import RuntimeConsoleError, run_runtime_console
+
+        try:
+            return run_runtime_console(
+                root,
+                host=str(ns.host),
+                port=int(ns.port),
+                daemon_host=str(ns.daemon_host),
+                daemon_port=int(ns.daemon_port),
+                open_browser=bool(ns.open_browser),
+                as_json=bool(ns.as_json),
+            )
+        except (RuntimeConsoleError, OSError, ValueError) as exc:
+            _emit(
+                {
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "truth_boundary": (
+                        "Runtime Console is an optional local read-only presentation capability. "
+                        "Its failure does not change runtime, memory, or turn authority."
+                    ),
+                },
+                as_json=True,
+            )
+            return 2
 
     if ns.command == "status":
         payload = diagnostics.status_payload(
