@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2411c7d93802bc4d2e7809717056c31214a71cf3",
-    "base_version": "16.3.25.5.82-turn-memory-continuity-convergence",
+    "base_commit": "78a1379602d612f061431b2a01397a939a424cb3",
+    "base_version": "16.3.25.5.83-chatgpt-library-discovery-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "78a1379602d612f061431b2a01397a939a424cb3",
