@@ -6,6 +6,7 @@ import unicodedata
 from typing import Any
 
 from latka_jazn.nlp.control_text import extract_intent_control_text
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent
 
 
 def _fold(text: str) -> str:
@@ -157,10 +158,18 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         or _contains_any(folded, ("co konkretnie pamietasz", "dwie konkretne sytuacje", "dwa konkretne przyklady", "dwa przyklady"))
     )
     recall_context = _contains_any(folded, ("dawne rozmowy", "naszych rozmow", "z naszych rozmow", "pobyt", "wyjazd", "ksiazce", "muzyce"))
-    recall = recall_directive or (recall_context and _contains_any(folded, ("pamiet", "wspomin", "odzyskuj")))
+    memory_semantics = analyze_memory_intent(text)
+    recall = (
+        recall_directive
+        or (recall_context and _contains_any(folded, ("pamiet", "wspomin", "odzyskuj")))
+        or memory_semantics.content_requested
+    )
     capability = bool(
-        re.search(r"\b(?:czy\s+)?(?:potrafisz|umiesz|mozesz|jestes w stanie)\b", folded)
-        and _contains_any(folded, ("pamiet", "wspomin", "przypomin"))
+        memory_semantics.capability_only
+        or (
+            re.search(r"\b(?:czy\s+)?(?:potrafisz|umiesz|mozesz|jestes w stanie)\b", folded)
+            and _contains_any(folded, ("pamiet", "wspomin", "przypomin"))
+        )
     )
     evidence_gap = _contains_any(
         folded,
