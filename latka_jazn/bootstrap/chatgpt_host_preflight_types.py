@@ -29,12 +29,12 @@ class ChatGptHostPreflightDecision:
     filesystem_state: HostFilesystemState
     package_state: HostPackageMaterializationState
     runtime_state: str
-    executor_available: bool
+    executor_available: bool | None
     library_search_available: bool | None
     library_materialize_available: bool | None
     system_search_attempted: bool | None
     system_candidate_found: bool | None
-    remote_runtime_available: bool
+    remote_runtime_available: bool | None
     bootstrap_allowed: bool
     remote_runtime_allowed: bool
     handoff_required: bool

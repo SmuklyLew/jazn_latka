@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.84",
-  "active_definition_count": 1689,
+  "system_version": "16.3.25.5.85",
+  "active_definition_count": 1693,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3795,6 +3795,90 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 117
+    },
+    "tests/test_chatgpt_host_discovery_evidence_reporting.py::test_no_executor_or_remote_observation_remains_unknown": {
+      "path": "tests/test_chatgpt_host_discovery_evidence_reporting.py",
+      "name": "test_no_executor_or_remote_observation_remains_unknown",
+      "purpose": "No executor or remote observation remains unknown",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
+    },
+    "tests/test_chatgpt_host_discovery_evidence_reporting.py::test_explicit_negative_remote_probe_reports_false_without_enabling_route": {
+      "path": "tests/test_chatgpt_host_discovery_evidence_reporting.py",
+      "name": "test_explicit_negative_remote_probe_reports_false_without_enabling_route",
+      "purpose": "Explicit negative remote probe reports false without enabling route",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
+    },
+    "tests/test_chatgpt_host_discovery_evidence_reporting.py::test_system_search_does_not_require_library_namespace_capability": {
+      "path": "tests/test_chatgpt_host_discovery_evidence_reporting.py",
+      "name": "test_system_search_does_not_require_library_namespace_capability",
+      "purpose": "System search does not require library namespace capability",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
+    },
+    "tests/test_chatgpt_host_discovery_evidence_reporting.py::test_chatgpt_runbook_keeps_all_discovery_fields_tristate": {
+      "path": "tests/test_chatgpt_host_discovery_evidence_reporting.py",
+      "name": "test_chatgpt_runbook_keeps_all_discovery_fields_tristate",
+      "purpose": "Chatgpt runbook keeps all discovery fields tristate",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 174
     },
     "tests/test_chatgpt_host_executor_epoch_recovery.py::test_canonical_operation_id_is_utc_safe_and_never_contains_plus_offset": {
       "path": "tests/test_chatgpt_host_executor_epoch_recovery.py",
