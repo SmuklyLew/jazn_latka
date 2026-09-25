@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable
 
+from latka_jazn.bootstrap.chatgpt_host_discovery_evidence import HostDiscoveryEvidence
 from latka_jazn.bootstrap.chatgpt_host_preflight_attachment import aggregate_attachment_state
 from latka_jazn.bootstrap.chatgpt_host_preflight_route import resolve_preflight_route
 from latka_jazn.bootstrap.chatgpt_host_preflight_types import ChatGptHostPreflightDecision
@@ -21,8 +22,10 @@ def plan_chatgpt_host_preflight(
     *,
     attachment_reports: Iterable[AttachmentMaterializationReport] = (),
     package_required: bool = False,
+    discovery_evidence: HostDiscoveryEvidence | None = None,
 ) -> ChatGptHostPreflightDecision:
     capability = aggregate_host_executor_observations(executor_observations)
+    discovery = discovery_evidence or HostDiscoveryEvidence()
     reports = tuple(attachment_reports)
     package_state = aggregate_attachment_state(reports)
     route = resolve_preflight_route(
@@ -36,6 +39,15 @@ def plan_chatgpt_host_preflight(
         filesystem_state=capability.filesystem_state,
         package_state=package_state,
         runtime_state="unverified",
+        executor_available=any(
+            surface.get("executor_state") == "available"
+            for surface in capability.surfaces
+        ),
+        library_search_available=discovery.library_search_available,
+        library_materialize_available=discovery.library_materialize_available,
+        system_search_attempted=discovery.system_search_attempted,
+        system_candidate_found=discovery.system_candidate_found,
+        remote_runtime_available=capability.remote_runtime_transport_available,
         bootstrap_allowed=route.bootstrap_allowed,
         remote_runtime_allowed=route.remote_runtime_allowed,
         handoff_required=route.handoff_required,
