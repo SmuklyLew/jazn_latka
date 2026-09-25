@@ -60,3 +60,14 @@ def test_chatgpt_loader_and_runbook_require_library_memory_discovery() -> None:
     assert "osobne discovery MEMORY" in runbook
     assert "kompletem części oraz `parts.sha256`" in runbook
     assert "memory_search_ready=true" in runbook
+
+
+def test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound() -> None:
+    report = DialogueIntentClassifier().classify(
+        "Powspominaj wszystko co możesz z 2025 roku."
+    )
+
+    assert report.primary_intent == "memory_experience_question"
+    assert report.memory_intent_contract["content_requested"] is True
+    assert report.memory_intent_contract["capability_only"] is False
+    assert report.response_plan["memory_required"] is True

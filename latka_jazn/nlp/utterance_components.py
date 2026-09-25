@@ -164,13 +164,7 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         or (recall_context and _contains_any(folded, ("pamiet", "wspomin", "odzyskuj")))
         or memory_semantics.content_requested
     )
-    capability = bool(
-        memory_semantics.capability_only
-        or (
-            re.search(r"\b(?:czy\s+)?(?:potrafisz|umiesz|mozesz|jestes w stanie)\b", folded)
-            and _contains_any(folded, ("pamiet", "wspomin", "przypomin"))
-        )
-    )
+    capability = bool(memory_semantics.capability_only)
     evidence_gap = _contains_any(
         folded,
         ("czego brakuje do potwierdzenia", "brak dowodu", "nie masz w pamieci", "pamiec nie daje", "nie zgaduj", "czego nie masz w pamieci"),
