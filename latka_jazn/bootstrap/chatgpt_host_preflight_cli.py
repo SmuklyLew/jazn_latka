@@ -5,6 +5,7 @@ import json
 import sys
 from typing import Sequence
 
+from latka_jazn.bootstrap.chatgpt_host_discovery_evidence import discovery_evidence_from_payload
 from latka_jazn.bootstrap.chatgpt_host_preflight_attachments_parse import attachment_reports_from_payload
 from latka_jazn.bootstrap.chatgpt_host_preflight_parse import (
     executor_observations_from_payload,
@@ -41,6 +42,7 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
             executor_observations_from_payload(payload),
             attachment_reports=attachment_reports_from_payload(payload),
             package_required=bool(package_required),
+            discovery_evidence=discovery_evidence_from_payload(payload),
         )
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         print(json.dumps({

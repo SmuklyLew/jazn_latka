@@ -29,6 +29,12 @@ class ChatGptHostPreflightDecision:
     filesystem_state: HostFilesystemState
     package_state: HostPackageMaterializationState
     runtime_state: str
+    executor_available: bool
+    library_search_available: bool | None
+    library_materialize_available: bool | None
+    system_search_attempted: bool | None
+    system_candidate_found: bool | None
+    remote_runtime_available: bool
     bootstrap_allowed: bool
     remote_runtime_allowed: bool
     handoff_required: bool
@@ -47,6 +53,12 @@ class ChatGptHostPreflightDecision:
             "filesystem_state": self.filesystem_state.value,
             "package_state": self.package_state.value,
             "runtime_state": self.runtime_state,
+            "executor_available": self.executor_available,
+            "library_search_available": self.library_search_available,
+            "library_materialize_available": self.library_materialize_available,
+            "system_search_attempted": self.system_search_attempted,
+            "system_candidate_found": self.system_candidate_found,
+            "remote_runtime_available": self.remote_runtime_available,
             "bootstrap_allowed": self.bootstrap_allowed,
             "local_bootstrap_allowed": self.bootstrap_allowed,
             "remote_runtime_allowed": self.remote_runtime_allowed,
