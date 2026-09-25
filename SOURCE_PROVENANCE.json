@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "808bd9ee4321599af558d23e3a51d84301c746e5",
-    "base_version": "16.3.25.5.83-chatgpt-library-discovery-convergence",
+    "base_commit": "bec96e4211ab816a864bf16b99fe1d1cd57e7642",
+    "base_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "bec96e4211ab816a864bf16b99fe1d1cd57e7642",
