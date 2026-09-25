@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
+  "base_merge_commit": "46baa70d27e30b667db15cc37f065ee9f38cbe09",
   "base_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
-  "commit_date": "2026-09-25T17:19:06Z",
+  "commit_date": "2026-09-25T17:26:11Z",
   "dirty": false,
-  "generated_at_utc": "2026-09-25T17:19:06+00:00",
+  "generated_at_utc": "2026-09-25T17:26:11+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8068d0c7886cf3a821503b93c3a50c68b9a2545b",
+  "git_tree_sha": "3a69f5d218728c70c1dc54a0a19aac1816571278",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
+    "source_commit": "46baa70d27e30b667db15cc37f065ee9f38cbe09",
     "source_version": "16.3.25.5.86-memory-recall-library-attach-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
+  "source_commit": "46baa70d27e30b667db15cc37f065ee9f38cbe09",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "tag": null,
