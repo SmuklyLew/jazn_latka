@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.84 makes pre-fail-closed ChatGPT discovery evidence explicit,
-# separating verified executor/remote-runtime availability from host-reported
-# Library search/materialization capability and SYSTEM search outcomes.
-DISTRIBUTION_VERSION = "16.3.25.5.84"
-PACKAGE_VERSION = "16.3.25.5.84"
-PACKAGE_RELEASE_NAME = "chatgpt-host-discovery-evidence-reporting"
+# v16.3.25.5.85 preserves tri-state host discovery evidence end-to-end and
+# decouples SYSTEM search observations from the ChatGPT Library namespace.
+DISTRIBUTION_VERSION = "16.3.25.5.85"
+PACKAGE_VERSION = "16.3.25.5.85"
+PACKAGE_RELEASE_NAME = "chatgpt-discovery-evidence-tristate-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

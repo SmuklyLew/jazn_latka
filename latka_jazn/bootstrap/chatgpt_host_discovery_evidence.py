@@ -11,9 +11,13 @@ class HostDiscoveryEvidence:
     ``None`` means the host did not report enough evidence to classify the
     capability or outcome. ``False`` is therefore reserved for an explicit
     negative observation, which keeps fail-closed diagnostics distinguishable
-    from an unobserved capability. Executor and remote-runtime availability are
-    derived elsewhere from verified runtime observations and are not trusted
-    from this host-reported structure.
+    from an unobserved capability. ``library_*`` fields describe the ChatGPT
+    Library namespace specifically, while ``system_search_*`` describes a
+    SYSTEM lookup on any logical host file surface (conversation, Project,
+    Library, or an equivalent capability). A SYSTEM search therefore does not
+    imply that Library itself was available. Executor and remote-runtime
+    availability are derived elsewhere from verified runtime observations and
+    are not trusted from this host-reported structure.
     """
 
     library_search_available: bool | None = None
@@ -22,10 +26,6 @@ class HostDiscoveryEvidence:
     system_candidate_found: bool | None = None
 
     def __post_init__(self) -> None:
-        if self.system_search_attempted is True and self.library_search_available is not True:
-            raise ValueError(
-                "system_search_attempted_requires_library_search_available"
-            )
         if self.system_candidate_found is True and self.system_search_attempted is not True:
             raise ValueError(
                 "system_candidate_found_requires_system_search_attempted"

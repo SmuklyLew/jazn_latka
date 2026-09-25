@@ -17,6 +17,31 @@ from latka_jazn.version import schema_version
 SCHEMA_VERSION = schema_version("chatgpt_host_preflight")
 
 
+def _executor_availability_evidence(capability: object) -> bool | None:
+    surfaces = tuple(getattr(capability, "surfaces", ()) or ())
+    states = tuple(str(surface.get("executor_state") or "unknown") for surface in surfaces)
+    if any(state == "available" for state in states):
+        return True
+    if states and all(state == "host_executor_unavailable" for state in states):
+        return False
+    return None
+
+
+def _remote_runtime_availability_evidence(capability: object) -> bool | None:
+    if bool(getattr(capability, "remote_runtime_transport_available", False)):
+        return True
+
+    surfaces = tuple(getattr(capability, "surfaces", ()) or ())
+    remote_probe_observed = any(
+        str(surface.get("remote_runtime_transport") or "none") != "none"
+        or surface.get("remote_runtime_reason_code") is not None
+        for surface in surfaces
+    )
+    if remote_probe_observed:
+        return False
+    return None
+
+
 def plan_chatgpt_host_preflight(
     executor_observations: Iterable[HostExecutorObservation],
     *,
@@ -39,15 +64,12 @@ def plan_chatgpt_host_preflight(
         filesystem_state=capability.filesystem_state,
         package_state=package_state,
         runtime_state="unverified",
-        executor_available=any(
-            surface.get("executor_state") == "available"
-            for surface in capability.surfaces
-        ),
+        executor_available=_executor_availability_evidence(capability),
         library_search_available=discovery.library_search_available,
         library_materialize_available=discovery.library_materialize_available,
         system_search_attempted=discovery.system_search_attempted,
         system_candidate_found=discovery.system_candidate_found,
-        remote_runtime_available=capability.remote_runtime_transport_available,
+        remote_runtime_available=_remote_runtime_availability_evidence(capability),
         bootstrap_allowed=route.bootstrap_allowed,
         remote_runtime_allowed=route.remote_runtime_allowed,
         handoff_required=route.handoff_required,

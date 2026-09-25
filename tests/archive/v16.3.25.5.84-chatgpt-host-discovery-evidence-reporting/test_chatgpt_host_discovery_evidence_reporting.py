@@ -68,7 +68,7 @@ def test_fail_closed_preflight_reports_explicit_discovery_evidence(tmp_path: Pat
         "library_materialize_available": False,
         "system_search_attempted": True,
         "system_candidate_found": True,
-        "remote_runtime_available": None,
+        "remote_runtime_available": False,
     }
 
 
@@ -84,7 +84,7 @@ def test_unreported_library_capabilities_remain_unknown_instead_of_false(tmp_pat
     assert completed.returncode == 3, completed.stderr
     result = json.loads(completed.stdout)
     assert result["executor_available"] is False
-    assert result["remote_runtime_available"] is None
+    assert result["remote_runtime_available"] is False
     assert result["library_search_available"] is None
     assert result["library_materialize_available"] is None
     assert result["system_search_attempted"] is None
@@ -129,52 +129,3 @@ def test_system_candidate_requires_attempted_library_search(tmp_path: Path) -> N
     result = json.loads(completed.stderr)
     assert result["error_code"] == "invalid_host_preflight_input"
     assert result["error"] == "system_candidate_found_requires_system_search_attempted"
-
-
-def test_no_executor_or_remote_observation_remains_unknown() -> None:
-    decision = plan_chatgpt_host_preflight([])
-
-    assert decision.executor_available is None
-    assert decision.remote_runtime_available is None
-    assert decision.remote_runtime_allowed is False
-
-
-def test_explicit_negative_remote_probe_reports_false_without_enabling_route() -> None:
-    decision = plan_chatgpt_host_preflight(
-        [
-            HostExecutorObservation(
-                process_created=False,
-                error_class="ClientError",
-                surface="chat",
-                remote_runtime_transport_available=False,
-                remote_runtime_transport="public_streamable_http",
-                remote_runtime_reason_code="remote_runtime_not_ready",
-            )
-        ]
-    )
-
-    assert decision.executor_available is False
-    assert decision.remote_runtime_available is False
-    assert decision.remote_runtime_allowed is False
-
-
-def test_system_search_does_not_require_library_namespace_capability() -> None:
-    evidence = HostDiscoveryEvidence(
-        library_search_available=None,
-        library_materialize_available=None,
-        system_search_attempted=True,
-        system_candidate_found=False,
-    )
-
-    assert evidence.library_search_available is None
-    assert evidence.system_search_attempted is True
-    assert evidence.system_candidate_found is False
-
-
-def test_chatgpt_runbook_keeps_all_discovery_fields_tristate() -> None:
-    runbook = (ROOT / "AGENTS.chatgpt.md").read_text(encoding="utf-8")
-
-    assert "Wszystkie sześć pól są tri-state" in runbook
-    assert "brak probe albo brak obserwacji pozostaje `unknown`" in runbook
-    assert "nie dowodzi dostępności Biblioteki" in runbook
-    assert "taki search wymaga `library_search_available=true`" not in runbook
