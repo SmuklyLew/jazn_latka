@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
-  "runtime_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
-  "package_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
-  "generated_at_utc": "2026-09-25T02:49:11+00:00",
-  "updated_at_utc": "2026-09-25T02:49:11+00:00",
+  "version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "generated_at_utc": "2026-09-25T03:25:38+00:00",
+  "updated_at_utc": "2026-09-25T03:25:38+00:00",
   "start_file": "run.py",
-  "file_count": 1779,
-  "static_file_count": 1779,
+  "file_count": 1781,
+  "static_file_count": 1781,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 29995,
-      "sha256": "b55bd8e93ff357c9dbdb4ab5aa02eb39d1c72426d15f5ef26150b3a12629faa6",
+      "size_bytes": 30114,
+      "sha256": "a80da2f7fb5e89079ebd35868f7259de4068ff076407cd335a44155feb2477cb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2969,
-      "sha256": "9ebafe2f6cca95e7bfe63aae83c114b4ecc6a452e0be78c7cb3fdcb6c3d47557",
+      "size_bytes": 3005,
+      "sha256": "cee03b0681411f23f6ff676bea74845508a4bfd5f3b921044e5bee81584bd447",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2125,6 +2125,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_85_CHATGPT_DISCOVERY_EVIDENCE_TRISTATE_CONVERGENCE.md",
+      "size_bytes": 2617,
+      "sha256": "6080f736aba8d2eb25305fb63ffabc2bffc0d87bd6e65992aa626e887360e18a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
@@ -2144,8 +2153,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 4894,
-      "sha256": "662c46fe7e9ba308c4f142912e319c4768b6296bc812ac5682446ccc5022ed20",
+      "size_bytes": 5077,
+      "sha256": "8e8d5806108a373245162a59a38f83c9b9dde715f16deb27fd6c9d88746680b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2486,8 +2495,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_host_discovery_evidence.py",
-      "size_bytes": 2384,
-      "sha256": "0d6ce80f863e3d8e6cc28e8a721fb96f21d620d33aff86ac4976144376867712",
+      "size_bytes": 2483,
+      "sha256": "c806f89e4bdc44cb8848f3a8b1f30bd4ce5cd187b2f705a7ba59cc6a5fb88175",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2540,8 +2549,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_host_preflight_plan.py",
-      "size_bytes": 2718,
-      "sha256": "724d622def366109869a382dd779a70fa3021f2acb237d9619da9dad552b0921",
+      "size_bytes": 3589,
+      "sha256": "de222e9c82d922473aeba5690d61157b12ff12d44fe100f1fc576cfdd6048f83",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2558,8 +2567,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_host_preflight_types.py",
-      "size_bytes": 2917,
-      "sha256": "1fc9081a3fe5b9e8af0e62d4d98adb9d5aeeee18f8fe5b456296b09fd37d6e54",
+      "size_bytes": 2931,
+      "sha256": "bf51a6dc4f02a3782d94517efa6bad17e887cd58e7b5077d4080d6958af72232",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8489,8 +8498,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6646,
-      "sha256": "8c2ee38d6853c3cfa01cc5cdde9a0def0a452505b88ad269fd9205367d50debd",
+      "size_bytes": 6577,
+      "sha256": "7a4c044a3f12a577f68d187a7f790c45108789a53d4ac231944d6021bd57e066",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12628,6 +12637,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.84-chatgpt-host-discovery-evidence-reporting/test_chatgpt_host_discovery_evidence_reporting.py",
+      "size_bytes": 4238,
+      "sha256": "aba79196d9ab7af10fce4b2f6f95856d6b86abb7ee03c590dc229ecca0c05bc3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -12971,8 +12989,8 @@
     },
     {
       "path": "tests/test_chatgpt_host_discovery_evidence_reporting.py",
-      "size_bytes": 4238,
-      "sha256": "aba79196d9ab7af10fce4b2f6f95856d6b86abb7ee03c590dc229ecca0c05bc3",
+      "size_bytes": 6050,
+      "sha256": "7ae9d5207360f696cace755cc4fac95331a6c7f9cbdc5c42d4d38d5bfb224cee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15878,8 +15896,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1565120,
-      "sha256": "1ae9795ed5beebdc55d93b2a0d1fb6c18d9d74bba5bb5d380894d43ce9c53f14",
+      "size_bytes": 1568718,
+      "sha256": "50fd9383b2ab59aca31f7cd7e65ff5c78323eef4cab5b984f2e9e07068925e27",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16463,11 +16481,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
+  "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
-    "package_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting",
-    "release_version": "16.3.25.5.84-chatgpt-host-discovery-evidence-reporting"
+    "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+    "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+    "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
