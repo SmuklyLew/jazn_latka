@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.86",
-  "active_definition_count": 1697,
+  "active_definition_count": 1698,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16665,6 +16665,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 53
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound",
+      "purpose": "Recall scope phrase co mozesz does not become capability compound",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_memory_experience_recall_handler.py::test_memory_experience_intents_use_dedicated_handler": {
       "path": "tests/test_memory_experience_recall_handler.py",
