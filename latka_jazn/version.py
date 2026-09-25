@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.82 closes stale host-finalization wedges and aligns recovery
-# with the canonical host-level MEMORY root while preserving the v81 MCP
-# 2026-07-28 persistent remote-runtime ingress and durable request identity.
-DISTRIBUTION_VERSION = "16.3.25.5.82"
-PACKAGE_VERSION = "16.3.25.5.82"
-PACKAGE_RELEASE_NAME = "turn-memory-continuity-convergence"
+# v16.3.25.5.83 converges ChatGPT host discovery across local filesystem
+# and logical Library/file surfaces, requiring exact-byte materialization before
+# the existing verified SYSTEM bootstrap path is allowed to run.
+DISTRIBUTION_VERSION = "16.3.25.5.83"
+PACKAGE_VERSION = "16.3.25.5.83"
+PACKAGE_RELEASE_NAME = "chatgpt-library-discovery-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

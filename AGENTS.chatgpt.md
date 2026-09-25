@@ -82,11 +82,17 @@ Niezerowy kod wyjścia, stderr albo timeout procesu, który rzeczywiście wystar
 
 ## 3. Discovery i bootstrap operatora
 
-Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na paczki lub rozpakowany runtime, ale nie zakładaj istnienia tej ścieżki.
+Jeżeli istnieje `/mnt/data`, sprawdź go jako pierwszy kandydat na paczki lub rozpakowany runtime, ale nie zakładaj istnienia tej ścieżki. Lokalny filesystem i logiczne powierzchnie plików hosta są niezależnymi źródłami evidence: brak paczki w `/mnt/data` nie dowodzi jej braku w Bibliotece ChatGPT, plikach bieżącej rozmowy ani plikach Projektu.
 
 Jeżeli istnieje host-level `workspace_runtime/JAZN_ACTIVE_RUNTIME.json`, zweryfikuj wskazany `active_root`, `run.py`, `latka_jazn/version.py`, `PACKAGE_INTEGRITY_MANIFEST.json`, wersję, SHA manifestu i wymagane drzewo kodu.
 
 Jeżeli marker nie istnieje albo jest nieważny, znajdź jeden jednoznaczny lokalny rozpakowany kandydat systemowy. Paczka profilu `memory` jest źródłem danych i nigdy sama nie jest systemowym `active_root`.
+
+Jeżeli lokalny filesystem nie zawiera poprawnego SYSTEM ZIP-a, ale bieżący host udostępnia Bibliotekę ChatGPT albo równoważną logiczną powierzchnię plików rozmowy/Projektu, sprawdź ją przed stwierdzeniem braku paczki. Wyszukuj po dokładnej tożsamości wydania i metadanych, nie tylko po podobnej nazwie. Logiczna ścieżka Biblioteki, `file_id` ani inny uchwyt hosta nie są ścieżką systemu plików i nie mogą być przekazane bezpośrednio do `ZipFile`, Pythona ani `run.py`.
+
+Znaleziony SYSTEM ZIP z logicznej powierzchni hosta zmaterializuj jako dokładne surowe bajty do świeżej, kontrolowanej lokalnej ścieżki. Zwiąż materializację z konkretnym identyfikatorem pliku/wersji, a następnie ponownie sprawdź fizyczny rozmiar i SHA-256 lokalnej kopii względem zaufanego sidecara lub metadanych paczki. Dopiero zweryfikowana lokalna kopia może wejść do istniejącego bootstrapu. Jeżeli wiele kandydatów tego samego wydania ma sprzeczny rozmiar, SHA-256 albo metadane, zakończ fail-closed zamiast wybierać po nazwie, dacie lub kolejności wyników.
+
+Brak capability dostępu/materializacji Biblioteki oznacza wyłącznie `library_surface_unavailable` dla tej powierzchni; nie jest dowodem, że paczki w Bibliotece nie ma. Materializacja SYSTEM nie materializuje automatycznie MEMORY, a profil `memory` nadal nie może stać się `active_root`.
 
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
