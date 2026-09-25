@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "generated_at_utc": "2026-09-25T03:25:38+00:00",
-  "updated_at_utc": "2026-09-25T03:25:38+00:00",
+  "version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+  "runtime_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+  "package_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+  "generated_at_utc": "2026-09-25T17:19:06+00:00",
+  "updated_at_utc": "2026-09-25T17:19:06+00:00",
   "start_file": "run.py",
-  "file_count": 1781,
-  "static_file_count": 1781,
+  "file_count": 1782,
+  "static_file_count": 1782,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 30114,
-      "sha256": "a80da2f7fb5e89079ebd35868f7259de4068ff076407cd335a44155feb2477cb",
+      "size_bytes": 31170,
+      "sha256": "8455cc94b1d899435c1264129921bc1845decf8fe284ae1d78b8e264f4157091",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3011,
-      "sha256": "e4e2834c9e03590d8616b9304ccd7525f049dd6b92848456b0117b5f2f86edaa",
+      "size_bytes": 2969,
+      "sha256": "a488f70d9688efd244e7a7163a225539c05af59b210412d60158f82186633be5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2153,8 +2153,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5077,
-      "sha256": "8e8d5806108a373245162a59a38f83c9b9dde715f16deb27fd6c9d88746680b9",
+      "size_bytes": 5162,
+      "sha256": "db04c14695451d7935f3c47bd0e8afc5e572956873622c6ebb169006a6fddf47",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3890,8 +3890,8 @@
     },
     {
       "path": "latka_jazn/core/memory_intent_contract.py",
-      "size_bytes": 15220,
-      "sha256": "e9b69c8c346928cfa303d62046f434f458336945c4199740551c2c2d504e3990",
+      "size_bytes": 15355,
+      "sha256": "4b1a763db528876e9dd08d9a9cf28c6d4df2f1a05e9016e6b2423f08b21de978",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6464,8 +6464,8 @@
     },
     {
       "path": "latka_jazn/nlp/utterance_components.py",
-      "size_bytes": 17670,
-      "sha256": "25ed0d15b8561f0fc706c75d3cb67b8b0c23d21e2a0fd83e722309bb98ac598d",
+      "size_bytes": 17936,
+      "sha256": "433baafbaf7f5fd07cd97e49b6064e696368a1bac68c0ea4ba7761265e61f246",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8498,8 +8498,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "7a4c044a3f12a577f68d187a7f790c45108789a53d4ac231944d6021bd57e066",
+      "size_bytes": 6573,
+      "sha256": "ac7a5a9901cdfe8f15858fef36609d694b3788c88b437038934541d7a7e73d5e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14077,6 +14077,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "size_bytes": 2488,
+      "sha256": "433b2e3d8f2b9c8c3f053340b54271cb1061293b5a92e6b488dcb5a2fe746961",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_experience_recall_handler.py",
       "size_bytes": 6858,
       "sha256": "dd5135dfde89d65e18dffe18924e8ba3f50f74126b19e9a1f42a6fe59035d7a0",
@@ -15896,8 +15905,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1568718,
-      "sha256": "50fd9383b2ab59aca31f7cd7e65ff5c78323eef4cab5b984f2e9e07068925e27",
+      "size_bytes": 1572378,
+      "sha256": "82c066b11fa1d62cb0e96fe80c00ac00cd5fff86de86c1007af7ab02edc58ce4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16481,11 +16490,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "release_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-    "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-    "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence"
+    "runtime_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+    "package_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+    "release_version": "16.3.25.5.86-memory-recall-library-attach-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

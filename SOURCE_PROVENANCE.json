@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "93a97ed4c7bcc61823c86c7074d9005caa0e31e7",
-  "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "commit_date": "2026-09-25T03:25:38Z",
+  "base_merge_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
+  "base_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+  "commit_date": "2026-09-25T17:19:06Z",
   "dirty": false,
-  "generated_at_utc": "2026-09-25T03:25:38+00:00",
+  "generated_at_utc": "2026-09-25T17:19:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ded3e42a64ec108fd674d27ed82a1d74a019127c",
+  "git_tree_sha": "8068d0c7886cf3a821503b93c3a50c68b9a2545b",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "93a97ed4c7bcc61823c86c7074d9005caa0e31e7",
+    "base_commit": "134667f8bce04b59a5ff4bea96f36a3f52b46b58",
     "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "93a97ed4c7bcc61823c86c7074d9005caa0e31e7",
-    "source_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence"
+    "source_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
+    "source_version": "16.3.25.5.86-memory-recall-library-attach-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "release_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "runtime_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "93a97ed4c7bcc61823c86c7074d9005caa0e31e7",
+  "source_commit": "441ff85472b3624550aa64cdf85fce27f13c5589",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "source_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "update_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
   "version_source": "latka_jazn/version.py"
 }
