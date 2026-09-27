@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import cast
-
 import pytest
 
 from latka_jazn.bootstrap.chatgpt_host_preflight_parse import executor_observation_from_mapping
@@ -89,7 +87,7 @@ def test_preflight_keeps_public_remote_route_unavailable_without_host_capability
 
 def test_preflight_keeps_structurally_valid_route_unavailable_without_instance_binding() -> None:
     evidence = _public_evidence()
-    readiness = dict(cast(dict[str, object], evidence["readiness"]))
+    readiness = dict(evidence["readiness"])
     readiness["runtime_instance_id"] = ""
     evidence["readiness"] = readiness
     observation = executor_observation_from_mapping({**_base(), "remote_runtime_evidence": evidence})
