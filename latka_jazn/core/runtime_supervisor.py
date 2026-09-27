@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import signal
 import threading
+import uuid
 from typing import Any
 
 from latka_jazn.config import JaznConfig
@@ -31,6 +32,7 @@ from latka_jazn.core.runtime_daemon import (  # noqa: E402
     pid_is_alive,
     status_daemon,
 )
+from latka_jazn.core.process_identity import process_fingerprint, process_fingerprint_matches  # noqa: E402
 from latka_jazn.core.runtime_health import DaemonHealthClass, classify_daemon_health  # noqa: E402
 from latka_jazn.core.runtime_lifecycle import restart_daemon  # noqa: E402
 from latka_jazn.core.runtime_root import workspace_runtime_path  # noqa: E402
@@ -57,6 +59,89 @@ def supervisor_state_path(root: Path) -> Path:
 
 def supervisor_pid_path(root: Path) -> Path:
     return supervisor_dir(root) / "supervisor.pid"
+
+
+def supervisor_owner_path(root: Path) -> Path:
+    return supervisor_dir(root) / "supervisor.owner.json"
+
+
+def _supervisor_owner_payload(
+    root: Path,
+    pid: int,
+) -> dict[str, Any]:
+    return {
+        "schema_version": schema_version("persistent_runtime_supervisor_owner"),
+        "package_version": PACKAGE_VERSION_FULL,
+        "supervisor_instance_id": str(uuid.uuid4()),
+        "pid": int(pid),
+        "runtime_root": str(Path(root).expanduser().resolve()),
+        "claimed_at_utc": utc_now_iso(),
+        "process_fingerprint": process_fingerprint(
+            pid,
+            pid_is_alive=pid_is_alive,
+        ),
+    }
+
+
+def _supervisor_identity_observation(
+    root: Path,
+    pid: int | None,
+) -> dict[str, Any]:
+    owner = _read_json(supervisor_owner_path(root))
+    alive = bool(pid and pid_is_alive(int(pid)))
+    observed = (
+        process_fingerprint(int(pid), pid_is_alive=pid_is_alive)
+        if alive and pid
+        else process_fingerprint(None)
+    )
+    expected = (
+        owner.get("process_fingerprint")
+        if isinstance(owner, dict)
+        else None
+    )
+    fingerprint_match = process_fingerprint_matches(expected, observed)
+    try:
+        owner_pid_matches = bool(
+            owner
+            and pid
+            and int(owner.get("pid") or 0) == int(pid)
+        )
+    except (TypeError, ValueError):
+        owner_pid_matches = False
+    try:
+        root_matches = bool(
+            owner
+            and str(owner.get("runtime_root") or "")
+            and Path(str(owner["runtime_root"])).expanduser().resolve()
+            == Path(root).expanduser().resolve()
+        )
+    except (OSError, RuntimeError, ValueError):
+        root_matches = False
+    identity_confirmed = bool(
+        alive
+        and owner_pid_matches
+        and root_matches
+        and fingerprint_match is True
+    )
+    if not alive:
+        state = "not_alive"
+    elif identity_confirmed:
+        state = "confirmed"
+    elif fingerprint_match is False:
+        state = "pid_reused_or_foreign_process"
+    else:
+        state = "alive_identity_unverified"
+    return {
+        "pid_alive": alive,
+        "owner_record_present": owner is not None,
+        "owner_pid_matches": owner_pid_matches,
+        "owner_root_matches": root_matches,
+        "expected_process_fingerprint": expected,
+        "observed_process_fingerprint": observed,
+        "process_fingerprint_match": fingerprint_match,
+        "identity_confirmed": identity_confirmed,
+        "identity_state": state,
+    }
 
 
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
@@ -140,6 +225,17 @@ def _cheap_daemon_liveness(
     }
 
 
+def _remove_supervisor_claim_files(root: Path) -> None:
+    try:
+        supervisor_owner_path(root).unlink(missing_ok=True)
+    except OSError:
+        pass
+    try:
+        supervisor_pid_path(root).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
 def _claim_supervisor_pid(root: Path) -> tuple[bool, int | None]:
     path = supervisor_pid_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -150,44 +246,92 @@ def _claim_supervisor_pid(root: Path) -> tuple[bool, int | None]:
                 handle.write(str(current_pid))
                 handle.flush()
                 os.fsync(handle.fileno())
-            return True, None
         except FileExistsError:
             try:
                 existing = int(path.read_text(encoding="ascii").strip())
             except (OSError, ValueError):
                 existing = 0
-            if existing > 0 and existing != current_pid and pid_is_alive(existing):
-                return False, existing
+
+            if existing > 0:
+                identity = _supervisor_identity_observation(root, existing)
+                if identity["pid_alive"] is True:
+                    if identity["process_fingerprint_match"] is False:
+                        _remove_supervisor_claim_files(root)
+                        continue
+                    return False, existing
+
+            _remove_supervisor_claim_files(root)
+            continue
+        else:
             try:
-                path.unlink(missing_ok=True)
+                _write_json_atomic(
+                    supervisor_owner_path(root),
+                    _supervisor_owner_payload(root, current_pid),
+                )
             except OSError:
-                return False, existing or None
+                try:
+                    recorded = path.read_text(encoding="ascii").strip()
+                    if recorded == str(current_pid):
+                        path.unlink(missing_ok=True)
+                except OSError:
+                    pass
+                return False, None
+            return True, None
     return False, None
 
+
+def _release_supervisor_claim(root: Path) -> bool:
+    path = supervisor_pid_path(root)
+    current_pid = os.getpid()
+    try:
+        recorded = int(path.read_text(encoding="ascii").strip())
+    except (FileNotFoundError, OSError, ValueError):
+        return False
+    if recorded != current_pid:
+        return False
+    identity = _supervisor_identity_observation(root, current_pid)
+    if identity["identity_confirmed"] is not True:
+        return False
+    _remove_supervisor_claim_files(root)
+    return True
 
 def supervisor_status(root: Path) -> dict[str, Any]:
     runtime_root = Path(root).expanduser().resolve()
     state = _read_json(supervisor_state_path(runtime_root)) or {}
     pid: int | None
     try:
-        pid = int(supervisor_pid_path(runtime_root).read_text(encoding="ascii").strip())
+        pid = int(
+            supervisor_pid_path(runtime_root)
+            .read_text(encoding="ascii")
+            .strip()
+        )
     except (FileNotFoundError, OSError, ValueError):
         pid = None
-    alive = bool(pid and pid_is_alive(pid))
+    identity = _supervisor_identity_observation(runtime_root, pid)
+    active = identity["identity_confirmed"] is True
     return {
         "schema_version": SUPERVISOR_SCHEMA_VERSION,
         "package_version": PACKAGE_VERSION_FULL,
-        "ok": alive,
-        "supervisor_active": alive,
+        "ok": active,
+        "supervisor_active": active,
         "supervisor_pid": pid,
+        "supervisor_pid_alive": identity["pid_alive"],
+        "supervisor_identity_confirmed": identity["identity_confirmed"],
+        "supervisor_identity_state": identity["identity_state"],
+        "supervisor_process_fingerprint_match": identity[
+            "process_fingerprint_match"
+        ],
+        "supervisor_owner_record_present": identity["owner_record_present"],
         "root": str(runtime_root),
         "state": state,
         "truth_boundary": (
-            "supervisor_active proves only that the local supervisor PID is alive. "
-            "Daemon liveness/readiness, tunnel readiness, connector capability and accepted visible turns are separate evidence."
+            "supervisor_active requires a live PID bound to the persisted "
+            "process-creation fingerprint and runtime root. A live PID alone "
+            "is untrusted because PIDs may be reused. Daemon readiness, tunnel "
+            "readiness, connector capability and accepted visible turns remain "
+            "separate evidence."
         ),
     }
-
 
 def supervisor_installation_plan(root: Path, *, python_executable: str | None = None) -> dict[str, Any]:
     runtime_root = Path(root).expanduser().resolve()
@@ -434,12 +578,7 @@ def run_supervisor(
                 started_at_utc=started_at,
             ),
         )
-        try:
-            recorded = supervisor_pid_path(runtime_root).read_text(encoding="ascii").strip()
-            if recorded == str(os.getpid()):
-                supervisor_pid_path(runtime_root).unlink(missing_ok=True)
-        except OSError:
-            pass
+        _release_supervisor_claim(runtime_root)
         for signum, previous in previous_handlers.items():
             try:
                 signal.signal(signum, previous)
