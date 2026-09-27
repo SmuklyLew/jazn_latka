@@ -33768,7 +33768,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 86
     },
     "tests/test_runtime_workspace_lock_identity.py::test_live_legacy_lock_without_fingerprint_fails_closed": {
       "path": "tests/test_runtime_workspace_lock_identity.py",
@@ -33790,7 +33790,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 146
     },
     "tests/test_runtime_workspace_lock_identity.py::test_pid_reuse_fingerprint_allows_stale_lock_reclaim": {
       "path": "tests/test_runtime_workspace_lock_identity.py",
@@ -33810,7 +33810,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 180
+      "line": 186
     },
     "tests/test_runtime_workspace_override.py::test_absolute_runtime_workspace_override_routes_startup_state_outside_code_root": {
       "path": "tests/test_runtime_workspace_override.py",
