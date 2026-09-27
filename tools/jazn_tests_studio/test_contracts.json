@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.87.6",
+  "system_version": "16.3.25.5.87.6.1",
   "active_definition_count": 1719,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -5456,7 +5456,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 62
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_derives_public_streamable_http_route_from_full_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5477,7 +5477,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 67
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_derives_secure_tunnel_route_from_full_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5498,7 +5498,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 77
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_keeps_public_remote_route_unavailable_without_host_capability": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5520,7 +5520,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 84
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_keeps_structurally_valid_route_unavailable_without_instance_binding": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5541,7 +5541,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 90
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_rejects_remote_declaration_that_conflicts_with_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5564,7 +5564,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 100
     },
     "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_default_policy_allows_verified_one_shot_fallback": {
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
