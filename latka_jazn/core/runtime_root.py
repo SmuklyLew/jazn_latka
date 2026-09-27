@@ -12,6 +12,11 @@ import shutil
 import time
 from typing import Any, Iterator
 
+from latka_jazn.core.process_identity import (
+    process_fingerprint,
+    process_fingerprint_matches,
+    process_is_alive,
+)
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
 
 
@@ -201,6 +206,79 @@ def _safe_root_label(root: Path) -> str:
     return value or "runtime"
 
 
+def _runtime_workspace_lock_owner_observation(
+    lock_path: Path,
+) -> dict[str, Any]:
+    try:
+        raw = json.loads(lock_path.read_text(encoding="utf-8"))
+    except (
+        FileNotFoundError,
+        OSError,
+        UnicodeError,
+        json.JSONDecodeError,
+    ):
+        return {
+            "state": "owner_record_unreadable",
+            "reclaimable": False,
+            "pid": None,
+            "pid_alive": None,
+            "process_fingerprint_match": None,
+        }
+    if not isinstance(raw, dict):
+        return {
+            "state": "owner_record_invalid",
+            "reclaimable": False,
+            "pid": None,
+            "pid_alive": None,
+            "process_fingerprint_match": None,
+        }
+
+    try:
+        pid = int(raw.get("pid") or 0)
+    except (TypeError, ValueError):
+        pid = 0
+    if pid <= 0:
+        return {
+            "state": "owner_pid_missing",
+            "reclaimable": False,
+            "pid": None,
+            "pid_alive": None,
+            "process_fingerprint_match": None,
+        }
+
+    alive = process_is_alive(pid)
+    expected = raw.get("process_fingerprint")
+    observed = (
+        process_fingerprint(pid)
+        if alive
+        else process_fingerprint(None)
+    )
+    match = process_fingerprint_matches(expected, observed)
+
+    if not alive:
+        state = "stale_owner_dead"
+        reclaimable = True
+    elif match is False:
+        state = "stale_owner_pid_reused"
+        reclaimable = True
+    elif match is True:
+        state = "live_owner_confirmed"
+        reclaimable = False
+    else:
+        state = "live_owner_identity_unverified"
+        reclaimable = False
+
+    return {
+        "state": state,
+        "reclaimable": reclaimable,
+        "pid": pid,
+        "pid_alive": alive,
+        "process_fingerprint_match": match,
+        "expected_process_fingerprint": expected,
+        "observed_process_fingerprint": observed,
+    }
+
+
 @contextmanager
 def runtime_workspace_transition_lock(
     root: Path,
@@ -208,50 +286,95 @@ def runtime_workspace_transition_lock(
     *,
     stale_after_seconds: float = 60.0,
 ) -> Iterator[Path]:
-    """Serialize short marker/migration transitions with an atomic exclusive file."""
+    """Serialize mutable runtime transitions with identity-bound ownership.
+
+    stale_after_seconds remains part of the public API and diagnostics, but
+    elapsed wall time alone is never deletion authority. A lock may be
+    reclaimed only after its owner is confirmed dead or after creation
+    identity proves that the recorded PID has been reused.
+    """
 
     workspace = workspace_runtime_path(root)
     lock_dir = workspace / WORKSPACE_LOCK_DIR_NAME
     lock_dir.mkdir(parents=True, exist_ok=True)
     lock_path = lock_dir / f"{name}.lock"
+
     for _attempt in range(2):
         try:
-            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            fd = os.open(
+                lock_path,
+                os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+                0o600,
+            )
         except FileExistsError as exc:
+            owner = _runtime_workspace_lock_owner_observation(lock_path)
             try:
-                age = max(0.0, time.time() - lock_path.stat().st_mtime)
+                age = max(
+                    0.0,
+                    time.time() - lock_path.stat().st_mtime,
+                )
             except OSError:
                 age = 0.0
-            if age > float(stale_after_seconds):
+
+            if owner.get("reclaimable") is True:
                 try:
                     lock_path.unlink()
                     continue
                 except OSError:
                     pass
-            raise RuntimeWorkspaceBusyError(f"runtime workspace transition busy: {lock_path}") from exc
+
+            raise RuntimeWorkspaceBusyError(
+                "runtime workspace transition busy: "
+                f"{lock_path}; owner_state={owner.get('state')}; "
+                f"age_seconds={age:.3f}; "
+                f"stale_after_seconds={float(stale_after_seconds):.3f}"
+            ) from exc
         else:
             try:
+                pid = os.getpid()
                 payload = {
-                    "schema_version": "runtime_workspace_transition_lock/v1",
+                    "schema_version": (
+                        "runtime_workspace_transition_lock/v2"
+                    ),
                     "name": name,
-                    "pid": os.getpid(),
-                    "created_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "pid": pid,
+                    "process_fingerprint": process_fingerprint(pid),
+                    "created_at_utc": datetime.now(
+                        timezone.utc
+                    ).isoformat(),
                     "runtime_root": str(Path(root).resolve()),
                 }
                 with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                    json.dump(payload, handle, ensure_ascii=False, sort_keys=True)
+                    json.dump(
+                        payload,
+                        handle,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    )
                     handle.write("\n")
                     handle.flush()
                     os.fsync(handle.fileno())
                 yield lock_path
             finally:
                 try:
-                    lock_path.unlink(missing_ok=True)
+                    current = _runtime_workspace_lock_owner_observation(
+                        lock_path
+                    )
+                    if (
+                        current.get("pid") == os.getpid()
+                        and current.get(
+                            "process_fingerprint_match"
+                        )
+                        is True
+                    ):
+                        lock_path.unlink(missing_ok=True)
                 except OSError:
                     pass
             return
-    raise RuntimeWorkspaceBusyError(f"runtime workspace transition busy: {lock_path}")
 
+    raise RuntimeWorkspaceBusyError(
+        f"runtime workspace transition busy: {lock_path}"
+    )
 
 def migrate_legacy_runtime_workspace(
     root: Path,

@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.87.2 binds supervisor ownership to process-creation identity
-# instead of trusting reusable PID numbers.
-DISTRIBUTION_VERSION = "16.3.25.5.87.2"
-PACKAGE_VERSION = "16.3.25.5.87.2"
-PACKAGE_RELEASE_NAME = "chatgpt-persistent-runtime-identity-convergence"
+# v16.3.25.5.87.3 binds lifecycle-lock reclamation to process identity;
+# lock age remains diagnostic only and cannot evict a live ambiguous owner.
+DISTRIBUTION_VERSION = "16.3.25.5.87.3"
+PACKAGE_VERSION = "16.3.25.5.87.3"
+PACKAGE_RELEASE_NAME = "chatgpt-persistent-runtime-lock-identity-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
