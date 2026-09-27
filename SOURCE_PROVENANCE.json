@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
-  "base_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
-  "commit_date": "2026-09-27T16:06:11Z",
+  "base_merge_commit": "2ed728db17aa2587850c2c208e0539615fc76725",
+  "base_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
+  "commit_date": "2026-09-27T16:13:14Z",
   "dirty": false,
-  "generated_at_utc": "2026-09-27T16:06:11+00:00",
+  "generated_at_utc": "2026-09-27T16:13:14+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "04bc8b6b7a2214e4704a351f33d0f48b0bff9712",
+  "git_tree_sha": "48a816630d466815ab056a2f993763a9824b6a95",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
-    "source_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence"
+    "source_commit": "2ed728db17aa2587850c2c208e0539615fc76725",
+    "source_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "release_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "runtime_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
+  "source_commit": "2ed728db17aa2587850c2c208e0539615fc76725",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "source_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "update_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
   "version_source": "latka_jazn/version.py"
 }
