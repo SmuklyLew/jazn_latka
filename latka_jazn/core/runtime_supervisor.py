@@ -29,9 +29,10 @@ from latka_jazn.core.runtime_daemon import (  # noqa: E402
     daemon_url,
     http_json,
     pid_is_alive,
-    start_daemon,
     status_daemon,
 )
+from latka_jazn.core.runtime_health import DaemonHealthClass, classify_daemon_health  # noqa: E402
+from latka_jazn.core.runtime_lifecycle import restart_daemon  # noqa: E402
 from latka_jazn.core.runtime_root import workspace_runtime_path  # noqa: E402
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version  # noqa: E402
 
@@ -296,16 +297,26 @@ def run_supervisor(
                         runtime_root,
                         state="daemon_live",
                         failure_count=0,
-                        last_liveness=liveness,
+                        last_liveness=observed_with_health,
                         started_at_utc=started_at,
                     ),
                 )
                 event.wait(max(0.2, float(check_interval_seconds)))
                 continue
 
-            # A full status/start path is intentionally paid only during recovery.
+            # A full status/recovery path is intentionally paid only after the
+            # cheap liveness probe fails. active_degraded is not automatically
+            # reusable: stale heartbeat or an unreachable endpoint require the
+            # canonical restart transaction, while identity ambiguity must fail
+            # closed rather than killing an unverified process.
             observed = status_daemon(JaznConfig(root=runtime_root), host=host, port=port)
-            if observed.get("active_state") in {"active_trusted", "active_degraded"}:
+            health = classify_daemon_health(observed)
+            observed_with_health = {
+                "cheap": liveness,
+                "full": observed,
+                "health": health.to_dict(),
+            }
+            if health.classification is DaemonHealthClass.HEALTHY:
                 failure_count = 0
                 _write_json_atomic(
                     supervisor_state_path(runtime_root),
@@ -313,15 +324,54 @@ def run_supervisor(
                         runtime_root,
                         state="daemon_live_after_full_probe",
                         failure_count=0,
-                        last_liveness={"cheap": liveness, "full": observed},
+                        last_liveness=observed_with_health,
                         started_at_utc=started_at,
                     ),
                 )
                 event.wait(max(0.2, float(check_interval_seconds)))
                 continue
 
+            if health.classification is DaemonHealthClass.IDENTITY_AMBIGUOUS:
+                failure_count += 1
+                delay = bounded_restart_backoff_seconds(runtime_root, failure_count)
+                _write_json_atomic(
+                    supervisor_state_path(runtime_root),
+                    _state_payload(
+                        runtime_root,
+                        state="daemon_recovery_blocked_identity_ambiguous",
+                        failure_count=failure_count,
+                        last_liveness=observed_with_health,
+                        last_start={
+                            "ok": False,
+                            "error_code": "daemon_identity_ambiguous",
+                            "error": health.reason,
+                        },
+                        next_retry_seconds=delay,
+                        started_at_utc=started_at,
+                    ),
+                )
+                event.wait(delay)
+                continue
+
+            if health.classification is DaemonHealthClass.TRANSIENT:
+                failure_count += 1
+                delay = bounded_restart_backoff_seconds(runtime_root, failure_count)
+                _write_json_atomic(
+                    supervisor_state_path(runtime_root),
+                    _state_payload(
+                        runtime_root,
+                        state="daemon_observation_transient",
+                        failure_count=failure_count,
+                        last_liveness=observed_with_health,
+                        next_retry_seconds=delay,
+                        started_at_utc=started_at,
+                    ),
+                )
+                event.wait(delay)
+                continue
+
             try:
-                start_result = start_daemon(
+                start_result = restart_daemon(
                     JaznConfig(root=runtime_root),
                     host=host,
                     port=port,
@@ -330,7 +380,7 @@ def run_supervisor(
             except Exception as exc:
                 start_result = {
                     "ok": False,
-                    "error_code": "supervisor_start_exception",
+                    "error_code": "supervisor_restart_exception",
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             if start_result.get("ok") is True:
