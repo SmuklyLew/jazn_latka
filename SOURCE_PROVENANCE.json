@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c9e6cfb1c53e3859aa1b3234985e33d4463e6576",
+  "base_merge_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
   "base_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
-  "commit_date": "2026-09-27T12:46:46Z",
+  "commit_date": "2026-09-27T16:06:11Z",
   "dirty": false,
-  "generated_at_utc": "2026-09-27T12:46:46+00:00",
+  "generated_at_utc": "2026-09-27T16:06:11+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "434bbdc433c4007bdc0cacf052f621fb5da289ea",
+  "git_tree_sha": "04bc8b6b7a2214e4704a351f33d0f48b0bff9712",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c9e6cfb1c53e3859aa1b3234985e33d4463e6576",
+    "source_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
     "source_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c9e6cfb1c53e3859aa1b3234985e33d4463e6576",
+  "source_commit": "e40b38abd45a1630e4d94eb1034d6ae7e660d195",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
   "tag": null,
