@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
-  "runtime_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
-  "package_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
-  "generated_at_utc": "2026-09-27T12:39:30+00:00",
-  "updated_at_utc": "2026-09-27T12:39:30+00:00",
+  "version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "runtime_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "package_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+  "generated_at_utc": "2026-09-27T12:46:46+00:00",
+  "updated_at_utc": "2026-09-27T12:46:46+00:00",
   "start_file": "run.py",
-  "file_count": 1786,
-  "static_file_count": 1786,
+  "file_count": 1787,
+  "static_file_count": 1787,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3023,
-      "sha256": "a8618320cb9c6485809fdb31a6c4cee65e5a6b8194a6fbb59fcad295dffd677c",
+      "size_bytes": 3053,
+      "sha256": "18c7a9457ccf89356619fdd5ed373973d4ddf850bf5b36e1e15fa50fda9fddbe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4430,8 +4430,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_root.py",
-      "size_bytes": 16354,
-      "sha256": "d6adcf110468bed07b507c4bebf4e3ee8044d720c50745893842a645b3a0dc75",
+      "size_bytes": 19809,
+      "sha256": "4cc0bdd693d5cd5bfb27aeb2e8a213a9359131730db09b806bc60fd4eb346f74",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8516,8 +8516,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6549,
-      "sha256": "a881628201e7f6bcd02bfbf49a0a459e117af37110dd472c2689623039327ea2",
+      "size_bytes": 6584,
+      "sha256": "d7c421f22504f5c935329264536b51f3a896497d12ac44dda27a315f542fdae8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15265,6 +15265,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_workspace_lock_identity.py",
+      "size_bytes": 5413,
+      "sha256": "6164a99c7690c88a24b93aa9fb4753f5c7bdb23b0ead885076bbf6ea70842610",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_workspace_override.py",
       "size_bytes": 7753,
       "sha256": "b31d2d25a7419c7cb7cf380731e1de13052fd0a7e5bc64eea787db3d08225ece",
@@ -15941,8 +15950,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1577265,
-      "sha256": "6577c847365073e7471341baa32612d8bdb9cbc19a4116054959691dbb835e25",
+      "size_bytes": 1580555,
+      "sha256": "4feb6d729d0c4bd7fce1f52f6be94cd45ed258e713d1ae7f69168d28a2610b0c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16526,11 +16535,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+  "release_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
-    "package_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
-    "release_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence"
+    "runtime_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+    "package_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence",
+    "release_version": "16.3.25.5.87.3-chatgpt-persistent-runtime-lock-identity-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
