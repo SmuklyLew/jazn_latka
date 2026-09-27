@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
-  "runtime_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
-  "package_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
-  "generated_at_utc": "2026-09-27T17:18:42+00:00",
-  "updated_at_utc": "2026-09-27T17:18:42+00:00",
+  "version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
+  "runtime_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
+  "package_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
+  "generated_at_utc": "2026-09-27T17:22:22+00:00",
+  "updated_at_utc": "2026-09-27T17:22:22+00:00",
   "start_file": "run.py",
-  "file_count": 1794,
-  "static_file_count": 1794,
+  "file_count": 1796,
+  "static_file_count": 1796,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3071,
-      "sha256": "fa62fd70aa8424a065ca64742e7764606f08fbacdfb24894d5359d08595cb402",
+      "size_bytes": 3101,
+      "sha256": "09ec3ab77fe4b1aba6523eaa90f7a8ef061efaee15842c66578269bd834578b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2128,6 +2128,15 @@
       "path": "docs/reports/JAZN_V16_3_25_5_85_CHATGPT_DISCOVERY_EVIDENCE_TRISTATE_CONVERGENCE.md",
       "size_bytes": 2617,
       "sha256": "6080f736aba8d2eb25305fb63ffabc2bffc0d87bd6e65992aa626e887360e18a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_87_6_1_PYRIGHT_REPAIR.md",
+      "size_bytes": 521,
+      "sha256": "a071cca1967fed28a7630df3cde36a8af23166df71715043e271326e680afa1d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8525,8 +8534,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6596,
-      "sha256": "8bceded78e6562fa219dcd0d6c0de4b16d3d2a3f40238f1db0282dcbe98dc8a6",
+      "size_bytes": 6581,
+      "sha256": "90376e59e11537ca5dd47546768a5f59840fbf53aa57f239dca02ac3a64c5b04",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12709,6 +12718,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence/test_chatgpt_remote_runtime_evidence.py",
+      "size_bytes": 4742,
+      "sha256": "1ee9fac157ad479ca96b27a8a2a25993bfe62808cd95c3a4b7c27df095847ab0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13187,8 +13205,8 @@
     },
     {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
-      "size_bytes": 4742,
-      "sha256": "1ee9fac157ad479ca96b27a8a2a25993bfe62808cd95c3a4b7c27df095847ab0",
+      "size_bytes": 4792,
+      "sha256": "76d98c2e9754bcfcf99209dca3ad7126f7f56d2de7fc29defecedd1af202dac2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16013,8 +16031,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1590172,
-      "sha256": "412ddaf8a54f4a2307cbc5970b97d9f090eae40a5a26c27cb432375185834833",
+      "size_bytes": 1590175,
+      "sha256": "438e358a905058f905ad6c1820e9d04ceafbfc38bb24dc087400ac0ffa8dfcca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16598,11 +16616,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
+  "release_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
-    "package_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence",
-    "release_version": "16.3.25.5.87.6-chatgpt-persistent-runtime-evidence-binding-convergence"
+    "runtime_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
+    "package_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair",
+    "release_version": "16.3.25.5.87.6.1-chatgpt-persistent-runtime-evidence-binding-pyright-repair"
   },
   "legacy_aliases": {
     "version": "release_version"
