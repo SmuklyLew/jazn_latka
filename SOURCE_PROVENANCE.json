@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "238ce9fb7023d3bb515aacd285311c65fcf31ac6",
-    "base_version": "16.3.25.5.86-memory-recall-library-attach-convergence",
+    "base_commit": "ca43e029bca83248ba4b09f87d75b3718f4332b0",
+    "base_version": "16.3.25.5.87.7-chatgpt-memory-persistent-runtime-integration-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ca43e029bca83248ba4b09f87d75b3718f4332b0",
