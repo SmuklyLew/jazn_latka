@@ -297,7 +297,7 @@ def run_supervisor(
                         runtime_root,
                         state="daemon_live",
                         failure_count=0,
-                        last_liveness=observed_with_health,
+                        last_liveness=liveness,
                         started_at_utc=started_at,
                     ),
                 )
