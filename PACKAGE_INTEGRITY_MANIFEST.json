@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
-  "runtime_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
-  "package_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
-  "generated_at_utc": "2026-09-27T16:13:14+00:00",
-  "updated_at_utc": "2026-09-27T16:13:14+00:00",
+  "version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
+  "runtime_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
+  "package_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
+  "generated_at_utc": "2026-09-27T16:23:22+00:00",
+  "updated_at_utc": "2026-09-27T16:23:22+00:00",
   "start_file": "run.py",
-  "file_count": 1788,
-  "static_file_count": 1788,
+  "file_count": 1789,
+  "static_file_count": 1789,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3113,
-      "sha256": "6658e75a216fd450959ff054746ddb70da8d2e2d86d98c43a09117a8be389753",
+      "sha256": "7d91b4ddd1fff7bc72824e2202d9ea30e5797c34e6d7ba9723e91ba71b83bfa9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4349,8 +4349,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 232176,
-      "sha256": "6b36383d00afc4192025ef4127acf4180cece72734d8dcb6f68b7a1de63e7ac8",
+      "size_bytes": 237970,
+      "sha256": "2e86e7c2a521c3934ef80a1a4e0fed8de4c82de4fc5579fc1ea8c2e6a664a916",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4358,8 +4358,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon_lifecycle_hotfix.py",
-      "size_bytes": 13292,
-      "sha256": "6d1704ef852f8f46ceeb289043bde8c98ae4f4c7de33aa10ab6ecf4f82d8bf4d",
+      "size_bytes": 13470,
+      "sha256": "481817ad0ce6aa1fea7525112dd144788c9d946e0da5d917b26473887541d749",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8516,8 +8516,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6594,
-      "sha256": "0f1ab6135c993f4f808387b3d99f3898a08018863f8ecc67cd6ecedeab31ac67",
+      "size_bytes": 6599,
+      "sha256": "efb4af0a14eb5a8d1a8b132cce7945b3306c9899f2fdf557e1091bcdfef0e3fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15058,6 +15058,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_daemon_native_lifecycle.py",
+      "size_bytes": 4444,
+      "sha256": "07ff4994c8baa65a69fd609c5e8a24a0555ca363e457457efea6d85f88dffe1a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_daemon_process_identity_source.py",
       "size_bytes": 772,
       "sha256": "4a18f282ff9b0a991419c2bd2f1fee625d861428bbca24ffe9c8e5addf49fe14",
@@ -15959,8 +15968,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1582155,
-      "sha256": "80f10286f7bada36039e5572f6e4020620fe01f79d57f006238ccfb0c9b77050",
+      "size_bytes": 1584661,
+      "sha256": "b09e5961f564182863d5e03c6ca5070b845db8c7e2b5f305931bf46000d0d84f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16544,11 +16553,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
+  "release_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
-    "package_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence",
-    "release_version": "16.3.25.5.87.4-chatgpt-persistent-runtime-process-identity-source-convergence"
+    "runtime_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
+    "package_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
+    "release_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
