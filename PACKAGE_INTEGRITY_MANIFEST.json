@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-  "generated_at_utc": "2026-09-25T03:25:38+00:00",
-  "updated_at_utc": "2026-09-25T03:25:38+00:00",
+  "version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+  "runtime_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+  "package_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+  "generated_at_utc": "2026-09-27T12:21:27+00:00",
+  "updated_at_utc": "2026-09-27T12:21:27+00:00",
   "start_file": "run.py",
-  "file_count": 1781,
-  "static_file_count": 1781,
+  "file_count": 1783,
+  "static_file_count": 1783,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3011,
-      "sha256": "e4e2834c9e03590d8616b9304ccd7525f049dd6b92848456b0117b5f2f86edaa",
+      "sha256": "d7794c4b098a3ad89ec85eed0b4c1d612f6856b69790325dc568ba828d55c19a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4366,6 +4366,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/runtime_health.py",
+      "size_bytes": 4046,
+      "sha256": "dd36c8446d8186abdec86bcdc88134d91fe92b2b221348bee2405b572d9498c6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/runtime_lifecycle.py",
       "size_bytes": 15961,
       "sha256": "69999530a8ef4fd8af547de03a5e30875874a57463c217a01f27797bc79f8e59",
@@ -4448,8 +4457,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_supervisor.py",
-      "size_bytes": 14654,
-      "sha256": "2fc876479f7bfa4be572d6552f420b691e0ca8a23fd7442b08bb65c6982e39b3",
+      "size_bytes": 17023,
+      "sha256": "b3fce9b4ae89b56e879077540de72678931ca4171d9ff88fedcf3b816a456874",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8498,8 +8507,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "7a4c044a3f12a577f68d187a7f790c45108789a53d4ac231944d6021bd57e066",
+      "size_bytes": 6581,
+      "sha256": "b3b7fd17181f4f75974bf5e6c60f7265b146cf8a6190566aeba3d64dde8b2123",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15049,6 +15058,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "size_bytes": 4914,
+      "sha256": "0b39fea0a39081abc6859ecbe77794fdaebb6d6340967a766d7b4582f875e39d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_kernel_finalization_canon.py",
       "size_bytes": 9657,
       "sha256": "3acf63cecf2372864d5616538012c8e606b5cb406c0f961999ff37cfacfaa267",
@@ -15896,8 +15914,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1568718,
-      "sha256": "50fd9383b2ab59aca31f7cd7e65ff5c78323eef4cab5b984f2e9e07068925e27",
+      "size_bytes": 1572882,
+      "sha256": "734ecabcca4c08a3166cf9abe77a3e295a1658b8e817e82abaffcd5d333f43d2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16481,11 +16499,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
+  "release_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-    "package_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
-    "release_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence"
+    "runtime_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+    "package_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+    "release_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
