@@ -58,15 +58,17 @@ def test_old_lock_is_not_stolen_from_live_confirmed_owner(
     old = time.time() - 3600
     os.utime(lock, (old, old))
 
+    from latka_jazn.core import process_identity
+
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_is_alive",
         lambda _pid: True,
     )
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_fingerprint",
-        lambda pid: _fingerprint(int(pid), "owner"),
+        lambda pid, **_kwargs: _fingerprint(int(pid), "owner"),
     )
 
     with pytest.raises(runtime_root.RuntimeWorkspaceBusyError):
@@ -105,15 +107,17 @@ def test_dead_owner_lock_is_reclaimed_without_age_authority(
         encoding="utf-8",
     )
 
+    from latka_jazn.core import process_identity
+
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_is_alive",
-        lambda _pid: False,
+        lambda pid: int(pid) != 4242,
     )
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_fingerprint",
-        lambda pid: (
+        lambda pid, **_kwargs: (
             _fingerprint(int(pid), "new")
             if pid
             else {
@@ -152,15 +156,17 @@ def test_live_legacy_lock_without_fingerprint_fails_closed(
         encoding="utf-8",
     )
 
+    from latka_jazn.core import process_identity
+
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_is_alive",
         lambda _pid: True,
     )
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_fingerprint",
-        lambda pid: _fingerprint(
+        lambda pid, **_kwargs: _fingerprint(
             int(pid),
             "observed",
         ),
@@ -198,15 +204,17 @@ def test_pid_reuse_fingerprint_allows_stale_lock_reclaim(
         encoding="utf-8",
     )
 
+    from latka_jazn.core import process_identity
+
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_is_alive",
         lambda _pid: True,
     )
     monkeypatch.setattr(
-        runtime_root,
+        process_identity,
         "process_fingerprint",
-        lambda pid: _fingerprint(
+        lambda pid, **_kwargs: _fingerprint(
             int(pid),
             "new-process",
         ),

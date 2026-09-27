@@ -12,11 +12,6 @@ import shutil
 import time
 from typing import Any, Iterator
 
-from latka_jazn.core.process_identity import (
-    process_fingerprint,
-    process_fingerprint_matches,
-    process_is_alive,
-)
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
 
 
@@ -206,6 +201,18 @@ def _safe_root_label(root: Path) -> str:
     return value or "runtime"
 
 
+def _runtime_workspace_process_identity() -> tuple[Any, Any, Any]:
+    # Keep runtime_root importable by the dependency-free launcher/preflight.
+    # Process identity is required only when a mutable transition lock is used.
+    from latka_jazn.core.process_identity import (
+        process_fingerprint,
+        process_fingerprint_matches,
+        process_is_alive,
+    )
+
+    return process_fingerprint, process_fingerprint_matches, process_is_alive
+
+
 def _runtime_workspace_lock_owner_observation(
     lock_path: Path,
 ) -> dict[str, Any]:
@@ -246,6 +253,11 @@ def _runtime_workspace_lock_owner_observation(
             "process_fingerprint_match": None,
         }
 
+    (
+        process_fingerprint,
+        process_fingerprint_matches,
+        process_is_alive,
+    ) = _runtime_workspace_process_identity()
     alive = process_is_alive(pid)
     expected = raw.get("process_fingerprint")
     observed = (
@@ -332,6 +344,11 @@ def runtime_workspace_transition_lock(
         else:
             try:
                 pid = os.getpid()
+                (
+                    process_fingerprint,
+                    _process_fingerprint_matches,
+                    _process_is_alive,
+                ) = _runtime_workspace_process_identity()
                 payload = {
                     "schema_version": (
                         "runtime_workspace_transition_lock/v2"
