@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "9cbb685034b5907aa34c8093a3b6c417b17e5717",
+  "base_merge_commit": "638dce5210bc4caa09cf19896806719407820ad3",
   "base_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
-  "commit_date": "2026-09-27T16:23:22Z",
+  "commit_date": "2026-09-27T18:30:34+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-09-27T16:23:22+00:00",
+  "generated_at_utc": "2026-09-27T16:30:34+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "0df7bed7fc4751868b799828e70a60a459d25ebd",
+  "git_tree_sha": "a2032e8b874c050c927f6a195a39bb71e8c2151a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.85-chatgpt-discovery-evidence-tristate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "9cbb685034b5907aa34c8093a3b6c417b17e5717",
+    "source_commit": "638dce5210bc4caa09cf19896806719407820ad3",
     "source_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "9cbb685034b5907aa34c8093a3b6c417b17e5717",
+  "source_commit": "638dce5210bc4caa09cf19896806719407820ad3",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.87.5-chatgpt-persistent-runtime-native-daemon-lifecycle-convergence",
   "tag": null,
