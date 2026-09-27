@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.87.3",
-  "active_definition_count": 1708,
+  "system_version": "16.3.25.5.87.4",
+  "active_definition_count": 1710,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29164,6 +29164,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 38
+    },
+    "tests/test_runtime_daemon_process_identity_source.py::test_lifecycle_hotfix_reexports_shared_process_identity_contract": {
+      "path": "tests/test_runtime_daemon_process_identity_source.py",
+      "name": "test_lifecycle_hotfix_reexports_shared_process_identity_contract",
+      "purpose": "Lifecycle hotfix reexports shared process identity contract",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
+    "tests/test_runtime_daemon_process_identity_source.py::test_lifecycle_hotfix_has_no_private_fingerprint_implementation": {
+      "path": "tests/test_runtime_daemon_process_identity_source.py",
+      "name": "test_lifecycle_hotfix_has_no_private_fingerprint_implementation",
+      "purpose": "Lifecycle hotfix has no private fingerprint implementation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
     },
     "tests/test_runtime_daemon_security_contract.py::test_chat_requires_capability_token": {
       "path": "tests/test_runtime_daemon_security_contract.py",
