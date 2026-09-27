@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.85",
-  "active_definition_count": 1693,
+  "system_version": "16.3.25.5.86",
+  "active_definition_count": 1698,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16581,6 +16581,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 73
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_deictic_evening_memory_question_requests_recall": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_deictic_evening_memory_question_requests_recall",
+      "purpose": "Deictic evening memory question requests recall",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_deictic_evening_recall_carries_previous_context_into_search_plan": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_deictic_evening_recall_carries_previous_context_into_search_plan",
+      "purpose": "Deictic evening recall carries previous context into search plan",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_dialogue_classifier_exposes_memory_requirement_for_deictic_evening": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_dialogue_classifier_exposes_memory_requirement_for_deictic_evening",
+      "purpose": "Dialogue classifier exposes memory requirement for deictic evening",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_chatgpt_loader_and_runbook_require_library_memory_discovery": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_chatgpt_loader_and_runbook_require_library_memory_discovery",
+      "purpose": "Chatgpt loader and runbook require library memory discovery",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound",
+      "purpose": "Recall scope phrase co mozesz does not become capability compound",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_memory_experience_recall_handler.py::test_memory_experience_intents_use_dedicated_handler": {
       "path": "tests/test_memory_experience_recall_handler.py",

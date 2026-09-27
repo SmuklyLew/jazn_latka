@@ -101,10 +101,11 @@ _REFERENTIAL_PATTERNS = (
     r"\bwtedy\b",
     r"\btamt(?:o|ego|a|ej|ym)\b",
     r"\b(?:to|tego|tamto|tamtego) wspomnieni\w*\b",
-    r"\bten temat\b",
+    r"\b(?:ten|tamten) (?:temat|dzien|wieczor|poranek|ranek|moment)\b",
+    r"\b(?:ta|tamta) (?:noc|chwila|rozmowa|sytuacja)\b",
+    r"\b(?:to|tamto) (?:spotkanie|wydarzenie)\b",
     r"\bwroc(?:my)? do\b",
     r"\bona\b",
-    r"\bten dzien\b",
 )
 _CORRECTION_PATTERNS = (
     r"\bnie tak\b",

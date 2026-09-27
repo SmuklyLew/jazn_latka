@@ -96,6 +96,8 @@ Znaleziony SYSTEM ZIP z logicznej powierzchni hosta zmaterializuj jako dokładne
 
 Brak capability dostępu/materializacji Biblioteki oznacza wyłącznie `library_surface_unavailable` dla tej powierzchni; nie jest dowodem, że paczki w Bibliotece nie ma. Materializacja SYSTEM nie materializuje automatycznie MEMORY, a profil `memory` nadal nie może stać się `active_root`.
 
+Po zweryfikowaniu SYSTEM i odczytaniu `MEMORY_ATTACHMENT_CONTRACT.json`, jeżeli kontrakt dopuszcza MEMORY, a aktywny `memory_root` nie zawiera oczekiwanej pamięci autobiograficznej, host z dostępną Biblioteką ma wykonać osobne discovery MEMORY. Wyszukaj profil `memory` wraz z jego `package.json`, pełnym SHA-256 i — dla paczki dzielonej — kompletem części oraz `parts.sha256`. Zmaterializuj dokładne bajty jednego zgodnego zestawu do wspólnego kontrolowanego `parts-dir`, zweryfikuj każdą część przed joinem i nie utożsamiaj uchwytów Library z lokalnymi ścieżkami. Następnie użyj istniejącego kontraktu attach/bootstrap; nie kopiuj prywatnej pamięci ręcznie do release root. Jeżeli daemon jest aktywny, zastosuj jedno okno maintenance opisane niżej. Po attach wymagaj ponownego `status`/readiness i dowodu `memory_search_ready=true` przed deklaracją dostępnego recallu. Brak kandydata MEMORY przy `memory_mode=optional` nie blokuje rdzenia, ale pozostawia recall i deklaracje autobiograficznej ciągłości niedostępne.
+
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
 Jeżeli nie ma jeszcze operatora, ale kompletna paczka systemowa ZIP i zaufany SHA-256 są lokalnie dostępne:
