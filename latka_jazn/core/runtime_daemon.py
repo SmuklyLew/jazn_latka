@@ -3010,7 +3010,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "daemon_chat_submit_endpoint": "/chat-submit",
             "daemon_chat_result_endpoint_template": "/chat-result/{request_id}",
             "daemon_pid": self.state.pid,
-            "process_fingerprint": process_fingerprint(self.state.pid, pid_is_alive=pid_is_alive),
+            "process_fingerprint": process_fingerprint(self.state.pid),
             "daemon_host": self.state.host,
             "daemon_port": self.state.port,
             "daemon_url": daemon_url(self.state.host, self.state.port),
@@ -3076,7 +3076,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "runtime_active_state": active_state if liveness_ok else "inactive",
             "time_trust_state": time_state,
             "daemon_pid": self.state.pid,
-            "process_fingerprint": process_fingerprint(self.state.pid, pid_is_alive=pid_is_alive),
+            "process_fingerprint": process_fingerprint(self.state.pid),
             "daemon_host": self.state.host,
             "daemon_port": self.state.port,
             "runtime_process_active": liveness_ok,
@@ -3160,7 +3160,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             "runtime_active_state": active_state if liveness_ok else "inactive",
             "time_trust_state": time_state,
             "daemon_pid": self.state.pid,
-            "process_fingerprint": process_fingerprint(self.state.pid, pid_is_alive=pid_is_alive),
+            "process_fingerprint": process_fingerprint(self.state.pid),
             "daemon_host": self.state.host,
             "daemon_port": self.state.port,
             "runtime_process_active": liveness_ok,
@@ -4446,7 +4446,7 @@ def status_daemon(
         else None
     )
     observed_process_fingerprint = (
-        process_fingerprint(pid_int, pid_is_alive=pid_is_alive)
+        process_fingerprint(pid_int)
         if raw_os_pid_alive and pid_int
         else process_fingerprint(None)
     )
