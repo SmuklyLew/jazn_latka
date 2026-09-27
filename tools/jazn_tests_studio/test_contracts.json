@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.87.6.1",
-  "active_definition_count": 1719,
+  "system_version": "16.3.25.5.86",
+  "active_definition_count": 1698,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -5451,12 +5451,11 @@
       ],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
+        "latka_jazn.core.chatgpt_host_executor_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 22
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_derives_public_streamable_http_route_from_full_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5472,12 +5471,11 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
+        "latka_jazn.core.chatgpt_host_executor_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 67
+      "line": 34
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_derives_secure_tunnel_route_from_full_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5493,55 +5491,32 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
+        "latka_jazn.core.chatgpt_host_executor_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 58
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_keeps_public_remote_route_unavailable_without_host_capability": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
       "name": "test_preflight_keeps_public_remote_route_unavailable_without_host_capability",
       "purpose": "Preflight keeps public remote route unavailable without host capability",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "host",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
+        "latka_jazn.core.chatgpt_host_executor_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
-    },
-    "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_keeps_structurally_valid_route_unavailable_without_instance_binding": {
-      "path": "tests/test_chatgpt_remote_runtime_evidence.py",
-      "name": "test_preflight_keeps_structurally_valid_route_unavailable_without_instance_binding",
-      "purpose": "Preflight keeps structurally valid route unavailable without instance binding",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 90
+      "line": 78
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_rejects_remote_declaration_that_conflicts_with_evidence": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -5559,12 +5534,11 @@
       ],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
-        "latka_jazn.core.chatgpt_host_executor_contract",
-        "latka_jazn.version"
+        "latka_jazn.core.chatgpt_host_executor_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 98
     },
     "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_default_policy_allows_verified_one_shot_fallback": {
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
@@ -15511,12 +15485,11 @@
         "ValueError"
       ],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 98
     },
     "tests/test_mcp_http_gateway.py::test_public_gateway_never_allows_non_loopback_daemon_target": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15533,12 +15506,11 @@
         "ValueError"
       ],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 113
     },
     "tests/test_mcp_http_gateway.py::test_official_sdk_exposes_only_minimal_public_tool_surface": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15555,12 +15527,11 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 132
+      "line": 124
     },
     "tests/test_mcp_http_gateway.py::test_generate_forwards_stable_request_id_through_private_backend_token": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15577,18 +15548,17 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 147
     },
     "tests/test_mcp_http_gateway.py::test_public_status_is_redacted_even_when_backend_status_is_private": {
       "path": "tests/test_mcp_http_gateway.py",
       "name": "test_public_status_is_redacted_even_when_backend_status_is_private",
       "purpose": "Public status is redacted even when backend status is private",
-      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -15596,15 +15566,14 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 14,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 175
+      "line": 167
     },
     "tests/test_mcp_http_gateway.py::test_http_app_contains_mcp_liveness_and_readiness_routes": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15619,12 +15588,11 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 198
+      "line": 185
     },
     "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -15641,12 +15609,11 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.http_gateway",
-        "latka_jazn.version"
+        "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 208
+      "line": 195
     },
     "tests/test_mcp_http_resources.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
       "path": "tests/test_mcp_http_resources.py",
@@ -16028,85 +15995,21 @@
       "path": "tests/test_mcp_remote_runtime.py",
       "name": "test_public_streamable_http_route_requires_all_independent_evidence",
       "purpose": "Public streamable http route requires all independent evidence",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "mcp",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.remote_runtime",
-        "latka_jazn.version"
+        "latka_jazn.mcp.remote_runtime"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 18
-    },
-    "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_cross_gateway_binding": {
-      "path": "tests/test_mcp_remote_runtime.py",
-      "name": "test_public_streamable_http_rejects_cross_gateway_binding",
-      "purpose": "Public streamable http rejects cross gateway binding",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.remote_runtime",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 37
-    },
-    "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_wrong_runtime_version": {
-      "path": "tests/test_mcp_remote_runtime.py",
-      "name": "test_public_streamable_http_rejects_wrong_runtime_version",
-      "purpose": "Public streamable http rejects wrong runtime version",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.remote_runtime",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 48
-    },
-    "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_stale_evidence": {
-      "path": "tests/test_mcp_remote_runtime.py",
-      "name": "test_public_streamable_http_rejects_stale_evidence",
-      "purpose": "Public streamable http rejects stale evidence",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.remote_runtime",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 58
+      "line": 9
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_is_preferred_when_verified": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -16122,12 +16025,11 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.remote_runtime",
-        "latka_jazn.version"
+        "latka_jazn.mcp.remote_runtime"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 33
     },
     "tests/test_mcp_task_input_fail_closed.py::test_task_input_update_never_mutates_outstanding_requests_without_runtime_transport": {
       "path": "tests/test_mcp_task_input_fail_closed.py",
@@ -16679,6 +16581,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 73
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_deictic_evening_memory_question_requests_recall": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_deictic_evening_memory_question_requests_recall",
+      "purpose": "Deictic evening memory question requests recall",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_deictic_evening_recall_carries_previous_context_into_search_plan": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_deictic_evening_recall_carries_previous_context_into_search_plan",
+      "purpose": "Deictic evening recall carries previous context into search plan",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_dialogue_classifier_exposes_memory_requirement_for_deictic_evening": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_dialogue_classifier_exposes_memory_requirement_for_deictic_evening",
+      "purpose": "Dialogue classifier exposes memory requirement for deictic evening",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_chatgpt_loader_and_runbook_require_library_memory_discovery": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_chatgpt_loader_and_runbook_require_library_memory_discovery",
+      "purpose": "Chatgpt loader and runbook require library memory discovery",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_memory_deictic_recall_library_attach.py::test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound": {
+      "path": "tests/test_memory_deictic_recall_library_attach.py",
+      "name": "test_recall_scope_phrase_co_mozesz_does_not_become_capability_compound",
+      "purpose": "Recall scope phrase co mozesz does not become capability compound",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_memory_experience_recall_handler.py::test_memory_experience_intents_use_dedicated_handler": {
       "path": "tests/test_memory_experience_recall_handler.py",
@@ -26084,57 +26091,6 @@
       "description_source": "source_identity",
       "line": 28
     },
-    "tests/test_process_identity.py::test_process_fingerprint_binds_current_pid_to_creation_identity": {
-      "path": "tests/test_process_identity.py",
-      "name": "test_process_fingerprint_binds_current_pid_to_creation_identity",
-      "purpose": "Process fingerprint binds current pid to creation identity",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 12
-    },
-    "tests/test_process_identity.py::test_process_fingerprint_rejects_forged_creation_identity": {
-      "path": "tests/test_process_identity.py",
-      "name": "test_process_fingerprint_rejects_forged_creation_identity",
-      "purpose": "Process fingerprint rejects forged creation identity",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 24
-    },
-    "tests/test_process_identity.py::test_process_fingerprint_reports_dead_pid_without_identity_probe": {
-      "path": "tests/test_process_identity.py",
-      "name": "test_process_fingerprint_reports_dead_pid_without_identity_probe",
-      "purpose": "Process fingerprint reports dead pid without identity probe",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 38
-    },
     "tests/test_professional_turn_runtime.py::test_remote_runtime_is_preferred_only_when_fully_verified": {
       "path": "tests/test_professional_turn_runtime.py",
       "name": "test_remote_runtime_is_preferred_only_when_fully_verified",
@@ -29263,107 +29219,6 @@
       "description_source": "source_identity",
       "line": 38
     },
-    "tests/test_runtime_daemon_native_lifecycle.py::test_native_daemon_lifecycle_disables_monkeypatch_install": {
-      "path": "tests/test_runtime_daemon_native_lifecycle.py",
-      "name": "test_native_daemon_lifecycle_disables_monkeypatch_install",
-      "purpose": "Native daemon lifecycle disables monkeypatch install",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 25
-    },
-    "tests/test_runtime_daemon_native_lifecycle.py::test_native_status_rejects_reused_pid_without_endpoint_identity": {
-      "path": "tests/test_runtime_daemon_native_lifecycle.py",
-      "name": "test_native_status_rejects_reused_pid_without_endpoint_identity",
-      "purpose": "Native status rejects reused pid without endpoint identity",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 8,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 41
-    },
-    "tests/test_runtime_daemon_native_lifecycle.py::test_native_runtime_versions_bind_subject_root": {
-      "path": "tests/test_runtime_daemon_native_lifecycle.py",
-      "name": "test_native_runtime_versions_bind_subject_root",
-      "purpose": "Native runtime versions bind subject root",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 130
-    },
-    "tests/test_runtime_daemon_process_identity_source.py::test_lifecycle_hotfix_reexports_shared_process_identity_contract": {
-      "path": "tests/test_runtime_daemon_process_identity_source.py",
-      "name": "test_lifecycle_hotfix_reexports_shared_process_identity_contract",
-      "purpose": "Lifecycle hotfix reexports shared process identity contract",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 7
-    },
-    "tests/test_runtime_daemon_process_identity_source.py::test_lifecycle_hotfix_has_no_private_fingerprint_implementation": {
-      "path": "tests/test_runtime_daemon_process_identity_source.py",
-      "name": "test_lifecycle_hotfix_has_no_private_fingerprint_implementation",
-      "purpose": "Lifecycle hotfix has no private fingerprint implementation",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 19
-    },
     "tests/test_runtime_daemon_security_contract.py::test_chat_requires_capability_token": {
       "path": "tests/test_runtime_daemon_security_contract.py",
       "name": "test_chat_requires_capability_token",
@@ -29606,106 +29461,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
-    },
-    "tests/test_runtime_health_recovery.py::test_health_classifier_recovers_stale_confirmed_daemon": {
-      "path": "tests/test_runtime_health_recovery.py",
-      "name": "test_health_classifier_recovers_stale_confirmed_daemon",
-      "purpose": "Health classifier recovers stale confirmed daemon",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.runtime_health"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 10
-    },
-    "tests/test_runtime_health_recovery.py::test_health_classifier_fails_closed_on_identity_mismatch": {
-      "path": "tests/test_runtime_health_recovery.py",
-      "name": "test_health_classifier_fails_closed_on_identity_mismatch",
-      "purpose": "Health classifier fails closed on identity mismatch",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.runtime_health"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 24
-    },
-    "tests/test_runtime_health_recovery.py::test_health_classifier_keeps_verified_runtime_without_time_based_restart": {
-      "path": "tests/test_runtime_health_recovery.py",
-      "name": "test_health_classifier_keeps_verified_runtime_without_time_based_restart",
-      "purpose": "Health classifier keeps verified runtime without time based restart",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.runtime_health"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 37
-    },
-    "tests/test_runtime_health_recovery.py::test_supervisor_uses_canonical_restart_for_recoverable_degradation": {
-      "path": "tests/test_runtime_health_recovery.py",
-      "name": "test_supervisor_uses_canonical_restart_for_recoverable_degradation",
-      "purpose": "Supervisor uses canonical restart for recoverable degradation",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.runtime_health"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 51
-    },
-    "tests/test_runtime_health_recovery.py::test_supervisor_does_not_restart_identity_ambiguous_process": {
-      "path": "tests/test_runtime_health_recovery.py",
-      "name": "test_supervisor_does_not_restart_identity_ambiguous_process",
-      "purpose": "Supervisor does not restart identity ambiguous process",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.runtime_health"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 101
     },
     "tests/test_runtime_kernel_finalization_canon.py::test_host_presentation_reuses_machine_readable_phase2_binding": {
       "path": "tests/test_runtime_kernel_finalization_canon.py",
@@ -33927,90 +33682,6 @@
       "description_source": "source_identity",
       "line": 39
     },
-    "tests/test_runtime_workspace_lock_identity.py::test_old_lock_is_not_stolen_from_live_confirmed_owner": {
-      "path": "tests/test_runtime_workspace_lock_identity.py",
-      "name": "test_old_lock_is_not_stolen_from_live_confirmed_owner",
-      "purpose": "Old lock is not stolen from live confirmed owner",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "RuntimeWorkspaceBusyError"
-      ],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 35
-    },
-    "tests/test_runtime_workspace_lock_identity.py::test_dead_owner_lock_is_reclaimed_without_age_authority": {
-      "path": "tests/test_runtime_workspace_lock_identity.py",
-      "name": "test_dead_owner_lock_is_reclaimed_without_age_authority",
-      "purpose": "Dead owner lock is reclaimed without age authority",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 86
-    },
-    "tests/test_runtime_workspace_lock_identity.py::test_live_legacy_lock_without_fingerprint_fails_closed": {
-      "path": "tests/test_runtime_workspace_lock_identity.py",
-      "name": "test_live_legacy_lock_without_fingerprint_fails_closed",
-      "purpose": "Live legacy lock without fingerprint fails closed",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "RuntimeWorkspaceBusyError"
-      ],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 146
-    },
-    "tests/test_runtime_workspace_lock_identity.py::test_pid_reuse_fingerprint_allows_stale_lock_reclaim": {
-      "path": "tests/test_runtime_workspace_lock_identity.py",
-      "name": "test_pid_reuse_fingerprint_allows_stale_lock_reclaim",
-      "purpose": "Pid reuse fingerprint allows stale lock reclaim",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 186
-    },
     "tests/test_runtime_workspace_override.py::test_absolute_runtime_workspace_override_routes_startup_state_outside_code_root": {
       "path": "tests/test_runtime_workspace_override.py",
       "name": "test_absolute_runtime_workspace_override_routes_startup_state_outside_code_root",
@@ -34187,27 +33858,46 @@
       "path": "tests/test_secure_mcp_remote_runtime_failover.py",
       "name": "test_managed_runtime_is_preferred_long_lived_supervision",
       "purpose": "Managed runtime is preferred long lived supervision",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "mcp",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
+        "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 13
     },
     "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability": {
       "path": "tests/test_secure_mcp_remote_runtime_failover.py",
       "name": "test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability",
       "purpose": "Remote failover requires tunnel and explicit chatgpt connector capability",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.secure_tunnel"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready": {
+      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
+      "name": "test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready",
+      "purpose": "Remote failover fails closed when managed tunnel is not ready",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
@@ -34218,75 +33908,11 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
+        "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
-    },
-    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready": {
-      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
-      "name": "test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready",
-      "purpose": "Remote failover fails closed when managed tunnel is not ready",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 45
-    },
-    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_rejects_missing_runtime_binding": {
-      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
-      "name": "test_remote_failover_rejects_missing_runtime_binding",
-      "purpose": "Remote failover rejects missing runtime binding",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 50
-    },
-    "tests/test_secure_mcp_remote_runtime_failover.py::test_remote_failover_rejects_stale_runtime_evidence": {
-      "path": "tests/test_secure_mcp_remote_runtime_failover.py",
-      "name": "test_remote_failover_rejects_stale_runtime_evidence",
-      "purpose": "Remote failover rejects stale runtime evidence",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "mcp",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 57
+      "line": 77
     },
     "tests/test_secure_mcp_remote_runtime_failover.py::test_runtime_alias_must_be_stable_and_whitespace_free": {
       "path": "tests/test_secure_mcp_remote_runtime_failover.py",
@@ -34304,12 +33930,11 @@
         "ValueError"
       ],
       "targets": [
-        "latka_jazn.mcp.secure_tunnel",
-        "latka_jazn.version"
+        "latka_jazn.mcp.secure_tunnel"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 90
     },
     "tests/test_secure_mcp_tunnel_bootstrap.py::test_ensure_tunnel_runtime_reuses_verified_active_subject_root": {
       "path": "tests/test_secure_mcp_tunnel_bootstrap.py",
@@ -36020,60 +35645,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 176
-    },
-    "tests/test_supervisor_identity_ownership.py::test_supervisor_reclaims_live_reused_pid_record": {
-      "path": "tests/test_supervisor_identity_ownership.py",
-      "name": "test_supervisor_reclaims_live_reused_pid_record",
-      "purpose": "Supervisor reclaims live reused pid record",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 24
-    },
-    "tests/test_supervisor_identity_ownership.py::test_supervisor_refuses_live_owner_when_identity_is_unavailable": {
-      "path": "tests/test_supervisor_identity_ownership.py",
-      "name": "test_supervisor_refuses_live_owner_when_identity_is_unavailable",
-      "purpose": "Supervisor refuses live owner when identity is unavailable",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 64
-    },
-    "tests/test_supervisor_identity_ownership.py::test_supervisor_status_requires_fingerprint_bound_owner": {
-      "path": "tests/test_supervisor_identity_ownership.py",
-      "name": "test_supervisor_status_requires_fingerprint_bound_owner",
-      "purpose": "Supervisor status requires fingerprint bound owner",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core",
-        "latka_jazn.core.process_identity"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 108
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",
