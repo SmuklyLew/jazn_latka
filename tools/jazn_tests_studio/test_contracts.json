@@ -29357,8 +29357,8 @@
       "description_source": "source_identity",
       "line": 51
     },
-    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_recovers_stale_confirmed_daemon": {
-      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+    "tests/test_runtime_health_recovery.py::test_health_classifier_recovers_stale_confirmed_daemon": {
+      "path": "tests/test_runtime_health_recovery.py",
       "name": "test_health_classifier_recovers_stale_confirmed_daemon",
       "purpose": "Health classifier recovers stale confirmed daemon",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -29377,8 +29377,8 @@
       "description_source": "source_identity",
       "line": 10
     },
-    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_fails_closed_on_identity_mismatch": {
-      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+    "tests/test_runtime_health_recovery.py::test_health_classifier_fails_closed_on_identity_mismatch": {
+      "path": "tests/test_runtime_health_recovery.py",
       "name": "test_health_classifier_fails_closed_on_identity_mismatch",
       "purpose": "Health classifier fails closed on identity mismatch",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -29397,8 +29397,8 @@
       "description_source": "source_identity",
       "line": 24
     },
-    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_keeps_verified_runtime_without_time_based_restart": {
-      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+    "tests/test_runtime_health_recovery.py::test_health_classifier_keeps_verified_runtime_without_time_based_restart": {
+      "path": "tests/test_runtime_health_recovery.py",
       "name": "test_health_classifier_keeps_verified_runtime_without_time_based_restart",
       "purpose": "Health classifier keeps verified runtime without time based restart",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -29417,8 +29417,8 @@
       "description_source": "source_identity",
       "line": 37
     },
-    "tests/test_runtime_health_supervisor_v163255871.py::test_supervisor_uses_canonical_restart_for_recoverable_degradation": {
-      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+    "tests/test_runtime_health_recovery.py::test_supervisor_uses_canonical_restart_for_recoverable_degradation": {
+      "path": "tests/test_runtime_health_recovery.py",
       "name": "test_supervisor_uses_canonical_restart_for_recoverable_degradation",
       "purpose": "Supervisor uses canonical restart for recoverable degradation",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -29437,8 +29437,8 @@
       "description_source": "source_identity",
       "line": 51
     },
-    "tests/test_runtime_health_supervisor_v163255871.py::test_supervisor_does_not_restart_identity_ambiguous_process": {
-      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+    "tests/test_runtime_health_recovery.py::test_supervisor_does_not_restart_identity_ambiguous_process": {
+      "path": "tests/test_runtime_health_recovery.py",
       "name": "test_supervisor_does_not_restart_identity_ambiguous_process",
       "purpose": "Supervisor does not restart identity ambiguous process",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
