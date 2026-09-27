@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.85",
-  "active_definition_count": 1693,
+  "system_version": "16.3.25.5.87.1",
+  "active_definition_count": 1698,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29356,6 +29356,106 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_recovers_stale_confirmed_daemon": {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "name": "test_health_classifier_recovers_stale_confirmed_daemon",
+      "purpose": "Health classifier recovers stale confirmed daemon",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_health"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_fails_closed_on_identity_mismatch": {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "name": "test_health_classifier_fails_closed_on_identity_mismatch",
+      "purpose": "Health classifier fails closed on identity mismatch",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_health"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_runtime_health_supervisor_v163255871.py::test_health_classifier_keeps_verified_runtime_without_time_based_restart": {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "name": "test_health_classifier_keeps_verified_runtime_without_time_based_restart",
+      "purpose": "Health classifier keeps verified runtime without time based restart",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_health"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_runtime_health_supervisor_v163255871.py::test_supervisor_uses_canonical_restart_for_recoverable_degradation": {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "name": "test_supervisor_uses_canonical_restart_for_recoverable_degradation",
+      "purpose": "Supervisor uses canonical restart for recoverable degradation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_health"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_runtime_health_supervisor_v163255871.py::test_supervisor_does_not_restart_identity_ambiguous_process": {
+      "path": "tests/test_runtime_health_supervisor_v163255871.py",
+      "name": "test_supervisor_does_not_restart_identity_ambiguous_process",
+      "purpose": "Supervisor does not restart identity ambiguous process",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_health"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
     },
     "tests/test_runtime_kernel_finalization_canon.py::test_host_presentation_reuses_machine_readable_phase2_binding": {
       "path": "tests/test_runtime_kernel_finalization_canon.py",
