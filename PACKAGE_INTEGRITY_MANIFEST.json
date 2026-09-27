@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
-  "runtime_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
-  "package_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
-  "generated_at_utc": "2026-09-27T12:26:28+00:00",
-  "updated_at_utc": "2026-09-27T12:26:28+00:00",
+  "version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+  "runtime_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+  "package_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+  "generated_at_utc": "2026-09-27T12:39:30+00:00",
+  "updated_at_utc": "2026-09-27T12:39:30+00:00",
   "start_file": "run.py",
-  "file_count": 1783,
-  "static_file_count": 1783,
+  "file_count": 1786,
+  "static_file_count": 1786,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3016,
-      "sha256": "4318506ef451d508940bf77e1b6e1be0ca7bded0f45a9754156c150ae3c9a027",
+      "size_bytes": 3023,
+      "sha256": "a8618320cb9c6485809fdb31a6c4cee65e5a6b8194a6fbb59fcad295dffd677c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4159,6 +4159,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/process_identity.py",
+      "size_bytes": 7426,
+      "sha256": "d0d55eee67a704bc28752a037e11044e4787bd25592d8e96352685dc1ba0cdc6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/project_index.py",
       "size_bytes": 16528,
       "sha256": "28d230374e0989db732a80a6352ab588d584d225157602c09c64ddbf1d69fde4",
@@ -4457,8 +4466,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_supervisor.py",
-      "size_bytes": 17011,
-      "sha256": "2b4cf5cc3f0803ea5e92b5a1b485f38f974bcd2bd8d9f776a03fcf6cc670cb71",
+      "size_bytes": 21551,
+      "sha256": "c11d9df2b2805677b7a431df062bfb4535f5f8ba686432ca223e637e9f454565",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8507,8 +8516,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6581,
-      "sha256": "b3b7fd17181f4f75974bf5e6c60f7265b146cf8a6190566aeba3d64dde8b2123",
+      "size_bytes": 6549,
+      "sha256": "a881628201e7f6bcd02bfbf49a0a459e117af37110dd472c2689623039327ea2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14770,6 +14779,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_process_identity.py",
+      "size_bytes": 1372,
+      "sha256": "32a64c0bc6ae7bfe7a66eff2430e0ee3b8672c4437ced3f33c15f514b807a0a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_professional_turn_runtime.py",
       "size_bytes": 10345,
       "sha256": "af852f5853c0c98981efac55eb9ed6d9621eef9fb2ca74ff0fabbfd3a0ce17d6",
@@ -15355,6 +15373,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_supervisor_identity_ownership.py",
+      "size_bytes": 4238,
+      "sha256": "67bf58c80f054f89b28fecee0b81faae8e8a1014a877f7f91d5136f3280ceb03",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_system_package_canonical_integrity.py",
       "size_bytes": 5040,
       "sha256": "aab5292cf93d6e1264f4c9a0be8cf72ca4bc65158096ecf6b3e565906d2e8c6a",
@@ -15914,8 +15941,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1572752,
-      "sha256": "a834b154e67fed4ad9017db6047544c0d2e380cd2587d0fe006174d4209e73de",
+      "size_bytes": 1577265,
+      "sha256": "6577c847365073e7471341baa32612d8bdb9cbc19a4116054959691dbb835e25",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16499,11 +16526,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
+  "release_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
-    "package_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence",
-    "release_version": "16.3.25.5.87.1-chatgpt-persistent-runtime-health-convergence"
+    "runtime_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+    "package_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence",
+    "release_version": "16.3.25.5.87.2-chatgpt-persistent-runtime-identity-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
