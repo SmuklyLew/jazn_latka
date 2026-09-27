@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.87.5 moves process identity, monotonic startup deadlines and
-# failed-child cleanup into the native daemon lifecycle; the hotfix is a shim.
-DISTRIBUTION_VERSION = "16.3.25.5.87.5"
-PACKAGE_VERSION = "16.3.25.5.87.5"
-PACKAGE_RELEASE_NAME = "chatgpt-persistent-runtime-native-daemon-lifecycle-convergence"
+# v16.3.25.5.87.6 binds remote-route evidence to one fresh gateway/runtime
+# instance and expected release so stale structurally valid payloads fail closed.
+DISTRIBUTION_VERSION = "16.3.25.5.87.6"
+PACKAGE_VERSION = "16.3.25.5.87.6"
+PACKAGE_RELEASE_NAME = "chatgpt-persistent-runtime-evidence-binding-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

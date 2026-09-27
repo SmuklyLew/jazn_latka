@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,8 @@ import pytest
 pytest.importorskip("mcp")
 
 from mcp import Client
+
+from latka_jazn.version import PACKAGE_VERSION_FULL
 
 from latka_jazn.mcp.http_gateway import (
     HEALTH_PATH,
@@ -38,7 +41,12 @@ class _FakeBackend:
                     "gateway_ok": True,
                     "daemon_reachable": True,
                     "runtime_root": "PRIVATE/ROOT/MUST/NOT/LEAK",
-                    "daemon": {"pid": 12345},
+                    "daemon": {
+                        "pid": 12345,
+                        "daemon_instance_id": "daemon-http-test-a",
+                        "runtime_version": PACKAGE_VERSION_FULL,
+                        "last_heartbeat_at_utc": datetime.now(timezone.utc).isoformat(),
+                    },
                     "capability_matrix": {"conversation_ready": True},
                 },
                 "_meta": {"private_operator_detail": True},
@@ -173,6 +181,11 @@ async def test_public_status_is_redacted_even_when_backend_status_is_private(tmp
     assert result.is_error is False
     assert result.structured_content is not None
     assert result.structured_content["ready"] is True
+    assert result.structured_content["runtime_instance_id"] == "daemon-http-test-a"
+    assert result.structured_content["runtime_version"] == PACKAGE_VERSION_FULL
+    assert result.structured_content["runtime_heartbeat_at_utc"]
+    assert result.structured_content["gateway_instance_id"]
+    assert result.structured_content["observed_at_utc"]
     assert "runtime_root" not in result.structured_content
     assert "daemon" not in result.structured_content
     assert result.meta is not None

@@ -15,6 +15,7 @@ loopback development/tests. The private daemon remains bound behind
 
 from collections import defaultdict, deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
 import ipaddress
 import json
 from pathlib import Path
@@ -229,6 +230,22 @@ def _runtime_ready(status: Mapping[str, Any]) -> bool:
     )
 
 
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _runtime_binding(status: Mapping[str, Any]) -> dict[str, str | None]:
+    daemon = status.get("daemon")
+    daemon_map = daemon if isinstance(daemon, Mapping) else {}
+    return {
+        "runtime_instance_id": str(daemon_map.get("daemon_instance_id") or "").strip() or None,
+        "runtime_version": str(daemon_map.get("runtime_version") or "").strip() or None,
+        "runtime_heartbeat_at_utc": str(
+            daemon_map.get("last_heartbeat_at_utc") or ""
+        ).strip() or None,
+    }
+
+
 class PublicMcpGateway:
     def __init__(
         self,
@@ -240,6 +257,7 @@ class PublicMcpGateway:
     ) -> None:
         config.validate(token_verifier_configured=token_verifier is not None)
         self.config = config
+        self._gateway_instance_id = secrets.token_hex(16)
         self._rate_limiter = _PublicRateLimiter()
         self._internal_token = secrets.token_urlsafe(48)
         if backend is None:
@@ -453,6 +471,9 @@ class PublicMcpGateway:
                 "protocol_version": MCP_PROTOCOL_VERSION,
                 "package_version": PACKAGE_VERSION_FULL,
                 "public_transport": "streamable_http",
+                "gateway_instance_id": self._gateway_instance_id,
+                "observed_at_utc": _utc_now_iso(),
+                **_runtime_binding(status),
             }
             return CallToolResult(
                 content=[
@@ -485,6 +506,9 @@ class PublicMcpGateway:
             "protocol_version": MCP_PROTOCOL_VERSION,
             "package_version": PACKAGE_VERSION_FULL,
             "public_transport": "streamable_http",
+            "gateway_instance_id": self._gateway_instance_id,
+            "observed_at_utc": _utc_now_iso(),
+            **_runtime_binding(status),
         }
 
     def _public_memory_status(self) -> dict[str, Any]:
@@ -564,20 +588,32 @@ class PublicMcpGateway:
                     "status": "live",
                     "gateway_live": True,
                     "package_version": PACKAGE_VERSION_FULL,
+                    "gateway_instance_id": self._gateway_instance_id,
+                    "observed_at_utc": _utc_now_iso(),
                 }
             )
 
         @self.mcp.custom_route(READINESS_PATH, methods=["GET"])
         async def readyz(_request: Request) -> Response:
+            binding: dict[str, str | None] = {
+                "runtime_instance_id": None,
+                "runtime_version": None,
+                "runtime_heartbeat_at_utc": None,
+            }
             try:
                 status = self._status_snapshot()
                 ready = _runtime_ready(status)
+                binding = _runtime_binding(status)
             except Exception:
                 ready = False
             return JSONResponse(
                 {
                     "status": "ready" if ready else "not_ready",
                     "ready": ready,
+                    "package_version": PACKAGE_VERSION_FULL,
+                    "gateway_instance_id": self._gateway_instance_id,
+                    "observed_at_utc": _utc_now_iso(),
+                    **binding,
                 },
                 status_code=200 if ready else 503,
             )

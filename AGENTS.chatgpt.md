@@ -47,8 +47,8 @@ main.py
 
 Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego zdalnego runtime Jaźni, preferuj tę trasę bez wykonywania lokalnego probe executora, ale tylko po zweryfikowaniu właściwego transportu. Dopuszczalne są dwie równorzędne warstwy transportowe do **tego samego** persistent runtime:
 
-- publiczny MCP 2026-07-28 Streamable HTTP: skonfigurowany endpoint HTTPS, zweryfikowane uwierzytelnienie, zgodność protokołu, `/healthz` live, `/readyz` ready oraz jawna capability aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_public_streamable_http_failover()`;
-- OpenAI Secure MCP Tunnel: `process_running=true`, `healthy=true`, `ready=true` oraz jawna capability odpowiadającej aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_remote_runtime_failover()`.
+- publiczny MCP 2026-07-28 Streamable HTTP: skonfigurowany endpoint HTTPS, zweryfikowane uwierzytelnienie, zgodność protokołu, `/healthz` live, `/readyz` ready, zgodny `gateway_instance_id`, niepusty `runtime_instance_id`, dokładnie oczekiwana `runtime_version`, świeży `observed_at_utc` i heartbeat runtime oraz jawna capability aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_public_streamable_http_failover()`;
+- OpenAI Secure MCP Tunnel: `process_running=true`, `healthy=true`, `ready=true`, niepusty `runtime_instance_id`, dokładnie oczekiwana `runtime_version`, świeży status/heartbeat oraz jawna capability odpowiadającej aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_remote_runtime_failover()`.
 
 Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego statusu nie wystarcza. Żadna z tych tras nie jest drugim runtime i żadna nie daje prawa do pokazania tekstu bez accepted-turn/finalization lineage.
 
