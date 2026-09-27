@@ -126,6 +126,11 @@ def install_runtime_daemon_lifecycle_hotfix() -> None:
         return
     from latka_jazn.core import runtime_daemon as rd
 
+    if getattr(rd, "_NATIVE_DAEMON_LIFECYCLE_IDENTITY_V2", False):
+        _INSTALLED = True
+        setattr(rd, "_v50_runtime_lifecycle_hotfix_installed", True)
+        return
+
     if getattr(rd, "_v50_runtime_lifecycle_hotfix_installed", False):
         _INSTALLED = True
         return
