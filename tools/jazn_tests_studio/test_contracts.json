@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.87.1",
-  "active_definition_count": 1698,
+  "system_version": "16.3.25.5.87.2",
+  "active_definition_count": 1704,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25986,6 +25986,57 @@
       "description_source": "source_identity",
       "line": 28
     },
+    "tests/test_process_identity.py::test_process_fingerprint_binds_current_pid_to_creation_identity": {
+      "path": "tests/test_process_identity.py",
+      "name": "test_process_fingerprint_binds_current_pid_to_creation_identity",
+      "purpose": "Process fingerprint binds current pid to creation identity",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_process_identity.py::test_process_fingerprint_rejects_forged_creation_identity": {
+      "path": "tests/test_process_identity.py",
+      "name": "test_process_fingerprint_rejects_forged_creation_identity",
+      "purpose": "Process fingerprint rejects forged creation identity",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_process_identity.py::test_process_fingerprint_reports_dead_pid_without_identity_probe": {
+      "path": "tests/test_process_identity.py",
+      "name": "test_process_fingerprint_reports_dead_pid_without_identity_probe",
+      "purpose": "Process fingerprint reports dead pid without identity probe",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
     "tests/test_professional_turn_runtime.py::test_remote_runtime_is_preferred_only_when_fully_verified": {
       "path": "tests/test_professional_turn_runtime.py",
       "name": "test_remote_runtime_is_preferred_only_when_fully_verified",
@@ -35640,6 +35691,60 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 176
+    },
+    "tests/test_supervisor_identity_ownership.py::test_supervisor_reclaims_live_reused_pid_record": {
+      "path": "tests/test_supervisor_identity_ownership.py",
+      "name": "test_supervisor_reclaims_live_reused_pid_record",
+      "purpose": "Supervisor reclaims live reused pid record",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_supervisor_identity_ownership.py::test_supervisor_refuses_live_owner_when_identity_is_unavailable": {
+      "path": "tests/test_supervisor_identity_ownership.py",
+      "name": "test_supervisor_refuses_live_owner_when_identity_is_unavailable",
+      "purpose": "Supervisor refuses live owner when identity is unavailable",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_supervisor_identity_ownership.py::test_supervisor_status_requires_fingerprint_bound_owner": {
+      "path": "tests/test_supervisor_identity_ownership.py",
+      "name": "test_supervisor_status_requires_fingerprint_bound_owner",
+      "purpose": "Supervisor status requires fingerprint bound owner",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.process_identity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",
