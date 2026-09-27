@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime
 import os
 from pathlib import Path
 import shlex
@@ -9,6 +10,10 @@ import subprocess
 import sys
 from typing import Any, Mapping, Sequence
 
+from latka_jazn.mcp.remote_runtime import (
+    DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
+    observation_is_fresh,
+)
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("secure_mcp_tunnel_transport")
@@ -268,22 +273,56 @@ def classify_remote_runtime_failover(
     payload: Mapping[str, Any] | None,
     *,
     host_connector_capability_available: bool | None,
+    expected_runtime_version: str = PACKAGE_VERSION_FULL,
+    now_utc: datetime | None = None,
+    max_evidence_age_seconds: float = DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
 ) -> dict[str, Any]:
-    """Combine managed tunnel readiness with host connector capability evidence.
+    """Combine tunnel readiness with one fresh canonical Jaźń runtime binding."""
 
-    The route fails closed unless both sides are explicitly verified. This is
-    the only classifier in this module whose positive result may safely populate
-    HostExecutorObservation's ``remote_runtime_transport_available`` field after
-    a local executor failure.
-    """
-
-    tunnel = classify_tunnel_runtime_status(payload)
+    value: Mapping[str, Any] = payload if isinstance(payload, Mapping) else {}
+    tunnel = classify_tunnel_runtime_status(value)
     connector_ready = host_connector_capability_available is True
-    route_ready = bool(tunnel["tunnel_transport_ready"] and connector_ready)
+    runtime_instance_id = str(
+        value.get("runtime_instance_id")
+        or value.get("daemon_instance_id")
+        or ""
+    ).strip()
+    runtime_version = str(value.get("runtime_version") or "").strip()
+    runtime_binding_verified = bool(runtime_instance_id)
+    runtime_version_verified = bool(
+        expected_runtime_version
+        and runtime_version == str(expected_runtime_version)
+    )
+    evidence_fresh = bool(
+        observation_is_fresh(
+            value.get("observed_at_utc"),
+            now_utc=now_utc,
+            max_age_seconds=max_evidence_age_seconds,
+        )
+        and observation_is_fresh(
+            value.get("runtime_heartbeat_at_utc")
+            or value.get("last_heartbeat_at_utc"),
+            now_utc=now_utc,
+            max_age_seconds=max_evidence_age_seconds,
+        )
+    )
+    route_ready = bool(
+        tunnel["tunnel_transport_ready"]
+        and connector_ready
+        and runtime_binding_verified
+        and runtime_version_verified
+        and evidence_fresh
+    )
     if not tunnel["tunnel_transport_ready"]:
         reason = "secure_mcp_tunnel_not_fully_ready"
     elif not connector_ready:
         reason = "chatgpt_connector_capability_not_verified"
+    elif not runtime_binding_verified:
+        reason = "secure_mcp_runtime_binding_not_verified"
+    elif not runtime_version_verified:
+        reason = "secure_mcp_runtime_version_mismatch"
+    elif not evidence_fresh:
+        reason = "secure_mcp_runtime_evidence_stale"
     else:
         reason = "secure_mcp_remote_failover_ready"
     return {
@@ -294,13 +333,19 @@ def classify_remote_runtime_failover(
         "ready": tunnel["ready"],
         "tunnel_transport_ready": tunnel["tunnel_transport_ready"],
         "host_connector_capability_available": connector_ready,
+        "runtime_instance_id": runtime_instance_id,
+        "runtime_version": runtime_version,
+        "runtime_binding_verified": runtime_binding_verified,
+        "runtime_version_verified": runtime_version_verified,
+        "evidence_fresh": evidence_fresh,
         "remote_runtime_transport_available": route_ready,
         "execution_route": "remote_runtime" if route_ready else "none",
         "next_action": "use_remote_runtime_transport" if route_ready else "keep_remote_runtime_unverified",
         "reason_code": reason,
         "truth_boundary": (
-            "Remote failover readiness is true only when the managed Secure MCP Tunnel is fully ready and the "
-            "current ChatGPT host explicitly exposes the matching connector/app capability. It does not prove an "
-            "accepted or finalized visible Jaźń turn."
+            "Remote failover readiness is true only when the managed Secure MCP Tunnel is fully ready, "
+            "the current ChatGPT host exposes the matching connector/app capability, and the observation "
+            "is bound to one fresh canonical Jaźń daemon instance and expected runtime version. "
+            "It does not prove an accepted or finalized visible Jaźń turn."
         ),
     }
