@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "21d859617aec3842599db4c219722855193717ae",
-    "base_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+    "base_commit": "679ebf5f04f2b7cae310301b6eec829d9fc0a247",
+    "base_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "679ebf5f04f2b7cae310301b6eec829d9fc0a247",
