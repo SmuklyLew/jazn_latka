@@ -1,6 +1,6 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja jest wyłącznie cienkim bootstrapem. Nie tworzy executora, connectora, aplikacji, tunelu, procesu ani runtime. Jej zadaniem jest rozpoznać capability faktycznie dostępne w bieżącej powierzchni ChatGPT, znaleźć i zweryfikować SYSTEM, a następnie przekazać sterowanie jego własnym `AGENTS.md` i właściwym runbookom. Nie kopiuj tutaj wersjonowanego lifecycle, routingu, pamięci, recovery, finalizacji, truth gate ani persony.
+Ta instrukcja jest wyłącznie cienkim bootstrapem. Nie tworzy executora, connectora, aplikacji, tunelu, procesu ani runtime. Jej zadaniem jest rozpoznać capability faktycznie dostępne w bieżącej powierzchni ChatGPT, znaleźć i zweryfikować SYSTEM, a następnie przekazać sterowanie jego własnym `AGENTS.md` i właściwym runbookom. Nie kopiuj tutaj wersjonowanego lifecycle, routingu, pamięci, recovery, finalizacji, truth gate ani warstwy dialogowej.
 
 ## 1. Najpierw ustal rzeczywiste capability hosta
 
