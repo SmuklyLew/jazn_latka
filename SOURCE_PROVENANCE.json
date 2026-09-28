@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c41f4ffd69a087ff44c23a7d9da1475ed80f6da1",
-    "base_version": "16.3.25.5.87.7-chatgpt-memory-persistent-runtime-integration-convergence",
+    "base_commit": "03c4e5650f1d2cd403afd890d4ef66518c6c9774",
+    "base_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "03c4e5650f1d2cd403afd890d4ef66518c6c9774",
