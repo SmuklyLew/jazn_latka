@@ -3,11 +3,11 @@
   "version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
   "runtime_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
   "package_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-  "generated_at_utc": "2026-09-28T22:23:00+00:00",
-  "updated_at_utc": "2026-09-28T22:23:00+00:00",
+  "generated_at_utc": "2026-09-28T22:26:07+00:00",
+  "updated_at_utc": "2026-09-28T22:26:07+00:00",
   "start_file": "run.py",
-  "file_count": 1808,
-  "static_file_count": 1808,
+  "file_count": 1810,
+  "static_file_count": 1810,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -273,7 +273,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3011,
-      "sha256": "5aecf9b85549d7c6afdf987be0b7a90f08f46d9f4d5f291cc86d0ed0f9615bf5",
+      "sha256": "7c3415216654bd9516db8ca3d3122bf909b031fd0595605601a8c3f0a30feae8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3754,9 +3754,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/host_operation_retry.py",
+      "size_bytes": 1991,
+      "sha256": "ac3e51e461859e7be2b72267bf0973b09a98dad5d74b97c03606c320b0964b0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/host_operations.py",
-      "size_bytes": 18815,
-      "sha256": "4d709c6ce85148719ce02f3e7f21f0ed70332a143b4bbefc17bf4761a9b0281a",
+      "size_bytes": 21716,
+      "sha256": "a98f66095c3583788984deaf3b962fddb6342fd809361d234d9734e9dacf4388",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13825,6 +13834,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_host_operation_memory_converge_retry.py",
+      "size_bytes": 1781,
+      "sha256": "ff311f78e5921d2e3e299a10998dc3569f64d4bc82209ad215d708c4f5fa7d62",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_host_operations.py",
       "size_bytes": 4297,
       "sha256": "4535a7987e0f7b21695b102a94be4813b0abb3951ad4d85386fc91e53312f1ca",
@@ -16139,8 +16157,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1629667,
-      "sha256": "b2c61f5f788f4b987dc1ee786ca71163042c402f893e04775995e09fafe5d4d2",
+      "size_bytes": 1632088,
+      "sha256": "e6ae65f99b03e93e0dafdd4da9d826674d87c9c87a65598720d4d882e9e4b34f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
