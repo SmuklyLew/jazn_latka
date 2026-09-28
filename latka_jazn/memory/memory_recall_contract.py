@@ -71,6 +71,10 @@ class MemoryRecallContractBuilder:
                         "source_layer": raw_metadata.get("source_layer"),
                         "source_database": raw_metadata.get("source_database"),
                         "source_locator": raw_metadata.get("source_locator"),
+                        "gateway_source_kind": raw_metadata.get("gateway_source_kind"),
+                        "gateway_source_origin": raw_metadata.get("gateway_source_origin"),
+                        "selected_canonical": raw_metadata.get("selected_canonical") is True,
+                        "autobiographical_source_ready": raw_metadata.get("autobiographical_source_ready") is True,
                         "evidence_sources": raw_metadata.get("evidence_sources") or [],
                     },
                 ).to_dict())
