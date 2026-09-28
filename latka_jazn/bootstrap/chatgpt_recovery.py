@@ -652,9 +652,91 @@ def _auto_attach_memory_before_daemon(
         validation = validate_large_memory(destination, full=False)
     report["validation_after_recovery"] = validation
     report["sqlite_after"] = _sqlite_health(destination)
-    report["ok"] = bool(validation.get("ok") is True and report["sqlite_after"].get("ok") is True)
-    report["state"] = "memory_attached_ready" if report["ok"] else "memory_attached_not_ready"
+    from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
+
+    living_readiness = LivingMemoryGateway(destination).readiness()
+    report["living_memory_readiness"] = living_readiness
+    policy_satisfied = living_readiness.get("memory_readiness_policy_satisfied") is True
+    report["ok"] = bool(
+        validation.get("ok") is True
+        and report["sqlite_after"].get("ok") is True
+        and policy_satisfied
+    )
+    if report["ok"]:
+        report["state"] = "memory_attached_ready"
+    elif not policy_satisfied:
+        report["state"] = "memory_attached_readiness_policy_blocked"
+    else:
+        report["state"] = "memory_attached_not_ready"
     return report
+
+def converge_memory_before_daemon(
+    *,
+    destination: Path,
+    parts_dir: Path,
+    memory_zip_name: str | None = None,
+    work_dir: Path | None = None,
+    time_budget_seconds: float | None = 25.0,
+    run_crc: bool = True,
+    force_reextract: bool = False,
+) -> dict[str, Any]:
+    """Converge one MEMORY package into a verified inactive runtime.
+
+    This is the public high-level maintenance operation for MEMORY delivered
+    after SYSTEM installation. It intentionally reuses the same discovery,
+    generator-v2 adapter, safe v3 repack, attach, recovery and readiness gates
+    as runtime-bootstrap auto-memory.
+    """
+
+    runtime_root = Path(destination).expanduser().resolve()
+    source_dir = Path(parts_dir).expanduser().resolve()
+    workspace = Path(work_dir).expanduser().resolve() if work_dir else (
+        workspace_runtime_path(runtime_root) / "memory_converge"
+    )
+    daemon = status_daemon(JaznConfig(root=runtime_root))
+    if daemon.get("active_state") in {"active_trusted", "active_degraded"}:
+        return {
+            "ok": False,
+            "state": "runtime_active_memory_converge_blocked",
+            "runtime_root": str(runtime_root),
+            "parts_dir": str(source_dir),
+            "daemon_status_before": daemon,
+            "truth_boundary": (
+                "MEMORY convergence is a maintenance transaction and never mutates "
+                "persistent autobiographical memory while the daemon is active."
+            ),
+        }
+
+    discovery = _discover_memory_package(source_dir, memory_zip_name)
+    selected_name = memory_zip_name
+    if (
+        selected_name is None
+        and discovery.get("ok") is True
+        and discovery.get("state") == "memory_package_discovered"
+    ):
+        selected_name = str(discovery.get("package_name") or "") or None
+
+    result = _auto_attach_memory_before_daemon(
+        destination=runtime_root,
+        parts_dir=source_dir,
+        work_dir=workspace,
+        memory_zip_name=selected_name,
+        time_budget_seconds=time_budget_seconds,
+        run_crc=run_crc,
+        force_reextract=force_reextract,
+    )
+    result["operation"] = "memory-converge"
+    result["runtime_root"] = str(runtime_root)
+    result["parts_dir"] = str(source_dir)
+    result["selected_memory_zip_name"] = selected_name
+    result["daemon_status_before"] = daemon
+    result["truth_boundary"] = (
+        "A successful convergence proves verified package/recovery/readiness state. "
+        "It does not prove that a ChatGPT host can create an executor or that a "
+        "visible turn has been accepted by Jaźń."
+    )
+    return result
+
 
 def _verify_memory_package_manifest(root: Path) -> dict[str, Any]:
     root = Path(root).resolve()
