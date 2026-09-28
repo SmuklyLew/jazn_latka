@@ -4681,7 +4681,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 213
+      "line": 219
     },
     "tests/test_chatgpt_host_runtime_observability.py::test_preflight_rejects_non_string_diagnostic_metadata": {
       "path": "tests/test_chatgpt_host_runtime_observability.py",
@@ -4708,7 +4708,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 226
+      "line": 232
     },
     "tests/test_chatgpt_library_discovery.py::test_project_loader_searches_library_before_declaring_system_zip_absent": {
       "path": "tests/test_chatgpt_library_discovery.py",
