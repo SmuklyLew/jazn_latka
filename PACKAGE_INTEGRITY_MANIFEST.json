@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-  "runtime_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-  "package_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-  "generated_at_utc": "2026-09-28T22:26:07+00:00",
-  "updated_at_utc": "2026-09-28T22:26:07+00:00",
+  "version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+  "runtime_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+  "package_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+  "generated_at_utc": "2026-09-28T22:28:53+00:00",
+  "updated_at_utc": "2026-09-28T22:28:53+00:00",
   "start_file": "run.py",
-  "file_count": 1810,
-  "static_file_count": 1810,
+  "file_count": 1813,
+  "static_file_count": 1813,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3011,
-      "sha256": "7c3415216654bd9516db8ca3d3122bf909b031fd0595605601a8c3f0a30feae8",
+      "size_bytes": 2999,
+      "sha256": "91ff23a8b98821bef35f4b6bac392b7d488846a0c3a761f4fd815f6826291ed1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2684,8 +2684,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 39629,
-      "sha256": "2121c687d8663e20bc538223c14c12b3f3a25b9c7e637731a4ac1a489f67de50",
+      "size_bytes": 41034,
+      "sha256": "f2130ef730373d1f4ca3f33cc416ddf2dd6f75e2b5c8981fd764551703f622d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5905,6 +5905,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/memory/sentinel_recall.py",
+      "size_bytes": 6263,
+      "sha256": "dc3cb7ebccdf1ba1925e9c8c50f95ba7152ffc27833085e24c3e0fa73e7f57a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/memory/session_continuity.py",
       "size_bytes": 9681,
       "sha256": "a63112c7b9f26239224e0b257ae2f8793c192d0af10e0c6db0ff998127750be3",
@@ -8588,8 +8597,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6652,
-      "sha256": "b35fa29ed428b920b165b56367ad1eb02102b976c17e22b21eda7d90e1dad567",
+      "size_bytes": 6656,
+      "sha256": "b7d755c25836977ec779f99925b8e2c9b33e87ae416a9c7afbafc1a6460ff767",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12781,6 +12790,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.88.0-autobiographical-memory-readiness-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2397,
+      "sha256": "18644e474e5029bdb83c9d9855bb4941d855ebe8703c9cf293f317a24fb1ebab",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13052,8 +13070,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2397,
-      "sha256": "18644e474e5029bdb83c9d9855bb4941d855ebe8703c9cf293f317a24fb1ebab",
+      "size_bytes": 2391,
+      "sha256": "ca31af6f45e55b24ae024af2b75669250641321b00fa171040d5a86e5d132385",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13835,8 +13853,8 @@
     },
     {
       "path": "tests/test_host_operation_memory_converge_retry.py",
-      "size_bytes": 1781,
-      "sha256": "ff311f78e5921d2e3e299a10998dc3569f64d4bc82209ad215d708c4f5fa7d62",
+      "size_bytes": 3798,
+      "sha256": "ff7e0208e406885c47c6011d0a26b71285bd6377bccf6e7395f00ee5b7b57f49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14557,6 +14575,15 @@
       "path": "tests/test_memory_round_trip_acceptance.py",
       "size_bytes": 14182,
       "sha256": "67ff5ffb9315cd71960c99fecd80340fd8ecff481f5724d700bd7cfac05dbdb8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_sentinel_recall.py",
+      "size_bytes": 4391,
+      "sha256": "53067c99b30bbf2927c2fda2a713799d226e5fd7d57c04911e138395469e2e8b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16157,8 +16184,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1632088,
-      "sha256": "e6ae65f99b03e93e0dafdd4da9d826674d87c9c87a65598720d4d882e9e4b34f",
+      "size_bytes": 1635297,
+      "sha256": "41aeacf82f269c581e940fd5058484e2e71bf43d155f534f14a55e50b24250b6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16742,11 +16769,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+  "release_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-    "package_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
-    "release_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence"
+    "runtime_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+    "package_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+    "release_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
