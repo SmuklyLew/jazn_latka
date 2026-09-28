@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Uruchom cięższe opcjonalne probe capabilities (np. lokalne Stanza); nigdy nie pobiera modeli.",
     )
 
-    for name in ("bridge-discovery", "self-test"):
+    for name in ("bridge-discovery", "self-test", "host-diagnose"):
         child = sub.add_parser(name, allow_abbrev=False)
         _add_common(child)
 
@@ -179,6 +179,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Wyczyść staging dołączania pamięci; nigdy nie omija weryfikacji systemu ani manifestu memory.",
     )
+
+    child = sub.add_parser("memory-sentinel", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--manifest", type=Path, required=True)
+    child.add_argument("--limit", type=int, default=12)
 
     for name in ("memory-prepare", "memory-status"):
         child = sub.add_parser(name, allow_abbrev=False)
@@ -391,10 +396,10 @@ def main(
 
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http",
-        "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
+        "host-finalize", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
-        "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+        "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-sentinel", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
@@ -409,6 +414,38 @@ def main(
         parser.print_help()
         return 0
     root = Path(ns.root).resolve()
+
+    if ns.command == "host-diagnose":
+        from latka_jazn.core.host_spawn_diagnostics import build_host_spawn_diagnostics
+
+        payload = build_host_spawn_diagnostics(root)
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok") is True else 1
+
+    if ns.command == "memory-sentinel":
+        from latka_jazn.memory.sentinel_recall import run_memory_sentinel
+
+        try:
+            payload = run_memory_sentinel(
+                root,
+                manifest=ns.manifest,
+                limit=ns.limit,
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+            _emit(
+                {
+                    "schema_version": "memory_sentinel_recall/v1",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "private_queries_emitted": False,
+                    "private_excerpts_emitted": False,
+                },
+                as_json=True,
+            )
+            return 2
+        _emit(payload, as_json=True)
+        return 0 if payload.get("ok") is True else 1
 
     if ns.command == "memory-plan":
         return dispatch_legacy([
