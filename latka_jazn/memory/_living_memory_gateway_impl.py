@@ -199,6 +199,19 @@ class LivingMemoryGateway:
                     except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
                         issues.append(f"runtime_write_v2:{tier_path}:{type(exc).__name__}:{exc}")
                     else:
+                        tier_hits = [
+                            replace(
+                                hit,
+                                metadata={
+                                    **(hit.metadata or {}),
+                                    "gateway_source_kind": str(source.get("source_kind") or "transactional_tier_memory"),
+                                    "gateway_source_origin": str(source.get("origin") or ""),
+                                    "selected_canonical": bool(source.get("selected_canonical")),
+                                    "autobiographical_source_ready": bool(source.get("autobiographical_source_ready")),
+                                },
+                            )
+                            for hit in tier_hits
+                        ]
                         hits.extend(tier_hits)
                 continue
             paths = {key: Path(value) for key, value in (source.get("database_paths") or {}).items()}
@@ -232,6 +245,19 @@ class LivingMemoryGateway:
                                 path, candidate_query, mode=mode, limit=per_layer,
                                 temporal_scope=temporal_scope, should_continue=can_continue,
                             )
+                        found = [
+                            replace(
+                                hit,
+                                metadata={
+                                    **(hit.metadata or {}),
+                                    "gateway_source_kind": str(source.get("source_kind") or ""),
+                                    "gateway_source_origin": str(source.get("origin") or ""),
+                                    "selected_canonical": bool(source.get("selected_canonical")),
+                                    "autobiographical_source_ready": bool(source.get("autobiographical_source_ready")),
+                                },
+                            )
+                            for hit in found
+                        ]
                         if query_index == 0:
                             found = [
                                 replace(
