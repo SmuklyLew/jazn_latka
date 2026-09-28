@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
-  "runtime_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
-  "package_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
-  "generated_at_utc": "2026-09-28T16:13:13+00:00",
-  "updated_at_utc": "2026-09-28T16:13:13+00:00",
+  "version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+  "runtime_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+  "package_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+  "generated_at_utc": "2026-09-28T16:14:43+00:00",
+  "updated_at_utc": "2026-09-28T16:14:43+00:00",
   "start_file": "run.py",
-  "file_count": 1799,
-  "static_file_count": 1799,
+  "file_count": 1800,
+  "static_file_count": 1800,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -200,8 +200,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 32073,
-      "sha256": "dbbe78be95889f83fd33dcc69f8e72a30b3a6d4140be0bb6f714afe6d66ace26",
+      "size_bytes": 33106,
+      "sha256": "d52be82f9b5d0ee300ae86f9f7edd8ae38d83f8e1f96015afb5dfa86eb962198",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3023,
-      "sha256": "af0fde8a60041549ea4c0d27d3fe759807822be711b8a11d00cf76284533da5f",
+      "size_bytes": 2969,
+      "sha256": "da350fec17b2d5052c54da8ae516d9d7ceb195821c26c696f2953da68d079302",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2180,8 +2180,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 4621,
-      "sha256": "bf61acd3729c21d888777ea2cc5feaf6fde6b0b502386a1dd109379b45350856",
+      "size_bytes": 4632,
+      "sha256": "8130d3c0a1e4bec698c01c32b8fee1cf5e9c53602490372c170de91a23eba368",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8543,8 +8543,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6584,
-      "sha256": "5b31f8aa46e7199d4c6a47356732b15e062756abdfb3ca080180d33b6ace4979",
+      "size_bytes": 6580,
+      "sha256": "6f4b51e91c8f3153fb792e12bfa0671fd42a53b0c8404bead9c59700b2342714",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12997,6 +12997,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2227,
+      "sha256": "d1a230787316890c46268f8552805c6d754a593497692046a3fd3e2f613927cd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_execution_route_contract.py",
       "size_bytes": 4500,
       "sha256": "898829a69927a234983f03521e5d3ad394ad41c166b41558c49e461aab9d4f5f",
@@ -16058,8 +16067,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1603356,
-      "sha256": "26249f271bfab05dd12f652e9264e586c53713fd2e39b0e1264a02441fcb168a",
+      "size_bytes": 1607209,
+      "sha256": "0c6a99c2b4a9a44f3556c6bc1c8326d56fbf2ef7e10304c0020d8409d6b5ac8b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16643,11 +16652,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
+  "release_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
-    "package_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence",
-    "release_version": "16.3.25.5.87.8-chatgpt-host-runtime-observability-convergence"
+    "runtime_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+    "package_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+    "release_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
