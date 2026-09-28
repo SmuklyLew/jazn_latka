@@ -45,6 +45,13 @@ _MEMORY_ITEM_KEYS = (
     "timestamp",
     "confidence",
     "relevance_reason",
+    "semantic_source_type",
+    "provenance_label",
+    "truth_status",
+    "source_database",
+    "source_locator",
+    "gateway_source_kind",
+    "autobiographical_source_ready",
 )
 _EXTERNAL_TOOL_EVIDENCE_MAX_ITEMS = 8
 _EXTERNAL_TOOL_SOURCE_MAX_ITEMS = 16
