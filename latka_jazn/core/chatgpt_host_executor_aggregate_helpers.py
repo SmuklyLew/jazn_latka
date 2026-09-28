@@ -8,6 +8,7 @@ from latka_jazn.core.chatgpt_host_executor_enums import (
     HostExecutionRoute,
     HostRecoveryAction,
 )
+from latka_jazn.core.chatgpt_host_executor_failure_codes import classify_prespan_error
 from latka_jazn.core.chatgpt_host_executor_observation import HostExecutorObservation
 from latka_jazn.core.chatgpt_host_executor_route_policy import HostAggregateRouteDecision
 from latka_jazn.core.chatgpt_host_handoff_state import HostHandoffState
@@ -65,6 +66,12 @@ def surface_payload(
 ) -> dict[str, Any]:
     payload = decision.to_dict()
     payload.pop("schema_version", None)
+
+    prespawn = (
+        classify_prespan_error(observation.error_class)
+        if not observation.process_created and observation.error_class
+        else None
+    )
     payload.update(
         surface=observation.surface,
         error_class=observation.error_class,
@@ -73,6 +80,25 @@ def surface_payload(
         host_request_id=observation.host_request_id,
         observed_at_utc=observation.observed_at_utc,
         process_created=observation.process_created,
+        normalized_reason_code=(prespawn.reason_code if prespawn else None),
+        retry_class=(prespawn.retry_class if prespawn else None),
+        same_request_retry_allowed=(
+            prespawn.same_request_retry_allowed if prespawn else False
+        ),
+        switch_surface_preferred=(
+            prespawn.switch_surface_preferred if prespawn else False
+        ),
+        spawn_phase=observation.spawn_phase,
+        intended_cwd=observation.intended_cwd,
+        command_fingerprint_sha256=observation.command_fingerprint_sha256,
+        executor_allocation_state=observation.executor_allocation_state,
+        materialization_state=observation.materialization_state,
+        mount_preparation_state=observation.mount_preparation_state,
+        pid=observation.pid,
+        observed_cwd=observation.observed_cwd,
+        platform=observation.platform,
+        effective_uid=observation.effective_uid,
+        effective_gid=observation.effective_gid,
         remote_runtime_transport_available=observation.remote_runtime_transport_available,
         remote_runtime_transport=observation.remote_runtime_transport,
         remote_runtime_reason_code=observation.remote_runtime_reason_code,

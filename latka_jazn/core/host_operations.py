@@ -9,7 +9,7 @@ not replace lifecycle logic: the worker always re-enters the public ``run.py``
 control plane.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import argparse
 import hashlib
 import json
@@ -19,8 +19,13 @@ import re
 import secrets
 import subprocess
 import sys
+import time
 from typing import Any, Mapping, Sequence
 
+from latka_jazn.core.host_operation_retry import (
+    classify_host_operation_retry,
+    retry_policy_for_kind,
+)
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -235,6 +240,7 @@ def submit_host_operation(
     stdout_path = operation_stdout_path(runtime_root, normalized_id)
     stderr_path = operation_stderr_path(runtime_root, normalized_id)
     now = utc_now_iso()
+    retry_policy = retry_policy_for_kind(normalized_kind)
     record: dict[str, Any] = {
         "schema_version": HOST_OPERATION_SCHEMA_VERSION,
         "package_version": PACKAGE_VERSION_FULL,
@@ -251,6 +257,12 @@ def submit_host_operation(
         "worker_pid": None,
         "command_pid": None,
         "returncode": None,
+        "attempt": 0,
+        "max_attempts": retry_policy.max_attempts,
+        "backoff_schedule_seconds": list(retry_policy.backoff_seconds),
+        "last_error_code": None,
+        "last_returncode": None,
+        "next_attempt_not_before_utc": None,
         "stdout_log": str(stdout_path),
         "stderr_log": str(stderr_path),
         "retry_policy": "reuse_same_operation_id_never_replay_with_new_id_after_ambiguous_transport",
@@ -420,75 +432,143 @@ def run_host_operation_worker(root: Path, *, operation_id: str) -> int:
     stdout_path = operation_stdout_path(runtime_root, normalized_id)
     stderr_path = operation_stderr_path(runtime_root, normalized_id)
     kind = str(record.get("kind") or "")
+    retry_policy = retry_policy_for_kind(kind)
     creationflags, extra_popen = detached_process_options()
-    try:
-        with stdout_path.open("ab") as out, stderr_path.open("ab") as err:
-            proc = subprocess.Popen(
-                target_argv,
-                cwd=str(runtime_root),
-                stdin=subprocess.DEVNULL,
-                stdout=out,
-                stderr=err,
-                creationflags=creationflags,
-                **extra_popen,
+
+    for attempt in range(1, retry_policy.max_attempts + 1):
+        _worker_update(
+            runtime_root,
+            normalized_id,
+            status="running",
+            phase="target_attempt_running",
+            attempt=attempt,
+            next_attempt_not_before_utc=None,
+        )
+        try:
+            with stdout_path.open("ab") as out, stderr_path.open("ab") as err:
+                proc = subprocess.Popen(
+                    target_argv,
+                    cwd=str(runtime_root),
+                    stdin=subprocess.DEVNULL,
+                    stdout=out,
+                    stderr=err,
+                    creationflags=creationflags,
+                    **extra_popen,
+                )
+                _worker_update(
+                    runtime_root,
+                    normalized_id,
+                    status="running",
+                    phase="target_spawned",
+                    command_pid=int(proc.pid),
+                    started_at_utc=utc_now_iso(),
+                    attempt=attempt,
+                )
+                if kind == "supervisor-start":
+                    # The supervisor is intentionally the long-lived owner. The
+                    # operation worker only proves process creation and then exits.
+                    try:
+                        returncode = proc.wait(timeout=0.25)
+                    except subprocess.TimeoutExpired:
+                        _worker_update(
+                            runtime_root,
+                            normalized_id,
+                            status="completed",
+                            phase="supervisor_spawned",
+                            returncode=None,
+                            completed_at_utc=utc_now_iso(),
+                            supervisor_pid=int(proc.pid),
+                            attempt=attempt,
+                        )
+                        return 0
+                    _worker_update(
+                        runtime_root,
+                        normalized_id,
+                        status="failed",
+                        phase="supervisor_exited_early",
+                        returncode=int(returncode),
+                        completed_at_utc=utc_now_iso(),
+                        error_code="supervisor_exited_early",
+                        last_returncode=int(returncode),
+                        attempt=attempt,
+                    )
+                    return int(returncode or 34)
+                returncode = int(proc.wait())
+        except OSError as exc:
+            # Spawn failures are terminal here. Retrying EACCES/ENOENT/noexec or
+            # equivalent host/process errors would hide the real boundary.
+            _worker_update(
+                runtime_root,
+                normalized_id,
+                status="failed",
+                phase="target_spawn_failed",
+                error_code="host_operation_target_spawn_failed",
+                error=f"{type(exc).__name__}: {exc}",
+                completed_at_utc=utc_now_iso(),
+                attempt=attempt,
             )
+            return 35
+
+        if returncode == 0:
+            _worker_update(
+                runtime_root,
+                normalized_id,
+                status="completed",
+                phase="target_completed",
+                returncode=0,
+                last_returncode=0,
+                last_error_code=None,
+                completed_at_utc=utc_now_iso(),
+                attempt=attempt,
+            )
+            return 0
+
+        retry = classify_host_operation_retry(
+            kind=kind,
+            returncode=returncode,
+            attempt=attempt,
+        )
+        if retry.retry_allowed:
+            backoff = float(retry.backoff_seconds or 0.0)
+            next_attempt = datetime.now(timezone.utc) + timedelta(seconds=backoff)
             _worker_update(
                 runtime_root,
                 normalized_id,
                 status="running",
-                phase="target_spawned",
-                command_pid=int(proc.pid),
-                started_at_utc=utc_now_iso(),
+                phase="retry_backoff",
+                returncode=None,
+                last_returncode=returncode,
+                last_error_code=retry.error_code,
+                next_attempt_not_before_utc=next_attempt.isoformat(),
+                attempt=attempt,
             )
-            if kind == "supervisor-start":
-                # The supervisor is intentionally the long-lived owner. The
-                # operation worker only proves process creation and then exits.
-                try:
-                    returncode = proc.wait(timeout=0.25)
-                except subprocess.TimeoutExpired:
-                    _worker_update(
-                        runtime_root,
-                        normalized_id,
-                        status="completed",
-                        phase="supervisor_spawned",
-                        returncode=None,
-                        completed_at_utc=utc_now_iso(),
-                        supervisor_pid=int(proc.pid),
-                    )
-                    return 0
-                _worker_update(
-                    runtime_root,
-                    normalized_id,
-                    status="failed",
-                    phase="supervisor_exited_early",
-                    returncode=int(returncode),
-                    completed_at_utc=utc_now_iso(),
-                    error_code="supervisor_exited_early",
-                )
-                return int(returncode or 34)
-            returncode = proc.wait()
-    except OSError as exc:
+            if backoff > 0:
+                time.sleep(backoff)
+            continue
+
         _worker_update(
             runtime_root,
             normalized_id,
             status="failed",
-            phase="target_spawn_failed",
-            error_code="host_operation_target_spawn_failed",
-            error=f"{type(exc).__name__}: {exc}",
+            phase="target_failed",
+            returncode=returncode,
+            last_returncode=returncode,
+            last_error_code=retry.error_code,
             completed_at_utc=utc_now_iso(),
+            error_code=retry.error_code or "host_operation_target_nonzero_exit",
+            attempt=attempt,
         )
-        return 35
+        return returncode
 
     _worker_update(
         runtime_root,
         normalized_id,
-        status="completed" if int(returncode) == 0 else "failed",
-        phase="target_completed" if int(returncode) == 0 else "target_failed",
-        returncode=int(returncode),
+        status="failed",
+        phase="retry_exhausted",
+        error_code="host_operation_retry_exhausted",
         completed_at_utc=utc_now_iso(),
-        error_code=None if int(returncode) == 0 else "host_operation_target_nonzero_exit",
     )
-    return int(returncode)
+    return 36
 
 
 def _worker_parser() -> argparse.ArgumentParser:

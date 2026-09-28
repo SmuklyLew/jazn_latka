@@ -2,14 +2,15 @@ from __future__ import annotations
 
 """Canonical host-level memory root resolution.
 
-Runtime code may live in versioned ``active_root`` directories, while private
-memory is mutable host state that should survive code upgrades.  This module
+Runtime code may live in versioned active_root directories, while private
+memory is mutable host state that should survive code upgrades. This module
 keeps that boundary explicit and preserves a read-compatible fallback for
-historical ``<active_root>/memory`` layouts.
+historical <active_root>/memory layouts.
 """
 
 import os
 from pathlib import Path
+from typing import Any
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
 
@@ -74,14 +75,14 @@ def resolve_memory_root(
     """Resolve the canonical memory directory without creating it.
 
     Resolution order:
-    1. explicit ``configured`` value;
-    2. ``JAZN_MEMORY_ROOT``;
-    3. host-level ``workspace_runtime/memory``;
-    4. historical ``<active_root>/memory`` only when the host-level directory
+    1. explicit configured value;
+    2. JAZN_MEMORY_ROOT;
+    3. host-level workspace_runtime/memory;
+    4. historical <active_root>/memory only when the host-level directory
        does not yet exist and compatibility fallback is enabled.
 
     Relative explicit values are resolved against the host-level runtime
-    workspace, not the versioned code root.  This prevents a new override from
+    workspace, not the versioned code root. This prevents a new override from
     accidentally re-introducing version-coupled private memory.
     """
 
@@ -107,20 +108,69 @@ def resolve_memory_root(
     if not prefer_existing_legacy:
         return canonical
 
-    # An empty host-level directory is not evidence of a MEMORY package. Prefer
-    # the canonical host root only when it carries payload; otherwise preserve
-    # compatibility with a populated legacy root. Explicit configuration above
-    # remains authoritative and therefore intentionally does not use fallback.
     if memory_root_has_payload(canonical):
         return canonical
     legacy = legacy_memory_root(root)
-    # Preserve the historical compatibility contract even when the legacy
-    # directory is currently empty or carries only non-indexed private files.
-    # The new rule is only that an empty canonical directory must not shadow
-    # an already-existing legacy memory root.
     if legacy.exists():
         return legacy
     return canonical
+
+
+def resolve_memory_root_diagnostic(
+    runtime_root: str | Path,
+    *,
+    configured: str | Path | None = None,
+    prefer_existing_legacy: bool = True,
+) -> dict[str, Any]:
+    """Explain memory-root selection without reading private memory contents."""
+
+    root = Path(runtime_root).expanduser().resolve()
+    canonical = default_memory_root(root)
+    legacy = legacy_memory_root(root)
+    env_raw = os.environ.get(MEMORY_ROOT_ENV)
+    explicit_raw = configured if configured is not None else env_raw
+    explicit_configured = bool(str(explicit_raw or "").strip())
+    selected = resolve_memory_root(
+        root,
+        configured=configured,
+        prefer_existing_legacy=prefer_existing_legacy,
+    )
+
+    if explicit_configured:
+        source = "explicit_configured" if configured is not None else "environment"
+    elif selected == canonical:
+        source = "canonical_host_memory"
+    elif selected == legacy:
+        source = "legacy_compatibility"
+    else:
+        source = "resolved_other"
+
+    canonical_exists = canonical.exists()
+    legacy_exists = legacy.exists()
+    canonical_has_payload = memory_root_has_payload(canonical)
+    legacy_has_payload = memory_root_has_payload(legacy)
+
+    return {
+        "selected": str(selected),
+        "selection_source": source,
+        "explicit_configured": explicit_configured,
+        "canonical": str(canonical),
+        "canonical_exists": canonical_exists,
+        "canonical_has_payload": canonical_has_payload,
+        "legacy": str(legacy),
+        "legacy_exists": legacy_exists,
+        "legacy_has_payload": legacy_has_payload,
+        "empty_canonical_placeholder_detected": bool(
+            canonical.is_dir()
+            and not canonical_has_payload
+            and legacy_exists
+            and legacy_has_payload
+        ),
+        "selected_exists": selected.exists(),
+        "selected_has_payload": memory_root_has_payload(selected),
+        "prefer_existing_legacy": bool(prefer_existing_legacy),
+        "private_content_read": False,
+    }
 
 
 def memory_path(
@@ -159,4 +209,5 @@ __all__ = [
     "memory_path",
     "memory_root_has_payload",
     "resolve_memory_root",
+    "resolve_memory_root_diagnostic",
 ]
