@@ -8,6 +8,7 @@ from latka_jazn.core.chatgpt_host_executor_enums import (
     HostFilesystemState,
     HostRecoveryAction,
 )
+from latka_jazn.core.chatgpt_host_executor_failure_codes import classify_prespan_error
 from latka_jazn.core.chatgpt_host_executor_observation import (
     MAX_ALTERNATIVE_EXECUTOR_PROBES,
     HostExecutorObservation,
@@ -76,12 +77,17 @@ def classify_failed_surface(observation: HostExecutorObservation) -> HostExecuto
     remaining = max(0, MAX_ALTERNATIVE_EXECUTOR_PROBES - observation.alternative_probe_count)
     probe = bool(observation.alternative_surface_available and remaining > 0)
     action = HostRecoveryAction.PROBE_ALTERNATIVE_ONCE if probe else HostRecoveryAction.STOP_LOCAL_BOOTSTRAP
+
     if state is HostHandoffState.DECLINED:
         reason = "execution_handoff_declined_alternative_probe_pending" if probe else "execution_handoff_declined_by_user"
     elif state is HostHandoffState.UNAVAILABLE:
         reason = "execution_handoff_unavailable_alternative_probe_pending" if probe else "execution_handoff_unavailable"
     else:
-        reason = "host_tool_failed_before_process_creation"
+        # Keep the failure class visible instead of collapsing every pre-spawn
+        # host error into one generic reason. This classification still leaves
+        # filesystem/package/runtime unknown because no process was created.
+        reason = classify_prespan_error(observation.error_class).reason_code
+
     return _failed(
         observation,
         action,
