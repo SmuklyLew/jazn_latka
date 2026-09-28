@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.88.0",
-  "active_definition_count": 1751,
+  "active_definition_count": 1757,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -4386,6 +4386,138 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 145
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_pre_spawn_failures_receive_stable_semantics": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_pre_spawn_failures_receive_stable_semantics",
+      "purpose": "Pre spawn failures receive stable semantics",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 15,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_client_error_before_spawn_never_claims_filesystem_failure": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_client_error_before_spawn_never_claims_filesystem_failure",
+      "purpose": "Client error before spawn never claims filesystem failure",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_unknown_error_remains_fail_closed": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_unknown_error_remains_fail_closed",
+      "purpose": "Unknown error remains fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_process_evidence_is_forbidden_before_spawn": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_process_evidence_is_forbidden_before_spawn",
+      "purpose": "Process evidence is forbidden before spawn",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_command_fingerprint_must_be_sha256": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_command_fingerprint_must_be_sha256",
+      "purpose": "Command fingerprint must be sha256",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_chatgpt_host_executor_failure_mapping.py::test_post_spawn_evidence_is_exported_without_changing_command_truth": {
+      "path": "tests/test_chatgpt_host_executor_failure_mapping.py",
+      "name": "test_post_spawn_evidence_is_exported_without_changing_command_truth",
+      "purpose": "Post spawn evidence is exported without changing command truth",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
     },
     "tests/test_chatgpt_host_executor_observation_validation.py::test_missing_pre_process_error_evidence_keeps_executor_state_unknown": {
       "path": "tests/test_chatgpt_host_executor_observation_validation.py",
