@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.88.0",
-  "active_definition_count": 1760,
+  "active_definition_count": 1763,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -13617,6 +13617,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 173
+    },
+    "tests/test_host_operation_memory_converge_retry.py::test_memory_converge_pending_retries_are_bounded": {
+      "path": "tests/test_host_operation_memory_converge_retry.py",
+      "name": "test_memory_converge_pending_retries_are_bounded",
+      "purpose": "Memory converge pending retries are bounded",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_operation_retry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_host_operation_memory_converge_retry.py::test_memory_converge_terminal_failure_is_never_blindly_retried": {
+      "path": "tests/test_host_operation_memory_converge_retry.py",
+      "name": "test_memory_converge_terminal_failure_is_never_blindly_retried",
+      "purpose": "Memory converge terminal failure is never blindly retried",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_operation_retry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_host_operation_memory_converge_retry.py::test_other_host_operations_never_inherit_memory_converge_retry": {
+      "path": "tests/test_host_operation_memory_converge_retry.py",
+      "name": "test_other_host_operations_never_inherit_memory_converge_retry",
+      "purpose": "Other host operations never inherit memory converge retry",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_operation_retry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_host_operations.py::test_host_operation_target_is_canonical_and_root_override_is_rejected": {
       "path": "tests/test_host_operations.py",
