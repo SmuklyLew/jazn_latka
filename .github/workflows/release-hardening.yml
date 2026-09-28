@@ -231,6 +231,16 @@ jobs:
       - name: Cognitive architecture audit
         run: python -X utf8 -m latka_jazn.tools.cognitive_architecture_audit --root . --json
 
+      - name: Host spawn and memory convergence regression set
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          tests/test_chatgpt_host_executor_failure_mapping.py
+          tests/test_host_spawn_diagnostics.py
+          tests/test_host_operation_memory_converge_retry.py
+          tests/test_memory_sentinel_recall.py
+          tests/test_autobiographical_memory_readiness_convergence.py
+
       - name: Full deterministic test suite
         run: >-
           python -X utf8 -m pytest
