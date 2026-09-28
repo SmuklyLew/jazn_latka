@@ -53,6 +53,6 @@ def test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt() ->
 
 def test_release_version_advances_to_capability_loader_convergence() -> None:
     # Stable contract id retained from the previous loader release; the active
-    # expectation follows the current host-executor spawn diagnostics release.
-    assert PACKAGE_VERSION == "16.3.25.5.89.0"
-    assert PACKAGE_RELEASE_NAME == "host-executor-spawn-diagnostics-convergence"
+    # expectation follows the current ChatGPT host bootstrap primitive release.
+    assert PACKAGE_VERSION == "16.3.25.5.90.0"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-host-bootstrap-primitive-convergence"
