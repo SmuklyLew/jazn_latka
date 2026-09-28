@@ -93,10 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--memory-zip-name", help="Jawna paczka profile=memory, gdy w parts-dir jest ich więcej niż jedna.")
     child.add_argument("--no-auto-memory", action="store_true", help="Nie wyszukuj i nie dołączaj automatycznie paczki pamięci po instalacji systemu.")
     child.add_argument("--work-dir", type=Path)
-    child.add_argument("--time-budget-seconds", type=float, default=25.0)
-    child.add_argument("--no-crc", action="store_true")
-    child.add_argument(
-        "--force-reextract",
+    child.add_argument("--time-budget-seconds", type=float, default=None)\n    child.add_argument("--no-crc", action="store_true")\n    child.add_argument(\n        "--force-reextract",
         action="store_true",
         help="Wyczyść tylko katalog stagingowy; nigdy nie zastępuje zajętego destination.",
     )
