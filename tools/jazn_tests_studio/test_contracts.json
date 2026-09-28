@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.88.0",
-  "active_definition_count": 1745,
+  "active_definition_count": 1751,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23296,6 +23296,140 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 137
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_generator_v2_discovery_filters_system_and_memory_before_ambiguity": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_generator_v2_discovery_filters_system_and_memory_before_ambiguity",
+      "purpose": "Generator v2 discovery filters system and memory before ambiguity",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_runtime_memory_discovery_accepts_generator_v2_memory": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_runtime_memory_discovery_accepts_generator_v2_memory",
+      "purpose": "Runtime memory discovery accepts generator v2 memory",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_generator_v2_memory_compat_preserves_entry_inventory": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_generator_v2_memory_compat_preserves_entry_inventory",
+      "purpose": "Generator v2 memory compat preserves entry inventory",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_large_legacy_memory_requires_safe_v3_repack": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_large_legacy_memory_requires_safe_v3_repack",
+      "purpose": "Large legacy memory requires safe v3 repack",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 155
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_cli_exposes_memory_converge_and_durable_host_kind": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_cli_exposes_memory_converge_and_durable_host_kind",
+      "purpose": "Cli exposes memory converge and durable host kind",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 173
+    },
+    "tests/test_memory_transport_convergence_v5880.py::test_durable_memory_converge_reenters_public_run_py": {
+      "path": "tests/test_memory_transport_convergence_v5880.py",
+      "name": "test_durable_memory_converge_reenters_public_run_py",
+      "purpose": "Durable memory converge reenters public run py",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.cli",
+        "latka_jazn.core.host_operations",
+        "latka_jazn.packaging.generator_v2_compat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 203
     },
     "tests/test_memory_transport_generator.py::test_generator_memory_mode_is_archive_only_and_cloud_attach_stays_outside_generator": {
       "path": "tests/test_memory_transport_generator.py",
