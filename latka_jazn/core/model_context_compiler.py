@@ -246,6 +246,13 @@ def _sanitize_memory_item(raw: Any) -> dict[str, Any]:
         "timestamp": _optional_text(data.get("timestamp") or data.get("created_at") or data.get("date")),
         "confidence": _as_float(data.get("confidence"), fallback=0.5),
         "relevance_reason": _clean_text(data.get("relevance_reason") or data.get("reason") or "payload przekazany przez runtime", fallback="payload przekazany przez runtime"),
+        "semantic_source_type": _clean_text(data.get("semantic_source_type"), fallback="unknown"),
+        "provenance_label": _clean_text(data.get("provenance_label"), fallback="brak dowodu"),
+        "truth_status": _clean_text(data.get("truth_status"), fallback="unknown"),
+        "source_database": _optional_text(data.get("source_database")),
+        "source_locator": _optional_text(data.get("source_locator")),
+        "gateway_source_kind": _optional_text(data.get("gateway_source_kind")),
+        "autobiographical_source_ready": data.get("autobiographical_source_ready") is True,
     }
 
 
