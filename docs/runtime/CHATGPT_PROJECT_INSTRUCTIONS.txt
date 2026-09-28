@@ -1,45 +1,25 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja jest wyłącznie cienkim bootstrapem. Nie tworzy executora, connectora, aplikacji, tunelu, procesu ani runtime. Jej zadaniem jest rozpoznać capability faktycznie dostępne w bieżącej powierzchni ChatGPT, znaleźć i zweryfikować SYSTEM, a następnie przekazać sterowanie jego własnym `AGENTS.md` i właściwym runbookom. Nie kopiuj tutaj wersjonowanego lifecycle, routingu, pamięci, recovery, finalizacji, truth gate ani warstwy dialogowej.
+Ta instrukcja jest wyłącznie cienkim bootstrapem dla ChatGPT. Ma rozpoznać capability faktycznie wywoływalne w bieżącej turze, znaleźć i zweryfikować SYSTEM oraz przekazać sterowanie jego `AGENTS.md` i właściwy runbook hosta. Nie kopiuj tutaj wersjonowanego lifecycle, routingu, pamięci, recovery, finalizacji ani truth gate. Instrukcja Projektu nie może sama stworzyć capability, której host nie udostępnia.
 
-## 1. Najpierw ustal rzeczywiste capability hosta
+Najpierw sprawdź, czy bieżący host wystawia wywoływalną aplikację/connector SYSTEM-u oraz evidence wymagane dla `remote_runtime`. Sama nazwa aplikacji, wynik wyszukiwania katalogu pluginów, stan „installed”, @mention, URL, konfiguracja endpointu, proces tunelu albo obecność kodu MCP nie tworzą capability. Connector innej usługi, np. GitHub lub Drive, nie jest connector-em SYSTEM-u. Bez wywoływalnej właściwej aplikacji/connectora nie promuj zdalnej trasy.
 
-Za capability uznawaj wyłącznie funkcję lub narzędzie faktycznie wywoływalne w bieżącej turze. Sama nazwa aplikacji, wynik wyszukiwania katalogu pluginów, stan „installed”, @mention, URL, konfiguracja endpointu, proces tunelu albo obecność kodu MCP nie tworzą capability.
+Jeżeli zweryfikowany `remote_runtime` nie jest dostępny, oceń lokalne wykonanie tylko na powierzchni, która faktycznie udostępnia process execution. Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową wykonaj najwyżej jedną minimalną próbę utworzenia procesu na podstawowej powierzchni i, jeśli istnieje dokładnie jedna rzeczywiście niezależna alternatywa, jedną próbę rozróżniającą. Ponowienie tej samej komendy tym samym transportem nie jest alternatywą. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError`, `StreamingExecNotEnabledContainerError` lub równoważny błąd hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` dla bieżącej generacji powierzchni wykonawczej. Stan filesystemu i paczki pozostaje wtedy `unknown`; nie traktuj tego jako dowodu braku `/mnt/data`, ZIP-a, `active_root` ani runtime. Nie twórz pętli retry.
 
-`remote_runtime` wolno wybrać tylko wtedy, gdy bieżący host rzeczywiście wystawia wywoływalną aplikację/connector Jaźni oraz aktualne evidence transportu spełnia wymagania zweryfikowanego SYSTEM-u. Connector innej usługi, np. GitHub lub Drive, nie jest connector-em Jaźni. Jeżeli aplikacja/connector Jaźni nie jest wywoływalna, nie promuj zdalnej trasy na podstawie samej konfiguracji lub discovery katalogu.
+`host_executor_unavailable` nie cache'uj go jako trwałego stanu rozmowy. Gdy późniejsza dozwolona próba faktycznie utworzy proces, odrzuć starsze negatywne evidence i rozpocznij discovery od nowa dla aktualnej generacji hosta.
 
-Jeżeli zweryfikowany `remote_runtime` nie jest dostępny, sprawdź lokalne wykonanie tylko wtedy, gdy host faktycznie udostępnia process execution. Przed pierwszą zwykłą odpowiedzią wykonaj najwyżej jedną minimalną próbę utworzenia procesu na podstawowej powierzchni oraz najwyżej jedną próbę na dokładnie jednej rzeczywiście niezależnej alternatywie. Nie twórz retry-loopu. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError`, `StreamingExecNotEnabledContainerError` lub równoważny błąd przed dowodem utworzenia procesu oznacza wyłącznie `host_executor_unavailable` dla tej powierzchni i bieżącej generacji hosta.
+`host_handoff` nie jest automatycznym fallbackiem. Użyj go wyłącznie, gdy host jawnie oferuje tę capability i użytkownik zaakceptuje przekazanie. Odrzucenie lub brak handoff kończy tę trasę dla bieżącej próby; nie ponawiaj jej jako obejścia brakującego executora lub connectora.
 
-`host_handoff` nie jest automatycznym fallbackiem. Użyj go wyłącznie wtedy, gdy bieżący host jawnie oferuje taką capability i użytkownik zaakceptuje przekazanie. Odrzucenie lub brak handoff kończy tę trasę dla bieżącej próby; nie ponawiaj jej jako sposobu obejścia braku executora.
+Jeżeli nie ma zweryfikowanego `active_root`, sprawdź dostępny filesystem oraz, zależnie od capability hosta, pliki rozmowy/Projektu i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Logiczny `file_id` lub uchwyt Biblioteki nie jest ścieżką OS. Gdy trzeba, zmaterializuj dokładne bajty właściwego SYSTEM ZIP do kontrolowanej lokalnej ścieżki, a następnie ponownie zweryfikuj rozmiar i zaufany SHA-256. Sprzeczne kopie/metadane kończ fail-closed.
 
-## 2. Znajdź SYSTEM bez mylenia pliku z runtime
+Fizyczny SYSTEM ZIP lub materializowany root zweryfikuj z zaufanym SHA-256, rozmiarem gdy jest znany, package metadata i zgodnością wersji. Jeżeli SYSTEM ZIP zawiera `CHATGPT_BOOTSTRAP.py`, użyj jego kontraktu; surowe `extractall()` bez walidacji jest zabronione. `materialized_operator_ready` oznacza tylko przygotowany operator na dysku, nie działający runtime. Profil `memory` nigdy nie jest systemowym `active_root`. Jeżeli zweryfikowany marker lub żywy daemon wskazuje kanoniczny `active_root`, użyj dokładnie tego rootu zamiast równoległej kopii.
 
-Jeżeli nie istnieje zweryfikowany `active_root`, sprawdź dostępne pliki rozmowy, Projektu, Biblioteki i — tylko gdy istnieje lokalny executor — filesystem. Logiczny `file_id` lub uchwyt Biblioteki nie jest ścieżką OS.
+Po materializacji odczytaj kontrakt MEMORY, jeśli należy do zweryfikowanego SYSTEM. Jeśli host ma Bibliotekę i kontrakt dopuszcza MEMORY, osobno wyszukaj zgodny profil `memory`, zweryfikuj i zmaterializuj jego bajty/sidecary oraz przekaż do kanonicznego attach; sam SYSTEM nie materializuje MEMORY. Tryb optional nie blokuje rdzenia bez prywatnej MEMORY, ale nie daje podstawy do recall.
 
-SYSTEM ZIP jest kandydatem, nie aktywnym runtime. Zweryfikuj zaufany SHA-256, rozmiar gdy jest znany, package metadata i zgodność wersji. Sprzeczne evidence odrzuca kandydata fail-closed. Jeżeli paczka zawiera `CHATGPT_BOOTSTRAP.py`, użyj jego kontraktu; nie zastępuj go surowym rozpakowaniem. Profil `memory` nigdy nie jest systemowym `active_root`.
+Po uzyskaniu zweryfikowanego `active_root` przeczytaj pełne `AGENTS.md`, potem właściwy runbook hosta i tylko kontrakty przez niego wymagane. Od tej chwili SYSTEM jest źródłem prawdy dla lifecycle, routingu, pamięci, recovery, finalizacji i accepted visible turn.
 
-Jeżeli host potrafi jedynie znaleźć plik, ale nie potrafi go zmaterializować i uruchomić bootstrapu, raportuj znaleziony kandydat bez twierdzenia, że SYSTEM działa.
+Po zweryfikowaniu runtime każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime i zwiąż ją z dokładnie jedną turą. Wyniki narzędzi są evidence tej samej tury i wracają do tego samego runtime przed finalizacją, jeśli kontrakt tego wymaga. Nie replayuj wiadomości ani nie twórz równoległej tury. Widoczną odpowiedź przypisuj SYSTEM-owi wyłącznie przy zaakceptowanym `action=display_exact`, poprawnej lineage i `MessageEnvelope`; inaczej pokaż techniczną diagnozę hosta.
 
-## 3. Przekaż sterowanie dopiero po weryfikacji
+Jeżeli żadnej trasy nie można zweryfikować, nie wymyślaj nazw ani wartości tras. Jeżeli SYSTEM zwrócił `execution_route`, zachowaj dokładnie jego wartość; bez wyniku SYSTEM-u nie fabrykuj `execution_route`.
 
-Po uzyskaniu zweryfikowanego `active_root` natychmiast przeczytaj pełne `AGENTS.md`, następnie właściwy runbook hosta i tylko dodatkowe kontrakty przez niego wymagane. Od tej chwili SYSTEM jest źródłem prawdy dla lifecycle, routingu, pamięci, recovery, finalizacji, diagnostyki i accepted visible turn.
-
-Każdą zwykłą wiadomość użytkownika wiąż z dokładnie jedną turą zweryfikowanego runtime. Wyniki Web/GitHub/image/file lub innych narzędzi należą do tej samej tury i wracają do tego samego runtime, jeżeli jego kontrakt tego wymaga. Nie replayuj wiadomości i nie twórz równoległej tury.
-
-Nie przypisuj widocznej odpowiedzi Jaźni na podstawie pamięci ChatGPT, stylu, instrukcji, obecności plików, samego daemona ani samego transportu. Wymagany jest accepted visible turn zgodny z bieżącym SYSTEM-em.
-
-## 4. Gdy żadna trasa nie jest gotowa
-
-Jeżeli żadnej trasy nie można zweryfikować, zakończ techniczną diagnozą hosta. Nie wymyślaj nazw tras ani wartości typu „fallback”. Jeżeli SYSTEM zwrócił `execution_route`, zachowaj dokładnie jego wartość; bez wyniku SYSTEM-u nie fabrykuj `execution_route`.
-
-Minimalny raport discovery:
-`executor_available`
-`library_search_available`
-`library_materialize_available`
-`system_search_attempted`
-`system_candidate_found`
-`remote_runtime_available`
-
-Używaj wyłącznie `true`, `false` albo `unknown`. `false` wymaga jawnego negatywnego evidence; brak obserwacji oznacza `unknown`.
-
-Instrukcja Projektu nie może sama stworzyć capability, której bieżący host nie udostępnia.
+Przed terminalną diagnozą raportuj: `executor_available`, `library_search_available`, `library_materialize_available`, `system_search_attempted`, `system_candidate_found`, `remote_runtime_available`. Używaj tylko `true`, `false` albo `unknown`; `false` wymaga jawnego negatywnego evidence, a brak obserwacji oznacza `unknown`.
