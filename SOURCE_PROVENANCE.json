@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "515c917a6147e59e1e26429e4ac598a4bc6c107f",
-    "base_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
+    "base_commit": "80afc0f49fd4d7b4174bc69c243a2016e8feec73",
+    "base_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "80afc0f49fd4d7b4174bc69c243a2016e8feec73",
