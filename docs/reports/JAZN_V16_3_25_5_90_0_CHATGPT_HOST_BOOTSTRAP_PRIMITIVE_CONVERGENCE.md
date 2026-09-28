@@ -155,6 +155,8 @@ konsolidacją. To wspiera architektoniczny kierunek modularny, nie próbę
 przeniesienia „neurologii” do promptu startowego.
 
 Przykładowe zweryfikowane źródła:
+- rozproszona natura working memory: https://pubmed.ncbi.nlm.nih.gov/28063661/
+- szeroki przegląd aktywności working memory: https://pmc.ncbi.nlm.nih.gov/articles/PMC8573634/
 - replay i konsolidacja wiedzy: https://pmc.ncbi.nlm.nih.gov/articles/PMC9758580/
 - przegląd funkcji replay w czuwaniu i śnie: https://pmc.ncbi.nlm.nih.gov/articles/PMC7898724/
 - wspólne i rozłączne substraty pamięci epizodycznej/semantycznej:
