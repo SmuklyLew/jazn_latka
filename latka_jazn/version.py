@@ -3,12 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.89.0 keeps persistent-runtime fail-closed routing while
-# distinguishing pre-spawn host failures from post-spawn runtime diagnostics,
-# adding bounded durable memory convergence recovery and private sentinel recall.
-DISTRIBUTION_VERSION = "16.3.25.5.89.0"
-PACKAGE_VERSION = "16.3.25.5.89.0"
-PACKAGE_RELEASE_NAME = "host-executor-spawn-diagnostics-convergence"
+# v16.3.25.5.90.0 keeps the v89 host truth boundary while making the
+# pre-SYSTEM ZIP primitive explicit and non-circular for ChatGPT project hosts.
+DISTRIBUTION_VERSION = "16.3.25.5.90.0"
+PACKAGE_VERSION = "16.3.25.5.90.0"
+PACKAGE_RELEASE_NAME = "chatgpt-host-bootstrap-primitive-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

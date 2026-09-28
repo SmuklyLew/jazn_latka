@@ -7,6 +7,10 @@ on:
     paths:
       - "latka_jazn/cli.py"
       - "latka_jazn/version.py"
+      - "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt"
+      - "AGENTS.chatgpt.md"
+      - "tests/test_chatgpt_project_bootstrap_primitive_convergence.py"
+      - "docs/reports/JAZN_V16_3_25_5_90_0_CHATGPT_HOST_BOOTSTRAP_PRIMITIVE_CONVERGENCE.md"
       - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
       - "latka_jazn/core/chatgpt_host_executor_failure_codes.py"
       - "latka_jazn/core/chatgpt_host_executor_failure_policy.py"
@@ -32,6 +36,10 @@ on:
     paths:
       - "latka_jazn/cli.py"
       - "latka_jazn/version.py"
+      - "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt"
+      - "AGENTS.chatgpt.md"
+      - "tests/test_chatgpt_project_bootstrap_primitive_convergence.py"
+      - "docs/reports/JAZN_V16_3_25_5_90_0_CHATGPT_HOST_BOOTSTRAP_PRIMITIVE_CONVERGENCE.md"
       - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
       - "latka_jazn/core/chatgpt_host_executor_failure_codes.py"
       - "latka_jazn/core/chatgpt_host_executor_failure_policy.py"
@@ -91,7 +99,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[mcp-http]" pytest
 
-      - name: Compile active v89 paths
+      - name: Compile active host paths
         run: >-
           python -X utf8 -m compileall -q
           latka_jazn/bootstrap/chatgpt_host_preflight_parse.py
@@ -118,12 +126,13 @@ jobs:
           tests/test_host_operations.py
           tests/test_autobiographical_memory_readiness_convergence.py
           tests/test_memory_sentinel_recall.py
+          tests/test_chatgpt_project_bootstrap_primitive_convergence.py
 
       - name: Exercise post-spawn CLI diagnostics
         run: python -X utf8 run.py host-diagnose --root . --json
 
       - name: Verify release identity
-        run: python -X utf8 -c "from latka_jazn.version import PACKAGE_VERSION_FULL; assert PACKAGE_VERSION_FULL == '16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence'; print(PACKAGE_VERSION_FULL)"
+        run: python -X utf8 -c "from latka_jazn.version import PACKAGE_VERSION_FULL; assert PACKAGE_VERSION_FULL == '16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence'; print(PACKAGE_VERSION_FULL)"
 
       - name: Clean checkout guard
         if: always()

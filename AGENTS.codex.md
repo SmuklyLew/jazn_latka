@@ -117,6 +117,8 @@ Dla samych instrukcji i dokumentacji:
 ```bash
 python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
 git diff --check
+
+Repo utrzymuje celowo ostrzejszy limit 5000 znaków dla tej instrukcji jako compatibility/headroom gate; nie zwiększaj go tylko dlatego, że bieżący interfejs może przyjąć więcej.
 ```
 
 Sprawdź także:

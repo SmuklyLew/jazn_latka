@@ -106,14 +106,21 @@ Po zweryfikowaniu SYSTEM i odczytaniu `MEMORY_ATTACHMENT_CONTRACT.json`, jeżeli
 
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
+### 3.x Host bootstrap primitive przed SYSTEM-em
+
+Odczyt struktury ZIP-a nie jest logiką Jaźni i nie wymaga wcześniej rozpakowanego SYSTEM-u. Jest to minimalna capability hosta/stdlib wykonywana wyłącznie wtedy, gdy lokalny proces faktycznie może zostać utworzony. Host może otworzyć fizyczny ZIP tylko do odczytu, sprawdzić jego katalog i odczytać pojedynczy member bez pełnej ekstrakcji. Nie wolno jednak wykonywać kodu z archiwum przed zweryfikowaniem całego ZIP-a z zaufanym SHA-256 oraz rozmiarem, gdy jest znany.
+
 Jeżeli nie ma jeszcze operatora, ale kompletna paczka systemowa ZIP i zaufany SHA-256 są lokalnie dostępne:
-1. zweryfikuj cały ZIP;
-2. jeżeli root ZIP zawiera `CHATGPT_BOOTSTRAP.py`, odczytaj tylko ten member przez `ZipFile.read()` do świeżego pliku tymczasowego;
-3. nie używaj surowego `extractall()` jako bootstrapu;
-4. uruchom helper lokalnym Pythonem z `--zip`, `--destination`, `--json` i dokładnie jednym z `--sha256-file` lub `--expected-sha256`;
-5. przekaż `--expected-size-bytes`, jeżeli rozmiar jest znany;
-6. lokalny sidecar nie jest wymagany, jeżeli host ma już zaufany SHA-256 dla dokładnie tego ZIP-a;
-7. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime.
+1. zweryfikuj cały fizyczny ZIP i jego package metadata;
+2. otwórz ZIP tylko do odczytu i sprawdź katalog bez pełnej ekstrakcji;
+3. jeżeli root ZIP zawiera `CHATGPT_BOOTSTRAP.py`, odczytaj wyłącznie ten member przez `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku tymczasowego;
+4. nie używaj surowego `extractall()` jako bootstrapu;
+5. uruchom helper lokalnym Pythonem z `--zip`, `--destination`, `--json` i dokładnie jednym z `--sha256-file` lub `--expected-sha256`;
+6. przekaż `--expected-size-bytes`, jeżeli rozmiar jest znany;
+7. lokalny sidecar nie jest wymagany, jeżeli host ma już zaufany SHA-256 dla dokładnie tego ZIP-a;
+8. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime.
+
+Ten primitive ma być poznawczo obojętny: nie implementuje uwagi, pamięci, replay, affect ani innych neuro-inspirowanych modułów. Takie warstwy należą dopiero do zweryfikowanego runtime i podlegają software contracts oraz granicom z `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
 Standalone bootstrap ma działać fail-closed: odrzucać traversal, ścieżki absolutne/drive-qualified, backslashe w nazwach ZIP, duplikaty, symlinki, nietypowe wpisy, szyfrowanie, przekroczenia limitów liczby/rozmiaru/compression-ratio i błędy CRC.
 
