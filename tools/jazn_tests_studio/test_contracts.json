@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.87.7",
-  "active_definition_count": 1724,
+  "system_version": "16.3.25.5.87.8",
+  "active_definition_count": 1732,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -4505,6 +4505,210 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 11
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_host_error_metadata_is_bounded_redacted_and_exported": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_host_error_metadata_is_bounded_redacted_and_exported",
+      "purpose": "Host error metadata is bounded redacted and exported",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_preprocess_client_error_semantics_remain_fail_closed": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_preprocess_client_error_semantics_remain_fail_closed",
+      "purpose": "Preprocess client error semantics remain fail closed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_public_remote_runtime_reports_all_blockers_without_changing_reason_code": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_public_remote_runtime_reports_all_blockers_without_changing_reason_code",
+      "purpose": "Public remote runtime reports all blockers without changing reason code",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_public_ready_route_has_no_blockers": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_public_ready_route_has_no_blockers",
+      "purpose": "Public ready route has no blockers",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_secure_tunnel_reports_granular_runtime_and_connector_blockers": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_secure_tunnel_reports_granular_runtime_and_connector_blockers",
+      "purpose": "Secure tunnel reports granular runtime and connector blockers",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_preflight_preserves_classifier_blockers_and_safe_host_metadata": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_preflight_preserves_classifier_blockers_and_safe_host_metadata",
+      "purpose": "Preflight preserves classifier blockers and safe host metadata",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 178
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_verified_route_rejects_conflicting_blocker_declaration": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_verified_route_rejects_conflicting_blocker_declaration",
+      "purpose": "Verified route rejects conflicting blocker declaration",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 213
+    },
+    "tests/test_chatgpt_host_runtime_observability.py::test_preflight_rejects_non_string_diagnostic_metadata": {
+      "path": "tests/test_chatgpt_host_runtime_observability.py",
+      "name": "test_preflight_rejects_non_string_diagnostic_metadata",
+      "purpose": "Preflight rejects non string diagnostic metadata",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.mcp.secure_tunnel",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 226
     },
     "tests/test_chatgpt_library_discovery.py::test_project_loader_searches_library_before_declaring_system_zip_absent": {
       "path": "tests/test_chatgpt_library_discovery.py",
