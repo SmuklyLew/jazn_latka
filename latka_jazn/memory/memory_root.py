@@ -17,6 +17,41 @@ MEMORY_DIR_NAME = "memory"
 MEMORY_ROOT_ENV = "JAZN_MEMORY_ROOT"
 
 
+def memory_root_has_payload(root: str | Path) -> bool:
+    """Return whether root contains a plausible persistent MEMORY payload.
+
+    The check is intentionally shallow: root resolution must not recursively
+    scan large private archives merely to decide between canonical and legacy
+    locations. Explicit JAZN_MEMORY_ROOT remains authoritative even when
+    empty; this helper is only used for automatic fallback selection.
+    """
+
+    candidate = Path(root).expanduser()
+    if not candidate.is_dir():
+        return False
+    known_files = (
+        candidate / "MEMORY_PACKAGE_MANIFEST.json",
+        candidate / "raw" / "dziennik.json",
+        candidate / "raw" / "chat.html",
+        candidate / "sqlite" / "memory_jazn.sqlite3",
+        candidate / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3",
+        candidate / "sqlite" / "runtime_write_v2" / "runtime_memory.sqlite3",
+        candidate / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
+    )
+    if any(path.is_file() for path in known_files):
+        return True
+    for dirname in ("sqlite", "raw", "layered", "versioned_sources"):
+        directory = candidate / dirname
+        if not directory.is_dir():
+            continue
+        try:
+            next(directory.iterdir())
+        except (StopIteration, OSError):
+            continue
+        return True
+    return False
+
+
 def legacy_memory_root(runtime_root: str | Path) -> Path:
     """Return the historical per-version memory directory."""
 
@@ -69,10 +104,17 @@ def resolve_memory_root(
         return resolved
 
     canonical = default_memory_root(root)
-    if canonical.exists() or not prefer_existing_legacy:
+    if not prefer_existing_legacy:
+        return canonical
+
+    # An empty host-level directory is not evidence of a MEMORY package. Prefer
+    # the canonical host root only when it carries payload; otherwise preserve
+    # compatibility with a populated legacy root. Explicit configuration above
+    # remains authoritative and therefore intentionally does not use fallback.
+    if memory_root_has_payload(canonical):
         return canonical
     legacy = legacy_memory_root(root)
-    if legacy.exists():
+    if memory_root_has_payload(legacy):
         return legacy
     return canonical
 
@@ -111,5 +153,6 @@ __all__ = [
     "default_memory_root",
     "legacy_memory_root",
     "memory_path",
+    "memory_root_has_payload",
     "resolve_memory_root",
 ]
