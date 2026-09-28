@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.87.8 preserves the v87 persistent-runtime fail-closed routing
-# while adding bounded host-executor diagnostics and complete remote blockers.
-DISTRIBUTION_VERSION = "16.3.25.5.87.8"
-PACKAGE_VERSION = "16.3.25.5.87.8"
-PACKAGE_RELEASE_NAME = "chatgpt-host-runtime-observability-convergence"
+# v16.3.25.5.87.9 preserves the v87 persistent-runtime fail-closed routing
+# while making ChatGPT project bootstrap depend only on callable host capabilities.
+DISTRIBUTION_VERSION = "16.3.25.5.87.9"
+PACKAGE_VERSION = "16.3.25.5.87.9"
+PACKAGE_RELEASE_NAME = "chatgpt-capability-loader-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
