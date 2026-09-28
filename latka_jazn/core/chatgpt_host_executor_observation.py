@@ -13,8 +13,10 @@ from latka_jazn.core.chatgpt_host_handoff_state import (
 MAX_ALTERNATIVE_EXECUTOR_PROBES = 1
 _SURFACE_RE = re.compile(r"^[a-z0-9][a-z0-9_.-]{0,63}$")
 _BLOCKER_RE = re.compile(r"^[a-z][a-z0-9_]{0,127}$")
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _HOST_ERROR_TEXT_LIMIT = 1024
 _HOST_ERROR_ID_LIMIT = 256
+_HOST_PATH_TEXT_LIMIT = 1024
 _HOST_ERROR_REDACTIONS: tuple[tuple[re.Pattern[str], str], ...] = (
     (
         re.compile(
@@ -75,6 +77,24 @@ def _normalized_surface(value: str) -> str:
     return surface
 
 
+def _normalized_phase(value: object) -> str | None:
+    phase = str(value or "").strip().lower()
+    if not phase:
+        return None
+    if not _BLOCKER_RE.fullmatch(phase):
+        raise ValueError(f"invalid_spawn_phase:{value!r}")
+    return phase
+
+
+def _normalized_sha256(value: object) -> str | None:
+    digest = str(value or "").strip().lower()
+    if not digest:
+        return None
+    if not _SHA256_RE.fullmatch(digest):
+        raise ValueError("command_fingerprint_sha256_must_be_64_hex")
+    return digest
+
+
 @dataclass(frozen=True)
 class HostExecutorObservation:
     process_created: bool
@@ -96,6 +116,22 @@ class HostExecutorObservation:
     host_request_id: str | None = None
     observed_at_utc: str | None = None
     remote_runtime_blockers: tuple[str, ...] = ()
+
+    # Optional host evidence. These fields describe what the host actually
+    # observed; absence remains unknown and must not be coerced to false.
+    spawn_phase: str | None = None
+    intended_cwd: str | None = None
+    command_fingerprint_sha256: str | None = None
+    executor_allocation_state: bool | None = None
+    materialization_state: bool | None = None
+    mount_preparation_state: bool | None = None
+
+    # Post-spawn evidence. These values are invalid when process_created=False.
+    pid: int | None = None
+    observed_cwd: str | None = None
+    platform: str | None = None
+    effective_uid: int | None = None
+    effective_gid: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "surface", _normalized_surface(self.surface))
@@ -123,6 +159,28 @@ class HostExecutorObservation:
             "observed_at_utc",
             _safe_optional_text(self.observed_at_utc, limit=_HOST_ERROR_ID_LIMIT),
         )
+        object.__setattr__(self, "spawn_phase", _normalized_phase(self.spawn_phase))
+        object.__setattr__(
+            self,
+            "intended_cwd",
+            _safe_optional_text(self.intended_cwd, limit=_HOST_PATH_TEXT_LIMIT),
+        )
+        object.__setattr__(
+            self,
+            "command_fingerprint_sha256",
+            _normalized_sha256(self.command_fingerprint_sha256),
+        )
+        object.__setattr__(
+            self,
+            "observed_cwd",
+            _safe_optional_text(self.observed_cwd, limit=_HOST_PATH_TEXT_LIMIT),
+        )
+        object.__setattr__(
+            self,
+            "platform",
+            _safe_optional_text(self.platform, limit=_HOST_ERROR_ID_LIMIT),
+        )
+
         blockers = _normalized_blockers(self.remote_runtime_blockers)
         object.__setattr__(self, "remote_runtime_blockers", blockers)
         state = normalize_handoff_state(self.execution_handoff_state)
@@ -170,3 +228,22 @@ class HostExecutorObservation:
             raise ValueError("filesystem_probe_result_requires_completed_command")
         if self.filesystem_probe_succeeded is True and self.returncode != 0:
             raise ValueError("successful_filesystem_probe_requires_zero_returncode")
+
+        if self.pid is not None:
+            if not self.process_created:
+                raise ValueError("pid_requires_process_created")
+            if self.pid <= 0:
+                raise ValueError("pid_must_be_positive")
+        if self.observed_cwd is not None and not self.process_created:
+            raise ValueError("observed_cwd_requires_process_created")
+        if self.platform is not None and not self.process_created:
+            raise ValueError("platform_requires_process_created")
+        for field_name, value in (
+            ("effective_uid", self.effective_uid),
+            ("effective_gid", self.effective_gid),
+        ):
+            if value is not None:
+                if not self.process_created:
+                    raise ValueError(f"{field_name}_requires_process_created")
+                if value < 0:
+                    raise ValueError(f"{field_name}_must_be_non_negative")
