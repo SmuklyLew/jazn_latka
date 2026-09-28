@@ -154,10 +154,11 @@ współpracujące systemy, a replay jako mechanizm re-aktywacji związany z
 konsolidacją. To wspiera architektoniczny kierunek modularny, nie próbę
 przeniesienia „neurologii” do promptu startowego.
 
-Przykładowe źródła:
-- https://pubmed.ncbi.nlm.nih.gov/31277034/
-- https://pmc.ncbi.nlm.nih.gov/articles/PMC8573118/
-- https://pmc.ncbi.nlm.nih.gov/articles/PMC9191831/
+Przykładowe zweryfikowane źródła:
+- replay i konsolidacja wiedzy: https://pmc.ncbi.nlm.nih.gov/articles/PMC9758580/
+- przegląd funkcji replay w czuwaniu i śnie: https://pmc.ncbi.nlm.nih.gov/articles/PMC7898724/
+- wspólne i rozłączne substraty pamięci epizodycznej/semantycznej:
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC11531848/
 
 ## Zmiany v90
 
