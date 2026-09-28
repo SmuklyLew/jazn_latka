@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.87.7 integrates the v86 deictic-memory/Library MEMORY attach
-# convergence with the v87 persistent-runtime and remote-evidence hardening.
-DISTRIBUTION_VERSION = "16.3.25.5.87.7"
-PACKAGE_VERSION = "16.3.25.5.87.7"
-PACKAGE_RELEASE_NAME = "chatgpt-memory-persistent-runtime-integration-convergence"
+# v16.3.25.5.87.8 preserves the v87 persistent-runtime fail-closed routing
+# while adding bounded host-executor diagnostics and complete remote blockers.
+DISTRIBUTION_VERSION = "16.3.25.5.87.8"
+PACKAGE_VERSION = "16.3.25.5.87.8"
+PACKAGE_RELEASE_NAME = "chatgpt-host-runtime-observability-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

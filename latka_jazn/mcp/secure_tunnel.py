@@ -246,7 +246,10 @@ def classify_tunnel_runtime_status(payload: Mapping[str, Any] | None) -> dict[st
 
     value: Mapping[str, Any] = payload if isinstance(payload, Mapping) else {}
     observations = {field: value.get(field) is True for field in _REQUIRED_READY_FIELDS}
-    ready = all(observations.values())
+    blocking_checks = [
+        field for field in _REQUIRED_READY_FIELDS if not observations[field]
+    ]
+    ready = not blocking_checks
     return {
         "schema_version": schema_version("secure_mcp_tunnel_readiness"),
         "package_version": PACKAGE_VERSION_FULL,
@@ -254,6 +257,7 @@ def classify_tunnel_runtime_status(payload: Mapping[str, Any] | None) -> dict[st
         "healthy": observations["healthy"],
         "ready": observations["ready"],
         "tunnel_transport_ready": ready,
+        "blocking_checks": blocking_checks,
         "remote_runtime_transport_available": False,
         "execution_route": "none",
         "next_action": (
@@ -306,13 +310,16 @@ def classify_remote_runtime_failover(
             max_age_seconds=max_evidence_age_seconds,
         )
     )
-    route_ready = bool(
-        tunnel["tunnel_transport_ready"]
-        and connector_ready
-        and runtime_binding_verified
-        and runtime_version_verified
-        and evidence_fresh
-    )
+    blocking_checks = list(tunnel.get("blocking_checks") or [])
+    if not connector_ready:
+        blocking_checks.append("host_connector_capability_available")
+    if not runtime_binding_verified:
+        blocking_checks.append("runtime_binding_verified")
+    if not runtime_version_verified:
+        blocking_checks.append("runtime_version_verified")
+    if not evidence_fresh:
+        blocking_checks.append("evidence_fresh")
+    route_ready = not blocking_checks
     if not tunnel["tunnel_transport_ready"]:
         reason = "secure_mcp_tunnel_not_fully_ready"
     elif not connector_ready:
@@ -339,6 +346,7 @@ def classify_remote_runtime_failover(
         "runtime_version_verified": runtime_version_verified,
         "evidence_fresh": evidence_fresh,
         "remote_runtime_transport_available": route_ready,
+        "blocking_checks": blocking_checks,
         "execution_route": "remote_runtime" if route_ready else "none",
         "next_action": "use_remote_runtime_transport" if route_ready else "keep_remote_runtime_unverified",
         "reason_code": reason,
