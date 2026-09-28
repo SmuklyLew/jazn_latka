@@ -119,6 +119,8 @@ def build_host_generation_context(
             "answer_current_user_turn": True,
             "use_only_allowed_memory_items": True,
             "declare_every_used_memory_item_id": True,
+            "positive_memory_claim_requires_autobiographical_source_ready": True,
+            "transactional_tier_is_not_full_autobiographical_provenance": True,
             "do_not_copy_runtime_fallback_or_template": True,
             "do_not_add_visible_timestamp": True,
             "return_only_candidate_reply": True,
