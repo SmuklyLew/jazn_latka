@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sys
-from typing import Any
+from collections.abc import Callable
+from typing import Any, cast
 
 from latka_jazn.memory.availability import memory_mode
 from latka_jazn.memory.living_memory_gateway import memory_readiness_policy
@@ -22,8 +23,9 @@ def _optional_process_int(name: str) -> int | None:
     func = getattr(os, name, None)
     if not callable(func):
         return None
+    typed_func = cast(Callable[[], int], func)
     try:
-        return int(func())
+        return int(typed_func())
     except (OSError, TypeError, ValueError):
         return None
 
@@ -32,8 +34,9 @@ def _supplementary_groups() -> list[int] | None:
     func = getattr(os, "getgroups", None)
     if not callable(func):
         return None
+    typed_func = cast(Callable[[], list[int]], func)
     try:
-        return [int(value) for value in func()]
+        return [int(value) for value in typed_func()]
     except (OSError, TypeError, ValueError):
         return None
 
