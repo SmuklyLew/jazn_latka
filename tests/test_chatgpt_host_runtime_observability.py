@@ -176,13 +176,19 @@ def test_secure_tunnel_reports_granular_runtime_and_connector_blockers() -> None
 
 
 def test_preflight_preserves_classifier_blockers_and_safe_host_metadata() -> None:
+    fresh_stamp = datetime.now(timezone.utc).isoformat()
+    health = _public_health()
+    readiness = _public_readiness()
+    health["observed_at_utc"] = fresh_stamp
+    readiness["observed_at_utc"] = fresh_stamp
+    readiness["runtime_heartbeat_at_utc"] = fresh_stamp
     evidence = {
         "transport": "public_streamable_http",
         "endpoint_configured": True,
         "auth_ready": True,
         "protocol_compatible": True,
-        "health": _public_health(),
-        "readiness": _public_readiness(),
+        "health": health,
+        "readiness": readiness,
         "host_connector_capability_available": False,
     }
     observation = executor_observation_from_mapping(
@@ -193,7 +199,7 @@ def test_preflight_preserves_classifier_blockers_and_safe_host_metadata() -> Non
             "error_code": "transport_timeout",
             "error_message": "token=secret-value host timeout",
             "host_request_id": "req_timeout_123",
-            "observed_at_utc": _STAMP,
+            "observed_at_utc": fresh_stamp,
             "remote_runtime_evidence": evidence,
         }
     )
