@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
-  "runtime_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
-  "package_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
-  "generated_at_utc": "2026-09-28T16:30:21+00:00",
-  "updated_at_utc": "2026-09-28T16:30:21+00:00",
+  "version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+  "runtime_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+  "package_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+  "generated_at_utc": "2026-09-28T20:50:36+00:00",
+  "updated_at_utc": "2026-09-28T20:50:36+00:00",
   "start_file": "run.py",
   "file_count": 1800,
   "static_file_count": 1800,
@@ -272,8 +272,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2960,
-      "sha256": "b6fddf0975f4df29b12282108fc581de6f6ec5097291e4d8cd620d3885ba5a9b",
+      "size_bytes": 3008,
+      "sha256": "20362674dbfdc7cf91ca077195daeffcdfe3ae8207360f0233f7451a438b9171",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8543,8 +8543,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6580,
-      "sha256": "6f4b51e91c8f3153fb792e12bfa0671fd42a53b0c8404bead9c59700b2342714",
+      "size_bytes": 6652,
+      "sha256": "b35fa29ed428b920b165b56367ad1eb02102b976c17e22b21eda7d90e1dad567",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16652,11 +16652,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
+  "release_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
-    "package_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence",
-    "release_version": "16.3.25.5.87.9-chatgpt-capability-loader-convergence"
+    "runtime_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+    "package_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+    "release_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
