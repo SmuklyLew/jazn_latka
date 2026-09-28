@@ -454,7 +454,8 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
         }
     if generator is not None:
         sidecar_path, payload = generator
-        archive = payload.get("archive") if isinstance(payload.get("archive"), dict) else {}
+        raw_archive = payload.get("archive")
+        archive = raw_archive if isinstance(raw_archive, dict) else {}
         package_name = str(archive.get("logical_filename") or "").strip()
         if package_name:
             candidates.append(
