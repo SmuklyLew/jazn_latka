@@ -199,6 +199,17 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
         execution_handoff_available=bool(optional_bool(item, "execution_handoff_available", False)),
         execution_handoff_state=handoff_state,
         observation_generation=int(optional_int(item, "observation_generation", 0) or 0),
+        spawn_phase=optional_text(item, "spawn_phase"),
+        intended_cwd=optional_text(item, "intended_cwd"),
+        command_fingerprint_sha256=optional_text(item, "command_fingerprint_sha256"),
+        executor_allocation_state=optional_bool(item, "executor_allocation_state", None),
+        materialization_state=optional_bool(item, "materialization_state", None),
+        mount_preparation_state=optional_bool(item, "mount_preparation_state", None),
+        pid=optional_int(item, "pid", None),
+        observed_cwd=optional_text(item, "observed_cwd"),
+        platform=optional_text(item, "platform"),
+        effective_uid=optional_int(item, "effective_uid", None),
+        effective_gid=optional_int(item, "effective_gid", None),
     )
 
 
