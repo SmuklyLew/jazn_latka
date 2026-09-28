@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "87cefa075cd46336d48a0af1bcdfa32ae12dbe46",
-    "base_version": "16.3.25.5.88.0-autobiographical-memory-readiness-convergence",
+    "base_commit": "ecc8428ca41e7603ee59cc1bfbe5d5c42b982330",
+    "base_version": "16.3.25.5.89.0-host-executor-spawn-diagnostics-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ecc8428ca41e7603ee59cc1bfbe5d5c42b982330",
