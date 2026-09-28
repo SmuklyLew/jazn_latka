@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.87.9",
-  "active_definition_count": 1732,
+  "active_definition_count": 1737,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2716,6 +2716,91 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 66
+    },
+    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_requires_callable_current_turn_capability": {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "name": "test_project_loader_requires_callable_current_turn_capability",
+      "purpose": "Project loader requires callable current turn capability",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_does_not_invent_handoff_or_execution_route": {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "name": "test_project_loader_does_not_invent_handoff_or_execution_route",
+      "purpose": "Project loader does not invent handoff or execution route",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_callable_jazn_connector_evidence": {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "name": "test_chatgpt_runbook_requires_callable_jazn_connector_evidence",
+      "purpose": "Chatgpt runbook requires callable jazn connector evidence",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt": {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "name": "test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt",
+      "purpose": "Chatgpt runbook treats declined handoff as unavailable for attempt",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_advances_to_capability_loader_convergence": {
+      "path": "tests/test_chatgpt_capability_loader_convergence.py",
+      "name": "test_release_version_advances_to_capability_loader_convergence",
+      "purpose": "Release version advances to capability loader convergence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
