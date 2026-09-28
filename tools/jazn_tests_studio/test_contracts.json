@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.88.0",
-  "active_definition_count": 1737,
+  "active_definition_count": 1745,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1764,6 +1764,207 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 52
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_empty_canonical_memory_root_does_not_shadow_populated_legacy_root": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_empty_canonical_memory_root_does_not_shadow_populated_legacy_root",
+      "purpose": "Empty canonical memory root does not shadow populated legacy root",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_explicit_memory_root_remains_authoritative_even_when_empty": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_explicit_memory_root_remains_authoritative_even_when_empty",
+      "purpose": "Explicit memory root remains authoritative even when empty",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_v3_native_probe_requires_memory_records_fts": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_v3_native_probe_requires_memory_records_fts",
+      "purpose": "V3 native probe requires memory records fts",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_transactional_tier_only_is_searchable_but_not_autobiographical": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_transactional_tier_only_is_searchable_but_not_autobiographical",
+      "purpose": "Transactional tier only is searchable but not autobiographical",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_native_unified_source_satisfies_autobiographical_policy": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_native_unified_source_satisfies_autobiographical_policy",
+      "purpose": "Native unified source satisfies autobiographical policy",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_positive_memory_claim_rejects_transactional_only_provenance": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_positive_memory_claim_rejects_transactional_only_provenance",
+      "purpose": "Positive memory claim rejects transactional only provenance",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 148
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_positive_memory_claim_accepts_native_autobiographical_provenance": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_positive_memory_claim_accepts_native_autobiographical_provenance",
+      "purpose": "Positive memory claim accepts native autobiographical provenance",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 176
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_host_context_preserves_bounded_autobiographical_provenance": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_host_context_preserves_bounded_autobiographical_provenance",
+      "purpose": "Host context preserves bounded autobiographical provenance",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 204
     },
     "tests/test_book_media_memory.py::test_roleplay_draft_and_canon_are_distinct": {
       "path": "tests/test_book_media_memory.py",
