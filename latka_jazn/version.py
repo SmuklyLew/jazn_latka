@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.88.0 keeps persistent-runtime fail-closed routing while
-# separating generic searchable memory from native autobiographical readiness
-# and preserving local-memory provenance through host-visible finalization.
-DISTRIBUTION_VERSION = "16.3.25.5.88.0"
-PACKAGE_VERSION = "16.3.25.5.88.0"
-PACKAGE_RELEASE_NAME = "autobiographical-memory-readiness-convergence"
+# v16.3.25.5.89.0 keeps persistent-runtime fail-closed routing while
+# distinguishing pre-spawn host failures from post-spawn runtime diagnostics,
+# adding bounded durable memory convergence recovery and private sentinel recall.
+DISTRIBUTION_VERSION = "16.3.25.5.89.0"
+PACKAGE_VERSION = "16.3.25.5.89.0"
+PACKAGE_RELEASE_NAME = "host-executor-spawn-diagnostics-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
