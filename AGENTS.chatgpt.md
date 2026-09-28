@@ -102,7 +102,7 @@ Znaleziony SYSTEM ZIP z logicznej powierzchni hosta zmaterializuj jako dokładne
 
 Brak capability dostępu/materializacji Biblioteki oznacza wyłącznie `library_surface_unavailable` dla tej powierzchni; nie jest dowodem, że paczki w Bibliotece nie ma. Materializacja SYSTEM nie materializuje automatycznie MEMORY, a profil `memory` nadal nie może stać się `active_root`.
 
-Po zweryfikowaniu SYSTEM i odczytaniu `MEMORY_ATTACHMENT_CONTRACT.json`, jeżeli kontrakt dopuszcza MEMORY, a aktywny `memory_root` nie zawiera oczekiwanej pamięci autobiograficznej, host z dostępną Biblioteką ma wykonać osobne discovery MEMORY. Wyszukaj profil `memory` wraz z jego `package.json`, pełnym SHA-256 i — dla paczki dzielonej — kompletem części oraz `parts.sha256`. Zmaterializuj dokładne bajty jednego zgodnego zestawu do wspólnego kontrolowanego `parts-dir`, zweryfikuj każdą część przed joinem i nie utożsamiaj uchwytów Library z lokalnymi ścieżkami. Następnie użyj istniejącego kontraktu attach/bootstrap; nie kopiuj prywatnej pamięci ręcznie do release root. Jeżeli daemon jest aktywny, zastosuj jedno okno maintenance opisane niżej. Po attach wymagaj ponownego `status`/readiness i dowodu `memory_search_ready=true` przed deklaracją dostępnego recallu. Brak kandydata MEMORY przy `memory_mode=optional` nie blokuje rdzenia, ale pozostawia recall i deklaracje autobiograficznej ciągłości niedostępne.
+Po zweryfikowaniu SYSTEM i odczytaniu `MEMORY_ATTACHMENT_CONTRACT.json`, jeżeli kontrakt dopuszcza MEMORY, a aktywny `memory_root` nie zawiera oczekiwanej pamięci autobiograficznej, host z dostępną Biblioteką ma wykonać osobne discovery MEMORY. Wyszukaj profil/content `memory` wraz z jego `package.json`, pełnym SHA-256 i — dla paczki dzielonej — kompletem części oraz `parts.sha256`. Zmaterializuj dokładne bajty jednego zgodnego zestawu do wspólnego kontrolowanego `parts-dir`, zweryfikuj każdą część przed joinem i nie utożsamiaj uchwytów Library z lokalnymi ścieżkami. Dla MEMORY dostarczanej po SYSTEM preferuj `run.py memory-converge`; ta sama ścieżka obsługuje kanoniczne sidecary oraz `jazn_pack_generator_package/v2`, wykonuje wymagany bezpieczny repack v3, attach, recovery/normalizację/wake-state i końcowy readiness gate. Nie kopiuj prywatnej pamięci ręcznie do release root. `memory_search_ready=true` oznacza jedynie dostępność co najmniej jednej zaufanej warstwy wyszukiwania i może dotyczyć samego transactional tier. Przed pozytywnym twierdzeniem autobiograficznym wymagaj `full_autobiographical_recall_ready=true` oraz local-memory provenance dla faktycznie użytych `memory_item_id`; przed deklaracją ciągłości dodatkowo wymagaj `continuity_ready=true`. Dla profilu Łatki ustaw `JAZN_MEMORY_READINESS_POLICY=native_unified_required`. Brak kandydata MEMORY przy `memory_mode=optional` nie blokuje rdzenia, ale pozostawia autobiograficzny recall i deklaracje ciągłości niedostępne.
 
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
@@ -206,14 +206,15 @@ Nie zastępuj lifecycle ręcznym `kill`, własnym `subprocess.Popen`, edycją ma
 
 ### Jedno okno maintenance dla dołączanej MEMORY
 
-`memory-attach` wymaga nieaktywnego daemona. Jeżeli dołączana pamięć wymaga także `memory-recover`, normalizacji albo odbudowy wake-state, traktuj cały zestaw jako **jedną transakcję maintenance**:
+Niskopoziomowy `memory-attach` wymaga nieaktywnego daemona. Dla MEMORY dostarczanej po SYSTEM używaj preferencyjnie wysokopoziomowego `memory-converge`, który scala discovery/adapter/repack/attach/recovery/readiness w **jedną transakcję maintenance**:
 
 1. jeżeli to możliwe, domknij bieżącą visible turn przed maintenance; jeżeli phase-1 została już trwale zapisana i restart jest konieczny, zachowaj dokładnie ten sam `request_id`, `turn_id`, `trace_id` i `host_request_contract_hash` do resume/finalizacji po restarcie — bez replayu tekstu użytkownika;
 2. zatrzymaj daemon najwyżej raz;
-3. wykonaj wymagany repack/`memory-attach`;
-4. pozostaw daemon nieaktywny podczas `memory-recover`, normalizacji i budowy wake-state; recovery ma rozwiązywać źródła przez kanoniczny `JaznConfig.memory_root` / `JAZN_MEMORY_ROOT`, nigdy przez zahardkodowane `<active_root>/memory`;
-5. uruchom daemon dopiero po zakończeniu całej operacji pamięciowej;
-6. zweryfikuj `status`, stan pamięci i continuity, a następnie resume/finalize zachowanego requestu, jeżeli taki request istniał.
+3. w stabilnym lokalnym hoście wykonaj `python -X utf8 run.py memory-converge --parts-dir <LOCAL_MEMORY_PACKAGE_DIR> --json`; w hoście z krótkim/niestabilnym budżetem prealokuj `host-op-id --kind memory-converge`, wykonaj jeden `host-op-submit ... --kind memory-converge -- --parts-dir <LOCAL_MEMORY_PACKAGE_DIR>` i polluj ten sam operation ID;
+4. pozostaw daemon nieaktywny przez cały adapter/repack/attach/recovery/normalizację/budowę wake-state; recovery ma rozwiązywać źródła przez kanoniczny `JaznConfig.memory_root` / `JAZN_MEMORY_ROOT`, nigdy przez zahardkodowane `<active_root>/memory`;
+5. wymagaj zakończenia `memory-converge` zgodnie z `JAZN_MEMORY_READINESS_POLICY`; dla Łatki `native_unified_required` nie może przejść na samym `ready_transactional_tier_only`;
+6. uruchom daemon dopiero po zakończeniu całej operacji pamięciowej;
+7. zweryfikuj live `status`, `full_autobiographical_recall_ready`, continuity i lokalne provenance, a następnie resume/finalize zachowanego requestu, jeżeli taki request istniał.
 
 Nie wykonuj sekwencji `start -> stop -> recover -> start` po poprawnym attach. Restart procesu nie tworzy nowej tury i nie upoważnia hosta do porzucenia durable lineage.
 
