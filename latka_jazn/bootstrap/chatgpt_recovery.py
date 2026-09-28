@@ -676,7 +676,7 @@ def converge_memory_before_daemon(
     parts_dir: Path,
     memory_zip_name: str | None = None,
     work_dir: Path | None = None,
-    time_budget_seconds: float | None = 25.0,
+    time_budget_seconds: float | None = None,
     run_crc: bool = True,
     force_reextract: bool = False,
 ) -> dict[str, Any]:
