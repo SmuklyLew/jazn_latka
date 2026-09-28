@@ -212,7 +212,7 @@ continuity_ready=true
 Nowe pliki testowe, bez modyfikowania historycznych aktywnych testów:
 
 - `tests/test_autobiographical_memory_readiness_convergence.py`
-- `tests/test_memory_transport_convergence_v5880.py`
+- `tests/test_memory_transport_convergence.py`
 
 Pokrywają m.in.:
 
