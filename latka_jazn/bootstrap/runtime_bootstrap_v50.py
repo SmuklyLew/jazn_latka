@@ -12,6 +12,10 @@ from latka_jazn.bootstrap.chatgpt_recovery import recover_chatgpt_runtime
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon_lifecycle_hotfix import install_runtime_daemon_lifecycle_hotfix
 from latka_jazn.core.runtime_lifecycle import reload_daemon
+from latka_jazn.packaging.generator_v2_compat import (
+    discover_generator_sidecar as _shared_discover_generator_sidecar,
+    materialize_generator_v2_compat as _shared_materialize_generator_v2_compat,
+)
 
 PACK_GENERATOR_V2 = "jazn_pack_generator_package/v2"
 LEGACY_COMPAT_SCHEMA = "jazn_package_set/v3"
@@ -50,95 +54,23 @@ def _copy_verified(source: Path, destination: Path, expected_sha: str | None, ex
         tmp.unlink(missing_ok=True)
 
 
-def _discover_generator_sidecar(parts_dir: Path, zip_name: str | None) -> tuple[Path, dict[str, Any]] | None:
-    candidates: list[tuple[Path, dict[str, Any]]] = []
-    for path in sorted(parts_dir.glob("*.json")):
-        if ".package" not in path.name:
-            continue
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8-sig"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            continue
-        if not isinstance(payload, dict) or payload.get("schema_version") != PACK_GENERATOR_V2:
-            continue
-        archive = _mapping(payload.get("archive"))
-        logical = str(archive.get("logical_filename") or "").strip()
-        if not logical.lower().endswith(".zip"):
-            continue
-        if zip_name and logical != zip_name:
-            continue
-        candidates.append((path, payload))
-    if len(candidates) > 1:
-        raise ValueError("more than one jazn_pack_generator_package/v2 system package; pass --zip-name")
-    return candidates[0] if candidates else None
-
-
-def _find_transport_file(parts_dir: Path, canonical_name: str, sha256: str | None, size_bytes: int | None) -> Path:
-    exact = parts_dir / canonical_name
-    if exact.is_file():
-        return exact
-    matches: list[Path] = []
-    for candidate in parts_dir.iterdir():
-        if not candidate.is_file():
-            continue
-        if size_bytes is not None and candidate.stat().st_size != int(size_bytes):
-            continue
-        if sha256 and _sha256_file(candidate) != sha256.lower():
-            continue
-        matches.append(candidate)
-    if len(matches) != 1:
-        raise FileNotFoundError(f"cannot uniquely resolve transport file {canonical_name!r}")
-    return matches[0]
-
-
-def _materialize_v2_compat(parts_dir: Path, payload: dict[str, Any], compat_dir: Path) -> str:
-    archive = _mapping(payload.get("archive"))
-    logical_name = str(archive.get("logical_filename") or "").strip()
-    logical_sha = str(archive.get("logical_sha256") or "").strip().lower() or None
-    logical_size = int(archive["logical_size_bytes"]) if archive.get("logical_size_bytes") is not None else None
-    content = str(payload.get("content") or "").strip().lower()
-    profile = {"system": "system", "memory": "memory", "system+memory": "combined"}.get(content)
-    if profile is None:
-        raise ValueError(f"unsupported generator package content: {content!r}")
-
-    split = _mapping(payload.get("split"))
-    raw_split_parts = split.get("parts")
-    split_parts = raw_split_parts if isinstance(raw_split_parts, list) else []
-    outputs: list[dict[str, Any]] = []
-    if split_parts:
-        for index, raw in enumerate(split_parts, start=1):
-            if not isinstance(raw, dict):
-                raise ValueError("invalid split.parts record")
-            filename = str(raw.get("filename") or "").strip()
-            sha = str(raw.get("sha256") or "").strip().lower() or None
-            size = int(raw["size_bytes"]) if raw.get("size_bytes") is not None else None
-            source = _find_transport_file(parts_dir, filename, sha, size)
-            _copy_verified(source, compat_dir / filename, sha, size)
-            outputs.append({"part_no": int(raw.get("part_no") or index), "filename": filename, "size_bytes": size, "sha256": sha, "is_complete_zip": False})
-    else:
-        source = _find_transport_file(parts_dir, logical_name, logical_sha, logical_size)
-        _copy_verified(source, compat_dir / logical_name, logical_sha, logical_size)
-        outputs.append({"part_no": 1, "filename": logical_name, "size_bytes": logical_size, "sha256": logical_sha, "is_complete_zip": True})
-
-    compat = {
-        "schema_version": LEGACY_COMPAT_SCHEMA,
-        "package_name": logical_name,
-        "profile": profile,
-        "archive_format": "binary",
-        "package_version": str(payload.get("package_version") or "").strip() or None,
-        "logical_zip_sha256": logical_sha,
-        "outputs": outputs,
-        "compatibility_source_schema": PACK_GENERATOR_V2,
-    }
-    (compat_dir / f"{logical_name}.package.json").write_text(
-        json.dumps(compat, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-        newline="\n",
+def _discover_generator_sidecar(
+    parts_dir: Path,
+    zip_name: str | None,
+) -> tuple[Path, dict[str, Any]] | None:
+    return _shared_discover_generator_sidecar(
+        parts_dir,
+        zip_name,
+        allowed_contents={"system", "system+memory"},
     )
-    if logical_sha:
-        (compat_dir / f"{logical_name}.sha256").write_text(f"{logical_sha}  {logical_name}\n", encoding="ascii")
-    return logical_name
 
+
+def _materialize_v2_compat(
+    parts_dir: Path,
+    payload: dict[str, Any],
+    compat_dir: Path,
+) -> str:
+    return _shared_materialize_generator_v2_compat(parts_dir, payload, compat_dir)
 
 def bootstrap_and_reload(
     *,

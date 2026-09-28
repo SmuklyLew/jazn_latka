@@ -49,8 +49,17 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "memory_mode_env": "JAZN_MEMORY_MODE",
         "default_memory_mode": "optional",
         "supported_memory_modes": ["optional", "required", "off"],
+        "memory_readiness_policy_env": "JAZN_MEMORY_READINESS_POLICY",
+        "supported_memory_readiness_policies": ["searchable", "native_unified_required"],
+        "default_memory_readiness_policy": "searchable",
+        "recommended_latka_memory_readiness_policy": "native_unified_required",
+        "generic_search_readiness_field": "memory_search_ready",
+        "autobiographical_recall_readiness_field": "full_autobiographical_recall_ready",
+        "autobiographical_claim_requires_local_provenance": True,
         "attach_requires_inactive_daemon": True,
         "attach_entrypoint": "run.py memory-attach",
+        "converge_entrypoint": "run.py memory-converge",
+        "converge_host_operation_kind": "memory-converge",
         "auto_attach_entrypoint": "run.py runtime-bootstrap",
         "post_attach_restart_required": True,
         "legacy_transport_repack_supported": True,
@@ -60,8 +69,9 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "truth_boundary": (
             "The SYSTEM/MEMORY package boundary prevents private mutable data from becoming a release dependency. "
             "A SYSTEM-only package remains a complete core runtime. MEMORY may be absent, attached later from a "
-            "separate verified package, or explicitly required by operator policy. Core operational SQLite under "
-            "workspace_runtime/core_state is not recall evidence."
+            "separate verified package, or explicitly required by operator policy. memory_search_ready may represent "
+            "transactional-only search; full autobiographical recall requires a trusted native unified source and "
+            "local recall provenance. Core operational SQLite under workspace_runtime/core_state is not recall evidence."
         ),
     }
 

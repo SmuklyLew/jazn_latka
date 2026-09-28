@@ -19,6 +19,11 @@ from latka_jazn.core.runtime_daemon import (
     start_daemon,
     status_daemon,
 )
+from latka_jazn.packaging.generator_v2_compat import (
+    discover_generator_sidecar,
+    materialize_generator_v2_compat,
+    memory_package_requires_v3_repack,
+)
 from latka_jazn.packaging.split_zip_package import (
     discover_package_sidecars,
     extract_independent_zip_set_resumable,
@@ -415,7 +420,7 @@ def _sqlite_health(root: Path) -> dict[str, Any]:
 
 
 def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = None) -> dict[str, Any]:
-    """Discover exactly one sidecar-declared memory package beside the system package."""
+    """Discover exactly one MEMORY package across canonical and generator-v2 sidecars."""
 
     directory = Path(parts_dir).expanduser().resolve()
     candidates: list[dict[str, Any]] = []
@@ -429,8 +434,40 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
                     "package_name": package_name,
                     "sidecar_path": str(sidecar_path),
                     "sidecar": payload,
+                    "transport_schema": str(payload.get("schema_version") or ""),
+                    "generator_v2": False,
                 }
             )
+
+    try:
+        generator = discover_generator_sidecar(
+            directory,
+            explicit_zip_name,
+            allowed_contents={"memory"},
+        )
+    except ValueError as exc:
+        return {
+            "ok": False,
+            "state": "memory_package_ambiguous",
+            "error": str(exc),
+            "candidate_names": [item["package_name"] for item in candidates],
+        }
+    if generator is not None:
+        sidecar_path, payload = generator
+        raw_archive = payload.get("archive")
+        archive = raw_archive if isinstance(raw_archive, dict) else {}
+        package_name = str(archive.get("logical_filename") or "").strip()
+        if package_name:
+            candidates.append(
+                {
+                    "package_name": package_name,
+                    "sidecar_path": str(sidecar_path),
+                    "sidecar": payload,
+                    "transport_schema": str(payload.get("schema_version") or ""),
+                    "generator_v2": True,
+                }
+            )
+
     if explicit_zip_name:
         wanted = str(explicit_zip_name).strip()
         matches = [item for item in candidates if item["package_name"] == wanted]
@@ -444,6 +481,10 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
         return {"ok": True, "state": "memory_package_discovered", **matches[0]}
     if not candidates:
         return {"ok": True, "state": "memory_package_not_present", "package_name": None}
+    unique: dict[tuple[str, str], dict[str, Any]] = {}
+    for item in candidates:
+        unique[(str(item["package_name"]), str(item["sidecar_path"]))] = item
+    candidates = list(unique.values())
     if len(candidates) > 1:
         return {
             "ok": False,
@@ -453,34 +494,9 @@ def _discover_memory_package(parts_dir: Path, explicit_zip_name: str | None = No
     return {"ok": True, "state": "memory_package_discovered", **candidates[0]}
 
 def _memory_package_requires_v3_repack(sidecar: dict[str, Any]) -> dict[str, Any]:
-    """Decide whether legacy transport must be segmented before safe extraction."""
+    """Compatibility wrapper for the shared transport safety policy."""
 
-    from latka_jazn.packaging.zip_resource_limits import ZipResourceLimits
-
-    if str(sidecar.get("memory_manifest_schema") or "").strip() == "jazn_memory_package_manifest/v3":
-        return {"required": False, "reason": "memory_transport_v3"}
-    limits = ZipResourceLimits.from_env()
-    entries = [item for item in sidecar.get("entries") or [] if isinstance(item, dict)]
-    total = sum(max(0, int(item.get("size_bytes") or 0)) for item in entries)
-    oversized = [
-        str(item.get("path") or "")
-        for item in entries
-        if int(item.get("size_bytes") or 0) > limits.max_member_uncompressed_bytes
-    ]
-    archive_format = str(sidecar.get("archive_format") or "").strip().lower()
-    required = bool(
-        oversized
-        or (archive_format == "binary" and total > limits.max_total_uncompressed_bytes)
-    )
-    return {
-        "required": required,
-        "reason": "legacy_transport_exceeds_safe_zip_limits" if required else "legacy_transport_within_safe_zip_limits",
-        "archive_format": archive_format,
-        "declared_total_uncompressed_bytes": total,
-        "oversized_members": oversized[:16],
-        "limits": limits.to_dict(),
-    }
-
+    return memory_package_requires_v3_repack(sidecar)
 
 def _auto_attach_memory_before_daemon(
     *,
@@ -529,6 +545,37 @@ def _auto_attach_memory_before_daemon(
     source_name = str(discovery.get("package_name") or "")
     raw_sidecar = discovery.get("sidecar")
     sidecar = cast(dict[str, Any], raw_sidecar) if isinstance(raw_sidecar, dict) else {}
+
+    if discovery.get("generator_v2") is True:
+        compat_dir = work_dir / "generator_v2_memory_compat"
+        if compat_dir.exists():
+            shutil.rmtree(compat_dir)
+        compat_dir.mkdir(parents=True, exist_ok=True)
+        source_name = materialize_generator_v2_compat(
+            source_dir,
+            sidecar,
+            compat_dir,
+        )
+        source_dir = compat_dir
+        compat_sidecar_path = compat_dir / f"{source_name}.package.json"
+        compat_value = json.loads(compat_sidecar_path.read_text(encoding="utf-8-sig"))
+        if not isinstance(compat_value, dict):
+            report.update({"ok": False, "state": "memory_generator_v2_compat_invalid"})
+            return report
+        sidecar = cast(dict[str, Any], compat_value)
+        report["generator_v2_memory_compat"] = {
+            "ok": True,
+            "source_schema": str(raw_sidecar.get("schema_version") if isinstance(raw_sidecar, dict) else ""),
+            "package_name": source_name,
+            "compat_dir": str(compat_dir),
+            "profile": sidecar.get("profile"),
+            "entry_count": len(sidecar.get("entries") or []),
+            "truth_boundary": (
+                "Generator-v2 metadata was translated only after transport hashes/sizes were verified. "
+                "The resulting MEMORY still passes repack/attach/recovery validation."
+            ),
+        }
+
     repack_decision = _memory_package_requires_v3_repack(sidecar)
     report["repack_decision"] = repack_decision
     if repack_decision.get("required") is True:
@@ -606,9 +653,91 @@ def _auto_attach_memory_before_daemon(
         validation = validate_large_memory(destination, full=False)
     report["validation_after_recovery"] = validation
     report["sqlite_after"] = _sqlite_health(destination)
-    report["ok"] = bool(validation.get("ok") is True and report["sqlite_after"].get("ok") is True)
-    report["state"] = "memory_attached_ready" if report["ok"] else "memory_attached_not_ready"
+    from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
+
+    living_readiness = LivingMemoryGateway(destination).readiness()
+    report["living_memory_readiness"] = living_readiness
+    policy_satisfied = living_readiness.get("memory_readiness_policy_satisfied") is True
+    report["ok"] = bool(
+        validation.get("ok") is True
+        and report["sqlite_after"].get("ok") is True
+        and policy_satisfied
+    )
+    if report["ok"]:
+        report["state"] = "memory_attached_ready"
+    elif not policy_satisfied:
+        report["state"] = "memory_attached_readiness_policy_blocked"
+    else:
+        report["state"] = "memory_attached_not_ready"
     return report
+
+def converge_memory_before_daemon(
+    *,
+    destination: Path,
+    parts_dir: Path,
+    memory_zip_name: str | None = None,
+    work_dir: Path | None = None,
+    time_budget_seconds: float | None = None,
+    run_crc: bool = True,
+    force_reextract: bool = False,
+) -> dict[str, Any]:
+    """Converge one MEMORY package into a verified inactive runtime.
+
+    This is the public high-level maintenance operation for MEMORY delivered
+    after SYSTEM installation. It intentionally reuses the same discovery,
+    generator-v2 adapter, safe v3 repack, attach, recovery and readiness gates
+    as runtime-bootstrap auto-memory.
+    """
+
+    runtime_root = Path(destination).expanduser().resolve()
+    source_dir = Path(parts_dir).expanduser().resolve()
+    workspace = Path(work_dir).expanduser().resolve() if work_dir else (
+        workspace_runtime_path(runtime_root) / "memory_converge"
+    )
+    daemon = status_daemon(JaznConfig(root=runtime_root))
+    if daemon.get("active_state") in {"active_trusted", "active_degraded"}:
+        return {
+            "ok": False,
+            "state": "runtime_active_memory_converge_blocked",
+            "runtime_root": str(runtime_root),
+            "parts_dir": str(source_dir),
+            "daemon_status_before": daemon,
+            "truth_boundary": (
+                "MEMORY convergence is a maintenance transaction and never mutates "
+                "persistent autobiographical memory while the daemon is active."
+            ),
+        }
+
+    discovery = _discover_memory_package(source_dir, memory_zip_name)
+    selected_name = memory_zip_name
+    if (
+        selected_name is None
+        and discovery.get("ok") is True
+        and discovery.get("state") == "memory_package_discovered"
+    ):
+        selected_name = str(discovery.get("package_name") or "") or None
+
+    result = _auto_attach_memory_before_daemon(
+        destination=runtime_root,
+        parts_dir=source_dir,
+        work_dir=workspace,
+        memory_zip_name=selected_name,
+        time_budget_seconds=time_budget_seconds,
+        run_crc=run_crc,
+        force_reextract=force_reextract,
+    )
+    result["operation"] = "memory-converge"
+    result["runtime_root"] = str(runtime_root)
+    result["parts_dir"] = str(source_dir)
+    result["selected_memory_zip_name"] = selected_name
+    result["daemon_status_before"] = daemon
+    result["truth_boundary"] = (
+        "A successful convergence proves verified package/recovery/readiness state. "
+        "It does not prove that a ChatGPT host can create an executor or that a "
+        "visible turn has been accepted by Jaźń."
+    )
+    return result
+
 
 def _verify_memory_package_manifest(root: Path) -> dict[str, Any]:
     root = Path(root).resolve()

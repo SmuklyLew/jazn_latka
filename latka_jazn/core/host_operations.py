@@ -27,7 +27,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 HOST_OPERATION_SCHEMA_VERSION = schema_version("host_durable_operation")
 HOST_OPERATION_ID_RE = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 TERMINAL_OPERATION_STATES = frozenset({"completed", "failed", "spawn_failed", "conflict"})
-SUPPORTED_OPERATION_KINDS = frozenset({"daemon-start", "runtime-bootstrap", "supervisor-start"})
+SUPPORTED_OPERATION_KINDS = frozenset({"daemon-start", "runtime-bootstrap", "memory-converge", "supervisor-start"})
 
 
 def utc_now_iso() -> str:
@@ -160,6 +160,9 @@ def build_host_operation_target_argv(
         public_command = "runtime-bootstrap"
         _require_option(extra, "--parts-dir")
         _require_option(extra, "--destination")
+    elif normalized_kind == "memory-converge":
+        public_command = "memory-converge"
+        _require_option(extra, "--parts-dir")
     else:
         public_command = "supervisor-run"
 

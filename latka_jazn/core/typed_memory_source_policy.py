@@ -122,6 +122,17 @@ _INFERENCE_MARKERS = (
     "reasoning",
 )
 
+_NON_SEMANTIC_METADATA_KEYS = frozenset(
+    {
+        "selected_canonical",
+        "selected_transactional_tier",
+        "transactional_tier_same_database",
+        "autobiographical_source_ready",
+        "gateway_source_kind",
+        "gateway_source_origin",
+    }
+)
+
 
 @dataclass(frozen=True, slots=True)
 class TypedSourceDecision:
@@ -206,7 +217,9 @@ def _blob(*values: Any) -> str:
             continue
         if isinstance(value, dict):
             for key, nested in value.items():
-                parts.append(str(key))
+                key_text = str(key).strip().casefold()
+                if key_text not in _NON_SEMANTIC_METADATA_KEYS:
+                    parts.append(str(key))
                 parts.append(str(nested))
         elif isinstance(value, (list, tuple, set)):
             parts.extend(str(part) for part in value)

@@ -30,9 +30,22 @@
   },
   "host_guidance": {
     "system_only": "A verified SYSTEM package may start and serve ordinary dialogue without private MEMORY. Do not create or claim autobiographical recall merely because core operational SQLite exists.",
-    "memory_available_separately": "When a verified MEMORY package is separately available, attach it through the canonical memory-attach/runtime-bootstrap pipeline while the daemon is inactive, then restart and re-evaluate recall readiness.",
+    "memory_available_separately": "When a verified MEMORY package is separately available, prefer run.py memory-converge while the daemon is inactive. The convergence path accepts canonical and generator-v2 transport, performs safe v3 repack when required, attaches atomically, recovers/normalizes, rebuilds wake state as needed, and then evaluates the configured recall readiness policy before restart.",
     "memory_missing": "Treat MEMORY as absent_optional in the default mode. Core runtime readiness remains independent; recall and continuity claims remain disabled.",
-    "memory_invalid": "Keep core runtime available, fail memory readiness closed, and do not use the invalid memory source for recall."
+    "memory_invalid": "Keep core runtime available, fail memory readiness closed, and do not use the invalid memory source for recall.",
+    "autobiographical_claims": "memory_search_ready may be true for transactional-tier-only search. A positive autobiographical memory claim requires full_autobiographical_recall_ready=true plus local MEMORY provenance for the memory items actually used by the turn."
   },
-  "truth_boundary": "SYSTEM is executable code plus runtime contracts. MEMORY is mutable private data and may be attached, replaced or absent independently. Operational core state under workspace_runtime/core_state is not autobiographical memory and must never be used as recall evidence."
+  "truth_boundary": "SYSTEM is executable code plus runtime contracts. MEMORY is mutable private data and may be attached, replaced or absent independently. Operational core state under workspace_runtime/core_state is not autobiographical memory and must never be used as recall evidence. Generic search readiness does not imply native autobiographical recall readiness.",
+  "memory_readiness_policy_env": "JAZN_MEMORY_READINESS_POLICY",
+  "supported_memory_readiness_policies": [
+    "searchable",
+    "native_unified_required"
+  ],
+  "default_memory_readiness_policy": "searchable",
+  "recommended_latka_memory_readiness_policy": "native_unified_required",
+  "generic_search_readiness_field": "memory_search_ready",
+  "autobiographical_recall_readiness_field": "full_autobiographical_recall_ready",
+  "autobiographical_claim_requires_local_provenance": true,
+  "converge_entrypoint": "run.py memory-converge",
+  "converge_host_operation_kind": "memory-converge"
 }

@@ -36,6 +36,14 @@ def _items(contract: Mapping[str, Any] | None) -> list[dict[str, Any]]:
     return [dict(item) for item in raw if isinstance(item, Mapping)]
 
 
+def _item_has_autobiographical_provenance(item: Mapping[str, Any]) -> bool:
+    metadata = _mapping(item.get("metadata"))
+    return bool(
+        metadata.get("autobiographical_source_ready") is True
+        or item.get("autobiographical_source_ready") is True
+    )
+
+
 def _item_has_usable_provenance(item: Mapping[str, Any]) -> bool:
     metadata = _mapping(item.get("metadata"))
     source_type = str(
@@ -93,6 +101,8 @@ def build_memory_recall_observability(
         and execution.get("cancelled") is not True
     )
     memory_search_ready = living.get("memory_search_ready") is True
+    native_unified_recall_ready = living.get("native_unified_recall_ready") is True
+    full_autobiographical_recall_ready = living.get("full_autobiographical_recall_ready") is True
     issue_count = len(living.get("issues") or []) if isinstance(living.get("issues"), list) else 0
 
     source_types: list[str] = []
@@ -109,6 +119,10 @@ def build_memory_recall_observability(
         contract_items
         and all(_item_has_usable_provenance(item) for item in contract_items)
     )
+    autobiographical_source_count = sum(
+        1 for item in contract_items if _item_has_autobiographical_provenance(item)
+    )
+    autobiographical_provenance_available = autobiographical_source_count > 0
 
     if not recall_requested:
         status = "not_requested"
@@ -130,9 +144,13 @@ def build_memory_recall_observability(
         "memory_recall_requested": recall_requested,
         "memory_recall_executed": recall_executed,
         "memory_search_ready": memory_search_ready,
+        "native_unified_recall_ready": native_unified_recall_ready,
+        "full_autobiographical_recall_ready": full_autobiographical_recall_ready,
         "memory_recall_status": status,
         "memory_source_count": len(contract_items),
         "memory_provenance_available": provenance_available,
+        "autobiographical_source_count": autobiographical_source_count,
+        "autobiographical_provenance_available": autobiographical_provenance_available,
         "memory_source_types": source_types,
         "memory_issue_count": issue_count,
         "runtime_turn_id": str(runtime_turn_id),

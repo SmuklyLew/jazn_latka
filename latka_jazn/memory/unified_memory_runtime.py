@@ -33,6 +33,11 @@ _BASE_FTS = {
     "journal_fts": "journal_fts_docs",
     "experience_fts": "experience_fts_docs",
 }
+_SCHEMA_FTS_CAPABILITIES: dict[str, dict[str, str]] = {
+    "jazn_unified_memory/v2.4": {},
+    "jazn_unified_memory/v2.5": {"memory_records_fts": "memory_records"},
+    "jazn_unified_memory/v3.0": {"memory_records_fts": "memory_records"},
+}
 
 
 def _cancelled(should_continue: Callable[[], bool] | None) -> bool:
@@ -97,8 +102,7 @@ def probe_unified_memory_database(
             native = schema_identity in COMPATIBLE_UNIFIED_SCHEMA_VERSIONS
             missing_tables = sorted(_REQUIRED_NATIVE_TABLES - set(objects)) if native else []
             required_fts = dict(_BASE_FTS)
-            if schema_identity == "jazn_unified_memory/v2.5":
-                required_fts["memory_records_fts"] = "memory_records"
+            required_fts.update(_SCHEMA_FTS_CAPABILITIES.get(str(schema_identity or ""), {}))
             missing_fts = sorted(
                 name for name, docs in required_fts.items()
                 if name not in objects or docs not in objects
@@ -143,6 +147,8 @@ def probe_unified_memory_database(
         "missing_fts_objects": missing_fts,
         "fts_counts": fts_counts,
         "fts_errors": fts_errors,
+        "required_fts_objects": sorted(required_fts) if native else [],
+        "fts_validation_mode": "read_only_match_and_row_count",
         "recall_probe_ok": recall_probe_ok,
         "cancelled": _cancelled(should_continue),
     })
@@ -157,6 +163,8 @@ def probe_unified_memory_database(
         and not report["cancelled"]
     )
     report["memory_search_ready"] = ready
+    report["native_unified_recall_ready"] = ready
+    report["full_autobiographical_recall_ready"] = ready
     if ready:
         report["status"] = "ready_native_unified"
     elif not native:

@@ -190,11 +190,24 @@ def status_payload(
         living_memory = {
             "status": "memory_readiness_probe_failed",
             "memory_search_ready": False,
+            "native_unified_recall_ready": False,
+            "full_autobiographical_recall_ready": False,
+            "memory_readiness_policy": "unknown",
+            "memory_readiness_policy_satisfied": False,
             "legacy_search_ready": False,
             "error_type": type(exc).__name__,
             "error": str(exc),
         }
     continuity = startup.get("memory_continuity_status") or {}
+    full_autobiographical_recall_ready = bool(
+        living_memory.get("full_autobiographical_recall_ready")
+    )
+    memory_readiness_policy = str(
+        living_memory.get("memory_readiness_policy") or "searchable"
+    )
+    memory_readiness_policy_satisfied = bool(
+        living_memory.get("memory_readiness_policy_satisfied")
+    )
     rest_status, rest_status_source = _daemon_subsystem_status(daemon, "rest_cycle_status")
     rest_scheduler_ready, rest_scheduler_running, rest_scheduler_state = _rest_scheduler_capability(rest_status)
     try:
@@ -272,6 +285,18 @@ def status_payload(
                 "ready": bool(living_memory.get("memory_search_ready")),
                 "status": str(living_memory.get("status") or "unknown"),
             },
+            "autobiographical_memory": {
+                "classification": (
+                    "required"
+                    if memory_readiness_policy == "native_unified_required"
+                    else "degraded_allowed"
+                ),
+                "ready": full_autobiographical_recall_ready,
+                "status": str(living_memory.get("status") or "unknown"),
+                "policy": memory_readiness_policy,
+                "policy_satisfied": memory_readiness_policy_satisfied,
+                "canonical_database": living_memory.get("autobiographical_database"),
+            },
             "continuity": {
                 "classification": "degraded_allowed",
                 "ready": bool(continuity.get("continuity_claim_allowed")),
@@ -343,6 +368,11 @@ def status_payload(
         "nlp_capability_probe": nlp_probe,
         "memory_search_ready": bool(living_memory.get("memory_search_ready")),
         "memory_search_status": living_memory.get("status"),
+        "native_unified_recall_ready": bool(living_memory.get("native_unified_recall_ready")),
+        "full_autobiographical_recall_ready": full_autobiographical_recall_ready,
+        "memory_readiness_policy": memory_readiness_policy,
+        "memory_readiness_policy_satisfied": memory_readiness_policy_satisfied,
+        "autobiographical_memory_database": living_memory.get("autobiographical_database"),
         "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
         "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
         "rest_scheduler_ready": rest_scheduler_ready,
@@ -357,9 +387,10 @@ def status_payload(
         "plugin_readiness": plugin_readiness,
         "operator_capabilities": operator_capabilities,
         "truth_boundary": (
-            "Process readiness does not imply memory, continuity, dream generation, cognitive integration, "
-            "optional plugin, Git-operator, or pip-operator readiness. Optional capabilities never become "
-            "installation blockers merely by being unavailable."
+            "Process readiness does not imply native autobiographical memory, continuity, dream generation, cognitive integration, "
+            "optional plugin, Git-operator, or pip-operator readiness. memory_search_ready may represent transactional-only search; "
+            "full_autobiographical_recall_ready requires trusted native unified memory. Optional capabilities never become "
+            "installation blockers unless an explicit readiness policy classifies them as required."
         ),
     }
     if not process_ok:

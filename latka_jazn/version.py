@@ -3,11 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.87.9 preserves the v87 persistent-runtime fail-closed routing
-# while making ChatGPT project bootstrap depend only on callable host capabilities.
-DISTRIBUTION_VERSION = "16.3.25.5.87.9"
-PACKAGE_VERSION = "16.3.25.5.87.9"
-PACKAGE_RELEASE_NAME = "chatgpt-capability-loader-convergence"
+# v16.3.25.5.88.0 keeps persistent-runtime fail-closed routing while
+# separating generic searchable memory from native autobiographical readiness
+# and preserving local-memory provenance through host-visible finalization.
+DISTRIBUTION_VERSION = "16.3.25.5.88.0"
+PACKAGE_VERSION = "16.3.25.5.88.0"
+PACKAGE_RELEASE_NAME = "autobiographical-memory-readiness-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

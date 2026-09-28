@@ -199,6 +199,19 @@ class LivingMemoryGateway:
                     except (sqlite3.Error, OSError, ValueError, KeyError) as exc:
                         issues.append(f"runtime_write_v2:{tier_path}:{type(exc).__name__}:{exc}")
                     else:
+                        tier_hits = [
+                            replace(
+                                hit,
+                                metadata={
+                                    **(hit.metadata or {}),
+                                    "gateway_source_kind": str(source.get("source_kind") or "transactional_tier_memory"),
+                                    "gateway_source_origin": str(source.get("origin") or ""),
+                                    "selected_canonical": bool(source.get("selected_canonical")),
+                                    "autobiographical_source_ready": bool(source.get("autobiographical_source_ready")),
+                                },
+                            )
+                            for hit in tier_hits
+                        ]
                         hits.extend(tier_hits)
                 continue
             paths = {key: Path(value) for key, value in (source.get("database_paths") or {}).items()}
@@ -232,6 +245,19 @@ class LivingMemoryGateway:
                                 path, candidate_query, mode=mode, limit=per_layer,
                                 temporal_scope=temporal_scope, should_continue=can_continue,
                             )
+                        found = [
+                            replace(
+                                hit,
+                                metadata={
+                                    **(hit.metadata or {}),
+                                    "gateway_source_kind": str(source.get("source_kind") or ""),
+                                    "gateway_source_origin": str(source.get("origin") or ""),
+                                    "selected_canonical": bool(source.get("selected_canonical")),
+                                    "autobiographical_source_ready": bool(source.get("autobiographical_source_ready")),
+                                },
+                            )
+                            for hit in found
+                        ]
                         if query_index == 0:
                             found = [
                                 replace(
@@ -312,6 +338,12 @@ class LivingMemoryGateway:
             and report.get("source_kind") == "native_unified"
             for report in source_reports
         )
+        full_autobiographical_recall_ready = any(
+            report.get("selected_canonical") is True
+            and report.get("autobiographical_source_ready") is True
+            and report.get("source_kind") == "native_unified"
+            for report in source_reports
+        )
         tier_ready = any(
             bool(report.get("memory_search_ready"))
             and report.get("source_kind") == "transactional_tier_memory"
@@ -334,6 +366,8 @@ class LivingMemoryGateway:
             "schema_version": SCHEMA_VERSION,
             "status": status,
             "memory_search_ready": native_ready or tier_ready,
+            "native_unified_recall_ready": full_autobiographical_recall_ready,
+            "full_autobiographical_recall_ready": full_autobiographical_recall_ready,
             "transactional_tier_search_ready": tier_ready,
             "legacy_search_ready": legacy_ready,
             "search_mode": mode,
@@ -369,8 +403,9 @@ class LivingMemoryGateway:
             ),
             "import_catalog_used_for_recall": False,
             "truth_boundary": (
-                "Źródła L0/L1/L2/L3 są czytane tylko do odczytu. Trafienie z archiwum, dziennika lub doświadczeń "
-                "jest dowodem albo zapisem, a nie automatycznie zatwierdzonym wspomnieniem L3 ani biologicznym przeżyciem."
+                "Źródła L0/L1/L2/L3 są czytane tylko do odczytu. memory_search_ready może oznaczać sam transactional tier; "
+                "full_autobiographical_recall_ready wymaga wybranego natywnego unified source. Trafienie z archiwum, dziennika "
+                "lub doświadczeń jest dowodem albo zapisem, a nie automatycznie zatwierdzonym wspomnieniem L3 ani biologicznym przeżyciem."
             ),
         }
 

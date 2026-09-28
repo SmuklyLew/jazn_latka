@@ -1063,7 +1063,7 @@ def _handle_action(
     elif action.kind == "export":
         workflows.export()
     elif action.kind == "recall":
-        dialogs.message("RECALL / BENCHMARK", "\n".join(state._design_detail("recall")))
+        workflows.recall_hub()
     elif action.kind == "settings-hub":
         _settings_hub(state, dialogs)
     elif action.kind == "settings-project":

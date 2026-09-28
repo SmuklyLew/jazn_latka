@@ -107,7 +107,7 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument(
         "--kind",
         required=True,
-        choices=("daemon-start", "runtime-bootstrap", "supervisor-start"),
+        choices=("daemon-start", "runtime-bootstrap", "memory-converge", "supervisor-start"),
     )
 
     child = sub.add_parser("host-op-submit", allow_abbrev=False)
@@ -116,7 +116,7 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument(
         "--kind",
         required=True,
-        choices=("daemon-start", "runtime-bootstrap", "supervisor-start"),
+        choices=("daemon-start", "runtime-bootstrap", "memory-converge", "supervisor-start"),
     )
     child.add_argument("remainder", nargs=argparse.REMAINDER)
 
@@ -148,6 +148,19 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--compression-level", type=int, default=6)
     child.add_argument("--dry-run", action="store_true")
     child.add_argument("--force", action="store_true")
+
+    child = sub.add_parser("memory-converge", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--parts-dir", type=Path, required=True)
+    child.add_argument("--zip-name")
+    child.add_argument("--work-dir", type=Path)
+    child.add_argument("--time-budget-seconds", type=float, default=None)
+    child.add_argument("--no-crc", action="store_true")
+    child.add_argument(
+        "--force-reextract",
+        action="store_true",
+        help="Wyczyść wyłącznie staging konwergencji; nie omija walidacji ani atomowego attach.",
+    )
 
     child = sub.add_parser("memory-attach", allow_abbrev=False)
     _add_common(child)
@@ -381,7 +394,7 @@ def main(
         "host-finalize", "bridge-discovery", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
-        "memory-repack-legacy", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
+        "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-recover", "memory-import-html",
         "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
@@ -514,6 +527,23 @@ def main(
                 as_json=True,
             )
             return 17
+
+    if ns.command == "memory-converge":
+        from latka_jazn.bootstrap.chatgpt_recovery import converge_memory_before_daemon
+
+        payload = converge_memory_before_daemon(
+            destination=root,
+            parts_dir=ns.parts_dir,
+            memory_zip_name=ns.zip_name,
+            work_dir=ns.work_dir,
+            time_budget_seconds=ns.time_budget_seconds,
+            run_crc=not ns.no_crc,
+            force_reextract=bool(ns.force_reextract),
+        )
+        _emit(payload, as_json=True)
+        if payload.get("pending") is True:
+            return 75
+        return 0 if payload.get("ok") is True else 17
 
     if ns.command == "memory-attach":
         from latka_jazn.packaging.memory_package_contract import attach_memory_package

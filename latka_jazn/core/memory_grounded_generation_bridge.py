@@ -40,6 +40,13 @@ class GroundedMemoryItem:
     timestamp: str | None
     confidence: float
     relevance_reason: str
+    semantic_source_type: str = "unknown"
+    provenance_label: str = "brak dowodu"
+    truth_status: str = "unknown"
+    source_database: str | None = None
+    source_locator: str | None = None
+    gateway_source_kind: str | None = None
+    autobiographical_source_ready: bool = False
     schema_version: str = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
@@ -49,6 +56,13 @@ class GroundedMemoryItem:
         self.timestamp = _optional_text(self.timestamp)
         self.confidence = _as_float(self.confidence, fallback=0.5)
         self.relevance_reason = _clean_text(self.relevance_reason, fallback="grounded_memory_payload")
+        self.semantic_source_type = _clean_text(self.semantic_source_type, fallback="unknown")
+        self.provenance_label = _clean_text(self.provenance_label, fallback="brak dowodu")
+        self.truth_status = _clean_text(self.truth_status, fallback="unknown")
+        self.source_database = _optional_text(self.source_database)
+        self.source_locator = _optional_text(self.source_locator)
+        self.gateway_source_kind = _optional_text(self.gateway_source_kind)
+        self.autobiographical_source_ready = self.autobiographical_source_ready is True
         self.schema_version = str(self.schema_version or SCHEMA_VERSION)
 
     def to_dict(self) -> dict[str, Any]:
@@ -109,11 +123,21 @@ def enforce_memory_grounding(candidate: ResponseCandidate, grounded_items: list[
         violations.append("memory_claim_without_grounded_items")
     if has_memory_claim and candidate.source == "model_adapter" and grounded_by_id and not used_ids:
         violations.append("model_memory_claim_without_declared_used_memory_ids")
+    used_grounded = [grounded_by_id[item_id] for item_id in used_ids if item_id in grounded_by_id]
+    if (
+        has_memory_claim
+        and candidate.source == "model_adapter"
+        and used_grounded
+        and any(not item.autobiographical_source_ready for item in used_grounded)
+    ):
+        violations.append("memory_claim_without_native_autobiographical_provenance")
 
     if grounded_by_id:
         reasons.append("grounded_memory_items_available")
     if used_ids and not unknown_ids:
         reasons.append("candidate_memory_ids_match_grounded_payload")
+    if used_grounded and all(item.autobiographical_source_ready for item in used_grounded):
+        reasons.append("native_autobiographical_provenance_verified")
     if not has_memory_claim and not used_ids:
         reasons.append("candidate_makes_no_memory_claim")
 
@@ -133,6 +157,7 @@ def enforce_memory_grounding(candidate: ResponseCandidate, grounded_items: list[
 
 def _grounded_item_from_raw(raw: Any, *, index: int) -> GroundedMemoryItem:
     data = _as_dict(raw)
+    metadata = _as_dict(data.get("metadata"))
     item_id = data.get("item_id") or data.get("id") or data.get("memory_id") or f"memory_item_{index + 1}"
     excerpt = (
         data.get("excerpt")
@@ -152,6 +177,16 @@ def _grounded_item_from_raw(raw: Any, *, index: int) -> GroundedMemoryItem:
         timestamp=str(timestamp) if timestamp is not None else None,
         confidence=_as_float(data.get("confidence"), fallback=0.5),
         relevance_reason=str(relevance_reason),
+        semantic_source_type=str(metadata.get("semantic_source_type") or data.get("semantic_source_type") or "unknown"),
+        provenance_label=str(metadata.get("provenance_label") or data.get("provenance_label") or "brak dowodu"),
+        truth_status=str(metadata.get("truth_status") or data.get("truth_status") or "unknown"),
+        source_database=str(metadata.get("source_database") or data.get("source_database") or "") or None,
+        source_locator=str(metadata.get("source_locator") or data.get("source_locator") or "") or None,
+        gateway_source_kind=str(metadata.get("gateway_source_kind") or data.get("gateway_source_kind") or "") or None,
+        autobiographical_source_ready=(
+            metadata.get("autobiographical_source_ready") is True
+            or data.get("autobiographical_source_ready") is True
+        ),
     )
 
 
