@@ -12,6 +12,7 @@ from typing import Any, Protocol
 import json
 
 from latka_jazn.tools.memory_restore import confirmation_token
+from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 
 from .baseline_registry import discover_baseline_roots
 from .controller import MemoryRebuildAppController
@@ -511,6 +512,7 @@ class StudioWorkflows:
                     ("new", "Utwórz nową bazę w wybranym folderze"),
                     ("manual", "Wpisz ścieżkę ręcznie"),
                     ("validate", "Pełna walidacja bieżącej bazy"),
+                    ("runtime-readiness", "Sprawdź native autobiographical readiness"),
                     ("back", "Wróć"),
                 ],
                 default="existing",
@@ -549,6 +551,63 @@ class StudioWorkflows:
             elif action == "validate":
                 report = UnifiedMemoryDatabase(self.state.database).validate(full=True)
                 self.dialogs.message("WALIDACJA BAZY", _json_text(report))
+            elif action == "runtime-readiness":
+                report = probe_unified_memory_database(
+                    self.state.database,
+                    full_integrity=False,
+                )
+                self.dialogs.message(
+                    "NATIVE AUTOBIOGRAPHICAL READINESS",
+                    _json_text(
+                        {
+                            "database": str(self.state.database),
+                            "status": report.get("status"),
+                            "memory_search_ready": report.get("memory_search_ready"),
+                            "native_unified_recall_ready": report.get("native_unified_recall_ready"),
+                            "full_autobiographical_recall_ready": report.get("full_autobiographical_recall_ready"),
+                            "schema_identity": report.get("schema_identity"),
+                            "missing_required_tables": report.get("missing_required_tables"),
+                            "missing_fts_objects": report.get("missing_fts_objects"),
+                            "fts_errors": report.get("fts_errors"),
+                            "recall_probe_ok": report.get("recall_probe_ok"),
+                            "truth_boundary": (
+                                "Ten raport używa tego samego native unified probe co runtime. "
+                                "Transactional tier ani sama obecność pliku nie wystarczają do pełnej gotowości autobiograficznej."
+                            ),
+                        }
+                    ),
+                )
+
+    def recall_hub(self) -> None:
+        report = probe_unified_memory_database(
+            self.state.database,
+            full_integrity=False,
+        )
+        self.dialogs.message(
+            "RECALL / BENCHMARK — RUNTIME GATE",
+            _json_text(
+                {
+                    "database": str(self.state.database),
+                    "status": report.get("status"),
+                    "native_unified_recall_ready": report.get("native_unified_recall_ready"),
+                    "full_autobiographical_recall_ready": report.get("full_autobiographical_recall_ready"),
+                    "schema_identity": report.get("schema_identity"),
+                    "required_fts_objects": report.get("required_fts_objects"),
+                    "fts_validation_mode": report.get("fts_validation_mode"),
+                    "fts_errors": report.get("fts_errors"),
+                    "recall_probe_ok": report.get("recall_probe_ok"),
+                    "benchmark_stage": "fts5-bm25/v1",
+                    "sentinel_policy": (
+                        "Prywatne sentinel queries pozostają poza repozytorium; "
+                        "syntetyczne testy E2E weryfikują tę samą ścieżkę provenance."
+                    ),
+                    "truth_boundary": (
+                        "Studio nie tworzy drugiego systemu pamięci. Waliduje tę samą "
+                        "memory_jazn.sqlite3, której używa LivingMemoryGateway."
+                    ),
+                }
+            ),
+        )
 
     def import_hub(self) -> None:
         store = UnifiedMemoryDatabase(self.state.database)
