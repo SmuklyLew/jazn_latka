@@ -114,7 +114,11 @@ def resolve_memory_root(
     if memory_root_has_payload(canonical):
         return canonical
     legacy = legacy_memory_root(root)
-    if memory_root_has_payload(legacy):
+    # Preserve the historical compatibility contract even when the legacy
+    # directory is currently empty or carries only non-indexed private files.
+    # The new rule is only that an empty canonical directory must not shadow
+    # an already-existing legacy memory root.
+    if legacy.exists():
         return legacy
     return canonical
 
