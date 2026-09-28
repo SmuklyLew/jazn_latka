@@ -36,6 +36,27 @@ from latka_jazn.tools.memory_rebuild_app.unified_schema import CANONICAL_DATABAS
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES
 
 
+MEMORY_READINESS_POLICY_ENV = "JAZN_MEMORY_READINESS_POLICY"
+MEMORY_READINESS_POLICIES = frozenset({"searchable", "native_unified_required"})
+FULL_AUTOBIOGRAPHICAL_STATUSES = frozenset(
+    {
+        "ready_native_unified",
+        "ready_native_plus_transactional_tier",
+        "ready_native_unified_transactional_single_database",
+    }
+)
+
+
+def memory_readiness_policy(value: str | None = None) -> str:
+    raw = str(value if value is not None else os.environ.get(MEMORY_READINESS_POLICY_ENV, "searchable"))
+    normalized = raw.strip().lower() or "searchable"
+    if normalized not in MEMORY_READINESS_POLICIES:
+        raise ValueError(
+            f"{MEMORY_READINESS_POLICY_ENV} must be one of {sorted(MEMORY_READINESS_POLICIES)}, got {raw!r}"
+        )
+    return normalized
+
+
 class LivingMemoryGateway(_LivingMemoryGateway):
     """Select exactly one native unified database, with legacy read-only fallback."""
 
@@ -255,6 +276,8 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                         else "workspace_registry_explicit_trust_required"
                     ),
                     "native_structurally_ready": native_ready,
+                    "autobiographical_source_ready": False,
+                    "gateway_source_kind": source_kind,
                     "legacy_structurally_ready": bool(
                         legacy_probe.get("legacy_search_ready")
                     ),
@@ -310,6 +333,8 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                     "trust_basis": "active_memory_root_boundary",
                     "trust_issue": None,
                     "native_structurally_ready": False,
+                    "autobiographical_source_ready": False,
+                    "gateway_source_kind": "transactional_tier_memory",
                     "legacy_structurally_ready": False,
                     "transactional_tier_structurally_ready": tier_ready,
                     "memory_search_ready": tier_ready,
@@ -343,6 +368,9 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                     continue
                 selected = item is selected_native
                 item["selected_canonical"] = selected
+                item["autobiographical_source_ready"] = bool(
+                    selected and item.get("source_kind") == "native_unified"
+                )
                 if not selected:
                     item["recall_ready"] = False
                     if item.get("source_trusted") is True:
@@ -350,6 +378,7 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         else:
             for item in discovered:
                 item.setdefault("selected_canonical", False)
+                item["autobiographical_source_ready"] = False
         self._discovery_cache = deepcopy(discovered)
         self._discovery_cached_at = time.monotonic()
         return discovered
@@ -377,6 +406,11 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         else:
             status = "disabled_by_policy" if memory_mode() == "off" else "no_ready_memory_source"
         memory_ready = selected is not None or tier is not None
+        full_autobiographical_ready = bool(selected is not None)
+        policy = memory_readiness_policy()
+        policy_satisfied = bool(
+            memory_ready if policy == "searchable" else full_autobiographical_ready
+        )
         selected_source_count = 0
         if selected is not None:
             selected_source_count += 1
@@ -386,6 +420,11 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             "schema_version": SCHEMA_VERSION,
             "status": status,
             "memory_search_ready": memory_ready,
+            "native_unified_recall_ready": full_autobiographical_ready,
+            "full_autobiographical_recall_ready": full_autobiographical_ready,
+            "memory_readiness_policy": policy,
+            "memory_readiness_policy_satisfied": policy_satisfied,
+            "autobiographical_claim_requires_local_memory_evidence": True,
             "transactional_tier_search_ready": tier is not None,
             "transactional_tier_same_database": same_database,
             "legacy_search_ready": bool(legacy),
@@ -394,11 +433,20 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                 if selected
                 else (tier.get("canonical_database") if tier else None)
             ),
+            "autobiographical_database": (
+                selected.get("canonical_database") if selected else None
+            ),
+            "degraded_reason": (
+                "transactional_tier_without_native_unified_recall"
+                if tier is not None and selected is None
+                else None
+            ),
             "selected_source_count": selected_source_count,
             "source_count": len(sources),
             "sources": sources,
             "truth_boundary": (
-                "memory_search_ready wymaga jawnie zaufanego źródła, włączonej polityki MEMORY i poprawnej próby read-only. "
+                "memory_search_ready oznacza dowolne zaufane źródło wyszukiwalne i może obejmować sam transactional tier. "
+                "full_autobiographical_recall_ready wymaga wybranej, zaufanej natywnej bazy unified po poprawnej próbie read-only. "
                 "Zweryfikowana natywna baza unified może być jednocześnie transactional L1/L2/L3, co usuwa drugi "
                 "niewidoczny świat pamięci. Układ pięciu baz pozostaje wyłącznie zgodnością read-only, a sidecary i "
                 "wake-state są warstwami pochodnymi. MEMORY mode=off blokuje wszystkie źródła recall."
@@ -406,4 +454,13 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         }
 
 
-__all__ = ["LivingMemoryGateway", "LivingMemoryHit", "REGISTRY_FILENAME", "SCHEMA_VERSION"]
+__all__ = [
+    "FULL_AUTOBIOGRAPHICAL_STATUSES",
+    "LivingMemoryGateway",
+    "LivingMemoryHit",
+    "MEMORY_READINESS_POLICIES",
+    "MEMORY_READINESS_POLICY_ENV",
+    "REGISTRY_FILENAME",
+    "SCHEMA_VERSION",
+    "memory_readiness_policy",
+]
