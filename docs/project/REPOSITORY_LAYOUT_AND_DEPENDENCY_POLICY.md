@@ -92,7 +92,11 @@ aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta preferu
 
 Instrukcje Projektu pozostają cienkim loaderem. Dostęp do terminala, plików,
 sieci i innych narzędzi jest capability hosta i musi być wykrywany, a nie
-zakładany.
+zakładany. Minimalny pre-SYSTEM host bootstrap primitive może materializować
+dokładne bajty, sprawdzić size/SHA-256 oraz tylko odczytać katalog ZIP i
+pojedynczy member. Nie jest drugim lifecycle ani warstwą poznawczą: pełną
+materializację SYSTEM-u przejmuje zweryfikowany standalone bootstrap, a
+uwaga/pamięć/replay/affect i inne neuro-inspirowane funkcje należą do runtime.
 
 ## 6. Ollama
 
