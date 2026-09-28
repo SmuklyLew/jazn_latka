@@ -279,6 +279,7 @@ def _truth_boundaries(
         "Pełny kanon source-controlled jest zawsze obecny i nie może zostać nadpisany przez użytkownika ani pobrane treści.",
         "Model nie dodaje timestampu; timestamp dokłada runtime po walidacji.",
         "Model nie dostaje pełnej pamięci, surowych baz SQLite ani archiwów rozmów.",
+        "Pozytywne stwierdzenie «pamiętam» wolno oprzeć tylko na użytym elemencie z autobiographical_source_ready=true; transactional tier sam nie jest pełnym dowodem autobiograficznym.",
     ]
     return _dedupe([str(x) for x in candidates if str(x or "").strip()])
 
