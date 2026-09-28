@@ -66,6 +66,8 @@ Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia 
 
 Gdy przekazujesz obserwacje do `host-preflight`, ustaw `observation_generation` jawnie dla cross-pass recovery: wszystkie powierzchnie z jednego discovery-pass muszą mieć ten sam numer, a nowy numer wolno nadać dopiero po rzeczywistej zmianie/reprowizjonowaniu powierzchni albo rozpoczęciu nowego discovery-pass, w którym stare evidence nie jest już wiążące. Brak pola pozostaje kompatybilny jako generacja `0`, lecz nie używaj domyślnego `0` do łączenia obserwacji z różnych przydziałów hosta.
 
+Jeżeli host udostępnia bezpieczne metadane awarii executora, przekaż do `host-preflight` również `error_code`, `host_request_id`, `observed_at_utc` i ograniczony `error_message`. Nie umieszczaj w tych polach credentiali, cookies, bearer tokenów, kluczy API ani pełnych request body; kontrakt obserwacji dodatkowo ogranicza długość i redaguje typowe sekrety w `error_message`. Wynikowe `remote_runtime_blockers` / transportowe `blocking_checks` są wyłącznie diagnostyczną listą wszystkich niespełnionych gate'ów. Nie mogą samodzielnie promować trasy do `remote_runtime`; pozytywna trasa nadal wymaga kompletnego świeżego evidence.
+
 Po wyczerpaniu dozwolonych lokalnych prób nie kończ automatycznie na lokalnej diagnozie. Sprawdź niezależne, już dostępne evidence zdalnej trasy bez replayu wiadomości i bez ponownego lokalnego bootstrapu:
 
 1. sprawdź publiczny Streamable HTTP tylko wtedy, gdy istnieje skonfigurowany endpoint; pozytywna klasyfikacja wymaga jednocześnie auth, zgodności MCP 2026-07-28, `/healthz`, `/readyz` i capability bieżącego hosta;

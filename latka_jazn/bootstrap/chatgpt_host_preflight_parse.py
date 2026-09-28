@@ -41,6 +41,37 @@ def optional_int(mapping: Mapping[str, Any], key: str, default: int | None) -> i
     return int(value)
 
 
+def optional_text(
+    mapping: Mapping[str, Any],
+    key: str,
+    default: str | None = None,
+) -> str | None:
+    if key not in mapping:
+        return default
+    value = mapping[key]
+    if value is None:
+        return default
+    if not isinstance(value, str):
+        raise ValueError(f"{key}_must_be_string")
+    return value
+
+
+def _blocking_checks(result: Mapping[str, Any]) -> tuple[str, ...]:
+    raw = result.get("blocking_checks", ())
+    if raw is None:
+        return ()
+    if not isinstance(raw, (list, tuple)):
+        raise ValueError("remote_runtime_blocking_checks_must_be_array")
+    blockers: list[str] = []
+    for item in raw:
+        if not isinstance(item, str):
+            raise ValueError("remote_runtime_blocking_check_must_be_string")
+        value = item.strip()
+        if value and value not in blockers:
+            blockers.append(value)
+    return tuple(blockers)
+
+
 def _mapping(value: Any, *, error_code: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(error_code)
@@ -49,7 +80,7 @@ def _mapping(value: Any, *, error_code: str) -> Mapping[str, Any]:
 
 def _remote_runtime_evidence(
     item: Mapping[str, Any],
-) -> tuple[bool, str, str | None]:
+) -> tuple[bool, str, str | None, tuple[str, ...]]:
     """Derive positive remote-route capability from concrete route evidence.
 
     The host-preflight JSON surface is untrusted integration input. A caller
@@ -65,7 +96,7 @@ def _remote_runtime_evidence(
             raise ValueError(
                 "remote_runtime_transport_available_requires_verified_evidence"
             )
-        return False, "none", None
+        return False, "none", None, ("remote_runtime_evidence_missing",)
 
     evidence = _mapping(
         raw,
@@ -129,7 +160,12 @@ def _remote_runtime_evidence(
         raise ValueError(
             "remote_runtime_transport_declaration_conflicts_with_verified_evidence"
         )
-    return available, transport, str(result.get("reason_code") or "").strip() or None
+    return (
+        available,
+        transport,
+        str(result.get("reason_code") or "").strip() or None,
+        _blocking_checks(result),
+    )
 
 
 def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorObservation:
@@ -137,12 +173,21 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
     if process_created is None:
         raise ValueError("process_created_is_required")
     handoff_state = normalize_handoff_state(str(item.get("execution_handoff_state") or "unknown"))
-    remote_available, remote_transport, remote_reason = _remote_runtime_evidence(item)
+    (
+        remote_available,
+        remote_transport,
+        remote_reason,
+        remote_blockers,
+    ) = _remote_runtime_evidence(item)
     return HostExecutorObservation(
         process_created=process_created,
         command_completed=bool(optional_bool(item, "command_completed", False)),
         returncode=optional_int(item, "returncode", None),
         error_class=(str(item["error_class"]).strip() if item.get("error_class") is not None else None),
+        error_code=optional_text(item, "error_code"),
+        error_message=optional_text(item, "error_message"),
+        host_request_id=optional_text(item, "host_request_id"),
+        observed_at_utc=optional_text(item, "observed_at_utc"),
         alternative_surface_available=bool(optional_bool(item, "alternative_surface_available", False)),
         alternative_probe_count=int(optional_int(item, "alternative_probe_count", 0) or 0),
         filesystem_probe_succeeded=optional_bool(item, "filesystem_probe_succeeded", None),
@@ -150,6 +195,7 @@ def executor_observation_from_mapping(item: Mapping[str, Any]) -> HostExecutorOb
         remote_runtime_transport_available=remote_available,
         remote_runtime_transport=remote_transport,
         remote_runtime_reason_code=remote_reason,
+        remote_runtime_blockers=remote_blockers,
         execution_handoff_available=bool(optional_bool(item, "execution_handoff_available", False)),
         execution_handoff_state=handoff_state,
         observation_generation=int(optional_int(item, "observation_generation", 0) or 0),

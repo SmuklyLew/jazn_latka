@@ -69,22 +69,25 @@ class PublicStreamableHttpEvidence:
     runtime_version: str
 
     @property
-    def route_ready(self) -> bool:
-        return all(
-            (
-                self.endpoint_configured,
-                self.auth_ready,
-                self.protocol_compatible,
-                self.gateway_live,
-                self.runtime_ready,
-                self.gateway_binding_verified,
-                self.gateway_version_verified,
-                self.runtime_binding_verified,
-                self.runtime_version_verified,
-                self.evidence_fresh,
-                self.host_connector_capability_available,
-            )
+    def blocking_checks(self) -> tuple[str, ...]:
+        checks = (
+            "endpoint_configured",
+            "auth_ready",
+            "protocol_compatible",
+            "gateway_live",
+            "runtime_ready",
+            "gateway_binding_verified",
+            "gateway_version_verified",
+            "runtime_binding_verified",
+            "runtime_version_verified",
+            "evidence_fresh",
+            "host_connector_capability_available",
         )
+        return tuple(name for name in checks if getattr(self, name) is not True)
+
+    @property
+    def route_ready(self) -> bool:
+        return not self.blocking_checks
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -94,6 +97,7 @@ class PublicStreamableHttpEvidence:
                 "package_version": PACKAGE_VERSION_FULL,
                 "remote_transport": RemoteTransport.PUBLIC_STREAMABLE_HTTP.value,
                 "remote_runtime_transport_available": self.route_ready,
+                "blocking_checks": list(self.blocking_checks),
                 "execution_route": "remote_runtime" if self.route_ready else "none",
                 "next_action": (
                     "use_remote_runtime_transport"
