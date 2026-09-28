@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.88.0",
-  "active_definition_count": 1757,
+  "active_definition_count": 1760,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14032,6 +14032,67 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 356
+    },
+    "tests/test_host_spawn_diagnostics.py::test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected": {
+      "path": "tests/test_host_spawn_diagnostics.py",
+      "name": "test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected",
+      "purpose": "Empty canonical placeholder is reported but legacy stays selected",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_host_spawn_diagnostics.py::test_explicit_root_diagnostic_remains_authoritative": {
+      "path": "tests/test_host_spawn_diagnostics.py",
+      "name": "test_explicit_root_diagnostic_remains_authoritative",
+      "purpose": "Explicit root diagnostic remains authoritative",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_host_spawn_diagnostics.py::test_post_spawn_diagnostics_reports_process_and_memory_metadata": {
+      "path": "tests/test_host_spawn_diagnostics.py",
+      "name": "test_post_spawn_diagnostics_reports_process_and_memory_metadata",
+      "purpose": "Post spawn diagnostics reports process and memory metadata",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",
