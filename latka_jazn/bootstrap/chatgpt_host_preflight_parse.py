@@ -7,7 +7,10 @@ from typing import Any, Mapping
 
 from latka_jazn.core.chatgpt_host_executor_contract import HostExecutorObservation
 from latka_jazn.core.chatgpt_host_handoff_state import normalize_handoff_state
-from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover
+from latka_jazn.mcp.remote_runtime import (
+    classify_public_connector_status_failover,
+    classify_public_streamable_http_failover,
+)
 from latka_jazn.mcp.secure_tunnel import classify_remote_runtime_failover
 
 
@@ -104,35 +107,53 @@ def _remote_runtime_evidence(
     )
     transport = str(evidence.get("transport") or "").strip().lower()
     if transport == "public_streamable_http":
+        connector_status = evidence.get("connector_status")
         health = evidence.get("health")
         readiness = evidence.get("readiness")
-        result = classify_public_streamable_http_failover(
-            endpoint_configured=bool(
-                optional_bool(evidence, "endpoint_configured", False)
-            ),
-            auth_ready=bool(optional_bool(evidence, "auth_ready", False)),
-            protocol_compatible=bool(
-                optional_bool(evidence, "protocol_compatible", False)
-            ),
-            health_payload=(
-                _mapping(health, error_code="remote_runtime_health_must_be_object")
-                if health is not None
-                else None
-            ),
-            readiness_payload=(
-                _mapping(
-                    readiness,
-                    error_code="remote_runtime_readiness_must_be_object",
+        if connector_status is not None:
+            if health is not None or readiness is not None:
+                raise ValueError(
+                    "remote_runtime_public_evidence_modes_are_mutually_exclusive"
                 )
-                if readiness is not None
-                else None
-            ),
-            host_connector_capability_available=optional_bool(
-                evidence,
-                "host_connector_capability_available",
-                None,
-            ),
-        )
+            result = classify_public_connector_status_failover(
+                status_payload=_mapping(
+                    connector_status,
+                    error_code="remote_runtime_connector_status_must_be_object",
+                ),
+                host_connector_invocation_observed=optional_bool(
+                    evidence,
+                    "host_connector_invocation_observed",
+                    None,
+                ),
+            )
+        else:
+            result = classify_public_streamable_http_failover(
+                endpoint_configured=bool(
+                    optional_bool(evidence, "endpoint_configured", False)
+                ),
+                auth_ready=bool(optional_bool(evidence, "auth_ready", False)),
+                protocol_compatible=bool(
+                    optional_bool(evidence, "protocol_compatible", False)
+                ),
+                health_payload=(
+                    _mapping(health, error_code="remote_runtime_health_must_be_object")
+                    if health is not None
+                    else None
+                ),
+                readiness_payload=(
+                    _mapping(
+                        readiness,
+                        error_code="remote_runtime_readiness_must_be_object",
+                    )
+                    if readiness is not None
+                    else None
+                ),
+                host_connector_capability_available=optional_bool(
+                    evidence,
+                    "host_connector_capability_available",
+                    None,
+                ),
+            )
     elif transport == "openai_secure_mcp_tunnel":
         runtime_status = evidence.get("runtime_status")
         result = classify_remote_runtime_failover(
