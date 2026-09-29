@@ -41,3 +41,16 @@ The 91.1 source line now treats explicit update-continuation goals as execution,
 The read-only `SelfArchitectureAuditHandler` also now satisfies the two reflection components already required by `RouteRegistry`, with explicit no-write semantics for reflection grounding/store.
 
 This keeps the tool surface narrow and per-turn while preserving continuation of an already authorized update task.
+
+
+## Neurocognitive release gate
+
+The update-continuation regression is now part of the executable cognitive architecture audit, not only a standalone unit test. The gate verifies that:
+
+- the dialogue classifier keeps an explicit release-candidate continuation on `system_update_execution_request`;
+- `NeurologicalSignalRouter` observes both `architecture` and `correction` and selects `architecture_repair`;
+- `web.run` is required when external research is requested;
+- `GitHub` is requested/allowed for the system-update route only when the host capability snapshot advertises it, and remains optional rather than a fabricated capability;
+- host evidence for both Web and GitHub passes the same per-turn tool policy before finalization.
+
+This is a functional software gate. The neurocognitive terminology remains an engineering analogy and is not a biological-neuron claim.

@@ -10,7 +10,13 @@ from latka_jazn.core.operational_learning_memory import OperationalLearningMemor
 from latka_jazn.core.reasoning_orchestrator import ReasoningOrchestrator
 from latka_jazn.core.cognitive_runtime_coordinator import CognitiveRuntimeCoordinator
 from latka_jazn.core.homeostasis import HomeostasisInput
+from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
+from latka_jazn.core.host_tool_turn_policy import (
+    build_host_tool_turn_policy,
+    validate_tool_evidence_against_policy,
+)
 from latka_jazn.core.knowledge_fabric import KnowledgeFabric
+from latka_jazn.core.signal_matching import NeurologicalSignalRouter
 from latka_jazn.nlp.lexical_intelligence import LexicalIntelligenceEngine
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.dream_sandbox import DreamSandbox
@@ -39,6 +45,10 @@ REQUIRED_FILES = (
     "latka_jazn/core/reasoning_orchestrator.py",
     "latka_jazn/core/knowledge_fabric.py",
     "latka_jazn/core/operational_learning_memory.py",
+    "latka_jazn/core/signal_matching.py",
+    "latka_jazn/core/neurocognitive_loop.py",
+    "latka_jazn/core/host_tool_capabilities.py",
+    "latka_jazn/core/host_tool_turn_policy.py",
     "latka_jazn/core/runtime_daemon.py",
     "latka_jazn/core/turn_timeout.py",
     "latka_jazn/memory/conversation_archive.py",
@@ -73,6 +83,7 @@ REQUIRED_FILES = (
     "tests/test_rest_cycle_controller.py",
     "tests/test_runtime_stability_rest_cycle.py",
     "tests/test_wake_rest_continuity.py",
+    "tests/test_v163255911_update_continuation_tool_policy.py",
 )
 
 
@@ -207,6 +218,36 @@ def run_audit(root: Path) -> dict[str, Any]:
     negated_report = DialogueIntentClassifier().classify(
         "@Wyszukiwanie w sieci Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić."
     )
+    update_continuation_text = (
+        "Sprawdź też kod źródłowy, czy jest poprawnie i bez błędnia wprowadzony w system Jaźni. "
+        "Pracuj dobrze i z dostępem do internetu aż aktualizacja będzie pełnym, zdrowym "
+        "release candidate i gotowym do scalenia."
+    )
+    update_continuation_report = DialogueIntentClassifier().classify(update_continuation_text)
+    neural_update_continuation = NeurologicalSignalRouter().analyse(update_continuation_text)
+    update_host_snapshot = build_host_tool_capability_snapshot(
+        {
+            "tools": [
+                {"name": "GitHub", "available": True},
+                {"name": "web.run", "available": True},
+            ]
+        },
+        env={},
+    )
+    update_tool_policy = build_host_tool_turn_policy(
+        user_text=update_continuation_text,
+        detected_intent=update_continuation_report.primary_intent,
+        route="system_update",
+        nlg_plan={"source_policy": "requires_external_web"},
+        host_tool_capabilities=update_host_snapshot,
+    )
+    update_tool_policy_violations = validate_tool_evidence_against_policy(
+        [
+            {"tool": "web.run", "operation": "public_search", "source_refs": [], "source_urls": []},
+            {"tool": "GitHub", "operation": "repository_update", "source_refs": [], "source_urls": []},
+        ],
+        update_tool_policy,
+    )
     retrieval_only = evaluate_memory_continuity_readiness(
         normalization_status={"status": "sidecar_missing", "last_run": None},
         wake_state_status={"status": "sidecar_missing", "active_snapshot_present": False},
@@ -307,6 +348,22 @@ def run_audit(root: Path) -> dict[str, Any]:
             negated_report.primary_intent != "system_update_execution_request"
             and negated_report.update_request is False
         ),
+        "update_continuation_route_safe": (
+            update_continuation_report.primary_intent == "system_update_execution_request"
+            and update_continuation_report.update_request is True
+        ),
+        "neural_update_continuation_safe": (
+            neural_update_continuation.primary == "architecture_repair"
+            and "architecture" in neural_update_continuation.signals
+            and "correction" in neural_update_continuation.signals
+        ),
+        "update_continuation_tool_policy_safe": (
+            "web.run" in update_tool_policy.get("allowed_tools", [])
+            and "GitHub" in update_tool_policy.get("allowed_tools", [])
+            and "web.run" in update_tool_policy.get("required_tools", [])
+            and "GitHub" not in update_tool_policy.get("required_tools", [])
+            and not update_tool_policy_violations
+        ),
         "route_dispatcher_complete": not route_dispatch_missing,
         "deadline_hierarchy_safe": (
             0 < DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS
@@ -357,6 +414,10 @@ def run_audit(root: Path) -> dict[str, Any]:
             "mixed_web_execution_primary": mixed_report.primary_intent,
             "mixed_web_execution_secondary": mixed_report.secondary_intents,
             "negated_write_primary": negated_report.primary_intent,
+            "update_continuation_primary": update_continuation_report.primary_intent,
+            "update_continuation_neural_route": neural_update_continuation.to_dict(),
+            "update_continuation_tool_policy": update_tool_policy,
+            "update_continuation_tool_policy_violations": update_tool_policy_violations,
             "route_dispatch_missing": route_dispatch_missing,
         },
         "memory_continuity_contract": {

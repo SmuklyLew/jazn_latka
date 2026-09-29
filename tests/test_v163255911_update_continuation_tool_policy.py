@@ -10,6 +10,7 @@ from latka_jazn.core.host_tool_turn_policy import (
     validate_tool_evidence_against_policy,
 )
 from latka_jazn.core.route_registry import RouteRegistry
+from latka_jazn.core.signal_matching import NeurologicalSignalRouter
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -27,6 +28,16 @@ def test_release_candidate_continuation_remains_update_execution() -> None:
     assert report.primary_intent == "system_update_execution_request"
     assert report.update_request is True
     assert report.question_object == "system_update"
+
+
+def test_update_continuation_is_seen_by_neural_signal_router_as_architecture_repair() -> None:
+    route = NeurologicalSignalRouter().analyse(UPDATE_CONTINUATION)
+
+    assert route.primary == "architecture_repair"
+    assert "architecture" in route.signals
+    assert "correction" in route.signals
+    assert route.architecture_score >= 0.45
+    assert route.correction_score >= 0.30
 
 
 def test_update_execution_requests_github_but_still_obeys_host_capability_snapshot() -> None:
