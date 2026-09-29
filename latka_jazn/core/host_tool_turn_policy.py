@@ -79,7 +79,15 @@ def build_host_tool_turn_policy(
         requested.append("web.run")
         if source_policy == "requires_external_web" or user_has_url:
             required_requested.append("web.run")
-    if any(token in folded for token in ("github", "repo", "branch", "commit", "push", "pull request", " pr ")):
+    github_update_route = detected_intent in {
+        "system_update_execution_request",
+        "system_update_manifest_request",
+        "update_manifest_request",
+    } or route == "system_update"
+    if github_update_route or any(
+        token in folded
+        for token in ("github", "repo", "branch", "commit", "push", "pull request", " pr ")
+    ):
         requested.append("GitHub")
     if any(token in folded for token in ("obraz", "grafik", "zdjec", "wygeneruj", "zobrazuj", "image")):
         requested.append("image_gen")

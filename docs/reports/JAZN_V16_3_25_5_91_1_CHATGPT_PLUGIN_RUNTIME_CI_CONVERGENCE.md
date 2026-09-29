@@ -27,3 +27,17 @@ Metadata `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` nie są ed
 - MCP Python SDK v2 — authorization, `TokenVerifier`, `AuthSettings`, resource validation;
 - RFC 7662 — token introspection;
 - RFC 6749 §2.3.1 — `client_secret_basic` i form-encoding danych klienta.
+
+
+## Finalization regressions found during live runtime audit
+
+During same-turn Jaźń finalization after PR creation, the active runtime exposed two additional source-level inconsistencies:
+
+- a continuation command such as "pracuj ... aż aktualizacja będzie release candidate i gotowa do scalenia" could be routed to `self_architecture_audit_request` instead of `system_update_execution_request`;
+- the response-candidate guard accepts bounded host attestations for `GitHub`, while `host_tool_turn_policy` could omit GitHub for an update-continuation turn unless the current sentence repeated a literal repo/branch/commit token.
+
+The 91.1 source line now treats explicit update-continuation goals as execution, requests GitHub for system-update routes while still obeying the live host capability snapshot, and keeps GitHub optional rather than making an unavailable connector a fatal requirement.
+
+The read-only `SelfArchitectureAuditHandler` also now satisfies the two reflection components already required by `RouteRegistry`, with explicit no-write semantics for reflection grounding/store.
+
+This keeps the tool surface narrow and per-turn while preserving continuation of an already authorized update task.
