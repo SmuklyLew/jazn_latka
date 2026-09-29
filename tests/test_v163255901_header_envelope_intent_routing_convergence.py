@@ -84,6 +84,7 @@ def _phase2_payload(
             "state_emoticon": "🛠️",
             "author_label": "Łatka",
             "author_source": "jazn_runtime",
+            "user_text_sha256": "b" * 64,
         },
         "host_visible_finalization": {
             "accepted": True,
@@ -137,3 +138,26 @@ def test_complete_envelope_and_settlement_are_displayable() -> None:
     assert presentation["final_visible_text"].startswith(
         f"{HEADER}\n🛠️ Łatka\n\n"
     )
+
+
+def test_diagnostic_downgrade_clears_all_visible_readiness_flags() -> None:
+    payload = _phase2_payload()
+    bridge = payload["chatgpt_host_bridge"]
+    assert isinstance(bridge, dict)
+    bridge.pop("user_text_sha256")
+
+    presentation = build_chatgpt_host_presentation_packet(payload)
+
+    assert presentation["action"] == "host_diagnostic"
+    assert presentation["phase"] == "host_diagnostic_required"
+    assert presentation["accepted_visible_turn_ready"] is False
+    assert presentation["visible_turn_readiness"] == "not_ready"
+    assert presentation["must_display_exactly"] is False
+    assert presentation["must_not_paraphrase"] is False
+    assert presentation["must_not_claim_runtime_voice"] is True
+    assert presentation["must_not_claim_latka_voice"] is True
+    assert presentation["must_preserve_runtime_voice"] is False
+    assert presentation["must_preserve_latka_voice"] is False
+    assert presentation["required_visible_prefix"] is None
+    assert presentation["final_visible_text"] == ""
+    assert presentation["final_text_sha256"] is None
