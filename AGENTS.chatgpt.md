@@ -54,6 +54,27 @@ Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego 
 
 **Dowód capability hosta musi dotyczyć bieżącej powierzchni i bieżącej tury.** Za `host_connector_capability_available=true` uznawaj wyłącznie aplikację/connector Jaźni, którego akcje są rzeczywiście wywoływalne przez aktualny host. Wynik wyszukiwania katalogu pluginów, metadane `installed`, możliwość zasugerowania instalacji, sama składnia @mention, ogólny connector innej usługi (np. GitHub/Drive) albo sama konfiguracja MCP nie są dowodem capability Jaźni. Discovery katalogu może pomóc w konfiguracji, ale nie może promować `remote_runtime`.
 
+
+### 2.1. Preferowany probe przez rzeczywistą akcję Jaźni
+
+Jeżeli aplikacja/connector Jaźni jest już faktycznie wywoływalny w bieżącej powierzchni ChatGPT, preferowanym dowodem publicznej trasy jest jedno read-only wywołanie `jazn_status`. Ta ścieżka nie wymaga lokalnego executora ani osobnej zdolności hosta do wykonywania surowych żądań HTTP do `/healthz` i `/readyz`.
+
+Po udanym wywołaniu użyj wyłącznie `structuredContent` zwróconego przez tę konkretną akcję. Status jest dodatnim transport evidence tylko wtedy, gdy zawiera bieżący kontrakt `evidence_schema=jazn_public_mcp_status/v1`, `tool_name=jazn_status`, `public_transport=streamable_http`, zgodny MCP `2026-07-28`, żywy gateway, gotowy i osiągalny daemon, niepuste identyfikatory gateway/runtime, dokładnie oczekiwaną wersję oraz świeży `observed_at_utc` i heartbeat.
+
+Host może ustawić `host_connector_invocation_observed=true` wyłącznie dlatego, że sam faktycznie wykonał tę akcję Jaźni w bieżącej powierzchni. Wklejony JSON, wynik z poprzedniej tury, katalog pluginów, `installed`, @mention albo deklaracja użytkownika nie mogą ustawić tego pola. Do `host-preflight` przekaż wtedy:
+
+```json
+{
+  "remote_runtime_evidence": {
+    "transport": "public_streamable_http",
+    "connector_status": "<structuredContent z bieżącego jazn_status>",
+    "host_connector_invocation_observed": true
+  }
+}
+```
+
+`connector_status` oraz bezpośrednie `health`/`readiness` są alternatywnymi trybami evidence i nie wolno ich mieszać w jednym rekordzie. Kanoniczny classifier `classify_public_connector_status_failover()` pozostaje fail-closed; dopiero jego dodatni wynik może promować trasę do `remote_runtime`. Sam sukces statusu nadal nie daje prawa do wypowiedzi Jaźni — każda zwykła wiadomość musi następnie przejść przez `jazn_generate_visible_reply` / resume / finalization i zakończyć się zaakceptowanym `display_exact`.
+
 `host_handoff` służy wyłącznie do przekazania wykonania, którego bieżący host sam nie potrafi wykonać; nie jest substytutem brakującego connectora Jaźni ani obowiązkowym krokiem przed użyciem już dostępnych narzędzi użytkownika. Jeżeli handoff został jawnie odrzucony lub host go nie oferuje, ta trasa jest niedostępna dla bieżącej próby. Nie ponawiaj handoff w tej samej próbie jako retry brakującego executora lub remote runtime.
 
 Jeżeli takiej gotowej zdalnej trasy nie ma, przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.

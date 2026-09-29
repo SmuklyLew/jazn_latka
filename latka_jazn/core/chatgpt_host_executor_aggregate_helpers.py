@@ -60,6 +60,28 @@ def resolve_local_route(
     )
 
 
+def host_failure_stage(observation: HostExecutorObservation) -> tuple[str, str]:
+    """Return a bounded diagnostic stage without changing routing semantics."""
+
+    if observation.process_created:
+        return "post_spawn", "process_evidence"
+    if observation.spawn_phase:
+        return observation.spawn_phase, "host_reported"
+    if observation.executor_allocation_state is False:
+        return "executor_allocation", "derived"
+    if observation.materialization_state is False:
+        return "materialization", "derived"
+    if observation.mount_preparation_state is False:
+        return "mount_preparation", "derived"
+    if (
+        observation.executor_allocation_state is True
+        and observation.materialization_state is True
+        and observation.mount_preparation_state is True
+    ):
+        return "process_spawn", "derived"
+    return "pre_spawn_unknown", "derived"
+
+
 def surface_payload(
     observation: HostExecutorObservation,
     decision: HostExecutorRecoveryDecision,
@@ -72,8 +94,11 @@ def surface_payload(
         if not observation.process_created and observation.error_class
         else None
     )
+    failure_stage, failure_stage_source = host_failure_stage(observation)
     payload.update(
         surface=observation.surface,
+        failure_stage=failure_stage,
+        failure_stage_source=failure_stage_source,
         error_class=observation.error_class,
         error_code=observation.error_code,
         error_message=observation.error_message,

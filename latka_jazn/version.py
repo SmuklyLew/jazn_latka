@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.91.2 makes release/** branches first-class CI/release-metadata
-# targets while preserving the hardened v91.1 ChatGPT plugin runtime line.
-DISTRIBUTION_VERSION = "16.3.25.5.91.2"
-PACKAGE_VERSION = "16.3.25.5.91.2"
-PACKAGE_RELEASE_NAME = "release-branch-ci-support"
+# v16.3.25.5.92 converges ChatGPT host-boundary diagnostics with a
+# connector-observed remote-runtime probe that does not depend on local exec.
+DISTRIBUTION_VERSION = "16.3.25.5.92"
+PACKAGE_VERSION = "16.3.25.5.92"
+PACKAGE_RELEASE_NAME = "chatgpt-remote-runtime-host-boundary-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

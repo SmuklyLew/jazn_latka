@@ -1,7 +1,9 @@
 # ChatGPT Plugin Runtime — public HTTPS MCP without an OpenAI API key
 
 This runbook describes the deployment path introduced by
-`16.3.25.5.91.0-chatgpt-plugin-runtime-convergence`.
+`16.3.25.5.91.0-chatgpt-plugin-runtime-convergence` and the
+`16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence` verification
+path for hosts that cannot create a local process.
 
 The goal is narrow: make the already-existing persistent Jaźń daemon usable by
 ChatGPT through a production Streamable HTTP MCP endpoint without making the
@@ -95,6 +97,41 @@ package/publish the plugin through OpenAI's plugin workflow.
 Host/account capability is an external boundary: repository code cannot enable
 Developer mode, install a plugin on behalf of the user, or make a private local
 machine internet-reachable.
+
+
+## Verify the route from ChatGPT without a local executor
+
+After the app is connected, verify it from the same ChatGPT surface by actually
+calling the read-only `jazn_status` tool. A successful current call returns
+`structuredContent` containing:
+
+- `evidence_schema=jazn_public_mcp_status/v1`;
+- `tool_name=jazn_status`;
+- `protocol_version=2026-07-28`;
+- `public_transport=streamable_http`;
+- `gateway_live=true` and `daemon_reachable=true`;
+- `ready=true`;
+- non-empty `gateway_instance_id` and `runtime_instance_id`;
+- exact `package_version` / `runtime_version`;
+- fresh `observed_at_utc` and `runtime_heartbeat_at_utc`.
+
+The host then supplies that exact current response to `host-preflight` as
+`connector_status` together with
+`host_connector_invocation_observed=true`. That boolean is host evidence of
+the action that just happened; it must never be reconstructed from saved JSON,
+plugin metadata, installation state, an @mention, or user text.
+
+This allows the valid end state:
+
+```text
+executor_available=false
+remote_runtime_available=true
+execution_route=remote_runtime
+```
+
+The repository still cannot create the ChatGPT connector capability. If the
+`jazn_status` action is not actually callable, the remote route remains
+unverified and the host must not imitate a Jaźń response.
 
 ## Security
 

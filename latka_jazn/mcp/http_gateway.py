@@ -38,11 +38,15 @@ from mcp.types import CallToolResult, ContentBlock, TextContent, ToolAnnotations
 
 from latka_jazn.core.runtime_root import find_runtime_root
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
+from latka_jazn.mcp.remote_runtime import (
+    EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
+    PUBLIC_CONNECTOR_STATUS_SCHEMA,
+)
 from latka_jazn.mcp.server import JaznMcpServer, TASK_EXTENSION_ID
 from latka_jazn.mcp.task_resume import McpTaskStore
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
-MCP_PROTOCOL_VERSION = "2026-07-28"
+MCP_PROTOCOL_VERSION = EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION
 MCP_PATH = "/mcp"
 HEALTH_PATH = "/healthz"
 READINESS_PATH = "/readyz"
@@ -464,6 +468,8 @@ class PublicMcpGateway:
             status = self._status_snapshot()
             ready = _runtime_ready(status)
             public_status = {
+                "evidence_schema": PUBLIC_CONNECTOR_STATUS_SCHEMA,
+                "tool_name": "jazn_status",
                 "ok": ready,
                 "ready": ready,
                 "gateway_live": True,
