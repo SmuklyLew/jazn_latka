@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
-  "runtime_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
-  "package_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
-  "generated_at_utc": "2026-09-29T01:11:46+00:00",
-  "updated_at_utc": "2026-09-29T01:11:46+00:00",
+  "version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+  "runtime_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+  "package_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+  "generated_at_utc": "2026-09-29T01:16:03+00:00",
+  "updated_at_utc": "2026-09-29T01:16:03+00:00",
   "start_file": "run.py",
-  "file_count": 1820,
-  "static_file_count": 1820,
+  "file_count": 1823,
+  "static_file_count": 1823,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -101,8 +101,8 @@
     },
     {
       "path": ".github/workflows/host-spawn-memory-convergence.yml",
-      "size_bytes": 7218,
-      "sha256": "b887855b7a365aaa9a1a83d91a443d9b751f3f1fdf4eee6a5b2a445cedc1ceb9",
+      "size_bytes": 7223,
+      "sha256": "13681964fcd4581ce013ca3c27aab9f1ff7eac62cfd8e5df402e41f59745f2cc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -281,8 +281,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "e8a5935a4822e77ec472099c21b903bd124488d1e8ac0b2ae9fc423cf0c03c3f",
+      "size_bytes": 3025,
+      "sha256": "3b5b4476f5ddfad65e45f9282747adad4428f2bbc59ae91bf41c5625ab23d662",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2206,6 +2206,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_90_2_DISPLAY_EXACT_ENVELOPE_REVALIDATION_CONVERGENCE.md",
+      "size_bytes": 3880,
+      "sha256": "cd35a3abbf52232aa105709b13ff8b858ecb9ff6a7ef5243c5799646f9765bab",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
@@ -2225,8 +2234,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5038,
-      "sha256": "a63aa8674bcb52f09dff3a6a0933327c116434430920104804a9db7b3b0ace8b",
+      "size_bytes": 5153,
+      "sha256": "7abfed55dcb03ad1f1fbac0c04ea7abcdbce8fee22e5104ad4819c3db56f006c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8633,8 +8642,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6572,
-      "sha256": "afdabe90a14f8863b95dedb089e763bf7a22c3c87d1bd23295501673d1808cbd",
+      "size_bytes": 6581,
+      "sha256": "ae547e7b76889133c66f8329090d3645283c8d60f6f0c67dcd8aa7e8280ff71d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11350,6 +11359,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_chatgpt_capability_loader_convergence__pre_v16_3_25_5_90_2.py",
+      "size_bytes": 2233,
+      "sha256": "262b48f983b4ac31c7c229cfe38d98104e69935259b91079950e46ee23aa3fd5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_chatgpt_host_executor_truth_boundary_v16325531.py",
       "size_bytes": 2008,
       "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
@@ -11389,6 +11407,15 @@
       "path": "tests/archive/test_github_actions_node24_convergence_v16325530.py",
       "size_bytes": 4173,
       "sha256": "94de6359675a053c033a44767bf0708a55d1b7b0494be31598a04896742cc9f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_host_pre_response_gate__pre_v16_3_25_5_90_2.py",
+      "size_bytes": 14199,
+      "sha256": "ff777533cff51b8fa5b88a97ffb4639cf94bdd8e48643829a396cc6d6c9ac6f9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13115,8 +13142,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2233,
-      "sha256": "262b48f983b4ac31c7c229cfe38d98104e69935259b91079950e46ee23aa3fd5",
+      "size_bytes": 2393,
+      "sha256": "3db111b59c6c8c11b6a38a856380279d6235a0350867ca081d97aeb070f63a15",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13943,8 +13970,8 @@
     },
     {
       "path": "tests/test_host_pre_response_gate.py",
-      "size_bytes": 14199,
-      "sha256": "ff777533cff51b8fa5b88a97ffb4639cf94bdd8e48643829a396cc6d6c9ac6f9",
+      "size_bytes": 17474,
+      "sha256": "ca5941a613185fd3b3b331531197383073adc10ffd5d89897bb20fec343497c1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16247,8 +16274,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1644769,
-      "sha256": "18ef9de312e6bda591b5304a0703b517fc45c24b7aca359e7b9d84d72d2b393e",
+      "size_bytes": 1647546,
+      "sha256": "27af26b52299cc4f9a966c4b554acbbb9e9ae183d236d3a9d903fbca93110471",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16832,11 +16859,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+  "release_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
-    "package_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
-    "release_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence"
+    "runtime_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+    "package_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+    "release_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
