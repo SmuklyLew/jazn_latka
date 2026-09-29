@@ -62,3 +62,20 @@ The active regression suite uses the stable purpose-based filename
 `tests/test_system_update_continuation_tool_policy.py`. Release/version tokens are intentionally excluded from active test filenames;
 historical release-specific snapshots remain confined to archive paths. This preserves the
 repository's Test Studio governance contract without weakening or bypassing it.
+
+
+## Final source ordering checkpoint
+
+The stable-purpose test rename is now reflected in the canonical Test Studio contract catalog.
+This report commit is intentionally placed after that generated catalog and before the final
+release-metadata synchronization. Therefore the final release provenance must point to a source
+tree that already contains:
+
+- the ChatGPT public MCP/OAuth/plugin runtime fixes;
+- the update-continuation and GitHub turn-authority regression fixes;
+- the neurocognitive/cognitive-architecture release gate;
+- the stable-purpose regression-test filename; and
+- the synchronized Test Studio catalog.
+
+Release metadata generated before this checkpoint are superseded and must not be treated as the
+final release metadata for 91.1.
