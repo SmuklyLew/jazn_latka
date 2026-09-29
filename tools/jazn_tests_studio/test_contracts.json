@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.90.0",
-  "active_definition_count": 1777,
+  "active_definition_count": 1778,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38123,7 +38123,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 107
     },
     "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_display_exact_requires_capture_hash": {
       "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
@@ -38142,7 +38142,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 116
     },
     "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_display_exact_requires_consumed_host_request": {
       "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
@@ -38163,7 +38163,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 122
     },
     "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_complete_envelope_and_settlement_are_displayable": {
       "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
@@ -38182,7 +38182,26 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 131
+    },
+    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_diagnostic_downgrade_clears_all_visible_readiness_flags": {
+      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
+      "name": "test_diagnostic_downgrade_clears_all_visible_readiness_flags",
+      "purpose": "Diagnostic downgrade clears all visible readiness flags",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
