@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.91.1",
-  "active_definition_count": 1793,
+  "active_definition_count": 1794,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29969,6 +29969,23 @@
       "description_source": "source_identity",
       "line": 22
     },
+    "tests/test_release_workflow_hardening.py::test_release_branches_trigger_release_and_stable_contract_workflows": {
+      "path": "tests/test_release_workflow_hardening.py",
+      "name": "test_release_branches_trigger_release_and_stable_contract_workflows",
+      "purpose": "Release branches trigger release and stable contract workflows",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
     "tests/test_release_workflow_hardening.py::test_release_metadata_branch_sync_uses_repository_token_scope_without_recursive_dispatch": {
       "path": "tests/test_release_workflow_hardening.py",
       "name": "test_release_metadata_branch_sync_uses_repository_token_scope_without_recursive_dispatch",
@@ -29984,7 +30001,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 60
     },
     "tests/test_release_workflow_hardening.py::test_pr_release_metadata_is_materialized_without_moving_exact_head": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30001,7 +30018,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 70
     },
     "tests/test_release_workflow_hardening.py::test_release_workflow_concurrency_is_scoped_to_the_workflow": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30018,7 +30035,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 79
     },
     "tests/test_release_workflow_hardening.py::test_release_workflow_keeps_windows_atomicity_targeted_without_duplication": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30036,7 +30053,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 89
     },
     "tests/test_release_workflow_hardening.py::test_release_package_smoke_runs_once_and_only_after_pr_validation": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30054,7 +30071,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 113
     },
     "tests/test_release_workflow_hardening.py::test_upload_artifact_is_pinned_with_explicit_pr_metadata_exception": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30071,7 +30088,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 111
+      "line": 121
     },
     "tests/test_release_workflow_hardening.py::test_cursor_conpty_workflow_is_pr_scoped_and_manually_runnable": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30088,7 +30105,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 132
     },
     "tests/test_repository_layout_dependency_operator.py::test_flat_runtime_layout_remains_directly_runnable_from_unpacked_root": {
       "path": "tests/test_repository_layout_dependency_operator.py",
