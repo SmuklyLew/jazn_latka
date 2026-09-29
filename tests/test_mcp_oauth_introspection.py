@@ -84,7 +84,9 @@ def test_active_introspection_response_becomes_bound_access_token() -> None:
     assert token.claims == {"iss": "https://id.example.test"}
     expected_basic = base64.b64encode(b"resource-client:secret%3A+value%2B").decode("ascii")
     assert captured["authorization"] == f"Basic {expected_basic}"
-    captured_body = captured["body"]\n    assert isinstance(captured_body, bytes)\n    assert b"opaque-token" in captured_body
+    captured_body = captured["body"]
+    assert isinstance(captured_body, bytes)
+    assert b"opaque-token" in captured_body
 
 
 @pytest.mark.parametrize(
