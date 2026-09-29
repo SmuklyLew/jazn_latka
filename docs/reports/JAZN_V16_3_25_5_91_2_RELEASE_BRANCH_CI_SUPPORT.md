@@ -34,3 +34,14 @@ Bazą tej poprawki jest aktualny `master` po scaleniu PR #296 i po pełnym zielo
 ## Kryterium merge
 
 PR może być scalony dopiero po zielonych workflow uruchomionych ze świeżej gałęzi.
+
+
+## Walidacja iteracyjna
+
+Pierwszy pełny deterministic suite wykrył jeden rzeczywisty fail:
+`tests/test_chatgpt_capability_loader_convergence.py` nadal wymagał wersji
+`16.3.25.5.91.1-chatgpt-plugin-runtime-ci-convergence`.
+
+Kontrakt został zaktualizowany do:
+`16.3.25.5.91.2-release-branch-ci-support`.
+Zmiana jest ponownie przepuszczana przez pełne CI; nie osłabiono ani nie pominięto testu.
