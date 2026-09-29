@@ -21,8 +21,6 @@ def test_project_loader_requires_callable_current_turn_capability() -> None:
     assert "stan „installed”" in text
     assert "Connector innej usługi, np. GitHub lub Drive" in text
     assert "nie promuj zdalnej trasy" in text
-    assert "Każda kolejna wiadomość wymaga świeżej lineage tury" in text
-    assert "nie dziedzicz `display_exact` ani koperty z poprzedniej" in text
 
 
 def test_project_loader_does_not_invent_handoff_or_execution_route() -> None:
@@ -53,6 +51,6 @@ def test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt() ->
     assert "Nie ponawiaj handoff w tej samej próbie" in text
 
 
-def test_release_version_tracks_display_exact_envelope_revalidation() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.90.2"
-    assert PACKAGE_RELEASE_NAME == "display-exact-envelope-revalidation-convergence"
+def test_release_version_tracks_current_header_envelope_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.90.1"
+    assert PACKAGE_RELEASE_NAME == "header-envelope-intent-routing-convergence"

@@ -5,6 +5,7 @@ from typing import Any
 
 from latka_jazn.core.memory_intent_contract import analyze_memory_intent
 from latka_jazn.core.memory_recall_observability import memory_recall_truth_boundary_violation
+from latka_jazn.core.message_envelope import TIMESTAMP_HEADER_RE, normalize_newlines
 
 from ._core import (
     HOST_ROUTING_BYPASS,
@@ -19,6 +20,60 @@ from ._core import (
     _presentation_from,
     build_host_pre_response_gate_telemetry,
 )
+
+
+def _display_exact_message_envelope_valid(
+    final_text: str,
+    presentation: dict[str, Any],
+) -> bool:
+    """Re-validate the visible MessageEnvelope at the last host gate.
+
+    Adapters may return a prebuilt host-presentation mapping. Such a mapping is
+    transport evidence, not authority to bypass the visible envelope contract.
+    The gate therefore validates rendered text again before display_exact.
+    """
+    value = normalize_newlines(final_text)
+    lines = value.split("\n")
+    if len(lines) < 4:
+        return False
+
+    timestamp_header = lines[0].strip()
+    identity_line = lines[1].strip()
+    if TIMESTAMP_HEADER_RE.fullmatch(timestamp_header) is None:
+        return False
+    if not identity_line or lines[2].strip():
+        return False
+    if not "\n".join(lines[3:]).strip():
+        return False
+
+    bridge = _mapping(presentation.get("chatgpt_host_bridge"))
+    expected_timestamp = str(
+        presentation.get("timestamp_header")
+        or bridge.get("timestamp_header")
+        or ""
+    ).strip()
+    expected_state = str(
+        presentation.get("state_emoticon")
+        or bridge.get("state_emoticon")
+        or ""
+    ).strip()
+    expected_author = str(
+        presentation.get("author_label")
+        or bridge.get("author_label")
+        or ""
+    ).strip()
+
+    if expected_timestamp and timestamp_header != expected_timestamp:
+        return False
+    if expected_state and expected_author:
+        if identity_line != f"{expected_state} {expected_author}":
+            return False
+    elif expected_state and not identity_line.startswith(f"{expected_state} "):
+        return False
+    elif expected_author and not identity_line.endswith(f" {expected_author}"):
+        return False
+
+    return True
 
 
 def run_host_pre_response_gate(
@@ -149,6 +204,17 @@ def run_host_pre_response_gate(
                 runtime_turn_invoked=True,
                 response=runtime_response,
             )
+        if not _display_exact_message_envelope_valid(final_text, presentation):
+            return _diagnostic_result(
+                user_text=exact_user_text,
+                requested_runtime_root=requested_runtime_root,
+                error_code="RUNTIME_MESSAGE_ENVELOPE_INVALID",
+                diagnostic_reason="runtime_message_envelope_invalid",
+                runtime_turn_invoked=True,
+                response=runtime_response,
+                bypass_detected=True,
+                bypass_reason="display_exact_message_envelope_invalid",
+            )
         telemetry = build_host_pre_response_gate_telemetry(
             presentation=presentation,
             response=runtime_response,
@@ -245,6 +311,20 @@ def run_host_pre_response_gate(
                 diagnostic_reason="runtime_finalized_text_missing",
                 runtime_turn_invoked=True,
                 response=runtime_response,
+            )
+        if not _display_exact_message_envelope_valid(
+            final_text,
+            finalized_presentation,
+        ):
+            return _diagnostic_result(
+                user_text=exact_user_text,
+                requested_runtime_root=requested_runtime_root,
+                error_code="RUNTIME_MESSAGE_ENVELOPE_INVALID",
+                diagnostic_reason="runtime_message_envelope_invalid",
+                runtime_turn_invoked=True,
+                response=finalized_response,
+                bypass_detected=True,
+                bypass_reason="display_exact_message_envelope_invalid",
             )
         telemetry = build_host_pre_response_gate_telemetry(
             presentation=finalized_presentation,

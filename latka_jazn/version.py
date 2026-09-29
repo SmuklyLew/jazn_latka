@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.90.1 preserves the v90 bootstrap boundary while closing
-# MessageEnvelope/finalization fail-open edges and header-loss intent drift.
-DISTRIBUTION_VERSION = "16.3.25.5.90.1"
-PACKAGE_VERSION = "16.3.25.5.90.1"
-PACKAGE_RELEASE_NAME = "header-envelope-intent-routing-convergence"
+# v16.3.25.5.90.2 closes the remaining host-gate edge where a prebuilt
+# display_exact packet could bypass MessageEnvelope revalidation across turns.
+DISTRIBUTION_VERSION = "16.3.25.5.90.2"
+PACKAGE_VERSION = "16.3.25.5.90.2"
+PACKAGE_RELEASE_NAME = "display-exact-envelope-revalidation-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
