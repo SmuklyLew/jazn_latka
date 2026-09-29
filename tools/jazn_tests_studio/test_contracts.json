@@ -12096,6 +12096,166 @@
       "description_source": "source_identity",
       "line": 282
     },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_header_loss_is_runtime_diagnostic_not_practical_repair": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_header_loss_is_runtime_diagnostic_not_practical_repair",
+      "purpose": "Header loss is runtime diagnostic not practical repair",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_physical_repair_still_routes_to_practical_advice": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_physical_repair_still_routes_to_practical_advice",
+      "purpose": "Physical repair still routes to practical advice",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_generic_system_repair_is_never_stolen_by_practical_route": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_generic_system_repair_is_never_stolen_by_practical_route",
+      "purpose": "Generic system repair is never stolen by practical route",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_display_exact_requires_affirmative_envelope_evidence": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_display_exact_requires_affirmative_envelope_evidence",
+      "purpose": "Display exact requires affirmative envelope evidence",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_display_exact_requires_capture_hash": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_display_exact_requires_capture_hash",
+      "purpose": "Display exact requires capture hash",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_display_exact_requires_consumed_host_request": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_display_exact_requires_consumed_host_request",
+      "purpose": "Display exact requires consumed host request",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_complete_envelope_and_settlement_are_displayable": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_complete_envelope_and_settlement_are_displayable",
+      "purpose": "Complete envelope and settlement are displayable",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_header_envelope_intent_routing_convergence.py::test_diagnostic_downgrade_clears_all_visible_readiness_flags": {
+      "path": "tests/test_header_envelope_intent_routing_convergence.py",
+      "name": "test_diagnostic_downgrade_clears_all_visible_readiness_flags",
+      "purpose": "Diagnostic downgrade clears all visible readiness flags",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
+    },
     "tests/test_host_bridge_and_ollama_first_attempt_regressions.py::test_model_executor_allows_configured_ollama_first_attempt": {
       "path": "tests/test_host_bridge_and_ollama_first_attempt_regressions.py",
       "name": "test_model_executor_allows_configured_ollama_first_attempt",
@@ -38042,166 +38202,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_header_loss_is_runtime_diagnostic_not_practical_repair": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_header_loss_is_runtime_diagnostic_not_practical_repair",
-      "purpose": "Header loss is runtime diagnostic not practical repair",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 26
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_physical_repair_still_routes_to_practical_advice": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_physical_repair_still_routes_to_practical_advice",
-      "purpose": "Physical repair still routes to practical advice",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 43
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_generic_system_repair_is_never_stolen_by_practical_route": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_generic_system_repair_is_never_stolen_by_practical_route",
-      "purpose": "Generic system repair is never stolen by practical route",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 49
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_display_exact_requires_affirmative_envelope_evidence": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_display_exact_requires_affirmative_envelope_evidence",
-      "purpose": "Display exact requires affirmative envelope evidence",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 107
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_display_exact_requires_capture_hash": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_display_exact_requires_capture_hash",
-      "purpose": "Display exact requires capture hash",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 116
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_display_exact_requires_consumed_host_request": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_display_exact_requires_consumed_host_request",
-      "purpose": "Display exact requires consumed host request",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 122
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_complete_envelope_and_settlement_are_displayable": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_complete_envelope_and_settlement_are_displayable",
-      "purpose": "Complete envelope and settlement are displayable",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 131
-    },
-    "tests/test_v163255901_header_envelope_intent_routing_convergence.py::test_diagnostic_downgrade_clears_all_visible_readiness_flags": {
-      "path": "tests/test_v163255901_header_envelope_intent_routing_convergence.py",
-      "name": "test_diagnostic_downgrade_clears_all_visible_readiness_flags",
-      "purpose": "Diagnostic downgrade clears all visible readiness flags",
-      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 14,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 143
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
