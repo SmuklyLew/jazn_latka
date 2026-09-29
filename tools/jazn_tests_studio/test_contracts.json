@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.90.1",
-  "active_definition_count": 1778,
+  "active_definition_count": 1781,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14331,6 +14331,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 356
+    },
+    "tests/test_host_pre_response_gate.py::test_direct_display_exact_without_message_envelope_fails_closed": {
+      "path": "tests/test_host_pre_response_gate.py",
+      "name": "test_direct_display_exact_without_message_envelope_fails_closed",
+      "purpose": "Direct display exact without message envelope fails closed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools.jazn_generate_visible_reply"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 384
+    },
+    "tests/test_host_pre_response_gate.py::test_finalized_display_exact_without_message_envelope_fails_closed": {
+      "path": "tests/test_host_pre_response_gate.py",
+      "name": "test_finalized_display_exact_without_message_envelope_fails_closed",
+      "purpose": "Finalized display exact without message envelope fails closed",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools.jazn_generate_visible_reply"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 403
+    },
+    "tests/test_host_pre_response_gate.py::test_two_consecutive_ordinary_turns_each_require_fresh_runtime_envelope": {
+      "path": "tests/test_host_pre_response_gate.py",
+      "name": "test_two_consecutive_ordinary_turns_each_require_fresh_runtime_envelope",
+      "purpose": "Two consecutive ordinary turns each require fresh runtime envelope",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chatgpt_host_pre_response_gate",
+        "latka_jazn.mcp.tools.jazn_generate_visible_reply"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 424
     },
     "tests/test_host_spawn_diagnostics.py::test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected": {
       "path": "tests/test_host_spawn_diagnostics.py",
