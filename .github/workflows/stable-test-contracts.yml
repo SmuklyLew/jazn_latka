@@ -8,6 +8,7 @@ on:
       - "fix/**"
       - "hotfix/**"
       - "upgrade/**"
+      - "release/**"
     paths:
       - tests/**
       - tools/jazn_tests_studio.py
