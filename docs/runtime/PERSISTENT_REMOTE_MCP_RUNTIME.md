@@ -109,14 +109,25 @@ migrowane leniwie do SQLite bez ich usuwania.
 
 ## 5. Zdalny failover hosta
 
-Publiczny Streamable HTTP jest host-usable dopiero, gdy jednocześnie:
+Publiczny Streamable HTTP ma dwa równoważne, fail-closed tryby evidence.
 
-- endpoint jest skonfigurowany;
-- uwierzytelnienie jest zweryfikowane;
-- protokół MCP jest zgodny;
-- `/healthz` potwierdza żywy gateway;
-- `/readyz` potwierdza gotowy persistent runtime;
-- bieżący host ChatGPT jawnie udostępnia odpowiadającą aplikację/konektor.
+**Deployment/HTTP probe** wymaga jednocześnie:
+
+- skonfigurowanego endpointu;
+- zweryfikowanego uwierzytelnienia;
+- zgodności MCP;
+- `/healthz` potwierdzającego żywy gateway;
+- `/readyz` potwierdzającego gotowy persistent runtime;
+- jawnej capability odpowiadającej aplikacji/konektora w bieżącym hoście.
+
+**Connector-observed probe** jest przeznaczony dla ChatGPT, który może wywołać
+aplikację Jaźni, ale nie ma lokalnego executora ani ogólnego klienta HTTP. Host
+wywołuje read-only `jazn_status`; gateway zwraca samopisujący kontrakt
+`jazn_public_mcp_status/v1`. `classify_public_connector_status_failover()`
+wymaga dodatkowo dowodu, że bieżący host rzeczywiście wykonał tę akcję, oraz
+sprawdza protokół, gateway/runtime instance binding, dokładną wersję i świeżość
+statusu/heartbeat. Skopiowany status bez obserwacji wywołania connectora pozostaje
+niewystarczający.
 
 Secure MCP Tunnel ma analogiczny niezależny gate: proces, health, readiness oraz
 capability hosta muszą być pozytywne.
@@ -124,8 +135,10 @@ capability hosta muszą być pozytywne.
 Untrusted JSON do `host-preflight` nie może ustawić gołego
 `remote_runtime_transport_available=true`. Musi przekazać
 `remote_runtime_evidence`, które jest ponownie klasyfikowane przez kanoniczny
-classifier dla rzeczywistego transportu. Wynik snapshotu zachowuje także typ
-zweryfikowanego transportu.
+classifier dla rzeczywistego transportu. Dla public HTTP wolno przekazać albo
+parę `health`/`readiness`, albo `connector_status` +
+`host_connector_invocation_observed=true`; oba tryby są wzajemnie wykluczające.
+Wynik snapshotu zachowuje także typ zweryfikowanego transportu.
 
 ## 6. Request identity i utrata transportu
 
