@@ -83,7 +83,7 @@ REQUIRED_FILES = (
     "tests/test_rest_cycle_controller.py",
     "tests/test_runtime_stability_rest_cycle.py",
     "tests/test_wake_rest_continuity.py",
-    "tests/test_v163255911_update_continuation_tool_policy.py",
+    "tests/test_system_update_continuation_tool_policy.py",
 )
 
 

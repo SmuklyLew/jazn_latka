@@ -54,3 +54,11 @@ The update-continuation regression is now part of the executable cognitive archi
 - host evidence for both Web and GitHub passes the same per-turn tool policy before finalization.
 
 This is a functional software gate. The neurocognitive terminology remains an engineering analogy and is not a biological-neuron claim.
+
+
+## Stable test-governance follow-up
+
+The active regression suite uses the stable purpose-based filename
+`tests/test_system_update_continuation_tool_policy.py`. Release/version tokens are intentionally excluded from active test filenames;
+historical release-specific snapshots remain confined to archive paths. This preserves the
+repository's Test Studio governance contract without weakening or bypassing it.
