@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.91.1",
-  "active_definition_count": 1786,
+  "active_definition_count": 1788,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17159,16 +17159,66 @@
       "description_source": "source_identity",
       "line": 190
     },
-    "tests/test_mcp_oauth_introspection.py::<parse_error>": {
+    "tests/test_mcp_oauth_introspection.py::test_config_rejects_non_https_and_hides_secret_in_repr": {
       "path": "tests/test_mcp_oauth_introspection.py",
-      "name": "<parse_error>",
-      "purpose": "Source must parse as valid Python.",
-      "expected": "AST parsing succeeds; current error: unexpected character after line continuation character (<unknown>, line 87)",
-      "category": "contract",
+      "name": "test_config_rejects_non_https_and_hides_secret_in_repr",
+      "purpose": "Config rejects non https and hides secret in repr",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
       "tags": [
-        "syntax"
+        "mcp"
       ],
-      "status": "incompatible"
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_mcp_oauth_introspection.py::test_active_introspection_response_becomes_bound_access_token": {
+      "path": "tests/test_mcp_oauth_introspection.py",
+      "name": "test_active_introspection_response_becomes_bound_access_token",
+      "purpose": "Active introspection response becomes bound access token",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_mcp_oauth_introspection.py::test_introspection_fails_closed": {
+      "path": "tests/test_mcp_oauth_introspection.py",
+      "name": "test_introspection_fails_closed",
+      "purpose": "Introspection fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_route_requires_all_independent_evidence": {
       "path": "tests/test_mcp_remote_runtime.py",
