@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
-  "runtime_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
-  "package_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
-  "generated_at_utc": "2026-09-29T00:30:11+00:00",
-  "updated_at_utc": "2026-09-29T00:30:11+00:00",
+  "version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+  "runtime_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+  "package_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+  "generated_at_utc": "2026-09-29T00:35:13+00:00",
+  "updated_at_utc": "2026-09-29T00:35:13+00:00",
   "start_file": "run.py",
   "file_count": 1819,
   "static_file_count": 1819,
@@ -101,8 +101,8 @@
     },
     {
       "path": ".github/workflows/host-spawn-memory-convergence.yml",
-      "size_bytes": 7220,
-      "sha256": "2c72dacd5385d200bf22838d6e168714c5364d1dc10f89b0663df7917a760d0f",
+      "size_bytes": 7218,
+      "sha256": "b887855b7a365aaa9a1a83d91a443d9b751f3f1fdf4eee6a5b2a445cedc1ceb9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -281,8 +281,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3004,
-      "sha256": "6fe9c7943f2ae9d93c89cef4eddab263c26e10a04cc722ccce156e5f793fe4ac",
+      "size_bytes": 2997,
+      "sha256": "e9c0d5bc061136bd1cd860580eee4ac724abcb0281e73774b43e595a22eb3581",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2216,8 +2216,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5012,
-      "sha256": "4dd16596785c58c6b8b125c1131ebda679464d6c4e32d10a26184d03bcf628bc",
+      "size_bytes": 5038,
+      "sha256": "a63aa8674bcb52f09dff3a6a0933327c116434430920104804a9db7b3b0ace8b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8624,8 +8624,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6577,
-      "sha256": "8f02211d7bf2d4fb8930911f3d214a08b4ac5033b430cafca71045b0dd88c929",
+      "size_bytes": 6572,
+      "sha256": "afdabe90a14f8863b95dedb089e763bf7a22c3c87d1bd23295501673d1808cbd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13106,8 +13106,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2393,
-      "sha256": "a9bbb0bab864dcf98f26a71c6927acec70d48644a01c54074123519720818835",
+      "size_bytes": 2233,
+      "sha256": "262b48f983b4ac31c7c229cfe38d98104e69935259b91079950e46ee23aa3fd5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16238,8 +16238,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1644766,
-      "sha256": "e1d707f33f2a528a010144b68e0725f27adff8c1b5ee6265cda19bd1860510fa",
+      "size_bytes": 1644769,
+      "sha256": "18ef9de312e6bda591b5304a0703b517fc45c24b7aca359e7b9d84d72d2b393e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16823,11 +16823,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
+  "release_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
-    "package_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence",
-    "release_version": "16.3.25.5.90.0-chatgpt-host-bootstrap-primitive-convergence"
+    "runtime_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+    "package_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+    "release_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
