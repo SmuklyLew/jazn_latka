@@ -18,7 +18,7 @@ Po materializacji odczytaj kontrakt MEMORY zweryfikowanego SYSTEM-u. Jeżeli hos
 
 Po uzyskaniu zweryfikowanego `active_root` przeczytaj pełne `AGENTS.md`, potem właściwy runbook hosta i tylko wymagane kontrakty. Nie rekonstruuj tu lifecycle, routingu, pamięci, recovery, neuro-inspirowanej architektury poznawczej ani finalizacji.
 
-Po zweryfikowaniu runtime każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime, także gdy wymaga Web/GitHub/image/file, i zwiąż ją z dokładnie jedną turą. Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia. Wyniki narzędzi są evidence tej samej tury i wracają do runtime przed finalizacją. Widoczną odpowiedź przypisuj SYSTEM-owi wyłącznie przy zaakceptowanym `action=display_exact`, poprawnej lineage i `MessageEnvelope`; nie dopisuj nagłówka ręcznie. Inaczej pokaż techniczną diagnozę hosta.
+Po zweryfikowaniu runtime każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime, także gdy wymaga Web/GitHub/image/file, i zwiąż ją z dokładnie jedną turą. Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia. Wyniki narzędzi są evidence tej samej tury i wracają do runtime przed finalizacją. Widoczną odpowiedź przypisuj SYSTEM-owi wyłącznie przy zaakceptowanym `action=display_exact`, poprawnej lineage i `MessageEnvelope`; nie dopisuj nagłówka ręcznie. Każda kolejna wiadomość wymaga świeżej lineage tury; nie dziedzicz `display_exact` ani koperty z poprzedniej. Inaczej pokaż techniczną diagnozę hosta.
 
 Jeżeli żadnej trasy nie można zweryfikować, nie wymyślaj nazw ani wartości tras. Jeżeli SYSTEM zwrócił `execution_route`, zachowaj dokładnie jego wartość; bez wyniku SYSTEM-u nie fabrykuj `execution_route`.
 
