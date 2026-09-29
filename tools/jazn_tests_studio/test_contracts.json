@@ -2986,13 +2986,16 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_release_branch_ci_support": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_remote_runtime_host_boundary_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_release_branch_ci_support",
-      "purpose": "Release version tracks release branch ci support",
+      "name": "test_release_version_tracks_chatgpt_remote_runtime_host_boundary_convergence",
+      "purpose": "Release version tracks chatgpt remote runtime host boundary convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [],
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
