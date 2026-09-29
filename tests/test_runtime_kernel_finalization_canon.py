@@ -118,10 +118,17 @@ def test_canonical_cli_host_finalize_consumes_pending_and_notifies_daemon(
             pass
 
         def persist_final_visible_reply(self, **kwargs: Any) -> dict[str, Any]:
+            final = kwargs["final_text"]
             return {
-                "final_visible_text": kwargs["final_text"],
+                "final_visible_text": final,
+                "final_text_sha256": sha256_host_visible_text(final),
                 "turn_id": kwargs["turn_id"],
                 "trace_id": kwargs["trace_id"],
+                "timestamp_header": kwargs["timestamp_header"],
+                "state_emoticon": kwargs["state_emoticon"],
+                "author_label": kwargs["author_label"],
+                "author_source": kwargs["author_source"],
+                "envelope_present_in_final": True,
             }
 
     class FakeGateway:
