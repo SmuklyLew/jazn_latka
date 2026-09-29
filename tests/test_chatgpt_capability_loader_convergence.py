@@ -21,6 +21,8 @@ def test_project_loader_requires_callable_current_turn_capability() -> None:
     assert "stan „installed”" in text
     assert "Connector innej usługi, np. GitHub lub Drive" in text
     assert "nie promuj zdalnej trasy" in text
+    assert "Każda kolejna wiadomość wymaga świeżej lineage tury" in text
+    assert "nie dziedzicz `display_exact` ani koperty z poprzedniej" in text
 
 
 def test_project_loader_does_not_invent_handoff_or_execution_route() -> None:
