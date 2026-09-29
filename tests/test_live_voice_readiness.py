@@ -66,7 +66,7 @@ def _voice_presentation(
 ) -> dict[str, object]:
     turn_id = f"turn-v163252-{index}"
     trace_id = f"trace-v163252-{index}"
-    final_text = f"{VOICE_HEADER}\n🌿 Łatka\nSyntetyczna odpowiedź {index}."
+    final_text = f"{VOICE_HEADER}\n🌿 Łatka\n\nSyntetyczna odpowiedź {index}."
     transport: dict[str, object] = {
         "selected_transport": "persistent_daemon",
         "fallback_reason": "daemon_reused",
