@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.91.0",
-  "active_definition_count": 1781,
+  "active_definition_count": 1788,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -5869,6 +5869,93 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 98
+    },
+    "tests/test_chatgpt_plugin_package.py::test_plugin_documents_use_published_agent_plugin_schemas": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_plugin_documents_use_published_agent_plugin_schemas",
+      "purpose": "Plugin documents use published agent plugin schemas",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_chatgpt_plugin_package.py::test_plugin_endpoint_is_https_mcp_without_embedded_credentials": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_plugin_endpoint_is_https_mcp_without_embedded_credentials",
+      "purpose": "Plugin endpoint is https mcp without embedded credentials",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "package"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_chatgpt_plugin_package.py::test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite",
+      "purpose": "Write plugin package is atomic bounded and refuses overwrite",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "FileExistsError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_chatgpt_plugin_package.py::test_cli_parser_accepts_production_oauth_and_plugin_package_modes": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_cli_parser_accepts_production_oauth_and_plugin_package_modes",
+      "purpose": "Cli parser accepts production oauth and plugin package modes",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
     },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
@@ -17069,6 +17156,67 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 190
+    },
+    "tests/test_mcp_oauth_introspection.py::test_config_rejects_non_https_and_hides_secret_in_repr": {
+      "path": "tests/test_mcp_oauth_introspection.py",
+      "name": "test_config_rejects_non_https_and_hides_secret_in_repr",
+      "purpose": "Config rejects non https and hides secret in repr",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_mcp_oauth_introspection.py::test_active_introspection_response_becomes_bound_access_token": {
+      "path": "tests/test_mcp_oauth_introspection.py",
+      "name": "test_active_introspection_response_becomes_bound_access_token",
+      "purpose": "Active introspection response becomes bound access token",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_mcp_oauth_introspection.py::test_introspection_fails_closed": {
+      "path": "tests/test_mcp_oauth_introspection.py",
+      "name": "test_introspection_fails_closed",
+      "purpose": "Introspection fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_route_requires_all_independent_evidence": {
       "path": "tests/test_mcp_remote_runtime.py",
