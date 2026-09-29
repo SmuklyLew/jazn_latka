@@ -34,17 +34,27 @@ def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push(
         '- "fix/**"',
         '- "hotfix/**"',
         '- "upgrade/**"',
+        '- "release/**"',
         '- "tools/upgrade-*"',
     ):
         assert branch_filter in text
     assert 'case "$target_branch" in' in text
-    assert "master|update/*|fix/*|hotfix/*|upgrade/*|tools/upgrade-*)" in text
+    assert "master|update/*|fix/*|hotfix/*|upgrade/*|release/*|tools/upgrade-*)" in text
     assert "Release metadata drift cannot be committed to a fork" in text
     assert "Refusing metadata commit because unrelated paths are dirty" in text
     assert "PACKAGE_INTEGRITY_MANIFEST\\.json|SOURCE_PROVENANCE\\.json" in text
     assert "[skip ci]" in text
     assert "github.event.pull_request.head.sha || github.head_ref || github.ref_name" in text
     assert "git push origin \"HEAD:${target_branch}\"" in text
+
+
+def test_release_branches_trigger_release_and_stable_contract_workflows() -> None:
+    release_hardening = _read("release-hardening.yml")
+    stable_contracts = _read("stable-test-contracts.yml")
+
+    assert '- "release/**"' in release_hardening
+    assert '- "release/**"' in stable_contracts
+    assert "master|update/*|fix/*|hotfix/*|upgrade/*|release/*|tools/upgrade-*)" in release_hardening
 
 
 def test_release_metadata_branch_sync_uses_repository_token_scope_without_recursive_dispatch() -> None:
