@@ -5271,7 +5271,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 128
+      "line": 135
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_forbidden_host_voice_gets_one_retry_then_fails_closed": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -5298,7 +5298,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 165
+      "line": 172
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -5325,7 +5325,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 197
+      "line": 204
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_retry_preserves_memory_context_and_web_run_provenance": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -5352,7 +5352,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 237
+      "line": 244
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -30903,7 +30903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 188
+      "line": 195
     },
     "tests/test_runtime_kernel_finalization_canon.py::test_runtime_identity_object_is_frozen_and_uses_executable_kernel": {
       "path": "tests/test_runtime_kernel_finalization_canon.py",
@@ -30931,7 +30931,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 211
+      "line": 218
     },
     "tests/test_runtime_kernel_finalization_canon.py::test_birth_source_manifest_has_executable_fail_closed_evaluation": {
       "path": "tests/test_runtime_kernel_finalization_canon.py",
@@ -30957,7 +30957,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 231
     },
     "tests/test_runtime_memory_autoload.py::test_runtime_bootstrap_discovers_one_memory_sidecar_and_requires_explicit_choice_for_many": {
       "path": "tests/test_runtime_memory_autoload.py",
