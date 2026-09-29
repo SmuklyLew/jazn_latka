@@ -82,7 +82,7 @@ def test_active_introspection_response_becomes_bound_access_token() -> None:
     assert token.subject == "user-123"
     assert token.scopes == ["jazn:mcp:connect", "jazn:turn:submit"]
     assert token.claims == {"iss": "https://id.example.test"}
-    expected_basic = base64.b64encode(b"resource-client:secret:value").decode("ascii")
+    expected_basic = base64.b64encode(b"resource-client:secret%3Avalue").decode("ascii")
     assert captured["authorization"] == f"Basic {expected_basic}"
     assert b"opaque-token" in captured["body"]
 
