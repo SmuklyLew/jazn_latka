@@ -60,14 +60,34 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--host", default="127.0.0.1")
     child.add_argument("--port", type=int, default=8080)
     child.add_argument("--daemon-url", default="http://127.0.0.1:8787")
-    child.add_argument(
+    mcp_http_mode = child.add_mutually_exclusive_group()
+    mcp_http_mode.add_argument(
         "--loopback-dev",
         action="store_true",
+        help="Jawnie zezwól na lokalny, nieuwierzytelniony tryb developerski.",
+    )
+    mcp_http_mode.add_argument(
+        "--public-oauth",
+        action="store_true",
         help=(
-            "Jawnie zezwól na lokalny, nieuwierzytelniony tryb developerski. "
-            "Produkcja musi wstrzyknąć TokenVerifier przez build_public_mcp_gateway()."
+            "Uruchom produkcyjny publiczny MCP jako OAuth 2.1 resource server, "
+            "weryfikujący tokeny przez RFC 7662 introspection."
         ),
     )
+    child.add_argument("--oauth-issuer-url")
+    child.add_argument("--oauth-resource-server-url")
+    child.add_argument("--oauth-introspection-url")
+    child.add_argument("--oauth-client-id-env", default="JAZN_MCP_OAUTH_CLIENT_ID")
+    child.add_argument("--oauth-client-secret-env", default="JAZN_MCP_OAUTH_CLIENT_SECRET")
+    child.add_argument("--oauth-scope", action="append", default=[])
+    child.add_argument("--allowed-host", action="append", default=[])
+    child.add_argument("--allowed-origin", action="append", default=[])
+
+    child = sub.add_parser("chatgpt-plugin-package", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--endpoint", required=True)
+    child.add_argument("--output", type=Path, required=True)
+    child.add_argument("--force", action="store_true")
 
     child = sub.add_parser("package-smoke", allow_abbrev=False)
     _add_common(child)
@@ -395,7 +415,7 @@ def main(
         )
 
     known = {
-        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http",
+        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http", "chatgpt-plugin-package",
         "host-finalize", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
@@ -631,40 +651,141 @@ def main(
         _emit(payload, as_json=ns.as_json)
         return 0
     if ns.command == "mcp-http":
-        if not ns.loopback_dev:
+        if not ns.loopback_dev and not ns.public_oauth:
             _emit(
                 {
                     "ok": False,
-                    "reason": "mcp_http_cli_requires_explicit_loopback_dev",
-                    "production_entrypoint": "latka_jazn.mcp.http_gateway.build_public_mcp_gateway",
+                    "reason": "mcp_http_cli_requires_explicit_mode",
+                    "legacy_reason": "mcp_http_cli_requires_explicit_loopback_dev",
+                    "supported_modes": ["--loopback-dev", "--public-oauth"],
                     "truth_boundary": (
                         "The built-in CLI never creates an unauthenticated public MCP listener. "
-                        "Production must inject an OAuth TokenVerifier and resource-server settings."
+                        "Use --loopback-dev only on loopback or --public-oauth with an external OAuth provider."
                     ),
                 },
                 as_json=True,
             )
             return 2
-        from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
 
+        from latka_jazn.mcp.http_gateway import (
+            SCOPE_CONNECT,
+            SCOPE_STATUS_READ,
+            SCOPE_TASK_CANCEL,
+            SCOPE_TASK_READ,
+            SCOPE_TASK_UPDATE,
+            SCOPE_TURN_FINALIZE,
+            SCOPE_TURN_READ,
+            SCOPE_TURN_SUBMIT,
+            build_public_mcp_gateway,
+        )
+
+        if ns.loopback_dev:
+            gateway = build_public_mcp_gateway(
+                root=root,
+                daemon_url=str(ns.daemon_url),
+                host=str(ns.host),
+                port=int(ns.port),
+                allow_unauthenticated_loopback_dev=True,
+            )
+            if not gateway.config.loopback_host:
+                _emit(
+                    {
+                        "ok": False,
+                        "reason": "mcp_http_cli_loopback_dev_only",
+                        "host": str(ns.host),
+                    },
+                    as_json=True,
+                )
+                return 2
+            gateway.run()
+            return 0
+
+        import os
+        from latka_jazn.mcp.oauth_introspection import (
+            IntrospectionVerifierConfig,
+            Rfc7662TokenVerifier,
+        )
+
+        required_urls = {
+            "oauth_issuer_url": ns.oauth_issuer_url,
+            "oauth_resource_server_url": ns.oauth_resource_server_url,
+            "oauth_introspection_url": ns.oauth_introspection_url,
+        }
+        missing_urls = [name for name, value in required_urls.items() if not str(value or "").strip()]
+        client_id = os.environ.get(str(ns.oauth_client_id_env), "")
+        client_secret = os.environ.get(str(ns.oauth_client_secret_env), "")
+        missing_env = [
+            name
+            for name, value in (
+                (str(ns.oauth_client_id_env), client_id),
+                (str(ns.oauth_client_secret_env), client_secret),
+            )
+            if not value
+        ]
+        if missing_urls or missing_env:
+            _emit(
+                {
+                    "ok": False,
+                    "reason": "mcp_http_public_oauth_configuration_incomplete",
+                    "missing_arguments": missing_urls,
+                    "missing_environment": missing_env,
+                },
+                as_json=True,
+            )
+            return 2
+
+        try:
+            verifier = Rfc7662TokenVerifier(
+                IntrospectionVerifierConfig(
+                    introspection_url=str(ns.oauth_introspection_url),
+                    issuer_url=str(ns.oauth_issuer_url),
+                    resource_server_url=str(ns.oauth_resource_server_url),
+                    client_id=client_id,
+                    client_secret=client_secret,
+                )
+            )
+        except ValueError as exc:
+            _emit({"ok": False, "reason": str(exc)}, as_json=True)
+            return 2
+
+        default_scopes = (
+            SCOPE_CONNECT,
+            SCOPE_TURN_SUBMIT,
+            SCOPE_TURN_READ,
+            SCOPE_TURN_FINALIZE,
+            SCOPE_STATUS_READ,
+            SCOPE_TASK_READ,
+            SCOPE_TASK_UPDATE,
+            SCOPE_TASK_CANCEL,
+        )
+        scopes = tuple(dict.fromkeys(str(item).strip() for item in ns.oauth_scope if str(item).strip()))
         gateway = build_public_mcp_gateway(
             root=root,
             daemon_url=str(ns.daemon_url),
             host=str(ns.host),
             port=int(ns.port),
-            allow_unauthenticated_loopback_dev=True,
+            token_verifier=verifier,
+            oauth_issuer_url=str(ns.oauth_issuer_url),
+            oauth_resource_server_url=str(ns.oauth_resource_server_url),
+            oauth_required_scopes=scopes or default_scopes,
+            allowed_hosts=tuple(str(item) for item in ns.allowed_host),
+            allowed_origins=tuple(str(item) for item in ns.allowed_origin),
         )
-        if not gateway.config.loopback_host:
-            _emit(
-                {
-                    "ok": False,
-                    "reason": "mcp_http_cli_loopback_dev_only",
-                    "host": str(ns.host),
-                },
-                as_json=True,
-            )
-            return 2
         gateway.run()
+        return 0
+    if ns.command == "chatgpt-plugin-package":
+        from latka_jazn.mcp.chatgpt_plugin import write_portable_plugin_package
+
+        try:
+            result = write_portable_plugin_package(
+                ns.output,
+                str(ns.endpoint),
+                force=bool(ns.force),
+            )
+        except (ValueError, FileExistsError, OSError) as exc:
+            _emit({"ok": False, "reason": str(exc)}, as_json=True)
+            return 2
+        _emit(result.to_dict(), as_json=ns.as_json)
         return 0
     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
         return dispatch_legacy(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
