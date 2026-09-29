@@ -2986,13 +2986,15 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_display_exact_envelope_revalidation": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_plugin_runtime_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_display_exact_envelope_revalidation",
-      "purpose": "Release version tracks display exact envelope revalidation",
+      "name": "test_release_version_tracks_chatgpt_plugin_runtime_convergence",
+      "purpose": "Release version tracks chatgpt plugin runtime convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [],
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
