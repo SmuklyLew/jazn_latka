@@ -51,6 +51,6 @@ def test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt() ->
     assert "Nie ponawiaj handoff w tej samej próbie" in text
 
 
-def test_release_version_tracks_current_header_envelope_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.90.1"
-    assert PACKAGE_RELEASE_NAME == "header-envelope-intent-routing-convergence"
+def test_release_version_tracks_display_exact_envelope_revalidation() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.90.2"
+    assert PACKAGE_RELEASE_NAME == "display-exact-envelope-revalidation-convergence"
