@@ -38,13 +38,13 @@ def _config() -> IntrospectionVerifierConfig:
         issuer_url="https://id.example.test/",
         resource_server_url="https://jazn.example.test/mcp",
         client_id="resource-client",
-        client_secret="secret:value",
+        client_secret="secret: value+",
     )
 
 
 def test_config_rejects_non_https_and_hides_secret_in_repr() -> None:
     config = _config()
-    assert "secret:value" not in repr(config)
+    assert "secret: value+" not in repr(config)
     with pytest.raises(ValueError, match="introspection_url_must_be_absolute_https_url"):
         IntrospectionVerifierConfig(
             introspection_url="http://id.example.test/introspect",
@@ -82,7 +82,7 @@ def test_active_introspection_response_becomes_bound_access_token() -> None:
     assert token.subject == "user-123"
     assert token.scopes == ["jazn:mcp:connect", "jazn:turn:submit"]
     assert token.claims == {"iss": "https://id.example.test"}
-    expected_basic = base64.b64encode(b"resource-client:secret%3Avalue").decode("ascii")
+    expected_basic = base64.b64encode(b"resource-client:secret%3A+value%2B").decode("ascii")
     assert captured["authorization"] == f"Basic {expected_basic}"
     captured_body = captured["body"]\n    assert isinstance(captured_body, bytes)\n    assert b"opaque-token" in captured_body
 
