@@ -14,8 +14,8 @@ from latka_jazn.mcp.tools.jazn_generate_visible_reply import run as run_visible_
 
 
 HEADER = "🕒 2026-08-28 12:00:00"
-RUNTIME_EXACT = f"{HEADER}\n🌿 Łatka\nJestem tutaj."
-RUNTIME_FINALIZED = f"{HEADER}\n🌿 Łatka\nOdpowiedź zaakceptowana przez runtime."
+RUNTIME_EXACT = f"{HEADER}\n🌿 Łatka\n\nJestem tutaj."
+RUNTIME_FINALIZED = f"{HEADER}\n🌿 Łatka\n\nOdpowiedź zaakceptowana przez runtime."
 
 
 def _display_exact_response(text: str = RUNTIME_EXACT) -> dict[str, Any]:
@@ -380,3 +380,84 @@ def test_canonical_mcp_entrypoint_returns_diagnostic_when_runtime_is_unavailable
     assert telemetry["visible_output_source"] == "host_diagnostic"
     assert telemetry["fallback_reason"].startswith("runtime_unavailable:")
     assert "🌿 Łatka" not in result["content"][0]["text"]
+
+def test_direct_display_exact_without_message_envelope_fails_closed() -> None:
+    malformed = _display_exact_response(
+        f"{HEADER}\n🌿 Łatka\nBrakuje pustej linii koperty."
+    )
+
+    result = run_host_pre_response_gate(
+        "Druga wiadomość.",
+        invoke_runtime=lambda _text: malformed,
+        requested_runtime_root="/runtime_A",
+    )
+
+    assert result["ok"] is False
+    assert result["action"] == "host_diagnostic"
+    assert result["error_code"] == "RUNTIME_MESSAGE_ENVELOPE_INVALID"
+    assert result["visible_output_source"] == "host_diagnostic"
+    assert result["host_pre_response_gate"]["host_routing_bypass_detected"] is True
+    assert "Łatka" not in result["visible_text"]
+
+
+def test_finalized_display_exact_without_message_envelope_fails_closed() -> None:
+    malformed_final = f"{HEADER}\n🌿 Łatka\nBrakuje pustej linii koperty."
+
+    result = run_host_pre_response_gate(
+        "Druga wiadomość.",
+        invoke_runtime=lambda _text: _generate_then_finalize_response(),
+        generate_host_candidate=lambda _presentation: "kandydat",
+        finalize_runtime_candidate=lambda _text, _presentation: {
+            **_display_exact_response(malformed_final),
+            "phase": "host_visible_reply_recorded",
+        },
+        requested_runtime_root="/runtime_A",
+    )
+
+    assert result["ok"] is False
+    assert result["action"] == "host_diagnostic"
+    assert result["error_code"] == "RUNTIME_MESSAGE_ENVELOPE_INVALID"
+    assert result["visible_output_source"] == "host_diagnostic"
+    assert result["host_pre_response_gate"]["host_routing_bypass_detected"] is True
+
+
+def test_two_consecutive_ordinary_turns_each_require_fresh_runtime_envelope() -> None:
+    calls: list[str] = []
+
+    def invoke(text: str) -> dict[str, Any]:
+        index = len(calls) + 1
+        calls.append(text)
+        timestamp = f"🕒 2026-08-28 12:00:0{index}"
+        final = f"{timestamp}\n🌿 Łatka\n\nOdpowiedź {index}."
+        response = _display_exact_response(final)
+        response["turn_id"] = f"turn-{index}"
+        response["trace_id"] = f"trace-{index}"
+        bridge = response["chatgpt_host_bridge"]
+        bridge["turn_id"] = f"turn-{index}"
+        bridge["trace_id"] = f"trace-{index}"
+        bridge["required_visible_prefix"] = timestamp
+        return response
+
+    first = run_host_pre_response_gate(
+        "Pierwsza wiadomość.",
+        invoke_runtime=invoke,
+        requested_runtime_root="/runtime_A",
+    )
+    second = run_host_pre_response_gate(
+        "Druga wiadomość.",
+        invoke_runtime=invoke,
+        requested_runtime_root="/runtime_A",
+    )
+
+    assert calls == ["Pierwsza wiadomość.", "Druga wiadomość."]
+    assert first["action"] == "display_exact"
+    assert second["action"] == "display_exact"
+    assert first["visible_text"].startswith(
+        "🕒 2026-08-28 12:00:01\n🌿 Łatka\n\n"
+    )
+    assert second["visible_text"].startswith(
+        "🕒 2026-08-28 12:00:02\n🌿 Łatka\n\n"
+    )
+    assert first["host_pre_response_gate"]["runtime_turn_id"] == "turn-1"
+    assert second["host_pre_response_gate"]["runtime_turn_id"] == "turn-2"
+    assert first["host_pre_response_gate"]["user_text_sha256"] != second["host_pre_response_gate"]["user_text_sha256"]
