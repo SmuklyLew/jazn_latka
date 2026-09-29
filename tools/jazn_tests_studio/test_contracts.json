@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.91.1",
-  "active_definition_count": 1792,
+  "active_definition_count": 1793,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38433,12 +38433,37 @@
         "latka_jazn.core.host_tool_capabilities",
         "latka_jazn.core.host_tool_turn_policy",
         "latka_jazn.core.route_registry",
+        "latka_jazn.core.signal_matching",
         "latka_jazn.nlp.dialogue_intent_classifier",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
+    },
+    "tests/test_v163255911_update_continuation_tool_policy.py::test_update_continuation_is_seen_by_neural_signal_router_as_architecture_repair": {
+      "path": "tests/test_v163255911_update_continuation_tool_policy.py",
+      "name": "test_update_continuation_is_seen_by_neural_signal_router_as_architecture_repair",
+      "purpose": "Update continuation is seen by neural signal router as architecture repair",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.handlers.self_architecture_audit_handler",
+        "latka_jazn.core.host_tool_capabilities",
+        "latka_jazn.core.host_tool_turn_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.signal_matching",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
     },
     "tests/test_v163255911_update_continuation_tool_policy.py::test_update_execution_requests_github_but_still_obeys_host_capability_snapshot": {
       "path": "tests/test_v163255911_update_continuation_tool_policy.py",
@@ -38458,12 +38483,13 @@
         "latka_jazn.core.host_tool_capabilities",
         "latka_jazn.core.host_tool_turn_policy",
         "latka_jazn.core.route_registry",
+        "latka_jazn.core.signal_matching",
         "latka_jazn.nlp.dialogue_intent_classifier",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 43
     },
     "tests/test_v163255911_update_continuation_tool_policy.py::test_update_execution_does_not_force_github_when_host_reports_it_unavailable": {
       "path": "tests/test_v163255911_update_continuation_tool_policy.py",
@@ -38483,12 +38509,13 @@
         "latka_jazn.core.host_tool_capabilities",
         "latka_jazn.core.host_tool_turn_policy",
         "latka_jazn.core.route_registry",
+        "latka_jazn.core.signal_matching",
         "latka_jazn.nlp.dialogue_intent_classifier",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 71
     },
     "tests/test_v163255911_update_continuation_tool_policy.py::test_read_only_self_architecture_handler_satisfies_its_declared_contract": {
       "path": "tests/test_v163255911_update_continuation_tool_policy.py",
@@ -38506,12 +38533,13 @@
         "latka_jazn.core.host_tool_capabilities",
         "latka_jazn.core.host_tool_turn_policy",
         "latka_jazn.core.route_registry",
+        "latka_jazn.core.signal_matching",
         "latka_jazn.nlp.dialogue_intent_classifier",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 90
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
