@@ -96,10 +96,10 @@ jobs:
           fi
 
           case "$target_branch" in
-            master|update/*|fix/*|hotfix/*|upgrade/*|tools/upgrade-*)
+            master|update/*|fix/*|hotfix/*|upgrade/*|release/*|tools/upgrade-*)
               ;;
             *)
-              echo "Automatic release-metadata commits are limited to master/update/fix/hotfix/upgrade/tools-upgrade branches: ${target_branch}." >&2
+              echo "Automatic release-metadata commits are limited to master/update/fix/hotfix/upgrade/release/tools-upgrade branches: ${target_branch}." >&2
               exit 2
               ;;
           esac
