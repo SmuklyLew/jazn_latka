@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.91.0 makes the public MCP route deployable as a production
-# OAuth resource server and packages the remote endpoint as an Agent Plugin.
+# v16.3.25.5.91.1 closes CI, release-identity and OAuth interoperability
+# regressions found while validating the ChatGPT plugin runtime convergence line.
 DISTRIBUTION_VERSION = "16.3.25.5.91.1"
 PACKAGE_VERSION = "16.3.25.5.91.1"
 PACKAGE_RELEASE_NAME = "chatgpt-plugin-runtime-ci-convergence"

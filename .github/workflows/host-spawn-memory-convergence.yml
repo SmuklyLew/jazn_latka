@@ -132,7 +132,15 @@ jobs:
         run: python -X utf8 run.py host-diagnose --root . --json
 
       - name: Verify release identity
-        run: python -X utf8 -c "from latka_jazn.version import PACKAGE_VERSION_FULL; assert PACKAGE_VERSION_FULL == '16.3.25.5.91.1-chatgpt-plugin-runtime-ci-convergence'; print(PACKAGE_VERSION_FULL)"
+        run: >-
+          python -X utf8 -c
+          "import subprocess, sys;
+          from importlib.metadata import version as installed_version;
+          from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION, PACKAGE_VERSION_FULL;
+          assert installed_version('latka-jazn') == DISTRIBUTION_VERSION == PACKAGE_VERSION;
+          observed = subprocess.check_output([sys.executable, '-X', 'utf8', 'run.py', '--version'], text=True).strip();
+          assert observed == PACKAGE_VERSION_FULL;
+          print(PACKAGE_VERSION_FULL)"
 
       - name: Clean checkout guard
         if: always()
