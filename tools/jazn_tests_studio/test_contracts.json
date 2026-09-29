@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.92",
-  "active_definition_count": 1793,
+  "active_definition_count": 1804,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -4797,6 +4797,86 @@
       "description_source": "source_identity",
       "line": 34
     },
+    "tests/test_chatgpt_host_failure_stage_convergence.py::test_explicit_host_spawn_phase_wins_over_derived_stage": {
+      "path": "tests/test_chatgpt_host_failure_stage_convergence.py",
+      "name": "test_explicit_host_spawn_phase_wins_over_derived_stage",
+      "purpose": "Explicit host spawn phase wins over derived stage",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_chatgpt_host_failure_stage_convergence.py::test_failed_executor_allocation_is_reported_without_claiming_filesystem_state": {
+      "path": "tests/test_chatgpt_host_failure_stage_convergence.py",
+      "name": "test_failed_executor_allocation_is_reported_without_claiming_filesystem_state",
+      "purpose": "Failed executor allocation is reported without claiming filesystem state",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_chatgpt_host_failure_stage_convergence.py::test_mount_failure_and_spawn_failure_are_distinguished": {
+      "path": "tests/test_chatgpt_host_failure_stage_convergence.py",
+      "name": "test_mount_failure_and_spawn_failure_are_distinguished",
+      "purpose": "Mount failure and spawn failure are distinguished",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_chatgpt_host_failure_stage_convergence.py::test_created_process_is_post_spawn_evidence": {
+      "path": "tests/test_chatgpt_host_failure_stage_convergence.py",
+      "name": "test_created_process_is_post_spawn_evidence",
+      "purpose": "Created process is post spawn evidence",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
     "tests/test_chatgpt_host_preflight.py::test_degraded_host_with_verified_package_can_resume_bootstrap": {
       "path": "tests/test_chatgpt_host_preflight.py",
       "name": "test_degraded_host_with_verified_package_can_resume_bootstrap",
@@ -6197,6 +6277,134 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 162
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_actual_connector_status_invocation_can_verify_remote_route": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_actual_connector_status_invocation_can_verify_remote_route",
+      "purpose": "Actual connector status invocation can verify remote route",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_copied_status_payload_without_observed_connector_call_is_not_capability": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_copied_status_payload_without_observed_connector_call_is_not_capability",
+      "purpose": "Copied status payload without observed connector call is not capability",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_connector_probe_rejects_stale_runtime_binding": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_connector_probe_rejects_stale_runtime_binding",
+      "purpose": "Connector probe rejects stale runtime binding",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_connector_probe_rejects_wrong_status_contract": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_connector_probe_rejects_wrong_status_contract",
+      "purpose": "Connector probe rejects wrong status contract",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_host_preflight_accepts_fresh_status_from_actual_connector_action": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_host_preflight_accepts_fresh_status_from_actual_connector_action",
+      "purpose": "Host preflight accepts fresh status from actual connector action",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_chatgpt_remote_connector_probe_convergence.py::test_host_preflight_rejects_mixed_public_probe_modes": {
+      "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
+      "name": "test_host_preflight_rejects_mixed_public_probe_modes",
+      "purpose": "Host preflight rejects mixed public probe modes",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_rejects_bare_positive_remote_runtime_boolean": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
@@ -16574,6 +16782,29 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 58
+    },
+    "tests/test_mcp_connector_status_probe_contract.py::test_jazn_status_emits_self_describing_connector_probe_contract": {
+      "path": "tests/test_mcp_connector_status_probe_contract.py",
+      "name": "test_jazn_status_emits_self_describing_connector_probe_contract",
+      "purpose": "Jazn status emits self describing connector probe contract",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
     },
     "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
       "path": "tests/test_mcp_http_cli.py",
