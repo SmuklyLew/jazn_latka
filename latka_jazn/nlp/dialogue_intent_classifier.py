@@ -127,7 +127,14 @@ class DialogueIntentClassifier:
     IDENTITY_TERMS = ("z kim rozmawiam", "kim jesteś", "kim jestes", "czy to łatka", "czy to latka", "chatgpt czy", "jaźń czy", "jazn czy", "to nadal ty", "czy jaźń to ty", "czy jazn to ty", "jaźń to ty", "jazn to ty", "jaźń to ty?", "jazn to ty?", "własny głos", "wlasny glos", "twój własny głos", "twoj wlasny glos", "skąd powinien płynąć twój", "skad powinien plynac twoj")
     AUDIT_TERMS = ("przeczytaj", "całość", "calosc", "wszystkie czaty", "historię rozmów", "historie rozmow", "pamięć", "pamiec", "bez streszczeń", "bez streszczen")
     PRESERVE_TERMS = ("nie zmieniaj", "1:1", "bez zmian", "zachowaj tekst", "bez redakcji", "nie redaguj")
-    PRACTICAL_TERMS = ("glazur", "kafelk", "zawór", "zawor", "kapie", "rączka", "raczka", "naprawić", "naprawic", "wyciąć otwór", "wyciac otwor")
+    # Physical/home repair routing must be grounded in an actual repair domain.
+    # Generic verbs such as "naprawić" are intentionally excluded: they also
+    # occur in software/runtime diagnostics and previously stole those turns.
+    PRACTICAL_TERMS = (
+        "glazur", "kafelk", "płytk", "plytk", "fug", "silikon",
+        "zawór", "zawor", "kran", "kapie", "rączka", "raczka",
+        "rur", "uszczelk", "zamek", "wyciąć otwór", "wyciac otwor",
+    )
     AUTOMOTIVE_TERMS = ("tpms", "kontrolka", "samoch", "ciśnienie opon", "cisnienie opon")
     DICTIONARY_TERMS = ("słownik", "slownik", "sjp", "wsjp", "synonim", "antonim", "odmian", "lemma", "lema", "znaczenie słowa", "znaczenie slowa", "czy to słowo", "czy to slowo")
     RESEARCH_TERMS = ("sprawdź w internecie", "sprawdz w internecie", "poszukaj w internecie", "źródła", "zrodla", "web", "research")
@@ -213,6 +220,18 @@ class DialogueIntentClassifier:
         "nie uruchomiłaś się", "nie uruchomilas sie",
         "po mojej pierwszej wiadomości", "po mojej pierwszej wiadomosci",
         "błąd pierwszej wiadomości", "blad pierwszej wiadomosci",
+    )
+    HEADER_CONTINUITY_DIAGNOSTIC_TERMS = (
+        "nagłówek zniknął", "naglowek zniknal",
+        "zniknął nagłówek", "zniknal naglowek",
+        "nie było nagłówka", "nie bylo naglowka",
+        "nie było już nagłówka", "nie bylo juz naglowka",
+        "brak nagłówka", "brak naglowka",
+        "brakuje nagłówka", "brakuje naglowka",
+        "bez nagłówka", "bez naglowka",
+        "timestamp zniknął", "timestamp zniknal",
+        "brak timestampu", "brakuje timestampu",
+        "brak czasu i autora", "jaki czas, kto pisze",
     )
     RUNTIME_STATUS_AFTER_UPDATE_TERMS = (
         "aktywny folder", "active_root", "active database", "active_database",
@@ -684,6 +703,9 @@ class DialogueIntentClassifier:
             and any(marker in folded for marker in ("obudz", "uruchom", "wystart", "pierwsz"))
             and any(marker in folded for marker in ("blad", "nie mogl", "co sie dzialo", "gdzie lezy"))
         )
+        has_header_continuity_diagnostic=self._has_any(
+            norm, folded, self.HEADER_CONTINUITY_DIAGNOSTIC_TERMS
+        )
         has_user_memory_recall=self._has_any(norm,folded,self.USER_MEMORY_RECALL_TERMS) or (self._has_any(norm,folded,self.SELF_MEMORY_RECALL_TERMS) and self._has_any(norm,folded,self.USER_MEMORY_PERSON_TERMS))
         has_self_memory_recall=self._has_any(norm,folded,self.SELF_MEMORY_RECALL_TERMS)
         has_self_memory_persona=self._has_any(norm,folded,self.SELF_MEMORY_PERSONA_TERMS)
@@ -707,6 +729,13 @@ class DialogueIntentClassifier:
                 norm, folded, 'system_diagnostic_question',
                 ['negacja/modalność blokuje wykonanie; bieżący akt mowy jest diagnostyczny'],
                 0.91, diag=True, speech_act=speech.speech_act, question_object='runtime',
+            )
+        if has_header_continuity_diagnostic:
+            return report(
+                norm, folded, 'runtime_behavior_diagnostic_request',
+                ['utrata nagłówka/timestampu/autora jest błędem ciągłości MessageEnvelope, nie naprawą fizyczną'],
+                0.97, diag=True, speech_act=speech.speech_act,
+                question_object='runtime_header_continuity',
             )
         if has_runtime_startup_failure_diagnostic:
             return report(
