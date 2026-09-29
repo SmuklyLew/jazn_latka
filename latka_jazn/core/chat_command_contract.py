@@ -535,16 +535,17 @@ def chatgpt_result_has_displayable_host_final(result: dict[str, Any]) -> bool:
     capture = json_object(result.get("host_visible_reply_capture"))
     if not capture:
         return False
-    if capture.get("envelope_present_in_final") is False:
+    # Missing evidence is not success.  Production capture always records the
+    # MessageEnvelope verdict and the final hash; a host must not infer either.
+    if capture.get("envelope_present_in_final") is not True:
         return False
     if str(capture.get("final_visible_text") or "") != final_text:
         return False
     capture_hash = str(capture.get("final_text_sha256") or "").strip().lower()
-    if capture_hash:
-        if not re.fullmatch(r"[0-9a-f]{64}", capture_hash):
-            return False
-        if capture_hash != expected_hash:
-            return False
+    if not re.fullmatch(r"[0-9a-f]{64}", capture_hash):
+        return False
+    if capture_hash != expected_hash:
+        return False
     if str(capture.get("turn_id") or "") != str(bridge.get("turn_id") or ""):
         return False
     if str(capture.get("trace_id") or "") != str(bridge.get("trace_id") or ""):
@@ -592,8 +593,17 @@ def chatgpt_result_has_displayable_host_final(result: dict[str, Any]) -> bool:
         if bridge_value and capture_value and capture_value != bridge_value:
             return False
 
+    # Accepted phase-2 is terminal only after the durable host request has been
+    # consumed.  An absent settlement record is indeterminate and therefore
+    # cannot authorize visible speech.
     consumption = json_object(result.get("host_request_consumption"))
-    if consumption and str(consumption.get("state") or "") != "consumed":
+    if str(consumption.get("state") or "") != "consumed":
+        return False
+    consumption_turn_id = str(consumption.get("turn_id") or "").strip()
+    consumption_trace_id = str(consumption.get("trace_id") or "").strip()
+    if consumption_turn_id and consumption_turn_id != str(bridge.get("turn_id") or ""):
+        return False
+    if consumption_trace_id and consumption_trace_id != str(bridge.get("trace_id") or ""):
         return False
     return True
 
