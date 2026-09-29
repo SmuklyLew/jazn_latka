@@ -2922,11 +2922,11 @@
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "name": "test_project_loader_requires_callable_current_turn_capability",
       "purpose": "Project loader requires callable current turn capability",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -2950,7 +2950,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 26
+      "line": 28
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_callable_jazn_connector_evidence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -2967,7 +2967,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 38
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -2984,7 +2984,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_display_exact_envelope_revalidation": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3001,7 +3001,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 56
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
