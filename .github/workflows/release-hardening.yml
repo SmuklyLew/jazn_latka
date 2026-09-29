@@ -8,6 +8,7 @@ on:
       - "fix/**"
       - "hotfix/**"
       - "upgrade/**"
+      - "release/**"
       - "tools/upgrade-*"
   pull_request:
     branches:
