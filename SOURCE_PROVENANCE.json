@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8497a0d4a2e714dcc8040d33338c4f87a6560b8c",
-    "base_version": "16.3.25.5.91.1-chatgpt-plugin-runtime-ci-convergence",
+    "base_commit": "362254225cf57601947929587c1bfe5ae9d93d1d",
+    "base_version": "16.3.25.5.91.2-release-branch-ci-support",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "362254225cf57601947929587c1bfe5ae9d93d1d",
