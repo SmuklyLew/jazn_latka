@@ -5,9 +5,9 @@ from typing import Any
 
 # v16.3.25.5.91.0 makes the public MCP route deployable as a production
 # OAuth resource server and packages the remote endpoint as an Agent Plugin.
-DISTRIBUTION_VERSION = "16.3.25.5.91.0"
-PACKAGE_VERSION = "16.3.25.5.91.0"
-PACKAGE_RELEASE_NAME = "chatgpt-plugin-runtime-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.91.1"
+PACKAGE_VERSION = "16.3.25.5.91.1"
+PACKAGE_RELEASE_NAME = "chatgpt-plugin-runtime-ci-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
