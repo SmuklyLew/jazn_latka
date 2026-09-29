@@ -90,7 +90,11 @@ class Rfc7662TokenVerifier:
         if not raw_token:
             return None
         body = parse.urlencode({"token": raw_token, "token_type_hint": "access_token"}).encode("utf-8")
-        basic = base64.b64encode(f"{self.config.client_id}:{self.config.client_secret}".encode("utf-8")).decode("ascii")
+        encoded_client_id = parse.quote(self.config.client_id, safe="")
+        encoded_client_secret = parse.quote(self.config.client_secret, safe="")
+        basic = base64.b64encode(
+            f"{encoded_client_id}:{encoded_client_secret}".encode("utf-8")
+        ).decode("ascii")
         req = request.Request(
             self.config.introspection_url,
             data=body,
