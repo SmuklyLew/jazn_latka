@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "78a5bb515eabfcf4f2097b23119015f17f493a46",
-    "base_version": "16.3.25.5.91.2-release-branch-ci-support",
+    "base_commit": "a26c2c9d3b07fd49e36f86bcd5364f0e2979ae70",
+    "base_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "a26c2c9d3b07fd49e36f86bcd5364f0e2979ae70",
