@@ -36,7 +36,7 @@ from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_databas
 
 
 HEADER = "🕒 2026-08-28 12:00:00"
-MEMORY_TEXT = f"{HEADER}\n🌿 Łatka\nPamiętam syntetyczny bursztynowy kompas."
+MEMORY_TEXT = f"{HEADER}\n🌿 Łatka\n\nPamiętam syntetyczny bursztynowy kompas."
 
 
 def _memory_observability(**overrides: Any) -> dict[str, Any]:
