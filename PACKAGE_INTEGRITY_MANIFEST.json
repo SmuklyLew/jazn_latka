@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
-  "runtime_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
-  "package_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
-  "generated_at_utc": "2026-09-29T01:20:34+00:00",
-  "updated_at_utc": "2026-09-29T01:20:34+00:00",
+  "version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
+  "runtime_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
+  "package_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
+  "generated_at_utc": "2026-09-29T03:14:14+00:00",
+  "updated_at_utc": "2026-09-29T03:14:14+00:00",
   "start_file": "run.py",
   "file_count": 1825,
   "static_file_count": 1825,
@@ -281,8 +281,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3030,
-      "sha256": "026d46a019f552777bc4a3c97f37e42665a814e6e5a911ac9cd996a463481228",
+      "size_bytes": 2947,
+      "sha256": "1f1a4f8fee05d03af1f320501d5b2acaa576bd4f996bce5f3e0ce65c387596aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8642,8 +8642,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6581,
-      "sha256": "ae547e7b76889133c66f8329090d3645283c8d60f6f0c67dcd8aa7e8280ff71d",
+      "size_bytes": 5205,
+      "sha256": "b564e2b960a6d67f1786f8ea01e476f46a687bd9a3b367521895d0eadc7123e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16293,7 +16293,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1647546,
-      "sha256": "27af26b52299cc4f9a966c4b554acbbb9e9ae183d236d3a9d903fbca93110471",
+      "sha256": "c8a4f6755185daf910d2fb5c878bc96f559c86fe23e566f5040e0e8140e142a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16877,11 +16877,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
+  "release_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
-    "package_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
-    "release_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence"
+    "runtime_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
+    "package_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence",
+    "release_version": "16.3.25.5.91.0-chatgpt-plugin-runtime-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
