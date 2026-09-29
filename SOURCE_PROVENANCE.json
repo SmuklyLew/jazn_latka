@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3ebcb1a2de1a9bca5ef6f14f2afbe5a57688ff05",
-    "base_version": "16.3.25.5.90.1-header-envelope-intent-routing-convergence",
+    "base_commit": "dc66eef01077de5af13a967def4bdebbca9195b0",
+    "base_version": "16.3.25.5.90.2-display-exact-envelope-revalidation-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "dc66eef01077de5af13a967def4bdebbca9195b0",
