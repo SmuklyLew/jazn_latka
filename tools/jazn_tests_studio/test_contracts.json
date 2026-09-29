@@ -187,7 +187,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 203
+      "line": 208
     },
     "tests/test_accepted_visible_turn_finalization_convergence.py::test_machine_readable_contracts_require_accepted_visible_turn": {
       "path": "tests/test_accepted_visible_turn_finalization_convergence.py",
@@ -210,7 +210,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 218
+      "line": 223
     },
     "tests/test_active_memory_recall_e2e.py::test_frozen_recall_contract_preserves_typed_provenance": {
       "path": "tests/test_active_memory_recall_e2e.py",
