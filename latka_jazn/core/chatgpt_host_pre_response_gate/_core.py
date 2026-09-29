@@ -119,6 +119,36 @@ def _enforce_persistent_voice_e2e(
     return attached
 
 
+def _force_host_diagnostic_presentation(
+    presentation: Mapping[str, Any],
+    *,
+    reason: str | None = None,
+) -> None:
+    """Atomically clear every runtime-visible readiness signal on degradation."""
+    if not isinstance(presentation, dict):
+        return
+    presentation.update({
+        "action": "host_diagnostic",
+        "phase": "host_diagnostic_required",
+        "accepted_visible_turn_ready": False,
+        "visible_turn_readiness": "not_ready",
+        "must_display_exactly": False,
+        "must_not_paraphrase": False,
+        "must_not_claim_runtime_voice": True,
+        "must_not_claim_latka_voice": True,
+        "must_preserve_runtime_voice": False,
+        "must_preserve_latka_voice": False,
+        "required_visible_prefix": None,
+        "final_visible_text": "",
+        "final_text_sha256": None,
+        "host_instruction": (
+            "Pokaż krótką techniczną diagnozę hosta; nie przypisuj jej runtime."
+        ),
+    })
+    if reason:
+        presentation["diagnostic_reason"] = reason
+
+
 def _normalize_host_presentation_contract(presentation: Mapping[str, Any]) -> None:
     """Normalize the final host-facing packet to neutral runtime voice fields.
 
@@ -128,6 +158,12 @@ def _normalize_host_presentation_contract(presentation: Mapping[str, Any]) -> No
     one normalization boundary before it can become visible.
     """
     if not isinstance(presentation, dict):
+        return
+    if str(presentation.get("action") or "") == "host_diagnostic":
+        _force_host_diagnostic_presentation(
+            presentation,
+            reason=str(presentation.get("diagnostic_reason") or "").strip() or None,
+        )
         return
     must_not_claim = bool(
         presentation.get("must_not_claim_runtime_voice", presentation.get("must_not_claim_latka_voice", False))
@@ -139,10 +175,6 @@ def _normalize_host_presentation_contract(presentation: Mapping[str, Any]) -> No
     presentation["must_preserve_runtime_voice"] = must_preserve
     presentation["must_not_claim_latka_voice"] = must_not_claim
     presentation["must_preserve_latka_voice"] = must_preserve
-    if str(presentation.get("action") or "") == "host_diagnostic":
-        presentation["host_instruction"] = (
-            "Pokaż krótką techniczną diagnozę hosta; nie przypisuj jej runtime."
-        )
 
 
 def build_host_pre_response_gate_telemetry(
@@ -231,18 +263,10 @@ def build_host_pre_response_gate_telemetry(
         visible_output_source = "host_diagnostic"
         finalization_required = False
         finalization_completed = False
-        if isinstance(presentation, dict):
-            presentation["action"] = "host_diagnostic"
-            presentation["phase"] = "host_diagnostic_required"
-            presentation["diagnostic_reason"] = bypass_reason
-            presentation["final_visible_text"] = ""
-            presentation["must_not_claim_runtime_voice"] = True
-            presentation["must_not_claim_latka_voice"] = True
-            presentation["must_preserve_runtime_voice"] = False
-            presentation["must_preserve_latka_voice"] = False
-            presentation["host_instruction"] = (
-                "Pokaż krótką techniczną diagnozę hosta; nie przypisuj jej runtime."
-            )
+        _force_host_diagnostic_presentation(
+            presentation,
+            reason=bypass_reason,
+        )
     return {
         "host_pre_response_gate": True,
         "host_pre_response_gate_version": HOST_PRE_RESPONSE_GATE_VERSION,

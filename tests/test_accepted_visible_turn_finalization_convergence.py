@@ -196,6 +196,11 @@ def test_complete_captured_message_envelope_is_required_for_display_exact() -> N
             "final_text_sha256": digest,
             "envelope_present_in_final": True,
         },
+        "host_request_consumption": {
+            "state": "consumed",
+            "turn_id": "turn-2",
+            "trace_id": "trace-2",
+        },
     }
     assert chatgpt_result_has_displayable_host_final(payload) is True
 
