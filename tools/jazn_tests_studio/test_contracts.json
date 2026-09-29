@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.91.1",
+  "system_version": "16.3.25.5.91.2",
   "active_definition_count": 1793,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -2986,15 +2986,13 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_plugin_runtime_ci_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_release_branch_ci_support": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_chatgpt_plugin_runtime_ci_convergence",
-      "purpose": "Release version tracks chatgpt plugin runtime ci convergence",
+      "name": "test_release_version_tracks_release_branch_ci_support",
+      "purpose": "Release version tracks release branch ci support",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
+      "category": "contract",
+      "tags": [],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -29956,13 +29954,13 @@
       "path": "tests/test_release_workflow_hardening.py",
       "name": "test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push",
       "purpose": "Release workflow uses one dynamic metadata writer without pr self push",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 17,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -29984,7 +29982,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 54
     },
     "tests/test_release_workflow_hardening.py::test_pr_release_metadata_is_materialized_without_moving_exact_head": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30001,7 +29999,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 64
     },
     "tests/test_release_workflow_hardening.py::test_release_workflow_concurrency_is_scoped_to_the_workflow": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30018,7 +30016,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 73
     },
     "tests/test_release_workflow_hardening.py::test_release_workflow_keeps_windows_atomicity_targeted_without_duplication": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30036,7 +30034,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 83
     },
     "tests/test_release_workflow_hardening.py::test_release_package_smoke_runs_once_and_only_after_pr_validation": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30054,7 +30052,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 107
     },
     "tests/test_release_workflow_hardening.py::test_upload_artifact_is_pinned_with_explicit_pr_metadata_exception": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30071,7 +30069,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 111
+      "line": 115
     },
     "tests/test_release_workflow_hardening.py::test_cursor_conpty_workflow_is_pr_scoped_and_manually_runnable": {
       "path": "tests/test_release_workflow_hardening.py",
@@ -30088,7 +30086,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 126
     },
     "tests/test_repository_layout_dependency_operator.py::test_flat_runtime_layout_remains_directly_runnable_from_unpacked_root": {
       "path": "tests/test_repository_layout_dependency_operator.py",
