@@ -374,10 +374,17 @@ def test_mcp_phase_two_completes_the_same_daemon_job(
                 return None
 
             def persist_final_visible_reply(self, **kwargs):
+                final = kwargs["final_text"]
                 return {
-                    "final_visible_text": kwargs["final_text"],
+                    "final_visible_text": final,
+                    "final_text_sha256": sha256_host_visible_text(final),
                     "turn_id": kwargs["turn_id"],
                     "trace_id": kwargs["trace_id"],
+                    "timestamp_header": kwargs["timestamp_header"],
+                    "state_emoticon": kwargs["state_emoticon"],
+                    "author_label": kwargs["author_label"],
+                    "author_source": kwargs["author_source"],
+                    "envelope_present_in_final": True,
                 }
 
         class _LifecycleGateway:
