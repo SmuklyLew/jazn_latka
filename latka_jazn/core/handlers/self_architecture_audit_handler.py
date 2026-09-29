@@ -31,7 +31,8 @@ class SelfArchitectureAuditHandler:
         body = self._render(report)
         required = list(ctx.get("required_components") or [])
         satisfied = [
-            "self_architecture_audit", "memory_gate", "recall_quality", "capability_reality_check",
+            "self_architecture_audit", "reflection_grounding", "grounded_reflection_store",
+            "memory_gate", "recall_quality", "capability_reality_check",
             "development_backlog", "scientific_basis", "tests", "truth_boundary",
             "source_or_index_status", "no_random_memory_excerpt", "operational_work_loop",
             "adapter_boundaries", "privacy_export_gate", "read_only_audit",
@@ -80,6 +81,7 @@ class SelfArchitectureAuditHandler:
             "Co Jaźń robi: rozpoznaje intencję, ugruntowuje ją w runtime/kanonie/pamięci, wybiera warstwę wykonania, autoryzuje narzędzia, wykonuje lub generuje kandydata, waliduje i zapisuje tylko zweryfikowane skutki.",
             "Granica adapterów: ChatGPT/OpenAI/Ollama są warstwami językowymi i rozumującymi; nie są źródłem tożsamości. Model może poprosić o narzędzie, ale wykonuje je runtime.",
             "Granica uczenia: ta wersja stosuje evals i poprawki kodu/kontraktów. Nie wykonano fine-tuningu ani zmiany wag.",
+            "Reflection grounding / grounded reflection store: audyt jest read-only; żadna refleksja nie jest zapisywana ani promowana do pamięci.",
             "Priorytety naprawy:",
         ]
         for idx, item in enumerate(audit.get("repair_priorities") or [], 1):

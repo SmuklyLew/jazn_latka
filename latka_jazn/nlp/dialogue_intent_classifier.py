@@ -600,18 +600,53 @@ class DialogueIntentClassifier:
         # "co działa".  The route-contract matrix intentionally treats that
         # short phrase as a health check, but the explicit architecture terms
         # and system/version context are more specific and must win first.
+        continuation_update_execution = bool(
+            has_update
+            and not component_report.negated_actions
+            and (
+                any(
+                    marker in folded
+                    for marker in (
+                        "pracuj dalej",
+                        "kontynuuj prac",
+                        "nie przerywaj",
+                        "doprowadz aktualiz",
+                        "doprowadź aktualiz",
+                        "dokonc aktualiz",
+                        "dokoncz aktualiz",
+                    )
+                )
+                or (
+                    "pracuj" in folded
+                    and any(
+                        goal in folded
+                        for goal in (
+                            "az aktualiz",
+                            "aż aktualiz",
+                            "release candidate",
+                            "gotow do scalen",
+                            "gotowa do scalen",
+                            "gotowy do scalen",
+                        )
+                    )
+                )
+            )
+        )
         broad_audit_signal = sum(1 for marker in ("co umiesz", "co potrafisz", "co dziala", "co trzeba naprawic", "kod zrodlowy", "gdzie sa luki", "jakie sa luki", "co blokuje", "moduly i narzedzia") if marker in folded)
-        if has_self_architecture_audit and broad_audit_signal >= 2 and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS):
+        if has_self_architecture_audit and broad_audit_signal >= 2 and not continuation_update_execution and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS):
             return report(norm,folded,'self_architecture_audit_request',['pełne pytanie o możliwości, kod, luki i blokady ma pierwszeństwo przed health-checkiem'],0.96,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
-        if has_self_architecture_audit and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or mentions_jazn_version(folded)):
+        if has_self_architecture_audit and not continuation_update_execution and not self._has_any(norm,folded,self.UPDATE_EXECUTION_VERBS) and (has_system or "latka" in folded or "łatka" in norm or "jazn" in folded or "jaźń" in norm or mentions_jazn_version(folded)):
             secondary = ['system_update_execution_request'] if (has_update or (any(x in folded for x in ('patch', 'hotfix', 'aktualiz')) or mentions_jazn_version(folded))) else []
             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         completion_update_execution = (
             has_update
             and not component_report.negated_actions
-            and any(marker in folded for marker in (
-                "przygotuj", "dokonc", "dokoncz", "uzupeln", "dodaj brakuj",
-            ))
+            and (
+                continuation_update_execution
+                or any(marker in folded for marker in (
+                    "przygotuj", "dokonc", "dokoncz", "uzupeln", "dodaj brakuj",
+                ))
+            )
         )
         if completion_update_execution:
             return report(
