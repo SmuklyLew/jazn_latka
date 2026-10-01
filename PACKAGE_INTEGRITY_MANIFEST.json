@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
-  "runtime_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
-  "package_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
-  "generated_at_utc": "2026-09-29T20:07:10+00:00",
-  "updated_at_utc": "2026-09-29T20:07:10+00:00",
+  "version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
+  "runtime_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
+  "package_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
+  "generated_at_utc": "2026-10-01T14:09:17+00:00",
+  "updated_at_utc": "2026-10-01T14:09:17+00:00",
   "start_file": "run.py",
-  "file_count": 1842,
-  "static_file_count": 1842,
+  "file_count": 1846,
+  "static_file_count": 1846,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -281,8 +281,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3018,
-      "sha256": "6395ae3519dcbc6e5f42fa3a5cdd3d6d5937d8d67ff25617ecaa0592d76da8c0",
+      "size_bytes": 2988,
+      "sha256": "ef4f7745cc930e8293298fa720ae6f06594b369827ba791d3a38b0a6c86a7bf3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5212,9 +5212,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/mcp/developer_mode_surface.py",
+      "size_bytes": 11836,
+      "sha256": "fa36c8742fe6762614c2f2c570ed12362f600e0aac1a602001fab9851ec4fdd6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 30143,
-      "sha256": "6b7e2fd8dc342b9314543c33da68938e60f4e952f846bd3219adbf61ac23b237",
+      "size_bytes": 32531,
+      "sha256": "d780cb010c54772674fbfc660682096f636b3c99c1e650efc37239892aa76d43",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5258,8 +5267,8 @@
     },
     {
       "path": "latka_jazn/mcp/server.py",
-      "size_bytes": 26561,
-      "sha256": "da6f7c0b5b8c08afd58f5a898c2900e7c86369bdf50d0615d5c11f70c26d0c4c",
+      "size_bytes": 29683,
+      "sha256": "0dde37e9bf6eb03e0b33123dd0b3452bd0bf8e593a5270857b8f8f2f3bedb869",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8696,8 +8705,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5211,
-      "sha256": "4c10521a6c19a5f525997302be06bd5f6095bb376da4f5224148942ef73d68d9",
+      "size_bytes": 5219,
+      "sha256": "ec3a814dcccadc09798afd726b28bca7f6159c3ab610615cdfdffa945719557f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11431,6 +11440,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_chatgpt_capability_loader_convergence_v16_3_25_5_92.py",
+      "size_bytes": 2405,
+      "sha256": "aabfd3a2f3862b553b146b71a6a0236e31f0b66bbdc35652567bea7eb8b81e69",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_chatgpt_host_executor_truth_boundary_v16325531.py",
       "size_bytes": 2008,
       "sha256": "a73751902268c9a23bb2e5ceee879464cc425da7e82be170fd5682301e468178",
@@ -11605,6 +11623,15 @@
       "path": "tests/archive/test_live_voice_readiness__pre_v16_3_25_5_90_2.py",
       "size_bytes": 10222,
       "sha256": "596952c86abffff539ad459a27ca6bbfe8e40d25db21d1695c2715534e6c44a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_mcp_http_gateway_v16_3_25_5_92.py",
+      "size_bytes": 8743,
+      "sha256": "eceb2a88c6028523758dc7532ce4105d24801c417a5478251198601f3928c4db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13250,8 +13277,17 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2405,
-      "sha256": "aabfd3a2f3862b553b146b71a6a0236e31f0b66bbdc35652567bea7eb8b81e69",
+      "size_bytes": 2395,
+      "sha256": "4497222becd008aa71c5f5818ce67c524a63d5a82670acf46385cf91351cf61e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "size_bytes": 5226,
+      "sha256": "c6a78cbaa61a3e0909f1d4667af5c4e70ab1889673cf16ba17970ab6b9a693b2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14411,8 +14447,8 @@
     },
     {
       "path": "tests/test_mcp_http_gateway.py",
-      "size_bytes": 8743,
-      "sha256": "eceb2a88c6028523758dc7532ce4105d24801c417a5478251198601f3928c4db",
+      "size_bytes": 10870,
+      "sha256": "a73fa670779a90930d8fadfcdbb91f707cca48c1f34b2d3a2729fd4687cb7bc0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16445,8 +16481,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1671280,
-      "sha256": "7d008f4021c16b553649640f3a35ac742f36739d8d75349ec5d5810bb4a13a6a",
+      "size_bytes": 1677274,
+      "sha256": "76cbcda5c70708cd5ab5fdf17175a65438bf9aca0516b13b25da60b7c55b351b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17030,11 +17066,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
+  "release_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
-    "package_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
-    "release_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence"
+    "runtime_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
+    "package_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
+    "release_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
