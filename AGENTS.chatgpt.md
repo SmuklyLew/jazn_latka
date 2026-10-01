@@ -139,7 +139,9 @@ Jeżeli nie ma jeszcze operatora, ale kompletna paczka systemowa ZIP i zaufany S
 5. uruchom helper lokalnym Pythonem z `--zip`, `--destination`, `--json` i dokładnie jednym z `--sha256-file` lub `--expected-sha256`;
 6. przekaż `--expected-size-bytes`, jeżeli rozmiar jest znany;
 7. lokalny sidecar nie jest wymagany, jeżeli host ma już zaufany SHA-256 dla dokładnie tego ZIP-a;
-8. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime.
+8. wynik `materialized_operator_ready` oznacza gotowy operator na dysku, nie aktywny runtime;
+9. jeżeli helper `CHATGPT_BOOTSTRAP.py` już działa w bieżącym interpreterze Pythona, preferuj flagę `--post-materialization-preflight`: po zweryfikowanej ekstrakcji uruchamia ona wyłącznie `run.py host-preflight --json` przez `runpy` w tym samym interpreterze, bez tworzenia child process; dodatni wynik dowodzi tylko wykonalnego operatora/preflightu, nie żywego daemona ani accepted visible turn;
+10. jeżeli host zwrócił `ClientError`/równoważny błąd **zanim powstał jakikolwiek proces Pythona**, tryb same-interpreter nie jest obejściem tego braku capability. Nie ponawiaj ZIP/bootstrapu; sprawdź faktycznie wywoływalny `jazn_status` dla zdalnej trasy, a bez takiego connectora pozostań fail-closed.
 
 Ten primitive ma być poznawczo obojętny: nie implementuje uwagi, pamięci, replay, affect ani innych neuro-inspirowanych modułów. Takie warstwy należą dopiero do zweryfikowanego runtime i podlegają software contracts oraz granicom z `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
