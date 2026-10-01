@@ -162,7 +162,7 @@ async def test_official_sdk_exposes_only_minimal_public_tool_surface(tmp_path: P
 
 
 @pytest.mark.anyio
-async def test_turn_maps_client_turn_id_to_canonical_request_identity(tmp_path: Path) -> None:
+async def test_canonical_turn_preserves_request_identity(tmp_path: Path) -> None:
     backend = _FakeBackend()
     gateway = _gateway(tmp_path, backend)
     async with Client(gateway.mcp, raise_exceptions=True) as client:
@@ -175,7 +175,7 @@ async def test_turn_maps_client_turn_id_to_canonical_request_identity(tmp_path: 
     assert result.structured_content is not None
     assert result.structured_content["action"] == "poll_runtime"
     assert result.structured_content["daemon_request_id"] == "turn-v95-1"
-        assert backend.calls[-1][0] == "jazn_generate_visible_reply"
+    assert backend.calls[-1][0] == "jazn_generate_visible_reply"
     assert backend.calls[-1][1]["request_id"] == "turn-v95-1"
     assert backend.calls[-1][1]["session_id"] == "chatgpt-main"
     assert backend.calls[-1][2]["authorization"]
@@ -236,7 +236,7 @@ async def test_generate_rate_limit_is_operation_specific_and_fail_closed(tmp_pat
 
 
 @pytest.mark.anyio
-async def test_resume_turn_reuses_client_turn_id_without_message_replay(tmp_path: Path) -> None:
+async def test_resume_turn_reuses_daemon_request_id_without_message_replay(tmp_path: Path) -> None:
     backend = _FakeBackend()
     gateway = _gateway(tmp_path, backend)
     async with Client(gateway.mcp, raise_exceptions=True) as client:
@@ -247,7 +247,7 @@ async def test_resume_turn_reuses_client_turn_id_without_message_replay(tmp_path
 
     assert result.is_error is False
     assert result.structured_content is not None
-        assert result.structured_content["action"] == "poll_runtime"
+    assert result.structured_content["action"] == "poll_runtime"
     assert backend.calls[-1][0] == "jazn_resume_visible_reply"
     assert backend.calls[-1][1] == {"daemon_request_id": "turn-v95-resume"}
 
