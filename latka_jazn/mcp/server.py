@@ -22,6 +22,7 @@ from typing import Any, Mapping
 from latka_jazn.mcp import server_legacy_v76 as _legacy
 from latka_jazn.mcp.developer_mode_surface import (
     DEVELOPER_MODE_TOOL_DEFINITIONS,
+    MODEL_VISIBLE_CANONICAL_TOOL_NAMES,
     MODERN_INTERNAL_TOOL_NAMES,
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
@@ -96,12 +97,11 @@ class JaznMcpServer(_V76JaznMcpServer):
     @staticmethod
     def _instructions() -> str:
         return (
-            "When the Jaźń app is selected in ChatGPT Developer Mode, use jazn_turn for every ordinary "
-            "user message with one stable clientTurnId. If action=poll_runtime, call jazn_resume_turn "
-            "with that same clientTurnId and never replay the user message. If action=generate_then_finalize, "
+            "When the Jaźń plugin is selected, use jazn_generate_visible_reply for every ordinary user "
+            "message with one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
+            "with that same daemon_request_id and never replay the user message. If action=generate_then_finalize, "
             "generate only from the returned host contract and finish with jazn_finalize_reply. Display "
-            "Jaźń output only when the returned action is display_exact. jazn_health and "
-            "jazn_memory_status are diagnostics, not conversation entrypoints."
+            "Jaźń output only when the returned action is display_exact. jazn_status is the readiness probe."
         )
 
     @staticmethod
@@ -488,6 +488,18 @@ class JaznMcpServer(_V76JaznMcpServer):
                     if isinstance(item, Mapping)
                     and str(item.get("name") or "") not in MODERN_INTERNAL_TOOL_NAMES
                 ]
+                for item in visible_tools:
+                    tool_name = str(item.get("name") or "")
+                    if tool_name in MODEL_VISIBLE_CANONICAL_TOOL_NAMES:
+                        tool_meta = dict(item.get("_meta") or {})
+                        # OpenAI deprecated openai/visibility in July 2026. Keep
+                        # canonical ingress tools explicitly model-visible via
+                        # the MCP Apps ui.visibility contract.
+                        tool_meta.pop("openai/visibility", None)
+                        ui_meta = dict(tool_meta.get("ui") or {})
+                        ui_meta["visibility"] = ["model", "app"]
+                        tool_meta["ui"] = ui_meta
+                        item["_meta"] = tool_meta
                 existing = {str(item.get("name") or "") for item in visible_tools}
                 for definition in DEVELOPER_MODE_TOOL_DEFINITIONS:
                     if str(definition.get("name") or "") not in existing:
