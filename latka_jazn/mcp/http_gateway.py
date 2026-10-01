@@ -80,7 +80,7 @@ _PUBLIC_TOOLS = frozenset(
         JAZN_MEMORY_STATUS_TOOL,
     }
 )
-_TASK_BRIDGE_COMPAT_TOOLS = frozenset({"jazn_generate_visible_reply"})
+_TASK_BRIDGE_COMPAT_TOOLS = frozenset({CANONICAL_GENERATE_TOOL})
 
 _TOOL_SCOPES = {
     CANONICAL_GENERATE_TOOL: SCOPE_TURN_SUBMIT,
@@ -103,7 +103,6 @@ _OPERATION_RATE_LIMITS_PER_MINUTE = {
     "tasks/cancel": 30,
 }
 
-ClientTurnId = Annotated[str, Field(min_length=1, max_length=256)]
 RequestId = Annotated[str, Field(min_length=1, max_length=256)]
 SessionId = Annotated[str | None, Field(max_length=128)]
 MessageText = Annotated[str, Field(min_length=1, max_length=262_144)]
