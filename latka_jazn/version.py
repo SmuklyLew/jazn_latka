@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.92 converges ChatGPT host-boundary diagnostics with a
-# connector-observed remote-runtime probe that does not depend on local exec.
-DISTRIBUTION_VERSION = "16.3.25.5.92"
-PACKAGE_VERSION = "16.3.25.5.92"
-PACKAGE_RELEASE_NAME = "chatgpt-remote-runtime-host-boundary-convergence"
+# v16.3.25.5.93 converges ChatGPT Developer Mode on one ergonomic remote-first
+# MCP turn surface while preserving canonical Jaźń lineage and finalization.
+DISTRIBUTION_VERSION = "16.3.25.5.93"
+PACKAGE_VERSION = "16.3.25.5.93"
+PACKAGE_RELEASE_NAME = "chatgpt-developer-mode-mcp-turn-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

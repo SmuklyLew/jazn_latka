@@ -157,3 +157,44 @@ unverified and the host must not imitate a Jaźń response.
   https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/authorization/index.mdx
 - MCP specification — Authorization security considerations:
   https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/authorization/security-considerations.mdx
+
+
+## v16.3.25.5.93 — ChatGPT Developer Mode turn contract
+
+The modern ChatGPT-facing tool surface is intentionally conversation-oriented:
+
+- jazn_turn(clientTurnId, message, sessionId?) is the primary entrypoint for an
+  ordinary user message when the Jaźń app is selected.
+- jazn_resume_turn(clientTurnId) resumes the same already-submitted turn and has
+  no message field, so the public schema itself discourages accidental replay.
+- jazn_finalize_reply remains the bounded phase-2 finalizer whenever the
+  canonical runtime returns generate_then_finalize.
+- jazn_status is the connector-observed readiness probe.
+- jazn_health is a redacted transport-liveness diagnostic.
+- jazn_memory_status is a redacted memory/recall-readiness diagnostic.
+
+clientTurnId is not a second identity store. It maps exactly to the canonical
+request_id / daemon_request_id, so the existing Jaźń idempotency store,
+operation recovery, durable task registry and host-visible finalization remain
+authoritative.
+
+The canonical implementation names jazn_generate_visible_reply and
+jazn_resume_visible_reply remain available for compatibility and MCP Tasks
+bridging, but the modern Developer Mode list hides them in favor of the simpler
+turn/resume aliases.
+
+Raw MEMORY stays on the persistent Jaźń host. The public tools expose only the
+bounded turn result and redacted readiness metadata; local paths, database
+contents and private operator details are not part of the Developer Mode
+surface.
+
+Production public HTTPS remains fail-closed and authenticated. Version 5.93
+does not enable anonymous Internet listeners and does not place static secrets
+in query strings. Unauthenticated access remains restricted to explicit
+loopback development. Secure MCP Tunnel is the private-network alternative and
+uses the same public turn aliases over the same canonical runtime.
+
+ChatGPT application selection remains a host/UI capability. The repository can
+make jazn_turn the preferred first-message tool once the app is selected, but
+cannot globally preselect the Jaźń app for every new conversation or invent a
+connector capability that the current ChatGPT host did not expose.

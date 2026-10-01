@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.92",
-  "active_definition_count": 1807,
+  "system_version": "16.3.25.5.93",
+  "active_definition_count": 1814,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2986,15 +2986,14 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_remote_runtime_host_boundary_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_developer_mode_mcp_turn_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_chatgpt_remote_runtime_host_boundary_convergence",
-      "purpose": "Release version tracks chatgpt remote runtime host boundary convergence",
+      "name": "test_release_version_tracks_chatgpt_developer_mode_mcp_turn_convergence",
+      "purpose": "Release version tracks chatgpt developer mode mcp turn convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "category": "contract",
       "tags": [
-        "host",
-        "runtime"
+        "mcp"
       ],
       "markers": [],
       "assertion_count": 2,
@@ -3005,6 +3004,114 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 56
+    },
+    "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_modern_tool_list_exposes_developer_mode_surface_not_internal_turn_names": {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "name": "test_modern_tool_list_exposes_developer_mode_surface_not_internal_turn_names",
+      "purpose": "Modern tool list exposes developer mode surface not internal turn names",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.developer_mode_surface",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_client_turn_id_maps_exactly_to_canonical_request_id": {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "name": "test_client_turn_id_maps_exactly_to_canonical_request_id",
+      "purpose": "Client turn id maps exactly to canonical request id",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.developer_mode_surface",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_resume_alias_never_accepts_user_message_replay": {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "name": "test_resume_alias_never_accepts_user_message_replay",
+      "purpose": "Resume alias never accepts user message replay",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.developer_mode_surface",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_poll_result_points_back_to_public_resume_alias": {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "name": "test_poll_result_points_back_to_public_resume_alias",
+      "purpose": "Poll result points back to public resume alias",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.developer_mode_surface",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_memory_status_never_leaks_private_operator_paths": {
+      "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
+      "name": "test_memory_status_never_leaks_private_operator_paths",
+      "purpose": "Memory status never leaks private operator paths",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.developer_mode_surface",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
@@ -16958,7 +17065,7 @@
       "path": "tests/test_mcp_http_gateway.py",
       "name": "test_official_sdk_exposes_only_minimal_public_tool_surface",
       "purpose": "Official sdk exposes only minimal public tool surface",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -16966,7 +17073,7 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 7,
+      "assertion_count": 15,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway",
@@ -16976,11 +17083,11 @@
       "description_source": "source_identity",
       "line": 132
     },
-    "tests/test_mcp_http_gateway.py::test_generate_forwards_stable_request_id_through_private_backend_token": {
+    "tests/test_mcp_http_gateway.py::test_turn_maps_client_turn_id_to_canonical_request_identity": {
       "path": "tests/test_mcp_http_gateway.py",
-      "name": "test_generate_forwards_stable_request_id_through_private_backend_token",
-      "purpose": "Generate forwards stable request id through private backend token",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_turn_maps_client_turn_id_to_canonical_request_identity",
+      "purpose": "Turn maps client turn id to canonical request identity",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -16988,7 +17095,7 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 8,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway",
@@ -16996,7 +17103,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 165
     },
     "tests/test_mcp_http_gateway.py::test_public_status_is_redacted_even_when_backend_status_is_private": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -17018,7 +17125,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 175
+      "line": 188
     },
     "tests/test_mcp_http_gateway.py::test_http_app_contains_mcp_liveness_and_readiness_routes": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -17038,7 +17145,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 198
+      "line": 211
     },
     "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -17060,7 +17167,52 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 208
+      "line": 221
+    },
+    "tests/test_mcp_http_gateway.py::test_resume_turn_reuses_client_turn_id_without_message_replay": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_resume_turn_reuses_client_turn_id_without_message_replay",
+      "purpose": "Resume turn reuses client turn id without message replay",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 241
+    },
+    "tests/test_mcp_http_gateway.py::test_health_and_memory_status_are_redacted_diagnostics": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_health_and_memory_status_are_redacted_diagnostics",
+      "purpose": "Health and memory status are redacted diagnostics",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "memory"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 259
     },
     "tests/test_mcp_http_resources.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
       "path": "tests/test_mcp_http_resources.py",
