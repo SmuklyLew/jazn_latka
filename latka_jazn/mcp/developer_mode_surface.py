@@ -130,6 +130,7 @@ DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "openWorldHint": False,
             "idempotentHint": True,
         },
+        "_meta": {"ui": {"visibility": ["app"]}},
     },
 )
 
@@ -334,6 +335,7 @@ __all__ = [
     "JAZN_MEMORY_STATUS_TOOL",
     "JAZN_RESUME_TURN_TOOL",
     "JAZN_TURN_TOOL",
+    "MODEL_VISIBLE_CANONICAL_TOOL_NAMES",
     "MODERN_INTERNAL_TOOL_NAMES",
     "adapt_developer_mode_tool_result",
     "translate_developer_mode_tool_call",
