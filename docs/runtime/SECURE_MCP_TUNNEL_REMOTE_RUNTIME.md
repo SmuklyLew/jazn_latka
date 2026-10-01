@@ -148,6 +148,17 @@ Jeżeli tunel jest gotowy, ale ChatGPT nie udostępnia odpowiadającego connecto
 
 To nadal nie jest zgoda na pokazanie odpowiedzi. Każda wiadomość przechodzi dalej przez istniejący kontrakt tury i finalizacji.
 
+## Kanoniczny ingress ChatGPT od v16.3.25.5.95
+
+Po stronie modern MCP model-visible są kanoniczne akcje
+`jazn_status`, `jazn_generate_visible_reply`,
+`jazn_resume_visible_reply` i `jazn_finalize_reply`. Aliasy
+`jazn_turn` / `jazn_resume_turn` pozostają wyłącznie powierzchnią
+kompatybilnościową dla app/UI i nie zastępują testu realnej callable capability
+hosta. `jazn_status` ma `_meta.ui.visibility=["model","app"]`; legacy
+`openai/visibility=private` nie jest używane do ukrywania kanonicznego
+readiness probe.
+
 ## Kolejność hosta i negocjacja MCP od v16.3.25.5.81
 
 Secure MCP Tunnel pozostaje jedną z dwóch zdalnych tras transportowych do tego
