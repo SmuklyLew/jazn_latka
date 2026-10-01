@@ -195,3 +195,39 @@ HTTPS endpointu, nadać bieżącemu kontu ChatGPT capability aplikacji/konektora
 uwierzytelnić zewnętrznego control plane. Te elementy są deployment evidence i
 muszą być zweryfikowane osobno w hoście, zanim `remote_runtime` stanie się
 aktywną trasą.
+
+
+## 11. Developer Mode convergence in 16.3.25.5.93
+
+The ChatGPT-facing modern MCP surface now uses one stable client turn identity:
+
+1. ChatGPT calls jazn_turn with a clientTurnId and the exact user message.
+2. The transport maps clientTurnId directly to the existing canonical
+   request_id before any side effect crosses into the daemon.
+3. If the outcome is pending or transport delivery is ambiguous, the returned
+   contract points to jazn_resume_turn with the same clientTurnId.
+4. jazn_resume_turn never accepts the original message, so recovery cannot
+   accidentally become a second conversation turn.
+5. If the runtime needs host generation, the existing
+   generate_then_finalize -> jazn_finalize_reply -> display_exact boundary is
+   unchanged.
+6. The persistent task registry and older canonical generate/resume names remain
+   compatibility machinery, not a second runtime.
+
+The same adapter is used by public Streamable HTTP and the Secure MCP Tunnel
+stdio target. This keeps first-message behavior, retry identity and redaction
+consistent across both deployment choices.
+
+The public diagnostics are jazn_status, jazn_health and jazn_memory_status.
+Memory status never returns raw autobiographical data or local filesystem paths.
+The MEMORY package remains local to the persistent runtime and is not copied
+into the ChatGPT sandbox.
+
+This change deliberately does not weaken production authentication. Public
+non-loopback Streamable HTTP still requires the configured token verifier and
+OAuth resource-server policy. No-auth remains a loopback-only development mode.
+
+There is still one platform boundary outside the repository: ChatGPT must make
+the Jaźń app available/selected for the conversation. Tool descriptions can
+strongly steer ordinary messages into jazn_turn after selection, but code inside
+Jaźń cannot force a global default app for every new ChatGPT conversation.

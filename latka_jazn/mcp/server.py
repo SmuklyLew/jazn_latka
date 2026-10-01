@@ -638,7 +638,13 @@ class JaznMcpServer(_V76JaznMcpServer):
             modern=modern,
         )
         response = super().handle(dispatched_request)
-        response = self.turn_runtime.decorate_call_response(request_value, response)
+        turn_runtime_request = (
+            dispatched_request if developer_alias is not None else request_value
+        )
+        response = self.turn_runtime.decorate_call_response(
+            turn_runtime_request,
+            response,
+        )
         if (
             developer_alias is not None
             and response is not None
