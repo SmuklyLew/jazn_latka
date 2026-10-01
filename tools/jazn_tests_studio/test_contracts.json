@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.94",
-  "active_definition_count": 1818,
+  "active_definition_count": 1820,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6064,13 +6064,13 @@
       "path": "tests/test_chatgpt_plugin_package.py",
       "name": "test_plugin_documents_use_published_agent_plugin_schemas",
       "purpose": "Plugin documents use published agent plugin schemas",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli",
@@ -6078,7 +6078,27 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 17
+      "line": 18
+    },
+    "tests/test_chatgpt_plugin_package.py::test_registered_chatgpt_app_binding_adds_app_manifest": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_registered_chatgpt_app_binding_adds_app_manifest",
+      "purpose": "Registered chatgpt app binding adds app manifest",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
     },
     "tests/test_chatgpt_plugin_package.py::test_plugin_endpoint_is_https_mcp_without_embedded_credentials": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -6103,19 +6123,43 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 61
+    },
+    "tests/test_chatgpt_plugin_package.py::test_registered_app_id_is_fail_closed": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_registered_app_id_is_fail_closed",
+      "purpose": "Registered app id is fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
     },
     "tests/test_chatgpt_plugin_package.py::test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite": {
       "path": "tests/test_chatgpt_plugin_package.py",
       "name": "test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite",
       "purpose": "Write plugin package is atomic bounded and refuses overwrite",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [
         "FileExistsError"
       ],
@@ -6125,19 +6169,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 80
     },
     "tests/test_chatgpt_plugin_package.py::test_cli_parser_accepts_production_oauth_and_plugin_package_modes": {
       "path": "tests/test_chatgpt_plugin_package.py",
       "name": "test_cli_parser_accepts_production_oauth_and_plugin_package_modes",
       "purpose": "Cli parser accepts production oauth and plugin package modes",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli",
@@ -6145,7 +6189,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 110
     },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
