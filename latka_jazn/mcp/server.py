@@ -20,6 +20,12 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from latka_jazn.mcp import server_legacy_v76 as _legacy
+from latka_jazn.mcp.developer_mode_surface import (
+    DEVELOPER_MODE_TOOL_DEFINITIONS,
+    MODERN_INTERNAL_TOOL_NAMES,
+    adapt_developer_mode_tool_result,
+    translate_developer_mode_tool_call,
+)
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
     READ_ONLY_TOOLS,
@@ -90,11 +96,12 @@ class JaznMcpServer(_V76JaznMcpServer):
     @staticmethod
     def _instructions() -> str:
         return (
-            "Use jazn_generate_visible_reply exactly once for a new user turn with a stable request_id. "
-            "If action=poll_runtime, call jazn_resume_visible_reply with the same daemon_request_id and "
-            "never replay the user message. If action=generate_then_finalize, generate only from the "
-            "returned host contract and finish with jazn_finalize_reply. Display Jaźń output only when "
-            "the returned action is display_exact."
+            "When the Jaźń app is selected in ChatGPT Developer Mode, use jazn_turn for every ordinary "
+            "user message with one stable clientTurnId. If action=poll_runtime, call jazn_resume_turn "
+            "with that same clientTurnId and never replay the user message. If action=generate_then_finalize, "
+            "generate only from the returned host contract and finish with jazn_finalize_reply. Display "
+            "Jaźń output only when the returned action is display_exact. jazn_health and "
+            "jazn_memory_status are diagnostics, not conversation entrypoints."
         )
 
     @staticmethod
@@ -475,11 +482,19 @@ class JaznMcpServer(_V76JaznMcpServer):
         if method == "tools/list":
             tools = result.get("tools")
             if isinstance(tools, list):
+                visible_tools = [
+                    dict(item)
+                    for item in tools
+                    if isinstance(item, Mapping)
+                    and str(item.get("name") or "") not in MODERN_INTERNAL_TOOL_NAMES
+                ]
+                existing = {str(item.get("name") or "") for item in visible_tools}
+                for definition in DEVELOPER_MODE_TOOL_DEFINITIONS:
+                    if str(definition.get("name") or "") not in existing:
+                        visible_tools.append(deepcopy(definition))
                 result["tools"] = sorted(
-                    tools,
-                    key=lambda item: (
-                        str(item.get("name") or "") if isinstance(item, Mapping) else ""
-                    ),
+                    visible_tools,
+                    key=lambda item: str(item.get("name") or ""),
                 )
         if method in {
             "tools/list",
@@ -586,12 +601,59 @@ class JaznMcpServer(_V76JaznMcpServer):
                 message="Method not found",
             )
 
+        dispatched_request = request_value
+        developer_alias: tuple[str, str | None] | None = None
+        if modern and method == "tools/call":
+            params = request_value.get("params")
+            if isinstance(params, Mapping):
+                public_tool_name = str(params.get("name") or "").strip()
+                public_alias_names = {
+                    str(definition.get("name") or "")
+                    for definition in DEVELOPER_MODE_TOOL_DEFINITIONS
+                }
+                if public_tool_name in public_alias_names:
+                    arguments = params.get("arguments")
+                    try:
+                        canonical_name, canonical_args, client_turn_id = (
+                            translate_developer_mode_tool_call(
+                                public_tool_name,
+                                arguments if isinstance(arguments, Mapping) else {},
+                            )
+                        )
+                    except (TypeError, ValueError) as exc:
+                        return self._jsonrpc_error(
+                            request_id,
+                            code=INVALID_PARAMS,
+                            message=f"Invalid Developer Mode tool arguments: {exc}",
+                        )
+                    dispatched_request = deepcopy(request_value)
+                    dispatched_params = dict(dispatched_request.get("params") or {})
+                    dispatched_params["name"] = canonical_name
+                    dispatched_params["arguments"] = canonical_args
+                    dispatched_request["params"] = dispatched_params
+                    developer_alias = (public_tool_name, client_turn_id)
+
         dispatched_request = self._prepare_legacy_dispatch(
-            request_value,
+            dispatched_request,
             modern=modern,
         )
         response = super().handle(dispatched_request)
         response = self.turn_runtime.decorate_call_response(request_value, response)
+        if (
+            developer_alias is not None
+            and response is not None
+            and "error" not in response
+            and isinstance(response.get("result"), Mapping)
+        ):
+            public_tool_name, client_turn_id = developer_alias
+            response = dict(response)
+            response["result"] = adapt_developer_mode_tool_result(
+                public_tool_name,
+                response["result"],
+                client_turn_id=client_turn_id,
+                protocol_version=MCP_PROTOCOL_VERSION_MODERN,
+                transport="secure_mcp_tunnel_stdio",
+            )
         if (
             modern
             and method == "tools/call"

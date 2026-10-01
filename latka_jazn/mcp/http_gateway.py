@@ -5,7 +5,8 @@ from __future__ import annotations
 This module is intentionally an adapter. It does not own conversation semantics,
 memory, finalization, daemon lifecycle, or operation identity. Those stay in the
 existing Jaźń runtime and :class:`JaznMcpServer`. The public HTTP surface exposes
-only the four tools required for a visible turn and keeps the audit tool private.
+one ergonomic ChatGPT Developer Mode turn contract plus bounded diagnostics while
+keeping canonical operator/audit internals private.
 
 Production HTTP is fail-closed: callers must provide an SDK ``TokenVerifier`` and
 OAuth resource-server settings. An unauthenticated mode exists only for explicit
@@ -37,6 +38,14 @@ from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import CallToolResult, ContentBlock, TextContent, ToolAnnotations
 
 from latka_jazn.core.runtime_root import find_runtime_root
+from latka_jazn.mcp.developer_mode_surface import (
+    JAZN_HEALTH_TOOL,
+    JAZN_MEMORY_STATUS_TOOL,
+    JAZN_RESUME_TURN_TOOL,
+    JAZN_TURN_TOOL,
+    adapt_developer_mode_tool_result,
+    translate_developer_mode_tool_call,
+)
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
@@ -63,30 +72,39 @@ SCOPE_TASK_CANCEL = "jazn:task:cancel"
 
 _PUBLIC_TOOLS = frozenset(
     {
-        "jazn_generate_visible_reply",
-        "jazn_resume_visible_reply",
+        JAZN_TURN_TOOL,
+        JAZN_RESUME_TURN_TOOL,
         "jazn_finalize_reply",
         "jazn_status",
+        JAZN_HEALTH_TOOL,
+        JAZN_MEMORY_STATUS_TOOL,
     }
 )
+_TASK_BRIDGE_COMPAT_TOOLS = frozenset({"jazn_generate_visible_reply"})
 
 _TOOL_SCOPES = {
-    "jazn_generate_visible_reply": SCOPE_TURN_SUBMIT,
-    "jazn_resume_visible_reply": SCOPE_TURN_READ,
+    JAZN_TURN_TOOL: SCOPE_TURN_SUBMIT,
+    JAZN_RESUME_TURN_TOOL: SCOPE_TURN_READ,
     "jazn_finalize_reply": SCOPE_TURN_FINALIZE,
     "jazn_status": SCOPE_STATUS_READ,
+    JAZN_HEALTH_TOOL: SCOPE_STATUS_READ,
+    JAZN_MEMORY_STATUS_TOOL: SCOPE_STATUS_READ,
 }
 
 _OPERATION_RATE_LIMITS_PER_MINUTE = {
-    "jazn_generate_visible_reply": 10,
+    JAZN_TURN_TOOL: 10,
+    JAZN_RESUME_TURN_TOOL: 120,
     "jazn_finalize_reply": 30,
-    "jazn_resume_visible_reply": 120,
     "jazn_status": 120,
+    JAZN_HEALTH_TOOL: 120,
+    JAZN_MEMORY_STATUS_TOOL: 120,
+    "jazn_generate_visible_reply": 10,
     "tasks/get": 180,
     "tasks/update": 60,
     "tasks/cancel": 30,
 }
 
+ClientTurnId = Annotated[str, Field(min_length=1, max_length=256)]
 RequestId = Annotated[str, Field(min_length=1, max_length=256)]
 SessionId = Annotated[str | None, Field(max_length=128)]
 MessageText = Annotated[str, Field(min_length=1, max_length=262_144)]
@@ -294,11 +312,11 @@ class PublicMcpGateway:
                 "it does not own runtime lifecycle, memory or finalization."
             ),
             instructions=(
-                "Use jazn_generate_visible_reply exactly once for each new user turn with a stable request_id. "
-                "If action=poll_runtime, call jazn_resume_visible_reply for that same request and never replay "
-                "the user's message. If action=generate_then_finalize, follow only the returned host contract "
-                "and finish with jazn_finalize_reply. Display Jaźń text only for action=display_exact. Never "
-                "claim Jaźń is running unless readiness is positively verified."
+                "When this app is selected in ChatGPT Developer Mode, call jazn_turn for every ordinary user "
+                "message using one stable clientTurnId. If action=poll_runtime, call jazn_resume_turn with the "
+                "same clientTurnId and never replay the user's message. If action=generate_then_finalize, "
+                "follow only the returned host contract and finish with jazn_finalize_reply. Display Jaźń text "
+                "only for action=display_exact. jazn_health and jazn_memory_status are diagnostics only."
             ),
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
@@ -349,9 +367,19 @@ class PublicMcpGateway:
         if not self._rate_limiter.allow(subject=principal.subject, operation_name=tool_name):
             return _public_error("rate_limit_exceeded", request_id=request_id)
 
+        try:
+            canonical_name, canonical_args, client_turn_id = (
+                translate_developer_mode_tool_call(tool_name, arguments)
+            )
+        except (TypeError, ValueError) as exc:
+            return _public_error(
+                f"invalid_tool_arguments:{exc}",
+                request_id=request_id,
+            )
+
         value = self._backend.call_tool(
-            tool_name,
-            dict(arguments),
+            canonical_name,
+            canonical_args,
             meta={
                 "authorization": self._internal_token,
                 "subject": principal.subject,
@@ -360,7 +388,22 @@ class PublicMcpGateway:
         )
         if not isinstance(value, Mapping):
             return _public_error("backend_result_not_object", request_id=request_id)
-        return _call_tool_result(value)
+        try:
+            adapted = adapt_developer_mode_tool_result(
+                tool_name,
+                value,
+                client_turn_id=client_turn_id,
+                protocol_version=MCP_PROTOCOL_VERSION,
+                transport="streamable_http",
+                gateway_instance_id=self._gateway_instance_id,
+                observed_at_utc=_utc_now_iso(),
+            )
+        except (TypeError, ValueError) as exc:
+            return _public_error(
+                f"tool_result_adaptation_failed:{exc}",
+                request_id=request_id,
+            )
+        return _call_tool_result(adapted)
 
     def _status_snapshot(self) -> dict[str, Any]:
         value = self._backend.call_tool(
@@ -390,42 +433,45 @@ class PublicMcpGateway:
         )
 
         @self.mcp.tool(
-            name="jazn_generate_visible_reply",
-            title="Submit one Jaźń turn",
+            name=JAZN_TURN_TOOL,
+            title="Send this message to Jaźń",
             description=(
-                "Submit exactly one new user turn to the persistent Jaźń runtime. "
-                "A stable request_id is mandatory; never replay the user message after an ambiguous transport outcome."
+                "Primary Developer Mode entrypoint for every ordinary user message while the Jaźń app is selected. "
+                "Use one stable clientTurnId and reuse it after an ambiguous timeout instead of creating a new turn."
             ),
             annotations=mutating_idempotent,
         )
-        def jazn_generate_visible_reply(
-            request_id: RequestId,
+        def jazn_turn(
+            clientTurnId: ClientTurnId,
             message: MessageText,
-            session_id: SessionId = None,
+            sessionId: SessionId = None,
         ) -> CallToolResult:
-            args: dict[str, Any] = {"request_id": request_id, "message": message}
-            if session_id:
-                args["session_id"] = session_id
+            args: dict[str, Any] = {
+                "clientTurnId": clientTurnId,
+                "message": message,
+            }
+            if sessionId:
+                args["sessionId"] = sessionId
             return self._invoke(
-                "jazn_generate_visible_reply",
+                JAZN_TURN_TOOL,
                 args,
-                request_id=request_id,
+                request_id=clientTurnId,
             )
 
         @self.mcp.tool(
-            name="jazn_resume_visible_reply",
-            title="Resume one Jaźń turn",
+            name=JAZN_RESUME_TURN_TOOL,
+            title="Resume the same Jaźń turn",
             description=(
-                "Read/resume the already submitted daemon request. Use the same daemon_request_id; "
-                "this tool never authorizes replaying the original user message."
+                "Read/resume the already submitted Jaźń turn using the same clientTurnId. "
+                "Never resubmit the original user message."
             ),
             annotations=read_only_idempotent,
         )
-        def jazn_resume_visible_reply(daemon_request_id: RequestId) -> CallToolResult:
+        def jazn_resume_turn(clientTurnId: ClientTurnId) -> CallToolResult:
             return self._invoke(
-                "jazn_resume_visible_reply",
-                {"daemon_request_id": daemon_request_id},
-                request_id=daemon_request_id,
+                JAZN_RESUME_TURN_TOOL,
+                {"clientTurnId": clientTurnId},
+                request_id=clientTurnId,
             )
 
         @self.mcp.tool(
@@ -491,6 +537,26 @@ class PublicMcpGateway:
                 structured_content=public_status,
                 is_error=not ready,
             )
+
+        @self.mcp.tool(
+            name=JAZN_HEALTH_TOOL,
+            title="Read Jaźń gateway health",
+            description="Read redacted transport liveness. Do not use this tool to submit a user message.",
+            annotations=read_only_idempotent,
+        )
+        def jazn_health() -> CallToolResult:
+            return self._invoke(JAZN_HEALTH_TOOL, {})
+
+        @self.mcp.tool(
+            name=JAZN_MEMORY_STATUS_TOOL,
+            title="Read Jaźń memory readiness",
+            description=(
+                "Read redacted persistent-memory and recall readiness without returning raw memory content or local paths."
+            ),
+            annotations=read_only_idempotent,
+        )
+        def jazn_memory_status() -> CallToolResult:
+            return self._invoke(JAZN_MEMORY_STATUS_TOOL, {})
 
     def _require_public_scope(self, scope_name: str) -> _Principal:
         principal = self._principal()
@@ -673,7 +739,7 @@ class PublicMcpGateway:
                 "tasks/update": SCOPE_TASK_UPDATE,
                 "tasks/cancel": SCOPE_TASK_CANCEL,
             },
-            public_tool_names=_PUBLIC_TOOLS,
+            public_tool_names=_PUBLIC_TOOLS | _TASK_BRIDGE_COMPAT_TOOLS,
             admission=lambda subject, operation: self._rate_limiter.allow(
                 subject=subject,
                 operation_name=operation,
