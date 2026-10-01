@@ -137,22 +137,22 @@ async def test_official_sdk_exposes_only_minimal_public_tool_surface(tmp_path: P
 
     tools = {tool.name: tool for tool in listing.tools}
     assert set(tools) == {
-        "jazn_turn",
-        "jazn_resume_turn",
+        "jazn_generate_visible_reply",
+        "jazn_resume_visible_reply",
         "jazn_finalize_reply",
         "jazn_status",
         "jazn_health",
         "jazn_memory_status",
     }
-    assert "jazn_generate_visible_reply" not in tools
-    assert "jazn_resume_visible_reply" not in tools
+    assert "jazn_turn" not in tools
+    assert "jazn_resume_turn" not in tools
     assert "jazn_audit_lookup" not in tools
-    turn_schema = tools["jazn_turn"].input_schema
-    assert set(turn_schema.get("required", [])) >= {"clientTurnId", "message"}
-    assert tools["jazn_turn"].annotations is not None
-    assert tools["jazn_turn"].annotations.idempotent_hint is True
-    assert tools["jazn_resume_turn"].annotations is not None
-    assert tools["jazn_resume_turn"].annotations.read_only_hint is True
+    turn_schema = tools["jazn_generate_visible_reply"].input_schema
+    assert set(turn_schema.get("required", [])) >= {"request_id", "message"}
+    assert tools["jazn_generate_visible_reply"].annotations is not None
+    assert tools["jazn_generate_visible_reply"].annotations.idempotent_hint is True
+    assert tools["jazn_resume_visible_reply"].annotations is not None
+    assert tools["jazn_resume_visible_reply"].annotations.read_only_hint is True
     assert tools["jazn_health"].annotations is not None
     assert tools["jazn_health"].annotations.read_only_hint is True
     assert tools["jazn_memory_status"].annotations is not None
@@ -167,18 +167,16 @@ async def test_turn_maps_client_turn_id_to_canonical_request_identity(tmp_path: 
     gateway = _gateway(tmp_path, backend)
     async with Client(gateway.mcp, raise_exceptions=True) as client:
         result = await client.call_tool(
-            "jazn_turn",
-            {"clientTurnId": "turn-v93-1", "message": "hello", "sessionId": "chatgpt-main"},
+            "jazn_generate_visible_reply",
+            {"request_id": "turn-v95-1", "message": "hello", "session_id": "chatgpt-main"},
         )
 
     assert result.is_error is False
     assert result.structured_content is not None
     assert result.structured_content["action"] == "poll_runtime"
-    assert result.structured_content["daemon_request_id"] == "turn-v93-1"
-    assert result.structured_content["clientTurnId"] == "turn-v93-1"
-    assert result.structured_content["resume_tool"] == "jazn_resume_turn"
-    assert backend.calls[-1][0] == "jazn_generate_visible_reply"
-    assert backend.calls[-1][1]["request_id"] == "turn-v93-1"
+    assert result.structured_content["daemon_request_id"] == "turn-v95-1"
+        assert backend.calls[-1][0] == "jazn_generate_visible_reply"
+    assert backend.calls[-1][1]["request_id"] == "turn-v95-1"
     assert backend.calls[-1][1]["session_id"] == "chatgpt-main"
     assert backend.calls[-1][2]["authorization"]
     assert backend.calls[-1][2]["subject"] == "loopback-development"
@@ -223,13 +221,13 @@ async def test_generate_rate_limit_is_operation_specific_and_fail_closed(tmp_pat
     async with Client(gateway.mcp, raise_exceptions=True) as client:
         for index in range(10):
             result = await client.call_tool(
-                "jazn_turn",
-                {"clientTurnId": f"req-rate-{index}", "message": "hello"},
+                "jazn_generate_visible_reply",
+                {"request_id": f"req-rate-{index}", "message": "hello"},
             )
             assert result.is_error is False
         limited = await client.call_tool(
-            "jazn_turn",
-            {"clientTurnId": "req-rate-10", "message": "hello"},
+            "jazn_generate_visible_reply",
+            {"request_id": "req-rate-10", "message": "hello"},
         )
 
     assert limited.is_error is True
@@ -243,16 +241,15 @@ async def test_resume_turn_reuses_client_turn_id_without_message_replay(tmp_path
     gateway = _gateway(tmp_path, backend)
     async with Client(gateway.mcp, raise_exceptions=True) as client:
         result = await client.call_tool(
-            "jazn_resume_turn",
-            {"clientTurnId": "turn-v93-resume"},
+            "jazn_resume_visible_reply",
+            {"daemon_request_id": "turn-v95-resume"},
         )
 
     assert result.is_error is False
     assert result.structured_content is not None
-    assert result.structured_content["clientTurnId"] == "turn-v93-resume"
-    assert result.structured_content["action"] == "poll_runtime"
+        assert result.structured_content["action"] == "poll_runtime"
     assert backend.calls[-1][0] == "jazn_resume_visible_reply"
-    assert backend.calls[-1][1] == {"daemon_request_id": "turn-v93-resume"}
+    assert backend.calls[-1][1] == {"daemon_request_id": "turn-v95-resume"}
 
 
 @pytest.mark.anyio
