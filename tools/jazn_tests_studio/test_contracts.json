@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.94",
+  "system_version": "16.3.25.5.95",
   "active_definition_count": 1820,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -2986,14 +2986,14 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_zip_bootstrap_runtime_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_real_mcp_ingress_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_chatgpt_zip_bootstrap_runtime_convergence",
-      "purpose": "Release version tracks chatgpt zip bootstrap runtime convergence",
+      "name": "test_release_version_tracks_chatgpt_real_mcp_ingress_convergence",
+      "purpose": "Release version tracks chatgpt real mcp ingress convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "e2e",
+      "category": "contract",
       "tags": [
-        "runtime"
+        "mcp"
       ],
       "markers": [],
       "assertion_count": 2,
@@ -7482,13 +7482,14 @@
       "description_source": "source_identity",
       "line": 120
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_is_v94_zip_bootstrap_runtime_convergence": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_is_v95_chatgpt_real_mcp_ingress_convergence": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_is_v94_zip_bootstrap_runtime_convergence",
-      "purpose": "Release identity is v94 zip bootstrap runtime convergence",
+      "name": "test_release_identity_is_v95_chatgpt_real_mcp_ingress_convergence",
+      "purpose": "Release identity is v95 chatgpt real mcp ingress convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
+        "mcp",
         "repository",
         "runtime"
       ],
