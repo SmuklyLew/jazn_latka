@@ -72,8 +72,8 @@ SCOPE_TASK_CANCEL = "jazn:task:cancel"
 
 _PUBLIC_TOOLS = frozenset(
     {
-        JAZN_TURN_TOOL,
-        JAZN_RESUME_TURN_TOOL,
+        CANONICAL_GENERATE_TOOL,
+        CANONICAL_RESUME_TOOL,
         "jazn_finalize_reply",
         "jazn_status",
         JAZN_HEALTH_TOOL,
@@ -433,45 +433,67 @@ class PublicMcpGateway:
         )
 
         @self.mcp.tool(
-            name=JAZN_TURN_TOOL,
-            title="Send this message to Jaźń",
+            name=CANONICAL_GENERATE_TOOL,
+            title="Start a validated Jaźń turn",
             description=(
-                "Primary Developer Mode entrypoint for every ordinary user message while the Jaźń app is selected. "
-                "Use one stable clientTurnId and reuse it after an ambiguous timeout instead of creating a new turn."
+                "Use this for one ordinary user message after Jaźń is selected. "
+                "Allocate request_id once for that user turn and reuse it only for recovery; "
+                "if the result says poll_runtime, call jazn_resume_visible_reply and do not resubmit the message."
             ),
-            annotations=mutating_idempotent,
+            annotations=ToolAnnotations(
+                readOnlyHint=False,
+                destructiveHint=False,
+                idempotentHint=True,
+                openWorldHint=False,
+            ),
         )
-        def jazn_turn(
-            clientTurnId: ClientTurnId,
-            message: MessageText,
-            sessionId: SessionId = None,
-        ) -> CallToolResult:
+        def jazn_generate_visible_reply(
+            request_id: str,
+            message: str,
+            session_id: str | None = None,
+            ctx: RequestContext[Any, Any, Any] | None = None,
+        ) -> dict[str, Any]:
             args: dict[str, Any] = {
-                "clientTurnId": clientTurnId,
+                "request_id": request_id,
                 "message": message,
             }
-            if sessionId:
-                args["sessionId"] = sessionId
+            if session_id:
+                args["session_id"] = session_id
             return self._invoke(
-                JAZN_TURN_TOOL,
+                CANONICAL_GENERATE_TOOL,
                 args,
-                request_id=clientTurnId,
+                request_context=ctx,
             )
 
         @self.mcp.tool(
-            name=JAZN_RESUME_TURN_TOOL,
-            title="Resume the same Jaźń turn",
+            name=CANONICAL_RESUME_TOOL,
+            title="Resume an existing Jaźń turn",
             description=(
-                "Read/resume the already submitted Jaźń turn using the same clientTurnId. "
-                "Never resubmit the original user message."
+                "Use this only after jazn_generate_visible_reply returns poll_runtime. "
+                "Poll the same daemon_request_id; never replay the original user message."
             ),
-            annotations=read_only_idempotent,
+            annotations=ToolAnnotations(
+                readOnlyHint=True,
+                destructiveHint=False,
+                idempotentHint=True,
+                openWorldHint=False,
+            ),
         )
-        def jazn_resume_turn(clientTurnId: ClientTurnId) -> CallToolResult:
+        def jazn_resume_visible_reply(
+            daemon_request_id: str,
+            turn_id: str | None = None,
+            host_request_contract_hash: str | None = None,
+            ctx: RequestContext[Any, Any, Any] | None = None,
+        ) -> dict[str, Any]:
+            args: dict[str, Any] = {"daemon_request_id": daemon_request_id}
+            if turn_id:
+                args["turn_id"] = turn_id
+            if host_request_contract_hash:
+                args["host_request_contract_hash"] = host_request_contract_hash
             return self._invoke(
-                JAZN_RESUME_TURN_TOOL,
-                {"clientTurnId": clientTurnId},
-                request_id=clientTurnId,
+                CANONICAL_RESUME_TOOL,
+                args,
+                request_context=ctx,
             )
 
         @self.mcp.tool(
