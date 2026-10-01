@@ -17,7 +17,7 @@ from latka_jazn.mcp.server import JaznMcpServer
 from latka_jazn.mcp.server_legacy_v76 import TOOL_DEFINITIONS
 
 
-def test_modern_tool_list_exposes_developer_mode_surface_not_internal_turn_names() -> None:
+def test_modern_tool_list_exposes_canonical_ingress_and_keeps_aliases_app_only() -> None:
     response = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -32,18 +32,26 @@ def test_modern_tool_list_exposes_developer_mode_surface_not_internal_turn_names
     assert names == {
         JAZN_TURN_TOOL,
         JAZN_RESUME_TURN_TOOL,
+        "jazn_generate_visible_reply",
+        "jazn_resume_visible_reply",
         "jazn_finalize_reply",
         "jazn_status",
         JAZN_HEALTH_TOOL,
         JAZN_MEMORY_STATUS_TOOL,
     }
-    assert "jazn_generate_visible_reply" not in names
-    assert "jazn_resume_visible_reply" not in names
     assert "jazn_audit_lookup" not in names
+
+    tools = {item["name"]: item for item in stamped["result"]["tools"]}
+    assert tools["jazn_generate_visible_reply"]["_meta"]["ui"]["visibility"] == ["model", "app"]
+    assert tools["jazn_resume_visible_reply"]["_meta"]["ui"]["visibility"] == ["model", "app"]
+    assert tools["jazn_status"]["_meta"]["ui"]["visibility"] == ["model", "app"]
+    assert "openai/visibility" not in tools["jazn_status"]["_meta"]
 
     aliases = {item["name"]: item for item in DEVELOPER_MODE_TOOL_DEFINITIONS}
     assert aliases[JAZN_TURN_TOOL]["annotations"]["idempotentHint"] is True
+    assert aliases[JAZN_TURN_TOOL]["_meta"]["ui"]["visibility"] == ["app"]
     assert aliases[JAZN_RESUME_TURN_TOOL]["annotations"]["readOnlyHint"] is True
+    assert aliases[JAZN_RESUME_TURN_TOOL]["_meta"]["ui"]["visibility"] == ["app"]
 
 
 def test_client_turn_id_maps_exactly_to_canonical_request_id() -> None:
