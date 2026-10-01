@@ -131,6 +131,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["remote_runtime_route_ready_from_package_alone"] is False
 
 
-def test_release_identity_is_v94_zip_bootstrap_runtime_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.94"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-zip-bootstrap-runtime-convergence"
+def test_release_identity_is_v95_chatgpt_real_mcp_ingress_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.95"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-real-mcp-ingress-convergence"
