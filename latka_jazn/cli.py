@@ -87,6 +87,13 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common(child)
     child.add_argument("--endpoint", required=True)
     child.add_argument("--output", type=Path, required=True)
+    child.add_argument(
+        "--registered-app-id",
+        help=(
+            "Optional ChatGPT Developer Mode technical app id. When supplied, "
+            "the package also writes .app.json for local/workspace installation."
+        ),
+    )
     child.add_argument("--force", action="store_true")
 
     child = sub.add_parser("package-smoke", allow_abbrev=False)
@@ -780,6 +787,7 @@ def main(
             result = write_portable_plugin_package(
                 ns.output,
                 str(ns.endpoint),
+                registered_app_id=ns.registered_app_id,
                 force=bool(ns.force),
             )
         except (ValueError, FileExistsError, OSError) as exc:
