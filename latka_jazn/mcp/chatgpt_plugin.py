@@ -34,7 +34,21 @@ def validate_remote_mcp_endpoint(value: str) -> str:
         raise ValueError("chatgpt_plugin_endpoint_path_must_be_/mcp")
     return candidate.rstrip("/")
 
-def build_portable_plugin_documents(endpoint: str, *, package_version: str = PACKAGE_VERSION_FULL) -> dict[str, dict[str, Any]]:
+def validate_registered_app_id(value: str) -> str:
+    candidate = str(value or "").strip()
+    if not candidate or not candidate.startswith(_REGISTERED_APP_PREFIXES):
+        raise ValueError("chatgpt_registered_app_id_invalid")
+    if any(ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-" for ch in candidate):
+        raise ValueError("chatgpt_registered_app_id_invalid")
+    return candidate
+
+
+def build_portable_plugin_documents(
+    endpoint: str,
+    *,
+    package_version: str = PACKAGE_VERSION_FULL,
+    registered_app_id: str | None = None,
+) -> dict[str, dict[str, Any]]:
     remote_endpoint = validate_remote_mcp_endpoint(endpoint)
     plugin = {
         "$schema": PLUGIN_SCHEMA,
@@ -89,10 +103,21 @@ class PluginPackageResult:
             ),
         }
 
-def write_portable_plugin_package(output_dir: Path, endpoint: str, *, package_version: str = PACKAGE_VERSION_FULL, force: bool = False) -> PluginPackageResult:
+def write_portable_plugin_package(
+    output_dir: Path,
+    endpoint: str,
+    *,
+    package_version: str = PACKAGE_VERSION_FULL,
+    registered_app_id: str | None = None,
+    force: bool = False,
+) -> PluginPackageResult:
     target = Path(output_dir).expanduser().resolve()
     target.mkdir(parents=True, exist_ok=True)
-    documents = build_portable_plugin_documents(endpoint, package_version=package_version)
+    documents = build_portable_plugin_documents(
+        endpoint,
+        package_version=package_version,
+        registered_app_id=registered_app_id,
+    )
     existing = [target / name for name in documents if (target / name).exists()]
     if existing and not force:
         raise FileExistsError("chatgpt_plugin_package_target_exists_use_force")
