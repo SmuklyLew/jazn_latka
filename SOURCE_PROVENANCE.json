@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8caf974c3a400ab270a1362d96d7ea062ffab941",
-    "base_version": "16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence",
+    "base_commit": "0a295bc49f786822ff334666254f5919f2d80180",
+    "base_version": "16.3.25.5.93-chatgpt-developer-mode-mcp-turn-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "0a295bc49f786822ff334666254f5919f2d80180",
