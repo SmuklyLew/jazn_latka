@@ -137,6 +137,10 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "missing_required_members": missing,
         "local_bootstrap_requires_process_creation": True,
         "package_can_create_host_executor": False,
+        "post_materialization_same_interpreter_preflight_supported": True,
+        "post_materialization_preflight_requires_child_process": False,
+        "post_materialization_preflight_flag": "--post-materialization-preflight",
+        "post_materialization_preflight_entrypoint": "run.py host-preflight --json",
         # The OpenAI tunnel client/control plane is deliberately external.  The
         # SYSTEM package only carries the local stdio target that the tunnel may
         # launch after host capability/authentication has been established.
@@ -145,6 +149,10 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "public_streamable_http_ingress_bundled": public_streamable_http_ingress_bundled,
         "public_streamable_http_ingress_members": public_mcp_members,
         "public_streamable_http_protocol_revision": "2026-07-28",
+        "public_streamable_http_endpoint_path": "/mcp",
+        "public_streamable_http_status_tool": "jazn_status",
+        "public_streamable_http_turn_tool": "jazn_generate_visible_reply",
+        "preferred_remote_runtime_transport": "public_streamable_http",
         "public_streamable_http_tasks_extension": "io.modelcontextprotocol/tasks",
         "public_streamable_http_requires_https_deployment": True,
         "public_streamable_http_requires_oauth_or_equivalent_verified_auth": True,
@@ -185,7 +193,9 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "the local stdio target for OpenAI Secure MCP Tunnel. The public Streamable HTTP implementation, when "
             "present, proves only that the code for an MCP 2026-07-28 HTTPS ingress is bundled; it does not prove that "
             "a public endpoint is deployed, authenticated, healthy, reachable, or registered with the current ChatGPT "
-            "host. The ZIP cannot grant ChatGPT a local executor, authenticate an external control plane, publish an "
+            "host. After verified extraction, the bootstrap may run dependency-free host-preflight in the same already "
+            "running Python interpreter without spawning a child process; this still does not prove daemon/runtime readiness. "
+            "The ZIP cannot grant ChatGPT a local executor, authenticate an external control plane, publish an "
             "app/connector, or prove a usable remote runtime route. "
             "Private MEMORY is an independent optional capability and is not required for core runtime readiness. "
             "Remote transport or execution handoff must be explicitly supplied and verified by the host."

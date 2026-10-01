@@ -9,18 +9,23 @@ materialization; runtime lifecycle remains owned by the extracted ``run.py``.
 """
 
 import argparse
+import contextlib
 import hashlib
+import io
 import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import runpy
 import shutil
 import stat
+import sys
 import tempfile
 import zipfile
 
 
 BOOTSTRAP_SCHEMA_VERSION = "chatgpt_system_zip_bootstrap/v1"
+POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION = "chatgpt_post_materialization_activation/v1"
 CHUNK_SIZE = 8 * 1024 * 1024
 DEFAULT_MAX_ENTRIES = 20_000
 DEFAULT_MAX_TOTAL_BYTES = 8 * 1024 * 1024 * 1024
@@ -367,6 +372,121 @@ def _safe_extract_validated_zip(
     return total_written
 
 
+def build_post_materialization_activation_contract(destination: Path) -> dict[str, object]:
+    """Describe valid next steps after a verified SYSTEM ZIP is materialized."""
+
+    root = Path(destination).resolve()
+    return {
+        "schema_version": POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION,
+        "active_root_candidate": str(root),
+        "operator_entrypoint": "run.py",
+        "control_plane": "main.py",
+        "local": {
+            "requires_host_python_execution": True,
+            "package_can_create_host_executor": False,
+            "same_interpreter_preflight_supported": True,
+            "preflight_requires_child_process": False,
+            "preflight_flag": "--post-materialization-preflight",
+            "preflight_argv": ["host-preflight", "--json"],
+            "runtime_activation_requires_additional_host_capabilities": True,
+        },
+        "remote": {
+            "preferred_transport": "public_streamable_http",
+            "endpoint_path": "/mcp",
+            "status_tool": "jazn_status",
+            "turn_tool": "jazn_generate_visible_reply",
+            "requires_authenticated_https": True,
+            "requires_current_host_connector_invocation": True,
+            "secure_tunnel_fallback": "openai_secure_mcp_tunnel",
+        },
+        "truth_boundary": (
+            "Materialization proves only that a verified operator exists on disk. "
+            "Same-interpreter preflight can reuse the Python process already executing "
+            "CHATGPT_BOOTSTRAP.py and does not create a child process, but it does not "
+            "create a daemon, connector, accepted turn, or display_exact. If the host "
+            "cannot execute Python at all, the ZIP cannot repair that host capability; "
+            "use only an actually callable, authenticated Jaźń MCP route."
+        ),
+    }
+
+
+def run_materialized_host_preflight_in_process(destination: Path) -> dict[str, object]:
+    """Run extracted run.py host-preflight in the current interpreter only."""
+
+    root = Path(destination).resolve()
+    run_path = root / "run.py"
+    main_path = root / "main.py"
+    if not run_path.is_file() or not main_path.is_file():
+        raise BootstrapError(
+            "materialized operator does not contain run.py/main.py",
+            code="post_materialization_operator_missing",
+        )
+
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = list(sys.argv)
+    previous_cwd = Path.cwd()
+    previous_path = list(sys.path)
+    previous_modules = {
+        name: module
+        for name, module in list(sys.modules.items())
+        if name == "latka_jazn" or name.startswith("latka_jazn.")
+    }
+    exit_code = 0
+
+    try:
+        for name in previous_modules:
+            sys.modules.pop(name, None)
+        os.chdir(root)
+        sys.path.insert(0, str(root))
+        sys.argv = [str(run_path), "host-preflight", "--json"]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                runpy.run_path(str(run_path), run_name="__main__")
+            except SystemExit as exc:
+                if exc.code is None:
+                    exit_code = 0
+                elif isinstance(exc.code, int):
+                    exit_code = int(exc.code)
+                else:
+                    exit_code = 1
+    finally:
+        for name in [
+            name
+            for name in list(sys.modules)
+            if name == "latka_jazn" or name.startswith("latka_jazn.")
+        ]:
+            sys.modules.pop(name, None)
+        sys.modules.update(previous_modules)
+        sys.argv = previous_argv
+        sys.path[:] = previous_path
+        os.chdir(previous_cwd)
+
+    raw = stdout.getvalue().strip()
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise BootstrapError(
+            "post-materialization host-preflight did not return one JSON object",
+            code="post_materialization_preflight_invalid_output",
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise BootstrapError(
+            "post-materialization host-preflight JSON must be an object",
+            code="post_materialization_preflight_invalid_output",
+        )
+
+    return {
+        "attempted": True,
+        "mode": "same_interpreter_no_child_process",
+        "exit_code": exit_code,
+        "ok": parsed.get("ok") is True,
+        "gate_passed": parsed.get("gate_passed") is True,
+        "preflight": parsed,
+        "stderr_present": bool(stderr.getvalue().strip()),
+    }
+
+
 def bootstrap_system_zip(
     *,
     zip_path: Path,
@@ -378,6 +498,7 @@ def bootstrap_system_zip(
     max_total_bytes: int = DEFAULT_MAX_TOTAL_BYTES,
     max_member_bytes: int = DEFAULT_MAX_MEMBER_BYTES,
     max_compression_ratio: float = DEFAULT_MAX_COMPRESSION_RATIO,
+    run_post_materialization_preflight: bool = False,
 ) -> dict[str, object]:
     zip_path = Path(zip_path).resolve()
     destination = Path(destination).resolve()
@@ -451,7 +572,7 @@ def bootstrap_system_zip(
             os.replace(root, destination)
             shutil.rmtree(staging, ignore_errors=True)
         moved = True
-        return {
+        payload: dict[str, object] = {
             "ok": True,
             "schema_version": BOOTSTRAP_SCHEMA_VERSION,
             "state": "materialized_operator_ready",
@@ -464,8 +585,18 @@ def bootstrap_system_zip(
             "uncompressed_size_bytes": total_bytes,
             "root_prefix": root_prefix or None,
             "operator_entrypoint": "run.py",
-            "next_step": "Read AGENTS.md, then invoke the extracted run.py for host-preflight/doctor/start/status.",
+            "activation_contract": build_post_materialization_activation_contract(destination),
+            "next_step": (
+                "Read AGENTS.md. If this bootstrap is already executing in a usable Python host, "
+                "prefer --post-materialization-preflight; otherwise use only a verified callable "
+                "remote Jaźń MCP route or an explicit host handoff."
+            ),
         }
+        if run_post_materialization_preflight:
+            payload["post_materialization_preflight"] = run_materialized_host_preflight_in_process(
+                destination
+            )
+        return payload
     except BootstrapError:
         raise
     except (OSError, zipfile.BadZipFile, RuntimeError) as exc:
@@ -498,6 +629,14 @@ def _build_parser() -> argparse.ArgumentParser:
         type=float,
         default=DEFAULT_MAX_COMPRESSION_RATIO,
     )
+    parser.add_argument(
+        "--post-materialization-preflight",
+        action="store_true",
+        help=(
+            "After verified extraction, run only run.py host-preflight --json in the same "
+            "Python interpreter. This does not spawn a child process or claim runtime activation."
+        ),
+    )
     parser.add_argument("--json", action="store_true", dest="as_json")
     return parser
 
@@ -515,6 +654,7 @@ def main(argv: list[str] | None = None) -> int:
             max_total_bytes=ns.max_total_bytes,
             max_member_bytes=ns.max_member_bytes,
             max_compression_ratio=ns.max_compression_ratio,
+            run_post_materialization_preflight=ns.post_materialization_preflight,
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
