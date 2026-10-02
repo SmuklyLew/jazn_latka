@@ -53,6 +53,6 @@ def test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt() ->
     assert "Nie ponawiaj handoff w tej samej próbie" in text
 
 
-def test_release_version_stays_on_system_coherence_line() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.96" or PACKAGE_VERSION.startswith("16.3.25.5.96.")
-    assert PACKAGE_RELEASE_NAME == "system-coherence-convergence"
+def test_release_version_tracks_chatgpt_host_runtime_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.97"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-host-runtime-convergence"
