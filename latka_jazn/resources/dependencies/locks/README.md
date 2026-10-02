@@ -1,19 +1,20 @@
 # Release dependency locks
 
 Canonical release locks are generated on native GitHub Actions runners from a verified
-`jazn_dependency_wheelhouse/v3` bundle. They are target-specific because wheel tags,
+`jazn_dependency_wheelhouse/v3` bundle. The current release profile is `core+archive+pdf`:
+PDF support is shipped in the verified sidecar but is not activation-required. They are target-specific because wheel tags,
 Python ABI and Linux libc compatibility are part of the contract. Linux x64 uses the
 glibc 2.17 baseline represented by `manylinux_2_17_x86_64` and its legacy equivalent
 `manylinux2014_x86_64`.
 
 Required `.25.5` targets:
 
-- `core+archive/windows-x64-py312.txt`
-- `core+archive/windows-x64-py313.txt`
-- `core+archive/windows-x64-py314.txt`
-- `core+archive/linux-x64-py312.txt`
-- `core+archive/linux-x64-py313.txt`
-- `core+archive/linux-x64-py314.txt`
+- `core+archive+pdf/windows-x64-py312.txt`
+- `core+archive+pdf/windows-x64-py313.txt`
+- `core+archive+pdf/windows-x64-py314.txt`
+- `core+archive+pdf/linux-x64-py312.txt`
+- `core+archive+pdf/linux-x64-py313.txt`
+- `core+archive+pdf/linux-x64-py314.txt`
 
 Do not hand-author hashes. The `dependency-artifacts` workflow materializes the native
 wheelhouse, verifies it, and publishes the exact `JAZN_WHEELHOUSE_REQUIREMENTS.txt` as
