@@ -3,11 +3,11 @@
   "version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
-  "generated_at_utc": "2026-10-02T22:24:26+00:00",
-  "updated_at_utc": "2026-10-02T22:24:26+00:00",
+  "generated_at_utc": "2026-10-02T22:28:30+00:00",
+  "updated_at_utc": "2026-10-02T22:28:30+00:00",
   "start_file": "run.py",
-  "file_count": 1882,
-  "static_file_count": 1882,
+  "file_count": 1887,
+  "static_file_count": 1887,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -92,8 +92,8 @@
     },
     {
       "path": ".github/workflows/dependency-artifacts.yml",
-      "size_bytes": 8298,
-      "sha256": "4a0b9d936530af3a9a4c218b7d304f6b9266b7e6dc7944e1ff1f2484b4c451c8",
+      "size_bytes": 8324,
+      "sha256": "dd8384224d55e1eac1a9cd07240d53299dca4f31c377c395ef2c39484f38ba61",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 18377,
-      "sha256": "f6c91e459f8826a4a464d45634e86d0522c5a86435721d37991052fc32c867cf",
+      "size_bytes": 18389,
+      "sha256": "795b8bd92672d369fb07a60bf5e048b945a225f1040685e1e4e40b4e0a49cdea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3001,
-      "sha256": "56f03afe318efbc4695aecff8b282bb0e76fa17765ae0391ddd9546881c21e1b",
+      "sha256": "4b0367d936157823b626917b18c12bb755c19d7c7dce95c89b09066e0c01998d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1829,8 +1829,8 @@
     },
     {
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
-      "size_bytes": 10358,
-      "sha256": "33a94612cd303ebd5bb2ea1e9001c58bdcd8fef1c14c0fde53dc346b446f989a",
+      "size_bytes": 10821,
+      "sha256": "af702deb306109023e33717f960aceb5f1f5f7ef5ce011c595049ebe5dd353fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2495,8 +2495,8 @@
     },
     {
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
-      "size_bytes": 12869,
-      "sha256": "e773ef9f887f4ae0b0fbcc1bb80749578040ca2eee6b40081fb13256a7a17fb9",
+      "size_bytes": 13673,
+      "sha256": "380ff04c82f7ca7e94f9ff0136ec1e61c67e28b95ea151b40203b78b8c34100e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7274,15 +7274,15 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/locks/README.md",
-      "size_bytes": 1187,
-      "sha256": "e827def7f14c7e96f45e889a07c29cb312b2433a8fe64bc945feeaf0831358df",
+      "size_bytes": 1341,
+      "sha256": "a06f419652689bdb96b387085912e6f4b0028afb00c8be2c8d8da35bd31468a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py312.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
       "sha256": "772cf97e47ed52a430d100928480ffbbd36d3b3392556938ff544f7965d46e9f",
       "mutable_runtime": false,
@@ -7291,7 +7291,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py313.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
       "sha256": "7829bc8d12f1705d928f7aaece3002f3984efa31e588d54cf2fe6af6a5498921",
       "mutable_runtime": false,
@@ -7300,7 +7300,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py314.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
       "sha256": "8b8ae01ec1b530d9c1938336891542f585adc9409f960ec4ea372d366f2f2871",
       "mutable_runtime": false,
@@ -7309,7 +7309,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py312.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
       "sha256": "6ce5923a1fbc5a47215a6cef32ae4826d05615fdb4e65f9f9b9daf976f6b6910",
       "mutable_runtime": false,
@@ -7318,7 +7318,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py313.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
       "sha256": "e06437db0cb821b80740fe2589c0c9daeccee6c07a2115f995ac248c0faaea49",
       "mutable_runtime": false,
@@ -7327,7 +7327,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py314.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
       "sha256": "54fd401fb026f78198201ff8f842bf031f2a11809e578b41bfb93ecff14d8016",
       "mutable_runtime": false,
@@ -13276,6 +13276,42 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_archive_capabilities.py",
+      "size_bytes": 5633,
+      "sha256": "406f8ee1e0533fb329633da5357037db68d5e590fc5398e391e69d03f4c5d9a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2095,
+      "sha256": "1bd2f9fc9c5f3c5f7f0dc6ca5f13e7c2e3ea25570071a1823540cd8fcc0bfa9e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6499,
+      "sha256": "a13bcd329e6e5e026812cf0d86ae0c10b951e7c293555370bb85e5e9a660d4ac",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_dependency_studio.py",
+      "size_bytes": 18829,
+      "sha256": "09ae72935b406862bdb00ebb99d0be2292272282a53b14148afad2068038df80",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13340,8 +13376,8 @@
     },
     {
       "path": "tests/test_archive_capabilities.py",
-      "size_bytes": 5633,
-      "sha256": "406f8ee1e0533fb329633da5357037db68d5e590fc5398e391e69d03f4c5d9a2",
+      "size_bytes": 5640,
+      "sha256": "d7e442e74819b7bd61475af561f2a43c51b0131a149f17adf82e6ff24b138d8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13547,8 +13583,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2095,
-      "sha256": "1bd2f9fc9c5f3c5f7f0dc6ca5f13e7c2e3ea25570071a1823540cd8fcc0bfa9e",
+      "size_bytes": 2091,
+      "sha256": "28a56279fb723c8f8bde54a13b348ef95d50fb31f801ce128022621dea4070c1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13925,8 +13961,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6499,
-      "sha256": "a13bcd329e6e5e026812cf0d86ae0c10b951e7c293555370bb85e5e9a660d4ac",
+      "size_bytes": 6495,
+      "sha256": "8f9119756ef54f9fa06ae94f93df7c96a6b0d7778a6f1295d4ffdd31e06a65c4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14159,8 +14195,8 @@
     },
     {
       "path": "tests/test_dependency_studio.py",
-      "size_bytes": 18829,
-      "sha256": "09ae72935b406862bdb00ebb99d0be2292272282a53b14148afad2068038df80",
+      "size_bytes": 19007,
+      "sha256": "f7e9a7a605f244d38544099b57a1ca78e52d84c342ee49fd87c7bd4ff762e7e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15526,6 +15562,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_pdf_dependency_capability_convergence.py",
+      "size_bytes": 2286,
+      "sha256": "31748a013f1c648597a142459f230fc6b9663be83d1d8b6332fa3a89723cdb25",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_pending_host_request_continuity.py",
       "size_bytes": 7864,
       "sha256": "07a8d5201fe0ff690801887f2f23e6c2c35c7a54b634ab53911a3dcaf55ed816",
@@ -16805,8 +16850,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1704321,
-      "sha256": "ba825e72402d5dce74d6ad8076d5b1e9d280201a7504f22458dd168057cdf1ff",
+      "size_bytes": 1706764,
+      "sha256": "83dd8459d0998d67233ecb9ca5c615862877ccd42c24b28e391682705dbe2851",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
