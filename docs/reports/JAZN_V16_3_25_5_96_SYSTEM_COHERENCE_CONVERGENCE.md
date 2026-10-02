@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96.2 — system coherence convergence
+# Jaźń v16.3.25.5.96.3 — system coherence convergence
 
 ## Scope
 
@@ -111,3 +111,35 @@ the stable `16.3.25.5.96[.*]` system-coherence release line. Their v96.1
 sources are archived byte-for-byte under
 `tests/archive/v16.3.25.5.96.2-sqlite-wal-contention-fix/`, so future CI-only
 patch increments do not create another artificial release-identity failure.
+
+
+## Generated-artifact ownership follow-up 16.3.25.5.96.3
+
+CI exposed a second-order race between two branch mutators. The release-hardening
+workflow could commit canonical metadata first, after which the Stable Test
+Contracts workflow committed `test_contracts.json`. Because pushes made with
+the repository `GITHUB_TOKEN` do not recursively trigger ordinary push
+workflows, that later catalog commit could become the branch HEAD without a new
+metadata synchronization pass.
+
+The shared concurrency group prevented simultaneous mutation but did not impose
+a semantic order between the two workflows. v96.3 therefore makes the Test
+Studio mutator self-contained:
+
+1. generate and locally commit `test_contracts.json` when it changed;
+2. run the canonical `release_metadata_sync` against that new local HEAD;
+3. commit `SOURCE_PROVENANCE.json` and `PACKAGE_INTEGRITY_MANIFEST.json`
+   after the catalog commit;
+4. push the whole generated sequence once, with metadata as the final commit;
+5. verify metadata idempotence before the job can succeed.
+
+Both branch-mutator jobs also use the current GitHub Actions `queue: max`
+concurrency mode so multiple pending mutator runs are queued instead of silently
+replacing an older pending run. Pull-request validation materializes the
+deterministic Test Studio catalog locally, mirroring the existing local
+materialization of release metadata, while push validation still proves the
+committed branch is synchronized.
+
+This removes the observed metadata-to-catalog inversion and makes the final
+automation-generated branch HEAD a `[skip ci]` metadata commit rather than a
+catalog commit that spawns approval-required recursive PR checks.

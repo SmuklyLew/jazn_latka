@@ -26,6 +26,7 @@ jobs:
   manifest_sync:
     concurrency:
       group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+      queue: max
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 15

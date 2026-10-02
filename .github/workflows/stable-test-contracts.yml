@@ -34,6 +34,7 @@ jobs:
     if: github.event_name == 'push' && github.ref_name != 'master'
     concurrency:
       group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+      queue: max
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -49,13 +50,48 @@ jobs:
           python-version: '3.12'
       - name: Synchronize active Test Studio contracts
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
-      - name: Commit catalog update when required
+      - name: Commit catalog update locally when required
         shell: bash
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git diff --quiet -- tools/jazn_tests_studio/test_contracts.json; then
             echo "Test Studio contract catalog is already synchronized."
-            exit 0
+          else
+            dirty_paths="$(
+              git status --porcelain --untracked-files=all |
+                sed -E 's/^.. //' |
+                sed -E 's/^"//; s/"$//' |
+                sort -u
+            )"
+            unexpected_paths="$(
+              printf '%s\n' "$dirty_paths" |
+                grep -Ev '^tools/jazn_tests_studio/test_contracts\.json$' || true
+            )"
+            if [ -n "$unexpected_paths" ]; then
+              echo "Refusing catalog commit because unrelated paths are dirty:" >&2
+              printf '%s\n' "$unexpected_paths" >&2
+              exit 2
+            fi
+            git add tools/jazn_tests_studio/test_contracts.json
+            git commit -m "test: synchronize Test Studio contract catalog"
           fi
+
+      - name: Normalize origin URL for deterministic provenance
+        shell: bash
+        run: git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Synchronize canonical release metadata after catalog
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --write
+          --json
+
+      - name: Commit metadata after catalog and push generated sequence
+        shell: bash
+        run: |
           dirty_paths="$(
             git status --porcelain --untracked-files=all |
               sed -E 's/^.. //' |
@@ -64,18 +100,37 @@ jobs:
           )"
           unexpected_paths="$(
             printf '%s\n' "$dirty_paths" |
-              grep -Ev '^tools/jazn_tests_studio/test_contracts\.json$' || true
+              grep -Ev '^(PACKAGE_INTEGRITY_MANIFEST\.json|SOURCE_PROVENANCE\.json)$' || true
           )"
           if [ -n "$unexpected_paths" ]; then
-            echo "Refusing catalog commit because unrelated paths are dirty:" >&2
+            echo "Refusing generated-artifact push because unrelated paths are dirty:" >&2
             printf '%s\n' "$unexpected_paths" >&2
             exit 2
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/jazn_tests_studio/test_contracts.json
-          git commit -m "test: synchronize Test Studio contract catalog"
-          git push origin "HEAD:${GITHUB_REF#refs/heads/}"
+
+          runtime_version="$(
+            python -X utf8 -c               'from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)'
+          )"
+          if ! git diff --quiet -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json; then
+            git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+            git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
+          fi
+
+          target_branch="${GITHUB_REF#refs/heads/}"
+          git fetch origin "${target_branch}"
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/${target_branch}")" ]; then
+            git push origin "HEAD:${target_branch}"
+          else
+            echo "No generated commits need to be pushed."
+          fi
+
+      - name: Verify canonical metadata is synchronized after generated catalog
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --check
+          --json
 
   validate:
     name: Validate stable Test Studio contracts
@@ -112,6 +167,9 @@ jobs:
         run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
       - name: Collect active suite
         run: python -m pytest --collect-only -q tests --ignore=tests/archive
+      - name: Materialize deterministic Test Studio catalog for PR validation
+        if: github.event_name == 'pull_request'
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
       - name: Verify deterministic Test Studio catalog
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
       - name: Test governance
