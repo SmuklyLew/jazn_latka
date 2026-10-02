@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96 — system coherence convergence
+# Jaźń v16.3.25.5.96.1 — system coherence convergence
 
 ## Scope
 
@@ -75,3 +75,17 @@ installed or that a public deployment is reachable. Real ingress acceptance
 still requires a deployed HTTPS `/mcp` endpoint and a host-observed call in a
 fresh ChatGPT conversation. That evidence must be collected outside this
 repository and must never be synthesized by CI.
+
+
+## CI follow-up 16.3.25.5.96.1
+
+The first full deterministic release-hardening run exercised 1,934 tests and
+found exactly two failures: both were stale release-identity assertions left on
+the 16.3.25.5.95.1 line. The functional MCP/SQLite changes were not the failing
+surface. Before updating the active tests, their exact source versions were
+archived under
+`tests/archive/v16.3.25.5.96.1-release-identity-fix/`.
+
+The active release-identity checks now assert the v96.1 system-coherence line
+with stable purpose names rather than continuing to describe the prior v95.1
+ChatGPT-ingress release.

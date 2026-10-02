@@ -233,7 +233,7 @@ strongly steer ordinary messages into jazn_turn after selection, but code inside
 Jaźń cannot force a global default app for every new ChatGPT conversation.
 
 
-## 12. Task-state coherence in 16.3.25.5.96
+## 12. Task-state coherence in 16.3.25.5.96.1
 
 The durable Tasks adapter now treats the advertised task TTL as an explicit
 server-side backstop. A non-terminal task whose `createdAt + ttlMs` has elapsed
