@@ -408,7 +408,7 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
             "-X",
             "utf8",
             "main.py",
-            "--chat-gpt",
+            "chat-gpt",
             "--session-id",
             "<stable-session-id>",
         ],
@@ -417,15 +417,16 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
             "-X",
             "utf8",
             "main.py",
-            "--daemon-start",
+            "start",
         ],
         "runtime_status_control_plane_argv": [
             "<python>",
             "-X",
             "utf8",
             "main.py",
-            "--daemon-status",
-            "--daemon-snapshot",
+            "status",
+            "--snapshot",
+            "--json",
         ],
         "nonstreaming_turn_contract": {
             "transport": "daemon_bound_transactional_turns",
@@ -451,7 +452,7 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
         "truth_boundary": (
             "This contract is launch intent, not proof of process creation. The ChatGPT "
             "bridge uses the surrounding ChatGPT host as the language-model channel and "
-            "does not require OPENAI_API_KEY or a --model flag. A host without process "
+            "does not require OPENAI_API_KEY or a --model flag. Canonical exported argv uses main.py subcommands; legacy --chat-gpt/--daemon-* flags remain internal compatibility only. A host without process "
             "execution cannot satisfy this local contract; it must use a separately "
             "verified callable Jaźń remote app/connector."
         ),
@@ -480,9 +481,9 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "runtime_status_entrypoint": "run.py status --snapshot --json",
             "runtime_start_argv": ["start"],
             "runtime_status_argv": ["status", "--snapshot", "--json"],
-            "control_plane_start_entrypoint": "main.py --daemon-start",
-            "control_plane_status_entrypoint": "main.py --daemon-status --daemon-snapshot",
-            "chatgpt_bridge_entrypoint": "main.py --chat-gpt --session-id <stable-session-id>",
+            "control_plane_start_entrypoint": "main.py start",
+            "control_plane_status_entrypoint": "main.py status --snapshot --json",
+            "chatgpt_bridge_entrypoint": "main.py chat-gpt --session-id <stable-session-id>",
             "chatgpt_bridge": chatgpt_launch,
             "activation_success_requires_verified_status": True,
         },
@@ -685,7 +686,7 @@ def bootstrap_system_zip(
             "next_step": (
                 "Read AGENTS.md and AGENTS.chatgpt.md. If this bootstrap is already executing "
                 "in a usable Python host, prefer --post-materialization-preflight. After a positive "
-                "local gate, start and verify the daemon through the central control plane, then "
+                "local gate, start and verify the daemon through the central control-plane subcommands, then "
                 "open the chatgpt_bridge control_plane_argv as one persistent stdin/stdout bridge "
                 "when the host can retain it. Do not add --model and do not require OPENAI_API_KEY "
                 "for chat-gpt. If process execution is unavailable, use only a verified callable "
