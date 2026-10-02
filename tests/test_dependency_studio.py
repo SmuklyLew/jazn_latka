@@ -51,7 +51,7 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
         PROFILE_JSON.read_text(encoding="utf-8"), encoding="utf-8"
     )
     deps = dependencies or [
-        "pypdf>=5.0.0",
+        "pypdf>=6.19.0,<7",
         "tzdata>=2024.1",
         "packaging>=24.2,<27",
     ]
@@ -147,7 +147,7 @@ def test_core_archive_resolves_all_required_base_dependencies(tmp_path: Path) ->
     root = _project(tmp_path)
     requirements = resolve_profile_requirements(root, ["core", "archive"])
     assert requirements == [
-        "pypdf>=5.0.0",
+        "pypdf>=6.19.0,<7",
         "tzdata>=2024.1",
         "packaging>=24.2,<27",
         "py7zr>=1.1.3,<2",
