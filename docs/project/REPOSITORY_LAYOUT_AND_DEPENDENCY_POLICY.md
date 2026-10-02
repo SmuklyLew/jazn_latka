@@ -84,6 +84,13 @@ Dokładne, reprodukowalne artefakty instalacyjne należą do
 `JAZN_WHEELHOUSE_REQUIREMENTS.txt` generowanego przez Dependency Studio; hashy
 nie wpisuje się ręcznie.
 
+Od `16.3.25.5.99` obsługa PDF jest osobną capability `pdf`. `pypdf>=6.19.0,<7`
+pozostaje pinem bezpieczeństwa/funkcjonalności dla tej capability, ale nie należy
+do activation-required `core`, ponieważ zwykły start i dialog runtime nie importują
+`pypdf`. Standardowy release sidecar jawnie obejmuje `core+archive+pdf`, więc
+obsługa PDF pozostaje dostarczana jako zweryfikowany, hash-locked wheel bez
+wprowadzania sieciowego `pip install` do bootstrapu.
+
 ## 5. ChatGPT
 
 ChatGPT w Projekcie jest hostem/runtime executor channel, a nie pakietem Python
