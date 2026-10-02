@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.96.2",
-  "active_definition_count": 1832,
+  "system_version": "16.3.25.5.96.3",
+  "active_definition_count": 1835,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -12594,6 +12594,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 132
+    },
+    "tests/test_generated_artifact_mutator_order.py::test_generated_catalog_is_committed_before_metadata_and_single_push": {
+      "path": "tests/test_generated_artifact_mutator_order.py",
+      "name": "test_generated_catalog_is_committed_before_metadata_and_single_push",
+      "purpose": "Generated catalog is committed before metadata and single push",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_generated_artifact_mutator_order.py::test_branch_mutators_queue_instead_of_replacing_pending_runs": {
+      "path": "tests/test_generated_artifact_mutator_order.py",
+      "name": "test_branch_mutators_queue_instead_of_replacing_pending_runs",
+      "purpose": "Branch mutators queue instead of replacing pending runs",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_generated_artifact_mutator_order.py::test_pr_validation_materializes_catalog_without_mutating_branch": {
+      "path": "tests/test_generated_artifact_mutator_order.py",
+      "name": "test_pr_validation_materializes_catalog_without_mutating_branch",
+      "purpose": "Pr validation materializes catalog without mutating branch",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
     },
     "tests/test_github_actions_node24_convergence.py::test_all_active_github_actions_pass_fail_closed_node24_audit": {
       "path": "tests/test_github_actions_node24_convergence.py",
