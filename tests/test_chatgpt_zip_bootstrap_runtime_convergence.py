@@ -89,7 +89,10 @@ def test_bootstrap_emits_post_materialization_activation_contract(tmp_path: Path
     assert local["preflight_requires_child_process"] is False
     assert local["package_can_create_host_executor"] is False
     assert local["runtime_start_entrypoint"] == "run.py start"
-    assert local["runtime_status_entrypoint"] == "run.py status --snapshot --json"
+    assert local["runtime_status_entrypoint"] == "run.py status --json"
+    assert local["runtime_snapshot_diagnostic_entrypoint"] == "run.py status --snapshot --json"
+    assert local["activation_readiness_source"] == "live_status"
+    assert local["snapshot_is_activation_authority"] is False
     assert local["activation_success_requires_verified_status"] is True
     assert remote["preferred_transport"] == "public_streamable_http"
     assert remote["endpoint_path"] == "/mcp"
@@ -136,7 +139,10 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["post_materialization_preflight_requires_child_process"] is False
     assert contract["post_materialization_preflight_flag"] == "--post-materialization-preflight"
     assert contract["post_materialization_start_entrypoint"] == "run.py start"
-    assert contract["post_materialization_status_entrypoint"] == "run.py status --snapshot --json"
+    assert contract["post_materialization_status_entrypoint"] == "run.py status --json"
+    assert contract["post_materialization_snapshot_diagnostic_entrypoint"] == "run.py status --snapshot --json"
+    assert contract["post_materialization_activation_readiness_source"] == "live_status"
+    assert contract["post_materialization_snapshot_is_activation_authority"] is False
     assert contract["post_materialization_activation_requires_verified_status"] is True
     assert contract["public_streamable_http_endpoint_path"] == "/mcp"
     assert contract["public_streamable_http_status_tool"] == "jazn_status"
@@ -150,6 +156,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["plan_name_is_runtime_predicate"] is False
 
 
-def test_release_identity_tracks_fresh_session_plugin_exposure_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.99"
-    assert PACKAGE_RELEASE_NAME == "pdf-capability-offline-dependency-convergence"
+def test_release_identity_tracks_bootstrap_progress_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.100"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-bootstrap-progress-convergence"
