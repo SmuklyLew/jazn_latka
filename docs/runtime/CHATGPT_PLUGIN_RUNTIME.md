@@ -1,6 +1,6 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.95 ingress contract. Its acceptance
+This runbook describes the v16.3.25.5.95.1 ingress contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.
@@ -156,6 +156,20 @@ ChatGPT conversation:
 
 A package, endpoint, tunnel id, successful deployment, successful tool scan, or
 "installed" catalog state is insufficient evidence by itself.
+
+### No-executor success evidence
+
+A real remote-success observation is valid even when `executor_available=false`,
+but only after the current ChatGPT surface actually invokes `jazn_status`.
+Its structured result must carry `evidence_schema=jazn_public_mcp_status/v1`
+and pass the runtime/version/freshness checks from `AGENTS.chatgpt.md`. Only
+then may the host report `remote_runtime_available=true` and preserve the
+SYSTEM-returned `execution_route=remote_runtime`.
+
+Connector invocation evidence must never be reconstructed from saved JSON,
+copied diagnostics, a previous conversation, catalog state, or a remembered
+tool result. Every ordinary turn needs fresh host-observed capability and its
+own turn/finalization lineage.
 
 ## Security / production checklist
 
