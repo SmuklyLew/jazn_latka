@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ae066e3a5476d1ab958a6cc0a51b35f42785e957",
+  "base_merge_commit": "943f0e49ec83129c049173c7af99d35c8611ae72",
   "base_version": "16.3.25.5.95-chatgpt-real-mcp-ingress-convergence",
-  "commit_date": "2026-10-01T21:50:08+02:00",
+  "commit_date": "2026-10-02T14:41:48+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-01T19:50:08+00:00",
+  "generated_at_utc": "2026-10-02T12:41:48+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "30f52ba1d2326e3a37f0f0ab3934213030c24701",
+  "git_tree_sha": "3bff27c80c30cf82e5c79102cca830a20ea4b2ae",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.94-chatgpt-zip-bootstrap-runtime-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "ae066e3a5476d1ab958a6cc0a51b35f42785e957",
+    "source_commit": "943f0e49ec83129c049173c7af99d35c8611ae72",
     "source_version": "16.3.25.5.95-chatgpt-real-mcp-ingress-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "ae066e3a5476d1ab958a6cc0a51b35f42785e957",
+  "source_commit": "943f0e49ec83129c049173c7af99d35c8611ae72",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.95-chatgpt-real-mcp-ingress-convergence",
   "tag": null,
