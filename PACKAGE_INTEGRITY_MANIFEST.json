@@ -3,11 +3,11 @@
   "version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "runtime_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "package_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
-  "generated_at_utc": "2026-10-02T12:44:52+00:00",
-  "updated_at_utc": "2026-10-02T12:44:52+00:00",
+  "generated_at_utc": "2026-10-02T12:52:04+00:00",
+  "updated_at_utc": "2026-10-02T12:52:04+00:00",
   "start_file": "run.py",
-  "file_count": 1853,
-  "static_file_count": 1853,
+  "file_count": 1857,
+  "static_file_count": 1857,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -63,6 +63,15 @@
   },
   "truth_boundary": "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, backups, generator state and temporary files.",
   "files": [
+    {
+      "path": ".dockerignore",
+      "size_bytes": 333,
+      "sha256": "c564771ccc944bae24fe6f20f6e862c6c8c46ae471604383650668a481be60c4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
     {
       "path": ".gitattributes",
       "size_bytes": 1081,
@@ -281,8 +290,26 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2951,
-      "sha256": "dd09f27c66ce71e45cd4bfd932e4b870c2dfd895f9e0dc9a9329b937abdf0540",
+      "size_bytes": 2956,
+      "sha256": "be15e8531ad97b20deb2d543463f26b8fd6860b12475ab86b81ee9888ff758b8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/Dockerfile",
+      "size_bytes": 859,
+      "sha256": "e627a57fbbdb75212048b04bf5f2351a951ef511ddf1a26e33a096daaeb07ae3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/README.md",
+      "size_bytes": 2802,
+      "sha256": "7955f8977b29181fbcc0bb94d1e040475746150fbadea72db5b5aa9033edae50",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5233,6 +5260,15 @@
       "path": "latka_jazn/mcp/chatgpt_plugin.py",
       "size_bytes": 7638,
       "sha256": "6fd9dcebf9a3651f8d221367f723794070bd829fa83c6759cb20ea5e0604db0d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/mcp/deployment.py",
+      "size_bytes": 10668,
+      "sha256": "2c04159db9fefc998bb99fbae895a1f9b7dc2b1774fe90118e9fe920b7d31ae9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
