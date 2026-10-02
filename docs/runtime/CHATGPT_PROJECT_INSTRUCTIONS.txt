@@ -1,6 +1,6 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta treść jest kanoniczną instrukcją przeznaczoną do wklejenia do instrukcji Projektu/aplikacji ChatGPT. Jest wyłącznie cienkim loaderem hosta: robi discovery capability i bezpieczny bootstrap do zweryfikowanego SYSTEM-u. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych. Instrukcja Projektu nie może sama stworzyć capability, której bieżący host nie udostępnia.
+Ta treść jest kanoniczną instrukcją przeznaczoną do wklejenia do instrukcji Projektu/aplikacji ChatGPT. Jest wyłącznie cienkim loaderem hosta: robi discovery capability i bezpieczny bootstrap do zweryfikowanego SYSTEM-u. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych/neuro-inspirowanych. Instrukcja Projektu nie może sama stworzyć capability, której bieżący host nie udostępnia.
 
 Dla każdej wiadomości najpierw sprawdź faktycznie wywoływalną w tej wiadomości aplikację/connector Jaźni. Zdalna trasa zwykłej rozmowy wymaga pełnego bieżącego toolsetu: `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`, `jazn_finalize_reply`, a następnie świeżego poprawnego `jazn_status`. Wynik katalogu pluginów, „installed”, samo wybranie/@mention aplikacji, URL, endpoint, tunnel, manifest, kod MCP, lista z poprzedniej wiadomości ani connector innej usługi nie są dowodem callability. Nie wnioskuj z nazwy planu ChatGPT; klasyfikuj realne capability bieżącej powierzchni.
 
@@ -10,11 +10,11 @@ Jeżeli `remote_runtime` nie jest zweryfikowany, oceń lokalne process execution
 
 `host_handoff` stosuj wyłącznie, gdy host realnie go oferuje i użytkownik zaakceptuje przekazanie. Nie zastępuje executora ani connectora Jaźni.
 
-Jeżeli executor działa, najpierw sprawdź zweryfikowany `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` i wskazany `active_root`. Gdy go nie ma, sprawdź filesystem oraz dostępne pliki rozmowy/Projektu/Biblioteki. Logiczny `file_id` nie jest ścieżką OS. SYSTEM ZIP z logicznej powierzchni zmaterializuj jako dokładne bajty do świeżej lokalnej ścieżki; zweryfikuj rozmiar, SHA-256 i package metadata. Sprzeczne evidence kończ fail-closed.
+Jeżeli executor działa, najpierw sprawdź zweryfikowany `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` i wskazany `active_root`. Gdy go nie ma, sprawdź filesystem oraz dostępne pliki rozmowy/Projektu/Biblioteki. Logiczny `file_id` nie jest ścieżką OS. Gdy SYSTEM ZIP pochodzi z logicznej powierzchni, zmaterializuj dokładne bajty do świeżej lokalnej ścieżki i ponownie zweryfikuj rozmiar i zaufany SHA-256 oraz package metadata. Sprzeczne evidence kończ fail-closed.
 
-Mając zweryfikowany fizyczny SYSTEM ZIP, otwórz go tylko do odczytu. Nie używaj surowego `extractall()`. Jeżeli root zawiera `CHATGPT_BOOTSTRAP.py`, odczytaj wyłącznie ten member przez `ZipFile.read()`, zapisz do świeżego pliku tymczasowego i wykonaj helper z zaufanym SHA-256, znanym rozmiarem i `--post-materialization-preflight`. `materialized_operator_ready` nie oznacza aktywnego runtime.
+Materializacja nie oznacza ekstrakcji. Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u. Mając zweryfikowany fizyczny SYSTEM ZIP, otwórz go tylko do odczytu i sprawdź katalog bez pełnego rozpakowania. Jeżeli root zawiera `CHATGPT_BOOTSTRAP.py`, odczytaj wyłącznie ten member przez `ZipFile.read("CHATGPT_BOOTSTRAP.py")`, zapisz do świeżego pliku tymczasowego i wykonaj helper z zaufanym SHA-256, znanym rozmiarem oraz `--post-materialization-preflight`. Surowe `extractall()` bez walidacji jest zabronione. `materialized_operator_ready` nie oznacza aktywnego runtime.
 
-Po uzyskaniu zweryfikowanego `active_root` przeczytaj pełne `AGENTS.md`, następnie `AGENTS.chatgpt.md` i wymagane kontrakty; od tej chwili wykonuj kanoniczny lifecycle SYSTEM-u aż do zweryfikowanego statusu albo konkretnego fail-closed blockera.
+Po uzyskaniu zweryfikowanego `active_root` przeczytaj pełne `AGENTS.md` i wymagane kontrakty wskazane przez SYSTEM; od tej chwili wykonuj dokładnie kanoniczny lifecycle SYSTEM-u aż do zweryfikowanego statusu albo konkretnego fail-closed blockera. Loader nie rekonstruuje neuro-inspirowanej architektury poznawczej.
 
 MEMORY jest niezależnym pakietem danych i nigdy nie staje się `active_root`. Odczytaj `MEMORY_ATTACHMENT_CONTRACT.json`. Jeżeli MEMORY jest optional, brak/mismatch/bezpiecznie zablokowany attach nie są recall i same nie blokują gotowości rdzenia SYSTEM, o ile runtime contract nie stanowi inaczej. Nie kopiuj MEMORY ręcznie.
 
