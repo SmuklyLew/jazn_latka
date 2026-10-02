@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "4a533863a53a71664d9e0c20ef414e51402dd60f",
+  "base_merge_commit": "7c79c48000b688956a86c015c2c78f0502fece45",
   "base_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "commit_date": "2026-10-02T22:51:53+02:00",
+  "commit_date": "2026-10-02T22:59:48+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-02T20:51:53+00:00",
+  "generated_at_utc": "2026-10-02T20:59:48+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "79d9b9fce95691aa7cdfbb8b9ea8b3e160fa5c10",
+  "git_tree_sha": "ad9e837d00cf0ad40db76ac58ffbb7e5c1688fa8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.96.7-system-coherence-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "4a533863a53a71664d9e0c20ef414e51402dd60f",
+    "source_commit": "7c79c48000b688956a86c015c2c78f0502fece45",
     "source_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "4a533863a53a71664d9e0c20ef414e51402dd60f",
+  "source_commit": "7c79c48000b688956a86c015c2c78f0502fece45",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
   "tag": null,
