@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
+  "base_merge_commit": "b917144840b2f5c6c9d6cc40a121d7fb8b04921b",
   "base_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
-  "commit_date": "2026-10-03T00:41:21+02:00",
+  "commit_date": "2026-10-03T01:48:18+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-02T22:41:21+00:00",
+  "generated_at_utc": "2026-10-02T23:48:18+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1fc977e621a076accde7bd58241c8b085fe07185",
+  "git_tree_sha": "80775719e40a5e569ce68e11fed55ee67510e9ed",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
+    "base_commit": "24b1f1f86c9ae69798f2c71e3c6e9b4e9e51a9c6",
     "base_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
+    "source_commit": "b917144840b2f5c6c9d6cc40a121d7fb8b04921b",
     "source_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
+  "source_commit": "b917144840b2f5c6c9d6cc40a121d7fb8b04921b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "tag": null,
