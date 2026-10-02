@@ -10818,7 +10818,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 145
+      "line": 146
     },
     "tests/test_dependency_studio.py::test_windows_x64_download_plan_is_wheel_only_and_targeted": {
       "path": "tests/test_dependency_studio.py",
@@ -10840,7 +10840,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 164
+      "line": 165
     },
     "tests/test_dependency_studio.py::test_explicit_current_platform_alias_is_accepted_for_current_python": {
       "path": "tests/test_dependency_studio.py",
@@ -10861,7 +10861,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 178
+      "line": 179
     },
     "tests/test_dependency_studio.py::test_verify_bundle_checks_sha_and_wheel_structure": {
       "path": "tests/test_dependency_studio.py",
@@ -10882,7 +10882,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 187
+      "line": 188
     },
     "tests/test_dependency_studio.py::test_install_dry_run_is_offline_and_uses_managed_environment": {
       "path": "tests/test_dependency_studio.py",
@@ -10903,7 +10903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 201
+      "line": 202
     },
     "tests/test_dependency_studio.py::test_download_dry_run_does_not_create_wheelhouse": {
       "path": "tests/test_dependency_studio.py",
@@ -10924,7 +10924,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 214
+      "line": 215
     },
     "tests/test_dependency_studio.py::test_audit_reports_undeclared_external_import": {
       "path": "tests/test_dependency_studio.py",
@@ -10945,7 +10945,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 233
+      "line": 234
     },
     "tests/test_dependency_studio.py::test_activation_status_fails_closed_when_required_packages_missing": {
       "path": "tests/test_dependency_studio.py",
@@ -10967,7 +10967,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 243
+      "line": 244
     },
     "tests/test_dependency_studio.py::test_entrypoint_bootstrap_does_not_use_network_without_verified_bundle": {
       "path": "tests/test_dependency_studio.py",
@@ -10989,7 +10989,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 257
+      "line": 258
     },
     "tests/test_dependency_studio.py::test_entrypoint_bootstrap_honors_canonical_wheelhouse_env_var": {
       "path": "tests/test_dependency_studio.py",
@@ -11010,7 +11010,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 272
+      "line": 273
     },
     "tests/test_dependency_studio.py::test_install_requires_explicit_offline_flag_in_cli": {
       "path": "tests/test_dependency_studio.py",
@@ -11033,7 +11033,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 293
+      "line": 294
     },
     "tests/test_dependency_studio.py::test_all_profile_expands_to_activation_and_optional_profiles": {
       "path": "tests/test_dependency_studio.py",
@@ -11054,7 +11054,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 301
+      "line": 302
     },
     "tests/test_dependency_studio.py::test_runtime_readiness_is_gated_by_required_dependencies": {
       "path": "tests/test_dependency_studio.py",
@@ -11076,7 +11076,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 312
+      "line": 313
     },
     "tests/test_dependency_studio.py::test_run_entrypoint_blocks_activation_when_required_dependencies_missing": {
       "path": "tests/test_dependency_studio.py",
@@ -11097,7 +11097,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 373
+      "line": 374
     },
     "tests/test_dependency_studio.py::test_install_uses_fresh_environment_and_atomically_switches_activation_marker": {
       "path": "tests/test_dependency_studio.py",
@@ -11118,7 +11118,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 426
+      "line": 427
     },
     "tests/test_dependency_studio.py::test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift": {
       "path": "tests/test_dependency_studio.py",
@@ -11139,7 +11139,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 447
+      "line": 448
     },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
@@ -28348,17 +28348,17 @@
       "description_source": "source_identity",
       "line": 521
     },
-    "tests/test_plugin_operator_convergence.py::test_archive_is_optional_for_activation_but_remains_in_release_profile": {
+    "tests/test_plugin_operator_convergence.py::test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile": {
       "path": "tests/test_plugin_operator_convergence.py",
-      "name": "test_archive_is_optional_for_activation_but_remains_in_release_profile",
-      "purpose": "Archive is optional for activation but remains in release profile",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile",
+      "purpose": "Archive and pdf are optional for activation but remain in release profile",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.archive.capabilities",
@@ -28388,7 +28388,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 23
+      "line": 25
     },
     "tests/test_plugin_operator_convergence.py::test_missing_enhanced_archive_backends_do_not_block_runtime_core": {
       "path": "tests/test_plugin_operator_convergence.py",
@@ -28411,7 +28411,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 35
     },
     "tests/test_plugin_operator_convergence.py::test_git_and_pip_are_operator_only_capabilities": {
       "path": "tests/test_plugin_operator_convergence.py",
@@ -28431,7 +28431,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_polish_reasoning_resource_bootstrap.py::test_default_resources_live_beside_package_not_in_workspace_runtime": {
       "path": "tests/test_polish_reasoning_resource_bootstrap.py",
