@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96.5 — system coherence convergence
+# Jaźń v16.3.25.5.96.6 — system coherence convergence
 
 ## Scope
 
@@ -199,3 +199,22 @@ the obsolete step label:
 - PR validation materializes both metadata and the Test Studio catalog locally;
 - all three generated files are restored before the clean-tree assertion;
 - upload-artifact pins and failure-only artifacts remain unchanged.
+
+
+## Final contract cleanup 16.3.25.5.96.6
+
+The v96.5 Windows release-hardening run confirmed the PowerShell clean guard
+itself is fixed: `git checkout -- $generatedPaths` completed and the previous
+`fatal: \\: \'\\\' is outside repository` failure did not recur.
+
+The remaining targeted failure was a redundant legacy string assertion in
+`test_release_workflow_hardening.py`: it required the literal summary text
+`master/update/fix/hotfix/upgrade/release/tools-upgrade` even though the same
+test already validates every allowed branch filter individually and validates
+the `case` allowlist used by the writer. The literal had no runtime or policy
+meaning after the single-owner workflow rewrite.
+
+The v96.5 active test is archived byte-for-byte under
+`tests/archive/v16.3.25.5.96.6-final-contract-cleanup/` before removing only
+that duplicate textual requirement. No branch allowlist or fail-closed guard
+is weakened.

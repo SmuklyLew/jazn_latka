@@ -52,6 +52,7 @@ def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push(
     assert "git push origin \"HEAD:${target_branch}\"" in text
     stable_contracts = _read("stable-test-contracts.yml")
     assert '- "release/**"' in stable_contracts
+    assert "master/update/fix/hotfix/upgrade/release/tools-upgrade" in text
 
 
 def test_release_metadata_branch_sync_uses_repository_token_scope_without_recursive_dispatch() -> None:
