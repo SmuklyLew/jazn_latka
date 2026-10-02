@@ -3,11 +3,11 @@
   "version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "runtime_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "package_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
-  "generated_at_utc": "2026-10-02T12:54:38+00:00",
-  "updated_at_utc": "2026-10-02T12:54:38+00:00",
+  "generated_at_utc": "2026-10-02T12:57:37+00:00",
+  "updated_at_utc": "2026-10-02T12:57:37+00:00",
   "start_file": "run.py",
-  "file_count": 1858,
-  "static_file_count": 1858,
+  "file_count": 1859,
+  "static_file_count": 1859,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2956,
-      "sha256": "af9c230d6a2892bcc62920489340c7c9ba3c1d6deddb995d9adc085ccdc34b45",
+      "sha256": "1dfc9062f4a3d459dba0c0354d0cd4289fd7ce3e70690eb6ef08f0856afcb8ca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5267,8 +5267,8 @@
     },
     {
       "path": "latka_jazn/mcp/deployment.py",
-      "size_bytes": 10668,
-      "sha256": "2c04159db9fefc998bb99fbae895a1f9b7dc2b1774fe90118e9fe920b7d31ae9",
+      "size_bytes": 10714,
+      "sha256": "837e87b4b994a7fa3e1bbaa4b64cd43e6728cd2c33aa01fa81d4c51e4e49b632",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13096,6 +13096,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.95.1-chatgpt-real-mcp-deployment-pre-assertion-fix/test_chatgpt_public_mcp_deployment.py",
+      "size_bytes": 5710,
+      "sha256": "dbd13f91330f69318e1a946cd56b60d6e3e56702bd978941a255da52550140c0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13637,8 +13646,8 @@
     },
     {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
-      "size_bytes": 5710,
-      "sha256": "dbd13f91330f69318e1a946cd56b60d6e3e56702bd978941a255da52550140c0",
+      "size_bytes": 5705,
+      "sha256": "c04e04b47293d34625d2543a512c3420b96bbb5e5399678c30247c35aa5a4221",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
