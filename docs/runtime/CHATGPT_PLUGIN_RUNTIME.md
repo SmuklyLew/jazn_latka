@@ -57,13 +57,17 @@ OpenAI API call:
 verified SYSTEM ZIP
   -> CHATGPT_BOOTSTRAP.py --post-materialization-preflight
   -> verified active_root
-  -> main.py --daemon-start
-  -> main.py --daemon-status --daemon-snapshot
-  -> main.py --chat-gpt --session-id <stable-session-id>
+  -> main.py start
+  -> main.py status --snapshot --json
+  -> main.py chat-gpt --session-id <stable-session-id>
      (normally reached through the public thin starter run.py)
   -> one persistent stdin/stdout JSONL bridge when the host can retain it
   -> otherwise daemon_bound_transactional_turns with a preallocated request_id
 ```
+
+The exported post-materialization contract uses `main.py` subcommands (`start`,
+`status`, `chat-gpt`). Legacy `--daemon-*` / `--chat-gpt` flags remain an
+internal compatibility mapping and are not the host-facing activation API.
 
 The `chat-gpt` route uses the surrounding ChatGPT host as the language-model
 channel. It does **not** require `OPENAI_API_KEY` and it does not take a
