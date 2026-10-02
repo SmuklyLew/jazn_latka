@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.96.1-system-coherence-convergence",
-  "runtime_version": "16.3.25.5.96.1-system-coherence-convergence",
-  "package_version": "16.3.25.5.96.1-system-coherence-convergence",
-  "generated_at_utc": "2026-10-02T14:21:55+00:00",
-  "updated_at_utc": "2026-10-02T14:21:55+00:00",
+  "version": "16.3.25.5.96.2-system-coherence-convergence",
+  "runtime_version": "16.3.25.5.96.2-system-coherence-convergence",
+  "package_version": "16.3.25.5.96.2-system-coherence-convergence",
+  "generated_at_utc": "2026-10-02T14:27:44+00:00",
+  "updated_at_utc": "2026-10-02T14:27:44+00:00",
   "start_file": "run.py",
-  "file_count": 1864,
-  "static_file_count": 1864,
+  "file_count": 1866,
+  "static_file_count": 1866,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2900,
-      "sha256": "a9f3144e90758295880602bd41f4d55c4a3d756cc4a54dab81b70ba457678bb9",
+      "size_bytes": 2905,
+      "sha256": "148eeed4b666ab2e51449ebf398374aff14835ea45f2e860a459506400e1429d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2297,8 +2297,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_96_SYSTEM_COHERENCE_CONVERGENCE.md",
-      "size_bytes": 4490,
-      "sha256": "ada23e7a39b399991d1ee744d9b7c55879d8f319ba9465ca0b2dfe9bfd5131a5",
+      "size_bytes": 5652,
+      "sha256": "e94bfb10f4853d3e4fa70a02bc4b52dc059c549e37b08d27a80c86e6726828e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2414,8 +2414,8 @@
     },
     {
       "path": "docs/runtime/PERSISTENT_REMOTE_MCP_RUNTIME.md",
-      "size_bytes": 12568,
-      "sha256": "29049675f11322a42e45dd30fa6eaf6a18b534465127397ac276019c5d12b0d7",
+      "size_bytes": 13122,
+      "sha256": "de3b83cb71cce5885dcc3082d1cf3d10c303f333d09c51608ffbb177db5c7664",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5357,8 +5357,8 @@
     },
     {
       "path": "latka_jazn/mcp/task_resume.py",
-      "size_bytes": 27481,
-      "sha256": "cd52e00587d6e2d2da08f709b088a7a5a8790edd4dca2527bff2cbcde96d17c9",
+      "size_bytes": 29535,
+      "sha256": "330b04fd95ea8d1a4ee4dcf15950aa3957bbce50010799abe20f4d7fe4907a35",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8777,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5277,
-      "sha256": "bba42bedafc21b2124eb5904b88b245e858161b9e29aec8f8638d97e88e624e7",
+      "size_bytes": 5280,
+      "sha256": "72dcf80a45d6041f277790161536cf22d7a87dd11901f90b30e89328ca259ec2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13141,6 +13141,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.96.2-sqlite-wal-contention-fix/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2367,
+      "sha256": "5dd3065a07fc257a0b286a68759181893cb8a07d3bf586996bbc1830af3733a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.96.2-sqlite-wal-contention-fix/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 5774,
+      "sha256": "c221031b69585db128bbc69af987419c9b018efe050d520de89d23d79742bb68",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13412,8 +13430,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2367,
-      "sha256": "5dd3065a07fc257a0b286a68759181893cb8a07d3bf586996bbc1830af3733a8",
+      "size_bytes": 2407,
+      "sha256": "94f672c7f83eebf72b58d8b51ff244084a99ebcce3da5aaec6bb80fcb049c5db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13772,8 +13790,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 5774,
-      "sha256": "c221031b69585db128bbc69af987419c9b018efe050d520de89d23d79742bb68",
+      "size_bytes": 5820,
+      "sha256": "27223fbb002676de41336b29bbc1064114a6494f9257018b11aaf2307fc91043",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17228,11 +17246,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.96.1-system-coherence-convergence",
+  "release_version": "16.3.25.5.96.2-system-coherence-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.96.1-system-coherence-convergence",
-    "package_version": "16.3.25.5.96.1-system-coherence-convergence",
-    "release_version": "16.3.25.5.96.1-system-coherence-convergence"
+    "runtime_version": "16.3.25.5.96.2-system-coherence-convergence",
+    "package_version": "16.3.25.5.96.2-system-coherence-convergence",
+    "release_version": "16.3.25.5.96.2-system-coherence-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
