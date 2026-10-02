@@ -96,7 +96,7 @@ def test_archive_dependency_contract_matches_dependency_studio_registry() -> Non
     )
     archive_profile = registry["profiles"]["archive"]
     assert registry["activation_profiles"] == ["core"]
-    assert registry["release_profiles"] == ["core", "archive"]
+    assert registry["release_profiles"] == ["core", "archive", "pdf"]
     assert archive_profile["kind"] == "runtime_optional"
     assert archive_profile["source_optional_group"] == "archive"
     assert report["dependency_contract"]["activation_required"] is False
