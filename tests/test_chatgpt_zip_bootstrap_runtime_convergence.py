@@ -88,6 +88,9 @@ def test_bootstrap_emits_post_materialization_activation_contract(tmp_path: Path
     assert local["same_interpreter_preflight_supported"] is True
     assert local["preflight_requires_child_process"] is False
     assert local["package_can_create_host_executor"] is False
+    assert local["runtime_start_entrypoint"] == "run.py start"
+    assert local["runtime_status_entrypoint"] == "run.py status --snapshot --json"
+    assert local["activation_success_requires_verified_status"] is True
     assert remote["preferred_transport"] == "public_streamable_http"
     assert remote["endpoint_path"] == "/mcp"
     assert remote["status_tool"] == "jazn_status"
@@ -123,6 +126,9 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["post_materialization_same_interpreter_preflight_supported"] is True
     assert contract["post_materialization_preflight_requires_child_process"] is False
     assert contract["post_materialization_preflight_flag"] == "--post-materialization-preflight"
+    assert contract["post_materialization_start_entrypoint"] == "run.py start"
+    assert contract["post_materialization_status_entrypoint"] == "run.py status --snapshot --json"
+    assert contract["post_materialization_activation_requires_verified_status"] is True
     assert contract["public_streamable_http_endpoint_path"] == "/mcp"
     assert contract["public_streamable_http_status_tool"] == "jazn_status"
     assert contract["public_streamable_http_turn_tool"] == "jazn_generate_visible_reply"
@@ -131,6 +137,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["remote_runtime_route_ready_from_package_alone"] is False
 
 
-def test_release_identity_is_v95_chatgpt_real_mcp_ingress_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.95"
+def test_release_identity_matches_chatgpt_real_mcp_ingress_line() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.95.1"
     assert PACKAGE_RELEASE_NAME == "chatgpt-real-mcp-ingress-convergence"
