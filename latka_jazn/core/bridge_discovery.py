@@ -88,6 +88,10 @@ def discover_runtime_bridges(
             **chatgpt,
             "command": "python -X utf8 run.py chat-gpt --session-id <id>",
             "canonical_command": "run.py chat-gpt",
+            "preferred_host_direct_command": "python -X utf8 main.py chat-gpt --session-id <id>",
+            "control_plane_entrypoint": "main.py",
+            "host_model_binding": "chatgpt_host_selected_model",
+            "model_cli_argument_required": False,
             "legacy_aliases": ["--chat-gpt-final-only", "--chat-gpt --final-only"],
             "transport": "persistent_stdio_jsonl",
             "transport_selection": "capability_negotiated",
@@ -105,6 +109,14 @@ def discover_runtime_bridges(
             ),
             "nonstreaming_resume_command": (
                 "python -X utf8 run.py chat-gpt --session-id <stable-session-id> "
+                "--daemon-result <same-request-id>"
+            ),
+            "host_direct_nonstreaming_turn_command": (
+                'python -X utf8 main.py chat-gpt --session-id <stable-session-id> '
+                '--daemon-request-id <unique-turn-request-id> -- "<exact-user-message>"'
+            ),
+            "host_direct_nonstreaming_resume_command": (
+                "python -X utf8 main.py chat-gpt --session-id <stable-session-id> "
                 "--daemon-result <same-request-id>"
             ),
             "request_id_preallocated_before_process_spawn": True,
