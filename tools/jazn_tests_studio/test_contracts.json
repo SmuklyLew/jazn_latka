@@ -6193,11 +6193,11 @@
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
       "name": "test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch",
       "purpose": "Post materialization contract exposes exact chatgpt control plane launch",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 19,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands.lifecycle"
@@ -6221,26 +6221,26 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 89
     },
     "tests/test_chatgpt_post_materialization_launch_contract.py::test_system_package_manifest_carries_same_chatgpt_launch_truth": {
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
       "name": "test_system_package_manifest_carries_same_chatgpt_launch_truth",
       "purpose": "System package manifest carries same chatgpt launch truth",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 15,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands.lifecycle"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 107
     },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
