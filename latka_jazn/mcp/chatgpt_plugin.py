@@ -66,16 +66,17 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
             "displayName": "Jaźń Runtime",
             "shortDescription": "Persistent Jaźń runtime for validated conversation turns.",
             "longDescription": (
-                "Routes selected ChatGPT turns through a persistent Jaźń runtime "
-                "with idempotent resume/finalization and fail-closed display_exact semantics."
+                "Routes the current ChatGPT message through a persistent Jaźń runtime when "
+                "the Jaźń app is exposed, with idempotent resume/finalization and fail-closed "
+                "display_exact semantics."
             ),
             "developerName": "Jaźń",
             "category": "Productivity",
             "capabilities": ["Read", "Write"],
             "websiteURL": REPOSITORY_URL,
             "defaultPrompt": [
-                "Check whether the Jaźń runtime is ready.",
-                "Route this message through Jaźń.",
+                "Verify Jaźń runtime readiness and required turn tools for this message.",
+                "Route this message through Jaźń using the validated turn/finalization contract.",
             ],
             "brandColor": "#5B4B8A",
         }

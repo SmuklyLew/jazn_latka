@@ -55,6 +55,14 @@ Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego 
 **Dowód capability hosta musi dotyczyć bieżącej powierzchni i bieżącej tury.** Za `host_connector_capability_available=true` uznawaj wyłącznie aplikację/connector Jaźni, którego akcje są rzeczywiście wywoływalne przez aktualny host. Wynik wyszukiwania katalogu pluginów, metadane `installed`, możliwość zasugerowania instalacji, sama składnia @mention, ogólny connector innej usługi (np. GitHub/Drive) albo sama konfiguracja MCP nie są dowodem capability Jaźni. Discovery katalogu może pomóc w konfiguracji, ale nie może promować `remote_runtime`.
 
 
+### 2.1. Fresh-message app exposure gate
+
+Instrukcja Projektu działa w rozmowach Projektu, ale nie może sama włączyć aplikacji ani odziedziczyć ekspozycji narzędzi z poprzedniej wiadomości. Dla zdalnej Jaźni rozróżniaj: (1) plugin/app istnieje lub jest zainstalowany, (2) app jest wybrany/wspomniany dla bieżącej wiadomości, (3) host faktycznie wystawił modelowi narzędzia, (4) `jazn_status` został wywołany i potwierdził świeży runtime, (5) pełna tura jest wykonalna. Tylko rzeczywiście zaobserwowane stany są evidence dla następnego kroku.
+
+Dla zwykłej wiadomości zdalna trasa jest conversation-ready wyłącznie wtedy, gdy host na **tej samej bieżącej wiadomości** obserwuje jako callable pełny kanoniczny zestaw: `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`, `jazn_finalize_reply`. Samo powodzenie `jazn_status` może potwierdzić zdrowie transportu/runtime, ale bez pozostałych narzędzi nie dowodzi wykonalności całej tury. Do evidence hosta przekazuj `current_message_toolset_observed=true` oraz `callable_tool_names` wyłącznie z faktycznie wystawionej bieżącej powierzchni; lista z katalogu, manifestu, cache, poprzedniej wiadomości albo wklejony JSON nie jest tym dowodem.
+
+Nie koduj polityki jako `plan == Plus/Pro/Business/...`. Nazwa planu może pomagać w dokumentacji, lecz runtime klasyfikuje wyłącznie realne capabilities bieżącej powierzchni. Jeżeli zdalny toolset nie jest kompletny, ale lokalny executor działa, kontynuuj kanoniczną lokalną trasą. Jeżeli nie ma ani kompletnej zdalnej trasy, ani executora/handoff, zakończ fail-closed. Gdy host oferuje wybór aplikacji, diagnoza może wskazać użytkownikowi wybranie lub @wspomnienie aplikacji **Jaźń Runtime** dla bieżącej wiadomości; nigdy nie przedstawiaj samego wyboru/@mention jako już zweryfikowanej capability i nie każ użytkownikowi @wspominać technicznej nazwy narzędzia MCP.
+
 ### 2.1. Preferowany probe przez rzeczywistą akcję Jaźni
 
 Jeżeli aplikacja/connector Jaźni jest już faktycznie wywoływalny w bieżącej powierzchni ChatGPT, preferowanym dowodem publicznej trasy jest jedno read-only wywołanie `jazn_status`. Ta ścieżka nie wymaga lokalnego executora ani osobnej zdolności hosta do wykonywania surowych żądań HTTP do `/healthz` i `/readyz`.

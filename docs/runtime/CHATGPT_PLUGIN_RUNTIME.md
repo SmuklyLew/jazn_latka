@@ -1,13 +1,13 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.95.1 ingress contract. Its acceptance
+This runbook describes the v16.3.25.5.98 ingress contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.
 
 ## Verified platform contract
 
-As of 2026-10-01, OpenAI's plugin documentation uses a portable Agent Plugins
+As of 2026-10-02, OpenAI's plugin documentation uses a portable Agent Plugins
 package with root `plugin.json` and optional root `mcp.json`. Do not add the
 legacy `ai-plugin.json`/OpenAPI plugin shape to this path.
 
@@ -20,6 +20,32 @@ Production MCP servers use Streamable HTTP at a stable HTTPS endpoint, normally
 `/mcp`. Secure MCP Tunnel is a supported Developer Mode alternative for a
 private/local stdio or HTTP server. A tunnel proves transport only; it does not
 prove that the current ChatGPT host has the Jaźń app installed or callable.
+
+## Project instructions vs current-message app exposure
+
+`docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt` is the canonical text intended
+to be pasted into the ChatGPT Project instructions for the project that hosts
+Jaźń. Project instructions persist as instructions for chats in that Project;
+they do **not** install, select, authorize, or expose a plugin by themselves.
+
+OpenAI's current app/plugin surfaces can scope app selection to the message.
+Jaźń therefore never treats a prior message's tool list as current capability.
+For a remote turn distinguish: installed/known app, app selected for the
+message, tools actually exposed to the model, fresh `jazn_status`, and the
+complete turn toolset. Only observed exposure/status are execution evidence.
+
+The complete turn toolset is `jazn_status`,
+`jazn_generate_visible_reply`, `jazn_resume_visible_reply`, and
+`jazn_finalize_reply`. A status-only surface may prove transport/runtime
+health but cannot prove submit/resume/finalize capability. Runtime routing is
+capability-first; plan names such as Plus/Pro/Business are documentation
+context, not predicates in Jaźń code.
+
+If no Jaźń tools are exposed for the current message and no local executor is
+available, a host diagnostic may ask the user to select or @mention the
+**Jaźń Runtime** app for that message. Never ask for an @mention of a raw MCP
+tool name, and never treat the selection gesture itself as positive capability
+evidence.
 
 ## Architecture
 
@@ -195,8 +221,10 @@ ChatGPT conversation:
 
 1. The local conversation executor may be unavailable; that must not prevent
    the test.
-2. The connected Jaźń app exposes callable `jazn_status` and
-   `jazn_generate_visible_reply` actions to the current host.
+2. The current message surface exposes the complete callable turn toolset:
+   `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`,
+   and `jazn_finalize_reply`. Installed/catalog state or a previous message's
+   exposure is not accepted.
 3. `jazn_status` returns current evidence with the expected package/runtime
    version, non-empty runtime instance identity, fresh heartbeat, and
    `ready=true`.
@@ -216,7 +244,8 @@ A package, endpoint, tunnel id, successful deployment, successful tool scan, or
 ### No-executor success evidence
 
 A real remote-success observation is valid even when `executor_available=false`,
-but only after the current ChatGPT surface actually invokes `jazn_status`.
+but only after the current ChatGPT surface exposes the complete turn toolset
+and actually invokes `jazn_status`.
 Its structured result must carry `evidence_schema=jazn_public_mcp_status/v1`
 and pass the runtime/version/freshness checks from `AGENTS.chatgpt.md`. Only
 then may the host report `remote_runtime_available=true` and preserve the
@@ -245,6 +274,8 @@ own turn/finalization lineage.
 
 ## Sources verified for this release
 
+- OpenAI — Projects in ChatGPT:
+  https://help.openai.com/en/articles/10169521-projects-in-chatgpt
 - OpenAI — Build an MCP server:
   https://developers.openai.com/plugins/build/mcp-server
 - OpenAI — Package your plugin:
