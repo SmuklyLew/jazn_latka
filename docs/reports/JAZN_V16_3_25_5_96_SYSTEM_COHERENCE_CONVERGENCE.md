@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96.3 — system coherence convergence
+# Jaźń v16.3.25.5.96.4 — system coherence convergence
 
 ## Scope
 
@@ -143,3 +143,30 @@ committed branch is synchronized.
 This removes the observed metadata-to-catalog inversion and makes the final
 automation-generated branch HEAD a `[skip ci]` metadata commit rather than a
 catalog commit that spawns approval-required recursive PR checks.
+
+
+## Single generated-artifact owner follow-up 16.3.25.5.96.4
+
+The v96.3 ordering fix proved that catalog-before-metadata produces a correct
+final metadata HEAD, but it still left two workflows with branch-write
+authority. v96.4 removes that architectural duplication.
+
+`release-hardening` is now the only generated-artifact branch mutator. On
+eligible push events it:
+
+1. materializes the Test Studio contract catalog;
+2. commits the catalog locally when it changed;
+3. generates canonical provenance/integrity metadata against that local catalog
+   commit;
+4. commits metadata as the final `[skip ci]` commit;
+5. pushes the complete generated sequence once.
+
+`Stable test contracts` is read-only and materializes the catalog only inside
+its validation checkout. Pull-request release-hardening verification likewise
+materializes metadata and then the catalog locally, and its clean-checkout guard
+restores all three generated files before asserting a clean tree.
+
+This gives generated source/catalog/metadata one lifecycle owner and prevents a
+workflow-created catalog commit from becoming an unverified final branch HEAD.
+The previous active CI-order contract test was archived byte-for-byte before
+being updated to assert this single-owner invariant.
