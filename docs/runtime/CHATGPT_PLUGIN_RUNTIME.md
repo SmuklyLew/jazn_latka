@@ -1,6 +1,6 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.98 ingress contract. Its acceptance
+This runbook describes the v16.3.25.5.100 ingress/bootstrap contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.
@@ -84,7 +84,7 @@ verified SYSTEM ZIP
   -> CHATGPT_BOOTSTRAP.py --post-materialization-preflight
   -> verified active_root
   -> main.py start
-  -> main.py status --snapshot --json
+  -> main.py status --json
   -> main.py chat-gpt --session-id <stable-session-id>
      (normally reached through the public thin starter run.py)
   -> one persistent stdin/stdout JSONL bridge when the host can retain it
@@ -92,8 +92,31 @@ verified SYSTEM ZIP
 ```
 
 The exported post-materialization contract uses `main.py` subcommands (`start`,
-`status`, `chat-gpt`). Legacy `--daemon-*` / `--chat-gpt` flags remain an
-internal compatibility mapping and are not the host-facing activation API.
+`status`, `chat-gpt`). Live `status --json` is the activation readiness
+authority; `status --snapshot --json` is retained as diagnostic evidence only.
+Legacy `--daemon-*` / `--chat-gpt` flags remain an internal compatibility
+mapping and are not the host-facing activation API.
+
+### Visible bootstrap progress
+
+`CHATGPT_BOOTSTRAP.py --progress-jsonl` emits structured
+`jazn_bootstrap_progress` events on stderr and leaves the final bootstrap JSON
+on stdout. Percentages are milestone-derived from completed evidence, not from
+wall-clock guesses: executor probe 5%, verified SYSTEM package 15%, validated
+ZIP 30%, operator materialization up to 55%, host preflight 65%, contracts 72%,
+daemon start 82%, live readiness 95%, and bound turn channel 100%.
+
+The host may surface those events as user-visible initialization updates. It
+must not claim byte-level progress for a file upload/mount that happens before
+Python starts, because the SYSTEM code cannot observe that transfer. Optional
+MEMORY is outside core wake readiness. When policy makes MEMORY required, its
+readiness is tracked separately instead of holding the core at an invented
+99%.
+
+For a remote MCP/App path, server-side MCP progress notifications and an
+optional MCP Apps widget may render richer progress when that host capability
+is actually exposed. Repository code must not assume such UI exists on an
+ordinary local ChatGPT executor path.
 
 The `chat-gpt` route uses the surrounding ChatGPT host as the language-model
 channel. It does **not** require `OPENAI_API_KEY` and it does not take a
