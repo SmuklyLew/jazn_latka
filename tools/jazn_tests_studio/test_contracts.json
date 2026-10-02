@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.95.1",
-  "active_definition_count": 1826,
+  "system_version": "16.3.25.5.96",
+  "active_definition_count": 1832,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -18050,6 +18050,124 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 46
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_tasks_get_enforces_advertised_ttl_without_polling_runtime": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_tasks_get_enforces_advertised_ttl_without_polling_runtime",
+      "purpose": "Tasks get enforces advertised ttl without polling runtime",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_tasks_get_repeats_input_required_snapshot_without_runtime_reentry": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_tasks_get_repeats_input_required_snapshot_without_runtime_reentry",
+      "purpose": "Tasks get repeats input required snapshot without runtime reentry",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_unexpected_poll_failure_does_not_expose_exception_text": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_unexpected_poll_failure_does_not_expose_exception_text",
+      "purpose": "Unexpected poll failure does not expose exception text",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_same_daemon_request_is_idempotent_across_independent_stores": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_same_daemon_request_is_idempotent_across_independent_stores",
+      "purpose": "Same daemon request is idempotent across independent stores",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_cancel_intent_is_idempotent_and_terminal_state_is_not_reopened": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_cancel_intent_is_idempotent_and_terminal_state_is_not_reopened",
+      "purpose": "Cancel intent is idempotent and terminal state is not reopened",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 125
+    },
+    "tests/test_mcp_task_lifecycle_bounds.py::test_negative_task_ttl_is_rejected": {
+      "path": "tests/test_mcp_task_lifecycle_bounds.py",
+      "name": "test_negative_task_ttl_is_rejected",
+      "purpose": "Negative task ttl is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
     },
     "tests/test_mcp_task_registry.py::test_task_registry_is_sqlite_durable_and_idempotent": {
       "path": "tests/test_mcp_task_registry.py",
