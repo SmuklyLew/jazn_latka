@@ -100,7 +100,11 @@ def test_post_materialization_nonstreaming_contract_forbids_turn_replay(tmp_path
 def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Path) -> None:
     contract = build_host_bootstrap_contract(_plan(tmp_path))
 
-    assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py --daemon-start"\n    assert (\n        contract["post_materialization_control_plane_status_entrypoint"]\n        == "main.py --daemon-status --daemon-snapshot"\n    )
+    assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py --daemon-start"
+    assert (
+        contract["post_materialization_control_plane_status_entrypoint"]
+        == "main.py --daemon-status --daemon-snapshot"
+    )
     assert (
         contract["post_materialization_chatgpt_bridge_entrypoint"]
         == "main.py --chat-gpt --session-id <stable-session-id>"
