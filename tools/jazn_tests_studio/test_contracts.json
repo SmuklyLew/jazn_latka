@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.99",
-  "active_definition_count": 1849,
+  "active_definition_count": 1857,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2864,6 +2864,95 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_chatgpt_bootstrap_progress_convergence.py::test_progress_accepts_generator_without_consuming_it": {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "name": "test_progress_accepts_generator_without_consuming_it",
+      "purpose": "Progress accepts generator without consuming it",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_chatgpt_bootstrap_progress_convergence.py::test_optional_memory_never_holds_ready_core_below_100": {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "name": "test_optional_memory_never_holds_ready_core_below_100",
+      "purpose": "Optional memory never holds ready core below 100",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_bootstrap_progress_convergence.py::test_required_memory_is_separate_readiness_dimension": {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "name": "test_required_memory_is_separate_readiness_dimension",
+      "purpose": "Required memory is separate readiness dimension",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_chatgpt_bootstrap_progress_convergence.py::test_bootstrap_emits_evidence_backed_progress_events": {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "name": "test_bootstrap_emits_evidence_backed_progress_events",
+      "purpose": "Bootstrap emits evidence backed progress events",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_chatgpt_bootstrap_progress_convergence.py::test_activation_contract_uses_live_status_as_readiness_authority": {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "name": "test_activation_contract_uses_live_status_as_readiness_authority",
+      "purpose": "Activation contract uses live status as readiness authority",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 125
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_defaults_match_canonical_zip_policy": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -6283,11 +6372,11 @@
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
       "name": "test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch",
       "purpose": "Post materialization contract exposes exact chatgpt control plane launch",
-      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 22 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 19,
+      "assertion_count": 22,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands.lifecycle"
@@ -6311,26 +6400,26 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 96
     },
     "tests/test_chatgpt_post_materialization_launch_contract.py::test_system_package_manifest_carries_same_chatgpt_launch_truth": {
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
       "name": "test_system_package_manifest_carries_same_chatgpt_launch_truth",
       "purpose": "System package manifest carries same chatgpt launch truth",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 22 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 22,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli_commands.lifecycle"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 114
     },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
@@ -38864,6 +38953,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 90
+    },
+    "tests/test_system_update_report_guard.py::test_long_research_report_does_not_open_mutating_update_route": {
+      "path": "tests/test_system_update_report_guard.py",
+      "name": "test_long_research_report_does_not_open_mutating_update_route",
+      "purpose": "Long research report does not open mutating update route",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_system_update_report_guard.py::test_explicit_update_request_still_opens_mutating_route": {
+      "path": "tests/test_system_update_report_guard.py",
+      "name": "test_explicit_update_request_still_opens_mutating_route",
+      "purpose": "Explicit update request still opens mutating route",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_system_update_report_guard.py::test_release_candidate_continuation_remains_update_execution": {
+      "path": "tests/test_system_update_report_guard.py",
+      "name": "test_release_candidate_continuation_remains_update_execution",
+      "purpose": "Release candidate continuation remains update execution",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
     },
     "tests/test_temporal_archive_recall.py::test_temporal_only_search_needs_no_literal_year_and_spreads_results": {
       "path": "tests/test_temporal_archive_recall.py",
