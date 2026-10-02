@@ -70,7 +70,7 @@ jobs:
           set -euo pipefail
           py_digits="${{ inputs.python-version }}"
           py_digits="${py_digits//./}"
-          lock="latka_jazn/resources/dependencies/locks/core+archive/${{ inputs.target }}-py${py_digits}.txt"
+          lock="latka_jazn/resources/dependencies/locks/core+archive+pdf/${{ inputs.target }}-py${py_digits}.txt"
           if [ -f "$lock" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
             echo "path=$lock" >> "$GITHUB_OUTPUT"
@@ -101,7 +101,7 @@ jobs:
           set +e
           python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --wheelhouse-root "$wheelhouse_root" --json \
-            download --profile core --profile archive \
+            download --profile core --profile archive --profile pdf \
             --python-version "${{ inputs.python-version }}" --platform current \
             "${lock_args[@]}" > "$result"
           download_rc=$?
@@ -140,11 +140,11 @@ jobs:
         run: |
           set -euo pipefail
           dist="$RUNNER_TEMP/jazn-package-set"
-          mkdir -p "$dist/locks/core+archive"
+          mkdir -p "$dist/locks/core+archive+pdf"
           py_digits="${{ inputs.python-version }}"
           py_digits="${py_digits//./}"
           cp "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
-            "$dist/locks/core+archive/${{ inputs.target }}-py${py_digits}.txt"
+            "$dist/locks/core+archive+pdf/${{ inputs.target }}-py${py_digits}.txt"
           cp "$RUNNER_TEMP/pip-audit.json" "$dist/pip-audit.json"
           cp "$RUNNER_TEMP/dependencies.cdx.json" "$dist/dependencies.cdx.json"
           python -X utf8 -m latka_jazn.tools.package_distribution \
