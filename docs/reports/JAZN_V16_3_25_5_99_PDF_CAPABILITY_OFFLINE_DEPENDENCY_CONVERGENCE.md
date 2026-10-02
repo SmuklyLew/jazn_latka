@@ -93,6 +93,31 @@ wyłącznie `core`. Komunikat został poprawiony na
 - nowy test `test_pdf_dependency_capability_convergence.py`;
 - dokumentacja polityki zależności i Dependency Studio.
 
+## Błędy wykryte podczas implementacji i naprawione od razu
+
+1. **Cross-target replay używał starego zestawu profili.**
+   Po zmianie ścieżki locka na `core+archive+pdf` workflow nadal wywoływał
+   Dependency Studio z `--profile core --profile archive`. Dałoby to inny
+   `dependency_contract_fingerprint` niż natywny sidecar. Replay został
+   zsynchronizowany do `core,archive,pdf`.
+
+2. **Clean-room polegał na przypadkowym stanie GitHub runnera.**
+   Historyczny test zakładał brak `py7zr/pyzipper`, ale po przeniesieniu
+   `pypdf` poza core nie dowodziło to już braku activation dependencies.
+   Consumer tworzy teraz izolowany `venv --without-pip`, bez system
+   site-packages, i jawnie potwierdza brak `packaging`, `tzdata`, `pypdf`,
+   `py7zr` i `pyzipper` przed testem offline handoff.
+
+3. **Test prestart był związany z poprzednią nazwą i komendą workflow.**
+   Poprzednia wersja testu została zachowana append-only w `tests/archive/`,
+   a aktywny kontrakt sprawdza nowy dependency-empty bootstrap i wykonywanie
+   `run.py` przez izolowany interpreter.
+
+4. **Release-hardening dry-run nie obejmował PDF.**
+   Macierz targetów została rozszerzona z `core,archive` do
+   `core,archive,pdf`, aby walidować ten sam profil, który jest faktycznie
+   transportowany w release sidecarze.
+
 ## Acceptance
 
 Branch nie jest release candidate dopóki nie przejdą rzeczywiste:
