@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.96",
+  "system_version": "16.3.25.5.96.1",
   "active_definition_count": 1832,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -2986,15 +2986,13 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_real_mcp_ingress_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_system_coherence_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_chatgpt_real_mcp_ingress_convergence",
-      "purpose": "Release version tracks chatgpt real mcp ingress convergence",
+      "name": "test_release_version_tracks_system_coherence_convergence",
+      "purpose": "Release version tracks system coherence convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [
-        "mcp"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -7610,14 +7608,13 @@
       "description_source": "source_identity",
       "line": 123
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_matches_chatgpt_real_mcp_ingress_line": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_matches_system_coherence_line": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_matches_chatgpt_real_mcp_ingress_line",
-      "purpose": "Release identity matches chatgpt real mcp ingress line",
+      "name": "test_release_identity_matches_system_coherence_line",
+      "purpose": "Release identity matches system coherence line",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
-        "mcp",
         "repository",
         "runtime"
       ],
