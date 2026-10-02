@@ -10,6 +10,7 @@ import subprocess
 import sys
 from typing import Any, Mapping, Sequence
 
+from latka_jazn.mcp.chatgpt_toolset import classify_current_message_toolset
 from latka_jazn.mcp.remote_runtime import (
     DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
     observation_is_fresh,
@@ -277,6 +278,8 @@ def classify_remote_runtime_failover(
     payload: Mapping[str, Any] | None,
     *,
     host_connector_capability_available: bool | None,
+    callable_tool_names: object = None,
+    current_message_toolset_observed: bool | None = None,
     expected_runtime_version: str = PACKAGE_VERSION_FULL,
     now_utc: datetime | None = None,
     max_evidence_age_seconds: float = DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
@@ -286,6 +289,10 @@ def classify_remote_runtime_failover(
     value: Mapping[str, Any] = payload if isinstance(payload, Mapping) else {}
     tunnel = classify_tunnel_runtime_status(value)
     connector_ready = host_connector_capability_available is True
+    toolset = classify_current_message_toolset(
+        callable_tool_names,
+        current_message_toolset_observed=current_message_toolset_observed,
+    )
     runtime_instance_id = str(
         value.get("runtime_instance_id")
         or value.get("daemon_instance_id")
@@ -319,6 +326,10 @@ def classify_remote_runtime_failover(
         blocking_checks.append("runtime_version_verified")
     if not evidence_fresh:
         blocking_checks.append("evidence_fresh")
+    if toolset["current_message_toolset_observed"] is not True:
+        blocking_checks.append("current_message_toolset_observed")
+    elif toolset["full_turn_toolset_callable"] is not True:
+        blocking_checks.append("full_turn_toolset_callable")
     route_ready = not blocking_checks
     if not tunnel["tunnel_transport_ready"]:
         reason = "secure_mcp_tunnel_not_fully_ready"
@@ -330,6 +341,10 @@ def classify_remote_runtime_failover(
         reason = "secure_mcp_runtime_version_mismatch"
     elif not evidence_fresh:
         reason = "secure_mcp_runtime_evidence_stale"
+    elif toolset["current_message_toolset_observed"] is not True:
+        reason = "chatgpt_current_message_toolset_not_observed"
+    elif toolset["full_turn_toolset_callable"] is not True:
+        reason = "chatgpt_required_turn_toolset_incomplete"
     else:
         reason = "secure_mcp_remote_failover_ready"
     return {
@@ -340,6 +355,11 @@ def classify_remote_runtime_failover(
         "ready": tunnel["ready"],
         "tunnel_transport_ready": tunnel["tunnel_transport_ready"],
         "host_connector_capability_available": connector_ready,
+        "current_message_toolset_observed": toolset["current_message_toolset_observed"],
+        "required_chatgpt_turn_tools": toolset["required_chatgpt_turn_tools"],
+        "callable_chatgpt_tool_names": toolset["callable_chatgpt_tool_names"],
+        "missing_required_chatgpt_turn_tools": toolset["missing_required_chatgpt_turn_tools"],
+        "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
         "runtime_instance_id": runtime_instance_id,
         "runtime_version": runtime_version,
         "runtime_binding_verified": runtime_binding_verified,

@@ -12,7 +12,6 @@ from latka_jazn.core.chatgpt_host_executor_contract import (
     HostExecutionRoute,
     aggregate_host_executor_observations,
 )
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
     PUBLIC_CONNECTOR_STATUS_SCHEMA,
@@ -48,8 +47,6 @@ def test_actual_connector_status_invocation_can_verify_remote_route() -> None:
     result = classify_public_connector_status_failover(
         status_payload=_status(),
         host_connector_invocation_observed=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=NOW,
     )
 
@@ -63,8 +60,6 @@ def test_copied_status_payload_without_observed_connector_call_is_not_capability
     result = classify_public_connector_status_failover(
         status_payload=_status(),
         host_connector_invocation_observed=False,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=NOW,
     )
 
@@ -77,8 +72,6 @@ def test_connector_probe_rejects_stale_runtime_binding() -> None:
     result = classify_public_connector_status_failover(
         status_payload=_status(NOW - timedelta(minutes=10)),
         host_connector_invocation_observed=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=NOW,
     )
 
@@ -92,8 +85,6 @@ def test_connector_probe_rejects_wrong_status_contract() -> None:
     result = classify_public_connector_status_failover(
         status_payload=status,
         host_connector_invocation_observed=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=NOW,
     )
 
@@ -112,8 +103,6 @@ def test_host_preflight_accepts_fresh_status_from_actual_connector_action() -> N
                 "transport": "public_streamable_http",
                 "connector_status": status,
                 "host_connector_invocation_observed": True,
-                "current_message_toolset_observed": True,
-                "callable_tool_names": list(REQUIRED_CHATGPT_TURN_TOOLS),
             },
         }
     )
@@ -141,21 +130,7 @@ def test_host_preflight_rejects_mixed_public_probe_modes() -> None:
                     "transport": "public_streamable_http",
                     "connector_status": status,
                     "host_connector_invocation_observed": True,
-                    "current_message_toolset_observed": True,
-                    "callable_tool_names": list(REQUIRED_CHATGPT_TURN_TOOLS),
                     "health": cast(dict[str, object], status),
                 },
             }
         )
-
-
-def test_connector_status_does_not_promote_status_only_message_surface() -> None:
-    result = classify_public_connector_status_failover(
-        status_payload=_status(),
-        host_connector_invocation_observed=True,
-        callable_tool_names=["jazn_status"],
-        current_message_toolset_observed=True,
-        now_utc=NOW,
-    )
-    assert result["remote_runtime_transport_available"] is False
-    assert result["reason_code"] == "chatgpt_required_turn_toolset_incomplete"

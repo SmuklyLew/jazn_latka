@@ -6,7 +6,6 @@ from typing import cast
 import pytest
 
 from latka_jazn.bootstrap.chatgpt_host_preflight_parse import executor_observation_from_mapping
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.core.chatgpt_host_executor_contract import HostExecutionRoute, aggregate_host_executor_observations
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -42,8 +41,6 @@ def _public_evidence(*, connector: bool = True) -> dict[str, object]:
             "runtime_heartbeat_at_utc": stamp,
         },
         "host_connector_capability_available": connector,
-        "current_message_toolset_observed": True,
-        "callable_tool_names": list(REQUIRED_CHATGPT_TURN_TOOLS),
     }
 
 
@@ -59,8 +56,6 @@ def _tunnel_evidence(*, healthy: bool = True, connector: bool = True) -> dict[st
             "runtime_heartbeat_at_utc": stamp,
         },
         "host_connector_capability_available": connector,
-        "current_message_toolset_observed": True,
-        "callable_tool_names": list(REQUIRED_CHATGPT_TURN_TOOLS),
     }
 
 
@@ -109,14 +104,3 @@ def test_preflight_rejects_remote_declaration_that_conflicts_with_evidence() -> 
             "remote_runtime_transport_available": True,
             "remote_runtime_evidence": _tunnel_evidence(healthy=False),
         })
-
-
-def test_preflight_rejects_current_message_with_status_only_tool() -> None:
-    evidence = _public_evidence()
-    evidence["callable_tool_names"] = ["jazn_status"]
-    observation = executor_observation_from_mapping(
-        {**_base(), "remote_runtime_evidence": evidence}
-    )
-    assert observation.remote_runtime_transport_available is False
-    assert observation.remote_runtime_reason_code == "chatgpt_required_turn_toolset_incomplete"
-    assert observation.remote_runtime_blockers == ("full_turn_toolset_callable",)

@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import pytest
 
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.secure_tunnel import build_secure_mcp_tunnel_plan, classify_remote_runtime_failover
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -34,9 +33,9 @@ def test_managed_runtime_is_preferred_long_lived_supervision(tmp_path: Path) -> 
 
 
 def test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capability() -> None:
-    blocked = classify_remote_runtime_failover(_status(), host_connector_capability_available=None, callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS, current_message_toolset_observed=True, now_utc=NOW)
+    blocked = classify_remote_runtime_failover(_status(), host_connector_capability_available=None, now_utc=NOW)
     assert blocked["reason_code"] == "chatgpt_connector_capability_not_verified"
-    ready = classify_remote_runtime_failover(_status(), host_connector_capability_available=True, callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS, current_message_toolset_observed=True, now_utc=NOW)
+    ready = classify_remote_runtime_failover(_status(), host_connector_capability_available=True, now_utc=NOW)
     assert ready["remote_runtime_transport_available"] is True
     assert ready["runtime_binding_verified"] is True
     assert ready["runtime_version_verified"] is True
@@ -44,34 +43,22 @@ def test_remote_failover_requires_tunnel_and_explicit_chatgpt_connector_capabili
 
 
 def test_remote_failover_fails_closed_when_managed_tunnel_is_not_ready() -> None:
-    blocked = classify_remote_runtime_failover(_status(ready=False), host_connector_capability_available=True, callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS, current_message_toolset_observed=True, now_utc=NOW)
+    blocked = classify_remote_runtime_failover(_status(ready=False), host_connector_capability_available=True, now_utc=NOW)
     assert blocked["reason_code"] == "secure_mcp_tunnel_not_fully_ready"
 
 
 def test_remote_failover_rejects_missing_runtime_binding() -> None:
     status = _status()
     status["runtime_instance_id"] = ""
-    blocked = classify_remote_runtime_failover(status, host_connector_capability_available=True, callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS, current_message_toolset_observed=True, now_utc=NOW)
+    blocked = classify_remote_runtime_failover(status, host_connector_capability_available=True, now_utc=NOW)
     assert blocked["reason_code"] == "secure_mcp_runtime_binding_not_verified"
 
 
 def test_remote_failover_rejects_stale_runtime_evidence() -> None:
-    blocked = classify_remote_runtime_failover(_status(NOW - timedelta(minutes=10)), host_connector_capability_available=True, callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS, current_message_toolset_observed=True, now_utc=NOW)
+    blocked = classify_remote_runtime_failover(_status(NOW - timedelta(minutes=10)), host_connector_capability_available=True, now_utc=NOW)
     assert blocked["reason_code"] == "secure_mcp_runtime_evidence_stale"
 
 
 def test_runtime_alias_must_be_stable_and_whitespace_free(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="runtime_alias_must_be_nonempty_and_whitespace_free"):
         build_secure_mcp_tunnel_plan(tmp_path, runtime_alias="bad alias", env={})
-
-
-def test_remote_failover_rejects_incomplete_current_message_toolset() -> None:
-    blocked = classify_remote_runtime_failover(
-        _status(),
-        host_connector_capability_available=True,
-        callable_tool_names=["jazn_status", "jazn_generate_visible_reply"],
-        current_message_toolset_observed=True,
-        now_utc=NOW,
-    )
-    assert blocked["remote_runtime_transport_available"] is False
-    assert blocked["reason_code"] == "chatgpt_required_turn_toolset_incomplete"

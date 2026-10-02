@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
+from latka_jazn.mcp.chatgpt_toolset import classify_current_message_toolset
 from latka_jazn.runtime.turn_runtime import RemoteTransport
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
@@ -119,12 +120,18 @@ def classify_public_streamable_http_failover(
     health_payload: Mapping[str, Any] | None,
     readiness_payload: Mapping[str, Any] | None,
     host_connector_capability_available: bool | None,
+    callable_tool_names: object = None,
+    current_message_toolset_observed: bool | None = None,
     expected_runtime_version: str = PACKAGE_VERSION_FULL,
     now_utc: datetime | None = None,
     max_evidence_age_seconds: float = DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
 ) -> dict[str, Any]:
     health = health_payload if isinstance(health_payload, Mapping) else {}
     readiness = readiness_payload if isinstance(readiness_payload, Mapping) else {}
+    toolset = classify_current_message_toolset(
+        callable_tool_names,
+        current_message_toolset_observed=current_message_toolset_observed,
+    )
 
     health_gateway_instance = str(health.get("gateway_instance_id") or "").strip()
     readiness_gateway_instance = str(readiness.get("gateway_instance_id") or "").strip()
@@ -192,6 +199,25 @@ def classify_public_streamable_http_failover(
         runtime_version=runtime_version,
     )
     payload = evidence.to_dict()
+    blocking_checks = list(payload["blocking_checks"])
+    if toolset["current_message_toolset_observed"] is not True:
+        blocking_checks.append("current_message_toolset_observed")
+    elif toolset["full_turn_toolset_callable"] is not True:
+        blocking_checks.append("full_turn_toolset_callable")
+    route_ready = not blocking_checks
+    payload.update(
+        {
+            "current_message_toolset_observed": toolset["current_message_toolset_observed"],
+            "required_chatgpt_turn_tools": toolset["required_chatgpt_turn_tools"],
+            "callable_chatgpt_tool_names": toolset["callable_chatgpt_tool_names"],
+            "missing_required_chatgpt_turn_tools": toolset["missing_required_chatgpt_turn_tools"],
+            "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
+            "blocking_checks": blocking_checks,
+            "remote_runtime_transport_available": route_ready,
+            "execution_route": "remote_runtime" if route_ready else "none",
+            "next_action": "use_remote_runtime_transport" if route_ready else "keep_remote_runtime_unverified",
+        }
+    )
 
     if not evidence.endpoint_configured:
         reason = "public_mcp_endpoint_not_configured"
@@ -215,6 +241,10 @@ def classify_public_streamable_http_failover(
         reason = "remote_runtime_evidence_stale"
     elif not evidence.host_connector_capability_available:
         reason = "chatgpt_connector_capability_not_verified"
+    elif toolset["current_message_toolset_observed"] is not True:
+        reason = "chatgpt_current_message_toolset_not_observed"
+    elif toolset["full_turn_toolset_callable"] is not True:
+        reason = "chatgpt_required_turn_toolset_incomplete"
     else:
         reason = "public_streamable_http_remote_failover_ready"
 
@@ -224,7 +254,8 @@ def classify_public_streamable_http_failover(
         "Public Streamable HTTP becomes a host-usable Jaźń route only when authentication, "
         "MCP 2026-07-28 compatibility, gateway liveness, runtime readiness, same-gateway "
         "binding, canonical daemon instance/version binding, fresh observation/heartbeat, "
-        "and the current host's connector/app capability are all independently verified."
+        "the current host's connector/app capability, and the complete Jaźń turn toolset "
+        "being exposed to this exact message are all independently verified."
     )
     return payload
 
@@ -233,6 +264,8 @@ def classify_public_connector_status_failover(
     *,
     status_payload: Mapping[str, Any] | None,
     host_connector_invocation_observed: bool | None,
+    callable_tool_names: object = None,
+    current_message_toolset_observed: bool | None = None,
     expected_runtime_version: str = PACKAGE_VERSION_FULL,
     expected_protocol_version: str = EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
     now_utc: datetime | None = None,
@@ -248,6 +281,10 @@ def classify_public_connector_status_failover(
 
     status = status_payload if isinstance(status_payload, Mapping) else {}
     connector_invocation = host_connector_invocation_observed is True
+    toolset = classify_current_message_toolset(
+        callable_tool_names,
+        current_message_toolset_observed=current_message_toolset_observed,
+    )
     connector_status_contract_verified = bool(
         status.get("evidence_schema") == PUBLIC_CONNECTOR_STATUS_SCHEMA
         and str(status.get("tool_name") or "") == "jazn_status"
@@ -308,6 +345,10 @@ def classify_public_connector_status_failover(
         "evidence_fresh": evidence_fresh,
     }
     blocking_checks = [name for name, ready in checks.items() if ready is not True]
+    if toolset["current_message_toolset_observed"] is not True:
+        blocking_checks.append("current_message_toolset_observed")
+    elif toolset["full_turn_toolset_callable"] is not True:
+        blocking_checks.append("full_turn_toolset_callable")
     route_ready = not blocking_checks
 
     if not connector_invocation:
@@ -332,6 +373,10 @@ def classify_public_connector_status_failover(
         reason = "public_mcp_runtime_version_mismatch"
     elif not evidence_fresh:
         reason = "remote_runtime_evidence_stale"
+    elif toolset["current_message_toolset_observed"] is not True:
+        reason = "chatgpt_current_message_toolset_not_observed"
+    elif toolset["full_turn_toolset_callable"] is not True:
+        reason = "chatgpt_required_turn_toolset_incomplete"
     else:
         reason = "public_streamable_http_connector_probe_ready"
 
@@ -350,6 +395,11 @@ def classify_public_connector_status_failover(
         "reason_code": reason,
         "host_connector_invocation_observed": connector_invocation,
         "host_connector_capability_available": connector_invocation,
+        "current_message_toolset_observed": toolset["current_message_toolset_observed"],
+        "required_chatgpt_turn_tools": toolset["required_chatgpt_turn_tools"],
+        "callable_chatgpt_tool_names": toolset["callable_chatgpt_tool_names"],
+        "missing_required_chatgpt_turn_tools": toolset["missing_required_chatgpt_turn_tools"],
+        "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
         "connector_status_contract_verified": connector_status_contract_verified,
         "protocol_compatible": protocol_compatible,
         "gateway_live": gateway_live,
@@ -366,7 +416,8 @@ def classify_public_connector_status_failover(
         "truth_boundary": (
             "A copied status object, plugin listing, installed flag, URL, or mention is not "
             "connector evidence. This route becomes available only when the current host "
-            "actually invokes the Jaźń jazn_status action and that same fresh response binds "
+            "actually invokes the Jaźń jazn_status action, observes the complete required "
+            "Jaźń turn toolset on this exact message surface, and that same fresh response binds "
             "the expected MCP protocol, gateway instance/version and persistent daemon "
             "instance/version. Visible Jaźń speech still requires accepted turn finalization."
         ),

@@ -15,7 +15,6 @@ from latka_jazn.core.chatgpt_host_executor_contract import (
     HostFilesystemState,
     classify_host_executor_observation,
 )
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover
 from latka_jazn.mcp.secure_tunnel import classify_remote_runtime_failover
 from latka_jazn.version import PACKAGE_VERSION_FULL
@@ -122,8 +121,6 @@ def test_public_remote_runtime_reports_all_blockers_without_changing_reason_code
         health_payload=health,
         readiness_payload=readiness,
         host_connector_capability_available=False,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=_NOW,
     )
 
@@ -146,8 +143,6 @@ def test_public_ready_route_has_no_blockers() -> None:
         health_payload=_public_health(),
         readiness_payload=_public_readiness(),
         host_connector_capability_available=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=_NOW,
     )
     assert result["remote_runtime_transport_available"] is True
@@ -166,8 +161,6 @@ def test_secure_tunnel_reports_granular_runtime_and_connector_blockers() -> None
             "runtime_heartbeat_at_utc": _STAMP,
         },
         host_connector_capability_available=False,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
         now_utc=_NOW,
     )
 
@@ -197,8 +190,6 @@ def test_preflight_preserves_classifier_blockers_and_safe_host_metadata() -> Non
         "health": health,
         "readiness": readiness,
         "host_connector_capability_available": False,
-        "current_message_toolset_observed": True,
-        "callable_tool_names": list(REQUIRED_CHATGPT_TURN_TOOLS),
     }
     observation = executor_observation_from_mapping(
         {
