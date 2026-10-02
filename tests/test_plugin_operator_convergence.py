@@ -9,15 +9,17 @@ from latka_jazn.plugins import PLUGIN_ENTRY_POINT_GROUP, discover_plugins, plugi
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_archive_is_optional_for_activation_but_remains_in_release_profile() -> None:
+def test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile() -> None:
     assert activation_profile_names(ROOT) == ("core",)
-    assert release_profile_names(ROOT) == ("core", "archive")
+    assert release_profile_names(ROOT) == ("core", "archive", "pdf")
     core = resolve_profile_requirements(ROOT, ["core"])
     archive = resolve_profile_requirements(ROOT, ["archive"])
-    assert not any(req.lower().startswith(("py7zr", "pyzipper", "rarfile")) for req in core)
+    pdf = resolve_profile_requirements(ROOT, ["pdf"])
+    assert not any(req.lower().startswith(("py7zr", "pyzipper", "rarfile", "pypdf")) for req in core)
     assert any(req.lower().startswith("py7zr") for req in archive)
     assert any(req.lower().startswith("pyzipper") for req in archive)
     assert any(req.lower().startswith("rarfile") for req in archive)
+    assert pdf == ["pypdf>=6.19.0,<7"]
 
 
 def test_plugin_registry_uses_pypa_entry_point_group_without_loading_external_code() -> None:
