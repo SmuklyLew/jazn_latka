@@ -33,6 +33,7 @@
       "includes": [
         "core",
         "archive",
+        "pdf",
         "mcp-http",
         "studio",
         "memory-cloud",
@@ -43,6 +44,10 @@
     "mcp-http": {
       "kind": "host_transport_optional",
       "source_optional_group": "mcp-http"
+    },
+    "pdf": {
+      "kind": "runtime_optional",
+      "source_optional_group": "pdf"
     }
   },
   "import_name_overrides": {
@@ -75,6 +80,7 @@
   },
   "release_profiles": [
     "core",
-    "archive"
+    "archive",
+    "pdf"
   ]
 }
