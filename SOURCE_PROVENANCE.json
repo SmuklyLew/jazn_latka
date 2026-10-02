@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "20633f0f5eb8532dda57959892cd187caa531df1",
-    "base_version": "16.3.25.5.94-chatgpt-zip-bootstrap-runtime-convergence",
+    "base_commit": "82cf5ab96e940514517e219d8e4c1f4ef57e0ce2",
+    "base_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "82cf5ab96e940514517e219d8e4c1f4ef57e0ce2",
