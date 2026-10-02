@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.96.6 removes the last obsolete release-workflow text assertion
-# after v96.5 proved the corrected Windows PowerShell clean guard in CI.
-DISTRIBUTION_VERSION = "16.3.25.5.96.6"
-PACKAGE_VERSION = "16.3.25.5.96.6"
-PACKAGE_RELEASE_NAME = "system-coherence-convergence"
+# v16.3.25.5.97 converges ChatGPT post-materialization activation on the
+# central main.py control plane and publishes an explicit no-API-key host bridge.
+DISTRIBUTION_VERSION = "16.3.25.5.97"
+PACKAGE_VERSION = "16.3.25.5.97"
+PACKAGE_RELEASE_NAME = "chatgpt-host-runtime-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
