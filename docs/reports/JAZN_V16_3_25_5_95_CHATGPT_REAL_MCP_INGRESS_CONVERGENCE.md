@@ -1,8 +1,8 @@
-# Jaźń v16.3.25.5.95 — ChatGPT real MCP ingress convergence
+# Jaźń v16.3.25.5.95.1 — ChatGPT real MCP ingress convergence
 
 ## Cel
 
-Wersja 5.95 przenosi kryterium sukcesu z "repozytorium zawiera kod MCP" na
+Wersja 5.95.1 domyka merge-hardening linii 5.95 i przenosi kryterium sukcesu z "repozytorium zawiera kod MCP" na
 "bieżący ChatGPT ma rzeczywiście wywoływalne akcje Jaźni po podłączeniu
 persistent runtime". ZIP pozostaje bootstrapem/fallbackiem, ale nie jest już
 jedynym projektowanym wejściem.
