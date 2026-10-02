@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.98",
-  "active_definition_count": 1841,
+  "active_definition_count": 1845,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2918,15 +2918,15 @@
       "description_source": "source_identity",
       "line": 66
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_requires_callable_current_turn_capability": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_is_pasteable_thin_loader_with_current_message_gate": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_project_loader_requires_callable_current_turn_capability",
-      "purpose": "Project loader requires callable current turn capability",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_project_loader_is_pasteable_thin_loader_with_current_message_gate",
+      "purpose": "Project loader is pasteable thin loader with current message gate",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -2939,11 +2939,11 @@
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "name": "test_project_loader_does_not_invent_handoff_or_execution_route",
       "purpose": "Project loader does not invent handoff or execution route",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -2952,10 +2952,10 @@
       "description_source": "source_identity",
       "line": 28
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_callable_jazn_connector_evidence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_complete_current_message_turn_toolset": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_chatgpt_runbook_requires_callable_jazn_connector_evidence",
-      "purpose": "Chatgpt runbook requires callable jazn connector evidence",
+      "name": "test_chatgpt_runbook_requires_complete_current_message_turn_toolset",
+      "purpose": "Chatgpt runbook requires complete current message turn toolset",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
@@ -2967,29 +2967,12 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 36
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_fresh_session_plugin_exposure_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt",
-      "purpose": "Chatgpt runbook treats declined handoff as unavailable for attempt",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.version"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 48
-    },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_stays_on_system_coherence_line": {
-      "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_stays_on_system_coherence_line",
-      "purpose": "Release version stays on system coherence line",
+      "name": "test_release_version_tracks_fresh_session_plugin_exposure_convergence",
+      "purpose": "Release version tracks fresh session plugin exposure convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
@@ -3001,7 +2984,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 51
     },
     "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py::test_modern_tool_list_exposes_canonical_ingress_and_keeps_aliases_app_only": {
       "path": "tests/test_chatgpt_developer_mode_mcp_turn_convergence.py",
@@ -3204,6 +3187,105 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 99
+    },
+    "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_toolset_requires_current_message_observation": {
+      "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
+      "name": "test_toolset_requires_current_message_observation",
+      "purpose": "Toolset requires current message observation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_toolset_rejects_incomplete_turn_surface": {
+      "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
+      "name": "test_toolset_rejects_incomplete_turn_surface",
+      "purpose": "Toolset rejects incomplete turn surface",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_toolset_input_is_fail_closed": {
+      "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
+      "name": "test_toolset_input_is_fail_closed",
+      "purpose": "Toolset input is fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_startup_contract_publishes_fresh_message_capability_gate": {
+      "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
+      "name": "test_startup_contract_publishes_fresh_message_capability_gate",
+      "purpose": "Startup contract publishes fresh message capability gate",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_portable_plugin_prompts_describe_current_message_validation": {
+      "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
+      "name": "test_portable_plugin_prompts_describe_current_message_validation",
+      "purpose": "Portable plugin prompts describe current message validation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
     },
     "tests/test_chatgpt_handoff_cross_surface.py::test_explicit_decline_suppresses_other_unaccepted_handoff_offer": {
       "path": "tests/test_chatgpt_handoff_cross_surface.py",
@@ -7667,14 +7749,14 @@
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "name": "test_bootstrap_emits_post_materialization_activation_contract",
       "purpose": "Bootstrap emits post materialization activation contract",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "repository",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -7701,13 +7783,13 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 109
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_pack_manifest_advertises_activation_without_claiming_host_capability": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "name": "test_pack_manifest_advertises_activation_without_claiming_host_capability",
       "purpose": "Pack manifest advertises activation without claiming host capability",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "host",
@@ -7715,19 +7797,19 @@
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 132
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_stays_on_system_coherence_line": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_fresh_session_plugin_exposure_convergence": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_stays_on_system_coherence_line",
-      "purpose": "Release identity stays on system coherence line",
+      "name": "test_release_identity_tracks_fresh_session_plugin_exposure_convergence",
+      "purpose": "Release identity tracks fresh session plugin exposure convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -7742,7 +7824,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 153
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
@@ -18083,12 +18165,13 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 18
+      "line": 19
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_cross_gateway_binding": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -18104,12 +18187,13 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 44
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_wrong_runtime_version": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -18125,12 +18209,13 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 58
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_rejects_stale_evidence": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -18146,12 +18231,13 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 71
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_is_preferred_when_verified": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -18167,12 +18253,13 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 84
     },
     "tests/test_mcp_task_input_fail_closed.py::test_task_input_update_never_mutates_outstanding_requests_without_runtime_transport": {
       "path": "tests/test_mcp_task_input_fail_closed.py",
