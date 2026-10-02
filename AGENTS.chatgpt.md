@@ -172,7 +172,17 @@ Nie pobieraj repozytorium lub release z GitHuba jako automatycznego substytutu b
 
 ## 4. Preflight, bounded host operations i persistent daemon
 
-Po uzyskaniu startera użyj publicznych komend; wszystkie są przekazywane do `main.py`:
+Po zweryfikowaniu `active_root` host ChatGPT powinien wejść bezpośrednio do centralnego `main.py`. `run.py` pozostaje publicznym, cienkim launcherem użytkownika i równoważnym wejściem, ale host nie potrzebuje dodatkowego wrappera, gdy operator jest już materializowany i zweryfikowany.
+
+Kanoniczne komendy host-direct dla ChatGPT:
+
+```bash
+python -X utf8 main.py host-preflight --json
+python -X utf8 main.py status --snapshot --json
+python -X utf8 main.py doctor --json
+```
+
+Publiczny launcher pozostaje wspierany i przekazuje te same argv do `main.py`:
 
 ```bash
 python -X utf8 run.py --version
@@ -182,12 +192,14 @@ python -X utf8 run.py doctor --json
 python -X utf8 run.py status --json
 ```
 
-Snapshot nie potwierdza procesu. Lokalny operator bez ciasnego budżetu hosta może nadal wykonać synchroniczny start:
+Snapshot nie potwierdza procesu. Lokalny operator bez ciasnego budżetu hosta może nadal wykonać synchroniczny start. Dla hosta ChatGPT preferuj bezpośredni centralny control plane:
 
 ```bash
-python -X utf8 run.py start
-python -X utf8 run.py status --json
+python -X utf8 main.py start
+python -X utf8 main.py status --json
 ```
+
+Równoważny publiczny launcher użytkownika pozostaje dostępny jako `python -X utf8 run.py start` i `python -X utf8 run.py status --json`.
 
 Host ChatGPT lub inna powierzchnia, która może utracić transport zanim `start_daemon()` zakończy readiness, powinna zamiast tego prealokować `operation_id` kanonicznym generatorem:
 
@@ -252,18 +264,22 @@ Jeżeli nowa wiadomość już czeka za poprzednią `awaiting_host_finalization`,
 
 ## 5. Kanał rozmowy ChatGPT — capability-negotiated, lineage ponad pipe
 
-Po zweryfikowaniu runtime host wybiera transport według rzeczywistych możliwości środowiska. Preferowana ścieżka, gdy executor potrafi utrzymać proces interaktywny, to **persistent ChatGPT bridge** uruchomiony raz na sesję wykonawczą:
+Po zweryfikowaniu runtime host wybiera transport według rzeczywistych możliwości środowiska. Preferowana ścieżka, gdy executor potrafi utrzymać proces interaktywny, to **persistent ChatGPT bridge** uruchomiony raz na sesję wykonawczą bezpośrednio przez centralny control plane:
 
 ```bash
-python -X utf8 run.py chat-gpt --session-id <stabilny-id-sesji>
+python -X utf8 main.py chat-gpt --session-id <stabilny-id-sesji>
 ```
+
+Publiczny launcher użytkownika `python -X utf8 run.py chat-gpt --session-id <stabilny-id-sesji>` pozostaje równoważnym aliasem do tego samego `main.py`.
+
+W trybie `chat-gpt` **nie przekazuj `--model` i nie wymagaj `OPENAI_API_KEY`**. Model językowy jest bieżącym modelem wybranym przez host ChatGPT, a Jaźń pozostaje właścicielem runtime, sesji, pamięci, tury, narzędzi i finalizacji. Nie hardkoduj nazw modeli takich jak `gpt-4`/`gpt-5` w komendzie hosta; płatna trasa `chat-open-ai` jest osobnym, jawnym opt-in.
 
 W tej ścieżce proces pozostaje otwarty. `main.py` utrzymuje JSONL/stdin bridge oraz `RuntimeSessionWorker`; daemon pozostaje niezależnym, trwałym właścicielem runtime. Dla każdej kolejnej wiadomości użytkownika **nie uruchamiaj nowej komendy CLI**: przekaż dokładny tekst do tego samego otwartego kanału i wykonaj phase-2 przez ten sam otwarty kanał. W tej zdolnej do persistent stdio ścieżce host zachowuje **ten sam otwarty kanał** przez kolejne tury.
 
-Jeżeli host **nie potrafi utrzymać** interaktywnego procesu/stdio pomiędzy turami, brak trwałego pipe'a nie może automatycznie wyłączać Jaźni. Użyj wtedy transportu `daemon_bound_transactional_turns` przez ten sam publiczny `run.py chat-gpt`. Krótki proces CLI jest tylko nośnikiem transportowym do trwałego daemonu, a nie nową sesją runtime:
+Jeżeli host **nie potrafi utrzymać** interaktywnego procesu/stdio pomiędzy turami, brak trwałego pipe'a nie może automatycznie wyłączać Jaźni. Użyj wtedy transportu `daemon_bound_transactional_turns` przez ten sam `main.py chat-gpt` (lub równoważny publiczny launcher `run.py chat-gpt`). Krótki proces CLI jest tylko nośnikiem transportowym do trwałego daemonu, a nie nową sesją runtime:
 
 ```bash
-python -X utf8 run.py chat-gpt --session-id <stabilny-id> --daemon-request-id <unikalny-request-id-tury> -- "<dokładna wiadomość użytkownika>"
+python -X utf8 main.py chat-gpt --session-id <stabilny-id> --daemon-request-id <unikalny-request-id-tury> -- "<dokładna wiadomość użytkownika>"
 ```
 
 - zachowaj jeden stabilny `session_id` dla logicznej rozmowy;
