@@ -45,16 +45,16 @@ replace local process-execution evidence.
 
 Sources checked on 2026-10-02:
 
-- OpenAI Help — Developer mode and MCP apps in ChatGPT:
-  https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt
-- OpenAI Help — Apps in ChatGPT:
-  https://help.openai.com/en/articles/11487775-connectors-in-chatgpt
-- OpenAI Help — Build with the Apps SDK:
-  https://help.openai.com/en/articles/12515353-build-with-the-apps-sdk
-- MCP TypeScript SDK — protocol revision 2026-07-28:
-  https://ts.sdk.modelcontextprotocol.io/v2/migration/support-2026-07-28
-- MCP TypeScript SDK — protocol versions:
-  https://ts.sdk.modelcontextprotocol.io/v2/protocol-versions
+- OpenAI Developers — Build an MCP server:
+  https://developers.openai.com/plugins/build/mcp-server
+- OpenAI Developers — MCP server and UI quickstart / connect in ChatGPT:
+  https://developers.openai.com/plugins/build/app-quickstart
+- OpenAI Developers — Secure MCP Tunnel:
+  https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+- OpenAI Developers — MCP server concepts:
+  https://developers.openai.com/plugins/concepts/mcp-server
+- Model Context Protocol — 2026-07-28 specification:
+  https://blog.modelcontextprotocol.io/posts/2026-07-28/
 
 ## Implemented change
 
@@ -64,8 +64,13 @@ control-plane argv:
 
 ```text
 <python> -X utf8 run.py  chat-gpt --session-id <stable-session-id>
-<python> -X utf8 main.py --chat-gpt --session-id <stable-session-id>
+<python> -X utf8 main.py chat-gpt --session-id <stable-session-id>
 ```
+
+
+The exported contract intentionally uses the same subcommand vocabulary through
+both entrypoints: `run.py chat-gpt` and `main.py chat-gpt`. Legacy flag forms
+remain implementation compatibility only and are not advertised as the host API.
 
 The contract also declares:
 
