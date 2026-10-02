@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.96.6",
-  "active_definition_count": 1835,
+  "system_version": "16.3.25.5.96.7",
+  "active_definition_count": 1838,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6188,6 +6188,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 110
+    },
+    "tests/test_chatgpt_post_materialization_launch_contract.py::test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch": {
+      "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
+      "name": "test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch",
+      "purpose": "Post materialization contract exposes exact chatgpt control plane launch",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_chatgpt_post_materialization_launch_contract.py::test_post_materialization_nonstreaming_contract_forbids_turn_replay": {
+      "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
+      "name": "test_post_materialization_nonstreaming_contract_forbids_turn_replay",
+      "purpose": "Post materialization nonstreaming contract forbids turn replay",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_chatgpt_post_materialization_launch_contract.py::test_system_package_manifest_carries_same_chatgpt_launch_truth": {
+      "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
+      "name": "test_system_package_manifest_carries_same_chatgpt_launch_truth",
+      "purpose": "System package manifest carries same chatgpt launch truth",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
     },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
