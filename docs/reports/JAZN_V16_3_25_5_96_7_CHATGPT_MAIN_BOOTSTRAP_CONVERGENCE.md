@@ -64,7 +64,7 @@ control-plane argv:
 
 ```text
 <python> -X utf8 run.py  chat-gpt --session-id <stable-session-id>
-<python> -X utf8 main.py chat-gpt --session-id <stable-session-id>
+<python> -X utf8 main.py --chat-gpt --session-id <stable-session-id>
 ```
 
 The contract also declares:
