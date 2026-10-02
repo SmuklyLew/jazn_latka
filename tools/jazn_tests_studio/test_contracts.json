@@ -101,11 +101,11 @@
       "path": "tests/test_accepted_visible_turn_finalization_convergence.py",
       "name": "test_bridge_discovery_separates_daemon_liveness_from_visible_turn_readiness",
       "purpose": "Bridge discovery separates daemon liveness from visible turn readiness",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -141,7 +141,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 135
+      "line": 141
     },
     "tests/test_accepted_visible_turn_finalization_convergence.py::test_complete_captured_message_envelope_is_required_for_display_exact": {
       "path": "tests/test_accepted_visible_turn_finalization_convergence.py",
@@ -164,7 +164,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 167
+      "line": 173
     },
     "tests/test_accepted_visible_turn_finalization_convergence.py::test_active_chatgpt_instructions_fail_closed_without_accepted_visible_final": {
       "path": "tests/test_accepted_visible_turn_finalization_convergence.py",
@@ -187,17 +187,17 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 208
+      "line": 214
     },
     "tests/test_accepted_visible_turn_finalization_convergence.py::test_machine_readable_contracts_require_accepted_visible_turn": {
       "path": "tests/test_accepted_visible_turn_finalization_convergence.py",
       "name": "test_machine_readable_contracts_require_accepted_visible_turn",
       "purpose": "Machine readable contracts require accepted visible turn",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -210,7 +210,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 223
+      "line": 229
     },
     "tests/test_active_memory_recall_e2e.py::test_frozen_recall_contract_preserves_typed_provenance": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -2986,13 +2986,16 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_stays_on_system_coherence_line": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_chatgpt_host_runtime_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_stays_on_system_coherence_line",
-      "purpose": "Release version stays on system coherence line",
+      "name": "test_release_version_tracks_chatgpt_host_runtime_convergence",
+      "purpose": "Release version tracks chatgpt host runtime convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [],
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -7551,14 +7554,14 @@
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "name": "test_bootstrap_emits_post_materialization_activation_contract",
       "purpose": "Bootstrap emits post materialization activation contract",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 25 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "repository",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 25,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -7585,13 +7588,13 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 116
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_pack_manifest_advertises_activation_without_claiming_host_capability": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "name": "test_pack_manifest_advertises_activation_without_claiming_host_capability",
       "purpose": "Pack manifest advertises activation without claiming host capability",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 25 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "host",
@@ -7599,22 +7602,23 @@
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 25,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 139
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_stays_on_system_coherence_line": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_chatgpt_host_runtime_convergence": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_stays_on_system_coherence_line",
-      "purpose": "Release identity stays on system coherence line",
+      "name": "test_release_identity_tracks_chatgpt_host_runtime_convergence",
+      "purpose": "Release identity tracks chatgpt host runtime convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
+        "host",
         "repository",
         "runtime"
       ],
@@ -7626,7 +7630,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 175
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
