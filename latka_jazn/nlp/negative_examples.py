@@ -7,6 +7,7 @@ NEGATIVE_EXAMPLES = {
         "Przygotuj tekst dla generatora muzyki.",
         "Cześć Łatko, sprawdź jedną krótką turę po aktualizacji.",
         "Cześć Łatko, test krótkiej rozmowy po aktualizacji.",
+        "Wniosek z badań: aktualizacja systemu Jaźni powinna rozdzielać SYSTEM od MEMORY, raportować postęp bootstrapu i poprawić routing. Raport zawiera hipotezy, rekomendacje, źródła i plan testów, ale nie jest poleceniem wykonania patcha.",
     ],
     "memory_recall_request": ["Co myślisz o tym tekście piosenki?"],
 }
