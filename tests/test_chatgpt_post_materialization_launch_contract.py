@@ -59,7 +59,7 @@ def test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launc
         "-X",
         "utf8",
         "main.py",
-        "--chat-gpt",
+        "chat-gpt",
         "--session-id",
         "<stable-session-id>",
     ]
@@ -72,11 +72,18 @@ def test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launc
         "--session-id",
         "<stable-session-id>",
     ]
-    assert bridge["control_plane_argv"][4:] == legacy_args(
-        "chat-gpt",
-        ["--session-id", "<stable-session-id>"],
-    )
-    assert bridge["daemon_start_control_plane_argv"][4:] == legacy_args("start", [])
+    # Exported host contracts use canonical subcommands.  The legacy mapping is
+    # deliberately internal to main.py/latka_jazn.cli compatibility dispatch.
+    assert bridge["control_plane_argv"][4] == "chat-gpt"
+    assert "--chat-gpt" not in bridge["control_plane_argv"]
+    assert bridge["daemon_start_control_plane_argv"][4:] == ["start"]
+    assert bridge["runtime_status_control_plane_argv"][4:] == ["status", "--snapshot", "--json"]
+    assert legacy_args("chat-gpt", ["--session-id", "<stable-session-id>"]) == [
+        "--chat-gpt",
+        "--session-id",
+        "<stable-session-id>",
+    ]
+    assert legacy_args("start", []) == ["--daemon-start"]
 
 
 def test_post_materialization_nonstreaming_contract_forbids_turn_replay(tmp_path: Path) -> None:
@@ -100,24 +107,27 @@ def test_post_materialization_nonstreaming_contract_forbids_turn_replay(tmp_path
 def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Path) -> None:
     contract = build_host_bootstrap_contract(_plan(tmp_path))
 
-    assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py --daemon-start"
+    assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py start"
     assert (
         contract["post_materialization_control_plane_status_entrypoint"]
-        == "main.py --daemon-status --daemon-snapshot"
+        == "main.py status --snapshot --json"
     )
     assert (
         contract["post_materialization_chatgpt_bridge_entrypoint"]
-        == "main.py --chat-gpt --session-id <stable-session-id>"
+        == "main.py chat-gpt --session-id <stable-session-id>"
     )
     assert contract["post_materialization_chatgpt_bridge_control_plane_argv"] == [
         "<python>",
         "-X",
         "utf8",
         "main.py",
-        "--chat-gpt",
+        "chat-gpt",
         "--session-id",
         "<stable-session-id>",
     ]
+    assert "--chat-gpt" not in contract["post_materialization_chatgpt_bridge_control_plane_argv"]
+    assert "--daemon-start" not in contract["post_materialization_activation_sequence"]
+    assert all("--daemon-status" not in step for step in contract["post_materialization_activation_sequence"])
     assert contract["post_materialization_chatgpt_language_model_channel"] == "chatgpt_host"
     assert contract["post_materialization_chatgpt_model_cli_argument_required"] is False
     assert contract["post_materialization_chatgpt_paid_openai_api_required"] is False
