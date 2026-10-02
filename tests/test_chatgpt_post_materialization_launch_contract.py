@@ -77,7 +77,14 @@ def test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launc
     assert bridge["control_plane_argv"][4] == "chat-gpt"
     assert "--chat-gpt" not in bridge["control_plane_argv"]
     assert bridge["daemon_start_control_plane_argv"][4:] == ["start"]
-    assert bridge["runtime_status_control_plane_argv"][4:] == ["status", "--snapshot", "--json"]
+    assert bridge["runtime_status_control_plane_argv"][4:] == ["status", "--json"]
+    assert bridge["runtime_snapshot_diagnostic_control_plane_argv"][4:] == [
+        "status",
+        "--snapshot",
+        "--json",
+    ]
+    assert bridge["runtime_readiness_source"] == "live_status"
+    assert bridge["progress_contract"]["percent_semantics"] == "completed_verified_gates_only"
     assert legacy_args("chat-gpt", ["--session-id", "<stable-session-id>"]) == [
         "--chat-gpt",
         "--session-id",
@@ -110,8 +117,14 @@ def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Pat
     assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py start"
     assert (
         contract["post_materialization_control_plane_status_entrypoint"]
+        == "main.py status --json"
+    )
+    assert (
+        contract["post_materialization_control_plane_snapshot_diagnostic_entrypoint"]
         == "main.py status --snapshot --json"
     )
+    assert contract["post_materialization_activation_readiness_source"] == "live_status"
+    assert contract["post_materialization_snapshot_is_activation_authority"] is False
     assert (
         contract["post_materialization_chatgpt_bridge_entrypoint"]
         == "main.py chat-gpt --session-id <stable-session-id>"
@@ -126,6 +139,12 @@ def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Pat
         "<stable-session-id>",
     ]
     assert "--chat-gpt" not in contract["post_materialization_chatgpt_bridge_control_plane_argv"]
+    assert contract["post_materialization_activation_sequence"] == [
+        "run.py host-preflight --json",
+        "run.py start",
+        "run.py status --json",
+        "main.py chat-gpt --session-id <stable-session-id>",
+    ]
     assert "--daemon-start" not in contract["post_materialization_activation_sequence"]
     assert all("--daemon-status" not in step for step in contract["post_materialization_activation_sequence"])
     assert contract["post_materialization_chatgpt_language_model_channel"] == "chatgpt_host"
@@ -135,6 +154,12 @@ def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Pat
     assert contract["post_materialization_chatgpt_requires_host_process_execution"] is True
     assert contract["post_materialization_chatgpt_request_id_preallocated_before_process_spawn"] is True
     assert contract["post_materialization_chatgpt_message_replay_allowed"] is False
+    assert contract["post_materialization_progress_schema_version"] == "chatgpt_bootstrap_progress/v1"
+    assert contract["post_materialization_progress_semantics"] == "completed_verified_gates_only"
+    assert contract["post_materialization_progress_milestones"][-1] == {
+        "gate": "turn_channel_bound",
+        "wake_percent": 100,
+    }
     assert contract["post_materialization_chatgpt_visible_reply_requires"] == [
         "action=display_exact",
         "valid_lineage",
