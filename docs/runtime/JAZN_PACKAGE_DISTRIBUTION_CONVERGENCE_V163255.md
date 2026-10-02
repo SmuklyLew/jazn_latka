@@ -108,10 +108,12 @@ reports/SBOM, package target sidecars, record Jaźń SHA and GitHub artifact dig
 attest release artifacts.
 
 `package-distribution-cleanroom` separates producer and consumer jobs. The consumer has
-no source checkout: it downloads only built artifacts, extracts the system ZIP, starts
-from an ambient Python without `py7zr/pyzipper`, discovers the sibling sidecar, creates
-the managed environment offline, performs handoff, doctor/start/status/stop, and also
-verifies the controlled failure when the sidecar is absent.
+no source checkout: it downloads only built artifacts, extracts the system ZIP, creates
+a dependency-empty `venv --without-pip` with no inherited site-packages, discovers the
+sibling sidecar, creates the managed environment offline, performs handoff,
+doctor/start/status/stop, and also verifies the controlled failure when the sidecar is
+absent. Since v16.3.25.5.99, optional `archive` and `pdf` capabilities are transported in
+the release sidecar without becoming activation-required core dependencies.
 
 Dependency Review and `pip-audit` are CI/development gates; neither is a runtime
 dependency.
