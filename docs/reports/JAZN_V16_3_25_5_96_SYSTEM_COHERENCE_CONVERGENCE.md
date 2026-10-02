@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96.1 — system coherence convergence
+# Jaźń v16.3.25.5.96.2 — system coherence convergence
 
 ## Scope
 
@@ -89,3 +89,25 @@ archived under
 The active release-identity checks now assert the v96.1 system-coherence line
 with stable purpose names rather than continuing to describe the prior v95.1
 ChatGPT-ingress release.
+
+
+## Windows WAL contention follow-up 16.3.25.5.96.2
+
+The v96.1 PR-context persistent-runtime matrix exposed a real Windows race:
+constructing independent `McpTaskStore` instances concurrently could fail in
+`_connect()` while every new connection re-issued
+`PRAGMA journal_mode=WAL`. The failure happened before the intended
+`BEGIN IMMEDIATE` task transaction.
+
+v96.2 treats WAL as persistent database bootstrap state instead of connection
+decoration. `_connect()` configures only per-connection properties. Schema
+initialization checks the current journal mode and enables WAL only when needed,
+using a six-attempt exponential backoff capped at 200 ms for SQLite
+BUSY/LOCKED contention. The loop is deliberately bounded and fails closed as
+`mcp_task_wal_bootstrap_lock_timeout` if contention cannot be resolved.
+
+The release-identity tests were also converted from exact patch-version pins to
+the stable `16.3.25.5.96[.*]` system-coherence release line. Their v96.1
+sources are archived byte-for-byte under
+`tests/archive/v16.3.25.5.96.2-sqlite-wal-contention-fix/`, so future CI-only
+patch increments do not create another artificial release-identity failure.

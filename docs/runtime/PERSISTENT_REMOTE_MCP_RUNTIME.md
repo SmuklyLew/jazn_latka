@@ -233,7 +233,7 @@ strongly steer ordinary messages into jazn_turn after selection, but code inside
 Jaźń cannot force a global default app for every new ChatGPT conversation.
 
 
-## 12. Task-state coherence in 16.3.25.5.96.1
+## 12. Task-state coherence in 16.3.25.5.96.2
 
 The durable Tasks adapter now treats the advertised task TTL as an explicit
 server-side backstop. A non-terminal task whose `createdAt + ttlMs` has elapsed
@@ -269,3 +269,14 @@ External ChatGPT acceptance remains a deployment fact, not a repository fact:
 the repository can validate its server, plugin package and task semantics, but
 only a real ChatGPT connection to the deployed HTTPS `/mcp` endpoint can prove
 host tool discovery and end-to-end `display_exact` delivery.
+
+
+### SQLite WAL bootstrap contention
+
+WAL mode is durable database state. The task store no longer executes
+`PRAGMA journal_mode=WAL` for every short-lived connection. Store
+initialization first observes the current journal mode and only performs the
+mode transition when necessary. BUSY/LOCKED during that transition is retried
+with a fixed maximum of six attempts and bounded exponential delay; exhaustion
+fails closed. Task state changes still use `BEGIN IMMEDIATE` so the
+read/modify/write invariant remains serialized across independent processes.

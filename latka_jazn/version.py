@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.96.1 hardens durable MCP task state transitions, bounded TTL
-# behavior, input-required polling semantics, cross-process SQLite writes,
-# and keeps release-identity tests synchronized with the active release line.
-DISTRIBUTION_VERSION = "16.3.25.5.96.1"
-PACKAGE_VERSION = "16.3.25.5.96.1"
+# v16.3.25.5.96.2 hardens durable MCP task state transitions, bounded TTL,
+# input-required polling semantics, and cross-process SQLite/WAL contention.
+# Release-identity tests now track the stable v96 line across CI-fix patches.
+DISTRIBUTION_VERSION = "16.3.25.5.96.2"
+PACKAGE_VERSION = "16.3.25.5.96.2"
 PACKAGE_RELEASE_NAME = "system-coherence-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

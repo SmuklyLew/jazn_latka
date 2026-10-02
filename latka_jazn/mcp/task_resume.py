@@ -21,6 +21,7 @@ import hashlib
 import json
 import secrets
 import sqlite3
+import time
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
@@ -32,6 +33,8 @@ TERMINAL_TASK_STATES = frozenset({"completed", "failed", "cancelled"})
 VALID_TASK_STATES = frozenset({"working", "input_required", "completed", "failed", "cancelled"})
 DEFAULT_TASK_TTL_MS = 60 * 60 * 1000
 DEFAULT_POLL_INTERVAL_MS = 750
+WAL_BOOTSTRAP_MAX_ATTEMPTS = 6
+WAL_BOOTSTRAP_BASE_DELAY_SECONDS = 0.025
 
 
 class TaskGateway(Protocol):
@@ -140,13 +143,54 @@ class McpTaskStore:
         conn = sqlite3.connect(self.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA busy_timeout=5000")
-        conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA synchronous=FULL")
         conn.execute("PRAGMA foreign_keys=ON")
         return conn
 
+    @staticmethod
+    def _is_lock_contention(exc: sqlite3.OperationalError) -> bool:
+        code = getattr(exc, "sqlite_errorcode", None)
+        return code in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED} or "locked" in str(exc).lower()
+
+    def _ensure_wal_mode(self, conn: sqlite3.Connection) -> None:
+        """Enable persistent WAL mode with a bounded bootstrap retry.
+
+        journal_mode is persistent database state, not per-request connection
+        configuration. Reissuing PRAGMA journal_mode=WAL on every connection can
+        itself contend with other openers, especially on Windows. Normal task
+        operations therefore only verify/bootstrap WAL during store schema
+        initialization and never run an unbounded retry loop.
+        """
+
+        last_error: sqlite3.OperationalError | None = None
+        for attempt in range(WAL_BOOTSTRAP_MAX_ATTEMPTS):
+            try:
+                current_row = conn.execute("PRAGMA journal_mode").fetchone()
+                current = str(current_row[0] if current_row else "").strip().lower()
+                if current == "wal":
+                    return
+                changed_row = conn.execute("PRAGMA journal_mode=WAL").fetchone()
+                changed = str(changed_row[0] if changed_row else "").strip().lower()
+                if changed != "wal":
+                    raise RuntimeError(f"mcp_task_wal_mode_not_enabled:{changed or 'unknown'}")
+                return
+            except sqlite3.OperationalError as exc:
+                if not self._is_lock_contention(exc):
+                    raise
+                last_error = exc
+                if attempt + 1 >= WAL_BOOTSTRAP_MAX_ATTEMPTS:
+                    break
+                time.sleep(
+                    min(
+                        WAL_BOOTSTRAP_BASE_DELAY_SECONDS * (2**attempt),
+                        0.2,
+                    )
+                )
+        raise RuntimeError("mcp_task_wal_bootstrap_lock_timeout") from last_error
+
     def _ensure_schema(self) -> None:
         with self._lock, self._connect() as conn:
+            self._ensure_wal_mode(conn)
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS mcp_tasks (
