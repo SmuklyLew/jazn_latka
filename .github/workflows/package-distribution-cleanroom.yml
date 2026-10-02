@@ -104,7 +104,7 @@ jobs:
           set -euo pipefail
           py_digits="${{ matrix.python }}"
           py_digits="${py_digits//./}"
-          lock="$RUNNER_TEMP/native-evidence/locks/core+archive/${{ matrix.target }}-py${py_digits}.txt"
+          lock="$RUNNER_TEMP/native-evidence/locks/core+archive+pdf/${{ matrix.target }}-py${py_digits}.txt"
           test -f "$lock"
           result="$RUNNER_TEMP/cross-target-download.json"
           set +e
@@ -371,7 +371,7 @@ jobs:
         run: |
           set -euo pipefail
           runtime_version="$(python -X utf8 -c 'from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)')"
-          destination="latka_jazn/resources/dependencies/locks/core+archive"
+          destination="latka_jazn/resources/dependencies/locks/core+archive+pdf"
           mkdir -p "$destination"
           count=0
           while IFS= read -r lock; do
@@ -382,7 +382,7 @@ jobs:
             esac
             cp "$lock" "$destination/$name"
             count=$((count + 1))
-          done < <(find "$RUNNER_TEMP/release-locks" -type f -path '*/locks/core+archive/*.txt' | sort)
+          done < <(find "$RUNNER_TEMP/release-locks" -type f -path '*/locks/core+archive+pdf/*.txt' | sort)
           test "$count" -eq 6
           test "$(find "$destination" -maxdepth 1 -type f -name '*.txt' | wc -l)" -ge 6
 
