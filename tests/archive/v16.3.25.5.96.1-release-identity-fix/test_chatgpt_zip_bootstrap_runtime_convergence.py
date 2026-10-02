@@ -137,6 +137,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["remote_runtime_route_ready_from_package_alone"] is False
 
 
-def test_release_identity_stays_on_system_coherence_line() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.96" or PACKAGE_VERSION.startswith("16.3.25.5.96.")
-    assert PACKAGE_RELEASE_NAME == "system-coherence-convergence"
+def test_release_identity_matches_chatgpt_real_mcp_ingress_line() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.95.1"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-real-mcp-ingress-convergence"

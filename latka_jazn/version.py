@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.95.1 makes the ChatGPT -> Jaźń boundary an installable MCP/plugin
-# ingress contract with canonical model-visible actions and persistent runtime evidence.
-DISTRIBUTION_VERSION = "16.3.25.5.95.1"
-PACKAGE_VERSION = "16.3.25.5.95.1"
-PACKAGE_RELEASE_NAME = "chatgpt-real-mcp-ingress-convergence"
+# v16.3.25.5.96.6 removes the last obsolete release-workflow text assertion
+# after v96.5 proved the corrected Windows PowerShell clean guard in CI.
+DISTRIBUTION_VERSION = "16.3.25.5.96.6"
+PACKAGE_VERSION = "16.3.25.5.96.6"
+PACKAGE_RELEASE_NAME = "system-coherence-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

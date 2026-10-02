@@ -26,6 +26,7 @@ jobs:
   manifest_sync:
     concurrency:
       group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+      queue: max
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -68,38 +69,24 @@ jobs:
           git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git remote get-url origin
 
-      - name: Synchronize canonical release metadata
-        run: >-
-          python -X utf8 -m latka_jazn.tools.release_metadata_sync
-          --root .
-          --base-branch master
-          --write
-          --json
+      - name: Synchronize active Test Studio catalog before release metadata
+        if: github.event_name != 'pull_request'
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
-      - name: Commit synchronized release metadata on eligible same-repository branch
+      - name: Commit synchronized Test Studio catalog locally
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
-          if git diff --quiet -- \
-            SOURCE_PROVENANCE.json \
-            PACKAGE_INTEGRITY_MANIFEST.json; then
-            echo "Release metadata is already synchronized."
-            exit 0
-          fi
-
           target_branch="${GITHUB_REF#refs/heads/}"
-          runtime_version="${{ steps.version.outputs.full }}"
-
           if [ "$JAZN_HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
-            echo "Release metadata drift cannot be committed to a fork: ${JAZN_HEAD_REPOSITORY}." >&2
+            echo "Generated catalog drift cannot be committed to a fork: ${JAZN_HEAD_REPOSITORY}." >&2
             exit 2
           fi
-
           case "$target_branch" in
             master|update/*|fix/*|hotfix/*|upgrade/*|release/*|tools/upgrade-*)
               ;;
             *)
-              echo "Automatic release-metadata commits are limited to master/update/fix/hotfix/upgrade/release/tools-upgrade branches: ${target_branch}." >&2
+              echo "Automatic generated-artifact commits are not allowed on ${target_branch}." >&2
               exit 2
               ;;
           esac
@@ -112,26 +99,72 @@ jobs:
           )"
           unexpected_paths="$(
             printf '%s\n' "$dirty_paths" |
-              grep -Ev '^(PACKAGE_INTEGRITY_MANIFEST\.json|SOURCE_PROVENANCE\.json)$' || true
+              grep -Ev '^tools/jazn_tests_studio/test_contracts\.json$' || true
           )"
           if [ -n "$unexpected_paths" ]; then
-            echo "Refusing metadata commit because unrelated paths are dirty:" >&2
+            echo "Refusing catalog commit because unrelated paths are dirty:" >&2
             printf '%s\n' "$unexpected_paths" >&2
             exit 2
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            SOURCE_PROVENANCE.json \
-            PACKAGE_INTEGRITY_MANIFEST.json
-          git diff --cached --quiet && {
-            echo "No canonical metadata changes remain after staging."
-            exit 0
-          }
-          git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
-          git push origin "HEAD:${target_branch}"
+          if ! git diff --quiet -- tools/jazn_tests_studio/test_contracts.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add tools/jazn_tests_studio/test_contracts.json
+            git commit -m "test: synchronize Test Studio contract catalog"
+          else
+            echo "Test Studio contract catalog is already synchronized."
+          fi
+
+      - name: Synchronize canonical release metadata after generated catalog
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --write
+          --json
+
+      - name: Commit release metadata and push the generated sequence once
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          target_branch="${GITHUB_REF#refs/heads/}"
+          runtime_version="${{ steps.version.outputs.full }}"
+
+          if [ "$JAZN_HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
+            echo "Release metadata drift cannot be committed to a fork: ${JAZN_HEAD_REPOSITORY}." >&2
+            exit 2
+          fi
+
+          dirty_paths="$(
+            git status --porcelain --untracked-files=all |
+              sed -E 's/^.. //' |
+              sed -E 's/^"//; s/"$//' |
+              sort -u
+          )"
+          unexpected_paths="$(
+            printf '%s\n' "$dirty_paths" |
+              grep -Ev '^(PACKAGE_INTEGRITY_MANIFEST\.json|SOURCE_PROVENANCE\.json)$' || true
+          )"
+          if [ -n "$unexpected_paths" ]; then
+            echo "Refusing generated-artifact push because unrelated paths are dirty:" >&2
+            printf '%s\n' "$unexpected_paths" >&2
+            exit 2
+          fi
+
+          if ! git diff --quiet -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+            git commit -m "release: synchronize canonical metadata for ${runtime_version} [skip ci]"
+          fi
+
+          git fetch origin "${target_branch}"
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/${target_branch}")" ]; then
+            git push origin "HEAD:${target_branch}"
+          else
+            echo "Generated catalog and release metadata are already synchronized."
+          fi
 
       - name: Verify synchronization is idempotent
         run: >-
@@ -207,6 +240,10 @@ jobs:
           --write
           --json
 
+      - name: Materialize Test Studio catalog locally for PR validation
+        if: github.event_name == 'pull_request'
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
+
       - name: Compile all active Python
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
@@ -263,7 +300,10 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+            git checkout -- \
+              SOURCE_PROVENANCE.json \
+              PACKAGE_INTEGRITY_MANIFEST.json \
+              tools/jazn_tests_studio/test_contracts.json
           fi
           git diff --check
           git diff --exit-code
@@ -308,6 +348,11 @@ jobs:
           --base-branch master
           --write
           --json
+
+      - name: Materialize Test Studio catalog locally for PR validation
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
       - name: Targeted Windows runtime and path tests
         shell: pwsh
@@ -367,7 +412,13 @@ jobs:
         shell: pwsh
         run: |
           if ("${{ github.event_name }}" -eq "pull_request") {
-            git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json
+            $generatedPaths = @(
+              "SOURCE_PROVENANCE.json",
+              "PACKAGE_INTEGRITY_MANIFEST.json",
+              "tools/jazn_tests_studio/test_contracts.json"
+            )
+            git checkout -- $generatedPaths
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
           git diff --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
