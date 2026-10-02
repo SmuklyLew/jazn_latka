@@ -57,9 +57,9 @@ OpenAI API call:
 verified SYSTEM ZIP
   -> CHATGPT_BOOTSTRAP.py --post-materialization-preflight
   -> verified active_root
-  -> main.py start
-  -> main.py status --snapshot --json
-  -> main.py chat-gpt --session-id <stable-session-id>
+  -> main.py --daemon-start
+  -> main.py --daemon-status --daemon-snapshot
+  -> main.py --chat-gpt --session-id <stable-session-id>
      (normally reached through the public thin starter run.py)
   -> one persistent stdin/stdout JSONL bridge when the host can retain it
   -> otherwise daemon_bound_transactional_turns with a preallocated request_id
