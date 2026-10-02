@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import CHATGPT_BOOTSTRAP as bootstrap
+from latka_jazn.cli_commands.lifecycle import legacy_args
 from tools.jazn_pack_generator_app.constants import SYSTEM_BOOTSTRAP_REQUIRED_FILES
 from tools.jazn_pack_generator_app.manifest import build_host_bootstrap_contract
 from tools.jazn_pack_generator_app.models import ContentMode, PackPlan, PackRequest, SourceEntry
@@ -71,6 +72,11 @@ def test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launc
         "--session-id",
         "<stable-session-id>",
     ]
+    assert bridge["control_plane_argv"][4:] == legacy_args(
+        "chat-gpt",
+        ["--session-id", "<stable-session-id>"],
+    )
+    assert bridge["daemon_start_control_plane_argv"][4:] == legacy_args("start", [])
 
 
 def test_post_materialization_nonstreaming_contract_forbids_turn_replay(tmp_path: Path) -> None:
