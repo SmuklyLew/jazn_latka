@@ -141,6 +141,14 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "post_materialization_preflight_requires_child_process": False,
         "post_materialization_preflight_flag": "--post-materialization-preflight",
         "post_materialization_preflight_entrypoint": "run.py host-preflight --json",
+        "post_materialization_start_entrypoint": "run.py start",
+        "post_materialization_status_entrypoint": "run.py status --snapshot --json",
+        "post_materialization_activation_sequence": [
+            "run.py host-preflight --json",
+            "run.py start",
+            "run.py status --snapshot --json",
+        ],
+        "post_materialization_activation_requires_verified_status": True,
         # The OpenAI tunnel client/control plane is deliberately external.  The
         # SYSTEM package only carries the local stdio target that the tunnel may
         # launch after host capability/authentication has been established.
