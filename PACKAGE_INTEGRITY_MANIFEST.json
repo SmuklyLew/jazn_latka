@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "runtime_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "package_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "generated_at_utc": "2026-10-02T20:59:48+00:00",
-  "updated_at_utc": "2026-10-02T20:59:48+00:00",
+  "version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "generated_at_utc": "2026-10-02T22:24:26+00:00",
+  "updated_at_utc": "2026-10-02T22:24:26+00:00",
   "start_file": "run.py",
   "file_count": 1882,
   "static_file_count": 1882,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3030,
-      "sha256": "ab8099a2872a3dc0213b3b6c67ead736c3ebe6f70915caa691b7673b6eca1b96",
+      "size_bytes": 3001,
+      "sha256": "56f03afe318efbc4695aecff8b282bb0e76fa17765ae0391ddd9546881c21e1b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7337,8 +7337,8 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/profiles.json",
-      "size_bytes": 1922,
-      "sha256": "7b0ccc0bd18bb68b98b148d1c000b39b2f92942b216d85afcdb7cdbd6edb5915",
+      "size_bytes": 2039,
+      "sha256": "624bd7e84c76e56e47e2ac27d6112509a24eac83b750b8915e23d7070d364fe9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7482,7 +7482,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 2899,
-      "sha256": "4c4ab3547331cb756809ee2586fcf138f30274cb6ce7cf156bc418abd1069387",
+      "sha256": "1fdf78acc503df60a722b8aa05a5c9dde596111f378ea43202cc270a04e16f2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8804,8 +8804,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5294,
-      "sha256": "214f0119350f513f587c0378f7e266e6c2c95fed8d83ff51bd03ed618204960a",
+      "size_bytes": 5285,
+      "sha256": "23093a29992ad60d551d43a05f634ed0b1a37ceb5d3956e6b7b68e4f3f8d54d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8912,8 +8912,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 131564,
-      "sha256": "2adac7281803ca6c5a7fff329155f955a0d8552c3feac22c2162dcec55fecc7f",
+      "size_bytes": 131567,
+      "sha256": "63509d9285d1e20d00b4eb02d959dfb96b84f1654da4f4b0a6732128ae0ec688",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8921,8 +8921,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2232,
-      "sha256": "d12f07d89f9a21592cac455e0490277f956cbbd85bf1625d7cbfb1f41d0f88aa",
+      "size_bytes": 2242,
+      "sha256": "544a8fa070b1a04c78c0c7fb2ce338bd7777d7cc4df82a46522e02d062d8cfa1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16806,7 +16806,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1704321,
-      "sha256": "421134a3e8b1f2cd242deb8cf2c79db61b3f0bbf7f7fe22836e165696ca900c5",
+      "sha256": "ba825e72402d5dce74d6ad8076d5b1e9d280201a7504f22458dd168057cdf1ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17390,11 +17390,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
+  "release_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-    "package_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-    "release_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence"
+    "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+    "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+    "release_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
