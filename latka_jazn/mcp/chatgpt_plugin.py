@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-"""Portable Agent Plugin packaging for a deployed public Jaźń MCP endpoint."""
+"""Portable Agent Plugin packaging for a deployed Jaźń MCP endpoint.
+
+The portable Agent Plugins package remains the canonical distributable form.
+For local/workspace ChatGPT testing, an optional registered app id can also be
+bound through .app.json after the MCP server has been connected in Developer
+Mode. Packaging never claims that the ChatGPT host has installed the app.
+"""
 
 from dataclasses import dataclass
 import hashlib
@@ -16,6 +22,13 @@ MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 PLUGIN_NAME = "jazn-runtime"
 MCP_SERVER_NAME = "jazn"
 REPOSITORY_URL = "https://github.com/SmuklyLew/jazn_latka"
+_REGISTERED_APP_PREFIXES = (
+    "plugin_asdk_app_",
+    "asdk_app_",
+    "connector_",
+    "templated_apps_",
+)
+
 
 def validate_remote_mcp_endpoint(value: str) -> str:
     candidate = str(value or "").strip()
@@ -34,19 +47,70 @@ def validate_remote_mcp_endpoint(value: str) -> str:
         raise ValueError("chatgpt_plugin_endpoint_path_must_be_/mcp")
     return candidate.rstrip("/")
 
-def build_portable_plugin_documents(endpoint: str, *, package_version: str = PACKAGE_VERSION_FULL) -> dict[str, dict[str, Any]]:
+
+def validate_registered_app_id(value: str) -> str:
+    candidate = str(value or "").strip()
+    if not candidate or not candidate.startswith(_REGISTERED_APP_PREFIXES):
+        raise ValueError("chatgpt_registered_app_id_invalid")
+    if any(
+        ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+        for ch in candidate
+    ):
+        raise ValueError("chatgpt_registered_app_id_invalid")
+    return candidate
+
+
+def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
+    extension: dict[str, Any] = {
+        "interface": {
+            "displayName": "Jaźń Runtime",
+            "shortDescription": "Persistent Jaźń runtime for validated conversation turns.",
+            "longDescription": (
+                "Routes selected ChatGPT turns through a persistent Jaźń runtime "
+                "with idempotent resume/finalization and fail-closed display_exact semantics."
+            ),
+            "developerName": "Jaźń",
+            "category": "Productivity",
+            "capabilities": ["Read", "Write"],
+            "websiteURL": REPOSITORY_URL,
+            "defaultPrompt": [
+                "Check whether the Jaźń runtime is ready.",
+                "Route this message through Jaźń.",
+            ],
+            "brandColor": "#5B4B8A",
+        }
+    }
+    if registered_app_id is not None:
+        extension["apps"] = "./.app.json"
+    return extension
+
+
+def build_portable_plugin_documents(
+    endpoint: str,
+    *,
+    package_version: str = PACKAGE_VERSION_FULL,
+    registered_app_id: str | None = None,
+) -> dict[str, dict[str, Any]]:
     remote_endpoint = validate_remote_mcp_endpoint(endpoint)
-    plugin = {
+    app_id = (
+        validate_registered_app_id(registered_app_id)
+        if registered_app_id is not None
+        else None
+    )
+    plugin: dict[str, Any] = {
         "$schema": PLUGIN_SCHEMA,
         "name": PLUGIN_NAME,
         "version": str(package_version),
         "description": (
-            "Authenticated ChatGPT/agent access to one persistent Jaźń runtime "
-            "through its public Streamable HTTP MCP ingress."
+            "Authenticated ChatGPT and agent access to one persistent Jaźń runtime "
+            "through Streamable HTTP MCP."
         ),
         "author": {"name": "SmuklyLew"},
         "repository": REPOSITORY_URL,
         "keywords": ["jazn", "mcp", "chatgpt", "persistent-runtime"],
+        "extensions": {
+            "com.openai": _openai_extension(registered_app_id=app_id),
+        },
     }
     mcp = {
         "$schema": MCP_SCHEMA,
@@ -57,10 +121,27 @@ def build_portable_plugin_documents(endpoint: str, *, package_version: str = PAC
             }
         },
     }
-    return {"plugin.json": plugin, "mcp.json": mcp}
+    documents: dict[str, dict[str, Any]] = {
+        "plugin.json": plugin,
+        "mcp.json": mcp,
+    }
+    if app_id is not None:
+        documents[".app.json"] = {
+            "apps": {
+                MCP_SERVER_NAME: {
+                    "id": app_id,
+                    "required": True,
+                }
+            }
+        }
+    return documents
+
 
 def _json_bytes(value: Mapping[str, Any]) -> bytes:
-    return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    return (
+        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
 
 def _atomic_write(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -68,11 +149,13 @@ def _atomic_write(path: Path, payload: bytes) -> None:
     tmp.write_bytes(payload)
     tmp.replace(path)
 
+
 @dataclass(frozen=True, slots=True)
 class PluginPackageResult:
     output_dir: str
     endpoint: str
     package_version: str
+    registered_app_id: str | None
     files: tuple[dict[str, Any], ...]
 
     def to_dict(self) -> dict[str, Any]:
@@ -81,37 +164,62 @@ class PluginPackageResult:
             "output_dir": self.output_dir,
             "endpoint": self.endpoint,
             "package_version": self.package_version,
+            "registered_app_id": self.registered_app_id,
             "files": [dict(item) for item in self.files],
             "truth_boundary": (
-                "Generating a portable plugin package proves only that the package metadata is ready. "
-                "It does not deploy the HTTPS MCP endpoint, configure OAuth, install or publish the plugin "
-                "in ChatGPT, or prove that the current ChatGPT host exposes the app capability."
+                "Generating a plugin package proves only that package metadata is ready. "
+                "It does not deploy the HTTPS MCP endpoint, configure OAuth, create the "
+                "Developer Mode connection, install/publish the plugin, or prove that the "
+                "current ChatGPT host exposes callable Jaźń actions."
             ),
         }
 
-def write_portable_plugin_package(output_dir: Path, endpoint: str, *, package_version: str = PACKAGE_VERSION_FULL, force: bool = False) -> PluginPackageResult:
+
+def write_portable_plugin_package(
+    output_dir: Path,
+    endpoint: str,
+    *,
+    package_version: str = PACKAGE_VERSION_FULL,
+    registered_app_id: str | None = None,
+    force: bool = False,
+) -> PluginPackageResult:
     target = Path(output_dir).expanduser().resolve()
     target.mkdir(parents=True, exist_ok=True)
-    documents = build_portable_plugin_documents(endpoint, package_version=package_version)
+    documents = build_portable_plugin_documents(
+        endpoint,
+        package_version=package_version,
+        registered_app_id=registered_app_id,
+    )
     existing = [target / name for name in documents if (target / name).exists()]
     if existing and not force:
         raise FileExistsError("chatgpt_plugin_package_target_exists_use_force")
+
     file_records: list[dict[str, Any]] = []
     for name, value in documents.items():
         payload = _json_bytes(value)
         destination = target / name
         _atomic_write(destination, payload)
-        file_records.append({
-            "path": str(destination),
-            "sha256": hashlib.sha256(payload).hexdigest(),
-            "size_bytes": len(payload),
-        })
+        file_records.append(
+            {
+                "path": str(destination),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+                "size_bytes": len(payload),
+            }
+        )
+
+    normalized_app_id = (
+        validate_registered_app_id(registered_app_id)
+        if registered_app_id is not None
+        else None
+    )
     return PluginPackageResult(
         output_dir=str(target),
         endpoint=validate_remote_mcp_endpoint(endpoint),
         package_version=str(package_version),
+        registered_app_id=normalized_app_id,
         files=tuple(file_records),
     )
+
 
 __all__ = [
     "MCP_SCHEMA",
@@ -120,6 +228,7 @@ __all__ = [
     "PLUGIN_SCHEMA",
     "PluginPackageResult",
     "build_portable_plugin_documents",
+    "validate_registered_app_id",
     "validate_remote_mcp_endpoint",
     "write_portable_plugin_package",
 ]

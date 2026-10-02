@@ -39,10 +39,10 @@ from mcp.types import CallToolResult, ContentBlock, TextContent, ToolAnnotations
 
 from latka_jazn.core.runtime_root import find_runtime_root
 from latka_jazn.mcp.developer_mode_surface import (
+    CANONICAL_GENERATE_TOOL,
+    CANONICAL_RESUME_TOOL,
     JAZN_HEALTH_TOOL,
     JAZN_MEMORY_STATUS_TOOL,
-    JAZN_RESUME_TURN_TOOL,
-    JAZN_TURN_TOOL,
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
@@ -72,19 +72,19 @@ SCOPE_TASK_CANCEL = "jazn:task:cancel"
 
 _PUBLIC_TOOLS = frozenset(
     {
-        JAZN_TURN_TOOL,
-        JAZN_RESUME_TURN_TOOL,
+        CANONICAL_GENERATE_TOOL,
+        CANONICAL_RESUME_TOOL,
         "jazn_finalize_reply",
         "jazn_status",
         JAZN_HEALTH_TOOL,
         JAZN_MEMORY_STATUS_TOOL,
     }
 )
-_TASK_BRIDGE_COMPAT_TOOLS = frozenset({"jazn_generate_visible_reply"})
+_TASK_BRIDGE_COMPAT_TOOLS = frozenset({CANONICAL_GENERATE_TOOL})
 
 _TOOL_SCOPES = {
-    JAZN_TURN_TOOL: SCOPE_TURN_SUBMIT,
-    JAZN_RESUME_TURN_TOOL: SCOPE_TURN_READ,
+    CANONICAL_GENERATE_TOOL: SCOPE_TURN_SUBMIT,
+    CANONICAL_RESUME_TOOL: SCOPE_TURN_READ,
     "jazn_finalize_reply": SCOPE_TURN_FINALIZE,
     "jazn_status": SCOPE_STATUS_READ,
     JAZN_HEALTH_TOOL: SCOPE_STATUS_READ,
@@ -92,19 +92,17 @@ _TOOL_SCOPES = {
 }
 
 _OPERATION_RATE_LIMITS_PER_MINUTE = {
-    JAZN_TURN_TOOL: 10,
-    JAZN_RESUME_TURN_TOOL: 120,
+    CANONICAL_GENERATE_TOOL: 10,
+    CANONICAL_RESUME_TOOL: 120,
     "jazn_finalize_reply": 30,
     "jazn_status": 120,
     JAZN_HEALTH_TOOL: 120,
     JAZN_MEMORY_STATUS_TOOL: 120,
-    "jazn_generate_visible_reply": 10,
     "tasks/get": 180,
     "tasks/update": 60,
     "tasks/cancel": 30,
 }
 
-ClientTurnId = Annotated[str, Field(min_length=1, max_length=256)]
 RequestId = Annotated[str, Field(min_length=1, max_length=256)]
 SessionId = Annotated[str | None, Field(max_length=128)]
 MessageText = Annotated[str, Field(min_length=1, max_length=262_144)]
@@ -312,11 +310,11 @@ class PublicMcpGateway:
                 "it does not own runtime lifecycle, memory or finalization."
             ),
             instructions=(
-                "When this app is selected in ChatGPT Developer Mode, call jazn_turn for every ordinary user "
-                "message using one stable clientTurnId. If action=poll_runtime, call jazn_resume_turn with the "
-                "same clientTurnId and never replay the user's message. If action=generate_then_finalize, "
+                "When this plugin is selected, call jazn_generate_visible_reply for every ordinary user "
+                "message using one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
+                "with the same daemon_request_id and never replay the user's message. If action=generate_then_finalize, "
                 "follow only the returned host contract and finish with jazn_finalize_reply. Display Jaźń text "
-                "only for action=display_exact. jazn_health and jazn_memory_status are diagnostics only."
+                "only for action=display_exact. Use jazn_status to verify persistent runtime readiness."
             ),
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
@@ -433,45 +431,55 @@ class PublicMcpGateway:
         )
 
         @self.mcp.tool(
-            name=JAZN_TURN_TOOL,
-            title="Send this message to Jaźń",
+            name=CANONICAL_GENERATE_TOOL,
+            title="Start a validated Jaźń turn",
             description=(
-                "Primary Developer Mode entrypoint for every ordinary user message while the Jaźń app is selected. "
-                "Use one stable clientTurnId and reuse it after an ambiguous timeout instead of creating a new turn."
+                "Use this for one ordinary user message after Jaźń is selected. "
+                "Allocate request_id once for that user turn and reuse it only for recovery; "
+                "if the result says poll_runtime, call jazn_resume_visible_reply and do not resubmit the message."
             ),
             annotations=mutating_idempotent,
         )
-        def jazn_turn(
-            clientTurnId: ClientTurnId,
+        def jazn_generate_visible_reply(
+            request_id: RequestId,
             message: MessageText,
-            sessionId: SessionId = None,
+            session_id: SessionId = None,
         ) -> CallToolResult:
             args: dict[str, Any] = {
-                "clientTurnId": clientTurnId,
+                "request_id": request_id,
                 "message": message,
             }
-            if sessionId:
-                args["sessionId"] = sessionId
+            if session_id:
+                args["session_id"] = session_id
             return self._invoke(
-                JAZN_TURN_TOOL,
+                CANONICAL_GENERATE_TOOL,
                 args,
-                request_id=clientTurnId,
+                request_id=request_id,
             )
 
         @self.mcp.tool(
-            name=JAZN_RESUME_TURN_TOOL,
-            title="Resume the same Jaźń turn",
+            name=CANONICAL_RESUME_TOOL,
+            title="Resume an existing Jaźń turn",
             description=(
-                "Read/resume the already submitted Jaźń turn using the same clientTurnId. "
-                "Never resubmit the original user message."
+                "Use this only after jazn_generate_visible_reply returns poll_runtime. "
+                "Poll the same daemon_request_id; never replay the original user message."
             ),
             annotations=read_only_idempotent,
         )
-        def jazn_resume_turn(clientTurnId: ClientTurnId) -> CallToolResult:
+        def jazn_resume_visible_reply(
+            daemon_request_id: RequestId,
+            turn_id: RequestId | None = None,
+            host_request_contract_hash: Sha256Hex | None = None,
+        ) -> CallToolResult:
+            args: dict[str, Any] = {"daemon_request_id": daemon_request_id}
+            if turn_id:
+                args["turn_id"] = turn_id
+            if host_request_contract_hash:
+                args["host_request_contract_hash"] = host_request_contract_hash
             return self._invoke(
-                JAZN_RESUME_TURN_TOOL,
-                {"clientTurnId": clientTurnId},
-                request_id=clientTurnId,
+                CANONICAL_RESUME_TOOL,
+                args,
+                request_id=daemon_request_id,
             )
 
         @self.mcp.tool(

@@ -30,13 +30,18 @@ DEVELOPER_MODE_ALIAS_TO_CANONICAL = {
     JAZN_MEMORY_STATUS_TOOL: CANONICAL_STATUS_TOOL,
 }
 
-MODERN_INTERNAL_TOOL_NAMES = frozenset(
+MODEL_VISIBLE_CANONICAL_TOOL_NAMES = frozenset(
     {
         CANONICAL_GENERATE_TOOL,
         CANONICAL_RESUME_TOOL,
-        "jazn_audit_lookup",
+        CANONICAL_STATUS_TOOL,
+        "jazn_finalize_reply",
     }
 )
+
+# Canonical ChatGPT ingress actions must remain discoverable by the model.
+# Only operator/audit internals stay hidden from the modern public surface.
+MODERN_INTERNAL_TOOL_NAMES = frozenset({"jazn_audit_lookup"})
 
 DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
     {
@@ -63,6 +68,7 @@ DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "openWorldHint": False,
             "idempotentHint": True,
         },
+        "_meta": {"ui": {"visibility": ["app"]}},
     },
     {
         "name": JAZN_RESUME_TURN_TOOL,
@@ -85,6 +91,7 @@ DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "openWorldHint": False,
             "idempotentHint": True,
         },
+        "_meta": {"ui": {"visibility": ["app"]}},
     },
     {
         "name": JAZN_HEALTH_TOOL,
@@ -103,6 +110,7 @@ DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "openWorldHint": False,
             "idempotentHint": True,
         },
+        "_meta": {"ui": {"visibility": ["app"]}},
     },
     {
         "name": JAZN_MEMORY_STATUS_TOOL,
@@ -122,6 +130,7 @@ DEVELOPER_MODE_TOOL_DEFINITIONS: tuple[dict[str, Any], ...] = (
             "openWorldHint": False,
             "idempotentHint": True,
         },
+        "_meta": {"ui": {"visibility": ["app"]}},
     },
 )
 
@@ -326,6 +335,7 @@ __all__ = [
     "JAZN_MEMORY_STATUS_TOOL",
     "JAZN_RESUME_TURN_TOOL",
     "JAZN_TURN_TOOL",
+    "MODEL_VISIBLE_CANONICAL_TOOL_NAMES",
     "MODERN_INTERNAL_TOOL_NAMES",
     "adapt_developer_mode_tool_result",
     "translate_developer_mode_tool_call",

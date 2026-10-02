@@ -1,56 +1,76 @@
-# ChatGPT Plugin Runtime — public HTTPS MCP without an OpenAI API key
+# ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the deployment path introduced by
-`16.3.25.5.91.0-chatgpt-plugin-runtime-convergence` and the
-`16.3.25.5.92-chatgpt-remote-runtime-host-boundary-convergence` verification
-path for hosts that cannot create a local process.
+This runbook describes the v16.3.25.5.95.1 ingress contract. Its acceptance
+boundary is intentionally stricter than "the repository contains MCP code":
+ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
+while the Jaźń runtime remains alive outside the per-conversation sandbox.
 
-The goal is narrow: make the already-existing persistent Jaźń daemon usable by
-ChatGPT through a production Streamable HTTP MCP endpoint without making the
-runtime depend on a per-turn ChatGPT executor and without requiring an OpenAI
-API key for the public-MCP route.
+## Verified platform contract
+
+As of 2026-10-01, OpenAI's plugin documentation uses a portable Agent Plugins
+package with root `plugin.json` and optional root `mcp.json`. Do not add the
+legacy `ai-plugin.json`/OpenAPI plugin shape to this path.
+
+For a local/workspace ChatGPT package that points at an already registered MCP
+connection, OpenAI also supports an `.app.json` mapping referenced from
+`extensions.com.openai.apps`. The technical app id is obtained only after the
+MCP server has been connected in ChatGPT Developer Mode.
+
+Production MCP servers use Streamable HTTP at a stable HTTPS endpoint, normally
+`/mcp`. Secure MCP Tunnel is a supported Developer Mode alternative for a
+private/local stdio or HTTP server. A tunnel proves transport only; it does not
+prove that the current ChatGPT host has the Jaźń app installed or callable.
 
 ## Architecture
 
+### Public HTTPS
+
 ```text
-ChatGPT plugin/app
-      |
-      | HTTPS + OAuth 2.1 bearer token
-      v
-public reverse proxy / tunnel
-      |
-      v
-run.py mcp-http --public-oauth
-      |  RFC 7662 token introspection
-      |  RFC 9728 discovery supplied by MCP Python SDK
-      |  /healthz, /readyz, /mcp
-      v
-persistent Jaźń daemon on loopback
+ChatGPT plugin
+  -> HTTPS + OAuth bearer token
+  -> reverse proxy / TLS termination
+  -> run.py mcp-http --public-oauth
+  -> loopback Jaźń daemon
+  -> durable turn/idempotency/finalization stores
 ```
 
-The public HTTP process is an OAuth resource server. It never signs users in and
-never issues tokens. An external OAuth/OIDC provider is the authorization
-server. Jaźń validates opaque bearer tokens through RFC 7662 introspection.
+### Secure MCP Tunnel
 
-The MCP Python SDK publishes RFC 9728 Protected Resource Metadata from
-`AuthSettings`, so clients can discover the configured authorization server.
+```text
+ChatGPT plugin
+  -> OpenAI Secure MCP Tunnel
+  -> managed tunnel-client runtime
+  -> latka_jazn/mcp/tunnel_bootstrap.py (stdio MCP)
+  -> loopback Jaźń daemon
+  -> durable turn/idempotency/finalization stores
+```
 
-## Why this route
+The ChatGPT conversation sandbox is not the Jaźń runtime in either topology.
 
-ChatGPT web does not directly connect to a local MCP process. The MCP endpoint
-must be reachable from ChatGPT over HTTPS, or another supported transport must
-bridge it. The public HTTPS route does not require an OpenAI API key. Secure MCP
-Tunnel remains a separate option and has its own control-plane credentials.
+## Model-visible MCP actions
 
-Required deployment inputs:
+The canonical model-facing surface is:
 
-- public HTTPS endpoint ending in `/mcp`;
-- OAuth/OIDC provider compatible with MCP discovery;
-- RFC 7662 introspection endpoint;
-- introspection client id/secret stored only in environment variables;
-- ChatGPT plugin/app availability for the target account/workspace.
+- `jazn_status` — read-only readiness evidence for the persistent runtime.
+- `jazn_generate_visible_reply` — submit exactly one ordinary user turn using
+  a stable `request_id`.
+- `jazn_resume_visible_reply` — resume/poll the same
+  `daemon_request_id` without replaying the original message.
+- `jazn_finalize_reply` — bounded phase-2 finalization when the runtime returns
+  `generate_then_finalize`.
 
-## Start production MCP
+The older `jazn_turn` / `jazn_resume_turn` aliases remain compatibility
+surfaces in the stdio server but are app-only metadata in MCP 2026 tool
+discovery. The public HTTP gateway advertises the canonical names directly.
+
+OpenAI deprecated `_meta["openai/visibility"]` in July 2026. Canonical Jaźń
+actions use `_meta.ui.visibility=["model","app"]`; compatibility aliases use
+`["app"]`.
+
+## Start the public HTTPS gateway
+
+The gateway is an OAuth resource server. The current implementation supports an
+RFC 7662 introspection provider and keeps the daemon on loopback.
 
 ```powershell
 $env:JAZN_MCP_OAUTH_CLIENT_ID = "<introspection-client-id>"
@@ -68,10 +88,32 @@ py -X utf8 run.py mcp-http `
   --allowed-host jazn.example.com
 ```
 
-The gateway validates `active=true`, non-empty `client_id`, exact resource
-audience binding, optional issuer consistency, scopes, and SDK resource binding.
+Terminate public TLS in a reverse proxy/load balancer and forward only to the
+loopback-bound gateway. Do not expose the private daemon port.
 
-## Generate Agent Plugin package
+### Provider-neutral container deployment
+
+For a persistent runtime outside the ChatGPT conversation sandbox, the
+repository includes `deploy/chatgpt_mcp/Dockerfile` and the fail-closed
+`latka_jazn.mcp.deployment` entrypoint. The entrypoint does not implement a
+second lifecycle. It invokes the canonical `run.py start`, requires a live
+`run.py status --json` result with `daemon_reachable=true`, and only then
+`exec`s the OAuth-protected `run.py mcp-http --public-oauth` gateway.
+
+The image runs as an unprivileged user, exposes only port 8080, keeps the
+private daemon loopback-only, and has a `/readyz` health check. OAuth client
+secret values stay in environment variables and are never copied into command
+arguments. Build and environment details are documented in
+`deploy/chatgpt_mcp/README.md`.
+
+A container that is healthy is deployment evidence, not ChatGPT capability
+evidence. The public endpoint still needs upstream HTTPS/TLS and a real
+Developer Mode app/connection before a host-observed `jazn_status` call can
+promote the remote route.
+
+## Build the installable plugin package
+
+Portable package:
 
 ```powershell
 py -X utf8 run.py chatgpt-plugin-package `
@@ -81,120 +123,107 @@ py -X utf8 run.py chatgpt-plugin-package `
   --json
 ```
 
-The output contains `plugin.json` and `mcp.json`. The MCP file uses the
-portable Agent Plugins 1.0.0 `streamable-http` transport and contains no
-credentials.
+After the MCP server has been registered in ChatGPT Developer Mode, copy the
+technical app id from the ChatGPT plugin URL and generate the OpenAI app binding:
 
-Generating the package does not deploy the endpoint, configure OAuth, install
-the plugin, or prove that a given ChatGPT host exposes the app capability.
-
-## ChatGPT connection
-
-For developer testing, connect the deployed HTTPS `/mcp` endpoint through
-ChatGPT Developer mode when that capability is available. For distribution,
-package/publish the plugin through OpenAI's plugin workflow.
-
-Host/account capability is an external boundary: repository code cannot enable
-Developer mode, install a plugin on behalf of the user, or make a private local
-machine internet-reachable.
-
-
-## Verify the route from ChatGPT without a local executor
-
-After the app is connected, verify it from the same ChatGPT surface by actually
-calling the read-only `jazn_status` tool. A successful current call returns
-`structuredContent` containing:
-
-- `evidence_schema=jazn_public_mcp_status/v1`;
-- `tool_name=jazn_status`;
-- `protocol_version=2026-07-28`;
-- `public_transport=streamable_http`;
-- `gateway_live=true` and `daemon_reachable=true`;
-- `ready=true`;
-- non-empty `gateway_instance_id` and `runtime_instance_id`;
-- exact `package_version` / `runtime_version`;
-- fresh `observed_at_utc` and `runtime_heartbeat_at_utc`.
-
-The host then supplies that exact current response to `host-preflight` as
-`connector_status` together with
-`host_connector_invocation_observed=true`. That boolean is host evidence of
-the action that just happened; it must never be reconstructed from saved JSON,
-plugin metadata, installation state, an @mention, or user text.
-
-This allows the valid end state:
-
-```text
-executor_available=false
-remote_runtime_available=true
-execution_route=remote_runtime
+```powershell
+py -X utf8 run.py chatgpt-plugin-package `
+  --root . `
+  --endpoint https://jazn.example.com/mcp `
+  --registered-app-id plugin_asdk_app_<id> `
+  --output .\exports\jazn-chatgpt-plugin `
+  --force `
+  --json
 ```
 
-The repository still cannot create the ChatGPT connector capability. If the
-`jazn_status` action is not actually callable, the remote route remains
-unverified and the host must not imitate a Jaźń response.
+The second form writes `plugin.json`, `mcp.json`, and `.app.json`.
+Packaging still does not create the ChatGPT connection or install the plugin.
 
-## Security
+## Connect in ChatGPT
 
-- no unauthenticated production mode;
-- introspection secret is read from environment variables, not CLI arguments;
-- issuer/resource/introspection URLs must be HTTPS;
-- audience/resource binding is fail-closed;
-- SDK `AuthSettings` provides RFC 9728 Protected Resource Metadata and bearer
-  challenge wiring;
-- DNS rebinding/allowed-host controls remain in `PublicMcpGateway`;
-- successful HTTP/authentication does not bypass Jaźń turn lineage or
-  `generate_then_finalize -> display_exact` finalization.
+1. Enable Developer Mode in ChatGPT if the account/workspace policy allows it.
+2. Open ChatGPT Plugins and add the MCP connection.
+3. For public ingress, provide the deployed HTTPS URL ending in `/mcp`.
+4. For private ingress, select Secure MCP Tunnel and choose/enter the
+   `tunnel_id`.
+5. Create the connection and review the discovered tool list.
+6. After changing names/schemas/annotations, deploy/restart the server, use
+   Refresh on the ChatGPT connection, then start a new conversation.
 
-## External sources used
+Repository code cannot perform these host/account actions on the user's behalf.
 
-- OpenAI Developers — Package your plugin:
+## Acceptance test: real ingress
+
+The release is accepted only when all of the following are observed in a fresh
+ChatGPT conversation:
+
+1. The local conversation executor may be unavailable; that must not prevent
+   the test.
+2. The connected Jaźń app exposes callable `jazn_status` and
+   `jazn_generate_visible_reply` actions to the current host.
+3. `jazn_status` returns current evidence with the expected package/runtime
+   version, non-empty runtime instance identity, fresh heartbeat, and
+   `ready=true`.
+4. One user message is submitted exactly once through
+   `jazn_generate_visible_reply` with a stable `request_id`.
+5. If the result is `poll_runtime`, the host calls
+   `jazn_resume_visible_reply` for the same `daemon_request_id` and does not
+   replay the message.
+6. If the result is `generate_then_finalize`, the host obeys the returned
+   generation contract and completes `jazn_finalize_reply`.
+7. Visible Jaźń text is shown only after the same turn returns
+   `action=display_exact` with valid lineage/MessageEnvelope evidence.
+
+A package, endpoint, tunnel id, successful deployment, successful tool scan, or
+"installed" catalog state is insufficient evidence by itself.
+
+### No-executor success evidence
+
+A real remote-success observation is valid even when `executor_available=false`,
+but only after the current ChatGPT surface actually invokes `jazn_status`.
+Its structured result must carry `evidence_schema=jazn_public_mcp_status/v1`
+and pass the runtime/version/freshness checks from `AGENTS.chatgpt.md`. Only
+then may the host report `remote_runtime_available=true` and preserve the
+SYSTEM-returned `execution_route=remote_runtime`.
+
+Connector invocation evidence must never be reconstructed from saved JSON,
+copied diagnostics, a previous conversation, catalog state, or a remembered
+tool result. Every ordinary turn needs fresh host-observed capability and its
+own turn/finalization lineage.
+
+## Security / production checklist
+
+- HTTPS for public ingress; no credentials in URLs.
+- OAuth/OIDC authorization for private/user data; current Jaźń public gateway
+  supports fail-closed RFC 7662 introspection.
+- Validate issuer/resource/audience/scopes and return a proper bearer challenge
+  on authorization failure.
+- Keep Jaźń daemon loopback-only.
+- Apply per-principal rate limits and idempotent request identities.
+- Never authorize from ChatGPT metadata such as `openai/session`,
+  `openai/subject`, user agent, or location hints.
+- Keep raw memory, local paths, secrets, and private operator diagnostics out of
+  model-visible tool results.
+- Treat tool annotations as host UX/safety hints, not authorization.
+- Log identifiers needed for incident correlation but redact secrets/tokens.
+
+## Sources verified for this release
+
+- OpenAI — Build an MCP server:
+  https://developers.openai.com/plugins/build/mcp-server
+- OpenAI — Package your plugin:
   https://developers.openai.com/plugins/build/plugins
-- OpenAI Developers — MCP server and UI quickstart:
-  https://developers.openai.com/plugins/build/app-quickstart
-- MCP Python SDK — Authorization:
-  https://github.com/modelcontextprotocol/python-sdk/blob/main/docs/run/authorization.md
-- MCP specification 2026-07-28 — Authorization:
-  https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/authorization/index.mdx
-- MCP specification — Authorization security considerations:
-  https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/authorization/security-considerations.mdx
-
-
-## v16.3.25.5.93 — ChatGPT Developer Mode turn contract
-
-The modern ChatGPT-facing tool surface is intentionally conversation-oriented:
-
-- jazn_turn(clientTurnId, message, sessionId?) is the primary entrypoint for an
-  ordinary user message when the Jaźń app is selected.
-- jazn_resume_turn(clientTurnId) resumes the same already-submitted turn and has
-  no message field, so the public schema itself discourages accidental replay.
-- jazn_finalize_reply remains the bounded phase-2 finalizer whenever the
-  canonical runtime returns generate_then_finalize.
-- jazn_status is the connector-observed readiness probe.
-- jazn_health is a redacted transport-liveness diagnostic.
-- jazn_memory_status is a redacted memory/recall-readiness diagnostic.
-
-clientTurnId is not a second identity store. It maps exactly to the canonical
-request_id / daemon_request_id, so the existing Jaźń idempotency store,
-operation recovery, durable task registry and host-visible finalization remain
-authoritative.
-
-The canonical implementation names jazn_generate_visible_reply and
-jazn_resume_visible_reply remain available for compatibility and MCP Tasks
-bridging, but the modern Developer Mode list hides them in favor of the simpler
-turn/resume aliases.
-
-Raw MEMORY stays on the persistent Jaźń host. The public tools expose only the
-bounded turn result and redacted readiness metadata; local paths, database
-contents and private operator details are not part of the Developer Mode
-surface.
-
-Production public HTTPS remains fail-closed and authenticated. Version 5.93
-does not enable anonymous Internet listeners and does not place static secrets
-in query strings. Unauthenticated access remains restricted to explicit
-loopback development. Secure MCP Tunnel is the private-network alternative and
-uses the same public turn aliases over the same canonical runtime.
-
-ChatGPT application selection remains a host/UI capability. The repository can
-make jazn_turn the preferred first-message tool once the app is selected, but
-cannot globally preselect the Jaźń app for every new conversation or invent a
-connector capability that the current ChatGPT host did not expose.
+- OpenAI — Connect and test your plugin:
+  https://developers.openai.com/plugins/deploy/connect-chatgpt
+- OpenAI — Plugin reference / tool visibility metadata:
+  https://developers.openai.com/plugins/reference
+- OpenAI — Plugin changelog:
+  https://developers.openai.com/plugins/changelog
+- OpenAI — Authentication:
+  https://developers.openai.com/plugins/build/auth
+- OpenAI — Secure MCP Tunnel:
+  https://developers.openai.com/api/docs/guides/tools-connectors-mcp
+- OpenAI tunnel-client:
+  https://github.com/openai/tunnel-client
+- MCP 2026-07-28 release:
+  https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/

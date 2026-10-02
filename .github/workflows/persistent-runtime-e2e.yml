@@ -45,6 +45,9 @@ on:
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
       - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/deployment.py"
+      - "deploy/chatgpt_mcp/**"
+      - ".dockerignore"
       - "latka_jazn/mcp/oauth_introspection.py"
       - "latka_jazn/mcp/chatgpt_plugin.py"
       - "latka_jazn/mcp/http_tasks_bridge.py"
@@ -82,6 +85,7 @@ on:
       - "tests/test_mcp_http_cli.py"
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
+      - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -140,6 +144,9 @@ on:
       - "latka_jazn/memory/memory_recall_contract.py"
       - "latka_jazn/mcp/server.py"
       - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/deployment.py"
+      - "deploy/chatgpt_mcp/**"
+      - ".dockerignore"
       - "latka_jazn/mcp/oauth_introspection.py"
       - "latka_jazn/mcp/chatgpt_plugin.py"
       - "latka_jazn/mcp/http_tasks_bridge.py"
@@ -177,6 +184,7 @@ on:
       - "tests/test_mcp_http_cli.py"
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
+      - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -247,6 +255,7 @@ jobs:
           tests/test_mcp_http_cli.py
           tests/test_mcp_oauth_introspection.py
           tests/test_chatgpt_plugin_package.py
+          tests/test_chatgpt_public_mcp_deployment.py
           tests/test_pack_generator_secure_mcp_bridge_contract.py
 
       - name: Host gate and persistent lifecycle E2E

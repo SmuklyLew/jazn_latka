@@ -389,6 +389,11 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "preflight_flag": "--post-materialization-preflight",
             "preflight_argv": ["host-preflight", "--json"],
             "runtime_activation_requires_additional_host_capabilities": True,
+            "runtime_start_entrypoint": "run.py start",
+            "runtime_status_entrypoint": "run.py status --snapshot --json",
+            "runtime_start_argv": ["start"],
+            "runtime_status_argv": ["status", "--snapshot", "--json"],
+            "activation_success_requires_verified_status": True,
         },
         "remote": {
             "preferred_transport": "public_streamable_http",
@@ -588,8 +593,9 @@ def bootstrap_system_zip(
             "activation_contract": build_post_materialization_activation_contract(destination),
             "next_step": (
                 "Read AGENTS.md. If this bootstrap is already executing in a usable Python host, "
-                "prefer --post-materialization-preflight; otherwise use only a verified callable "
-                "remote Jaźń MCP route or an explicit host handoff."
+                "prefer --post-materialization-preflight. A positive local gate still requires "
+                "canonical runtime start and verified status before activation can be claimed; "
+                "otherwise use only a verified callable remote Jaźń MCP route or explicit host handoff."
             ),
         }
         if run_post_materialization_preflight:
