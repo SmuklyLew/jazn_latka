@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.96.3-system-coherence-convergence",
-  "runtime_version": "16.3.25.5.96.3-system-coherence-convergence",
-  "package_version": "16.3.25.5.96.3-system-coherence-convergence",
-  "generated_at_utc": "2026-10-02T14:37:28+00:00",
-  "updated_at_utc": "2026-10-02T14:37:28+00:00",
+  "version": "16.3.25.5.96.4-system-coherence-convergence",
+  "runtime_version": "16.3.25.5.96.4-system-coherence-convergence",
+  "package_version": "16.3.25.5.96.4-system-coherence-convergence",
+  "generated_at_utc": "2026-10-02T14:42:11+00:00",
+  "updated_at_utc": "2026-10-02T14:42:11+00:00",
   "start_file": "run.py",
-  "file_count": 1867,
-  "static_file_count": 1867,
+  "file_count": 1868,
+  "static_file_count": 1868,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 17432,
-      "sha256": "b1e9b6708ad1d7c9d42e0211f4682df4d40b9404ea7df70b297472675673e054",
+      "size_bytes": 19639,
+      "sha256": "153cbe78701b2c21cc915c3e8b8c6f5c63822223c9d6c696f50583a1af0031d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/stable-test-contracts.yml",
-      "size_bytes": 6791,
-      "sha256": "b9304fc1e93124fedd78eed74a057a058ec7494091ce16a451206514181229e7",
+      "size_bytes": 2228,
+      "sha256": "171d0a55b5590b11bb7cbf0bcee3422bd46b1f2fc833fe0fa0891fb4c2811316",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2900,
-      "sha256": "ab217b288fc4103400c5e6d44dccb92a2cd3291760504e0c7e606887cbbaff18",
+      "sha256": "259d35df1b3ab43e0b196638d0a7fcb3e5ded49dd2ae038d7e4f0927bb507bab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2297,8 +2297,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_96_SYSTEM_COHERENCE_CONVERGENCE.md",
-      "size_bytes": 7331,
-      "sha256": "29658dde66c17ae6d49e9e51f1b66402bd2310e5e9cea0051fa6c6c47df62eaf",
+      "size_bytes": 8585,
+      "sha256": "ad9e99c8689a5e904a293926eb1cac6537b5fb84182ff6bbc5749a302357d41a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8777,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5260,
-      "sha256": "337641cfc966d9e3323bf4ff2b41e04684ffafe03b25b4e1010e54fdb65ffa0e",
+      "size_bytes": 5278,
+      "sha256": "32c3deffdb458d525a41ae6311c50a9fabc67d5763ab56ab4b0e6347177af8a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13159,6 +13159,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.96.4-generated-artifact-single-owner-fix/test_generated_artifact_mutator_order.py",
+      "size_bytes": 2056,
+      "sha256": "06463e05ac9be78dab5973263b589db3604ff9eeebaa7f3d50301a0e8629477a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -14168,8 +14177,8 @@
     },
     {
       "path": "tests/test_generated_artifact_mutator_order.py",
-      "size_bytes": 2056,
-      "sha256": "06463e05ac9be78dab5973263b589db3604ff9eeebaa7f3d50301a0e8629477a",
+      "size_bytes": 2392,
+      "sha256": "99d4d66fa2f81e6e11216970618448573d366b837c28a475d62e0b98473ab3a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16670,8 +16679,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1694092,
-      "sha256": "85695aff4a0a60d8596e52df3a7d9bf359b0fbf1b9d363b2d338683e34816330",
+      "size_bytes": 1694110,
+      "sha256": "08e36a542277a81a0ba46f2a4dfdb02cee0645fe6e2100304d08b2e45a11a387",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17255,11 +17264,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.96.3-system-coherence-convergence",
+  "release_version": "16.3.25.5.96.4-system-coherence-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.96.3-system-coherence-convergence",
-    "package_version": "16.3.25.5.96.3-system-coherence-convergence",
-    "release_version": "16.3.25.5.96.3-system-coherence-convergence"
+    "runtime_version": "16.3.25.5.96.4-system-coherence-convergence",
+    "package_version": "16.3.25.5.96.4-system-coherence-convergence",
+    "release_version": "16.3.25.5.96.4-system-coherence-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
