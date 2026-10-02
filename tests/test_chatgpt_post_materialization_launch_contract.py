@@ -58,7 +58,7 @@ def test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launc
         "-X",
         "utf8",
         "main.py",
-        "chat-gpt",
+        "--chat-gpt",
         "--session-id",
         "<stable-session-id>",
     ]
@@ -97,14 +97,14 @@ def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Pat
     assert contract["post_materialization_control_plane_start_entrypoint"] == "main.py start"
     assert (
         contract["post_materialization_chatgpt_bridge_entrypoint"]
-        == "main.py chat-gpt --session-id <stable-session-id>"
+        == "main.py --chat-gpt --session-id <stable-session-id>"
     )
     assert contract["post_materialization_chatgpt_bridge_control_plane_argv"] == [
         "<python>",
         "-X",
         "utf8",
         "main.py",
-        "chat-gpt",
+        "--chat-gpt",
         "--session-id",
         "<stable-session-id>",
     ]
