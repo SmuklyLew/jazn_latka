@@ -87,8 +87,13 @@ rejestracji MCP w ChatGPT, a nie jako wartość wymyślana przez repo.
 
 ### 4. Persistent runtime
 
-Ta wersja nie przenosi daemonu do sandboxa rozmowy. Obsługiwane topologie
-pozostają:
+Ta wersja nie przenosi daemonu do sandboxa rozmowy. Dodano provider-neutralny
+target kontenerowy `deploy/chatgpt_mcp/Dockerfile` oraz
+`latka_jazn.mcp.deployment`. Warstwa deploymentu deleguje start i status do
+kanonicznego `run.py`, wymaga osiągalnego daemona przed uruchomieniem gatewaya,
+nie przekazuje sekretów OAuth w argv i nie publikuje prywatnego portu 8787.
+
+Obsługiwane topologie pozostają:
 
 - publiczny HTTPS MCP -> gateway -> loopback daemon;
 - Secure MCP Tunnel -> managed `tunnel-client` -> stdio MCP -> loopback daemon.
