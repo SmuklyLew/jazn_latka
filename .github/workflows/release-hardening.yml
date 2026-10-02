@@ -480,7 +480,7 @@ jobs:
         run: |
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json audit
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json download \
-            --profile core --profile archive --platform current \
+            --profile core --profile archive --profile pdf --platform current \
             --python-version "${{ matrix.python }}" --dry-run
           python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json download \
             --profile mcp-http --platform current \
