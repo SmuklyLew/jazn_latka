@@ -47,6 +47,42 @@ ChatGPT plugin
 
 The ChatGPT conversation sandbox is not the Jaźń runtime in either topology.
 
+## Local ChatGPT executor path
+
+When the current ChatGPT host actually exposes Python/process execution, the
+local path is different from MCP registration and does not require a paid
+OpenAI API call:
+
+```text
+verified SYSTEM ZIP
+  -> CHATGPT_BOOTSTRAP.py --post-materialization-preflight
+  -> verified active_root
+  -> main.py start
+  -> main.py status --snapshot --json
+  -> main.py chat-gpt --session-id <stable-session-id>
+     (normally reached through the public thin starter run.py)
+  -> one persistent stdin/stdout JSONL bridge when the host can retain it
+  -> otherwise daemon_bound_transactional_turns with a preallocated request_id
+```
+
+The exported post-materialization contract uses `main.py` subcommands (`start`,
+`status`, `chat-gpt`). Legacy `--daemon-*` / `--chat-gpt` flags remain an
+internal compatibility mapping and are not the host-facing activation API.
+
+The `chat-gpt` route uses the surrounding ChatGPT host as the language-model
+channel. It does **not** require `OPENAI_API_KEY` and it does not take a
+`--model gpt-4`-style selector. The host must preserve the exact runtime
+contract instead of inventing a model name from the currently selected ChatGPT
+model.
+
+The bootstrap package cannot manufacture process-execution capability. If the
+host cannot create a Python process, the local sequence is unavailable for that
+host generation even when the ZIP is present and valid. In that case only an
+actually callable Jaźń remote app/connector with fresh `jazn_status` evidence,
+or an explicitly accepted host handoff, may continue activation. A generic
+OpenAI Deep Research app, GitHub connector, catalog result, URL, or `installed`
+flag is not Jaźń capability evidence.
+
 ## Model-visible MCP actions
 
 The canonical model-facing surface is:

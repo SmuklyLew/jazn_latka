@@ -143,10 +143,47 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "post_materialization_preflight_entrypoint": "run.py host-preflight --json",
         "post_materialization_start_entrypoint": "run.py start",
         "post_materialization_status_entrypoint": "run.py status --snapshot --json",
+        "post_materialization_control_plane_start_entrypoint": "main.py start",
+        "post_materialization_control_plane_status_entrypoint": "main.py status --snapshot --json",
+        "post_materialization_chatgpt_bridge_entrypoint": "main.py chat-gpt --session-id <stable-session-id>",
+        "post_materialization_chatgpt_bridge_control_plane_argv": [
+            "<python>",
+            "-X",
+            "utf8",
+            "main.py",
+            "chat-gpt",
+            "--session-id",
+            "<stable-session-id>",
+        ],
+        "post_materialization_chatgpt_bridge_public_starter_argv": [
+            "<python>",
+            "-X",
+            "utf8",
+            "run.py",
+            "chat-gpt",
+            "--session-id",
+            "<stable-session-id>",
+        ],
+        "post_materialization_chatgpt_language_model_channel": "chatgpt_host",
+        "post_materialization_chatgpt_model_cli_argument_required": False,
+        "post_materialization_chatgpt_paid_openai_api_required": False,
+        "post_materialization_chatgpt_openai_api_key_required": False,
+        "post_materialization_chatgpt_persistent_stdio_preferred": True,
+        "post_materialization_chatgpt_requires_host_process_execution": True,
+        "post_materialization_chatgpt_nonstreaming_transport": "daemon_bound_transactional_turns",
+        "post_materialization_chatgpt_request_id_preallocated_before_process_spawn": True,
+        "post_materialization_chatgpt_message_replay_allowed": False,
+        "post_materialization_chatgpt_visible_reply_requires": [
+            "action=display_exact",
+            "valid_lineage",
+            "valid_MessageEnvelope",
+            "accepted_finalization",
+        ],
         "post_materialization_activation_sequence": [
             "run.py host-preflight --json",
             "run.py start",
             "run.py status --snapshot --json",
+            "main.py chat-gpt --session-id <stable-session-id>",
         ],
         "post_materialization_activation_requires_verified_status": True,
         # The OpenAI tunnel client/control plane is deliberately external.  The
@@ -203,7 +240,11 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "a public endpoint is deployed, authenticated, healthy, reachable, or registered with the current ChatGPT "
             "host. After verified extraction, the bootstrap may run dependency-free host-preflight in the same already "
             "running Python interpreter without spawning a child process; this still does not prove daemon/runtime readiness. "
-            "The ZIP cannot grant ChatGPT a local executor, authenticate an external control plane, publish an "
+            "When local process execution exists, the canonical ChatGPT bridge is main.py chat-gpt (normally reached "
+            "through the thin run.py starter), uses the surrounding ChatGPT host as its language-model channel, and "
+            "does not require OPENAI_API_KEY or a --model argument. Exported host contracts use main.py subcommands; "
+            "legacy --chat-gpt/--daemon-* flags remain internal compatibility only. The ZIP cannot grant ChatGPT a local executor, "
+            "authenticate an external control plane, publish an "
             "app/connector, or prove a usable remote runtime route. "
             "Private MEMORY is an independent optional capability and is not required for core runtime readiness. "
             "Remote transport or execution handoff must be explicitly supplied and verified by the host."
