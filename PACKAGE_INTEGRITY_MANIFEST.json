@@ -3,11 +3,11 @@
   "version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
-  "generated_at_utc": "2026-10-02T23:53:27+00:00",
-  "updated_at_utc": "2026-10-02T23:53:27+00:00",
+  "generated_at_utc": "2026-10-02T23:56:12+00:00",
+  "updated_at_utc": "2026-10-02T23:56:12+00:00",
   "start_file": "run.py",
-  "file_count": 1893,
-  "static_file_count": 1893,
+  "file_count": 1896,
+  "static_file_count": 1896,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "28943a5583d7844e43eba18a21150cd7a78bab0719b69e07a880deb885a15de5",
+      "size_bytes": 2997,
+      "sha256": "a24f34031c667a20477e470dc3c271de2f10244ac623927f89bca1fcad31cfc6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13366,6 +13366,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.99-pre-chatgpt-bootstrap-progress-convergence/test_chatgpt_post_materialization_launch_contract.py",
+      "size_bytes": 6006,
+      "sha256": "864b46699779fbb4bec9deb10ab38a781e3d9153dbecf5476e6ea68ed5392e46",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13621,6 +13630,15 @@
       "path": "tests/test_chatgpt_bootstrap_package_contract.py",
       "size_bytes": 1454,
       "sha256": "f08efc0636173c8838f4f49b689c602485fc5927d0acf2dc122d187bf398f8ea",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
+      "size_bytes": 4382,
+      "sha256": "bd2c01204d8db191058646270b61ba84517b2a89dd37a8c98001b425182a9699",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13907,8 +13925,8 @@
     },
     {
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
-      "size_bytes": 6006,
-      "sha256": "864b46699779fbb4bec9deb10ab38a781e3d9153dbecf5476e6ea68ed5392e46",
+      "size_bytes": 7185,
+      "sha256": "fe166b248870cc2e217db13264a5c097017cbf055d36d141b78f4b35fad18a98",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16354,6 +16372,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_system_update_report_guard.py",
+      "size_bytes": 2577,
+      "sha256": "a4c418de220188ab224786b85e4ee65771721acb36dbb8ecd33d6437b5fcc350",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_temporal_archive_recall.py",
       "size_bytes": 5464,
       "sha256": "3a839a07f4f801492707be26a01fc8dcc02fed46301a7dbd34b3953eca339479",
@@ -16715,8 +16742,8 @@
     },
     {
       "path": "tools/jazn_pack_generator_app/manifest.py",
-      "size_bytes": 18776,
-      "sha256": "f66b5e9427aafb7f26d2231817897a4515b93f958f67ec6a8a9846e932a7f335",
+      "size_bytes": 20200,
+      "sha256": "851e521462d618595cfd5dbb14142461189f0e2423eb7a518aeb50f2b273da7c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16904,8 +16931,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1707578,
-      "sha256": "bd6ae142da8e2a43ca95165a6db13154e0923f00ca5a516e5e998e97a2bbe592",
+      "size_bytes": 1713760,
+      "sha256": "5fe6489b272abf3ed32df974b4396215766720b39206f89d7b83fa6a4dce3180",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
