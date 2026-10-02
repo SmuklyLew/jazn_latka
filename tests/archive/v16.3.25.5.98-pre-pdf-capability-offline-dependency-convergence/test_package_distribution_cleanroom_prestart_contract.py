@@ -9,7 +9,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "package-distribution-cleanroom.yml"
 
 def _handoff_step() -> str:
     text = WORKFLOW.read_text(encoding="utf-8")
-    start = text.index("      - name: Dependency-empty run.py performs verified offline handoff")
+    start = text.index("      - name: Ambient run.py performs verified offline handoff")
     end = text.index("      - name: Reject package when dependency sidecar is absent", start)
     return text[start:end]
 
@@ -33,7 +33,7 @@ def test_prestart_status_is_inactive_while_doctor_reports_release_readiness() ->
 
 def test_activation_checks_capture_exit_code_then_fail_closed() -> None:
     step = _handoff_step()
-    start_index = step.index('"$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start.json"')
+    start_index = step.index('python run.py start --json > "$RUNNER_TEMP/start.json"')
     activation = step[start_index:]
     before_start = step[:start_index]
     assert before_start.rstrip().endswith("set +e")
@@ -44,12 +44,3 @@ def test_activation_checks_capture_exit_code_then_fail_closed() -> None:
     assert 'assert p.get("runtime_core_ready") is True' in activation
     assert 'assert p.get("runtime_write_ready") is True' in activation
     assert 'assert st.get("voice_live_ready") is True' in activation
-
-
-def test_cleanroom_uses_isolated_bootstrap_python_without_site_packages() -> None:
-    text = WORKFLOW.read_text(encoding="utf-8")
-    assert "python -m venv --without-pip" in text
-    assert 'BARE_PYTHON: ${{ steps.bare_python.outputs.path }}' in text
-    assert 'for name in ("packaging", "tzdata", "pypdf", "py7zr", "pyzipper"):' in text
-    assert '"$BARE_PYTHON" run.py doctor --json' in text
-    assert '"$BARE_PYTHON" run.py start --json' in text

@@ -51,13 +51,13 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
         PROFILE_JSON.read_text(encoding="utf-8"), encoding="utf-8"
     )
     deps = dependencies or [
+        "pypdf>=6.19.0,<7",
         "tzdata>=2024.1",
         "packaging>=24.2,<27",
     ]
     pyproject = "[project]\nname='fixture'\nversion='1.0'\nrequires-python='>=3.12'\ndependencies=[\n"
     pyproject += "".join(f"  {item!r},\n" for item in deps)
     pyproject += "]\n[project.optional-dependencies]\n"
-    pyproject += "pdf=['pypdf>=6.19.0,<7']\n"
     pyproject += "archive=['py7zr>=1.1.3,<2','pyzipper>=0.4.0,<1','rarfile>=4.5,<5']\n"
     pyproject += "memory-rebuild-ui=['prompt-toolkit>=3.0.52,<4']\n"
     pyproject += "memory-cloud=['PyNaCl>=1.5,<2']\n"
@@ -143,21 +143,16 @@ def _bundle(root: Path, bundle_dir: Path, *, profiles: list[str] | None = None) 
     return bundle_dir
 
 
-def test_core_archive_pdf_resolves_release_dependencies_without_making_pdf_activation_required(tmp_path: Path) -> None:
+def test_core_archive_resolves_all_required_base_dependencies(tmp_path: Path) -> None:
     root = _project(tmp_path)
-    core_requirements = resolve_profile_requirements(root, ["core"])
-    assert core_requirements == [
-        "tzdata>=2024.1",
-        "packaging>=24.2,<27",
-    ]
-    requirements = resolve_profile_requirements(root, ["core", "archive", "pdf"])
+    requirements = resolve_profile_requirements(root, ["core", "archive"])
     assert requirements == [
+        "pypdf>=6.19.0,<7",
         "tzdata>=2024.1",
         "packaging>=24.2,<27",
         "py7zr>=1.1.3,<2",
         "pyzipper>=0.4.0,<1",
         "rarfile>=4.5,<5",
-        "pypdf>=6.19.0,<7",
     ]
     assert activation_profile_names(root) == ("core",)
 

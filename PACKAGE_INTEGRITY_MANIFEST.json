@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "runtime_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "package_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-  "generated_at_utc": "2026-10-02T20:59:48+00:00",
-  "updated_at_utc": "2026-10-02T20:59:48+00:00",
+  "version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+  "generated_at_utc": "2026-10-02T22:41:21+00:00",
+  "updated_at_utc": "2026-10-02T22:41:21+00:00",
   "start_file": "run.py",
-  "file_count": 1882,
-  "static_file_count": 1882,
+  "file_count": 1892,
+  "static_file_count": 1892,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -92,8 +92,8 @@
     },
     {
       "path": ".github/workflows/dependency-artifacts.yml",
-      "size_bytes": 8298,
-      "sha256": "4a0b9d936530af3a9a4c218b7d304f6b9266b7e6dc7944e1ff1f2484b4c451c8",
+      "size_bytes": 8324,
+      "sha256": "dd8384224d55e1eac1a9cd07240d53299dca4f31c377c395ef2c39484f38ba61",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 18377,
-      "sha256": "f6c91e459f8826a4a464d45634e86d0522c5a86435721d37991052fc32c867cf",
+      "size_bytes": 19031,
+      "sha256": "698458945bf3aa5405ea761626245e32bf3537e70f2e8d1caf52fa683ce609ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -182,8 +182,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 19764,
-      "sha256": "157aaac5f3ad9af2f14b966e030faeffda6165bfedbb4bca3c7cd3b5f86470e2",
+      "size_bytes": 19778,
+      "sha256": "1c14937997f80159ca233e3e0a0317186e51b4a2af711190eab038e82e09269d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3030,
-      "sha256": "ab8099a2872a3dc0213b3b6c67ead736c3ebe6f70915caa691b7673b6eca1b96",
+      "size_bytes": 3006,
+      "sha256": "d96ab0b107439cd771abb0360a16ad7ea1b082f43a1b2a56c7e0a97fe8486c4d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1829,8 +1829,8 @@
     },
     {
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
-      "size_bytes": 10358,
-      "sha256": "33a94612cd303ebd5bb2ea1e9001c58bdcd8fef1c14c0fde53dc346b446f989a",
+      "size_bytes": 10821,
+      "sha256": "af702deb306109023e33717f960aceb5f1f5f7ef5ce011c595049ebe5dd353fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2323,6 +2323,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_99_PDF_CAPABILITY_OFFLINE_DEPENDENCY_CONVERGENCE.md",
+      "size_bytes": 5766,
+      "sha256": "0725a3f1a6c2fef0595971a03824dcb48e5d6935edfeade799b10e30b033deb2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
@@ -2360,8 +2369,8 @@
     },
     {
       "path": "docs/runtime/JAZN_PACKAGE_DISTRIBUTION_CONVERGENCE_V163255.md",
-      "size_bytes": 7383,
-      "sha256": "eaa66b4478043662a605885eb88814f9c1c4869e00fcc90c964fdf079675b86a",
+      "size_bytes": 7566,
+      "sha256": "205ef9e9dfcb2140ddc55d5c66ae0e1252eb2b558d8e0d28ccf0774930663586",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2495,8 +2504,8 @@
     },
     {
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
-      "size_bytes": 12869,
-      "sha256": "e773ef9f887f4ae0b0fbcc1bb80749578040ca2eee6b40081fb13256a7a17fb9",
+      "size_bytes": 13673,
+      "sha256": "380ff04c82f7ca7e94f9ff0136ec1e61c67e28b95ea151b40203b78b8c34100e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7274,15 +7283,15 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/locks/README.md",
-      "size_bytes": 1187,
-      "sha256": "e827def7f14c7e96f45e889a07c29cb312b2433a8fe64bc945feeaf0831358df",
+      "size_bytes": 1341,
+      "sha256": "a06f419652689bdb96b387085912e6f4b0028afb00c8be2c8d8da35bd31468a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py312.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
       "sha256": "772cf97e47ed52a430d100928480ffbbd36d3b3392556938ff544f7965d46e9f",
       "mutable_runtime": false,
@@ -7291,7 +7300,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py313.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
       "sha256": "7829bc8d12f1705d928f7aaece3002f3984efa31e588d54cf2fe6af6a5498921",
       "mutable_runtime": false,
@@ -7300,7 +7309,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py314.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
       "sha256": "8b8ae01ec1b530d9c1938336891542f585adc9409f960ec4ea372d366f2f2871",
       "mutable_runtime": false,
@@ -7309,7 +7318,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py312.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
       "sha256": "6ce5923a1fbc5a47215a6cef32ae4826d05615fdb4e65f9f9b9daf976f6b6910",
       "mutable_runtime": false,
@@ -7318,7 +7327,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py313.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
       "sha256": "e06437db0cb821b80740fe2589c0c9daeccee6c07a2115f995ac248c0faaea49",
       "mutable_runtime": false,
@@ -7327,7 +7336,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py314.txt",
+      "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
       "sha256": "54fd401fb026f78198201ff8f842bf031f2a11809e578b41bfb93ecff14d8016",
       "mutable_runtime": false,
@@ -7337,8 +7346,8 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/profiles.json",
-      "size_bytes": 1922,
-      "sha256": "7b0ccc0bd18bb68b98b148d1c000b39b2f92942b216d85afcdb7cdbd6edb5915",
+      "size_bytes": 2039,
+      "sha256": "624bd7e84c76e56e47e2ac27d6112509a24eac83b750b8915e23d7070d364fe9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7482,7 +7491,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 2899,
-      "sha256": "4c4ab3547331cb756809ee2586fcf138f30274cb6ce7cf156bc418abd1069387",
+      "sha256": "1fdf78acc503df60a722b8aa05a5c9dde596111f378ea43202cc270a04e16f2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8804,8 +8813,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5294,
-      "sha256": "214f0119350f513f587c0378f7e266e6c2c95fed8d83ff51bd03ed618204960a",
+      "size_bytes": 5285,
+      "sha256": "23093a29992ad60d551d43a05f634ed0b1a37ceb5d3956e6b7b68e4f3f8d54d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8912,8 +8921,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 131564,
-      "sha256": "2adac7281803ca6c5a7fff329155f955a0d8552c3feac22c2162dcec55fecc7f",
+      "size_bytes": 131567,
+      "sha256": "63509d9285d1e20d00b4eb02d959dfb96b84f1654da4f4b0a6732128ae0ec688",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8921,8 +8930,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2232,
-      "sha256": "d12f07d89f9a21592cac455e0490277f956cbbd85bf1625d7cbfb1f41d0f88aa",
+      "size_bytes": 2242,
+      "sha256": "544a8fa070b1a04c78c0c7fb2ce338bd7777d7cc4df82a46522e02d062d8cfa1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13276,6 +13285,78 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_archive_capabilities.py",
+      "size_bytes": 5633,
+      "sha256": "406f8ee1e0533fb329633da5357037db68d5e590fc5398e391e69d03f4c5d9a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2095,
+      "sha256": "1bd2f9fc9c5f3c5f7f0dc6ca5f13e7c2e3ea25570071a1823540cd8fcc0bfa9e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6499,
+      "sha256": "a13bcd329e6e5e026812cf0d86ae0c10b951e7c293555370bb85e5e9a660d4ac",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_dependency_studio.py",
+      "size_bytes": 18829,
+      "sha256": "09ae72935b406862bdb00ebb99d0be2292272282a53b14148afad2068038df80",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.98-pre-pdf-capability-offline-dependency-convergence/test_package_distribution_cleanroom_prestart_contract.py",
+      "size_bytes": 1997,
+      "sha256": "c1bd6ea78b8e5e5fc9b1781a77d9265606a8188d7769d493efae823d4c12f87a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.99-implementation-regression-fixes/test_dependency_studio_before_pdf_fixture_fix.py",
+      "size_bytes": 19007,
+      "sha256": "f7e9a7a605f244d38544099b57a1ca78e52d84c342ee49fd87c7bd4ff762e7e3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.99-implementation-regression-fixes/test_dependency_studio_before_toml_newline_fix.py",
+      "size_bytes": 19056,
+      "sha256": "db5716d3c03c62fade1d2ad907b719989554a7a93c5d3a4b5350fa4257afd4f6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.99-implementation-regression-fixes/test_plugin_operator_convergence.py",
+      "size_bytes": 2797,
+      "sha256": "4114adf8f285231049f7699aaf00c5f7c85e702d96e81fd642d060691665e428",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13340,8 +13421,8 @@
     },
     {
       "path": "tests/test_archive_capabilities.py",
-      "size_bytes": 5633,
-      "sha256": "406f8ee1e0533fb329633da5357037db68d5e590fc5398e391e69d03f4c5d9a2",
+      "size_bytes": 5640,
+      "sha256": "d7e442e74819b7bd61475af561f2a43c51b0131a149f17adf82e6ff24b138d8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13547,8 +13628,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2095,
-      "sha256": "1bd2f9fc9c5f3c5f7f0dc6ca5f13e7c2e3ea25570071a1823540cd8fcc0bfa9e",
+      "size_bytes": 2091,
+      "sha256": "28a56279fb723c8f8bde54a13b348ef95d50fb31f801ce128022621dea4070c1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13925,8 +14006,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6499,
-      "sha256": "a13bcd329e6e5e026812cf0d86ae0c10b951e7c293555370bb85e5e9a660d4ac",
+      "size_bytes": 6495,
+      "sha256": "8f9119756ef54f9fa06ae94f93df7c96a6b0d7778a6f1295d4ffdd31e06a65c4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14159,8 +14240,8 @@
     },
     {
       "path": "tests/test_dependency_studio.py",
-      "size_bytes": 18829,
-      "sha256": "09ae72935b406862bdb00ebb99d0be2292272282a53b14148afad2068038df80",
+      "size_bytes": 19053,
+      "sha256": "53f778956a1bc64526768e3814aad1dc0b7ddc016698e7b6d77b3d7a20e93315",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15482,8 +15563,8 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "size_bytes": 1997,
-      "sha256": "c1bd6ea78b8e5e5fc9b1781a77d9265606a8188d7769d493efae823d4c12f87a",
+      "size_bytes": 2470,
+      "sha256": "52c4b18f5bfa24e853ae3c76d34475773252535cd7554a30bc3b2773186a7fa6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15526,6 +15607,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_pdf_dependency_capability_convergence.py",
+      "size_bytes": 2286,
+      "sha256": "31748a013f1c648597a142459f230fc6b9663be83d1d8b6332fa3a89723cdb25",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_pending_host_request_continuity.py",
       "size_bytes": 7864,
       "sha256": "07a8d5201fe0ff690801887f2f23e6c2c35c7a54b634ab53911a3dcaf55ed816",
@@ -15554,8 +15644,8 @@
     },
     {
       "path": "tests/test_plugin_operator_convergence.py",
-      "size_bytes": 2797,
-      "sha256": "4114adf8f285231049f7699aaf00c5f7c85e702d96e81fd642d060691665e428",
+      "size_bytes": 2914,
+      "sha256": "f0043a99847a59ec79da28a818d889555cc0abdfc87b5372d084abee87941f11",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16805,8 +16895,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1704321,
-      "sha256": "421134a3e8b1f2cd242deb8cf2c79db61b3f0bbf7f7fe22836e165696ca900c5",
+      "size_bytes": 1707578,
+      "sha256": "bd6ae142da8e2a43ca95165a6db13154e0923f00ca5a516e5e998e97a2bbe592",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17390,11 +17480,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
+  "release_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-    "package_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
-    "release_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence"
+    "runtime_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+    "package_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+    "release_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

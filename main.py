@@ -94,7 +94,7 @@ def _bootstrap_entrypoint_environment(argv: list[str]) -> None:
             "Automatyczny bootstrap runtime nigdy nie pobiera pakietów z sieci."
         ),
         "truth_boundary": (
-            "Runtime activation is blocked because required core+archive Python dependencies are not verified. "
+            "Runtime activation is blocked because activation-required core Python dependencies are not verified. "
             "Diagnostic/operator commands remain available."
         ),
     }

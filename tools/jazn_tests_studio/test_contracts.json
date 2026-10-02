@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.98",
-  "active_definition_count": 1845,
+  "system_version": "16.3.25.5.99",
+  "active_definition_count": 1849,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10798,18 +10798,18 @@
       "description_source": "source_identity",
       "line": 39
     },
-    "tests/test_dependency_studio.py::test_core_archive_resolves_all_required_base_dependencies": {
+    "tests/test_dependency_studio.py::test_core_archive_pdf_resolves_release_dependencies_without_making_pdf_activation_required": {
       "path": "tests/test_dependency_studio.py",
-      "name": "test_core_archive_resolves_all_required_base_dependencies",
-      "purpose": "Core archive resolves all required base dependencies",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_core_archive_pdf_resolves_release_dependencies_without_making_pdf_activation_required",
+      "purpose": "Core archive pdf resolves release dependencies without making pdf activation required",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "archive",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.readiness",
@@ -10840,7 +10840,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 160
+      "line": 165
     },
     "tests/test_dependency_studio.py::test_explicit_current_platform_alias_is_accepted_for_current_python": {
       "path": "tests/test_dependency_studio.py",
@@ -10861,7 +10861,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 174
+      "line": 179
     },
     "tests/test_dependency_studio.py::test_verify_bundle_checks_sha_and_wheel_structure": {
       "path": "tests/test_dependency_studio.py",
@@ -10882,7 +10882,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 183
+      "line": 188
     },
     "tests/test_dependency_studio.py::test_install_dry_run_is_offline_and_uses_managed_environment": {
       "path": "tests/test_dependency_studio.py",
@@ -10903,7 +10903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 197
+      "line": 202
     },
     "tests/test_dependency_studio.py::test_download_dry_run_does_not_create_wheelhouse": {
       "path": "tests/test_dependency_studio.py",
@@ -10924,7 +10924,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 210
+      "line": 215
     },
     "tests/test_dependency_studio.py::test_audit_reports_undeclared_external_import": {
       "path": "tests/test_dependency_studio.py",
@@ -10945,7 +10945,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 229
+      "line": 234
     },
     "tests/test_dependency_studio.py::test_activation_status_fails_closed_when_required_packages_missing": {
       "path": "tests/test_dependency_studio.py",
@@ -10967,7 +10967,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 239
+      "line": 244
     },
     "tests/test_dependency_studio.py::test_entrypoint_bootstrap_does_not_use_network_without_verified_bundle": {
       "path": "tests/test_dependency_studio.py",
@@ -10989,7 +10989,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 253
+      "line": 258
     },
     "tests/test_dependency_studio.py::test_entrypoint_bootstrap_honors_canonical_wheelhouse_env_var": {
       "path": "tests/test_dependency_studio.py",
@@ -11010,7 +11010,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 268
+      "line": 273
     },
     "tests/test_dependency_studio.py::test_install_requires_explicit_offline_flag_in_cli": {
       "path": "tests/test_dependency_studio.py",
@@ -11033,7 +11033,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 289
+      "line": 294
     },
     "tests/test_dependency_studio.py::test_all_profile_expands_to_activation_and_optional_profiles": {
       "path": "tests/test_dependency_studio.py",
@@ -11054,7 +11054,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 297
+      "line": 302
     },
     "tests/test_dependency_studio.py::test_runtime_readiness_is_gated_by_required_dependencies": {
       "path": "tests/test_dependency_studio.py",
@@ -11076,7 +11076,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 308
+      "line": 313
     },
     "tests/test_dependency_studio.py::test_run_entrypoint_blocks_activation_when_required_dependencies_missing": {
       "path": "tests/test_dependency_studio.py",
@@ -11097,7 +11097,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 369
+      "line": 374
     },
     "tests/test_dependency_studio.py::test_install_uses_fresh_environment_and_atomically_switches_activation_marker": {
       "path": "tests/test_dependency_studio.py",
@@ -11118,7 +11118,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 422
+      "line": 427
     },
     "tests/test_dependency_studio.py::test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift": {
       "path": "tests/test_dependency_studio.py",
@@ -11139,7 +11139,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 443
+      "line": 448
     },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
@@ -27503,6 +27503,23 @@
       "description_source": "source_identity",
       "line": 34
     },
+    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_cleanroom_uses_isolated_bootstrap_python_without_site_packages": {
+      "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
+      "name": "test_cleanroom_uses_isolated_bootstrap_python_without_site_packages",
+      "purpose": "Cleanroom uses isolated bootstrap python without site packages",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
     "tests/test_package_generator_release_version.py::test_release_version_is_read_from_canonical_version_file": {
       "path": "tests/test_package_generator_release_version.py",
       "name": "test_release_version_is_read_from_canonical_version_file",
@@ -27844,6 +27861,59 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 124
+    },
+    "tests/test_pdf_dependency_capability_convergence.py::test_pypdf_is_optional_pdf_capability_not_activation_core": {
+      "path": "tests/test_pdf_dependency_capability_convergence.py",
+      "name": "test_pypdf_is_optional_pdf_capability_not_activation_core",
+      "purpose": "Pypdf is optional pdf capability not activation core",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_pdf_dependency_capability_convergence.py::test_release_locks_follow_explicit_core_archive_pdf_profile": {
+      "path": "tests/test_pdf_dependency_capability_convergence.py",
+      "name": "test_release_locks_follow_explicit_core_archive_pdf_profile",
+      "purpose": "Release locks follow explicit core archive pdf profile",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_pdf_dependency_capability_convergence.py::test_dependency_block_message_names_only_activation_required_core": {
+      "path": "tests/test_pdf_dependency_capability_convergence.py",
+      "name": "test_dependency_block_message_names_only_activation_required_core",
+      "purpose": "Dependency block message names only activation required core",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_pending_host_request_continuity.py::test_completed_daemon_presentation_reuses_persisted_phase_one": {
       "path": "tests/test_pending_host_request_continuity.py",
@@ -28278,17 +28348,17 @@
       "description_source": "source_identity",
       "line": 521
     },
-    "tests/test_plugin_operator_convergence.py::test_archive_is_optional_for_activation_but_remains_in_release_profile": {
+    "tests/test_plugin_operator_convergence.py::test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile": {
       "path": "tests/test_plugin_operator_convergence.py",
-      "name": "test_archive_is_optional_for_activation_but_remains_in_release_profile",
-      "purpose": "Archive is optional for activation but remains in release profile",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile",
+      "purpose": "Archive and pdf are optional for activation but remain in release profile",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.archive.capabilities",
@@ -28318,7 +28388,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 23
+      "line": 25
     },
     "tests/test_plugin_operator_convergence.py::test_missing_enhanced_archive_backends_do_not_block_runtime_core": {
       "path": "tests/test_plugin_operator_convergence.py",
@@ -28341,7 +28411,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 35
     },
     "tests/test_plugin_operator_convergence.py::test_git_and_pip_are_operator_only_capabilities": {
       "path": "tests/test_plugin_operator_convergence.py",
@@ -28361,7 +28431,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_polish_reasoning_resource_bootstrap.py::test_default_resources_live_beside_package_not_in_workspace_runtime": {
       "path": "tests/test_polish_reasoning_resource_bootstrap.py",

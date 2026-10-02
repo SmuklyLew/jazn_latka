@@ -14,7 +14,7 @@ The Studio is not a second package manager. It orchestrates standard Python `ven
 4. `download` is an explicit operator/network action.
 5. Runtime autobootstrap never downloads from the network. It may only reuse a verified managed environment or install from a verified local wheelhouse.
 6. A wheelhouse bundle is immutable. `update` creates a new resolution when bytes/versions change and keeps the previous bundle available for rollback.
-7. `core` is activation-required. `archive` is runtime-optional but remains in the explicit release profile `core+archive`; other optional profiles do not silently become required.
+7. `core` is activation-required. `archive` and `pdf` are runtime-optional but remain explicit in the release profile `core+archive+pdf`; other optional profiles do not silently become required.
 8. `activation_ready=True` requires the activation dependency profiles to be satisfied by the current interpreter or a verified managed environment.
 9. SHA-256 and recorded package metadata prove local byte identity relative to the manifest; they do not certify upstream package safety or legal compatibility.
 
@@ -31,7 +31,7 @@ Layout:
 ```text
 python/
 ├─ wheelhouse/
-│  ├─ core+archive__windows-x64__py312__<resolution>/
+│  ├─ core+archive+pdf__windows-x64__py312__<resolution>/
 │  │  ├─ *.whl
 │  │  ├─ JAZN_WHEELHOUSE_MANIFEST.json
 │  │  └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
@@ -59,13 +59,14 @@ Current profiles:
 |---|---|---|
 | `core` | runtime required | base `project.dependencies` |
 | `archive` | runtime optional / release sidecar | `py7zr`, `pyzipper`, `rarfile` |
+| `pdf` | runtime optional / release sidecar | `pypdf>=6.19.0,<7` |
 | `studio` | operator optional | `memory-rebuild-ui` optional dependencies |
 | `memory-cloud` | runtime optional | matching `pyproject.toml` optional group |
 | `memory-cloud-server` | service optional | matching optional group |
 | `polish-nlp` | heavy optional | Morfeusz/Stanza/spaCy/transformer NLP dependency group |
 | `all` | aggregate | all profiles above |
 
-The archive profile is an optional capability containing `py7zr`, `pyzipper` and `rarfile`. Baseline ZIP remains stdlib-only; enhanced 7z/AES ZIP/RAR readiness is reported separately and does not block core activation.
+The archive profile is an optional capability containing `py7zr`, `pyzipper` and `rarfile`. Baseline ZIP remains stdlib-only; enhanced 7z/AES ZIP/RAR readiness is reported separately and does not block core activation. The `pdf` profile is likewise optional for activation: missing or incompatible `pypdf` disables PDF processing capability but does not block ordinary runtime startup.
 
 ## Terminal commands
 
@@ -79,7 +80,7 @@ Build an offline wheelhouse for Windows x64 / Python 3.12:
 
 ```powershell
 .\tools\Start-JaznDependencyStudio.ps1 download `
-    -Profile core,archive `
+    -Profile core,archive,pdf `
     -Python 3.12 `
     -Platform windows-x64
 ```
@@ -184,9 +185,9 @@ Diagnostic/operator commands remain available so an operator can inspect and rep
 
 ## `activation_ready`
 
-The canonical readiness evaluator now includes required Python dependency readiness. Therefore installation/activation readiness cannot become true merely because source files and package manifests are valid while `py7zr`, `pyzipper` or another base dependency is absent.
+The canonical readiness evaluator now includes required Python dependency readiness. Therefore installation/activation readiness cannot become true merely because source files and package manifests are valid while an activation-required core dependency such as `tzdata` or `packaging` is absent.
 
-Optional dependency profiles continue to report capability-specific absence without blocking ordinary runtime activation.
+Optional dependency profiles such as `archive` and `pdf` continue to report capability-specific absence without blocking ordinary runtime activation.
 
 ## Audit semantics
 
@@ -232,7 +233,7 @@ Bootstrap never performs garbage collection automatically.
 
 ## Release locks
 
-Release CI builds wheelhouses on native runners and emits exact target locks under `latka_jazn/resources/dependencies/locks/core+archive/`. Every line is fully pinned and SHA-256 locked, including transitive dependencies. The first native matrix run materializes release evidence for all six required targets. Before persistence, Windows runners replay the three Linux locks and Ubuntu runners replay the three Windows locks with `--require-hashes --no-deps --only-binary=:all:`. The replayed lock and full resolved filename/SHA-256 inventory must match native evidence exactly. Subsequent native runs consume the persisted lock through `dependency-studio download --lock-file ...`.
+Release CI builds wheelhouses on native runners and emits exact target locks under `latka_jazn/resources/dependencies/locks/core+archive+pdf/`. Every line is fully pinned and SHA-256 locked, including transitive dependencies. The first native matrix run materializes release evidence for all six required targets. Before persistence, Windows runners replay the three Linux locks and Ubuntu runners replay the three Windows locks with `--require-hashes --no-deps --only-binary=:all:`. The replayed lock and full resolved filename/SHA-256 inventory must match native evidence exactly. Subsequent native runs consume the persisted lock through `dependency-studio download --lock-file ...`.
 
 A release is not considered converged merely because bootstrap resolution succeeded once: native locked consumers, opposite-OS replay and clean-room package consumers must pass for Windows x64 and Linux glibc x64 on Python 3.12, 3.13 and 3.14. Locks are generated from native wheelhouse resolution rather than handwritten or inferred across platforms. `pylock.<target>.toml` may be emitted later as an additional audit/export format, but it is not a bootstrap dependency in `.25.5.17`.
 
@@ -240,3 +241,8 @@ A release is not considered converged merely because bootstrap resolution succee
 ## v16.3.25.5.34 capability split
 
 `activation_profiles=["core"]` controls runtime bootstrap. `release_profiles=["core","archive"]` preserves the existing target-specific release sidecar contract while allowing ordinary Jaźń core activation without optional archive backends. A real `install` always creates a fresh path-stable venv and atomically switches only the activation marker after verification; existing environments are never mutated in place.
+
+
+## v16.3.25.5.99 PDF capability split
+
+`activation_profiles=["core"]` remains unchanged. `pypdf>=6.19.0,<7` moved from base `project.dependencies` to the optional `pdf` group because active runtime code does not require the library for ordinary startup/dialogue. `release_profiles=["core","archive","pdf"]` deliberately keeps PDF support in portable release sidecars. Runtime bootstrap remains network-free and may only consume a verified managed environment or verified local wheelhouse.

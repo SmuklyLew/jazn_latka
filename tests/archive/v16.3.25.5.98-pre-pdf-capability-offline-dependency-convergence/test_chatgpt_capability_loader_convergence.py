@@ -49,5 +49,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_fresh_session_plugin_exposure_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.99"
-    assert PACKAGE_RELEASE_NAME == "pdf-capability-offline-dependency-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.98"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-fresh-session-plugin-exposure-convergence"

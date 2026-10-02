@@ -104,13 +104,13 @@ jobs:
           set -euo pipefail
           py_digits="${{ matrix.python }}"
           py_digits="${py_digits//./}"
-          lock="$RUNNER_TEMP/native-evidence/locks/core+archive/${{ matrix.target }}-py${py_digits}.txt"
+          lock="$RUNNER_TEMP/native-evidence/locks/core+archive+pdf/${{ matrix.target }}-py${py_digits}.txt"
           test -f "$lock"
           result="$RUNNER_TEMP/cross-target-download.json"
           set +e
           python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --wheelhouse-root "$RUNNER_TEMP/cross-target-wheelhouse" --json \
-            download --profile core --profile archive \
+            download --profile core --profile archive --profile pdf \
             --python-version "${{ matrix.python }}" --platform "${{ matrix.target }}" \
             --lock-file "$lock" > "$result"
           download_rc=$?
@@ -190,14 +190,24 @@ jobs:
           name: jazn-package-${{ matrix.target }}-py${{ matrix.python }}
           path: ${{ runner.temp }}/jazn-consumer
 
-      - name: Prove ambient Python lacks archive dependencies
+      - name: Create isolated dependency-empty bootstrap Python
+        id: bare_python
         shell: bash
         run: |
-          python - <<'PY'
+          set -euo pipefail
+          bare_root="$RUNNER_TEMP/jazn-bare-python"
+          python -m venv --without-pip "$bare_root"
+          if [ -x "$bare_root/Scripts/python.exe" ]; then
+            bare_python="$bare_root/Scripts/python.exe"
+          else
+            bare_python="$bare_root/bin/python"
+          fi
+          "$bare_python" - <<'PY'
           import importlib.util
-          assert importlib.util.find_spec("py7zr") is None
-          assert importlib.util.find_spec("pyzipper") is None
+          for name in ("packaging", "tzdata", "pypdf", "py7zr", "pyzipper"):
+              assert importlib.util.find_spec(name) is None, name
           PY
+          echo "path=$bare_python" >> "$GITHUB_OUTPUT"
 
       - name: Extract only the transported system ZIP
         id: extract
@@ -228,16 +238,17 @@ jobs:
           echo "runtime_dir=$runtime_dir" >> "$GITHUB_OUTPUT"
           echo "package_dir=$package_dir" >> "$GITHUB_OUTPUT"
 
-      - name: Ambient run.py performs verified offline handoff
+      - name: Dependency-empty run.py performs verified offline handoff
         shell: bash
         env:
           JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
+          BARE_PYTHON: ${{ steps.bare_python.outputs.path }}
         run: |
           set -euo pipefail
           cd "${{ steps.extract.outputs.runtime_dir }}"
 
           set +e
-          python run.py status --json > "$RUNNER_TEMP/status.json"
+          "$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status.json"
           status_rc=$?
           set -e
           cat "$RUNNER_TEMP/status.json"
@@ -245,19 +256,19 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; assert p.get("ok") is False, p; assert d.get("active_state") == "inactive", d; assert d.get("package_integrity_verified") is True, d' "$RUNNER_TEMP/status.json"
 
           set +e
-          python run.py doctor --json > "$RUNNER_TEMP/doctor.json"
+          "$BARE_PYTHON" run.py doctor --json > "$RUNNER_TEMP/doctor.json"
           doctor_rc=$?
           set -e
           cat "$RUNNER_TEMP/doctor.json"
           test "$doctor_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is True, p; assert p.get("installation_ok") is True, p; assert p.get("activation_ready") is True, p; assert p.get("release_ready") is True, p; assert p.get("live_runtime_ready") is False, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
 
-          python run.py host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
+          "$BARE_PYTHON" run.py host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
           cat "$RUNNER_TEMP/host-diagnose.json"
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); m=p.get("memory") or {}; assert p.get("ok") is True, p; assert p.get("process_created") is True, p; assert isinstance(p.get("pid"), int) and p["pid"] > 0, p; assert m.get("private_content_read") is False, m' "$RUNNER_TEMP/host-diagnose.json"
 
           set +e
-          python run.py start --json > "$RUNNER_TEMP/start.json"
+          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start.json"
           start_rc=$?
           set -e
           cat "$RUNNER_TEMP/start.json"
@@ -265,7 +276,7 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
 
           set +e
-          python run.py status --json > "$RUNNER_TEMP/status-after-start.json"
+          "$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status-after-start.json"
           status_after_rc=$?
           set -e
           cat "$RUNNER_TEMP/status-after-start.json"
@@ -273,7 +284,7 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; r=d.get("readiness") or {}; st=p.get("startup") or {}; assert p.get("ok") is True, p; assert p.get("runtime_core_ready") is True, p; assert p.get("runtime_write_ready") is True, p; assert d.get("active_state") == "active_trusted", d; assert d.get("endpoint_reachable") is True, d; assert d.get("heartbeat_fresh") is True, d; assert r.get("ok") is True, r; assert st.get("voice_live_ready") is True, st' "$RUNNER_TEMP/status-after-start.json"
 
           set +e
-          python run.py start --json > "$RUNNER_TEMP/start-again.json"
+          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start-again.json"
           start_again_rc=$?
           set -e
           cat "$RUNNER_TEMP/start-again.json"
@@ -281,7 +292,7 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("already_running") is True or (p.get("daemon") or {}).get("already_running") is True, p' "$RUNNER_TEMP/start-again.json"
 
           set +e
-          python run.py stop --json > "$RUNNER_TEMP/stop.json"
+          "$BARE_PYTHON" run.py stop --json > "$RUNNER_TEMP/stop.json"
           stop_rc=$?
           set -e
           cat "$RUNNER_TEMP/stop.json"
@@ -291,6 +302,7 @@ jobs:
         shell: bash
         env:
           JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
+          BARE_PYTHON: ${{ steps.bare_python.outputs.path }}
         run: |
           set -euo pipefail
           package_dir="${{ steps.extract.outputs.package_dir }}"
@@ -307,7 +319,7 @@ jobs:
           test -n "$dependency_state"
           rm -rf "$dependency_state"
           set +e
-          python run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
+          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
           rc=$?
           set -e
           cat "$RUNNER_TEMP/no-sidecar.out"
@@ -371,7 +383,7 @@ jobs:
         run: |
           set -euo pipefail
           runtime_version="$(python -X utf8 -c 'from latka_jazn.version import PACKAGE_VERSION_FULL; print(PACKAGE_VERSION_FULL)')"
-          destination="latka_jazn/resources/dependencies/locks/core+archive"
+          destination="latka_jazn/resources/dependencies/locks/core+archive+pdf"
           mkdir -p "$destination"
           count=0
           while IFS= read -r lock; do
@@ -382,7 +394,7 @@ jobs:
             esac
             cp "$lock" "$destination/$name"
             count=$((count + 1))
-          done < <(find "$RUNNER_TEMP/release-locks" -type f -path '*/locks/core+archive/*.txt' | sort)
+          done < <(find "$RUNNER_TEMP/release-locks" -type f -path '*/locks/core+archive+pdf/*.txt' | sort)
           test "$count" -eq 6
           test "$(find "$destination" -maxdepth 1 -type f -name '*.txt' | wc -l)" -ge 6
 
