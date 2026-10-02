@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.96.5-system-coherence-convergence",
-  "runtime_version": "16.3.25.5.96.5-system-coherence-convergence",
-  "package_version": "16.3.25.5.96.5-system-coherence-convergence",
-  "generated_at_utc": "2026-10-02T14:50:51+00:00",
-  "updated_at_utc": "2026-10-02T14:50:51+00:00",
+  "version": "16.3.25.5.96.6-system-coherence-convergence",
+  "runtime_version": "16.3.25.5.96.6-system-coherence-convergence",
+  "package_version": "16.3.25.5.96.6-system-coherence-convergence",
+  "generated_at_utc": "2026-10-02T14:56:01+00:00",
+  "updated_at_utc": "2026-10-02T14:56:01+00:00",
   "start_file": "run.py",
-  "file_count": 1869,
-  "static_file_count": 1869,
+  "file_count": 1870,
+  "static_file_count": 1870,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2900,
-      "sha256": "068dd7119eab27487f09bd27a4a875668434d9a87e45ad315d6203a594e68192",
+      "sha256": "5a8fa3d37f33959055dc5fc65e263796d745d7e2c97b157888ca44e3ae028c30",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2297,8 +2297,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_96_SYSTEM_COHERENCE_CONVERGENCE.md",
-      "size_bytes": 10022,
-      "sha256": "08d96e029caa7a69f2eac7486a56444f7e0220f7ebddb91111c57d96ede6e908",
+      "size_bytes": 10941,
+      "sha256": "bf05f3fde14be8322d24df45f2a4a3cf4415d94ea084bcdd744556fbd0898854",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8777,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5211,
-      "sha256": "ffe51c7ffde641ad7e24579134462ba20242c2a31a3e8c2e0204fcc5d6395174",
+      "size_bytes": 5199,
+      "sha256": "c3c44ccae8b43b14880f0fc98b48adf3720896b6816e6f9cf13d09fade5b48ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13177,6 +13177,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.96.6-final-contract-cleanup/test_release_workflow_hardening.py",
+      "size_bytes": 6634,
+      "sha256": "cf0d081a9b2828d3287cca1315189acfbb4faa4027eefea901764b12cab0c0d6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -15653,8 +15662,8 @@
     },
     {
       "path": "tests/test_release_workflow_hardening.py",
-      "size_bytes": 6634,
-      "sha256": "cf0d081a9b2828d3287cca1315189acfbb4faa4027eefea901764b12cab0c0d6",
+      "size_bytes": 6558,
+      "sha256": "153f290489a0080dec49ca8d4b9f77df4ab303e41d979973d9a2d03b4ee10027",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16689,7 +16698,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1694112,
-      "sha256": "7f66d43a583e8b62a49e2c79ffbee908520977096c37e1322a2f9792a0ad4197",
+      "sha256": "f11bb2e585b1d9cf04f90c6a2b9d19574538d222e02f4c176f6b3af1daa94232",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17273,11 +17282,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.96.5-system-coherence-convergence",
+  "release_version": "16.3.25.5.96.6-system-coherence-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.96.5-system-coherence-convergence",
-    "package_version": "16.3.25.5.96.5-system-coherence-convergence",
-    "release_version": "16.3.25.5.96.5-system-coherence-convergence"
+    "runtime_version": "16.3.25.5.96.6-system-coherence-convergence",
+    "package_version": "16.3.25.5.96.6-system-coherence-convergence",
+    "release_version": "16.3.25.5.96.6-system-coherence-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
