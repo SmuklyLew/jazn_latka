@@ -95,7 +95,7 @@ def discover_runtime_bridges(
             "fallback_transport": "daemon_bound_transactional_turns",
             "remote_transport": "verified_public_streamable_http_or_openai_secure_mcp_tunnel",
             "remote_failover_policy": (
-                "verified_remote_transport_plus_current_message_connector_and_complete_turn_toolset"
+                "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
             ),
             "fresh_conversation_reverification_required": True,
             "current_message_toolset_observation_required": True,
