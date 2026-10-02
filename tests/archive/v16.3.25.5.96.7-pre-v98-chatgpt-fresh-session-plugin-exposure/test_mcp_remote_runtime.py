@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover, preferred_verified_remote_transport
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -21,19 +20,13 @@ def test_public_streamable_http_route_requires_all_independent_evidence() -> Non
     blocked = classify_public_streamable_http_failover(
         endpoint_configured=True, auth_ready=True, protocol_compatible=True,
         health_payload=health, readiness_payload=readiness,
-        host_connector_capability_available=False,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
-        now_utc=NOW,
+        host_connector_capability_available=False, now_utc=NOW,
     )
     assert blocked["reason_code"] == "chatgpt_connector_capability_not_verified"
     ready = classify_public_streamable_http_failover(
         endpoint_configured=True, auth_ready=True, protocol_compatible=True,
         health_payload=health, readiness_payload=readiness,
-        host_connector_capability_available=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
-        now_utc=NOW,
+        host_connector_capability_available=True, now_utc=NOW,
     )
     assert ready["remote_runtime_transport_available"] is True
     assert ready["gateway_binding_verified"] is True
@@ -47,10 +40,7 @@ def test_public_streamable_http_rejects_cross_gateway_binding() -> None:
     result = classify_public_streamable_http_failover(
         endpoint_configured=True, auth_ready=True, protocol_compatible=True,
         health_payload=health, readiness_payload=readiness,
-        host_connector_capability_available=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
-        now_utc=NOW,
+        host_connector_capability_available=True, now_utc=NOW,
     )
     assert result["reason_code"] == "public_mcp_gateway_binding_not_verified"
 
@@ -60,10 +50,7 @@ def test_public_streamable_http_rejects_wrong_runtime_version() -> None:
     result = classify_public_streamable_http_failover(
         endpoint_configured=True, auth_ready=True, protocol_compatible=True,
         health_payload=health, readiness_payload=readiness,
-        host_connector_capability_available=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
-        now_utc=NOW,
+        host_connector_capability_available=True, now_utc=NOW,
     )
     assert result["reason_code"] == "public_mcp_runtime_version_mismatch"
 
@@ -73,10 +60,7 @@ def test_public_streamable_http_rejects_stale_evidence() -> None:
     result = classify_public_streamable_http_failover(
         endpoint_configured=True, auth_ready=True, protocol_compatible=True,
         health_payload=health, readiness_payload=readiness,
-        host_connector_capability_available=True,
-        callable_tool_names=REQUIRED_CHATGPT_TURN_TOOLS,
-        current_message_toolset_observed=True,
-        now_utc=NOW,
+        host_connector_capability_available=True, now_utc=NOW,
     )
     assert result["reason_code"] == "remote_runtime_evidence_stale"
 
