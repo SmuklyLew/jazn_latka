@@ -12,47 +12,42 @@ def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
-def test_project_loader_requires_callable_current_turn_capability() -> None:
+def test_project_loader_is_pasteable_thin_loader_with_current_message_gate() -> None:
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
-
     assert len(text) <= 5000
-    assert "faktycznie wywoływalne w bieżącej turze" in text
-    assert "wynik wyszukiwania katalogu pluginów" in text
-    assert "stan „installed”" in text
-    assert "Connector innej usługi, np. GitHub lub Drive" in text
-    assert "nie promuj zdalnej trasy" in text
-    assert "Każda kolejna wiadomość wymaga świeżej lineage tury" in text
-    assert "nie dziedzicz `display_exact` ani koperty z poprzedniej" in text
+    assert "przeznaczoną do wklejenia do instrukcji Projektu/aplikacji ChatGPT" in text
+    assert "Dla każdej wiadomości najpierw sprawdź faktycznie wywoływalną" in text
+    assert "pełnego bieżącego toolsetu" in text
+    assert "„installed”" in text
+    assert "lista z poprzedniej wiadomości" in text
+    assert "Nie wnioskuj z nazwy planu ChatGPT" in text
+    assert "Jaźń Runtime" in text
+    assert "Nie dziedzicz autoryzacji ani tool-exposure między wiadomościami" in text
 
 
 def test_project_loader_does_not_invent_handoff_or_execution_route() -> None:
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
-
-    assert "`host_handoff` nie jest automatycznym fallbackiem" in text
+    assert "`host_handoff` stosuj wyłącznie" in text
     assert "użytkownik zaakceptuje przekazanie" in text
-    assert "Odrzucenie lub brak handoff kończy tę trasę" in text
-    assert "bez wyniku SYSTEM-u nie fabrykuj `execution_route`" in text
+    assert "bez wyniku SYSTEM-u nie wymyślaj jej" in text
     assert "Instrukcja Projektu nie może sama stworzyć capability" in text
 
 
-def test_chatgpt_runbook_requires_callable_jazn_connector_evidence() -> None:
+def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> None:
     text = _read("AGENTS.chatgpt.md")
-
-    assert "Dowód capability hosta musi dotyczyć bieżącej powierzchni i bieżącej tury" in text
-    assert "akcje są rzeczywiście wywoływalne przez aktualny host" in text
-    assert "Wynik wyszukiwania katalogu pluginów" in text
-    assert "ogólny connector innej usługi (np. GitHub/Drive)" in text
-    assert "nie może promować `remote_runtime`" in text
-
-
-def test_chatgpt_runbook_treats_declined_handoff_as_unavailable_for_attempt() -> None:
-    text = _read("AGENTS.chatgpt.md")
-
-    assert "`host_handoff` służy wyłącznie do przekazania wykonania" in text
-    assert "Jeżeli handoff został jawnie odrzucony" in text
-    assert "Nie ponawiaj handoff w tej samej próbie" in text
+    assert "Fresh-message app exposure gate" in text
+    for tool_name in (
+        "jazn_status",
+        "jazn_generate_visible_reply",
+        "jazn_resume_visible_reply",
+        "jazn_finalize_reply",
+    ):
+        assert tool_name in text
+    assert "current_message_toolset_observed=true" in text
+    assert "Nie koduj polityki jako `plan == Plus/Pro/Business/...`" in text
+    assert "Jaźń Runtime" in text
 
 
-def test_release_version_stays_on_system_coherence_line() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.96" or PACKAGE_VERSION.startswith("16.3.25.5.96.")
-    assert PACKAGE_RELEASE_NAME == "system-coherence-convergence"
+def test_release_version_tracks_fresh_session_plugin_exposure_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.98"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-fresh-session-plugin-exposure-convergence"

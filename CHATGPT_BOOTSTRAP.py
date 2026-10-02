@@ -32,6 +32,12 @@ DEFAULT_MAX_TOTAL_BYTES = 8 * 1024 * 1024 * 1024
 DEFAULT_MAX_MEMBER_BYTES = 2 * 1024 * 1024 * 1024
 DEFAULT_MAX_COMPRESSION_RATIO = 1_000.0
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+_REQUIRED_CHATGPT_TURN_TOOLS = (
+    "jazn_status",
+    "jazn_generate_visible_reply",
+    "jazn_resume_visible_reply",
+    "jazn_finalize_reply",
+)
 _REQUIRED_ROOT_FILES = frozenset(
     {
         "run.py",
@@ -494,6 +500,11 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "turn_tool": "jazn_generate_visible_reply",
             "requires_authenticated_https": True,
             "requires_current_host_connector_invocation": True,
+            "fresh_conversation_reverification_required": True,
+            "current_message_toolset_observation_required": True,
+            "catalog_or_installed_state_sufficient": False,
+            "required_chatgpt_turn_tools": list(_REQUIRED_CHATGPT_TURN_TOOLS),
+            "plan_name_is_runtime_predicate": False,
             "secure_tunnel_fallback": "openai_secure_mcp_tunnel",
         },
         "truth_boundary": (

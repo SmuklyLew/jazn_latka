@@ -21,8 +21,18 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API.",
-  "version": "v15.1.0.3.96",
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API. Dla zdalnej trasy sama instalacja/wybór aplikacji nie wystarcza: bieżąca wiadomość musi faktycznie wystawiać pełny zestaw narzędzi Jaźni, a nazwa planu ChatGPT nie jest predykatem runtime.",
+  "version": "16.3.25.5.98",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
-  "visible_turn_readiness": "accepted_final_visible_text_only"
+  "visible_turn_readiness": "accepted_final_visible_text_only",
+  "chatgpt_fresh_conversation_reverification_required": true,
+  "chatgpt_current_message_toolset_observation_required": true,
+  "chatgpt_catalog_or_installed_state_sufficient": false,
+  "chatgpt_required_turn_tools": [
+    "jazn_status",
+    "jazn_generate_visible_reply",
+    "jazn_resume_visible_reply",
+    "jazn_finalize_reply"
+  ],
+  "chatgpt_plan_name_is_runtime_predicate": false
 }

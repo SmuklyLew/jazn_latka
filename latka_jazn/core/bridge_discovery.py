@@ -10,6 +10,7 @@ from latka_jazn.core.host_operations import SUPPORTED_OPERATION_KINDS
 from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
+from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover
 from latka_jazn.mcp.secure_tunnel import build_secure_mcp_tunnel_plan, tunnel_client_executable_status
 from latka_jazn.version import schema_version
@@ -96,6 +97,11 @@ def discover_runtime_bridges(
             "remote_failover_policy": (
                 "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
             ),
+            "fresh_conversation_reverification_required": True,
+            "current_message_toolset_observation_required": True,
+            "required_remote_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+            "catalog_or_installed_state_sufficient": False,
+            "plan_name_is_runtime_predicate": False,
             "per_message_cli_required": False,
             "per_message_cli_allowed_when_host_cannot_retain_stdio": True,
             "persistent_stdio_required": False,

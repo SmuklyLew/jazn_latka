@@ -125,6 +125,10 @@ def _remote_runtime_evidence(
                     "host_connector_invocation_observed",
                     None,
                 ),
+                callable_tool_names=evidence.get("callable_tool_names"),
+                current_message_toolset_observed=optional_bool(
+                    evidence, "current_message_toolset_observed", None
+                ),
             )
         else:
             result = classify_public_streamable_http_failover(
@@ -153,6 +157,10 @@ def _remote_runtime_evidence(
                     "host_connector_capability_available",
                     None,
                 ),
+                callable_tool_names=evidence.get("callable_tool_names"),
+                current_message_toolset_observed=optional_bool(
+                    evidence, "current_message_toolset_observed", None
+                ),
             )
     elif transport == "openai_secure_mcp_tunnel":
         runtime_status = evidence.get("runtime_status")
@@ -169,6 +177,10 @@ def _remote_runtime_evidence(
                 evidence,
                 "host_connector_capability_available",
                 None,
+            ),
+            callable_tool_names=evidence.get("callable_tool_names"),
+            current_message_toolset_observed=optional_bool(
+                evidence, "current_message_toolset_observed", None
             ),
         )
     else:

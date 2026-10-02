@@ -101,7 +101,9 @@ class JaznMcpServer(_V76JaznMcpServer):
             "message with one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
             "with that same daemon_request_id and never replay the user message. If action=generate_then_finalize, "
             "generate only from the returned host contract and finish with jazn_finalize_reply. Display "
-            "Jaźń output only when the returned action is display_exact. jazn_status is the readiness probe."
+            "Jaźń output only when the returned action is display_exact. jazn_status is the readiness probe. "
+            "A host must also observe the complete Jaźń turn toolset on the current message surface; "
+            "installed/catalog state or a previous message's tools do not satisfy that gate."
         )
 
     @staticmethod

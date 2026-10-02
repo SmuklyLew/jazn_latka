@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.96.7 makes ChatGPT post-materialization activation explicit:
-# the verified operator publishes the canonical main.py chat-gpt launch contract
-# without inventing a model flag, requiring OPENAI_API_KEY, or claiming executor capability.
-DISTRIBUTION_VERSION = "16.3.25.5.96.7"
-PACKAGE_VERSION = "16.3.25.5.96.7"
-PACKAGE_RELEASE_NAME = "system-coherence-convergence"
+# v16.3.25.5.98 makes fresh ChatGPT message/plugin exposure an explicit
+# capability gate: remote dialogue requires the complete current-message Jaźń
+# turn toolset plus fresh runtime evidence, without plan-name assumptions.
+DISTRIBUTION_VERSION = "16.3.25.5.98"
+PACKAGE_VERSION = "16.3.25.5.98"
+PACKAGE_RELEASE_NAME = "chatgpt-fresh-session-plugin-exposure-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

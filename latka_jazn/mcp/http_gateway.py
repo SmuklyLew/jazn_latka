@@ -46,6 +46,7 @@ from latka_jazn.mcp.developer_mode_surface import (
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
+from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
@@ -314,7 +315,9 @@ class PublicMcpGateway:
                 "message using one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
                 "with the same daemon_request_id and never replay the user's message. If action=generate_then_finalize, "
                 "follow only the returned host contract and finish with jazn_finalize_reply. Display Jaźń text "
-                "only for action=display_exact. Use jazn_status to verify persistent runtime readiness."
+                "only for action=display_exact. Use jazn_status to verify persistent runtime readiness. "
+                "The app must expose jazn_status, jazn_generate_visible_reply, jazn_resume_visible_reply, "
+                "and jazn_finalize_reply to this current message before treating the remote route as conversation-ready."
             ),
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
@@ -533,6 +536,10 @@ class PublicMcpGateway:
                 "public_transport": "streamable_http",
                 "gateway_instance_id": self._gateway_instance_id,
                 "observed_at_utc": _utc_now_iso(),
+                "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+                "fresh_conversation_reverification_required": True,
+                "current_message_toolset_observation_required": True,
+                "catalog_or_installed_state_sufficient": False,
                 **_runtime_binding(status),
             }
             return CallToolResult(
@@ -588,6 +595,10 @@ class PublicMcpGateway:
             "public_transport": "streamable_http",
             "gateway_instance_id": self._gateway_instance_id,
             "observed_at_utc": _utc_now_iso(),
+            "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+            "fresh_conversation_reverification_required": True,
+            "current_message_toolset_observation_required": True,
+            "catalog_or_installed_state_sufficient": False,
             **_runtime_binding(status),
         }
 

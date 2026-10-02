@@ -191,6 +191,16 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         # launch after host capability/authentication has been established.
         "remote_runtime_transport_bundled": False,
         "remote_runtime_route_ready_from_package_alone": False,
+        "fresh_conversation_reverification_required": True,
+        "current_message_toolset_observation_required": True,
+        "catalog_or_installed_state_sufficient": False,
+        "required_chatgpt_turn_tools": [
+            "jazn_status",
+            "jazn_generate_visible_reply",
+            "jazn_resume_visible_reply",
+            "jazn_finalize_reply",
+        ],
+        "plan_name_is_runtime_predicate": False,
         "public_streamable_http_ingress_bundled": public_streamable_http_ingress_bundled,
         "public_streamable_http_ingress_members": public_mcp_members,
         "public_streamable_http_protocol_revision": "2026-07-28",
@@ -209,6 +219,7 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "authenticated_remote_ingress",
             "runtime_health_and_readiness",
             "explicit_chatgpt_connector_or_app_capability",
+            "current_message_complete_turn_toolset",
         ],
         "remote_runtime_readiness_requires_any_route": {
             "public_streamable_http": [
@@ -218,12 +229,14 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
                 "gateway_healthz_live",
                 "runtime_readyz_ready",
                 "explicit_chatgpt_connector_or_app_capability",
+                "current_message_complete_turn_toolset",
             ],
             "openai_secure_mcp_tunnel": [
                 "external_tunnel_client",
                 "authenticated_tunnel_control_plane",
                 "process_running_healthy_ready",
                 "explicit_chatgpt_connector_or_app_capability",
+                "current_message_complete_turn_toolset",
             ],
         },
         "host_capability_negotiation_required": True,

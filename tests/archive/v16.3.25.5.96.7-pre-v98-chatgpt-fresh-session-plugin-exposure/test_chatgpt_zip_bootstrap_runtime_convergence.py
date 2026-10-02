@@ -95,15 +95,6 @@ def test_bootstrap_emits_post_materialization_activation_contract(tmp_path: Path
     assert remote["endpoint_path"] == "/mcp"
     assert remote["status_tool"] == "jazn_status"
     assert remote["turn_tool"] == "jazn_generate_visible_reply"
-    assert remote["fresh_conversation_reverification_required"] is True
-    assert remote["current_message_toolset_observation_required"] is True
-    assert remote["catalog_or_installed_state_sufficient"] is False
-    assert remote["required_chatgpt_turn_tools"] == [
-        "jazn_status",
-        "jazn_generate_visible_reply",
-        "jazn_resume_visible_reply",
-        "jazn_finalize_reply",
-    ]
 
 
 def test_same_interpreter_preflight_reuses_current_python_without_subprocess(tmp_path: Path) -> None:
@@ -144,12 +135,8 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["preferred_remote_runtime_transport"] == "public_streamable_http"
     assert contract["package_can_create_host_executor"] is False
     assert contract["remote_runtime_route_ready_from_package_alone"] is False
-    assert contract["fresh_conversation_reverification_required"] is True
-    assert contract["current_message_toolset_observation_required"] is True
-    assert contract["catalog_or_installed_state_sufficient"] is False
-    assert contract["plan_name_is_runtime_predicate"] is False
 
 
-def test_release_identity_tracks_fresh_session_plugin_exposure_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.98"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-fresh-session-plugin-exposure-convergence"
+def test_release_identity_stays_on_system_coherence_line() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.96" or PACKAGE_VERSION.startswith("16.3.25.5.96.")
+    assert PACKAGE_RELEASE_NAME == "system-coherence-convergence"
