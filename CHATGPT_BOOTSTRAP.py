@@ -389,11 +389,35 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "preflight_flag": "--post-materialization-preflight",
             "preflight_argv": ["host-preflight", "--json"],
             "runtime_activation_requires_additional_host_capabilities": True,
-            "runtime_start_entrypoint": "run.py start",
-            "runtime_status_entrypoint": "run.py status --snapshot --json",
+            "runtime_start_entrypoint": "main.py start",
+            "runtime_status_entrypoint": "main.py status --snapshot --json",
             "runtime_start_argv": ["start"],
             "runtime_status_argv": ["status", "--snapshot", "--json"],
+            "public_launcher_start_entrypoint": "run.py start",
+            "public_launcher_status_entrypoint": "run.py status --snapshot --json",
             "activation_success_requires_verified_status": True,
+        },
+        "chatgpt_host": {
+            "control_plane_entrypoint": "main.py",
+            "persistent_bridge_entrypoint": "main.py chat-gpt --session-id <stable-session-id>",
+            "persistent_bridge_command": "python -X utf8 main.py chat-gpt --session-id <stable-session-id>",
+            "persistent_bridge_argv": ["chat-gpt", "--session-id", "<stable-session-id>"],
+            "fallback_transport": "daemon_bound_transactional_turns",
+            "nonstreaming_turn_command": (
+                "python -X utf8 main.py chat-gpt --session-id <stable-session-id> "
+                "--daemon-request-id <unique-turn-request-id> -- \"<exact-user-message>\""
+            ),
+            "nonstreaming_resume_command": (
+                "python -X utf8 main.py chat-gpt --session-id <stable-session-id> "
+                "--daemon-result <same-request-id>"
+            ),
+            "transport": "persistent_stdio_jsonl",
+            "uses_openai_api": False,
+            "openai_api_key_required": False,
+            "model_cli_argument_required": False,
+            "model_binding": "chatgpt_host_selected_model",
+            "accepted_visible_turn_required": True,
+            "display_action_required": "display_exact",
         },
         "remote": {
             "preferred_transport": "public_streamable_http",
@@ -408,9 +432,12 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "Materialization proves only that a verified operator exists on disk. "
             "Same-interpreter preflight can reuse the Python process already executing "
             "CHATGPT_BOOTSTRAP.py and does not create a child process, but it does not "
-            "create a daemon, connector, accepted turn, or display_exact. If the host "
-            "cannot execute Python at all, the ZIP cannot repair that host capability; "
-            "use only an actually callable, authenticated Jaźń MCP route."
+            "create a daemon, connector, accepted turn, or display_exact. After a verified "
+            "local start/status, ChatGPT must enter the central control plane through "
+            "main.py chat-gpt; that bridge uses the model selected by the ChatGPT host and "
+            "does not require OPENAI_API_KEY or a model CLI flag. If the host cannot execute "
+            "Python at all, the ZIP cannot repair that host capability; use only an actually "
+            "callable, authenticated Jaźń MCP route."
         ),
     }
 
