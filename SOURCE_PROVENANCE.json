@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c2b16c4bc3c71fb36ddff23919423e4dc513b7c2",
+  "base_merge_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
   "base_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
-  "commit_date": "2026-10-03T00:40:57+02:00",
+  "commit_date": "2026-10-03T00:41:21+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-02T22:40:57+00:00",
+  "generated_at_utc": "2026-10-02T22:41:21+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "3a4421d7f581e3e473aa742f41e6330735f168c7",
+  "git_tree_sha": "1fc977e621a076accde7bd58241c8b085fe07185",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c2b16c4bc3c71fb36ddff23919423e4dc513b7c2",
+    "source_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
     "source_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c2b16c4bc3c71fb36ddff23919423e4dc513b7c2",
+  "source_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
   "tag": null,
