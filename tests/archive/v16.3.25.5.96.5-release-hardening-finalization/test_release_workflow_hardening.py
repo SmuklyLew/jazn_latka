@@ -26,9 +26,7 @@ def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push(
     assert "PACKAGE_VERSION_FULL" in text
     assert "permissions:\n  contents: read" in text
     assert "permissions:\n      contents: write" in text
-    assert "Commit synchronized Test Studio catalog locally" in text
-    assert "Commit release metadata and push the generated sequence once" in text
-    assert text.count('git push origin "HEAD:${target_branch}"') == 1
+    assert "Commit synchronized release metadata on eligible same-repository branch" in text
     assert "if: github.event_name != 'pull_request'" in text
     for branch_filter in (
         '- master',
@@ -42,10 +40,8 @@ def test_release_workflow_uses_one_dynamic_metadata_writer_without_pr_self_push(
         assert branch_filter in text
     assert 'case "$target_branch" in' in text
     assert "master|update/*|fix/*|hotfix/*|upgrade/*|release/*|tools/upgrade-*)" in text
-    assert "Generated catalog drift cannot be committed to a fork" in text
     assert "Release metadata drift cannot be committed to a fork" in text
-    assert "Refusing catalog commit because unrelated paths are dirty" in text
-    assert "Refusing generated-artifact push because unrelated paths are dirty" in text
+    assert "Refusing metadata commit because unrelated paths are dirty" in text
     assert "PACKAGE_INTEGRITY_MANIFEST\\.json|SOURCE_PROVENANCE\\.json" in text
     assert "[skip ci]" in text
     assert "github.event.pull_request.head.sha || github.head_ref || github.ref_name" in text
@@ -70,14 +66,8 @@ def test_pr_release_metadata_is_materialized_without_moving_exact_head() -> None
     assert "Upload synchronized PR metadata" in text
     assert "synchronized-release-metadata-${{ github.event.pull_request.head.sha }}" in text
     assert text.count("Materialize canonical PR metadata locally") == 2
-    assert text.count("Materialize Test Studio catalog locally for PR validation") == 2
     assert "echo \"sha=${{ github.event.pull_request.head.sha }}\" >> \"$GITHUB_OUTPUT\"" in text
-    assert "SOURCE_PROVENANCE.json" in text
-    assert "PACKAGE_INTEGRITY_MANIFEST.json" in text
-    assert "tools/jazn_tests_studio/test_contracts.json" in text
-    assert "$generatedPaths = @(" in text
-    assert "git checkout -- $generatedPaths" in text
-    assert "git checkout -- \\\\" not in text
+    assert "git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json" in text
 
 
 def test_release_workflow_concurrency_is_scoped_to_the_workflow() -> None:
@@ -128,8 +118,7 @@ def test_upload_artifact_is_pinned_with_explicit_pr_metadata_exception() -> None
     assert refs == [UPLOAD_ARTIFACT_V701_SHA] * 5
     assert all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in refs)
     assert text.count("if: failure()") == 4
-    assert text.count("if: github.event_name == 'pull_request'") == 5
-    assert text.count("Materialize Test Studio catalog locally for PR validation") == 2
+    assert text.count("if: github.event_name == 'pull_request'") == 3
     assert text.count("retention-days: 3") == 5
     assert "synchronized-release-metadata-${{ github.event.pull_request.head.sha }}" in text
 

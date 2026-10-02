@@ -412,10 +412,13 @@ jobs:
         shell: pwsh
         run: |
           if ("${{ github.event_name }}" -eq "pull_request") {
-            git checkout -- \
-              SOURCE_PROVENANCE.json \
-              PACKAGE_INTEGRITY_MANIFEST.json \
-              tools/jazn_tests_studio/test_contracts.json
+            $generatedPaths = @(
+              "SOURCE_PROVENANCE.json",
+              "PACKAGE_INTEGRITY_MANIFEST.json",
+              "tools/jazn_tests_studio/test_contracts.json"
+            )
+            git checkout -- $generatedPaths
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
           git diff --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

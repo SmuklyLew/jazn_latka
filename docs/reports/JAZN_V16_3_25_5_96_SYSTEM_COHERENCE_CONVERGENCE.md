@@ -1,4 +1,4 @@
-# Jaźń v16.3.25.5.96.4 — system coherence convergence
+# Jaźń v16.3.25.5.96.5 — system coherence convergence
 
 ## Scope
 
@@ -170,3 +170,32 @@ This gives generated source/catalog/metadata one lifecycle owner and prevents a
 workflow-created catalog commit from becoming an unverified final branch HEAD.
 The previous active CI-order contract test was archived byte-for-byte before
 being updated to assert this single-owner invariant.
+
+
+## Final release-hardening follow-up 16.3.25.5.96.5
+
+The v96.4 full-suite run exposed three stale assertions in
+`tests/test_release_workflow_hardening.py`. They described the older
+metadata-only writer and an exact PR-condition count that no longer matched the
+intentional single-owner catalog+metadata workflow. Their exact v96.4 source is
+archived under
+`tests/archive/v16.3.25.5.96.5-release-hardening-finalization/` before the
+active contract is updated.
+
+The same run also exposed a real Windows shell defect in the clean-checkout
+guard: a Bash-style backslash was being passed literally to native `git` from
+PowerShell, producing `fatal: \\: '\\' is outside repository`. The Windows
+guard now builds a PowerShell array of generated paths and passes that array to
+`git checkout --`, with an explicit native exit-code check. This avoids
+fragile line-continuation syntax and keeps the PR validation checkout clean.
+
+The release-hardening tests now assert the architectural invariants rather than
+the obsolete step label:
+
+- `release-hardening` is the only branch writer for generated catalog and
+  canonical metadata;
+- catalog commit precedes metadata commit;
+- the generated sequence is pushed exactly once;
+- PR validation materializes both metadata and the Test Studio catalog locally;
+- all three generated files are restored before the clean-tree assertion;
+- upload-artifact pins and failure-only artifacts remain unchanged.
