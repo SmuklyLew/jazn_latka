@@ -161,7 +161,7 @@ publicznemu starterowi:
 
 ```bash
 python -X utf8 main.py start
-python -X utf8 main.py status --snapshot --json
+python -X utf8 main.py status --json
 python -X utf8 main.py chat-gpt --session-id <stabilny-id-sesji>
 ```
 
@@ -175,6 +175,10 @@ hosta ChatGPT jako kanału modelu i nie wymaga `--model` ani
 Ten primitive ma być poznawczo obojętny: nie implementuje uwagi, pamięci, replay, affect ani innych neuro-inspirowanych modułów. Takie warstwy należą dopiero do zweryfikowanego runtime i podlegają software contracts oraz granicom z `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
 Standalone bootstrap ma działać fail-closed: odrzucać traversal, ścieżki absolutne/drive-qualified, backslashe w nazwach ZIP, duplikaty, symlinki, nietypowe wpisy, szyfrowanie, przekroczenia limitów liczby/rozmiaru/compression-ratio i błędy CRC.
+
+Dla widocznej inicjacji host może uruchomić `CHATGPT_BOOTSTRAP.py --progress-jsonl`. Finalny wynik pozostaje pojedynczym JSON-em na stdout, a stderr emituje `jazn_bootstrap_progress` wyłącznie dla faktycznie zakończonych/obserwowanych gate'ów. Procent nie jest ETA ani zgadywanym czasem: `executor_probe=5`, `system_package_verified=15`, `zip_validated=30`, materializacja operatora dochodzi do `55`, dodatni `host_preflight=65`; kolejne milestone'y po materializacji to `contracts_loaded=72`, `daemon_started=82`, `live_readiness=95` i `turn_channel_bound=100`. Host może pokazywać te eventy użytkownikowi jako status inicjacji, ale nie może wymyślać brakujących procentów ani twierdzić, że obserwuje hostowy upload/mount sprzed startu Pythona. Opcjonalne MEMORY nie blokuje 100% obudzenia rdzenia; wymagane MEMORY jest osobnym wymiarem readiness.
+
+Po `start` autorytetem aktywacyjnej gotowości jest **live** `status --json`. `status --snapshot --json` pozostaje diagnostycznym snapshotem i nie może cofnąć potwierdzonego live-ready daemona.
 
 Jeżeli zweryfikowany operator już istnieje, nową paczkę materializuj jego komendą:
 
