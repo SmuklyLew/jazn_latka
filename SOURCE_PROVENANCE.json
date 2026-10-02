@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e463b21b79e874c4e004ea1f2c29e0c010a723cb",
-    "base_version": "16.3.25.5.98-chatgpt-fresh-session-plugin-exposure-convergence",
+    "base_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
+    "base_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "18bb20fa347d904c5b593f808d7630892d12bbc9",
