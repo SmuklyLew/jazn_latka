@@ -13,7 +13,7 @@ for audit/recovery rather than deleted.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import RLock
 from typing import Any, Mapping, Protocol
@@ -62,6 +62,25 @@ class McpTaskRecord:
     @property
     def terminal(self) -> bool:
         return self.status in TERMINAL_TASK_STATES
+
+    def ttl_elapsed(self, *, now: datetime | None = None) -> bool:
+        """Return whether this task has crossed its MCP TTL backstop."""
+
+        if self.ttl_ms is None:
+            return False
+        ttl_ms = int(self.ttl_ms)
+        if ttl_ms < 0:
+            raise RuntimeError("mcp_task_record_invalid_ttl")
+        try:
+            created = datetime.fromisoformat(self.created_at)
+        except ValueError as exc:
+            raise RuntimeError("mcp_task_record_invalid_created_at") from exc
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        current = now or datetime.now(timezone.utc)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        return current >= created + timedelta(milliseconds=ttl_ms)
 
     def to_task_result(self, *, creation: bool = False) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -342,7 +361,13 @@ class McpTaskStore:
         request_value = str(daemon_request_id or "").strip()
         if not request_value or len(request_value) > 256:
             raise ValueError("daemon_request_id_required")
+        if ttl_ms is not None and int(ttl_ms) < 0:
+            raise ValueError("task_ttl_must_be_non_negative_or_none")
         with self._lock, self._connect() as conn:
+            # Acquire the SQLite write reservation before the read/modify/write
+            # sequence. RLock only serializes one Python object; BEGIN IMMEDIATE
+            # also serializes independent gateway processes sharing this DB.
+            conn.execute("BEGIN IMMEDIATE")
             existing = self._select_request(conn, request_value)
             if existing is not None:
                 return existing
@@ -394,6 +419,10 @@ class McpTaskStore:
         if target not in VALID_TASK_STATES:
             raise ValueError("invalid_task_status")
         with self._lock, self._connect() as conn:
+            # Serialize cross-process state transitions before reading the
+            # current row so cancel/finalize/poll updates cannot overwrite a
+            # newer task state with a stale snapshot.
+            conn.execute("BEGIN IMMEDIATE")
             record = self._select_task(conn, str(task_id))
             if record is None:
                 legacy = self._read_legacy_task(str(task_id))
@@ -424,20 +453,31 @@ class McpTaskStore:
             return self._upsert(conn, record)
 
     def request_cancel(self, task_id: str) -> McpTaskRecord:
-        record = self.get(task_id)
-        if record is None:
-            raise KeyError("unknown_task")
-        if record.terminal:
-            return record
-        return self.update(
-            task_id,
-            status="working",
-            cancel_requested=True,
-            status_message=(
+        value = str(task_id or "").strip()
+        if not value or len(value) > 256:
+            raise ValueError("invalid_task_id")
+        with self._lock, self._connect() as conn:
+            # Keep terminal-check + cancel intent in one cross-process write
+            # transaction; a separate get()/update() pair can race another
+            # gateway instance.
+            conn.execute("BEGIN IMMEDIATE")
+            record = self._select_task(conn, value)
+            if record is None:
+                legacy = self._read_legacy_task(value)
+                if legacy is None:
+                    raise KeyError("unknown_task")
+                self._upsert(conn, legacy)
+                record = legacy
+            if record.terminal:
+                return record
+            record.status = "working"
+            record.last_updated_at = datetime.now(timezone.utc).isoformat()
+            record.cancel_requested = True
+            record.status_message = (
                 "Cancellation requested; the underlying Jaźń turn has no verified "
                 "cancellation acknowledgement yet."
-            ),
-        )
+            )
+            return self._upsert(conn, record)
 
 
 class McpTaskResumeAdapter:
@@ -495,6 +535,24 @@ class McpTaskResumeAdapter:
         if record.terminal:
             return record.to_task_result()
 
+        # SEP-2663 defines ttlMs as a creation-relative backstop. A server may
+        # fail and later discard a task once this duration elapses. Enforcing
+        # the backstop here prevents an unbounded tasks/get polling loop.
+        if record.ttl_elapsed():
+            expired = self.store.update(
+                task_id,
+                status="failed",
+                error={"code": -32603, "message": "task_ttl_elapsed"},
+                status_message="The durable Jaźń task exceeded its advertised TTL.",
+            )
+            return expired.to_task_result()
+
+        # input_required is a stable point-in-time snapshot. Repeated tasks/get
+        # calls must surface the same outstanding inputRequests until
+        # tasks/update supplies input; they must not poll/re-enter the runtime.
+        if record.status == "input_required":
+            return record.to_task_result()
+
         try:
             resumed = jazn_resume_visible_reply.run(
                 root=self.root,
@@ -502,11 +560,14 @@ class McpTaskResumeAdapter:
                 daemon_request_id=record.daemon_request_id,
             )
         except Exception as exc:
+            # Do not reflect exception text across the public task boundary:
+            # transport/internal exceptions can contain paths, URLs or other
+            # operator detail. The exception class is enough for diagnostics.
             failed = self.store.update(
                 task_id,
                 status="failed",
-                error={"code": -32603, "message": f"task_poll_failed:{type(exc).__name__}:{exc}"},
-                status_message="Polling the existing Jaźń request failed.",
+                error={"code": -32603, "message": f"task_poll_failed:{type(exc).__name__}"},
+                status_message="Polling the existing Jaźń request failed safely.",
             )
             return failed.to_task_result()
 

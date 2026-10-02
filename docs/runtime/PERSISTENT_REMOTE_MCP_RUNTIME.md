@@ -231,3 +231,41 @@ There is still one platform boundary outside the repository: ChatGPT must make
 the Jaźń app available/selected for the conversation. Tool descriptions can
 strongly steer ordinary messages into jazn_turn after selection, but code inside
 Jaźń cannot force a global default app for every new ChatGPT conversation.
+
+
+## 12. Task-state coherence in 16.3.25.5.96
+
+The durable Tasks adapter now treats the advertised task TTL as an explicit
+server-side backstop. A non-terminal task whose `createdAt + ttlMs` has elapsed
+transitions to `failed` with a stable `task_ttl_elapsed` protocol error
+instead of remaining pollable forever. `ttlMs=null` remains unlimited.
+
+An `input_required` task is a stable snapshot. Repeated `tasks/get` calls
+return the same persisted `inputRequests` and `requestState` without
+re-entering `jazn_resume_visible_reply`. This matches SEP-2663 and prevents a
+poll loop from repeatedly touching the runtime while the client has not supplied
+the requested input.
+
+SQLite task mutations that perform read/modify/write transitions reserve the
+write transaction with `BEGIN IMMEDIATE`. The in-process `RLock` remains,
+but correctness no longer depends on a single Python gateway object: independent
+gateway processes sharing `mcp_tasks.sqlite3` serialize task creation,
+state transitions, and cancellation intent at the database boundary.
+
+Unexpected adapter exceptions are still terminal protocol failures, but public
+task errors contain only the stable exception class, not raw exception text.
+Normal daemon transport ambiguity does not use this exception path:
+`jazn_resume_visible_reply` already converts a verified transport outage into
+`poll_runtime` for the same `daemon_request_id`, so the user message is never
+replayed.
+
+The custom HTTP Tasks bridge remains intentional in this release. The official
+MCP Python SDK v2 implements the 2026-07-28 protocol core, while its current
+migration/roadmap documentation still lists SEP-2663 Tasks dispatch as not yet
+implemented. Removing the bridge before the SDK supplies the extension would
+remove working Tasks support rather than simplify it.
+
+External ChatGPT acceptance remains a deployment fact, not a repository fact:
+the repository can validate its server, plugin package and task semantics, but
+only a real ChatGPT connection to the deployed HTTPS `/mcp` endpoint can prove
+host tool discovery and end-to-end `display_exact` delivery.
