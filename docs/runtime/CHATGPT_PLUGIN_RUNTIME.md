@@ -91,6 +91,26 @@ py -X utf8 run.py mcp-http `
 Terminate public TLS in a reverse proxy/load balancer and forward only to the
 loopback-bound gateway. Do not expose the private daemon port.
 
+### Provider-neutral container deployment
+
+For a persistent runtime outside the ChatGPT conversation sandbox, the
+repository includes `deploy/chatgpt_mcp/Dockerfile` and the fail-closed
+`latka_jazn.mcp.deployment` entrypoint. The entrypoint does not implement a
+second lifecycle. It invokes the canonical `run.py start`, requires a live
+`run.py status --json` result with `daemon_reachable=true`, and only then
+`exec`s the OAuth-protected `run.py mcp-http --public-oauth` gateway.
+
+The image runs as an unprivileged user, exposes only port 8080, keeps the
+private daemon loopback-only, and has a `/readyz` health check. OAuth client
+secret values stay in environment variables and are never copied into command
+arguments. Build and environment details are documented in
+`deploy/chatgpt_mcp/README.md`.
+
+A container that is healthy is deployment evidence, not ChatGPT capability
+evidence. The public endpoint still needs upstream HTTPS/TLS and a real
+Developer Mode app/connection before a host-observed `jazn_status` call can
+promote the remote route.
+
 ## Build the installable plugin package
 
 Portable package:
