@@ -82,15 +82,31 @@ def test_bootstrap_emits_post_materialization_activation_contract(tmp_path: Path
 
     activation = cast(dict[str, Any], payload["activation_contract"])
     local = cast(dict[str, Any], activation["local"])
+    chatgpt_host = cast(dict[str, Any], activation["chatgpt_host"])
     remote = cast(dict[str, Any], activation["remote"])
     assert activation["schema_version"] == "chatgpt_post_materialization_activation/v1"
     assert activation["active_root_candidate"] == str(destination.resolve())
+    assert activation["control_plane"] == "main.py"
     assert local["same_interpreter_preflight_supported"] is True
     assert local["preflight_requires_child_process"] is False
     assert local["package_can_create_host_executor"] is False
-    assert local["runtime_start_entrypoint"] == "run.py start"
-    assert local["runtime_status_entrypoint"] == "run.py status --snapshot --json"
+    assert local["runtime_start_entrypoint"] == "main.py start"
+    assert local["runtime_status_entrypoint"] == "main.py status --snapshot --json"
+    assert local["public_launcher_start_entrypoint"] == "run.py start"
+    assert local["public_launcher_status_entrypoint"] == "run.py status --snapshot --json"
     assert local["activation_success_requires_verified_status"] is True
+    assert chatgpt_host["control_plane_entrypoint"] == "main.py"
+    assert chatgpt_host["persistent_bridge_entrypoint"] == "main.py chat-gpt --session-id <stable-session-id>"
+    assert chatgpt_host["persistent_bridge_command"] == (
+        "python -X utf8 main.py chat-gpt --session-id <stable-session-id>"
+    )
+    assert chatgpt_host["transport"] == "persistent_stdio_jsonl"
+    assert chatgpt_host["fallback_transport"] == "daemon_bound_transactional_turns"
+    assert chatgpt_host["uses_openai_api"] is False
+    assert chatgpt_host["openai_api_key_required"] is False
+    assert chatgpt_host["model_cli_argument_required"] is False
+    assert chatgpt_host["model_binding"] == "chatgpt_host_selected_model"
+    assert chatgpt_host["display_action_required"] == "display_exact"
     assert remote["preferred_transport"] == "public_streamable_http"
     assert remote["endpoint_path"] == "/mcp"
     assert remote["status_tool"] == "jazn_status"
@@ -126,8 +142,27 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["post_materialization_same_interpreter_preflight_supported"] is True
     assert contract["post_materialization_preflight_requires_child_process"] is False
     assert contract["post_materialization_preflight_flag"] == "--post-materialization-preflight"
-    assert contract["post_materialization_start_entrypoint"] == "run.py start"
-    assert contract["post_materialization_status_entrypoint"] == "run.py status --snapshot --json"
+    assert contract["post_materialization_preflight_entrypoint"] == "main.py host-preflight --json"
+    assert contract["post_materialization_start_entrypoint"] == "main.py start"
+    assert contract["post_materialization_status_entrypoint"] == "main.py status --snapshot --json"
+    assert contract["post_materialization_public_launcher_start_entrypoint"] == "run.py start"
+    assert contract["post_materialization_public_launcher_status_entrypoint"] == "run.py status --snapshot --json"
+    assert contract["post_materialization_activation_sequence"][-1] == (
+        "main.py chat-gpt --session-id <stable-session-id>"
+    )
+    assert contract["post_materialization_chatgpt_bridge_entrypoint"] == (
+        "main.py chat-gpt --session-id <stable-session-id>"
+    )
+    assert contract["post_materialization_chatgpt_bridge_command"] == (
+        "python -X utf8 main.py chat-gpt --session-id <stable-session-id>"
+    )
+    assert contract["post_materialization_chatgpt_transport"] == "persistent_stdio_jsonl"
+    assert contract["post_materialization_chatgpt_fallback_transport"] == "daemon_bound_transactional_turns"
+    assert contract["post_materialization_chatgpt_uses_openai_api"] is False
+    assert contract["post_materialization_chatgpt_openai_api_key_required"] is False
+    assert contract["post_materialization_chatgpt_model_cli_argument_required"] is False
+    assert contract["post_materialization_chatgpt_model_binding"] == "chatgpt_host_selected_model"
+    assert contract["post_materialization_chatgpt_visible_action_required"] == "display_exact"
     assert contract["post_materialization_activation_requires_verified_status"] is True
     assert contract["public_streamable_http_endpoint_path"] == "/mcp"
     assert contract["public_streamable_http_status_tool"] == "jazn_status"
@@ -137,6 +172,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["remote_runtime_route_ready_from_package_alone"] is False
 
 
-def test_release_identity_stays_on_system_coherence_line() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.96" or PACKAGE_VERSION.startswith("16.3.25.5.96.")
-    assert PACKAGE_RELEASE_NAME == "system-coherence-convergence"
+def test_release_identity_tracks_chatgpt_host_runtime_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.97"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-host-runtime-convergence"
