@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.96.2-system-coherence-convergence",
-  "runtime_version": "16.3.25.5.96.2-system-coherence-convergence",
-  "package_version": "16.3.25.5.96.2-system-coherence-convergence",
-  "generated_at_utc": "2026-10-02T14:27:44+00:00",
-  "updated_at_utc": "2026-10-02T14:27:44+00:00",
+  "version": "16.3.25.5.96.3-system-coherence-convergence",
+  "runtime_version": "16.3.25.5.96.3-system-coherence-convergence",
+  "package_version": "16.3.25.5.96.3-system-coherence-convergence",
+  "generated_at_utc": "2026-10-02T14:36:48+00:00",
+  "updated_at_utc": "2026-10-02T14:36:48+00:00",
   "start_file": "run.py",
-  "file_count": 1866,
-  "static_file_count": 1866,
+  "file_count": 1867,
+  "static_file_count": 1867,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 17415,
-      "sha256": "9944f5f1807e2750a96c78b6f53e17e6e3b1461f1e326c17d4b1358851950f54",
+      "size_bytes": 17432,
+      "sha256": "b1e9b6708ad1d7c9d42e0211f4682df4d40b9404ea7df70b297472675673e054",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/stable-test-contracts.yml",
-      "size_bytes": 4438,
-      "sha256": "1a4e0a69b88bd56b8d2eed481740d740167b450d140a956e51d785b1e948e0b7",
+      "size_bytes": 6791,
+      "sha256": "b9304fc1e93124fedd78eed74a057a058ec7494091ce16a451206514181229e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2905,
-      "sha256": "148eeed4b666ab2e51449ebf398374aff14835ea45f2e860a459506400e1429d",
+      "sha256": "3b66a582bf0fae852adfe284d62dfe03b9a22d6f94844cd8899f8f0f147947d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2297,8 +2297,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_96_SYSTEM_COHERENCE_CONVERGENCE.md",
-      "size_bytes": 5652,
-      "sha256": "e94bfb10f4853d3e4fa70a02bc4b52dc059c549e37b08d27a80c86e6726828e3",
+      "size_bytes": 7331,
+      "sha256": "29658dde66c17ae6d49e9e51f1b66402bd2310e5e9cea0051fa6c6c47df62eaf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8777,8 +8777,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5280,
-      "sha256": "72dcf80a45d6041f277790161536cf22d7a87dd11901f90b30e89328ca259ec2",
+      "size_bytes": 5260,
+      "sha256": "337641cfc966d9e3323bf4ff2b41e04684ffafe03b25b4e1010e54fdb65ffa0e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14167,6 +14167,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_generated_artifact_mutator_order.py",
+      "size_bytes": 2056,
+      "sha256": "06463e05ac9be78dab5973263b589db3604ff9eeebaa7f3d50301a0e8629477a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_github_actions_node24_convergence.py",
       "size_bytes": 3940,
       "sha256": "ae086091d6a033742fc5a4471a41d9d61a7848355509068bb38a0c52cddc12fe",
@@ -16661,8 +16670,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1691851,
-      "sha256": "0a886c813dee8d8197354054499d2b1507aef24ae0c537b8dacc1dd3b64f2c3c",
+      "size_bytes": 1691839,
+      "sha256": "2235340f095d8d5c623a10a98774d2da1515b7862cd0fb1040ae2cd4fa72e5b0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17246,11 +17255,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.96.2-system-coherence-convergence",
+  "release_version": "16.3.25.5.96.3-system-coherence-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.96.2-system-coherence-convergence",
-    "package_version": "16.3.25.5.96.2-system-coherence-convergence",
-    "release_version": "16.3.25.5.96.2-system-coherence-convergence"
+    "runtime_version": "16.3.25.5.96.3-system-coherence-convergence",
+    "package_version": "16.3.25.5.96.3-system-coherence-convergence",
+    "release_version": "16.3.25.5.96.3-system-coherence-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
