@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "41aaa7aa8ffa83d5c9ea254d8c109a9f71c7c3e8",
-    "base_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
+    "base_commit": "73e4e5cd983bc4185cc239c8842b534115920d47",
+    "base_version": "16.3.25.5.96.6-system-coherence-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "73e4e5cd983bc4185cc239c8842b534115920d47",
