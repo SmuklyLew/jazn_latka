@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.95.1",
-  "active_definition_count": 1820,
+  "active_definition_count": 1826,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6241,6 +6241,134 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 45
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_builds_canonical_control_plane_commands_without_secrets": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_public_deployment_builds_canonical_control_plane_commands_without_secrets",
+      "purpose": "Public deployment builds canonical control plane commands without secrets",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_rejects_non_loopback_daemon_and_non_https_resource": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_public_deployment_rejects_non_loopback_daemon_and_non_https_resource",
+      "purpose": "Public deployment rejects non loopback daemon and non https resource",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_requires_oauth_credentials_and_allowed_hosts": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_public_deployment_requires_oauth_credentials_and_allowed_hosts",
+      "purpose": "Public deployment requires oauth credentials and allowed hosts",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_activation_requires_live_daemon_status_after_canonical_start": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_activation_requires_live_daemon_status_after_canonical_start",
+      "purpose": "Activation requires live daemon status after canonical start",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_container_entrypoint_execs_gateway_only_after_runtime_is_ready": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_container_entrypoint_execs_gateway_only_after_runtime_is_ready",
+      "purpose": "Container entrypoint execs gateway only after runtime is ready",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_container_contract_is_non_root_and_never_exposes_private_daemon_port": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_container_contract_is_non_root_and_never_exposes_private_daemon_port",
+      "purpose": "Container contract is non root and never exposes private daemon port",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 148
     },
     "tests/test_chatgpt_recovery_integrity.py::test_runtime_preflight_rejects_file_hash_mismatch_in_package_manifest": {
       "path": "tests/test_chatgpt_recovery_integrity.py",
