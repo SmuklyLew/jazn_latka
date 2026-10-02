@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 # v16.3.25.5.96.7 makes ChatGPT post-materialization activation explicit:
-# the verified operator publishes the canonical main.py --chat-gpt launch contract
+# the verified operator publishes the canonical main.py chat-gpt launch contract
 # without inventing a model flag, requiring OPENAI_API_KEY, or claiming executor capability.
 DISTRIBUTION_VERSION = "16.3.25.5.96.7"
 PACKAGE_VERSION = "16.3.25.5.96.7"
