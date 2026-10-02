@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping
 from urllib.parse import urlsplit
 
 
@@ -293,7 +293,7 @@ def run_public_mcp_deployment(
     env: Mapping[str, str] | None = None,
     *,
     runner: Runner = subprocess.run,
-    execv: Callable[[str, Sequence[str]], Any] = os.execv,
+    execv: Callable[[str, list[str]], Any] | None = None,
 ) -> int:
     """Activate the persistent runtime and exec the OAuth-protected gateway."""
 
@@ -312,7 +312,8 @@ def run_public_mcp_deployment(
         return 2
 
     argv = config.gateway_argv()
-    execv(argv[0], argv)
+    exec_impl = os.execv if execv is None else execv
+    exec_impl(argv[0], argv)
     return 0
 
 
