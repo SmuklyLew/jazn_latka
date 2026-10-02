@@ -21,8 +21,22 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API.",
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API. Dla hosta ChatGPT po zweryfikowaniu active_root preferowana jest bezpośrednia trasa centralnego control plane przez main.py; host nie podaje --model ani OPENAI_API_KEY, ponieważ warstwa językowa pochodzi z bieżącego modelu ChatGPT.",
   "version": "v15.1.0.3.96",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
-  "visible_turn_readiness": "accepted_final_visible_text_only"
+  "visible_turn_readiness": "accepted_final_visible_text_only",
+  "chatgpt_control_plane": "main.py",
+  "chatgpt_host_direct_command": "python -X utf8 main.py chat-gpt --session-id <stable-session-id>",
+  "chatgpt_host_direct_nonstreaming_turn_command": "python -X utf8 main.py chat-gpt --session-id <stable-session-id> --daemon-request-id <unique-turn-request-id> -- \"<exact-user-message>\"",
+  "chatgpt_host_direct_nonstreaming_resume_command": "python -X utf8 main.py chat-gpt --session-id <stable-session-id> --daemon-result <same-request-id>",
+  "chatgpt_model_binding": "chatgpt_host_selected_model",
+  "chatgpt_model_cli_argument_required": false,
+  "chatgpt_openai_api_key_required": false,
+  "chatgpt_visible_action_required": "display_exact",
+  "chatgpt_host_startup_commands": [
+    "python -X utf8 main.py host-preflight --json",
+    "python -X utf8 main.py start",
+    "python -X utf8 main.py status --snapshot --json",
+    "python -X utf8 main.py chat-gpt --session-id <stable-session-id>"
+  ]
 }
