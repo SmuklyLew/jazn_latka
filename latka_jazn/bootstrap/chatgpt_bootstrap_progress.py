@@ -56,8 +56,9 @@ def _normalized_memory_mode(value: str | None) -> str:
 
 
 def _core_percent(completed_gates: Iterable[str]) -> tuple[int, tuple[str, ...]]:
+    completed_set = set(completed_gates)
     completed = tuple(
-        gate for gate, _percent in CORE_GATE_MILESTONES if gate in set(completed_gates)
+        gate for gate, _percent in CORE_GATE_MILESTONES if gate in completed_set
     )
     if not completed:
         return 0, ()
