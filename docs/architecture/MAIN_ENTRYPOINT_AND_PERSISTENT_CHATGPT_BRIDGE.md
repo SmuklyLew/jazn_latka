@@ -65,11 +65,13 @@ run.py chat-gpt -- "następna wiadomość"
 ...
 ```
 
-Kanoniczny tryb to jedno uruchomienie mostu na czas dostępności executora/sesji hosta:
+Kanoniczny tryb host-direct to jedno uruchomienie mostu na czas dostępności executora/sesji hosta bezpośrednio przez centralny control plane:
 
 ```text
-python -X utf8 run.py chat-gpt --session-id <stable-session-id>
+python -X utf8 main.py chat-gpt --session-id <stable-session-id>
 ```
+
+Publiczny launcher `python -X utf8 run.py chat-gpt --session-id <stable-session-id>` pozostaje równoważnym wejściem użytkownika, ponieważ przekazuje argv do tego samego `main.py`.
 
 Host utrzymuje stdin/stdout procesu. Każda kolejna wiadomość jest rekordem tego samego kanału JSONL. Ten sam kanał obsługuje również phase-2 `host_visible_reply`/finalization. Nowy `turn_id` nie oznacza nowego procesu CLI.
 
@@ -92,7 +94,7 @@ One-shot pozostaje wyłącznie:
 
 ## 4. ChatGPT ≠ płatne OpenAI API
 
-`chat-gpt` oznacza host ChatGPT jako wymienną warstwę językową. Nie wymaga `OPENAI_API_KEY`, nie wykonuje żądania do płatnego OpenAI API i nie może automatycznie przełączyć użytkownika na trasę paid API.
+`chat-gpt` oznacza host ChatGPT jako wymienną warstwę językową. Nie wymaga `OPENAI_API_KEY`, nie wykonuje żądania do płatnego OpenAI API i nie może automatycznie przełączyć użytkownika na trasę paid API. Host nie przekazuje też `--model`: nazwa/model LLM jest własnością bieżącej sesji ChatGPT, a nie parametrem lokalnego runtime Jaźni.
 
 `chat-open-ai` / `--chat-open-ai` pozostaje osobną, jawnie opt-in capability dla API i nie jest częścią wymaganego działania Jaźni w ChatGPT.
 
