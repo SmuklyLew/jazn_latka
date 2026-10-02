@@ -125,6 +125,12 @@ def test_bridge_discovery_separates_daemon_liveness_from_visible_turn_readiness(
     assert chatgpt["transport"] == "persistent_stdio_jsonl"
     assert chatgpt["transport_selection"] == "capability_negotiated"
     assert chatgpt["fallback_transport"] == "daemon_bound_transactional_turns"
+    assert chatgpt["preferred_host_direct_command"] == (
+        "python -X utf8 main.py chat-gpt --session-id <id>"
+    )
+    assert chatgpt["control_plane_entrypoint"] == "main.py"
+    assert chatgpt["host_model_binding"] == "chatgpt_host_selected_model"
+    assert chatgpt["model_cli_argument_required"] is False
     assert chatgpt["daemon_transactional_resume_supported"] is True
     assert chatgpt["pipe_lifetime_is_identity"] is False
     assert chatgpt["accepted_visible_turn_required"] is True
@@ -228,6 +234,14 @@ def test_machine_readable_contracts_require_accepted_visible_turn() -> None:
 
     assert startup["chatgpt_transport_selection"] == "capability_negotiated"
     assert startup["chatgpt_fallback_transport"] == "daemon_bound_transactional_turns"
+    assert startup["chatgpt_control_plane"] == "main.py"
+    assert startup["chatgpt_host_direct_command"] == (
+        "python -X utf8 main.py chat-gpt --session-id <stable-session-id>"
+    )
+    assert startup["chatgpt_model_binding"] == "chatgpt_host_selected_model"
+    assert startup["chatgpt_model_cli_argument_required"] is False
+    assert startup["chatgpt_openai_api_key_required"] is False
+    assert startup["chatgpt_visible_action_required"] == "display_exact"
     assert startup["chatgpt_pipe_lifetime_is_identity"] is False
     assert startup["accepted_visible_turn_required"] is True
     assert startup["visible_turn_readiness"] == "accepted_final_visible_text_only"
