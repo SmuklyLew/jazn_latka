@@ -143,6 +143,27 @@ Jeżeli nie ma jeszcze operatora, ale kompletna paczka systemowa ZIP i zaufany S
 9. jeżeli helper `CHATGPT_BOOTSTRAP.py` już działa w bieżącym interpreterze Pythona, preferuj flagę `--post-materialization-preflight`: po zweryfikowanej ekstrakcji uruchamia ona wyłącznie `run.py host-preflight --json` przez `runpy` w tym samym interpreterze, bez tworzenia child process; dodatni wynik dowodzi tylko wykonalnego operatora/preflightu, nie żywego daemona ani accepted visible turn;
 10. jeżeli host zwrócił `ClientError`/równoważny błąd **zanim powstał jakikolwiek proces Pythona**, tryb same-interpreter nie jest obejściem tego braku capability. Nie ponawiaj ZIP/bootstrapu; sprawdź faktycznie wywoływalny `jazn_status` dla zdalnej trasy, a bez takiego connectora pozostań fail-closed.
 
+**`materialized_operator_ready` nie jest stanem terminalnym.** Jeżeli helper zwrócił
+poprawny `activation_contract` albo dodatni post-materialization preflight, host ma
+natychmiast przejść do zweryfikowanego root, wczytać pełne `AGENTS.md` i ten
+runbook, a następnie kontynuować kanoniczny lifecycle aż do zweryfikowanego
+runtime albo konkretnego fail-closed blockera. Dla lokalnego hosta zdolnego do
+process execution kanoniczne subkomendy centralnego control plane są równoważne
+publicznemu starterowi:
+
+```bash
+python -X utf8 main.py start
+python -X utf8 main.py status --snapshot --json
+python -X utf8 main.py chat-gpt --session-id <stabilny-id-sesji>
+```
+
+Publicznie preferuj odpowiedniki przez `run.py`; `main.py` pozostaje jedynym
+właścicielem dispatchu. Legacy flagi `--daemon-start`, `--daemon-status` i
+`--chat-gpt` mogą istnieć jako wewnętrzna warstwa kompatybilności, ale nie są
+eksportowanym kontraktem aktywacji hosta. Tryb `chat-gpt` korzysta z bieżącego
+hosta ChatGPT jako kanału modelu i nie wymaga `--model` ani
+`OPENAI_API_KEY`.
+
 Ten primitive ma być poznawczo obojętny: nie implementuje uwagi, pamięci, replay, affect ani innych neuro-inspirowanych modułów. Takie warstwy należą dopiero do zweryfikowanego runtime i podlegają software contracts oraz granicom z `PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
 Standalone bootstrap ma działać fail-closed: odrzucać traversal, ścieżki absolutne/drive-qualified, backslashe w nazwach ZIP, duplikaty, symlinki, nietypowe wpisy, szyfrowanie, przekroczenia limitów liczby/rozmiaru/compression-ratio i błędy CRC.
