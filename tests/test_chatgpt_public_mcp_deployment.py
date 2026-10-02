@@ -38,7 +38,7 @@ def test_public_deployment_builds_canonical_control_plane_commands_without_secre
     env = _env(tmp_path)
     config = PublicMcpDeploymentConfig.from_environment(env)
 
-    assert config.daemon_start_argv()[-3:] == ["--root", str(tmp_path.resolve())][-3:]
+    assert config.daemon_start_argv()[-2:] == ["--root", str(tmp_path.resolve())]
     assert "start" in config.daemon_start_argv()
     assert "status" in config.daemon_status_argv()
     assert "--json" in config.daemon_status_argv()
