@@ -3,11 +3,11 @@
   "version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "runtime_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
   "package_version": "16.3.25.5.95.1-chatgpt-real-mcp-ingress-convergence",
-  "generated_at_utc": "2026-10-02T12:57:37+00:00",
-  "updated_at_utc": "2026-10-02T12:57:37+00:00",
+  "generated_at_utc": "2026-10-02T13:17:43+00:00",
+  "updated_at_utc": "2026-10-02T13:17:43+00:00",
   "start_file": "run.py",
-  "file_count": 1859,
-  "static_file_count": 1859,
+  "file_count": 1860,
+  "static_file_count": 1860,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2956,
-      "sha256": "1dfc9062f4a3d459dba0c0354d0cd4289fd7ce3e70690eb6ef08f0856afcb8ca",
+      "sha256": "2965728ceafa06c5087f05270875e1d25ef7a4e2da8d5335eb97513392f4dff3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7248,7 +7248,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "4fa5fa9d041942794ee7eca8b296797fd795fcf6d8184a5aeb3d4f19c24d8bb8",
+      "sha256": "772cf97e47ed52a430d100928480ffbbd36d3b3392556938ff544f7965d46e9f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7257,7 +7257,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "6446c8f0025b1350e395a9bb761d594186a59425fe420417af4747a54c75179b",
+      "sha256": "7829bc8d12f1705d928f7aaece3002f3984efa31e588d54cf2fe6af6a5498921",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7266,7 +7266,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/linux-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "b4aed61430b1e2d473749a1ee5530025bd4fa077ef9bb193859c101e0cc9c461",
+      "sha256": "8b8ae01ec1b530d9c1938336891542f585adc9409f960ec4ea372d366f2f2871",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7275,7 +7275,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "e4b59088a52207084262b694c47ba9b785b3cf151e351261c52f0b65c7b66e2c",
+      "sha256": "6ce5923a1fbc5a47215a6cef32ae4826d05615fdb4e65f9f9b9daf976f6b6910",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7284,7 +7284,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "3f0fa37746ccc0d224502903d6ff2e5fd2f179ebb445babfde5e311fb0f7a755",
+      "sha256": "e06437db0cb821b80740fe2589c0c9daeccee6c07a2115f995ac248c0faaea49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7293,7 +7293,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive/windows-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "9cf7bb2f19d13becf7ae9bd39e4fda433d499e6fd663f1f7a39df0f15d0eca44",
+      "sha256": "54fd401fb026f78198201ff8f842bf031f2a11809e578b41bfb93ecff14d8016",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8885,8 +8885,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2228,
-      "sha256": "a4f465116cdcccd664c6e9f6180f52292b12692f9214339e04d6fa23f5b745e6",
+      "size_bytes": 2232,
+      "sha256": "d12f07d89f9a21592cac455e0490277f956cbbd85bf1625d7cbfb1f41d0f88aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13105,6 +13105,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.95.1-pypdf-security-pre-fix/test_dependency_studio.py",
+      "size_bytes": 18821,
+      "sha256": "943f88ace0019bfa006e45d44dc909116536159d806dd3464ea2fc5a06750002",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/conftest.py",
       "size_bytes": 383,
       "sha256": "d02fa32b32900e77777fe8729437d327bbdb726cb24de187ebef4578f774b6a4",
@@ -13970,8 +13979,8 @@
     },
     {
       "path": "tests/test_dependency_studio.py",
-      "size_bytes": 18821,
-      "sha256": "943f88ace0019bfa006e45d44dc909116536159d806dd3464ea2fc5a06750002",
+      "size_bytes": 18829,
+      "sha256": "09ae72935b406862bdb00ebb99d0be2292272282a53b14148afad2068038df80",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
