@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.101",
-  "active_definition_count": 1861,
+  "active_definition_count": 1865,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -39833,10 +39833,10 @@
       "description_source": "source_identity",
       "line": 29
     },
-    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_generic_leadin_before_following_question_is_not_a_coverage_goal": {
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_discourse_or_style_leadin_before_following_goal_is_not_a_coverage_goal": {
       "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
-      "name": "test_generic_leadin_before_following_question_is_not_a_coverage_goal",
-      "purpose": "Generic leadin before following question is not a coverage goal",
+      "name": "test_discourse_or_style_leadin_before_following_goal_is_not_a_coverage_goal",
+      "purpose": "Discourse or style leadin before following goal is not a coverage goal",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
@@ -39847,11 +39847,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
         "latka_jazn.nlp.utterance_components"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 19
+      "line": 47
     },
     "tests/test_v163255101_component_coverage_leadin_convergence.py::test_standalone_generic_directive_is_preserved": {
       "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
@@ -39865,29 +39866,31 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
         "latka_jazn.nlp.utterance_components"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 66
     },
-    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_non_generic_directive_before_question_is_preserved": {
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_standalone_style_directive_is_preserved": {
       "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
-      "name": "test_non_generic_directive_before_question_is_preserved",
-      "purpose": "Non generic directive before question is preserved",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_standalone_style_directive_is_preserved",
+      "purpose": "Standalone style directive is preserved",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
         "latka_jazn.nlp.utterance_components"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 42
+      "line": 73
     },
     "tests/test_v163255101_component_coverage_leadin_convergence.py::test_exact_multi_question_message_uses_first_person_compatible_semantics": {
       "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
@@ -39901,11 +39904,92 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
         "latka_jazn.nlp.utterance_components"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 81
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_self_assessment_cannot_be_cross_covered_by_self_knowledge_phrase": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_self_assessment_cannot_be_cross_covered_by_self_knowledge_phrase",
+      "purpose": "Self assessment cannot be cross covered by self knowledge phrase",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_self_knowledge_cannot_be_cross_covered_by_assessment_identity_phrase": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_self_knowledge_cannot_be_cross_covered_by_assessment_identity_phrase",
+      "purpose": "Self knowledge cannot be cross covered by assessment identity phrase",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_runtime_answer_validator_accepts_exact_fixed_message": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_runtime_answer_validator_accepts_exact_fixed_message",
+      "purpose": "Runtime answer validator accepts exact fixed message",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 151
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_runtime_answer_validator_rejects_missing_component_fail_closed": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_runtime_answer_validator_rejects_missing_component_fail_closed",
+      "purpose": "Runtime answer validator rejects missing component fail closed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 165
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
