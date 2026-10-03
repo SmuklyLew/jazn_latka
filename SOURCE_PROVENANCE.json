@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "24b1f1f86c9ae69798f2c71e3c6e9b4e9e51a9c6",
-    "base_version": "16.3.25.5.99-pdf-capability-offline-dependency-convergence",
+    "base_commit": "bbd4c199902245b77e6c05b576d6eab015942eb9",
+    "base_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "bbd4c199902245b77e6c05b576d6eab015942eb9",
