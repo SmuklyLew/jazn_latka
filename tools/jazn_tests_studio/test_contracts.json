@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.101",
-  "active_definition_count": 1865,
+  "system_version": "16.3.25.5.102",
+  "active_definition_count": 1873,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3058,13 +3058,15 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_component_coverage_leadin_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_component_coverage_leadin_convergence",
-      "purpose": "Release version tracks component coverage leadin convergence",
+      "name": "test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence",
+      "purpose": "Release version tracks fast bootstrap persistent runtime convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [],
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -7895,10 +7897,10 @@
       "description_source": "source_identity",
       "line": 135
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_component_coverage_leadin_convergence": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_tracks_component_coverage_leadin_convergence",
-      "purpose": "Release identity tracks component coverage leadin convergence",
+      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
+      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -39990,6 +39992,192 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_skips_zip_rehash_and_extraction": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_verified_materialization_reuse_skips_zip_rehash_and_extraction",
+      "purpose": "Verified materialization reuse skips zip rehash and extraction",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_fails_closed_after_static_tamper": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_verified_materialization_reuse_fails_closed_after_static_tamper",
+      "purpose": "Verified materialization reuse fails closed after static tamper",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "BootstrapError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_warm_daemon_reuse_does_not_pay_cold_integrity_gate": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_warm_daemon_reuse_does_not_pay_cold_integrity_gate",
+      "purpose": "Warm daemon reuse does not pay cold integrity gate",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid",
+      "purpose": "Supervisor requires fresh heartbeat lease even for confirmed pid",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 160
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_quoted_loader_material_does_not_promote_creative_intent": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_quoted_loader_material_does_not_promote_creative_intent",
+      "purpose": "Quoted loader material does not promote creative intent",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 203
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_explicit_edit_instruction_outside_fence_still_routes_creative": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_explicit_edit_instruction_outside_fence_still_routes_creative",
+      "purpose": "Explicit edit instruction outside fence still routes creative",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 231
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_structured_lyrics_still_promote_creative_material": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_structured_lyrics_still_promote_creative_material",
+      "purpose": "Structured lyrics still promote creative material",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 244
+    },
+    "tests/test_v163255102_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
+      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_supervisor",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 260
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
