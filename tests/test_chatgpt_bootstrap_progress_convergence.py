@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from typing import cast
 import zipfile
 
 import CHATGPT_BOOTSTRAP as bootstrap
@@ -117,15 +118,15 @@ def test_bootstrap_emits_evidence_backed_progress_events(tmp_path: Path) -> None
     assert "system_package_verified" in phases
     assert "zip_validated" in phases
     assert phases[-1] == "operator_materialized"
-    assert int(events[-1]["wake_percent"]) == 55
+    assert events[-1]["wake_percent"] == 55
     assert result["progress"] == events[-1]
-    assert result["progress_contract"]["optional_memory_blocks_core_wake"] is False
+    progress_contract = cast(dict[str, object], result["progress_contract"])
+    assert progress_contract["optional_memory_blocks_core_wake"] is False
 
 
 def test_activation_contract_uses_live_status_as_readiness_authority(tmp_path: Path) -> None:
     activation = bootstrap.build_post_materialization_activation_contract(tmp_path / "active")
-    local = activation["local"]
-    assert isinstance(local, dict)
+    local = cast(dict[str, object], activation["local"])
 
     assert local["runtime_status_argv"] == ["status", "--json"]
     assert local["runtime_snapshot_diagnostic_argv"] == ["status", "--snapshot", "--json"]
