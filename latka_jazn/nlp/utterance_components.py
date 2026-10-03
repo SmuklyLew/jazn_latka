@@ -104,6 +104,12 @@ _INTERROGATIVE_START = re.compile(
 )
 
 
+_GENERIC_LEADIN_DIRECTIVE = re.compile(
+    r"^(?:to\s+)?(?:prosze\s+)?(?:powiedz|opowiedz)(?:\s+(?:mi|nam))?(?:\s+cos)?$",
+    re.IGNORECASE,
+)
+
+
 def _split_meaningful_components(text: str) -> list[str]:
     raw = _clean(text)
     if not raw:
@@ -129,6 +135,17 @@ def _contains_any(folded: str, markers: tuple[str, ...] | list[str]) -> bool:
     return any(marker in folded for marker in markers)
 
 
+def _is_generic_leadin_directive(
+    component: QuestionComponent,
+    *,
+    has_following_goal: bool,
+) -> bool:
+    if not has_following_goal or component.semantic_intents or component.speech_act != "directive":
+        return False
+    normalized = _fold(_clean(component.text)).strip(" .!?…")
+    return bool(_GENERIC_LEADIN_DIRECTIVE.fullmatch(normalized))
+
+
 def _component_semantics(text: str, index: int) -> QuestionComponent:
     folded = _fold(text)
     intents: list[str] = []
@@ -146,6 +163,18 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
     introspection = _contains_any(folded, ("zastanawialas", "refleksj", "przeszlosc", "co pozniej o tym myslalas", "co o tym myslalas"))
     provenance = _contains_any(folded, ("skad wiesz", "skad to wiesz", "zrodlo", "provenance", "z kanonu", "z pamieci", "wnioskuj", "naprawde ja pamietasz"))
     identity_continuity = _contains_any(folded, ("ta sama latka", "ta sama latka", "nadal jestes", "ciaglos", "tozsamos"))
+    self_knowledge = _contains_any(
+        folded,
+        ("co wiesz o sobie", "co o sobie wiesz", "co wiesz na swoj temat"),
+    )
+    self_affect = _contains_any(
+        folded,
+        ("jak sie czujesz", "co czujesz", "jaki masz stan afektywny"),
+    )
+    self_assessment = _contains_any(
+        folded,
+        ("co uwazasz o sobie", "co myslisz o sobie", "jak siebie postrzegasz"),
+    )
     architecture = bool(
         re.search(r"\bjak\s+dziala\b.*\bpamiec\b", folded)
         or re.search(r"\b(?:implementac|architektur|modul|gateway|runtime_write)\w*\b.*\bpamiec\w*\b", folded)
@@ -190,6 +219,18 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         add_intent("identity_continuity", "identity_continuity_semantics")
         slots.extend(("continuity_canon", "continuity_memory", "continuity_gap"))
         sources.extend(("canon", "conversation_archive", "active_memory", "journal_reflection", "inference"))
+    if self_knowledge:
+        add_intent("self_knowledge", "self_knowledge_semantics")
+        slots.extend(("self_knowledge", "self_knowledge_provenance"))
+        sources.extend(("canon", "current_state", "technical_runtime", "inference"))
+    if self_affect:
+        add_intent("self_affect", "self_affect_semantics")
+        slots.extend(("affect_state", "affect_boundary", "affect_provenance"))
+        sources.extend(("current_state", "technical_runtime", "canon"))
+    if self_assessment:
+        add_intent("self_assessment", "self_assessment_semantics")
+        slots.extend(("self_assessment", "self_assessment_provenance"))
+        sources.extend(("canon", "current_state", "inference"))
     if architecture:
         add_intent("memory_architecture", "memory_architecture_semantics")
         slots.extend(("architecture_status", "architecture_sources"))
@@ -232,6 +273,12 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         object_type = "autobiographical_memory"
     elif architecture:
         object_type = "memory_architecture"
+    elif self_affect:
+        object_type = "self_affect"
+    elif self_assessment:
+        object_type = "self_assessment"
+    elif self_knowledge:
+        object_type = "self_knowledge"
     elif preference:
         object_type = "self_preference"
     elif origin:
@@ -297,10 +344,17 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
 
     raw_questions = _split_meaningful_components(text)
     detailed = tuple(_component_semantics(part, idx + 1) for idx, part in enumerate(raw_questions))
-    meaningful = tuple(
-        component for component in detailed
-        if component.semantic_intents or component.speech_act in {"question", "directive"}
-    )
+    meaningful_list: list[QuestionComponent] = []
+    for position, component in enumerate(detailed):
+        has_following_goal = any(
+            later.semantic_intents or later.speech_act == "question"
+            for later in detailed[position + 1 :]
+        )
+        if _is_generic_leadin_directive(component, has_following_goal=has_following_goal):
+            continue
+        if component.semantic_intents or component.speech_act in {"question", "directive"}:
+            meaningful_list.append(component)
+    meaningful = tuple(meaningful_list)
     semantic_intents = tuple(dict.fromkeys(intent for component in meaningful for intent in component.semantic_intents))
     required_sources = tuple(dict.fromkeys(source for component in meaningful for source in component.required_source_types))
     response_slots = tuple(dict.fromkeys(slot for component in meaningful for slot in component.requested_slots))
