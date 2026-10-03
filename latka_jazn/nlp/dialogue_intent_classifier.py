@@ -517,6 +517,26 @@ class DialogueIntentClassifier:
             return report(norm,folded,'post_update_coverage_audit_request',[
                 'jawne pytanie o kompletność i pominięcia zakończonego patcha/aktualizacji'
             ],0.97,diag=True,speech_act=speech.speech_act,question_object='post_update_coverage')
+        if report_like_non_execution:
+            guarded_intent = (
+                "system_diagnostic_question"
+                if has_diag
+                else ("external_research_request" if has_research else "ordinary_dialogue")
+            )
+            return report(
+                norm,
+                folded,
+                guarded_intent,
+                [
+                    "długi materiał raportowy opisuje system/aktualizację bez jawnego polecenia wykonania",
+                    "report_material_cannot_open_mutating_update_route_without_execution_directive",
+                ],
+                0.95,
+                diag=guarded_intent == "system_diagnostic_question",
+                speech_act=speech.speech_act,
+                question_object="runtime" if guarded_intent == "system_diagnostic_question" else "report_material",
+            )
+
         task_has_memory_anchor = bool(
             isinstance(previous_task_state, dict)
             and (
@@ -641,26 +661,6 @@ class DialogueIntentClassifier:
         # "co działa".  The route-contract matrix intentionally treats that
         # short phrase as a health check, but the explicit architecture terms
         # and system/version context are more specific and must win first.
-        if report_like_non_execution:
-            guarded_intent = (
-                "system_diagnostic_question"
-                if has_diag
-                else ("external_research_request" if has_research else "ordinary_dialogue")
-            )
-            return report(
-                norm,
-                folded,
-                guarded_intent,
-                [
-                    "długi materiał raportowy opisuje system/aktualizację bez jawnego polecenia wykonania",
-                    "report_material_cannot_open_mutating_update_route_without_execution_directive",
-                ],
-                0.95,
-                diag=guarded_intent == "system_diagnostic_question",
-                speech_act=speech.speech_act,
-                question_object="runtime" if guarded_intent == "system_diagnostic_question" else "report_material",
-            )
-
         continuation_update_execution = bool(
             has_update
             and not component_report.negated_actions
