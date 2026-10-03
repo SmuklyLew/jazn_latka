@@ -26,7 +26,7 @@ CORE_GATE_MILESTONES: tuple[tuple[str, int], ...] = (
     ("turn_channel_bound", 100),
 )
 
-_CORE_PERCENT_BY_GATE = dict(CORE_GATE_MILESTONES)
+_CORE_PERCENT_BY_GATE: dict[str, int] = dict(CORE_GATE_MILESTONES)
 _VALID_MEMORY_MODES = frozenset({"off", "optional", "required"})
 
 
