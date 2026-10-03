@@ -2880,7 +2880,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 35
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_optional_memory_never_holds_ready_core_below_100": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -2899,7 +2899,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 50
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_required_memory_is_separate_readiness_dimension": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -2918,7 +2918,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 73
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_bootstrap_emits_evidence_backed_progress_events": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -2935,24 +2935,24 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 104
+      "line": 105
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_activation_contract_uses_live_status_as_readiness_authority": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
       "name": "test_activation_contract_uses_live_status_as_readiness_authority",
       "purpose": "Activation contract uses live status as readiness authority",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_bootstrap_progress"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 127
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_defaults_match_canonical_zip_policy": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
