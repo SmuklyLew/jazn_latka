@@ -864,17 +864,19 @@ def bootstrap_system_zip(
         if run_post_materialization_preflight:
             preflight = run_materialized_host_preflight_in_process(destination)
             payload["post_materialization_preflight"] = preflight
+            preflight_payload = preflight.get("preflight")
+            execution_route = (
+                preflight_payload.get("execution_route")
+                if isinstance(preflight_payload, dict)
+                else None
+            )
             record_progress(
                 "host_preflight",
                 65 if preflight.get("gate_passed") is True else 55,
                 status="completed" if preflight.get("gate_passed") is True else "blocked",
                 detail={
                     "gate_passed": preflight.get("gate_passed") is True,
-                    "execution_route": (
-                        preflight.get("preflight", {}).get("execution_route")
-                        if isinstance(preflight.get("preflight"), dict)
-                        else None
-                    ),
+                    "execution_route": execution_route,
                 },
             )
             payload["progress"] = progress_events[-1]
