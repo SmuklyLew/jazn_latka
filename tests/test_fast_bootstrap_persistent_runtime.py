@@ -66,7 +66,9 @@ def test_verified_materialization_reuse_skips_zip_rehash_and_extraction(tmp_path
     )
     assert cold["materialization_mode"] == "cold_extract"
     assert cold["reused_existing"] is False
-    assert cold["materialization_stamp"]["written"] is True
+    cold_stamp = cold["materialization_stamp"]
+    assert isinstance(cold_stamp, dict)
+    assert cold_stamp.get("written") is True
 
     reused = bootstrap.bootstrap_system_zip(
         zip_path=archive,

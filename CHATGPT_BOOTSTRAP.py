@@ -446,13 +446,17 @@ def _reuse_existing_materialization(
             "materialization stamp source SHA-256 differs from trusted package identity",
             code="materialization_stamp_mismatch",
         )
-    try:
-        stamped_size = int(stamp.get("source_size_bytes"))
-    except (TypeError, ValueError) as exc:
+    raw_stamped_size = stamp.get("source_size_bytes")
+    if (
+        isinstance(raw_stamped_size, bool)
+        or not isinstance(raw_stamped_size, int)
+        or raw_stamped_size < 0
+    ):
         raise BootstrapError(
             "materialization stamp source size is invalid",
             code="materialization_stamp_mismatch",
-        ) from exc
+        )
+    stamped_size = raw_stamped_size
     if stamped_size != source_size:
         raise BootstrapError(
             "materialization stamp source size differs from current ZIP size",
@@ -474,6 +478,20 @@ def _reuse_existing_materialization(
             f"reused system root is incomplete: {missing}",
             code="materialized_operator_incomplete",
         )
+    raw_entry_count = stamp.get("entry_count")
+    raw_uncompressed_size = stamp.get("uncompressed_size_bytes")
+    if (
+        isinstance(raw_entry_count, bool)
+        or not isinstance(raw_entry_count, int)
+        or raw_entry_count < 0
+        or isinstance(raw_uncompressed_size, bool)
+        or not isinstance(raw_uncompressed_size, int)
+        or raw_uncompressed_size < 0
+    ):
+        raise BootstrapError(
+            "materialization stamp extraction counters are invalid",
+            code="materialization_stamp_mismatch",
+        )
     return {
         "reused": True,
         "materialization_mode": "verified_reuse",
@@ -481,8 +499,8 @@ def _reuse_existing_materialization(
         "source_size_bytes": source_size,
         "sha256": expected_sha256.lower(),
         "root_prefix": stamp.get("root_prefix"),
-        "entry_count": int(stamp.get("entry_count") or 0),
-        "uncompressed_size_bytes": int(stamp.get("uncompressed_size_bytes") or 0),
+        "entry_count": raw_entry_count,
+        "uncompressed_size_bytes": raw_uncompressed_size,
         "materialization_stamp": {
             "path": str(stamp_path),
             "schema_version": stamp.get("schema_version"),
