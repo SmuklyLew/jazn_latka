@@ -12484,13 +12484,13 @@
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
       "name": "test_verified_materialization_reuse_skips_zip_rehash_and_extraction",
       "purpose": "Verified materialization reuse skips zip rehash and extraction",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -12526,7 +12526,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 88
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_warm_daemon_reuse_does_not_pay_cold_integrity_gate": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12549,7 +12549,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 109
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12572,7 +12572,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 160
+      "line": 162
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_quoted_loader_material_does_not_promote_creative_intent": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12595,7 +12595,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 203
+      "line": 205
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_explicit_edit_instruction_outside_fence_still_routes_creative": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12618,7 +12618,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 231
+      "line": 233
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_structured_lyrics_still_promote_creative_material": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12641,7 +12641,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 244
+      "line": 246
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -12664,7 +12664,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 260
+      "line": 262
     },
     "tests/test_final_hardening.py::test_canonical_route_lexicon_covers_new_dialogue_families": {
       "path": "tests/test_final_hardening.py",
