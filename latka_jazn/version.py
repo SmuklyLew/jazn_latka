@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.99 separates PDF tooling from activation-required core while
-# preserving pypdf>=6.19.0,<7 in an explicit verified release capability.
-# This keeps offline startup independent of optional PDF parsing support.
-DISTRIBUTION_VERSION = "16.3.25.5.99"
-PACKAGE_VERSION = "16.3.25.5.99"
-PACKAGE_RELEASE_NAME = "pdf-capability-offline-dependency-convergence"
+# v16.3.25.5.100 makes ChatGPT bootstrap progress evidence-backed, keeps
+# optional MEMORY outside core wake readiness, uses live runtime status as the
+# activation authority, and hardens update-intent routing for pasted reports.
+DISTRIBUTION_VERSION = "16.3.25.5.100"
+PACKAGE_VERSION = "16.3.25.5.100"
+PACKAGE_RELEASE_NAME = "chatgpt-bootstrap-progress-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -21,11 +21,13 @@ import shutil
 import stat
 import sys
 import tempfile
+from typing import Callable
 import zipfile
 
 
 BOOTSTRAP_SCHEMA_VERSION = "chatgpt_system_zip_bootstrap/v1"
 POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION = "chatgpt_post_materialization_activation/v1"
+BOOTSTRAP_PROGRESS_SCHEMA_VERSION = "chatgpt_bootstrap_progress/v1"
 CHUNK_SIZE = 8 * 1024 * 1024
 DEFAULT_MAX_ENTRIES = 20_000
 DEFAULT_MAX_TOTAL_BYTES = 8 * 1024 * 1024 * 1024
@@ -47,6 +49,56 @@ _REQUIRED_ROOT_FILES = frozenset(
         "SOURCE_PROVENANCE.json",
     }
 )
+
+_BOOTSTRAP_PROGRESS_MILESTONES = (
+    ("executor_probe", 5),
+    ("system_package_verified", 15),
+    ("zip_validated", 30),
+    ("operator_materialized", 55),
+    ("host_preflight", 65),
+    ("contracts_loaded", 72),
+    ("daemon_started", 82),
+    ("live_readiness", 95),
+    ("turn_channel_bound", 100),
+)
+
+
+def build_bootstrap_progress_contract() -> dict[str, object]:
+    return {
+        "schema_version": BOOTSTRAP_PROGRESS_SCHEMA_VERSION,
+        "milestones": [
+            {"gate": gate, "wake_percent": percent}
+            for gate, percent in _BOOTSTRAP_PROGRESS_MILESTONES
+        ],
+        "percent_semantics": "completed_verified_gates_only",
+        "optional_memory_blocks_core_wake": False,
+        "required_memory_is_separate_readiness_dimension": True,
+        "live_status_is_activation_authority": True,
+        "snapshot_status_is_diagnostic_only": True,
+        "truth_boundary": (
+            "Wake percent is milestone-derived and may advance only after evidence-backed "
+            "gates complete. Optional MEMORY must not hold a ready SYSTEM at 99 percent. "
+            "Host-side upload/materialization progress that the bootstrap cannot observe "
+            "must remain unknown rather than estimated."
+        ),
+    }
+
+
+def _bootstrap_progress_event(
+    *,
+    phase: str,
+    status: str,
+    wake_percent: int,
+    detail: dict[str, object] | None = None,
+) -> dict[str, object]:
+    return {
+        "event": "jazn_bootstrap_progress",
+        "schema_version": BOOTSTRAP_PROGRESS_SCHEMA_VERSION,
+        "phase": str(phase),
+        "status": str(status),
+        "wake_percent": max(0, min(100, int(wake_percent))),
+        "detail": dict(detail or {}),
+    }
 
 
 class BootstrapError(RuntimeError):
@@ -322,6 +374,8 @@ def _safe_extract_validated_zip(
     *,
     max_total_bytes: int,
     max_member_bytes: int,
+    progress_callback: Callable[[int, int], None] | None = None,
+    progress_total_bytes: int | None = None,
 ) -> int:
     """Stream validated members without delegating path decisions to extractall()."""
 
@@ -368,6 +422,11 @@ def _safe_extract_validated_zip(
                         code="zip_total_limit_exceeded",
                     )
                 output.write(chunk)
+                if progress_callback is not None:
+                    progress_callback(
+                        total_written,
+                        int(progress_total_bytes or max(total_written, 1)),
+                    )
 
         if member_written != int(info.file_size):
             raise BootstrapError(
@@ -431,9 +490,19 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
             "utf8",
             "main.py",
             "status",
+            "--json",
+        ],
+        "runtime_snapshot_diagnostic_control_plane_argv": [
+            "<python>",
+            "-X",
+            "utf8",
+            "main.py",
+            "status",
             "--snapshot",
             "--json",
         ],
+        "runtime_readiness_source": "live_status",
+        "progress_contract": build_bootstrap_progress_contract(),
         "nonstreaming_turn_contract": {
             "transport": "daemon_bound_transactional_turns",
             "preallocate_request_id_before_process_spawn": True,
@@ -484,11 +553,17 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "preflight_argv": ["host-preflight", "--json"],
             "runtime_activation_requires_additional_host_capabilities": True,
             "runtime_start_entrypoint": "run.py start",
-            "runtime_status_entrypoint": "run.py status --snapshot --json",
+            "runtime_status_entrypoint": "run.py status --json",
+            "runtime_snapshot_diagnostic_entrypoint": "run.py status --snapshot --json",
             "runtime_start_argv": ["start"],
-            "runtime_status_argv": ["status", "--snapshot", "--json"],
+            "runtime_status_argv": ["status", "--json"],
+            "runtime_snapshot_diagnostic_argv": ["status", "--snapshot", "--json"],
             "control_plane_start_entrypoint": "main.py start",
-            "control_plane_status_entrypoint": "main.py status --snapshot --json",
+            "control_plane_status_entrypoint": "main.py status --json",
+            "control_plane_snapshot_diagnostic_entrypoint": "main.py status --snapshot --json",
+            "activation_readiness_source": "live_status",
+            "snapshot_is_activation_authority": False,
+            "progress_contract": build_bootstrap_progress_contract(),
             "chatgpt_bridge_entrypoint": "main.py chat-gpt --session-id <stable-session-id>",
             "chatgpt_bridge": chatgpt_launch,
             "activation_success_requires_verified_status": True,
@@ -607,10 +682,45 @@ def bootstrap_system_zip(
     max_member_bytes: int = DEFAULT_MAX_MEMBER_BYTES,
     max_compression_ratio: float = DEFAULT_MAX_COMPRESSION_RATIO,
     run_post_materialization_preflight: bool = False,
+    progress_callback: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
     zip_path = Path(zip_path).resolve()
     destination = Path(destination).resolve()
     sidecar = Path(sha256_file_path).resolve() if sha256_file_path is not None else None
+    progress_events: list[dict[str, object]] = []
+
+    def record_progress(
+        phase: str,
+        wake_percent: int,
+        *,
+        status: str = "completed",
+        detail: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        event = _bootstrap_progress_event(
+            phase=phase,
+            status=status,
+            wake_percent=wake_percent,
+            detail=detail,
+        )
+        if (
+            progress_events
+            and progress_events[-1].get("phase") == event.get("phase")
+            and progress_events[-1].get("wake_percent") == event.get("wake_percent")
+        ):
+            return progress_events[-1]
+        progress_events.append(event)
+        if progress_callback is not None:
+            progress_callback(event)
+        return event
+
+    record_progress(
+        "executor_probe",
+        5,
+        detail={
+            "evidence": "CHATGPT_BOOTSTRAP.py is executing in the current Python process",
+            "external_no_file_probe": "host_responsibility",
+        },
+    )
 
     if not zip_path.is_file():
         raise BootstrapError(
@@ -633,6 +743,11 @@ def bootstrap_system_zip(
             f"SHA-256 mismatch: expected={expected}, actual={actual}",
             code="sha256_mismatch",
         )
+    record_progress(
+        "system_package_verified",
+        15,
+        detail={"sha256": actual, "source_size_bytes": observed_size},
+    )
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".jazn-chatgpt-bootstrap-", dir=str(destination.parent)))
@@ -646,11 +761,45 @@ def bootstrap_system_zip(
                 max_member_bytes=max_member_bytes,
                 max_compression_ratio=max_compression_ratio,
             )
+            record_progress(
+                "zip_validated",
+                30,
+                detail={
+                    "entry_count": entry_count,
+                    "uncompressed_size_bytes": total_bytes,
+                    "root_prefix": root_prefix or None,
+                },
+            )
+            last_extract_bucket = -1
+
+            def on_extract_progress(written: int, total: int) -> None:
+                nonlocal last_extract_bucket
+                if total <= 0:
+                    return
+                fraction = min(1.0, max(0.0, written / total))
+                bucket = min(100, int(fraction * 100))
+                if bucket < 100 and bucket < last_extract_bucket + 5:
+                    return
+                last_extract_bucket = bucket
+                wake_percent = 30 + round(fraction * 25)
+                record_progress(
+                    "operator_materializing",
+                    wake_percent,
+                    status="in_progress" if bucket < 100 else "completed",
+                    detail={
+                        "bytes_written": written,
+                        "bytes_total": total,
+                        "extract_percent": bucket,
+                    },
+                )
+
             extracted_bytes = _safe_extract_validated_zip(
                 zf,
                 staging,
                 max_total_bytes=max_total_bytes,
                 max_member_bytes=max_member_bytes,
+                progress_callback=on_extract_progress,
+                progress_total_bytes=total_bytes,
             )
 
         if extracted_bytes != total_bytes:
@@ -680,6 +829,11 @@ def bootstrap_system_zip(
             os.replace(root, destination)
             shutil.rmtree(staging, ignore_errors=True)
         moved = True
+        record_progress(
+            "operator_materialized",
+            55,
+            detail={"destination": str(destination)},
+        )
         payload: dict[str, object] = {
             "ok": True,
             "schema_version": BOOTSTRAP_SCHEMA_VERSION,
@@ -693,6 +847,9 @@ def bootstrap_system_zip(
             "uncompressed_size_bytes": total_bytes,
             "root_prefix": root_prefix or None,
             "operator_entrypoint": "run.py",
+            "progress": progress_events[-1],
+            "progress_events": list(progress_events),
+            "progress_contract": build_bootstrap_progress_contract(),
             "activation_contract": build_post_materialization_activation_contract(destination),
             "next_step": (
                 "Read AGENTS.md and AGENTS.chatgpt.md. If this bootstrap is already executing "
@@ -705,9 +862,25 @@ def bootstrap_system_zip(
             ),
         }
         if run_post_materialization_preflight:
-            payload["post_materialization_preflight"] = run_materialized_host_preflight_in_process(
-                destination
+            preflight = run_materialized_host_preflight_in_process(destination)
+            payload["post_materialization_preflight"] = preflight
+            preflight_payload = preflight.get("preflight")
+            execution_route = (
+                preflight_payload.get("execution_route")
+                if isinstance(preflight_payload, dict)
+                else None
             )
+            record_progress(
+                "host_preflight",
+                65 if preflight.get("gate_passed") is True else 55,
+                status="completed" if preflight.get("gate_passed") is True else "blocked",
+                detail={
+                    "gate_passed": preflight.get("gate_passed") is True,
+                    "execution_route": execution_route,
+                },
+            )
+            payload["progress"] = progress_events[-1]
+            payload["progress_events"] = list(progress_events)
         return payload
     except BootstrapError:
         raise
@@ -749,12 +922,31 @@ def _build_parser() -> argparse.ArgumentParser:
             "Python interpreter. This does not spawn a child process or claim runtime activation."
         ),
     )
+    parser.add_argument(
+        "--progress-jsonl",
+        action="store_true",
+        help=(
+            "Emit evidence-backed bootstrap progress events as JSONL on stderr while "
+            "keeping the final result as one JSON object on stdout."
+        ),
+    )
     parser.add_argument("--json", action="store_true", dest="as_json")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     ns = _build_parser().parse_args(argv)
+    captured_progress: list[dict[str, object]] = []
+
+    def capture_progress(event: dict[str, object]) -> None:
+        captured_progress.append(dict(event))
+        if ns.progress_jsonl:
+            print(
+                json.dumps(event, ensure_ascii=False, sort_keys=True),
+                file=sys.stderr,
+                flush=True,
+            )
+
     try:
         payload = bootstrap_system_zip(
             zip_path=ns.zip_path,
@@ -767,6 +959,7 @@ def main(argv: list[str] | None = None) -> int:
             max_member_bytes=ns.max_member_bytes,
             max_compression_ratio=ns.max_compression_ratio,
             run_post_materialization_preflight=ns.post_materialization_preflight,
+            progress_callback=capture_progress,
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
@@ -777,6 +970,8 @@ def main(argv: list[str] | None = None) -> int:
             "state": "bootstrap_failed",
             "error_code": exc.code,
             "error": str(exc),
+            "progress": captured_progress[-1] if captured_progress else None,
+            "progress_events": captured_progress,
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 2

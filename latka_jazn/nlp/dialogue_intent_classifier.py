@@ -426,6 +426,47 @@ class DialogueIntentClassifier:
         # they must not take the primary route away from an explicit system write.
         component_report = analyse_utterance(norm)
         has_system=self._has_any(norm,folded,self.SYSTEM_TERMS); has_update=self._has_any(norm,folded,self.UPDATE_TERMS); has_diag=self._has_any(norm,folded,self.DIAGNOSTIC_TERMS)
+        explicit_update_directive = bool(
+            self._has_any(norm, folded, self.UPDATE_EXECUTION_VERBS)
+            or any(
+                marker in folded
+                for marker in (
+                    "przygotuj update",
+                    "przygotuj aktualiz",
+                    "wykonaj aktualiz",
+                    "wykonaj update",
+                    "zrob update",
+                    "zrób update",
+                    "pracuj na nowym branch",
+                    "pracuj nad aktualiz",
+                    "pracuj dalej",
+                    "wdroz aktualiz",
+                    "wdroż aktualiz",
+                )
+            )
+        )
+        report_like_markers = (
+            "podsumowanie",
+            "wniosek",
+            "wnioski",
+            "badani",
+            "raport",
+            "hipotez",
+            "obserwac",
+            "rekomendac",
+            "zaleceni",
+            "dowod",
+            "źródł",
+            "zrodl",
+            "plan implementacji",
+            "plan test",
+        )
+        report_like_non_execution = bool(
+            len(folded.split()) >= 80
+            and (has_system or has_update)
+            and not explicit_update_directive
+            and sum(1 for marker in report_like_markers if marker in folded) >= 3
+        )
         has_self_plan=self._has_any(norm,folded,self.SELF_PLAN_TERMS) and any(token in folded for token in ("plan", "zamierzasz", "pomijajac mnie", "poza mna"))
         has_self_preference=self._has_any(norm,folded,self.SELF_PREFERENCE_TERMS) and speech.speech_act == "question"
         has_sleep_close=self._has_any(norm,folded,self.SLEEP_CLOSE_TERMS) and any(x in folded for x in ("spac", "dobranoc"))
@@ -476,6 +517,26 @@ class DialogueIntentClassifier:
             return report(norm,folded,'post_update_coverage_audit_request',[
                 'jawne pytanie o kompletność i pominięcia zakończonego patcha/aktualizacji'
             ],0.97,diag=True,speech_act=speech.speech_act,question_object='post_update_coverage')
+        if report_like_non_execution:
+            guarded_intent = (
+                "system_diagnostic_question"
+                if has_diag
+                else ("external_research_request" if has_research else "ordinary_dialogue")
+            )
+            return report(
+                norm,
+                folded,
+                guarded_intent,
+                [
+                    "długi materiał raportowy opisuje system/aktualizację bez jawnego polecenia wykonania",
+                    "report_material_cannot_open_mutating_update_route_without_execution_directive",
+                ],
+                0.95,
+                diag=guarded_intent == "system_diagnostic_question",
+                speech_act=speech.speech_act,
+                question_object="runtime" if guarded_intent == "system_diagnostic_question" else "report_material",
+            )
+
         task_has_memory_anchor = bool(
             isinstance(previous_task_state, dict)
             and (

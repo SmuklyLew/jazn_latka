@@ -142,9 +142,26 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "post_materialization_preflight_flag": "--post-materialization-preflight",
         "post_materialization_preflight_entrypoint": "run.py host-preflight --json",
         "post_materialization_start_entrypoint": "run.py start",
-        "post_materialization_status_entrypoint": "run.py status --snapshot --json",
+        "post_materialization_status_entrypoint": "run.py status --json",
+        "post_materialization_snapshot_diagnostic_entrypoint": "run.py status --snapshot --json",
         "post_materialization_control_plane_start_entrypoint": "main.py start",
-        "post_materialization_control_plane_status_entrypoint": "main.py status --snapshot --json",
+        "post_materialization_control_plane_status_entrypoint": "main.py status --json",
+        "post_materialization_control_plane_snapshot_diagnostic_entrypoint": "main.py status --snapshot --json",
+        "post_materialization_activation_readiness_source": "live_status",
+        "post_materialization_snapshot_is_activation_authority": False,
+        "post_materialization_progress_schema_version": "chatgpt_bootstrap_progress/v1",
+        "post_materialization_progress_semantics": "completed_verified_gates_only",
+        "post_materialization_progress_milestones": [
+            {"gate": "executor_probe", "wake_percent": 5},
+            {"gate": "system_package_verified", "wake_percent": 15},
+            {"gate": "zip_validated", "wake_percent": 30},
+            {"gate": "operator_materialized", "wake_percent": 55},
+            {"gate": "host_preflight", "wake_percent": 65},
+            {"gate": "contracts_loaded", "wake_percent": 72},
+            {"gate": "daemon_started", "wake_percent": 82},
+            {"gate": "live_readiness", "wake_percent": 95},
+            {"gate": "turn_channel_bound", "wake_percent": 100},
+        ],
         "post_materialization_chatgpt_bridge_entrypoint": "main.py chat-gpt --session-id <stable-session-id>",
         "post_materialization_chatgpt_bridge_control_plane_argv": [
             "<python>",
@@ -182,7 +199,7 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "post_materialization_activation_sequence": [
             "run.py host-preflight --json",
             "run.py start",
-            "run.py status --snapshot --json",
+            "run.py status --json",
             "main.py chat-gpt --session-id <stable-session-id>",
         ],
         "post_materialization_activation_requires_verified_status": True,
@@ -256,7 +273,9 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "When local process execution exists, the canonical ChatGPT bridge is main.py chat-gpt (normally reached "
             "through the thin run.py starter), uses the surrounding ChatGPT host as its language-model channel, and "
             "does not require OPENAI_API_KEY or a --model argument. Exported host contracts use main.py subcommands; "
-            "legacy --chat-gpt/--daemon-* flags remain internal compatibility only. The ZIP cannot grant ChatGPT a local executor, "
+            "legacy --chat-gpt/--daemon-* flags remain internal compatibility only. Live status is the activation readiness authority; "
+            "snapshot status is diagnostic evidence and must not override a confirmed live-ready daemon. Progress percentages are "
+            "derived only from completed verified gates, and optional MEMORY does not block SYSTEM wake readiness. The ZIP cannot grant ChatGPT a local executor, "
             "authenticate an external control plane, publish an "
             "app/connector, or prove a usable remote runtime route. "
             "Private MEMORY is an independent optional capability and is not required for core runtime readiness. "
