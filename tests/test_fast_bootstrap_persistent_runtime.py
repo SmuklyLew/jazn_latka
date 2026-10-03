@@ -103,7 +103,7 @@ def test_verified_materialization_reuse_fails_closed_after_static_tamper(tmp_pat
             expected_sha256=digest,
             reuse_existing_verified=True,
         )
-    assert exc_info.value.code == "materialized_file_sha256_mismatch"
+    assert exc_info.value.code == "materialized_file_size_mismatch"
 
 
 def test_warm_daemon_reuse_does_not_pay_cold_integrity_gate(

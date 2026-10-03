@@ -337,10 +337,19 @@ def verify_materialized_integrity_manifest(destination: Path) -> dict[str, objec
                 code="materialized_manifest_invalid",
             )
         member = _materialized_manifest_member(root, raw_path)
-        actual_sha256, actual_size = sha256_stable_file(
-            member,
-            expected_size_bytes=raw_size,
-        )
+        try:
+            actual_size_on_disk = member.stat().st_size
+        except OSError as exc:
+            raise BootstrapError(
+                f"cannot stat materialized file: {raw_path}",
+                code="materialized_manifest_member_missing",
+            ) from exc
+        if actual_size_on_disk != raw_size:
+            raise BootstrapError(
+                f"materialized file size mismatch: {raw_path}",
+                code="materialized_file_size_mismatch",
+            )
+        actual_sha256, actual_size = sha256_stable_file(member)
         if actual_sha256 != expected_sha256:
             raise BootstrapError(
                 f"materialized file SHA-256 mismatch: {raw_path}",

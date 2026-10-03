@@ -428,6 +428,25 @@ class DialogueIntentClassifier:
             else control_creative_report
         )
         preservation=self.preserve_detector.detect(control_text)
+        explicit_creative_edit = bool(
+            preservation.revision_allowed
+            and any(
+                marker in folded
+                for marker in (
+                    "tekst",
+                    "treść",
+                    "tresc",
+                    "wiadom",
+                    "mail",
+                    "opis",
+                    "piosenk",
+                    "zwrotk",
+                    "refren",
+                    "akap",
+                    "zdani",
+                )
+            )
+        )
         decision_frame=self.feature_engine.analyse(control_text, speech_act=speech.speech_act, previous_text=previous_text)
         # Analyse execution/negation before any deterministic route-matrix shortcut.
         # Tool markers such as @Wyszukiwanie w sieci are supporting capabilities;
@@ -481,6 +500,7 @@ class DialogueIntentClassifier:
         has_past_year=self._has_any(norm,folded,self.PAST_YEAR_TERMS) and (speech.speech_act == "question" or "2025" in folded)
         has_creative=(
             self._has_any(norm,folded,self.CREATIVE_TERMS)
+            or explicit_creative_edit
             or self._looks_like_large_material(control_text)
             or (
                 control_creative_report.creative_material_present
