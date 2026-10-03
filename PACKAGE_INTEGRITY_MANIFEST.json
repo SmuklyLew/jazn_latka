@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.101-component-coverage-leadin-convergence",
-  "runtime_version": "16.3.25.5.101-component-coverage-leadin-convergence",
-  "package_version": "16.3.25.5.101-component-coverage-leadin-convergence",
-  "generated_at_utc": "2026-10-03T04:29:38+00:00",
-  "updated_at_utc": "2026-10-03T04:29:38+00:00",
+  "version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+  "runtime_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+  "package_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+  "generated_at_utc": "2026-10-03T19:36:38+00:00",
+  "updated_at_utc": "2026-10-03T19:36:38+00:00",
   "start_file": "run.py",
-  "file_count": 1905,
-  "static_file_count": 1905,
+  "file_count": 1909,
+  "static_file_count": 1909,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -218,8 +218,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 41994,
-      "sha256": "82cb1830456d0676a2cb3aa8c58cb3b5e72ccbcefc1a783e292737ad843545df",
+      "size_bytes": 43705,
+      "sha256": "1dca90c2a2646025ba1d8626a773c2a16d6222a2009c4c96ba907cbe08f6c880",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -254,8 +254,8 @@
     },
     {
       "path": "CHATGPT_BOOTSTRAP.py",
-      "size_bytes": 37055,
-      "sha256": "78a5e151b28952a48a6932d3aa94d33489aa1a9c021689d49e0de403f13287b5",
+      "size_bytes": 53124,
+      "sha256": "165b7493dd730eedf6c02799c7e0e999ad885d65734fad42d63041939d80fdd7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2948,
-      "sha256": "08757834abae154f8b80d5e9dd6293dad6a04c797476d31b96d155f3851e4570",
+      "size_bytes": 2996,
+      "sha256": "636154031c809743d3f523c38de0ec2823c22abdfa518e23198f74fc7cb93117",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2566,6 +2566,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/update_history/JAZN_V16_3_25_5_102_FAST_BOOTSTRAP_PERSISTENT_RUNTIME_CONVERGENCE.md",
+      "size_bytes": 2309,
+      "sha256": "2db162b40f947f54425dde19ae7bcb44fed483e3a4569fb41a7a4ec1d9138cdb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "jazn",
       "size_bytes": 5642,
       "sha256": "9f673876b2b8ac7cc8abc416eb8241cd6a9c93de4de0ef4e461b37514d58e8d0",
@@ -4610,8 +4619,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 237862,
-      "sha256": "fcc052a040ba16eb7313e32abec800cfbab0ffb4be3263a400f8410d7397e200",
+      "size_bytes": 240775,
+      "sha256": "9a8094c6bb2bc4c0a0478328c9109bc47f45d353c025b18887aa1ed9d9aa0797",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4727,8 +4736,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_supervisor.py",
-      "size_bytes": 21551,
-      "sha256": "c11d9df2b2805677b7a431df062bfb4535f5f8ba686432ca223e637e9f454565",
+      "size_bytes": 24080,
+      "sha256": "b2071dbdcc0cd596ac59e64e8de7c7b0776e1b80b990537f0402e980ebe96b98",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6392,8 +6401,8 @@
     },
     {
       "path": "latka_jazn/nlp/control_text.py",
-      "size_bytes": 3908,
-      "sha256": "76d4acfb74de2ae59cf27653494d428bbb49e90934851b2d47d73a402d6eab63",
+      "size_bytes": 4125,
+      "sha256": "bf0c5db5605650b64e8ffaea2dab2222b1c7fc5b5f39db1f28261d9cb3c17085",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6410,8 +6419,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 78949,
-      "sha256": "e1d2641992b7a50dd2729185ffece33de99ddfa754581874ebc1db3e94e9e9db",
+      "size_bytes": 79522,
+      "sha256": "f25994843ae4c281c222d31fe261f0de62446b2aa9647459a132c418b0c5880d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8840,8 +8849,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5284,
-      "sha256": "6e9b9afe192ea28572560c559d9ae1d880c61d4c3956111c3e339132a8877329",
+      "size_bytes": 5298,
+      "sha256": "f4e311e5e0fc4bb60356c6fa9eeec2897e3b6492faf124c8575aaf91bc08d0bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12142,6 +12151,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.101-component-coverage-leadin-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2080,
+      "sha256": "be38d1ca4973267ba91b0e0a1d742ec64450d7dedee4f108e5e0d9d91117fffd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.101-component-coverage-leadin-convergence/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6972,
+      "sha256": "4d7b0cc97a75d9e56b29bbfd225ad8cdc95bcf964c1803ed1a97c0babf6a24f4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.12-pack-generator-v89-docstring-escape-fix/test_independent_memory_package_contract_v2.py",
       "size_bytes": 12282,
       "sha256": "69cce01ff0f00a180c3bee8d2f0beb77f65e87192a6ef3a3b72187a39a4aa93c",
@@ -13727,8 +13754,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2080,
-      "sha256": "be38d1ca4973267ba91b0e0a1d742ec64450d7dedee4f108e5e0d9d91117fffd",
+      "size_bytes": 2096,
+      "sha256": "3e1616de1f9abb2c600a61ce13399a6842d7a6161e8ce5edd1ae72218e756c91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14105,8 +14132,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6972,
-      "sha256": "4d7b0cc97a75d9e56b29bbfd225ad8cdc95bcf964c1803ed1a97c0babf6a24f4",
+      "size_bytes": 6988,
+      "sha256": "189a97a4cc66a4cd12dd5e7d8c345a6307399d4927e17a5e460a2d858318557d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16543,6 +16570,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v163255102_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8643,
+      "sha256": "3778b50b6e453f7ebb45bf0b35dd7efd823c23a57fd543d84a567670362e61a5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -17012,8 +17048,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1720953,
-      "sha256": "7997007607337df75a64e3c6118c2db9f2133e9cee1ad551583521dde6473df1",
+      "size_bytes": 1728894,
+      "sha256": "bf183ea096af57e2a55bcf7bf1cd3d9f97dc9a24ced6d48b3c90b4dc256ac5be",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17597,11 +17633,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.101-component-coverage-leadin-convergence",
+  "release_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.101-component-coverage-leadin-convergence",
-    "package_version": "16.3.25.5.101-component-coverage-leadin-convergence",
-    "release_version": "16.3.25.5.101-component-coverage-leadin-convergence"
+    "runtime_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+    "package_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+    "release_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
