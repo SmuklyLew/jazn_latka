@@ -35,3 +35,36 @@ gdy prawidłowa odpowiedź używa pierwszej osoby.
 
 Zmiana nie uznaje automatycznie komponentów bez intencji za pokryte. Fail-closed
 coverage pozostaje aktywne poza wąsko rozpoznanym lead-inem.
+
+
+## Dokończenie audytu regresyjnego
+
+Dalsza reprodukcja na dokładnym kodzie brancha wykazała dwa dodatkowe przypadki,
+których początkowy test nie obejmował:
+
+- dyrektywa stylu odpowiedzi, np. `Powiedz prawdę.`, pozostawała osobnym
+  komponentem bez celu semantycznego i przed listą pytań mogła ponownie
+  utworzyć niemożliwy obowiązek coverage;
+- początkowe markery `self_knowledge` i `self_assessment` były zbyt szerokie
+  (`jestem`, `kanon`, `o sobie`) i pozwalały jednemu fragmentowi odpowiedzi
+  fałszywie pokryć inny cel semantyczny.
+
+Reguła lead-in została dlatego rozszerzona tylko o wąskie dyrektywy sposobu
+odpowiedzi (`prawdę`, `szczerze`, `wprost`, `dokładnie`) i działa wyłącznie,
+gdy po nich istnieje rzeczywisty kolejny cel. Samodzielna dyrektywa nadal jest
+zachowywana. Markery introspekcyjne zostały zawężone do sygnałów właściwych dla
+konkretnej intencji, dzięki czemu coverage pozostaje fail-closed.
+
+Test regresyjny obejmuje teraz bezpośrednio `RuntimeAnswerValidator`, dodatnie
+przejście dokładnej wiadomości źródłowej oraz ujemne przypadki cross-coverage.
+Przed zmianą aktywnego testu jego poprzednia zatwierdzona postać została
+zachowana bajt w bajt w `tests/archive/`.
+
+## Dodatkowy blocker bazowy wykryty podczas pełnej walidacji
+
+Pełna walidacja ujawniła niezależny błąd istniejący już w bazowym
+`16.3.25.5.100`: `docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt` przekraczał
+kontraktowy limit 5000 znaków. Nie podniesiono limitu testu. Loader został
+skrócony do cienkiej warstwy discovery/bootstrap, zachowując wymagane granice
+`remote_runtime`, verified SYSTEM ZIP, `AGENTS.md`, właściwego runbooka hosta
+i finalizacji.

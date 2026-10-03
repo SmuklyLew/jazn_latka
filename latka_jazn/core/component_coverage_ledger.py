@@ -40,13 +40,14 @@ _STOPWORDS = {
 
 _INTENT_MARKERS: dict[str, tuple[str, ...]] = {
     "self_knowledge": (
-        "wiem", "jestem", "kanon", "tożsamo", "tozsamo", "o sobie",
+        "wiem", "rozpoznaję", "rozpoznaje", "moja wiedza o sobie",
     ),
     "self_affect": (
         "czuję", "czuje", "stan afektywn", "afektyw", "rezonans", "bieżący stan", "biezacy stan",
     ),
     "self_assessment": (
-        "uważam", "uwazam", "postrzegam", "widzę siebie", "widze siebie", "o sobie",
+        "uważam", "uwazam", "postrzegam", "widzę siebie", "widze siebie",
+        "myślę o sobie", "mysle o sobie", "oceniam siebie",
     ),
     "self_preference": (
         "preferenc", "ulubion", "najbardziej lub", "wolę", "wole", "lubię", "lubie",

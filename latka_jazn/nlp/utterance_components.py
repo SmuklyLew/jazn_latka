@@ -105,7 +105,9 @@ _INTERROGATIVE_START = re.compile(
 
 
 _GENERIC_LEADIN_DIRECTIVE = re.compile(
-    r"^(?:to\s+)?(?:prosze\s+)?(?:powiedz|opowiedz)(?:\s+(?:mi|nam))?(?:\s+cos)?$",
+    r"^(?:to\s+)?(?:prosze\s+)?(?:powiedz|opowiedz)"
+    r"(?:\s+(?:mi|nam|sobie))?"
+    r"(?:\s+(?:cos|prawde|szczerze|wprost|dokladnie))?$",
     re.IGNORECASE,
 )
 
