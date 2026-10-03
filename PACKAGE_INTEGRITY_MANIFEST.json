@@ -3,11 +3,11 @@
   "version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
   "runtime_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
   "package_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-  "generated_at_utc": "2026-10-03T19:44:55+00:00",
-  "updated_at_utc": "2026-10-03T19:44:55+00:00",
+  "generated_at_utc": "2026-10-03T19:49:23+00:00",
+  "updated_at_utc": "2026-10-03T19:49:23+00:00",
   "start_file": "run.py",
-  "file_count": 1909,
-  "static_file_count": 1909,
+  "file_count": 1910,
+  "static_file_count": 1910,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -254,8 +254,8 @@
     },
     {
       "path": "CHATGPT_BOOTSTRAP.py",
-      "size_bytes": 53741,
-      "sha256": "5c4dd637a2251296ed07e4119772bf864d95f1afd32722996819f39e6a273e9a",
+      "size_bytes": 54168,
+      "sha256": "88a78adb1e8363cf1278363665b8281cf7533d5d2add0ac57adc7789518c57d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2996,
-      "sha256": "017e418229b3f46352262a72090f526dc9cdb89772dbdbf243e5ee4662a81125",
+      "sha256": "3271d1b5229321abd41ba44a7653ac98480329cbc10bdefae4a6ff1fec68fb55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6419,8 +6419,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 79522,
-      "sha256": "f25994843ae4c281c222d31fe261f0de62446b2aa9647459a132c418b0c5880d",
+      "size_bytes": 80092,
+      "sha256": "e159554b5f509fd13543ae0fcb48a34c284a8971d4174a05da6be40b5b97bb43",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7527,7 +7527,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 2900,
-      "sha256": "f25500112feca5fb98b91165d9f5e7453103396dbc01437acf53ee11695cd29f",
+      "sha256": "f6f587000a05b2f7b599346062f803f67da1f486e58843923d8ac34473b8477b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12169,6 +12169,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.101-component-coverage-leadin-convergence/test_supervisor_identity_ownership.py",
+      "size_bytes": 4238,
+      "sha256": "67bf58c80f054f89b28fecee0b81faae8e8a1014a877f7f91d5136f3280ceb03",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.12-pack-generator-v89-docstring-escape-fix/test_independent_memory_package_contract_v2.py",
       "size_bytes": 12282,
       "sha256": "69cce01ff0f00a180c3bee8d2f0beb77f65e87192a6ef3a3b72187a39a4aa93c",
@@ -14492,8 +14501,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8715,
-      "sha256": "dffc37bd3d4123c19dbc15cf2a4540e7b6a09a5f453d8ef14ea375bce59e84a5",
+      "size_bytes": 8713,
+      "sha256": "8b543bee8250fac9b985ac08b6e04abe0e53e9ed9a4f24190027a3ae4291b081",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16463,8 +16472,8 @@
     },
     {
       "path": "tests/test_supervisor_identity_ownership.py",
-      "size_bytes": 4238,
-      "sha256": "67bf58c80f054f89b28fecee0b81faae8e8a1014a877f7f91d5136f3280ceb03",
+      "size_bytes": 4587,
+      "sha256": "81435eb0f8b8106521743c83eb520c2cc45ac518b21d806c3b287c94736a3104",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17049,7 +17058,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1728720,
-      "sha256": "78204bdd56f9445461c04130f5164db767a6078c9d08eff0235aec730afe179a",
+      "sha256": "5cc2b5d515be92a7245506ca8d0c5c02f4b75ec7538d2e3087d966ca44acf3fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
