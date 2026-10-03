@@ -1,6 +1,6 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.100 ingress/bootstrap contract. Its acceptance
+This runbook describes the v16.3.25.5.101 ingress/bootstrap contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.

@@ -39,6 +39,16 @@ _STOPWORDS = {
 }
 
 _INTENT_MARKERS: dict[str, tuple[str, ...]] = {
+    "self_knowledge": (
+        "wiem", "rozpoznaję", "rozpoznaje", "moja wiedza o sobie",
+    ),
+    "self_affect": (
+        "czuję", "czuje", "stan afektywn", "afektyw", "rezonans", "bieżący stan", "biezacy stan",
+    ),
+    "self_assessment": (
+        "uważam", "uwazam", "postrzegam", "widzę siebie", "widze siebie",
+        "myślę o sobie", "mysle o sobie", "oceniam siebie",
+    ),
     "self_preference": (
         "preferenc", "ulubion", "najbardziej lub", "wolę", "wole", "lubię", "lubie",
         "wybieram", "podoba mi się", "podoba mi sie",
@@ -155,7 +165,17 @@ def build_component_coverage_ledger(
             and (
                 anchor_hits
                 or "evidence_gap" in semantic_intents
-                or any(intent in matched for intent in ("self_origin", "memory_recall", "provenance"))
+                or any(
+                    intent in matched
+                    for intent in (
+                        "self_knowledge",
+                        "self_affect",
+                        "self_assessment",
+                        "self_origin",
+                        "memory_recall",
+                        "provenance",
+                    )
+                )
             )
         )
 
