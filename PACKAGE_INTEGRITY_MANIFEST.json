@@ -3,11 +3,11 @@
   "version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
   "runtime_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
   "package_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
-  "generated_at_utc": "2026-10-03T00:01:14+00:00",
-  "updated_at_utc": "2026-10-03T00:01:14+00:00",
+  "generated_at_utc": "2026-10-03T00:08:26+00:00",
+  "updated_at_utc": "2026-10-03T00:08:26+00:00",
   "start_file": "run.py",
-  "file_count": 1898,
-  "static_file_count": 1898,
+  "file_count": 1899,
+  "static_file_count": 1899,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2961,
-      "sha256": "1ffd524daeeeddf35ac9eb303577bdc7e82cb7a72f91961b3784f337b16a74ca",
+      "sha256": "90462c8b23a62df77bd4abfb327ed187a040406b21665b3fcd89f55d23ad59c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6402,7 +6402,7 @@
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
       "size_bytes": 78949,
-      "sha256": "f970f48c4fccb7613d52d9316f047f076f196a5f88cadb4d82c438d5a530e778",
+      "sha256": "e1d2641992b7a50dd2729185ffece33de99ddfa754581874ebc1db3e94e9e9db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7508,8 +7508,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 2899,
-      "sha256": "1fdf78acc503df60a722b8aa05a5c9dde596111f378ea43202cc270a04e16f2d",
+      "size_bytes": 2900,
+      "sha256": "1c4f3e89a4e50872e76191ee1b7415a7b4d6615101c1549927e729d2af29f3f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -13375,6 +13375,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.99-pre-chatgpt-bootstrap-progress-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2091,
+      "sha256": "28a56279fb723c8f8bde54a13b348ef95d50fb31f801ce128022621dea4070c1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.99-pre-chatgpt-bootstrap-progress-convergence/test_chatgpt_post_materialization_launch_contract.py",
       "size_bytes": 6006,
       "sha256": "864b46699779fbb4bec9deb10ab38a781e3d9153dbecf5476e6ea68ed5392e46",
@@ -13673,8 +13682,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2091,
-      "sha256": "28a56279fb723c8f8bde54a13b348ef95d50fb31f801ce128022621dea4070c1",
+      "size_bytes": 2074,
+      "sha256": "ae87f34a2343e37c75ec64d820937601c5a862fa1a0988a82966d6ca3b9aeba8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16949,8 +16958,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1713728,
-      "sha256": "ff39da3312afcbb7c86a40c4040f5bc90f4c45c90608d7a0fb3a46ed2c926547",
+      "size_bytes": 1713690,
+      "sha256": "c0ac92cb3cd8bf8a0a8103a6025b6dcad21a504785fd8905b59870ac1fc5dc00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
