@@ -419,7 +419,15 @@ class DialogueIntentClassifier:
         norm=self.normalize(control_text); folded=self.fold(norm); evidence=[]; secondary=[]
         if control_report.quoted_material_masked:
             evidence.append(f"quoted_material_masked:{control_report.masked_span_count}")
-        speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text); creative_report=self.creative.detect(text); preservation=self.preserve_detector.detect(text)
+        speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text)
+        control_creative_report=self.creative.detect(control_text)
+        source_creative_report=self.creative.detect(text)
+        creative_report=(
+            source_creative_report
+            if control_report.structured_creative_material_masked
+            else control_creative_report
+        )
+        preservation=self.preserve_detector.detect(control_text)
         decision_frame=self.feature_engine.analyse(control_text, speech_act=speech.speech_act, previous_text=previous_text)
         # Analyse execution/negation before any deterministic route-matrix shortcut.
         # Tool markers such as @Wyszukiwanie w sieci are supporting capabilities;
@@ -473,8 +481,16 @@ class DialogueIntentClassifier:
         has_past_year=self._has_any(norm,folded,self.PAST_YEAR_TERMS) and (speech.speech_act == "question" or "2025" in folded)
         has_creative=(
             self._has_any(norm,folded,self.CREATIVE_TERMS)
-            or self._looks_like_large_material(text)
-            or (creative_report.creative_material_present and creative_report.confidence >= 0.65)
+            or self._looks_like_large_material(control_text)
+            or (
+                control_creative_report.creative_material_present
+                and control_creative_report.confidence >= 0.65
+            )
+            or (
+                control_report.structured_creative_material_masked
+                and source_creative_report.creative_material_present
+                and source_creative_report.confidence >= 0.65
+            )
         )
         has_source=self._has_any(norm,folded,self.SOURCE_TERMS); has_state=self._has_any(norm,folded,self.STATE_TERMS); has_identity=self._has_any(norm,folded,self.IDENTITY_TERMS)
         has_health_concern=self._has_any(norm,folded,self.HEALTH_CONCERN_TERMS)

@@ -10,6 +10,7 @@ materialization; runtime lifecycle remains owned by the extracted ``run.py``.
 
 import argparse
 import contextlib
+from datetime import datetime, timezone
 import hashlib
 import io
 import json
@@ -26,6 +27,9 @@ import zipfile
 
 
 BOOTSTRAP_SCHEMA_VERSION = "chatgpt_system_zip_bootstrap/v1"
+MATERIALIZATION_STAMP_SCHEMA_VERSION = "chatgpt_materialization_stamp/v1"
+MATERIALIZATION_STAMP_SUFFIX = ".jazn-materialization.json"
+PACKAGE_INTEGRITY_MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
 POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION = "chatgpt_post_materialization_activation/v1"
 BOOTSTRAP_PROGRESS_SCHEMA_VERSION = "chatgpt_bootstrap_progress/v1"
 CHUNK_SIZE = 8 * 1024 * 1024
@@ -211,6 +215,281 @@ def _expected_sha256(*, sidecar: Path | None, explicit: str | None) -> str:
             code="invalid_expected_sha256",
         )
     return candidate.lower()
+
+
+
+def _materialization_stamp_path(destination: Path) -> Path:
+    root = Path(destination).resolve()
+    return root.parent / f".{root.name}{MATERIALIZATION_STAMP_SUFFIX}"
+
+
+def _read_json_object(path: Path, *, code: str) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise BootstrapError(
+            f"cannot read valid JSON object: {path}",
+            code=code,
+        ) from exc
+    if not isinstance(value, dict):
+        raise BootstrapError(
+            f"JSON root must be an object: {path}",
+            code=code,
+        )
+    return value
+
+
+def _write_json_atomic(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        with tmp.open("x", encoding="utf-8", newline="") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp, path)
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _materialized_manifest_member(root: Path, raw_name: str) -> Path:
+    if not raw_name or "\x00" in raw_name or "\\" in raw_name:
+        raise BootstrapError(
+            f"unsafe package manifest path: {raw_name!r}",
+            code="unsafe_materialized_manifest_path",
+        )
+    relative = PurePosixPath(raw_name)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise BootstrapError(
+            f"unsafe package manifest path: {raw_name!r}",
+            code="unsafe_materialized_manifest_path",
+        )
+    if relative.parts and re.fullmatch(r"[A-Za-z]:", relative.parts[0]):
+        raise BootstrapError(
+            f"drive-qualified package manifest path: {raw_name!r}",
+            code="unsafe_materialized_manifest_path",
+        )
+
+    candidate = root.joinpath(*relative.parts)
+    try:
+        resolved = candidate.resolve(strict=True)
+        common = os.path.commonpath((str(root.resolve()), str(resolved)))
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise BootstrapError(
+            f"materialized manifest member is missing or cannot be resolved: {raw_name!r}",
+            code="materialized_manifest_member_missing",
+        ) from exc
+    if common != str(root.resolve()):
+        raise BootstrapError(
+            f"materialized manifest member escapes active root: {raw_name!r}",
+            code="unsafe_materialized_manifest_path",
+        )
+    if candidate.is_symlink() or not resolved.is_file():
+        raise BootstrapError(
+            f"materialized manifest member is not a regular file: {raw_name!r}",
+            code="materialized_manifest_member_invalid",
+        )
+    return resolved
+
+
+def verify_materialized_integrity_manifest(destination: Path) -> dict[str, object]:
+    """Cryptographically verify a reused active root without reopening the ZIP."""
+    root = Path(destination).resolve()
+    manifest_path = root / PACKAGE_INTEGRITY_MANIFEST_NAME
+    if not manifest_path.is_file():
+        raise BootstrapError(
+            "reused active root has no PACKAGE_INTEGRITY_MANIFEST.json",
+            code="materialized_manifest_missing",
+        )
+    manifest_sha256, manifest_size = sha256_stable_file(manifest_path)
+    manifest = _read_json_object(manifest_path, code="materialized_manifest_invalid")
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        raise BootstrapError(
+            "PACKAGE_INTEGRITY_MANIFEST.json has no static file plan",
+            code="materialized_manifest_invalid",
+        )
+
+    verified_count = 0
+    verified_bytes = 0
+    for index, raw_entry in enumerate(files):
+        if not isinstance(raw_entry, dict):
+            raise BootstrapError(
+                f"invalid package manifest entry at index {index}",
+                code="materialized_manifest_invalid",
+            )
+        raw_path = str(raw_entry.get("path") or "").strip()
+        expected_sha256 = str(raw_entry.get("sha256") or "").strip().lower()
+        raw_size = raw_entry.get("size_bytes")
+        if (
+            not raw_path
+            or not _SHA256_RE.fullmatch(expected_sha256)
+            or isinstance(raw_size, bool)
+            or not isinstance(raw_size, int)
+            or raw_size < 0
+        ):
+            raise BootstrapError(
+                f"invalid package manifest metadata for entry {index}",
+                code="materialized_manifest_invalid",
+            )
+        member = _materialized_manifest_member(root, raw_path)
+        actual_sha256, actual_size = sha256_stable_file(
+            member,
+            expected_size_bytes=raw_size,
+        )
+        if actual_sha256 != expected_sha256:
+            raise BootstrapError(
+                f"materialized file SHA-256 mismatch: {raw_path}",
+                code="materialized_file_sha256_mismatch",
+            )
+        verified_count += 1
+        verified_bytes += actual_size
+
+    return {
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": manifest_sha256,
+        "manifest_size_bytes": manifest_size,
+        "verified_static_file_count": verified_count,
+        "verified_static_bytes": verified_bytes,
+        "package_version": manifest.get("package_version") or manifest.get("version"),
+    }
+
+
+def _write_materialization_stamp(
+    destination: Path,
+    *,
+    source_zip_sha256: str,
+    source_size_bytes: int,
+    root_prefix: str,
+    entry_count: int,
+    uncompressed_size_bytes: int,
+) -> dict[str, object]:
+    root = Path(destination).resolve()
+    manifest_path = root / PACKAGE_INTEGRITY_MANIFEST_NAME
+    manifest_sha256, manifest_size = sha256_stable_file(manifest_path)
+    stamp_path = _materialization_stamp_path(root)
+    payload: dict[str, object] = {
+        "schema_version": MATERIALIZATION_STAMP_SCHEMA_VERSION,
+        "destination": str(root),
+        "source_zip_sha256": str(source_zip_sha256).lower(),
+        "source_size_bytes": int(source_size_bytes),
+        "package_integrity_manifest_sha256": manifest_sha256,
+        "package_integrity_manifest_size_bytes": manifest_size,
+        "root_prefix": root_prefix or None,
+        "entry_count": int(entry_count),
+        "uncompressed_size_bytes": int(uncompressed_size_bytes),
+        "written_at_utc": datetime.now(timezone.utc).isoformat(),
+        "reuse_requires_full_static_manifest_verification": True,
+    }
+    try:
+        _write_json_atomic(stamp_path, payload)
+    except OSError as exc:
+        raise BootstrapError(
+            f"cannot write materialization stamp: {stamp_path}",
+            code="materialization_stamp_write_failed",
+        ) from exc
+    return {"written": True, "path": str(stamp_path), **payload}
+
+
+def _reuse_existing_materialization(
+    *,
+    zip_path: Path,
+    destination: Path,
+    expected_sha256: str,
+    expected_size_bytes: int | None,
+) -> dict[str, object]:
+    root = Path(destination).resolve()
+    if not root.is_dir():
+        raise BootstrapError(
+            f"existing destination is not a directory: {root}",
+            code="existing_destination_not_directory",
+        )
+    try:
+        source_size = int(Path(zip_path).stat().st_size)
+    except OSError as exc:
+        raise BootstrapError(
+            f"cannot stat system ZIP for reuse: {zip_path}",
+            code="source_read_failed",
+        ) from exc
+    if expected_size_bytes is not None and source_size != int(expected_size_bytes):
+        raise BootstrapError(
+            "system ZIP size mismatch during verified reuse: "
+            f"expected={int(expected_size_bytes)}, actual={source_size}",
+            code="source_size_mismatch",
+        )
+
+    stamp_path = _materialization_stamp_path(root)
+    stamp = _read_json_object(
+        stamp_path,
+        code="materialization_stamp_missing_or_invalid",
+    )
+    if stamp.get("schema_version") != MATERIALIZATION_STAMP_SCHEMA_VERSION:
+        raise BootstrapError("materialization stamp schema mismatch", code="materialization_stamp_mismatch")
+    try:
+        stamped_root = Path(str(stamp.get("destination") or "")).resolve()
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise BootstrapError(
+            "materialization stamp destination is invalid",
+            code="materialization_stamp_mismatch",
+        ) from exc
+    if stamped_root != root:
+        raise BootstrapError(
+            "materialization stamp belongs to another destination",
+            code="materialization_stamp_mismatch",
+        )
+    if str(stamp.get("source_zip_sha256") or "").lower() != expected_sha256.lower():
+        raise BootstrapError(
+            "materialization stamp source SHA-256 differs from trusted package identity",
+            code="materialization_stamp_mismatch",
+        )
+    try:
+        stamped_size = int(stamp.get("source_size_bytes"))
+    except (TypeError, ValueError) as exc:
+        raise BootstrapError(
+            "materialization stamp source size is invalid",
+            code="materialization_stamp_mismatch",
+        ) from exc
+    if stamped_size != source_size:
+        raise BootstrapError(
+            "materialization stamp source size differs from current ZIP size",
+            code="materialization_stamp_mismatch",
+        )
+
+    integrity = verify_materialized_integrity_manifest(root)
+    if (
+        str(stamp.get("package_integrity_manifest_sha256") or "").lower()
+        != str(integrity["manifest_sha256"]).lower()
+    ):
+        raise BootstrapError(
+            "materialization stamp manifest identity differs from active root",
+            code="materialization_stamp_mismatch",
+        )
+    missing = sorted(required for required in _REQUIRED_ROOT_FILES if not (root / required).is_file())
+    if missing:
+        raise BootstrapError(
+            f"reused system root is incomplete: {missing}",
+            code="materialized_operator_incomplete",
+        )
+    return {
+        "reused": True,
+        "materialization_mode": "verified_reuse",
+        "source_zip_rehashed": False,
+        "source_size_bytes": source_size,
+        "sha256": expected_sha256.lower(),
+        "root_prefix": stamp.get("root_prefix"),
+        "entry_count": int(stamp.get("entry_count") or 0),
+        "uncompressed_size_bytes": int(stamp.get("uncompressed_size_bytes") or 0),
+        "materialization_stamp": {
+            "path": str(stamp_path),
+            "schema_version": stamp.get("schema_version"),
+            "verified": True,
+        },
+        **integrity,
+    }
 
 
 def _normalized_member_name(info: zipfile.ZipInfo) -> str:
@@ -682,6 +961,7 @@ def bootstrap_system_zip(
     max_member_bytes: int = DEFAULT_MAX_MEMBER_BYTES,
     max_compression_ratio: float = DEFAULT_MAX_COMPRESSION_RATIO,
     run_post_materialization_preflight: bool = False,
+    reuse_existing_verified: bool = False,
     progress_callback: Callable[[dict[str, object]], None] | None = None,
 ) -> dict[str, object]:
     zip_path = Path(zip_path).resolve()
@@ -727,13 +1007,94 @@ def bootstrap_system_zip(
             f"system ZIP not found: {zip_path}",
             code="source_not_found",
         )
-    if destination.exists():
-        raise BootstrapError(
-            f"destination already exists; refusing overwrite: {destination}",
-            code="destination_exists",
-        )
 
     expected = _expected_sha256(sidecar=sidecar, explicit=expected_sha256)
+    if destination.exists():
+        if not reuse_existing_verified:
+            raise BootstrapError(
+                f"destination already exists; refusing overwrite: {destination}",
+                code="destination_exists",
+            )
+        reuse = _reuse_existing_materialization(
+            zip_path=zip_path,
+            destination=destination,
+            expected_sha256=expected,
+            expected_size_bytes=expected_size_bytes,
+        )
+        record_progress(
+            "system_package_verified",
+            15,
+            detail={
+                "sha256": expected,
+                "source_size_bytes": reuse["source_size_bytes"],
+                "verification_mode": "materialization_stamp_plus_static_manifest",
+                "source_zip_rehashed": False,
+            },
+        )
+        record_progress(
+            "operator_materialized",
+            55,
+            detail={
+                "destination": str(destination),
+                "materialization_mode": "verified_reuse",
+                "verified_static_file_count": reuse["verified_static_file_count"],
+                "verified_static_bytes": reuse["verified_static_bytes"],
+            },
+        )
+        payload: dict[str, object] = {
+            "ok": True,
+            "schema_version": BOOTSTRAP_SCHEMA_VERSION,
+            "state": "materialized_operator_ready",
+            "zip_path": str(zip_path),
+            "destination": str(destination),
+            "sha256": expected,
+            "source_size_bytes": reuse["source_size_bytes"],
+            "stable_during_hash": None,
+            "source_zip_rehashed": False,
+            "reused_existing": True,
+            "materialization_mode": "verified_reuse",
+            "entry_count": reuse["entry_count"],
+            "uncompressed_size_bytes": reuse["uncompressed_size_bytes"],
+            "root_prefix": reuse["root_prefix"],
+            "operator_entrypoint": "run.py",
+            "materialization_stamp": reuse["materialization_stamp"],
+            "package_integrity_manifest_sha256": reuse["manifest_sha256"],
+            "verified_static_file_count": reuse["verified_static_file_count"],
+            "verified_static_bytes": reuse["verified_static_bytes"],
+            "progress": progress_events[-1],
+            "progress_events": list(progress_events),
+            "progress_contract": build_bootstrap_progress_contract(),
+            "activation_contract": build_post_materialization_activation_contract(destination),
+            "next_step": (
+                "Verified existing materialization was reused without reopening, CRC-testing or "
+                "decompressing the SYSTEM ZIP. Continue with AGENTS.md / AGENTS.chatgpt.md and "
+                "live runtime discovery; a live matching daemon is the warm path, otherwise "
+                "the canonical lifecycle owns resume/start integrity and provenance gates."
+            ),
+        }
+        if run_post_materialization_preflight:
+            preflight = run_materialized_host_preflight_in_process(destination)
+            payload["post_materialization_preflight"] = preflight
+            preflight_payload = preflight.get("preflight")
+            execution_route = (
+                preflight_payload.get("execution_route")
+                if isinstance(preflight_payload, dict)
+                else None
+            )
+            record_progress(
+                "host_preflight",
+                65 if preflight.get("gate_passed") is True else 55,
+                status="completed" if preflight.get("gate_passed") is True else "blocked",
+                detail={
+                    "gate_passed": preflight.get("gate_passed") is True,
+                    "execution_route": execution_route,
+                    "materialization_mode": "verified_reuse",
+                },
+            )
+            payload["progress"] = progress_events[-1]
+            payload["progress_events"] = list(progress_events)
+        return payload
+
     actual, observed_size = sha256_stable_file(
         zip_path,
         expected_size_bytes=expected_size_bytes,
@@ -829,6 +1190,22 @@ def bootstrap_system_zip(
             os.replace(root, destination)
             shutil.rmtree(staging, ignore_errors=True)
         moved = True
+        try:
+            materialization_stamp = _write_materialization_stamp(
+                destination,
+                source_zip_sha256=actual,
+                source_size_bytes=observed_size,
+                root_prefix=root_prefix,
+                entry_count=entry_count,
+                uncompressed_size_bytes=total_bytes,
+            )
+        except BootstrapError as exc:
+            materialization_stamp = {
+                "written": False,
+                "path": str(_materialization_stamp_path(destination)),
+                "error_code": exc.code,
+                "error": str(exc),
+            }
         record_progress(
             "operator_materialized",
             55,
@@ -847,6 +1224,10 @@ def bootstrap_system_zip(
             "uncompressed_size_bytes": total_bytes,
             "root_prefix": root_prefix or None,
             "operator_entrypoint": "run.py",
+            "reused_existing": False,
+            "materialization_mode": "cold_extract",
+            "source_zip_rehashed": True,
+            "materialization_stamp": materialization_stamp,
             "progress": progress_events[-1],
             "progress_events": list(progress_events),
             "progress_contract": build_bootstrap_progress_contract(),
@@ -915,6 +1296,16 @@ def _build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_MAX_COMPRESSION_RATIO,
     )
     parser.add_argument(
+        "--reuse-existing-verified",
+        action="store_true",
+        help=(
+            "When destination already exists, reuse it only after the external "
+            "materialization stamp and every static PACKAGE_INTEGRITY_MANIFEST.json "
+            "member pass verification. The SYSTEM ZIP is not rehashed, CRC-tested "
+            "or decompressed on this fast path."
+        ),
+    )
+    parser.add_argument(
         "--post-materialization-preflight",
         action="store_true",
         help=(
@@ -959,6 +1350,7 @@ def main(argv: list[str] | None = None) -> int:
             max_member_bytes=ns.max_member_bytes,
             max_compression_ratio=ns.max_compression_ratio,
             run_post_materialization_preflight=ns.post_materialization_preflight,
+            reuse_existing_verified=ns.reuse_existing_verified,
             progress_callback=capture_progress,
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))

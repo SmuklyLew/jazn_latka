@@ -19,6 +19,18 @@ Po znalezieniu zweryfikowanego `active_root`:
 
 Tożsamość operacyjna systemu nie pochodzi z samego tekstu hosta ani modelu językowego. Host ma zachować zweryfikowaną lineage runtime, pamięci, kanonu i tury zgodnie z kontraktem zwróconym przez operatora.
 
+### 0.1. Fast path, resume path i cold path
+
+Po zweryfikowaniu subject `active_root` nie wykonuj automatycznie ponownego bootstrapu ZIP ani pełnego startu:
+
+- **warm path** — jeżeli live endpoint potwierdza ten sam `active_root`, zgodną wersję, niepusty `daemon_instance_id` i świeży heartbeat, reuse'uj istniejący daemon. To kontynuacja wcześniej zweryfikowanego persistent runtime, a nie nowa aktywacja; nie rehashuj SYSTEM-u tylko dlatego, że nadeszła kolejna wiadomość;
+- **resume path** — jeżeli zweryfikowany `active_root` istnieje, ale live daemon nie jest gotowy, użyj kanonicznego lifecycle `run.py start`/`main.py start`. Każdy spawn/restart nadal musi przejść pełny package-integrity i source-provenance gate;
+- **cold path** — pełna weryfikacja SHA/CRC i materializacja SYSTEM ZIP jest potrzebna dopiero wtedy, gdy nie ma zaufanej materializacji. Jeżeli standalone bootstrap dostaje `--reuse-existing-verified`, wolno ominąć ponowne CRC/dekompresję wyłącznie po zgodnym materialization stamp i pełnej weryfikacji statycznego `PACKAGE_INTEGRITY_MANIFEST.json`;
+- aktywny supervisor jest osobnym właścicielem recovery daemona. Jego żywy PID nie wystarcza: wymagaj process fingerprint/root identity oraz świeżego heartbeat lease; nie startuj duplikatu supervisora;
+- MEMORY optional nie należy do krytycznej ścieżki core wake. Nie uruchamiaj `memory-converge` w każdej turze i nie zatrzymuj conversation-ready tylko dlatego, że opcjonalny attach jest w toku lub niedostępny.
+
+Każda wiadomość nadal tworzy świeżą lineage tury i osobny request/finalization envelope; stabilna sesja i persistent daemon nie oznaczają ponownego użycia starego `turn_id`.
+
 ## 1. Rzeczywisty dispatch `run.py -> main.py`
 
 Przed interpretacją dokumentacji sprawdzaj bieżący kod `run.py` i `main.py`. Kanoniczny przebieg ma być:

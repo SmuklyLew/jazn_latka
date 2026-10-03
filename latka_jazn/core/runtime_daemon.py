@@ -4027,6 +4027,55 @@ def start_daemon(
         runtime_base_version,
         runtime_version_full,
     }
+    startup_path = "resume_daemon" if subject_resolution.marker_found else "cold_daemon_start"
+
+    try:
+        warm_existing, _warm_error, warm_endpoint = _probe_daemon_status(host, int(port))
+        if isinstance(warm_existing, dict):
+            warm_pid = _daemon_pid_from_status(warm_existing)
+            warm_root_matches = _endpoint_confirms_root(subject_root, warm_existing)
+            warm_instance_id = str(warm_existing.get("daemon_instance_id") or "")
+            warm_version_matches = (
+                str(warm_existing.get("runtime_version") or warm_existing.get("version") or "")
+                in expected_runtime_versions
+            )
+            warm_heartbeat_fresh, warm_heartbeat_age, warm_heartbeat_threshold = _heartbeat_fresh(
+                warm_existing
+            )
+            if (
+                warm_existing.get("active_state") in {"active_trusted", "active_degraded"}
+                and warm_root_matches
+                and warm_instance_id
+                and warm_version_matches
+                and warm_heartbeat_fresh
+            ):
+                warm_existing.setdefault("endpoint", warm_endpoint or warm_existing.get("endpoint"))
+                return {
+                    "ok": True,
+                    "trusted": warm_existing.get("active_state") == "active_trusted",
+                    "already_running": True,
+                    "started": False,
+                    "degraded": warm_existing.get("active_state") == "active_degraded",
+                    "startup_path": "warm_daemon_reuse",
+                    "package_integrity_reverified": False,
+                    "source_provenance_reverified": False,
+                    "pid": warm_pid,
+                    "daemon_instance_id": warm_instance_id,
+                    "status": warm_existing,
+                    "marker_path": str(marker_path),
+                    "reuse_evidence": {
+                        "active_root_matches": True,
+                        "runtime_version_matches": True,
+                        "daemon_instance_id_present": True,
+                        "heartbeat_fresh": True,
+                        "heartbeat_age_seconds": warm_heartbeat_age,
+                        "heartbeat_fresh_threshold_seconds": warm_heartbeat_threshold,
+                    },
+                    **subject_context,
+                }
+    except Exception:
+        pass
+
     package_verification = verify_package_integrity_manifest(subject_root)
     if package_verification.get("ok") is not True:
         return {
@@ -4081,6 +4130,9 @@ def start_daemon(
                     "already_running": True,
                     "started": False,
                     "degraded": existing.get("active_state") == "active_degraded",
+                    "startup_path": "verified_daemon_reuse_after_integrity_gate",
+                    "package_integrity_reverified": True,
+                    "source_provenance_reverified": True,
                     "pid": existing_pid,
                     "daemon_instance_id": existing_instance_id,
                     "status": existing,
@@ -4314,6 +4366,9 @@ def start_daemon(
                         "ok": True,
                         "trusted": status.get("active_state") == "active_trusted",
                         "started": True,
+                        "startup_path": startup_path,
+                        "package_integrity_reverified": True,
+                        "source_provenance_reverified": True,
                         "degraded": status.get("active_state") == "active_degraded",
                         "pid": status_pid or proc.pid,
                         "spawned_pid": proc.pid,
@@ -4351,7 +4406,9 @@ def start_daemon(
         ):
             return {
                 "ok": True, "trusted": final_status.get("active_state") == "active_trusted",
-                "started": True, "degraded": final_status.get("active_state") == "active_degraded",
+                "started": True, "startup_path": startup_path,
+                "package_integrity_reverified": True, "source_provenance_reverified": True,
+                "degraded": final_status.get("active_state") == "active_degraded",
                 "pid": final_pid or proc.pid, "spawned_pid": proc.pid, "endpoint_pid": final_pid,
                 "pid_matches_spawn": bool(final_pid and int(final_pid) == int(proc.pid)),
                 "daemon_instance_id": daemon_instance_id, "status": final_status,
