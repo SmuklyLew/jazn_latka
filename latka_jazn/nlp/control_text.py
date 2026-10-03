@@ -14,6 +14,8 @@ class IntentControlText:
     control_text: str
     quoted_material_masked: bool
     masked_span_count: int
+    structured_creative_material_masked: bool = False
+    structured_creative_span_count: int = 0
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
         "Tekst sterujący służy wyłącznie do klasyfikacji intencji. Oryginalna wiadomość pozostaje bez zmian "
@@ -114,4 +116,6 @@ def extract_intent_control_text(text: str) -> IntentControlText:
         control_text=control,
         quoted_material_masked=count > 0,
         masked_span_count=count,
+        structured_creative_material_masked=creative_spans > 0,
+        structured_creative_span_count=creative_spans,
     )

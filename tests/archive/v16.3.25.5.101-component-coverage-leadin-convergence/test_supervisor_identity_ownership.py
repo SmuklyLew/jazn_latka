@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -142,16 +141,6 @@ def test_supervisor_status_requires_fingerprint_bound_owner(
             int(observed_pid),
             "same-token",
         ),
-    )
-    runtime_supervisor.supervisor_state_path(root).write_text(
-        json.dumps(
-            {
-                "heartbeat_at_utc": datetime.now(timezone.utc).isoformat(),
-                "lease_seconds": 30.0,
-                "state": "daemon_live",
-            }
-        ),
-        encoding="utf-8",
     )
     status = runtime_supervisor.supervisor_status(root)
     assert status["supervisor_pid_alive"] is True

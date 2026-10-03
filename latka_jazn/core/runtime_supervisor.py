@@ -40,6 +40,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version  # noqa: E40
 
 SUPERVISOR_SCHEMA_VERSION = schema_version("persistent_runtime_supervisor")
 DEFAULT_SUPERVISOR_CHECK_INTERVAL_SECONDS = 5.0
+DEFAULT_SUPERVISOR_LEASE_MIN_SECONDS = 30.0
 DEFAULT_SUPERVISOR_BASE_BACKOFF_SECONDS = 2.0
 DEFAULT_SUPERVISOR_MAX_BACKOFF_SECONDS = 60.0
 DEFAULT_SUPERVISOR_STARTUP_TIMEOUT_SECONDS = 12.0
@@ -167,6 +168,37 @@ def _read_json(path: Path) -> dict[str, Any] | None:
     except (FileNotFoundError, OSError, json.JSONDecodeError, UnicodeError):
         return None
     return value if isinstance(value, dict) else None
+
+
+
+def _supervisor_heartbeat_observation(state: dict[str, Any]) -> dict[str, Any]:
+    raw_heartbeat = str(state.get("heartbeat_at_utc") or "").strip()
+    try:
+        lease_seconds = max(
+            1.0,
+            float(state.get("lease_seconds") or DEFAULT_SUPERVISOR_LEASE_MIN_SECONDS),
+        )
+    except (TypeError, ValueError):
+        lease_seconds = DEFAULT_SUPERVISOR_LEASE_MIN_SECONDS
+    age_seconds: float | None = None
+    if raw_heartbeat:
+        try:
+            heartbeat = datetime.fromisoformat(raw_heartbeat.replace("Z", "+00:00"))
+            if heartbeat.tzinfo is None:
+                heartbeat = heartbeat.replace(tzinfo=timezone.utc)
+            age_seconds = max(
+                0.0,
+                (datetime.now(timezone.utc) - heartbeat.astimezone(timezone.utc)).total_seconds(),
+            )
+        except (TypeError, ValueError):
+            age_seconds = None
+    fresh = bool(age_seconds is not None and age_seconds <= lease_seconds)
+    return {
+        "heartbeat_at_utc": raw_heartbeat or None,
+        "heartbeat_age_seconds": age_seconds,
+        "lease_seconds": lease_seconds,
+        "heartbeat_fresh": fresh,
+    }
 
 
 def bounded_restart_backoff_seconds(
@@ -308,7 +340,11 @@ def supervisor_status(root: Path) -> dict[str, Any]:
     except (FileNotFoundError, OSError, ValueError):
         pid = None
     identity = _supervisor_identity_observation(runtime_root, pid)
-    active = identity["identity_confirmed"] is True
+    heartbeat = _supervisor_heartbeat_observation(state)
+    active = bool(
+        identity["identity_confirmed"] is True
+        and heartbeat["heartbeat_fresh"] is True
+    )
     return {
         "schema_version": SUPERVISOR_SCHEMA_VERSION,
         "package_version": PACKAGE_VERSION_FULL,
@@ -322,12 +358,17 @@ def supervisor_status(root: Path) -> dict[str, Any]:
             "process_fingerprint_match"
         ],
         "supervisor_owner_record_present": identity["owner_record_present"],
+        "supervisor_heartbeat_at_utc": heartbeat["heartbeat_at_utc"],
+        "supervisor_heartbeat_age_seconds": heartbeat["heartbeat_age_seconds"],
+        "supervisor_heartbeat_fresh": heartbeat["heartbeat_fresh"],
+        "supervisor_lease_seconds": heartbeat["lease_seconds"],
         "root": str(runtime_root),
         "state": state,
         "truth_boundary": (
             "supervisor_active requires a live PID bound to the persisted "
-            "process-creation fingerprint and runtime root. A live PID alone "
-            "is untrusted because PIDs may be reused. Daemon readiness, tunnel "
+            "process-creation fingerprint and runtime root plus a fresh heartbeat "
+            "inside the persisted lease. A live PID alone is untrusted because "
+            "PIDs may be reused or a supervisor may be hung. Daemon readiness, tunnel "
             "readiness, connector capability and accepted visible turns remain "
             "separate evidence."
         ),
@@ -381,7 +422,10 @@ def _state_payload(
     last_start: dict[str, Any] | None = None,
     next_retry_seconds: float | None = None,
     started_at_utc: str,
+    check_interval_seconds: float = DEFAULT_SUPERVISOR_CHECK_INTERVAL_SECONDS,
 ) -> dict[str, Any]:
+    interval_seconds = max(0.2, float(check_interval_seconds))
+    lease_seconds = max(DEFAULT_SUPERVISOR_LEASE_MIN_SECONDS, interval_seconds * 3.0)
     return {
         "schema_version": SUPERVISOR_SCHEMA_VERSION,
         "package_version": PACKAGE_VERSION_FULL,
@@ -390,6 +434,8 @@ def _state_payload(
         "supervisor_pid": os.getpid(),
         "started_at_utc": started_at_utc,
         "heartbeat_at_utc": utc_now_iso(),
+        "check_interval_seconds": interval_seconds,
+        "lease_seconds": lease_seconds,
         "failure_count": int(failure_count),
         "next_retry_seconds": next_retry_seconds,
         "last_liveness": last_liveness,
@@ -443,6 +489,7 @@ def run_supervisor(
                         failure_count=0,
                         last_liveness=liveness,
                         started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                     ),
                 )
                 event.wait(max(0.2, float(check_interval_seconds)))
@@ -470,6 +517,7 @@ def run_supervisor(
                         failure_count=0,
                         last_liveness=observed_with_health,
                         started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                     ),
                 )
                 event.wait(max(0.2, float(check_interval_seconds)))
@@ -492,6 +540,7 @@ def run_supervisor(
                         },
                         next_retry_seconds=delay,
                         started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                     ),
                 )
                 event.wait(delay)
@@ -509,6 +558,7 @@ def run_supervisor(
                         last_liveness=observed_with_health,
                         next_retry_seconds=delay,
                         started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                     ),
                 )
                 event.wait(delay)
@@ -543,6 +593,7 @@ def run_supervisor(
                             "already_running": start_result.get("already_running"),
                         },
                         started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                     ),
                 )
                 event.wait(max(0.2, float(check_interval_seconds)))
@@ -565,6 +616,7 @@ def run_supervisor(
                     },
                     next_retry_seconds=delay,
                     started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
                 ),
             )
             event.wait(delay)
@@ -576,6 +628,7 @@ def run_supervisor(
                 state="supervisor_stopped",
                 failure_count=failure_count,
                 started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
             ),
         )
         _release_supervisor_claim(runtime_root)
