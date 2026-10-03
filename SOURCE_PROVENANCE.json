@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "65769ae54a23776967c865643cce3c15f88cac71",
-  "base_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
-  "commit_date": "2026-10-03T04:08:22+02:00",
+  "base_merge_commit": "da699dfc96bd38428ceda75938c7a158642079c5",
+  "base_version": "16.3.25.5.101-component-coverage-leadin-convergence",
+  "commit_date": "2026-10-03T02:37:47Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-03T02:08:22+00:00",
+  "generated_at_utc": "2026-10-03T02:37:47+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1c8be8d4d740390f9b2a597de0a9ebbb98bbf6e3",
+  "git_tree_sha": "a52a9d9a343002b24bac7549311021ec63a4d000",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "65769ae54a23776967c865643cce3c15f88cac71",
+    "base_commit": "80ec05815c61f1b315b313c0f06a40ce0cb93b85",
     "base_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "65769ae54a23776967c865643cce3c15f88cac71",
-    "source_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence"
+    "source_commit": "da699dfc96bd38428ceda75938c7a158642079c5",
+    "source_version": "16.3.25.5.101-component-coverage-leadin-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
+  "release_version": "16.3.25.5.101-component-coverage-leadin-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
+  "runtime_version": "16.3.25.5.101-component-coverage-leadin-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "65769ae54a23776967c865643cce3c15f88cac71",
+  "source_commit": "da699dfc96bd38428ceda75938c7a158642079c5",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
+  "source_version": "16.3.25.5.101-component-coverage-leadin-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.100-chatgpt-bootstrap-progress-convergence",
+  "update_version": "16.3.25.5.101-component-coverage-leadin-convergence",
   "version_source": "latka_jazn/version.py"
 }
