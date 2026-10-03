@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "5fdf6a1b25c6c591c5dde212c80f6c9658129594",
+  "base_merge_commit": "6c480b8f0b3e8af5aea273a6562abc531a5b403d",
   "base_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-  "commit_date": "2026-10-03T19:36:38Z",
+  "commit_date": "2026-10-03T19:40:22Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-03T19:36:38+00:00",
+  "generated_at_utc": "2026-10-03T19:40:22+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "237bfde55d8ef386d8fb5610f8b84437f4b1a366",
+  "git_tree_sha": "3da8f72640ae793c6a651b6414d1be5df96d6aba",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.101-component-coverage-leadin-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "5fdf6a1b25c6c591c5dde212c80f6c9658129594",
+    "source_commit": "6c480b8f0b3e8af5aea273a6562abc531a5b403d",
     "source_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "5fdf6a1b25c6c591c5dde212c80f6c9658129594",
+  "source_commit": "6c480b8f0b3e8af5aea273a6562abc531a5b403d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
   "tag": null,
