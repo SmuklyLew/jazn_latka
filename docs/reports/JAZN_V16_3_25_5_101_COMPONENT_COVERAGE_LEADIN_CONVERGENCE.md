@@ -68,3 +68,23 @@ kontraktowy limit 5000 znaków. Nie podniesiono limitu testu. Loader został
 skrócony do cienkiej warstwy discovery/bootstrap, zachowując wymagane granice
 `remote_runtime`, verified SYSTEM ZIP, `AGENTS.md`, właściwego runbooka hosta
 i finalizacji.
+
+
+## CI closure po pierwszym wdrożeniu
+
+Rzeczywiste runy GitHub Actions ujawniły dwa dodatkowe gate'y repozytorium.
+`Stable test contracts` odrzucił wersjonowaną nazwę aktywnego testu, dlatego
+regresję przeniesiono do stabilnej nazwy
+`tests/test_component_coverage_leadin_convergence.py`, a poprzednie zatwierdzone
+wersje zachowano w `tests/archive/`.
+
+Pełny `release-hardening` pokazał też drift kontraktu wydania: aktywne
+`startup_contract.json` oraz dwa release-identity testy nadal wskazywały
+`16.3.25.5.100-chatgpt-bootstrap-progress-convergence`. Aktywne kontrakty zostały
+przeniesione na `16.3.25.5.101-component-coverage-leadin-convergence`; historyczny
+raport wersji .100 i snapshoty pozostają bez zmian.
+
+Loader został skompresowany bez podnoszenia limitu 5000 znaków i zachowuje
+literalne kontrakty wymagane przez testy host-executor, Library bootstrap,
+bezpieczną materializację ZIP, MEMORY attach oraz zwracanie tool evidence do tej
+samej tury. Lokalny zestaw krytycznych gate'ów po tych zmianach: 190/190.
