@@ -156,6 +156,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["plan_name_is_runtime_predicate"] is False
 
 
-def test_release_identity_tracks_bootstrap_progress_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.100"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-bootstrap-progress-convergence"
+def test_release_identity_tracks_component_coverage_leadin_convergence() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.101"
+    assert PACKAGE_RELEASE_NAME == "component-coverage-leadin-convergence"
