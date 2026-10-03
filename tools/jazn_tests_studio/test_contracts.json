@@ -3058,12 +3058,12 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_fresh_session_plugin_exposure_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_bootstrap_progress_convergence": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_fresh_session_plugin_exposure_convergence",
-      "purpose": "Release version tracks fresh session plugin exposure convergence",
+      "name": "test_release_version_tracks_bootstrap_progress_convergence",
+      "purpose": "Release version tracks bootstrap progress convergence",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
+      "category": "e2e",
       "tags": [],
       "markers": [],
       "assertion_count": 2,
