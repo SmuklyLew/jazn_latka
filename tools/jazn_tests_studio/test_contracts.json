@@ -39116,7 +39116,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
     },
     "tests/test_supervisor_identity_ownership.py::test_supervisor_refuses_live_owner_when_identity_is_unavailable": {
       "path": "tests/test_supervisor_identity_ownership.py",
@@ -39134,7 +39134,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 65
     },
     "tests/test_supervisor_identity_ownership.py::test_supervisor_status_requires_fingerprint_bound_owner": {
       "path": "tests/test_supervisor_identity_ownership.py",
@@ -39152,7 +39152,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 109
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",
