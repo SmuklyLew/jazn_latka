@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.100",
-  "active_definition_count": 1857,
+  "system_version": "16.3.25.5.101",
+  "active_definition_count": 1861,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -39832,6 +39832,80 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_generic_leadin_before_following_question_is_not_a_coverage_goal": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_generic_leadin_before_following_question_is_not_a_coverage_goal",
+      "purpose": "Generic leadin before following question is not a coverage goal",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_standalone_generic_directive_is_preserved": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_standalone_generic_directive_is_preserved",
+      "purpose": "Standalone generic directive is preserved",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_non_generic_directive_before_question_is_preserved": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_non_generic_directive_before_question_is_preserved",
+      "purpose": "Non generic directive before question is preserved",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_v163255101_component_coverage_leadin_convergence.py::test_exact_multi_question_message_uses_first_person_compatible_semantics": {
+      "path": "tests/test_v163255101_component_coverage_leadin_convergence.py",
+      "name": "test_exact_multi_question_message_uses_first_person_compatible_semantics",
+      "purpose": "Exact multi question message uses first person compatible semantics",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
