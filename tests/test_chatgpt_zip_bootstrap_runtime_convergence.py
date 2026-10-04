@@ -156,6 +156,6 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
     assert contract["plan_name_is_runtime_predicate"] is False
 
 
-def test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.102"
-    assert PACKAGE_RELEASE_NAME == "fast-bootstrap-persistent-runtime-convergence"
+def test_release_identity_tracks_current_distribution() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.103"
+    assert PACKAGE_RELEASE_NAME == "generative-dialogue-nlg-convergence"
