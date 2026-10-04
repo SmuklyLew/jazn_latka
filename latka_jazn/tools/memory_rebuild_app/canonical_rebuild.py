@@ -261,20 +261,20 @@ class CanonicalMemoryRebuildPipeline:
         existing = self._database_paths()
         existing_inventory: list[dict[str, Any]] = []
         for path in existing:
-            wal = Path(str(path) + "-wal")
+            persistent_sidecars: dict[str, dict[str, Any]] = {}
+            for suffix in ("-wal", "-journal"):
+                sidecar = Path(str(path) + suffix)
+                if sidecar.is_file():
+                    persistent_sidecars[suffix] = {
+                        "size_bytes": sidecar.stat().st_size,
+                        "sha256": sha256_file(sidecar),
+                    }
             existing_inventory.append(
                 {
                     "path": str(path),
                     "size_bytes": path.stat().st_size,
                     "sha256": sha256_file(path),
-                    "wal": (
-                        {
-                            "size_bytes": wal.stat().st_size,
-                            "sha256": sha256_file(wal),
-                        }
-                        if wal.is_file()
-                        else None
-                    ),
+                    "persistent_sidecars": persistent_sidecars,
                 }
             )
         generation = "beta" if existing else "alpha"
@@ -429,6 +429,7 @@ class CanonicalMemoryRebuildPipeline:
             path,
             Path(str(path) + "-wal"),
             Path(str(path) + "-shm"),
+            Path(str(path) + "-journal"),
         ]
 
     def _restore_rollbacks(self, rollback_dir: Path, moved: list[tuple[Path, Path]]) -> None:
