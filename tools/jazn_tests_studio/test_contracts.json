@@ -24024,7 +24024,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 979
+      "line": 988
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_journal_emotions_are_searchable_and_indexed_as_affect_claims": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24059,7 +24059,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1030
+      "line": 1039
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24094,7 +24094,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1079
+      "line": 1088
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affect_claim_change_changes_semantic_fingerprint": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24129,7 +24129,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1107
+      "line": 1116
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
@@ -42068,14 +42068,14 @@
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
       "name": "test_legacy_affective_json_recovery_preserves_duplicate_keys_and_records",
       "purpose": "Legacy affective json recovery preserves duplicate keys and records",
-      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 14,
+      "assertion_count": 18,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.living_memory_gateway",
@@ -42132,7 +42132,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 964
+      "line": 973
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_living_memory_gateway_recalls_affective_l0_evidence": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -42168,7 +42168,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1158
+      "line": 1167
     }
   }
 }
