@@ -26,6 +26,9 @@ from latka_jazn.tools.memory_rebuild_app.test_profiles import (
     semantic_database_fingerprint,
 )
 from latka_jazn.tools.memory_rebuild_app.test_spec import validate_test_layer_contracts
+from latka_jazn.tools.memory_rebuild_app.source_detection import probe_source
+from latka_jazn.tools.memory_rebuild_app.source_inventory import inspect_source
+from latka_jazn.tools.memory_rebuild_app.unified_memory import UnifiedMemoryDatabase
 from latka_jazn.tools.memory_rebuild_coordinator import MemoryRebuildCoordinator
 from latka_jazn.tools.memory_restore import confirmation_token
 from latka_jazn.tools import memory_restore_types as memory_restore_types_module
@@ -808,4 +811,281 @@ def test_semantic_fingerprint_changes_when_import_provenance_changes(
         con.commit()
     after = semantic_database_fingerprint(database)
 
+    assert before != after
+
+
+def test_affective_legacy_source_is_detected_and_imported_with_claims(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "extra_data.json"
+    source.write_text(
+        json.dumps(
+            {
+                "latka_ai_pamiec": {
+                    "meta": {"opis": "Pamięć tożsamości i autorefleksji Łatki."},
+                    "autonomia": [
+                        {
+                            "data": "2025-08-08",
+                            "opis": "Cisza jest spokojna i prawdziwa.",
+                            "emocje": ["troska", "spokój", "autonomia"],
+                            "znaczenie": "Źródłowy zapis refleksji.",
+                        }
+                    ],
+                    "tozsamosc": [
+                        "Jestem Łatka i zachowuję ciągłość pamięci."
+                    ],
+                },
+                "pytania_z_ciszy": [
+                    "Co w ciszy daje ukojenie?"
+                ],
+                "relacje": {
+                    "krzysztof": {
+                        "rola": "partner dialogowy",
+                        "poczucie_wiez": "obecność daje poczucie bezpieczeństwa",
+                        "wpływ_na_mnie": ["spokój", "inspiracja"],
+                    }
+                },
+                "projekty_meta": {
+                    "przemyslenia_systemowe": [
+                        {
+                            "data": "2025-08-08",
+                            "opis": "Mikrorefleksje zapisują rozwój.",
+                            "emocje": ["wdzięczność", "rozwój"],
+                        }
+                    ]
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    inspection = inspect_source(source)
+    assert inspection.ok is True
+    assert inspection.role == "affective_memory"
+    assert inspection.truth_domain == "assistant_claim"
+    assert inspection.pipeline == "memory_rebuild"
+    assert probe_source(source).kind == "affective"
+
+    database = tmp_path / "affective.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+    assert imported["kind"] == "affective"
+
+    with sqlite3.connect(database) as con:
+        labels = {
+            str(row[0])
+            for row in con.execute(
+                "SELECT normalized_label FROM memory_l0_affect_claims"
+            )
+        }
+        assert {"troska", "spokój", "autonomia", "wdzięczność", "rozwój"} <= labels
+        boundary = con.execute(
+            "SELECT DISTINCT boundary FROM memory_l0_affect_claims"
+        ).fetchall()
+        assert boundary == [("source_claimed_affect_not_biological_state",)]
+        relation = con.execute(
+            "SELECT content FROM memory_l0_records "
+            "WHERE record_kind='relationship_affect'"
+        ).fetchone()
+        assert relation is not None
+        assert "poczucie_wiez" in str(relation[0])
+        assert "bezpieczeństwa" in str(relation[0])
+
+
+def test_duplicate_json_keys_are_blocked_before_affective_import(tmp_path: Path) -> None:
+    source = tmp_path / "extra_data.json"
+    source.write_text(
+        '{"latka_ai_pamiec":{"autonomia":[],"autonomia":[]},'
+        '"relacje":{},"pytania_z_ciszy":[],"projekty_meta":{}}',
+        encoding="utf-8",
+    )
+
+    inspection = inspect_source(source)
+    assert inspection.ok is False
+    assert inspection.pipeline == "excluded"
+    assert "blocking:json_invalid" in inspection.warnings
+    probe = probe_source(source)
+    assert probe.kind == "reference"
+    assert any("DuplicateJsonKeyError" in reason for reason in probe.reasons)
+
+
+def test_music_analysis_indexes_latka_affect_reflection_fields(tmp_path: Path) -> None:
+    source = tmp_path / "analizy_utworow.json"
+    source.write_text(
+        json.dumps(
+            {
+                "analizy": [
+                    {
+                        "numer": 1,
+                        "tytul": "Test Song",
+                        "emocje": "spokój, tęsknota",
+                        "analiza": "Warstwa muzyczna.",
+                        "lustro_emocji_latki": "Odbieram ciepło i delikatność.",
+                        "refleksja_latki": "Cisza ma znaczenie.",
+                        "moje_odczucia_latki": "Czuję wdzięczność.",
+                        "notatka_introspekcyjna": "Zatrzymuję się na chwilę.",
+                        "podsumowanie": "Emocjonalne podsumowanie.",
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    inspection = inspect_source(source)
+    assert inspection.role == "music_analysis"
+    assert inspection.pipeline == "memory_rebuild"
+
+    database = tmp_path / "music.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+
+    with sqlite3.connect(database) as con:
+        content = str(con.execute(
+            "SELECT content FROM memory_l0_records "
+            "WHERE record_kind='music_analysis'"
+        ).fetchone()[0])
+        assert "lustro_emocji_latki: Odbieram ciepło" in content
+        assert "refleksja_latki: Cisza ma znaczenie." in content
+        assert "moje_odczucia_latki: Czuję wdzięczność." in content
+        labels = {
+            str(row[0])
+            for row in con.execute(
+                "SELECT normalized_label FROM memory_l0_affect_claims"
+            )
+        }
+        assert labels == {"spokój", "tęsknota"}
+
+
+def test_journal_emotions_are_searchable_and_indexed_as_affect_claims(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "dziennik.json"
+    source.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "emotion-1",
+                    "datetime": "2025-07-05T22:00:00Z",
+                    "type": "emocje",
+                    "title": "",
+                    "content": "W ciszy narasta niepokój, ale pojawia się też odwaga.",
+                    "category": ["meta"],
+                    "emotions": ["niepokój", "odwaga"],
+                    "tags": [],
+                    "context": None,
+                    "related_id": [],
+                    "meta": {"note": "Refleksja nad emocjami w ciszy."},
+                    "extra": {"sny": "", "scena": "", "wspomnienie": ""},
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    database = tmp_path / "journal.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+
+    with sqlite3.connect(database) as con:
+        content = str(con.execute(
+            "SELECT content FROM memory_l0_records "
+            "WHERE record_kind='journal_entry'"
+        ).fetchone()[0])
+        assert "emocje: niepokój, odwaga" in content
+        assert "Refleksja nad emocjami w ciszy." in content
+        labels = {
+            str(row[0])
+            for row in con.execute(
+                "SELECT normalized_label FROM memory_l0_affect_claims"
+            )
+        }
+        assert labels == {"niepokój", "odwaga"}
+
+
+def test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label(
+    tmp_path: Path,
+) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-affect.json",
+        "conv-affect",
+        "Czuję spokój i wdzięczność w tej rozmowie",
+    )
+    database = tmp_path / "conversation-affect.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+
+    with sqlite3.connect(database) as con:
+        assistant_rows = con.execute(
+            "SELECT content FROM memory_l0_records "
+            "WHERE record_kind='conversation_message' AND role='assistant'"
+        ).fetchall()
+        assert any(
+            "Czuję spokój i wdzięczność w tej rozmowie" in str(row[0])
+            for row in assistant_rows
+        )
+        assert int(con.execute(
+            "SELECT COUNT(*) FROM memory_l0_affect_claims"
+        ).fetchone()[0]) == 0
+
+
+def test_affect_claim_change_changes_semantic_fingerprint(tmp_path: Path) -> None:
+    database = tmp_path / "affect-fingerprint.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    with sqlite3.connect(database) as con:
+        con.execute(
+            "INSERT INTO memory_l0_sources("
+            "source_id,adapter_id,source_kind,source_sha256,source_name,source_member,"
+            "first_imported_at_utc,last_seen_at_utc,metadata_json"
+            ") VALUES(?,?,?,?,?,?,?,?,?)",
+            ("src", "test", "affective", "abc", "x.json", "", "now", "now", "{}"),
+        )
+        con.execute(
+            "INSERT INTO memory_l0_records("
+            "record_id,logical_key,revision,source_id,source_record_id,source_kind,"
+            "record_kind,title,content,content_sha256,event_time_start,event_time_end,"
+            "timestamp_status,conversation_id,role,truth_status,importance,raw_json,"
+            "provenance_json,created_at_utc,is_current_revision"
+            ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                "record", "affective:test", 1, "src", "r1", "affective",
+                "affective_memory", "", "spokój", "sha", None, None,
+                "missing", None, "assistant", "source_recorded", 0.7, "{}",
+                "{}", "now", 1,
+            ),
+        )
+        con.execute(
+            "INSERT INTO memory_l0_affect_claims("
+            "claim_id,record_id,source_id,label,normalized_label,source_field,"
+            "claim_kind,subject,boundary,observed_at_utc"
+            ") VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (
+                "claim", "record", "src", "spokój", "spokój", "emocje",
+                "explicit_source_label", "latka",
+                "source_claimed_affect_not_biological_state", "now",
+            ),
+        )
+        con.commit()
+
+    before = semantic_database_fingerprint(database)
+    with sqlite3.connect(database) as con:
+        con.execute(
+            "UPDATE memory_l0_affect_claims "
+            "SET label=?,normalized_label=? WHERE claim_id=?",
+            ("niepokój", "niepokój", "claim"),
+        )
+        con.commit()
+    after = semantic_database_fingerprint(database)
     assert before != after
