@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.104",
-  "active_definition_count": 1904,
+  "active_definition_count": 1905,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23262,6 +23262,7 @@
       "assertion_count": 27,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23280,7 +23281,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 182
+      "line": 183
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_existing_alpha_layout_is_snapshotted_then_converged_to_beta": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23296,6 +23297,7 @@
       "assertion_count": 15,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23314,7 +23316,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 243
+      "line": 244
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_source_union_fingerprint_is_independent_of_project_order_and_source_ids": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23330,6 +23332,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23348,7 +23351,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 301
+      "line": 302
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23364,6 +23367,7 @@
       "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23382,7 +23386,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 322
+      "line": 323
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_test04_benchmark_changes": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23398,6 +23402,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23416,7 +23421,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 343
+      "line": 344
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_baseline_reconciliation_detects_same_key_content_change": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23432,6 +23437,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23450,7 +23456,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 365
+      "line": 366
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_memory_evidence_resolver_rejects_paths_outside_memory_root": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23468,6 +23474,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23486,7 +23493,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 388
+      "line": 389
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_final_publish_restores_old_target_when_second_replace_fails": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23504,6 +23511,7 @@
         "OSError"
       ],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23522,7 +23530,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 409
+      "line": 410
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_system_mode_preflight_rejects_active_runtime": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23539,6 +23547,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23557,7 +23566,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 444
+      "line": 445
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_test04_acceptance_binding_rejects_report_from_different_candidate": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23573,6 +23582,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23591,7 +23601,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 477
+      "line": 478
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_runtime_probe_import_does_not_cycle_through_memory_rebuild_package": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23609,6 +23619,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23627,7 +23638,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 529
+      "line": 530
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_baseline_reconciliation_ignores_target_only_schema_columns": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23643,6 +23654,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23661,7 +23673,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 554
+      "line": 555
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepublish_system_gate_rechecks_runtime_after_long_rebuild": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23678,6 +23690,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23696,7 +23709,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 594
+      "line": 595
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_existing_sqlite_wal_changes": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23712,6 +23725,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23730,7 +23744,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 622
+      "line": 623
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_existing_sqlite_rollback_journal_changes": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23746,6 +23760,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23764,7 +23779,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 652
+      "line": 653
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_publish_rollback_tracks_sqlite_rollback_journal_sidecar": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23780,6 +23795,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23798,7 +23814,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 681
+      "line": 682
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_incomplete_live_publish_rollback_preserves_backup_for_manual_recovery": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23814,6 +23830,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23832,7 +23849,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 690
+      "line": 691
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_disk_preflight_counts_persistent_sqlite_sidecars": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23848,6 +23865,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23866,7 +23884,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 729
+      "line": 730
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepublish_plan_gate_rejects_source_mutation_after_run_start": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23882,6 +23900,7 @@
       "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23900,7 +23919,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 759
+      "line": 760
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_semantic_fingerprint_changes_when_import_provenance_changes": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23916,6 +23935,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23934,7 +23954,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 786
+      "line": 787
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affective_legacy_source_is_detected_and_imported_with_claims": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23950,6 +23970,7 @@
       "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -23968,7 +23989,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 817
+      "line": 818
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_music_analysis_indexes_latka_affect_reflection_fields": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23984,6 +24005,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -24002,7 +24024,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 978
+      "line": 979
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_journal_emotions_are_searchable_and_indexed_as_affect_claims": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24018,6 +24040,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -24036,7 +24059,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1029
+      "line": 1030
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24052,6 +24075,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -24070,7 +24094,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1078
+      "line": 1079
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affect_claim_change_changes_semantic_fingerprint": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24086,6 +24110,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -24104,7 +24129,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1106
+      "line": 1107
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
@@ -42053,6 +42078,7 @@
       "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -42071,7 +42097,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 898
+      "line": 899
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_unrecoverable_affective_json_remains_fail_closed": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -42087,6 +42113,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.living_memory_gateway",
         "latka_jazn.memory.unified_memory_runtime",
         "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
@@ -42105,7 +42132,43 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 963
+      "line": 964
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_living_memory_gateway_recalls_affective_l0_evidence": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_living_memory_gateway_recalls_affective_l0_evidence",
+      "purpose": "Living memory gateway recalls affective l0 evidence",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 1158
     }
   }
 }
