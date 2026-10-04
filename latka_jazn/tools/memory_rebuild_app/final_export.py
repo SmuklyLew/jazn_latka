@@ -59,18 +59,24 @@ def export_final_memory(
             str(row[0]): str(row[1])
             for row in con.execute("SELECT key,value FROM unified_memory_meta")
         }
+    memory_root = store.path.parent.parent
+
+    def resolve_memory_evidence(raw: str) -> Path:
+        path = Path(raw).expanduser()
+        return path.resolve() if path.is_absolute() else (memory_root / path).resolve()
+
     effective_baselines = list(baselines)
     if not effective_baselines:
         metadata_baseline = str(source_meta.get("test04_baseline_root") or "").strip()
         if metadata_baseline:
-            effective_baselines.append(metadata_baseline)
+            effective_baselines.append(resolve_memory_evidence(metadata_baseline))
     effective_acceptance_report = acceptance_report
     if effective_acceptance_report is None:
         metadata_acceptance = str(
             source_meta.get("test04_acceptance_report") or ""
         ).strip()
         if metadata_acceptance:
-            effective_acceptance_report = metadata_acceptance
+            effective_acceptance_report = resolve_memory_evidence(metadata_acceptance)
     test_report = run_test_profile(
         store.path,
         "final",
