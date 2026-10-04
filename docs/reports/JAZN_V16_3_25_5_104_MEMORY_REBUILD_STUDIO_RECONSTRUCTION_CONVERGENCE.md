@@ -68,7 +68,7 @@ Plan ma `execution_plan_sha256`. Hash obejmuje między innymi:
 - source inventory i SHA-256;
 - source union;
 - stan istniejących baz;
-- bieżący `-wal` istniejącej bazy, jeśli występuje;
+- trwałe sidecary `-wal` i `-journal` istniejącej bazy, jeśli występują;
 - prywatny benchmark Test04 i jego SHA-256;
 - restart continuity report i SHA-256;
 - protocol base commit i tryb system acceptance.
@@ -77,8 +77,10 @@ Zmiana któregoś z tych wejść pomiędzy `plan()` i `run()` daje
 `prepared_plan_stale`.
 
 Stan `-wal` jest częścią planu, ponieważ w trybie WAL zatwierdzone strony mogą
-pozostawać poza głównym plikiem SQLite do checkpointu. `-shm` nie jest
-fingerprintowany jako trwała treść.
+pozostawać poza głównym plikiem SQLite do checkpointu. `-journal` również jest
+wiązaną i rollbackowaną częścią stanu, ponieważ SQLite może pozostawić hot
+rollback journal po przerwanym zapisie. `-shm` jest przenoszony przy publikacji,
+ale nie fingerprintowany jako trwała treść.
 
 ## P1 — reconciliation wykrywa zmianę treści
 
