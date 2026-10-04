@@ -613,3 +613,33 @@ def test_prepublish_system_gate_rechecks_runtime_after_long_rebuild(
     report = pipeline.prepublish_runtime_gate()
     assert report["ok"] is False
     assert "system_runtime_must_be_stopped" in report["blocking_errors"]
+
+
+
+def test_prepared_plan_is_stale_when_existing_sqlite_wal_changes(
+    tmp_path: Path,
+) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-wal.json",
+        "conv-wal",
+        "wal",
+    )
+    project = _project(tmp_path, source, name="WAL plan binding")
+    target = Path(project.target_root)
+    legacy = MemoryRebuildCoordinator(target)
+    initialized = legacy.init()
+    assert initialized["ok"]
+
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+    prepared = pipeline.plan()
+    assert prepared["ok"], prepared
+    assert prepared["execution_plan_sha256"]
+
+    wal = Path(str(legacy.paths.memory_jazn) + "-wal")
+    wal.write_bytes(b"synthetic-wal-state-change")
+
+    result = pipeline.run(prepared_plan=prepared)
+    assert result["ok"] is False
+    assert result["status"] == "prepared_plan_stale"
+    assert result["field"] == "execution_plan_sha256"
+    assert result["actual"] != prepared["execution_plan_sha256"]
