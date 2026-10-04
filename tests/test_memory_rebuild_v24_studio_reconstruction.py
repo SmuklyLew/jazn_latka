@@ -4,6 +4,8 @@ from pathlib import Path
 import json
 import os
 import sqlite3
+import subprocess
+import sys
 
 import pytest
 
@@ -205,6 +207,9 @@ def test_studio_rebuild_publishes_only_runtime_ready_unified_database(tmp_path: 
     assert result["protocol_gate"]["test00"] == "PASSED"
     assert result["protocol_gate"]["test04"] == "PASSED"
     assert result["protocol_gate"]["final"] == "PASSED"
+    assert result["protocol_gate"]["test04_candidate_transition"] is True
+    assert result["protocol_gate"]["test04_database_sha256"]
+    assert result["protocol_gate"]["test04_database_fingerprint"]
     assert result["memory_search_ready"] is True
     assert result["full_autobiographical_recall_ready"] is True
     assert expected_database.is_file()
@@ -514,3 +519,28 @@ def test_test04_acceptance_binding_rejects_report_from_different_candidate(
     assert rejected["ok"] is False
     assert rejected["binding_ok"] is False
     assert rejected["binding_checks"]["source_union_sha256"]["passed"] is False
+
+
+
+def test_runtime_probe_import_does_not_cycle_through_memory_rebuild_package() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-X",
+            "utf8",
+            "-c",
+            (
+                "import latka_jazn.memory.unified_memory_runtime; "
+                "import latka_jazn.tools.memory_rebuild_app; "
+                "from latka_jazn.tools.memory_rebuild_app import ProtocolEngine"
+            ),
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "partially initialized module" not in completed.stderr
