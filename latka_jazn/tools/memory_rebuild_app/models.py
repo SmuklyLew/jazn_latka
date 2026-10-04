@@ -13,6 +13,8 @@ SOURCE_ROLES: tuple[str, ...] = (
     "chatgpt_export",
     "chatgpt_html_export",
     "journal",
+    "music_analysis",
+    "affective_memory",
     "approved_l0",
     "layered_memory",
     "runtime_event_ledger",
