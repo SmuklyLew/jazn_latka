@@ -6,7 +6,11 @@ import json
 import os
 import re
 
-from latka_jazn.tools.memory_restore import MemoryRestoreSettings, confirmation_token
+from latka_jazn.tools.memory_restore import (
+    MemoryRestoreSettings,
+    confirmation_token,
+    target_preflight,
+)
 
 from .canonical_rebuild import CanonicalMemoryRebuildPipeline, canonical_database_path
 
@@ -183,6 +187,23 @@ class MemoryRebuildAppController:
         if self.project.mode == "developer" and target_inside_repo:
             errors.append("developer_target_inside_repository")
 
+        runtime_target_preflight: dict[str, Any] = {
+            "ok": True,
+            "mode": self.project.mode,
+            "status": "not_required_for_developer_target",
+            "blocking_errors": [],
+            "warnings": [],
+            "evidence": {},
+        }
+        if self.project.mode == "system" and target is not None:
+            runtime_target_preflight = target_preflight(
+                self.settings(),
+                tool_root=self.tool_root,
+            )
+            for error in runtime_target_preflight.get("blocking_errors", []):
+                if error not in errors:
+                    errors.append(str(error))
+
         disk_preflight: dict[str, Any] = {
             "ok": False,
             "status": "not_checked",
@@ -211,6 +232,7 @@ class MemoryRebuildAppController:
             "target_inside_repository": target_inside_repo,
             "canonical_database": canonical_database,
             "disk_preflight": disk_preflight,
+            "runtime_target_preflight": runtime_target_preflight,
             "pipeline_owner": "UnifiedMemoryDatabase",
             "automatic_experience_approval": False,
             "automatic_l2": False,
