@@ -6,6 +6,8 @@ import hashlib
 import json
 import sqlite3
 
+from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
 from .read_only_validation import (
     open_read_only,
     promotion_ledger_validation,
@@ -231,7 +233,25 @@ def run_test_profile(
             detail="system_acceptance=true requires restart_continuity=passed" if system_acceptance else "developer acceptance",
         ))
     ledger = {"ok": True, "status": "not_required"}
+    runtime_probe: dict[str, Any] = {"status": "not_required"}
     if selected == "final" and path.is_file():
+        runtime_probe = probe_unified_memory_database(path, full_integrity=full_validation)
+        checks.append(_check(
+            "native_unified_runtime_readiness",
+            bool(runtime_probe.get("full_autobiographical_recall_ready")),
+            actual={
+                "status": runtime_probe.get("status"),
+                "schema_identity": runtime_probe.get("schema_identity"),
+                "memory_search_ready": runtime_probe.get("memory_search_ready"),
+                "full_autobiographical_recall_ready": runtime_probe.get(
+                    "full_autobiographical_recall_ready"
+                ),
+                "missing_required_tables": runtime_probe.get("missing_required_tables"),
+                "missing_fts_objects": runtime_probe.get("missing_fts_objects"),
+                "fts_errors": runtime_probe.get("fts_errors"),
+            },
+            expected="full_autobiographical_recall_ready=true",
+        ))
         ledger = promotion_ledger_validation(path)
         checks.append(_check(
             "l2_l3_verified_from_promotion_ledger", bool(ledger.get("ok")), actual=ledger,
@@ -270,6 +290,7 @@ def run_test_profile(
         "baseline_reconciliation": reconciliation,
         "test04_acceptance": acceptance,
         "promotion_ledger_validation": ledger,
+        "runtime_readiness_probe": runtime_probe,
         "checks": checks,
         "blocking_failures": blocking_failures,
         "warnings": warnings,
