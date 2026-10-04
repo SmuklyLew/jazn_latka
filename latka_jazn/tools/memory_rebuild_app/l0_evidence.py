@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 import sqlite3
+import uuid
 
 
 def persist_record_metadata(
@@ -20,6 +21,36 @@ def persist_record_metadata(
         "UPDATE memory_l0_records SET visibility=?,memory_eligible=? WHERE record_id=?",
         (visibility, int(memory_eligible), record_id),
     )
+    con.execute("DELETE FROM memory_l0_affect_claims WHERE record_id=?", (record_id,))
+    claims = raw.get("__jazn_affect_claims__")
+    for claim in claims if isinstance(claims, list) else ():
+        if not isinstance(claim, Mapping):
+            continue
+        label = str(claim.get("label") or "").strip()
+        if not label:
+            continue
+        source_field = str(claim.get("source_field") or "unknown").strip() or "unknown"
+        claim_kind = str(claim.get("claim_kind") or "explicit_source_label").strip()
+        subject = str(claim.get("subject") or "latka").strip() or "latka"
+        boundary = str(
+            claim.get("boundary") or "source_claimed_affect_not_biological_state"
+        ).strip()
+        normalized = " ".join(label.casefold().split())
+        claim_id = str(uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"jazn-affect-claim:{record_id}:{normalized}:{source_field}:{claim_kind}:{subject}",
+        ))
+        con.execute(
+            """INSERT OR REPLACE INTO memory_l0_affect_claims(
+               claim_id,record_id,source_id,label,normalized_label,source_field,
+               claim_kind,subject,boundary,observed_at_utc
+               ) VALUES(?,?,?,?,?,?,?,?,?,?)""",
+            (
+                claim_id, record_id, source_id, label, normalized, source_field,
+                claim_kind, subject, boundary, observed_at_utc,
+            ),
+        )
+
     assets = raw.get("assets")
     for asset in assets if isinstance(assets, list) else ():
         if not isinstance(asset, Mapping):
