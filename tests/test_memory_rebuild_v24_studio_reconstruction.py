@@ -28,6 +28,7 @@ from latka_jazn.tools.memory_rebuild_app.test_profiles import (
 from latka_jazn.tools.memory_rebuild_app.test_spec import validate_test_layer_contracts
 from latka_jazn.tools.memory_rebuild_coordinator import MemoryRebuildCoordinator
 from latka_jazn.tools.memory_restore import confirmation_token
+from latka_jazn.tools import memory_restore_types as memory_restore_types_module
 
 
 def _message(mid: str, role: str, text: str, timestamp: float) -> dict:
@@ -584,3 +585,31 @@ def test_baseline_reconciliation_ignores_target_only_schema_columns(
     assert report["ok"] is True
     assert report["tables"]["conversations"]["missing_record_count"] == 0
     assert report["tables"]["conversations"]["content_mismatch_count"] == 0
+
+
+
+def test_prepublish_system_gate_rechecks_runtime_after_long_rebuild(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _write_conversations(tmp_path / "conversations.json", "conv-race", "race")
+    project = _project(tmp_path, source, name="Prepublish gate")
+    project.mode = "system"
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+
+    monkeypatch.setattr(
+        memory_restore_types_module,
+        "target_preflight",
+        lambda settings, tool_root=None: {
+            "ok": False,
+            "mode": "system",
+            "target_root": settings.target_root,
+            "blocking_errors": ["system_runtime_must_be_stopped"],
+            "warnings": [],
+            "evidence": {"daemon": {"pid_alive": True}},
+        },
+    )
+
+    report = pipeline.prepublish_runtime_gate()
+    assert report["ok"] is False
+    assert "system_runtime_must_be_stopped" in report["blocking_errors"]
