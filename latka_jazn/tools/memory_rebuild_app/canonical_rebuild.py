@@ -311,6 +311,12 @@ class CanonicalMemoryRebuildPipeline:
                 1 for item in rebuild if item["role"] in {"chatgpt_export", "chatgpt_html_export"}
             ),
             "journal_source_count": sum(1 for item in rebuild if item["role"] == "journal"),
+            "music_source_count": sum(
+                1 for item in rebuild if item["role"] == "music_analysis"
+            ),
+            "affective_source_count": sum(
+                1 for item in rebuild if item["role"] == "affective_memory"
+            ),
             "rejected_source_count": len(rejected),
             "rejected": rejected,
             "source_inventory": inventory,
