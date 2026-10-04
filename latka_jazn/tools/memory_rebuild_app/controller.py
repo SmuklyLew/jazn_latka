@@ -6,12 +6,9 @@ import json
 import os
 import re
 
-from latka_jazn.tools.memory_restore import (
-    MemoryRestoreOrchestrator,
-    MemoryRestorePlan,
-    MemoryRestoreSettings,
-    confirmation_token,
-)
+from latka_jazn.tools.memory_restore import MemoryRestoreSettings, confirmation_token
+
+from .canonical_rebuild import CanonicalMemoryRebuildPipeline, canonical_database_path
 
 from .baseline_registry import baseline_from_path, refresh_baseline
 from .models import BaselineSpec, RebuildProject, SourceSpec, utc_iso
@@ -186,6 +183,18 @@ class MemoryRebuildAppController:
         if self.project.mode == "developer" and target_inside_repo:
             errors.append("developer_target_inside_repository")
 
+        disk_preflight: dict[str, Any] = {
+            "ok": False,
+            "status": "not_checked",
+        }
+        canonical_database = ""
+        if target and rebuild_sources and not missing:
+            pipeline = self._canonical_pipeline()
+            canonical_database = str(canonical_database_path(target))
+            disk_preflight = pipeline.disk_preflight()
+            if not disk_preflight.get("ok"):
+                errors.append("insufficient_disk_space")
+
         return {
             "ok": not errors,
             "errors": errors,
@@ -200,16 +209,18 @@ class MemoryRebuildAppController:
             "target_root": self.project.target_root,
             "target_exists": target_exists,
             "target_inside_repository": target_inside_repo,
+            "canonical_database": canonical_database,
+            "disk_preflight": disk_preflight,
+            "pipeline_owner": "UnifiedMemoryDatabase",
             "automatic_experience_approval": False,
             "automatic_l2": False,
             "automatic_l3": False,
         }
 
-    def _orchestrator(self) -> MemoryRestoreOrchestrator:
-        return MemoryRestoreOrchestrator(
-            self.settings(),
+    def _canonical_pipeline(self) -> CanonicalMemoryRebuildPipeline:
+        return CanonicalMemoryRebuildPipeline(
+            self.project,
             tool_root=self.tool_root,
-            callback=self.callback,
         )
 
     def _rebuild_paths(self) -> list[Path]:
@@ -221,14 +232,19 @@ class MemoryRebuildAppController:
             raise MemoryRebuildAppError(
                 "Preflight projektu jest zablokowany: " + ", ".join(preflight["errors"])
             )
-        plan = self._orchestrator().plan(self._rebuild_paths())
+        plan = self._canonical_pipeline().plan()
+        if not plan.get("ok"):
+            raise MemoryRebuildAppError(
+                "Kanoniczny plan unified jest zablokowany: "
+                + ", ".join(str(item) for item in plan.get("errors") or [])
+            )
         payload = {
-            "schema_version": "jazn_memory_rebuild_app_plan/v1",
+            "schema_version": "jazn_memory_rebuild_app_plan/v2",
             "generated_at_utc": utc_iso(),
             "project_id": self.project.project_id,
             "project_revision": self.project.revision,
             "preflight": preflight,
-            "engine_plan": plan.to_dict(),
+            "engine_plan": plan,
             "catalog_only_sources": [
                 item.to_dict() for item in self.project.enabled_sources(pipeline="catalog_only")
             ],
@@ -245,7 +261,12 @@ class MemoryRebuildAppController:
         self.save()
         return payload
 
-    def run(self, *, confirmation: str, prepared_plan: MemoryRestorePlan | None = None) -> dict[str, Any]:
+    def run(
+        self,
+        *,
+        confirmation: str,
+        prepared_plan: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         expected = confirmation_token(self.settings())
         if confirmation != expected:
             raise MemoryRebuildAppError(f"Nieprawidłowy token potwierdzenia. Oczekiwano: {expected}")
@@ -254,19 +275,14 @@ class MemoryRebuildAppController:
             raise MemoryRebuildAppError(
                 "Preflight projektu jest zablokowany: " + ", ".join(preflight["errors"])
             )
-        orchestrator = self._orchestrator()
-        if prepared_plan is None:
-            prepared_plan = orchestrator.plan(self._rebuild_paths())
-        result = orchestrator.run(
-            self._rebuild_paths(),
-            confirmation=confirmation,
-            prepared_plan=prepared_plan,
-        )
+        plan = prepared_plan or self.project.last_plan or self.plan()
+        result = self._canonical_pipeline().run(prepared_plan=plan)
         payload = {
-            "schema_version": "jazn_memory_rebuild_app_run/v1",
+            "schema_version": "jazn_memory_rebuild_app_run/v2",
             "generated_at_utc": utc_iso(),
             "project_id": self.project.project_id,
             "project_revision": self.project.revision,
+            "pipeline_owner": "UnifiedMemoryDatabase",
             "engine_result": result,
             "automatic_experience_approval": False,
             "automatic_l2": False,
