@@ -15,6 +15,7 @@ from latka_jazn.tools.memory_rebuild_app.canonical_rebuild import (
 )
 from latka_jazn.tools.memory_rebuild_app import controller as controller_module
 from latka_jazn.tools.memory_rebuild_app import final_export as final_export_module
+from latka_jazn.tools.memory_rebuild_app import test_profiles as test_profiles_module
 from latka_jazn.tools.memory_rebuild_app.controller import MemoryRebuildAppController
 from latka_jazn.tools.memory_rebuild_app.models import RebuildProject, SourceSpec
 from latka_jazn.tools.memory_rebuild_app.project_store import ProjectStore
@@ -454,3 +455,55 @@ def test_system_mode_preflight_rejects_active_runtime(
     assert report["ok"] is False
     assert "system_runtime_must_be_stopped" in report["errors"]
     assert report["runtime_target_preflight"]["ok"] is False
+
+
+
+def test_test04_acceptance_binding_rejects_report_from_different_candidate(
+    tmp_path: Path,
+) -> None:
+    report_path = tmp_path / "acceptance.json"
+    final = {
+        "structural_integrity": "passed",
+        "source_completeness": "passed",
+        "same_target_idempotence": "passed",
+        "fresh_rebuild_reproducibility": "passed",
+        "test03_reconciliation": "passed",
+        "recall": "passed",
+        "multi_turn_review": "passed",
+        "html_import_dry_run": "not_applicable",
+        "restart_continuity": "not_run",
+    }
+    payload = {
+        "schema_version": "jazn_memory_rebuild_acceptance/v3.1",
+        "final": final,
+        "binding": {
+            "database_semantic_fingerprint": "candidate-fingerprint",
+            "source_union_sha256": "source-union",
+            "restore_run_id": "restore-run",
+            "protocol_run_id": "protocol-run",
+        },
+    }
+    report_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    accepted = test_profiles_module._load_acceptance_report(
+        report_path,
+        expected_database_fingerprint="candidate-fingerprint",
+        expected_source_union_sha256="source-union",
+        expected_restore_run_id="restore-run",
+        expected_protocol_run_id="protocol-run",
+    )
+    assert accepted["ok"] is True
+    assert accepted["binding_ok"] is True
+
+    payload["binding"]["source_union_sha256"] = "different-union"
+    report_path.write_text(json.dumps(payload), encoding="utf-8")
+    rejected = test_profiles_module._load_acceptance_report(
+        report_path,
+        expected_database_fingerprint="candidate-fingerprint",
+        expected_source_union_sha256="source-union",
+        expected_restore_run_id="restore-run",
+        expected_protocol_run_id="protocol-run",
+    )
+    assert rejected["ok"] is False
+    assert rejected["binding_ok"] is False
+    assert rejected["binding_checks"]["source_union_sha256"]["passed"] is False
