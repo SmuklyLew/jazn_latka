@@ -12,6 +12,7 @@ from .read_only_validation import (
     validate_existing_database,
 )
 from .unified_memory import CANONICAL_DATABASE_NAME
+from .test_spec import get_test_spec
 from .unified_schema import quote
 
 PROFILE_NAMES = ("test01", "test02", "test03", "test04", "final")
@@ -184,6 +185,7 @@ def run_test_profile(
     selected = profile.strip().lower()
     if selected not in PROFILE_NAMES:
         raise ValueError(f"Nieznany profil {profile!r}. Dozwolone: {', '.join(PROFILE_NAMES)}")
+    spec = get_test_spec(selected)
     path = Path(database).expanduser().resolve()
     before = path.stat().st_mtime_ns if path.is_file() else None
     validation = validate_existing_database(path, full=full_validation, include_fts=True)
@@ -257,6 +259,9 @@ def run_test_profile(
     return {
         "ok": not blocking_failures,
         "profile": selected,
+        "owner_layer": spec.owner_layer,
+        "required_predecessors": list(spec.required_predecessors),
+        "gate_kind": spec.gate_kind,
         "database": str(path),
         "canonical_database_name": CANONICAL_DATABASE_NAME,
         "validation": validation,
