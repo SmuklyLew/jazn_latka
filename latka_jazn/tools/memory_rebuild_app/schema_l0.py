@@ -105,9 +105,21 @@ CREATE TABLE IF NOT EXISTS memory_l0_affect_claims(
 CREATE INDEX IF NOT EXISTS idx_memory_l0_affect_claim_label
   ON memory_l0_affect_claims(normalized_label,source_field,claim_kind);
 CREATE VIEW IF NOT EXISTS memory_l0_affect_claims_current AS
-  SELECT c.*, r.source_kind, r.record_kind, r.title, r.content, r.event_time_start, r.role
+  SELECT
+    c.*,
+    r.source_kind,
+    r.record_kind,
+    r.title,
+    r.content,
+    r.event_time_start,
+    r.role,
+    r.provenance_json,
+    s.source_name,
+    s.source_sha256,
+    s.adapter_id
   FROM memory_l0_affect_claims AS c
   JOIN memory_l0_records AS r ON r.record_id=c.record_id
+  JOIN memory_l0_sources AS s ON s.source_id=c.source_id
   WHERE r.is_current_revision=1;
 CREATE TABLE IF NOT EXISTS memory_l0_embeddings(
   record_id TEXT NOT NULL,
