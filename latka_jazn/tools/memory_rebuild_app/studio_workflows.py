@@ -699,7 +699,8 @@ class StudioWorkflows:
                 rows = con.execute(
                     "SELECT claim_id,label,normalized_label,source_field,"
                     "claim_kind,subject,boundary,source_kind,record_kind,"
-                    "title,content,event_time_start,role "
+                    "title,content,event_time_start,role,provenance_json,"
+                    "source_name,source_sha256,adapter_id "
                     "FROM memory_l0_affect_claims_current "
                     f"{where} "
                     "ORDER BY COALESCE(event_time_start,'') DESC,"
