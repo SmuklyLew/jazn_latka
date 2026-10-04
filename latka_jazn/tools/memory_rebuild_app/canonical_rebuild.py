@@ -29,7 +29,8 @@ from latka_jazn.version import PACKAGE_VERSION_FULL
 from .application import resolve_base_commit
 from .models import RebuildProject
 from .protocol_engine import ProtocolEngine
-from .test_profiles import baseline_record_reconciliation
+from .recall import run_fts5_recall_benchmark
+from .test_profiles import baseline_record_reconciliation, semantic_database_fingerprint
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
 
@@ -236,16 +237,22 @@ class CanonicalMemoryRebuildPipeline:
 
         benchmark_raw = str(self.project.settings.get("test04_benchmark") or "").strip()
         benchmark = Path(benchmark_raw).expanduser().resolve() if benchmark_raw else None
+        benchmark_sha256: str | None = None
         if benchmark is None:
             errors.append("test04_benchmark_missing")
         elif not benchmark.is_file():
             errors.append("test04_benchmark_missing")
+        else:
+            benchmark_sha256 = sha256_file(benchmark)
 
         system_acceptance = bool(self.project.settings.get("system_acceptance", False))
         restart_raw = str(self.project.settings.get("restart_continuity_report") or "").strip()
         restart_report = Path(restart_raw).expanduser().resolve() if restart_raw else None
+        restart_report_sha256: str | None = None
         if system_acceptance and (restart_report is None or not restart_report.is_file()):
             errors.append("restart_continuity_report_missing")
+        elif restart_report is not None and restart_report.is_file():
+            restart_report_sha256 = sha256_file(restart_report)
 
         protocol_base_commit: str | None = None
         try:
@@ -254,12 +261,32 @@ class CanonicalMemoryRebuildPipeline:
             errors.append(str(exc).split(":", 1)[0])
 
         existing = self._database_paths()
+        existing_inventory = [
+            {
+                "path": str(path),
+                "size_bytes": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+            for path in existing
+        ]
         generation = "beta" if existing else "alpha"
         union_sha = self._source_union_sha256(inventory)
-        return {
+        protocol_gate = {
+            "required": True,
+            "protocol_order": ["test00", "test01", "test02", "test03", "test04", "final"],
+            "test04_benchmark": str(benchmark) if benchmark is not None else None,
+            "test04_benchmark_sha256": benchmark_sha256,
+            "system_acceptance": system_acceptance,
+            "restart_continuity_report": (
+                str(restart_report) if restart_report is not None else None
+            ),
+            "restart_continuity_report_sha256": restart_report_sha256,
+            "base_commit": protocol_base_commit,
+        }
+        payload = {
             "ok": not errors,
             "pipeline_owner": "UnifiedMemoryDatabase",
-            "pipeline_schema": "jazn_memory_rebuild_studio_pipeline/v2",
+            "pipeline_schema": "jazn_memory_rebuild_studio_pipeline/v3",
             "canonical_database": str(self.database),
             "memory_generation": generation,
             "selected_source_count": len(rebuild),
@@ -273,23 +300,47 @@ class CanonicalMemoryRebuildPipeline:
             "source_union_sha256": union_sha,
             "existing_database_count": len(existing),
             "existing_databases": [str(path) for path in existing],
+            "existing_database_inventory": existing_inventory,
             "disk_preflight": disk,
-            "protocol_gate": {
-                "required": True,
-                "protocol_order": ["test00", "test01", "test02", "test03", "test04", "final"],
-                "test04_benchmark": str(benchmark) if benchmark is not None else None,
-                "system_acceptance": system_acceptance,
-                "restart_continuity_report": (
-                    str(restart_report) if restart_report is not None else None
-                ),
-                "base_commit": protocol_base_commit,
-            },
+            "protocol_gate": protocol_gate,
             "errors": errors,
             "automatic_experience_approval": False,
             "automatic_l2": False,
             "automatic_l3": False,
             "automatic_activation": False,
         }
+        execution_contract = {
+            "package_version": PACKAGE_VERSION_FULL,
+            "canonical_database": payload["canonical_database"],
+            "memory_generation": payload["memory_generation"],
+            "source_inventory": [
+                {
+                    "path": item["path"],
+                    "role": item["role"],
+                    "pipeline": item["pipeline"],
+                    "truth_domain": item["truth_domain"],
+                    "source_family": item["source_family"],
+                    "size_bytes": item["size_bytes"],
+                    "sha256": item["sha256"],
+                    "disposition": item["disposition"],
+                    "disposition_reason": item["disposition_reason"],
+                }
+                for item in inventory
+            ],
+            "source_union_sha256": union_sha,
+            "existing_database_inventory": existing_inventory,
+            "protocol_gate": protocol_gate,
+        }
+        payload["execution_plan_sha256"] = hashlib.sha256(
+            json.dumps(
+                execution_contract,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            ).encode("utf-8")
+        ).hexdigest()
+        return payload
 
     def _write_rebuild_metadata(
         self,
@@ -362,15 +413,16 @@ class CanonicalMemoryRebuildPipeline:
         current = self.plan()
         if not current["ok"]:
             return {"ok": False, "status": "rebuild_plan_blocked", "plan": current}
-        for field in ("canonical_database", "source_union_sha256"):
-            if expected.get(field) and expected.get(field) != current.get(field):
-                return {
-                    "ok": False,
-                    "status": "prepared_plan_stale",
-                    "field": field,
-                    "expected": expected.get(field),
-                    "actual": current.get(field),
-                }
+        expected_plan_sha = str(expected.get("execution_plan_sha256") or "")
+        current_plan_sha = str(current.get("execution_plan_sha256") or "")
+        if not expected_plan_sha or expected_plan_sha != current_plan_sha:
+            return {
+                "ok": False,
+                "status": "prepared_plan_stale",
+                "field": "execution_plan_sha256",
+                "expected": expected_plan_sha or None,
+                "actual": current_plan_sha or None,
+            }
 
         run_id = _run_id()
         memory_root = self.paths.sqlite_dir.parent
@@ -561,9 +613,30 @@ class CanonicalMemoryRebuildPipeline:
             if not staged_probe.get("full_autobiographical_recall_ready"):
                 raise RuntimeError("staged_runtime_readiness_probe_failed")
 
+            # The protocol chain proves deterministic source reconstruction, but
+            # beta candidates may additionally contain migrated alpha/legacy
+            # baseline state. Run private Recall on the exact candidate that is
+            # going to be published rather than inheriting Test04 from a
+            # different protocol database.
+            candidate_recall = run_fts5_recall_benchmark(
+                stage_database,
+                benchmark,
+                output_root=baseline_root / "candidate-test04",
+                run_id="candidate-recall",
+            )
+            candidate_test04_validation = protocol_engine.validate_test04(
+                candidate_recall,
+                benchmark=benchmark,
+                system_acceptance=bool(protocol_gate.get("system_acceptance")),
+                restart_continuity_report=restart_report,
+            )
+            if not candidate_test04_validation.get("ok"):
+                raise RuntimeError("published_candidate_test04_failed")
+            candidate_semantic_fingerprint = semantic_database_fingerprint(stage_database)
+
             test04_checks = {
                 str(item.get("name")): bool(item.get("passed"))
-                for item in ((test04.get("details") or {}).get("validation") or {}).get("checks", [])
+                for item in candidate_test04_validation.get("checks", [])
                 if isinstance(item, dict)
             }
             protocol_test03_details = test03.get("details") or {}
@@ -573,10 +646,16 @@ class CanonicalMemoryRebuildPipeline:
                 else str(protocol_final_output)
             )
             compatibility_acceptance = {
-                "schema_version": "jazn_memory_rebuild_acceptance/v3.0",
+                "schema_version": "jazn_memory_rebuild_acceptance/v3.1",
                 "generated_from": "ProtocolEngine+CanonicalMemoryRebuildPipeline",
                 "run_id": run_id,
                 "protocol_run_id": protocol_engine.run_id,
+                "binding": {
+                    "database_semantic_fingerprint": candidate_semantic_fingerprint,
+                    "source_union_sha256": current["source_union_sha256"],
+                    "restore_run_id": run_id,
+                    "protocol_run_id": protocol_engine.run_id,
+                },
                 "final": {
                     "structural_integrity": "passed",
                     "source_completeness": (
@@ -593,7 +672,9 @@ class CanonicalMemoryRebuildPipeline:
                     "test03_reconciliation": (
                         "passed" if baseline_reconciliation.get("ok") else "failed"
                     ),
-                    "recall": "passed" if test04.get("ok") else "failed",
+                    "recall": (
+                        "passed" if candidate_test04_validation.get("ok") else "failed"
+                    ),
                     "multi_turn_review": (
                         "passed"
                         if test04_checks.get("referential_multi_turn_context")
@@ -616,6 +697,10 @@ class CanonicalMemoryRebuildPipeline:
                     "same_target_idempotence": idempotence_report,
                     "runtime_probe_status": staged_probe.get("status"),
                     "schema_identity": staged_probe.get("schema_identity"),
+                    "candidate_database_semantic_fingerprint": (
+                        candidate_semantic_fingerprint
+                    ),
+                    "candidate_test04_validation": candidate_test04_validation,
                 },
             }
             acceptance_path = baseline_root / "test04-acceptance.private.json"
@@ -634,6 +719,8 @@ class CanonicalMemoryRebuildPipeline:
                 baseline_root=baseline_relative,
             )
             staged.checkpoint()
+            if semantic_database_fingerprint(stage_database) != candidate_semantic_fingerprint:
+                raise RuntimeError("candidate_changed_after_test04_acceptance")
 
             self.paths.sqlite_dir.mkdir(parents=True, exist_ok=True)
             rollback_dir.mkdir(parents=True, exist_ok=True)
@@ -692,6 +779,10 @@ class CanonicalMemoryRebuildPipeline:
                 "baseline_reconciliation": baseline_reconciliation,
                 "test04_acceptance_report": str(acceptance_path),
                 "test04_baseline_root": acceptance_baseline,
+                "candidate_database_semantic_fingerprint": (
+                    candidate_semantic_fingerprint
+                ),
+                "candidate_test04_validation": candidate_test04_validation,
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
