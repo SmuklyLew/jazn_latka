@@ -750,3 +750,27 @@ def test_disk_preflight_counts_persistent_sqlite_sidecars(tmp_path: Path) -> Non
         report["existing_database_main_bytes"]
         + report["existing_persistent_sidecar_bytes"]
     )
+
+
+
+def test_prepublish_plan_gate_rejects_source_mutation_after_run_start(
+    tmp_path: Path,
+) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-prepublish.json",
+        "conv-prepublish",
+        "before",
+    )
+    project = _project(tmp_path, source, name="Prepublish source binding")
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+    prepared = pipeline.plan()
+    assert prepared["ok"], prepared
+    assert prepared["execution_plan_sha256"]
+
+    _write_conversations(source, "conv-prepublish", "after")
+
+    gate = pipeline.prepublish_plan_gate(prepared)
+    assert gate["ok"] is False
+    assert gate["expected_execution_plan_sha256"] == prepared["execution_plan_sha256"]
+    assert gate["observed_execution_plan_sha256"] != prepared["execution_plan_sha256"]
+    assert "source_sha256_changed" in gate["observed_plan_errors"]
