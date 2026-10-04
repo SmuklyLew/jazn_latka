@@ -59,6 +59,12 @@ ERROR_LABELS = {
     "no_memory_rebuild_sources": "Nie ma żadnego źródła przeznaczonego do odbudowy pamięci.",
     "developer_target_inside_repository": "W trybie developer katalog docelowy musi być poza repozytorium.",
     "insufficient_disk_space": "Za mało wolnego miejsca na bezpieczny staging, baseline i atomową publikację.",
+    "test04_benchmark_missing": "Pełna odbudowa wymaga prywatnego pliku test04_benchmark.",
+    "restart_continuity_report_missing": "System acceptance wymaga raportu ciągłości po restarcie.",
+    "protocol_base_commit_unavailable": "Nie można ustalić commit-u źródłowego dla manifestu protokołu.",
+    "protocol_source_provenance_invalid": "SOURCE_PROVENANCE.json jest niepoprawny.",
+    "protocol_source_provenance_has_no_valid_source_commit": "SOURCE_PROVENANCE.json nie zawiera poprawnego source_commit.",
+    "protocol_base_commit_invalid": "Rozpoznany commit protokołu ma niepoprawny format.",
 }
 
 
@@ -235,6 +241,8 @@ def format_plan(payload: dict[str, Any]) -> str:
         f"Kanoniczna baza: {plan.get('canonical_database', '—')}",
         f"Generacja wyniku: {plan.get('memory_generation', '—')}",
         f"Source union SHA-256: {plan.get('source_union_sha256', '—')}",
+        f"Pełny protokół Test00→Final: {_yes(bool((plan.get('protocol_gate') or {}).get('required')))}",
+        f"Benchmark Test04: {(plan.get('protocol_gate') or {}).get('test04_benchmark') or '—'}",
         f"Wybrane źródła: {plan.get('selected_source_count', 0)}",
         f"Źródła rozmów: {plan.get('chat_source_count', 0)}",
         f"Źródła dziennika: {plan.get('journal_source_count', 0)}",
