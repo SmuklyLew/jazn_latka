@@ -620,6 +620,9 @@ class CanonicalMemoryRebuildPipeline:
             }
             acceptance_path = baseline_root / "test04-acceptance.private.json"
             _atomic_json(acceptance_path, compatibility_acceptance)
+            acceptance_relative = acceptance_path.relative_to(memory_root).as_posix()
+            acceptance_baseline_path = Path(acceptance_baseline).expanduser().resolve()
+            baseline_relative = acceptance_baseline_path.relative_to(memory_root).as_posix()
             self._write_rebuild_metadata(
                 staged,
                 plan=current,
@@ -627,8 +630,8 @@ class CanonicalMemoryRebuildPipeline:
                 parent_database_sha256=parent_database_sha256,
                 readiness_class="native_unified",
                 protocol_run_id=protocol_engine.run_id,
-                acceptance_report=str(acceptance_path),
-                baseline_root=acceptance_baseline,
+                acceptance_report=acceptance_relative,
+                baseline_root=baseline_relative,
             )
             staged.checkpoint()
 
