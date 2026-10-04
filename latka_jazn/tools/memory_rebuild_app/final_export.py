@@ -54,9 +54,30 @@ def export_final_memory(
     system_acceptance: bool = False,
 ) -> dict[str, Any]:
     store = UnifiedMemoryDatabase(database)
+    with store.connect(read_only=True) as con:
+        source_meta = {
+            str(row[0]): str(row[1])
+            for row in con.execute("SELECT key,value FROM unified_memory_meta")
+        }
+    effective_baselines = list(baselines)
+    if not effective_baselines:
+        metadata_baseline = str(source_meta.get("test04_baseline_root") or "").strip()
+        if metadata_baseline:
+            effective_baselines.append(metadata_baseline)
+    effective_acceptance_report = acceptance_report
+    if effective_acceptance_report is None:
+        metadata_acceptance = str(
+            source_meta.get("test04_acceptance_report") or ""
+        ).strip()
+        if metadata_acceptance:
+            effective_acceptance_report = metadata_acceptance
     test_report = run_test_profile(
-        store.path, "final", baselines=baselines, full_validation=True,
-        acceptance_report=acceptance_report, system_acceptance=system_acceptance,
+        store.path,
+        "final",
+        baselines=effective_baselines,
+        full_validation=True,
+        acceptance_report=effective_acceptance_report,
+        system_acceptance=system_acceptance,
     )
     if not test_report["ok"]:
         return {"ok": False, "status": "blocked_by_final_profile", "test_report": test_report}
@@ -136,7 +157,10 @@ def export_final_memory(
                 runtime_probe.get("full_autobiographical_recall_ready")
             ),
             "restore_run_id": unified_meta.get("restore_run_id") or None,
+            "protocol_run_id": unified_meta.get("protocol_run_id") or None,
             "parent_database_sha256": unified_meta.get("parent_database_sha256") or None,
+            "test04_acceptance_report": unified_meta.get("test04_acceptance_report") or None,
+            "test04_baseline_root": unified_meta.get("test04_baseline_root") or None,
             "source_union_sha256": unified_meta.get("source_union_sha256") or source_manifest_sha,
             "studio_release": PACKAGE_VERSION_FULL,
             "validation": staged_validation,
