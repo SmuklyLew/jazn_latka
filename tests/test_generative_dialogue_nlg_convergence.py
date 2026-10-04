@@ -41,7 +41,8 @@ def test_memory_recall_handler_exposes_evidence_for_language_realization() -> No
     assert result.data["memory_evidence_role"] == "generation_context_not_visible_answer"
     assert result.memory_sources[0]["item_id"] == "memory-1"
     assert "Źródło:" not in result.body
-    assert "surowych rekordów" in result.body
+    assert "journal.sqlite3" not in result.body
+    assert "Rozmawialiśmy o muzyce i ciszy." in result.body
 
 
 def test_chatgpt_host_bridge_cannot_pass_memory_evidence_body_directly() -> None:
