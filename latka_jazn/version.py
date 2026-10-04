@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.103 converges grounded memory recall on the existing model-guided
-# language channel, enforces semantic component coverage and routes explicit
-# NLP/NLG capability questions away from ordinary-conversation fallbacks.
+# v16.3.25.5.104 converges Memory Rebuild Studio on one canonical unified
+# reconstruction pipeline, preserves immutable pre-rebuild baselines, and
+# gates publication/export on runtime-native autobiographical readiness.
 DISTRIBUTION_VERSION = "16.3.25.5.104"
 PACKAGE_VERSION = "16.3.25.5.104"
 PACKAGE_RELEASE_NAME = "memory-rebuild-studio-reconstruction-convergence"
