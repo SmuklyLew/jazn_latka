@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Iterator
-import json
 
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
