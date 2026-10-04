@@ -130,7 +130,6 @@ class CanonicalMemoryRebuildPipeline:
     def _source_union_sha256(items: list[dict[str, Any]]) -> str:
         canonical = [
             {
-                "source_id": item["source_id"],
                 "role": item["role"],
                 "pipeline": item["pipeline"],
                 "truth_domain": item["truth_domain"],
@@ -142,6 +141,15 @@ class CanonicalMemoryRebuildPipeline:
             }
             for item in items
         ]
+        canonical.sort(
+            key=lambda item: json.dumps(
+                item,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+        )
         payload = json.dumps(
             canonical,
             ensure_ascii=False,
