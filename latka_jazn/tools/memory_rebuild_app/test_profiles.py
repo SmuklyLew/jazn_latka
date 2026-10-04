@@ -48,6 +48,7 @@ _SEMANTIC_FINGERPRINT_TABLES = tuple(dict.fromkeys((
     "memory_l0_occurrences",
     "memory_l0_assets",
     "memory_l0_record_assets",
+    "memory_l0_affect_claims",
     "memory_l0_conversations",
     "memory_rebuild_projections",
     "candidate_revisions",
