@@ -12641,10 +12641,10 @@
       "description_source": "source_identity",
       "line": 246
     },
-    "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_identity_tracks_current_distribution",
+      "purpose": "Release identity tracks current distribution",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -13281,13 +13281,13 @@
       "path": "tests/test_generative_dialogue_nlg_convergence.py",
       "name": "test_memory_recall_handler_exposes_evidence_for_language_realization",
       "purpose": "Memory recall handler exposes evidence for language realization",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.engine",
@@ -13320,7 +13320,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 48
     },
     "tests/test_generative_dialogue_nlg_convergence.py::test_semantically_compound_turn_requires_every_component": {
       "path": "tests/test_generative_dialogue_nlg_convergence.py",
@@ -13340,7 +13340,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 67
     },
     "tests/test_generative_dialogue_nlg_convergence.py::test_nlp_nlg_capability_question_routes_to_system_diagnostic": {
       "path": "tests/test_generative_dialogue_nlg_convergence.py",
@@ -13360,7 +13360,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 86
     },
     "tests/test_github_actions_node24_convergence.py::test_all_active_github_actions_pass_fail_closed_node24_audit": {
       "path": "tests/test_github_actions_node24_convergence.py",
