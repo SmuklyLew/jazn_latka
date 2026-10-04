@@ -6,9 +6,9 @@ from typing import Any
 # v16.3.25.5.103 converges grounded memory recall on the existing model-guided
 # language channel, enforces semantic component coverage and routes explicit
 # NLP/NLG capability questions away from ordinary-conversation fallbacks.
-DISTRIBUTION_VERSION = "16.3.25.5.103"
-PACKAGE_VERSION = "16.3.25.5.103"
-PACKAGE_RELEASE_NAME = "generative-dialogue-nlg-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.104"
+PACKAGE_VERSION = "16.3.25.5.104"
+PACKAGE_RELEASE_NAME = "memory-rebuild-studio-reconstruction-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
