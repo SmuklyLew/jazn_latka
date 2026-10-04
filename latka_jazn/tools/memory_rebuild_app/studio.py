@@ -53,7 +53,11 @@ class PageItem:
 DESIGN_ITEMS: tuple[PageItem, ...] = (
     PageItem("project", "Projekt i źródła", "Projekt, źródła, baseline’y, role i pipeline’y."),
     PageItem("database", "Baza docelowa", "Jedna kanoniczna memory_jazn.sqlite3 i jej walidacja."),
-    PageItem("import", "Import źródeł", "Rozmowy, HTML, dzienniki, nowe wątki i migracja starych baz."),
+    PageItem(
+        "import",
+        "Import źródeł",
+        "Rozmowy, HTML, dzienniki, analizy utworów, źródła afektywne i migracja starych baz.",
+    ),
     PageItem("candidates", "Kandydaci pamięci", "Ręczny review L1 bez automatycznego L2/L3."),
     PageItem("plan", "Plan bez zapisu", "Preflight i dokładny plan bez uruchamiania odbudowy."),
     PageItem("rebuild", "Wykonaj odbudowę", "Jawnie potwierdzony zapis zgodnie z aktualnym planem."),
