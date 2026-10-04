@@ -18,6 +18,7 @@ import shutil
 import sqlite3
 import uuid
 
+from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 from latka_jazn.tools.chat_export_reader import sha256_file
 
 from .config import TOOL_VERSION
@@ -1166,17 +1167,42 @@ class ProtocolEngine:
         database = root / CANONICAL_DATABASE_NAME
         validation = validate_existing_database(database, full=True, include_fts=True)
         ledger = promotion_ledger_validation(database) if database.is_file() else {"ok": False}
+        runtime_probe = (
+            probe_unified_memory_database(database, full_integrity=True)
+            if database.is_file()
+            else {"status": "missing", "full_autobiographical_recall_ready": False}
+        )
         test04 = _json_read(test04_result)
         checks = [
             {"name": "test04_passed", "passed": bool(test04.get("ok"))},
             {"name": "sqlite_backup_snapshot_exists", "passed": database.is_file()},
             {"name": "integrity_foreign_keys_fts", "passed": bool(validation.get("ok"))},
             {"name": "promotion_ledger_fail_closed", "passed": bool(ledger.get("ok"))},
+            {
+                "name": "native_unified_runtime_readiness",
+                "passed": bool(runtime_probe.get("full_autobiographical_recall_ready")),
+                "actual": {
+                    "status": runtime_probe.get("status"),
+                    "schema_identity": runtime_probe.get("schema_identity"),
+                    "memory_search_ready": runtime_probe.get("memory_search_ready"),
+                    "full_autobiographical_recall_ready": runtime_probe.get(
+                        "full_autobiographical_recall_ready"
+                    ),
+                },
+            },
             {"name": "private_manifest", "passed": (root / "final.private.json").is_file()},
             {"name": "sanitized_manifest", "passed": (root / "final.sanitized.json").is_file()},
             {"name": "runtime_not_activated", "passed": True},
         ]
-        return {"ok": all(item["passed"] for item in checks), "checks": checks, "blockers": [item["name"] for item in checks if not item["passed"]], "database_sha256": sha256_file(database) if database.is_file() else None, "validation": validation, "promotion_ledger_validation": ledger}
+        return {
+            "ok": all(item["passed"] for item in checks),
+            "checks": checks,
+            "blockers": [item["name"] for item in checks if not item["passed"]],
+            "database_sha256": sha256_file(database) if database.is_file() else None,
+            "validation": validation,
+            "promotion_ledger_validation": ledger,
+            "runtime_readiness_probe": runtime_probe,
+        }
 
     def validate(self, profile: str, artifact: str | Path | Mapping[str, Any], **kwargs: Any) -> dict[str, Any]:
         selected = profile.strip().lower()
