@@ -1274,3 +1274,43 @@ def test_music_analysis_duplicate_json_key_is_fail_closed(tmp_path: Path) -> Non
     probe = probe_source(source)
     assert probe.kind == "reference"
     assert any("DuplicateJsonKeyError" in reason for reason in probe.reasons)
+
+
+def test_affect_projection_integrity_detects_missing_derived_claim(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "affect-integrity.json"
+    source.write_text(
+        json.dumps(
+            {
+                "analizy": [
+                    {
+                        "tytul": "Projection integrity",
+                        "emocje": "spokój, nadzieja",
+                        "refleksja_latki": "Jawny zapis źródłowy.",
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    database = tmp_path / "affect-integrity.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    assert memory.import_source(source).to_dict()["report"]["ok"] is True
+
+    before = test_profiles_module._affect_evidence_integrity(database)
+    assert before["ok"] is True
+    assert before["expected_claim_count"] == 2
+
+    with sqlite3.connect(database) as con:
+        con.execute(
+            "DELETE FROM memory_l0_affect_claims "
+            "WHERE normalized_label='nadzieja'"
+        )
+        con.commit()
+
+    after = test_profiles_module._affect_evidence_integrity(database)
+    assert after["ok"] is False
+    assert after["missing_claim_count"] == 1
