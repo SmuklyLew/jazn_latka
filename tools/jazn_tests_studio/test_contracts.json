@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.104",
-  "active_definition_count": 1889,
+  "active_definition_count": 1890,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23263,6 +23263,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23276,7 +23277,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 178
+      "line": 179
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_existing_alpha_layout_is_snapshotted_then_converged_to_beta": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23293,6 +23294,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23306,7 +23308,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 239
+      "line": 240
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_source_union_fingerprint_is_independent_of_project_order_and_source_ids": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23323,6 +23325,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23336,7 +23339,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 297
+      "line": 298
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23353,6 +23356,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23366,7 +23370,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 318
+      "line": 319
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_test04_benchmark_changes": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23383,6 +23387,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23396,7 +23401,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 339
+      "line": 340
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_baseline_reconciliation_detects_same_key_content_change": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23413,6 +23418,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23426,7 +23432,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 361
+      "line": 362
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_memory_evidence_resolver_rejects_paths_outside_memory_root": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23445,6 +23451,7 @@
       ],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23458,7 +23465,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 384
+      "line": 385
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_final_publish_restores_old_target_when_second_replace_fails": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23477,6 +23484,7 @@
       ],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23490,7 +23498,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 405
+      "line": 406
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_system_mode_preflight_rejects_active_runtime": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23508,6 +23516,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23521,7 +23530,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 440
+      "line": 441
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_test04_acceptance_binding_rejects_report_from_different_candidate": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23538,6 +23547,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23551,7 +23561,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 473
+      "line": 474
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_runtime_probe_import_does_not_cycle_through_memory_rebuild_package": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23570,6 +23580,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23583,7 +23594,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 525
+      "line": 526
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_baseline_reconciliation_ignores_target_only_schema_columns": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23600,6 +23611,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
         "latka_jazn.tools.chat_export_reader",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
@@ -23613,7 +23625,39 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 550
+      "line": 551
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepublish_system_gate_rechecks_runtime_after_long_rebuild": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_prepublish_system_gate_rechecks_runtime_after_long_rebuild",
+      "purpose": "Prepublish system gate rechecks runtime after long rebuild",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 591
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
