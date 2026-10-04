@@ -359,6 +359,25 @@ class CanonicalMemoryRebuildPipeline:
         ).hexdigest()
         return payload
 
+    def prepublish_plan_gate(self, expected_plan: dict[str, Any]) -> dict[str, Any]:
+        """Re-bind mutable execution inputs immediately before live publication.
+
+        The second plan intentionally compares only the canonical execution
+        fingerprint. Disk free space is not a stable execution input here:
+        staging/baseline artifacts created by this same run legitimately consume
+        the reserve that was required by the initial preflight.
+        """
+
+        observed = self.plan()
+        expected_sha = str(expected_plan.get("execution_plan_sha256") or "")
+        observed_sha = str(observed.get("execution_plan_sha256") or "")
+        return {
+            "ok": bool(expected_sha) and expected_sha == observed_sha,
+            "expected_execution_plan_sha256": expected_sha or None,
+            "observed_execution_plan_sha256": observed_sha or None,
+            "observed_plan_errors": list(observed.get("errors") or []),
+        }
+
     def prepublish_runtime_gate(self) -> dict[str, Any]:
         """Re-check system runtime state immediately before replacing live DBs."""
 
@@ -792,6 +811,10 @@ class CanonicalMemoryRebuildPipeline:
             if semantic_database_fingerprint(stage_database) != candidate_semantic_fingerprint:
                 raise RuntimeError("candidate_changed_after_test04_acceptance")
 
+            publish_plan_gate = self.prepublish_plan_gate(current)
+            if not publish_plan_gate.get("ok"):
+                raise RuntimeError("execution_plan_changed_before_publish")
+
             publish_runtime_gate = self.prepublish_runtime_gate()
             if not publish_runtime_gate.get("ok") or publish_runtime_gate.get(
                 "blocking_errors"
@@ -867,6 +890,7 @@ class CanonicalMemoryRebuildPipeline:
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
+                "publish_plan_gate": publish_plan_gate,
                 "publish_runtime_gate": publish_runtime_gate,
                 "automatic_experience_approval": False,
                 "automatic_l2": False,
