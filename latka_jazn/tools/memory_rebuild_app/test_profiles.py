@@ -6,8 +6,6 @@ import hashlib
 import json
 import sqlite3
 
-from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
-
 from .read_only_validation import (
     open_read_only,
     promotion_ledger_validation,
@@ -399,6 +397,8 @@ def run_test_profile(
     ledger = {"ok": True, "status": "not_required"}
     runtime_probe: dict[str, Any] = {"status": "not_required"}
     if selected == "final" and path.is_file():
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
         runtime_probe = probe_unified_memory_database(path, full_integrity=full_validation)
         checks.append(_check(
             "native_unified_runtime_readiness",
