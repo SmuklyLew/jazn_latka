@@ -259,6 +259,6 @@ jeszcze jeden krok.
     assert report.creative_material_present is True
 
 
-def test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.102"
-    assert PACKAGE_RELEASE_NAME == "fast-bootstrap-persistent-runtime-convergence"
+def test_release_identity_tracks_current_distribution() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.103"
+    assert PACKAGE_RELEASE_NAME == "generative-dialogue-nlg-convergence"
