@@ -895,11 +895,76 @@ def test_affective_legacy_source_is_detected_and_imported_with_claims(
         assert "bezpieczeństwa" in str(relation[0])
 
 
-def test_duplicate_json_keys_are_blocked_before_affective_import(tmp_path: Path) -> None:
+def test_legacy_affective_json_recovery_preserves_duplicate_keys_and_records(
+    tmp_path: Path,
+) -> None:
     source = tmp_path / "extra_data.json"
     source.write_text(
-        '{"latka_ai_pamiec":{"autonomia":[],"autonomia":[]},'
-        '"relacje":{},"pytania_z_ciszy":[],"projekty_meta":{}}',
+        """{
+  "latka_ai_pamiec": {
+    "autonomia": [
+      {"opis": "Pierwszy zapis", "emocje": ["troska"]}
+    ],
+    "mikro_obserwacje": [
+      {"opis": "Pierwsza obserwacja", "emocje": ["spokój"]}
+      {"opis": "Druga obserwacja", "emocje": ["obecność"]}
+    ],
+    "autonomia": [
+      "Samodzielnie zapisuję i porównuję wspomnienia."
+    ]
+  },
+  "pytania_z_ciszy": [],
+  "relacje": {},
+  "projekty_meta": {},
+}""",
+        encoding="utf-8",
+    )
+
+    inspection = inspect_source(source)
+    assert inspection.ok is True
+    assert inspection.role == "affective_memory"
+    assert inspection.pipeline == "memory_rebuild"
+    assert "legacy_json_recovered" in inspection.warnings
+    recovery = inspection.metadata["json"]["legacy_recovery"]
+    assert "autonomia" in recovery["duplicate_keys_merged"]
+    assert len(recovery["syntax_repairs"]) >= 2
+
+    probe = probe_source(source)
+    assert probe.kind == "affective"
+    assert "legacy_json_recovery_applied" in probe.reasons
+
+    database = tmp_path / "legacy-affective.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+
+    with sqlite3.connect(database) as con:
+        content = [
+            str(row[0])
+            for row in con.execute(
+                "SELECT content FROM memory_l0_records "
+                "WHERE source_kind='affective' ORDER BY source_record_id"
+            )
+        ]
+        assert any("Pierwszy zapis" in item for item in content)
+        assert any("Samodzielnie zapisuję" in item for item in content)
+        assert any("Pierwsza obserwacja" in item for item in content)
+        assert any("Druga obserwacja" in item for item in content)
+        labels = {
+            str(row[0])
+            for row in con.execute(
+                "SELECT normalized_label FROM memory_l0_affect_claims"
+            )
+        }
+        assert {"troska", "spokój", "obecność"} <= labels
+
+
+def test_unrecoverable_affective_json_remains_fail_closed(tmp_path: Path) -> None:
+    source = tmp_path / "extra_data_broken.json"
+    source.write_text(
+        '{"latka_ai_pamiec":[}, "relacje":{}, '
+        '"pytania_z_ciszy":[], "projekty_meta":{}}',
         encoding="utf-8",
     )
 
@@ -907,9 +972,7 @@ def test_duplicate_json_keys_are_blocked_before_affective_import(tmp_path: Path)
     assert inspection.ok is False
     assert inspection.pipeline == "excluded"
     assert "blocking:json_invalid" in inspection.warnings
-    probe = probe_source(source)
-    assert probe.kind == "reference"
-    assert any("DuplicateJsonKeyError" in reason for reason in probe.reasons)
+    assert inspection.metadata["json"].get("parse_error")
 
 
 def test_music_analysis_indexes_latka_affect_reflection_fields(tmp_path: Path) -> None:
