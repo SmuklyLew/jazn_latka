@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "b781dd1e294bcde2522c4134e6ffcfc1e7816c89",
+  "base_merge_commit": "4e2a597dd81e5d1024bfe0f5ef4a9eea60bf1f20",
   "base_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-  "commit_date": "2026-10-04T12:01:14Z",
+  "commit_date": "2026-10-04T12:05:28Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-04T12:01:14+00:00",
+  "generated_at_utc": "2026-10-04T12:05:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8aee813f96b3457be77e7c1cb8415abd4a5886d8",
+  "git_tree_sha": "dcb0c36669db3dce82b52d525b2c1fe4f95bdf4a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "b781dd1e294bcde2522c4134e6ffcfc1e7816c89",
+    "source_commit": "4e2a597dd81e5d1024bfe0f5ef4a9eea60bf1f20",
     "source_version": "16.3.25.5.103-generative-dialogue-nlg-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "b781dd1e294bcde2522c4134e6ffcfc1e7816c89",
+  "source_commit": "4e2a597dd81e5d1024bfe0f5ef4a9eea60bf1f20",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
   "tag": null,
