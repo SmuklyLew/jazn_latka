@@ -268,3 +268,28 @@ afektywnego unieważnia binding Test04/Final.
 
 Automatyczna promocja pozostaje wyłączona: `automatic_l2=False`,
 `automatic_l3=False`, `automatic_activation=False`.
+
+### Studio affect evidence browser
+
+Strona PROJEKTOWANIE zawiera read-only widok **Ślady afektywne / emocje**.
+Pokazuje liczbę claimów, rozkład po źródłach, najczęstsze etykiety oraz
+konkretny rekord źródłowy. Operator może filtrować po znormalizowanej etykiecie,
+ale z tego widoku nie może promować, edytować ani tworzyć pamięci L1/L2/L3.
+
+### Native recall of L0 affective evidence
+
+`LivingMemoryGateway` rozszerza natywny lane `memory_jazn` o read-only
+wyszukiwanie bieżących rekordów L0 dla `music_analysis` i `affective`.
+Zapytanie używa `memory_l0_fts`, jeśli indeks jest dostępny, z bezpiecznym
+fallbackiem do ograniczonego skanu LIKE. Wynik zachowuje:
+
+- `source_locator=memory_l0_records:<record_id>`;
+- pełne provenance rekordu;
+- jawne `affect_claims`;
+- `affect_boundary=source_claimed_affect_not_biological_state`;
+- `automatic_memory_promotion=False`.
+
+Ten lane nie zastępuje aktywnego `memory_records` i nie promuje L0. Umożliwia
+natomiast Recall bezpośrednio z zachowanych, źródłowych analiz i refleksji, co
+zamyka lukę, w której dane były obecne w Final, ale nie musiały być osiągalne
+przez zwykły `LivingMemoryGateway`.
