@@ -44,8 +44,11 @@ kandydata, innego source union albo innego runu nie przechodzi.
 
 Fingerprint nie zależy od `unified_memory_meta`, aby nie tworzyć samoodwołania,
 ale obejmuje stabilną treść rozmów, dziennika, L0, wariantów, konfliktów,
-kandydatów i promotion ledger. Operacyjne timestampy i identyfikatory importu
-są wyłączone.
+kandydatów i promotion ledger. Obejmuje również tabele proweniencji i evidence
+wpływające na exact provenance oraz review lineage, między innymi
+`import_sources`, `journal_sources`, `memory_evidence`,
+`candidate_evidence`, `sources`, `source_occurrences`, decyzje promocji i
+konflikty migracji. Operacyjne timestampy i identyfikatory importu są wyłączone.
 
 ## P0 — runtime systemowy musi być zatrzymany
 
@@ -153,6 +156,7 @@ Historyczny raport v16.3.25.5.103 pozostaje bez zmian.
 - alpha → beta z immutable baseline;
 - Test04/Final na dokładnym publish candidate;
 - binding acceptance evidence do candidate/source/run lineage;
+- zmianę semantic fingerprint po zmianie import provenance/evidence;
 - odrzucenie raportu z innego kandydata;
 - stale prepared plan po zmianie benchmarku;
 - prepublish plan gate po zmianie źródła już w trakcie runu;
