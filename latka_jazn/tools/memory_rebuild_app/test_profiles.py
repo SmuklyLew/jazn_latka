@@ -27,6 +27,21 @@ _REQUIRED_TEST04_FIELDS = (
     "fresh_rebuild_reproducibility", "test03_reconciliation", "recall",
     "multi_turn_review",
 )
+_VOLATILE_RECONCILIATION_COLUMNS = frozenset({
+    "created_at_utc",
+    "first_imported_at_utc",
+    "last_seen_at_utc",
+    "seen_at_utc",
+    "imported_at_utc",
+    "observed_at_utc",
+    "completed_at_utc",
+    "started_at_utc",
+    "updated_at_utc",
+    "first_seen_at_utc",
+    "first_seen_import_id",
+    "last_seen_import_id",
+    "import_id",
+})
 
 
 def _check(name: str, passed: bool, *, actual: Any = None, expected: Any = None,
@@ -80,15 +95,22 @@ def _stable_record_hashes(path: Path, table: str) -> dict[str, set[str]]:
             return {}
         pk = _pk_columns(con, table)
         key_columns = pk or columns
+        content_columns = [
+            column
+            for column in columns
+            if column not in _VOLATILE_RECONCILIATION_COLUMNS
+            or column in key_columns
+        ]
         selected = ",".join(quote(item) for item in columns)
         key_indexes = [columns.index(item) for item in key_columns]
+        content_indexes = [columns.index(item) for item in content_columns]
         result: dict[str, set[str]] = {}
         for row in con.execute(f"SELECT {selected} FROM {quote(table)}"):
             values = list(row)
             key_payload = [values[index] for index in key_indexes]
             content_payload = {
                 column: values[index]
-                for index, column in enumerate(columns)
+                for column, index in zip(content_columns, content_indexes)
             }
             key_encoded = json.dumps(
                 key_payload,
@@ -334,7 +356,7 @@ def run_test_profile(
         reconciliation = baseline_record_reconciliation(path, baselines)
         checks.append(_check(
             "test03_record_level_reconciliation", bool(reconciliation.get("ok")),
-            actual=reconciliation, expected="baseline required and no missing stable record keys",
+            actual=reconciliation, expected="baseline required and no missing stable keys or content mismatches",
         ))
         unified_meta: dict[str, str] = {}
         if path.is_file():
