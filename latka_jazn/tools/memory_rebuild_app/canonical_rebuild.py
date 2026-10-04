@@ -432,13 +432,38 @@ class CanonicalMemoryRebuildPipeline:
             Path(str(path) + "-journal"),
         ]
 
-    def _restore_rollbacks(self, rollback_dir: Path, moved: list[tuple[Path, Path]]) -> None:
+    def _restore_rollbacks(
+        self,
+        rollback_dir: Path,
+        moved: list[tuple[Path, Path]],
+    ) -> dict[str, Any]:
+        errors: list[dict[str, str]] = []
+        restored: list[str] = []
         for original, backup in reversed(moved):
             if not backup.exists():
                 continue
             original.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(backup, original)
-        shutil.rmtree(rollback_dir, ignore_errors=True)
+            try:
+                os.replace(backup, original)
+                restored.append(str(original))
+            except OSError as exc:
+                errors.append(
+                    {
+                        "original": str(original),
+                        "backup": str(backup),
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    }
+                )
+        if not errors:
+            shutil.rmtree(rollback_dir, ignore_errors=True)
+        return {
+            "ok": not errors,
+            "rollback_dir": str(rollback_dir),
+            "restored": restored,
+            "errors": errors,
+            "preserved_for_manual_recovery": bool(errors),
+        }
 
     def run(self, *, prepared_plan: dict[str, Any] | None = None) -> dict[str, Any]:
         expected = prepared_plan or self.plan()
@@ -463,7 +488,7 @@ class CanonicalMemoryRebuildPipeline:
         staging_root = memory_root / ".rebuild_staging" / run_id
         staging_sqlite = staging_root / "sqlite"
         stage_database = staging_sqlite / CANONICAL_DATABASE_NAME
-        rollback_dir = staging_root / "rollback"
+        rollback_dir = memory_root / ".rebuild_rollback" / run_id
         baseline_root = memory_root / "rebuild_baselines" / run_id
         baseline_sqlite = baseline_root / "sqlite"
         staging_sqlite.mkdir(parents=True, exist_ok=False)
@@ -790,10 +815,15 @@ class CanonicalMemoryRebuildPipeline:
                     raise RuntimeError("published_unified_validation_failed")
                 if not final_probe.get("full_autobiographical_recall_ready"):
                     raise RuntimeError("published_runtime_readiness_probe_failed")
-            except BaseException:
+            except BaseException as publish_exc:
                 if published:
                     self.database.unlink(missing_ok=True)
-                self._restore_rollbacks(rollback_dir, moved)
+                rollback_report = self._restore_rollbacks(rollback_dir, moved)
+                if not rollback_report["ok"]:
+                    raise RuntimeError(
+                        "publish_failed_and_rollback_incomplete:"
+                        + str(rollback_dir)
+                    ) from publish_exc
                 raise
 
             shutil.rmtree(rollback_dir, ignore_errors=True)
@@ -846,6 +876,9 @@ class CanonicalMemoryRebuildPipeline:
                 "error_type": type(exc).__name__,
                 "error": str(exc),
                 "source_union_sha256": current.get("source_union_sha256"),
+                "preserved_rollback_dir": (
+                    str(rollback_dir) if rollback_dir.exists() else None
+                ),
                 "automatic_l2": False,
                 "automatic_l3": False,
                 "automatic_activation": False,
