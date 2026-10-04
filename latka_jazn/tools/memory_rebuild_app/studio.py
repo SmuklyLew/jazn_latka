@@ -166,7 +166,12 @@ def _project_setting_lines(project: dict[str, Any] | None) -> list[str]:
             continue
         if key == "unified_database_path":
             marker = "[READ-ONLY tutaj — zmień w „Baza docelowa”]"
-        elif key in {"test04_acceptance_report", "system_acceptance"}:
+        elif key in {
+            "test04_benchmark",
+            "test04_acceptance_report",
+            "restart_continuity_report",
+            "system_acceptance",
+        }:
             marker = "[EDYTOWALNE]"
         else:
             marker = "[READ-ONLY — rozszerzenie projektu]"
@@ -884,7 +889,9 @@ def _edit_project_settings(state: StudioState, dialogs: DialogBackend) -> None:
             ("mode", f"Tryb: {project.mode}"),
             ("target_root", f"Katalog docelowy: {project.target_root}"),
             ("source_directory", f"Główny folder źródeł: {project.source_directory or '—'}"),
+            ("test04_benchmark", f"Prywatny benchmark Test04: {project.settings.get('test04_benchmark') or '—'}"),
             ("test04_acceptance_report", f"Raport Test04: {project.settings.get('test04_acceptance_report') or '—'}"),
+            ("restart_continuity_report", f"Raport ciągłości po restarcie: {project.settings.get('restart_continuity_report') or '—'}"),
             ("system_acceptance", f"System acceptance: {_yes_no(project.settings.get('system_acceptance', False))}"),
         ]
         for key, default in DEFAULT_SETTINGS.items():
@@ -935,17 +942,36 @@ def _edit_project_settings(state: StudioState, dialogs: DialogBackend) -> None:
                 project.target_root = resolved
             else:
                 project.source_directory = resolved
-        elif action == "test04_acceptance_report":
+        elif action in {
+            "test04_benchmark",
+            "test04_acceptance_report",
+            "restart_continuity_report",
+        }:
+            labels = {
+                "test04_benchmark": (
+                    "BENCHMARK TEST04",
+                    "Ścieżka prywatnego benchmarku Recall; puste = nie ustawiono:",
+                ),
+                "test04_acceptance_report": (
+                    "RAPORT TEST04",
+                    "Ścieżka prywatnego raportu; puste = nie ustawiono:",
+                ),
+                "restart_continuity_report": (
+                    "RAPORT CIĄGŁOŚCI",
+                    "Ścieżka raportu ciągłości po restarcie; puste = nie ustawiono:",
+                ),
+            }
+            title, prompt = labels[action]
             raw = dialogs.input(
-                "RAPORT TEST04",
-                "Ścieżka prywatnego raportu; puste = nie ustawiono:",
-                str(project.settings.get("test04_acceptance_report") or ""),
+                title,
+                prompt,
+                str(project.settings.get(action) or ""),
             )
             if raw is not None:
                 if raw.strip():
-                    project.settings["test04_acceptance_report"] = str(Path(raw).expanduser().resolve())
+                    project.settings[action] = str(Path(raw).expanduser().resolve())
                 else:
-                    project.settings.pop("test04_acceptance_report", None)
+                    project.settings.pop(action, None)
         elif action == "system_acceptance":
             new_value = not bool(project.settings.get("system_acceptance", False))
             if not _confirm_risk(dialogs, "system_acceptance", new_value):
