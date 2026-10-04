@@ -99,7 +99,7 @@ patch po benchmarku względem obecnego `nlp_core`, a nie jako warunek rdzenia.
 
 ## Test regresji
 
-Nowy plik `tests/test_v163255103_generative_dialogue_nlg_convergence.py` sprawdza:
+Nowy plik `tests/test_generative_dialogue_nlg_convergence.py` sprawdza:
 
 - kontrakt evidence-only pamięci;
 - blokadę bezpośredniego pass-through przez ChatGPT host bridge;
@@ -110,5 +110,9 @@ Nowy plik `tests/test_v163255103_generative_dialogue_nlg_convergence.py` sprawdz
 
 Executor hosta był niedostępny podczas przygotowywania patcha, więc lokalne
 `pytest`, `compileall` i `pyright` nie są raportowane jako wykonane. Po zapisie
-brancha źródłem prawdy dla weryfikacji jest GitHub Actions. Ewentualne regresje
-należy naprawiać bez osłabiania testów ani truth gate.
+brancha źródłem prawdy dla weryfikacji jest GitHub Actions. W trakcie CI wykryto
+również, że transactional working-memory nie może legalnie wygenerować afirmacji
+„Pamiętam” bez `autobiographical_source_ready=true`; fixture E2E został więc
+zmieniony na naturalne, ale prawdziwe epistemicznie „Odzyskałam z aktywnej
+pamięci…”, bez osłabiania guardu. Ewentualne dalsze regresje należy naprawiać bez
+osłabiania testów ani truth gate.
