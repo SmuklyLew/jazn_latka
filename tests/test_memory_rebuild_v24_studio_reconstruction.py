@@ -10,6 +10,7 @@ import sys
 import pytest
 
 from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.tools.chat_export_reader import sha256_file
 from latka_jazn.tools.memory_rebuild_app.canonical_rebuild import (
     CanonicalMemoryRebuildPipeline,
@@ -1152,3 +1153,56 @@ def test_affect_claim_change_changes_semantic_fingerprint(tmp_path: Path) -> Non
         con.commit()
     after = semantic_database_fingerprint(database)
     assert before != after
+
+
+def test_living_memory_gateway_recalls_affective_l0_evidence(tmp_path: Path) -> None:
+    source = tmp_path / "analizy_utworow.json"
+    source.write_text(
+        json.dumps(
+            {
+                "analizy": [
+                    {
+                        "tytul": "Recall Affect",
+                        "emocje": "spokój, wdzięczność",
+                        "lustro_emocji_latki": (
+                            "Odbieram spokojną wdzięczność i ciepło tej chwili."
+                        ),
+                        "refleksja_latki": "To źródłowy zapis refleksji.",
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    database = tmp_path / "memory_jazn.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+    imported = memory.import_source(source).to_dict()
+    assert imported["report"]["ok"] is True
+
+    gateway = LivingMemoryGateway(database)
+    hits = gateway._search_memory(
+        database,
+        "wdzięczność",
+        mode="semantic_query",
+        limit=10,
+    )
+    l0_hits = [
+        hit for hit in hits
+        if hit.source_layer == "memory_jazn:l0_evidence"
+    ]
+    assert l0_hits
+    hit = l0_hits[0]
+    assert hit.grounding == "read_only_l0_source_evidence"
+    assert hit.metadata is not None
+    assert hit.metadata["source_kind"] == "music_analysis"
+    assert hit.metadata["affect_boundary"] == (
+        "source_claimed_affect_not_biological_state"
+    )
+    labels = {
+        item["normalized_label"]
+        for item in hit.metadata["affect_claims"]
+    }
+    assert {"spokój", "wdzięczność"} <= labels
+    assert hit.metadata["automatic_memory_promotion"] is False
