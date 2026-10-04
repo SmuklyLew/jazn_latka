@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.104",
-  "active_definition_count": 1890,
+  "active_definition_count": 1893,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23658,6 +23658,99 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 591
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_existing_sqlite_wal_changes": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_prepared_plan_is_stale_when_existing_sqlite_wal_changes",
+      "purpose": "Prepared plan is stale when existing sqlite wal changes",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 619
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_prepared_plan_is_stale_when_existing_sqlite_rollback_journal_changes": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_prepared_plan_is_stale_when_existing_sqlite_rollback_journal_changes",
+      "purpose": "Prepared plan is stale when existing sqlite rollback journal changes",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 649
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_publish_rollback_tracks_sqlite_rollback_journal_sidecar": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_publish_rollback_tracks_sqlite_rollback_journal_sidecar",
+      "purpose": "Publish rollback tracks sqlite rollback journal sidecar",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 678
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
