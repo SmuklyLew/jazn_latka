@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-  "runtime_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-  "package_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-  "generated_at_utc": "2026-10-03T19:49:23+00:00",
-  "updated_at_utc": "2026-10-03T19:49:23+00:00",
+  "version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+  "runtime_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+  "package_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+  "generated_at_utc": "2026-10-04T12:01:14+00:00",
+  "updated_at_utc": "2026-10-04T12:01:14+00:00",
   "start_file": "run.py",
   "file_count": 1910,
   "static_file_count": 1910,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3004,
-      "sha256": "778af255b6ab1ec78159089dbc5d5e803a930ed7cdac49512a17cfab62817635",
+      "size_bytes": 2944,
+      "sha256": "8c401dee9d59740f3978b7c2c5294dbc0f977090e2281867aca03b04bc41a84b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8849,8 +8849,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5298,
-      "sha256": "f4e311e5e0fc4bb60356c6fa9eeec2897e3b6492faf124c8575aaf91bc08d0bc",
+      "size_bytes": 5285,
+      "sha256": "0232457f3b80bfaea46a688e144f871ea83d4b5fab9e16da9e1929ad96c7aad3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17058,7 +17058,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1728720,
-      "sha256": "5cc2b5d515be92a7245506ca8d0c5c02f4b75ec7538d2e3087d966ca44acf3fe",
+      "sha256": "ec9039a895d0aecb1491cce1621324cdc2561e825fa37dd6de4f6c87de495751",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17642,11 +17642,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+  "release_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-    "package_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
-    "release_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence"
+    "runtime_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+    "package_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+    "release_version": "16.3.25.5.103-generative-dialogue-nlg-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
