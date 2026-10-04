@@ -76,6 +76,14 @@ Plan ma `execution_plan_sha256`. Hash obejmuje między innymi:
 Zmiana któregoś z tych wejść pomiędzy `plan()` i `run()` daje
 `prepared_plan_stale`.
 
+Ten sam `execution_plan_sha256` jest ponownie wyliczany bezpośrednio przed
+podmianą live SQLite. Dzięki temu zmiana źródła, benchmarku, restart evidence
+albo istniejącej bazy już w trakcie długiego Test00–04 również kończy run
+fail-closed jako `execution_plan_changed_before_publish`. Drugi gate porównuje
+fingerprint wejść, ale nie ponawia początkowego wymogu wolnego miejsca, ponieważ
+staging i immutable baseline utworzone przez ten sam run legalnie zużywają
+wcześniej zarezerwowaną przestrzeń.
+
 Stan `-wal` jest częścią planu, ponieważ w trybie WAL zatwierdzone strony mogą
 pozostawać poza głównym plikiem SQLite do checkpointu. `-journal` również jest
 wiązaną i rollbackowaną częścią stanu, ponieważ SQLite może pozostawić hot
@@ -147,6 +155,7 @@ Historyczny raport v16.3.25.5.103 pozostaje bez zmian.
 - binding acceptance evidence do candidate/source/run lineage;
 - odrzucenie raportu z innego kandydata;
 - stale prepared plan po zmianie benchmarku;
+- prepublish plan gate po zmianie źródła już w trakcie runu;
 - same-key content mismatch;
 - zgodną ewolucję schematu z target-only columns;
 - path escape poza `memory_root`;
