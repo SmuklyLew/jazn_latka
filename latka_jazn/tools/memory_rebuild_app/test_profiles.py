@@ -20,6 +20,21 @@ _COMPARE_TABLES = (
     "conversations", "nodes", "fts_docs", "journal_entries",
     "candidates", "experiences", "memory_records",
 )
+_SEMANTIC_FINGERPRINT_TABLES = tuple(dict.fromkeys((
+    *_COMPARE_TABLES,
+    "conversation_occurrences",
+    "conversation_variant_payloads",
+    "import_conflicts",
+    "memory_l0_sources",
+    "memory_l0_records",
+    "memory_l0_occurrences",
+    "memory_l0_assets",
+    "memory_l0_record_assets",
+    "memory_l0_conversations",
+    "memory_rebuild_projections",
+    "candidate_revisions",
+    "promotion_ledger",
+)))
 _REQUIRED_TEST04_FIELDS = (
     "structural_integrity", "source_completeness", "same_target_idempotence",
     "fresh_rebuild_reproducibility", "test03_reconciliation", "recall",
@@ -197,7 +212,7 @@ def semantic_database_fingerprint(database: str | Path) -> str:
 
     path = Path(database).expanduser().resolve()
     payload: dict[str, dict[str, list[str]]] = {}
-    for table in _COMPARE_TABLES:
+    for table in _SEMANTIC_FINGERPRINT_TABLES:
         records = _stable_record_hashes(path, table)
         if records:
             payload[table] = {
