@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.103",
-  "active_definition_count": 1877,
+  "system_version": "16.3.25.5.104",
+  "active_definition_count": 1881,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23246,6 +23246,115 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 32
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_studio_rebuild_publishes_only_runtime_ready_unified_database": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_studio_rebuild_publishes_only_runtime_ready_unified_database",
+      "purpose": "Studio rebuild publishes only runtime ready unified database",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 15,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_existing_alpha_layout_is_snapshotted_then_converged_to_beta": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_existing_alpha_layout_is_snapshotted_then_converged_to_beta",
+      "purpose": "Existing alpha layout is snapshotted then converged to beta",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_source_union_fingerprint_is_independent_of_project_order_and_source_ids": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_source_union_fingerprint_is_independent_of_project_order_and_source_ids",
+      "purpose": "Source union fingerprint is independent of project order and source ids",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 199
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate",
+      "purpose": "Each memory protocol test has one layer owner and ordered gate",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 217
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
