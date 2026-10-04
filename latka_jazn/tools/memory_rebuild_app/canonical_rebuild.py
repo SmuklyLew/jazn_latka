@@ -359,6 +359,48 @@ class CanonicalMemoryRebuildPipeline:
         ).hexdigest()
         return payload
 
+    @staticmethod
+    def _immutable_execution_inputs_sha256(plan: dict[str, Any]) -> str:
+        """Hash execution inputs that must never change during one rebuild run.
+
+        Existing live SQLite files are deliberately excluded here because the
+        canonical Backup API snapshot may normalize/recover SQLite's own
+        persistent sidecar state while establishing the immutable baseline.
+        Their post-snapshot state is sealed separately by execution_plan_sha256.
+        """
+
+        source_inventory = [
+            {
+                "path": item.get("path"),
+                "role": item.get("role"),
+                "pipeline": item.get("pipeline"),
+                "truth_domain": item.get("truth_domain"),
+                "source_family": item.get("source_family"),
+                "size_bytes": item.get("size_bytes"),
+                "sha256": item.get("sha256"),
+                "disposition": item.get("disposition"),
+                "disposition_reason": item.get("disposition_reason"),
+            }
+            for item in (plan.get("source_inventory") or [])
+            if isinstance(item, dict)
+        ]
+        payload = {
+            "package_version": PACKAGE_VERSION_FULL,
+            "canonical_database": plan.get("canonical_database"),
+            "memory_generation": plan.get("memory_generation"),
+            "source_inventory": source_inventory,
+            "source_union_sha256": plan.get("source_union_sha256"),
+            "protocol_gate": plan.get("protocol_gate"),
+        }
+        encoded = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+        return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
     def prepublish_plan_gate(self, expected_plan: dict[str, Any]) -> dict[str, Any]:
         """Re-bind mutable execution inputs immediately before live publication.
 
@@ -557,6 +599,19 @@ class CanonicalMemoryRebuildPipeline:
                     "snapshots": snapshot_reports,
                 },
             )
+
+            # Opening a stopped SQLite database through the Backup API may
+            # legitimately normalize WAL/rollback-journal state. Preserve the
+            # original plan as the operator authorization boundary, verify that
+            # all non-database execution inputs are still identical, then seal
+            # the post-snapshot live DB state as the publish guard.
+            publish_guard_plan = self.plan()
+            initial_inputs_sha = self._immutable_execution_inputs_sha256(current)
+            guard_inputs_sha = self._immutable_execution_inputs_sha256(
+                publish_guard_plan
+            )
+            if initial_inputs_sha != guard_inputs_sha:
+                raise RuntimeError("execution_inputs_changed_during_snapshot")
 
             protocol_gate = dict(current.get("protocol_gate") or {})
             benchmark = Path(str(protocol_gate["test04_benchmark"])).expanduser().resolve()
@@ -811,7 +866,7 @@ class CanonicalMemoryRebuildPipeline:
             if semantic_database_fingerprint(stage_database) != candidate_semantic_fingerprint:
                 raise RuntimeError("candidate_changed_after_test04_acceptance")
 
-            publish_plan_gate = self.prepublish_plan_gate(current)
+            publish_plan_gate = self.prepublish_plan_gate(publish_guard_plan)
             if not publish_plan_gate.get("ok"):
                 raise RuntimeError("execution_plan_changed_before_publish")
 
@@ -890,7 +945,11 @@ class CanonicalMemoryRebuildPipeline:
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
-                "publish_plan_gate": publish_plan_gate,
+                "publish_plan_gate": {
+                    **publish_plan_gate,
+                    "initial_immutable_inputs_sha256": initial_inputs_sha,
+                    "publish_guard_immutable_inputs_sha256": guard_inputs_sha,
+                },
                 "publish_runtime_gate": publish_runtime_gate,
                 "automatic_experience_approval": False,
                 "automatic_l2": False,
