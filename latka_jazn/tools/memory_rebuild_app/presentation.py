@@ -51,7 +51,8 @@ WARNING_LABELS = {
     "blocking:zip_symlinks": "ZIP zawiera dowiązania symboliczne.",
     "blocking:zip_duplicate_members": "ZIP zawiera duplikaty lub kolizje nazw.",
     "blocking:zip_crc_failed": "Kontrola CRC ZIP nie przeszła.",
-    "blocking:json_invalid": "JSON jest niepoprawny albo zawiera powtórzone klucze; import zablokowany, aby nie zgubić danych.",
+    "blocking:json_invalid": "JSON jest niepoprawny i nie można go bezpiecznie odtworzyć; import zablokowany.",
+    "legacy_json_recovered": "Starszy JSON wymagał bezpiecznej rekonstrukcji składni; źródło nie zostało nadpisane, a operacje recovery są zapisane w metadanych.",
     "jsonl_sample_contains_invalid_records": "Próbka JSONL zawiera niepoprawne rekordy.",
 }
 
@@ -140,6 +141,17 @@ def format_source(source: SourceSpec) -> str:
         count = json_meta.get("entry_count", json_meta.get("item_count"))
         if count is not None:
             lines.extend(("", f"Liczba rekordów w JSON: {count}"))
+        recovery = json_meta.get("legacy_recovery")
+        if isinstance(recovery, dict) and recovery.get("repaired"):
+            lines.extend((
+                "",
+                "Recovery legacy JSON:",
+                f"  • scalone powtórzone klucze: {', '.join(recovery.get('duplicate_keys_merged') or []) or '—'}",
+                f"  • korekty separatorów: {len(recovery.get('syntax_repairs') or [])}",
+                "  • oryginalny plik pozostaje byte-exact i jest chroniony przez SHA-256",
+            ))
+        if json_meta.get("parse_error"):
+            lines.extend(("", f"Błąd JSON: {json_meta.get('parse_error')}"))
     jsonl_meta = metadata.get("jsonl") if isinstance(metadata, dict) else None
     if isinstance(jsonl_meta, dict):
         lines.extend(
