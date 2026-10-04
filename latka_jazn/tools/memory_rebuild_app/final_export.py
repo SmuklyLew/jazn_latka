@@ -9,7 +9,6 @@ import os
 import shutil
 import uuid
 
-from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 from latka_jazn.tools.chat_export_reader import sha256_file
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
@@ -159,6 +158,8 @@ def export_final_memory(
         staged_validation = staged_store.validate(full=True)
         if not staged_validation["ok"]:
             raise RuntimeError("Walidacja stagingowego memory_jazn.sqlite3 nie powiodła się.")
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
         runtime_probe = probe_unified_memory_database(database_target, full_integrity=True)
         if not runtime_probe.get("full_autobiographical_recall_ready"):
             raise RuntimeError(
