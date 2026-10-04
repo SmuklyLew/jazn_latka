@@ -544,3 +544,43 @@ def test_runtime_probe_import_does_not_cycle_through_memory_rebuild_package() ->
     )
     assert completed.returncode == 0, completed.stderr
     assert "partially initialized module" not in completed.stderr
+
+
+
+def test_baseline_reconciliation_ignores_target_only_schema_columns(
+    tmp_path: Path,
+) -> None:
+    baseline = tmp_path / "baseline-schema.sqlite3"
+    target = tmp_path / "target-schema.sqlite3"
+    with sqlite3.connect(baseline) as con:
+        con.execute(
+            "CREATE TABLE conversations("
+            "conversation_id TEXT PRIMARY KEY,"
+            "title TEXT NOT NULL"
+            ")"
+        )
+        con.execute(
+            "INSERT INTO conversations(conversation_id,title) VALUES(?,?)",
+            ("conv-schema", "same"),
+        )
+        con.commit()
+    with sqlite3.connect(target) as con:
+        con.execute(
+            "CREATE TABLE conversations("
+            "conversation_id TEXT PRIMARY KEY,"
+            "title TEXT NOT NULL,"
+            "new_target_only_column TEXT"
+            ")"
+        )
+        con.execute(
+            "INSERT INTO conversations("
+            "conversation_id,title,new_target_only_column"
+            ") VALUES(?,?,?)",
+            ("conv-schema", "same", "derived"),
+        )
+        con.commit()
+
+    report = baseline_record_reconciliation(target, [baseline])
+    assert report["ok"] is True
+    assert report["tables"]["conversations"]["missing_record_count"] == 0
+    assert report["tables"]["conversations"]["content_mismatch_count"] == 0
