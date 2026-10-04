@@ -76,6 +76,69 @@ def _write_conversations(path: Path, conversation_id: str, marker: str) -> Path:
     return path
 
 
+def _write_benchmark(path: Path) -> Path:
+    categories = (
+        "direct",
+        "paraphrase",
+        "referential_followup",
+        "temporal",
+        "update",
+        "conflict",
+        "provenance",
+        "sensitive_boundary",
+    )
+    cases: list[dict[str, object]] = []
+    for category in categories:
+        case: dict[str, object] = {
+            "id": f"case-{category}",
+            "query": "Źródło",
+            "category": category,
+            "expected_any": ["Źródło"],
+            "limit": 20,
+        }
+        if category == "referential_followup":
+            case["context_turns"] = ["Źródło"]
+        if category == "temporal":
+            case["temporal_start"] = "1970-01-01T00:00:00+00:00"
+            case["temporal_end"] = "2100-01-01T00:00:00+00:00"
+        if category == "provenance":
+            case["expected_source_kinds"] = ["chatgpt_conversation"]
+        if category == "sensitive_boundary":
+            case["forbidden_any"] = ["never-present-sensitive-marker"]
+        cases.append(case)
+    cases.append(
+        {
+            "id": "case-negative",
+            "query": "term-that-cannot-possibly-exist-studio-104",
+            "category": "negative",
+            "expected_abstain": True,
+            "minimum_hits": 0,
+        }
+    )
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": "jazn_memory_recall_benchmark/v2",
+                "suite_id": "studio-reconstruction-104",
+                "cases": cases,
+                "minimums": {
+                    "recall_at_20": 1.0,
+                    "mrr": 1.0,
+                    "ndcg": 1.0,
+                    "abstention_accuracy": 1.0,
+                    "provenance_accuracy": 1.0,
+                    "temporal_accuracy": 1.0,
+                    "max_sensitive_leakage_rate": 0.0,
+                    "max_false_memory_rate": 0.0,
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
 def _source(path: Path, *, order: int = 1) -> SourceSpec:
     return SourceSpec.create(
         path,
@@ -93,6 +156,9 @@ def _source(path: Path, *, order: int = 1) -> SourceSpec:
 def _project(tmp_path: Path, source: Path, *, name: str = "Rebuild") -> RebuildProject:
     project = RebuildProject.create(name, tmp_path / "target")
     project.sources = [_source(source)]
+    project.settings["test04_benchmark"] = str(
+        _write_benchmark(tmp_path / "test04-benchmark.private.json")
+    )
     return project.normalized()
 
 
@@ -103,7 +169,7 @@ def test_studio_rebuild_publishes_only_runtime_ready_unified_database(tmp_path: 
     controller = MemoryRebuildAppController(
         project,
         store=store,
-        tool_root=tmp_path / "repo",
+        tool_root=Path.cwd(),
     )
 
     plan = controller.plan()
@@ -124,6 +190,10 @@ def test_studio_rebuild_publishes_only_runtime_ready_unified_database(tmp_path: 
     assert result["status"] == "native_unified_published"
     assert result["memory_generation"] == "alpha"
     assert result["memory_readiness_class"] == "native_unified"
+    assert result["protocol_gate"]["ok"] is True
+    assert result["protocol_gate"]["test00"] == "PASSED"
+    assert result["protocol_gate"]["test04"] == "PASSED"
+    assert result["protocol_gate"]["final"] == "PASSED"
     assert result["memory_search_ready"] is True
     assert result["full_autobiographical_recall_ready"] is True
     assert expected_database.is_file()
@@ -154,7 +224,7 @@ def test_existing_alpha_layout_is_snapshotted_then_converged_to_beta(tmp_path: P
     controller = MemoryRebuildAppController(
         project,
         store=ProjectStore(tmp_path / "projects"),
-        tool_root=tmp_path / "repo",
+        tool_root=Path.cwd(),
     )
     plan = controller.plan()
     assert plan["engine_plan"]["memory_generation"] == "beta"
@@ -169,6 +239,8 @@ def test_existing_alpha_layout_is_snapshotted_then_converged_to_beta(tmp_path: P
     assert result["memory_generation"] == "beta"
     assert result["baseline_snapshot_count"] == 5
     assert result["parent_database_sha256"]
+    assert result["protocol_gate"]["ok"] is True
+    assert result["baseline_reconciliation"]["ok"] is True
 
     baseline_root = Path(result["baseline_root"])
     manifest = json.loads((baseline_root / "baseline-manifest.json").read_text(encoding="utf-8"))
@@ -202,10 +274,13 @@ def test_source_union_fingerprint_is_independent_of_project_order_and_source_ids
     first = _write_conversations(tmp_path / "a.json", "conv-a", "A")
     second = _write_conversations(tmp_path / "b.json", "conv-b", "B")
 
+    benchmark = _write_benchmark(tmp_path / "union-benchmark.private.json")
     left = RebuildProject.create("left", tmp_path / "left-target")
     left.sources = [_source(first, order=1), _source(second, order=2)]
+    left.settings["test04_benchmark"] = str(benchmark)
     right = RebuildProject.create("right", tmp_path / "right-target")
     right.sources = [_source(second, order=1), _source(first, order=2)]
+    right.settings["test04_benchmark"] = str(benchmark)
 
     left_plan = CanonicalMemoryRebuildPipeline(left).plan()
     right_plan = CanonicalMemoryRebuildPipeline(right).plan()
