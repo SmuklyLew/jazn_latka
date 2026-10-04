@@ -157,5 +157,5 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.103"
-    assert PACKAGE_RELEASE_NAME == "generative-dialogue-nlg-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.104"
+    assert PACKAGE_RELEASE_NAME == "memory-rebuild-studio-reconstruction-convergence"
