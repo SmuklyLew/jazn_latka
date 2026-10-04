@@ -3,11 +3,11 @@
   "version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
   "runtime_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
   "package_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-  "generated_at_utc": "2026-10-04T12:13:28+00:00",
-  "updated_at_utc": "2026-10-04T12:13:28+00:00",
+  "generated_at_utc": "2026-10-04T12:17:32+00:00",
+  "updated_at_utc": "2026-10-04T12:17:32+00:00",
   "start_file": "run.py",
-  "file_count": 1915,
-  "static_file_count": 1915,
+  "file_count": 1917,
+  "static_file_count": 1917,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2944,
-      "sha256": "1853b0a9222420932fd03107371f8e370d5b5e3f856edb9af602bf7c63399eaa",
+      "sha256": "eec38878fb4908805a6c3d13dd747e5da980a6784a802bd98057587cff9c1f26",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11692,6 +11692,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_fast_bootstrap_persistent_runtime__pre_v16_3_25_5_103_nlg.py",
+      "size_bytes": 8713,
+      "sha256": "8b543bee8250fac9b985ac08b6e04abe0e53e9ed9a4f24190027a3ae4291b081",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_generative_dialogue_nlg_convergence__pre_evidence_body_refine.py",
+      "size_bytes": 3433,
+      "sha256": "a9490d555a22592e94cd13f9e5bead7d13924b56bed8700963da8ca800f06d20",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_github_actions_node24_convergence_v16325530.py",
       "size_bytes": 4173,
       "sha256": "94de6359675a053c033a44767bf0708a55d1b7b0494be31598a04896742cc9f0",
@@ -14537,8 +14555,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8713,
-      "sha256": "8b543bee8250fac9b985ac08b6e04abe0e53e9ed9a4f24190027a3ae4291b081",
+      "size_bytes": 8678,
+      "sha256": "c56b8328a654200fd572b2e5ce415672894624e9e5fb739663cb91b2b503ec10",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14582,8 +14600,8 @@
     },
     {
       "path": "tests/test_generative_dialogue_nlg_convergence.py",
-      "size_bytes": 3433,
-      "sha256": "a9490d555a22592e94cd13f9e5bead7d13924b56bed8700963da8ca800f06d20",
+      "size_bytes": 3495,
+      "sha256": "c9fabf8c4cb8b426c4c1804ad9004bf7cb8795112d91a7286e8aea45ddfe4e52",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17102,8 +17120,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1732410,
-      "sha256": "29fab8d243956b27f063f9f746d8d18767e10e26303e21132eab4405cdf0334e",
+      "size_bytes": 1732335,
+      "sha256": "06ff7cc8d2cf2d587aa4e9515e8126ba84ffa955c242cee26ae2e1496f1e9968",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
