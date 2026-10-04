@@ -964,7 +964,7 @@ def test_legacy_affective_json_recovery_preserves_duplicate_keys_and_records(
             "WHERE source_kind='affective'"
         ).fetchone()
         assert source_row is not None
-        assert str(source_row[0]) == hashlib.sha256(source.read_bytes()).hexdigest()
+        assert str(source_row[0]) == sha256_file(source)
         source_meta = json.loads(str(source_row[1]))
         assert source_meta["legacy_json_recovery"]["source_bytes_preserved"] is True
         assert "autonomia" in source_meta["legacy_json_recovery"]["duplicate_keys_merged"]
