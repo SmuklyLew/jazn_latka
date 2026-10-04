@@ -17,6 +17,7 @@ from latka_jazn.version import PACKAGE_VERSION
 
 from .application import MemoryRebuildApplicationService
 from .layout import build_studio_layout
+from .canonical_rebuild import canonical_database_path
 from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore
 from .settings import (
@@ -245,9 +246,7 @@ class StudioState:
         if configured:
             self.database = Path(configured).expanduser().resolve()
         elif loaded.target_root:
-            self.database = (
-                Path(loaded.target_root).expanduser().resolve() / "memory_jazn.sqlite3"
-            )
+            self.database = canonical_database_path(loaded.target_root)
         self.refresh()
         self.status = f"Projekt: {loaded.name}"
         self.status_kind = "ok"
