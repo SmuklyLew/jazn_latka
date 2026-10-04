@@ -28,7 +28,6 @@ from latka_jazn.version import PACKAGE_VERSION_FULL
 from .application import resolve_base_commit
 from .models import RebuildProject
 from .protocol_engine import ProtocolEngine
-from .recall import run_fts5_recall_benchmark
 from .test_profiles import baseline_record_reconciliation, semantic_database_fingerprint
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
@@ -506,41 +505,6 @@ class CanonicalMemoryRebuildPipeline:
             )
             if not test03.get("ok"):
                 raise RuntimeError("protocol_test03_failed")
-            test04 = protocol_engine.run_test04(
-                protocol_database,
-                benchmark,
-                test03_result=test03,
-                system_acceptance=bool(protocol_gate.get("system_acceptance")),
-                restart_continuity_report=restart_report,
-            )
-            if not test04.get("ok"):
-                raise RuntimeError("protocol_test04_failed")
-            protocol_final_output = baseline_root / "protocol-final"
-            final_protocol = protocol_engine.run_final(
-                protocol_database,
-                protocol_final_output,
-                test04_result=test04,
-                sources=rebuild_paths,
-            )
-            if not final_protocol.get("ok"):
-                raise RuntimeError("protocol_final_failed")
-            protocol_manifest = protocol_engine.seal_manifest()
-            protocol_report = {
-                "ok": True,
-                "run_id": protocol_engine.run_id,
-                "test00": test00.get("outcome"),
-                "test01": test01.get("outcome"),
-                "test02": test02.get("outcome"),
-                "test03": test03.get("outcome"),
-                "test04": test04.get("outcome"),
-                "final": final_protocol.get("outcome"),
-                "source_union_fingerprint": (
-                    final_protocol.get("artifacts") or {}
-                ).get("source_union_fingerprint"),
-                "manifest": protocol_manifest,
-                "final_output": str(protocol_final_output),
-            }
-
             staged = UnifiedMemoryDatabase(stage_database)
             initialized = staged.initialize()
             migration: dict[str, Any] = {"ok": True, "status": "not_required"}
@@ -614,25 +578,60 @@ class CanonicalMemoryRebuildPipeline:
             if not staged_probe.get("full_autobiographical_recall_ready"):
                 raise RuntimeError("staged_runtime_readiness_probe_failed")
 
-            # The protocol chain proves deterministic source reconstruction, but
-            # beta candidates may additionally contain migrated alpha/legacy
-            # baseline state. Run private Recall on the exact candidate that is
-            # going to be published rather than inheriting Test04 from a
-            # different protocol database.
-            candidate_recall = run_fts5_recall_benchmark(
+            # Test04 and Final belong to the exact staged candidate.  Test03
+            # establishes deterministic source reconstruction; the explicit
+            # reconciliation below is the verified transition to the
+            # migration-aware alpha/beta candidate.
+            test04 = protocol_engine.run_test04(
                 stage_database,
                 benchmark,
-                output_root=baseline_root / "candidate-test04",
-                run_id="candidate-recall",
-            )
-            candidate_test04_validation = protocol_engine.validate_test04(
-                candidate_recall,
-                benchmark=benchmark,
+                test03_result=test03,
+                candidate_reconciliation=baseline_reconciliation,
                 system_acceptance=bool(protocol_gate.get("system_acceptance")),
                 restart_continuity_report=restart_report,
             )
+            if not test04.get("ok"):
+                raise RuntimeError("protocol_candidate_test04_failed")
+            candidate_test04_validation = dict(
+                (test04.get("details") or {}).get("validation") or {}
+            )
             if not candidate_test04_validation.get("ok"):
-                raise RuntimeError("published_candidate_test04_failed")
+                raise RuntimeError("protocol_candidate_test04_validation_failed")
+
+            protocol_final_output = baseline_root / "protocol-final"
+            final_protocol = protocol_engine.run_final(
+                stage_database,
+                protocol_final_output,
+                test04_result=test04,
+                sources=rebuild_paths,
+            )
+            if not final_protocol.get("ok"):
+                raise RuntimeError("protocol_final_failed")
+            protocol_manifest = protocol_engine.seal_manifest()
+            protocol_report = {
+                "ok": True,
+                "run_id": protocol_engine.run_id,
+                "test00": test00.get("outcome"),
+                "test01": test01.get("outcome"),
+                "test02": test02.get("outcome"),
+                "test03": test03.get("outcome"),
+                "test04": test04.get("outcome"),
+                "final": final_protocol.get("outcome"),
+                "test04_candidate_transition": (
+                    (test04.get("artifacts") or {}).get("candidate_transition")
+                ),
+                "test04_database_sha256": (
+                    (test04.get("artifacts") or {}).get("database_sha256")
+                ),
+                "test04_database_fingerprint": (
+                    (test04.get("artifacts") or {}).get("database_fingerprint")
+                ),
+                "source_union_fingerprint": (
+                    final_protocol.get("artifacts") or {}
+                ).get("source_union_fingerprint"),
+                "manifest": protocol_manifest,
+                "final_output": str(protocol_final_output),
+            }
             candidate_semantic_fingerprint = semantic_database_fingerprint(stage_database)
 
             test04_checks = {
