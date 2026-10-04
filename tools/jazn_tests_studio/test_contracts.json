@@ -23960,14 +23960,14 @@
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
       "name": "test_affective_legacy_source_is_detected_and_imported_with_claims",
       "purpose": "Affective legacy source is detected and imported with claims",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.living_memory_gateway",
@@ -23995,14 +23995,14 @@
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
       "name": "test_music_analysis_indexes_latka_affect_reflection_fields",
       "purpose": "Music analysis indexes latka affect reflection fields",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.living_memory_gateway",
@@ -24024,7 +24024,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 988
+      "line": 991
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_journal_emotions_are_searchable_and_indexed_as_affect_claims": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24059,7 +24059,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1039
+      "line": 1045
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24094,7 +24094,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1088
+      "line": 1094
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affect_claim_change_changes_semantic_fingerprint": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -24129,7 +24129,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1116
+      "line": 1122
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
@@ -42097,7 +42097,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 899
+      "line": 902
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_unrecoverable_affective_json_remains_fail_closed": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -42132,7 +42132,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 973
+      "line": 976
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_living_memory_gateway_recalls_affective_l0_evidence": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -42168,7 +42168,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 1167
+      "line": 1173
     }
   }
 }
