@@ -19,6 +19,8 @@ PROFILE_NAMES = ("test01", "test02", "test03", "test04", "final")
 _COMPARE_TABLES = (
     "conversations", "nodes", "fts_docs", "journal_entries",
     "candidates", "experiences", "memory_records",
+    "memory_l0_sources", "memory_l0_records", "memory_l0_occurrences",
+    "memory_l0_affect_claims",
 )
 _SEMANTIC_FINGERPRINT_TABLES = tuple(dict.fromkeys((
     *_COMPARE_TABLES,
