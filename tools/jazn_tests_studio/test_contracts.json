@@ -23339,13 +23339,13 @@
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
       "name": "test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate",
       "purpose": "Each memory protocol test has one layer owner and ordered gate",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.unified_memory_runtime",
@@ -23391,7 +23391,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 327
+      "line": 334
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_baseline_reconciliation_detects_same_key_content_change": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23420,7 +23420,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 349
+      "line": 356
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_memory_evidence_resolver_rejects_paths_outside_memory_root": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23451,7 +23451,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 372
+      "line": 379
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_final_publish_restores_old_target_when_second_replace_fails": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23482,7 +23482,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 393
+      "line": 400
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_system_mode_preflight_rejects_active_runtime": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23512,7 +23512,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 428
+      "line": 435
     },
     "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_test04_acceptance_binding_rejects_report_from_different_candidate": {
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
@@ -23541,7 +23541,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 461
+      "line": 468
     },
     "tests/test_memory_rebuild_v24_unified.py::test_unified_database_imports_new_threads_and_dry_run_is_non_mutating": {
       "path": "tests/test_memory_rebuild_v24_unified.py",
