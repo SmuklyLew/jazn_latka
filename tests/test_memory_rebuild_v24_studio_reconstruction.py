@@ -720,3 +720,33 @@ def test_incomplete_live_publish_rollback_preserves_backup_for_manual_recovery(
     assert backup.is_file()
     assert backup_dir.is_dir()
     assert report["errors"][0]["backup"] == str(backup)
+
+
+
+def test_disk_preflight_counts_persistent_sqlite_sidecars(tmp_path: Path) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-disk.json",
+        "conv-disk",
+        "disk",
+    )
+    project = _project(tmp_path, source, name="Sidecar disk budget")
+    target = Path(project.target_root)
+    legacy = MemoryRebuildCoordinator(target)
+    initialized = legacy.init()
+    assert initialized["ok"]
+
+    wal = Path(str(legacy.paths.memory_jazn) + "-wal")
+    rollback_journal = Path(str(legacy.paths.memory_jazn) + "-journal")
+    wal.write_bytes(b"w" * 17)
+    rollback_journal.write_bytes(b"j" * 23)
+
+    report = CanonicalMemoryRebuildPipeline(
+        project,
+        tool_root=Path.cwd(),
+    ).disk_preflight()
+
+    assert report["existing_persistent_sidecar_bytes"] >= 40
+    assert report["existing_database_bytes"] == (
+        report["existing_database_main_bytes"]
+        + report["existing_persistent_sidecar_bytes"]
+    )
