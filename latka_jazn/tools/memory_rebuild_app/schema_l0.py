@@ -104,7 +104,8 @@ CREATE TABLE IF NOT EXISTS memory_l0_affect_claims(
 );
 CREATE INDEX IF NOT EXISTS idx_memory_l0_affect_claim_label
   ON memory_l0_affect_claims(normalized_label,source_field,claim_kind);
-CREATE VIEW IF NOT EXISTS memory_l0_affect_claims_current AS
+DROP VIEW IF EXISTS memory_l0_affect_claims_current;
+CREATE VIEW memory_l0_affect_claims_current AS
   SELECT
     c.*,
     r.source_kind,
