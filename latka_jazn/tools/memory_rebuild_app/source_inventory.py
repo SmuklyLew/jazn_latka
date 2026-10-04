@@ -11,7 +11,11 @@ import stat
 import zipfile
 
 from .models import SourceSpec
-from .source_detection import DuplicateJsonKeyError, load_json_strict
+from .source_detection import (
+    DuplicateJsonKeyError,
+    load_json_strict,
+    load_legacy_affective_json,
+)
 
 _DATE_RE = re.compile(r"(?<!\d)(20\d{2})[._-](0[1-9]|1[0-2])[._-](0[1-9]|[12]\d|3[01])(?!\d)")
 _CHAT_MEMBER_RE = re.compile(r"(^|/)(conversations(?:[-_]\d+)?\.json)$", re.IGNORECASE)
@@ -194,11 +198,17 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
 
 
 def _sniff_json(path: Path) -> dict[str, Any]:
+    recovery: dict[str, Any] | None = None
     try:
         payload = load_json_strict(path)
     except (OSError, UnicodeError, json.JSONDecodeError, DuplicateJsonKeyError) as exc:
-        return {"parse_error": f"{type(exc).__name__}: {exc}"}
+        try:
+            payload, recovery = load_legacy_affective_json(path)
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+            return {"parse_error": f"{type(exc).__name__}: {exc}"}
     result: dict[str, Any] = {"json_type": type(payload).__name__}
+    if recovery is not None:
+        result["legacy_recovery"] = recovery
     if isinstance(payload, dict):
         keys = sorted(str(key) for key in payload.keys())
         result["top_level_keys"] = keys[:100]
@@ -341,6 +351,8 @@ def inspect_source(
             metadata["json"] = _sniff_json(path)
             if metadata["json"].get("parse_error"):
                 result.warnings.append("blocking:json_invalid")
+            elif (metadata["json"].get("legacy_recovery") or {}).get("repaired"):
+                result.warnings.append("legacy_json_recovered")
         elif path.suffix.casefold() in {".jsonl", ".ndjson"}:
             metadata["jsonl"] = _sniff_jsonl(path)
             if metadata["jsonl"].get("sample_invalid_json"):
