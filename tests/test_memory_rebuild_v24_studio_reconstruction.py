@@ -681,3 +681,42 @@ def test_publish_rollback_tracks_sqlite_rollback_journal_sidecar(tmp_path: Path)
     assert Path(str(database) + "-journal") in sidecars
     assert Path(str(database) + "-wal") in sidecars
     assert Path(str(database) + "-shm") in sidecars
+
+
+
+def test_incomplete_live_publish_rollback_preserves_backup_for_manual_recovery(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-rollback.json",
+        "conv-rollback",
+        "rollback",
+    )
+    project = _project(tmp_path, source, name="Rollback preservation")
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+
+    original = tmp_path / "memory_jazn.sqlite3"
+    backup_dir = tmp_path / ".rebuild_rollback" / "run"
+    backup_dir.mkdir(parents=True)
+    backup = backup_dir / original.name
+    backup.write_bytes(b"old-database-bytes")
+
+    original_replace = os.replace
+
+    def fail_restore(src: str | os.PathLike[str], dst: str | os.PathLike[str]) -> None:
+        if Path(src) == backup and Path(dst) == original:
+            raise OSError("synthetic rollback restore failure")
+        original_replace(src, dst)
+
+    monkeypatch.setattr(
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild.os.replace",
+        fail_restore,
+    )
+
+    report = pipeline._restore_rollbacks(backup_dir, [(original, backup)])
+    assert report["ok"] is False
+    assert report["preserved_for_manual_recovery"] is True
+    assert backup.is_file()
+    assert backup_dir.is_dir()
+    assert report["errors"][0]["backup"] == str(backup)
