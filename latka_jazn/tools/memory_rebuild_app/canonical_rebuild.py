@@ -300,6 +300,8 @@ class CanonicalMemoryRebuildPipeline:
         parent_database_sha256: str | None,
         readiness_class: str,
         protocol_run_id: str | None = None,
+        acceptance_report: str | None = None,
+        baseline_root: str | None = None,
     ) -> None:
         source_status = [
             {
@@ -327,6 +329,8 @@ class CanonicalMemoryRebuildPipeline:
             ),
             "reconstructed_at_utc": _utc_now(),
             "protocol_run_id": protocol_run_id or "",
+            "test04_acceptance_report": acceptance_report or "",
+            "test04_baseline_root": baseline_root or "",
         }
         with store.connect() as con:
             con.executemany(
@@ -499,6 +503,42 @@ class CanonicalMemoryRebuildPipeline:
                 raise RuntimeError("unified_source_import_failed")
 
             staged.rebuild_search_indexes()
+            stable_stat_keys = (
+                "conversations",
+                "nodes",
+                "fts_docs",
+                "journal_entries",
+                "candidates",
+                "experiences",
+                "memory_records",
+                "memory_l0_records",
+                "memory_l0_conversations",
+                "import_sources",
+            )
+            idempotence_before_all = staged.stats()
+            idempotence_before = {
+                key: int(idempotence_before_all.get(key, 0))
+                for key in stable_stat_keys
+            }
+            idempotence_import = staged.import_sources(
+                rebuild_paths,
+                full_validation=True,
+            )
+            staged.rebuild_search_indexes()
+            idempotence_after_all = staged.stats()
+            idempotence_after = {
+                key: int(idempotence_after_all.get(key, 0))
+                for key in stable_stat_keys
+            }
+            idempotence_report = {
+                "ok": bool(idempotence_import.get("ok"))
+                and idempotence_before == idempotence_after,
+                "before": idempotence_before,
+                "after": idempotence_after,
+                "second_import": idempotence_import,
+            }
+            if not idempotence_report["ok"]:
+                raise RuntimeError("same_target_idempotence_failed")
             self._write_rebuild_metadata(
                 staged,
                 plan=current,
@@ -520,6 +560,66 @@ class CanonicalMemoryRebuildPipeline:
             staged_probe = probe_unified_memory_database(stage_database, full_integrity=True)
             if not staged_probe.get("full_autobiographical_recall_ready"):
                 raise RuntimeError("staged_runtime_readiness_probe_failed")
+
+            test04_checks = {
+                str(item.get("name")): bool(item.get("passed"))
+                for item in ((test04.get("details") or {}).get("validation") or {}).get("checks", [])
+                if isinstance(item, dict)
+            }
+            protocol_test03_details = test03.get("details") or {}
+            acceptance_baseline = (
+                str(baseline_sqlite)
+                if snapshot_paths
+                else str(protocol_final_output)
+            )
+            compatibility_acceptance = {
+                "schema_version": "jazn_memory_rebuild_acceptance/v3.0",
+                "generated_from": "ProtocolEngine+CanonicalMemoryRebuildPipeline",
+                "run_id": run_id,
+                "protocol_run_id": protocol_engine.run_id,
+                "final": {
+                    "structural_integrity": "passed",
+                    "source_completeness": (
+                        "passed" if test00.get("downstream_ready") else "failed"
+                    ),
+                    "same_target_idempotence": (
+                        "passed" if idempotence_report["ok"] else "failed"
+                    ),
+                    "fresh_rebuild_reproducibility": (
+                        "passed"
+                        if bool(protocol_test03_details.get("semantic_reconciliation"))
+                        else "failed"
+                    ),
+                    "test03_reconciliation": (
+                        "passed" if baseline_reconciliation.get("ok") else "failed"
+                    ),
+                    "recall": "passed" if test04.get("ok") else "failed",
+                    "multi_turn_review": (
+                        "passed"
+                        if test04_checks.get("referential_multi_turn_context")
+                        else "failed"
+                    ),
+                    "html_import_dry_run": "not_applicable",
+                    "restart_continuity": (
+                        "passed"
+                        if bool(protocol_gate.get("system_acceptance"))
+                        and test04_checks.get("restart_continuity")
+                        else "not_run"
+                    ),
+                },
+                "evidence": {
+                    "source_union_sha256": current["source_union_sha256"],
+                    "protocol_source_union_fingerprint": protocol_report.get(
+                        "source_union_fingerprint"
+                    ),
+                    "baseline_reconciliation": baseline_reconciliation,
+                    "same_target_idempotence": idempotence_report,
+                    "runtime_probe_status": staged_probe.get("status"),
+                    "schema_identity": staged_probe.get("schema_identity"),
+                },
+            }
+            acceptance_path = baseline_root / "test04-acceptance.private.json"
+            _atomic_json(acceptance_path, compatibility_acceptance)
             self._write_rebuild_metadata(
                 staged,
                 plan=current,
@@ -527,6 +627,8 @@ class CanonicalMemoryRebuildPipeline:
                 parent_database_sha256=parent_database_sha256,
                 readiness_class="native_unified",
                 protocol_run_id=protocol_engine.run_id,
+                acceptance_report=str(acceptance_path),
+                baseline_root=acceptance_baseline,
             )
             staged.checkpoint()
 
@@ -583,7 +685,10 @@ class CanonicalMemoryRebuildPipeline:
                 "migration": migration,
                 "import": imported,
                 "protocol_gate": protocol_report,
+                "same_target_idempotence": idempotence_report,
                 "baseline_reconciliation": baseline_reconciliation,
+                "test04_acceptance_report": str(acceptance_path),
+                "test04_baseline_root": acceptance_baseline,
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
