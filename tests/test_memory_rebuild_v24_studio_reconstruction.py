@@ -643,3 +643,41 @@ def test_prepared_plan_is_stale_when_existing_sqlite_wal_changes(
     assert result["status"] == "prepared_plan_stale"
     assert result["field"] == "execution_plan_sha256"
     assert result["actual"] != prepared["execution_plan_sha256"]
+
+
+
+def test_prepared_plan_is_stale_when_existing_sqlite_rollback_journal_changes(
+    tmp_path: Path,
+) -> None:
+    source = _write_conversations(
+        tmp_path / "conversations-journal.json",
+        "conv-journal",
+        "journal-sidecar",
+    )
+    project = _project(tmp_path, source, name="Rollback journal plan binding")
+    target = Path(project.target_root)
+    legacy = MemoryRebuildCoordinator(target)
+    initialized = legacy.init()
+    assert initialized["ok"]
+
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+    prepared = pipeline.plan()
+    assert prepared["ok"], prepared
+    assert prepared["execution_plan_sha256"]
+
+    rollback_journal = Path(str(legacy.paths.memory_jazn) + "-journal")
+    rollback_journal.write_bytes(b"synthetic-hot-journal-state-change")
+
+    result = pipeline.run(prepared_plan=prepared)
+    assert result["ok"] is False
+    assert result["status"] == "prepared_plan_stale"
+    assert result["field"] == "execution_plan_sha256"
+    assert result["actual"] != prepared["execution_plan_sha256"]
+
+
+def test_publish_rollback_tracks_sqlite_rollback_journal_sidecar(tmp_path: Path) -> None:
+    database = tmp_path / "memory_jazn.sqlite3"
+    sidecars = CanonicalMemoryRebuildPipeline._sidecars(database)
+    assert Path(str(database) + "-journal") in sidecars
+    assert Path(str(database) + "-wal") in sidecars
+    assert Path(str(database) + "-shm") in sidecars
