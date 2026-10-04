@@ -365,7 +365,11 @@ class RuntimeAnswerValidator:
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
         component_report = analyse_utterance(user_text)
-        coverage_required = bool(detected_intent == "compound_dialogue_question" or "compound_dialogue" in route_low)
+        coverage_required = bool(
+            component_report.compound
+            or detected_intent == "compound_dialogue_question"
+            or "compound_dialogue" in route_low
+        )
         component_coverage_ledger = build_component_coverage_ledger(user_text=user_text, body=body, coverage_required=coverage_required)
         if component_report.compound and not coverage_required:
             legacy_missing_components = missing_component_evidence(body, component_report.components)
