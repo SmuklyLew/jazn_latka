@@ -197,7 +197,14 @@ class CanonicalMemoryRebuildPipeline:
             inventory, _ = self._source_inventory()
         source_bytes = sum(int(item.get("size_bytes") or 0) for item in inventory)
         existing = self._database_paths()
-        existing_bytes = sum(path.stat().st_size for path in existing)
+        existing_main_bytes = sum(path.stat().st_size for path in existing)
+        existing_sidecar_bytes = sum(
+            sidecar.stat().st_size
+            for path in existing
+            for suffix in ("-wal", "-journal")
+            if (sidecar := Path(str(path) + suffix)).is_file()
+        )
+        existing_bytes = existing_main_bytes + existing_sidecar_bytes
         estimated_working = source_bytes + (existing_bytes * 3) + _STAGING_RESERVE_BYTES
         required = (estimated_working * _DISK_MARGIN_NUMERATOR) // _DISK_MARGIN_DENOMINATOR
         probe_root = _nearest_existing_parent(self.paths.sqlite_dir)
@@ -207,6 +214,8 @@ class CanonicalMemoryRebuildPipeline:
             "probe_root": str(probe_root),
             "source_bytes": source_bytes,
             "existing_database_bytes": existing_bytes,
+            "existing_database_main_bytes": existing_main_bytes,
+            "existing_persistent_sidecar_bytes": existing_sidecar_bytes,
             "staging_reserve_bytes": _STAGING_RESERVE_BYTES,
             "safety_margin_percent": 20,
             "required_free_bytes": required,
