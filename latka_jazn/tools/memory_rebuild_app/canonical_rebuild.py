@@ -20,7 +20,6 @@ import os
 import shutil
 import uuid
 
-from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 from latka_jazn.tools.chat_export_reader import sha256_file
 from latka_jazn.tools.memory_rebuild_common import MemoryRebuildPaths
 from latka_jazn.tools.sqlite_archive_snapshot import create_sqlite_snapshot
@@ -609,6 +608,8 @@ class CanonicalMemoryRebuildPipeline:
             )
             if not baseline_reconciliation.get("ok"):
                 raise RuntimeError("alpha_or_legacy_baseline_reconciliation_failed")
+            from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
             staged_probe = probe_unified_memory_database(stage_database, full_integrity=True)
             if not staged_probe.get("full_autobiographical_recall_ready"):
                 raise RuntimeError("staged_runtime_readiness_probe_failed")
