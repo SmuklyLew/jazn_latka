@@ -365,13 +365,15 @@ class RuntimeAnswerValidator:
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
         component_report = analyse_utterance(user_text)
-        coverage_required = bool(
-            component_report.compound
-            or detected_intent == "compound_dialogue_question"
-            or "compound_dialogue" in route_low
+        semantic_coverage_required = bool(
+            component_report.compound and component_report.semantic_intents
         )
-        component_coverage_ledger = build_component_coverage_ledger(user_text=user_text, body=body, coverage_required=coverage_required)
-        if component_report.compound and not coverage_required:
+        component_coverage_ledger = build_component_coverage_ledger(
+            user_text=user_text,
+            body=body,
+            coverage_required=semantic_coverage_required,
+        )
+        if component_report.compound and not semantic_coverage_required:
             legacy_missing_components = missing_component_evidence(body, component_report.components)
             if legacy_missing_components:
                 checks.append("missing_compound_question_components")
@@ -385,7 +387,7 @@ class RuntimeAnswerValidator:
                     legacy_missing_components,
                     component_coverage_ledger=component_coverage_ledger,
                 )
-        if coverage_required and component_coverage_ledger.get("complete") is not True:
+        if semantic_coverage_required and component_coverage_ledger.get("complete") is not True:
             missing_ids = [str(value) for value in component_coverage_ledger.get("missing_component_ids") or [] if str(value).strip()]
             checks.append("compound_component_coverage_incomplete")
             return self._bad("compound_component_coverage_incomplete", "compound_dialogue_coverage_repair", "Odpowiedź nie pokrywa każdego component_id i nie deklaruje jawnego evidence_gap dla brakujących części.", detected_intent, route, checks, missing_ids, component_coverage_ledger=component_coverage_ledger)
