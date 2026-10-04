@@ -175,6 +175,9 @@ def _handler_body_can_cross_chatgpt_host_bridge(
         return False
     if not str(getattr(handler_result, "body", "") or "").strip():
         return False
+    handler_data = getattr(handler_result, "data", {})
+    if isinstance(handler_data, dict) and handler_data.get("requires_model_language_realization") is True:
+        return False
     if list(handler_missing or []):
         return False
     if handler_required and not set(handler_required).issubset(handler_satisfied):
@@ -185,6 +188,28 @@ def _handler_body_can_cross_chatgpt_host_bridge(
         return False
     return True
 
+
+def _handler_requires_model_language_realization(handler_result: Any) -> bool:
+    data = getattr(handler_result, "data", {})
+    return bool(isinstance(data, dict) and data.get("requires_model_language_realization") is True)
+
+
+def _should_preserve_handler_body(handler_result: Any, required: list[Any], satisfied: set[Any], missing: list[Any]) -> bool:
+    return bool(
+        handler_result.handler_name in JaznEngine.DEDICATED_PRESERVE_HANDLERS
+        and not _handler_requires_model_language_realization(handler_result)
+        and handler_result.generation_mode == "handler_generated"
+        and bool(handler_result.body)
+        and not missing
+        and (not required or set(required).issubset(satisfied))
+    )
+
+
+def _speech_truth_gate_required(detected_intent: Any, handler_result: Any) -> bool:
+    return bool(
+        str(detected_intent) in MODEL_GUIDED_SPEECH_INTENTS
+        or _handler_requires_model_language_realization(handler_result)
+    )
 
 def _sync_conversation_decision_body(
     decision_dict: dict[str, Any],
@@ -2966,12 +2991,10 @@ class JaznEngine:
         handler_required = list(handler_result.required_components or route_entry.required_components or [])
         handler_satisfied = set(handler_result.satisfied_components or [])
         handler_missing = list(handler_result.missing_components or [])
-        preserve_handler_body = (
-            handler_result.handler_name in self.DEDICATED_PRESERVE_HANDLERS
-            and handler_result.generation_mode == "handler_generated"
-            and bool(handler_result.body)
-            and not handler_missing
-            and (not handler_required or set(handler_required).issubset(handler_satisfied))
+        handler_requires_model_language = _handler_requires_model_language_realization(handler_result)
+        decision_dict["requires_model_language_realization"] = handler_requires_model_language
+        preserve_handler_body = _should_preserve_handler_body(
+            handler_result, handler_required, handler_satisfied, handler_missing
         )
         if preserve_handler_body:
             decision_dict["preserve_handler_body"] = True
@@ -3023,7 +3046,7 @@ class JaznEngine:
                 user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
             )
         repair_used = False
-        speech_truth_gate_required = str(detected_dialogue_intent) in MODEL_GUIDED_SPEECH_INTENTS
+        speech_truth_gate_required = _speech_truth_gate_required(detected_dialogue_intent, handler_result)
         if speech_truth_gate_required:
             candidate_valid = bool(model_synthesis.used and first_validation.accepted and not template_origin.get("template_id"))
             if not candidate_valid and model_executor.retry_allowed:

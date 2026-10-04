@@ -542,6 +542,17 @@ class DialogueIntentClassifier:
         has_runtime_restart=self._has_any(norm,folded,self.RUNTIME_RESTART_TERMS)
         has_repair_plan=self._has_any(norm,folded,self.SYSTEM_REPAIR_PLAN_TERMS)
         has_self_architecture_audit=self._has_any(norm,folded,self.SELF_ARCHITECTURE_AUDIT_TERMS)
+        has_language_architecture_diagnostic = bool(
+            speech.speech_act == "question"
+            and any(marker in folded for marker in (
+                "nlp", "nlg", "model adapter", "model_adapter", "adapter model",
+                "warstwa jezyk", "rozumienie wypowiedzi", "rozumie swoje wypowiedzi",
+            ))
+            and any(marker in folded for marker in (
+                "dziala", "wystarczaj", "jak dziala", "do wypowiedzi",
+                "rozumie", "wyslaw", "naturaln", "generatyw", "model",
+            ))
+        )
         has_post_update_coverage = (
             (has_update or "patch" in folded or "aktualiz" in folded)
             and any(marker in folded for marker in (
@@ -782,6 +793,17 @@ class DialogueIntentClassifier:
                 ['jawne wykonanie na systemie ma pierwszeństwo przed markerem research/tool'],
                 0.96, secondary_intents, update=True, diag=has_diag,
                 speech_act=speech.speech_act, question_object='system_update',
+            )
+
+        if has_language_architecture_diagnostic:
+            return report(
+                norm, folded, "system_diagnostic_question",
+                [
+                    "jawne pytanie o NLP/NLG lub adapter językowy wymaga diagnostyki capability, nie ordinary_conversation",
+                    "language_architecture_diagnostic",
+                ],
+                0.95, diag=True, speech_act=speech.speech_act,
+                question_object="language_architecture",
             )
 
         route_contract_hint = self.route_contract_matrix.classify(norm)

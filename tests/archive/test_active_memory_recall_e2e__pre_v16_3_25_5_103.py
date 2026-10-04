@@ -768,8 +768,8 @@ def test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall(
             second_text,
             invoke_runtime=lambda exact: second if exact == second_text else {},
             generate_host_candidate=lambda _presentation: (
-                "Odzyskałam z aktywnej pamięci tej tury testowej źródłowo uziemiony "
-                "syntetyczny ślad o bursztynowym kompasie i spacerze nad rzeką."
+                "Pamiętam syntetyczny ślad o bursztynowym kompasie i spacerze nad rzeką; "
+                "źródłem jest aktywna pamięć tej tury testowej."
             ),
             finalize_runtime_candidate=finalize_second,
             requested_runtime_root=requested_root,

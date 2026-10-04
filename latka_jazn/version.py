@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.102 adds verified SYSTEM materialization reuse, a true warm
-# persistent-daemon fast path, supervisor heartbeat leases and quoted-material
-# intent isolation without weakening cold/resume integrity and provenance gates.
-DISTRIBUTION_VERSION = "16.3.25.5.102"
-PACKAGE_VERSION = "16.3.25.5.102"
-PACKAGE_RELEASE_NAME = "fast-bootstrap-persistent-runtime-convergence"
+# v16.3.25.5.103 converges grounded memory recall on the existing model-guided
+# language channel, enforces semantic component coverage and routes explicit
+# NLP/NLG capability questions away from ordinary-conversation fallbacks.
+DISTRIBUTION_VERSION = "16.3.25.5.103"
+PACKAGE_VERSION = "16.3.25.5.103"
+PACKAGE_RELEASE_NAME = "generative-dialogue-nlg-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

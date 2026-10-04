@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.102",
-  "active_definition_count": 1873,
+  "system_version": "16.3.25.5.103",
+  "active_definition_count": 1877,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3058,15 +3058,13 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release version tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_version_tracks_current_distribution_identity",
+      "purpose": "Release version tracks current distribution identity",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "e2e",
-      "tags": [
-        "runtime"
-      ],
+      "category": "contract",
+      "tags": [],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -7897,10 +7895,10 @@
       "description_source": "source_identity",
       "line": 135
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_identity_tracks_current_distribution",
+      "purpose": "Release identity tracks current distribution",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -12643,10 +12641,10 @@
       "description_source": "source_identity",
       "line": 246
     },
-    "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_identity_tracks_current_distribution",
+      "purpose": "Release identity tracks current distribution",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -13278,6 +13276,91 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 47
+    },
+    "tests/test_generative_dialogue_nlg_convergence.py::test_memory_recall_handler_exposes_evidence_for_language_realization": {
+      "path": "tests/test_generative_dialogue_nlg_convergence.py",
+      "name": "test_memory_recall_handler_exposes_evidence_for_language_realization",
+      "purpose": "Memory recall handler exposes evidence for language realization",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.engine",
+        "latka_jazn.core.handlers.memory_experience_recall_handler",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_generative_dialogue_nlg_convergence.py::test_chatgpt_host_bridge_cannot_pass_memory_evidence_body_directly": {
+      "path": "tests/test_generative_dialogue_nlg_convergence.py",
+      "name": "test_chatgpt_host_bridge_cannot_pass_memory_evidence_body_directly",
+      "purpose": "Chatgpt host bridge cannot pass memory evidence body directly",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.engine",
+        "latka_jazn.core.handlers.memory_experience_recall_handler",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_generative_dialogue_nlg_convergence.py::test_semantically_compound_turn_requires_every_component": {
+      "path": "tests/test_generative_dialogue_nlg_convergence.py",
+      "name": "test_semantically_compound_turn_requires_every_component",
+      "purpose": "Semantically compound turn requires every component",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.engine",
+        "latka_jazn.core.handlers.memory_experience_recall_handler",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_generative_dialogue_nlg_convergence.py::test_nlp_nlg_capability_question_routes_to_system_diagnostic": {
+      "path": "tests/test_generative_dialogue_nlg_convergence.py",
+      "name": "test_nlp_nlg_capability_question_routes_to_system_diagnostic",
+      "purpose": "Nlp nlg capability question routes to system diagnostic",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.engine",
+        "latka_jazn.core.handlers.memory_experience_recall_handler",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
     },
     "tests/test_github_actions_node24_convergence.py::test_all_active_github_actions_pass_fail_closed_node24_audit": {
       "path": "tests/test_github_actions_node24_convergence.py",

@@ -298,7 +298,14 @@ def _output_instructions(plan: dict[str, Any], policy: dict[str, Any]) -> list[s
         "Zachowaj ton i ograniczenia z nlg_plan, o ile nie kolidują z pełnym kanonem.",
     ]
     if str(plan.get("memory_policy") or "") == "required_grounded_payload":
-        instructions.append("Jeżeli allowed_memory_items jest puste, powiedz uczciwie, że brak ugruntowanego payloadu pamięci.")
+        instructions.extend([
+            "Jeżeli allowed_memory_items jest puste, powiedz uczciwie, że brak ugruntowanego payloadu pamięci.",
+            "Traktuj allowed_memory_items jako materiał dowodowy do naturalnej wypowiedzi, nie jako gotową listę rekordów do recytowania.",
+            "Nie pokazuj ścieżek baz, surowych source_locator ani technicznych identyfikatorów pamięci, chyba że użytkownik jawnie prosi o provenance lub źródła.",
+        ])
+    instructions.append(
+        "Jeżeli pytanie ma kilka niezależnych komponentów, odpowiedz na każdy z nich albo jawnie zaznacz brak dowodu dla konkretnego komponentu."
+    )
     if policy.get("exact_runtime_required") is True:
         instructions.append("Nie parafrazuj dokładnego cytatu runtime.")
     cognitive = _as_dict(policy.get("cognitive_control"))

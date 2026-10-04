@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from typing import Any
 
 from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
@@ -111,22 +113,42 @@ class MemoryExperienceRecallHandler:
         return items
 
     @staticmethod
-    def _render(items: list[dict[str, Any]]) -> str:
+    def _safe_source_label(value: Any) -> str:
+        source = str(value or "").strip()
+        folded = source.lower().replace("\\", "/")
+        if (
+            not source
+            or folded.startswith("/")
+            or re.match(r"^[a-z]:/", folded)
+            or ".sqlite" in folded
+            or "journal_entries:" in folded
+            or "memory_records:" in folded
+        ):
+            return "źródło runtime zachowane w structured provenance"
+        return source[:160]
+
+    @classmethod
+    def _render(cls, items: list[dict[str, Any]]) -> str:
+        """Return bounded evidence text for downstream language realization.
+
+        Logical provenance labels may remain visible to the internal language
+        channel, while absolute paths, SQLite locators and raw row identifiers
+        stay redacted. Engine policy prevents this evidence draft from becoming
+        the final host-visible answer when model language realization is required.
+        """
+
         lines = [
-            "Z przywołanej pamięci mogę uczciwie oprzeć odpowiedź tylko na tych źródłowych śladach:"
+            f"Znalazłam wybrane, źródłowo uziemione fragmenty pamięci ({len(items)}) dla tej tury.",
+            "Materiał dowodowy do naturalnej odpowiedzi:",
         ]
-        for index, item in enumerate(items, start=1):
-            timestamp = item.get("timestamp") or "czas nieustalony"
-            lines.append(
-                f"{index}. {timestamp}: „{item['content_excerpt']}” "
-                f"Źródło: {item['source']}."
-            )
+        for item in items:
+            source_label = cls._safe_source_label(item.get("source"))
+            lines.append(f"- {item['content_excerpt']} [źródło: {source_label}]")
         lines.append(
-            "To są wybrane, źródłowo uziemione fragmenty dopuszczone do odpowiedzi w tej turze. "
-            "Jeśli pytasz o szczegół, którego w tych fragmentach nie ma, "
-            "nie dopowiem go jako wspomnienia."
+            "Te fragmenty są kontekstem generacji; surowe rekordy i ścieżki bazy pozostają w structured provenance."
         )
         return chr(10).join(lines)
+
 
     def handle(
         self,
@@ -138,7 +160,7 @@ class MemoryExperienceRecallHandler:
         items = self._grounded_items(payload, user_text=text)
         if items:
             body = self._render(items)
-            status = "grounded_payload_rendered"
+            status = "grounded_payload_ready_for_language_realization"
             confidence = 0.86
         else:
             body = (
@@ -159,7 +181,9 @@ class MemoryExperienceRecallHandler:
                 "memory_recall_payload_frozen": True,
                 "filtered_item_count": len(items),
                 "status": status,
-                "preserve_handler_body": True,
+                "preserve_handler_body": False,
+                "requires_model_language_realization": True,
+                "memory_evidence_role": "generation_context_not_visible_answer",
             },
             memory_sources=items,
             required_components=list(ctx.get("required_components") or []),
