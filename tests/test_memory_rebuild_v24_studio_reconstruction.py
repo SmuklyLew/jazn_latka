@@ -773,7 +773,10 @@ def test_prepublish_plan_gate_rejects_source_mutation_after_run_start(
     assert gate["ok"] is False
     assert gate["expected_execution_plan_sha256"] == prepared["execution_plan_sha256"]
     assert gate["observed_execution_plan_sha256"] != prepared["execution_plan_sha256"]
-    assert "source_sha256_changed" in gate["observed_plan_errors"]
+    assert any(
+        str(item).startswith("source_sha256_changed:")
+        for item in gate["observed_plan_errors"]
+    )
 
 
 
