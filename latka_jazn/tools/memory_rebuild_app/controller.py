@@ -223,9 +223,6 @@ class MemoryRebuildAppController:
             tool_root=self.tool_root,
         )
 
-    def _rebuild_paths(self) -> list[Path]:
-        return [Path(item.path) for item in self.project.enabled_sources(pipeline="memory_rebuild")]
-
     def plan(self) -> dict[str, Any]:
         preflight = self.preflight()
         if not preflight["ok"]:
