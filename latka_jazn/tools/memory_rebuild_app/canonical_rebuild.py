@@ -26,7 +26,10 @@ from latka_jazn.tools.memory_rebuild_common import MemoryRebuildPaths
 from latka_jazn.tools.sqlite_archive_snapshot import create_sqlite_snapshot
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
+from .application import resolve_base_commit
 from .models import RebuildProject
+from .protocol_engine import ProtocolEngine
+from .test_profiles import baseline_record_reconciliation
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
 
@@ -70,6 +73,34 @@ def _source_disposition(pipeline: str) -> tuple[str, str]:
     if pipeline in {"html_control", "catalog_only", "sqlite_baseline"}:
         return "cold_evidence_only", f"pipeline:{pipeline}"
     return "excluded_with_reason", f"pipeline:{pipeline}"
+
+
+def _is_commit_sha(value: str) -> bool:
+    stripped = value.strip().lower()
+    return len(stripped) == 40 and all(char in "0123456789abcdef" for char in stripped)
+
+
+def _protocol_base_commit(tool_root: Path) -> str:
+    try:
+        commit = resolve_base_commit(tool_root)
+    except RuntimeError:
+        provenance = tool_root / "SOURCE_PROVENANCE.json"
+        if not provenance.is_file():
+            raise RuntimeError(
+                "protocol_base_commit_unavailable: git and SOURCE_PROVENANCE.json are unavailable"
+            )
+        try:
+            payload = json.loads(provenance.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"protocol_source_provenance_invalid: {exc}") from exc
+        for key in ("source_commit", "base_merge_commit"):
+            candidate = str(payload.get(key) or "").strip().lower()
+            if _is_commit_sha(candidate):
+                return candidate
+        raise RuntimeError("protocol_source_provenance_has_no_valid_source_commit")
+    if not _is_commit_sha(commit):
+        raise RuntimeError("protocol_base_commit_invalid")
+    return commit
 
 
 class CanonicalMemoryRebuildPipeline:
@@ -202,6 +233,26 @@ class CanonicalMemoryRebuildPipeline:
             errors.append("no_memory_rebuild_sources")
         if not disk["ok"]:
             errors.append("insufficient_disk_space")
+
+        benchmark_raw = str(self.project.settings.get("test04_benchmark") or "").strip()
+        benchmark = Path(benchmark_raw).expanduser().resolve() if benchmark_raw else None
+        if benchmark is None:
+            errors.append("test04_benchmark_missing")
+        elif not benchmark.is_file():
+            errors.append("test04_benchmark_missing")
+
+        system_acceptance = bool(self.project.settings.get("system_acceptance", False))
+        restart_raw = str(self.project.settings.get("restart_continuity_report") or "").strip()
+        restart_report = Path(restart_raw).expanduser().resolve() if restart_raw else None
+        if system_acceptance and (restart_report is None or not restart_report.is_file()):
+            errors.append("restart_continuity_report_missing")
+
+        protocol_base_commit: str | None = None
+        try:
+            protocol_base_commit = _protocol_base_commit(self.tool_root)
+        except RuntimeError as exc:
+            errors.append(str(exc).split(":", 1)[0])
+
         existing = self._database_paths()
         generation = "beta" if existing else "alpha"
         union_sha = self._source_union_sha256(inventory)
@@ -223,6 +274,16 @@ class CanonicalMemoryRebuildPipeline:
             "existing_database_count": len(existing),
             "existing_databases": [str(path) for path in existing],
             "disk_preflight": disk,
+            "protocol_gate": {
+                "required": True,
+                "protocol_order": ["test00", "test01", "test02", "test03", "test04", "final"],
+                "test04_benchmark": str(benchmark) if benchmark is not None else None,
+                "system_acceptance": system_acceptance,
+                "restart_continuity_report": (
+                    str(restart_report) if restart_report is not None else None
+                ),
+                "base_commit": protocol_base_commit,
+            },
             "errors": errors,
             "automatic_experience_approval": False,
             "automatic_l2": False,
@@ -238,6 +299,7 @@ class CanonicalMemoryRebuildPipeline:
         run_id: str,
         parent_database_sha256: str | None,
         readiness_class: str,
+        protocol_run_id: str | None = None,
     ) -> None:
         source_status = [
             {
@@ -264,6 +326,7 @@ class CanonicalMemoryRebuildPipeline:
                 separators=(",", ":"),
             ),
             "reconstructed_at_utc": _utc_now(),
+            "protocol_run_id": protocol_run_id or "",
         }
         with store.connect() as con:
             con.executemany(
@@ -352,6 +415,77 @@ class CanonicalMemoryRebuildPipeline:
                 },
             )
 
+            protocol_gate = dict(current.get("protocol_gate") or {})
+            benchmark = Path(str(protocol_gate["test04_benchmark"])).expanduser().resolve()
+            restart_report = protocol_gate.get("restart_continuity_report")
+            protocol_engine = ProtocolEngine(
+                baseline_root / "protocol",
+                system_version=PACKAGE_VERSION_FULL,
+                base_commit=str(protocol_gate["base_commit"]),
+                run_id=f"restore-{run_id}",
+            )
+            rebuild_paths = [
+                Path(item["path"])
+                for item in current["source_inventory"]
+                if item["pipeline"] == "memory_rebuild"
+            ]
+            test00 = protocol_engine.run_test00(rebuild_paths)
+            if not test00.get("downstream_ready"):
+                raise RuntimeError("protocol_test00_failed")
+            test01 = protocol_engine.run_test01(
+                rebuild_paths,
+                test00_result=test00,
+            )
+            if not test01.get("ok"):
+                raise RuntimeError("protocol_test01_failed")
+            protocol_database = Path(str(test01["artifacts"]["database"]))
+            test02 = protocol_engine.run_test02(
+                protocol_database,
+                test01_result=test01,
+            )
+            if not test02.get("ok"):
+                raise RuntimeError("protocol_test02_failed")
+            test03 = protocol_engine.run_test03(
+                rebuild_paths,
+                test02_result=test02,
+            )
+            if not test03.get("ok"):
+                raise RuntimeError("protocol_test03_failed")
+            test04 = protocol_engine.run_test04(
+                protocol_database,
+                benchmark,
+                test03_result=test03,
+                system_acceptance=bool(protocol_gate.get("system_acceptance")),
+                restart_continuity_report=restart_report,
+            )
+            if not test04.get("ok"):
+                raise RuntimeError("protocol_test04_failed")
+            protocol_final_output = baseline_root / "protocol-final"
+            final_protocol = protocol_engine.run_final(
+                protocol_database,
+                protocol_final_output,
+                test04_result=test04,
+                sources=rebuild_paths,
+            )
+            if not final_protocol.get("ok"):
+                raise RuntimeError("protocol_final_failed")
+            protocol_manifest = protocol_engine.seal_manifest()
+            protocol_report = {
+                "ok": True,
+                "run_id": protocol_engine.run_id,
+                "test00": test00.get("outcome"),
+                "test01": test01.get("outcome"),
+                "test02": test02.get("outcome"),
+                "test03": test03.get("outcome"),
+                "test04": test04.get("outcome"),
+                "final": final_protocol.get("outcome"),
+                "source_union_fingerprint": (
+                    final_protocol.get("artifacts") or {}
+                ).get("source_union_fingerprint"),
+                "manifest": protocol_manifest,
+                "final_output": str(protocol_final_output),
+            }
+
             staged = UnifiedMemoryDatabase(stage_database)
             initialized = staged.initialize()
             migration: dict[str, Any] = {"ok": True, "status": "not_required"}
@@ -360,11 +494,6 @@ class CanonicalMemoryRebuildPipeline:
                 if not migration.get("ok"):
                     raise RuntimeError("legacy_or_alpha_migration_failed")
 
-            rebuild_paths = [
-                Path(item["path"])
-                for item in current["source_inventory"]
-                if item["pipeline"] == "memory_rebuild"
-            ]
             imported = staged.import_sources(rebuild_paths, full_validation=True)
             if not imported.get("ok"):
                 raise RuntimeError("unified_source_import_failed")
@@ -376,10 +505,18 @@ class CanonicalMemoryRebuildPipeline:
                 run_id=run_id,
                 parent_database_sha256=parent_database_sha256,
                 readiness_class="candidate_native_unified",
+                protocol_run_id=protocol_engine.run_id,
             )
             validation = staged.validate(full=True)
             if not validation.get("ok"):
                 raise RuntimeError("staged_unified_validation_failed")
+            baseline_reconciliation = (
+                baseline_record_reconciliation(stage_database, snapshot_paths)
+                if snapshot_paths
+                else {"ok": True, "status": "not_applicable", "tables": {}}
+            )
+            if not baseline_reconciliation.get("ok"):
+                raise RuntimeError("alpha_or_legacy_baseline_reconciliation_failed")
             staged_probe = probe_unified_memory_database(stage_database, full_integrity=True)
             if not staged_probe.get("full_autobiographical_recall_ready"):
                 raise RuntimeError("staged_runtime_readiness_probe_failed")
@@ -389,6 +526,7 @@ class CanonicalMemoryRebuildPipeline:
                 run_id=run_id,
                 parent_database_sha256=parent_database_sha256,
                 readiness_class="native_unified",
+                protocol_run_id=protocol_engine.run_id,
             )
             staged.checkpoint()
 
@@ -444,6 +582,8 @@ class CanonicalMemoryRebuildPipeline:
                 "baseline_snapshot_count": len(snapshot_reports),
                 "migration": migration,
                 "import": imported,
+                "protocol_gate": protocol_report,
+                "baseline_reconciliation": baseline_reconciliation,
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
