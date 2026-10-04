@@ -58,6 +58,7 @@ ERROR_LABELS = {
     "enabled_sources_blocked": "Co najmniej jedno źródło jest zablokowane przez kontrolę bezpieczeństwa.",
     "no_memory_rebuild_sources": "Nie ma żadnego źródła przeznaczonego do odbudowy pamięci.",
     "developer_target_inside_repository": "W trybie developer katalog docelowy musi być poza repozytorium.",
+    "insufficient_disk_space": "Za mało wolnego miejsca na bezpieczny staging, baseline i atomową publikację.",
 }
 
 
@@ -166,11 +167,21 @@ def format_preflight(report: dict[str, Any]) -> str:
         "GOTOWOŚĆ PROJEKTU: " + ("GOTOWY" if ok else "WYMAGA POPRAWY"),
         "",
         f"Katalog docelowy: {report.get('target_root') or 'nie ustawiono'}",
+        f"Kanoniczna baza: {report.get('canonical_database') or '—'}",
+        f"Właściciel odbudowy: {report.get('pipeline_owner') or '—'}",
         f"Włączone źródła: {report.get('enabled_source_count', 0)}",
         f"Źródła importowane do odbudowy: {report.get('memory_rebuild_source_count', 0)}",
         f"Źródła referencyjne — bez bezpośredniego importu: {report.get('catalog_only_source_count', 0)}",
         f"Źródła HTML używane tylko do kontroli: {report.get('html_control_source_count', 0)}",
     ]
+    disk = report.get("disk_preflight") or {}
+    if disk.get("status") != "not_checked":
+        lines.extend(
+            (
+                f"Wymagane wolne miejsce: {human_size(disk.get('required_free_bytes'))}",
+                f"Dostępne wolne miejsce: {human_size(disk.get('available_free_bytes'))}",
+            )
+        )
     errors = list(report.get("errors") or [])
     if errors:
         lines.extend(("", "Co trzeba poprawić:"))
@@ -220,6 +231,10 @@ def format_plan(payload: dict[str, Any]) -> str:
         "PLAN BEZ ZAPISU",
         "",
         f"Plan poprawny: {_yes(bool(plan.get('ok')))}",
+        f"Właściciel pipeline: {plan.get('pipeline_owner', '—')}",
+        f"Kanoniczna baza: {plan.get('canonical_database', '—')}",
+        f"Generacja wyniku: {plan.get('memory_generation', '—')}",
+        f"Source union SHA-256: {plan.get('source_union_sha256', '—')}",
         f"Wybrane źródła: {plan.get('selected_source_count', 0)}",
         f"Źródła rozmów: {plan.get('chat_source_count', 0)}",
         f"Źródła dziennika: {plan.get('journal_source_count', 0)}",
