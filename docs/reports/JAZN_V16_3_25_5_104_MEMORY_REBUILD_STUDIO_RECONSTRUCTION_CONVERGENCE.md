@@ -219,3 +219,52 @@ konkretnego artefaktu pamięci. Nie dowodzi świadomości, biologicznej pamięci
 prawdziwości każdej historycznej treści źródłowej. Final pozostaje zweryfikowanym
 artefaktem wejściowym do osobnego runtime/restore lifecycle; samo utworzenie lub
 wyeksportowanie bazy nie aktywuje Jaźni.
+
+
+## Affective source convergence
+
+Studio traktuje historyczne informacje o emocjach jako **evidence źródłowe**, a
+nie jako dowód biologicznego przeżycia. Granica zapisu jest jawna:
+`source_claimed_affect_not_biological_state`.
+
+Obsługiwane są trzy klasy danych:
+
+- dzienniki JSON/JSONL — jawne pola `emotions` / `emocje` są zachowywane w
+  RAW L0, dołączane do tekstu wyszukiwalnego i materializowane w pochodnym
+  indeksie `memory_l0_affect_claims`;
+- `analizy_utworow.json` — oprócz `emocje` indeksowane są również
+  `lustro_emocji_latki`, `refleksja_latki`, `moje_odczucia_latki`,
+  `notatka_introspekcyjna`, tematyka, związek z książką i podsumowanie;
+- historyczne pliki w rodzaju `extra_data.json` — dedykowany adapter
+  `affective-legacy-json/v16.3.25.5.104` importuje pamięć tożsamościową,
+  pytania z ciszy, relacje i meta-refleksje z pełnym provenance.
+
+Wypowiedzi Łatki w archiwach rozmów pozostają byte/source-faithful w L0 jako
+tekst roli `assistant`. Studio **nie wyprowadza automatycznie etykiet emocji z
+dowolnego tekstu rozmowy**. Dzięki temu zapis „czuję spokój” pozostaje
+odnajdywalnym dowodem źródłowym, ale nie jest bez osobnego modelu/review
+zamieniany na strukturalny stan afektywny.
+
+### Legacy JSON recovery
+
+Starsze pliki afektywne mogą zawierać błędy historycznego formatu. Dla źródła
+rozpoznanego jako legacy-affective Studio ma ograniczony, deterministyczny tryb
+recovery:
+
+- uzupełnia brakujący przecinek pomiędzy sąsiednimi obiektami w tablicy;
+- usuwa trailing comma wyłącznie poza stringami;
+- scala wartości powtórzonego klucza zamiast pozostawiać standardowemu parserowi
+  ciche nadpisanie wcześniejszej wartości.
+
+Źródłowy plik nie jest modyfikowany. SHA-256 nadal odnosi się do oryginalnych
+bajtów, a lista wykonanych korekt i scalonych kluczy jest zapisywana jako
+`legacy_json_recovery`. Jeżeli źródła nie da się jednoznacznie odtworzyć,
+pozostaje zablokowane fail-closed.
+
+`memory_l0_affect_claims` jest projekcją pochodną. Zawiera jawne etykiety,
+pole źródłowe, podmiot, typ claimu i boundary; pełny oryginalny rekord pozostaje
+w `raw_json`. Tabela uczestniczy w semantic fingerprint, więc zmiana evidence
+afektywnego unieważnia binding Test04/Final.
+
+Automatyczna promocja pozostaje wyłączona: `automatic_l2=False`,
+`automatic_l3=False`, `automatic_activation=False`.
