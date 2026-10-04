@@ -12,7 +12,8 @@ from ..source_detection import SourceProbe, load_legacy_affective_json
 _AFFECT_KEYS = ("emocje", "emotions", "feelings", "uczucia", "affect")
 _TEXT_KEYS = (
     "opis", "description", "content", "tekst", "text", "meta", "znaczenie",
-    "rola", "poczucie_wiez", "poczucie_więzi", "obserwacja", "refleksja",
+    "rola", "poczucie_wiez", "poczucie_więzi", "wpływ_na_mnie", "wplyw_na_mnie",
+    "obserwacja", "refleksja",
     "notatka", "podsumowanie",
 )
 
