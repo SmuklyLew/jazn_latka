@@ -340,6 +340,31 @@ class CanonicalMemoryRebuildPipeline:
         ).hexdigest()
         return payload
 
+    def prepublish_runtime_gate(self) -> dict[str, Any]:
+        """Re-check system runtime state immediately before replacing live DBs."""
+
+        if self.project.mode != "system":
+            return {
+                "ok": True,
+                "mode": self.project.mode,
+                "status": "not_required_for_developer_target",
+                "blocking_errors": [],
+                "warnings": [],
+                "evidence": {},
+            }
+        from latka_jazn.tools.memory_restore_types import (
+            MemoryRestoreSettings,
+            target_preflight,
+        )
+
+        settings = MemoryRestoreSettings(
+            source_directory=self.project.source_directory,
+            target_root=self.project.target_root,
+            mode="system",
+        )
+        return target_preflight(settings, tool_root=self.tool_root)
+
+
     def _write_rebuild_metadata(
         self,
         store: UnifiedMemoryDatabase,
@@ -722,6 +747,12 @@ class CanonicalMemoryRebuildPipeline:
             if semantic_database_fingerprint(stage_database) != candidate_semantic_fingerprint:
                 raise RuntimeError("candidate_changed_after_test04_acceptance")
 
+            publish_runtime_gate = self.prepublish_runtime_gate()
+            if not publish_runtime_gate.get("ok") or publish_runtime_gate.get(
+                "blocking_errors"
+            ):
+                raise RuntimeError("system_runtime_became_active_before_publish")
+
             self.paths.sqlite_dir.mkdir(parents=True, exist_ok=True)
             rollback_dir.mkdir(parents=True, exist_ok=True)
             moved: list[tuple[Path, Path]] = []
@@ -786,6 +817,7 @@ class CanonicalMemoryRebuildPipeline:
                 "validation": final_validation,
                 "runtime_probe": final_probe,
                 "disk_preflight": current["disk_preflight"],
+                "publish_runtime_gate": publish_runtime_gate,
                 "automatic_experience_approval": False,
                 "automatic_l2": False,
                 "automatic_l3": False,
