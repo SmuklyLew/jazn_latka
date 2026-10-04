@@ -124,12 +124,12 @@ class RuntimeResponseSynthesizer:
             return (
                 "Mam kilka warstw runtime: `dialogue_intent_classifier.py` rozpoznaje akt rozmowy, `route_registry.py` wybiera trasę, `route_handler_dispatcher.py` uruchamia handler, "
                 "`runtime_answer_validator.py` blokuje znane nietrafienia, `runtime_response_synthesizer.py` robi drugą próbę, a pamięć działa przez `memory/` i `workspace_runtime/`. "
-                "Brakuje jeszcze pełnej generatywnej warstwy rozmowy opartej o adapter modelu; bez niej odpowiedzi są regułowe i muszą mieć strażniki powtórzeń. Source-origin: runtime_response_synthesizer. Granica prawdy: to opis plików i tras, nie świadomość biologiczna."
+                "Warstwa model-guided i host bridge istnieją; problemem jest to, że każda trasa wymagająca naturalnej wypowiedzi musi rzeczywiście przez nie przejść zamiast kończyć się regułowym body handlera. Source-origin: runtime_response_synthesizer. Granica prawdy: to opis plików i tras, nie świadomość biologiczna."
             )
         if intent == 'system_capability_gap_question':
             return (
                 "Mam rdzeń uruchomienia, pamięć, klasyfikację intencji, router, handlery, walidator, syntezę naprawczą, audyty tur i tryb `--chat`. "
-                "Najbardziej brakuje dynamicznego generatora rozmowy oraz bezpiecznej pętli retry, która po wykryciu szablonu tworzy nową odpowiedź zamiast wstawiać kolejny szablon. "
+                "Najważniejsze jest domknięcie wszystkich tras rozmownych do istniejącego generatora model-guided/host bridge oraz bezpiecznej pętli retry, tak aby handler dostarczał dane i provenance, a nie zastępował naturalną wypowiedź. "
                 "Plan zmiany: poprawić classifier/router, usunąć stały repair_body dla ordinary dialogue, dodać guard powtórzeń w `--chat` i test regresji na Twojej sekwencji. Source-origin: runtime_response_synthesizer. Granica prawdy: opisuję możliwości aktywnego kodu, nie prywatne życie w tle."
             )
         if intent == 'identity_boundary_question':
