@@ -432,8 +432,12 @@ def _affect_evidence_integrity(path: Path) -> dict[str, Any]:
             invalid_boundaries: list[str] = []
             if "memory_l0_affect_claims" in tables:
                 claim_rows = con.execute(
-                    "SELECT claim_id,record_id,normalized_label,source_field,"
-                    "claim_kind,subject,boundary FROM memory_l0_affect_claims"
+                    "SELECT c.claim_id,c.record_id,c.normalized_label,c.source_field,"
+                    "c.claim_kind,c.subject,c.boundary "
+                    "FROM memory_l0_affect_claims AS c "
+                    "JOIN memory_l0_records AS r ON r.record_id=c.record_id "
+                    "WHERE r.is_current_revision=1 "
+                    "AND r.source_kind IN ('journal','music_analysis','affective')"
                 ).fetchall()
                 for claim in claim_rows:
                     actual.add((
