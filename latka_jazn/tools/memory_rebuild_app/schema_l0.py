@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 
-L0_SCHEMA_VERSION = "memory_rebuild_l0/v4"
+L0_SCHEMA_VERSION = "memory_rebuild_l0/v5"
 
 L0_SCHEMA_SQL = """
 PRAGMA foreign_keys=ON;
@@ -87,6 +87,28 @@ AFTER UPDATE OF record_id,title,content,record_kind ON memory_l0_records BEGIN
   INSERT INTO memory_l0_fts(rowid,record_id,title,content,record_kind)
   VALUES(new.rowid,new.record_id,new.title,new.content,new.record_kind);
 END;
+CREATE TABLE IF NOT EXISTS memory_l0_affect_claims(
+  claim_id TEXT PRIMARY KEY,
+  record_id TEXT NOT NULL,
+  source_id TEXT NOT NULL,
+  label TEXT NOT NULL,
+  normalized_label TEXT NOT NULL,
+  source_field TEXT NOT NULL,
+  claim_kind TEXT NOT NULL,
+  subject TEXT NOT NULL DEFAULT 'latka',
+  boundary TEXT NOT NULL DEFAULT 'source_claimed_affect_not_biological_state',
+  observed_at_utc TEXT NOT NULL,
+  UNIQUE(record_id,normalized_label,source_field,claim_kind,subject),
+  FOREIGN KEY(record_id) REFERENCES memory_l0_records(record_id) ON DELETE CASCADE,
+  FOREIGN KEY(source_id) REFERENCES memory_l0_sources(source_id)
+);
+CREATE INDEX IF NOT EXISTS idx_memory_l0_affect_claim_label
+  ON memory_l0_affect_claims(normalized_label,source_field,claim_kind);
+CREATE VIEW IF NOT EXISTS memory_l0_affect_claims_current AS
+  SELECT c.*, r.source_kind, r.record_kind, r.title, r.content, r.event_time_start, r.role
+  FROM memory_l0_affect_claims AS c
+  JOIN memory_l0_records AS r ON r.record_id=c.record_id
+  WHERE r.is_current_revision=1;
 CREATE TABLE IF NOT EXISTS memory_l0_embeddings(
   record_id TEXT NOT NULL,
   model_id TEXT NOT NULL,
