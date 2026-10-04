@@ -398,15 +398,17 @@ class CanonicalMemoryRebuildPipeline:
                 for item in self._sidecars(database_path):
                     if item.exists():
                         active_files.append(item)
-            for original in active_files:
-                backup = rollback_dir / original.name
-                if backup.exists():
-                    backup = rollback_dir / f"{uuid.uuid4().hex}-{original.name}"
-                os.replace(original, backup)
-                moved.append((original, backup))
-
+            published = False
             try:
+                for original in active_files:
+                    backup = rollback_dir / original.name
+                    if backup.exists():
+                        backup = rollback_dir / f"{uuid.uuid4().hex}-{original.name}"
+                    os.replace(original, backup)
+                    moved.append((original, backup))
+
                 os.replace(stage_database, self.database)
+                published = True
                 final_store = UnifiedMemoryDatabase(self.database)
                 final_validation = final_store.validate(full=True)
                 final_probe = probe_unified_memory_database(self.database, full_integrity=True)
@@ -415,7 +417,8 @@ class CanonicalMemoryRebuildPipeline:
                 if not final_probe.get("full_autobiographical_recall_ready"):
                     raise RuntimeError("published_runtime_readiness_probe_failed")
             except BaseException:
-                self.database.unlink(missing_ok=True)
+                if published:
+                    self.database.unlink(missing_ok=True)
                 self._restore_rollbacks(rollback_dir, moved)
                 raise
 
