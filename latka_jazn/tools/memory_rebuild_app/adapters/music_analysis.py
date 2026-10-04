@@ -6,12 +6,12 @@ import json
 
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
-from ..source_detection import SourceProbe
+from ..source_detection import SourceProbe, load_json_strict
 from .common import stable_key
 
 
 def _analysis_rows(path: Path) -> Iterator[dict[str, Any]]:
-    value = json.loads(path.read_text(encoding="utf-8-sig"))
+    value = load_json_strict(path)
     if isinstance(value, dict) and isinstance(value.get("analizy"), list):
         source = value["analizy"]
     elif isinstance(value, list):
