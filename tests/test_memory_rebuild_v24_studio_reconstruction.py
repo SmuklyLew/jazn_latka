@@ -959,6 +959,15 @@ def test_legacy_affective_json_recovery_preserves_duplicate_keys_and_records(
             )
         }
         assert {"troska", "spokój", "obecność"} <= labels
+        source_row = con.execute(
+            "SELECT source_sha256,metadata_json FROM memory_l0_sources "
+            "WHERE source_kind='affective'"
+        ).fetchone()
+        assert source_row is not None
+        assert str(source_row[0]) == hashlib.sha256(source.read_bytes()).hexdigest()
+        source_meta = json.loads(str(source_row[1]))
+        assert source_meta["legacy_json_recovery"]["source_bytes_preserved"] is True
+        assert "autonomia" in source_meta["legacy_json_recovery"]["duplicate_keys_merged"]
 
 
 def test_unrecoverable_affective_json_remains_fail_closed(tmp_path: Path) -> None:
