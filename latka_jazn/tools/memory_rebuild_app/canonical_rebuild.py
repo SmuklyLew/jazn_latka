@@ -259,14 +259,24 @@ class CanonicalMemoryRebuildPipeline:
             errors.append(str(exc).split(":", 1)[0])
 
         existing = self._database_paths()
-        existing_inventory = [
-            {
-                "path": str(path),
-                "size_bytes": path.stat().st_size,
-                "sha256": sha256_file(path),
-            }
-            for path in existing
-        ]
+        existing_inventory: list[dict[str, Any]] = []
+        for path in existing:
+            wal = Path(str(path) + "-wal")
+            existing_inventory.append(
+                {
+                    "path": str(path),
+                    "size_bytes": path.stat().st_size,
+                    "sha256": sha256_file(path),
+                    "wal": (
+                        {
+                            "size_bytes": wal.stat().st_size,
+                            "sha256": sha256_file(wal),
+                        }
+                        if wal.is_file()
+                        else None
+                    ),
+                }
+            )
         generation = "beta" if existing else "alpha"
         union_sha = self._source_union_sha256(inventory)
         protocol_gate = {
