@@ -79,13 +79,21 @@ Plan ma `execution_plan_sha256`. Hash obejmuje między innymi:
 Zmiana któregoś z tych wejść pomiędzy `plan()` i `run()` daje
 `prepared_plan_stale`.
 
-Ten sam `execution_plan_sha256` jest ponownie wyliczany bezpośrednio przed
-podmianą live SQLite. Dzięki temu zmiana źródła, benchmarku, restart evidence
-albo istniejącej bazy już w trakcie długiego Test00–04 również kończy run
-fail-closed jako `execution_plan_changed_before_publish`. Drugi gate porównuje
-fingerprint wejść, ale nie ponawia początkowego wymogu wolnego miejsca, ponieważ
-staging i immutable baseline utworzone przez ten sam run legalnie zużywają
-wcześniej zarezerwowaną przestrzeń.
+Po utworzeniu immutable baseline Studio ponownie hashuje wejścia, które nie mogą
+zmienić się w obrębie runu: źródła, benchmark Test04, restart evidence, source
+union, protocol base commit i tryb acceptance. Muszą być identyczne z planem
+operatora. Następnie **post-snapshot** stan istniejących baz i trwałych sidecarów
+jest zamrażany jako osobny publish guard. Bezpośrednio przed podmianą live SQLite
+pełny `execution_plan_sha256` jest porównywany właśnie z tym guardem.
+
+To rozróżnienie jest celowe: SQLite Backup API może podczas otwarcia zatrzymanej
+bazy legalnie znormalizować/recoverować własny WAL albo rollback journal.
+Normalizacja wykonana podczas ustanawiania baseline nie jest więc fałszywie
+traktowana jako TOCTOU, natomiast każda późniejsza zmiana źródła, benchmarku,
+restart evidence albo live SQLite kończy run fail-closed jako
+`execution_plan_changed_before_publish`. Gate nie ponawia początkowego wymogu
+wolnego miejsca, ponieważ staging i immutable baseline utworzone przez ten sam
+run legalnie zużywają wcześniej zarezerwowaną przestrzeń.
 
 Stan `-wal` jest częścią planu, ponieważ w trybie WAL zatwierdzone strony mogą
 pozostawać poza głównym plikiem SQLite do checkpointu. `-journal` również jest
