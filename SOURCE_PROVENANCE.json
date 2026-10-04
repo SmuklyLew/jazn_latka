@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "551705bb5038d51e94d0668a27cf46bb35a99c7f",
-    "base_version": "16.3.25.5.102-fast-bootstrap-persistent-runtime-convergence",
+    "base_commit": "a458c553433003d72fa6f0443ca9b052330d0e36",
+    "base_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "a458c553433003d72fa6f0443ca9b052330d0e36",
