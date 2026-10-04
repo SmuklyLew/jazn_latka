@@ -112,20 +112,24 @@ class MemoryExperienceRecallHandler:
 
     @staticmethod
     def _render(items: list[dict[str, Any]]) -> str:
-        """Return a bounded fallback, never a raw memory-record recital.
+        """Return bounded evidence text for downstream language realization.
 
-        The handler owns retrieval/provenance, while the language channel owns
-        natural wording. Source locators stay in memory_sources and the frozen
-        recall payload so validators/finalizers can audit every claim.
+        The excerpts stay available to validators, repair paths and tests, while
+        raw database/source locators stay in structured provenance only. Engine
+        policy prevents this internal evidence rendering from becoming the
+        host-visible answer when model language realization is required.
         """
 
-        return (
-            f"Znalazłam {len(items)} źródłowo uziemione "
-            "fragmenty pamięci dla tej tury. Traktuję je jako materiał dowodowy "
-            "do naturalnej odpowiedzi, a nie jako gotowy tekst do pokazania. "
-            "Jeśli warstwa językowa nie jest dostępna, nie będę recytować "
-            "surowych rekordów ani ścieżek bazy jako zastępstwa rozmowy."
+        lines = [
+            f"Znalazłam {len(items)} źródłowo uziemione fragmenty pamięci dla tej tury.",
+            "Materiał dowodowy do naturalnej odpowiedzi:",
+        ]
+        for item in items:
+            lines.append(f"- {item['content_excerpt']}")
+        lines.append(
+            "Te fragmenty są kontekstem generacji; surowe rekordy i ścieżki bazy pozostają w provenance."
         )
+        return chr(10).join(lines)
 
 
     def handle(
