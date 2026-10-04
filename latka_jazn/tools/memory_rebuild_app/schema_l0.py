@@ -198,7 +198,7 @@ CREATE VIEW IF NOT EXISTS music_analysis_current AS
 """
 
 def ensure_l0_schema_extensions(con: sqlite3.Connection) -> None:
-    """Migrate an existing L0 database to the native v4 evidence boundary."""
+    """Migrate an existing L0 database to the native v5 evidence boundary."""
 
     con.executescript(L0_SCHEMA_SQL)
     columns = {str(row[1]) for row in con.execute("PRAGMA table_info(memory_l0_records)")}
