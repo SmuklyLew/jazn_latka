@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import os
+import sqlite3
+
+import pytest
 
 from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 from latka_jazn.tools.chat_export_reader import sha256_file
@@ -9,9 +13,15 @@ from latka_jazn.tools.memory_rebuild_app.canonical_rebuild import (
     CanonicalMemoryRebuildPipeline,
     canonical_database_path,
 )
+from latka_jazn.tools.memory_rebuild_app import controller as controller_module
+from latka_jazn.tools.memory_rebuild_app import final_export as final_export_module
 from latka_jazn.tools.memory_rebuild_app.controller import MemoryRebuildAppController
 from latka_jazn.tools.memory_rebuild_app.models import RebuildProject, SourceSpec
 from latka_jazn.tools.memory_rebuild_app.project_store import ProjectStore
+from latka_jazn.tools.memory_rebuild_app.test_profiles import (
+    baseline_record_reconciliation,
+    semantic_database_fingerprint,
+)
 from latka_jazn.tools.memory_rebuild_app.test_spec import validate_test_layer_contracts
 from latka_jazn.tools.memory_rebuild_coordinator import MemoryRebuildCoordinator
 from latka_jazn.tools.memory_restore import confirmation_token
@@ -197,6 +207,16 @@ def test_studio_rebuild_publishes_only_runtime_ready_unified_database(tmp_path: 
     assert result["memory_search_ready"] is True
     assert result["full_autobiographical_recall_ready"] is True
     assert expected_database.is_file()
+    assert result["candidate_test04_validation"]["ok"] is True
+    acceptance = json.loads(
+        Path(result["test04_acceptance_report"]).read_text(encoding="utf-8")
+    )
+    assert acceptance["binding"]["database_semantic_fingerprint"] == (
+        semantic_database_fingerprint(expected_database)
+    )
+    assert acceptance["binding"]["source_union_sha256"] == result["source_union_sha256"]
+    assert acceptance["binding"]["restore_run_id"] == result["run_id"]
+    assert acceptance["binding"]["protocol_run_id"] == result["protocol_gate"]["run_id"]
 
     probe = probe_unified_memory_database(expected_database, full_integrity=True)
     assert probe["status"] == "ready_native_unified"
@@ -300,3 +320,137 @@ def test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate() -> Non
     assert contracts["test04"]["required_predecessors"] == ("test03",)
     assert contracts["final"]["required_predecessors"] == ("test04",)
     assert contracts["final"]["gate_kind"] == "export_and_readiness"
+
+
+
+def test_prepared_plan_is_stale_when_test04_benchmark_changes(tmp_path: Path) -> None:
+    source = _write_conversations(tmp_path / "conversations.json", "conv-plan", "plan")
+    project = _project(tmp_path, source, name="Plan binding")
+    pipeline = CanonicalMemoryRebuildPipeline(project, tool_root=Path.cwd())
+    prepared = pipeline.plan()
+    assert prepared["ok"], prepared
+    assert prepared["execution_plan_sha256"]
+
+    benchmark = Path(project.settings["test04_benchmark"])
+    benchmark.write_text(
+        benchmark.read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+
+    result = pipeline.run(prepared_plan=prepared)
+    assert result["ok"] is False
+    assert result["status"] == "prepared_plan_stale"
+    assert result["field"] == "execution_plan_sha256"
+    assert result["expected"] == prepared["execution_plan_sha256"]
+    assert result["actual"] != prepared["execution_plan_sha256"]
+
+
+def test_baseline_reconciliation_detects_same_key_content_change(tmp_path: Path) -> None:
+    baseline = tmp_path / "baseline.sqlite3"
+    target = tmp_path / "target.sqlite3"
+    for path, title in ((baseline, "before"), (target, "after")):
+        with sqlite3.connect(path) as con:
+            con.execute(
+                "CREATE TABLE conversations("
+                "conversation_id TEXT PRIMARY KEY,"
+                "title TEXT NOT NULL"
+                ")"
+            )
+            con.execute(
+                "INSERT INTO conversations(conversation_id,title) VALUES(?,?)",
+                ("conv-1", title),
+            )
+            con.commit()
+
+    report = baseline_record_reconciliation(target, [baseline])
+    assert report["ok"] is False
+    assert report["tables"]["conversations"]["missing_record_count"] == 0
+    assert report["tables"]["conversations"]["content_mismatch_count"] == 1
+
+
+def test_memory_evidence_resolver_rejects_paths_outside_memory_root(
+    tmp_path: Path,
+) -> None:
+    memory_root = tmp_path / "memory"
+    memory_root.mkdir()
+    inside = memory_root / "rebuild_baselines" / "report.json"
+    inside.parent.mkdir(parents=True)
+    inside.write_text("{}", encoding="utf-8")
+
+    resolved = final_export_module._resolve_memory_evidence(
+        memory_root,
+        "rebuild_baselines/report.json",
+    )
+    assert resolved == inside.resolve()
+
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="inside canonical memory root"):
+        final_export_module._resolve_memory_evidence(memory_root, outside)
+
+
+def test_final_publish_restores_old_target_when_second_replace_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "final"
+    staging = tmp_path / "final.staging"
+    target.mkdir()
+    staging.mkdir()
+    (target / "old.txt").write_text("old", encoding="utf-8")
+    (staging / "new.txt").write_text("new", encoding="utf-8")
+
+    original_replace = os.replace
+    calls = 0
+
+    def fail_second_replace(src: str | os.PathLike[str], dst: str | os.PathLike[str]) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("synthetic publish failure")
+        original_replace(src, dst)
+
+    monkeypatch.setattr(final_export_module.os, "replace", fail_second_replace)
+
+    with pytest.raises(OSError, match="synthetic publish failure"):
+        final_export_module._publish_directory_atomically(
+            staging,
+            target,
+            overwrite=True,
+        )
+
+    assert target.is_dir()
+    assert (target / "old.txt").read_text(encoding="utf-8") == "old"
+    assert not (target / "new.txt").exists()
+
+
+def test_system_mode_preflight_rejects_active_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _write_conversations(tmp_path / "conversations.json", "conv-system", "system")
+    project = _project(tmp_path, source, name="System gate")
+    project.mode = "system"
+
+    monkeypatch.setattr(
+        controller_module,
+        "target_preflight",
+        lambda settings, tool_root=None: {
+            "ok": False,
+            "mode": "system",
+            "target_root": settings.target_root,
+            "blocking_errors": ["system_runtime_must_be_stopped"],
+            "warnings": [],
+            "evidence": {"daemon": {"pid_alive": True}},
+        },
+    )
+    controller = MemoryRebuildAppController(
+        project,
+        store=ProjectStore(tmp_path / "projects"),
+        tool_root=Path.cwd(),
+    )
+
+    report = controller.preflight()
+    assert report["ok"] is False
+    assert "system_runtime_must_be_stopped" in report["errors"]
+    assert report["runtime_target_preflight"]["ok"] is False
