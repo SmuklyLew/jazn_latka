@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from typing import Any
 
 from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
