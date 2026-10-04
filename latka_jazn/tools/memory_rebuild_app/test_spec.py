@@ -230,7 +230,14 @@ TEST_SPECS: tuple[TestSpec, ...] = (
         goal="Zamraża zweryfikowaną bazę i dowody jako wejście do osobnego Verified Memory Restore.",
         inputs=("zaliczony Test04", "raporty Test00-04", "review/promotion ledgers"),
         readiness=("wszystkie blocking checks Test04 PASSED", "brak niejawnych automatycznych promocji"),
-        phases=("SQLite Backup API snapshot", "full validation", "FTS5 integrity", "manifest sealing", "sanitized export"),
+        phases=(
+            "SQLite Backup API snapshot",
+            "full validation",
+            "FTS5 integrity",
+            "runtime-native read-only probe",
+            "manifest sealing",
+            "sanitized export",
+        ),
         checks=(
             "snapshot SQLite jest spójny i powstaje przez API SQLite, nie surowe kopiowanie aktywnego WAL DB",
             "PRAGMA integrity_check oraz foreign_key_check są czyste",
@@ -239,6 +246,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "private + sanitized manifests zgadzają się po hashach",
             "source manifest i database manifest są kompletne",
             "promotion ledger pozostaje fail-closed bez jawnej decyzji",
+            "runtime-native probe potwierdza schema_identity i full_autobiographical_recall_ready=true",
         ),
         outputs=("final memory_jazn.sqlite3", "database/source/test manifests", "candidate/review ledger"),
         truth_boundary=("Final jest gotowym wejściem do Verified Memory Restore, nie aktywną Jaźnią.",),
