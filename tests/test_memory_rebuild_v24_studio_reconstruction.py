@@ -1257,3 +1257,20 @@ def test_baseline_reconciliation_detects_lost_affect_claim(tmp_path: Path) -> No
     after = baseline_record_reconciliation(target, [baseline])
     assert after["ok"] is False
     assert after["tables"]["memory_l0_affect_claims"]["missing_record_count"] == 1
+
+
+def test_music_analysis_duplicate_json_key_is_fail_closed(tmp_path: Path) -> None:
+    source = tmp_path / "analizy_utworow.json"
+    source.write_text(
+        '{"analizy":[{"tytul":"Duplicate","emocje":"spokój",'
+        '"emocje":"niepokój","analiza":"test"}]}',
+        encoding="utf-8",
+    )
+
+    inspection = inspect_source(source)
+    assert inspection.ok is False
+    assert inspection.pipeline == "excluded"
+    assert "blocking:json_invalid" in inspection.warnings
+    probe = probe_source(source)
+    assert probe.kind == "reference"
+    assert any("DuplicateJsonKeyError" in reason for reason in probe.reasons)
