@@ -110,6 +110,12 @@ lub zmiana zachowywanej treści pozostaje blockerem.
 kanonicznego `memory_root`. Absolutny lub względny path escaping poza ten root
 jest odrzucany.
 
+Rollback live publikacji jest przechowywany poza katalogiem staging. Jeśli
+przywrócenie któregoś pliku po nieudanej publikacji samo zawiedzie, pozostałe
+restore są nadal podejmowane, a katalog rollback nie jest usuwany; wynik
+wskazuje `preserved_rollback_dir` do ręcznego recovery. Dzięki temu cleanup
+staging nie może skasować ostatniej kopii nierestaurowanego pliku.
+
 ## P0 — usunięty circular import runtime
 
 CI ujawniło cykl:
