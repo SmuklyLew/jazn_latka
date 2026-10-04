@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.104",
-  "active_definition_count": 1897,
+  "active_definition_count": 1903,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -41808,6 +41808,186 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affective_legacy_source_is_detected_and_imported_with_claims": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_affective_legacy_source_is_detected_and_imported_with_claims",
+      "purpose": "affective legacy source is detected and imported with claims",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 817
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_duplicate_json_keys_are_blocked_before_affective_import": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_duplicate_json_keys_are_blocked_before_affective_import",
+      "purpose": "duplicate json keys are blocked before affective import",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 898
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_music_analysis_indexes_latka_affect_reflection_fields": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_music_analysis_indexes_latka_affect_reflection_fields",
+      "purpose": "music analysis indexes latka affect reflection fields",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 915
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_journal_emotions_are_searchable_and_indexed_as_affect_claims": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_journal_emotions_are_searchable_and_indexed_as_affect_claims",
+      "purpose": "journal emotions are searchable and indexed as affect claims",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 966
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_assistant_emotion_utterance_is_preserved_without_inferred_affect_label",
+      "purpose": "assistant emotion utterance is preserved without inferred affect label",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 1015
+    },
+    "tests/test_memory_rebuild_v24_studio_reconstruction.py::test_affect_claim_change_changes_semantic_fingerprint": {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "name": "test_affect_claim_change_changes_semantic_fingerprint",
+      "purpose": "affect claim change changes semantic fingerprint",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools",
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.controller",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.test_profiles",
+        "latka_jazn.tools.memory_rebuild_app.test_spec",
+        "latka_jazn.tools.memory_rebuild_coordinator",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 1043
     }
   }
 }
