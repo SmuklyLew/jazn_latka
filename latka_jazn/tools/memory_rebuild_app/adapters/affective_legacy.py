@@ -6,7 +6,7 @@ import hashlib
 
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
-from ..source_detection import SourceProbe, load_json_strict
+from ..source_detection import SourceProbe, load_legacy_affective_json
 
 
 _AFFECT_KEYS = ("emocje", "emotions", "feelings", "uczucia", "affect")
@@ -182,7 +182,7 @@ class LegacyAffectiveJsonAdapter:
         self, path: Path, probe: SourceProbe, settings: MemoryRebuildSettings,
     ) -> PreparedSource:
         del probe, settings
-        payload = load_json_strict(path)
+        payload, recovery = load_legacy_affective_json(path)
         if not isinstance(payload, Mapping):
             raise ValueError("Affective legacy JSON must be a top-level object.")
         records = list(_iter_records(payload))
@@ -202,6 +202,7 @@ class LegacyAffectiveJsonAdapter:
                 "logical_collection": "legacy_affective_memory",
                 "record_count": len(records),
                 "truth_boundary": "source_claimed_affect_not_biological_state",
+                "legacy_json_recovery": recovery,
                 "automatic_promotion": False,
             },
             record_factory=record_factory,
