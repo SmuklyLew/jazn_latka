@@ -313,7 +313,14 @@ def test_source_union_fingerprint_is_independent_of_project_order_and_source_ids
 def test_each_memory_protocol_test_has_one_layer_owner_and_ordered_gate() -> None:
     report = validate_test_layer_contracts()
     assert report["ok"], report
-    contracts = {item["profile"]: item for item in report["contracts"]}
+    raw_contracts = report.get("contracts")
+    assert isinstance(raw_contracts, tuple)
+    contracts: dict[str, dict[str, object]] = {}
+    for item in raw_contracts:
+        assert isinstance(item, dict)
+        profile = item.get("profile")
+        assert isinstance(profile, str)
+        contracts[profile] = item
     assert contracts["test00"]["owner_layer"] == "source_fidelity_and_union"
     assert contracts["test01"]["required_predecessors"] == ("test00",)
     assert contracts["test02"]["required_predecessors"] == ("test01",)
