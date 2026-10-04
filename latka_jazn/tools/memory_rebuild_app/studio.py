@@ -59,6 +59,11 @@ DESIGN_ITEMS: tuple[PageItem, ...] = (
         "Rozmowy, HTML, dzienniki, analizy utworów, źródła afektywne i migracja starych baz.",
     ),
     PageItem("candidates", "Kandydaci pamięci", "Ręczny review L1 bez automatycznego L2/L3."),
+    PageItem(
+        "affect",
+        "Ślady afektywne / emocje",
+        "Read-only: jawne emocje i refleksje źródłowe z provenance, bez automatycznej promocji.",
+    ),
     PageItem("plan", "Plan bez zapisu", "Preflight i dokładny plan bez uruchamiania odbudowy."),
     PageItem("rebuild", "Wykonaj odbudowę", "Jawnie potwierdzony zapis zgodnie z aktualnym planem."),
     PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi Testami 01–04."),
@@ -1083,6 +1088,8 @@ def _handle_action(
         workflows.import_hub()
     elif action.kind == "candidates":
         workflows.candidates_hub()
+    elif action.kind == "affect":
+        workflows.affect_hub()
     elif action.kind == "plan":
         workflows.plan(compare=False)
     elif action.kind == "rebuild":
