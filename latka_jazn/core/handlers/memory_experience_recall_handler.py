@@ -112,21 +112,21 @@ class MemoryExperienceRecallHandler:
 
     @staticmethod
     def _render(items: list[dict[str, Any]]) -> str:
-        lines = [
-            "Z przywołanej pamięci mogę uczciwie oprzeć odpowiedź tylko na tych źródłowych śladach:"
-        ]
-        for index, item in enumerate(items, start=1):
-            timestamp = item.get("timestamp") or "czas nieustalony"
-            lines.append(
-                f"{index}. {timestamp}: „{item['content_excerpt']}” "
-                f"Źródło: {item['source']}."
-            )
-        lines.append(
-            "To są wybrane, źródłowo uziemione fragmenty dopuszczone do odpowiedzi w tej turze. "
-            "Jeśli pytasz o szczegół, którego w tych fragmentach nie ma, "
-            "nie dopowiem go jako wspomnienia."
+        """Return a bounded fallback, never a raw memory-record recital.
+
+        The handler owns retrieval/provenance, while the language channel owns
+        natural wording. Source locators stay in memory_sources and the frozen
+        recall payload so validators/finalizers can audit every claim.
+        """
+
+        return (
+            f"Znalazłam {len(items)} źródłowo uziemione "
+            "fragmenty pamięci dla tej tury. Traktuję je jako materiał dowodowy "
+            "do naturalnej odpowiedzi, a nie jako gotowy tekst do pokazania. "
+            "Jeśli warstwa językowa nie jest dostępna, nie będę recytować "
+            "surowych rekordów ani ścieżek bazy jako zastępstwa rozmowy."
         )
-        return chr(10).join(lines)
+
 
     def handle(
         self,
@@ -138,7 +138,7 @@ class MemoryExperienceRecallHandler:
         items = self._grounded_items(payload, user_text=text)
         if items:
             body = self._render(items)
-            status = "grounded_payload_rendered"
+            status = "grounded_payload_ready_for_language_realization"
             confidence = 0.86
         else:
             body = (
@@ -159,7 +159,9 @@ class MemoryExperienceRecallHandler:
                 "memory_recall_payload_frozen": True,
                 "filtered_item_count": len(items),
                 "status": status,
-                "preserve_handler_body": True,
+                "preserve_handler_body": False,
+                "requires_model_language_realization": True,
+                "memory_evidence_role": "generation_context_not_visible_answer",
             },
             memory_sources=items,
             required_components=list(ctx.get("required_components") or []),
