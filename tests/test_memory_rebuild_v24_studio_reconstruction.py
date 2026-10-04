@@ -774,3 +774,35 @@ def test_prepublish_plan_gate_rejects_source_mutation_after_run_start(
     assert gate["expected_execution_plan_sha256"] == prepared["execution_plan_sha256"]
     assert gate["observed_execution_plan_sha256"] != prepared["execution_plan_sha256"]
     assert "source_sha256_changed" in gate["observed_plan_errors"]
+
+
+
+def test_semantic_fingerprint_changes_when_import_provenance_changes(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "provenance.sqlite3"
+    with sqlite3.connect(database) as con:
+        con.execute(
+            "CREATE TABLE import_sources("
+            "source_id TEXT PRIMARY KEY,"
+            "source_kind TEXT NOT NULL,"
+            "source_sha256 TEXT NOT NULL"
+            ")"
+        )
+        con.execute(
+            "INSERT INTO import_sources(source_id,source_kind,source_sha256) "
+            "VALUES(?,?,?)",
+            ("source-1", "chatgpt_export", "abc123"),
+        )
+        con.commit()
+
+    before = semantic_database_fingerprint(database)
+    with sqlite3.connect(database) as con:
+        con.execute(
+            "UPDATE import_sources SET source_kind=? WHERE source_id=?",
+            ("tampered_provenance", "source-1"),
+        )
+        con.commit()
+    after = semantic_database_fingerprint(database)
+
+    assert before != after
