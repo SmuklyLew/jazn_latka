@@ -265,8 +265,6 @@ def probe_source(path: str | Path) -> SourceProbe:
         return _classify_records(source, samples)
     if suffix == ".json":
         name_hints = _name_hints(source)
-        if "music" in name_hints:
-            return SourceProbe(str(source), "music", 0.95, ("path_hint:music",))
         try:
             if probe_json_source_kind(source) == "conversation":
                 return SourceProbe(str(source), "chat", 0.98, ("chat_export_probe",))
@@ -289,6 +287,8 @@ def probe_source(path: str | Path) -> SourceProbe:
                 )
         if isinstance(payload, dict) and isinstance(payload.get("analizy"), list):
             return SourceProbe(str(source), "music", 0.99, ("json_schema:analizy",))
+        if "music" in name_hints and isinstance(payload, (dict, list)):
+            return SourceProbe(str(source), "music", 0.95, ("path_hint:music",))
         if isinstance(payload, dict) and {
             "latka_ai_pamiec", "pytania_z_ciszy", "relacje", "projekty_meta",
         } & set(payload):
