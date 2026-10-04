@@ -18,7 +18,6 @@ import shutil
 import sqlite3
 import uuid
 
-from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
 from latka_jazn.tools.chat_export_reader import sha256_file
 
 from .config import TOOL_VERSION
@@ -1167,6 +1166,8 @@ class ProtocolEngine:
         database = root / CANONICAL_DATABASE_NAME
         validation = validate_existing_database(database, full=True, include_fts=True)
         ledger = promotion_ledger_validation(database) if database.is_file() else {"ok": False}
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
         runtime_probe = (
             probe_unified_memory_database(database, full_integrity=True)
             if database.is_file()
