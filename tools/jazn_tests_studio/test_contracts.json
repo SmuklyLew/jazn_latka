@@ -42139,11 +42139,10 @@
       "name": "test_living_memory_gateway_recalls_affective_l0_evidence",
       "purpose": "Living memory gateway recalls affective l0 evidence",
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "category": "security",
       "tags": [
         "memory",
-        "repository",
-        "runtime"
+        "repository"
       ],
       "markers": [],
       "assertion_count": 8,
