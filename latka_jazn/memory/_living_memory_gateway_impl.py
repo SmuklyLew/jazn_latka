@@ -574,6 +574,7 @@ class LivingMemoryGateway:
             tables = self._table_names(con)
             if "memory_records" not in tables:
                 return []
+
             params: list[Any] = []
             where = "active=1"
             fts_query = ""
@@ -586,17 +587,29 @@ class LivingMemoryGateway:
                 if not tokens and temporal_scope is None:
                     return []
                 if tokens and "memory_records_fts" in tables:
-                    fts_query = " OR ".join(f'"{token.replace(chr(34), chr(34) * 2)}"*' for token in tokens)
-                    where += " AND memory_records.rowid IN (SELECT rowid FROM memory_records_fts WHERE memory_records_fts MATCH ?)"
+                    fts_query = " OR ".join(
+                        f'"{token.replace(chr(34), chr(34) * 2)}"*'
+                        for token in tokens
+                    )
+                    where += (
+                        " AND memory_records.rowid IN "
+                        "(SELECT rowid FROM memory_records_fts "
+                        "WHERE memory_records_fts MATCH ?)"
+                    )
                     params.append(fts_query)
                 elif tokens:
                     where += " AND (" + " OR ".join("content LIKE ?" for _ in tokens) + ")"
                     params.extend(f"%{token}%" for token in tokens)
             direction = "ASC" if mode == "chronological_earliest" else "DESC"
-            order = f"created_at_utc {direction}, importance DESC" if mode.startswith("chronological_") else "importance DESC, confidence DESC, updated_at_utc DESC"
+            order = (
+                f"created_at_utc {direction}, importance DESC"
+                if mode.startswith("chronological_")
+                else "importance DESC, confidence DESC, updated_at_utc DESC"
+            )
             params.append(limit)
             rows = con.execute(
-                f"SELECT memory_id,tier,kind,content,domain,truth_status,confidence,importance,created_at_utc,updated_at_utc "
+                "SELECT memory_id,tier,kind,content,domain,truth_status,"
+                "confidence,importance,created_at_utc,updated_at_utc "
                 f"FROM memory_records WHERE {where} ORDER BY {order} LIMIT ?",
                 params,
             ).fetchall()
@@ -604,36 +617,174 @@ class LivingMemoryGateway:
             if rows and "memory_evidence" in tables:
                 placeholders = ",".join("?" for _ in rows)
                 evidence_rows = con.execute(
-                    "SELECT memory_id,evidence_key,source_type,source_id FROM memory_evidence "
-                    f"WHERE memory_id IN ({placeholders}) ORDER BY memory_id,evidence_key",
+                    "SELECT memory_id,evidence_key,source_type,source_id "
+                    "FROM memory_evidence "
+                    f"WHERE memory_id IN ({placeholders}) "
+                    "ORDER BY memory_id,evidence_key",
                     [str(row["memory_id"]) for row in rows],
                 ).fetchall()
                 for evidence in evidence_rows:
-                    evidence_by_memory.setdefault(str(evidence["memory_id"]), []).append({
+                    evidence_by_memory.setdefault(
+                        str(evidence["memory_id"]), []
+                    ).append({
                         "evidence_id": str(evidence["evidence_key"]),
                         "source_type": str(evidence["source_type"]),
                         "source_id": str(evidence["source_id"]),
                     })
-        return [LivingMemoryHit(
-            source_layer="memory_jazn",
-            source_database=str(path),
-            source_locator=f"memory_records:{row['memory_id']}",
-            record_id=str(row["memory_id"]),
-            content_excerpt=self._excerpt(row["content"]),
-            timestamp=str(row["created_at_utc"] or row["updated_at_utc"] or "") or None,
-            truth_status=str(row["truth_status"] or "source_recorded"),
-            confidence=self._float(row["confidence"]),
-            importance=self._float(row["importance"]),
-            relevance=self._relevance(query, str(row["content"] or ""), base=0.86),
-            title=str(row["kind"] or row["domain"] or "pamięć aktywna"),
-            metadata={
-                "tier": row["tier"],
-                "kind": row["kind"],
-                "domain": row["domain"],
-                "evidence": evidence_by_memory.get(str(row["memory_id"]), []),
-                "search_index": "memory_records_fts" if fts_query else "bounded_table_scan",
-            },
-        ) for row in rows if str(row["content"] or "").strip()]
+
+            l0_rows: list[sqlite3.Row] = []
+            affect_by_record: dict[str, list[dict[str, str]]] = {}
+            l0_fts_query = ""
+            if "memory_l0_records" in tables:
+                l0_params: list[Any] = ["music_analysis", "affective"]
+                l0_where = (
+                    "is_current_revision=1 AND memory_eligible=1 "
+                    "AND source_kind IN (?,?)"
+                )
+                if temporal_scope is not None:
+                    timestamp_sql = self._iso_epoch_sql("event_time_start")
+                    l0_where += (
+                        " AND event_time_start IS NOT NULL"
+                        f" AND {timestamp_sql} >= ? AND {timestamp_sql} < ?"
+                    )
+                    l0_params.extend(
+                        (temporal_scope.start_epoch, temporal_scope.end_epoch_exclusive)
+                    )
+                if mode not in {"chronological_earliest", "chronological_latest"}:
+                    l0_tokens = self._tokens(query)
+                    if l0_tokens and "memory_l0_fts" in tables:
+                        l0_fts_query = " OR ".join(
+                            f'"{token.replace(chr(34), chr(34) * 2)}"*'
+                            for token in l0_tokens
+                        )
+                        l0_where += (
+                            " AND memory_l0_records.rowid IN "
+                            "(SELECT rowid FROM memory_l0_fts "
+                            "WHERE memory_l0_fts MATCH ?)"
+                        )
+                        l0_params.append(l0_fts_query)
+                    elif l0_tokens:
+                        l0_where += " AND (" + " OR ".join(
+                            "(title LIKE ? OR content LIKE ?)" for _ in l0_tokens
+                        ) + ")"
+                        for token in l0_tokens:
+                            l0_params.extend((f"%{token}%", f"%{token}%"))
+                    elif temporal_scope is None:
+                        l0_where += " AND 0"
+                l0_direction = (
+                    "ASC" if mode == "chronological_earliest" else "DESC"
+                )
+                l0_order = (
+                    f"event_time_start {l0_direction}, importance DESC"
+                    if mode.startswith("chronological_")
+                    else "importance DESC, event_time_start DESC"
+                )
+                l0_params.append(limit)
+                l0_rows = con.execute(
+                    "SELECT record_id,source_id,source_kind,record_kind,title,content,"
+                    "truth_status,importance,event_time_start,role,provenance_json "
+                    f"FROM memory_l0_records WHERE {l0_where} "
+                    f"ORDER BY {l0_order} LIMIT ?",
+                    l0_params,
+                ).fetchall()
+                if l0_rows and "memory_l0_affect_claims" in tables:
+                    placeholders = ",".join("?" for _ in l0_rows)
+                    claim_rows = con.execute(
+                        "SELECT record_id,label,normalized_label,source_field,"
+                        "claim_kind,subject,boundary "
+                        "FROM memory_l0_affect_claims "
+                        f"WHERE record_id IN ({placeholders}) "
+                        "ORDER BY record_id,normalized_label,source_field",
+                        [str(row["record_id"]) for row in l0_rows],
+                    ).fetchall()
+                    for claim in claim_rows:
+                        affect_by_record.setdefault(
+                            str(claim["record_id"]), []
+                        ).append({
+                            "label": str(claim["label"]),
+                            "normalized_label": str(claim["normalized_label"]),
+                            "source_field": str(claim["source_field"]),
+                            "claim_kind": str(claim["claim_kind"]),
+                            "subject": str(claim["subject"]),
+                            "boundary": str(claim["boundary"]),
+                        })
+
+        active_hits = [
+            LivingMemoryHit(
+                source_layer="memory_jazn",
+                source_database=str(path),
+                source_locator=f"memory_records:{row['memory_id']}",
+                record_id=str(row["memory_id"]),
+                content_excerpt=self._excerpt(row["content"]),
+                timestamp=str(
+                    row["created_at_utc"] or row["updated_at_utc"] or ""
+                ) or None,
+                truth_status=str(row["truth_status"] or "source_recorded"),
+                confidence=self._float(row["confidence"]),
+                importance=self._float(row["importance"]),
+                relevance=self._relevance(
+                    query, str(row["content"] or ""), base=0.86
+                ),
+                title=str(row["kind"] or row["domain"] or "pamięć aktywna"),
+                metadata={
+                    "tier": row["tier"],
+                    "kind": row["kind"],
+                    "domain": row["domain"],
+                    "evidence": evidence_by_memory.get(str(row["memory_id"]), []),
+                    "search_index": (
+                        "memory_records_fts" if fts_query else "bounded_table_scan"
+                    ),
+                },
+            )
+            for row in rows
+            if str(row["content"] or "").strip()
+        ]
+        l0_hits: list[LivingMemoryHit] = []
+        for row in l0_rows:
+            content = str(row["content"] or "").strip()
+            if not content:
+                continue
+            try:
+                provenance = json.loads(str(row["provenance_json"] or "{}"))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                provenance = {}
+            record_id = str(row["record_id"])
+            l0_hits.append(
+                LivingMemoryHit(
+                    source_layer="memory_jazn:l0_evidence",
+                    source_database=str(path),
+                    source_locator=f"memory_l0_records:{record_id}",
+                    record_id=record_id,
+                    content_excerpt=self._excerpt(content),
+                    timestamp=str(row["event_time_start"] or "") or None,
+                    truth_status=str(row["truth_status"] or "source_recorded"),
+                    confidence=None,
+                    importance=self._float(row["importance"]),
+                    relevance=self._relevance(query, content, base=0.74),
+                    title=str(row["title"] or row["record_kind"] or "L0 evidence"),
+                    grounding="read_only_l0_source_evidence",
+                    metadata={
+                        "semantic_source_type": "source_recorded_evidence",
+                        "source_kind": row["source_kind"],
+                        "record_kind": row["record_kind"],
+                        "role": row["role"],
+                        "provenance": provenance,
+                        "affect_claims": affect_by_record.get(record_id, []),
+                        "affect_boundary": (
+                            "source_claimed_affect_not_biological_state"
+                            if row["source_kind"] in {"music_analysis", "affective"}
+                            else None
+                        ),
+                        "automatic_memory_promotion": False,
+                        "search_index": (
+                            "memory_l0_fts"
+                            if l0_fts_query
+                            else "bounded_l0_table_scan"
+                        ),
+                    },
+                )
+            )
+        return [*active_hits, *l0_hits]
 
     def _search_experience(
         self, path: Path, query: str, *, mode: str, limit: int,
