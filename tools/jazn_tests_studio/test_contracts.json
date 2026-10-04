@@ -42174,14 +42174,14 @@
       "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
       "name": "test_baseline_reconciliation_detects_lost_affect_claim",
       "purpose": "Baseline reconciliation detects lost affect claim",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.living_memory_gateway",
