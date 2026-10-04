@@ -866,6 +866,9 @@ def test_affective_legacy_source_is_detected_and_imported_with_claims(
     assert inspection.role == "affective_memory"
     assert inspection.truth_domain == "assistant_claim"
     assert inspection.pipeline == "memory_rebuild"
+    source_spec = inspection.to_source_spec()
+    assert source_spec.role == "affective_memory"
+    assert source_spec.pipeline == "memory_rebuild"
     assert probe_source(source).kind == "affective"
 
     database = tmp_path / "affective.sqlite3"
@@ -1012,6 +1015,9 @@ def test_music_analysis_indexes_latka_affect_reflection_fields(tmp_path: Path) -
     inspection = inspect_source(source)
     assert inspection.role == "music_analysis"
     assert inspection.pipeline == "memory_rebuild"
+    source_spec = inspection.to_source_spec()
+    assert source_spec.role == "music_analysis"
+    assert source_spec.pipeline == "memory_rebuild"
 
     database = tmp_path / "music.sqlite3"
     memory = UnifiedMemoryDatabase(database)
