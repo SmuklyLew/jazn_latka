@@ -72,6 +72,63 @@ def _pk_columns(con: sqlite3.Connection, table: str) -> list[str]:
     return [str(row[1]) for row in sorted((row for row in rows if int(row[5]) > 0), key=lambda row: int(row[5]))]
 
 
+def _table_columns(path: Path, table: str) -> tuple[list[str], list[str]]:
+    with open_read_only(path) as con:
+        exists = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        if not exists:
+            return [], []
+        info = list(con.execute(f"PRAGMA table_info({quote(table)})"))
+        columns = [str(row[1]) for row in info]
+        pk = [
+            str(row[1])
+            for row in sorted(
+                (row for row in info if int(row[5]) > 0),
+                key=lambda row: int(row[5]),
+            )
+        ]
+        return columns, pk
+
+
+def _projected_record_hashes(
+    path: Path,
+    table: str,
+    *,
+    columns: list[str],
+    key_columns: list[str],
+) -> dict[str, set[str]]:
+    if not columns:
+        return {}
+    selected = ",".join(quote(item) for item in columns)
+    key_indexes = [columns.index(item) for item in key_columns]
+    result: dict[str, set[str]] = {}
+    with open_read_only(path) as con:
+        for row in con.execute(f"SELECT {selected} FROM {quote(table)}"):
+            values = list(row)
+            key_payload = [values[index] for index in key_indexes]
+            content_payload = dict(zip(columns, values))
+            key_encoded = json.dumps(
+                key_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            content_encoded = json.dumps(
+                content_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            key_hash = hashlib.sha256(key_encoded.encode("utf-8")).hexdigest()
+            content_hash = hashlib.sha256(content_encoded.encode("utf-8")).hexdigest()
+            result.setdefault(key_hash, set()).add(content_hash)
+    return result
+
+
 def _stable_record_hashes(path: Path, table: str) -> dict[str, set[str]]:
     """Return stable-key -> content-hash variants for one table.
 
@@ -165,18 +222,78 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
     baseline_sets: dict[str, dict[str, set[str]]] = {
         table: {} for table in _COMPARE_TABLES
     }
+    target_sets: dict[str, dict[str, set[str]]] = {
+        table: {} for table in _COMPARE_TABLES
+    }
+    projection_details: dict[str, list[dict[str, Any]]] = {
+        table: [] for table in _COMPARE_TABLES
+    }
     files: list[Path] = []
     try:
         for raw in roots:
             files.extend(_baseline_files(Path(raw).expanduser().resolve()))
         for source in files:
             for table in _COMPARE_TABLES:
-                for key_hash, content_hashes in _stable_record_hashes(source, table).items():
+                source_columns, source_pk = _table_columns(source, table)
+                target_columns, target_pk = _table_columns(target, table)
+                if not source_columns or not target_columns:
+                    continue
+                key_columns = [
+                    item
+                    for item in source_pk
+                    if item in target_columns
+                ]
+                if not key_columns:
+                    key_columns = [
+                        item
+                        for item in target_pk
+                        if item in source_columns
+                    ]
+                shared_columns = [
+                    item
+                    for item in target_columns
+                    if item in source_columns
+                    and (
+                        item not in _VOLATILE_RECONCILIATION_COLUMNS
+                        or item in key_columns
+                    )
+                ]
+                if not key_columns:
+                    key_columns = list(shared_columns)
+                for key_column in key_columns:
+                    if key_column not in shared_columns:
+                        shared_columns.insert(0, key_column)
+                if not shared_columns or not key_columns:
+                    continue
+
+                baseline_records = _projected_record_hashes(
+                    source,
+                    table,
+                    columns=shared_columns,
+                    key_columns=key_columns,
+                )
+                target_records = _projected_record_hashes(
+                    target,
+                    table,
+                    columns=shared_columns,
+                    key_columns=key_columns,
+                )
+                for key_hash, content_hashes in baseline_records.items():
                     baseline_sets[table].setdefault(key_hash, set()).update(content_hashes)
+                for key_hash, content_hashes in target_records.items():
+                    target_sets[table].setdefault(key_hash, set()).update(content_hashes)
+                projection_details[table].append(
+                    {
+                        "baseline_database": source.name,
+                        "shared_columns": shared_columns,
+                        "key_columns": key_columns,
+                    }
+                )
+
         tables: dict[str, Any] = {}
         ok = True
         for table in _COMPARE_TABLES:
-            target_records = _stable_record_hashes(target, table)
+            target_records = target_sets[table]
             baseline_records = baseline_sets[table]
             baseline_keys = set(baseline_records)
             target_keys = set(target_records)
@@ -193,6 +310,7 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
                 "content_mismatch_count": len(changed),
                 "missing_record_key_sha256_samples": sorted(missing)[:25],
                 "content_mismatch_key_sha256_samples": sorted(changed)[:25],
+                "projections": projection_details[table],
             }
             if missing or changed:
                 ok = False
@@ -200,7 +318,7 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
             "ok": ok,
             "baseline_database_count": len(files),
             "tables": tables,
-            "comparison": "stable_primary_key_and_content_hash_presence",
+            "comparison": "shared_stable_columns_primary_key_and_content_hash_presence",
             "private_paths_persisted": False,
         }
     except (OSError, sqlite3.DatabaseError, ValueError) as exc:
