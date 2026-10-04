@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-  "runtime_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-  "package_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-  "generated_at_utc": "2026-10-04T18:50:48+00:00",
-  "updated_at_utc": "2026-10-04T18:50:48+00:00",
+  "version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
+  "runtime_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
+  "package_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
+  "generated_at_utc": "2026-10-04T18:53:39+00:00",
+  "updated_at_utc": "2026-10-04T18:53:39+00:00",
   "start_file": "run.py",
-  "file_count": 1918,
-  "static_file_count": 1918,
+  "file_count": 1919,
+  "static_file_count": 1919,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -128,8 +128,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 2884,
-      "sha256": "fb2a63881cac4494611bd8c84f26415c30b55f3a39cac2a69e6d74a269a164f0",
+      "size_bytes": 3014,
+      "sha256": "ce3d14b9d80aceb47633f5388de9b1e6284a156485ab49f9831b0d594881eb88",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "faee85f0e787d9ed5089b0d1811a7a14493241b4070c12d074bdbe340ffbb983",
+      "size_bytes": 3012,
+      "sha256": "41a470144fbbfa72368af6a9ae94c61984f4b69fe1e20d3c9d241897d51874d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8867,8 +8867,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5285,
-      "sha256": "0232457f3b80bfaea46a688e144f871ea83d4b5fab9e16da9e1929ad96c7aad3",
+      "size_bytes": 5298,
+      "sha256": "1670448d1eea5c95606b32288f9241d14d38456f1ddaec00c70e35e0e1f78a91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15427,6 +15427,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_rebuild_v24_studio_reconstruction.py",
+      "size_bytes": 8469,
+      "sha256": "a9eff1e5b42dc4056ac98c990667a382ef179eb35bd98b7645ceee3905a9cc1a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_rebuild_v24_unified.py",
       "size_bytes": 11741,
       "sha256": "4aa582b6bb3d8daf974ee7b5000691eef68cb211f277e03ee64c6bbec0b7607c",
@@ -17129,8 +17138,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1732335,
-      "sha256": "06ff7cc8d2cf2d587aa4e9515e8126ba84ffa955c242cee26ae2e1496f1e9968",
+      "size_bytes": 1737468,
+      "sha256": "ec04a69387a5bf39a61fa83179842dfb0a2c084ba6259fd76eaaaaca8b2587e2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17714,11 +17723,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+  "release_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-    "package_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
-    "release_version": "16.3.25.5.103-generative-dialogue-nlg-convergence"
+    "runtime_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
+    "package_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
+    "release_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
