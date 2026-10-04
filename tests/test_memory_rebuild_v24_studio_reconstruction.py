@@ -1314,3 +1314,40 @@ def test_affect_projection_integrity_detects_missing_derived_claim(
     after = test_profiles_module._affect_evidence_integrity(database)
     assert after["ok"] is False
     assert after["missing_claim_count"] == 1
+
+
+def test_affect_projection_integrity_ignores_historical_l0_revisions(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "analizy_utworow.json"
+    database = tmp_path / "affect-revision.sqlite3"
+    memory = UnifiedMemoryDatabase(database)
+    memory.initialize()
+
+    source.write_text(
+        json.dumps(
+            {"analizy": [{"tytul": "Revision", "emocje": "spokój"}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    assert memory.import_source(source).to_dict()["report"]["ok"] is True
+
+    source.write_text(
+        json.dumps(
+            {"analizy": [{"tytul": "Revision", "emocje": "radość"}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    assert memory.import_source(source).to_dict()["report"]["ok"] is True
+
+    report = test_profiles_module._affect_evidence_integrity(database)
+    assert report["ok"] is True
+    assert report["expected_claim_count"] == 1
+    assert report["actual_claim_count"] == 1
+
+    with sqlite3.connect(database) as con:
+        assert int(con.execute(
+            "SELECT COUNT(*) FROM memory_l0_affect_claims"
+        ).fetchone()[0]) == 2
