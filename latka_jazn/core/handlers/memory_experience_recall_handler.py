@@ -111,23 +111,39 @@ class MemoryExperienceRecallHandler:
         return items
 
     @staticmethod
-    def _render(items: list[dict[str, Any]]) -> str:
+    def _safe_source_label(value: Any) -> str:
+        source = str(value or "").strip()
+        folded = source.lower().replace("\\", "/")
+        if (
+            not source
+            or folded.startswith("/")
+            or re.match(r"^[a-z]:/", folded)
+            or ".sqlite" in folded
+            or "journal_entries:" in folded
+            or "memory_records:" in folded
+        ):
+            return "źródło runtime zachowane w structured provenance"
+        return source[:160]
+
+    @classmethod
+    def _render(cls, items: list[dict[str, Any]]) -> str:
         """Return bounded evidence text for downstream language realization.
 
-        The excerpts stay available to validators, repair paths and tests, while
-        raw database/source locators stay in structured provenance only. Engine
-        policy prevents this internal evidence rendering from becoming the
-        host-visible answer when model language realization is required.
+        Logical provenance labels may remain visible to the internal language
+        channel, while absolute paths, SQLite locators and raw row identifiers
+        stay redacted. Engine policy prevents this evidence draft from becoming
+        the final host-visible answer when model language realization is required.
         """
 
         lines = [
-            f"Znalazłam {len(items)} źródłowo uziemione fragmenty pamięci dla tej tury.",
+            f"Znalazłam wybrane, źródłowo uziemione fragmenty pamięci ({len(items)}) dla tej tury.",
             "Materiał dowodowy do naturalnej odpowiedzi:",
         ]
         for item in items:
-            lines.append(f"- {item['content_excerpt']}")
+            source_label = cls._safe_source_label(item.get("source"))
+            lines.append(f"- {item['content_excerpt']} [źródło: {source_label}]")
         lines.append(
-            "Te fragmenty są kontekstem generacji; surowe rekordy i ścieżki bazy pozostają w provenance."
+            "Te fragmenty są kontekstem generacji; surowe rekordy i ścieżki bazy pozostają w structured provenance."
         )
         return chr(10).join(lines)
 
