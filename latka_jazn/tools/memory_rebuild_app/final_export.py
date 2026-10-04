@@ -30,6 +30,45 @@ def _json_write(path: Path, payload: Any) -> None:
     os.replace(temporary, path)
 
 
+def _resolve_memory_evidence(memory_root: Path, raw: str | Path) -> Path:
+    root = memory_root.expanduser().resolve()
+    candidate = Path(raw).expanduser()
+    resolved = candidate.resolve() if candidate.is_absolute() else (root / candidate).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(
+            f"memory evidence must remain inside canonical memory root: {resolved}"
+        ) from exc
+    return resolved
+
+
+def _publish_directory_atomically(
+    staging: Path,
+    target: Path,
+    *,
+    overwrite: bool,
+) -> Path | None:
+    """Publish staging and restore the old target if the final rename fails."""
+
+    backup: Path | None = None
+    if target.exists():
+        if not overwrite:
+            raise FileExistsError(target)
+        suffix = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = target.with_name(
+            target.name + f".backup-{suffix}-{uuid.uuid4().hex[:8]}"
+        )
+        os.replace(target, backup)
+    try:
+        os.replace(staging, target)
+    except BaseException:
+        if backup is not None and backup.exists() and not target.exists():
+            os.replace(backup, target)
+        raise
+    return backup
+
+
 def _source_manifest(sources: Iterable[str | Path]) -> dict[str, Any]:
     items: list[dict[str, Any]] = []
     for raw in sources:
@@ -59,24 +98,20 @@ def export_final_memory(
             str(row[0]): str(row[1])
             for row in con.execute("SELECT key,value FROM unified_memory_meta")
         }
-    memory_root = store.path.parent.parent
-
-    def resolve_memory_evidence(raw: str) -> Path:
-        path = Path(raw).expanduser()
-        return path.resolve() if path.is_absolute() else (memory_root / path).resolve()
+    memory_root = store.path.parent.parent.resolve()
 
     effective_baselines = list(baselines)
     if not effective_baselines:
         metadata_baseline = str(source_meta.get("test04_baseline_root") or "").strip()
         if metadata_baseline:
-            effective_baselines.append(resolve_memory_evidence(metadata_baseline))
+            effective_baselines.append(_resolve_memory_evidence(memory_root, metadata_baseline))
     effective_acceptance_report = acceptance_report
     if effective_acceptance_report is None:
         metadata_acceptance = str(
             source_meta.get("test04_acceptance_report") or ""
         ).strip()
         if metadata_acceptance:
-            effective_acceptance_report = resolve_memory_evidence(metadata_acceptance)
+            effective_acceptance_report = _resolve_memory_evidence(memory_root, metadata_acceptance)
     test_report = run_test_profile(
         store.path,
         "final",
@@ -207,13 +242,16 @@ def export_final_memory(
         }
         _json_write(staging / "final-export-summary.json", summary)
 
-        if target.exists():
-            if not overwrite:
-                raise FileExistsError(target)
-            backup = target.with_name(target.name + ".backup-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
-            os.replace(target, backup)
-        os.replace(staging, target)
-        return {**summary, "output": str(target)}
+        backup = _publish_directory_atomically(
+            staging,
+            target,
+            overwrite=overwrite,
+        )
+        return {
+            **summary,
+            "output": str(target),
+            "replaced_output_backup": str(backup) if backup is not None else None,
+        }
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
         raise
