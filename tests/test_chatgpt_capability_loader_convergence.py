@@ -48,6 +48,6 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
     assert "Jaźń Runtime" in text
 
 
-def test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.102"
-    assert PACKAGE_RELEASE_NAME == "fast-bootstrap-persistent-runtime-convergence"
+def test_release_version_tracks_current_distribution_identity() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.103"
+    assert PACKAGE_RELEASE_NAME == "generative-dialogue-nlg-convergence"
