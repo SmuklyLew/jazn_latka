@@ -3058,15 +3058,13 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_release_version_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release version tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_version_tracks_current_distribution_identity",
+      "purpose": "Release version tracks current distribution identity",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "e2e",
-      "tags": [
-        "runtime"
-      ],
+      "category": "contract",
+      "tags": [],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -7897,10 +7895,10 @@
       "description_source": "source_identity",
       "line": 135
     },
-    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence": {
+    "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "name": "test_release_identity_tracks_fast_bootstrap_persistent_runtime_convergence",
-      "purpose": "Release identity tracks fast bootstrap persistent runtime convergence",
+      "name": "test_release_identity_tracks_current_distribution",
+      "purpose": "Release identity tracks current distribution",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
