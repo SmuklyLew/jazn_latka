@@ -368,6 +368,116 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
         }
 
 
+def _affect_evidence_integrity(path: Path) -> dict[str, Any]:
+    """Verify that derived affect claims are an exact projection of RAW L0 evidence."""
+
+    if not path.is_file():
+        return {"ok": False, "reason": "database_missing"}
+    try:
+        with open_read_only(path) as con:
+            tables = {
+                str(row[0])
+                for row in con.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+            }
+            if "memory_l0_records" not in tables:
+                return {
+                    "ok": True,
+                    "status": "not_applicable_no_l0",
+                    "expected_claim_count": 0,
+                    "actual_claim_count": 0,
+                    "missing_claim_count": 0,
+                    "unexpected_claim_count": 0,
+                }
+
+            expected: set[tuple[str, str, str, str, str]] = set()
+            invalid_raw: list[str] = []
+            rows = con.execute(
+                "SELECT record_id,raw_json FROM memory_l0_records "
+                "WHERE is_current_revision=1 "
+                "AND source_kind IN ('journal','music_analysis','affective')"
+            ).fetchall()
+            for row in rows:
+                record_id = str(row["record_id"])
+                try:
+                    raw = json.loads(str(row["raw_json"] or "{}"))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    invalid_raw.append(record_id)
+                    continue
+                if not isinstance(raw, dict):
+                    continue
+                claims = raw.get("__jazn_affect_claims__")
+                if not isinstance(claims, list):
+                    continue
+                for claim in claims:
+                    if not isinstance(claim, dict):
+                        continue
+                    label = str(claim.get("label") or "").strip()
+                    if not label:
+                        continue
+                    normalized = " ".join(label.casefold().split())
+                    source_field = str(
+                        claim.get("source_field") or "unknown"
+                    ).strip() or "unknown"
+                    claim_kind = str(
+                        claim.get("claim_kind") or "explicit_source_label"
+                    ).strip()
+                    subject = str(claim.get("subject") or "latka").strip() or "latka"
+                    expected.add(
+                        (record_id, normalized, source_field, claim_kind, subject)
+                    )
+
+            actual: set[tuple[str, str, str, str, str]] = set()
+            invalid_boundaries: list[str] = []
+            if "memory_l0_affect_claims" in tables:
+                claim_rows = con.execute(
+                    "SELECT claim_id,record_id,normalized_label,source_field,"
+                    "claim_kind,subject,boundary FROM memory_l0_affect_claims"
+                ).fetchall()
+                for claim in claim_rows:
+                    actual.add((
+                        str(claim["record_id"]),
+                        str(claim["normalized_label"]),
+                        str(claim["source_field"]),
+                        str(claim["claim_kind"]),
+                        str(claim["subject"]),
+                    ))
+                    if str(claim["boundary"]) != (
+                        "source_claimed_affect_not_biological_state"
+                    ):
+                        invalid_boundaries.append(str(claim["claim_id"]))
+
+            missing = expected - actual
+            unexpected = actual - expected
+            return {
+                "ok": not invalid_raw
+                and not missing
+                and not unexpected
+                and not invalid_boundaries,
+                "status": "checked",
+                "expected_claim_count": len(expected),
+                "actual_claim_count": len(actual),
+                "missing_claim_count": len(missing),
+                "unexpected_claim_count": len(unexpected),
+                "invalid_raw_record_count": len(invalid_raw),
+                "invalid_boundary_count": len(invalid_boundaries),
+                "missing_claim_samples": sorted(missing)[:25],
+                "unexpected_claim_samples": sorted(unexpected)[:25],
+                "invalid_raw_record_samples": sorted(invalid_raw)[:25],
+                "invalid_boundary_claim_samples": sorted(invalid_boundaries)[:25],
+                "truth_boundary": "source_claimed_affect_not_biological_state",
+                "derived_projection_only": True,
+            }
+    except (OSError, sqlite3.DatabaseError, ValueError) as exc:
+        return {
+            "ok": False,
+            "reason": "affect_evidence_integrity_error",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+
 def _unresolved_conflicts(path: Path) -> dict[str, int]:
     with open_read_only(path) as con:
         tables = {str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -513,6 +623,16 @@ def run_test_profile(
         checks.append(_check(
             "test03_record_level_reconciliation", bool(reconciliation.get("ok")),
             actual=reconciliation, expected="baseline required and no missing stable keys or content mismatches",
+        ))
+        affect_integrity = _affect_evidence_integrity(path)
+        checks.append(_check(
+            "affect_evidence_projection_integrity",
+            bool(affect_integrity.get("ok")),
+            actual=affect_integrity,
+            expected=(
+                "every explicit RAW L0 affect claim is represented exactly once "
+                "with source_claimed_affect_not_biological_state boundary"
+            ),
         ))
         unified_meta: dict[str, str] = {}
         if path.is_file():
