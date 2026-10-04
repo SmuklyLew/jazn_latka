@@ -141,17 +141,19 @@ class CanonicalMemoryRebuildPipeline:
             }
             for item in items
         ]
-        canonical.sort(
-            key=lambda item: json.dumps(
+        encoded = {
+            json.dumps(
                 item,
                 ensure_ascii=False,
                 sort_keys=True,
                 separators=(",", ":"),
                 default=str,
             )
-        )
+            for item in canonical
+        }
+        canonical_union = [json.loads(item) for item in sorted(encoded)]
         payload = json.dumps(
-            canonical,
+            canonical_union,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
