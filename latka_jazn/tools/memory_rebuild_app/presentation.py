@@ -10,6 +10,8 @@ ROLE_LABELS = {
     "chatgpt_export": "Eksport rozmów ChatGPT",
     "chatgpt_html_export": "HTML rozmów — kontrola",
     "journal": "Dziennik",
+    "music_analysis": "Analizy utworów / emocje Łatki",
+    "affective_memory": "Pamięć afektywna / autorefleksja Łatki",
     "approved_l0": "Zatwierdzone źródło L0",
     "layered_memory": "Starsza pamięć warstwowa",
     "runtime_event_ledger": "Dziennik zdarzeń runtime",
@@ -49,6 +51,7 @@ WARNING_LABELS = {
     "blocking:zip_symlinks": "ZIP zawiera dowiązania symboliczne.",
     "blocking:zip_duplicate_members": "ZIP zawiera duplikaty lub kolizje nazw.",
     "blocking:zip_crc_failed": "Kontrola CRC ZIP nie przeszła.",
+    "blocking:json_invalid": "JSON jest niepoprawny albo zawiera powtórzone klucze; import zablokowany, aby nie zgubić danych.",
     "jsonl_sample_contains_invalid_records": "Próbka JSONL zawiera niepoprawne rekordy.",
 }
 
@@ -98,6 +101,14 @@ def format_source(source: SourceSpec) -> str:
         f"SHA-256: {source.sha256 or 'nieobliczone'}",
         f"Stan: {source.status}",
     ]
+    if source.role in {"music_analysis", "affective_memory"}:
+        lines.extend((
+            "",
+            "Granica danych afektywnych:",
+            "  • zapis źródłowy / deklaracja dawnej Łatki",
+            "  • nie jest traktowany jako biologiczny stan emocjonalny",
+            "  • pełny rekord i provenance pozostają w L0",
+        ))
     if warnings:
         lines.extend(("", "Uwagi:", *(f"  • {item}" for item in warnings)))
     zip_meta = metadata.get("zip") if isinstance(metadata, dict) else None
@@ -246,6 +257,8 @@ def format_plan(payload: dict[str, Any]) -> str:
         f"Wybrane źródła: {plan.get('selected_source_count', 0)}",
         f"Źródła rozmów: {plan.get('chat_source_count', 0)}",
         f"Źródła dziennika: {plan.get('journal_source_count', 0)}",
+        f"Analizy utworów: {plan.get('music_source_count', 0)}",
+        f"Źródła afektywne / autorefleksja: {plan.get('affective_source_count', 0)}",
         f"Źródła odrzucone: {plan.get('rejected_source_count', 0)}",
         f"Bazy porównawcze: {payload.get('baseline_count', 0)}",
         "",
