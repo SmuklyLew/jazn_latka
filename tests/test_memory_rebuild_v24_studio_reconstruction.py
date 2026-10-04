@@ -1221,3 +1221,39 @@ def test_living_memory_gateway_recalls_affective_l0_evidence(tmp_path: Path) -> 
     }
     assert {"spokój", "wdzięczność"} <= labels
     assert hit.metadata["automatic_memory_promotion"] is False
+
+
+def test_baseline_reconciliation_detects_lost_affect_claim(tmp_path: Path) -> None:
+    source = tmp_path / "affect-source.json"
+    source.write_text(
+        json.dumps(
+            {
+                "analizy": [
+                    {
+                        "tytul": "Affect baseline",
+                        "emocje": "spokój",
+                        "refleksja_latki": "Źródłowy ślad emocjonalny.",
+                    }
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    baseline = tmp_path / "baseline.sqlite3"
+    target = tmp_path / "target.sqlite3"
+    for database in (baseline, target):
+        memory = UnifiedMemoryDatabase(database)
+        memory.initialize()
+        assert memory.import_source(source).to_dict()["report"]["ok"] is True
+
+    before = baseline_record_reconciliation(target, [baseline])
+    assert before["ok"] is True
+
+    with sqlite3.connect(target) as con:
+        con.execute("DELETE FROM memory_l0_affect_claims")
+        con.commit()
+
+    after = baseline_record_reconciliation(target, [baseline])
+    assert after["ok"] is False
+    assert after["tables"]["memory_l0_affect_claims"]["missing_record_count"] == 1
