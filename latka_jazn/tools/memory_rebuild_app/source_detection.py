@@ -14,6 +14,27 @@ SOURCE_KINDS = (
 )
 
 
+class DuplicateJsonKeyError(ValueError):
+    """Raised when repeated JSON object keys would silently discard evidence."""
+
+
+def _unique_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKeyError(f"duplicate_json_key:{key}")
+        result[key] = value
+    return result
+
+
+def load_json_strict(path: str | Path) -> Any:
+    source = Path(path).expanduser().resolve()
+    return json.loads(
+        source.read_text(encoding="utf-8-sig"),
+        object_pairs_hook=_unique_object_pairs,
+    )
+
+
 @dataclass(slots=True, frozen=True)
 class SourceProbe:
     path: str
@@ -148,11 +169,26 @@ def probe_source(path: str | Path) -> SourceProbe:
         if source.stat().st_size > 64 * 1024 * 1024:
             return SourceProbe(str(source), "reference", 0.4, ("large_json_requires_explicit_type",))
         try:
-            payload = json.loads(source.read_text(encoding="utf-8-sig"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return SourceProbe(str(source), "reference", 0.0, ("invalid_json",))
+            payload = load_json_strict(source)
+        except (OSError, UnicodeError, json.JSONDecodeError, DuplicateJsonKeyError) as exc:
+            return SourceProbe(
+                str(source),
+                "reference",
+                0.0,
+                (f"invalid_json:{type(exc).__name__}:{exc}",),
+            )
         if isinstance(payload, dict) and isinstance(payload.get("analizy"), list):
             return SourceProbe(str(source), "music", 0.99, ("json_schema:analizy",))
+        if isinstance(payload, dict) and {
+            "latka_ai_pamiec", "pytania_z_ciszy", "relacje", "projekty_meta",
+        } & set(payload):
+            return SourceProbe(
+                str(source),
+                "affective",
+                0.99,
+                ("json_schema:legacy_affective_memory",),
+                schema_keys=tuple(sorted(str(key).casefold() for key in payload))[:64],
+            )
         if isinstance(payload, dict) and isinstance(payload.get("entries"), list):
             samples = [item for item in payload["entries"][:8] if isinstance(item, dict)]
             probe = _classify_records(source, samples)
@@ -165,4 +201,11 @@ def probe_source(path: str | Path) -> SourceProbe:
     return SourceProbe(str(source), "reference", 0.2, ("unsupported_or_unknown_schema",))
 
 
-__all__ = ["SOURCE_KINDS", "SourceProbe", "iter_jsonl_objects", "probe_source"]
+__all__ = [
+    "DuplicateJsonKeyError",
+    "SOURCE_KINDS",
+    "SourceProbe",
+    "iter_jsonl_objects",
+    "load_json_strict",
+    "probe_source",
+]
