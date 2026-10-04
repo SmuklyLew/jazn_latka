@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "6196e7750061f4e73e62f2ed55ad3e1b42959771",
+  "base_merge_commit": "503ac255921b87286363a417054bef1fe3807383",
   "base_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
-  "commit_date": "2026-10-04T22:40:42+02:00",
+  "commit_date": "2026-10-04T20:43:56Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-04T20:40:42+00:00",
+  "generated_at_utc": "2026-10-04T20:43:56+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "37bbfc843f95ec41f4db0749c53db617a619133a",
+  "git_tree_sha": "3ea542406ae9957df22f26506d421dd1a79bf9f0",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "6196e7750061f4e73e62f2ed55ad3e1b42959771",
+    "source_commit": "503ac255921b87286363a417054bef1fe3807383",
     "source_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "6196e7750061f4e73e62f2ed55ad3e1b42959771",
+  "source_commit": "503ac255921b87286363a417054bef1fe3807383",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
   "tag": null,
