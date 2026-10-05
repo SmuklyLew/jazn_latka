@@ -21,8 +21,8 @@ from latka_jazn.core.runtime_daemon import (
 )
 from latka_jazn.packaging.generator_v2_compat import (
     discover_generator_sidecar,
-    materialize_generator_v2_compat,
     memory_package_requires_v3_repack,
+    normalize_generator_v2_compat,
 )
 from latka_jazn.packaging.split_zip_package import (
     discover_package_sidecars,
@@ -526,11 +526,7 @@ def _auto_attach_memory_before_daemon(
             "state": "existing_memory_kept" if existing_health.get("ok") is True else "memory_package_not_present",
         })
         return report
-    from latka_jazn.packaging.memory_package_contract import (
-        LegacyMemoryRepackError,
-        attach_memory_package,
-        repack_legacy_memory_package,
-    )
+    from latka_jazn.packaging.memory_package_contract import attach_memory_package
     from latka_jazn.tools.memory_validation import validate_large_memory
     from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
 
@@ -546,80 +542,42 @@ def _auto_attach_memory_before_daemon(
     raw_sidecar = discovery.get("sidecar")
     sidecar = cast(dict[str, Any], raw_sidecar) if isinstance(raw_sidecar, dict) else {}
 
+    package_sidecar_override: dict[str, Any] | None = None
     if discovery.get("generator_v2") is True:
-        compat_dir = work_dir / "generator_v2_memory_compat"
-        if compat_dir.exists():
-            shutil.rmtree(compat_dir)
-        compat_dir.mkdir(parents=True, exist_ok=True)
-        source_name = materialize_generator_v2_compat(
-            source_dir,
-            sidecar,
-            compat_dir,
-        )
-        source_dir = compat_dir
-        compat_sidecar_path = compat_dir / f"{source_name}.package.json"
-        compat_value = json.loads(compat_sidecar_path.read_text(encoding="utf-8-sig"))
-        if not isinstance(compat_value, dict):
-            report.update({"ok": False, "state": "memory_generator_v2_compat_invalid"})
-            return report
-        sidecar = cast(dict[str, Any], compat_value)
+        sidecar = normalize_generator_v2_compat(sidecar)
+        package_sidecar_override = sidecar
         report["generator_v2_memory_compat"] = {
             "ok": True,
-            "source_schema": str(raw_sidecar.get("schema_version") if isinstance(raw_sidecar, dict) else ""),
+            "state": "metadata_normalized_in_memory",
+            "source_schema": str(
+                raw_sidecar.get("schema_version")
+                if isinstance(raw_sidecar, dict)
+                else ""
+            ),
             "package_name": source_name,
-            "compat_dir": str(compat_dir),
             "profile": sidecar.get("profile"),
             "entry_count": len(sidecar.get("entries") or []),
+            "transport_bytes_copied": 0,
             "truth_boundary": (
-                "Generator-v2 metadata was translated only after transport hashes/sizes were verified. "
-                "The resulting MEMORY still passes repack/attach/recovery validation."
+                "Generator-v2 metadata is translated in memory only. Uploaded "
+                "transport bytes remain in place and are reverified during the "
+                "streaming MEMORY attach."
             ),
         }
 
     repack_decision = _memory_package_requires_v3_repack(sidecar)
-    report["repack_decision"] = repack_decision
-    if repack_decision.get("required") is True:
-        repack_dir = work_dir / "auto_memory_v3"
-        repack_work = work_dir / "auto_memory_v3_work"
-        existing_repack = _discover_memory_package(repack_dir) if repack_dir.is_dir() else {"ok": True, "state": "memory_package_not_present"}
-        raw_existing_sidecar = existing_repack.get("sidecar")
-        existing_sidecar = (
-            cast(dict[str, Any], raw_existing_sidecar)
-            if isinstance(raw_existing_sidecar, dict)
-            else {}
-        )
-        if (
-            existing_repack.get("ok") is True
-            and existing_repack.get("state") == "memory_package_discovered"
-            and str(existing_sidecar.get("memory_manifest_schema") or "").strip()
-            == "jazn_memory_package_manifest/v3"
-        ):
-            report["repack"] = {
-                "ok": True,
-                "state": "legacy_memory_repack_reused",
-                "output_package_name": existing_repack.get("package_name"),
-                "output_dir": str(repack_dir),
-            }
-            source_dir = repack_dir
-            source_name = str(existing_repack.get("package_name") or "")
-        else:
-            try:
-                repack = repack_legacy_memory_package(
-                    source_dir,
-                    output_dir=repack_dir,
-                    base_zip_name=source_name,
-                    work_dir=repack_work,
-                    force=force_reextract,
-                )
-            except (LegacyMemoryRepackError, FileExistsError) as exc:
-                report.update({"ok": False, "state": "memory_legacy_repack_failed", "error": str(exc)})
-                return report
-            report["repack"] = repack
-            if repack.get("ok") is not True:
-                report.update({"ok": False, "state": "memory_legacy_repack_failed"})
-                return report
-            source_dir = repack_dir
-            source_name = str(repack.get("output_package_name") or "")
+    report["repack_decision"] = {
+        **repack_decision,
+        "runtime_repack_performed": False,
+        "runtime_policy": "direct_verified_streaming_attach",
+        "migration_tool_remains_available": True,
+        "truth_boundary": (
+            "A legacy package may still be migrated to v3 explicitly, but normal "
+            "runtime convergence no longer creates a second package transport. "
+            "Oversized members are bounded by exact sidecar sizes, disk preflight, "
+            "streamed SHA-256/CRC checks and final manifest validation."
+        ),
+    }
 
     attach = attach_memory_package(
         destination,
@@ -629,6 +587,7 @@ def _auto_attach_memory_before_daemon(
         time_budget_seconds=time_budget_seconds,
         run_crc=run_crc,
         force_reextract=force_reextract,
+        package_sidecar=package_sidecar_override,
     )
     report["attach"] = attach.to_dict()
     if attach.pending:
@@ -684,9 +643,10 @@ def converge_memory_before_daemon(
     """Converge one MEMORY package into a verified inactive runtime.
 
     This is the public high-level maintenance operation for MEMORY delivered
-    after SYSTEM installation. It intentionally reuses the same discovery,
-    generator-v2 adapter, safe v3 repack, attach, recovery and readiness gates
-    as runtime-bootstrap auto-memory.
+    after SYSTEM installation. It reuses the same discovery, metadata-only
+    generator-v2 adapter, verified streaming attach, recovery and readiness
+    gates as runtime-bootstrap auto-memory. Runtime convergence does not create
+    an intermediate joined ZIP or mandatory v3 repack.
     """
 
     runtime_root = Path(destination).expanduser().resolve()
