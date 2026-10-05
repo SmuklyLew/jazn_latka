@@ -245,6 +245,17 @@ def _snapshot_sqlite_memory(source: Path, target: Path) -> dict[str, Any]:
                     sleep=0.01,
                 )
                 target_connection.commit()
+                journal_row = target_connection.execute(
+                    "PRAGMA journal_mode=DELETE"
+                ).fetchone()
+                journal_mode = "" if journal_row is None else str(journal_row[0]).casefold()
+                if journal_mode != "delete":
+                    raise PackIntegrityError(
+                        f"SQLite snapshot could not switch to single-file journal mode: {source}"
+                    )
+                target_connection.commit()
+        target.with_name(target.name + "-wal").unlink(missing_ok=True)
+        target.with_name(target.name + "-shm").unlink(missing_ok=True)
         report = inspect_sqlite_memory_file(target)
     except Exception:
         target.unlink(missing_ok=True)
