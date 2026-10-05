@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.106 hardens low-amplification MEMORY convergence: streaming
-# attach now applies the shared archive resource policy before extraction,
-# durable metadata is flushed/fsynced before atomic replace, and MEMORY-only
-# generation emits native v3 transport with SQLite Online Backup snapshots.
-DISTRIBUTION_VERSION = "16.3.25.5.106"
-PACKAGE_VERSION = "16.3.25.5.106"
-PACKAGE_RELEASE_NAME = "memory-streaming-hardening-convergence"
+# v16.3.25.5.107 closes the production remote-runtime operations gap:
+# public MCP startup now requires strict conversation-ready runtime evidence,
+# reuses or starts the canonical runtime supervisor by default, and ships
+# versioned deployment/tunnel contracts plus chaos-oriented regressions.
+DISTRIBUTION_VERSION = "16.3.25.5.107"
+PACKAGE_VERSION = "16.3.25.5.107"
+PACKAGE_RELEASE_NAME = "persistent-remote-runtime-operations-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
