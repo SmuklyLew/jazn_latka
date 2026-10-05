@@ -1,8 +1,8 @@
 # Dokumentacja Jaźni — mapa i źródła prawdy
 
-**Aktualizacja:** 2026-09-07  
-**Zweryfikowany master:** `e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`  
-**Bieżąca dokumentacyjna linia zmian:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
+**Aktualizacja:** 2026-10-05  
+**Zweryfikowany master:** `bb107ebaeea119487f49d8cb1e34efd9a1896464` / `16.3.25.5.106-memory-streaming-hardening-convergence`  
+**Bieżąca dokumentacyjna linia zmian:** `docs/chatgpt-live-bootstrap-recovery-2026-10-05`
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
 
@@ -13,6 +13,7 @@ Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i pozi
 3. [`plans/README.md`](plans/README.md) — kanoniczna mapa aktywnych planów.
 4. [`plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md) — nadrzędna roadmapa v16.3.25.4→v17.
 5. [`plans/CURRENT_STEP.md`](plans/CURRENT_STEP.md) — bieżący legalny krok.
+6. [`reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`](reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md) — rzeczywisty przebieg udanego bootstrapu SYSTEM-u na hoście ChatGPT 2026-10-05, wraz z fail-closed odrzuceniem MEMORY.
 
 ## Aktywna warstwa planistyczna
 
