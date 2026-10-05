@@ -4,7 +4,7 @@ Active implementation of `tools/jazn_pack_generator.py`.
 
 ## Primary scope
 
-The tool has two explicit byte contracts. Runnable **SYSTEM** content is materialized from canonical release staging (Git blobs for a checkout, verified-export bytes without Git). **MEMORY** remains a selected-folder byte-exact snapshot. The primary archive format is one ordinary logical ZIP.
+The tool has two explicit content contracts. Runnable **SYSTEM** content is materialized from canonical release staging (Git blobs for a checkout, verified-export bytes without Git). **MEMORY-only** output is normalized to native v3 transport: ordinary files remain byte-exact, SQLite databases are captured with the Online Backup API, and oversized raw JSONL is represented by bounded exact segments. The primary archive format is one ordinary logical ZIP.
 
 The user chooses whether that logical ZIP remains:
 
