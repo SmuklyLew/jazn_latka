@@ -4,8 +4,9 @@ from __future__ import annotations
 
 This module deliberately does not own Jaźń lifecycle. It composes the existing
 public ``run.py`` control-plane commands so a container or service manager can
-start the persistent daemon, verify readiness, and then replace itself with the
-OAuth-protected Streamable HTTP MCP gateway.
+start the persistent daemon, verify *conversation-ready* state, ensure/reuse the
+canonical runtime supervisor, and then replace itself with the OAuth-protected
+Streamable HTTP MCP gateway.
 """
 
 from dataclasses import dataclass
@@ -14,17 +15,23 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from typing import Any, Callable, Mapping
 from urllib.parse import urlsplit
+
+from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
 DEFAULT_CONTAINER_ROOT = Path("/opt/jazn")
 DEFAULT_BIND_HOST = "0.0.0.0"
 DEFAULT_PUBLIC_PORT = 8080
 DEFAULT_DAEMON_URL = "http://127.0.0.1:8787"
+DEFAULT_SUPERVISOR_STARTUP_TIMEOUT_SECONDS = 15.0
+DEFAULT_SUPERVISOR_POLL_INTERVAL_SECONDS = 0.25
 
 CLIENT_ID_ENV = "JAZN_MCP_OAUTH_CLIENT_ID"
 CLIENT_SECRET_ENV = "JAZN_MCP_OAUTH_CLIENT_SECRET"
+REQUIRE_SUPERVISOR_ENV = "JAZN_MCP_REQUIRE_SUPERVISOR"
 
 
 class DeploymentError(RuntimeError):
@@ -40,6 +47,20 @@ def _csv_values(value: str | None) -> tuple[str, ...]:
         item
         for item in (part.strip() for part in str(value or "").split(","))
         if item
+    )
+
+
+def _bool_env(value: str | None, *, name: str, default: bool) -> bool:
+    raw = str(value or "").strip().lower()
+    if not raw:
+        return bool(default)
+    if raw in {"1", "true", "yes", "on"}:
+        return True
+    if raw in {"0", "false", "no", "off"}:
+        return False
+    raise DeploymentError(
+        f"{name} must be one of 1/0, true/false, yes/no or on/off",
+        code=f"invalid_{name.lower()}",
     )
 
 
@@ -97,6 +118,59 @@ def _port(value: str | int | None) -> int:
     return port
 
 
+def _json_object_from_completed_process(
+    completed: subprocess.CompletedProcess[str],
+    *,
+    invalid_code: str,
+    command_label: str,
+) -> dict[str, Any]:
+    if int(completed.returncode) != 0:
+        raise DeploymentError(
+            f"{command_label} failed",
+            code=f"{invalid_code}_command_failed",
+        )
+    try:
+        payload = json.loads(str(completed.stdout or "").strip())
+    except json.JSONDecodeError as exc:
+        raise DeploymentError(
+            f"{command_label} did not return one JSON object",
+            code=f"{invalid_code}_invalid_json",
+        ) from exc
+    if not isinstance(payload, dict):
+        raise DeploymentError(
+            f"{command_label} JSON must be an object",
+            code=f"{invalid_code}_invalid_json",
+        )
+    return dict(payload)
+
+
+def _runtime_status_blockers(payload: Mapping[str, Any]) -> list[str]:
+    blockers: list[str] = []
+    for field in (
+        "ok",
+        "daemon_reachable",
+        "system_fully_ready",
+        "conversation_ready",
+        "activation_truth_gate_eligible",
+    ):
+        if payload.get(field) is not True:
+            blockers.append(field)
+
+    runtime_version = str(payload.get("runtime_version") or "").strip()
+    if runtime_version != PACKAGE_VERSION_FULL:
+        blockers.append("runtime_version")
+
+    daemon_instance_id = str(
+        payload.get("daemon_instance_id")
+        or payload.get("runtime_instance_id")
+        or ""
+    ).strip()
+    if not daemon_instance_id:
+        blockers.append("daemon_instance_id")
+
+    return blockers
+
+
 @dataclass(frozen=True)
 class PublicMcpDeploymentConfig:
     root: Path
@@ -109,6 +183,7 @@ class PublicMcpDeploymentConfig:
     allowed_hosts: tuple[str, ...]
     allowed_origins: tuple[str, ...] = ()
     oauth_scopes: tuple[str, ...] = ()
+    require_supervisor: bool = True
 
     @classmethod
     def from_environment(
@@ -172,6 +247,11 @@ class PublicMcpDeploymentConfig:
             allowed_hosts=allowed_hosts,
             allowed_origins=_csv_values(source.get("JAZN_MCP_ALLOWED_ORIGINS")),
             oauth_scopes=_csv_values(source.get("JAZN_MCP_OAUTH_SCOPES")),
+            require_supervisor=_bool_env(
+                source.get(REQUIRE_SUPERVISOR_ENV),
+                name=REQUIRE_SUPERVISOR_ENV,
+                default=True,
+            ),
         )
 
     def _run_py(self, command: str) -> list[str]:
@@ -190,6 +270,12 @@ class PublicMcpDeploymentConfig:
 
     def daemon_status_argv(self) -> list[str]:
         return [*self._run_py("status"), "--json"]
+
+    def supervisor_status_argv(self) -> list[str]:
+        return [*self._run_py("supervisor-status"), "--json"]
+
+    def supervisor_run_argv(self) -> list[str]:
+        return self._run_py("supervisor-run")
 
     def gateway_argv(self) -> list[str]:
         argv = [
@@ -228,6 +314,7 @@ class PublicMcpDeploymentConfig:
             "allowed_hosts": list(self.allowed_hosts),
             "allowed_origins": list(self.allowed_origins),
             "oauth_scopes": list(self.oauth_scopes),
+            "require_supervisor": self.require_supervisor,
             "oauth_client_id_env": CLIENT_ID_ENV,
             "oauth_client_secret_env": CLIENT_SECRET_ENV,
             "secrets_in_argv": False,
@@ -235,6 +322,8 @@ class PublicMcpDeploymentConfig:
 
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
+PopenFactory = Callable[..., Any]
+Sleeper = Callable[[float], None]
 
 
 def activate_persistent_runtime(
@@ -242,7 +331,7 @@ def activate_persistent_runtime(
     *,
     runner: Runner = subprocess.run,
 ) -> dict[str, Any]:
-    """Start through canonical lifecycle, then require live status evidence."""
+    """Start through canonical lifecycle, then require strict ready evidence."""
 
     start = runner(
         config.daemon_start_argv(),
@@ -264,42 +353,126 @@ def activate_persistent_runtime(
         capture_output=True,
         check=False,
     )
-    if int(status.returncode) != 0:
+    payload = _json_object_from_completed_process(
+        status,
+        invalid_code="daemon_status",
+        command_label="canonical Jaźń status probe",
+    )
+    blockers = _runtime_status_blockers(payload)
+    if blockers:
         raise DeploymentError(
-            "canonical Jaźń status probe failed",
-            code="daemon_status_failed",
+            "Jaźń daemon did not reach verified conversation-ready status; blockers="
+            + ",".join(blockers),
+            code="daemon_not_conversation_ready",
         )
-    try:
-        payload = json.loads(str(status.stdout or "").strip())
-    except json.JSONDecodeError as exc:
-        raise DeploymentError(
-            "canonical Jaźń status did not return one JSON object",
-            code="daemon_status_invalid_json",
-        ) from exc
-    if not isinstance(payload, dict):
-        raise DeploymentError(
-            "canonical Jaźń status JSON must be an object",
-            code="daemon_status_invalid_json",
+    return payload
+
+
+def ensure_runtime_supervisor(
+    config: PublicMcpDeploymentConfig,
+    *,
+    runner: Runner = subprocess.run,
+    popen: PopenFactory = subprocess.Popen,
+    sleeper: Sleeper = time.sleep,
+    startup_timeout_seconds: float = DEFAULT_SUPERVISOR_STARTUP_TIMEOUT_SECONDS,
+    poll_interval_seconds: float = DEFAULT_SUPERVISOR_POLL_INTERVAL_SECONDS,
+) -> dict[str, Any]:
+    """Reuse a verified supervisor or start one and wait for its lease evidence."""
+
+    if not config.require_supervisor:
+        return {
+            "ok": True,
+            "supervisor_required": False,
+            "supervisor_active": False,
+            "reason": "explicit_external_supervision_mode",
+        }
+
+    def read_status() -> dict[str, Any] | None:
+        result = runner(
+            config.supervisor_status_argv(),
+            cwd=config.root,
+            text=True,
+            capture_output=True,
+            check=False,
         )
-    if payload.get("ok") is not True or payload.get("daemon_reachable") is not True:
-        raise DeploymentError(
-            "Jaźń daemon did not reach verified ready status",
-            code="daemon_not_ready",
-        )
-    return dict(payload)
+        if int(result.returncode) != 0:
+            return None
+        try:
+            payload = json.loads(str(result.stdout or "").strip())
+        except json.JSONDecodeError:
+            return None
+        return dict(payload) if isinstance(payload, dict) else None
+
+    existing = read_status()
+    if (
+        isinstance(existing, dict)
+        and existing.get("ok") is True
+        and existing.get("supervisor_active") is True
+        and existing.get("supervisor_identity_confirmed") is True
+        and existing.get("supervisor_heartbeat_fresh") is True
+    ):
+        return existing
+
+    process = popen(
+        config.supervisor_run_argv(),
+        cwd=config.root,
+        stdin=subprocess.DEVNULL,
+    )
+
+    timeout = max(0.5, float(startup_timeout_seconds))
+    interval = max(0.05, float(poll_interval_seconds))
+    deadline = time.monotonic() + timeout
+    last_status: dict[str, Any] | None = existing
+    while time.monotonic() < deadline:
+        observed = read_status()
+        if observed is not None:
+            last_status = observed
+            if (
+                observed.get("ok") is True
+                and observed.get("supervisor_active") is True
+                and observed.get("supervisor_identity_confirmed") is True
+                and observed.get("supervisor_heartbeat_fresh") is True
+            ):
+                return observed
+
+        poll = getattr(process, "poll", None)
+        if callable(poll):
+            return_code = poll()
+            if return_code not in (None, 41):
+                raise DeploymentError(
+                    f"runtime supervisor exited before readiness: returncode={return_code}",
+                    code="supervisor_start_failed",
+                )
+        sleeper(interval)
+
+    detail = ""
+    if isinstance(last_status, Mapping):
+        detail = f"; last_state={last_status.get('state')!r}"
+    raise DeploymentError(
+        "runtime supervisor did not become active before startup timeout" + detail,
+        code="supervisor_not_ready",
+    )
 
 
 def run_public_mcp_deployment(
     env: Mapping[str, str] | None = None,
     *,
     runner: Runner = subprocess.run,
+    popen: PopenFactory = subprocess.Popen,
+    sleeper: Sleeper = time.sleep,
     execv: Callable[[str, list[str]], Any] | None = None,
 ) -> int:
-    """Activate the persistent runtime and exec the OAuth-protected gateway."""
+    """Activate runtime, ensure supervision, then exec the protected gateway."""
 
     try:
         config = PublicMcpDeploymentConfig.from_environment(env)
         activate_persistent_runtime(config, runner=runner)
+        ensure_runtime_supervisor(
+            config,
+            runner=runner,
+            popen=popen,
+            sleeper=sleeper,
+        )
     except DeploymentError as exc:
         print(
             json.dumps(
