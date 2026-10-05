@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.106",
-  "active_definition_count": 1917,
+  "active_definition_count": 1921,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26423,6 +26423,88 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 406
+    },
+    "tests/test_memory_streaming_hardening_convergence.py::test_memory_zip_resource_policy_rejects_high_compression_ratio": {
+      "path": "tests/test_memory_streaming_hardening_convergence.py",
+      "name": "test_memory_zip_resource_policy_rejects_high_compression_ratio",
+      "purpose": "Memory zip resource policy rejects high compression ratio",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "MemoryStreamingTransportError"
+      ],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_memory_streaming_hardening_convergence.py::test_write_json_atomic_fsyncs_before_replace": {
+      "path": "tests/test_memory_streaming_hardening_convergence.py",
+      "name": "test_write_json_atomic_fsyncs_before_replace",
+      "purpose": "Write json atomic fsyncs before replace",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_memory_streaming_hardening_convergence.py::test_native_memory_v3_staging_uses_online_backup_for_live_wal_sqlite": {
+      "path": "tests/test_memory_streaming_hardening_convergence.py",
+      "name": "test_native_memory_v3_staging_uses_online_backup_for_live_wal_sqlite",
+      "purpose": "Native memory v3 staging uses online backup for live wal sqlite",
+      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 18,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_memory_streaming_hardening_convergence.py::test_native_memory_v3_staging_segments_large_jsonl_without_source_copy": {
+      "path": "tests/test_memory_streaming_hardening_convergence.py",
+      "name": "test_native_memory_v3_staging_segments_large_jsonl_without_source_copy",
+      "purpose": "Native memory v3 staging segments large jsonl without source copy",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 156
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
