@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.105",
-  "active_definition_count": 1915,
+  "active_definition_count": 1917,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26247,6 +26247,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26254,7 +26255,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 88
     },
     "tests/test_memory_streaming_attach_convergence.py::test_split_zip_reader_opens_logical_zip_without_joined_file": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -26269,6 +26270,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26276,7 +26278,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 116
+      "line": 121
     },
     "tests/test_memory_streaming_attach_convergence.py::test_streaming_attach_legacy_generator_v2_writes_one_candidate_tree": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -26291,6 +26293,7 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26298,7 +26301,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 136
     },
     "tests/test_memory_streaming_attach_convergence.py::test_v3_raw_segments_stream_directly_to_logical_source": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -26313,6 +26316,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26320,7 +26324,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 182
+      "line": 187
     },
     "tests/test_memory_streaming_attach_convergence.py::test_disk_preflight_fails_before_large_payload_write": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -26337,6 +26341,7 @@
         "MemoryStreamingTransportError"
       ],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26344,7 +26349,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 291
+      "line": 296
     },
     "tests/test_memory_streaming_attach_convergence.py::test_atomic_install_refuses_cross_filesystem_copy_fallback": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -26361,6 +26366,7 @@
         "OSError"
       ],
       "targets": [
+        "latka_jazn.bootstrap",
         "latka_jazn.packaging",
         "latka_jazn.packaging.generator_v2_compat",
         "latka_jazn.packaging.memory_package_manifest",
@@ -26368,7 +26374,55 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 316
+      "line": 321
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_generator_contract_declares_low_amplification_runtime_attach": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_generator_contract_declares_low_amplification_runtime_attach",
+      "purpose": "Generator contract declares low amplification runtime attach",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 388
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_runtime_converge_source_does_not_reintroduce_transport_repack_or_compat_copy": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_runtime_converge_source_does_not_reintroduce_transport_repack_or_compat_copy",
+      "purpose": "Runtime converge source does not reintroduce transport repack or compat copy",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap",
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 406
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
