@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "d68773ba6f62aca87c671c1eb24cbc308fe59e5c",
-    "base_version": "16.3.25.5.103-generative-dialogue-nlg-convergence",
+    "base_commit": "6f11f077f4aed76fc7ee87a9f6c20dab301d8d7c",
+    "base_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "6f11f077f4aed76fc7ee87a9f6c20dab301d8d7c",
