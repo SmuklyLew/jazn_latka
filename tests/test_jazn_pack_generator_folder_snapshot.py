@@ -47,8 +47,12 @@ def test_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserved(tmp_path
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
     rows = {item["path"]: item for item in manifest["source"]["entries"] if item["kind"] == "file"}
     assert rows["memory/drift.py"]["sha256"] == hashlib.sha256(source_bytes).hexdigest()
-    assert manifest["source"]["staging_mode"] == "source-folder-byte-copy"
-    assert manifest["source"]["source_basis"] == "selected_folder"
+    assert manifest["source"]["staging_mode"] == "memory-native-v3-staging"
+    assert manifest["source"]["source_basis"] == "memory_native_v3"
+    assert manifest["source"]["byte_exact"] is False
+    assert manifest["memory_manifest_schema"] == "jazn_memory_package_manifest/v3"
+    assert manifest["memory_format_version"] == 3
+    assert manifest["verification"]["byte_exact_source_copy"] is False
     assert manifest["verification"]["byte_exact"] is True
     assert manifest["verification"]["member_sha256"] == "ok"
     assert manifest["verification"]["eol_policy"] == "diagnostic_only"
