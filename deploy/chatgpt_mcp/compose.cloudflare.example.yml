@@ -27,7 +27,7 @@ services:
       retries: 3
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: ${CLOUDFLARED_IMAGE:?set CLOUDFLARED_IMAGE to a reviewed tag or immutable digest}
     restart: unless-stopped
     depends_on:
       jazn-mcp:
