@@ -57,6 +57,7 @@ on:
       - "latka_jazn/runtime/turn_runtime.py"
       - "latka_jazn/resources/dependencies/profiles.json"
       - "tools/jazn_pack_generator_app/manifest.py"
+      - "tools/jazn_pack_generator_app/staging.py"
       - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
@@ -87,6 +88,8 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
+      - "tests/test_v163255107_memory_manifest_producer_gate.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -157,6 +160,7 @@ on:
       - "latka_jazn/runtime/turn_runtime.py"
       - "latka_jazn/resources/dependencies/profiles.json"
       - "tools/jazn_pack_generator_app/manifest.py"
+      - "tools/jazn_pack_generator_app/staging.py"
       - "pyproject.toml"
       - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
       - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
@@ -187,6 +191,8 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
+      - "tests/test_v163255107_memory_manifest_producer_gate.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -259,6 +265,8 @@ jobs:
           tests/test_mcp_oauth_introspection.py
           tests/test_chatgpt_plugin_package.py
           tests/test_chatgpt_public_mcp_deployment.py
+          tests/test_v163255107_persistent_remote_runtime_operations.py
+          tests/test_v163255107_memory_manifest_producer_gate.py
           tests/test_pack_generator_secure_mcp_bridge_contract.py
 
       - name: Host gate and persistent lifecycle E2E

@@ -1,0 +1,55 @@
+{
+  "schema_version": "jazn_public_mcp_deployment/v1",
+  "runtime_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
+  "transport": {
+    "protocol": "MCP",
+    "protocol_version": "2026-07-28",
+    "public_path": "/mcp",
+    "canonical_methods": [
+      "server/discover",
+      "tools/list",
+      "tools/call"
+    ],
+    "forbidden_non_mcp_aliases": [
+      "mcp/list-tools",
+      "mcp/invoke"
+    ]
+  },
+  "runtime_readiness": {
+    "required_true_paths": [
+      "ok",
+      "system_fully_ready",
+      "activation_truth_gate_eligible",
+      "daemon.endpoint_reachable",
+      "capability_matrix.conversation_ready"
+    ],
+    "required_non_empty_paths": [
+      "daemon.daemon_instance_id"
+    ],
+    "runtime_version_paths": [
+      "runtime_version",
+      "daemon.runtime_version"
+    ],
+    "runtime_version_must_match_package": true
+  },
+  "supervision": {
+    "required_by_default": true,
+    "opt_out_env": "JAZN_MCP_REQUIRE_SUPERVISOR",
+    "opt_out_requires_external_supervision": true,
+    "verified_reuse_requires": [
+      "supervisor_active",
+      "supervisor_identity_confirmed",
+      "supervisor_heartbeat_fresh"
+    ]
+  },
+  "security": {
+    "public_https_required": true,
+    "daemon_loopback_only": true,
+    "oauth_required_for_public_non_loopback": true,
+    "secrets_in_argv": false,
+    "cloudflare_tunnel_token_in_repo": false,
+    "openai_api_key_required_for_public_https_route": false,
+    "secure_mcp_tunnel_runtime_api_key_external_to_repo": true
+  },
+  "truth_boundary": "Deployment readiness proves the gateway may be exposed. It does not prove that a specific ChatGPT message has the Jaźń app callable or that a visible turn has passed accepted finalization."
+}

@@ -280,3 +280,33 @@ mode transition when necessary. BUSY/LOCKED during that transition is retried
 with a fixed maximum of six attempts and bounded exponential delay; exhaustion
 fails closed. Task state changes still use `BEGIN IMMEDIATE` so the
 read/modify/write invariant remains serialized across independent processes.
+
+
+## 13. Operational convergence in 16.3.25.5.107
+
+The public deployment path now treats remote ingress as an operated persistent
+service, not merely as code that can be started:
+
+- production startup validates the canonical nested `run.py status --json`
+  evidence, including runtime/gateway binding and exact runtime version;
+- a verified existing runtime supervisor is reused, otherwise the deployment
+  starts the canonical supervisor and waits boundedly for identity + heartbeat
+  evidence before exposing the gateway;
+- `/healthz` remains process liveness while `/readyz` is runtime readiness;
+- `deploy/chatgpt_mcp/deployment.contract.json` versions the deployment-facing
+  wire/readiness/security contract;
+- Cloudflare Tunnel and systemd examples keep the daemon private, keep secrets
+  outside source control and require a reviewed cloudflared tag/digest;
+- MEMORY package production verifies its v3 exact-set manifest against the
+  staged tree before archive/transport creation, so an unlisted/missing member
+  fails at the producer boundary as well as during runtime attach.
+
+The preferred continuity route for ordinary ChatGPT turns is a **currently
+callable and verified** remote Jaźń app. Local process execution remains a
+bootstrap/recovery capability. Losing a ChatGPT-local executor is therefore not
+evidence that an independently running remote runtime died. Conversely, a
+healthy public endpoint without a callable Jaźń app in the current message is
+not enough to set `remote_runtime_available=true`.
+
+Operational procedures, failure injection and rollback are specified in
+`docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md`.

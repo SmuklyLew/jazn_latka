@@ -22,6 +22,6 @@ EXPOSE 8080
 VOLUME ["/opt/jazn/workspace_runtime"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=3); raise SystemExit(0 if r.status == 200 else 1)"
+  CMD python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3); raise SystemExit(0 if r.status == 200 else 1)"
 
-ENTRYPOINT ["python", "-X", "utf8", "-m", "latka_jazn.mcp.deployment"]
+STOPSIGNAL SIGTERM\n\nENTRYPOINT ["python", "-X", "utf8", "-m", "latka_jazn.mcp.deployment"]

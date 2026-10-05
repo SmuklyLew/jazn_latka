@@ -1,11 +1,10 @@
 # Current project state
 
-**Snapshot date:** 2026-10-05  
+**Snapshot date:** 2026-10-05
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master:** `bb107ebaeea119487f49d8cb1e34efd9a1896464`  
-**Current master version:** `16.3.25.5.106-memory-streaming-hardening-convergence`  
-**Latest merged release PR:** #315  
-**Documentation-only recovery branch:** `docs/chatgpt-live-bootstrap-recovery-2026-10-05`
+**Current master at documentation baseline:** `bb107ebaeea119487f49d8cb1e34efd9a1896464`
+**Current master version:** `16.3.25.5.106-memory-streaming-hardening-convergence`
+**Update target:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
@@ -13,14 +12,32 @@ Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `la
 
 Aktualna linia master to v16.3.25.5.106.
 
-- `run.py` pozostaje cienkim publicznym starterem;
-- `main.py` jest centralnym control plane;
-- `AGENTS.md` jest routerem do hostowych/operacyjnych runbooków;
-- SYSTEM i MEMORY pozostają oddzielnymi pakietami/capabilities;
-- SYSTEM package nie może sam utworzyć executora hosta;
-- persistent daemon/live status oraz accepted visible turn pozostają oddzielnymi gate'ami;
-- ChatGPT bridge nie wymaga `OPENAI_API_KEY` w lokalnej trasie hostowej;
-- public/remote MCP jest osobną trasą i wymaga oddzielnego, aktualnego evidence dostępności.
+## v107 — persistent remote runtime operations
+
+**Status:** `IMPLEMENTATION CANDIDATE` on
+`upgrade/v16.3.25.5.107-persistent-remote-runtime-operations-convergence`.
+
+- public MCP startup is fail-closed on canonical conversation readiness, exact
+  runtime version and daemon instance binding;
+- the canonical runtime supervisor is required by default and is reused only
+  with confirmed process identity plus a fresh heartbeat lease;
+- Docker liveness (`/healthz`) is separated from runtime readiness
+  (`/readyz`);
+- deployment contract, Cloudflare Tunnel example and hardened systemd unit are
+  versioned in `deploy/chatgpt_mcp/`;
+- the MCP wire contract remains 2026-07-28
+  `server/discover` + `tools/list` + `tools/call`; non-standard
+  `mcp/list-tools` / `mcp/invoke` aliases are explicitly rejected from the
+  deployment contract;
+- MEMORY v3 staging now verifies its exact-set manifest before transport
+  creation, preserving the existing fail-closed attach validation;
+- current-message app/callability and accepted `display_exact` finalization
+  remain mandatory before attributing a visible response to Jaźń.
+
+This branch does not create a public endpoint by itself and does not claim a
+remote ChatGPT route until external deployment and current-host capability
+evidence pass.
+
 
 ## 2. ChatGPT live bootstrap — zaobserwowany sukces 2026-10-05
 
