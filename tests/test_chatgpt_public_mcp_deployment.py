@@ -37,12 +37,17 @@ def _env(tmp_path: Path) -> dict[str, str]:
 def _ready_status() -> dict[str, Any]:
     return {
         "ok": True,
-        "daemon_reachable": True,
         "system_fully_ready": True,
-        "conversation_ready": True,
         "activation_truth_gate_eligible": True,
         "runtime_version": PACKAGE_VERSION_FULL,
-        "daemon_instance_id": "daemon-test-instance",
+        "daemon": {
+            "endpoint_reachable": True,
+            "runtime_version": PACKAGE_VERSION_FULL,
+            "daemon_instance_id": "daemon-test-instance",
+        },
+        "capability_matrix": {
+            "conversation_ready": True,
+        },
     }
 
 
@@ -127,17 +132,17 @@ def test_activation_requires_full_conversation_ready_status_and_exact_runtime_ve
         return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(_ready_status()), stderr="")
 
     result = activate_persistent_runtime(config, runner=runner)
-    assert result["conversation_ready"] is True
+    assert result["capability_matrix"]["conversation_ready"] is True
     assert len(calls) == 2
 
     def reachable_but_not_ready(argv: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
         if "start" in argv:
             return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
         payload = _ready_status()
-        payload["conversation_ready"] = False
+        payload["capability_matrix"]["conversation_ready"] = False
         return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(payload), stderr="")
 
-    with pytest.raises(DeploymentError, match="conversation_ready"):
+    with pytest.raises(DeploymentError, match="capability_matrix.conversation_ready"):
         activate_persistent_runtime(config, runner=reachable_but_not_ready)
 
     def version_mismatch(argv: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
