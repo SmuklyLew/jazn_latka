@@ -37,13 +37,13 @@ into argv, package metadata or Git.
 
 Before the gateway is executed, deployment must verify:
 
-- `ok=true`;
-- `daemon_reachable=true`;
-- `system_fully_ready=true`;
-- `conversation_ready=true`;
-- `activation_truth_gate_eligible=true`;
-- exact `runtime_version == PACKAGE_VERSION_FULL`;
-- non-empty daemon/runtime instance id.
+- top-level `ok=true`;
+- top-level `system_fully_ready=true`;
+- top-level `activation_truth_gate_eligible=true`;
+- `daemon.endpoint_reachable=true`;
+- `capability_matrix.conversation_ready=true`;
+- top-level and `daemon.runtime_version == PACKAGE_VERSION_FULL`;
+- non-empty `daemon.daemon_instance_id`.
 
 Reachability alone is not readiness.
 
@@ -72,7 +72,9 @@ resume the same request after ambiguous transport, and accept final
 
 ## Cloudflare Tunnel
 
-The supplied Compose example uses outbound-only `cloudflared`. The token is an
+The supplied Compose example uses outbound-only `cloudflared` and requires the
+operator to provide a reviewed tag or immutable image digest; it does not default
+to a mutable `latest` tag. The token is an
 operator secret and is intentionally not represented in repository manifests.
 No inbound router port is required for this topology.
 
