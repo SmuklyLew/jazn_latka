@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.105-memory-streaming-attach-convergence",
-  "runtime_version": "16.3.25.5.105-memory-streaming-attach-convergence",
-  "package_version": "16.3.25.5.105-memory-streaming-attach-convergence",
-  "generated_at_utc": "2026-10-05T14:08:15+00:00",
-  "updated_at_utc": "2026-10-05T14:08:15+00:00",
+  "version": "16.3.25.5.106-memory-streaming-hardening-convergence",
+  "runtime_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
+  "package_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
+  "generated_at_utc": "2026-10-05T14:56:59+00:00",
+  "updated_at_utc": "2026-10-05T14:56:59+00:00",
   "start_file": "run.py",
   "file_count": 1926,
   "static_file_count": 1926,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2939,
-      "sha256": "470b87bbf12472ee8b75c01ef7294d9a1c09f3b635ee602db326c8b4b68fc4ae",
+      "size_bytes": 2952,
+      "sha256": "d346c06ac12ba62fe4ce01e78410919b93f77d7b3dd3b149c6b651894a64b48f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7094,8 +7094,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_types.py",
-      "size_bytes": 4547,
-      "sha256": "2ea1234611cb254550635353e36d68f07d23f04fda3d1e842707ab6e395f7650",
+      "size_bytes": 4755,
+      "sha256": "85240dbae484120d7d46f10227d6f48566c3300980eaa71ddad4f61cfb9fe8b2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7112,8 +7112,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_streaming_transport.py",
-      "size_bytes": 44831,
-      "sha256": "fecc584a43fc376520d3801c2a85fc31da1bfaf9cc735ac1f71e6650e449aa67",
+      "size_bytes": 46108,
+      "sha256": "097a1225d910894dffb159d99cfa62186a06d4074a3e9b96d10b46e97cd75866",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8894,8 +8894,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5352,
-      "sha256": "a71f40cf46c5adc5d26c50e2f31b520c46d7aa9bc4d56aeeed19d8eea5db5d1b",
+      "size_bytes": 5355,
+      "sha256": "6d33d434f7ae37ba184f926c8b943d00d7cf79a2abe0993e5ec4560be4b4a861",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16949,8 +16949,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 9615,
-      "sha256": "97a782edc7742c6e5fbc31327f92a6aa6644d89d3d931f4de57783d859d41109",
+      "size_bytes": 9674,
+      "sha256": "53fa865d0e222bc404be62c7ae23a52972bdd706376d6ad0450a74e1a8512677",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16986,7 +16986,7 @@
     {
       "path": "tools/jazn_pack_generator_app/constants.py",
       "size_bytes": 2059,
-      "sha256": "789250452856c6de1a70d639376da3b7b3a66554c5a614a6875de375cc91c28f",
+      "sha256": "f29e165ffa0f27eb6b32a42aef45d2b9bd57169504e18f5073368cfb7c1ec2e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17202,7 +17202,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1793577,
-      "sha256": "4014389291e95ef5cde1ccbb0bfb3a02686e31424ac1ce288d23140822ce271f",
+      "sha256": "3f3b12bbbd2d173321c8dcdcbe43f5cbb2e788d66621f18a0f20e7afc92c957a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17786,11 +17786,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.105-memory-streaming-attach-convergence",
+  "release_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.105-memory-streaming-attach-convergence",
-    "package_version": "16.3.25.5.105-memory-streaming-attach-convergence",
-    "release_version": "16.3.25.5.105-memory-streaming-attach-convergence"
+    "runtime_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
+    "package_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
+    "release_version": "16.3.25.5.106-memory-streaming-hardening-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
