@@ -3,11 +3,11 @@
   "version": "16.3.25.5.106-memory-streaming-hardening-convergence",
   "runtime_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
   "package_version": "16.3.25.5.106-memory-streaming-hardening-convergence",
-  "generated_at_utc": "2026-10-05T15:08:58+00:00",
-  "updated_at_utc": "2026-10-05T15:08:58+00:00",
+  "generated_at_utc": "2026-10-05T15:13:29+00:00",
+  "updated_at_utc": "2026-10-05T15:13:29+00:00",
   "start_file": "run.py",
-  "file_count": 1928,
-  "static_file_count": 1928,
+  "file_count": 1931,
+  "static_file_count": 1931,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -290,8 +290,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2952,
-      "sha256": "6489aebad65e2f40debe4f9d7c37e6a1d346b501023a75d40049a7d894f08008",
+      "size_bytes": 2957,
+      "sha256": "7f1aac6c511e84c0b3b1553e629eca9fe6c59b3c18c2ffcfb8bc4acbde790729",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7554,7 +7554,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 2900,
-      "sha256": "6939093dbbfa736c24b2512e1ae552d2976fd166e0c91776a6033255c7d8bb8b",
+      "sha256": "6b836507e929fe3fbbf49d6de28264b5dcac7ee2cbef1874cca2e7b627c38fc2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12295,6 +12295,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.105-memory-streaming-attach-convergence/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2070,
+      "sha256": "1e7aa6d759a796dbfe05b39951f4c6d9376526697c08d82befc52926ca31a40e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.105-memory-streaming-attach-convergence/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6953,
+      "sha256": "ed214fdad271cd7d7d3cbbf5753cd862536ee417cc8d5c94f3acc449c303c6e2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.105-memory-streaming-attach-convergence/test_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8678,
+      "sha256": "2f9129cd90bc48ccadeb14144a48c8be19756eadb8a4b0a7a7b3f6a3b909e5bb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.105-memory-streaming-attach-convergence/test_jazn_pack_generator_folder_snapshot.py",
       "size_bytes": 5244,
       "sha256": "788b495cbce1b5570f3e17a06ba968c3beaf1037e0e04c2eccc9935365815951",
@@ -13889,8 +13916,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2070,
-      "sha256": "1e7aa6d759a796dbfe05b39951f4c6d9376526697c08d82befc52926ca31a40e",
+      "size_bytes": 2073,
+      "sha256": "efb1e8dcfafcd8a74b3c805ac1ab2ddb67d900f605a95c4088addd515e297ae0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14267,8 +14294,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6953,
-      "sha256": "ed214fdad271cd7d7d3cbbf5753cd862536ee417cc8d5c94f3acc449c303c6e2",
+      "size_bytes": 6956,
+      "sha256": "84016a9a8ace5ab94f4aa71c6ea30c71cd8f97475f95b5e9d072716eb228decd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14627,8 +14654,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8678,
-      "sha256": "2f9129cd90bc48ccadeb14144a48c8be19756eadb8a4b0a7a7b3f6a3b909e5bb",
+      "size_bytes": 8681,
+      "sha256": "b2b1dc4a6416c228f887679fb31e58390ac9a7729db8abad4e0be312f12e3197",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17075,8 +17102,8 @@
     },
     {
       "path": "tools/jazn_pack_generator_app/staging.py",
-      "size_bytes": 23458,
-      "sha256": "123da81ec22132fbba0aec4173f1986233a5151d130a57f2c1c4a4be758a672c",
+      "size_bytes": 24082,
+      "sha256": "801d810b7762919b3eb2ce058e32098a6be7708514079ebeab7d2935336d5c20",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
