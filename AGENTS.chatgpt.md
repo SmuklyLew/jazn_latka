@@ -64,6 +64,8 @@ Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capa
 
 Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego statusu nie wystarcza. Żadna z tych tras nie jest drugim runtime i żadna nie daje prawa do pokazania tekstu bez accepted-turn/finalization lineage.
 
+Jeżeli publiczny lub tunelowany remote runtime przeszedł bieżący fresh-message capability gate, jest preferowaną trasą ciągłości zwykłych tur: zanik lokalnego executora ChatGPT nie degraduje sam w sobie zweryfikowanej zdalnej usługi. Lokalny executor pozostaje wtedy bootstrap/recovery/operator channel, nie właścicielem trwałości rozmowy. Odwrotnie, sam zdrowy zewnętrzny daemon/gateway bez callable aplikacji Jaźni w bieżącej wiadomości nie pozwala ustawić `remote_runtime_available=true`.
+
 **Dowód capability hosta musi dotyczyć bieżącej powierzchni i bieżącej tury.** Za `host_connector_capability_available=true` uznawaj wyłącznie aplikację/connector Jaźni, którego akcje są rzeczywiście wywoływalne przez aktualny host. Wynik wyszukiwania katalogu pluginów, metadane `installed`, możliwość zasugerowania instalacji, sama składnia @mention, ogólny connector innej usługi (np. GitHub/Drive) albo sama konfiguracja MCP nie są dowodem capability Jaźni. Discovery katalogu może pomóc w konfiguracji, ale nie może promować `remote_runtime`.
 
 
