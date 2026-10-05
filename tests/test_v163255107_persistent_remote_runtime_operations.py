@@ -33,12 +33,17 @@ def test_v107_deployment_contract_requires_strict_readiness_and_supervision() ->
         )
     )
     readiness = contract["runtime_readiness"]
-    assert set(readiness["required_true_fields"]) >= {
+    assert set(readiness["required_true_paths"]) >= {
         "ok",
-        "daemon_reachable",
         "system_fully_ready",
-        "conversation_ready",
         "activation_truth_gate_eligible",
+        "daemon.endpoint_reachable",
+        "capability_matrix.conversation_ready",
+    }
+    assert readiness["required_non_empty_paths"] == ["daemon.daemon_instance_id"]
+    assert set(readiness["runtime_version_paths"]) == {
+        "runtime_version",
+        "daemon.runtime_version",
     }
     assert readiness["runtime_version_must_match_package"] is True
 
