@@ -1,0 +1,43 @@
+services:
+  jazn-mcp:
+    build:
+      context: ../..
+      dockerfile: deploy/chatgpt_mcp/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./jazn-mcp.env
+    environment:
+      JAZN_MCP_REQUIRE_SUPERVISOR: "1"
+    volumes:
+      - jazn-runtime:/opt/jazn/workspace_runtime
+    expose:
+      - "8080"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          r=urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3);
+          raise SystemExit(0 if r.status == 200 else 1)
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    depends_on:
+      jazn-mcp:
+        condition: service_healthy
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN outside the repository}
+
+volumes:
+  jazn-runtime:
