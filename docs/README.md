@@ -1,8 +1,8 @@
 # Dokumentacja Jaźni — mapa i źródła prawdy
 
-**Aktualizacja:** 2026-09-07  
-**Zweryfikowany master:** `e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`  
-**Bieżąca dokumentacyjna linia zmian:** `update/v16.3.25.5.39-memory-affect-docs-convergence`
+**Aktualizacja:** 2026-10-05  
+**Zweryfikowany master:** `bb107ebaeea119487f49d8cb1e34efd9a1896464` / `16.3.25.5.106-memory-streaming-hardening-convergence`  
+**Bieżąca dokumentacyjna linia zmian:** `upgrade/v16.3.25.5.107-persistent-remote-runtime-operations-convergence`
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
 
@@ -36,7 +36,7 @@ Historyczne plany nie pozostają jako compatibility pointery w aktywnym root `pl
 - `project/` — current state, release timeline, assumptions, architecture/governance.
 - `plans/` — tylko bieżące owner plans + historyczne `only_to_check/`.
 - `memory/` — operacyjna dokumentacja pamięci i narzędzi.
-- `runtime/` — lifecycle/host/runtime/operator.
+- `runtime/` — lifecycle/host/runtime/operator; dla trwałego ChatGPT MCP: `PERSISTENT_REMOTE_MCP_RUNTIME.md` + `PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
 - `packaging/` — pakowanie, release i dystrybucja.
 - `nlp/` — kontrakty NLP/resources.
 - `tools/` — dokumentacja narzędzi.
