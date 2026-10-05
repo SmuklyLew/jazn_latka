@@ -290,6 +290,5 @@ Dowodzi natomiast, że w tej sesji:
 - `docs/reports/JAZN_V16_3_25_5_89_0_HOST_EXECUTOR_SPAWN_DIAGNOSTICS_CONVERGENCE.md`
 - `docs/reports/JAZN_V16_3_25_5_90_0_CHATGPT_HOST_BOOTSTRAP_PRIMITIVE_CONVERGENCE.md`
 - `docs/reports/JAZN_V16_3_25_5_100_CHATGPT_BOOTSTRAP_PROGRESS_CONVERGENCE.md`
-- `docs/reports/JAZN_V16_3_25_5_105_MEMORY_WRITE_SAFETY_CONVERGENCE.md` (jeżeli obecny w danej rewizji)
 - testy aktywnej linii v106 dotyczące capability loadera, bootstrapu ZIP i memory streaming hardening.
 
