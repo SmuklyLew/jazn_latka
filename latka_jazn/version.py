@@ -7,9 +7,9 @@ from typing import Any
 # parts are consumed in place, binary split ZIPs are read as one seekable
 # stream, v3 raw segments materialize directly to logical sources, and runtime
 # convergence no longer creates mandatory compat/repack payload copies.
-DISTRIBUTION_VERSION = "16.3.25.5.105"
-PACKAGE_VERSION = "16.3.25.5.105"
-PACKAGE_RELEASE_NAME = "memory-streaming-attach-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.106"
+PACKAGE_VERSION = "16.3.25.5.106"
+PACKAGE_RELEASE_NAME = "memory-streaming-hardening-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
