@@ -8,6 +8,7 @@ import pytest
 from latka_jazn.packaging.memory_package_manifest import verify_memory_package_manifest
 from tools.jazn_pack_generator_app import staging
 from tools.jazn_pack_generator_app.errors import PackIntegrityError
+from tools.jazn_pack_generator_app.manifest import build_memory_attachment_contract
 from tools.jazn_pack_generator_app.models import ContentMode, PackPlan, PackRequest, SourceEntry
 
 
@@ -77,3 +78,18 @@ def test_generator_refuses_to_continue_when_exact_set_verification_fails(
 
     with pytest.raises(PackIntegrityError, match="memory_package_unlisted_file"):
         staging.materialize_source_staging(_memory_plan(tmp_path), tmp_path / "staging")
+
+
+def test_memory_attachment_contract_requires_producer_exact_set_gate(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    static_contract = json.loads(
+        (root / "MEMORY_ATTACHMENT_CONTRACT.json").read_text(encoding="utf-8")
+    )
+    generated_contract = build_memory_attachment_contract(_memory_plan(tmp_path))
+
+    for contract in (static_contract, generated_contract):
+        assert contract["memory_package_manifest_exact_set_required"] is True
+        assert contract["memory_package_producer_self_verification_required"] is True
+        assert contract["memory_package_producer_verification_boundary"] == (
+            "before_archive_or_transport_creation"
+        )
