@@ -16923,13 +16923,13 @@
       "path": "tests/test_jazn_pack_generator_folder_snapshot.py",
       "name": "test_memory_crlf_drift_is_diagnostic_and_source_bytes_are_preserved",
       "purpose": "Memory crlf drift is diagnostic and source bytes are preserved",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 13,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -16951,7 +16951,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 62
     },
     "tests/test_jazn_pack_generator_folder_snapshot.py::test_system_plan_excludes_archive_local_settings_and_secrets": {
       "path": "tests/test_jazn_pack_generator_folder_snapshot.py",
@@ -16968,7 +16968,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 76
     },
     "tests/test_jazn_pack_generator_folder_snapshot.py::test_memory_split_is_one_logical_zip_cut_into_binary_transport_parts": {
       "path": "tests/test_jazn_pack_generator_folder_snapshot.py",
@@ -16985,7 +16985,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 100
     },
     "tests/test_jazn_pack_generator_folder_snapshot.py::test_verify_rehashes_memory_members_from_zip": {
       "path": "tests/test_jazn_pack_generator_folder_snapshot.py",
@@ -17002,7 +17002,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 126
+      "line": 130
     },
     "tests/test_jazn_pack_generator_import_isolation.py::test_direct_spec_load_keeps_public_tools_generator_importable": {
       "path": "tests/test_jazn_pack_generator_import_isolation.py",
