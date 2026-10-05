@@ -1,70 +1,83 @@
 # Jaźń — CURRENT STEP
 
 **Status:** `CANONICAL_CURRENT_STEP`  
-**Stan:** 2026-09-10
-**Baza:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f` / `16.3.25.5.59-conversation-runtime-orchestration-convergence`
-**Branch:** `upgrade/v16.3.25.5.60-main-entrypoint-chatgpt-live-convergence`
-**Target:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
+**Stan:** 2026-10-05  
+**Baza:** `master @ bb107ebaeea119487f49d8cb1e34efd9a1896464` / `16.3.25.5.106-memory-streaming-hardening-convergence`  
+**Branch:** `upgrade/v16.3.25.5.107-persistent-remote-runtime-operations-convergence`  
+**Target:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
 
-## 1. Bieżący krok — main-first + persistent ChatGPT
+## 1. Bieżący krok — persistent remote runtime operations
 
-Najwyższy priorytet to usunięcie błędu ownership wykrytego w prawdziwej rozmowie ChatGPT: żywy daemon/PID nie gwarantował, że każda wiadomość hosta przechodzi przez runtime, ponieważ aktywna instrukcja kazała uruchamiać świeże `run.py chat-gpt -- <message>` dla każdej tury.
-
-Bieżąca migracja:
-
-```text
-run.py                   thin user launcher
-  ↓
-main.py                  single central control plane
-  ↓
-Conversation/runtime services
-  ↓
-one persistent ChatGPT stdin/JSONL bridge per executor session
-  ↓
-persistent daemon/session owner
-```
-
-## 2. Zakres v60
-
-- odchudzić `run.py` do launchera;
-- przenieść centralny top-level dispatch/lifecycle/recovery/finalization do `main.py`;
-- zachować `latka_jazn.cli` jako parser/service layer bez drugiego control-plane importu w kanonicznej trasie;
-- utrzymywać jeden `chat-gpt` process i ten sam stdin/stdout przez kolejne tury;
-- prowadzić phase-2 host candidate/finalization tym samym kanałem;
-- nie używać płatnego OpenAI API w trasie ChatGPT;
-- traktować MCP jako transport opcjonalny, nie requirement dla bieżącego hosta/Plus;
-- zaktualizować aktywne AGENTS/runbook/loader/help/discovery;
-- dodać command-parity, persistent multi-turn, reconnect/idempotency i no-paid-API tests;
-- wykonać compileall, Pyright, deterministic tests, CI i canonical manifest sync.
-
-## 3. Exit gate v60
+Najwyższy priorytet to usunięcie zależności ciągłości rozmowy od efemerycznej
+powierzchni process execution pojedynczej wiadomości ChatGPT. Kod remote MCP,
+daemon, supervisor, durable request lineage i accepted-visible-turn już istnieją;
+bieżący krok domyka ich produkcyjne uruchomienie i kontrakty.
 
 ```text
-run.py thin                              PASS required
-main.py single control owner             PASS required
-no per-message CLI in active ChatGPT docs PASS required
-persistent JSONL 10+ turns               PASS required
-same-channel phase2                      PASS required
-reconnect without duplicate turn/final  PASS required
-paid OpenAI API not required/auto-used   PASS required
-runtime lineage on every visible turn    PASS required
-Linux + Windows CI                       PASS required
-package integrity after canonical sync   PASS required
+ChatGPT current-message app capability
+        |
+        | authenticated HTTPS MCP 2026-07-28
+        v
+public gateway / outbound tunnel
+        |
+        v
+one persistent Jaźń daemon
+        ^
+        |
+canonical runtime supervisor
 ```
 
-Dokumentacja, branch, PID lub pojedynczy test nie certyfikują samodzielnie tego gate.
+Lokalny executor ChatGPT pozostaje bootstrap/recovery capability. Nie jest
+warunkiem utrzymania rozmowy po zweryfikowaniu zdalnej trasy.
 
-## 4. Następny krok po v60
+## 2. Zakres v107
 
-Dopiero po v60 można bezpiecznie wykonać kolejną część `CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md`:
+- strict production readiness from canonical nested status evidence;
+- supervisor required by default, verified reuse, bounded start and fail-closed
+  timeout;
+- separate liveness `/healthz` from readiness `/readyz`;
+- versioned public deployment contract with real MCP method names;
+- public HTTPS deployment examples for container/systemd/outbound Cloudflare
+  Tunnel without repository-held secrets;
+- exact-set MEMORY manifest producer gate before archive/transport creation;
+- ChatGPT runbook rule: verified remote runtime owns ordinary-turn continuity;
+- Windows/Linux regression coverage and release metadata sync;
+- rollback and chaos/failure-injection runbook.
 
-1. wydzielić `ConversationRunner` z dużego `main.py`, pozostawiając `main.py` composition ownerem;
-2. ujednolicić daemon/session execution owner;
-3. utrwalić pełny `TurnStateMachine`;
-4. podłączyć memory/affect/NLP/tool policy przez typed lifecycle events;
-5. wykonać source-aware memory i causal/ablation evidence;
-6. utrzymać szerszą roadmapę Memory/Affect/attachment/NLP bez naruszania jej gates.
+## 3. Exit gate v107
 
-## 5. Granica naukowa
+```text
+canonical runtime status shape used        PASS required
+strict conversation readiness              PASS required
+exact runtime/daemon version binding       PASS required
+supervisor identity + heartbeat lease      PASS required
+daemon kill -> supervisor recovery         PASS required
+tunnel loss does not kill local runtime    deployment test required
+ambiguous transport never replays message  PASS required
+MCP 2026-07-28 wire names preserved        PASS required
+MEMORY exact-set producer verification     PASS required
+OAuth/secrets/loopback boundaries          PASS required
+Linux + Windows persistent-runtime CI      PASS required
+Pyright + release-hardening                PASS required
+canonical manifest/provenance sync         PASS required
+real ChatGPT app acceptance                external evidence required
+```
 
-„Neurologiczny” oznacza funkcjonalne połączenia software: ingress, routing, working state, memory, salience/affect, decision, action, source monitoring, finalization i autonomic lifecycle. Nie oznacza biologicznego układu nerwowego ani dowodu świadomości.
+A green repository candidate proves implementation readiness, not that a
+particular ChatGPT conversation currently has the Jaźń app callable.
+
+## 4. Następny krok
+
+Po merge-ready v107:
+
+1. deploy one reviewed build behind a stable HTTPS hostname;
+2. verify OAuth, `/healthz`, `/readyz` and supervisor recovery;
+3. connect/select the Jaźń custom MCP app in ChatGPT;
+4. verify fresh-message `jazn_status` + full four-tool callable set;
+5. execute generate/resume/finalize without replay and require
+   `action=display_exact`;
+6. perform daemon/tunnel failure injection and record external acceptance
+   evidence.
+
+Do not claim `remote_runtime_available=true` from repository code, a URL or a
+healthy tunnel alone.
