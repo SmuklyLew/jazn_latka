@@ -21562,7 +21562,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 83
     },
     "tests/test_memory_rebuild_modular.py::test_common_l0_creates_revisions_instead_of_overwriting": {
       "path": "tests/test_memory_rebuild_modular.py",
@@ -21588,7 +21588,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 126
     },
     "tests/test_memory_rebuild_modular.py::test_typed_temporal_recall_provenance_and_truthful_unknown": {
       "path": "tests/test_memory_rebuild_modular.py",
@@ -21614,7 +21614,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 146
     },
     "tests/test_memory_rebuild_modular.py::test_embeddings_are_optional_and_require_explicit_configuration": {
       "path": "tests/test_memory_rebuild_modular.py",
@@ -21642,7 +21642,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 201
+      "line": 208
     },
     "tests/test_memory_rebuild_modular.py::test_legacy_sqlite_adapter_is_read_only_and_feeds_common_model": {
       "path": "tests/test_memory_rebuild_modular.py",
@@ -21668,7 +21668,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 226
+      "line": 233
     },
     "tests/test_memory_rebuild_p0_studio.py::test_retired_p0_contract_is_owned_by_one_canonical_three_page_studio": {
       "path": "tests/test_memory_rebuild_p0_studio.py",
