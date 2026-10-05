@@ -21,6 +21,7 @@ from latka_jazn.memory.storage_limits import (
     DEFAULT_RAW_SEGMENT_MAX_BYTES,
     DEFAULT_RAW_SEGMENT_TARGET_BYTES,
 )
+from latka_jazn.packaging.memory_package_manifest import verify_memory_package_manifest
 from latka_jazn.packaging.memory_package_types import (
     MEMORY_FORMAT_VERSION_V3,
     MEMORY_MANIFEST_SCHEMA_V3,
@@ -450,6 +451,23 @@ def _materialize_memory_v3_staging(
     }
     manifest_path = destination / Path(*PurePosixPath(MEMORY_PACKAGE_MANIFEST_PATH).parts)
     _write_json_durable(manifest_path, manifest)
+
+    # Fail before archive/transport creation if the generated staging tree and
+    # its exact-set MEMORY manifest disagree.  This catches generator drift
+    # (unlisted/missing files, wrong hashes, transient SQLite sidecars) at the
+    # producer boundary instead of deferring it to runtime attach.
+    verification = verify_memory_package_manifest(destination)
+    if verification.get("ok") is not True:
+        error_codes = sorted({
+            str(item.get("code") or "unknown")
+            for item in verification.get("errors", [])
+            if isinstance(item, dict)
+        })
+        raise PackIntegrityError(
+            "generated MEMORY staging failed exact-set verification: "
+            + ",".join(error_codes[:12])
+        )
+
     manifest_digest = _sha(manifest_path)
     entries.append(
         SourceEntry(
