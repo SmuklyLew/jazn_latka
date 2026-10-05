@@ -3,11 +3,11 @@
   "version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
   "runtime_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
   "package_version": "16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence",
-  "generated_at_utc": "2026-10-05T13:57:24+00:00",
-  "updated_at_utc": "2026-10-05T13:57:24+00:00",
+  "generated_at_utc": "2026-10-05T14:00:49+00:00",
+  "updated_at_utc": "2026-10-05T14:00:49+00:00",
   "start_file": "run.py",
-  "file_count": 1922,
-  "static_file_count": 1922,
+  "file_count": 1925,
+  "static_file_count": 1925,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -291,7 +291,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3017,
-      "sha256": "f5607c6889c3dab63afc84c94c2e5c05f269c83a3da27e24e009a4c96b46456a",
+      "sha256": "bd6adf571f7c15b9268d9dfff662dee0c4a78a8c6a36118d09939e15b2e063f4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2837,8 +2837,8 @@
     },
     {
       "path": "latka_jazn/bootstrap/chatgpt_recovery.py",
-      "size_bytes": 60604,
-      "sha256": "00f6000815805df354e43d6c720a4b4c9d89db38f9da7911d3d040fbadba5aaa",
+      "size_bytes": 58768,
+      "sha256": "4ced142b9ba3da927724c6d960a4a56dec9427e85f7740f044c4817247c53bdf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7049,8 +7049,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_attach.py",
-      "size_bytes": 19957,
-      "sha256": "df18bbe0b7c81ab699cc7b3d005448d632526f1021d9c08ea70e0455a125b902",
+      "size_bytes": 19718,
+      "sha256": "d95b48afec8736081f4773b750851d3452aeef445182babb8dfc19c699bd7917",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7076,8 +7076,8 @@
     },
     {
       "path": "latka_jazn/packaging/memory_package_manifest.py",
-      "size_bytes": 15483,
-      "sha256": "81eee9d76971cae3b154fef6864c5a780a06c231f89728464d6bd28208c5d708",
+      "size_bytes": 19078,
+      "sha256": "a26aaa2c7470448a476cd0474b250d1ba049d1be23024e363c89cebf74be533f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11665,6 +11665,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_chatgpt_capability_loader_convergence_v163255104.py",
+      "size_bytes": 2083,
+      "sha256": "181821f7a294b1024577d6d19411d09a62137e9da4affb756106eed7d0cba9f3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_chatgpt_capability_loader_convergence_v16_3_25_5_92.py",
       "size_bytes": 2405,
       "sha256": "aabfd3a2f3862b553b146b71a6a0236e31f0b66bbdc35652567bea7eb8b81e69",
@@ -11719,6 +11728,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_chatgpt_zip_bootstrap_runtime_convergence_v163255104.py",
+      "size_bytes": 6966,
+      "sha256": "8826165c8fe508f2274ad7cc93200961ff6fcb5cfdd090c788f78b44e0d2e7dd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_dependency_studio_v1632539_source_v16325533.py",
       "size_bytes": 16749,
       "sha256": "f78c08be73af170591a6633391fc09127e818c129fdec67ac9c2019642b495cd",
@@ -11731,6 +11749,15 @@
       "path": "tests/archive/test_fast_bootstrap_persistent_runtime__pre_v16_3_25_5_103_nlg.py",
       "size_bytes": 8713,
       "sha256": "8b543bee8250fac9b985ac08b6e04abe0e53e9ed9a4f24190027a3ae4291b081",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_fast_bootstrap_persistent_runtime_v163255104.py",
+      "size_bytes": 8691,
+      "sha256": "7a2593931694ab8adfc6300009fd52968a3a0c36bd96ec06a8c9a171196ebc2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
