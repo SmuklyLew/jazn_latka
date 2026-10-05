@@ -87,6 +87,7 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -187,6 +188,7 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -259,6 +261,7 @@ jobs:
           tests/test_mcp_oauth_introspection.py
           tests/test_chatgpt_plugin_package.py
           tests/test_chatgpt_public_mcp_deployment.py
+          tests/test_v163255107_persistent_remote_runtime_operations.py
           tests/test_pack_generator_secure_mcp_bridge_contract.py
 
       - name: Host gate and persistent lifecycle E2E
