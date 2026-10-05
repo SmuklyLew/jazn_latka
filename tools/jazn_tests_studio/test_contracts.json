@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.104",
-  "active_definition_count": 1909,
+  "system_version": "16.3.25.5.105",
+  "active_definition_count": 1915,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26233,6 +26233,142 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 938
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_generator_v2_normalization_is_metadata_only": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_generator_v2_normalization_is_metadata_only",
+      "purpose": "Generator v2 normalization is metadata only",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_split_zip_reader_opens_logical_zip_without_joined_file": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_split_zip_reader_opens_logical_zip_without_joined_file",
+      "purpose": "Split zip reader opens logical zip without joined file",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_streaming_attach_legacy_generator_v2_writes_one_candidate_tree": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_streaming_attach_legacy_generator_v2_writes_one_candidate_tree",
+      "purpose": "Streaming attach legacy generator v2 writes one candidate tree",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_v3_raw_segments_stream_directly_to_logical_source": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_v3_raw_segments_stream_directly_to_logical_source",
+      "purpose": "V3 raw segments stream directly to logical source",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 182
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_disk_preflight_fails_before_large_payload_write": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_disk_preflight_fails_before_large_payload_write",
+      "purpose": "Disk preflight fails before large payload write",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "MemoryStreamingTransportError"
+      ],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 291
+    },
+    "tests/test_memory_streaming_attach_convergence.py::test_atomic_install_refuses_cross_filesystem_copy_fallback": {
+      "path": "tests/test_memory_streaming_attach_convergence.py",
+      "name": "test_atomic_install_refuses_cross_filesystem_copy_fallback",
+      "purpose": "Atomic install refuses cross filesystem copy fallback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.packaging",
+        "latka_jazn.packaging.generator_v2_compat",
+        "latka_jazn.packaging.memory_package_manifest",
+        "latka_jazn.packaging.memory_package_types"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 316
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
