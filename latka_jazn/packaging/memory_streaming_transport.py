@@ -27,6 +27,11 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
+from latka_jazn.archive.resource_policy import (
+    ArchiveResourcePolicy,
+    ArchiveResourcePolicyError,
+    validate_member_inventory,
+)
 from latka_jazn.packaging.attachment_materialization import (
     AttachmentMaterializationState,
     probe_attachment_materialization,
@@ -431,6 +436,32 @@ class _ArchiveSet:
                 self.assert_stable()
         finally:
             self.close()
+
+
+def _validate_archive_resources(
+    archives: list[zipfile.ZipFile],
+) -> dict[str, Any]:
+    """Apply the shared archive bomb/resource policy across all MEMORY volumes."""
+
+    infos: list[zipfile.ZipInfo] = []
+    seen_directories: set[str] = set()
+    for archive in archives:
+        for info in archive.infolist():
+            if info.is_dir():
+                directory = info.filename.rstrip("/")
+                if directory in seen_directories:
+                    continue
+                seen_directories.add(directory)
+            infos.append(info)
+    try:
+        return validate_member_inventory(
+            infos,
+            policy=ArchiveResourcePolicy(),
+        )
+    except ArchiveResourcePolicyError as exc:
+        raise MemoryStreamingTransportError(
+            f"MEMORY ZIP resource policy rejected: {exc}"
+        ) from exc
 
 
 def _member_map(
@@ -1034,6 +1065,7 @@ def stream_extract_verified_memory_package(
     completed_now = 0
 
     with _ArchiveSet(parts, archive_format) as archive_set:
+        resource_policy = _validate_archive_resources(archive_set.archives)
         members = _member_map(archive_set.archives, inventory)
         manifest = _read_manifest(members, inventory)
         raw_by_source, segment_paths = _raw_descriptor_maps(manifest)
@@ -1069,6 +1101,7 @@ def stream_extract_verified_memory_package(
                     "package_set": package_set,
                     "part_resolution": part_report,
                     "disk_preflight": disk,
+                    "zip_resource_policy": resource_policy,
                     "expected_full_sha256": expected_full_sha,
                     "observed_full_sha256": actual_full_sha,
                     "completed_count": len(completed),
@@ -1113,6 +1146,7 @@ def stream_extract_verified_memory_package(
                     "package_set": package_set,
                     "part_resolution": part_report,
                     "disk_preflight": disk,
+                    "zip_resource_policy": resource_policy,
                     "expected_full_sha256": expected_full_sha,
                     "observed_full_sha256": actual_full_sha,
                     "completed_count": len(completed),
@@ -1174,6 +1208,7 @@ def stream_extract_verified_memory_package(
         "expectations_source": expectations_source,
         "part_resolution": part_report,
         "disk_preflight": disk,
+        "zip_resource_policy": resource_policy,
         "expected_full_sha256": expected_full_sha,
         "observed_full_sha256": actual_full_sha,
         "transport_member_count": len(inventory),
@@ -1197,6 +1232,7 @@ __all__ = [
     "MemoryStreamingTransportError",
     "SplitZipReader",
     "VerifiedTransportPart",
+    "_validate_archive_resources",
     "resolve_verified_parts_in_place",
     "stream_extract_verified_memory_package",
 ]
