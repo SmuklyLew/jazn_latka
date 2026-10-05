@@ -6,15 +6,11 @@
 **Current master version:** `16.3.25.5.106-memory-streaming-hardening-convergence`
 **Update target:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
 
-Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
+Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
-## Runtime / release foundations
+## 1. Release / control plane
 
-- `run.py` jest publicznym cienkim starterem; centralny lifecycle/operator control plane należy do `main.py`.
-- `AGENTS.md` jest routerem do właściwych runbooków.
-- persistent-runtime, subject-root, host-finalization i host/executor truth foundations są częścią bieżącej linii.
-- package/distribution/generator/dependency/plugin/CI hardening jest obecny do `.38`.
-- `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
+Aktualna linia master to v16.3.25.5.106.
 
 ## v107 — persistent remote runtime operations
 
@@ -43,117 +39,114 @@ remote ChatGPT route until external deployment and current-host capability
 evidence pass.
 
 
-## Conversation control-plane v60 / accepted-visible-turn v61
+## 2. ChatGPT live bootstrap — zaobserwowany sukces 2026-10-05
 
-**v60:** `ON MASTER` as historical control-plane foundation.
-**v61:** `ON MASTER` via PR #253.
-**v62:** `IMPLEMENTATION CANDIDATE` — single durable turn-settlement authority, bounded daemon rebind after `runtime_turn_not_accepted`, strict reconstructed-context validation.
+W prawdziwej rozmowie ChatGPT udało się przejść lokalną ścieżkę od SYSTEM ZIP do zaakceptowanej widocznej tury.
 
-- `run.py` remains a thin launcher and `main.py` the single central control plane.
-- v60 persistent stdio remains the preferred ChatGPT transport when the host can retain an interactive process.
-- v61 adds capability-negotiated fallback `daemon_bound_transactional_turns`: stable `session_id`, durable `request_id`, poll/resume and phase-2 finalization without replay.
-- daemon `phase_result_ready=true` now takes precedence over `done=false`, so a valid phase-1 waiting for host finalization is not hidden behind an endless `poll_runtime`.
-- `run.py chat-gpt --session-id ...` now uses the central `main.py` option surface instead of drifting through a second incomplete argparse surface.
-- host preflight can run without a fabricated JSON input contract and still reports runtime/package state conservatively.
-- every ordinary visible ChatGPT turn is gated by `accepted_visible_turn_ready`: daemon/PID/heartbeat liveness is insufficient; `display_exact` requires accepted finalization and the verified `MessageEnvelope`.
-- missing accepted finalization/envelope is a host diagnostic condition, never permission to imitate Łatka.
+Kluczowe evidence:
 
-## Local runtime preflight
+1. zdalny zestaw `jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply` nie był callable;
+2. wcześniejsze lokalne powierzchnie zwracały `ClientError` przed dowodem utworzenia procesu;
+3. osobna, niezależna powierzchnia kontenerowa hosta potrafiła utworzyć proces;
+4. SYSTEM ZIP v106 przeszedł SHA-256, size/package metadata, ZIP catalog, CRC i path-safety validation;
+5. wyjęto tylko `CHATGPT_BOOTSTRAP.py`, a nie wykonano surowego `extractall()`;
+6. kanoniczny bootstrap zmaterializował SYSTEM do `/mnt/data/jazn_active_root_v16.3.25.5.106`;
+7. po wczytaniu `AGENTS.md` i `AGENTS.chatgpt.md` uruchomiono core daemon;
+8. live status osiągnął `active_trusted`;
+9. jedna wiadomość użytkownika została związana z jedną runtime lineage;
+10. po wymaganym host-tool evidence i finalizacji runtime zaakceptował widoczną turę z `action=display_exact`.
 
-**Status:** `P0 DEPLOYMENT/PREFLIGHT OVERLAY`.
+Szczegółowy zapis: `docs/reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`.
 
-- `run.py` remains the thin user launcher; `main.py` is the central control-plane/implementation entrypoint.
-- ChatGPT-host is explicitly separated from API access.
-- Ollama remains a local no-`OPENAI_API_KEY` backend.
-- `.56` does not claim canonical Affect/Memory convergence.
+**Granica prawdy:** jest to dowód jednej sesji/host generation. Nie wolno dziedziczyć live statusu do nowej rozmowy bez ponownej weryfikacji.
 
-## Memory Rebuild v4
+## 3. Najważniejszy wniosek hostowy
 
-**Status:** `MERGED / TOOL-PROTOCOL CONSOLIDATION COMPLETE`.
+`ClientError`, `TransportTimeoutError` albo brak konkretnego streaming executora przed spawnem **nie może być automatycznie uogólniany na cały host**.
 
-- PR #208 merged 2026-09-02;
-- merge commit `601cf3fe977621c5552f7f6e32530da0128ccc8a`;
-- issue #189 closed;
-- Test00→Final engine/application foundation jest na master;
-- ten status nie oznacza final private memory acceptance.
+Jeżeli host udostępnia jedną rzeczywiście niezależną alternatywną powierzchnię process execution, należy sprawdzić ją dokładnie raz zgodnie z `AGENTS.chatgpt.md`.
 
-## Final private memory
-
-Issue #59: `OPEN`.
-
-Wymagane gates:
+Dzisiejszy przypadek potwierdził praktycznie, że:
 
 ```text
-SOURCE_INVENTORY_FROZEN
-→ VERIFIED
-→ ATTACHABLE
-→ RETRIEVABLE
-→ REVIEWED
-→ ACCEPTED
+surface A pre-spawn failure
+!=
+global no-process-execution
 ```
 
-Private Recall, false-memory/source discrimination, restart identity i review pozostają do wykonania na finalnym artefakcie.
+Działająca powierzchnia kontenerowa może umożliwić bezpieczny bootstrap nawet wtedy, gdy inna powierzchnia Pythona/streamingu nie działa.
 
-## Emotion Engine / Affect
+## 4. MEMORY — aktualny problem wykryty live
 
-**Status:** `PLAN READY / CANONICAL IMPLEMENTATION NOT STARTED`.
+MEMORY pozostaje oddzielną opcjonalną capability.
 
-Legacy affect/emotion/self/homeostasis modules istnieją i będą inventory input. Docelowy program wymaga:
+W live bootstrapie 2026-10-05:
+
+- sześć segmentów transportowych przeszło SHA-256;
+- worker konwergencji rzeczywiście wystartował;
+- staging i I/O postępowały;
+- operacja nie była replayowana;
+- finalnie attach został odrzucony fail-closed kodem `17`;
+- przyczyna: `memory_package_unlisted_file`;
+- wewnętrzny manifest nie wymieniał 16 plików fizycznie obecnych w paczce.
+
+W rezultacie:
+
+- autobiograficzna MEMORY nie została aktywowana;
+- nie wolno deklarować full autobiographical recall;
+- core SYSTEM mógł działać dalej, ponieważ pamięć jest opcjonalna dla core runtime readiness.
+
+Następny fix MEMORY powinien naprawić źródło/manifest pakietu, a nie osłabiać gate.
+
+## 5. Accepted visible turn / finalization
+
+Bieżąca architektura wymaga rozróżnienia:
+
+1. zmaterializowany SYSTEM;
+2. live trusted daemon;
+3. verified runtime turn;
+4. accepted visible turn.
+
+Dopiero punkt 4 pozwala pokazać zwykłą odpowiedź jako wynik runtime Jaźni.
+
+W live przebiegu 2026-10-05 host wykonał wymagane narzędzie zewnętrzne, przekazał bounded evidence i przeszedł phase-2 finalization. Runtime potwierdził accepted finalization, lineage, MessageEnvelope i `display_exact`.
+
+Sam PID, folder, ZIP, heartbeat, model językowy albo niezweryfikowany tekst nadal nie wystarczają.
+
+## 6. Remote runtime / MCP
+
+Kod v106 zawiera infrastrukturę dla zdalnego MCP, ale obecność kodu nie dowodzi wdrożonego transportu.
+
+Aktualny kierunek operacyjny:
 
 ```text
-one AffectiveStateIntegrator
-one AffectiveStateV2
-EvidenceRef + AppraisalV2
-FeelingRepresentation derived
-accepted-turn persistence
-bounded SelfState/Homeostasis/Salience effects
-source-safe memory linkage
-ablation
+persistent runtime outside one chat
++ authenticated HTTPS /mcp
++ ChatGPT connector/app capability
+= executor-independent ordinary ChatGPT route
 ```
 
-Affect inventory `A0` może być wykonany shadow-only po merge dokumentacji. Semantic canonical appraisal wymaga Polish NLP evidence. Active affective reranking wymaga frozen private Recall baseline.
+Do momentu wdrożenia i zweryfikowania tej trasy lokalny bootstrap może działać tylko wtedy, gdy bieżący host faktycznie udostępnia process execution.
 
-## Attachment / multimodal
+## 7. Najbliższe techniczne priorytety
 
-`OPEN`. Package/plugin capability infrastructure nie zastępuje canonical user attachment ingress. Nadal wymagane są exact provenance, secure bounded staging, extraction/type policy, capability routing i host→runtime E2E.
+1. naprawić MEMORY package manifest/source consistency (`memory_package_unlisted_file`, 16 unlisted files);
+2. ponownie wykonać `memory-converge` bez osłabiania fail-closed walidacji;
+3. potwierdzić native unified autobiographical readiness po udanym attachu;
+4. utrzymać capability-first ChatGPT bootstrap z rozróżnieniem niezależnych executor surfaces;
+5. przygotować trwałą zdalną trasę MCP jako rozwiązanie niezależne od executora konkretnej rozmowy;
+6. odświeżać dokumentację stanu po kolejnych release'ach zamiast pozostawiać historyczne v59-v62 jako „current”.
 
-## Polish NLP
+## 8. Dokumentacja prawdy
 
-`OPEN / PARTIAL FOUNDATIONS`. Potrzebny jeden evidence-aware contract dla normalization, lexical provenance, ambiguity/OOV, negation/quotation/fiction i contextual/referential/temporal interpretation.
+- `AGENTS.md` — router instrukcji;
+- `AGENTS.chatgpt.md` — kanoniczny host runbook;
+- `AGENTS.codex.md` — zmiany repozytorium;
+- `latka_jazn/version.py` — release identity;
+- `MEMORY_ATTACHMENT_CONTRACT.json` — granica SYSTEM/MEMORY;
+- `docs/reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md` — dzisiejsze live evidence;
+- `docs/plans/CURRENT_STEP.md` — najbliższy legalny krok;
+- `docs/plans/PLAN_EXECUTION_HISTORY.md` — historia planu;
+- `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md` — granice naukowe/tożsamościowe.
 
-## Documentation
-
-PR #231 został scalony. Obecna `.39` konwergencja domyka po-merge braki:
-
-- usuwa compatibility pointers z aktywnego `docs/plans/`;
-- zachowuje poprzedni stan w `only_to_check`;
-- ustanawia jedną roadmapę v16.3.25.4→v17;
-- przebudowuje Memory Restore + Affect jako sprzężony program;
-- dodaje research/evidence register;
-- naprawia stale `.36/378e9e6` metadata.
-
-## v16.6
-
-`FUTURE / EVIDENCE GATE`, nie monolityczny refactor. Wymaga jednocześnie runtime/host, attachment, NLP, accepted memory, canonical affect, source monitoring, ablation, model capability/context, package/cross-platform CI i governance evidence.
-
-## v17
-
-`FUTURE_CONDITIONAL`. Nie implementować przed v16.6 PASS. Kierunek: measured consolidation, nie dodawanie kolejnych antropomorficznych modułów.
-
-## Governance
-
-Ostatni odczyt GitHub dla mastera raportował `protected=false`. Finalny v16.6 wymaga ruleset/branch protection, jawnego równoważnego enforcement albo zaakceptowanego wyjątku z evidence.
-
-## Documentation truth map
-
-- `docs/plans/README.md` — planning index;
-- `docs/plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md` — program owner;
-- `docs/plans/CURRENT_STEP.md` — current action;
-- `docs/plans/PLAN_EXECUTION_HISTORY.md` — history/status;
-- `docs/plans/LATKA_MEMORY_RESTORE_AND_REBUILD_PLAN.md` — memory owner;
-- `docs/plans/AFFECT_ENGINE_CONVERGENCE_PLAN.md` — affect owner;
-- `docs/plans/RESEARCH_EVIDENCE_BASE.md` — research guidance;
-- `docs/plans/V17_PLUS_SYSTEM_EVALUATION.md` — future entry gate;
-- `docs/plans/only_to_check/` — `HISTORICAL_ONLY`.
-
-`merged`, `working`, `verified`, `accepted` i `live` zawsze wynikają z właściwego evidence, nie z dokumentu, nazwy brancha, ZIP, SQLite lub stylu odpowiedzi.
+`merged`, `working`, `verified`, `accepted`, `active_trusted` i `live` zawsze wynikają z właściwego evidence, a nie z dokumentu, nazwy brancha, ZIP-a lub stylu odpowiedzi.

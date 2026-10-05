@@ -1882,6 +1882,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md",
+      "size_bytes": 10235,
+      "sha256": "53040bc2a516ac39ddc5a7ab96b49571a47ac05ffc12599d6d8237388d9a7858",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_100_CHATGPT_BOOTSTRAP_PROGRESS_CONVERGENCE.md",
       "size_bytes": 4624,
       "sha256": "e05b2533dda1efa92dd1f843fc6765e627fcfa0147aa1a5d45b1885e6cac4b12",

@@ -13,6 +13,7 @@ Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i pozi
 3. [`plans/README.md`](plans/README.md) — kanoniczna mapa aktywnych planów.
 4. [`plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md) — nadrzędna roadmapa v16.3.25.4→v17.
 5. [`plans/CURRENT_STEP.md`](plans/CURRENT_STEP.md) — bieżący legalny krok.
+6. [`reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`](reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md) — rzeczywisty przebieg udanego bootstrapu SYSTEM-u na hoście ChatGPT 2026-10-05, wraz z fail-closed odrzuceniem MEMORY.
 
 ## Aktywna warstwa planistyczna
 
