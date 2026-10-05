@@ -156,6 +156,100 @@ def _compat_entries(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
     return result
 
 
+
+def normalize_generator_v2_compat(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Translate generator-v2 metadata without copying package bytes.
+
+    Runtime attach uses this view directly against the already uploaded source
+    files. The older materializing adapter remains available for explicit
+    tooling/migration workflows, but normal MEMORY convergence must not create
+    a second transport copy merely to normalize sidecar metadata.
+    """
+
+    archive = _mapping(payload.get("archive"))
+    logical_name = str(archive.get("logical_filename") or "").strip()
+    if (
+        not logical_name.lower().endswith(".zip")
+        or Path(logical_name).name != logical_name
+        or "/" in logical_name
+        or "\\" in logical_name
+    ):
+        raise ValueError("generator-v2 logical archive filename must be a simple .zip filename")
+    logical_sha = str(archive.get("logical_sha256") or "").strip().lower() or None
+    logical_size = (
+        int(archive["logical_size_bytes"])
+        if archive.get("logical_size_bytes") is not None
+        else None
+    )
+    content = str(payload.get("content") or "").strip().lower()
+    profile = {
+        "system": "system",
+        "memory": "memory",
+        "system+memory": "combined",
+    }.get(content)
+    if profile is None:
+        raise ValueError(f"unsupported generator package content: {content!r}")
+
+    split = _mapping(payload.get("split"))
+    raw_parts = split.get("parts")
+    split_parts = raw_parts if isinstance(raw_parts, list) else []
+    outputs: list[dict[str, Any]] = []
+    if split_parts:
+        for index, raw in enumerate(split_parts, start=1):
+            if not isinstance(raw, Mapping):
+                raise ValueError("invalid split.parts record")
+            filename = str(raw.get("filename") or "").strip()
+            if (
+                not filename
+                or Path(filename).name != filename
+                or "/" in filename
+                or "\\" in filename
+            ):
+                raise ValueError(f"invalid generator-v2 transport filename: {filename!r}")
+            outputs.append(
+                {
+                    "part_no": int(raw.get("part_no") or index),
+                    "filename": filename,
+                    "size_bytes": (
+                        int(raw["size_bytes"])
+                        if raw.get("size_bytes") is not None
+                        else None
+                    ),
+                    "sha256": str(raw.get("sha256") or "").strip().lower() or None,
+                    "is_complete_zip": False,
+                }
+            )
+    else:
+        outputs.append(
+            {
+                "part_no": 1,
+                "filename": logical_name,
+                "size_bytes": logical_size,
+                "sha256": logical_sha,
+                "is_complete_zip": True,
+            }
+        )
+
+    return {
+        "schema_version": LEGACY_COMPAT_SCHEMA,
+        "package_name": logical_name,
+        "profile": profile,
+        "archive_format": "binary",
+        "package_version": str(payload.get("package_version") or "").strip() or None,
+        "logical_zip_sha256": logical_sha,
+        "logical_zip_size_bytes": logical_size,
+        "outputs": outputs,
+        "entries": _compat_entries(payload),
+        "compatibility_source_schema": PACK_GENERATOR_V2,
+        "compatibility_source_content": content,
+        "runtime_metadata_only_adapter": True,
+        "truth_boundary": (
+            "This sidecar is an in-memory transport compatibility projection. "
+            "No package bytes were copied; source bytes remain subject to the "
+            "same size/SHA/member verification during streaming MEMORY attach."
+        ),
+    }
+
 def materialize_generator_v2_compat(
     parts_dir: Path,
     payload: Mapping[str, Any],
@@ -291,6 +385,7 @@ __all__ = [
     "PACK_GENERATOR_V2",
     "discover_generator_sidecar",
     "materialize_generator_v2_compat",
+    "normalize_generator_v2_compat",
     "memory_package_requires_v3_repack",
     "sha256_file",
 ]
