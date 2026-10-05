@@ -1,10 +1,10 @@
 # Current project state
 
-**Snapshot date:** 2026-09-11
+**Snapshot date:** 2026-10-05
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `bed6ce28685f843d17030a57b552fa5ae92b9d14`
-**Current master version:** `16.3.25.5.61-accepted-visible-turn-finalization-convergence`
-**Update target:** `16.3.25.5.62-turn-settlement-authority-convergence`
+**Current master at documentation baseline:** `bb107ebaeea119487f49d8cb1e34efd9a1896464`
+**Current master version:** `16.3.25.5.106-memory-streaming-hardening-convergence`
+**Update target:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z kodu/testów/CI/PR/issue.
 
@@ -15,6 +15,32 @@ Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `la
 - persistent-runtime, subject-root, host-finalization i host/executor truth foundations są częścią bieżącej linii.
 - package/distribution/generator/dependency/plugin/CI hardening jest obecny do `.38`.
 - `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json` są synchronizowane wyłącznie kanonicznym release metadata flow, nie ręcznie.
+
+## v107 — persistent remote runtime operations
+
+**Status:** `IMPLEMENTATION CANDIDATE` on
+`upgrade/v16.3.25.5.107-persistent-remote-runtime-operations-convergence`.
+
+- public MCP startup is fail-closed on canonical conversation readiness, exact
+  runtime version and daemon instance binding;
+- the canonical runtime supervisor is required by default and is reused only
+  with confirmed process identity plus a fresh heartbeat lease;
+- Docker liveness (`/healthz`) is separated from runtime readiness
+  (`/readyz`);
+- deployment contract, Cloudflare Tunnel example and hardened systemd unit are
+  versioned in `deploy/chatgpt_mcp/`;
+- the MCP wire contract remains 2026-07-28
+  `server/discover` + `tools/list` + `tools/call`; non-standard
+  `mcp/list-tools` / `mcp/invoke` aliases are explicitly rejected from the
+  deployment contract;
+- MEMORY v3 staging now verifies its exact-set manifest before transport
+  creation, preserving the existing fail-closed attach validation;
+- current-message app/callability and accepted `display_exact` finalization
+  remain mandatory before attributing a visible response to Jaźń.
+
+This branch does not create a public endpoint by itself and does not claim a
+remote ChatGPT route until external deployment and current-host capability
+evidence pass.
 
 
 ## Conversation control-plane v60 / accepted-visible-turn v61
