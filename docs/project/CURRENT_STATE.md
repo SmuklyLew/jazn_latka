@@ -1,21 +1,20 @@
 # Current project state
 
-**Snapshot date:** 2026-10-05
+**Snapshot date:** 2026-10-06
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `bb107ebaeea119487f49d8cb1e34efd9a1896464`
-**Current master version:** `16.3.25.5.106-memory-streaming-hardening-convergence`
-**Update target:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
+**Current master at documentation baseline:** `712a25db94c634ea47fbf265c0d907608a668f00`
+**Current master version:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
+**Next planned target:** `16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
 ## 1. Release / control plane
 
-Aktualna linia master to v16.3.25.5.106.
+Aktualna linia master to v16.3.25.5.107.
 
 ## v107 — persistent remote runtime operations
 
-**Status:** `IMPLEMENTATION CANDIDATE` on
-`upgrade/v16.3.25.5.107-persistent-remote-runtime-operations-convergence`.
+**Status:** `MERGED` / PR #317 / merge commit `d078819a252e98cdce3270713f3c4a5abb8b8e54`; canonical release metadata synchronized at `712a25db94c634ea47fbf265c0d907608a668f00`.
 
 - public MCP startup is fail-closed on canonical conversation readiness, exact
   runtime version and daemon instance binding;
@@ -34,9 +33,9 @@ Aktualna linia master to v16.3.25.5.106.
 - current-message app/callability and accepted `display_exact` finalization
   remain mandatory before attributing a visible response to Jaźń.
 
-This branch does not create a public endpoint by itself and does not claim a
-remote ChatGPT route until external deployment and current-host capability
-evidence pass.
+v107 code on master does not by itself prove a deployed public endpoint or a
+current-message callable ChatGPT app. External deployment and fresh host
+capability evidence remain required.
 
 
 ## 2. ChatGPT live bootstrap — zaobserwowany sukces 2026-10-05
@@ -130,12 +129,19 @@ Do momentu wdrożenia i zweryfikowania tej trasy lokalny bootstrap może działa
 
 ## 7. Najbliższe techniczne priorytety
 
-1. naprawić MEMORY package manifest/source consistency (`memory_package_unlisted_file`, 16 unlisted files);
-2. ponownie wykonać `memory-converge` bez osłabiania fail-closed walidacji;
-3. potwierdzić native unified autobiographical readiness po udanym attachu;
-4. utrzymać capability-first ChatGPT bootstrap z rozróżnieniem niezależnych executor surfaces;
-5. przygotować trwałą zdalną trasę MCP jako rozwiązanie niezależne od executora konkretnej rozmowy;
-6. odświeżać dokumentację stanu po kolejnych release'ach zamiast pozostawiać historyczne v59-v62 jako „current”.
+1. zachować v107 remote-runtime/MEMORY producer fixes jako baseline;
+2. nie mylić naprawionego generatora z już naprawioną historyczną paczką MEMORY:
+   stara paczka, która fail-closed zakończyła się `memory_package_unlisted_file`,
+   wymaga nowej poprawnie wygenerowanej paczki i ponownego attach/acceptance;
+3. zbudować jeden `TurnDiagnosticTrace` dla całej tury;
+4. wprowadzić typed no-silent-fallback contract oraz blind-route detection;
+5. dodać statyczny RouteGraphAudit do CI;
+6. rozpocząć etapową dekompozycję `JaznEngine` dopiero po characterization/parity
+   gate;
+7. wydzielić host finalization tak, aby phase-2 nie konstruowała pełnego
+   cognitive engine;
+8. redukować legacy `conversation.py` dopiero po route/parity evidence;
+9. Affect i MEMORY zmieniać semantycznie wyłącznie przez ich własne owner plans.
 
 ## 8. Dokumentacja prawdy
 
