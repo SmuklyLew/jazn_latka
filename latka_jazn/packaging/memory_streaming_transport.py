@@ -117,7 +117,7 @@ class SplitZipReader(io.RawIOBase):
         self._position = min(position, self._length)
         return self._position
 
-    def readinto(self, buffer: bytearray | memoryview) -> int:
+    def readinto(self, buffer: Any) -> int:
         if self._position >= self._length:
             return 0
         view = memoryview(buffer).cast("B")
