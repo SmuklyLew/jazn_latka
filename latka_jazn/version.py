@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.104 converges Memory Rebuild Studio on one canonical unified
-# reconstruction pipeline, preserves immutable pre-rebuild baselines, and
-# gates publication/export on runtime-native autobiographical readiness.
-DISTRIBUTION_VERSION = "16.3.25.5.104"
-PACKAGE_VERSION = "16.3.25.5.104"
-PACKAGE_RELEASE_NAME = "memory-rebuild-studio-reconstruction-convergence"
+# v16.3.25.5.105 makes MEMORY attach low-amplification: verified upload
+# parts are consumed in place, binary split ZIPs are read as one seekable
+# stream, v3 raw segments materialize directly to logical sources, and runtime
+# convergence no longer creates mandatory compat/repack payload copies.
+DISTRIBUTION_VERSION = "16.3.25.5.105"
+PACKAGE_VERSION = "16.3.25.5.105"
+PACKAGE_RELEASE_NAME = "memory-streaming-attach-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
