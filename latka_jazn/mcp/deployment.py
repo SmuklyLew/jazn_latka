@@ -145,28 +145,36 @@ def _json_object_from_completed_process(
 
 
 def _runtime_status_blockers(payload: Mapping[str, Any]) -> list[str]:
+    """Validate the real run.py status shape, not a flattened mock."""
+
     blockers: list[str] = []
-    for field in (
-        "ok",
-        "daemon_reachable",
-        "system_fully_ready",
-        "conversation_ready",
-        "activation_truth_gate_eligible",
-    ):
+    daemon_value = payload.get("daemon")
+    daemon = dict(daemon_value) if isinstance(daemon_value, Mapping) else {}
+    capability_value = payload.get("capability_matrix")
+    capability = (
+        dict(capability_value) if isinstance(capability_value, Mapping) else {}
+    )
+
+    for field in ("ok", "system_fully_ready", "activation_truth_gate_eligible"):
         if payload.get(field) is not True:
             blockers.append(field)
+
+    if daemon.get("endpoint_reachable") is not True:
+        blockers.append("daemon.endpoint_reachable")
+    if capability.get("conversation_ready") is not True:
+        blockers.append("capability_matrix.conversation_ready")
 
     runtime_version = str(payload.get("runtime_version") or "").strip()
     if runtime_version != PACKAGE_VERSION_FULL:
         blockers.append("runtime_version")
 
-    daemon_instance_id = str(
-        payload.get("daemon_instance_id")
-        or payload.get("runtime_instance_id")
-        or ""
-    ).strip()
+    daemon_runtime_version = str(daemon.get("runtime_version") or "").strip()
+    if daemon_runtime_version != PACKAGE_VERSION_FULL:
+        blockers.append("daemon.runtime_version")
+
+    daemon_instance_id = str(daemon.get("daemon_instance_id") or "").strip()
     if not daemon_instance_id:
-        blockers.append("daemon_instance_id")
+        blockers.append("daemon.daemon_instance_id")
 
     return blockers
 
