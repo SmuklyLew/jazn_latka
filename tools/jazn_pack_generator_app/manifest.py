@@ -76,6 +76,9 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "runtime_attach_cross_filesystem_copy_fallback": False,
         "runtime_attach_disk_preflight_required": True,
         "runtime_attach_v3_raw_segments_stream_to_logical_source": True,
+        "memory_package_manifest_exact_set_required": True,
+        "memory_package_producer_self_verification_required": True,
+        "memory_package_producer_verification_boundary": "before_archive_or_transport_creation",
         "bootstrap_contract_member": (
             MEMORY_ATTACHMENT_CONTRACT_MEMBER if carries_system else None
         ),
