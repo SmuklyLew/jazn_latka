@@ -9,10 +9,11 @@ visible-response authority.
 The production entrypoint performs this fail-closed sequence:
 
 1. `run.py start` through the canonical control plane;
-2. `run.py status --json` and require all of:
-   `ok`, `daemon_reachable`, `system_fully_ready`,
-   `conversation_ready`, `activation_truth_gate_eligible`,
-   a non-empty daemon/runtime instance id and the exact package version;
+2. `run.py status --json` and validate the canonical nested evidence:
+   top-level `ok`, `system_fully_ready`, `activation_truth_gate_eligible`;
+   `daemon.endpoint_reachable`; `capability_matrix.conversation_ready`;
+   non-empty `daemon.daemon_instance_id`; and exact package version at both
+   top-level and `daemon.runtime_version`;
 3. reuse an already verified runtime supervisor or start `supervisor-run`;
 4. require supervisor identity + fresh heartbeat lease;
 5. `exec run.py mcp-http --public-oauth ...`.
@@ -70,11 +71,13 @@ token in the shell/secret store, not in Git.
 cp deploy/chatgpt_mcp/jazn-mcp.env.example deploy/chatgpt_mcp/jazn-mcp.env
 # fill OAuth/resource-server values locally
 export CLOUDFLARE_TUNNEL_TOKEN='...'
+export CLOUDFLARED_IMAGE='cloudflare/cloudflared:<reviewed-version-or-digest>'
 docker compose -f deploy/chatgpt_mcp/compose.cloudflare.example.yml up -d
 ```
 
-Configure the Cloudflare public hostname to forward to
-`http://jazn-mcp:8080`. The public hostname must match
+The Compose file intentionally refuses an implicit `latest`; pin a reviewed
+cloudflared version or immutable digest in production. Configure the Cloudflare
+public hostname to forward to `http://jazn-mcp:8080`. The public hostname must match
 `JAZN_MCP_ALLOWED_HOSTS` and the resource URL.
 
 ## systemd
