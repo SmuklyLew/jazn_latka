@@ -13,7 +13,7 @@ import shutil
 import sqlite3
 import uuid
 from threading import Event
-from typing import Callable
+from typing import Any, Callable
 
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.storage_limits import (
@@ -232,7 +232,7 @@ def _write_json_durable(path: Path, payload: dict[str, object]) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def _snapshot_sqlite_memory(source: Path, target: Path) -> dict[str, object]:
+def _snapshot_sqlite_memory(source: Path, target: Path) -> dict[str, Any]:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.unlink(missing_ok=True)
     try:
