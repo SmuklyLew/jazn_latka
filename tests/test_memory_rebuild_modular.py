@@ -64,7 +64,14 @@ def test_structure_settings_theme_and_adapter_contracts() -> None:
     assert len(Path("tools/rebuild_memory.py").read_text(encoding="utf-8").splitlines()) < 20
     assert len(Path("tools/memory_rebuild.py").read_text(encoding="utf-8").splitlines()) < 20
     assert DEFAULT_THEME.l0_label != DEFAULT_THEME.active_label
-    assert len(default_adapter_registry().ids()) == 5
+    assert default_adapter_registry().ids() == (
+        "chat-html/v16.1",
+        "chatgpt-json/v16.1",
+        "journal/v16.1",
+        "music-analysis/v16.1",
+        "affective-legacy-json/v16.3.25.5.104",
+        "legacy-sqlite/v16.1",
+    )
     assert MemoryRebuildSettings().require_fts5
     assert not MemoryRebuildSettings().embeddings_enabled
     with pytest.raises(ValueError, match="FTS5"):
