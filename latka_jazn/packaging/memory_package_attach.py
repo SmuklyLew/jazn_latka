@@ -9,7 +9,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from latka_jazn.bootstrap.chatgpt_recovery import runtime_preflight
 from latka_jazn.config import JaznConfig
@@ -18,13 +18,13 @@ from latka_jazn.core.runtime_daemon import status_daemon
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
-from latka_jazn.packaging.split_zip_package import (
-    extract_independent_zip_set_resumable, extract_joined_zip_resumable, infer_base_zip_name,
-    join_split_package_to_zip, load_package_expectations, load_package_set_metadata,
-    resolve_renamed_package_parts, test_joined_zip, verify_extracted_zip_set, verify_extracted_zip_tree,
-)
+from latka_jazn.packaging.split_zip_package import infer_base_zip_name
 from latka_jazn.tools.active_extraction_cache import write_active_runtime_marker
 from .memory_package_manifest import verify_memory_package_manifest
+from .memory_streaming_transport import (
+    MemoryStreamingTransportError,
+    stream_extract_verified_memory_package,
+)
 from .memory_package_source import MemoryPackageSourceError, materialize_r2_memory_package
 from .memory_raw_segmentation import RawJsonlSegmenter
 from .memory_package_types import (
@@ -62,6 +62,7 @@ class _VerifiedMemoryPackage:
     zip_name: str
     staging: Path
     manifest: dict[str, Any]
+    raw_segments_materialized: bool = False
 
 
 def _resolve_memory_source(
@@ -120,89 +121,40 @@ def _verify_and_extract_memory_package(
     run_crc: bool,
     force_reextract: bool,
     report: dict[str, Any],
+    package_sidecar: Mapping[str, Any] | None = None,
 ) -> _VerifiedMemoryPackage | MemoryAttachResult:
-    zip_name = _infer_memory_base_zip_name(parts_dir, base_zip_name)
-    report["base_zip_name"] = zip_name
-    package_set = load_package_set_metadata(parts_dir, zip_name)
-    report["package_set"] = package_set
-    if (
-        package_set.get("source") != "package.json"
-        or str(package_set.get("profile") or "").lower() != "memory"
-    ):
-        return MemoryAttachResult(
-            False,
-            "memory_package_profile_rejected",
-            str(runtime_root),
-            report,
-            exit_code=14,
-        )
+    if package_sidecar is not None:
+        zip_name = str(package_sidecar.get("package_name") or "").strip()
+        if not zip_name:
+            return MemoryAttachResult(
+                False,
+                "memory_package_profile_rejected",
+                str(runtime_root),
+                report,
+                exit_code=14,
+            )
+    else:
+        zip_name = _infer_memory_base_zip_name(parts_dir, base_zip_name)
 
-    work_dir.mkdir(parents=True, exist_ok=True)
-    expected, expected_full_sha, source = load_package_expectations(parts_dir, zip_name)
-    report.update({"expectations_source": source, "expected_full_sha256": expected_full_sha})
-    canonical = work_dir / "canonical_parts"
-    if force_reextract:
-        _safe_remove_tree(canonical)
-    report["part_resolution"] = resolve_renamed_package_parts(
+    target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
+    streaming = stream_extract_verified_memory_package(
+        runtime_root,
         parts_dir,
-        expected,
-        canonical_dir=canonical,
-        skip_part_hash=False,
+        target_memory_root=target_memory,
+        base_zip_name=zip_name,
+        package_sidecar=package_sidecar,
+        time_budget_seconds=time_budget_seconds,
+        force_reextract=force_reextract,
     )
-
-    archive_format = str(package_set.get("archive_format") or "binary").strip().lower()
-    independent: list[Path] = []
-    joined: Path | None = None
-    if archive_format == "independent":
-        independent = [canonical / part.filename for part in expected]
-        volumes = [test_joined_zip(path, run_crc=run_crc) for path in independent]
-        zip_report = {
-            "ok": all(row.get("ok") for row in volumes),
-            "archive_format": "independent",
-            "volumes": volumes,
-        }
-    elif archive_format == "binary":
-        joined = join_split_package_to_zip(
-            canonical,
-            zip_name,
-            zip_out=work_dir / zip_name,
-            force=True,
-            keep_existing=False,
-        )
-        zip_report = test_joined_zip(joined, run_crc=run_crc)
-    else:
-        raise ValueError(f"unsupported archive_format:{archive_format}")
-
-    report["zip_test"] = zip_report
-    if zip_report.get("ok") is not True:
-        return MemoryAttachResult(
-            False,
-            "memory_archive_verification_failed",
-            str(runtime_root),
-            report,
-            exit_code=15,
-        )
-
-    staging = work_dir / "staging"
-    if force_reextract:
-        _safe_remove_tree(staging)
-    if archive_format == "independent":
-        extraction = extract_independent_zip_set_resumable(
-            independent,
-            staging,
-            progress_path=work_dir / "extract-progress.json",
-            time_budget_seconds=time_budget_seconds,
-        )
-    else:
-        assert joined is not None
-        extraction = extract_joined_zip_resumable(
-            joined,
-            staging,
-            progress_path=work_dir / "extract-progress.json",
-            time_budget_seconds=time_budget_seconds,
-        )
-    report["extraction"] = extraction
-    if extraction.get("pending"):
+    report["streaming_transport"] = streaming
+    report["base_zip_name"] = zip_name
+    report["package_set"] = streaming.get("package_set")
+    report["part_resolution"] = streaming.get("part_resolution")
+    report["disk_preflight"] = streaming.get("disk_preflight")
+    report["run_crc_requested"] = bool(run_crc)
+    report["crc_policy"] = "always_verified_while_streaming"
+    report["work_dir"] = str(work_dir)
+    if streaming.get("pending") is True:
         return MemoryAttachResult(
             False,
             "memory_extracting_pending",
@@ -211,18 +163,7 @@ def _verify_and_extract_memory_package(
             pending=True,
             exit_code=75,
         )
-
-    if archive_format == "independent":
-        fs_report = verify_extracted_zip_set(
-            independent,
-            staging,
-            reject_extra_files=True,
-        )
-    else:
-        assert joined is not None
-        fs_report = verify_extracted_zip_tree(joined, staging, reject_extra_files=True)
-    report["filesystem_verification"] = fs_report
-    if fs_report.get("ok") is not True:
+    if streaming.get("ok") is not True:
         return MemoryAttachResult(
             False,
             "memory_archive_verification_failed",
@@ -231,6 +172,7 @@ def _verify_and_extract_memory_package(
             exit_code=15,
         )
 
+    staging = Path(str(streaming["staging"])).expanduser().resolve()
     only, extras = _memory_only(staging)
     report["memory_only_tree"] = {"ok": only, "extra_paths": extras}
     if not only:
@@ -242,10 +184,12 @@ def _verify_and_extract_memory_package(
             exit_code=14,
         )
 
+    raw_segments_materialized = bool(streaming.get("raw_segments_materialized"))
     manifest = verify_memory_package_manifest(
         staging,
         runtime_root=runtime_root,
         require_runtime_match=False,
+        installed_raw_segments=raw_segments_materialized,
     )
     report["memory_manifest_verification"] = manifest
     if manifest.get("ok") is not True:
@@ -256,8 +200,12 @@ def _verify_and_extract_memory_package(
             report,
             exit_code=15,
         )
-    return _VerifiedMemoryPackage(zip_name=zip_name, staging=staging, manifest=manifest)
-
+    return _VerifiedMemoryPackage(
+        zip_name=zip_name,
+        staging=staging,
+        manifest=manifest,
+        raw_segments_materialized=raw_segments_materialized,
+    )
 
 def _materialize_raw_segments(
     staging: Path,
@@ -305,24 +253,44 @@ def _install_memory_tree(
     report: dict[str, Any],
 ) -> tuple[Path, bool]:
     transaction_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-    backup_memory = workspace / "memory_attach_backups" / transaction_id / "memory"
     target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
+    target_memory.parent.mkdir(parents=True, exist_ok=True)
+    backup_memory = (
+        target_memory.parent
+        / ".memory-backups"
+        / transaction_id
+        / target_memory.name
+    )
+    failed_memory = target_memory.parent / ".memory-failed" / transaction_id
     previous_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=True)
     had_previous = previous_memory.exists()
     installed_new = False
     report["memory_root"] = str(target_memory)
     report["previous_memory_root"] = str(previous_memory) if had_previous else None
+    report["memory_install_strategy"] = "same_filesystem_atomic_replace_no_copy_fallback"
+    report["workspace"] = str(workspace)
     try:
         if had_previous:
             backup_memory.parent.mkdir(parents=True, exist_ok=False)
-            os.replace(previous_memory, backup_memory)
-        target_memory.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.replace(previous_memory, backup_memory)
+            except OSError as move_exc:
+                if move_exc.errno == errno.EXDEV:
+                    raise OSError(
+                        errno.EXDEV,
+                        "existing MEMORY and rollback directory are on different filesystems; "
+                        "copy fallback is disabled",
+                    ) from move_exc
+                raise
         try:
             os.replace(source_memory, target_memory)
         except OSError as move_exc:
-            if move_exc.errno != errno.EXDEV:
-                raise
-            shutil.copytree(source_memory, target_memory)
+            if move_exc.errno == errno.EXDEV:
+                raise OSError(
+                    errno.EXDEV,
+                    "MEMORY staging must share the target filesystem; copy fallback is disabled",
+                ) from move_exc
+            raise
         installed_new = True
         transactional = initialize_transactional_memory_store(runtime_root)
         report["transactional_memory_initialization"] = transactional
@@ -331,10 +299,9 @@ def _install_memory_tree(
     except Exception:
         if target_memory.exists():
             if installed_new:
-                failed = workspace / "memory_attach_failed" / transaction_id
-                failed.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(target_memory, failed)
-                report["failed_memory_preserved_at"] = str(failed)
+                failed_memory.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(target_memory, failed_memory)
+                report["failed_memory_preserved_at"] = str(failed_memory)
             else:
                 shutil.rmtree(target_memory, ignore_errors=True)
         if had_previous and backup_memory.exists():
@@ -342,7 +309,6 @@ def _install_memory_tree(
             os.replace(backup_memory, previous_memory)
         raise
     return backup_memory, had_previous
-
 
 def _finalize_memory_attach(
     runtime_root: Path,
@@ -402,6 +368,7 @@ def attach_memory_package(
     time_budget_seconds: float | None = 25.0,
     run_crc: bool = True,
     force_reextract: bool = False,
+    package_sidecar: Mapping[str, Any] | None = None,
     r2_prefix: str | None = None,
     r2_bucket: str | None = None,
     r2_endpoint_url: str | None = None,
@@ -476,11 +443,23 @@ def attach_memory_package(
             run_crc=run_crc,
             force_reextract=force_reextract,
             report=report,
+            package_sidecar=package_sidecar,
         )
         if isinstance(verified, MemoryAttachResult):
             return verified
 
-        _materialize_raw_segments(verified.staging, verified.manifest, report)
+        if not verified.raw_segments_materialized:
+            _materialize_raw_segments(verified.staging, verified.manifest, report)
+        else:
+            report["raw_segment_materialization"] = {
+                "ok": True,
+                "mode": "streamed_direct_to_logical_source",
+                "segments_materialized_as_install_files": False,
+                "truth_boundary": (
+                    "v3 transport segments were verified while streaming directly "
+                    "into the logical source file; no segment tree was installed."
+                ),
+            }
         source_memory = verified.staging / "memory"
         if not source_memory.is_dir():
             return MemoryAttachResult(
@@ -508,6 +487,8 @@ def attach_memory_package(
         )
     except MemoryPackageSourceError as exc:
         code, etype, detail = "memory_source_materialization_failed", type(exc).__name__, str(exc)
+    except MemoryStreamingTransportError as exc:
+        code, etype, detail = "memory_streaming_transport_blocked", type(exc).__name__, str(exc)
     except PermissionError as exc:
         code, etype, detail = "memory_attach_path_unwritable", type(exc).__name__, str(exc)
     except FileNotFoundError as exc:
