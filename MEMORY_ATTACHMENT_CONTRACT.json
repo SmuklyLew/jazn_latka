@@ -55,5 +55,8 @@
   "runtime_attach_staging_same_filesystem_required": true,
   "runtime_attach_cross_filesystem_copy_fallback": false,
   "runtime_attach_disk_preflight_required": true,
-  "runtime_attach_v3_raw_segments_stream_to_logical_source": true
+  "runtime_attach_v3_raw_segments_stream_to_logical_source": true,
+  "memory_package_manifest_exact_set_required": true,
+  "memory_package_producer_self_verification_required": true,
+  "memory_package_producer_verification_boundary": "before_archive_or_transport_creation"
 }
