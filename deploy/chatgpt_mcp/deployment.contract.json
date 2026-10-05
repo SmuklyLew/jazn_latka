@@ -16,15 +16,19 @@
     ]
   },
   "runtime_readiness": {
-    "required_true_fields": [
+    "required_true_paths": [
       "ok",
-      "daemon_reachable",
       "system_fully_ready",
-      "conversation_ready",
-      "activation_truth_gate_eligible"
+      "activation_truth_gate_eligible",
+      "daemon.endpoint_reachable",
+      "capability_matrix.conversation_ready"
     ],
-    "required_non_empty_fields": [
-      "daemon_instance_id"
+    "required_non_empty_paths": [
+      "daemon.daemon_instance_id"
+    ],
+    "runtime_version_paths": [
+      "runtime_version",
+      "daemon.runtime_version"
     ],
     "runtime_version_must_match_package": true
   },
